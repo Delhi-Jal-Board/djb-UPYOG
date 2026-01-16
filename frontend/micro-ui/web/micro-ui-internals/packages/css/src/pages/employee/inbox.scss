@@ -1,9 +1,8 @@
 .complaint-links-container {
-  /*  @apply bg-white; */
-  /* border-radius: 4px; */
-
+  @apply bg-white;
+  border-radius: 4px;
   .header {
-    /* @apply flex items-center border-b border-border justify-between; */
+    @apply flex items-center border-b border-border justify-between;
 
     .logo {
       width: 56px;
@@ -11,7 +10,6 @@
       @apply bg-focus;
       padding: 12px;
       border-radius: 4px;
-
       svg {
         @apply w-8 h-8;
       }
@@ -23,38 +21,30 @@
   }
 
   .body {
-    /* padding: 10px; */
+    padding: 10px;
     @apply flex items-start flex-col;
-    /*    margin-left: 46px; */
+    margin-left: 46px;
 
     .link {
-      @apply p-sm items-center;
-      color: #764ba2 !important;
+      @apply p-sm text-primary-main items-center;
       display: flex !important;
-
-      a {
-        color: inherit;
-        text-decoration: inherit
-      }
+      color: #a82227 !important;
     }
 
     .inbox-total {
       padding: 4px;
       display: table;
       @apply whitespace-normal text-center text-white w-8 h-8 bg-primary-main rounded-full ml-xs;
+      background-color: #a82227 !important;
     }
   }
 
   .links-wrapper {
-    @apply py-sm;
-    line-height: 24px;
-    font-size: 20px;
-    align-self: center;
-
+    @apply pl-md py-sm text-text-btn;
     .link {
       padding: 0 !important;
       padding-bottom: 4px !important;
-
+      color: #a82227 !important;
       svg {
         @apply ml-sm;
       }
@@ -64,7 +54,6 @@
 
 .MobilePopupHeadingWrapper {
   @apply flex place-content-between mb-md;
-
   h2 {
     @apply text-heading-l font-bold;
   }
@@ -72,7 +61,6 @@
 
 .filter-button {
   @apply text-primary-main;
-
   &:hover {
     @apply text-primary-dark cursor-pointer;
   }
@@ -80,17 +68,14 @@
 
 .employeeCard-info-box {
   @apply flex justify-end ml-md;
-  background-color: theme(colors.grey.light);
-
+  background-color: #fafafa;
   div {
     margin-right: 32px;
-
     span:nth-child(2) {
       @apply font-bold;
       color: #4f5a5f;
     }
   }
-
   .employeeCard-info-data {
     display: flex;
     flex-direction: column;
@@ -114,18 +99,15 @@
     .filter-label {
       @apply font-bold text-heading-l flex gap-3;
       padding-bottom: 6px;
-
       svg {
-        fill: theme(colors.text.primary);
+        fill: #0b0c0c;
       }
     }
-
     .sub-filter-label {
       font-weight: 400;
       font-size: 16px;
     }
   }
-
   .filter-form-field {
     p {
       @apply text-form-field text-text-primary block mb-md;
@@ -139,11 +121,9 @@
       .filter-card {
         @apply bg-white;
         padding: 10px;
-
         .filter-card-close-button {
           @apply flex flex-row-reverse;
         }
-
         .heading {
           @apply flex justify-between;
 
@@ -155,9 +135,8 @@
         .filter-label {
           @apply text-heading-m block flex gap-3 items-center;
           padding-bottom: 6px;
-
           svg {
-            fill: theme(colors.text.primary);
+            fill: #0b0c0c;
           }
         }
 
@@ -173,22 +152,21 @@
 
       .complaint-input-container {
         @apply w-full;
-
         .complaint-input {
           @apply flex flex-col;
 
           .clear-search {
             @apply text-focus;
             display: none;
-
             &:hover {
-              color: theme(colors.link.hover);
+              color: #003078;
               cursor: pointer;
             }
           }
         }
 
-        .mobile-input {}
+        .mobile-input {
+        }
       }
     }
   }
@@ -203,12 +181,10 @@
   @apply text-focus;
   @apply block;
   cursor: pointer;
-
   &:hover {
     color: #000;
   }
 }
-
 .button-clear {
   @apply text-focus text-body-s-dt;
 }
@@ -219,10 +195,10 @@
 
 @screen dt {
   .complaint-links-container {
-    /* @apply bg-white; */
+    @apply bg-white;
 
     .header {
-      /* @apply flex items-center border-b border-border; */
+      @apply flex items-center border-b border-border;
 
       .logo {
         @apply bg-focus;
@@ -236,13 +212,13 @@
     }
 
     .body {
-      /* padding: 10px; */
+      padding: 10px;
       @apply flex items-start flex-col;
-      /* margin-left: 46px; */
+      margin-left: 46px;
 
       .link {
-        @apply p-sm;
-        color: #764ba2 !important;
+        color:#a82227 !important;
+        @apply p-sm text-primary-main;
       }
     }
   }
@@ -250,22 +226,18 @@
   .inboxLinks {
     margin: 0 !important;
     padding: 0 !important;
-
     .header {
       border: none;
       @apply justify-start;
-
       .logo {
         @apply bg-white;
-
         svg {
           path {
-            fill: theme(colors.primary.main);
+            fill: #a82227;
           }
         }
       }
     }
-
     .body {
       margin-left: 0;
     }
@@ -306,7 +278,6 @@
           }
         }
       }
-
       .citizen-filter {
         margin-top: unset;
       }
@@ -317,7 +288,7 @@
 
       .search-complaint-container {
         margin: auto;
-        @apply flex flex-col items-start mb-md bg-white p-md;
+        @apply flex flex-col items-start  mb-md bg-white p-md;
 
         .complaint-header {
           display: flex;
@@ -327,7 +298,7 @@
 
         .complaint-input-container {
           /* display: inline-block !important; */
-          display: grid;
+          display: grid !important;
           grid-template-columns: 33.33% 33.33% 33.33%;
 
           &.for-pt {
@@ -391,9 +362,8 @@
               @apply text-focus;
               @apply block;
               cursor: pointer;
-
               &:hover {
-                color: theme(colors.link.hover);
+                color: #003078;
                 cursor: pointer;
               }
             }
@@ -408,7 +378,6 @@
           width: 33%;
           margin-top: 28px;
           @apply inline-block align-middle text-center;
-
           button {
             margin: 0;
             width: 100%;
@@ -417,7 +386,8 @@
         }
       }
 
-      .search-complaint-container-for-search {}
+      .search-complaint-container-for-search {
+      }
     }
   }
 }
@@ -431,18 +401,18 @@
 }
 
 .cell-text {
-  color: theme(colors.text.secondary);
+  color: #505a5f;
 }
 
 .sla-cell-error {
-  color: theme(colors.error);
+  color: #d4351c;
   background-color: rgba(212, 53, 28, 0.12);
   padding: 0 24px;
   border-radius: 11px;
 }
 
 .sla-cell-success {
-  color: theme(colors.success);
+  color: #00703c;
   background-color: rgba(0, 112, 60, 0.12);
   padding: 0 24px;
   border-radius: 11px;
@@ -450,7 +420,7 @@
 
 .complain-no-cell-text {
   margin-top: "4px";
-  color: "theme(colors.text.secondary)";
+  color: "#505A5F";
 }
 
 .search-error-label {
@@ -462,8 +432,6 @@
   justify-content: flex-end;
   align-items: flex-start;
 }
-
-/*
 .complaint-links-container .header .removeHeight {
   line-height: 28px;
 }
@@ -471,24 +439,20 @@
 @screen dt {
   .complaint-links-container .header .removeBorderRadiusLogo {
     border-radius: 2px !important;
+    background-color: #a82227
   }
 }
-
-*/
-
-/*
 @screen dt {
   .customEmployeeCard {
-    width: 263px !important;
-    height: 263px !important;
+    width: 320px !important;
+    height: 220px !important;
+    padding: 0px !important;
   }
 }
-*/
-
-.employeeTotalLink {
-  color: theme(colors.text.secondary);
-  font-size: 16px;
-  text-decoration: none;
+.employeeTotalLink{
+  color: #a82227;
+  
+  font-size: 12px;
 }
 
 @screen dt {
@@ -496,37 +460,31 @@
     .custom-group-merge-container {
       display: flex !important;
       justify-content: space-between !important;
-
       .header {
         display: flex;
         align-items: baseline;
-
         .logo {
           margin-right: 1rem;
-
           svg {
             path {
-              fill: theme(colors.primary.main);
+              fill: #a82227;
             }
           }
         }
-
         .h1 {
           font-size: 24px;
           line-height: 28px;
           font-weight: 400;
-          color: theme(colors.primary.main);
+          color: #a82227;
         }
       }
     }
-
     .inbox-container {
       .search-container {
         .search-complaint-container {
           display: flex;
           flex-direction: row;
         }
-
         .group-complaint-input-container {
           width: 33% !important;
           display: flex;
@@ -534,22 +492,119 @@
         }
       }
     }
-
     .inbox-action-container {
       display: flex;
       flex-direction: row-reverse;
-
       .clear-search {
         margin-top: 65px;
         margin-left: 16px;
         padding-top: unset !important;
       }
-
       .submit-bar-search {
         margin-top: 55px !important;
       }
     }
   }
+}
+
+@screen dt {
+  .groupBill-custom {
+    .custom-group-merge-container {
+      display: flex !important;
+      justify-content: space-between !important;
+      .header {
+        display: flex;
+        align-items: baseline;
+        .logo {
+          margin-right: 1rem;
+          svg {
+            path {
+              fill: #a82227;
+            }
+          }
+        }
+        .h1 {
+          font-size: 24px;
+          line-height: 28px;
+          font-weight: 400;
+          color: #a82227;
+        }
+      }
+    }
+    .inbox-container {
+      .search-container {
+        .search-complaint-container {
+          display: flex;
+          flex-direction: row;
+        }
+        .group-complaint-input-container {
+          width: 33% !important;
+          display: flex;
+          flex-direction: column;
+        }
+      }
+    }
+    .inbox-action-container {
+      display: flex;
+      flex-direction: row-reverse;
+      .clear-search {
+        margin-top: 65px;
+        margin-left: 16px;
+        padding-top: unset !important;
+      }
+      .submit-bar-search {
+        margin-top: 55px !important;
+      }
+    }
+  }
+}
+
+.inboxLinksFSM {
+  margin: 0 !important;
+}
+.complaint-links-container .body .link{
+  color: #a82227 !important;
+}
+
+.employee .customEmployeeCard:nth-child(odd){
+  .employeeCustomCard{
+    background-image: url("https://in-egov-assets.s3.ap-south-1.amazonaws.com/images/top-red-card.png");
+    background-size: cover
+  }
+}
+.employee .customEmployeeCard:nth-child(even){
+  .employeeCustomCard{
+background-image: url("https://in-egov-assets.s3.ap-south-1.amazonaws.com/images/top-green-card.png");
+background-size: cover
+  }
+}
+.employee .employeeCustomCard {
+  border-radius: 4%;
+    .employeeCustomCard {
+      border-radius: 4%;
+  }
+}
+.employee-card-banner{
+    background-color: white;
+    width: 88%;
+    margin: 0 auto;
+    bottom: 0px;
+    position: absolute;
+    margin-bottom: -10%;
+    left: 6%;
+    box-shadow: 1px 5px 6px 0px #e3e4e3;
+    border-radius: 10px;
+}
+.text-employee-card{
+  font-size: 1.5rem;
+  font-weight: 700;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  position: absolute;
+  top:10%;
+  padding-left: 10%;
+  color: white !important;
+  width: 300px;
+
 }
 
 .plumber-details-new-value-wrapper {
@@ -569,7 +624,6 @@
     padding-bottom: 8px;
     margin-bottom: 8px;
   }
-
   .row {
     color: #b1b4b6;
     font-weight: 700;
@@ -619,15 +673,14 @@
   tHead {
     tr {
       th {
-        text-align: center;
+        text-align: left;
       }
     }
   }
-
   tBody {
     tr {
       td {
-        text-align: center;
+        text-align: left;
       }
     }
   }

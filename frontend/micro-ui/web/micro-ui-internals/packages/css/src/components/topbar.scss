@@ -12,13 +12,13 @@
     display: inline;
 
     &.city {
-    margin-right: 8px;
-    height: 60px;
+      margin-right: 8px;
+      height: 60px;
     }
 
     &.state {
-    min-height: 50px;
-    width: 80px;
+      min-height: 50px;
+      width: 80px;
     }
   }
 
@@ -37,10 +37,12 @@
     }
 
     .user-img-txt {
-      background: theme(colors.primary.main);
+      background: #a82227;
       padding: 10px 15px;
-      border-radius: 50%;
+      border-radius: 2px;
       color: white;
+      height: 43px;
+      width: 43px;
       font-weight: 700;
     }
   }
@@ -88,6 +90,7 @@
   .select-wrap,
   .employee-select-wrap {
     margin-bottom: 0px;
+
     .profile-dropdown--item {
       span {
         white-space: pre;
@@ -98,6 +101,7 @@
 
 .cp {
   cursor: pointer;
+
   .hamburger {
     display: none;
   }
@@ -129,10 +133,10 @@
   flex-direction: row;
   padding: 10px;
   column-gap: 10px;
-  color: theme(colors.text.secondary);
+  color: #505a5f;
 
   &:hover {
-    background: theme(colors.grey.mid);
+    background: #eeeeee;
   }
 }
 
@@ -140,12 +144,9 @@
   @apply flex items-center justify-end;
   min-width: 85px;
 }
+
 video::-webkit-media-controls-panel {
   top: 55%;
   position: absolute;
   width: 100%;
-}
-
-.topbarOptionsClassName {
-  right: -3rem !important
 }
