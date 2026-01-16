@@ -39,7 +39,7 @@ const headerConfig = {
   },
 
   branding: {
-    logo: "https://i.ibb.co/G3nX8LX2/Frame-6-2.png",
+    logo: "https://objectstorage.ap-hyderabad-1.oraclecloud.com/n/axn3czn1s06y/b/djb-dev-asset-bucket/o/DJB_integrated_logo_without_bg_dark.png",
     alt: "ALT_INDIA_EMBLEM",
   },
 
