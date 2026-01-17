@@ -1,63 +1,170 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
+import React from "react";
+import ReactDOM from "react-dom";
+
 import { initLibraries } from "@upyog/digit-ui-libraries";
-// import "@upyog/digit-ui-css/dist/index.css";
-import "./index.css";
-import App from './App';
-// import { TLCustomisations } from './Customisations/tl/TLCustomisation';
+import { PGRReducers } from "@upyog/digit-ui-module-pgr";
+import { MCollectModule, MCollectLinks } from "@upyog/digit-ui-module-mcollect";
+// import { TLModule, TLLinks } from "@upyog/digit-ui-module-tl";
+import { initFSMComponents } from "@upyog/digit-ui-module-fsm";
+import { initPGRComponents } from "@upyog/digit-ui-module-pgr";
+import { initDSSComponents } from "@upyog/digit-ui-module-dss";
+import { initHRMSComponents } from "@upyog/digit-ui-module-hrms";
+import { initReceiptsComponents, ReceiptsModule } from "@upyog/digit-ui-module-receipts";
+// import { initReportsComponents } from "@upyog/digit-ui-module-reports";
+import { initMCollectComponents } from "@upyog/digit-ui-module-mcollect";
+import { PaymentModule, PaymentLinks, paymentConfigs } from "@upyog/digit-ui-module-common";
+import { HRMSModule } from "@upyog/digit-ui-module-hrms";
+import { initEngagementComponents } from "@upyog/digit-ui-module-engagement";
+import { initWSComponents } from "@upyog/digit-ui-module-ws";
+import { WSModule } from "@upyog/digit-ui-module-ws";
+import { DigitUI } from "@upyog/digit-ui-module-core";
+import { initCommonPTComponents } from "@upyog/digit-ui-module-commonpt";
+import { initBillsComponents, BillsModule } from "@upyog/digit-ui-module-bills";
+
+// import {initCustomisationComponents} from "./customisations";
+
+// import { PGRModule, PGRLinks } from "@upyog/digit-ui-module-pgr";
+// import { Body, TopBar } from "@upyog/digit-ui-react-components";
+import "@nudmcdgnpm/upyog-css";
+
+import { PTRModule, PTRLinks, PTRComponents } from "@upyog/upyog-ui-module-ptr";
+import { ASSETComponents, ASSETLinks, ASSETModule } from "@upyog/upyog-ui-module-asset";
 
 
-initLibraries();
+import { WTModule, WTLinks, WTComponents } from "@nudmcdgnpm/upyog-ui-module-wt";
+import { VENDORComponents, VENDORLinks, VENDORModule } from "@nudmcdgnpm/upyog-ui-module-vendor";
+import { PGRAIComponents, PGRAILinks, PGRAIModule } from "@nudmcdgnpm/upyog-ui-module-pgrai";
+// import * as comps from "@upyog/digit-ui-react-components";
 
+// import { subFormRegistry } from "@upyog/digit-ui-libraries";
 
-// window.Digit.Customizations = { PGR: {} ,TL:TLCustomisations};
+import { pgrCustomizations, pgrComponents } from "./pgr";
 
-const user = window.Digit.SessionStorage.get("User");
+var Digit = window.Digit || {};
 
-if (!user || !user.access_token || !user.info) {
-  // login detection
+const enabledModules = [
+  "Tqm",
+  "PGR",
+  "FSM",
+  "Payment",
+  "QuickPayLinks",
+  "DSS",
+  "MCollect",
+  "HRMS",
+  "Receipts",
+  "Reports",
+  "Engagement",
+  "WS",
+  "CommonPT",
+  "NDSS",
+  "Bills",
+  "SW",
+  "BillAmendment",
+  "FireNoc",
+  "Birth",
+  "Death",
+  "PTR",
+  "ASSET",
+  
+  "WT",
+  "VENDOR",
+  "MT",
+  "PGRAI",
+  "TP"
+];
 
-  const parseValue = (value) => {
-    try {
-      return JSON.parse(value)
-    } catch (e) {
-      return value
-    }
+const initTokens = (stateCode) => {
+  const userType = window.sessionStorage.getItem("userType") || process.env.REACT_APP_USER_TYPE || "CITIZEN";
+
+  const token = window.localStorage.getItem("token") || process.env[`REACT_APP_${userType}_TOKEN`];
+
+  const citizenInfo = window.localStorage.getItem("Citizen.user-info");
+
+  const citizenTenantId = window.localStorage.getItem("Citizen.tenant-id") || stateCode;
+
+  const employeeInfo = window.localStorage.getItem("Employee.user-info");
+  const employeeTenantId = window.localStorage.getItem("Employee.tenant-id");
+
+  const userTypeInfo = userType === "CITIZEN" || userType === "QACT" ? "citizen" : "employee";
+  window.Digit.SessionStorage.set("user_type", userTypeInfo);
+  window.Digit.SessionStorage.set("userType", userTypeInfo);
+
+  if (userType !== "CITIZEN") {
+    window.Digit.SessionStorage.set("User", { access_token: token, info: userType !== "CITIZEN" ? JSON.parse(employeeInfo) : citizenInfo });
+  } else {
+    // if (!window.Digit.SessionStorage.get("User")?.extraRoleInfo) window.Digit.SessionStorage.set("User", { access_token: token, info: citizenInfo });
   }
 
-  const getFromStorage = (key) => {
-    const value = window.localStorage.getItem(key);
-    return value && value !== "undefined" ? parseValue(value) : null;
-  }
-
-  const token = getFromStorage("token")
-
-  const citizenToken = getFromStorage("Citizen.token")
-  const citizenInfo = getFromStorage("Citizen.user-info")
-  const citizenTenantId = getFromStorage("Citizen.tenant-id")
-
-  const employeeToken = getFromStorage("Employee.token")
-  const employeeInfo = getFromStorage("Employee.user-info")
-  const employeeTenantId = getFromStorage("Employee.tenant-id")
-
-  const userType = token === citizenToken ? "citizen" : "employee";
-  window.Digit.SessionStorage.set("user_type", userType);
-  window.Digit.SessionStorage.set("userType", userType);
-
-  const getUserDetails = (access_token, info) => ({ token: access_token, access_token, info })
-
-  const userDetails = userType === "citizen" ? getUserDetails(citizenToken, citizenInfo) : getUserDetails(employeeToken, employeeInfo)
-
-  window.Digit.SessionStorage.set("User", userDetails);
   window.Digit.SessionStorage.set("Citizen.tenantId", citizenTenantId);
-  window.Digit.SessionStorage.set("Employee.tenantId", employeeTenantId);
-  // end
-}
 
-ReactDOM.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-  document.getElementById('root')
-);
+  if (employeeTenantId && employeeTenantId.length) window.Digit.SessionStorage.set("Employee.tenantId", employeeTenantId);
+};
 
+const initDigitUI = () => {
+  window.contextPath = window?.globalConfigs?.getConfig("CONTEXT_PATH") || "digit-ui";
+  window?.Digit.ComponentRegistryService.setupRegistry({
+    ...pgrComponents,
+    PaymentModule,
+    ...paymentConfigs,
+    PaymentLinks,
+    MCollectLinks,
+    MCollectModule,
+    HRMSModule,
+    ReceiptsModule,
+    BillsModule,
+    PTRModule,
+    PTRLinks,
+    ...PTRComponents,
+    // TLModule,
+    // TLLinks,
+    ASSETModule,
+    ASSETLinks,
+    ...ASSETComponents,
+    WTModule,
+    WTLinks,
+    ...WTComponents,
+    VENDORModule,
+    VENDORLinks,
+    ...VENDORComponents,
+    PGRAIModule,
+    PGRAILinks,
+    ...PGRAIComponents
+  });
+
+  initPGRComponents();
+  initFSMComponents();
+  initDSSComponents();
+  initMCollectComponents();
+  initHRMSComponents();
+  initReceiptsComponents();
+  // initReportsComponents();
+  initEngagementComponents();
+  initWSComponents();
+  initCommonPTComponents();
+  initBillsComponents();
+
+  // initCustomisationComponents();
+
+  const moduleReducers = (initData) => ({
+    pgr: PGRReducers(initData),
+  });
+
+  window.Digit.Customizations = {
+    PGR: pgrCustomizations,
+    TL: {
+      customiseCreateFormData: (formData, licenceObject) => licenceObject,
+      customiseRenewalCreateFormData: (formData, licenceObject) => licenceObject,
+      customiseSendbackFormData: (formData, licenceObject) => licenceObject,
+    },
+  };
+
+  const stateCode = window?.globalConfigs?.getConfig("STATE_LEVEL_TENANT_ID") || "pb";
+  initTokens(stateCode);
+
+  const registry = window?.Digit.ComponentRegistryService.getRegistry();
+  ReactDOM.render(<DigitUI stateCode={stateCode} enabledModules={enabledModules} moduleReducers={moduleReducers} />, document.getElementById("root"));
+};
+
+initLibraries().then(() => {
+  initDigitUI();
+});
