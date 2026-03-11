@@ -17,7 +17,7 @@ const RadioButtons = (props) => {
         if (props?.optionsKey && !props?.isDependent) {
           return (
             <div className="radio-btn-outer-wrap" style={props.innerStyles} key={ind}>
-              <span className="radio-btn-wrap abcd">
+              <span className="radio-btn-wrap">
                 <input
                   className="radio-btn"
                   type="radio"
