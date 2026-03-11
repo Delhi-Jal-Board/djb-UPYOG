@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { LabelFieldPair, CardLabel, TextInput, CardLabelError } from "@djb25/digit-ui-react-components";
+import { LabelFieldPair, CardLabel, TextInput, CardLabelError, Tooltip } from "@djb25/digit-ui-react-components";
 
 const SelectEmployeePhoneNumber = ({ t, config, onSelect, formData = {}, userType, register, errors }) => {
   const [iserror, setError] = useState(false);
@@ -33,13 +33,16 @@ const SelectEmployeePhoneNumber = ({ t, config, onSelect, formData = {}, userTyp
       {inputs?.map((input, index) => (
         <React.Fragment key={index}>
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">
-              {t(input.label)}
-              {input.isMandatory ? " * " : null}
+            <CardLabel className="card-label-smaller" style={{ display: "flex", alignItems: "center" }}>
+              <Tooltip
+                message={t("HR_MOBILE_NO_CHECK")}
+                label={t(input.label)}
+                isMandatory={input.isMandatory}
+              />
             </CardLabel>
             <div className="field-container" style={{ width: isMobile ? "100%" : "", display: "block" }}>
               <div>
-                <div style={{ display: "flex" }}>
+                <div className="phone-input-wrapper">
                   <div className="employee-card-input employee-card-input--front phone-country-code" style={{ borderRadius: "6px 0 0 6px" }}>
                     +91
                   </div>
@@ -48,30 +51,21 @@ const SelectEmployeePhoneNumber = ({ t, config, onSelect, formData = {}, userTyp
                     key={input.name}
                     value={(formData && formData[config.key] && formData[config.key][input.name]) || ""}
                     onChange={(e) => {
-                      setValue(e.target.value, input.name, validate(e.target.value, input));
+                      const value = e.target.value.replace(/\D/g, "").slice(0, 10);
+                      setValue(value, input.name);
+                      validate(value, input);
                     }}
                     disable={false}
                     defaultValue={""}
+                    maxlength={10}
                     onBlur={(e) => validate(e.target.value, input)}
                     {...input.validation}
                     style={{ borderRadius: "0 6px 6px 0", marginBottom: "10px" }}
                   />
                 </div>
                 <div>
-                  {iserror ? (
+                  {iserror && (
                     <CardLabelError style={{ width: "100%" }}>{t(input.populators.error)}</CardLabelError>
-                  ) : (
-                    <span
-                      style={{
-                        color: "gray",
-                        width: "100%",
-                        border: "none",
-                        background: "none",
-                        justifyContent: "start",
-                      }}
-                    >
-                      {t("HR_MOBILE_NO_CHECK")}
-                    </span>
                   )}
                 </div>
               </div>

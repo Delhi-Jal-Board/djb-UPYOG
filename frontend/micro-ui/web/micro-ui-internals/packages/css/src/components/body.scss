@@ -94,6 +94,10 @@ body {
   padding-inline: 24px;
 }
 
+ .app-container{
+   height: 100%;
+ }
+
 @screen dt {
   .employee-app-homepage-container {
     @apply w-full;
@@ -128,7 +132,6 @@ body {
   .form-container {
     display: flex;
     flex-direction: column;
-    gap: 12px;
     padding: 20px;
     padding-bottom: 0px;
     width: 100%;
@@ -226,9 +229,15 @@ body {
       }
     }
   }
+
+  .form-container{
+        gap:12px
+      }
+      
   .app-container {
     width: 100%;
 
+      
     form {
       .card {
         max-width: 960px;

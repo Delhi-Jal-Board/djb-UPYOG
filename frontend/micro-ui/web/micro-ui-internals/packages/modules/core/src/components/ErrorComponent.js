@@ -29,7 +29,7 @@ const ErrorComponent = (props) => {
     const pathname = window.location.pathname;
 
     const isEmployee = pathname.includes("/employee");
-    const isLoginPage = pathname.includes("/employee/user/login") || pathname.includes("/citizen/select-language");
+    const isLoginPage = pathname.includes("/employee/user/login") || pathname.includes("/citizen");
 
     // Wait until keycloak is ready
     if (!kc || !kc.didInitialize) return;

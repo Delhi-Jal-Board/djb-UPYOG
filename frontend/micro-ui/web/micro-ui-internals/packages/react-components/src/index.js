@@ -236,6 +236,7 @@ import Timeline from "./molecules/Timeline";
 import ExpandedViewContext from "./atoms/ExpandedViewContext";
 import ExpandedViewPage from "./atoms/ExpandedViewPage";
 import CollapsibleModuleSidebar from "./atoms/CollapsibleModuleSidebar";
+import Tooltip from "./atoms/Tooltip";
 
 export {
   Phone,
@@ -481,4 +482,5 @@ export {
   ExpandedViewContext,
   ExpandedViewPage,
   CollapsibleModuleSidebar,
+  Tooltip
 };

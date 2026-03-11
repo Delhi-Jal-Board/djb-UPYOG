@@ -1,10 +1,10 @@
 import React from "react";
-import { LabelFieldPair, CardLabel, TextInput, CardLabelError, DatePicker } from "@djb25/digit-ui-react-components";
-import { useLocation } from "react-router-dom";
+import { LabelFieldPair, CardLabel, CardLabelError, DatePicker, Tooltip } from "@djb25/digit-ui-react-components";
+// import { useLocation } from "react-router-dom";
 import { convertEpochToDate } from "../Utils/index";
 
 const SelectDateofBirthEmployment = ({ t, config, onSelect, formData = {}, userType, register, errors }) => {
-  const { pathname: url } = useLocation();
+  // const { pathname: url } = useLocation();
   const inputs = [
     {
       label: "HR_BIRTH_DATE_LABEL",
@@ -28,8 +28,10 @@ const SelectDateofBirthEmployment = ({ t, config, onSelect, formData = {}, userT
           {errors[input.name] && <CardLabelError>{t(input.error)}</CardLabelError>}
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">
-              {t(input.label)}
-              {input.isMandatory ? " * " : null}
+              <Tooltip
+                label={t(input.label)}
+                isMandatory={input.isMandatory}
+              />
             </CardLabel>
             <div className="field">
               <DatePicker

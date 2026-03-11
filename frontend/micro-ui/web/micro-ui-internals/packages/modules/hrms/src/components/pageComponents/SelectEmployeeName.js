@@ -1,9 +1,9 @@
 import React from "react";
-import { LabelFieldPair, CardLabel, TextInput, CardLabelError } from "@djb25/digit-ui-react-components";
-import { useLocation } from "react-router-dom";
+import { LabelFieldPair, CardLabel, TextInput, CardLabelError, Tooltip } from "@djb25/digit-ui-react-components";
+// import { useLocation } from "react-router-dom";
 
 const SelectEmployeeName = ({ t, config, onSelect, formData = {}, userType, register, errors }) => {
-  const { pathname: url } = useLocation();
+  // const { pathname: url } = useLocation();
   const inputs = [
     {
       label: "HR_EMP_NAME_LABEL",
@@ -11,7 +11,7 @@ const SelectEmployeeName = ({ t, config, onSelect, formData = {}, userType, regi
       name: "employeeName",
       validation: {
         isRequired: true,
-        pattern: Digit.Utils.getPattern('Name'),
+        pattern: Digit.Utils.getPattern("Name").source,
         title: t("CORE_COMMON_APPLICANT_NAME_INVALID"),
       },
       isMandatory: true,
@@ -30,8 +30,10 @@ const SelectEmployeeName = ({ t, config, onSelect, formData = {}, userType, regi
           {errors[input.name] && <CardLabelError>{t(input.error)}</CardLabelError>}
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">
-              {t(input.label)}
-              {input.isMandatory ? " * " : null}
+              <Tooltip
+                label={t(input.label)}
+                isMandatory={input.isMandatory}
+              />
             </CardLabel>
             <div className="field">
               <TextInput
@@ -42,7 +44,7 @@ const SelectEmployeeName = ({ t, config, onSelect, formData = {}, userType, regi
                 defaultValue={""}
                 {...input.validation}
               />
-              {currentValue && currentValue.length > 0 && !currentValue.match(Digit.Utils.getPattern('Name')) && <CardLabelError style={{ width: "100%", marginTop: '-15px', fontSize: '16px', marginBottom: '12px' }}>{t("CORE_COMMON_APPLICANT_NAME_INVALID")}</CardLabelError>}
+              {currentValue && currentValue.length > 0 && !currentValue.match(Digit.Utils.getPattern('Name')) && <CardLabelError style={{ width: "100%", fontSize: '16px' }}>{t("CORE_COMMON_APPLICANT_NAME_INVALID")}</CardLabelError>}
             </div>
           </LabelFieldPair>
         </React.Fragment>

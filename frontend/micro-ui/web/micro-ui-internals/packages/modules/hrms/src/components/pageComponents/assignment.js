@@ -1,4 +1,4 @@
-import { CardLabel, CheckBox, DatePicker, Dropdown, LabelFieldPair, Loader } from "@djb25/digit-ui-react-components";
+import { CardLabel, CheckBox, CloseSvg, DatePicker, Dropdown, LabelFieldPair, Loader } from "@djb25/digit-ui-react-components";
 import React, { useEffect, useState } from "react";
 import cleanup from "../Utils/cleanup";
 import { convertEpochToDate } from "../Utils/index";
@@ -49,17 +49,17 @@ const Assignments = ({ t, config, onSelect, userType, formData }) => {
     var promises = assignments?.map((assignment) => {
       return assignment
         ? cleanup({
-            id: assignment?.id,
-            position: assignment?.position,
-            govtOrderNumber: assignment?.govtOrderNumber,
-            tenantid: assignment?.tenantid,
-            auditDetails: assignment?.auditDetails,
-            fromDate: assignment?.fromDate ? new Date(assignment?.fromDate).getTime() : undefined,
-            toDate: assignment?.toDate ? new Date(assignment?.toDate).getTime() : undefined,
-            isCurrentAssignment: assignment?.isCurrentAssignment,
-            department: assignment?.department?.code,
-            designation: assignment?.designation?.code,
-          })
+          id: assignment?.id,
+          position: assignment?.position,
+          govtOrderNumber: assignment?.govtOrderNumber,
+          tenantid: assignment?.tenantid,
+          auditDetails: assignment?.auditDetails,
+          fromDate: assignment?.fromDate ? new Date(assignment?.fromDate).getTime() : undefined,
+          toDate: assignment?.toDate ? new Date(assignment?.toDate).getTime() : undefined,
+          isCurrentAssignment: assignment?.isCurrentAssignment,
+          department: assignment?.department?.code,
+          designation: assignment?.designation?.code,
+        })
         : [];
     });
 
@@ -98,29 +98,27 @@ const Assignments = ({ t, config, onSelect, userType, formData }) => {
   }
   return (
     <div className="juridictions-wrapper">
-      <div className="juridictions">
-        {assignments?.map((assignment, index) => (
-          <Assignment
-            t={t}
-            key={index}
-            keys={index.key}
-            formData={formData}
-            assignment={assignment}
-            setassignments={setassignments}
-            index={index}
-            focusIndex={focusIndex}
-            setFocusIndex={setFocusIndex}
-            getdepartmentdata={getdepartmentdata}
-            department={department}
-            designation={designation}
-            getdesignationdata={getdesignationdata}
-            assignments={assignments}
-            handleRemoveUnit={handleRemoveUnit}
-            setCurrentAssiginmentDate={setCurrentAssiginmentDate}
-            currentassignemtDate={currentassignemtDate}
-          />
-        ))}
-      </div>
+      {assignments?.map((assignment, index) => (
+        <Assignment
+          t={t}
+          key={index}
+          keys={index.key}
+          formData={formData}
+          assignment={assignment}
+          setassignments={setassignments}
+          index={index}
+          focusIndex={focusIndex}
+          setFocusIndex={setFocusIndex}
+          getdepartmentdata={getdepartmentdata}
+          department={department}
+          designation={designation}
+          getdesignationdata={getdesignationdata}
+          assignments={assignments}
+          handleRemoveUnit={handleRemoveUnit}
+          setCurrentAssiginmentDate={setCurrentAssiginmentDate}
+          currentassignemtDate={currentassignemtDate}
+        />
+      ))}
       <label onClick={handleAddUnit} className="link-label" style={{ width: "12rem" }}>
         {t("HR_ADD_ASSIGNMENT")}
       </label>
@@ -160,9 +158,9 @@ function Assignment({
         pre.map((item) =>
           item.key === assignment.key
             ? {
-                ...item,
-                toDate: null,
-              }
+              ...item,
+              toDate: null,
+            }
             : item
         )
       );
@@ -183,25 +181,26 @@ function Assignment({
     assignments;
   };
   return (
-    <div key={index + 1}>
-      <div className="juridiction-form" style={{ border: "1px solid #E3E3E3", padding: "16px" }}>
-        <LabelFieldPair>
-          <div className="label-field-pair" style={{ width: "100%" }}>
-            <h2 className="card-label card-label-smaller" style={{ color: "#505A5F" }}>
-              {t("HR_ASSIGNMENT")} {index + 1}
-            </h2>
+    <div key={index + 1} style={{ border: "1px solid #E3E3E3", borderRadius: "6px" }}>
+      <div className="" style={{ display: "flex", justifyContent: "space-between", padding: "16px", alignItems: "center" }}>
+        <div className="label-field-pair" style={{ width: "100%" }}>
+          <h2 className="card-label card-label-smaller" style={{ color: "#505A5F" }}>
+            {t("HR_ASSIGNMENT")} {index + 1}
+          </h2>
+        </div>
+        {assignments.length > 1 ? (
+          <div
+            onClick={() => handleRemoveUnit(assignment)}
+            style={{ cursor: "pointer", textAlign: "right" }}
+          >
+            <CloseSvg />
           </div>
-          {assignments.length > 1 && !assignment?.id && !assignment?.isCurrentAssignment ? (
-            <div onClick={() => handleRemoveUnit(assignment)} style={{ padding: "5px", cursor: "pointer", textAlign: "right" }}>
-              X
-            </div>
-          ) : null}
-        </LabelFieldPair>
-
+        ) : null}
+      </div>
+      <div className="juridiction-form">
         <LabelFieldPair>
           <CardLabel className={assignment?.id ? "card-label-smaller disabled" : "card-label-smaller"}>
-            {" "}
-            {`${t("HR_ASMT_FROM_DATE_LABEL")} * `}{" "}
+            {`${t("HR_ASMT_FROM_DATE_LABEL")} * `}
           </CardLabel>
           <div className="field">
             <DatePicker
@@ -242,9 +241,7 @@ function Assignment({
         </LabelFieldPair>
 
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller" style={{ color: "white" }}>
-            .
-          </CardLabel>
+
           <div className="field">
             <CheckBox
               onChange={(e) => onAssignmentChange(e.target.checked)}

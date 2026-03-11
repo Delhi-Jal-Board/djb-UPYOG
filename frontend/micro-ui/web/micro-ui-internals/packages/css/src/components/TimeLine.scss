@@ -66,3 +66,139 @@
     }
   }
 }
+
+
+.stepper-container {
+  width: 240px;
+  background: #fff;
+  padding: 24px 0;
+  border-radius: 8px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+}
+
+.stepper-item {
+  padding: 0 24px;
+}
+
+.stepper-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.stepper-circle {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #f1f1f1;
+  color: #555;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 600;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.stepper-circle.active {
+  background: #667eea;
+  color: #fff;
+}
+
+.stepper-circle.completed {
+  background: #667eea;
+  color: #fff;
+}
+
+.stepper-label {
+  font-size: 14px;
+  color: #505a5f;
+}
+
+.stepper-label.active {
+  font-weight: 600;
+}
+
+.stepper-label:hover {
+  cursor: pointer;
+  color: #667eea;
+}
+
+.stepper-line {
+  height: 40px;
+  width: 2px;
+  background: #eee;
+  margin-left: 17px;
+}
+
+.stepper-line.completed {
+  background: #667eea;
+}
+
+
+
+
+@media (max-width: 768px) {
+
+  .stepper-container {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 20px;
+    box-shadow: none;
+    gap: 0;
+  }
+
+  .stepper-item {
+    flex: 1;
+    padding: 0;
+    position: relative;
+    text-align: center;
+  }
+
+  .stepper-row {
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .stepper-circle {
+    margin: 0 auto;
+  }
+
+  /* horizontal line */
+  .stepper-line {
+    position: absolute;
+    top: 17px;
+    left: 50%;
+    width: 100%;
+    height: 2px;
+    background: #eee;
+    z-index: -1;
+  }
+
+  .stepper-line.completed {
+    background: #667eea;
+  }
+
+  /* hide line on last step */
+  .stepper-item:last-child .stepper-line {
+    display: none;
+  }
+
+  .stepper-label {
+    font-size: 12px;
+    text-align: center;
+    width: 100%;
+  }
+}
+
+.stepper-circle {
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.stepper-circle.active {
+  transform: scale(1.05);
+}

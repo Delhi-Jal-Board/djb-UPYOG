@@ -65,10 +65,9 @@ const DesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
         disableSortBy: true,
         Cell: ({ row }) => {
           return GetCell(
-            `${
-              t(
-                "COMMON_MASTERS_DESIGNATION_" + row.original?.assignments?.sort((a, b) => new Date(a.fromDate) - new Date(b.fromDate))[0]?.designation
-              ) || ""
+            `${t(
+              "COMMON_MASTERS_DESIGNATION_" + row.original?.assignments?.sort((a, b) => new Date(a.fromDate) - new Date(b.fromDate))[0]?.designation
+            ) || ""
             }`
           );
         },
@@ -78,10 +77,9 @@ const DesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
         disableSortBy: true,
         Cell: ({ row }) => {
           return GetCell(
-            `${
-              t(
-                "COMMON_MASTERS_DEPARTMENT_" + row.original?.assignments?.sort((a, b) => new Date(a.fromDate) - new Date(b.fromDate))[0]?.department
-              ) || ""
+            `${t(
+              "COMMON_MASTERS_DEPARTMENT_" + row.original?.assignments?.sort((a, b) => new Date(a.fromDate) - new Date(b.fromDate))[0]?.department
+            ) || ""
             }`
           );
         },
@@ -172,7 +170,7 @@ const DesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
           </div>
         </div>
       )}
-      <div className="form-search-wrapper" style={{ flex: 1 }}>
+      <div className="form-search-wrapper">
         <SearchApplication
           defaultSearchParams={props.defaultSearchParams}
           onSearch={props.onSearch}

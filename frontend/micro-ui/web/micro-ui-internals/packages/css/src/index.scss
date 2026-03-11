@@ -115,6 +115,7 @@
 @import "./components/moduleHeader.scss";
 @import "./components/VerticalTimeline.scss";
 @import "./components/juridictions.scss";
+@import "./pages/employee/hrms.scss";
 
 .display-none {
   display: none;
@@ -468,6 +469,20 @@ input[type="number"] {
   }
 }
 
+.phone-input-wrapper{
+  display: flex;
+}
+.phone-input-wrapper:hover {
+  .employee-card-input--front {
+    border: 1px solid #667eea;
+    border-right: 0;
+  }
+
+  input {
+    border: 1px solid #667eea;
+  }
+}
+    
 .text-input {
   @apply relative w-full;
 
@@ -537,6 +552,8 @@ input[type="number"] {
 .form-search-wrapper {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .result {
@@ -544,6 +561,8 @@ input[type="number"] {
   flex-direction: column;
   overflow-x: scroll;
   border-radius: 6px;
+  flex:1 1 0%;
+
 }
 .inbox-search-container {
   .result {
@@ -704,7 +723,7 @@ input[type="number"] {
   width: 100%;
   flex: 1;
   min-width: 0;
-  overflow-y: scroll;
+  margin-bottom: 56px;
 }
 
 .employee-app-wrapper {

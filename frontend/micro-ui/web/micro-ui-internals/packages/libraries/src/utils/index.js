@@ -20,7 +20,7 @@ const GetParamFromUrl = (key, fallback, search) => {
 const getPattern = (type) => {
   switch (type) {
     case "Name":
-      return /^[^{0-9}^\$\"<>?\\\\~!@#$%^()+={}\[\]*,/_:;“”‘’]{1,50}$/i;
+      return /^[A-Za-z\s]{1,50}$/i;
     case "SearchOwnerName":
       return /^[^{0-9}^\$\"<>?\\\\~!@#$%^()+={}\[\]*,/_:;“”‘’]{3,50}$/i;
     case "MobileNo":

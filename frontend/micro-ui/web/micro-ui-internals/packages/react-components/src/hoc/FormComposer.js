@@ -319,13 +319,15 @@ export const FormComposer = (props) => {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} onKeyDown={(e) => checkKeyDown(e)} id={props.formId} className={props.className}>
-      <Card style={getCardStyles()} className={props?.cardClassName ? props.cardClassName : ""}>
+    <form style={{ minHeight: "100%", height: "100%" }} onSubmit={handleSubmit(onSubmit)} onKeyDown={(e) => checkKeyDown(e)} id={props.formId} className={props.className}>
+      <Card className={"form-composer-card"} style={getCardStyles()}>
         {!props.childrenAtTheBottom && props.children}
         {props.heading && <CardSubHeader style={{ ...props.headingStyle }}> {props.heading} </CardSubHeader>}
         {props.description && <CardLabelDesc className={"repos"}> {props.description} </CardLabelDesc>}
         {props.text && <CardText>{props.text}</CardText>}
-        {formFields}
+        <div className={props?.cardClassName ? props.cardClassName : ""}>
+          {formFields}
+        </div>
         {props.childrenAtTheBottom && props.children}
         {props.submitInForm && (
           <SubmitBar label={t(props.label)} style={{ ...props?.buttonStyle }} submit="submit" disabled={isDisabled} className="w-full" />

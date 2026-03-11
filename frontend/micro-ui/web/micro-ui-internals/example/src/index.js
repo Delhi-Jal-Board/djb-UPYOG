@@ -233,8 +233,8 @@ initLibraries().then(async () => {
   const publicRoutes = [
     "/digit-ui/employee/user/language-selection",
     "/digit-ui/employee/user/login",
-    "/digit-ui/citizen/select-language",
-    "/digit-ui/citizen/select-location",
+    // "/digit-ui/citizen/select-language",
+    // "/digit-ui/citizen/select-location",
     "/digit-ui/citizen",
   ];
 
@@ -243,6 +243,14 @@ initLibraries().then(async () => {
 
     if (!isPublic) {
       window.location.href = "/digit-ui/employee/user/language-selection";
+      return;
+    }
+  }
+  if (path.startsWith("/digit-ui/citizen") && !kc.authenticated) {
+    const isPublic = publicRoutes.some((route) => path.startsWith(route));
+
+    if (!isPublic) {
+      window.location.href = "/digit-ui/citizen";
       return;
     }
   }

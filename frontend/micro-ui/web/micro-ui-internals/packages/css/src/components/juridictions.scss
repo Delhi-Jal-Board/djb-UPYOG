@@ -4,20 +4,11 @@
   gap: 8px;
 }
 
-.juridictions {
+.juridiction-form {
+  padding: 16px;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  width: 100%;
-  grid-column: span 2;
   gap: 16px;
-
-  .juridiction-form {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-  .label-field-pair {
-    display: flex;
-    flex-direction: row;
-  }
 }
+
+

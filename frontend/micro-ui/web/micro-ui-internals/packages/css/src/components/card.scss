@@ -61,9 +61,14 @@
   /*@apply flex  justify-center items-center;*/
 }
 
+.form-composer-card{
+    min-height: 100%;
+}
+
 .employeeCard {
-  @apply bg-white shadow-card p-md mb-xl;
-  border-radius: 4px;
+  @apply bg-white shadow-card p-xl;
+  padding-inline: 48px;
+  border-radius: 6px;
 
   .card-header {
     @apply text-text-primary text-heading-xl font-bold font-rc align-middle text-left mb-md;
@@ -215,7 +220,6 @@
     /*  TODO need to revisit that we need mx-md NABEEL/ANIL
      @apply mb-md mx-md !important;
     */
-    @apply mb-md !important;
 
     &.filter {
       margin-left: auto;
@@ -236,7 +240,6 @@
     }
 
     .card-section-header {
-      margin-bottom: 40px;
       @apply text-heading-m-dt;
     }
 
@@ -287,8 +290,7 @@
           margin-right: unset;
         }
       }
-    }
-*/
+    }*/
 
     /* CSS for vertical label-field layout */
 
@@ -296,6 +298,7 @@
       display: flex;
       flex-direction: column;
       gap: 8px;
+      justify-content: center;
       /* Adjust spacing between label and field */
       /* Space between form groups */
     }

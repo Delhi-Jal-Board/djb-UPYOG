@@ -32,7 +32,7 @@ const Login = () => {
     if (!kc) {
       const isEmployee = window.location.pathname.includes("employee");
 
-      const redirectPath = isEmployee ? "/digit-ui/employee/user/language-selection" : "/digit-ui/citizen/select-language";
+      const redirectPath = isEmployee ? "/digit-ui/employee/user/language-selection" : "/digit-ui/citizen";
 
       const from = encodeURIComponent(window.location.pathname + window.location.search);
 

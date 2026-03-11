@@ -1,0 +1,19 @@
+.employee-form {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  gap: 24px;
+  overflow-y: auto;
+}
+
+.mobile-view {
+    flex-direction: column !important;
+    gap: 0 !important;
+}
+
+@media (max-width: 768px) {
+  .employee-form {
+    flex-direction: column;
+    gap: 24px;
+  }
+}

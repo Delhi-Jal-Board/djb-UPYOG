@@ -1,9 +1,10 @@
 .radio-wrap {
-  @apply my-sm block leading-10 mb-lg;
-
-  div {
-    @apply block mb-md;
+  flex-wrap: wrap;
+  .radio-btn-outer-wrap {
+  display: flex;
+  align-items: center;
   }
+  @apply my-sm block leading-10 mb-lg;
 
   .radio-btn-wrap {
     @apply block float-left relative;
@@ -15,15 +16,15 @@
   }
 
   .radio-btn {
-    @apply opacity-0 absolute cursor-pointer h-10 w-10;
+    @apply opacity-0 absolute cursor-pointer h-10 w-4;
   }
 
   .radio-btn-checkmark {
-    @apply h-10 w-10 border border-input-border border-solid rounded-full block;
+    @apply h-4 w-4 border border-input-border border-solid rounded-full block;
   }
 
   label {
-    @apply text-text-primary text-form-field ml-md;
+    @apply text-text-primary text-form-field ml-sm;
   }
 
   .radio-btn-checkmark:after {
@@ -34,9 +35,13 @@
     @apply border-2 border-primary-main;
   }
 
-  .radio-btn-wrap input:checked ~ .radio-btn-checkmark:after {
-    @apply block bg-primary-main h-5 w-5 rounded-full absolute top-10 left-10;
-  }
+.radio-btn-wrap input:checked ~ .radio-btn-checkmark:after {
+  @apply block bg-primary-main h-3 w-3 rounded-full absolute;
+
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
 }
 .reverse-radio-selection-wrapper{
   div{

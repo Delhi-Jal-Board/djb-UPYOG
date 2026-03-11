@@ -33,7 +33,7 @@ const Inbox = ({ parentRoute, businessService = "HRMS", initialStates = {}, filt
     // setTotalReacords(res?.EmployeCount?.totalEmployee);
   }, [res]);
 
-  useEffect(() => {}, [hookLoading, rest]);
+  useEffect(() => { }, [hookLoading, rest]);
 
   useEffect(() => {
     setPageOffset(0);
@@ -121,7 +121,7 @@ const Inbox = ({ parentRoute, businessService = "HRMS", initialStates = {}, filt
       );
     } else {
       return (
-        <div className="abcd">
+        <div className="abcd" style={{ height: "inherit" }}>
           {/* {isInbox && <Header>{t("HR_HOME_SEARCH_RESULTS_HEADING")}</Header>} */}
           <DesktopInbox
             businessService={businessService}

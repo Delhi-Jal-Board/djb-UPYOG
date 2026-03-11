@@ -72,7 +72,7 @@ export const AppModules = ({ stateCode, userType, modules, appTenants }) => {
   const sidebarContent = renderSidebar();
 
   return (
-    <div style={{ display: "flex", width: "100vw", height: "inherit" }}>
+    <div style={{ display: "flex", width: "100vw", height: "100%" }}>
       {sidebarContent}
       <div className="app-wrapper">
         <Switch>

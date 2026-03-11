@@ -202,15 +202,15 @@ const BILLSBreadCrumbs = ({ location }) => {
       path: "/digit-ui/employee/module/details",
       content: t("ES_TITLE_WATER_AND_SEWERAGE"),
       show: location.pathname.includes("/create-application") ||
-    location.pathname.includes("/new-application"),
+        location.pathname.includes("/new-application"),
     },
     {
       path: "/digit-ui/employee/ws/create-application",
       content: t("ES_COMMON_WS_DOCUMENTS_REQUIRED"),
       show: location.pathname.includes("/create-application") ||
-    location.pathname.includes("/new-application"),
+        location.pathname.includes("/new-application"),
       rightContent: (
-       location.pathname.includes("/create-application")&& <div onClick={printDiv} style={{ cursor: "pointer", display: "flex" }}>
+        location.pathname.includes("/create-application") && <div onClick={printDiv} style={{ cursor: "pointer", display: "flex" }}>
           <PrintBtnCommon />
           <div style={{ fontSize: "24px", fontWeight: "400", color: "#0B0C0C" }}>{"Print"}</div>
         </div>

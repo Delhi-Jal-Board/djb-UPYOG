@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import PropTypes from "prop-types";
 import isEqual from "lodash/isEqual";
 import { useTranslation } from "react-i18next";
@@ -16,8 +16,8 @@ const RadioButtons = (props) => {
       {props?.options?.map((option, ind) => {
         if (props?.optionsKey && !props?.isDependent) {
           return (
-            <div style={props.innerStyles} key={ind}>
-              <span className="radio-btn-wrap">
+            <div className="radio-btn-outer-wrap" style={props.innerStyles} key={ind}>
+              <span className="radio-btn-wrap abcd">
                 <input
                   className="radio-btn"
                   type="radio"

@@ -4,6 +4,7 @@ import ErrorComponent from "./ErrorComponent";
 const Redircter = () => {
   const path = Digit.UserService.getType() === "employee" ? "/digit-ui/employee/user/error" : "/digit-ui/citizen/error";
 
+
   if (
     window.location.href.includes("employee/user/error") ||
     window.location.href.includes("citizen/error") ||
@@ -15,6 +16,28 @@ const Redircter = () => {
 
   return null;
 };
+
+// const Redircter1 = () => {
+//   const DigitObj = window?.Digit;
+
+//   if (!DigitObj?.UserService) return null;
+
+//   const userType = DigitObj.UserService.getType();
+
+//   const path = userType === "employee" ? "/digit-ui/employee/user/error" : "/digit-ui/citizen/error";
+
+//   const href = window.location.href;
+
+//   const alreadyOnError = href.includes("/employee/user/error") || href.includes("/citizen/error");
+
+//   if (alreadyOnError || process.env.NODE_ENV === "development") {
+//     return null;
+//   }
+
+//   window.location.replace(path);
+
+//   return null;
+// };
 
 class ErrorBoundary extends React.Component {
   constructor(props) {

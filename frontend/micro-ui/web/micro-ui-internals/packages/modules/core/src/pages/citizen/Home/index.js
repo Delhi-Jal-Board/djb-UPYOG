@@ -212,8 +212,17 @@ import ChatBot from "./ChatBot";
 // import StaticCitizenSideBar from "../../../components/TopBarSideBar/SideBar/StaticCitizenSideBar";
 // import ChatBot from "./ChatBot";
 const Home = () => {
-  const { t } = useTranslation();
   const history = useHistory();
+
+  //   useEffect(() => {
+  //   const kc = window.keycloak;
+
+  //   if (!kc?.authenticated) {
+  //     history.replace("/digit-ui/citizen/login");
+  //     return;
+  //   }
+  // }, []);
+  const { t } = useTranslation();
   const tenantId = Digit.ULBService.getCitizenCurrentTenant(true);
   const [user, setUser] = useState(null);
   const DEFAULT_REDIRECT_URL = "/digit-ui/citizen";
@@ -236,6 +245,7 @@ const Home = () => {
       enabled: conditionsToDisableNotificationCountTrigger(),
     },
   });
+
 
   if (!tenantId) {
     Digit.SessionStorage.get("locale") === null
@@ -378,7 +388,7 @@ const Home = () => {
   return isLoading ? (
     <Loader />
   ) : (
-    <div className="HomePageContainer" style={{width:"100%"}}>
+    <div className="HomePageContainer" style={{ width: "100%" }}>
       {/* <div className="SideBarStatic">
         <StaticCitizenSideBar />
       </div> */}

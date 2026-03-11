@@ -1,64 +1,99 @@
-import { FormComposer, Toast, Loader, Header } from "@djb25/digit-ui-react-components";
+import { FormComposer, Toast, Loader } from "@djb25/digit-ui-react-components";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
 import { newConfig } from "../components/config/config";
 
+// const Stepper = ({ customSteps, currentStep, onStepClick, t }) => {
+//   return (
+//     <div className="stepper-container">
+//       {customSteps.map((stepObj, index) => {
+//         const isCompleted = index < currentStep;
+//         const isActive = index === currentStep;
+
+//         return (
+//           <div className="stepper-item" key={index}>
+//             <div className="stepper-row">
+//               <div
+//                 className={`stepper-circle ${isCompleted ? "completed" : isActive ? "active" : ""
+//                   }`}
+//               >
+//                 {isCompleted ? (
+//                   <svg width="14" height="10" viewBox="0 0 14 10">
+//                     <path
+//                       d="M4.7 9.99L0.28 5.58C-0.09 5.21 -0.09 4.6 0.28 4.22C0.66 3.85 1.26 3.85 1.64 4.22L4.7 7.28L12.36 0.28C12.79 -0.11 13.44 -0.08 13.84 0.35C14.24 0.78 14.19 1.46 13.77 1.84L4.7 9.99Z"
+//                       fill="white"
+//                     />
+//                   </svg>
+//                 ) : (
+//                   index + 1
+//                 )}
+//               </div>
+
+//               <div
+//                 className={`stepper-label ${isActive ? "active" : ""}`}
+//                 onClick={() => isCompleted && onStepClick(index)}
+//               >
+//                 {t(stepObj.head)}
+//               </div>
+//             </div>
+
+//             {index !== customSteps.length - 1 && (
+//               <div
+//                 className={`stepper-line ${isCompleted ? "completed" : ""
+//                   }`}
+//               />
+//             )}
+//           </div>
+//         );
+//       })}
+//     </div>
+//   );
+// };
+
 const Stepper = ({ customSteps, currentStep, onStepClick, t }) => {
   return (
-    <div className="" style={{ width: "20%", background: "#fff", padding: "20px 0", boxShadow: "0 2px 4px rgba(0,0,0,0.1)", borderRadius: "4px" }}>
-      {customSteps.map((stepObj, index, arr) => (
-        <div className="timeline-checkpoint" key={index} style={{ padding: "0 20px" }}>
-          <div className="timeline-content" style={{ display: "flex", alignItems: "center", marginBottom: "20px" }}>
-            <span
-              className={`circle ${index <= currentStep ? "active" : ""}`}
-              style={{
-                width: "32px",
-                height: "32px",
-                borderRadius: "50%",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                background: index <= currentStep ? "#386af4ff" : "#eee",
-                color: index <= currentStep ? "#fff" : "#000",
-                marginRight: "12px",
-                flexShrink: 0,
-              }}
-            >
-              {index < currentStep ? (
-                <svg width="14" height="10" viewBox="0 0 14 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path
-                    d="M4.70019 9.99966L0.283526 5.58299C-0.0914742 5.20799 -0.0914742 4.59966 0.283526 4.22466C0.658526 3.84966 1.26686 3.84966 1.64186 4.22466L4.70019 7.28299L12.3585 0.283002C12.7919 -0.116998 13.4419 -0.0836647 13.8419 0.349669C14.2419 0.783002 14.1919 1.458 13.7752 1.84134L4.70019 9.99966Z"
-                    fill="white"
-                  />
-                </svg>
-              ) : (
-                index + 1
-              )}
-            </span>
-            <span
-              className="secondary-color"
-              style={{ fontWeight: index === currentStep ? "bold" : "normal", cursor: index < currentStep ? "pointer" : "default" }}
-              onClick={() => index < currentStep && onStepClick(index)}
-            >
-              {t(stepObj.head)}
-            </span>
+    <div className="stepper-container">
+      {customSteps.map((stepObj, index) => {
+        const isCompleted = index < currentStep;
+        const isActive = index === currentStep;
+
+        return (
+          <div className="stepper-item" key={index}>
+            <div className="stepper-row">
+              <div
+                className={`stepper-circle ${isCompleted ? "completed" : isActive ? "active" : ""
+                  }`}
+              >
+                {isCompleted ? (
+                  <svg width="14" height="10" viewBox="0 0 14 10">
+                    <path
+                      d="M4.7 9.99L0.28 5.58C-0.09 5.21 -0.09 4.6 0.28 4.22C0.66 3.85 1.26 3.85 1.64 4.22L4.7 7.28L12.36 0.28C12.79 -0.11 13.44 -0.08 13.84 0.35C14.24 0.78 14.19 1.46 13.77 1.84L4.7 9.99Z"
+                      fill="white"
+                    />
+                  </svg>
+                ) : (
+                  index + 1
+                )}
+              </div>
+
+              <div
+                className={`stepper-label ${isActive ? "active" : ""}`}
+                onClick={() => isCompleted && onStepClick(index)}
+              >
+                {t(stepObj.head)}
+              </div>
+            </div>
+
+            {index !== customSteps.length - 1 && (
+              <div
+                className={`stepper-line ${isCompleted ? "completed" : ""
+                  }`}
+              />
+            )}
           </div>
-          {index < arr.length - 1 && (
-            <div
-              className={`line ${index < currentStep ? "active" : ""}`}
-              style={{
-                height: "40px",
-                width: "2px",
-                background: index < currentStep ? "#f47738" : "#eee",
-                marginLeft: "15px",
-                marginTop: "-20px",
-                marginBottom: "10px",
-              }}
-            ></div>
-          )}
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 };
@@ -72,7 +107,8 @@ const CreateEmployee = () => {
   const { t } = useTranslation();
   const history = useHistory();
   const isMobile = window.Digit.Utils.browser.isMobile();
-  const [activeStep, setActiveStep] = useState(0);
+  // const [activeStep, setActiveStep] = useState(0); Commented for development by Avinash
+  const [activeStep, setActiveStep] = useState(0);  // Only used during development
 
   const defaultValues = {
     Jurisdictions: [
@@ -134,6 +170,7 @@ const CreateEmployee = () => {
 
   const config = mdmsData?.config ? mdmsData.config : newConfig;
   const formDataRef = React.useRef(sessionFormData);
+
 
   const validate = (currentData, currentPhoneCheck, step) => {
     let isValid = true;
@@ -309,30 +346,25 @@ const CreateEmployee = () => {
   }
 
   return (
-    <div>
-      {/* <div style={isMobile ? { marginLeft: "-12px", fontFamily: "calibri", color: "#FF0000" } : { marginLeft: "15px", fontFamily: "calibri", color: "#FF0000" }}>
-        <Header>{t("HR_COMMON_CREATE_EMPLOYEE_HEADER")}</Header>
-      </div> */}
-      <div style={{ display: "flex", width: "100%", gap: isMobile ? "0px" : "24px", flexDirection: isMobile ? "column" : "row" }}>
-        <Stepper customSteps={config} currentStep={activeStep} onStepClick={handleStepClick} t={t} />
-        <div style={{ flex: "1", overflowY: "auto" }}>
-          <FormComposer
-            key={activeStep}
-            defaultValues={sessionFormData}
-            heading={t("")}
-            config={activeConfig}
-            onSubmit={onSubmit}
-            onFormValueChange={onFormValueChange}
-            isDisabled={!canSubmit}
-            label={isFinalStep ? t("HR_COMMON_BUTTON_SUBMIT") : t("CS_COMMON_NEXT")}
-            // secondaryActionLabel={activeStep !== 0 ? t("CS_COMMON_BACK") : null}
-            onSecondayActionClick={handleSecondaryAction}
-            cardClassName="stepper-form-wrapper"
-            sectionHeadStyle={{ gridColumn: "span 2" }}
-          />
-        </div>
-      </div>
-      {showToast && (
+
+    <div className={`employee-form ${isMobile ? "mobile-view" : ""}`}>
+      <Stepper customSteps={config} currentStep={activeStep} onStepClick={handleStepClick} t={t} />
+      <div style={{ flex: "1", overflowY: "auto", height: "100%" }}>
+        <FormComposer
+          key={activeStep}
+          defaultValues={sessionFormData}
+          heading={t("")}
+          config={activeConfig}
+          onSubmit={onSubmit}
+          onFormValueChange={onFormValueChange}
+          isDisabled={!canSubmit}
+          label={isFinalStep ? t("HR_COMMON_BUTTON_SUBMIT") : t("CS_COMMON_NEXT")}
+          // secondaryActionLabel={activeStep !== 0 ? t("CS_COMMON_BACK") : null}
+          onSecondayActionClick={handleSecondaryAction}
+          cardClassName="stepper-form-wrapper"
+          sectionHeadStyle={{ gridColumn: "span 2" }}
+        />
+      </div>{showToast && (
         <Toast
           error={showToast.key}
           label={t(showToast.label)}
@@ -342,6 +374,7 @@ const CreateEmployee = () => {
         />
       )}
     </div>
+
   );
 };
 export default CreateEmployee;

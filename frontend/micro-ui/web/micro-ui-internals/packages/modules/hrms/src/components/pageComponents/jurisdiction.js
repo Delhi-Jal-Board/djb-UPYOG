@@ -1,4 +1,4 @@
-import { CardLabel, Dropdown, LabelFieldPair, Loader, RemoveableTag, MultiSelectDropdown } from "@djb25/digit-ui-react-components";
+import { CardLabel, Dropdown, LabelFieldPair, Loader, RemoveableTag, MultiSelectDropdown, CloseSvg } from "@djb25/digit-ui-react-components";
 import React, { useEffect, useState } from "react";
 import cleanup from "../Utils/cleanup";
 // import MultiSelectDropdown from "./Multiselect";
@@ -112,29 +112,27 @@ const Jurisdictions = ({ t, config, onSelect, userType, formData }) => {
   }
   return (
     <div className="juridictions-wrapper">
-      <div className="juridictions">
-        {jurisdictions?.map((jurisdiction, index) => (
-          <Jurisdiction
-            t={t}
-            formData={formData}
-            jurisdictions={jurisdictions}
-            key={index}
-            keys={jurisdiction.key}
-            data={data}
-            jurisdiction={jurisdiction}
-            setjurisdictions={setjurisdictions}
-            index={index}
-            focusIndex={focusIndex}
-            setFocusIndex={setFocusIndex}
-            gethierarchylistdata={gethierarchylistdata}
-            hierarchylist={hierarchylist}
-            boundaryTypeoption={boundaryTypeoption}
-            getboundarydata={getboundarydata}
-            getroledata={getroledata}
-            handleRemoveUnit={handleRemoveUnit}
-          />
-        ))}
-      </div>
+      {jurisdictions?.map((jurisdiction, index) => (
+        <Jurisdiction
+          t={t}
+          formData={formData}
+          jurisdictions={jurisdictions}
+          key={index}
+          keys={jurisdiction.key}
+          data={data}
+          jurisdiction={jurisdiction}
+          setjurisdictions={setjurisdictions}
+          index={index}
+          focusIndex={focusIndex}
+          setFocusIndex={setFocusIndex}
+          gethierarchylistdata={gethierarchylistdata}
+          hierarchylist={hierarchylist}
+          boundaryTypeoption={boundaryTypeoption}
+          getboundarydata={getboundarydata}
+          getroledata={getroledata}
+          handleRemoveUnit={handleRemoveUnit}
+        />
+      ))}
       <label onClick={handleAddUnit} className="link-label" style={{ width: "12rem" }}>
         {t("HR_ADD_JURISDICTION")}
       </label>
@@ -225,23 +223,23 @@ function Jurisdiction({
     setjurisdictions((pre) => pre.map((item) => (item.key === jurisdiction.key ? { ...item, roles: afterRemove } : item)));
   };
   return (
-    <div key={jurisdiction?.keys}>
-      <div className="juridiction-form" style={{ border: "1px solid #E3E3E3", padding: "16px" }}>
-        <LabelFieldPair>
-          <div className="label-field-pair" style={{ width: "100%" }}>
-            <h2 className="card-label card-label-smaller" style={{ color: "#505A5F" }}>
-              {t("HR_JURISDICTION")} {index + 1}
-            </h2>
+    <div key={jurisdiction?.keys} style={{ border: "1px solid #E3E3E3", borderRadius: "6px" }}>
+      <div className="" style={{ display: "flex", justifyContent: "space-between", padding: "16px" }}>
+        <div className="label-field-pair" style={{ width: "100%" }}>
+          <h2 className="card-label card-label-smaller" style={{ color: "#505A5F" }}>
+            {t("HR_JURISDICTION")} {index + 1}
+          </h2>
+        </div>
+        {jurisdictions.length > 1 ? (
+          <div
+            onClick={() => handleRemoveUnit(jurisdiction)}
+            style={{ padding: "5px", cursor: "pointer", textAlign: "right" }}
+          >
+            <CloseSvg />
           </div>
-          {jurisdictions.length > 1 ? (
-            <div
-              onClick={() => handleRemoveUnit(jurisdiction)}
-              style={{ marginBottom: "16px", padding: "5px", cursor: "pointer", textAlign: "right" }}
-            >
-              X
-            </div>
-          ) : null}
-        </LabelFieldPair>
+        ) : null}
+      </div>
+      <div className="juridiction-form">
         <LabelFieldPair>
           <CardLabel isMandatory={true} className="card-label-smaller">{`${t("HR_HIERARCHY_LABEL")} * `}</CardLabel>
           <Dropdown

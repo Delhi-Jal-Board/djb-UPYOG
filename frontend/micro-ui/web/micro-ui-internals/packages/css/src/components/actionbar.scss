@@ -25,6 +25,21 @@
   }
 }
 
+.action-bar-wrap{
+  box-shadow: 0 -2px 8px rgba(0,0,0,.16);
+  left: 0;
+  max-width: none;
+  z-index: 999;
+  position: fixed;
+  bottom: 0;
+  --bg-opacity: 1;
+  background-color: #fff;
+  background-color: rgba(255,255,255,var(--bg-opacity));
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-right: 24px;
+  text-align: right;
+}
 @screen dt {
   .action-bar-wrap {
     box-shadow: rgba(0, 0, 0, 0.16) 0 -2px 8px;

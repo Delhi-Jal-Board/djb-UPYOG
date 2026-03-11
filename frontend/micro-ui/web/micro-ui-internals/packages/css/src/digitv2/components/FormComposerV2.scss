@@ -48,7 +48,7 @@
 }
 
 .employee-card-input {
-  @apply mb-lg pl-sm outline-none block border w-full h-10 border-input-border border-solid bg-white leading-10 text-form-field text-text-primary;
+  @apply pl-sm outline-none block border w-full h-10 border-input-border border-solid bg-white leading-10 text-form-field text-text-primary;
   @extend .light-input-border;
 }
 .employee-card-input:disabled {
@@ -82,7 +82,7 @@
 }
 
 .citizen-card-input {
-  @apply mb-lg pl-sm outline-none block border w-full h-10 border-input-border border-solid bg-white leading-10 text-form-field text-text-primary;
+  @apply pl-sm outline-none block border w-full h-10 border-input-border border-solid bg-white leading-10 text-form-field text-text-primary;
   @extend .light-input-border;
 }
 .citizen-card-input--front {

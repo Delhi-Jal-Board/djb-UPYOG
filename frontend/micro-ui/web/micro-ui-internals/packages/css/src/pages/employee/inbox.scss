@@ -139,6 +139,7 @@
 
 .inbox-container {
   gap: 16px;
+
   .filters-container {
     .filter {
       .filter-card {
@@ -294,10 +295,13 @@
 
   .inbox-container {
     @apply flex;
+    height: inherit;
+    padding-bottom: 24px;
 
     .filters-container {
       width: 270px;
-
+      overflow-y: scroll;
+      
       .filter {
         @apply mt-md;
 

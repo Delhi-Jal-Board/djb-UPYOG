@@ -1,9 +1,9 @@
 import React from "react";
-import { LabelFieldPair, CardLabel, TextInput, CardLabelError, RadioButtons } from "@djb25/digit-ui-react-components";
-import { useLocation } from "react-router-dom";
+import { LabelFieldPair, CardLabel, TextInput, CardLabelError, RadioButtons, Tooltip } from "@djb25/digit-ui-react-components";
+// import { useLocation } from "react-router-dom";
 
 const SelectEmployeeGender = ({ t, config, onSelect, formData = {}, userType, register, errors }) => {
-  const { pathname: url } = useLocation();
+  // const { pathname: url } = useLocation();
 
   const inputs = [
     {
@@ -21,14 +21,14 @@ const SelectEmployeeGender = ({ t, config, onSelect, formData = {}, userType, re
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
 
-  const { data: Menu} = Digit.Hooks.hrms.useHRMSGenderMDMS(stateId, "common-masters", "GenderType");
+  const { data: Menu } = Digit.Hooks.hrms.useHRMSGenderMDMS(stateId, "common-masters", "GenderType");
 
   let HRMenu = [];
 
   Menu &&
     Menu.map((comGender) => {
-      HRMenu.push({name: `COMMON_GENDER_${comGender.code}`, code: `${comGender.code}`})
-    }); 
+      HRMenu.push({ name: `COMMON_GENDER_${comGender.code}`, code: `${comGender.code}` })
+    });
 
   function setValue(value, input) {
     onSelect(config.key, { ...formData[config.key], [input]: value });
@@ -41,12 +41,14 @@ const SelectEmployeeGender = ({ t, config, onSelect, formData = {}, userType, re
           {errors[input.name] && <CardLabelError>{t(input.error)}</CardLabelError>}
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">
-              {t(input.label)}
-              {input.isMandatory ? " * " : null}
+              <Tooltip
+                label={t(input.label)}
+                isMandatory={input.isMandatory}
+              />
             </CardLabel>
             <div className="field">
               <RadioButtons
-                style={{ display: "flex", justifyContent: "space-between" }}
+                style={{ display: "flex", gap: "24px" }}
                 /*options={[
                   {
                     code: "MALE",

@@ -27,8 +27,8 @@ initLibraries().then(async () => {
   const publicRoutes = [
     "/digit-ui/employee/user/language-selection",
     "/digit-ui/employee/user/login",
-    "/digit-ui/citizen/select-language",
-    "/digit-ui/citizen/select-location",
+    // "/digit-ui/citizen/select-language",
+    // "/digit-ui/citizen/select-location",
     "/digit-ui/citizen",
   ];
 
