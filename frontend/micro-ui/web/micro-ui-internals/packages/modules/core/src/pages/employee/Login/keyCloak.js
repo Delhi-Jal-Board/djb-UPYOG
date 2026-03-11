@@ -8,7 +8,7 @@ export const initKeycloak = async () => {
   _kc = new Keycloak({
     url: "https://dev-djb.nitcon.in/keycloak",
     realm: "DL",
-    clientId: "local-upyog",
+    clientId: "upyog",
     // redirectUri: window.location.origin,
   });
 
