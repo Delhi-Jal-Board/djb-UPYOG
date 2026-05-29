@@ -29,7 +29,7 @@ const useInboxTableConfig = ({
 
   React.useEffect(() => {
     if (reviewData) {
-      history.push("/digit-ui/employee/ekyc/review", { kNumber: selectedKno, aadhaarData: reviewData?.aadhaarData, reviewData });
+      history.push(`/digit-ui/employee/ekyc/review/${selectedKno}`, { aadhaarData: reviewData?.aadhaarData, reviewData });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reviewData]);
@@ -70,8 +70,8 @@ const useInboxTableConfig = ({
       accessor: "ekycStatus",
       Cell: ({ row }) => {
         const ekycStatus = row.original?.ekycstatus || "NA";
-        return <span className={`ekyc-status-tag ${ekycStatus}`}>{t(`${ekycStatus}`)}</span>
-      }
+        return <span className={`ekyc-status-tag ${ekycStatus}`}>{t(`${ekycStatus}`)}</span>;
+      },
     },
     {
       Header: t("EKYC_REVIEW"),

@@ -100,25 +100,7 @@ const EmployeeApp = ({ path }) => {
               exact
               component={() => (
                 <LayoutWrapper layoutClass="action">
-                  <SurveyorDetailsCard
-                    surveyor={{
-                      name: "Rahul Sharma",
-                      designation: "Field Surveyor",
-                      employeeId: "SURV-1023",
-                      mobile: "9876543210",
-                      email: "rahul@upyog.gov.in",
-                      zone: "South Zone",
-                      ward: "Ward 12",
-                      assignedCases: 45,
-                      completedCases: 32,
-                      pendingCases: 13,
-                      rejectedCases: 2,
-                      todayCompleted: 5,
-                      weekCompleted: 28,
-                      monthCompleted: 110,
-                      lastActive: "Today 11:30 AM",
-                    }}
-                  />
+                  <SurveyorDetailsCard />
                 </LayoutWrapper>
               )}
             />
@@ -133,7 +115,7 @@ const EmployeeApp = ({ path }) => {
             />
 
             <PrivateRoute
-              path={`${path}/review`}
+              path={`${path}/review/:kno`}
               component={() => (
                 <LayoutWrapper layoutClass="action">
                   <Review />
