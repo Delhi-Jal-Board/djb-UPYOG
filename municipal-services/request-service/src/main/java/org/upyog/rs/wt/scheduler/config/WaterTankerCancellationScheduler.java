@@ -19,7 +19,7 @@ public class WaterTankerCancellationScheduler {
 
     // Cron expression for 11:30 PM daily
     @Scheduled(cron = "${wt.cancel.scheduler.cron}",
-              zone = "${app.timezone:UTC}")
+              zone = "${wt.fixed.point.scheduler.timezone}")
     public void executeNightlyCancellations() {
         log.info("--- CRON TRIGGERED: Starting 11:30 PM Automated Cancellations ---");
 
