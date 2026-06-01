@@ -57,8 +57,8 @@ public class RequestServiceConfiguration {
 	private String mobileToiletApplicationFormat;
 
 	// Save fixed Point Booking Details
-	@Value("{kafka.topics.save.fixed.point.booking}")
-	private String saveFixedPointDetails;
+//	@Value("{kafka.topics.save.fixed.point.booking}")
+//	private String saveFixedPointDetails;
 
 	// Kafka topics for saving water tanker data
 	@Value("${persister.create.water-tanker.topic}")
