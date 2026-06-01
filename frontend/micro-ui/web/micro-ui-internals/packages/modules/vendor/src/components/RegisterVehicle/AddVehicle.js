@@ -180,15 +180,24 @@ const AddVehicle = ({ parentUrl, heading }) => {
 
     mutate(formData, {
       onError: (error, variables) => {
-        setShowToast({ key: "error", action: error });
+        const errorMessage = error?.response?.data?.Errors?.[0]?.message || error?.message || "An error occurred";
+        setShowToast({ key: "error", action: errorMessage });
         setTimeout(closeToast, 5000);
       },
       onSuccess: (data, variables) => {
+        const isError = data?.error === true || data?.Errors?.length > 0 || data?.data?.Errors?.length > 0;
+        if (isError) {
+          const errorMessage = data?.data?.Errors?.[0]?.message || data?.Errors?.[0]?.message || data?.message || "An error occurred";
+          setShowToast({ key: "error", action: errorMessage });
+          setTimeout(closeToast, 5000);
+          return;
+        }
+
         setShowToast({ key: "success", action: "ADD_VEHICLE" });
         queryClient.invalidateQueries("FSM_VEICLES_SEARCH");
 
         if (isCitizen && vendorData?.[0]?.dsoDetails) {
-          const newVehicle = data.vehicle.map((v) => ({ ...v, vendorVehicleStatus: "ACTIVE", status: "ACTIVE" }));
+          const newVehicle = data?.vehicle?.map((v) => ({ ...v, vendorVehicleStatus: "ACTIVE", status: "ACTIVE" })) || [];
           const vendor = vendorData[0].dsoDetails;
           const updatedVendor = {
             vendor: {
@@ -199,9 +208,18 @@ const AddVehicle = ({ parentUrl, heading }) => {
 
           mutateVendor(updatedVendor, {
             onError: (error) => {
-              setShowToast({ key: "error", action: error });
+              const errorMessage = error?.response?.data?.Errors?.[0]?.message || error?.message || "An error occurred";
+              setShowToast({ key: "error", action: errorMessage });
+              setTimeout(closeToast, 5000);
             },
-            onSuccess: () => {
+            onSuccess: (vendorDataRes) => {
+              const isError = vendorDataRes?.error === true || vendorDataRes?.Errors?.length > 0 || vendorDataRes?.data?.Errors?.length > 0;
+              if (isError) {
+                const errorMessage = vendorDataRes?.data?.Errors?.[0]?.message || vendorDataRes?.Errors?.[0]?.message || vendorDataRes?.message || "An error occurred";
+                setShowToast({ key: "error", action: errorMessage });
+                setTimeout(closeToast, 5000);
+                return;
+              }
               setShowToast({ key: "success", action: "ADD_VEHICLE" });
               queryClient.invalidateQueries("DSO_SEARCH");
               const userType = Digit.UserService.getUser()?.info?.type?.toLowerCase() || "citizen";
