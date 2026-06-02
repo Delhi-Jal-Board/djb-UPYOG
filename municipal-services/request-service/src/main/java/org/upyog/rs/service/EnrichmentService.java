@@ -705,6 +705,16 @@ public class EnrichmentService {
 		waterTankerFixedPointDetail.getApplicantDetail().setAuditDetails(auditDetails);
 		waterTankerFixedPointDetail.getAddress().setApplicantId(waterTankerFixedPointDetail.getApplicantDetail().getApplicantId());
 
+		if (address != null) {
+
+			if (address.getLocalityCode() == null || address.getLocalityCode().trim().isEmpty()) {
+				address.setLocalityCode(address.getLocality());
+			}
+
+			if (address.getLocality() == null || address.getLocality().trim().isEmpty()) {
+				address.setLocality(address.getLocalityCode());
+			}
+		}
 		log.info("Enriched application request data :" + waterTankerFixedPointDetail);
 
 	}
