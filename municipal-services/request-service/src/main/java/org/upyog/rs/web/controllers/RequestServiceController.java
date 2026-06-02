@@ -92,7 +92,7 @@ public class RequestServiceController {
 		log.info("waterTankerbookingRequest : {}" , waterTankerFixedPointRequest);
 		WaterTankerFixedPointDetail waterTankerFixedPointDetail = waterTankerService.createFixedPointWaterTankerBookingRequest(waterTankerFixedPointRequest);
 		ResponseInfo info = RequestServiceUtil.createReponseInfo(waterTankerFixedPointRequest.getRequestInfo(),
-				RequestServiceConstants.BOOKING_CREATED, StatusEnum.SUCCESSFUL);
+				RequestServiceConstants.FIXED_POINT_CREATED, StatusEnum.SUCCESSFUL);
 		WaterTankerFixedPointResponse response = WaterTankerFixedPointResponse.builder()
 				.waterTankerFixedPointDetail(waterTankerFixedPointDetail)
 				.responseInfo(info).build();

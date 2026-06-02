@@ -136,7 +136,7 @@ public WaterTankerBookingDetail createNewWaterTankerBookingRequest(WaterTankerBo
 	@Override
 	public WaterTankerFixedPointDetail createFixedPointWaterTankerBookingRequest(WaterTankerFixedPointRequest waterTankerFixedPointRequest) {
 
-		log.info("Create water tanker booking for user : " + waterTankerFixedPointRequest.getRequestInfo().getUserInfo().getUuid()
+		log.info("Create water tanker Fix Point for user : " + waterTankerFixedPointRequest.getRequestInfo().getUserInfo().getUuid()
 				+ " for the request : " + waterTankerFixedPointRequest.getWaterTankerFixedPointDetail());
 
 		String mobileNumber = waterTankerFixedPointRequest

@@ -126,4 +126,7 @@ public class RequestServiceConstants {
 	public static final String KAFKA_SAVE_DRIVER_TRIP_TOPIC   = "save-driver-trip";
 	public static final String KAFKA_UPDATE_DRIVER_TRIP_TOPIC = "update-driver-trip";
 
+	public static final String FIXED_POINT_CREATED = "Your Water Tanker Fixed point  created successfully";
+
+
 }
