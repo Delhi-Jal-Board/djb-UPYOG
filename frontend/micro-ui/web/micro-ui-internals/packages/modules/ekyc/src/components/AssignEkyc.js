@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback, useReducer, useState, useEffect } from "react";
+import React, { useMemo, useCallback, useReducer, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { InboxComposer } from "@djb25/digit-ui-react-components";
 import SupervisorInboxTableConfig from "../hook/SupervisorInboxTableConfig";
@@ -27,23 +27,11 @@ const AssignEkyc = () => {
 
   const [formState, dispatch] = useReducer(formReducer, formInitValue);
 
-  const { data: dashboardData, isLoading, refetch } = Digit.Hooks.fsm.useSurveyorSearch(
+  const { data: dashboardData, isLoading } = Digit.Hooks.fsm.useSurveyorSearch(
     tenantId,
     { ...paginationParms, status: "ACTIVE,DISABLED" },
-    { enabled: false }
+    { enabled: !!tenantId, keepPreviousData: true }
   );
-
-  useEffect(() => {
-    refetch();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    refetch();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sortParams, pageOffset, pageSize]);
-
-  console.log(dashboardData);
 
   const handleSort = useCallback((args) => {
     if (args?.length === 0) return;
