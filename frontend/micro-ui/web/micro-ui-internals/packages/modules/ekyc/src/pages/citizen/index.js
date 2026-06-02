@@ -35,7 +35,7 @@ const CitizenApp = () => {
   const breadcrumbs = [{ icon: HomeIcon, path: "/digit-ui/citizen" }, { label: t(getBreadcrumbLabel()) }];
 
   const roles = Digit.SessionStorage.get("User")?.info?.roles.map((ele) => ele.code);
-  const isEkyAction = (!roles.includes("EKYC_SURVEYOR") || roles.includes("EMPLOYEE"))
+  const isEkyAction = (!roles?.includes("EKYC_SURVEYOR") || roles?.includes("EMPLOYEE"))
   return (
     <React.Fragment>
       <div className="ground-container form-container">
