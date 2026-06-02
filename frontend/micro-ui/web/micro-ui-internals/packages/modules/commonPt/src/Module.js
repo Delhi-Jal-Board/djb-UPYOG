@@ -20,52 +20,33 @@ import CPTSearchResults from "./pages/citizen/SearchResults";
 import CPTCreateProperty from "./pages/pageComponents/createForm";
 import CPTAcknowledgement from "./pages/pageComponents/PTAcknowledgement";
 import CommonPTCard from "./components/CommonPTCard";
-
-const componentsToRegister = {
-  CPTPropertySearchForm,
-  CPTPropertySearchResults,
-  CPTSearchProperty,
-  CPTPropertyAssemblyDetails,
-  CPTPropertyLocationDetails,
-  CPTPropertyOwnerDetails,
-  PropertyWaterConnection,
-  CPTKnowYourProperty,
-  CPTPropertyDetails,
-  CPTPropertySearchNSummary,
-  CPTSearchResults,
-  CPTCreateProperty,
-  CPTAcknowledgement,
-};
-
-const addComponentsToRegistry = () => {
-  Object.entries(componentsToRegister).forEach(([key, value]) => {
-    Digit.ComponentRegistryService.setComponent(key, value);
-  });
-};
-
-export const CommonPTModule = ({ stateCode, userType, tenants }) => {
+export const CommonPTModule = ({ userType, tenants }) => {
   const { path, url } = useRouteMatch();
 
-  const moduleCode = "PT";
+  const moduleCode = ["PT", "CommonPT"];
   const language = Digit.StoreData.getCurrentLanguage();
-  const { isLoading, data: store } = Digit.Services.useStore({ stateCode, moduleCode, language });
-
-  addComponentsToRegistry();
+  const { isLoading, data: store } = Digit.Services.useStore({ moduleCode, language });
 
   Digit.SessionStorage.set("PT_TENANTS", tenants);
 
+  useEffect(
+    () =>
+      userType === "employee" &&
+      Digit.LocalizationService.getLocale({
+        modules: [`rainmaker-${Digit.ULBService.getCurrentTenantId()}`],
+        locale: Digit.StoreData.getCurrentLanguage(),
+        tenantId: Digit.ULBService.getCurrentTenantId(),
+      }),
+    []
+  );
+
   if (userType === "employee") {
-    return <EmployeeApp path={path} url={url} userType={userType} />;
-  } else return <CitizenApp stateCode={stateCode} />;
+    return <EmployeeApp path={path} url={url} userType={userType} tenants={tenants} />;
+  } else return <CitizenApp />;
 };
 
 export const CommonPTLinks = ({ matchPath, userType }) => {
   const { t } = useTranslation();
-  const [params, setParams, clearParams] = Digit.Hooks.useSessionStorage("CPT_CREATE_PROPERTY", {});
-
-  useEffect(() => {
-    clearParams();
-  }, []);
 
   const links = [
     {
@@ -82,19 +63,33 @@ export const CommonPTLinks = ({ matchPath, userType }) => {
   return <CitizenHomeCard header={t("ACTION_TEST_COMMON_PROPERTY_TAX")} links={links} Icon={() => <PTIcon className="fill-path-primary-main" />} />;
 };
 
-/* 
-  CommonPTCardTemp name should be updated without temp keyword to see a card in employee home screen
-  CommonPTLinksTemp name should be updated without temp keyword to see a card in citizen home screen
-*/
 export const CommonPTComponents = {
-  CommonPTCardTemp: CommonPTCard,
+  CommonPTCard,
   CommonPTModule,
-  CommonPTLinksTemp: CommonPTLinks,
-  ...componentsToRegister,
+  CommonPTLinks,
+};
+
+const componentsToRegister = {
+  CommonPTModule,
+  CommonPTCard,
+  CommonPTLinks,
+  CPTPropertySearchForm,
+  CPTPropertySearchResults,
+  CPTSearchProperty,
+  CPTPropertyAssemblyDetails,
+  CPTPropertyLocationDetails,
+  CPTPropertyOwnerDetails,
+  PropertyWaterConnection,
+  CPTKnowYourProperty,
+  CPTPropertyDetails,
+  CPTPropertySearchNSummary,
+  CPTSearchResults,
+  CPTCreateProperty,
+  CPTAcknowledgement,
 };
 
 export const initCommonPTComponents = () => {
-  Object.entries(CommonPTComponents).forEach(([key, value]) => {
+  Object.entries(componentsToRegister).forEach(([key, value]) => {
     Digit.ComponentRegistryService.setComponent(key, value);
   });
 };

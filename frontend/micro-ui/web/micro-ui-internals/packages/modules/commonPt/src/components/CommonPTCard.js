@@ -5,18 +5,24 @@ import { EmployeeModuleCard, PropertyHouse } from "@djb25/digit-ui-react-compone
 const CommonPTCard = () => {
   const { t } = useTranslation();
 
-  if (!Digit.Utils.ptAccess()) {
-    return null;
-  }
+  // if (!Digit.Utils.ptAccess()) {
+  //   return null;
+  // }
 
   const propsForModuleCard = {
     Icon: <PropertyHouse />,
     moduleName: t("ACTION_TEST_COMMON_PROPERTY_TAX"),
+    kpis: [
+      {
+        label: t("PT_TOTAL_APPLICATIONS"),
+        value: 0,
+      },
+    ],
     links: [
       {
-        label: t("PT_SEARCH_AND_PAY"),
+        label: t("PT_SEARCH"),
         link: `/digit-ui/employee/commonpt/search`,
-      }
+      },
     ],
   };
 

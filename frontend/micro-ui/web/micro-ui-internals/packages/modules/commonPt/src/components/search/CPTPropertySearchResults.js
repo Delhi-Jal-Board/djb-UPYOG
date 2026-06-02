@@ -34,9 +34,9 @@ const SearchPTID = ({ tenantId, t, payload, showToast, setShowToast, ptSearchCon
               <span className="link">
                 <span
                   onClick={() => {
-                    //sessionStorage.setItem("propertyDetailsBC",JSON.stringify({...state}))
+                    const userType = window.location.href.includes("/citizen/") ? "citizen" : "employee";
                     history.push(
-                      `/digit-ui/employee/commonpt/view-property?propertyId=${row.original["propertyId"]}&tenantId=${tenantId}&redirectToUrl=${redirectToUrl}`,
+                      `/digit-ui/${userType}/commonpt/view-property?propertyId=${row.original["propertyId"]}&tenantId=${tenantId}&redirectToUrl=${redirectToUrl}`,
                       { ...state }
                     );
                   }}
@@ -64,11 +64,11 @@ const SearchPTID = ({ tenantId, t, payload, showToast, setShowToast, ptSearchCon
         Cell: ({ row }) => GetCell(t(row?.original?.status || "NA")),
         disableSortBy: true,
       },
-      {
-        Header: t("PT_AMOUNT_DUE"),
-        Cell: ({ row }) => GetCell(row?.original?.due ? `₹ ${row?.original?.due}` : t("PT_NA")),
-        disableSortBy: true,
-      },
+      // {
+      //   Header: t("PT_AMOUNT_DUE"),
+      //   Cell: ({ row }) => GetCell(row?.original?.due ? `₹ ${row?.original?.due}` : t("PT_NA")),
+      //   disableSortBy: true,
+      // },
       {
         Header: t("ES_SEARCH_ACTION"),
         disableSortBy: true,

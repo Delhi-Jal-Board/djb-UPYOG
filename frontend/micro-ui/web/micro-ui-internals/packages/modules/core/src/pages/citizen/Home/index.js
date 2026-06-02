@@ -10,6 +10,7 @@ import {
   HelpIcon,
   WhatsNewCard,
   CHBIcon,
+  PTIcon,
 } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useHistory, useLocation } from "react-router-dom";
@@ -152,16 +153,10 @@ const Home = () => {
         onClick: () => history.push("/digit-ui/citizen/ekyc"),
       },
       {
-        name: t("ACTION_TEST_APPLY_NEW_CONNECTION"),
-        description: t("Apply for a new water connection efficiently"),
-        Icon: <DropIcon className="fill-path-primary-main" />,
-        onClick: () => history.push("/digit-ui/citizen/ws/create-application"),
-      },
-      {
         name: t("ACTION_TEST_WATER_AND_SEWERAGE"),
         description: t("Apply for new water connection"),
         Icon: <DropIcon className="fill-path-primary-main" />,
-        onClick: () => history.push("/digit-ui/citizen/ws/home"),
+        onClick: () => history.push("/digit-ui/citizen/ws-home"),
       },
       ...(Digit.UserService.hasAccess(["WT_VENDOR", "EKYC_VENDOR", "EKYC_SUPERVISOR"])
         ? [
@@ -173,6 +168,12 @@ const Home = () => {
             },
           ]
         : []),
+      {
+        name: t("ACTION_TEST_COMMON_PROPERTY_TAX"),
+        description: t("Search and pay property tax"),
+        Icon: <PTIcon className="fill-path-primary-main" />,
+        onClick: () => history.push("/digit-ui/citizen/commonpt-home"),
+      },
       // {
       //   name: t(citizenServicesObj?.props?.[3]?.label) === "ACTION_TEST_CHB" ? t("Community Halls") : t(citizenServicesObj?.props?.[3]?.label),
       //   description: t("Book community halls for your events and functions"),

@@ -131,22 +131,22 @@ export const WSLinks = ({ matchPath, userType }) => {
   const { t } = useTranslation();
 
   const links = [
+    // {
+    //   link: `${matchPath}/my-bills`,
+    //   i18nKey: t("ACTION_TEST_WNS_MY_BILLS"),
+    // },
+    // {
+    //   link: `${matchPath}/my-payments`,
+    //   i18nKey: t("ACTION_TEST_MY_PAYMENTS"),
+    // },
     {
-      link: `${matchPath}/my-bills`,
-      i18nKey: t("ACTION_TEST_WNS_MY_BILLS"),
-    },
-    {
-      link: `${matchPath}/my-payments`,
-      i18nKey: t("ACTION_TEST_MY_PAYMENTS"),
-    },
-    {
-      link: `${matchPath}/create-application`,
+      link: `${matchPath}/old-application`,
       i18nKey: t("ACTION_TEST_APPLY_NEW_CONNECTION"),
     },
-    {
-      link: `${matchPath}/search`,
-      i18nKey: t("ACTION_TEXT_WS_SEARCH_AND_PAY"),
-    },
+    // {
+    //   link: `${matchPath}/search`,
+    //   i18nKey: t("ACTION_TEXT_WS_SEARCH_AND_PAY"),
+    // },
     {
       link: `${matchPath}/my-applications`,
       i18nKey: t("ACTION_TEXT_WS_MY_APPLICATION"),
