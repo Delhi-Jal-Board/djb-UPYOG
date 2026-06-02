@@ -231,25 +231,11 @@ const AssignEkycModal = ({ surveyor, closeModal }) => {
       actionSaveLabel={`Assign ${selectedKnos.length} KNOs`}
       actionSaveOnSubmit={handleAssign}
     >
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "20px",
-          height: "inherit",
-          overflowY: "scroll",
-          flex: 1,
-        }}
-      >
+      <div className="assign-knos-modal">
         {/* Filters */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-            gap: "16px",
-          }}
-        >
+        <div className="filters-grid">
           <input
+            className="form-control"
             placeholder="Search by KNO / Consumer"
             value={filters.search}
             onChange={(e) =>
@@ -258,10 +244,10 @@ const AssignEkycModal = ({ surveyor, closeModal }) => {
                 search: e.target.value,
               })
             }
-            style={inputStyle}
           />
 
           <input
+            className="form-control"
             placeholder="Pincode"
             value={filters.pincode}
             onChange={(e) =>
@@ -270,10 +256,10 @@ const AssignEkycModal = ({ surveyor, closeModal }) => {
                 pincode: e.target.value,
               })
             }
-            style={inputStyle}
           />
 
           <input
+            className="form-control"
             placeholder="Locality"
             value={filters.locality}
             onChange={(e) =>
@@ -282,10 +268,10 @@ const AssignEkycModal = ({ surveyor, closeModal }) => {
                 locality: e.target.value,
               })
             }
-            style={inputStyle}
           />
 
           <input
+            className="form-control"
             placeholder="Route"
             value={filters.route}
             onChange={(e) =>
@@ -294,10 +280,10 @@ const AssignEkycModal = ({ surveyor, closeModal }) => {
                 route: e.target.value,
               })
             }
-            style={inputStyle}
           />
 
           <select
+            className="form-control"
             value={filters.status}
             onChange={(e) =>
               setFilters({
@@ -305,7 +291,6 @@ const AssignEkycModal = ({ surveyor, closeModal }) => {
                 status: e.target.value,
               })
             }
-            style={inputStyle}
           >
             <option value="">All Status</option>
             <option value="PENDING">Pending</option>
@@ -315,42 +300,15 @@ const AssignEkycModal = ({ surveyor, closeModal }) => {
         </div>
 
         {/* Summary */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            background: "#f5f7fa",
-            padding: "14px 18px",
-            borderRadius: "12px",
-            fontWeight: "600",
-          }}
-        >
+        <div className="summary-bar">
           <div>Total Records: {filteredKnos.length}</div>
-
           <div>Selected KNOs: {selectedKnos.length}</div>
         </div>
 
         {/* Table */}
-        <div
-          style={{
-            border: "1px solid #d6d6d6",
-            borderRadius: "14px",
-            overflow: "hidden",
-          }}
-        >
+        <div className="table-wrapper">
           {/* Header */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "90px 1.2fr 1.4fr 1fr 1fr 1fr 0.8fr",
-              padding: "16px",
-              background: "#eef2f7",
-              fontWeight: "700",
-              fontSize: "14px",
-              color: "#0B2559",
-            }}
-          >
+          <div className="table-header">
             <div>
               <input
                 type="checkbox"
@@ -368,54 +326,22 @@ const AssignEkycModal = ({ surveyor, closeModal }) => {
           </div>
 
           {/* Rows */}
-          <div
-            style={{
-              maxHeight: "500px",
-              overflowY: "auto",
-            }}
-          >
+          <div className="table-body">
             {filteredKnos.length > 0 ? (
               filteredKnos.map((item, index) => (
-                <div
-                  key={item.kno}
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "90px 1.2fr 1.4fr 1fr 1fr 1fr 0.8fr",
-                    padding: "16px",
-                    alignItems: "center",
-                    borderTop: "1px solid #edf0f4",
-                    background: index % 2 === 0 ? "#fff" : "#fafbfd",
-                    fontSize: "14px",
-                  }}
-                >
+                <div key={item.kno} className={`table-row ${index % 2 === 0 ? "even" : "odd"}`}>
                   <div>
                     <input type="checkbox" checked={selectedKnos.includes(item.kno)} onChange={() => handleSelect(item.kno)} />
                   </div>
 
-                  <div
-                    style={{
-                      fontWeight: "600",
-                      color: "#0B2559",
-                    }}
-                  >
-                    {item.kno}
-                  </div>
+                  <div className="kno-value">{item.kno}</div>
 
                   <div>{item.consumerName}</div>
                   <div>{item.locality}</div>
                   <div>{item.pincode}</div>
 
                   <div>
-                    <span
-                      style={{
-                        padding: "6px 10px",
-                        borderRadius: "999px",
-                        fontSize: "12px",
-                        fontWeight: "600",
-                        background: item.status === "PENDING" ? "#FEF3C7" : item.status === "VERIFIED" ? "#DCFCE7" : "#DBEAFE",
-                        color: item.status === "PENDING" ? "#92400E" : item.status === "VERIFIED" ? "#166534" : "#1E40AF",
-                      }}
-                    >
+                    <span className={`status-badge ${item.status === "PENDING" ? "pending" : item.status === "VERIFIED" ? "verified" : "assigned"}`}>
                       {item.status}
                     </span>
                   </div>
@@ -424,33 +350,13 @@ const AssignEkycModal = ({ surveyor, closeModal }) => {
                 </div>
               ))
             ) : (
-              <div
-                style={{
-                  padding: "40px",
-                  textAlign: "center",
-                  color: "#6b7280",
-                  fontWeight: "500",
-                }}
-              >
-                No KNO records found
-              </div>
+              <div className="empty-state">No KNO records found</div>
             )}
           </div>
         </div>
       </div>
     </Modal>
   );
-};
-
-const inputStyle = {
-  height: "48px",
-  border: "1px solid #d1d5db",
-  borderRadius: "10px",
-  padding: "0 14px",
-  fontSize: "14px",
-  outline: "none",
-  width: "100%",
-  background: "#fff",
 };
 
 export default AssignEkycModal;

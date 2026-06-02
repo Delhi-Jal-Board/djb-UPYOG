@@ -13,7 +13,7 @@ import {
   GenericFileIcon,
 } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
-import { useHistory, useLocation } from "react-router-dom";
+import { useHistory, useLocation, useParams } from "react-router-dom";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -166,6 +166,7 @@ const Review = () => {
   const { t } = useTranslation();
   const history = useHistory();
   const location = useLocation();
+  let { kno } = useParams();
 
   const [agree, setAgree] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -173,8 +174,8 @@ const Review = () => {
   const [previewUrl, setPreviewUrl] = useState("");
 
   const flowState = location.state || {};
-  const { kNumber, kno, edits = {} } = flowState;
-  const activeKno = kNumber || kno;
+  const { edits = {} } = flowState;
+  const activeKno = kno;
 
   const { aadhaarData = {}, addressDetails: editedAddress = {}, propertyDetails: editedProperty = {}, meterDetails: editedMeter = {} } = edits;
 

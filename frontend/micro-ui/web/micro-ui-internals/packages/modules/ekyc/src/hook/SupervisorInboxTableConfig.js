@@ -16,8 +16,10 @@ const SupervisorInboxTableConfig = ({
   const { t } = useTranslation();
   const history = useHistory();
 
+  const userType = Digit.SessionStorage.get("User")?.info?.type?.toLowerCase() || "citizen";
+
   const handleReview = (id) => {
-    history.push(`/digit-ui/employee/ekyc/assign/surveyor-details/${id}`);
+    history.push(`/digit-ui/${userType}/ekyc/assign/surveyor-details/${id}`);
   };
 
   const limit = formState?.tableForm?.limit || 10;

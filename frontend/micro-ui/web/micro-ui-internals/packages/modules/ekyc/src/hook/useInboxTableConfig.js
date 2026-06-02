@@ -26,10 +26,11 @@ const useInboxTableConfig = ({
 
   const limit = formState?.tableForm?.limit || 10;
   const offset = formState?.tableForm?.offset || 0;
+  const userType = Digit.SessionStorage.get("User")?.info?.type?.toLowerCase() || "citizen";
 
   React.useEffect(() => {
     if (reviewData) {
-      history.push("/digit-ui/employee/ekyc/review", { kNumber: selectedKno, aadhaarData: reviewData?.aadhaarData, reviewData });
+      history.push(`/digit-ui/${userType}/ekyc/review/${selectedKno}`, { aadhaarData: reviewData?.aadhaarData, reviewData });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reviewData]);
@@ -70,8 +71,8 @@ const useInboxTableConfig = ({
       accessor: "ekycStatus",
       Cell: ({ row }) => {
         const ekycStatus = row.original?.ekycstatus || "NA";
-        return <span className={`ekyc-status-tag ${ekycStatus}`}>{t(`${ekycStatus}`)}</span>
-      }
+        return <span className={`ekyc-status-tag ${ekycStatus}`}>{t(`${ekycStatus}`)}</span>;
+      },
     },
     {
       Header: t("EKYC_REVIEW"),
