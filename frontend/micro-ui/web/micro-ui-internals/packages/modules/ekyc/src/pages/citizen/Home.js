@@ -12,7 +12,20 @@ const Home = () => {
         link: `/digit-ui/citizen/ekyc/dashboard`,
       },
     ],
-    links: [
+    links: [],
+  };
+  const citizenInfo = Digit.SessionStorage.get("User")?.info?.roles;
+  const roles = citizenInfo.map((ele) => ele.code);
+
+  if (roles.includes("EKYC_SURVEYOR")) {
+    propsForModuleCard.links.push({
+      label: t("SURVEYOR_DASHBOARD"),
+      link: `/digit-ui/citizen/ekyc/surveyor-dashboard`,
+    });
+  }
+
+  if (roles.includes("EKYC_SUPERVISOR") || roles.includes("EKYC_VENDOR")) {
+    propsForModuleCard.links.push(
       {
         label: t("EKYC_DASHBOARD"),
         link: `/digit-ui/citizen/ekyc/dashboard`,
@@ -21,20 +34,20 @@ const Home = () => {
         label: t("EKYC_INBOX"),
         link: `/digit-ui/citizen/ekyc/inbox`,
       },
-      // {
-      //     label: t("EKYC_CREATE_KYC"),
-      //     link: `/digit-ui/citizen/ekyc/create-kyc`
-      // },
-      // {
-      //     label: t("EKYC_UPDATE_KYC"),
-      //     link: `/digit-ui/citizen/ekyc/update-kyc`
-      // },
       {
-        label: t("EKYC_MAPPING"),
-        link: `/digit-ui/citizen/ekyc/mapping`,
-      },
-    ],
-  };
+        label: t("EKYC_ASSIGN"),
+        link: `/digit-ui/citizen/ekyc/assign`,
+      }
+    );
+  }
+
+  if (roles.length === 1 && roles.includes("CITIZEN")) {
+    propsForModuleCard.links.push({
+      label: t("EKYC_STATUS"),
+      link: `/digit-ui/citizen/ekyc/:id`,
+    });
+  }
+
   return <ModuleLinksView links={propsForModuleCard.links} />;
 };
 
