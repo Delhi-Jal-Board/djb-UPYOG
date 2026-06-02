@@ -5,11 +5,25 @@ import { ekycMockData } from "./mockData";
 import ExecutiveLineChart from "./analytics/charts/ExecutiveLineChart";
 import ExecutiveBarChart from "./analytics/charts/ExecutiveBarChart";
 import ExecutivePieChart from "./analytics/charts/ExecutivePieChart";
+import { Loader } from "@djb25/digit-ui-react-components";
 
 const VendorDetails = () => {
   const history = useHistory();
-  const { vendorId } = useParams();
+  const { vendorId = 1 } = useParams();
   const vendor = useMemo(() => ekycMockData.vendors.find((item) => item.id === Number(vendorId)), [vendorId]);
+
+  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const { isLoading, data: dashboardData } = Digit.Hooks.ekyc.useEkycSurveyorDashboard(
+    {},
+    {
+      tenantId,
+      offset: 0,
+      limit: 10,
+    },
+    {
+      enabled: !!tenantId,
+    }
+  );
 
   if (!vendor) {
     return (
@@ -37,6 +51,9 @@ const VendorDetails = () => {
     pending: row.pending,
     rejected: row.rejected,
   }));
+
+  console.log(dashboardData);
+  if (isLoading) <Loader />;
 
   return (
     <div className="ekyc-dashboard-wrapper">
