@@ -96,9 +96,12 @@ public class SupervisorService {
 
     /**
      * Rules:
-     * - EMPLOYEE / SUPERUSER / DJB_ZRO → no restriction, see all
-     * - WT_VENDOR / DJB_AGENCY          → restrict to their own vendor's supervisors
-     * - All others (CITIZEN etc.)        → empty result
+     * - EMPLOYEE / SUPERUSER / DJB_ZRO                    → no restriction, see all
+     * - EKYC_SUPERVISOR / EKYC_VENDOR / EKYC_ZRO          → no restriction
+     *     (VendorServiceClient already scopes query to ownerIds= in query params,
+     *      so DB result is already limited to the exact supervisor needed)
+     * - WT_VENDOR / DJB_AGENCY                            → restrict to own vendor's supervisors
+     * - All others (CITIZEN etc.)                         → empty result
      */
     private void applyRoleBasedRestriction(SupervisorSearchCriteria criteria, RequestInfo requestInfo) {
         if (requestInfo == null || requestInfo.getUserInfo() == null) return;
@@ -107,23 +110,28 @@ public class SupervisorService {
                 .map(Role::getCode).collect(Collectors.toList());
         String userType = requestInfo.getUserInfo().getType();
 
+        // ── Unrestricted roles ────────────────────────────────────────
         boolean isEmployee = VendorConstants.EMPLOYEE.equalsIgnoreCase(userType)
                 || roleCodes.stream().anyMatch(r ->
-                "EMPLOYEE".equalsIgnoreCase(r) ||
-                        "SUPERUSER".equalsIgnoreCase(r) ||
-                        "DJB_ZRO".equalsIgnoreCase(r));
+                "EMPLOYEE".equalsIgnoreCase(r)          ||
+                        "SUPERUSER".equalsIgnoreCase(r)         ||
+                        "DJB_ZRO".equalsIgnoreCase(r)           ||
+                        "EKYC_SUPERVISOR".equalsIgnoreCase(r)   ||  // internal call from ekyc-service
+                        "EKYC_VENDOR".equalsIgnoreCase(r)       ||  // internal call from ekyc-service
+                        "EKYC_ZRO".equalsIgnoreCase(r));            // ZRO role used in this project
 
         if (isEmployee) {
-            log.info("Employee/ZRO role — no supervisor restriction applied");
+            log.info("Unrestricted role ({}) — no supervisor restriction applied", roleCodes);
             return;
         }
 
+        // ── Vendor-restricted roles ───────────────────────────────────
         boolean isVendor = roleCodes.stream().anyMatch(r ->
                 "WT_VENDOR".equalsIgnoreCase(r) || "DJB_AGENCY".equalsIgnoreCase(r));
 
         if (!isVendor) {
             // Unknown role — return empty
-            log.info("No recognised role for supervisor search — returning empty");
+            log.info("No recognised role for supervisor search — returning empty. roles={}", roleCodes);
             criteria.setIds(new ArrayList<>());
             return;
         }
