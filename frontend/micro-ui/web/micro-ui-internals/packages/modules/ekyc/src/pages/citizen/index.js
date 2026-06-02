@@ -10,6 +10,9 @@ import Home from "./Home";
 import Dashboard from "../../components/Dashboard";
 import Inbox from "./Inbox";
 import AddressDetails from "../../components/AddressDetails";
+import AssignEkyc from "../../components/AssignEkyc";
+import SurveyorDetailsCard from "../../components/SurveyorDetailsCard";
+import VendorDetails from "../../components/VendorDetails";
 
 const CitizenApp = () => {
   const { t } = useTranslation();
@@ -31,6 +34,8 @@ const CitizenApp = () => {
 
   const breadcrumbs = [{ icon: HomeIcon, path: "/digit-ui/citizen" }, { label: t(getBreadcrumbLabel()) }];
 
+  const roles = Digit.SessionStorage.get("User")?.info?.roles.map((ele) => ele.code);
+  const isEkyAction = (!roles.includes("EKYC_SURVEYOR") || roles.includes("EMPLOYEE"))
   return (
     <React.Fragment>
       <div className="ground-container form-container">
@@ -59,7 +64,7 @@ const CitizenApp = () => {
             path={`${path}/dashboard`}
             component={() => (
               <LayoutWrapper layoutClass="normal">
-                <Dashboard />
+                <VendorDetails />
               </LayoutWrapper>
             )}
           />
@@ -110,6 +115,48 @@ const CitizenApp = () => {
 
           <PrivateRoute
             path={`${path}/review`}
+            component={() => (
+              <LayoutWrapper layoutClass="normal">
+                <Review />
+              </LayoutWrapper>
+            )}
+          />
+          <PrivateRoute
+            path={`${path}/assign`}
+            exact
+            component={() => (
+              <LayoutWrapper layoutClass="normal">
+                <AssignEkyc />
+              </LayoutWrapper>
+            )}
+          />
+          <PrivateRoute
+            path={`${path}/assign/surveyor-details/:id`}
+            exact
+            component={() => (
+              <LayoutWrapper layoutClass="action">
+                <SurveyorDetailsCard />
+              </LayoutWrapper>
+            )}
+          />
+          <PrivateRoute
+            path={`${path}/surveyor-dashboard/:id`}
+            component={() => (
+              <LayoutWrapper layoutClass="normal">
+                <SurveyorDetailsCard />
+              </LayoutWrapper>
+            )}
+          />
+          <PrivateRoute
+            path={`${path}/surveyor-dashboard`}
+            component={() => (
+              <LayoutWrapper layoutClass="normal">
+                <SurveyorDetailsCard />
+              </LayoutWrapper>
+            )}
+          />
+          <PrivateRoute
+            path={`${path}/status/:applicationId`}
             component={() => (
               <LayoutWrapper layoutClass="normal">
                 <Review />

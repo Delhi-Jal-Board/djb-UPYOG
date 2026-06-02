@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, PieChart, Pie, Cell, Legend } from "recharts";
 
-import { Card, SubmitBar, ActionBar, Menu, Loader } from "@djb25/digit-ui-react-components";
+import { Card, SubmitBar, ActionBar, Menu, Loader, Table } from "@djb25/digit-ui-react-components";
 
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
@@ -15,14 +15,50 @@ const SurveyorDetailsDashboard = () => {
   const [showOptions, setShowOptions] = useState(false);
 
   const { id: surveyorId } = useParams();
+  const ownerIds = Digit.SessionStorage.get("User")?.info?.uuid;
 
   const { t } = useTranslation();
 
-  const { data: surveyorSearchResponse, isLoading } = Digit.Hooks.fsm.useSurveyorSearch(tenantId, { ids: surveyorId }, { staleTime: Infinity });
+  const searchParams = surveyorId ? { ids: surveyorId } : { ownerIds };
+
+  const { data: surveyorSearchResponse, isLoading } = Digit.Hooks.fsm.useSurveyorSearch(tenantId, searchParams, { staleTime: Infinity });
+
+  const roles = Digit.SessionStorage.get("User")?.info?.roles.map((ele) => ele.code);
 
   const surveyor = useMemo(() => {
     return surveyorSearchResponse?.surveyors?.[0] || null;
   }, [surveyorSearchResponse]);
+
+  const knoColumns = React.useMemo(
+    () => [
+      {
+        Header: t("KNO"),
+        accessor: "kno",
+      },
+      {
+        Header: t("CONSUMER_NAME"),
+        accessor: "consumerName",
+      },
+      {
+        Header: t("MOBILE_NO"),
+        accessor: "mobileNumber",
+      },
+      {
+        Header: t("STATUS"),
+        accessor: "status",
+        Cell: ({ value }) => <span className={`status-badge ${value?.toLowerCase() || ""}`}>{value}</span>,
+      },
+      {
+        Header: t("ASSIGNED_DATE"),
+        accessor: "assignedDate",
+      },
+      {
+        Header: t("COMPLETED_DATE"),
+        accessor: "completedDate",
+      },
+    ],
+    [t]
+  );
 
   if (isLoading) {
     return <Loader />;
@@ -35,6 +71,24 @@ const SurveyorDetailsDashboard = () => {
       </Card>
     );
   }
+  const assignedKnos = [
+    {
+      kno: "123456789",
+      consumerName: "Rahul Sharma",
+      mobileNumber: "9876543210",
+      status: "Completed",
+      assignedDate: "01-06-2026",
+      completedDate: "02-06-2026",
+    },
+    {
+      kno: "123456790",
+      consumerName: "Amit Kumar",
+      mobileNumber: "9876543211",
+      status: "Pending",
+      assignedDate: "03-06-2026",
+      completedDate: "-",
+    },
+  ];
 
   const weeklyData = [
     { day: "Mon", completed: 4 },
@@ -156,64 +210,69 @@ const SurveyorDetailsDashboard = () => {
 
       {/* Details */}
       <div className="ekyc-dashboard-section">
-        <h3 className="chart-title">{t("SURVEYOR_DETAILS")}</h3>
-
         <div className="details-grid">
           <div className="detail-item">
             <span className="label">{t("MOBILE")}:</span>
-
             <span className="value">{surveyor?.owner?.mobileNumber || surveyor?.mobileNo || "N/A"}</span>
           </div>
 
           <div className="detail-item">
             <span className="label">{t("EMAIL")}:</span>
-
             <span className="value">{surveyor?.owner?.emailId || "N/A"}</span>
           </div>
 
           <div className="detail-item">
             <span className="label">{t("GENDER")}:</span>
-
             <span className="value">{surveyor?.owner?.gender || "N/A"}</span>
           </div>
 
           <div className="detail-item">
             <span className="label">{t("STATUS")}:</span>
-
             <span className="value">{surveyor?.status || "N/A"}</span>
           </div>
 
           <div className="detail-item">
             <span className="label">{t("SERVICE_TYPE")}:</span>
-
             <span className="value">{surveyor?.additionalDetails?.serviceType || "N/A"}</span>
           </div>
 
           <div className="detail-item">
             <span className="label">{t("VENDOR_ID")}:</span>
-
             <span className="value">{surveyor?.vendorId || "N/A"}</span>
           </div>
         </div>
       </div>
 
-      {/* Actions */}
-      <ActionBar>
-        <SubmitBar label={t("EKYC_ASSIGN_KNOS")} onSubmit={() => setShowOptions((prev) => !prev)} />
+      <Table
+        t={t}
+        tableTitle={t("ASSIGNED_KNOS")}
+        data={assignedKnos}
+        columns={knoColumns}
+        totalRecords={assignedKnos?.length}
+        isPaginationRequired={true}
+        pageSizeLimit={10}
+        manualPagination={false}
+      />
 
-        {showOptions && (
-          <Menu
-            options={options}
-            optionKey={"action"}
-            t={t}
-            onSelect={handleMenuSelect}
-            style={{
-              color: "#FFFFFF",
-              fontSize: "18px",
-            }}
-          />
-        )}
-      </ActionBar>
+      {/* Actions */}
+      {(!roles.includes("EKYC_SURVEYOR") || roles.includes("EMPLOYEE")) && (
+        <ActionBar>
+          <SubmitBar label={t("EKYC_ASSIGN_KNOS")} onSubmit={() => setShowOptions((prev) => !prev)} />
+
+          {showOptions && (
+            <Menu
+              options={options}
+              optionKey={"action"}
+              t={t}
+              onSelect={handleMenuSelect}
+              style={{
+                color: "#FFFFFF",
+                fontSize: "18px",
+              }}
+            />
+          )}
+        </ActionBar>
+      )}
 
       {showModal && <AssignEkycModal surveyor={surveyor} closeModal={() => setShowModal(false)} />}
     </Card>

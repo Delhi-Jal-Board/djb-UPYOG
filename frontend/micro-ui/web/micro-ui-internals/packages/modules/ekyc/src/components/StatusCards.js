@@ -16,7 +16,6 @@ const StatusCards = ({ countData }) => {
   const pending = countData?.pending || 0;
   const active = countData?.completed || 0;
   const completed = 0;
-  const rejected = countData?.rejected || 0;
 
   const actualCompleted = countData?.completed || 0;
   const approved = actualCompleted;
@@ -77,14 +76,11 @@ const StatusCards = ({ countData }) => {
             </div>
             <h1 className="status-cards-h1">{t("EKYC_DASHBOARD_TITLE") || "eKYC Verification Dashboard"}</h1>
             <p className="status-cards-subtitle">
-              {t("EKYC_DASHBOARD_SUBTITLE") ||
-                "Real-time monitoring of consumer verification workflows across all administrative zones."}
+              {t("EKYC_DASHBOARD_SUBTITLE") || "Real-time monitoring of consumer verification workflows across all administrative zones."}
             </p>
           </div>
           <div className="total-applications-card">
-            <div className="total-label">
-              {t("EKYC_TOTAL_APPLICATIONS") || "Total Applications Processed"}
-            </div>
+            <div className="total-label">{t("EKYC_TOTAL_APPLICATIONS") || "Total Applications Processed"}</div>
             <div className="total-number">{formatNumber(total)}</div>
             <div className="total-badge">↗ +12.4% {t("EKYC_FROM_LAST_QUARTER") || "from last quarter"}</div>
           </div>
@@ -95,18 +91,13 @@ const StatusCards = ({ countData }) => {
           {/* Panel 1: Status Breakdown */}
           <div className="status-panel">
             <div className="panel-title">{t("EKYC_STATUS_BREAKDOWN") || "Status Breakdown"}</div>
-            <div className="panel-subtitle">
-              {t("EKYC_VERIFICATION_LIFECYCLE") || "Verification lifecycle distribution"}
-            </div>
+            <div className="panel-subtitle">{t("EKYC_VERIFICATION_LIFECYCLE") || "Verification lifecycle distribution"}</div>
             <div className="breakdown-body">
               <div className="status-legend">
                 {legendItems.map((item) => (
                   <div key={item.label} className="legend-row">
                     <span className="legend-label">
-                      <span
-                        className="indicator-dot"
-                        style={{ background: item.color }}
-                      />
+                      <span className="indicator-dot" style={{ background: item.color }} />
                       {item.label}
                     </span>
                     <span className="legend-value">{formatNumber(item.value)}</span>
@@ -129,9 +120,7 @@ const StatusCards = ({ countData }) => {
               {t("EKYC_SUBMISSION_HEALTH") || "Submission Health"}
               <span className="optimal-badge">{t("EKYC_OPTIMAL") || "Optimal"}</span>
             </div>
-            <div className="panel-subtitle">
-              {t("EKYC_PLATFORM_EFFICIENCY") || "Platform operational efficiency"}
-            </div>
+            <div className="panel-subtitle">{t("EKYC_PLATFORM_EFFICIENCY") || "Platform operational efficiency"}</div>
             <div className="health-metrics-row">
               <div className="health-percentage">{healthPct}%</div>
               <div className="health-trend">↗ +2.1%</div>

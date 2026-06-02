@@ -7,8 +7,12 @@ import React from "react";
 /**
  * @param {{ layoutClass?: LayoutType, children: React.ReactNode }} props
  */
-const LayoutWrapper = ({ layoutClass = "normal", children }) => {
-  return <div className={layouts[layoutClass]}>{children}</div>;
+const LayoutWrapper = ({ layoutClass = "normal", style, children }) => {
+  return (
+    <div style={style} className={layouts[layoutClass]}>
+      {children}
+    </div>
+  );
 };
 
 export default LayoutWrapper;
