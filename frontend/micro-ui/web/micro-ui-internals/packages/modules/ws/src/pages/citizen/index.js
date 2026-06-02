@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Switch, useLocation, Route } from "react-router-dom";
-import { PrivateRoute, BackButton } from "@djb25/digit-ui-react-components";
+import { PrivateRoute, BackButton, LayoutWrapper } from "@djb25/digit-ui-react-components";
 import TestAcknowledgment from "./TestAcknowledgment";
 import { WSMyApplications } from "./WSMyApplications";
 
@@ -35,6 +35,7 @@ const App = ({ path }) => {
   const WSReSubmitDisconnectionApplication = Digit?.ComponentRegistryService?.getComponent("WSReSubmitDisconnectionApplication");
   const WSMyConnections = Digit?.ComponentRegistryService?.getComponent("WSMyConnections");
   const WNSMyBillsComponent = Digit?.ComponentRegistryService?.getComponent("WNSMyBillsComponent");
+  const WSOLDApplication = Digit?.ComponentRegistryService?.getComponent("WSOLDApplication");
   return (
     <React.Fragment>
       <div className="ws-citizen-wrapper">
@@ -61,6 +62,14 @@ const App = ({ path }) => {
           <PrivateRoute path={`${path}/consumption/details`} component={WSCitizenConsumptionDetails} />
           <PrivateRoute path={`${path}/edit-application/:tenantId`} component={WSCitizenEditApplication} />
           <PrivateRoute path={`${path}/modify-connection/:tenantId`} component={WSCitizenEditApplication} />
+          <PrivateRoute
+            path={`${path}/old-application`}
+            component={() => (
+              <LayoutWrapper layoutClass="action">
+                <WSOLDApplication {...{ path }} />
+              </LayoutWrapper>
+            )}
+          />
         </Switch>
       </div>
     </React.Fragment>

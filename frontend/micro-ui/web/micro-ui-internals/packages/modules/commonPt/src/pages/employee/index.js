@@ -1,4 +1,4 @@
-import { BreadCrumb, LayoutWrapper, PrivateRoute } from "@djb25/digit-ui-react-components";
+import { AppContainer, ArrowLeft, BreadCrumb, HomeIcon, LayoutWrapper, ModuleHeader, PrivateRoute } from "@djb25/digit-ui-react-components";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { Link, Switch, useLocation } from "react-router-dom";
@@ -14,77 +14,48 @@ const EmployeeApp = ({ path, url, userType }) => {
   const urltenantId = new URLSearchParams(useLocation().search).get("tenantId");
   const mobileView = innerWidth <= 640;
 
-  const breadcrumbObj = {
-    ["/digit-ui/employee/pt/inbox"]: "ES_TITLE_INBOX",
-    ["/digit-ui/employee/pt/new-application"]: "ES_TITLE_NEW_PROPERTY_APPLICATION",
-    ["/digit-ui/employee/pt/search"]: "ES_COMMON_SEARCH",
-    ["/digit-ui/employee/pt/application-search"]: "ES_COMMON_APPLICATION_SEARCH",
+  const getBreadcrumbLabel = () => {
+    const pathname = location.pathname;
+    if (pathname.includes("/commonpt/search")) return "SEARCH_PROPERTY";
+    else if (pathname.includes("/view-property")) return "PT_PROPERTY_INFORMATION";
+
+    return "ES_COMMON_INBOX";
   };
 
-  const getBreadCrumb = () => {
-    if (location.pathname.includes("/commonpt/search")) return t("SEARCH_PROPERTY");
-    else if (location.pathname.includes("/view-property")) return t("PT_PROPERTY_INFORMATION");
-    else return t("PT_NEW_PROPERTY");
-  };
-  const getRedirectBreadCrumb = (redirectUrl) => {
-    // switch(redirectUrl) {
-    //   case !!redirectUrl.includes("employee/tl/new-application"):
-    //     return t("ES_TITLE_NEW_TRADE_LICESE_APPLICATION")
-    //   case !!redirectUrl.includes("employee/ws/new-application"):
-    //     return t("ES_NEW_CONNECTION")
-    //   case !!(!redirectUrl.includes("employee/tl/new-application")):
-    //     return t("WF_EMPLOYEE_NEWTL_RENEWAL_SUBMIT_BUTTON")
-    //   default:
-    //     return null
-    //}
-    if (redirectUrl.includes("employee/tl/new-application")) return t("ES_TITLE_NEW_TRADE_LICESE_APPLICATION");
-    else if (redirectUrl.includes("employee/ws/new-application")) return t("ES_COMMON_WS_NEW_CONNECTION");
-    else if (redirectUrl.includes("employee/ws/modify-application")) return t("WS_WATER_AND_SEWERAGE_MODIFY_CONNECTION_LABEL");
-    else return t("WF_EMPLOYEE_NEWTL_RENEWAL_SUBMIT_BUTTON");
-  };
-  const search = useLocation().search;
-
-  const redirectUrl = new URLSearchParams(search).get("redirectToUrl");
-  const fromScreen = new URLSearchParams(search).get("from") || "";
-
-  const crumbs = [
-    {
-      path: "/digit-ui/employee",
-      content: t("ES_COMMON_HOME"),
-      show: true,
-    },
-    {
-      path: { pathname: urlpropertyId ? `${redirectUrl}?propertyId=${urlpropertyId}&tenantId=${urltenantId}` : redirectUrl, state: { ...location.state } },
-      content: redirectUrl ? getRedirectBreadCrumb(redirectUrl) : (fromScreen && t(fromScreen)) || "NONE",
-      show: (redirectUrl || fromScreen) && true,
-      isBack: fromScreen && true,
-      isredirected: true,
-    },
-    {
-      path: "/digit-ui/employee/dss/drilldown",
-      content: getBreadCrumb(),
-      show: true,
-    },
-  ];
-
-  const locationCheck = window.location.href.includes("/employee/commonpt/new-application");
+  const breadcrumbs = [{ icon: HomeIcon, path: "/digit-ui/employee" }, { label: t(getBreadcrumbLabel()) }];
 
   return (
-    <div className="ground-container">
-      <div style={locationCheck ? { marginLeft: "12px" } : {}}>
-        <BreadCrumb crumbs={crumbs} />
+    <AppContainer>
+      <div className="ground-container employee-app-container form-container">
+        <ModuleHeader
+          leftContent={
+            <React.Fragment>
+              <ArrowLeft className="icon" />
+              Back
+            </React.Fragment>
+          }
+          onLeftClick={() => window.history.back()}
+          breadcrumbs={breadcrumbs}
+        />
+        <div className="employee-form">
+          <div className="employee-form-content">
+            <Switch>
+              <PrivateRoute exact path={`${path}/`} component={() => <CommonPTLinks matchPath={path} userType={userType} />} />
+              <PrivateRoute
+                path={`${path}/new-application`}
+                component={() => (
+                  <LayoutWrapper layoutClass="action">
+                    <NewApplication path={path} />
+                  </LayoutWrapper>
+                )}
+              />
+              <PrivateRoute path={`${path}/search`} component={Search} />
+              <PrivateRoute path={`${path}/view-property`} component={ViewProperty} />
+            </Switch>
+          </div>
+        </div>
       </div>
-      <Switch>
-        <PrivateRoute exact path={`${path}/`} component={() => <CommonPTLinks matchPath={path} userType={userType} />} />
-        <PrivateRoute path={`${path}/new-application`} component={() => (
-          <LayoutWrapper layoutClass="action">
-            <NewApplication path={path} />
-          </LayoutWrapper>
-        )} />
-        <PrivateRoute path={`${path}/search`} component={Search} />
-        <PrivateRoute path={`${path}/view-property`} component={ViewProperty} />
-      </Switch>
-    </div>
+    </AppContainer>
   );
 };
 

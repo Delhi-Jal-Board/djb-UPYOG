@@ -3,11 +3,11 @@ import React from "react";
 import { initPGRComponents, PGRReducers } from "@djb25/digit-ui-module-pgr";
 import { initFSMComponents } from "@djb25/digit-ui-module-fsm";
 import { FinanceModule } from "@djb25/digit-ui-module-finance";
-// import {
-//   PTModule,
-//   PTLinks,
-//   PTComponents,
-// } from "@djb25/digit-ui-module-pt";
+import {
+  PTModule,
+  PTLinks,
+  PTComponents,
+} from "@djb25/digit-ui-module-pt";
 import {
   MCollectModule,
   MCollectLinks,
@@ -41,7 +41,7 @@ import { initEngagementComponents } from "@djb25/digit-ui-module-engagement";
 import { initWSComponents } from "@djb25/digit-ui-module-ws";
 import { initFinanceComponents } from "@djb25/digit-ui-module-finance";
 // import { initCustomisationComponents } from "./Customisations";
-import { initCommonPTComponents } from "@djb25/digit-ui-module-commonpt";
+import {CommonPTModule,CommonPTLinks, CommonPTComponents,initCommonPTComponents } from "@djb25/digit-ui-module-commonpt";
 import { initBillsComponents } from "@djb25/digit-ui-module-bills";
 // import {
 //   PTRModule,
@@ -84,7 +84,7 @@ const enabledModules = [
   "PGR",
   "FSM",
   "Payment",
-  // "PT",
+  "PT",
   "QuickPayLinks",
   "DSS",
   "NDSS",
@@ -162,6 +162,9 @@ window.Digit.ComponentRegistryService.setupRegistry({
   RWHModule,
   RWHLinks,
   ...RwhComponents,
+  CommonPTModule,
+  CommonPTLinks,
+  ...CommonPTComponents,
 });
 
 initPGRComponents();

@@ -23,7 +23,7 @@ import { FinanceModule } from "@djb25/digit-ui-module-finance";
 import { initEngagementComponents } from "@djb25/digit-ui-module-engagement";
 // import { initNOCComponents } from "@djb25/digit-ui-module-noc";
 import { DigitUI } from "@djb25/digit-ui-module-core";
-import { initCommonPTComponents } from "@djb25/digit-ui-module-commonpt";
+import {CommonPTModule,CommonPTLinks, CommonPTComponents,initCommonPTComponents } from "@djb25/digit-ui-module-commonpt";
 import { initBillsComponents, BillsModule } from "@djb25/digit-ui-module-bills";
 // import { initFormioComponents } from "@djb25/digit-ui-module-formio";
 import { initEkycComponents } from "@djb25/digit-ui-module-ekyc";
@@ -69,7 +69,7 @@ const enabledModules = [
   "PGR",
   "FSM",
   "Payment",
-  // "PT",
+  "PT",
   "QuickPayLinks",
   "DSS",
   "MCollect",
@@ -182,6 +182,9 @@ const initDigitUI = () => {
     RWHModule,
     RWHLinks,
     ...RwhComponents,
+    CommonPTModule,
+    CommonPTLinks,
+    ...CommonPTComponents,
   });
 
   initFSMComponents();
