@@ -9,8 +9,8 @@ import { EwService } from "../../services/elements/EW";
 import { filterFunctions } from "./newFilterFn";
 import { getSearchFields } from "./searchFields";
 import { InboxGeneral } from "../../services/elements/InboxService";
-import {WTService} from "../../services/elements/WT";
-import {MTService} from "../../services/elements/MT";
+import { WTService } from "../../services/elements/WT";
+import { MTService } from "../../services/elements/MT";
 
 const inboxConfig = (tenantId, filters) => ({
   PT: {
@@ -164,7 +164,7 @@ const useNewInboxGeneral = ({ tenantId, ModuleCode, businessService, filters, mi
                 applicationStatus: st.toUpperCase().replace(/\s+/g, "_"),
                 count: Number(sc[st]) || 0,
               }));
-              inboxRes.totalCount = Number(wtRes?.count) || Number(inboxRes.totalCount) || inboxRes.items.length;
+              inboxRes.totalCount = Number(inboxRes.totalCount) || Number(wtRes?.count) || inboxRes.items.length;
             } else {
               inboxRes.totalCount = Math.max(Number(inboxRes.totalCount) || 0, inboxRes.items.length);
               const sMap = {};
