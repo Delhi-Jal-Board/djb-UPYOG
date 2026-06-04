@@ -26,18 +26,39 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SupervisorService {
 
-    @Autowired private SupervisorRepository repository;
+    @Autowired private SupervisorRepository       repository;
     @Autowired private SupervisorEnrichmentService enrichmentService;
-    @Autowired private SupervisorUserService userService;
-    @Autowired private VendorConfiguration config;
+    @Autowired private SupervisorUserService       userService;
+    @Autowired private VendorConfiguration         config;
 
     // ── CREATE ────────────────────────────────────────────────────────────────
 
     public org.egov.vendor.supervisor.web.model.Supervisor create(SupervisorRequest request) {
+
         if (request.getSupervisor().getTenantId().split("\\.").length == 1) {
             throw new CustomException("INVALID_TENANT_ID",
                     "Supervisor cannot be created at state level");
         }
+
+        // ── Auto-derive vendorId from logged-in user's token ──────────
+        // Vendor (EKYC_VENDOR, CITIZEN) creates supervisors.
+        // Instead of requiring the frontend to know and send vendorId,
+        // we look it up from the token's UUID → eg_vendor.owner_id.
+        if (!StringUtils.hasLength(request.getSupervisor().getVendorId())) {
+            String callerUuid = request.getRequestInfo().getUserInfo().getUuid();
+            List<String> vendorIds = repository.getVendorIdsByOwner(callerUuid);
+
+            if (CollectionUtils.isEmpty(vendorIds)) {
+                throw new CustomException("VENDOR_NOT_FOUND",
+                        "No active vendor found for logged-in user (uuid=" + callerUuid + "). "
+                                + "Please register as a vendor before creating supervisors.");
+            }
+
+            request.getSupervisor().setVendorId(vendorIds.get(0));
+            log.info("Auto-derived vendorId={} for supervisor from token uuid={}",
+                    vendorIds.get(0), callerUuid);
+        }
+
         userService.manageSupervisors(request, true);
         enrichmentService.enrichCreate(request);
         repository.save(request);
@@ -47,6 +68,7 @@ public class SupervisorService {
     // ── UPDATE ────────────────────────────────────────────────────────────────
 
     public org.egov.vendor.supervisor.web.model.Supervisor update(SupervisorRequest request) {
+
         if (request.getSupervisor().getTenantId().split("\\.").length == 1) {
             throw new CustomException("INVALID_TENANT_ID",
                     "Supervisor cannot be updated at state level");
@@ -55,6 +77,7 @@ public class SupervisorService {
             throw new CustomException("UPDATE_ERROR",
                     "Supervisor id is mandatory for update");
         }
+
         userService.manageSupervisors(request, false);
         enrichmentService.enrichUpdate(request);
         repository.update(request);
@@ -86,52 +109,59 @@ public class SupervisorService {
 
         // 4. Enrich with owner (User) details
         if (response != null && !CollectionUtils.isEmpty(response.getSupervisors())) {
-            enrichmentService.enrichSearch(response.getSupervisors(), requestInfo, criteria.getTenantId());
+            enrichmentService.enrichSearch(response.getSupervisors(), requestInfo,
+                    criteria.getTenantId());
         }
 
         return response;
     }
 
-    // ── Role-based restriction ────────────────────────────────────────────────
+    // ── Role-based restriction ────────────────────────────────────────
 
     /**
-     * Rules:
-     * - EMPLOYEE / SUPERUSER / DJB_ZRO                    → no restriction, see all
-     * - EKYC_SUPERVISOR / EKYC_VENDOR / EKYC_ZRO          → no restriction
-     *     (VendorServiceClient already scopes query to ownerIds= in query params,
-     *      so DB result is already limited to the exact supervisor needed)
-     * - WT_VENDOR / DJB_AGENCY                            → restrict to own vendor's supervisors
-     * - All others (CITIZEN etc.)                         → empty result
+     * Access rules:
+     *
+     * Unrestricted (see all supervisors):
+     *   EMPLOYEE, SUPERUSER, DJB_ZRO      → system/admin users
+     *   EKYC_SUPERVISOR, EKYC_VENDOR, EKYC_ZRO → ekyc roles
+     *     (VendorServiceClient in ekyc-service already scopes the query
+     *      to ownerIds= so the DB result is already limited to exactly
+     *      the supervisor needed — no further restriction required here)
+     *
+     * Vendor-restricted (own vendor's supervisors only):
+     *   WT_VENDOR, DJB_AGENCY
+     *
+     * All other roles → empty result
      */
-    private void applyRoleBasedRestriction(SupervisorSearchCriteria criteria, RequestInfo requestInfo) {
+    private void applyRoleBasedRestriction(SupervisorSearchCriteria criteria,
+                                           RequestInfo requestInfo) {
         if (requestInfo == null || requestInfo.getUserInfo() == null) return;
 
-        List<String> roleCodes = requestInfo.getUserInfo().getRoles().stream()
-                .map(Role::getCode).collect(Collectors.toList());
+        List<String> roleCodes = requestInfo.getUserInfo().getRoles()
+                .stream().map(Role::getCode).collect(Collectors.toList());
         String userType = requestInfo.getUserInfo().getType();
 
         // ── Unrestricted roles ────────────────────────────────────────
-        boolean isEmployee = VendorConstants.EMPLOYEE.equalsIgnoreCase(userType)
+        boolean isUnrestricted = VendorConstants.EMPLOYEE.equalsIgnoreCase(userType)
                 || roleCodes.stream().anyMatch(r ->
                 "EMPLOYEE".equalsIgnoreCase(r)          ||
                         "SUPERUSER".equalsIgnoreCase(r)         ||
                         "DJB_ZRO".equalsIgnoreCase(r)           ||
-                        "EKYC_SUPERVISOR".equalsIgnoreCase(r)   ||  // internal call from ekyc-service
-                        "EKYC_VENDOR".equalsIgnoreCase(r)       ||  // internal call from ekyc-service
-                        "EKYC_ZRO".equalsIgnoreCase(r));            // ZRO role used in this project
+                        "EKYC_SUPERVISOR".equalsIgnoreCase(r)   ||
+                        "EKYC_VENDOR".equalsIgnoreCase(r)       ||
+                        "EKYC_ZRO".equalsIgnoreCase(r));
 
-        if (isEmployee) {
-            log.info("Unrestricted role ({}) — no supervisor restriction applied", roleCodes);
+        if (isUnrestricted) {
+            log.info("Unrestricted role ({}) — no supervisor search restriction", roleCodes);
             return;
         }
 
         // ── Vendor-restricted roles ───────────────────────────────────
-        boolean isVendor = roleCodes.stream().anyMatch(r ->
+        boolean isVendorRole = roleCodes.stream().anyMatch(r ->
                 "WT_VENDOR".equalsIgnoreCase(r) || "DJB_AGENCY".equalsIgnoreCase(r));
 
-        if (!isVendor) {
-            // Unknown role — return empty
-            log.info("No recognised role for supervisor search — returning empty. roles={}", roleCodes);
+        if (!isVendorRole) {
+            log.info("Unrecognised role for supervisor search — returning empty. roles={}", roleCodes);
             criteria.setIds(new ArrayList<>());
             return;
         }
@@ -144,7 +174,7 @@ public class SupervisorService {
 
         List<String> vendorIds = repository.getVendorIdsByOwner(ownerUuid);
         if (CollectionUtils.isEmpty(vendorIds)) {
-            log.info("No vendor found for UUID: {} — returning empty", ownerUuid);
+            log.info("No vendor found for UUID={} — returning empty", ownerUuid);
             criteria.setIds(new ArrayList<>());
             return;
         }
