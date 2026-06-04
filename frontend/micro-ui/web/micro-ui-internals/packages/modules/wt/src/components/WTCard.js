@@ -95,12 +95,14 @@ const WTCard = () => {
   ];
   const WT_CEMP = Digit.UserService.hasAccess(["WT_CEMP"]) || false;
 
+  const totalInboxCount = isCitizenInboxLoading || isFixedPointInboxLoading ? "-" : citizenInboxCount + fixedPointInboxCount;
+
   const propsForModuleCard = {
     Icon: <CHBIcon />,
     moduleName: t("WT_MODULE_NAME"),
     kpis: [
       {
-        count: citizenInboxCount,
+        count: totalInboxCount,
         label: t("ES_TITLE_INBOX"),
         link: `${APPLICATION_PATH}/employee/wt/inbox`,
       },
