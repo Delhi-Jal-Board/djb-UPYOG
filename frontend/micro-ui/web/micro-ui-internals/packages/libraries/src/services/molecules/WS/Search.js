@@ -900,6 +900,16 @@ export const WSSearch = {
       bankDetails,
       documentDetails,
     ];
+
+    if (wsDataDetails?.applicationStatus === "PENDING_FOR_FIELD_INSPECTION") {
+      const dueVerificationDetails = {
+        title: " ",
+        asSectionHeader: false,
+        isDueVerification: true,
+      };
+      details.push(dueVerificationDetails);
+    }
+
     wsDataDetails.serviceType = serviceDataType;
 
     if (!isVisible) {

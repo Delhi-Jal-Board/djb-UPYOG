@@ -23,7 +23,7 @@ import CommonPTCard from "./components/CommonPTCard";
 export const CommonPTModule = ({ userType, tenants }) => {
   const { path, url } = useRouteMatch();
 
-  const moduleCode = ["PT", "CommonPT"];
+  const moduleCode = ["PT","ws"];
   const language = Digit.StoreData.getCurrentLanguage();
   const { isLoading, data: store } = Digit.Services.useStore({ moduleCode, language });
 

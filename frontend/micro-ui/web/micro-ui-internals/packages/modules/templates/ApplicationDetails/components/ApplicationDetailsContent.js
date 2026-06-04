@@ -38,6 +38,7 @@ import InfoDetails from "./InfoDetails";
 import ViewBreakup from "./ViewBreakup";
 import ArrearSummary from "../../../common/src/payments/citizen/bills/routes/bill-details/arrear-summary";
 import RenewPopup from "../../../asset/src/components/RenewPopup";
+import DueVerification from "./DueVerification";
 
 function ApplicationDetailsContent({
   applicationDetails,
@@ -538,6 +539,7 @@ function ApplicationDetailsContent({
             <PropertyEstimates taxHeadEstimatesCalculation={detail?.additionalDetails?.taxHeadEstimatesCalculation} />
           )}
           {detail?.isWaterConnectionDetails && <WSAdditonalDetails wsAdditionalDetails={detail} oldValue={oldValue} />}
+          {detail?.isDueVerification && applicationData?.applicationStatus === "PENDING_FOR_FIELD_INSPECTION" && <DueVerification />}
           {/* {detail?.isLabelShow ? <WSInfoLabel t={t} /> : null} */}
           {detail?.additionalDetails?.redirectUrl && (
             <Link to={detail?.additionalDetails?.redirectUrl?.url}>
