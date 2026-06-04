@@ -1,19 +1,21 @@
-// import { SearchIcon } from "@mcd89/finance-ui-react-components";
 import React from "react";
+import { useTranslation } from "react-i18next";
+import { SearchIcon, TextInput, SubmitBar } from "@djb25/digit-ui-react-components";
 
 const SearchBar = () => {
+  const { t } = useTranslation();
   return (
-    <div className="mcd-search-wrapper">
-      <div className="mcd-search-box">
-        {/* <span className="mcd-search-icon"><SearchIcon/> </span> */}
+    <div className="upyog-search-wrapper">
+      <div className="upyog-search-box">
+        <span className="upyog-search-icon">
+          <SearchIcon />
+        </span>
 
-        <input
-          type="text"
-          placeholder="Find a service"
-          className="mcd-search-input"
+        <TextInput
+          placeholder={t("Search for Services (eg. Water bill, connection...)")}
+          style={{ border: "none", width: "100%", outline: "none", boxShadow: "none" }}
         />
-
-        <button className="mcd-search-btn">Search</button>
+        <SubmitBar label={t("Search")} className="upyog-search-btn" style={{ height: "100%", margin: 0 }} />
       </div>
     </div>
   );

@@ -1,4 +1,5 @@
 import React from "react";
+import { EmailIcon } from "@djb25/digit-ui-react-components";
 // import { Facebook } from "../../../../../../svg-components/src/svg/Facebook";
 // import { MailOutline } from "../../../../../../svg-components/src/svg/MailOutline";
 import VideoPlayIcon from "../icons/VideoPlayIcon";
@@ -30,7 +31,7 @@ const headerConfig = {
       },
       {
         name: "SOCIAL_YOUTUBE",
-        url: "#",
+        url: "https://www.youtube.com/@DelhiJalBoardOfficial",
         iconType: "component",
         icon: <VideoPlayIcon width="20" height="20" fill="#FF0000" />,
       },
@@ -38,7 +39,7 @@ const headerConfig = {
         name: "SOCIAL_EMAIL",
         url: "mailto:#",
         iconType: "component",
-        // icon: <MailOutline width="20" height="20" fill="#000000" />,
+        icon: <EmailIcon width="20" height="20" fill="#000000" />,
       },
       {
         name: "SOCIAL_TWITTER",
@@ -67,12 +68,11 @@ const headerConfig = {
     },
     {
       label: "ABOUT",
-      link: `/${contextPath}/about`,
+      link: `/${contextPath}/home/about`,
     },
     {
       label: "HELP/SUPPORT",
-      link: "https://forms.gle/A6vXKSED3gB1mqhF7",
-      external: true,
+      link: `/${contextPath}/home/contact`,
     },
     {
       label: "TRAINING",
@@ -81,14 +81,16 @@ const headerConfig = {
     },
     {
       label: "LOGIN",
-      type: "dropdown",   // 🔥 used by HeaderBar logic
+      type: "dropdown",
       children: [
         {
           label: "Citizen Login",
-          link: `/${contextPath}/citizen`,
+          // Direct to citizen login form — avoids Keycloak check-sso redirect loop
+          link: `/${contextPath}/citizen/login`,
         },
         {
           label: "Employee Login",
+          // Direct to employee login form — avoids Keycloak check-sso redirect loop
           link: `/${contextPath}/employee/user/login`,
         },
       ],

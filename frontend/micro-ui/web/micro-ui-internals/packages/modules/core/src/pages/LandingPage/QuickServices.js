@@ -5,7 +5,11 @@ import MutationIcon from "./icons/MutationIcon";
 import RainWaterHarvestingIcon from "./icons/RWHIcon";
 import AddServiceIcon from "./icons/SeviceIcon";
 import GrievanceIcon from "./icons/GrievanceIcon";
+import { useTranslation } from "react-i18next";
+import { Card } from "@djb25/digit-ui-react-components";
+
 const QuickServices = () => {
+  const { t } = useTranslation();
   const services = [
     { icon: <WaterBillIcon />, label: "Pay Your Water Bill" },
     { icon: <NewConnectionIcon />, label: "Apply for New Connection" },
@@ -16,16 +20,16 @@ const QuickServices = () => {
   ];
 
   return (
-    <section className="mcd-quick-wrapper">
-      <h2 className="mcd-quick-title">Quick Services</h2>
+    <section className="upyog-quick-wrapper">
+      <h2 className="upyog-quick-title">{t("Quick Services")}</h2>
 
-      <div className="mcd-quick-grid">
+      <div className="upyog-quick-grid">
         {services.map((item, index) => (
-          <div key={index} className="mcd-quick-card ">
-            <div className="mcd-quick-icon">{item.icon}</div>
-            <div className="mcd-quick-text">{item.label}</div>
-            <div className="mcd-quick-arrow">›</div>
-          </div>
+          <Card key={index} className="upyog-quick-card">
+            <div className="upyog-quick-icon">{item.icon}</div>
+            <div className="upyog-quick-text">{t(item.label)}</div>
+            <div className="upyog-quick-arrow">›</div>
+          </Card>
         ))}
       </div>
     </section>

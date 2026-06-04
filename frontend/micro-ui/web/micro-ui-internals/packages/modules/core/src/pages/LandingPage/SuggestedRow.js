@@ -1,6 +1,8 @@
 import React, { useMemo } from "react";
 import services from "./configs/services.json";
 
+import { useTranslation } from "react-i18next";
+
 // 🔀 Fisher–Yates shuffle (does NOT mutate original array)
 const shuffleArray = (array) => {
   const shuffled = [...array];
@@ -12,6 +14,7 @@ const shuffleArray = (array) => {
 };
 
 const SuggestedRow = ({ limit = 3 }) => {
+  const { t } = useTranslation();
   const suggestedServices = useMemo(() => {
     return shuffleArray(
       services.filter((s) => s.active)
@@ -19,15 +22,15 @@ const SuggestedRow = ({ limit = 3 }) => {
   }, []);
 
   return (
-    <div className="mcd-suggested-wrapper">
-      <span className="mcd-suggested-label">Suggested:</span>
+    <div className="upyog-suggested-wrapper">
+      <span className="upyog-suggested-label">{t("Suggested")}:</span>
 
       {suggestedServices.map((service) => (
         <button
           key={service.code}
-          className="mcd-suggested-btn"
+          className="upyog-suggested-btn"
         >
-          {service.module}
+          {t(service.module)}
         </button>
       ))}
     </div>
