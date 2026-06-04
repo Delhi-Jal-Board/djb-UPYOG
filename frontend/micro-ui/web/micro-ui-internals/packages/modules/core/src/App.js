@@ -3,6 +3,9 @@ import { Redirect, Route, Switch, useHistory, useLocation } from "react-router-d
 import EmployeeApp from "./pages/employee";
 import CitizenApp from "./pages/citizen";
 import AccessDenied from "./components/AccessDenied";
+import LandingPage from "./pages/LandingPage/LandingPage";
+import About from "./pages/LandingPage/About";
+import ContactUs from "./pages/LandingPage/ContactUs";
 
 export const DigitApp = ({ stateCode, modules, appTenants, logoUrl, initData }) => {
   const history = useHistory();
@@ -82,9 +85,8 @@ export const DigitApp = ({ stateCode, modules, appTenants, logoUrl, initData }) 
   // ✅ Determine default redirect path based on logged-in user type
   const getDefaultRedirect = () => {
     if (!userDetails?.info) {
-      // No user in session yet — Keycloak login pages will handle auth
-      // Default to employee login as entry point
-      return "/digit-ui/citizen";
+      // No user in session yet — default to the new landing page
+      return "/digit-ui/home";
     }
     return userType === "CITIZEN" ? "/digit-ui/citizen" : "/digit-ui/employee";
   };
@@ -93,6 +95,27 @@ export const DigitApp = ({ stateCode, modules, appTenants, logoUrl, initData }) 
     <Switch>
       <Route path="/digit-ui/employee">
         <EmployeeApp {...commonProps} />
+      </Route>
+      {/* ✅ Sub-routes of /digit-ui/home must come BEFORE the parent route.
+          Switch matches top-to-bottom; without this order the parent would swallow them. */}
+      <Route path="/digit-ui/home/about">
+        <About {...commonProps} />
+      </Route>
+      <Route path="/digit-ui/home/contact">
+        <ContactUs {...commonProps} />
+      </Route>
+      <Route exact path="/digit-ui/home">
+        <LandingPage {...commonProps} />
+      </Route>
+      {/* ⚠️ CRITICAL: Keycloak SSO only has /digit-ui/citizen/home whitelisted. Keycloak redirects here during check-sso initialization, so we must redirect it back to /digit-ui/home. */}
+      <Route path="/digit-ui/citizen/home">
+        <Redirect to="/digit-ui/home" />
+      </Route>
+      <Route path="/digit-ui/citizen/about">
+        <About {...commonProps} />
+      </Route>
+      <Route path="/digit-ui/citizen/contact">
+        <ContactUs {...commonProps} />
       </Route>
       <Route path="/digit-ui/citizen">
         <CitizenApp {...commonProps} />
@@ -107,3 +130,4 @@ export const DigitApp = ({ stateCode, modules, appTenants, logoUrl, initData }) 
     </Switch>
   );
 };
+

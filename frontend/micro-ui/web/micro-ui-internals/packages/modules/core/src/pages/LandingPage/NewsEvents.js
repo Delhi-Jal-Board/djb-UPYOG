@@ -1,12 +1,15 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Card } from "@djb25/digit-ui-react-components";
 
 const NewsEvents = ({ news = [] }) => {
+  const { t } = useTranslation();
 
   if (!news || news.length === 0) {
     return (
       <section className="news-events-container">
-        <h2 className="news-title">News and Events</h2>
-        <p>No news available.</p>
+        <h2 className="news-title">{t("News and Events")}</h2>
+        <p>{t("No news available.")}</p>
       </section>
     );
   }
@@ -44,27 +47,27 @@ const NewsEvents = ({ news = [] }) => {
   return (
     <section className="news-events-container">
 
-      <h2 className="news-title">News and Events</h2>
+      <h2 className="news-title">{t("News and Events")}</h2>
 
       {/* === FEATURED BOX === */}
-      <div className="featured-news">
+      <Card className="featured-news">
 
         <div className="featured-left">
           <img src={featured.image} alt="" className="featured-img" />
-          <span className="latest-tag">Latest</span>
+          <span className="latest-tag">{t("Latest")}</span>
         </div>
 
         <div className="featured-right">
-          <h3 className="featured-heading">{featured.title}</h3>
-          <p className="featured-date">{featured.date}</p>
+          <h3 className="featured-heading">{t(featured.title)}</h3>
+          <p className="featured-date">{t(featured.date)}</p>
 
           {featured.description && (
-            <p className="featured-desc">{featured.description}</p>
+            <p className="featured-desc">{t(featured.description)}</p>
           )}
 
-          <a className="read-more" href="#">Read More →</a>
+          <a className="read-more" href="#">{t("Read More")} →</a>
         </div>
-      </div>
+      </Card>
 
       {/* === SCROLL SLIDER BAR === */}
       <div className="news-slider-section">
@@ -73,16 +76,16 @@ const NewsEvents = ({ news = [] }) => {
 
         <div className="slider">
           {visibleCards.map((item, idx) => (
-            <div
+            <Card
               key={idx}
               className={`news-card ${featured.title === item.title ? "highlight-card" : ""
                 }`}
               onClick={() => setFeatured(item)}
             >
               <img src={item.image} alt="" className="news-card-img" />
-              <h4 className="news-card-title">{item.title}</h4>
-              <p className="news-card-date">{item.date}</p>
-            </div>
+              <h4 className="news-card-title">{t(item.title)}</h4>
+              <p className="news-card-date">{t(item.date)}</p>
+            </Card>
           ))}
         </div>
 
@@ -90,7 +93,7 @@ const NewsEvents = ({ news = [] }) => {
       </div>
 
       <div className="news-footer">
-        <button className="view-all-btn">View All News and Events</button>
+        <button className="view-all-btn">{t("View All News and Events")}</button>
       </div>
 
     </section>
