@@ -48,6 +48,7 @@ public class ElasticSearchQueryBuilder {
     private static final String BASE_QUERY = "{\n" +
             "  \"from\": {{OFFSET}},\n" +
             "  \"size\": {{LIMIT}},\n" +
+            "  \"track_total_hits\": true,\n" +
             "  \"sort\": {\n" +
             "    \"{{SORT_BY}}\": {\n" +
             "      \"order\": \"{{SORT_ORDER}}\"\n" +

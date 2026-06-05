@@ -293,6 +293,7 @@ public class InboxQueryBuilder implements QueryBuilderInterface {
             baseEsQuery.put("from", inboxRequest.getInbox().getOffset());
             baseEsQuery.put("size", inboxRequest.getInbox().getLimit());
         }
+        baseEsQuery.put("track_total_hits", true);
         baseEsQuery.put("query", boolQuery);
 
         return baseEsQuery;

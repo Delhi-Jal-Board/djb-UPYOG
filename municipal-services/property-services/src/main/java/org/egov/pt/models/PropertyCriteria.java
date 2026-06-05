@@ -38,6 +38,8 @@ public class PropertyCriteria {
 	private String name;
 	
 	private Set<String> ownerIds;
+
+	private String accountId;
 	
 	private boolean audit;
 	

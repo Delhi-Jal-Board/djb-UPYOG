@@ -604,6 +604,7 @@ public class PropertyValidator {
 				&& CollectionUtils.isEmpty(criteria.getUuids())
 				&& null == criteria.getMobileNumber()
 				&& null == criteria.getName()
+				&& null == criteria.getAccountId()
 				&& null == criteria.getDocumentNumbers()
 				&& null == criteria.getPropertyType()
 				&& null == criteria.getDoorNo()
@@ -642,6 +643,9 @@ public class PropertyValidator {
 
         if(!CollectionUtils.isEmpty(criteria.getOwnerIds()) && !allowedParams.contains("ownerids"))
             throw new CustomException("EG_PT_INVALID_SEARCH","Search based on ownerId is not available for : " + userType);
+
+        if(criteria.getAccountId() != null && !allowedParams.contains("accountId"))
+            throw new CustomException("EG_PT_INVALID_SEARCH","Search based on accountId is not available for : " + userType);
     }
 
 	/**
