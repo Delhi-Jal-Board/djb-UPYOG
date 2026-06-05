@@ -81,6 +81,11 @@ public class PropertyValidator {
      */
 	public void validateCreateRequest(PropertyRequest request) {
 
+		String tenantId = request.getProperty().getTenantId();
+		if ("dl".equalsIgnoreCase(tenantId)) {
+			request.getProperty().setTenantId("dl.djb");
+		}
+
 		Map<String, String> errorMap = new HashMap<>();
 		
 		List<Unit> units 		=	request.getProperty().getUnits();
@@ -279,7 +284,6 @@ public class PropertyValidator {
 				PTConstants.MDMS_PT_USAGECATEGORY,
 				PTConstants.MDMS_PT_OCCUPANCYTYPE,
 				PTConstants.MDMS_PT_CONSTRUCTIONTYPE,
-				PTConstants.MDMS_PT_NEW_PROPERTYTYPE,
 				PTConstants.MDMS_PT_PROPERTY_NEW_USAGE_TYPE,
 				PTConstants.MDMS_PT_NUMBER_FLOOR,
 				PTConstants.MDMS_PT_PROPERTY_CATEGORY
