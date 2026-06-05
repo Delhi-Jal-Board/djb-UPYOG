@@ -107,9 +107,20 @@ export const DigitApp = ({ stateCode, modules, appTenants, logoUrl, initData }) 
       <Route exact path="/digit-ui/home">
         <LandingPage {...commonProps} />
       </Route>
-      {/* ⚠️ CRITICAL: Keycloak SSO only has /digit-ui/citizen/home whitelisted. Keycloak redirects here during check-sso initialization, so we must redirect it back to /digit-ui/home. */}
+      {/* ⚠️ CRITICAL: Keycloak SSO only has /digit-ui/citizen/home whitelisted. Keycloak redirects here during check-sso initialization, so we must redirect it back to /digit-ui/home or their previous page if they are authenticated. */}
       <Route path="/digit-ui/citizen/home">
-        <Redirect to="/digit-ui/home" />
+        {(() => {
+          const user = Digit.UserService.getUser();
+          if (user?.info) {
+            const redirectPath = sessionStorage.getItem("post_keycloak_redirect");
+            sessionStorage.removeItem("post_keycloak_redirect");
+            if (redirectPath) {
+              return <Redirect to={redirectPath} />;
+            }
+            return <Redirect to={user.info.type === "CITIZEN" ? "/digit-ui/citizen" : "/digit-ui/employee"} />;
+          }
+          return <Redirect to="/digit-ui/home" />;
+        })()}
       </Route>
       <Route path="/digit-ui/citizen/about">
         <About {...commonProps} />
