@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { AddressDetails, CollapsibleCardPage } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
+import PropertySearchNSummary from "../pageComponents/PropertySearchNSummary";
 
 const PropertyLocationDetails = ({ address, actionCancelOnSubmit, isEdit, onSelect, config, formData: formDataProp, ...props }) => {
   const { t } = useTranslation();
@@ -22,9 +23,18 @@ const PropertyLocationDetails = ({ address, actionCancelOnSubmit, isEdit, onSele
     block: address?.block || "",
     zone: address?.zone || "",
     zroLocation: address?.zroLocation || "",
+    subLocality: address?.subLocality || "",
+    wardRemarks: address?.wardRemarks || "",
   });
 
   const isPropertyFound = window.location.href.includes("ws/old-application");
+
+  useEffect(() => {
+    if (props.register) {
+      props.register({ name: "cpt" });
+      props.register({ name: "cptId" });
+    }
+  }, [props.register]);
 
   useEffect(() => {
     if (formDataProp?.cpt?.details) {
@@ -61,6 +71,8 @@ const PropertyLocationDetails = ({ address, actionCancelOnSubmit, isEdit, onSele
         zone: additionalDetails.zone || addressData.additionalDetails?.zone || "",
         zroLocation: zroCode,
         zro: zroValue,
+        subLocality: addressData.subLocality || "",
+        wardRemarks: additionalDetails.wardRemarks || addressData.additionalDetails?.wardRemarks || "",
         address: {
           ...addressData,
           city: addressData.city || "",
@@ -76,10 +88,37 @@ const PropertyLocationDetails = ({ address, actionCancelOnSubmit, isEdit, onSele
           assembly: additionalDetails.assembly || addressData.additionalDetails?.assembly || "",
           block: additionalDetails.block || addressData.additionalDetails?.block || "",
           zone: additionalDetails.zone || addressData.additionalDetails?.zone || "",
+          subLocality: addressData.subLocality || "",
+          wardRemarks: additionalDetails.wardRemarks || addressData.additionalDetails?.wardRemarks || "",
         },
       });
+    } else if (formDataProp?.cpt === null) {
+      const clearedData = {
+        addressType: "",
+        pincode: "",
+        city: "",
+        locality: "",
+        streetName: "",
+        houseNo: "",
+        houseName: "",
+        landmark: "",
+        addressLine1: "",
+        addressLine2: "",
+        latitude: "",
+        longitude: "",
+        assembly: "",
+        block: "",
+        zone: "",
+        zroLocation: "",
+        subLocality: "",
+        wardRemarks: "",
+        zro: "",
+        address: {},
+      };
+      setFormData(clearedData);
+      onSelect(config?.key || "address", clearedData);
     }
-  }, [formDataProp?.cpt?.details]);
+  }, [formDataProp?.cpt?.details, formDataProp?.cpt]);
 
   useEffect(() => {
     if (showToast) {
@@ -93,19 +132,24 @@ const PropertyLocationDetails = ({ address, actionCancelOnSubmit, isEdit, onSele
   return (
     <CollapsibleCardPage title={t("PT_LOCATION_DETAILS")} defaultOpen={true}>
       <div style={{ boxShadow: "none", ...props.style }}>
-        <AddressDetails
-          t={t}
-          formData={formData}
-          onSelect={(key, data) => {
-            setFormData(data);
-            onSelect(key, data);
-          }}
-          config={{ isCollapsible: false, ...config }}
-          isEdit={isEdit}
-          showZRO={true}
-          disable={isPropertyFound}
-          hideNextButton={true}
-        />
+        {!window.location.href.includes("create-application/create-property") && (
+          <PropertySearchNSummary config={config} onSelect={onSelect} formData={formDataProp} userType={window.location.href.includes("/employee/") ? "employee" : "citizen"} />
+        )}
+        <div style={{ marginTop: "20px" }}>
+          <AddressDetails
+            t={t}
+            formData={formData}
+            onSelect={(key, data) => {
+              setFormData((prev) => ({ ...prev, ...data }));
+              onSelect(key, data);
+            }}
+            config={{ isCollapsible: false, ...config }}
+            isEdit={isEdit}
+            showZRO={true}
+            disable={isPropertyFound}
+            hideNextButton={true}
+          />
+        </div>
       </div>
     </CollapsibleCardPage>
   );

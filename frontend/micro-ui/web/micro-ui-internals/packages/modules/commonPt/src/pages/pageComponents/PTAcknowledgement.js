@@ -25,7 +25,7 @@ const BannerPicker = (props) => {
   return (
     <Banner
       message={GetActionMessage(props)}
-      applicationNumber={props.data?.Properties[0].acknowldgementNumber}
+      applicationNumber={props.data?.Properties?.[0]?.acknowldgementNumber}
       info={props.isSuccess ? props.t("PT_APPLICATION_NO") : ""}
       successful={props.isSuccess}
     />
@@ -43,7 +43,7 @@ const PTAcknowledgement = ({ onSuccess, onSelect, formData, redirectUrl, userTyp
   if (onSelect) {
     data = formData?.cptNewProperty?.property;
   }
-  const propertyFromState = location?.state?.property;
+  const propertyFromState = location?.state?.property || (onSelect && formData?.cptNewProperty?.property ? formData?.cptNewProperty?.property : null);
 
   let createNUpdate = false;
   let { data: mdmsConfig, isLoading } = Digit.Hooks.pt.useMDMS(stateId, "PropertyTax", "PTWorkflow");
@@ -154,19 +154,19 @@ const PTAcknowledgement = ({ onSuccess, onSelect, formData, redirectUrl, userTyp
     }
   }, [mutation.isSuccess]);
 
-  const onNext = () => {
-    if (onSelect) {
-      if (mutation.isSuccess) {
-        sessionStorage.setItem("Digit_OBPS_PT",JSON.stringify(mutation?.data?.Properties[0]))
-        sessionStorage.setItem("Digit_FSM_PT",JSON.stringify(mutation?.data?.Properties[0]))
-        onSelect("cpt", { details: mutation?.data?.Properties[0] });
-      }
-    }
-  };
-
   const isMutationLoading = propertyFromState ? false : (mutation.isLoading || mutation.isIdle);
   const isMutationSuccess = propertyFromState ? true : mutation.isSuccess;
   const responseData = propertyFromState ? { Properties: [propertyFromState] } : mutation.data;
+
+  const onNext = () => {
+    if (onSelect) {
+      if (isMutationSuccess) {
+        sessionStorage.setItem("Digit_OBPS_PT",JSON.stringify(responseData?.Properties?.[0]))
+        sessionStorage.setItem("Digit_FSM_PT",JSON.stringify(responseData?.Properties?.[0]))
+        onSelect("cpt", { details: responseData?.Properties?.[0] });
+      }
+    }
+  };
 
   return isMutationLoading ? (
     <Loader />

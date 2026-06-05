@@ -96,6 +96,12 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
   const [assembly, setAssembly] = useState(formData?.assembly || formData?.address?.assembly || "");
   const [zro, setZro] = useState(formData?.zro || formData?.address?.zro || formData?.infodetails?.existingDataSet?.address?.zro || "");
   const [selectedAddress, setSelectedAddress] = useState("");
+  const [subLocality, setSubLocality] = useState(
+    formData?.subLocality || formData?.address?.subLocality || formData?.infodetails?.existingDataSet?.address?.subLocality || ""
+  );
+  const [wardRemark, setWardRemark] = useState(
+    formData?.wardRemark || formData?.address?.wardRemark || formData?.infodetails?.existingDataSet?.address?.wardRemark || ""
+  );
 
   const {
     control,
@@ -322,10 +328,10 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
 
   const addressUpdateRef = React.useRef(null);
   useEffect(() => {
-    if (formData?.address && structuredLocalityData?.length > 0) {
+    if (formData?.address) {
       const addressData = formData.address;
 
-      const addressStr = JSON.stringify(addressData);
+      const addressStr = JSON.stringify(addressData) + "_" + (structuredLocalityData?.length || 0) + "_" + (allCities?.length || 0);
       if (addressUpdateRef.current === addressStr) return;
       addressUpdateRef.current = addressStr;
 
@@ -393,6 +399,8 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
       zone,
       block,
       zro,
+      subLocality,
+      wardRemark,
       ...(config?.doorImage ? { doorImage, doorImageId } : {}),
     };
 
@@ -442,6 +450,8 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
       zone,
       block,
       zro,
+      subLocality,
+      wardRemark,
       ...(isEkyc ? { doorImage, doorImageId } : {}),
     };
 
@@ -482,6 +492,8 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
     assembly,
     zro,
     doorImageId,
+    subLocality,
+    wardRemark,
     config?.key,
     onSelect,
   ]);
@@ -503,6 +515,8 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
       setBlock(selectedAddress.block);
       setAddressType(allOptions?.find((ele) => ele.code === selectedAddress.addressType));
       setZro(selectedAddress.zro);
+      setSubLocality(selectedAddress.subLocality);
+      setWardRemark(selectedAddress.wardRemark);
       if (config?.doorImage) {
         setDoorImage(selectedAddress.doorImage);
         setDoorImageId(selectedAddress.doorImageId);
@@ -743,19 +757,20 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
             )}
           />
         </div>
+
         <div>
-          <CardLabel>{`${t("HOUSE_NO")}`}</CardLabel>
+          <CardLabel>{`${t("SubLocality")}`}</CardLabel>
           <TextInput
             t={t}
             type={"text"}
             isMandatory={false}
             optionKey="i18nKey"
-            name="houseNo"
-            value={houseNo}
+            name="subLocality"
+            value={subLocality}
             style={{ width: "100%" }}
-            placeholder={"Enter House No"}
+            placeholder={"Enter Sub-locality"}
             onChange={(e) => {
-              setHouseNo(e.target.value);
+              setSubLocality(e.target.value);
             }}
             disabled={disable}
             ValidationRequired={true}
@@ -763,7 +778,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
               isRequired: true,
               pattern: "^[a-zA-Z0-9 ,\\-]+$",
               type: "text",
-              title: t("HOUSE_NO_ERROR_MESSAGE"),
+              title: t("SUB_LOCALITY_ERROR_MESSAGE"),
             }}
           />
         </div>
@@ -862,6 +877,31 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
         )}
 
         <div>
+          <CardLabel>{`${t("HOUSE_NO")}`}</CardLabel>
+          <TextInput
+            t={t}
+            type={"text"}
+            isMandatory={false}
+            optionKey="i18nKey"
+            name="houseNo"
+            value={houseNo}
+            style={{ width: "100%" }}
+            placeholder={"Enter House No"}
+            onChange={(e) => {
+              setHouseNo(e.target.value);
+            }}
+            disabled={disable}
+            ValidationRequired={true}
+            validation={{
+              isRequired: true,
+              pattern: "^[a-zA-Z0-9 ,\\-]+$",
+              type: "text",
+              title: t("HOUSE_NO_ERROR_MESSAGE"),
+            }}
+          />
+        </div>
+
+        <div>
           <CardLabel>{`${t("LATITUDE")}`}</CardLabel>
 
           <TextInput
@@ -943,19 +983,35 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
             onChange={(e) => setWard(e.target.value)}
           />
         </div> */}
-        <div>
-          <CardLabel>{`${t("BLOCK")}`}</CardLabel>
-          <TextInput
-            t={t}
-            type={"text"}
-            isMandatory={false}
-            name="block"
-            value={block}
-            style={{ width: "100%" }}
-            placeholder={"Enter Block"}
-            onChange={(e) => setBlock(e.target.value)}
-            disabled={disable}
-          />
+        <div style={{ display: "flex", gap: "16px" }}>
+          <div style={{ flex: 1 }}>
+            <CardLabel>{`${t("WARD")}`}</CardLabel>
+            <TextInput
+              t={t}
+              type={"text"}
+              isMandatory={false}
+              name="block"
+              value={block}
+              style={{ width: "100%" }}
+              placeholder={"Enter Ward"}
+              onChange={(e) => setBlock(e.target.value)}
+              disabled={disable}
+            />
+          </div>
+          <div style={{ flex: 1 }}>
+            <CardLabel>{`${t("WARD REMARK")}`}</CardLabel>
+            <TextInput
+              t={t}
+              type={"text"}
+              isMandatory={false}
+              name="wardRemark"
+              value={wardRemark}
+              style={{ width: "100%" }}
+              placeholder={"Enter Ward Remark"}
+              onChange={(e) => setWardRemark(e.target.value)}
+              disabled={disable}
+            />
+          </div>
         </div>
         <div>
           <CardLabel>{`${t("ZONE")}`}</CardLabel>

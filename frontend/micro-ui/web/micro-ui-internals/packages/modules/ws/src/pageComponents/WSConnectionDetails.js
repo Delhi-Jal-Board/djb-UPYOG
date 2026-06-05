@@ -360,7 +360,7 @@ const ConnectionDetails = (_props) => {
             )}
           />
         </LabelFieldPair>
-        <LabelFieldPair>
+        {/* <LabelFieldPair>
           <CardLabel>{`${t("WS_CATEGORY_TYPE")}*`}</CardLabel>
           <Controller
             control={control}
@@ -384,7 +384,7 @@ const ConnectionDetails = (_props) => {
               />
             )}
           />
-        </LabelFieldPair>
+        </LabelFieldPair> */}
         <LabelFieldPair>
           <CardLabel>{`${t("WS_CONNECTION_TYPE")}*`}</CardLabel>
           <Controller
