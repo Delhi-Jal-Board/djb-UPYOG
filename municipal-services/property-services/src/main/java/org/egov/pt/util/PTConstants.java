@@ -33,8 +33,6 @@ public class PTConstants {
 
     public static final String MDMS_PT_CONSTRUCTIONTYPE = "ConstructionType";
 
-    public static final String MDMS_PT_NEW_PROPERTYTYPE = "NewPropertyType";
-
     public static final String MDMS_PT_PROPERTY_NEW_USAGE_TYPE = "PropertyNewUsageType";
 
     public static final String MDMS_PT_NUMBER_FLOOR = "NoOfFloors";
