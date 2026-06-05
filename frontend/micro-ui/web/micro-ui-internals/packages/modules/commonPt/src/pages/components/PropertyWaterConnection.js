@@ -39,7 +39,6 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
     "PropertyNewUsageType",
   ]);
 
-
   const isPropertyFound = window.location.href.includes("ws/old-application");
 
   const formValue = watch();
@@ -57,37 +56,46 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
   }, []);
 
   const categoryOptions = useMemo(() => {
-    return (
-      ptServicesMastersData?.PropertyTax?.PropertyCategory?.filter((item) => item.active).map((item) => ({
-        code: item.code,
-        name: item.name,
-      }))
-    );
+    return ptServicesMastersData?.PropertyTax?.PropertyCategory?.filter((item) => item.active).map((item) => ({
+      code: item.code,
+      name: item.name,
+    }));
   }, [ptServicesMastersData]);
 
   const propertyTypeOptions = useMemo(() => {
-    return ptServicesMastersData?.PropertyTax?.PropertyType?.filter((item) => item.active).map((item) => ({
+    let options = ptServicesMastersData?.PropertyTax?.PropertyType?.filter((item) => item.active) || [];
+    if (watchPropertyCategory?.code) {
+      if (watchPropertyCategory?.code?.toUpperCase() !== "MIXED") {
+        options = options.filter((item) => item.type?.toUpperCase() === watchPropertyCategory.code?.toUpperCase());
+      }
+    }
+    return options.map((item) => ({
       code: item.code,
       name: item.name,
-    })) || [];
-  }, [ptServicesMastersData]);
+    }));
+  }, [ptServicesMastersData, watchPropertyCategory]);
+
+  useEffect(() => {
+    if (watchPropertyCategory && watchPropertyType) {
+      const isTypeValid = propertyTypeOptions.some((opt) => opt.code === watchPropertyType.code);
+      if (!isTypeValid) {
+        setValue("useDetails.propertyType", null);
+      }
+    }
+  }, [watchPropertyCategory, propertyTypeOptions, setValue, watchPropertyType]);
 
   const usageTypeOptions = useMemo(() => {
-    return (
-      ptServicesMastersData?.PropertyTax?.PropertyNewUsageType?.filter((item) => item.active).map((item) => ({
-        code: item.code,
-        name: item.name,
-      })) 
-    );
+    return ptServicesMastersData?.PropertyTax?.PropertyNewUsageType?.filter((item) => item.active).map((item) => ({
+      code: item.code,
+      name: item.name,
+    }));
   }, [ptServicesMastersData]);
 
   const floorOptions = useMemo(() => {
-    return (
-      ptServicesMastersData?.PropertyTax?.NoOfFloors?.filter((item) => item.active).map((item) => ({
-        code: item.code,
-        name: item.name,
-      }))
-    );
+    return ptServicesMastersData?.PropertyTax?.NoOfFloors?.filter((item) => item.active).map((item) => ({
+      code: item.code,
+      name: item.name,
+    }));
   }, [ptServicesMastersData]);
 
   const lastSentValue = React.useRef(null);
@@ -106,7 +114,10 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
       setValue("useDetails.propertyCategory", categoryOptions?.find((o) => o.code === additionalDetails.propertyCategory) || null);
       setValue("useDetails.propertyType", propertyTypeOptions?.find((o) => o.code === additionalDetails.propertyType) || null);
       setValue("useDetails.WaterConnectionUsageType", usageTypeOptions?.find((o) => o.code === additionalDetails.waterConnectionUsageType) || null);
-      setValue("useDetails.noOfFloors", floorOptions?.find((o) => o.code === (details.noOfFloors?.toString() || additionalDetails.noOfFloors)) || null);
+      setValue(
+        "useDetails.noOfFloors",
+        floorOptions?.find((o) => o.code === (details.noOfFloors?.toString() || additionalDetails.noOfFloors)) || null
+      );
       setValue("useDetails.plotArea", additionalDetails.plotArea || "");
       setValue("useDetails.builtUpArea", additionalDetails.builtUpArea || "");
       setValue("useDetails.SelectYearofConstruction", yearOptions?.find((o) => o.value === additionalDetails.yearOfConstruction) || null);
@@ -128,8 +139,6 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
     }
   }, [errors, config.key, setError, clearErrors]);
 
-
-
   const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
 
   return (
@@ -143,7 +152,15 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
               name="useDetails.propertyCategory"
               rules={{ required: t("REQUIRED_FIELD") }}
               render={(props) => (
-                <Dropdown option={categoryOptions} optionKey="name" selected={props.value} select={props.onChange} t={t} onBlur={props.onBlur} disable={isPropertyFound} />
+                <Dropdown
+                  option={categoryOptions}
+                  optionKey="name"
+                  selected={props.value}
+                  select={props.onChange}
+                  t={t}
+                  onBlur={props.onBlur}
+                  disable={isPropertyFound}
+                />
               )}
             />
           </div>
@@ -158,7 +175,15 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
               name="useDetails.propertyType"
               rules={{ required: t("REQUIRED_FIELD") }}
               render={(props) => (
-                <Dropdown option={propertyTypeOptions} optionKey="name" selected={props.value} select={props.onChange} t={t} onBlur={props.onBlur} disable={isPropertyFound} />
+                <Dropdown
+                  option={propertyTypeOptions}
+                  optionKey="name"
+                  selected={props.value}
+                  select={props.onChange}
+                  t={t}
+                  onBlur={props.onBlur}
+                  disable={isPropertyFound}
+                />
               )}
             />
           </div>
@@ -173,7 +198,15 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
               name="useDetails.WaterConnectionUsageType"
               rules={{ required: t("REQUIRED_FIELD") }}
               render={(props) => (
-                <Dropdown option={usageTypeOptions} optionKey="name" selected={props.value} select={props.onChange} t={t} onBlur={props.onBlur} disable={isPropertyFound} />
+                <Dropdown
+                  option={usageTypeOptions}
+                  optionKey="name"
+                  selected={props.value}
+                  select={props.onChange}
+                  t={t}
+                  onBlur={props.onBlur}
+                  disable={isPropertyFound}
+                />
               )}
             />
           </div>
@@ -183,14 +216,22 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
         )}
 
         <LabelFieldPair>
-          <CardLabel>{`${t("WS_NUMBER_OF_FLOORS")}*`}</CardLabel>
+          <CardLabel>{`${t("WS_NUMBER_OF_FLOORS")}`}</CardLabel>
           <div className="form-field">
             <Controller
               control={control}
               name="useDetails.noOfFloors"
-              rules={{ required: t("REQUIRED_FIELD") }}
+              // rules={{ required: t("REQUIRED_FIELD") }}
               render={(props) => (
-                <Dropdown option={floorOptions} optionKey="name" selected={props.value} select={props.onChange} t={t} onBlur={props.onBlur} disable={isPropertyFound} />
+                <Dropdown
+                  option={floorOptions}
+                  optionKey="name"
+                  selected={props.value}
+                  select={props.onChange}
+                  t={t}
+                  onBlur={props.onBlur}
+                  disable={isPropertyFound}
+                />
               )}
             />
           </div>
@@ -198,13 +239,12 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
         {errors?.useDetails?.noOfFloors && <CardLabelError style={errorStyle}>{errors.useDetails.noOfFloors.message}</CardLabelError>}
 
         <LabelFieldPair>
-          <CardLabel>{`${t("WS_PLOT_AREA")}*`}</CardLabel>
+          <CardLabel>{`${t("WS_PLOT_AREA")}`}</CardLabel>
           <div className="form-field">
             <TextInput
               t={t}
               inputRef={register({
                 pattern: { value: DECIMAL_PATTERN, message: t("ERR_INVALID_DECIMAL") },
-                required: t("REQUIRED_FIELD"),
               })}
               name="useDetails.plotArea"
               disabled={isPropertyFound}
@@ -214,13 +254,12 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
         {errors?.useDetails?.plotArea && <CardLabelError style={errorStyle}>{errors.useDetails.plotArea.message}</CardLabelError>}
 
         <LabelFieldPair>
-          <CardLabel>{`${t("WS_BUILT_UP_AREA")}*`}</CardLabel>
+          <CardLabel>{`${t("WS_BUILT_UP_AREA")}`}</CardLabel>
           <div className="form-field">
             <TextInput
               t={t}
               inputRef={register({
                 pattern: { value: DECIMAL_PATTERN, message: t("ERR_INVALID_DECIMAL") },
-                required: t("REQUIRED_FIELD"),
               })}
               name="useDetails.builtUpArea"
               disabled={isPropertyFound}
@@ -237,7 +276,15 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
               name="useDetails.SelectYearofConstruction"
               rules={{ required: t("REQUIRED_FIELD") }}
               render={(props) => (
-                <Dropdown option={yearOptions} optionKey="value" selected={props.value} select={props.onChange} t={t} onBlur={props.onBlur} disable={isPropertyFound} />
+                <Dropdown
+                  option={yearOptions}
+                  optionKey="value"
+                  selected={props.value}
+                  select={props.onChange}
+                  t={t}
+                  onBlur={props.onBlur}
+                  disable={isPropertyFound}
+                />
               )}
             />
           </div>

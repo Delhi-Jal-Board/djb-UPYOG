@@ -57,11 +57,11 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
   );
   const [addressLine1, setAddressLine1] = useState(
     formData?.addressLine1 ||
-    formData?.subLocality ||
-    formData?.address?.addressLine1 ||
-    formData?.address?.subLocality ||
-    formData?.infodetails?.existingDataSet?.address?.addressline1 ||
-    ""
+      formData?.subLocality ||
+      formData?.address?.addressLine1 ||
+      formData?.address?.subLocality ||
+      formData?.infodetails?.existingDataSet?.address?.addressline1 ||
+      ""
   );
   const [addressLine2, setAddressLine2] = useState(
     formData?.addressLine2 || formData?.address?.addressLine2 || formData?.infodetails?.existingDataSet?.address?.addressline2 || ""
@@ -72,16 +72,16 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
   const [addressType, setAddressType] = useState(
     convertToObject(formData?.addressType) || formData?.address?.addressType || formData?.infodetails?.existingDataSet?.address?.addressType
       ? allOptions.find(
-        (a) =>
-          a.code ===
-          (formData?.addressType?.code ||
-            formData?.addressType ||
-            formData?.address?.addressType ||
-            formData?.infodetails?.existingDataSet?.address?.addressType)
-      ) ||
-      convertToObject(formData?.addressType) ||
-      formData?.address?.addressType ||
-      formData?.infodetails?.existingDataSet?.address?.addressType
+          (a) =>
+            a.code ===
+            (formData?.addressType?.code ||
+              formData?.addressType ||
+              formData?.address?.addressType ||
+              formData?.infodetails?.existingDataSet?.address?.addressType)
+        ) ||
+          convertToObject(formData?.addressType) ||
+          formData?.address?.addressType ||
+          formData?.infodetails?.existingDataSet?.address?.addressType
       : allOptions.find((a) => a.code === "PERMANENT")
   );
   const [showPincodeSuggestions, setShowPincodeSuggestions] = useState(false);
@@ -104,7 +104,9 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
 
   useEffect(() => {
     if (allCities?.length > 0 && !city) {
-      const delhi = allCities.find((c) => c.name?.toLowerCase() === "delhi" || c.code?.toLowerCase().includes("delhi") || c.i18nKey?.toLowerCase().includes("delhi"));
+      const delhi = allCities.find(
+        (c) => c.name?.toLowerCase() === "delhi" || c.code?.toLowerCase().includes("delhi") || c.i18nKey?.toLowerCase().includes("delhi")
+      );
       if (delhi) setCity(delhi);
     }
   }, [allCities, city]);
@@ -118,8 +120,10 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
   const getFieldError = (fieldName) => resolveNestedValue(errors, fieldName);
   const location = useLocation();
 
-  const isEkyc = window.location.pathname.includes('/ekyc');
-  const searchKno = isEkyc ? (location?.state?.kNumber || location?.state?.kno || formData?.kNumber || formData?.kno || sessionStorage.getItem("EKYC_K_NUMBER")) : null;
+  const isEkyc = window.location.pathname.includes("/ekyc");
+  const searchKno = isEkyc
+    ? location?.state?.kNumber || location?.state?.kno || formData?.kNumber || formData?.kno || sessionStorage.getItem("EKYC_K_NUMBER")
+    : null;
 
   const { data: searchData } = Digit.Hooks.ekyc.useSearchConnection(
     { tenantId, details: { kno: searchKno } },
@@ -138,7 +142,8 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
     // Otherwise, show whatever is not used
     return allOptions.filter((opt) => !usedAddressTypes.includes(opt.code));
   }, [usedAddressTypes]);
-  const { data: egovLocationData } = Digit.Hooks.useCommonMDMS(tenantId, "egov-location", ["TenantBoundary"]);
+  const locationTenantId = city?.code || tenantId;
+  const { data: egovLocationData } = Digit.Hooks.useCommonMDMS(locationTenantId, "egov-location", ["TenantBoundary"]);
 
   const boundaryData = useMemo(() => {
     const tenantBoundary = egovLocationData?.["egov-location"]?.TenantBoundary || [];
@@ -173,7 +178,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
         localities.push({
           ...node,
           name: node.localname || node.name || node.code,
-          i18nKey: node.i18nKey || `${tenantId.replace(".", "_")}_REVENUE_${node.code}`.toUpperCase(),
+          i18nKey: node.i18nKey || `${locationTenantId.replace(".", "_")}_REVENUE_${node.code}`.toUpperCase(),
           zone: currentZone,
           ward: currentWard,
           assembly: currentAssembly,
@@ -188,7 +193,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
     boundaries.forEach((rootNode) => extractLocalities(rootNode));
 
     return localities;
-  }, [boundaryData, tenantId]);
+  }, [boundaryData, locationTenantId]);
 
   const fetchedPincodes = useMemo(() => {
     const pinSet = new Set();
@@ -249,47 +254,51 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
   useEffect(() => {
     if (isEkyc && searchData) {
       const rawData = searchData || formData?.connectionDetails;
-      const apiAddress = rawData?.addressDetails || rawData?.address || rawData?.propertyInfo?.address || rawData?.connectionDetails?.address || rawData || {};
+      const apiAddress =
+        rawData?.addressDetails || rawData?.address || rawData?.propertyInfo?.address || rawData?.connectionDetails?.address || rawData || {};
 
       if (apiAddress && Object.keys(apiAddress).length > 0) {
         const pin = apiAddress.pinCode || apiAddress.pincode;
         if (!pincode && pin) setPincode(pin.toString().split(".")[0]);
-        
+
         const house = apiAddress.flatHouseNumber || apiAddress.houseNo;
         if (!houseNo && house) setHouseNo(house);
-        
+
         if (!streetName && apiAddress.streetName) setstreetName(apiAddress.streetName);
-        
+
         const addr1 = apiAddress.subLocality || apiAddress.addressLine1;
         if (!addressLine1 && addr1) setAddressLine1(addr1);
-        
+
         const addr2 = apiAddress.landmark || apiAddress.addressLine2;
         if (!addressLine2 && addr2) setAddressLine2(addr2);
-        
+
         if (!landmark && apiAddress.landmark) setLandmark(apiAddress.landmark);
-        
+
         if (!city && apiAddress.city) {
-            const cityObj = allCities?.find(c => c.code === apiAddress.city || c.name === apiAddress.city) || convertToObject(apiAddress.city);
-            if (cityObj) setCity(cityObj);
+          const cityObj = allCities?.find((c) => c.code === apiAddress.city || c.name === apiAddress.city) || convertToObject(apiAddress.city);
+          if (cityObj) setCity(cityObj);
         }
         if (!locality && apiAddress.locality && structuredLocalityData?.length > 0) {
-             const locObj = structuredLocalityData.find(l => l.code === apiAddress.locality || l.name === apiAddress.locality || l.i18nKey === apiAddress.locality) || convertToObject(apiAddress.locality);
-             if (locObj) setLocality(locObj);
+          const locObj =
+            structuredLocalityData.find(
+              (l) => l.code === apiAddress.locality || l.name === apiAddress.locality || l.i18nKey === apiAddress.locality
+            ) || convertToObject(apiAddress.locality);
+          if (locObj) setLocality(locObj);
         }
         if (!zone && apiAddress.zone) setZone(apiAddress.zone);
         if (!block && (apiAddress.block || apiAddress.ward)) setBlock(apiAddress.block || apiAddress.ward);
         if (!assembly && apiAddress.assembly) setAssembly(apiAddress.assembly);
         if (!zro && apiAddress.zro) setZro(apiAddress.zro);
-        
+
         const lat = apiAddress.latitude;
         if (!latitude && lat) setLatitude(lat);
-        
+
         const lng = apiAddress.longitude;
         if (!longitude && lng) setLongitude(lng);
 
         if (!doorImageId && apiAddress.doorPhotoFilestoreId) {
-            setDoorImageId(apiAddress.doorPhotoFilestoreId);
-            setDoorImage(apiAddress.doorPhotoFilestoreId); // or a generic string, since API only returns ID
+          setDoorImageId(apiAddress.doorPhotoFilestoreId);
+          setDoorImage(apiAddress.doorPhotoFilestoreId); // or a generic string, since API only returns ID
         }
       }
     }
@@ -330,15 +339,15 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
       if ((addressData.houseNo || "") !== houseNo) setHouseNo(addressData.houseNo || "");
       if ((addressData.streetName || "") !== streetName) setstreetName(addressData.streetName || "");
       if ((addressData.landmark || "") !== landmark) setLandmark(addressData.landmark || "");
-      
+
       const newAddr1 = addressData.addressLine1 || addressData.subLocality || "";
       if (newAddr1 !== addressLine1) setAddressLine1(newAddr1);
-      
+
       if ((addressData.addressLine2 || "") !== addressLine2) setAddressLine2(addressData.addressLine2 || "");
       if ((addressData.latitude || "") !== latitude) setLatitude(addressData.latitude || "");
       if ((addressData.longitude || "") !== longitude) setLongitude(addressData.longitude || "");
       if ((addressData.zro || "") !== zro) setZro(addressData.zro || "");
-      
+
       if (addressData.doorImageId) {
         if (addressData.doorImage !== doorImage) setDoorImage(addressData.doorImage);
         if (addressData.doorImageId !== doorImageId) setDoorImageId(addressData.doorImageId);
@@ -353,10 +362,10 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
       // Derive Zone/Block/Assembly from Locality if missing
       const newZone = addressData.zone || localityObj?.zone || "";
       if (newZone !== zone) setZone(newZone);
-      
+
       const newBlock = addressData.block || localityObj?.ward || "";
       if (newBlock !== block) setBlock(newBlock);
-      
+
       const newAssembly = addressData.assembly || localityObj?.assembly || "";
       if (newAssembly !== assembly) setAssembly(newAssembly);
 
@@ -387,7 +396,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
       ...(config?.doorImage ? { doorImage, doorImageId } : {}),
     };
 
-    if (window.location.pathname.includes('/ekyc')) {
+    if (window.location.pathname.includes("/ekyc")) {
       try {
         await Digit.CustomService.getResponse({
           url: "/ekyc-service/user/application/_update",
@@ -441,7 +450,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
       try {
         isDifferent = JSON.stringify(lastSentValue.current) !== JSON.stringify(addressStep);
       } catch (e) {
-        isDifferent = Object.keys(addressStep).some(k => lastSentValue.current?.[k] !== addressStep[k]);
+        isDifferent = Object.keys(addressStep).some((k) => lastSentValue.current?.[k] !== addressStep[k]);
       }
       if (isDifferent) {
         lastSentValue.current = addressStep;
@@ -474,7 +483,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
     zro,
     doorImageId,
     config?.key,
-    onSelect
+    onSelect,
   ]);
 
   useEffect(() => {
@@ -534,8 +543,6 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
       }
     );
   };
-
-
 
   return (
     <React.Fragment>
@@ -737,9 +744,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
           />
         </div>
         <div>
-          <CardLabel>
-            {`${t("HOUSE_NO")}`}
-          </CardLabel>
+          <CardLabel>{`${t("HOUSE_NO")}`}</CardLabel>
           <TextInput
             t={t}
             type={"text"}
@@ -763,9 +768,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
           />
         </div>
         <div>
-          <CardLabel>
-            {`${t("STREET_NAME")}`}
-          </CardLabel>
+          <CardLabel>{`${t("STREET_NAME")}`}</CardLabel>
           <TextInput
             t={t}
             type={"text"}
@@ -815,9 +818,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
         </div>
         {!config?.doorImage && (
           <div>
-            <CardLabel>
-              {`${t("ADDRESS_LINE2")}`}
-            </CardLabel>
+            <CardLabel>{`${t("ADDRESS_LINE2")}`}</CardLabel>
             <TextInput
               t={t}
               type={"text"}
@@ -861,9 +862,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
         )}
 
         <div>
-          <CardLabel>
-            {`${t("LATITUDE")}`}
-          </CardLabel>
+          <CardLabel>{`${t("LATITUDE")}`}</CardLabel>
 
           <TextInput
             t={t}
@@ -890,9 +889,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
         </div>
 
         <div>
-          <CardLabel>
-            {`${t("LONGITUDE")}`}
-          </CardLabel>
+          <CardLabel>{`${t("LONGITUDE")}`}</CardLabel>
 
           <TextInput
             t={t}
@@ -918,9 +915,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
           />
         </div>
         <div>
-          <CardLabel>
-            {`${t("ASSEMBLY")}`}
-          </CardLabel>
+          <CardLabel>{`${t("ASSEMBLY")}`}</CardLabel>
           <TextInput
             t={t}
             type={"text"}
@@ -949,9 +944,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
           />
         </div> */}
         <div>
-          <CardLabel>
-            {`${t("BLOCK")}`}
-          </CardLabel>
+          <CardLabel>{`${t("BLOCK")}`}</CardLabel>
           <TextInput
             t={t}
             type={"text"}
@@ -965,9 +958,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
           />
         </div>
         <div>
-          <CardLabel>
-            {`${t("ZONE")}`}
-          </CardLabel>
+          <CardLabel>{`${t("ZONE")}`}</CardLabel>
           <TextInput
             t={t}
             type={"text"}

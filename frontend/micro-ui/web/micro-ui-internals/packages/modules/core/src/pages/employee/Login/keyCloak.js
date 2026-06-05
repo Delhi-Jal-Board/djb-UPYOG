@@ -17,6 +17,7 @@ export const initKeycloak = async () => {
       onLoad: "check-sso",
       pkceMethod: "S256",
       checkLoginIframe: false,
+      redirectUri: window.location.origin + "/digit-ui/citizen/home",
     });
   } catch (err) {
     console.error("Keycloak init failed", err);

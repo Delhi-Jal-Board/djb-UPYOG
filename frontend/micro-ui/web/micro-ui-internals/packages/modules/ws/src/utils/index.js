@@ -394,7 +394,7 @@ export const createPayloadOfWS = async (data) => {
     processInstance: {
       action: "INITIATE",
     },
-    channel: Digit.UserService.getType() === "CITIZEN" ? "CITIZEN" : "CFC_COUNTER",
+    channel: Digit.UserService.getType()?.toUpperCase() === "CITIZEN" ? "CITIZEN" : "CFC_COUNTER",
   };
   sessionStorage.setItem("WS_DOCUMENTS_INOF", JSON.stringify(data?.documents?.documents || data?.documents || []));
   sessionStorage.setItem("WS_PROPERTY_INOF", JSON.stringify(data?.cpt?.details || {}));
@@ -500,7 +500,7 @@ export const convertToEditWSUpdate = (data) => {
           : null
         : waterResult?.connectionHolders,
       oldApplication: false,
-      channel: Digit.UserService.getType() === "CITIZEN" ? "CITIZEN" : "CFC_COUNTER",
+      channel: Digit.UserService.getType()?.toUpperCase() === "CITIZEN" ? "CITIZEN" : "CFC_COUNTER",
       waterSource: (data?.isEditApplication ? data?.waterSource : waterResult?.waterSource) || null,
       meterId: (data?.isEditApplication ? data?.meterId : waterResult?.meterId) || null,
       meterInstallationDate: (data?.isEditApplication ? data?.meterInstallationDate : waterResult?.meterInstallationDate) || null,
@@ -622,7 +622,7 @@ export const convertToEditSWUpdate = (data) => {
           : null
         : SewerageResult?.connectionHolders,
       oldApplication: false,
-      channel: Digit.UserService.getType() === "CITIZEN" ? "CITIZEN" : "CFC_COUNTER",
+      channel: Digit.UserService.getType()?.toUpperCase() === "CITIZEN" ? "CITIZEN" : "CFC_COUNTER",
       waterSource: (data?.isEditApplication ? data?.waterSource : SewerageResult?.waterSource) || null,
       meterId: (data?.isEditApplication ? data?.meterId : SewerageResult?.meterId) || null,
       meterInstallationDate: (data?.isEditApplication ? data?.meterInstallationDate : SewerageResult?.meterInstallationDate) || null,
@@ -757,7 +757,7 @@ export const createPayloadOfWSDisconnection = async (data, storeData, service) =
         ...storeData?.applicationData?.processInstance,
         action: "INITIATE",
       },
-      channel: user === "citizen" ? "CITIZEN" : "CFC_COUNTER",
+      channel: user?.toUpperCase() === "CITIZEN" ? "CITIZEN" : "CFC_COUNTER",
     },
     disconnectRequest: true,
   };
@@ -806,7 +806,7 @@ export const createPayloadOfWSDisconnection = async (data, storeData, service) =
         ...storeData?.applicationData?.processInstance,
         action: "INITIATE",
       },
-      channel: user === "citizen" ? "CITIZEN" : "CFC_COUNTER",
+      channel: user?.toUpperCase() === "CITIZEN" ? "CITIZEN" : "CFC_COUNTER",
     },
     disconnectRequest: true,
   };
@@ -878,7 +878,7 @@ export const createPayloadOfWSReconnection = async (data, storeData, service) =>
         action: "INITIATE",
         businessService: "WSReconnection",
       },
-      channel: user === "citizen" ? "CITIZEN" : "CFC_COUNTER",
+      channel: user?.toUpperCase() === "CITIZEN" ? "CITIZEN" : "CFC_COUNTER",
     },
     disconnectRequest: false,
   };
@@ -928,7 +928,7 @@ export const createPayloadOfWSReconnection = async (data, storeData, service) =>
         action: "INITIATE",
         businessService: "SWReconnection",
       },
-      channel: user === "citizen" ? "CITIZEN" : "CFC_COUNTER",
+      channel: user?.toUpperCase() === "CITIZEN" ? "CITIZEN" : "CFC_COUNTER",
     },
     disconnectRequest: false,
   };
@@ -1301,7 +1301,11 @@ export const convertApplicationData = (data, serviceType, modify = false, editBy
             mobileNumber: data?.applicationData?.connectionHolders?.[0]?.mobileNumber || "",
             emailId: data?.applicationData?.connectionHolders?.[0]?.emailId || "",
             watsAppMobileNumber: data?.applicationData?.connectionHolders?.[0]?.watsAppMobileNumber || "",
-            isWatsappSameAsMobile: (data?.applicationData?.connectionHolders?.[0]?.mobileNumber && data?.applicationData?.connectionHolders?.[0]?.mobileNumber === data?.applicationData?.connectionHolders?.[0]?.watsAppMobileNumber) ? true : false,
+            isWatsappSameAsMobile:
+              data?.applicationData?.connectionHolders?.[0]?.mobileNumber &&
+              data?.applicationData?.connectionHolders?.[0]?.mobileNumber === data?.applicationData?.connectionHolders?.[0]?.watsAppMobileNumber
+                ? true
+                : false,
             guardian: data?.applicationData?.connectionHolders?.[0]?.fatherOrHusbandName || "",
             address: data?.applicationData?.connectionHolders?.[0]?.correspondenceAddress || "",
             gender: data?.applicationData?.connectionHolders?.[0]?.gender
@@ -1781,7 +1785,7 @@ export const convertModifyApplicationDetails = async (data, appData, actionData 
   }
   formData.processInstance = { action: actionData };
   formData.action = actionData;
-  formData.channel = "CFC_COUNTER";
+  formData.channel = Digit.UserService.getType()?.toUpperCase() === "CITIZEN" ? "CITIZEN" : "CFC_COUNTER";
 
   sessionStorage.setItem("WS_DOCUMENTS_INOF", JSON.stringify(data?.DocumentsRequired?.documents || []));
   sessionStorage.setItem("WS_PROPERTY_INOF", JSON.stringify(data?.cpt?.details));

@@ -1,13 +1,16 @@
 import React from "react";
 import topInfoConfig from "./configs/topInfoConfig"; // <-- Import config
 
-const TopInfoBar = () => {
-  return (
-    <div className="mcd-info-bar">
-      <span className="mcd-info-icon">{topInfoConfig.icon}</span>
+import { useTranslation } from "react-i18next";
 
-      <div className="mcd-info-content">
-        <p className="mcd-info-text">{topInfoConfig.message}</p>
+const TopInfoBar = () => {
+  const { t } = useTranslation();
+  return (
+    <div className="upyog-info-bar">
+      <span className="upyog-info-icon">{topInfoConfig.icon}</span>
+
+      <div className="upyog-info-content">
+        <p className="upyog-info-text">{t(topInfoConfig.message)}</p>
       </div>
     </div>
   );
