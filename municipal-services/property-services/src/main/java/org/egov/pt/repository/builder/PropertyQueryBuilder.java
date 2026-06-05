@@ -209,6 +209,7 @@ public class PropertyQueryBuilder {
 				&& null == criteria.getName()
 				&& null == criteria.getDoorNo()
 				&& null == criteria.getOldPropertyId()
+				&& null == criteria.getAccountId()
 				&& (null == criteria.getFromDate() && null == criteria.getToDate())
 				&& CollectionUtils.isEmpty(criteria.getCreationReason());
 
@@ -348,6 +349,12 @@ public class PropertyQueryBuilder {
 			addClauseIfRequired(preparedStmtList,builder);
 			builder.append("property.oldpropertyid IN (").append(createQuery(oldpropertyids)).append(")");
 			addToPreparedStatement(preparedStmtList, oldpropertyids);
+		}
+
+		if (null != criteria.getAccountId()) {
+			addClauseIfRequired(preparedStmtList, builder);
+			builder.append("property.accountid = ?");
+			preparedStmtList.add(criteria.getAccountId());
 		}
 
 		/*

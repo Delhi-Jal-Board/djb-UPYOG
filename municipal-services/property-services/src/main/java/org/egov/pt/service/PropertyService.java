@@ -93,6 +93,7 @@ public class PropertyService {
 	 * @return List of properties successfully created
 	 */
 	public Property createProperty(PropertyRequest request) {
+		System.out.println("######## CREATE PROPERTY HIT ########");
 
 		propertyValidator.validateCreateRequest(request);
 		enrichmentService.enrichCreateRequest(request);
@@ -498,7 +499,11 @@ public class PropertyService {
 		if (!criteria.getIsRequestForDuplicatePropertyValidation() && (criteria.getDoorNo() != null || criteria.getOldPropertyId() != null)) {
 			properties = fuzzySearchService.getProperties(requestInfo, criteria);
 		} else {
-			if (criteria.getMobileNumber() != null || criteria.getName() != null || criteria.getOwnerIds() != null) {
+			if (criteria.getAccountId() != null) {
+				// accountId search — direct DB lookup, no User Service call needed
+				log.info("In Property Search by accountId: {}", criteria.getAccountId());
+				properties = repository.getPropertiesWithOwnerInfo(criteria, requestInfo, false);
+			} else if (criteria.getMobileNumber() != null || criteria.getName() != null || criteria.getOwnerIds() != null) {
 
 				log.info("In Property Search");
 				/* converts owner information to associated property ids */
