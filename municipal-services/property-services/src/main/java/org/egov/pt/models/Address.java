@@ -70,6 +70,12 @@ public class Address {
 	@JsonProperty("zroLocation")
 	private String zroLocation;
 
+	@JsonProperty("subLocality")
+	private String subLocality;
+
+	@JsonProperty("wardRemark")
+	private String wardRemark;
+
 	@JsonProperty("additionalDetails")
 	private Object additionalDetails;
 }
