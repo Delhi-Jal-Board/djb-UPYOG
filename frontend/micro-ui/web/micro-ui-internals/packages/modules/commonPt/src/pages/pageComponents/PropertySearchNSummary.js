@@ -81,6 +81,13 @@ const PropertySearchNSummary = ({ config, onSelect, userType, formData, setError
       history.push(`/digit-ui/employee/ws/new-application?propertyId=${propertyId}`);
   };
 
+  const clearSearch = () => {
+    setPropertyId("");
+    setSearchPropertyId("");
+    onSelect(config?.key, { id: "" });
+    onSelect("cpt", null);
+  };
+
   if (isEditScreen) {
     return <React.Fragment />;
   }
@@ -111,7 +118,7 @@ const PropertySearchNSummary = ({ config, onSelect, userType, formData, setError
   if (window.location.href.includes("/ws/")) clns = ":";
 
   return (
-    <CollapsibleCardPage title={t("PT_PROPERTY_DETAILS")} defaultOpen={true}>
+    <React.Fragment>
       {(window.location.href.includes("/tl/")
         ? !(formData?.tradedetils?.[0]?.structureType?.code === "MOVABLE") && (isEmpNewApplication || isEmpRenewLicense)
         : true) && (
@@ -120,12 +127,12 @@ const PropertySearchNSummary = ({ config, onSelect, userType, formData, setError
             <Label style={getInputStyles()}>{`${t(`PROPERTY_ID`)}`}</Label>
             <div style={{ display: "flex", gap: "12px" }}>
               <TextInput
-                key={config.key}
+                key={config?.key}
                 value={propertyId}
                 //isMandatory={true}
                 onChange={(e) => {
                   setPropertyId(e.target.value);
-                  onSelect(config.key, { id: e.target.value });
+                  onSelect(config?.key, { id: e.target.value });
                 }}
                 style={{ width: "80%", float: "left" }}
                 placeholder={`${t("PT_ENTER_PROPERTY_ID")}`}
@@ -133,26 +140,24 @@ const PropertySearchNSummary = ({ config, onSelect, userType, formData, setError
               <button className="submit-bar" type="button" style={{ color: "white" }} onClick={searchProperty}>
                 {`${t("PT_SEARCH")}`}
               </button>
+              <button className="submit-bar" type="button" style={{ color: "white" }} onClick={clearSearch}>
+                {`${t("CLEAR")}`}
+              </button>
 
               <span
                 onClick={() =>
                   history.push(`/digit-ui/${userType}/${pathname.split("/")[3]}/create-application/create-property`, { ...state, ...formData })
                 }
               >
-                <button className="submit-bar" type="button" style={{ color: "white" }}>{t("CPT_CREATE_PROPERTY")}</button>
+                <button className="submit-bar" type="button" style={{ color: "white" }}>
+                  {t("CPT_CREATE_PROPERTY")}
+                </button>
               </span>
             </div>
           </LabelFieldPair>
-          {/* <span onClick={() => history.push(`/digit-ui/${userType}/commonpt/search?${serachParams}`, { ...state })}>
-            <LinkButton label={t("CPT_SEARCH_PROPERTY")} style={{ color: "#a82227", display: "inline-block" }} />
-          </span> */}
-          {/* &nbsp; | &nbsp; */}
 
-          {propertyDetails && propertyDetails?.Properties.length ? (
+          {/* {searchPropertyId && propertyDetails && propertyDetails?.Properties.length ? (
             <React.Fragment>
-              {/* <header className="card-section-header" style={{ marginBottom: "5px", marginTop: "20px" }}>
-                {t("PT_DETAILS")}
-              </header> */}
               <Card className="card-with-background" style={{ margin: "16px 0px", padding: "20px", boxShadow: "none" }}>
                 <StatusTable style={{ padding: "0", margin: "0" }}>
                   <div className="formcomposer-section-grid" style={isMobile ? {} : {}}>
@@ -170,7 +175,6 @@ const PropertySearchNSummary = ({ config, onSelect, userType, formData, setError
                       label={t(`OWNER_NAME`)}
                       text={getOwnerNames(propertyDetails?.Properties[0])}
                     />
-                    {/* <span style={{ display: "inline-flex", width: "fit-content"}}> */}
                     <Row
                       className="border-none"
                       labelStyle={isMobile ? { width: "40%" } : { width: "30%", color: "#505a5f", fontWeight: "600" }}
@@ -185,7 +189,10 @@ const PropertySearchNSummary = ({ config, onSelect, userType, formData, setError
                         loadData: {
                           serviceName: "/property-services/property/_search",
                           requestBody: {},
-                          requestParam: { tenantId: propertyDetails?.Properties[0]?.tenantId, propertyIds: propertyDetails?.Properties[0]?.propertyId },
+                          requestParam: {
+                            tenantId: propertyDetails?.Properties[0]?.tenantId,
+                            propertyIds: propertyDetails?.Properties[0]?.propertyId,
+                          },
                           jsonPath: "Properties[0].address.street",
                           d: (res) => {
                             let resultString =
@@ -201,21 +208,8 @@ const PropertySearchNSummary = ({ config, onSelect, userType, formData, setError
                   </div>
                 </StatusTable>
               </Card>
-              {/* <Link
-                to={`/digit-ui/employee/commonpt/view-property?propertyId=${propertyId}&tenantId=${tenantId}&from=${
-                  window.location.pathname?.includes("employee/ws/new-application")
-                    ? "ES_COMMON_WS_NEW_CONNECTION"
-                    : window.location.pathname?.includes("employee/ws/modify-application")
-                    ? "WS_MODIFY_CONNECTION_BUTTON"
-                    : window.location.pathname?.includes("employee/tl/new-application")
-                    ? "ES_TITLE_NEW_TRADE_LICESE_APPLICATION"
-                    : "WF_EMPLOYEE_NEWTL_RENEWAL_SUBMIT_BUTTON"
-                }`}
-              >
-                <LinkButton label={t("CPT_COMPLETE_PROPERTY_DETAILS")} style={{ color: "#a82227", textAlign: "Left" }} />
-              </Link> */}
             </React.Fragment>
-          ) : null}
+          ) : null} */}
           {showToast && (
             <Toast
               isDleteBtn={true}
@@ -230,7 +224,7 @@ const PropertySearchNSummary = ({ config, onSelect, userType, formData, setError
           )}
         </React.Fragment>
       )}
-    </CollapsibleCardPage>
+    </React.Fragment>
   );
 };
 

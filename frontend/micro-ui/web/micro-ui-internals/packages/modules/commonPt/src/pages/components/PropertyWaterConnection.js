@@ -1,5 +1,5 @@
 import { LabelFieldPair, Dropdown, TextInput, CardLabelError, CardLabel, CollapsibleCardPage, CloseSvg } from "@djb25/digit-ui-react-components";
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import _ from "lodash";
 
@@ -39,12 +39,30 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
     "PropertyNewUsageType",
   ]);
 
+  const { data: wsServicesMastersData } = Digit.Hooks.ws.useMDMS(tenantId, "ws-services-masters", ["WsCategoryType"]);
+
+  const [categoryTypeList, setCategoryTypeList] = useState([]);
+
+  useEffect(() => {
+    const categories = wsServicesMastersData?.["ws-services-masters"]?.WsCategoryType || [];
+    categories.forEach((data) => (data.i18nKey = data.i18nKey || `WS_CATEGORY_${data.code}`));
+    setCategoryTypeList(categories);
+  }, [wsServicesMastersData]);
+
   const isPropertyFound = window.location.href.includes("ws/old-application");
 
+  useEffect(() => {
+    if (props.register) {
+      props.register({ name: "cpt" });
+    }
+  }, [props.register]);
+
   const formValue = watch();
+  const watchCategoryType = watch("useDetails.categoryType");
   const watchPropertyType = watch("useDetails.propertyType");
   const watchPropertyCategory = watch("useDetails.propertyCategory");
   const isHospitalProperty = watchPropertyType?.code === "HOSPITAL_NURSING_HOME" || watchPropertyType?.code === "HospitalNursingHome";
+  const isHotelRestaurantProperty = watchPropertyType?.code === "HOTEL_OR_RESTAURANT" || watchPropertyType?.code === "HotelOrRestaurant";
 
   const yearOptions = useMemo(() => {
     const currentYear = new Date().getFullYear();
@@ -56,11 +74,24 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
   }, []);
 
   const categoryOptions = useMemo(() => {
-    return ptServicesMastersData?.PropertyTax?.PropertyCategory?.filter((item) => item.active).map((item) => ({
+    let options = ptServicesMastersData?.PropertyTax?.PropertyCategory?.filter((item) => item.active) || [];
+    if (watchCategoryType?.code) {
+      options = options.filter((item) => item.type === watchCategoryType.code);
+    }
+    return options.map((item) => ({
       code: item.code,
       name: item.name,
     }));
-  }, [ptServicesMastersData]);
+  }, [ptServicesMastersData, watchCategoryType]);
+
+  useEffect(() => {
+    if (watchCategoryType && watchPropertyCategory) {
+      const isCategoryValid = categoryOptions.some((opt) => opt.code === watchPropertyCategory.code);
+      if (!isCategoryValid) {
+        setValue("useDetails.propertyCategory", null);
+      }
+    }
+  }, [watchCategoryType, categoryOptions, setValue, watchPropertyCategory]);
 
   const propertyTypeOptions = useMemo(() => {
     let options = ptServicesMastersData?.PropertyTax?.PropertyType?.filter((item) => item.active) || [];
@@ -111,20 +142,46 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
       const details = formData.cpt.details;
       const additionalDetails = details?.additionalDetails || {};
 
-      setValue("useDetails.propertyCategory", categoryOptions?.find((o) => o.code === additionalDetails.propertyCategory) || null);
-      setValue("useDetails.propertyType", propertyTypeOptions?.find((o) => o.code === additionalDetails.propertyType) || null);
+      const catType = additionalDetails.categoryType || (details.usageCategory?.includes("RESIDENTIAL") ? "DOMESTIC" : "NON_DOMESTIC");
+
+      setValue("useDetails.categoryType", categoryTypeList?.find((o) => o.code === catType) || null);
+      setValue(
+        "useDetails.propertyCategory",
+        categoryOptions?.find((o) => o.code === (additionalDetails.propertyCategory || details.usageCategory)) || null
+      );
+      setValue(
+        "useDetails.propertyType",
+        propertyTypeOptions?.find((o) => o.code === (additionalDetails.propertyType || details.propertyType)) || null
+      );
       setValue("useDetails.WaterConnectionUsageType", usageTypeOptions?.find((o) => o.code === additionalDetails.waterConnectionUsageType) || null);
       setValue(
         "useDetails.noOfFloors",
-        floorOptions?.find((o) => o.code === (details.noOfFloors?.toString() || additionalDetails.noOfFloors)) || null
+        floorOptions?.find((o) => {
+          const val1 = additionalDetails.numberOfFloors;
+          const val2 = additionalDetails.noOfFloors;
+          const val3 = details.noOfFloors?.toString();
+          return o.code === val1 || o.code === val2 || o.code === val3 || (val3 && o.code === `${val3}_FLOOR`);
+        }) || null
       );
-      setValue("useDetails.plotArea", additionalDetails.plotArea || "");
-      setValue("useDetails.builtUpArea", additionalDetails.builtUpArea || "");
+      setValue("useDetails.plotArea", additionalDetails.plotArea || details?.landArea?.toString() || "");
+      setValue("useDetails.builtUpArea", additionalDetails.builtUpArea || details?.superBuiltUpArea?.toString() || "");
       setValue("useDetails.SelectYearofConstruction", yearOptions?.find((o) => o.value === additionalDetails.yearOfConstruction) || null);
-      setValue("useDetails.NumberofDwellingUnits", additionalDetails.numberOfDwellingUnits || "");
-      setValue("useDetails.NumberofRooms", additionalDetails.numberOfRooms || "");
+      setValue("useDetails.NumberofDwellingUnits", additionalDetails.numberOfDwellingUnits || additionalDetails.noOfDwellingUnits || details?.noOfDwellingUnits || "");
+      setValue("useDetails.NumberofRooms", additionalDetails.numberOfRooms || additionalDetails.noOfRooms || details?.noOfRooms || "");
+    } else if (formData?.cpt === null) {
+      setValue("useDetails.categoryType", null);
+      setValue("useDetails.propertyCategory", null);
+      setValue("useDetails.propertyType", null);
+      setValue("useDetails.WaterConnectionUsageType", null);
+      setValue("useDetails.noOfFloors", null);
+      setValue("useDetails.plotArea", "");
+      setValue("useDetails.builtUpArea", "");
+      setValue("useDetails.SelectYearofConstruction", null);
+      setValue("useDetails.NumberofDwellingUnits", "");
+      setValue("useDetails.NumberofRooms", "");
+      setValue("useDetails.hospitalBeds", "");
     }
-  }, [formData?.cpt?.details, categoryOptions, propertyTypeOptions, usageTypeOptions, floorOptions, yearOptions, setValue]);
+  }, [formData?.cpt?.details, formData?.cpt, categoryOptions, propertyTypeOptions, usageTypeOptions, floorOptions, yearOptions, categoryTypeList, setValue]);
 
   const lastErrorState = React.useRef(null);
   useEffect(() => {
@@ -144,6 +201,28 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
   return (
     <CollapsibleCardPage title={t("WS_PROPERTY_AND_WATER_CONNECTION_USE_DETAILS")} defaultOpen={true} style={props.style}>
       <div className="formcomposer-section-grid">
+        <LabelFieldPair>
+          <CardLabel>{`${t("WS_CATEGORY_TYPE")}*`}</CardLabel>
+          <div className="form-field">
+            <Controller
+              control={control}
+              name={"useDetails.categoryType"}
+              rules={{ required: t("REQUIRED_FIELD") }}
+              render={(props) => (
+                <Dropdown
+                  option={categoryTypeList}
+                  optionKey="i18nKey"
+                  selected={props.value}
+                  select={props.onChange}
+                  t={t}
+                  onBlur={props.onBlur}
+                  disable={isPropertyFound}
+                />
+              )}
+            />
+          </div>
+        </LabelFieldPair>
+        {errors?.useDetails?.categoryType && <CardLabelError style={errorStyle}>{errors.useDetails.categoryType.message}</CardLabelError>}
         <LabelFieldPair>
           <CardLabel>{`${t("WS_PROPERTY_CATEGORY")}*`}</CardLabel>
           <div className="form-field">
@@ -311,21 +390,25 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
           <CardLabelError style={errorStyle}>{errors.useDetails.NumberofDwellingUnits.message}</CardLabelError>
         )}
 
-        <LabelFieldPair>
-          <CardLabel>{`${t("WS_NUMBER_OF_ROOMS")}*`}</CardLabel>
-          <div className="form-field">
-            <TextInput
-              t={t}
-              inputRef={register({
-                pattern: { value: NUMBER_PATTERN, message: t("ERR_INVALID_NUMBER") },
-                required: t("REQUIRED_FIELD"),
-              })}
-              name="useDetails.NumberofRooms"
-              disabled={isPropertyFound}
-            />
-          </div>
-        </LabelFieldPair>
-        {errors?.useDetails?.NumberofRooms && <CardLabelError style={errorStyle}>{errors.useDetails.NumberofRooms.message}</CardLabelError>}
+        {isHotelRestaurantProperty ? (
+          <LabelFieldPair>
+            <CardLabel>{`${t("WS_NUMBER_OF_ROOMS")}*`}</CardLabel>
+            <div className="form-field">
+              <TextInput
+                t={t}
+                inputRef={register({
+                  pattern: { value: NUMBER_PATTERN, message: t("ERR_INVALID_NUMBER") },
+                  required: isHotelRestaurantProperty ? t("REQUIRED_FIELD") : false,
+                })}
+                name="useDetails.NumberofRooms"
+                disabled={isPropertyFound}
+              />
+            </div>
+          </LabelFieldPair>
+        ) : null}
+        {isHotelRestaurantProperty && errors?.useDetails?.NumberofRooms && (
+          <CardLabelError style={errorStyle}>{errors.useDetails.NumberofRooms.message}</CardLabelError>
+        )}
 
         {isHospitalProperty ? (
           <LabelFieldPair>

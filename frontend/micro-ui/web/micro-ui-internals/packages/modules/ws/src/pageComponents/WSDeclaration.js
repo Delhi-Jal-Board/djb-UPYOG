@@ -44,32 +44,29 @@ const WSDeclaration = ({ config, onSelect, userType, formData, setError, formSta
   const submittedByOptions = [{ code: "SELF", i18nKey: "WS_SUBMITTED_BY_SELF" }];
 
   useEffect(() => {
-    if (formData?.declarationData?.signatureFileStoreId !== signatureFileStoreId) {
-      const fsId = formData?.declarationData?.signatureFileStoreId || null;
+    const fsId = formData?.declarationData?.signatureFileStoreId || null;
+    const currentFsId = signatureFileStoreId || null;
+    if (fsId !== currentFsId) {
       setSignatureFileStoreId(fsId);
       setValue("signatureFileStoreId", fsId);
     }
-    if (formData?.declarationData?.signatureFile !== signatureFile) {
-      const file = formData?.declarationData?.signatureFile || null;
-      setSignatureFile(file);
-      setValue("signatureFile", file);
-    }
-  }, [formData?.declarationData]);
+  }, [formData?.declarationData?.signatureFileStoreId]);
 
+  const lastSentValue = React.useRef(formData?.declarationData || null);
   useEffect(() => {
     const currentValues = {
       ...formValue,
       signatureFileStoreId,
       signatureFile,
     };
-    const isDifferent = !_.isEqual(formData?.declarationData, currentValues);
-    if (isDifferent) {
+    if (!_.isEqual(lastSentValue.current, currentValues)) {
+      lastSentValue.current = currentValues;
       const timer = setTimeout(() => {
         onSelect(config?.key, currentValues);
       }, 200);
       return () => clearTimeout(timer);
     }
-  }, [formValue, signatureFileStoreId, signatureFile]);
+  }, [formValue, signatureFileStoreId, signatureFile, config?.key, onSelect]);
 
   const onUploadSignature = async (e) => {
     const file = e.target.files?.[0];

@@ -77,9 +77,9 @@ const OLDApplication = () => {
 
         // Define the desired order based on the component inside the section
         const desiredComponentOrder = [
-          "CPTPropertySearchNSummary",
           "WSConnectionDetails",
           "WSConnectionHolderDetails",
+          // "CPTPropertySearchNSummary",
           "CPTPropertyLocationDetails",
           "PropertyWaterConnection",
           "WSDjbEmployee",
@@ -99,7 +99,7 @@ const OLDApplication = () => {
           });
           if (section) {
             // Override headers to match primary form if needed
-            if (compName === "CPTPropertySearchNSummary");
+            // if (compName === "CPTPropertySearchNSummary");
             if (compName === "WSConnectionHolderDetails");
             if (compName === "WSConnectionDetails");
             if (compName === "WSDocumentsEmployee");
@@ -171,14 +171,17 @@ const OLDApplication = () => {
               ],
             });
           } else {
-            console.warn(`[WS] section for component ${compName} not found in allCreateSections`);
+            // console.warn(`[WS] section for component ${compName} not found in allCreateSections`);
           }
         });
 
         // Add any remaining sections that were not in desiredComponentOrder
         allCreateSections.forEach((section) => {
           const bodyComp = section.body?.[0]?.component;
-          if (!reorderedBody.find((r) => r.body?.[0]?.component === bodyComp)) {
+          if (
+            bodyComp !== "CPTPropertySearchNSummary" &&
+            !reorderedBody.find((r) => r.body?.[0]?.component === bodyComp)
+          ) {
             reorderedBody.push(section);
           }
         });
@@ -230,8 +233,9 @@ const OLDApplication = () => {
   } = Digit.Hooks.ws.useWSApplicationActions("SEWERAGE");
 
   const onFormValueChange = (setValue, formData, formState) => {
-    if (!_.isEqual(sessionFormData, formData)) {
-      setSessionFormData({ ...sessionFormData, ...formData });
+    const updatedFormData = { ...sessionFormData, ...formData };
+    if (!_.isEqual(sessionFormData, updatedFormData)) {
+      setSessionFormData(updatedFormData);
       sessionStorage.setItem("FORMSTATE_ERRORS", JSON.stringify(formState?.errors));
     }
 

@@ -27,6 +27,8 @@ export const setAddressDetailsLW = (data) => {
     zone: address?.zone,
     zroLocation: address?.zro?.code || address?.zro,
     addressType: address?.addressType?.code || address?.addressType,
+    subLocality: address?.subLocality || address?.subLocality?.name || address?.subLocality,
+    wardRemark: address?.wardRemark || address?.wardRemark?.name || address?.wardRemark,
   };
 
   data.address = propAddress;
@@ -233,6 +235,7 @@ export const convertToPropertyLightWeight = (data = {}) => {
         isRainwaterHarvesting: false,
         propertyType: propertyType,
         propertyCategory: data.propertyDetails?.usageCategory,
+        categoryType: data.waterConnection?.useDetails?.categoryType?.code || data.useDetails?.categoryType?.code,
         waterConnectionUsageType: data.waterConnection?.useDetails?.WaterConnectionUsageType?.code || data.useDetails?.WaterConnectionUsageType?.code,
         yearOfConstruction: data.waterConnection?.useDetails?.SelectYearofConstruction?.value || data.useDetails?.SelectYearofConstruction?.value,
         numberOfDwellingUnits: data.waterConnection?.useDetails?.NumberofDwellingUnits || data.useDetails?.NumberofDwellingUnits,
@@ -313,6 +316,7 @@ export const convertToUpdatePropertyLightWeight = (data = {}) => {
       noOfFloors: noOfFloors,
       additionalDetails: {
         isRainwaterHarvesting: false,
+        categoryType: data.waterConnection?.useDetails?.categoryType?.code || data.useDetails?.categoryType?.code,
         waterConnectionUsageType: data.waterConnection?.useDetails?.WaterConnectionUsageType?.code || data.useDetails?.WaterConnectionUsageType?.code,
         yearOfConstruction: data.waterConnection?.useDetails?.SelectYearofConstruction?.value || data.useDetails?.SelectYearofConstruction?.value,
         numberOfDwellingUnits: data.waterConnection?.useDetails?.NumberofDwellingUnits || data.useDetails?.NumberofDwellingUnits,
