@@ -95,16 +95,19 @@ const WTCard = () => {
   ];
   const WT_CEMP = Digit.UserService.hasAccess(["WT_CEMP"]) || false;
 
-  const totalInboxCount = isCitizenInboxLoading || isFixedPointInboxLoading ? "-" : citizenInboxCount + fixedPointInboxCount;
-
   const propsForModuleCard = {
     Icon: <CHBIcon />,
     moduleName: t("WT_MODULE_NAME"),
     kpis: [
       {
-        count: totalInboxCount,
-        label: t("ES_TITLE_INBOX"),
+        count: isCitizenInboxLoading ? "-" : citizenInboxCount,
+        label: t("WT_ONLINE_INBOX") !== "WT_ONLINE_INBOX" ? t("WT_ONLINE_INBOX") : "General Inbox",
         link: `${APPLICATION_PATH}/employee/wt/inbox`,
+      },
+      {
+        count: isFixedPointInboxLoading ? "-" : fixedPointInboxCount,
+        label: t("WT_EMERGENCY_INBOX") !== "WT_EMERGENCY_INBOX" ? t("WT_EMERGENCY_INBOX") : "Emergency Inbox",
+        link: `${APPLICATION_PATH}/employee/wt/fixed-point/inbox`,
       },
     ],
     links: links.filter((link) => !link?.role || WT_CEMP),

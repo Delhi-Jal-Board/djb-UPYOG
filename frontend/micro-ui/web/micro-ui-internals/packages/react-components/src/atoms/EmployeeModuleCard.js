@@ -256,7 +256,7 @@ const EmployeeModuleCard = ({ Icon, moduleName, kpis = [], links = [], className
             {secondaryKpis
               .filter((kpi) => {
                 const label = String(kpi.label || "").toLowerCase();
-                return label.includes("nearing sla") || label.includes("active employee");
+                return label.includes("nearing sla") || label.includes("active employee") || label.includes("online inbox") || label.includes("emergency inbox");
               })
               .map((kpi, index) => {
                 const isHeader = !kpi.count && kpi.label === kpi.label?.toUpperCase();
@@ -347,7 +347,7 @@ const ModuleCardFullWidth = ({ Icon, moduleName, kpis = [], links = [], classNam
           {secondaryKpis
             .filter((kpi) => {
               const label = String(kpi.label || "").toLowerCase();
-              return label.includes("nearing sla") || label.includes("active employee");
+              return label.includes("nearing sla") || label.includes("active employee") || label.includes("online inbox") || label.includes("emergency inbox");
             })
             .map((kpi, index) => {
               const isHeader = !kpi.count && kpi.label === kpi.label?.toUpperCase();
