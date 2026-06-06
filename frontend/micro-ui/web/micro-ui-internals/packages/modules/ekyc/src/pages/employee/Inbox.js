@@ -32,7 +32,7 @@ const Inbox = ({ parentRoute, businessService = "EKYC", initialStates = {}, filt
     };
   }, [tenantId, formState?.tableForm?.offset, formState?.tableForm?.limit, formState?.searchForm]);
 
-  const { isLoading, data: dashboardData = {} } = Digit.Hooks.ekyc.useEkycSurveyorDashboard({}, queryParams, {
+  const { isLoading: isListLoading, data: listData = {} } = Digit.Hooks.ekyc.useEkycApplicationList({}, queryParams, {
     enabled: !!tenantId,
     keepPreviousData: true,
   });
@@ -64,8 +64,8 @@ const Inbox = ({ parentRoute, businessService = "EKYC", initialStates = {}, filt
       return [searchData];
     }
 
-    return dashboardData?.dashboardInfo?.consumerList || [];
-  }, [isSearchActive, searchData, dashboardData]);
+    return listData?.consumerList || [];
+  }, [isSearchActive, searchData, listData]);
 
   const filteredData = useMemo(() => {
     return (sourceData || []).map((item) => {
@@ -99,7 +99,7 @@ const Inbox = ({ parentRoute, businessService = "EKYC", initialStates = {}, filt
     });
   }, [sourceData]);
 
-  const totalRecords = dashboardData?.dashboardInfo?.totalRecords || dashboardData?.totalCount || 0;
+  const totalRecords = listData?.totalCount || 0;
 
   const checkPathName = location.pathname.includes("ekyc/inbox");
   const PropsForInboxLinks = {
@@ -233,7 +233,7 @@ const Inbox = ({ parentRoute, businessService = "EKYC", initialStates = {}, filt
     },
   });
 
-  const isInboxLoading = isLoading || isSearchLoading;
+  const isInboxLoading = isListLoading || isSearchLoading;
 
   return (
     <div className="app-container">
@@ -247,11 +247,11 @@ const Inbox = ({ parentRoute, businessService = "EKYC", initialStates = {}, filt
           propsForInboxTable,
           // propsForInboxMobileCards,
           formState,
-          countData: dashboardData?.dashboardInfo,
-        }}
-      />
-    </div>
-  );
+            countData: listData,
+          }}
+        />
+      </div>
+    );
 };
 
 export default Inbox;

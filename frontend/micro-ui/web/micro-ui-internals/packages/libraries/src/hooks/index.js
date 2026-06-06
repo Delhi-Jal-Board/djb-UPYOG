@@ -355,7 +355,7 @@ import useSelectedMDMS from "./useSelectedMDMS";
 import useVendorAdditionaldetailsAPI from "./vendor/useVendorAdditionaldetailsAPI";
 import useCreateDemand from "./sv/useCreateDemand";
 import useEmpvendorCommonSearch from "./vendor/useEmpvendorCommonSearch";
-import { useInboxRouting, useSearchConnection, useGetConnectionTypeV2, useGetUserType, useGetFloorCount, useGetPropertyType, useEkycSurveyorDashboard, useEkycApplicationReview, useEkycSearchReview, useEkycApplicationUpdate, useEkycAPI, useEkycWorkflow, useEkycUpdate, useEkycDashboardData, useEkycDashboardConfigs } from "./ekyc/useEkyc";
+import { useInboxRouting, useSearchConnection, useGetConnectionTypeV2, useGetUserType, useGetFloorCount, useGetPropertyType, useEkycSurveyorDashboard, useEkycApplicationList, useEkycApplicationReview, useEkycSearchReview, useEkycApplicationUpdate, useEkycAPI, useEkycWorkflow, useEkycUpdate, useEkycDashboardData, useEkycDashboardConfigs } from "./ekyc/useEkyc";
 import { useCreateFixedPoint } from "./wt/createFixedPoint";
 import { useCreateFixedPointSchedule } from "./wt/useCreateFixedPointSchedule";
 import { useUpdateFixedPoint } from "./wt/updateFixedPoint";
@@ -541,6 +541,7 @@ const ekyc = {
   useGetUserType,
   useGetFloorCount,
   useEkycSurveyorDashboard,
+  useEkycApplicationList,
   useEkycApplicationReview,
   useEkycSearchReview,
   useEkycApplicationUpdate,
