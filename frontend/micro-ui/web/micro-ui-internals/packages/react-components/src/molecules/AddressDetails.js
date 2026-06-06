@@ -302,6 +302,9 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
         const lng = apiAddress.longitude;
         if (!longitude && lng) setLongitude(lng);
 
+        if (!subLocality && apiAddress.subLocality) setSubLocality(apiAddress.subLocality);
+        if (!wardRemark && apiAddress.wardRemark) setWardRemark(apiAddress.wardRemark);
+
         if (!doorImageId && apiAddress.doorPhotoFilestoreId) {
           setDoorImageId(apiAddress.doorPhotoFilestoreId);
           setDoorImage(apiAddress.doorPhotoFilestoreId); // or a generic string, since API only returns ID
@@ -353,6 +356,8 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
       if ((addressData.latitude || "") !== latitude) setLatitude(addressData.latitude || "");
       if ((addressData.longitude || "") !== longitude) setLongitude(addressData.longitude || "");
       if ((addressData.zro || "") !== zro) setZro(addressData.zro || "");
+      if ((addressData.subLocality || "") !== subLocality) setSubLocality(addressData.subLocality || "");
+      if ((addressData.wardRemark || "") !== wardRemark) setWardRemark(addressData.wardRemark || "");
 
       if (addressData.doorImageId) {
         if (addressData.doorImage !== doorImage) setDoorImage(addressData.doorImage);
