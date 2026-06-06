@@ -240,6 +240,7 @@ const PagBtn = ({ onClick, disabled, title, children, active = false }) => {
 /* ─── Main Table ────────────────────────────────────────────────────────────── */
 const Table = ({
   className = "table",
+  tableClass = "",
   t,
   data = [],
   columns = [],
@@ -418,137 +419,48 @@ const Table = ({
   };
 
   return (
-    <div
-      style={{
-        fontFamily: T.fontBody,
-        background: T.surface,
-        border: `1px solid ${T.border}`,
-        borderRadius: "12px",
-        boxShadow: "0 1px 3px rgba(15,23,42,0.06), 0 1px 2px rgba(15,23,42,0.04)",
-        width: "100%",
-      }}
-    >
+    <div className="basetable">
       {/* ── Top Bar ──────────────────────────────────────────────────────── */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "12px 16px",
-          borderBottom: `1px solid ${T.border}`,
-          background: "#fff",
-          gap: 12,
-          flexWrap: "wrap",
-          borderRadius: "12px 12px 0 0",
-        }}
-      >
+      <div className="table-topbar">
         {/* Left: title + total badge */}
-        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-          {tableTitle && <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: T.textPrimary, letterSpacing: "-0.015em" }}>{tableTitle}</h3>}
+        <div className="topbar-badge">
+          {tableTitle && <h3 className="title">{tableTitle}</h3>}
           {totalRecords !== undefined && (
-            <div
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 6,
-                background: T.accent,
-                color: "#fff",
-                borderRadius: 999,
-                padding: "3px 10px 3px 5px",
-                fontSize: 11,
-                fontWeight: 600,
-                boxShadow: "0 1px 4px rgba(37,99,235,0.28)",
-              }}
-            >
-              <span
-                style={{
-                  background: "rgba(255,255,255,0.22)",
-                  borderRadius: 999,
-                  padding: "1px 7px",
-                  fontSize: 11,
-                  fontWeight: 700,
-                  fontFamily: T.fontMono,
-                  color: "#fff",
-                }}
-              >
-                {totalRecords}
-              </span>
-              <span style={{ fontSize: 10, opacity: 0.88, textTransform: "uppercase", letterSpacing: "0.06em", color: "#fff" }}>
-                {t ? t("CS_TOTAL_RECORDS") : "Total Records"}
-              </span>
+            <div className="total-records">
+              <span className="records">{totalRecords}</span>
+              <span className="title">{t ? t("CS_TOTAL_RECORDS") : "Total Records"}</span>
             </div>
           )}
         </div>
 
         {/* Right: internal search box + tableTopComponent */}
-        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-          <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-            <span style={{ position: "absolute", left: 9, color: searchFocused ? T.accent : T.textMuted, lineHeight: 0, pointerEvents: "none" }}>
+        <div className="search-box-wrapper">
+          <div className="table-search-box">
+            <span className={`icon ${searchFocused ? "accent" : "textMuted"}`}>
               <IconSearch />
             </span>
             <input
+              className={`search-input ${searchFocused ? "shadow" : ""}`}
               placeholder={t ? t("CS_COMMON_SEARCH") : "Search table…"}
               value={internalSearch}
               onChange={(e) => setInternalSearch(e.target.value)}
               onFocus={() => setSearchFocused(true)}
               onBlur={() => setSearchFocused(false)}
-              style={{
-                border: `1.5px solid ${searchFocused ? T.accent : T.borderStrong}`,
-                borderRadius: 6,
-                padding: "6px 10px 6px 30px",
-                fontSize: 13,
-                fontFamily: T.fontBody,
-                color: T.textPrimary,
-                background: T.surface,
-                outline: "none",
-                width: 200,
-                boxShadow: searchFocused ? "0 0 0 3px rgba(37,99,235,0.10)" : "none",
-                transition: "border-color 0.15s, box-shadow 0.15s",
-              }}
             />
             {internalSearch && (
-              <button
-                onClick={() => setInternalSearch("")}
-                style={{
-                  position: "absolute",
-                  right: 7,
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  padding: 2,
-                  lineHeight: 0,
-                  color: T.textMuted,
-                  display: "flex",
-                  alignItems: "center",
-                }}
-              >
+              <button onClick={() => setInternalSearch("")} className="close-button">
                 <IconClose />
               </button>
             )}
           </div>
           {isCsvExportEnabled && (
             <button
+              className={`export-button ${isCsvExporting ? "exporting" : "normal"}`}
               onClick={handleCsvExport}
               disabled={isCsvExporting}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 6,
-                border: `1px solid ${isCsvExporting ? T.borderStrong : T.accentMid}`,
-                background: isCsvExporting ? T.surfaceAlt : T.accentLight,
-                color: isCsvExporting ? T.textMuted : T.accentDark,
-                borderRadius: 6,
-                padding: "6px 10px",
-                fontSize: 12.5,
-                fontWeight: 600,
-                fontFamily: T.fontBody,
-                cursor: isCsvExporting ? "not-allowed" : "pointer",
-                lineHeight: 1,
-                transition: "all 0.15s",
-              }}
               title={isCsvExporting ? "Export in progress" : "Download CSV"}
             >
-              <span style={{ lineHeight: 0 }}>
+              <span className="download-icon">
                 <IconDownload />
               </span>
               <span>{isCsvExporting ? "Exporting..." : csvExportButtonLabel || "Download CSV"}</span>
@@ -561,52 +473,22 @@ const Table = ({
       {/* ── Table Scroll Wrapper ─────────────────────────────────────────── */}
       <div
         ref={tref}
-        className={customTableWrapperClassName}
+        className={`table-content-wrapper ${customTableWrapperClassName}`}
         style={{
-          width: "100%",
-          overflowX: "auto",
-          WebkitOverflowScrolling: "touch",
           ...(tref.current && tref.current.offsetWidth < tref.current.scrollWidth ? inboxStyles : {}),
         }}
       >
         <table
-          className={className}
+          className={`table-content ${className}${tableClass ? " " + tableClass : ""}`}
           {...getTableProps()}
-          style={{
-            width: "100%",
-            borderCollapse: "collapse",
-            borderSpacing: 0,
-            fontSize: 13.5,
-            color: T.textPrimary,
-            fontFamily: T.fontBody,
-            ...styles,
-          }}
+          style={{ ...styles }}
           ref={tableRef}
         >
           {/* ── Head ────────────────────────────────────────────────────── */}
           <thead>
             {headerGroups.map((headerGroup) => (
-              <tr {...headerGroup.getHeaderGroupProps()} style={{ background: T.surfaceAlt }}>
-                {showAutoSerialNo && (
-                  <th
-                    style={{
-                      width: 48,
-                      padding: "12px 8px",
-                      textAlign: "center",
-                      borderBottom: `2px solid ${T.borderStrong}`,
-                      fontSize: 11,
-                      fontWeight: 700,
-                      textTransform: "uppercase",
-                      letterSpacing: "0.07em",
-                      color: T.textSecondary,
-                      whiteSpace: "nowrap",
-                      verticalAlign: "middle",
-                      height: DEFAULT_ROW_HEIGHT,
-                    }}
-                  >
-                    {typeof showAutoSerialNo === "string" ? t(showAutoSerialNo) : t("TB_SNO")}
-                  </th>
-                )}
+              <tr {...headerGroup.getHeaderGroupProps()} className="tr">
+                {showAutoSerialNo && <th className="th-s-no">{typeof showAutoSerialNo === "string" ? t(showAutoSerialNo) : t("TB_SNO")}</th>}
 
                 {headerGroup.headers.map((column) => {
                   const isSorted = column.isSorted;
@@ -614,36 +496,15 @@ const Table = ({
                   const textAlign = getColumnAlign(column);
                   const mergedStyle = {
                     ...(headerProps.style || {}),
-                    position: "relative",
-                    padding: "12px 14px",
-                    verticalAlign: "middle",
-                    borderBottom: `2px solid ${T.borderStrong}`,
-                    whiteSpace: "nowrap",
-                    userSelect: "none",
                     cursor: column.canSort ? "pointer" : "default",
                     background: isSorted ? T.accentLight : T.surfaceAlt,
-                    transition: "background 0.15s",
                     textAlign,
-                    height: DEFAULT_ROW_HEIGHT,
                   };
 
                   return (
-                    <th {...headerProps} title={column.canSort ? "Click to sort" : ""} style={mergedStyle}>
-                      <div
-                        style={{ display: "flex", alignItems: "center", gap: 5, justifyContent: getFlexJustifyFromAlign(textAlign), width: "100%" }}
-                      >
-                        <span
-                          style={{
-                            fontSize: 11,
-                            fontWeight: 700,
-                            textTransform: "uppercase",
-                            letterSpacing: "0.07em",
-                            color: isSorted ? T.accentDark : T.textSecondary,
-                            transition: "color 0.15s",
-                          }}
-                        >
-                          {column.render("Header")}
-                        </span>
+                    <th {...headerProps} title={column.canSort ? "Click to sort" : ""} className="th" style={mergedStyle}>
+                      <div style={{ justifyContent: getFlexJustifyFromAlign(textAlign) }}>
+                        <span className={`col-head ${isSorted ? "accentDark" : "textSecondary"}`}>{column.render("Header")}</span>
                         {column.canSort && (
                           <span style={{ lineHeight: 0, color: isSorted ? T.accent : T.textMuted }}>
                             {isSorted ? column.isSortedDesc ? <IconSortDesc /> : <IconSortAsc /> : <IconSortNeutral />}
