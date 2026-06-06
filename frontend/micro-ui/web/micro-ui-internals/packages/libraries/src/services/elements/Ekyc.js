@@ -22,6 +22,16 @@ export const EkycService = {
             auth: true,
             userService: true,
         }),
+    application_list: (data, params) =>
+        Request({
+            url: Urls.ekyc.application_list,
+            data: data,
+            useCache: false,
+            method: "POST",
+            params,
+            auth: true,
+            userService: true,
+        }),
     application_review: (data, params) =>
         Request({
             url: Urls.ekyc.application_review,

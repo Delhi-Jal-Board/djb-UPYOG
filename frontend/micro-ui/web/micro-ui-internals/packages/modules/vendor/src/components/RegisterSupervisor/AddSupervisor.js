@@ -59,6 +59,8 @@ const AddSupervisor = ({ parentUrl, heading }) => {
   };
 
   const onSubmit = (data) => {
+    const isVendor = userInfo?.roles?.some((role) => role.code === "EKYC_VENDOR");
+
     const formData = {
       RequestInfo: {
         apiId: "Rainmaker",
@@ -66,16 +68,18 @@ const AddSupervisor = ({ parentUrl, heading }) => {
         ts: null,
         action: "_create",
         msgId: `${Date.now()}|en_IN`,
-        authToken: userInfo?.authToken,
-        userInfo: {
-          id: userInfo?.id,
-          uuid: userInfo?.uuid,
-          userName: userInfo?.userName,
-          name: userInfo?.name,
-          type: userInfo?.type,
-          tenantId: tenantId,
-          roles: userInfo?.roles,
-        },
+        authToken: Digit.UserService.getUser()?.access_token || userInfo?.authToken,
+        ...(isVendor && {
+          userInfo: {
+            id: userInfo?.id,
+            uuid: userInfo?.uuid,
+            userName: userInfo?.userName,
+            name: userInfo?.name,
+            type: userInfo?.type,
+            tenantId: userInfo?.tenantId || rawTenantId,
+            roles: userInfo?.roles,
+          },
+        }),
       },
       supervisor: {
         tenantId: tenantId,
