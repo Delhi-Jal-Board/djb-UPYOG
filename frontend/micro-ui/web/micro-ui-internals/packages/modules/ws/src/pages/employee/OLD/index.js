@@ -377,7 +377,7 @@ const OLDApplication = () => {
         details: propertyDetails?.Properties?.[0],
       };
     }
-    data.channel = "CITIZEN";
+    data.channel = Digit.UserService.getType()?.toUpperCase() === "CITIZEN" ? "CITIZEN" : "CFC_COUNTER";
 
     // Ensure applicationSelection is set for createPayloadOfWS compatibility
     data.applicationSelection = {

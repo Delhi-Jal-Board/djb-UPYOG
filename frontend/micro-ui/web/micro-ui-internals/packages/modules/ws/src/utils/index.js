@@ -964,7 +964,7 @@ export const createPayloadOfWSReSubmitDisconnection = async (data, storeData, se
         ...storeData?.applicationData?.processInstance,
         action: "RESUBMIT_APPLICATION",
       },
-      channel: "CITIZEN",
+      channel: user?.toUpperCase() === "CITIZEN" ? "CITIZEN" : "CFC_COUNTER",
     },
     disconnectRequest: true,
   };
@@ -990,7 +990,7 @@ export const createPayloadOfWSReSubmitDisconnection = async (data, storeData, se
         ...storeData?.applicationData?.processInstance,
         action: "RESUBMIT_APPLICATION",
       },
-      channel: "CITIZEN",
+      channel: user?.toUpperCase() === "CITIZEN" ? "CITIZEN" : "CFC_COUNTER",
     },
     disconnectRequest: true,
   };
