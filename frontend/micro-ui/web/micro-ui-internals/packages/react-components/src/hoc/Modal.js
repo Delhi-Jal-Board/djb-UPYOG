@@ -10,7 +10,6 @@ import SubmitBar from "../atoms/SubmitBar";
 const Modal = ({
   headerBarMain,
   headerBarEnd,
-  popupStyles,
   children,
   actionCancelLabel,
   actionCancelOnSubmit,
@@ -24,32 +23,13 @@ const Modal = ({
   isDisabled,
   hideSubmit,
   style = {},
-  popupModuleMianStyles,
   headerBarMainStyle,
-  isOBPSFlow = false,
   popupModuleActionBarStyles = {},
 }) => {
   /**
    * TODO: It needs to be done from the desgin changes
    */
   const mobileView = Digit.Utils.browser.isMobile() ? true : false;
-
-  const legacyActionBarStyle = isOBPSFlow
-    ? !mobileView
-      ? { marginRight: "18px" }
-      : { position: "absolute", bottom: "5%", right: "10%", left: window.location.href.includes("employee") ? "0%" : "7%" }
-    : popupModuleActionBarStyles;
-
-  const baseActionBarStyle = {
-    display: "flex",
-    flexWrap: "wrap",
-    alignItems: "center",
-    justifyContent: mobileView ? "stretch" : "flex-end",
-    gap: "12px",
-    marginTop: "16px",
-    paddingTop: "12px",
-    borderTop: "1px solid rgba(15, 23, 42, 0.08)",
-  };
 
   useEffect(() => {
     document.body.style.overflowY = "hidden";
@@ -84,7 +64,7 @@ const Modal = ({
         />
         <div className="popup-module-main">
           {children}
-          <div className="popup-module-action-bar" style={{ ...baseActionBarStyle, ...legacyActionBarStyle }}>
+          <div className="popup-module-action-bar" style={{ ...popupModuleActionBarStyles }}>
             {actionCancelLabel ? <ButtonSelector theme="border" label={actionCancelLabel} onSubmit={actionCancelOnSubmit} style={style} /> : null}
             {!hideSubmit ? (
               <ButtonSelector label={actionSaveLabel} onSubmit={actionSaveOnSubmit} formId={formId} isDisabled={isDisabled} style={style} />

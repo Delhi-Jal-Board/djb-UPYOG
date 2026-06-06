@@ -5,12 +5,241 @@
   /* Smooth scrolling on iOS */
 }
 
+.ekycTable {
+  thead {
+    th {
+      &:first-child {
+        min-width: fit-content !important;
+      }
+      &:nth-child(2) {
+        min-width: fit-content !important;
+      }
+    }
+  }
+}
+
+.basetable {
+  font-family: DM Sans, Segoe UI, ui-sans-serif, sans-serif;
+  background: rgb(255, 255, 255);
+  border: 1px solid rgb(226, 232, 240);
+  border-radius: 12px;
+  box-shadow: rgba(15, 23, 42, 0.06) 0px 1px 3px, rgba(15, 23, 42, 0.04) 0px 1px 2px;
+  width: 100%;
+  flex: 1;
+  overflow-y: scroll;
+  display: flex;
+  flex-direction: column;
+  .table-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid rgb(226, 232, 240);
+    background: rgb(255, 255, 255);
+    gap: 12px;
+    flex-wrap: wrap;
+    border-radius: 12px 12px 0px 0px;
+    .topbar-badge {
+      display: flex !important;
+      align-items: center !important;
+      gap: 10px !important;
+      flex-wrap: wrap;
+      .title {
+        margin: 0;
+        font-size: 15px;
+        font-weight: 700;
+        color: #0f172a;
+        letter-spacing: -0.015em;
+      }
+      .total-records {
+        display: inline-flex;
+        align-items: center;
+        gap: 6;
+        background: #5282e6;
+        color: #fff;
+        border-radius: 999;
+        padding: 4px 16px;
+        font-size: 11;
+        font-weight: 600;
+        box-shadow: 0 1px 4px rgba(37, 99, 235, 0.28);
+        border-radius: 40px;
+        .records {
+          background: rgba(255, 255, 255, 0.22);
+          border-radius: 999;
+          padding: 1px 7px;
+          font-size: 11;
+          font-weight: 700;
+          font-family: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
+          color: #fff;
+        }
+        .title {
+          font-size: 10;
+          opacity: 0.88;
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          color: #fff;
+        }
+      }
+    }
+
+    .search-box-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 8;
+      flex-wrap: wrap;
+      border: 1px solid #e2e8f0 !important;
+      border-radius: 40px;
+      padding: 0px 12px;
+
+      .table-search-box {
+        position: relative;
+        display: flex;
+        align-items: center !important;
+        .icon {
+          position: absolute;
+          left: 9;
+          line-height: 0;
+          pointer-events: none;
+        }
+        .icon.accent {
+          color: #5282e6;
+        }
+        .icon.textMuted {
+          color: #94a3b8;
+        }
+        .search-input {
+          border-radius: 6;
+          padding: 6px 10px 6px 30px;
+          font-size: 13;
+          font-family: "DM Sans", "Segoe UI", ui-sans-serif, sans-serif;
+          color: #0f172a;
+          background: #fff;
+          outline: none;
+          width: 200;
+          transition: border-color 0.15s, box-shadow 0.15s;
+        }
+        .search-input.shadow {
+          box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        .close-button {
+          position: absolute;
+          right: 7;
+          background: none;
+          border: none;
+          cursor: pointer;
+          padding: 2;
+          line-height: 0;
+          color: #94a3b8;
+          display: flex;
+          align-items: center;
+        }
+        .export-button {
+          display: inline-flex;
+          align-items: center;
+          gap: 6;
+          border-radius: 6;
+          padding: 6px 10px;
+          font-size: 12.5;
+          font-weight: 600;
+          font-family: "DM Sans", "Segoe UI", ui-sans-serif, sans-serif;
+          line-height: 1;
+          transition: all 0.15s;
+          border: 1px solid;
+
+          .download-icon {
+            line-height: 0;
+          }
+        }
+        .export-button.exporting {
+          border-color: #cbd5e1;
+          background: #f8fafc;
+          color: #94a3b8;
+          cursor: not-allowed;
+        }
+        .export-button.normal {
+          border-color: #bfdbfe;
+          background: #eff6ff;
+          color: #5282e6;
+          cursor: pointer;
+        }
+      }
+    }
+  }
+
+  .table-content-wrapper {
+    flex: 1;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    .table-content {
+      width: 100%;
+      border-collapse: collapse;
+      border-spacing: 0;
+      font-size: 13.5;
+      color: #0f172a;
+      font-family: DM Sans, Segoe UI, ui-sans-serif, sans-serif;
+
+      .thead {
+        .tr {
+          background: #f8fafc;
+          .th-s-no {
+            width: 48;
+            padding: 12px 8px;
+            text-align: center;
+            border-bottom: 2px solid #cbd5e1;
+            font-size: 11;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            color: #475569;
+            white-space: nowrap;
+            vertical-align: middle;
+            height: 52px;
+          }
+
+          .th {
+            position: relative;
+            padding: 12px 14px;
+            vertical-align: middle;
+            border-bottom: 2px solid #cbd5e1;
+            white-space: nowrap;
+            user-select: none;
+            transition: 0.15s;
+            height: 52px;
+
+            div {
+              display: flex;
+              align-items: center;
+              gap: 5;
+              justify-content: center;
+              width: 100%;
+              .col-head {
+                font-size: 11;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.07em;
+                transition: color 0.15s;
+              }
+              .col-head.accentDark {
+                color: #5282e6;
+              }
+              .col-head.textSecondary {
+                color: #475569;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
 .table {
   @apply bg-white w-full;
 
   thead {
     th {
-      padding: 20px 18px;
+      padding: 8px 18px;
       text-align: left;
       white-space: nowrap;
       /* Updated gradient background to match screenshot */

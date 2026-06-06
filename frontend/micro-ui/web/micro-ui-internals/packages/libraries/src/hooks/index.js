@@ -32,7 +32,6 @@ import useApplicationStatusGeneral from "./useStatusGeneral";
 import useModuleTenants from "./useModuleTenants";
 import useStore from "./useStore";
 import { useTenants } from "./useTenants";
-import useInbox from "./useInbox";
 import { useEvents, useClearNotifications, useNotificationCount } from "./events";
 import useCreateEvent from "./events/useCreateEvent";
 import useUpdateEvent from "./events/useUpdateEvent";
@@ -291,7 +290,7 @@ import useAssetdetail from "./asset/useAssetdetail";
 import useAssetCreateAPI from "./asset/useAssetCreateAPI";
 import useAssetApplicationDetail from "./asset/useAssetApplicationDetail";
 import useASSETSearch from "./asset/useASSETSearch";
-import useTenantsASSET from "./asset/useTenants"
+import useTenantsASSET from "./asset/useTenants";
 import useASSETApplicationAction from "./asset/useASSETApplicationAction";
 import useAssetparentSubType from "./asset/useAssetparentSubType";
 import useAssignCreateAPI from "./asset/useAssignCreateAPI";
@@ -332,11 +331,11 @@ import useServiceSearchCHB from "./chb/useServiceSearchCHB";
 // import useChbCommunityHalls from "./chb/useChbCommunityHalls";
 // import useChbHallCode from "./chb/useChbHallCode"
 import useChbSlotSearch from "./chb/useChbSlotSearch";
-import useDemandEstimation from "./chb/useDemandEstimation"
-import useTenantsADS from "./ads/useTenants"
+import useDemandEstimation from "./chb/useDemandEstimation";
+import useTenantsADS from "./ads/useTenants";
 import useADSDocumentsMDMS from "./ads/useADSDocumentsMDMS";
 import useADSDocumentSearch from "./ads/useADSDocumentSearch";
-import useADSDemandEstimation from "./ads/useADSDemandEstimation"
+import useADSDemandEstimation from "./ads/useADSDemandEstimation";
 import useCMSearch from "./cm/useCMSearch";
 import { useCustomBackNavigation } from "./UseCustomBackNavigationProps";
 import useTankerCreateAPI from "./wt/useTankerCreateAPI";
@@ -355,13 +354,31 @@ import useSelectedMDMS from "./useSelectedMDMS";
 import useVendorAdditionaldetailsAPI from "./vendor/useVendorAdditionaldetailsAPI";
 import useCreateDemand from "./sv/useCreateDemand";
 import useEmpvendorCommonSearch from "./vendor/useEmpvendorCommonSearch";
-import { useInboxRouting, useSearchConnection, useGetConnectionTypeV2, useGetUserType, useGetFloorCount, useGetPropertyType, useEkycSurveyorDashboard, useEkycApplicationList, useEkycApplicationReview, useEkycSearchReview, useEkycApplicationUpdate, useEkycAPI, useEkycWorkflow, useEkycUpdate, useEkycDashboardData, useEkycDashboardConfigs } from "./ekyc/useEkyc";
+import {
+  useInboxRouting,
+  useSearchConnection,
+  useGetConnectionTypeV2,
+  useGetUserType,
+  useGetFloorCount,
+  useGetPropertyType,
+  useEkycSurveyorDashboard,
+  useEkycApplicationReview,
+  useEkycSearchReview,
+  useEkycApplicationUpdate,
+  useEkycAPI,
+  useEkycWorkflow,
+  useEkycUpdate,
+  useEkycDashboardData,
+  useEkycDashboardConfigs,
+  useEkycApplicationList,
+  useEkycAssignmentCreate,
+} from "./ekyc/useEkyc";
 import { useCreateFixedPoint } from "./wt/createFixedPoint";
 import { useCreateFixedPointSchedule } from "./wt/useCreateFixedPointSchedule";
 import { useUpdateFixedPoint } from "./wt/updateFixedPoint";
 import useFixedPointSearchAPI from "./wt/useFixedPointSearchAPI";
 import useFillPointSearch from "./wt/useFillPointSearch";
-import { useCreateFillPoint } from "./wt/createFillPoint"
+import { useCreateFillPoint } from "./wt/createFillPoint";
 import useFixedPointScheduleSearch from "./wt/useFixedPointScheduleSearch";
 import useVendorFillingMapping from "./wt/useVendorFillingMapping";
 import useUpdateFillPoint from "./wt/updateFillPoint";
@@ -372,7 +389,6 @@ import { useUpdateFixedPointSchedule } from "./wt/useUpdateFixedPointSchedule";
 import useVendorFillingMap from "./wt/useVendorFillingMap";
 import useDriverTripReportSearch from "./wt/useDriverTripReportSearch";
 import useUpdateEmergencyBooking from "./wt/useUpdateEmergencyBooking";
-
 
 const wt = {
   useTankerCreateAPI,
@@ -447,10 +463,6 @@ const fsm = {
   useVendorUpdate,
   useVehicleDetails,
   useVehicleCreate,
-  useVendorCreate,
-  useVendorUpdate,
-  useVehicleDetails,
-  useVehicleCreate,
   useUpdateVehicle,
   useDriverSearch,
   useDriverCreate,
@@ -480,8 +492,7 @@ const ptr = {
   useServiceSearchPTR,
   usePetDocumentSearch,
   useMyPetPayments,
-  useTenants: useTenantsPTR
-
+  useTenants: useTenantsPTR,
 };
 
 const pt = {
@@ -551,6 +562,7 @@ const ekyc = {
   useEkycDashboardData,
   useEkycDashboardConfigs,
   useInboxRouting,
+  useEkycAssignmentCreate,
 };
 
 const hrms = {
@@ -722,7 +734,6 @@ const sv = {
   useSvSearchApplication,
   useSVApplicationDetail,
   useSVApplicationAction,
-  useSvSearchApplication,
   useCreateDemand,
 };
 

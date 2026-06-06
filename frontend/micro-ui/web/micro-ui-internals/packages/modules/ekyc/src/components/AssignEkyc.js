@@ -33,23 +33,6 @@ const AssignEkyc = () => {
     { enabled: !!tenantId, keepPreviousData: true }
   );
 
-  const handleSort = useCallback((args) => {
-    if (args?.length === 0) return;
-    setSortParams(args);
-  }, []);
-
-  const fetchNextPage = () => {
-    setPageOffset((prevState) => prevState + pageSize);
-  };
-
-  const fetchPrevPage = () => {
-    setPageOffset((prevState) => prevState - pageSize);
-  };
-
-  const handlePageSizeChange = (e) => {
-    setPageSize(Number(e.target.value));
-  };
-
   const searchDetails = useMemo(
     () => ({
       kno: formState?.searchForm?.kNumber || "",

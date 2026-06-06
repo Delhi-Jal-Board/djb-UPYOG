@@ -1,6 +1,8 @@
 import React from "react";
 import { useHistory } from "react-router-dom";
 import { useQuery, useQueryClient, useMutation } from "react-query";
+import { MockDashboardData } from "./mockData";
+import { DashboardConfig } from "./dashboardConfig";
 
 // search connection
 export const useSearchConnection = ({ tenantId, details }, config = {}) => {
@@ -123,32 +125,30 @@ export const useEkycUpdate = (tenantId, config = {}) => {
   return useMutation((data) => Digit.EkycService.application_update(data, tenantId), config);
 };
 
-import { MockDashboardData } from "./mockData";
-
 export const useEkycDashboardData = (role, filters = {}, config = {}) => {
   const isMock = true; // Default to mock mode as requested "moke hook"
 
   const { data: summary, isLoading: isLoadingSummary } = useQuery(
     ["EKYC_DASHBOARD_SUMMARY", role, filters],
-    () => isMock ? Promise.resolve(MockDashboardData.getSummary(role, filters)) : Digit.EkycService.fetchSummary({ role, filters }),
+    () => (isMock ? Promise.resolve(MockDashboardData.getSummary(role, filters)) : Digit.EkycService.fetchSummary({ role, filters })),
     config
   );
 
   const { data: agencies, isLoading: isLoadingAgencies } = useQuery(
     ["EKYC_AGENCY_ANALYTICS", filters],
-    () => isMock ? Promise.resolve(MockDashboardData.getAgencies(filters)) : Digit.EkycService.fetchAgencyAnalytics({ filters }),
+    () => (isMock ? Promise.resolve(MockDashboardData.getAgencies(filters)) : Digit.EkycService.fetchAgencyAnalytics({ filters })),
     config
   );
 
   const { data: heatmap, isLoading: isLoadingHeatmap } = useQuery(
     ["EKYC_CLUSTER_HEATMAP", filters],
-    () => isMock ? Promise.resolve(MockDashboardData.getClusterHeatmap(filters)) : Digit.EkycService.fetchClusterHeatmap({ filters }),
+    () => (isMock ? Promise.resolve(MockDashboardData.getClusterHeatmap(filters)) : Digit.EkycService.fetchClusterHeatmap({ filters })),
     config
   );
 
   const { data: workflow, isLoading: isLoadingWorkflow } = useQuery(
     ["EKYC_WORKFLOW_TRACKING", filters],
-    () => isMock ? Promise.resolve(MockDashboardData.getWorkflowTracking(filters)) : Digit.EkycService.fetchWorkflowTracking({ filters }),
+    () => (isMock ? Promise.resolve(MockDashboardData.getWorkflowTracking(filters)) : Digit.EkycService.fetchWorkflowTracking({ filters })),
     config
   );
 
@@ -157,11 +157,9 @@ export const useEkycDashboardData = (role, filters = {}, config = {}) => {
     agencies,
     heatmap,
     workflow,
-    isLoading: isLoadingSummary || isLoadingAgencies || isLoadingHeatmap || isLoadingWorkflow
+    isLoading: isLoadingSummary || isLoadingAgencies || isLoadingHeatmap || isLoadingWorkflow,
   };
 };
-
-import { DashboardConfig } from "./dashboardConfig";
 
 export const useEkycDashboardConfigs = (roleType = "CEO") => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -173,14 +171,14 @@ export const useEkycDashboardConfigs = (roleType = "CEO") => {
       ...roleConfig,
       globalFilters: DashboardConfig.globalFilters,
       kpis: DashboardConfig.kpis,
-      tenantId
+      tenantId,
     };
   }, [roleType, tenantId]);
 
   return {
     config,
     tenantId,
-    userRoles
+    userRoles,
   };
 };
 
@@ -192,7 +190,7 @@ export const useInboxRouting = () => {
 
     const queryParams = new URLSearchParams();
     if (filters) {
-      Object.keys(filters).forEach(key => {
+      Object.keys(filters).forEach((key) => {
         if (filters[key] !== "ALL" && filters[key] !== undefined && filters[key] !== null) {
           queryParams.append(key, filters[key]);
         }
@@ -200,8 +198,16 @@ export const useInboxRouting = () => {
     }
 
     const queryString = queryParams.toString();
-    history.push(`${targetRoute}${queryString ? `?${queryString}` : ''}`);
+    history.push(`${targetRoute}${queryString ? `?${queryString}` : ""}`);
   };
 
   return { routeToInbox };
+};
+
+export const useEkycApplicationList = (data, config = {}) => {
+  return useQuery(["useEkycApplicationList", data], () => Digit.EkycService.application_list(data), config);
+};
+
+export const useEkycAssignmentCreate = (config = {}) => {
+  return useMutation((data) => Digit.EkycService.assignment_create(data), config);
 };

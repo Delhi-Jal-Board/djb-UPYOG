@@ -1,225 +1,181 @@
-import React, { useMemo, useState } from "react";
-import { Modal, Close } from "@djb25/digit-ui-react-components";
+import React, { useMemo, useState, useEffect } from "react";
+import { Modal, Close, Table } from "@djb25/digit-ui-react-components";
 
 const AssignEkycModal = ({ surveyor, closeModal }) => {
   const [selectedKnos, setSelectedKnos] = useState([]);
-
+  const [assignmentType, setAssignmentType] = useState("KNO");
+  const [currentPage, setCurrentPage] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
   const [filters, setFilters] = useState({
+    kno: "", // search value
+    ekycStatus: "",
+    zoneName: "",
+    assembly: "",
+    ward: "",
+    mrkey: "",
     pincode: "",
-    locality: "",
-    status: "",
-    route: "",
-    search: "",
   });
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const knoList = [
-    {
-      kno: "1029384756",
-      consumerName: "Rahul Sharma",
-      locality: "Rohini",
-      pincode: "110085",
-      status: "PENDING",
-      route: "R1",
-    },
-    {
-      kno: "9283746555",
-      consumerName: "Amit Kumar",
-      locality: "Pitampura",
-      pincode: "110034",
-      status: "VERIFIED",
-      route: "R2",
-    },
-    {
-      kno: "8473625147",
-      consumerName: "Neha Verma",
-      locality: "Dwarka",
-      pincode: "110075",
-      status: "PENDING",
-      route: "R3",
-    },
-    {
-      kno: "5647382910",
-      consumerName: "Sanjay Singh",
-      locality: "Janakpuri",
-      pincode: "110058",
-      status: "ASSIGNED",
-      route: "R1",
-    },
-    {
-      kno: "9182736450",
-      consumerName: "Priya Mehta",
-      locality: "Laxmi Nagar",
-      pincode: "110092",
-      status: "PENDING",
-      route: "R4",
-    },
-    {
-      kno: "7463829105",
-      consumerName: "Vikas Gupta",
-      locality: "Karol Bagh",
-      pincode: "110005",
-      status: "VERIFIED",
-      route: "R2",
-    },
-    {
-      kno: "1122334455",
-      consumerName: "Anjali Kapoor",
-      locality: "Saket",
-      pincode: "110017",
-      status: "PENDING",
-      route: "R5",
-    },
-    {
-      kno: "6677889900",
-      consumerName: "Rohit Yadav",
-      locality: "Uttam Nagar",
-      pincode: "110059",
-      status: "ASSIGNED",
-      route: "R3",
-    },
-    {
-      kno: "8899776655",
-      consumerName: "Deepak Chauhan",
-      locality: "Burari",
-      pincode: "110084",
-      status: "PENDING",
-      route: "R6",
-    },
-    {
-      kno: "5544332211",
-      consumerName: "Sneha Arora",
-      locality: "Shahdara",
-      pincode: "110032",
-      status: "VERIFIED",
-      route: "R4",
-    },
-    {
-      kno: "3344556677",
-      consumerName: "Karan Malhotra",
-      locality: "Mayur Vihar",
-      pincode: "110091",
-      status: "PENDING",
-      route: "R7",
-    },
-    {
-      kno: "9988776654",
-      consumerName: "Pooja Bansal",
-      locality: "Patel Nagar",
-      pincode: "110008",
-      status: "ASSIGNED",
-      route: "R5",
-    },
-    {
-      kno: "7766554433",
-      consumerName: "Harsh Jain",
-      locality: "Punjabi Bagh",
-      pincode: "110026",
-      status: "PENDING",
-      route: "R8",
-    },
-    {
-      kno: "2233445566",
-      consumerName: "Nitin Sharma",
-      locality: "Rajouri Garden",
-      pincode: "110027",
-      status: "VERIFIED",
-      route: "R1",
-    },
-    {
-      kno: "4433221100",
-      consumerName: "Megha Sethi",
-      locality: "Ashok Vihar",
-      pincode: "110052",
-      status: "PENDING",
-      route: "R9",
-    },
-    {
-      kno: "1010101010",
-      consumerName: "Aditya Rana",
-      locality: "Model Town",
-      pincode: "110009",
-      status: "ASSIGNED",
-      route: "R10",
-    },
-    {
-      kno: "2020202020",
-      consumerName: "Simran Kaur",
-      locality: "Tilak Nagar",
-      pincode: "110018",
-      status: "PENDING",
-      route: "R11",
-    },
-    {
-      kno: "3030303030",
-      consumerName: "Mohit Saini",
-      locality: "Narela",
-      pincode: "110040",
-      status: "VERIFIED",
-      route: "R6",
-    },
-    {
-      kno: "4040404040",
-      consumerName: "Ritika Sharma",
-      locality: "Bawana",
-      pincode: "110039",
-      status: "PENDING",
-      route: "R7",
-    },
-    {
-      kno: "5050505050",
-      consumerName: "Yash Aggarwal",
-      locality: "Okhla",
-      pincode: "110020",
-      status: "ASSIGNED",
-      route: "R8",
-    },
-  ];
+  const getAssignmentValue = () => {
+    switch (assignmentType) {
+      case "MRKEY":
+        return filters.mrkey;
 
-  const filteredKnos = useMemo(() => {
-    return knoList.filter((item) => {
-      const matchesPincode = filters.pincode ? item.pincode.includes(filters.pincode) : true;
+      case "ASSEMBLY":
+        return filters.assembly;
 
-      const matchesLocality = filters.locality ? item.locality.toLowerCase().includes(filters.locality.toLowerCase()) : true;
+      case "WARD":
+        return filters.ward;
 
-      const matchesStatus = filters.status ? item.status === filters.status : true;
-
-      const matchesRoute = filters.route ? item.route.toLowerCase().includes(filters.route.toLowerCase()) : true;
-
-      const matchesSearch = filters.search
-        ? item.kno.includes(filters.search) || item.consumerName.toLowerCase().includes(filters.search.toLowerCase())
-        : true;
-
-      return matchesPincode && matchesLocality && matchesStatus && matchesRoute && matchesSearch;
-    });
-  }, [filters, knoList]);
-
-  const handleSelect = (kno) => {
-    setSelectedKnos((prev) => (prev.includes(kno) ? prev.filter((item) => item !== kno) : [...prev, kno]));
-  };
-
-  const handleSelectAll = () => {
-    const visibleKnos = filteredKnos.map((item) => item.kno);
-
-    const allSelected = visibleKnos.every((kno) => selectedKnos.includes(kno));
-
-    if (allSelected) {
-      setSelectedKnos((prev) => prev.filter((kno) => !visibleKnos.includes(kno)));
-    } else {
-      setSelectedKnos((prev) => [...new Set([...prev, ...visibleKnos])]);
+      case "KNO":
+      default:
+        return selectedKnos.join(",");
     }
   };
 
+  const [debouncedFilters, setDebouncedFilters] = useState(filters);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedFilters(filters);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [filters]);
+
+  useEffect(() => {
+    setCurrentPage(0);
+  }, [debouncedFilters]);
+
+  const { data: applicationData, isLoading } = Digit.Hooks.ekyc.useEkycApplicationList(
+    {
+      tenantId: "dl.djb",
+      offset: currentPage * pageSize,
+      limit: pageSize,
+
+      ...(debouncedFilters.kno && {
+        kno: debouncedFilters.kno,
+      }),
+
+      ...(debouncedFilters.ekycStatus && {
+        ekycStatus: debouncedFilters.ekycStatus,
+      }),
+
+      ...(debouncedFilters.zoneName && {
+        zoneName: debouncedFilters.zoneName,
+      }),
+
+      ...(debouncedFilters.assembly && {
+        assembly: debouncedFilters.assembly,
+      }),
+
+      ...(debouncedFilters.ward && {
+        ward: debouncedFilters.ward,
+      }),
+
+      ...(debouncedFilters.mrkey && {
+        mrkey: debouncedFilters.mrkey,
+      }),
+
+      ...(debouncedFilters.pincode && {
+        pincode: debouncedFilters.pincode,
+      }),
+    },
+    {
+      keepPreviousData: true,
+    }
+  );
+
+  const assignmentMutation = Digit.Hooks.ekyc.useEkycAssignmentCreate({
+    onSuccess: (response) => {
+      console.log("Assignment successful", response);
+      closeModal();
+    },
+    onError: (error) => {
+      console.error("Assignment failed", error);
+      // show toast here
+    },
+  });
+
+  const tableData = applicationData?.consumerList || [];
+
   const handleAssign = () => {
-    const payload = {
+    assignmentMutation.mutate({
+      tenantId: "dl.djb",
       surveyorId: surveyor?.uuid,
-      knos: selectedKnos,
-      filters,
-    };
+      assignmentType: "KNO",
+      assignmentValue: getAssignmentValue(),
+    });
+  };
 
-    console.log(payload);
+  const handleSelectAll = () => {
+    const pageKnos = tableData.map((item) => item.kno);
 
-    closeModal();
+    const allSelected = pageKnos.length > 0 && pageKnos.every((kno) => selectedKnos.includes(kno));
+
+    setSelectedKnos((prev) => (allSelected ? prev.filter((kno) => !pageKnos.includes(kno)) : [...new Set([...prev, ...pageKnos])]));
+  };
+
+  const handleFilterChange = (key, value) => {
+    setFilters((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
+  };
+
+  const columns = useMemo(
+    () => [
+      {
+        Header: () => (
+          <input
+            type="checkbox"
+            checked={tableData.length > 0 && tableData.every((item) => selectedKnos.includes(item.kno))}
+            onChange={handleSelectAll}
+          />
+        ),
+        id: "selection",
+        Cell: ({ row }) => {
+          const kno = row.original.kno;
+
+          return <input type="checkbox" checked={selectedKnos.includes(kno)} onChange={() => handleSelect(kno)} />;
+        },
+      },
+      {
+        Header: "KNO",
+        accessor: "kno",
+      },
+      {
+        Header: "Consumer Name",
+        accessor: (row) => `${row.firstName || ""} ${row.middleName || ""} ${row.lastName || ""}`.trim(),
+        id: "consumerName",
+      },
+      {
+        Header: "Zone",
+        accessor: "zoneName",
+      },
+      {
+        Header: "Pincode",
+        accessor: "pincode",
+      },
+      {
+        Header: "Status",
+        accessor: "status",
+        Cell: ({ value }) => (
+          <span className={`status-badge ${value === "ACTIVE" ? "verified" : value === "PENDING" ? "pending" : "assigned"}`}>{value}</span>
+        ),
+      },
+      {
+        Header: "eKYC Status",
+        accessor: "ekycStatus",
+        Cell: ({ value }) => value || "-",
+      },
+    ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [selectedKnos, tableData]
+  );
+
+  const handleSelect = (kno) => {
+    setSelectedKnos((prev) => (prev.includes(kno) ? prev.filter((item) => item !== kno) : [...prev, kno]));
   };
 
   return (
@@ -234,126 +190,81 @@ const AssignEkycModal = ({ surveyor, closeModal }) => {
       <div className="assign-knos-modal">
         {/* Filters */}
         <div className="filters-grid">
-          <input
-            className="form-control"
-            placeholder="Search by KNO / Consumer"
-            value={filters.search}
-            onChange={(e) =>
-              setFilters({
-                ...filters,
-                search: e.target.value,
-              })
-            }
-          />
+          <input className="form-control" placeholder="KNO" value={filters.kno} onChange={(e) => handleFilterChange("kno", e.target.value)} />
 
           <input
             className="form-control"
             placeholder="Pincode"
             value={filters.pincode}
-            onChange={(e) =>
-              setFilters({
-                ...filters,
-                pincode: e.target.value,
-              })
-            }
+            onChange={(e) => handleFilterChange("pincode", e.target.value)}
           />
 
           <input
             className="form-control"
-            placeholder="Locality"
-            value={filters.locality}
-            onChange={(e) =>
-              setFilters({
-                ...filters,
-                locality: e.target.value,
-              })
-            }
+            placeholder="Zone"
+            value={filters.zoneName}
+            onChange={(e) => handleFilterChange("zoneName", e.target.value)}
           />
+
+          <input className="form-control" placeholder="Ward" value={filters.ward} onChange={(e) => handleFilterChange("ward", e.target.value)} />
 
           <input
             className="form-control"
-            placeholder="Route"
-            value={filters.route}
-            onChange={(e) =>
-              setFilters({
-                ...filters,
-                route: e.target.value,
-              })
-            }
+            placeholder="Assembly"
+            value={filters.assembly}
+            onChange={(e) => handleFilterChange("assembly", e.target.value)}
           />
 
-          <select
-            className="form-control"
-            value={filters.status}
-            onChange={(e) =>
-              setFilters({
-                ...filters,
-                status: e.target.value,
-              })
-            }
-          >
-            <option value="">All Status</option>
+          <input className="form-control" placeholder="MR Key" value={filters.mrkey} onChange={(e) => handleFilterChange("mrkey", e.target.value)} />
+
+          <select className="form-control" value={filters.ekycStatus} onChange={(e) => handleFilterChange("ekycStatus", e.target.value)}>
+            <option value="">All eKYC Status</option>
             <option value="PENDING">Pending</option>
-            <option value="VERIFIED">Verified</option>
-            <option value="ASSIGNED">Assigned</option>
+            <option value="APPROVED">Approved</option>
+            <option value="REJECTED">Rejected</option>
+          </select>
+
+          <select className="form-control" value={assignmentType} onChange={(e) => setAssignmentType(e.target.value)}>
+            <option value="KNO">KNO</option>
+            <option value="MRKEY">MR Key</option>
+            <option value="WARD">Ward</option>
+            <option value="ASSEMBLY">Assembly</option>
           </select>
         </div>
 
-        {/* Summary */}
-        <div className="summary-bar">
-          <div>Total Records: {filteredKnos.length}</div>
-          <div>Selected KNOs: {selectedKnos.length}</div>
-        </div>
-
         {/* Table */}
-        <div className="table-wrapper">
-          {/* Header */}
-          <div className="table-header">
-            <div>
-              <input
-                type="checkbox"
-                checked={filteredKnos.length > 0 && filteredKnos.every((item) => selectedKnos.includes(item.kno))}
-                onChange={handleSelectAll}
-              />
-            </div>
-
-            <div>KNO</div>
-            <div>Consumer Name</div>
-            <div>Locality</div>
-            <div>Pincode</div>
-            <div>Status</div>
-            <div>Route</div>
-          </div>
-
-          {/* Rows */}
-          <div className="table-body">
-            {filteredKnos.length > 0 ? (
-              filteredKnos.map((item, index) => (
-                <div key={item.kno} className={`table-row ${index % 2 === 0 ? "even" : "odd"}`}>
-                  <div>
-                    <input type="checkbox" checked={selectedKnos.includes(item.kno)} onChange={() => handleSelect(item.kno)} />
-                  </div>
-
-                  <div className="kno-value">{item.kno}</div>
-
-                  <div>{item.consumerName}</div>
-                  <div>{item.locality}</div>
-                  <div>{item.pincode}</div>
-
-                  <div>
-                    <span className={`status-badge ${item.status === "PENDING" ? "pending" : item.status === "VERIFIED" ? "verified" : "assigned"}`}>
-                      {item.status}
-                    </span>
-                  </div>
-
-                  <div>{item.route}</div>
-                </div>
-              ))
-            ) : (
-              <div className="empty-state">No KNO records found</div>
-            )}
-          </div>
-        </div>
+        <Table
+          tableTitle="eKYC Applications"
+          tableClass="ekycTable"
+          data={tableData}
+          columns={columns}
+          isLoading={isLoading}
+          totalRecords={applicationData?.totalCount || 0}
+          currentPage={currentPage}
+          pageSizeLimit={pageSize}
+          manualPagination={true}
+          isPaginationRequired={true}
+          onNextPage={() => {
+            if (currentPage < (applicationData?.totalPages || 1) - 1) {
+              setCurrentPage((prev) => prev + 1);
+            }
+          }}
+          onPrevPage={() => {
+            if (currentPage > 0) {
+              setCurrentPage((prev) => prev - 1);
+            }
+          }}
+          onFirstPage={() => {
+            setCurrentPage(0);
+          }}
+          onLastPage={() => {
+            setCurrentPage(Math.max((applicationData?.totalPages || 1) - 1, 0));
+          }}
+          onPageSizeChange={(e) => {
+            setPageSize(Number(e.target.value));
+            setCurrentPage(0);
+          }}
+        />
       </div>
     </Modal>
   );
