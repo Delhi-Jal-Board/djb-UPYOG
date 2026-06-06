@@ -3,6 +3,7 @@ import { Modal, Close, Table } from "@djb25/digit-ui-react-components";
 
 const AssignEkycModal = ({ surveyor, closeModal }) => {
   const [selectedKnos, setSelectedKnos] = useState([]);
+  const [assignmentType, setAssignmentType] = useState("KNO");
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
   const [filters, setFilters] = useState({
@@ -14,6 +15,23 @@ const AssignEkycModal = ({ surveyor, closeModal }) => {
     mrkey: "",
     pincode: "",
   });
+
+  const getAssignmentValue = () => {
+    switch (assignmentType) {
+      case "MRKEY":
+        return filters.mrkey;
+
+      case "ASSEMBLY":
+        return filters.assembly;
+
+      case "WARD":
+        return filters.ward;
+
+      case "KNO":
+      default:
+        return selectedKnos.join(",");
+    }
+  };
 
   const [debouncedFilters, setDebouncedFilters] = useState(filters);
 
@@ -86,7 +104,7 @@ const AssignEkycModal = ({ surveyor, closeModal }) => {
       tenantId: "dl.djb",
       surveyorId: surveyor?.uuid,
       assignmentType: "KNO",
-      assignmentValue: selectedKnos.join(","),
+      assignmentValue: getAssignmentValue(),
     });
   };
 
@@ -204,6 +222,13 @@ const AssignEkycModal = ({ surveyor, closeModal }) => {
             <option value="PENDING">Pending</option>
             <option value="APPROVED">Approved</option>
             <option value="REJECTED">Rejected</option>
+          </select>
+
+          <select className="form-control" value={assignmentType} onChange={(e) => setAssignmentType(e.target.value)}>
+            <option value="KNO">KNO</option>
+            <option value="MRKEY">MR Key</option>
+            <option value="WARD">Ward</option>
+            <option value="ASSEMBLY">Assembly</option>
           </select>
         </div>
 
