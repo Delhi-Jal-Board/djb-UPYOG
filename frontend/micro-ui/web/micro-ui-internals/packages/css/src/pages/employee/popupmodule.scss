@@ -16,8 +16,9 @@
   }
 
   .popup-module-action-bar {
-    gap: 16px;
-    @apply flex flex-row justify-end;
+    border-top: 1px solid rgba(15, 23, 42, 0.08);
+    padding-top: 12px;
+    @apply flex flex-wrap items-center flex-row justify-end gap-3;
   }
 
   .modal-form {
@@ -33,11 +34,6 @@
 
     .popup-module-main {
       @apply w-full p-md h-full;
-    }
-
-    .popup-module-action-bar {
-      gap: 16px;
-      @apply flex flex-row justify-end;
     }
   }
 }
