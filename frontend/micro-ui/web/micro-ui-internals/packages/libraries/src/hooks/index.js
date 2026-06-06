@@ -371,6 +371,7 @@ import {
   useEkycDashboardData,
   useEkycDashboardConfigs,
   useEkycApplicationList,
+  useEkycAssignmentCreate,
 } from "./ekyc/useEkyc";
 import { useCreateFixedPoint } from "./wt/createFixedPoint";
 import { useCreateFixedPointSchedule } from "./wt/useCreateFixedPointSchedule";
@@ -561,6 +562,7 @@ const ekyc = {
   useEkycDashboardData,
   useEkycDashboardConfigs,
   useInboxRouting,
+  useEkycAssignmentCreate,
 };
 
 const hrms = {

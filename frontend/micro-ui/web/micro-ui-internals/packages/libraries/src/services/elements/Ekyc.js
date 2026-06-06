@@ -161,6 +161,22 @@ export const EkycService = {
         mrkey,
       },
     }),
+  assignment_create: ({ tenantId = "dl.djb", surveyorId, assignmentType, assignmentValue } = {}) =>
+    Request({
+      url: Urls.ekyc.assignment_create,
+      method: "POST",
+      auth: true,
+      userService: true,
+      useCache: false,
+      params: {
+        tenantId,
+      },
+      data: {
+        surveyorId,
+        assignmentType,
+        assignmentValue,
+      },
+    }),
   fetchSummary: (data) =>
     Request({
       url: Urls.ekyc.dashboard_summary,

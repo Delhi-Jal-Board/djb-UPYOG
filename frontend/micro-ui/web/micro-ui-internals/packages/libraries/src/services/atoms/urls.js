@@ -346,6 +346,7 @@ const Urls = {
     cluster_heatmap: "/analytics-service/v1/cluster/_heatmap",
     workflow_tracking: "/analytics-service/v1/workflow/_tracking",
     application_list: "/ekyc-service/user/application/_list",
+    assignment_create: "/ekyc-service/assignment/_assign",
   },
   audit: "/inbox/v1/elastic/_search",
 };

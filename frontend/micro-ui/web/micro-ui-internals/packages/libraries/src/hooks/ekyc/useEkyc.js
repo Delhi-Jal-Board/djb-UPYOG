@@ -207,3 +207,7 @@ export const useInboxRouting = () => {
 export const useEkycApplicationList = (data, config = {}) => {
   return useQuery(["useEkycApplicationList", data], () => Digit.EkycService.application_list(data), config);
 };
+
+export const useEkycAssignmentCreate = (config = {}) => {
+  return useMutation((data) => Digit.EkycService.assignment_create(data), config);
+};
