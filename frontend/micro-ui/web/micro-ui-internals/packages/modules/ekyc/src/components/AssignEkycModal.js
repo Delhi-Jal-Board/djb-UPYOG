@@ -1,61 +1,114 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { Modal, Close, Table } from "@djb25/digit-ui-react-components";
 
 const AssignEkycModal = ({ surveyor, closeModal }) => {
   const [selectedKnos, setSelectedKnos] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
-  const [pageSize, setPageSize] = useState(20);
-
+  const [pageSize, setPageSize] = useState(10);
   const [filters, setFilters] = useState({
+    kno: "", // search value
+    ekycStatus: "",
+    zoneName: "",
+    assembly: "",
+    ward: "",
+    mrkey: "",
     pincode: "",
-    locality: "",
-    status: "",
-    route: "",
-    search: "",
   });
+
+  const [debouncedFilters, setDebouncedFilters] = useState(filters);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedFilters(filters);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [filters]);
+
+  useEffect(() => {
+    setCurrentPage(0);
+  }, [debouncedFilters]);
 
   const { data: applicationData, isLoading } = Digit.Hooks.ekyc.useEkycApplicationList(
     {
       tenantId: "dl.djb",
       offset: currentPage * pageSize,
       limit: pageSize,
-      ...(filters.pincode && { pincode: filters.pincode }),
+
+      ...(debouncedFilters.kno && {
+        kno: debouncedFilters.kno,
+      }),
+
+      ...(debouncedFilters.ekycStatus && {
+        ekycStatus: debouncedFilters.ekycStatus,
+      }),
+
+      ...(debouncedFilters.zoneName && {
+        zoneName: debouncedFilters.zoneName,
+      }),
+
+      ...(debouncedFilters.assembly && {
+        assembly: debouncedFilters.assembly,
+      }),
+
+      ...(debouncedFilters.ward && {
+        ward: debouncedFilters.ward,
+      }),
+
+      ...(debouncedFilters.mrkey && {
+        mrkey: debouncedFilters.mrkey,
+      }),
+
+      ...(debouncedFilters.pincode && {
+        pincode: debouncedFilters.pincode,
+      }),
     },
     {
       keepPreviousData: true,
     }
   );
 
+  const assignmentMutation = Digit.Hooks.ekyc.useEkycAssignmentCreate({
+    onSuccess: (response) => {
+      console.log("Assignment successful", response);
+      closeModal();
+    },
+    onError: (error) => {
+      console.error("Assignment failed", error);
+      // show toast here
+    },
+  });
+
   const tableData = applicationData?.consumerList || [];
 
   const handleAssign = () => {
-    const payload = {
+    assignmentMutation.mutate({
+      tenantId: "dl.djb",
       surveyorId: surveyor?.uuid,
-      knos: selectedKnos,
-      filters,
-    };
-
-    console.log(payload);
-
-    closeModal();
+      assignmentType: "KNO",
+      assignmentValue: selectedKnos.join(","),
+    });
   };
 
   const handleSelectAll = () => {
     const pageKnos = tableData.map((item) => item.kno);
 
-    const allSelected = pageKnos.every((kno) => selectedKnos.includes(kno));
+    const allSelected = pageKnos.length > 0 && pageKnos.every((kno) => selectedKnos.includes(kno));
 
-    if (allSelected) {
-      setSelectedKnos((prev) => prev.filter((kno) => !pageKnos.includes(kno)));
-    } else {
-      setSelectedKnos((prev) => [...new Set([...prev, ...pageKnos])]);
-    }
+    setSelectedKnos((prev) => (allSelected ? prev.filter((kno) => !pageKnos.includes(kno)) : [...new Set([...prev, ...pageKnos])]));
+  };
+
+  const handleFilterChange = (key, value) => {
+    setFilters((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
   };
 
   const columns = useMemo(
     () => [
       {
-        Header: (
+        Header: () => (
           <input
             type="checkbox"
             checked={tableData.length > 0 && tableData.every((item) => selectedKnos.includes(item.kno))}
@@ -63,9 +116,11 @@ const AssignEkycModal = ({ surveyor, closeModal }) => {
           />
         ),
         id: "selection",
-        Cell: ({ row }) => (
-          <input type="checkbox" checked={selectedKnos.includes(row.original.kno)} onChange={() => handleSelect(row.original.kno)} />
-        ),
+        Cell: ({ row }) => {
+          const kno = row.original.kno;
+
+          return <input type="checkbox" checked={selectedKnos.includes(kno)} onChange={() => handleSelect(kno)} />;
+        },
       },
       {
         Header: "KNO",
@@ -98,7 +153,7 @@ const AssignEkycModal = ({ surveyor, closeModal }) => {
       },
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
+    [selectedKnos, tableData]
   );
 
   const handleSelect = (kno) => {
@@ -117,78 +172,39 @@ const AssignEkycModal = ({ surveyor, closeModal }) => {
       <div className="assign-knos-modal">
         {/* Filters */}
         <div className="filters-grid">
-          <input
-            className="form-control"
-            placeholder="Search by KNO / Consumer"
-            value={filters.search}
-            onChange={(e) =>
-              setFilters({
-                ...filters,
-                search: e.target.value,
-              })
-            }
-          />
+          <input className="form-control" placeholder="KNO" value={filters.kno} onChange={(e) => handleFilterChange("kno", e.target.value)} />
 
           <input
             className="form-control"
             placeholder="Pincode"
             value={filters.pincode}
-            onChange={(e) =>
-              setFilters({
-                ...filters,
-                pincode: e.target.value,
-              })
-            }
+            onChange={(e) => handleFilterChange("pincode", e.target.value)}
           />
 
           <input
             className="form-control"
-            placeholder="Locality"
-            value={filters.locality}
-            onChange={(e) =>
-              setFilters({
-                ...filters,
-                locality: e.target.value,
-              })
-            }
+            placeholder="Zone"
+            value={filters.zoneName}
+            onChange={(e) => handleFilterChange("zoneName", e.target.value)}
           />
+
+          <input className="form-control" placeholder="Ward" value={filters.ward} onChange={(e) => handleFilterChange("ward", e.target.value)} />
 
           <input
             className="form-control"
-            placeholder="Route"
-            value={filters.route}
-            onChange={(e) =>
-              setFilters({
-                ...filters,
-                route: e.target.value,
-              })
-            }
+            placeholder="Assembly"
+            value={filters.assembly}
+            onChange={(e) => handleFilterChange("assembly", e.target.value)}
           />
 
-          <select
-            className="form-control"
-            value={filters.status}
-            onChange={(e) =>
-              setFilters({
-                ...filters,
-                status: e.target.value,
-              })
-            }
-          >
-            <option value="">All Status</option>
+          <input className="form-control" placeholder="MR Key" value={filters.mrkey} onChange={(e) => handleFilterChange("mrkey", e.target.value)} />
+
+          <select className="form-control" value={filters.ekycStatus} onChange={(e) => handleFilterChange("ekycStatus", e.target.value)}>
+            <option value="">All eKYC Status</option>
             <option value="PENDING">Pending</option>
-            <option value="VERIFIED">Verified</option>
-            <option value="ASSIGNED">Assigned</option>
+            <option value="APPROVED">Approved</option>
+            <option value="REJECTED">Rejected</option>
           </select>
-        </div>
-
-        {/* Summary */}
-        <div className="summary-bar">
-          <div>Total Records: {applicationData?.totalCount || 0}</div>
-          <div>Selected KNOs: {selectedKnos.length}</div>
-          <div>
-            Page {currentPage + 1} of {applicationData?.totalPages || 1}
-          </div>
         </div>
 
         {/* Table */}
