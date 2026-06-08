@@ -283,8 +283,7 @@
     .search-complaint-container {
       border-radius: 6px;
       width: 100%;
-      margin: auto;
-      @apply flex flex-col items-start mb-md bg-white p-md;
+      @apply flex flex-col items-start bg-white p-md;
 
       .complaint-header {
         display: flex;
@@ -487,13 +486,10 @@
     }
 
     .search-container {
-      width: 874px;
-
       .search-complaint-container {
         border-radius: 6px;
-        width: 100%;
-        margin: auto;
-        @apply flex flex-col items-start mb-md bg-white p-md;
+        width: 100% !important;
+        @apply flex flex-col items-start bg-white p-md;
 
         .complaint-header {
           display: flex;
@@ -590,6 +586,65 @@
       }
     }
   }
+
+  .groupBill-custom {
+    .custom-group-merge-container {
+      display: flex !important;
+      justify-content: space-between !important;
+
+      .header {
+        display: flex;
+        align-items: baseline;
+
+        .logo {
+          margin-right: 1rem;
+
+          svg {
+            path {
+              fill: theme(colors.primary.main);
+            }
+          }
+        }
+
+        .h1 {
+          font-size: 24px;
+          line-height: 28px;
+          font-weight: 400;
+          color: theme(colors.primary.main);
+        }
+      }
+    }
+
+    .inbox-container {
+      .search-container {
+        .search-complaint-container {
+          display: flex;
+          flex-direction: row;
+        }
+
+        .group-complaint-input-container {
+          width: 33% !important;
+          display: flex;
+          flex-direction: column;
+        }
+      }
+    }
+
+    .inbox-action-container {
+      display: flex;
+      flex-direction: row-reverse;
+
+      .clear-search {
+        margin-top: 65px;
+        margin-left: 16px;
+        padding-top: unset !important;
+      }
+
+      .submit-bar-search {
+        margin-top: 55px !important;
+      }
+    }
+  }
 }
 
 .input-fields {
@@ -675,64 +730,6 @@
 }
 
 @screen dt {
-  .groupBill-custom {
-    .custom-group-merge-container {
-      display: flex !important;
-      justify-content: space-between !important;
-
-      .header {
-        display: flex;
-        align-items: baseline;
-
-        .logo {
-          margin-right: 1rem;
-
-          svg {
-            path {
-              fill: theme(colors.primary.main);
-            }
-          }
-        }
-
-        .h1 {
-          font-size: 24px;
-          line-height: 28px;
-          font-weight: 400;
-          color: theme(colors.primary.main);
-        }
-      }
-    }
-
-    .inbox-container {
-      .search-container {
-        .search-complaint-container {
-          display: flex;
-          flex-direction: row;
-        }
-
-        .group-complaint-input-container {
-          width: 33% !important;
-          display: flex;
-          flex-direction: column;
-        }
-      }
-    }
-
-    .inbox-action-container {
-      display: flex;
-      flex-direction: row-reverse;
-
-      .clear-search {
-        margin-top: 65px;
-        margin-left: 16px;
-        padding-top: unset !important;
-      }
-
-      .submit-bar-search {
-        margin-top: 55px !important;
-      }
-    }
-  }
 }
 
 .plumber-details-new-value-wrapper {
@@ -762,7 +759,7 @@
 
 .search-tabs-container {
   border-bottom: 1px solid rgba(0, 0, 0, 0.2);
-  margin-bottom: 35px;
+  margin-bottom: 8px;
   display: flex;
   justify-content: space-between;
 
@@ -810,6 +807,24 @@
     tr {
       th {
         text-align: center;
+        .col-head-wrapper {
+          display: flex;
+          gap: 4px;
+          align-items: center;
+          .col-head {
+            font-size: 11;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            transition: color 0.15s;
+          }
+          .col-head.accentDark {
+            color: #5282e6;
+          }
+          .col-head.textSecondary {
+            color: #475569;
+          }
+        }
       }
     }
   }

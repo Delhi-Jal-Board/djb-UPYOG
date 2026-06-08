@@ -104,8 +104,8 @@ const RegisteredVendorSearch = ({
               <DropdownStatus
                 onAssignmentChange={props.onChange}
                 value={props.value}
-              // applicationStatuses={applicationStatuses}
-              // areApplicationStatus={areApplicationStatus}
+                // applicationStatuses={applicationStatuses}
+                // areApplicationStatus={areApplicationStatus}
               />
             )}
             name={input.name}
@@ -160,7 +160,7 @@ const RegisteredVendorSearch = ({
   ];
   return (
     <React.Fragment>
-      <div className="search-container" style={{ width: "auto" }}>
+      <div className="search-container">
         <div className="search-complaint-container">
           {(type === "mobile" || mobileView) && (
             <div className="complaint-header">
@@ -179,7 +179,6 @@ const RegisteredVendorSearch = ({
           )}
           <div className="search-tabs-container">
             <div>
-
               <button
                 className={selectedTab === "VENDOR" ? "search-tab-head-selected" : "search-tab-head"}
                 onClick={() => {

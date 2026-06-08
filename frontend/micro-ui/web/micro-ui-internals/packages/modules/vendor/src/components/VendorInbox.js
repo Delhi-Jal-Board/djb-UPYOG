@@ -1483,7 +1483,16 @@ const VendorInbox = (props) => {
           </div>
         </div>
       )}
-      <div style={{ flex: 1, width: "100%", marginLeft: props.userRole === "FSM_ADMIN" ? "" : "24px" }}>
+      <div
+        style={{
+          flex: 1,
+          width: "100%",
+          marginLeft: props.userRole === "FSM_ADMIN" ? "" : "24px",
+          display: "flex",
+          flexDirection: "column",
+          gap: "12px",
+        }}
+      >
         <RegistredVendorSearch
           onSearch={props.onSearch}
           type="desktop"
