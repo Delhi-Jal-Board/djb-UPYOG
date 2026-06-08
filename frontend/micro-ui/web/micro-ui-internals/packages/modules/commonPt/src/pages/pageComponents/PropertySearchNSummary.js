@@ -119,111 +119,113 @@ const PropertySearchNSummary = ({ config, onSelect, userType, formData, setError
 
   return (
     <React.Fragment>
-      {(window.location.href.includes("/tl/")
-        ? !(formData?.tradedetils?.[0]?.structureType?.code === "MOVABLE") && (isEmpNewApplication || isEmpRenewLicense)
-        : true) && (
-        <React.Fragment>
-          <LabelFieldPair>
-            <Label style={getInputStyles()}>{`${t(`PROPERTY_ID`)}`}</Label>
-            <div style={{ display: "flex", gap: "12px" }}>
-              <TextInput
-                key={config?.key}
-                value={propertyId}
-                //isMandatory={true}
-                onChange={(e) => {
-                  setPropertyId(e.target.value);
-                  onSelect(config?.key, { id: e.target.value });
-                }}
-                style={{ width: "80%", float: "left" }}
-                placeholder={`${t("PT_ENTER_PROPERTY_ID")}`}
-              />
-              <button className="submit-bar" type="button" style={{ color: "white" }} onClick={searchProperty}>
-                {`${t("PT_SEARCH")}`}
-              </button>
-              <button className="submit-bar" type="button" style={{ color: "white" }} onClick={clearSearch}>
-                {`${t("CLEAR")}`}
-              </button>
-
-              <span
-                onClick={() =>
-                  history.push(`/digit-ui/${userType}/${pathname.split("/")[3]}/create-application/create-property`, { ...state, ...formData })
-                }
-              >
-                <button className="submit-bar" type="button" style={{ color: "white" }}>
-                  {t("CPT_CREATE_PROPERTY")}
+      <CollapsibleCardPage title={t("PT_PROPERTY_SEARCH")} defaultOpen={true}>
+        {(window.location.href.includes("/tl/")
+          ? !(formData?.tradedetils?.[0]?.structureType?.code === "MOVABLE") && (isEmpNewApplication || isEmpRenewLicense)
+          : true) && (
+          <React.Fragment>
+            <LabelFieldPair>
+              <Label style={getInputStyles()}>{`${t(`PROPERTY_ID`)}`}</Label>
+              <div style={{ display: "flex", gap: "12px" }}>
+                <TextInput
+                  key={config?.key}
+                  value={propertyId}
+                  //isMandatory={true}
+                  onChange={(e) => {
+                    setPropertyId(e.target.value);
+                    onSelect(config?.key, { id: e.target.value });
+                  }}
+                  style={{ width: "80%", float: "left" }}
+                  placeholder={`${t("PT_ENTER_PROPERTY_ID")}`}
+                />
+                <button className="submit-bar" type="button" style={{ color: "white" }} onClick={searchProperty}>
+                  {`${t("PT_SEARCH")}`}
                 </button>
-              </span>
-            </div>
-          </LabelFieldPair>
+                <button className="submit-bar" type="button" style={{ color: "white" }} onClick={clearSearch}>
+                  {`${t("CLEAR")}`}
+                </button>
 
-          {/* {searchPropertyId && propertyDetails && propertyDetails?.Properties.length ? (
-            <React.Fragment>
-              <Card className="card-with-background" style={{ margin: "16px 0px", padding: "20px", boxShadow: "none" }}>
-                <StatusTable style={{ padding: "0", margin: "0" }}>
-                  <div className="formcomposer-section-grid" style={isMobile ? {} : {}}>
-                    <Row
-                      className="border-none"
-                      labelStyle={isMobile ? { width: "40%" } : { width: "30%", color: "#505a5f", fontWeight: "600" }}
-                      textStyle={{ color: "#000" }}
-                      label={t(`PROPERTY_ID`)}
-                      text={propertyDetails?.Properties[0]?.propertyId}
-                    />
-                    <Row
-                      className="border-none"
-                      labelStyle={isMobile ? { width: "40%" } : { width: "30%", color: "#505a5f", fontWeight: "600" }}
-                      textStyle={{ color: "#000" }}
-                      label={t(`OWNER_NAME`)}
-                      text={getOwnerNames(propertyDetails?.Properties[0])}
-                    />
-                    <Row
-                      className="border-none"
-                      labelStyle={isMobile ? { width: "40%" } : { width: "30%", color: "#505a5f", fontWeight: "600" }}
-                      textStyle={{ wordBreak: "break-word", color: "#000" }}
-                      label={t(`PROPERTY_ADDRESS`)}
-                      text={propertyAddress}
-                      privacy={{
-                        uuid: propertyDetails?.Properties[0]?.owners?.[0]?.uuid,
-                        fieldName: ["doorNo", "street", "landmark"],
-                        model: "Property",
-                        showValue: true,
-                        loadData: {
-                          serviceName: "/property-services/property/_search",
-                          requestBody: {},
-                          requestParam: {
-                            tenantId: propertyDetails?.Properties[0]?.tenantId,
-                            propertyIds: propertyDetails?.Properties[0]?.propertyId,
+                <span
+                  onClick={() =>
+                    history.push(`/digit-ui/${userType}/${pathname.split("/")[3]}/create-application/create-property`, { ...state, ...formData })
+                  }
+                >
+                  <button className="submit-bar" type="button" style={{ color: "white" }}>
+                    {t("CPT_CREATE_PROPERTY")}
+                  </button>
+                </span>
+              </div>
+            </LabelFieldPair>
+
+            {searchPropertyId && propertyDetails && propertyDetails?.Properties.length ? (
+              <React.Fragment>
+                <Card className="card-with-background" style={{ margin: "16px 0px", padding: "20px", boxShadow: "none" }}>
+                  <StatusTable style={{ padding: "0", margin: "0" }}>
+                    <div className="formcomposer-section-grid" style={isMobile ? {} : {}}>
+                      <Row
+                        className="border-none"
+                        labelStyle={isMobile ? { width: "40%" } : { width: "30%", color: "#505a5f", fontWeight: "600" }}
+                        textStyle={{ color: "#000" }}
+                        label={t(`PROPERTY_ID`)}
+                        text={propertyDetails?.Properties[0]?.propertyId}
+                      />
+                      <Row
+                        className="border-none"
+                        labelStyle={isMobile ? { width: "40%" } : { width: "30%", color: "#505a5f", fontWeight: "600" }}
+                        textStyle={{ color: "#000" }}
+                        label={t(`OWNER_NAME`)}
+                        text={getOwnerNames(propertyDetails?.Properties[0])}
+                      />
+                      <Row
+                        className="border-none"
+                        labelStyle={isMobile ? { width: "40%" } : { width: "30%", color: "#505a5f", fontWeight: "600" }}
+                        textStyle={{ wordBreak: "break-word", color: "#000" }}
+                        label={t(`PROPERTY_ADDRESS`)}
+                        text={propertyAddress}
+                        privacy={{
+                          uuid: propertyDetails?.Properties[0]?.owners?.[0]?.uuid,
+                          fieldName: ["doorNo", "street", "landmark"],
+                          model: "Property",
+                          showValue: true,
+                          loadData: {
+                            serviceName: "/property-services/property/_search",
+                            requestBody: {},
+                            requestParam: {
+                              tenantId: propertyDetails?.Properties[0]?.tenantId,
+                              propertyIds: propertyDetails?.Properties[0]?.propertyId,
+                            },
+                            jsonPath: "Properties[0].address.street",
+                            d: (res) => {
+                              let resultString =
+                                (_.get(res, "Properties[0].address.doorNo") ? `${_.get(res, "Properties[0].address.doorNo")}, ` : "") +
+                                (_.get(res, "Properties[0].address.street") ? `${_.get(res, "Properties[0].address.street")}, ` : "") +
+                                (_.get(res, "Properties[0].address.landmark") ? `${_.get(res, "Properties[0].address.landmark")}` : "");
+                              return resultString;
+                            },
+                            isArray: false,
                           },
-                          jsonPath: "Properties[0].address.street",
-                          d: (res) => {
-                            let resultString =
-                              (_.get(res, "Properties[0].address.doorNo") ? `${_.get(res, "Properties[0].address.doorNo")}, ` : "") +
-                              (_.get(res, "Properties[0].address.street") ? `${_.get(res, "Properties[0].address.street")}, ` : "") +
-                              (_.get(res, "Properties[0].address.landmark") ? `${_.get(res, "Properties[0].address.landmark")}` : "");
-                            return resultString;
-                          },
-                          isArray: false,
-                        },
-                      }}
-                    />
-                  </div>
-                </StatusTable>
-              </Card>
-            </React.Fragment>
-          ) : null} */}
-          {showToast && (
-            <Toast
-              isDleteBtn={true}
-              labelstyle={{ width: "100%" }}
-              error={showToast.error}
-              warning={showToast.warning}
-              label={t(showToast.label)}
-              onClose={() => {
-                setShowToast(null);
-              }}
-            />
-          )}
-        </React.Fragment>
-      )}
+                        }}
+                      />
+                    </div>
+                  </StatusTable>
+                </Card>
+              </React.Fragment>
+            ) : null}
+            {showToast && (
+              <Toast
+                isDleteBtn={true}
+                labelstyle={{ width: "100%" }}
+                error={showToast.error}
+                warning={showToast.warning}
+                label={t(showToast.label)}
+                onClose={() => {
+                  setShowToast(null);
+                }}
+              />
+            )}
+          </React.Fragment>
+        )}
+      </CollapsibleCardPage>
     </React.Fragment>
   );
 };

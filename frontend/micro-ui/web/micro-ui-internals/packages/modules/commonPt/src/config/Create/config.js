@@ -33,7 +33,7 @@ export const newConfig = [
         component: "CPTPropertyLocationDetails",
         texts: {
           headerCaption: "",
-          header: "PT_LOCATION_DETAILS",
+          // header: "PT_LOCATION_DETAILS",
           cardText: "",
           submitBarLabel: "PT_COMMONS_NEXT",
         },

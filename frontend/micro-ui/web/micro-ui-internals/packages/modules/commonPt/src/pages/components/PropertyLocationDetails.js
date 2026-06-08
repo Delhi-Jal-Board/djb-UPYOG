@@ -131,11 +131,10 @@ const PropertyLocationDetails = ({ address, actionCancelOnSubmit, isEdit, onSele
 
   return (
     <CollapsibleCardPage title={t("PT_LOCATION_DETAILS")} defaultOpen={true}>
-      <div style={{ boxShadow: "none", ...props.style }}>
-        {!window.location.href.includes("create-application/create-property") && (
+        {/* {!window.location.href.includes("create-application/create-property") && (
           <PropertySearchNSummary config={config} onSelect={onSelect} formData={formDataProp} userType={window.location.href.includes("/employee/") ? "employee" : "citizen"} />
-        )}
-        <div style={{ marginTop: "20px" }}>
+        )} */}
+        {/* <div style={{ marginTop: "20px" }}> */}
           <AddressDetails
             t={t}
             formData={formData}
@@ -149,8 +148,7 @@ const PropertyLocationDetails = ({ address, actionCancelOnSubmit, isEdit, onSele
             disable={isPropertyFound}
             hideNextButton={true}
           />
-        </div>
-      </div>
+        {/* </div> */}
     </CollapsibleCardPage>
   );
 };
