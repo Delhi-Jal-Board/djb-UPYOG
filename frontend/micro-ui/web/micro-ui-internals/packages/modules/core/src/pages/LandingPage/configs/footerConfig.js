@@ -13,7 +13,7 @@ const footerConfig = {
       "Room No.306, 3rd Floor",
       "Varunalaya Ph-II",
       "Jhandewalan, Karol Bagh",
-      "New Delhi-110005"
+      "New Delhi-110005",
     ],
     buttonText: "Contact Us",
   },
@@ -21,9 +21,18 @@ const footerConfig = {
   government: {
     title: "About the Government",
     items: [
-      "Government of India",
-      "Government of Delhi",
-      // "Local Self Government Department",
+      {
+        label: "Government of India",
+        link: "https://www.india.gov.in/",
+      },
+      {
+        label: "Government of Delhi",
+        link: "https://delhi.gov.in/",
+      },
+      // {
+      //   label: "Government of National Capital Territory of Delhi",
+      //   link: "",
+      // },
     ],
   },
 

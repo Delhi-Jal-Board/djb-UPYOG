@@ -85,8 +85,8 @@ const headerConfig = {
       children: [
         {
           label: "Citizen Login",
-          // Direct to citizen login form — avoids Keycloak check-sso redirect loop
-          link: `/${contextPath}/citizen/login`,
+          // Redirect to the citizen portal dashboard (accessible to guests/unauthenticated users)
+          link: `/${contextPath}/citizen`,
         },
         {
           label: "Employee Login",
