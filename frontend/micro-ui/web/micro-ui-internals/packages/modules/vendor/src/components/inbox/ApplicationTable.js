@@ -1,5 +1,5 @@
 import React from "react";
-import { Table } from "@djb25/digit-ui-react-components";
+import { Table, Card } from "@djb25/digit-ui-react-components";
 
 const ApplicationTable = ({
   className = "table",
@@ -26,30 +26,32 @@ const ApplicationTable = ({
   ...rest
 }) => {
   return (
-    <Table
-      className={className}
-      t={t}
-      data={data}
-      currentPage={currentPage}
-      columns={columns}
-      getCellProps={getCellProps}
-      onNextPage={onNextPage}
-      onPrevPage={onPrevPage}
-      pageSizeLimit={pageSizeLimit}
-      disableSort={disableSort}
-      onPageSizeChange={onPageSizeChange}
-      onSort={onSort}
-      sortParams={sortParams}
-      totalRecords={totalRecords}
-      isPaginationRequired={isPaginationRequired}
-      showCSVExport={showCSVExport}
-      csvExportFileName={csvExportFileName}
-      csvExportData={csvExportData}
-      getCSVExportData={getCSVExportData}
-      csvExportColumns={csvExportColumns}
-      csvExportButtonLabel={csvExportButtonLabel}
-      {...rest}
-    />
+    <Card>
+      <Table
+        className={className}
+        t={t}
+        data={data}
+        currentPage={currentPage}
+        columns={columns}
+        getCellProps={getCellProps}
+        onNextPage={onNextPage}
+        onPrevPage={onPrevPage}
+        pageSizeLimit={pageSizeLimit}
+        disableSort={disableSort}
+        onPageSizeChange={onPageSizeChange}
+        onSort={onSort}
+        sortParams={sortParams}
+        totalRecords={totalRecords}
+        isPaginationRequired={isPaginationRequired}
+        showCSVExport={showCSVExport}
+        csvExportFileName={csvExportFileName}
+        csvExportData={csvExportData}
+        getCSVExportData={getCSVExportData}
+        csvExportColumns={csvExportColumns}
+        csvExportButtonLabel={csvExportButtonLabel}
+        {...rest}
+      />
+    </Card>
   );
 };
 

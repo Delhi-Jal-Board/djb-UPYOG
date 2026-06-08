@@ -503,7 +503,7 @@ const Table = ({
 
                   return (
                     <th {...headerProps} title={column.canSort ? "Click to sort" : ""} className="th" style={mergedStyle}>
-                      <div style={{ justifyContent: getFlexJustifyFromAlign(textAlign) }}>
+                      <div className="col-head-wrapper" style={{ justifyContent: getFlexJustifyFromAlign(textAlign) }}>
                         <span className={`col-head ${isSorted ? "accentDark" : "textSecondary"}`}>{column.render("Header")}</span>
                         {column.canSort && (
                           <span style={{ lineHeight: 0, color: isSorted ? T.accent : T.textMuted }}>
