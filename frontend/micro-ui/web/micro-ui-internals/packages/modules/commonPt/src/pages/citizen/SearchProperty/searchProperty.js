@@ -4,6 +4,7 @@ import PropTypes from "prop-types";
 import React, { useEffect, useLayoutEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory, Link } from "react-router-dom";
+import PropertySearchResults from "../SearchResults/searchResults";
 
 const description = {
   description: "PT_SEARCH_OR_DESC",
@@ -21,7 +22,15 @@ const SearchProperty = ({ config: propsConfig, onSelect, redirectToUrl }) => {
   const { t } = useTranslation();
   const history = useHistory();
   const { action = 0 } = Digit.Hooks.useQueryParams();
-  const [searchData, setSearchData] = useState({});
+  const [searchData, setSearchData] = useState(() => {
+    const isFirstVisit = sessionStorage.getItem("VisitedCitizenSearchRedirect");
+    const mobileNumber = Digit.UserService.getUser()?.info?.mobileNumber;
+    if (!isFirstVisit && mobileNumber && window.location.href.includes("digit-ui/citizen/commonpt/property/citizen-search")) {
+      sessionStorage.setItem("VisitedCitizenSearchRedirect", "true");
+      return { filters: { mobileNumber } };
+    }
+    return {};
+  });
   const [showToast, setShowToast] = useState(null);
   sessionStorage.setItem("VisitedCommonPTSearch", true);
   sessionStorage.setItem("VisitedLightCreate", false);
@@ -178,13 +187,25 @@ const SearchProperty = ({ config: propsConfig, onSelect, redirectToUrl }) => {
     //Why do we need this? !!!!!
     const getActionBar = () => {
       let el = document.querySelector("div.action-bar-wrap");
-      if (el) {
+      let clearBtn = document.querySelector(".primary-label-btn");
+      if (el && clearBtn) {
         el.style.position = "static";
         el.style.padding = "8px 0";
         el.style.boxShadow = "none";
         el.style.marginBottom = "16px";
-        el.style.textAlign = "left";
+        el.style.display = "flex";
+        el.style.justifyContent = "flex-end";
+        el.style.alignItems = "center";
         el.style.zIndex = "0";
+
+        // Reset any inline margins set by FormComposer
+        clearBtn.style.margin = "0";
+        clearBtn.style.marginRight = "24px";
+        clearBtn.style.marginLeft = "auto";
+
+        if (clearBtn.parentElement !== el) {
+          el.insertBefore(clearBtn, el.firstChild);
+        }
       } else {
         setTimeout(() => {
           getActionBar();
@@ -192,7 +213,7 @@ const SearchProperty = ({ config: propsConfig, onSelect, redirectToUrl }) => {
       }
     };
     getActionBar();
-  }, []);
+  }, [action]);
 
   const { data: ptSearchConfig, isLoading } = Digit.Hooks.pt.useMDMS(Digit.ULBService.getStateId(), "DIGIT-UI", "HelpText", {
     select: (data) => {
@@ -205,50 +226,51 @@ const SearchProperty = ({ config: propsConfig, onSelect, redirectToUrl }) => {
   const config = [
     {
       body: [
-        {
-          type: "custom",
-          populators: {
-            name: "addParam",
-            defaultValue: { code: 0, name: t("PT_KNOW_PTID") },
-            customProps: {
-              t,
-              isMandatory: true,
-              optionsKey: "name",
-              options: [
-                { code: 0, name: t("PT_KNOW_PTID") },
-                { code: 1, name: t("PT_SEARCH_DOOR_NO") },
-              ],
-            },
-            component: (props, customProps) => (
-              <RadioButtons
-                {...customProps}
-                selectedOption={props.value}
-                onSelect={(d) => {
-                  props?.setValue("city", {});
-                  props?.setValue("locality", {});
-                  props?.setValue("mobileNumber", "");
-                  props?.setValue("propertyIds", "");
-                  props?.setValue("doorNumber", "");
-                  props?.setValue("oldPropertyId", "");
-                  props?.setValue("name", "");
-                  history.replace(`${history.location.pathname}?action=${action == 0 ? 1 : 0}`);
-                }}
-              />
-            ),
-          },
-        },
+        // {
+        //   type: "custom",
+        //   populators: {
+        //     name: "addParam",
+        //     defaultValue: { code: 0, name: t("PT_KNOW_PTID") },
+        //     customProps: {
+        //       t,
+        //       isMandatory: true,
+        //       optionsKey: "name",
+        //       options: [
+        //         { code: 0, name: t("PT_KNOW_PTID") },
+        //         { code: 1, name: t("PT_SEARCH_DOOR_NO") },
+        //       ],
+        //     },
+        //     component: (props, customProps) => (
+        //       <RadioButtons
+        //         {...customProps}
+        //         selectedOption={props.value}
+        //         onSelect={(d) => {
+        //           props?.setValue("city", {});
+        //           props?.setValue("locality", {});
+        //           props?.setValue("mobileNumber", "");
+        //           props?.setValue("propertyIds", "");
+        //           props?.setValue("doorNumber", "");
+        //           props?.setValue("oldPropertyId", "");
+        //           props?.setValue("name", "");
+        //           history.replace(`${history.location.pathname}?action=${action == 0 ? 1 : 0}`);
+        //         }}
+        //       />
+        //     ),
+        //   },
+        // },
         {
           label: "PT_SELECT_CITY",
           isMandatory: true,
           type: "custom",
           populators: {
             name: "city",
-            defaultValue: null,
+            defaultValue: allCities?.find((c) => c.code === "dl.djb" || c.code === "dl") || allCities?.[0] || null,
             rules: { required: true },
             customProps: { t, isMandatory: true, option: [...allCities], optionKey: "i18nKey" },
             component: (props, customProps) => (
               <Dropdown
                 {...customProps}
+                disable={true}
                 selected={props.value}
                 select={(d) => {
                   Digit.ULBService.getCurrentTenantId();
@@ -259,107 +281,106 @@ const SearchProperty = ({ config: propsConfig, onSelect, redirectToUrl }) => {
             ),
           },
         },
-        {
-          label: t("PT_PROVIDE_ONE_MORE_PARAM"),
-          isInsideBox: true,
-          placementinbox: 0,
-          isSectionText: true,
-        },
+        // {
+        //   label: t("PT_PROVIDE_ONE_MORE_PARAM"),
+        //   isInsideBox: true,
+        //   placementinbox: 0,
+        //   isSectionText: true,
+        // },
         {
           label: mobileNumber.label,
           type: mobileNumber.type,
           populators: {
-            defaultValue: "",
+            defaultValue: Digit.UserService.getUser()?.info?.mobileNumber || "",
             name: mobileNumber.name,
             validation: mobileNumber?.validation,
           },
-          ...description,
+          // ...description,
           isMandatory: false,
-          isInsideBox: true,
-          placementinbox: 1,
         },
-        {
-          label: "",
-          labelChildren: (
-            <div className="tooltip" /* style={{position:"relative"}} */>
-              <div style={{ display: "flex", /* alignItems: "center", */ gap: "0 4px" }}>
-                <h2>{t(property.label)}</h2>
-                <InfoBannerIcon fill="#0b0c0c" />
-                <span className="tooltiptext" style={{ position: "absolute", width: "72%", marginLeft: "50%", fontSize: "medium" }}>
-                  {t(property.description) + " " + "PG-PT-xxxx-xxxxxx"}
-                </span>
-              </div>
-            </div>
-          ),
-          type: property.type,
-          populators: {
-            name: property.name,
-            defaultValue: "",
-            validation: property?.validation,
-          },
-          ...description,
-          isMandatory: false,
-          isInsideBox: true,
-          placementinbox: 1,
-        },
-        {
-          label: oldProperty.label,
-          type: oldProperty.type,
-          populators: {
-            name: oldProperty.name,
-            defaultValue: "",
-            validation: oldProperty?.validation,
-          },
-          isMandatory: false,
-          isInsideBox: true,
-          placementinbox: 2,
-        },
+        // {
+        //   label: "",
+        //   labelChildren: (
+        //     <div className="tooltip" /* style={{position:"relative"}} */>
+        //       <div style={{ display: "flex", /* alignItems: "center", */ gap: "0 4px" }}>
+        //         <h2>{t(property.label)}</h2>
+        //         <InfoBannerIcon fill="#0b0c0c" />
+        //         <span className="tooltiptext" style={{ position: "absolute", width: "72%", marginLeft: "50%", fontSize: "medium" }}>
+        //           {t(property.description) + " " + "PG-PT-xxxx-xxxxxx"}
+        //         </span>
+        //       </div>
+        //     </div>
+        //   ),
+        //   type: property.type,
+        //   populators: {
+        //     name: property.name,
+        //     defaultValue: "",
+        //     validation: property?.validation,
+        //   },
+        //   ...description,
+        //   isMandatory: false,
+        //   isInsideBox: true,
+        //   placementinbox: 1,
+        // },
+        // {
+        //   label: oldProperty.label,
+        //   type: oldProperty.type,
+        //   populators: {
+        //     name: oldProperty.name,
+        //     defaultValue: "",
+        //     validation: oldProperty?.validation,
+        //   },
+        //   isMandatory: false,
+        //   isInsideBox: true,
+        //   placementinbox: 2,
+        // },
       ],
       body1: [
-        {
-          type: "custom",
-          populators: {
-            name: "addParam1",
-            defaultValue: { code: 1, name: t("PT_SEARCH_DOOR_NO") },
-            customProps: {
-              t,
-              isMandatory: true,
-              optionsKey: "name",
-              options: [
-                { code: 0, name: t("PT_KNOW_PTID") },
-                { code: 1, name: t("PT_SEARCH_DOOR_NO") },
-              ],
-            },
-            component: (props, customProps) => (
-              <RadioButtons
-                {...customProps}
-                selectedOption={props.value}
-                onSelect={(d) => {
-                  props?.setValue("city", {});
-                  props?.setValue("locality", {});
-                  props?.setValue("mobileNumber", "");
-                  props?.setValue("propertyIds", "");
-                  props?.setValue("doorNumber", "");
-                  props?.setValue("oldPropertyId", "");
-                  props?.setValue("name", "");
-                  history.replace(`${history.location.pathname}?action=${action == 0 ? 1 : 0}`);
-                }}
-              />
-            ),
-          },
-        },
+        // {
+        //   type: "custom",
+        //   populators: {
+        //     name: "addParam1",
+        //     defaultValue: { code: 1, name: t("PT_SEARCH_DOOR_NO") },
+        //     customProps: {
+        //       t,
+        //       isMandatory: true,
+        //       optionsKey: "name",
+        //       options: [
+        //         { code: 0, name: t("PT_KNOW_PTID") },
+        //         { code: 1, name: t("PT_SEARCH_DOOR_NO") },
+        //       ],
+        //     },
+        //     component: (props, customProps) => (
+        //       <RadioButtons
+        //         {...customProps}
+        //         selectedOption={props.value}
+        //         onSelect={(d) => {
+        //           props?.setValue("city", {});
+        //           props?.setValue("locality", {});
+        //           props?.setValue("mobileNumber", "");
+        //           props?.setValue("propertyIds", "");
+        //           props?.setValue("doorNumber", "");
+        //           props?.setValue("oldPropertyId", "");
+        //           props?.setValue("name", "");
+        //           history.replace(`${history.location.pathname}?action=${action == 0 ? 1 : 0}`);
+        //         }}
+        //       />
+        //     ),
+        //   },
+        // },
         {
           label: "PT_SELECT_CITY",
           isMandatory: true,
           type: "custom",
           populators: {
             name: "city",
-            defaultValue: null,
+            defaultValue: allCities?.find((c) => c.code === "dl.djb" || c.code === "dl") || allCities?.[0] || null,
             rules: { required: true },
             customProps: { t, isMandatory: true, option: [...allCities], optionKey: "i18nKey" },
             component: (props, customProps) => (
               <Dropdown
                 {...customProps}
+                disable={true}
                 selected={props.value}
                 select={(d) => {
                   Digit.LocalizationService.getLocale({
@@ -399,12 +420,12 @@ const SearchProperty = ({ config: propsConfig, onSelect, redirectToUrl }) => {
             ),
           },
         },
-        {
-          label: t("PT_PROVIDE_ONE_MORE_PARAM"),
-          isInsideBox: true,
-          placementinbox: 0,
-          isSectionText: true,
-        },
+        // {
+        //   label: t("PT_PROVIDE_ONE_MORE_PARAM"),
+        //   isInsideBox: true,
+        //   placementinbox: 0,
+        //   isSectionText: true,
+        // },
         {
           label: doorNumber.label,
           type: doorNumber.type,
@@ -414,8 +435,6 @@ const SearchProperty = ({ config: propsConfig, onSelect, redirectToUrl }) => {
             validation: doorNumber?.validation,
           },
           isMandatory: false,
-          isInsideBox: true,
-          placementinbox: 1,
         },
         {
           label: name.label,
@@ -426,8 +445,6 @@ const SearchProperty = ({ config: propsConfig, onSelect, redirectToUrl }) => {
             validation: name?.validation,
           },
           isMandatory: false,
-          isInsideBox: true,
-          placementinbox: 2,
         },
       ],
     },
@@ -552,7 +569,7 @@ const SearchProperty = ({ config: propsConfig, onSelect, redirectToUrl }) => {
 
   let validation =
     ptSearchConfig?.maxResultValidation &&
-    !(searchData?.filters?.mobileNumber && Object.values(searchData?.filters)?.filter((ob) => ob !== undefined)?.length == 1)
+      !(searchData?.filters?.mobileNumber && Object.values(searchData?.filters)?.filter((ob) => ob !== undefined)?.length == 1)
       ? propertyData?.Properties.length < ptSearchConfig?.maxPropertyResult && (showToast == null || (showToast !== null && !showToast?.error))
       : true;
 
@@ -577,13 +594,14 @@ const SearchProperty = ({ config: propsConfig, onSelect, redirectToUrl }) => {
       // beacuse of this commit
       // https://github.com/egovernments/DIGIT-Dev/commit/2bae1c36dd1f8242bca30366da80c88d46b6aaaa#diff-3c34510e8b422f53eb9633d014f50024496ad79f952849e1b42fd61877562c4cR385
       // am adding one more condtion for this.
-      if (redirectToUrl || window.location.href.includes("digit-ui/citizen/commonpt/property/citizen-search")) {
+      if (redirectToUrl && !window.location.href.includes("digit-ui/citizen/commonpt/property/citizen-search")) {
         history.push(
           `/digit-ui/citizen/commonPt/property/search-results?${Object.keys(qs)
+            .filter((key) => qs[key] !== undefined && qs[key] !== "")
             .map((key) => `${key}=${qs[key]}`)
             .join("&")}${redirectToUrl ? `&redirectToUrl=${redirectToUrl}` : ""}`
         );
-      } else {
+      } else if (!window.location.href.includes("digit-ui/citizen/commonpt/property/citizen-search")) {
         let SearchParams = {};
         if (action == 0)
           SearchParams = {
@@ -623,56 +641,92 @@ const SearchProperty = ({ config: propsConfig, onSelect, redirectToUrl }) => {
   }
 
   return (
-    <div style={{ marginTop: "16px", marginBottom: "16px", backgroundColor: "white", maxWidth: "960px" }}>
-      <FormComposer
-        onSubmit={onPropertySearch}
-        noBoxShadow
-        inline
-        config={config}
-        label={propsConfig.texts.submitButtonLabel}
-        heading={t(propsConfig.texts.header)}
-        text={t(propsConfig.texts.text)}
-        headingStyle={{ fontSize: "32px", marginBottom: "16px", fontFamily: "Roboto Condensed,sans-serif" }}
-        onFormValueChange={onFormValueChange}
-        cardStyle={{ marginBottom: "0", maxWidth: "960px" }}
-      ></FormComposer>
-      <div style={{ display: "flex" }}>
-        {window.location.href.includes("/obps/bpa/") ? (
-          <span
-            className="link"
-            style={
-              isMobile
-                ? { display: "flex", justifyContent: "center", paddingBottom: "16px" }
-                : { display: "flex", justifyContent: "left", paddingBottom: "16px", marginLeft: "45px" }
-            }
-          >
-            <Link to={"/digit-ui/citizen/obps/bpa/building_plan_scrutiny/new_construction/location"}>{t("CORE_COMMON_SKIP_CONTINUE")}</Link>
-          </span>
-        ) : (
-          <span
-            className="link"
-            style={
-              isMobile
-                ? { display: "flex", justifyContent: "center", paddingBottom: "16px" }
-                : { display: "flex", justifyContent: "left", paddingBottom: "16px", marginLeft: "45px" }
-            }
-          >
+    <div>
+      <div
+        className="search-tabs-container"
+        style={{ marginBottom: "16px", display: "flex", gap: "24px", justifyContent: "flex-start", borderBottom: "1px solid #ccc" }}
+      >
+        <div
+          className={`search-tab ${action == 0 ? "active" : ""}`}
+          style={{
+            padding: "8px 16px",
+            cursor: "pointer",
+            borderBottom: action == 0 ? "2px solid #f47738" : "2px solid transparent",
+            color: action == 0 ? "#f47738" : "#0b0c0c",
+            fontWeight: action == 0 ? "bold" : "normal",
+          }}
+          onClick={() => {
+            history.replace(`${history.location.pathname}?action=0`);
+            setSearchData({});
+          }}
+        >
+          {t("PT_KNOW_PTID")}
+        </div>
+        <div
+          className={`search-tab ${action == 1 ? "active" : ""}`}
+          style={{
+            padding: "8px 16px",
+            cursor: "pointer",
+            borderBottom: action == 1 ? "2px solid #f47738" : "2px solid transparent",
+            color: action == 1 ? "#f47738" : "#0b0c0c",
+            fontWeight: action == 1 ? "bold" : "normal",
+          }}
+          onClick={() => {
+            history.replace(`${history.location.pathname}?action=1`);
+            setSearchData({});
+          }}
+        >
+          {t("PT_SEARCH_DOOR_NO")}
+        </div>
+        <div style={{ marginLeft: "auto", display: "flex", alignItems: "center" }}>
+          {window.location.href.includes("/obps/bpa/") ? (
+            <Link
+              to={"/digit-ui/citizen/obps/bpa/building_plan_scrutiny/new_construction/location"}
+              style={{ padding: "8px 24px", textDecoration: "none", borderRadius: "2px" }}
+            >
+              {t("CORE_COMMON_SKIP_CONTINUE")}
+            </Link>
+          ) : (
             <Link
               to={
                 window.location.href.includes("/ws/")
                   ? "/digit-ui/citizen/ws/create-application/create-property"
                   : window.location.href.includes("/tl/tradelicence/")
-                  ? "/digit-ui/citizen/tl/tradelicence/new-application/create-property"
-                  : window.location.href.includes("/fsm/")
-                  ? "/digit-ui/citizen/fsm/new-application/create-property"
-                  : "/digit-ui/citizen/commonpt/property/new-application"
+                    ? "/digit-ui/citizen/tl/tradelicence/new-application/create-property"
+                    : window.location.href.includes("/fsm/")
+                      ? "/digit-ui/citizen/fsm/new-application/create-property"
+                      : "/digit-ui/citizen/commonpt/property/new-application"
               }
+              style={{ padding: "8px 24px", textDecoration: "none", borderRadius: "2px" }}
             >
               {t("CPT_REG_NEW_PROPERTY")}
             </Link>
-          </span>
-        )}
+          )}
+        </div>
       </div>
+      <FormComposer
+        key={action}
+        onSubmit={onPropertySearch}
+        config={config}
+        label={propsConfig.texts.submitButtonLabel}
+        secondaryActionLabel={t("ES_COMMON_CLEAR_SEARCH")}
+        onSecondayActionClick={() => {
+          setSearchData({});
+          history.replace(`${history.location.pathname}?action=0`);
+        }}
+        text={t(propsConfig.texts.text)}
+        onFormValueChange={onFormValueChange}
+      />
+
+      {Object.keys(searchData).length > 0 && (
+        <PropertySearchResults
+          searchQuery={{ ...searchData.filters, city: searchData.city }}
+          city={searchData.city}
+          stateCode={Digit.ULBService.getStateId()}
+          onSelect={onSelect}
+          config={propsConfig}
+        />
+      )}
       {showToast && (
         <Toast
           isDleteBtn={true}

@@ -77,9 +77,9 @@ const OLDApplication = () => {
 
         // Define the desired order based on the component inside the section
         const desiredComponentOrder = [
+          "CPTPropertySearchNSummary",
           "WSConnectionDetails",
           "WSConnectionHolderDetails",
-          // "CPTPropertySearchNSummary",
           "CPTPropertyLocationDetails",
           "PropertyWaterConnection",
           "WSDjbEmployee",
@@ -178,10 +178,7 @@ const OLDApplication = () => {
         // Add any remaining sections that were not in desiredComponentOrder
         allCreateSections.forEach((section) => {
           const bodyComp = section.body?.[0]?.component;
-          if (
-            bodyComp !== "CPTPropertySearchNSummary" &&
-            !reorderedBody.find((r) => r.body?.[0]?.component === bodyComp)
-          ) {
+          if (bodyComp !== "CPTPropertySearchNSummary" && !reorderedBody.find((r) => r.body?.[0]?.component === bodyComp)) {
             reorderedBody.push(section);
           }
         });
