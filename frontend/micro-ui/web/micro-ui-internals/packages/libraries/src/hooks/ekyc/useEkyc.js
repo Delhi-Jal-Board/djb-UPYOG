@@ -57,33 +57,6 @@ export const useEkycSurveyorDashboard = (data, params, config = {}) => {
   );
 };
 
-export const useEkycApplicationList = (data, params, config = {}) => {
-  const { tenantId, offset, limit } = params;
-
-  return useQuery(
-    ["useEkycApplicationList", tenantId, offset, limit, data],
-    () =>
-      Digit.EkycService.application_list(
-        {
-          kno: null,
-          ekycStatus: null,
-          zoneName: null,
-          assembly: null,
-          ward: null,
-          pincode: null,
-          mrkey: null,
-          ...data,
-        },
-        {
-          tenantId,
-          offset,
-          limit,
-        }
-      ),
-    config
-  );
-};
-
 export const useEkycApplicationReview = (params, config = {}) => {
   return useMutation((data) => Digit.EkycService.application_review(data, params), config);
 };
@@ -204,10 +177,33 @@ export const useInboxRouting = () => {
   return { routeToInbox };
 };
 
-export const useEkycApplicationList = (data, config = {}) => {
-  return useQuery(["useEkycApplicationList", data], () => Digit.EkycService.application_list(data), config);
-};
-
 export const useEkycAssignmentCreate = (config = {}) => {
   return useMutation((data) => Digit.EkycService.assignment_create(data), config);
+};
+
+export const useEkycApplicationList = (data, params, config = {}) => {
+  const { tenantId, offset, limit } = params;
+
+  return useQuery(
+    ["useEkycApplicationList", tenantId, offset, limit, data],
+    () =>
+      Digit.EkycService.application_list(
+        {
+          kno: null,
+          ekycStatus: null,
+          zoneName: null,
+          assembly: null,
+          ward: null,
+          pincode: null,
+          mrkey: null,
+          ...data,
+        },
+        {
+          tenantId,
+          offset,
+          limit,
+        }
+      ),
+    config
+  );
 };

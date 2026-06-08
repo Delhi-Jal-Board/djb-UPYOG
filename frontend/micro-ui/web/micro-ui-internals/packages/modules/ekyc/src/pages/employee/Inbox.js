@@ -23,16 +23,19 @@ const Inbox = ({ parentRoute, businessService = "EKYC", initialStates = {}, filt
 
   const [formState, dispatch] = useReducer(formReducer, formInitValue);
 
+  const filters = useMemo(() => {
+    return formState?.searchForm || {};
+  }, [formState?.searchForm]);
+
   const queryParams = useMemo(() => {
     return {
       tenantId,
       offset: formState?.tableForm?.offset || 0,
       limit: formState?.tableForm?.limit || 10,
-      search: formState?.searchForm || {},
     };
-  }, [tenantId, formState?.tableForm?.offset, formState?.tableForm?.limit, formState?.searchForm]);
+  }, [tenantId, formState?.tableForm?.offset, formState?.tableForm?.limit]);
 
-  const { isLoading: isListLoading, data: listData = {} } = Digit.Hooks.ekyc.useEkycApplicationList({}, queryParams, {
+  const { isLoading: isListLoading, data: listData = {} } = Digit.Hooks.ekyc.useEkycApplicationList(filters, queryParams, {
     enabled: !!tenantId,
     keepPreviousData: true,
   });
@@ -247,11 +250,11 @@ const Inbox = ({ parentRoute, businessService = "EKYC", initialStates = {}, filt
           propsForInboxTable,
           // propsForInboxMobileCards,
           formState,
-            countData: listData,
-          }}
-        />
-      </div>
-    );
+          countData: listData,
+        }}
+      />
+    </div>
+  );
 };
 
 export default Inbox;

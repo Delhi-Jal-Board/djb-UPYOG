@@ -49,10 +49,6 @@ const AssignEkycModal = ({ surveyor, closeModal }) => {
 
   const { data: applicationData, isLoading } = Digit.Hooks.ekyc.useEkycApplicationList(
     {
-      tenantId: "dl.djb",
-      offset: currentPage * pageSize,
-      limit: pageSize,
-
       ...(debouncedFilters.kno && {
         kno: debouncedFilters.kno,
       }),
@@ -80,6 +76,11 @@ const AssignEkycModal = ({ surveyor, closeModal }) => {
       ...(debouncedFilters.pincode && {
         pincode: debouncedFilters.pincode,
       }),
+    },
+    {
+      tenantId: "dl.djb",
+      offset: currentPage * pageSize,
+      limit: pageSize,
     },
     {
       keepPreviousData: true,
