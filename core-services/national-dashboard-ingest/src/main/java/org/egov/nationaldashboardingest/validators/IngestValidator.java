@@ -403,7 +403,7 @@ public class IngestValidator {
     // contructing a module detail to send in MDMS - tenant is the module name and nationalInfo is the masterName
 	ModuleDetail moduleDetail = ModuleDetail.builder().moduleName("tenant").masterDetails(Arrays.asList(mstrDetail)).build();
     //here it is sending module details and tenant id to fetch the data from MDMS
-	MdmsCriteria mdmsCriteria = MdmsCriteria.builder().moduleDetails(Arrays.asList(moduleDetail)).tenantId("pg").build();
+	MdmsCriteria mdmsCriteria = MdmsCriteria.builder().moduleDetails(Arrays.asList(moduleDetail)).tenantId("dl").build();
 	MdmsCriteriaReq mdmsConfig = MdmsCriteriaReq.builder().requestInfo(requestInfo).mdmsCriteria(mdmsCriteria).build();
 	Object response = null;
 	List<Map<String,String>> jsonOutput=null;
@@ -614,7 +614,7 @@ public class IngestValidator {
 
         // contructing a module detail to send in MDMS - tenant is the module name and propertyType is the masterName
         ModuleDetail moduleDetail = ModuleDetail.builder().moduleName("tenant").masterDetails(Arrays.asList(mstrDetail)).build();
-        MdmsCriteria mdmsCriteria = MdmsCriteria.builder().moduleDetails(Arrays.asList(moduleDetail)).tenantId("pg").build();
+        MdmsCriteria mdmsCriteria = MdmsCriteria.builder().moduleDetails(Arrays.asList(moduleDetail)).tenantId("dl").build();
         MdmsCriteriaReq mdmsConfig = MdmsCriteriaReq.builder().requestInfo(requestInfo).mdmsCriteria(mdmsCriteria).build();
         Object response = null;
         List < Map < String, String >> jsonOutput = null;
@@ -663,7 +663,7 @@ public class IngestValidator {
 
 
         ModuleDetail moduleDetail = ModuleDetail.builder().moduleName("common-masters").masterDetails(Arrays.asList(mstrDetail)).build();
-        MdmsCriteria mdmsCriteria = MdmsCriteria.builder().moduleDetails(Arrays.asList(moduleDetail)).tenantId("pg").build();
+        MdmsCriteria mdmsCriteria = MdmsCriteria.builder().moduleDetails(Arrays.asList(moduleDetail)).tenantId("dl").build();
         MdmsCriteriaReq mdmsConfig = MdmsCriteriaReq.builder().requestInfo(requestInfo).mdmsCriteria(mdmsCriteria).build();
         Object response = null;
         List < Map < String, String >> jsonOutput = null;
@@ -784,7 +784,7 @@ public class IngestValidator {
 
 
         ModuleDetail moduleDetail = ModuleDetail.builder().moduleName("tenant").masterDetails(Arrays.asList(mstrDetail)).build();
-        MdmsCriteria mdmsCriteria = MdmsCriteria.builder().moduleDetails(Arrays.asList(moduleDetail)).tenantId("pg").build();
+        MdmsCriteria mdmsCriteria = MdmsCriteria.builder().moduleDetails(Arrays.asList(moduleDetail)).tenantId("dl").build();
         MdmsCriteriaReq mdmsConfig = MdmsCriteriaReq.builder().requestInfo(requestInfo).mdmsCriteria(mdmsCriteria).build();
         Object response = null;
         List < Map < String, String >> nationalinfouser = null;
@@ -810,7 +810,7 @@ public class IngestValidator {
             log.error("Exception while fetching from searcher: ", e);
         }
         ModuleDetail moduleDetail1 = ModuleDetail.builder().moduleName("tenant").masterDetails(Arrays.asList(mstrDetail1)).build();
-        MdmsCriteria mdmsCriteria1 = MdmsCriteria.builder().moduleDetails(Arrays.asList(moduleDetail1)).tenantId("pg").build();
+        MdmsCriteria mdmsCriteria1 = MdmsCriteria.builder().moduleDetails(Arrays.asList(moduleDetail1)).tenantId("dl").build();
         MdmsCriteriaReq mdmsConfig1 = MdmsCriteriaReq.builder().requestInfo(requestInfo).mdmsCriteria(mdmsCriteria1).build();
         List<Map<String,String>> nationalinfo = null;
         try {
