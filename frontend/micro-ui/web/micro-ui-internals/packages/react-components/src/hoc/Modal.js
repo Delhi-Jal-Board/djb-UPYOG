@@ -24,6 +24,8 @@ const Modal = ({
   hideSubmit,
   style = {},
   headerBarMainStyle,
+  actionClearLabel,
+  actionClearOnSubmit,
   popupModuleActionBarStyles = {},
 }) => {
   /**
@@ -66,6 +68,7 @@ const Modal = ({
           {children}
           <div className="popup-module-action-bar" style={{ ...popupModuleActionBarStyles }}>
             {actionCancelLabel ? <ButtonSelector theme="border" label={actionCancelLabel} onSubmit={actionCancelOnSubmit} style={style} /> : null}
+            {actionClearLabel ? <ButtonSelector theme="border" label={actionClearLabel} onSubmit={actionClearOnSubmit} style={style} /> : null}
             {!hideSubmit ? (
               <ButtonSelector label={actionSaveLabel} onSubmit={actionSaveOnSubmit} formId={formId} isDisabled={isDisabled} style={style} />
             ) : null}

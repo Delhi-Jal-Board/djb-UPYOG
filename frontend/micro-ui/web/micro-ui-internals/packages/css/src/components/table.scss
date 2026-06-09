@@ -171,7 +171,7 @@
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     .table-content {
-      width: 100%;
+      width: 100% !important;
       border-collapse: collapse;
       border-spacing: 0;
       font-size: 13.5;

@@ -3,7 +3,7 @@
   border-radius: 12px;
   display: flex;
   flex-direction: column;
-  width: auto;
+  width: 960px;
   margin: 0 auto;
   overflow: hidden;
   @apply bg-white;
@@ -28,7 +28,7 @@
 
 @screen dt {
   .popup-module {
-    width: auto;
+    width: 960px;
     margin: auto;
     @apply bg-white;
 

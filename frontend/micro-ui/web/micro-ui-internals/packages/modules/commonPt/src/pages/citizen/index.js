@@ -16,6 +16,7 @@ const App = ({ stateCode }) => {
     const pathname = location.pathname;
     if (pathname.includes("/commonpt/search")) return "SEARCH_PROPERTY";
     else if (pathname.includes("/view-property")) return "PT_PROPERTY_INFORMATION";
+    if (pathname.includes("/property/new-application")) return "PT_CREATE_PROPERTY";
 
     return "ES_COMMON_INBOX";
   };

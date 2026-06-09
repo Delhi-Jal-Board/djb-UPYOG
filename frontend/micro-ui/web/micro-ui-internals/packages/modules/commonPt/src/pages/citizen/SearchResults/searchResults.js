@@ -170,10 +170,11 @@ const PropertySearchResults = ({
         t(`TENANTS_MOHALLA_${addr.locality?.code}`) !== `TENANTS_MOHALLA_${addr.locality?.code}`
           ? t(`TENANTS_MOHALLA_${addr.locality?.code}`)
           : addr.locality?.name || "",
-        t(addr.tenantId) || "",
       ]
         .filter((a) => a)
         .join(", "),
+
+      zroLocation: property?.address?.zroLocation || property?.address?.zroLocation,
       total_due: payment[property?.propertyId]?.total_due || 0,
       bil_due__date: payment[property?.propertyId]?.bil_due__date || t("N/A"),
       status: t(property.status),
@@ -285,6 +286,11 @@ const PropertySearchResults = ({
                 disableSortBy: true,
                 accessor: "property_address",
               },
+              {
+                Header: t("zroLocation"),
+                disableSortBy: true,
+                accessor: "zroLocation",
+              }
             ]}
           />
         )}

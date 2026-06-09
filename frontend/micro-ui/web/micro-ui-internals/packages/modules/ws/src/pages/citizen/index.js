@@ -24,42 +24,42 @@ const App = ({ path }) => {
   const crumbs = [
     {
       path: "/digit-ui/citizen",
-      content: t("CS_COMMON_HOME"),
+      label: t("CS_COMMON_HOME"),
       show: true,
     },
     {
       path: "/digit-ui/citizen/ws/create-application",
-      content: t("CS_WS_CREATE_APPLICATION"),
+      label: t("CS_WS_CREATE_APPLICATION"),
       show: location.pathname.includes("/create-application"),
     },
     {
       path: "/digit-ui/citizen/ws/search",
-      content: t("CS_WS_SEARCH_CONNECTION"),
+      label: t("CS_WS_SEARCH_CONNECTION"),
       show: location.pathname.includes("/search"),
     },
     {
       path: "/digit-ui/citizen/ws/my-applications",
-      content: t("CS_WS_MY_APPLICATIONS"),
+      label: t("CS_WS_MY_APPLICATIONS"),
       show: location.pathname.includes("/my-applications"),
     },
     {
       path: "/digit-ui/citizen/ws/my-connections",
-      content: t("CS_WS_MY_CONNECTIONS"),
+      label: t("CS_WS_MY_CONNECTIONS"),
       show: location.pathname.includes("/my-connections"),
     },
     {
       path: "/digit-ui/citizen/ws/my-bills",
-      content: t("CS_WS_MY_BILLS"),
+      label: t("CS_WS_MY_BILLS"),
       show: location.pathname.includes("/my-bills"),
     },
     {
       path: "/digit-ui/citizen/ws/my-payments",
-      content: t("CS_WS_MY_PAYMENTS"),
+      label: t("CS_WS_MY_PAYMENTS"),
       show: location.pathname.includes("/my-payments"),
     },
     {
       path: "/digit-ui/citizen/ws/old-application",
-      content: t("WS_OLD_APPLICATION"),
+      label: t("WS_OLD_APPLICATION"),
       show: location.pathname.includes("/old-application"),
     },
   ];

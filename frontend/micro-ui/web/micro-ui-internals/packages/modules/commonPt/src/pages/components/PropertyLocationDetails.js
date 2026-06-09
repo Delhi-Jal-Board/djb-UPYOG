@@ -24,7 +24,9 @@ const PropertyLocationDetails = ({ address, actionCancelOnSubmit, isEdit, onSele
     zone: address?.zone || "",
     zroLocation: address?.zroLocation || "",
     subLocality: address?.subLocality || "",
-    wardRemarks: address?.wardRemarks || "",
+    actualAssembly: address?.actualAssembly || "",
+    actualWard: address?.actualWard || "",
+    actualZone: address?.actualZone || "",
   });
 
   const isPropertyFound = window.location.href.includes("ws/old-application");
@@ -72,7 +74,9 @@ const PropertyLocationDetails = ({ address, actionCancelOnSubmit, isEdit, onSele
         zroLocation: zroCode,
         zro: zroValue,
         subLocality: addressData.subLocality || "",
-        wardRemarks: additionalDetails.wardRemarks || addressData.additionalDetails?.wardRemarks || "",
+        actualAssembly: additionalDetails.actualAssembly || addressData.additionalDetails?.actualAssembly || "",
+        actualWard: additionalDetails.actualWard || addressData.additionalDetails?.actualWard || "",
+        actualZone: additionalDetails.actualZone || addressData.additionalDetails?.actualZone || "",
         address: {
           ...addressData,
           city: addressData.city || "",
@@ -89,7 +93,9 @@ const PropertyLocationDetails = ({ address, actionCancelOnSubmit, isEdit, onSele
           block: additionalDetails.block || addressData.additionalDetails?.block || "",
           zone: additionalDetails.zone || addressData.additionalDetails?.zone || "",
           subLocality: addressData.subLocality || "",
-          wardRemarks: additionalDetails.wardRemarks || addressData.additionalDetails?.wardRemarks || "",
+          actualWard: additionalDetails.actualWard || addressData.additionalDetails?.actualWard || "",
+          actualZone: additionalDetails.actualZone || addressData.additionalDetails?.actualZone || "",
+          actualAssembly: additionalDetails.actualAssembly || addressData.additionalDetails?.actualAssembly || "",
         },
       });
     } else if (formDataProp?.cpt === null) {
@@ -111,7 +117,9 @@ const PropertyLocationDetails = ({ address, actionCancelOnSubmit, isEdit, onSele
         zone: "",
         zroLocation: "",
         subLocality: "",
-        wardRemarks: "",
+        actualWard: "",
+        actualZone: "",
+        actualAssembly: "",
         zro: "",
         address: {},
       };
@@ -131,24 +139,25 @@ const PropertyLocationDetails = ({ address, actionCancelOnSubmit, isEdit, onSele
 
   return (
     <CollapsibleCardPage title={t("PT_LOCATION_DETAILS")} defaultOpen={true}>
-        {/* {!window.location.href.includes("create-application/create-property") && (
+      {/* {!window.location.href.includes("create-application/create-property") && (
           <PropertySearchNSummary config={config} onSelect={onSelect} formData={formDataProp} userType={window.location.href.includes("/employee/") ? "employee" : "citizen"} />
         )} */}
-        {/* <div style={{ marginTop: "20px" }}> */}
-          <AddressDetails
-            t={t}
-            formData={formData}
-            onSelect={(key, data) => {
-              setFormData((prev) => ({ ...prev, ...data }));
-              onSelect(key, data);
-            }}
-            config={{ isCollapsible: false, ...config }}
-            isEdit={isEdit}
-            showZRO={true}
-            disable={isPropertyFound}
-            hideNextButton={true}
-          />
-        {/* </div> */}
+      {/* <div style={{ marginTop: "20px" }}> */}
+      <AddressDetails
+        t={t}
+        formData={formData}
+        onSelect={(key, data) => {
+          setFormData((prev) => ({ ...prev, ...data }));
+          onSelect(key, data);
+        }}
+        config={{ isCollapsible: false, ...config }}
+        isEdit={isEdit}
+        showZRO={true}
+        showMapActualLocation={true}
+        disable={isPropertyFound}
+        hideNextButton={true}
+      />
+      {/* </div> */}
     </CollapsibleCardPage>
   );
 };
