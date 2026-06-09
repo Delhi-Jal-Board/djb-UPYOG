@@ -73,8 +73,14 @@ public class Address {
 	@JsonProperty("subLocality")
 	private String subLocality;
 
-	@JsonProperty("wardRemark")
-	private String wardRemark;
+	@JsonProperty("actualWard")
+	private String actualWard;
+
+	@JsonProperty("actualAssembly")
+	private String actualAssembly;
+
+	@JsonProperty("actualZone")
+	private String actualZone;
 
 	@JsonProperty("additionalDetails")
 	private Object additionalDetails;
