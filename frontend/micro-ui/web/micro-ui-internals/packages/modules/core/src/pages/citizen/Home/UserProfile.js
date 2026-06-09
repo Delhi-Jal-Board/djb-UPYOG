@@ -1,5 +1,5 @@
 import {
-  CardLabel,
+  Label,
   Dropdown,
   LabelFieldPair,
   MobileNumber,
@@ -608,7 +608,7 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
                     {activeTab === "profile" ? (
                       <Fragment>
                         <LabelFieldPair style={{ flexDirection: "column", alignItems: "flex-start" }}>
-                          <CardLabel style={{ marginBottom: "8px" }}>{`${t("CORE_COMMON_PROFILE_NAME")}`}*</CardLabel>
+                          <Label style={{ marginBottom: "8px" }}>{`${t("CORE_COMMON_PROFILE_NAME")}`}*</Label>
                           <div style={{ width: "100%" }}>
                             <TextInput
                               t={t}
@@ -622,7 +622,7 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
                         </LabelFieldPair>
 
                         <LabelFieldPair style={{ flexDirection: "column", alignItems: "flex-start" }}>
-                          <CardLabel style={{ marginBottom: "8px" }}>{`${t("CORE_COMMON_PROFILE_GENDER")}`}</CardLabel>
+                          <Label style={{ marginBottom: "8px" }}>{`${t("CORE_COMMON_PROFILE_GENDER")}`}</Label>
                           <Dropdown
                             style={{ width: "100%" }}
                             selected={gender?.length === 1 ? gender[0] : gender}
@@ -637,21 +637,21 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
                         </LabelFieldPair>
 
                         <LabelFieldPair style={{ flexDirection: "column", alignItems: "flex-start" }}>
-                          <CardLabel style={{ marginBottom: "8px" }}>{`${t("CORE_COMMON_PROFILE_DOB")}*`}</CardLabel>
+                          <Label style={{ marginBottom: "8px" }}>{`${t("CORE_COMMON_PROFILE_DOB")}*`}</Label>
                           <div style={{ width: "100%" }}>
                             <DatePicker date={dob || dateOfBirth} onChange={setUserDOB} disable={true} />
                           </div>
                         </LabelFieldPair>
 
                         <LabelFieldPair style={{ flexDirection: "column", alignItems: "flex-start" }}>
-                          <CardLabel style={{ marginBottom: "8px" }}>{`${t("CORE_COMMON_PROFILE_MOBILE_NUMBER")}*`}</CardLabel>
+                          <Label style={{ marginBottom: "8px" }}>{`${t("CORE_COMMON_PROFILE_MOBILE_NUMBER")}*`}</Label>
                           <div style={{ width: "100%" }}>
                             <MobileNumber value={mobileNumber} disable={true} />
                           </div>
                         </LabelFieldPair>
 
                         <LabelFieldPair style={{ flexDirection: "column", alignItems: "flex-start" }}>
-                          <CardLabel style={{ marginBottom: "8px" }}>{`${t("CORE_COMMON_PROFILE_ALT_MOBILE_NUMBER")}`}</CardLabel>
+                          <Label style={{ marginBottom: "8px" }}>{`${t("CORE_COMMON_PROFILE_ALT_MOBILE_NUMBER")}`}</Label>
                           <div style={{ width: "100%" }}>
                             <MobileNumber
                               value={altMobileNumber}
@@ -663,7 +663,7 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
                         </LabelFieldPair>
 
                         <LabelFieldPair style={{ flexDirection: "column", alignItems: "flex-start" }}>
-                          <CardLabel style={{ marginBottom: "8px" }}>{`${t("CORE_COMMON_PROFILE_EMAIL")}`}</CardLabel>
+                          <Label style={{ marginBottom: "8px" }}>{`${t("CORE_COMMON_PROFILE_EMAIL")}`}</Label>
                           <div style={{ width: "100%" }}>
                             <TextInput
                               t={t}
@@ -801,41 +801,41 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
             <div className="formcomposer-grid-container-form">
               <div className="formcomposer-section-grid">
                 <LabelFieldPair>
-                  <CardLabel className="profile-label-margin" style={editScreen ? { color: "#B1B4B6" } : {}}>
+                  <Label className="profile-label-margin" style={editScreen ? { color: "#B1B4B6" } : {}}>
                     {t("HR_EMP_ID_LABEL")}
-                  </CardLabel>
+                  </Label>
                   <div style={{ width: "100%" }}>
                     <TextInput t={t} type={"text"} isMandatory={false} name="code" value={userInfo?.userName} disable />
                   </div>
                 </LabelFieldPair>
                 <LabelFieldPair>
-                  <CardLabel className="profile-label-margin" style={editScreen ? { color: "#B1B4B6" } : {}}>
+                  <Label className="profile-label-margin" style={editScreen ? { color: "#B1B4B6" } : {}}>
                     {t("HR_DESG_LABEL")}
-                  </CardLabel>
+                  </Label>
                   <div style={{ width: "100%" }}>
                     <TextInput t={t} type={"text"} name="desg" value={t(`COMMON_MASTERS_DESIGNATION_${designationName}`)} disable />
                   </div>
                 </LabelFieldPair>
                 <LabelFieldPair>
-                  <CardLabel className="profile-label-margin" style={editScreen ? { color: "#B1B4B6" } : {}}>
+                  <Label className="profile-label-margin" style={editScreen ? { color: "#B1B4B6" } : {}}>
                     {t("HR_DEPT_LABEL")}
-                  </CardLabel>
+                  </Label>
                   <div style={{ width: "100%" }}>
                     <TextInput t={t} type={"text"} name="dept" value={t(`COMMON_MASTERS_DEPARTMENT_${departmentName}`)} disable />
                   </div>
                 </LabelFieldPair>
                 <LabelFieldPair>
-                  <CardLabel className="profile-label-margin" style={editScreen ? { color: "#B1B4B6" } : {}}>
+                  <Label className="profile-label-margin" style={editScreen ? { color: "#B1B4B6" } : {}}>
                     {t("CORE_COMMON_PROFILE_NAME")}*
-                  </CardLabel>
+                  </Label>
                   <div style={{ width: "100%" }}>
                     <TextInput t={t} type={"text"} name="name" value={name} onChange={(e) => setUserName(e.target.value)} disable={editScreen} />
                   </div>
                 </LabelFieldPair>
                 <LabelFieldPair>
-                  <CardLabel className="profile-label-margin" style={editScreen ? { color: "#B1B4B6" } : {}}>
+                  <Label className="profile-label-margin" style={editScreen ? { color: "#B1B4B6" } : {}}>
                     {t("CORE_COMMON_PROFILE_GENDER")}
-                  </CardLabel>
+                  </Label>
                   <Dropdown
                     style={{ width: "100%" }}
                     selected={gender?.length === 1 ? gender[0] : gender}
@@ -849,25 +849,25 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
                   />
                 </LabelFieldPair>
                 <LabelFieldPair>
-                  <CardLabel className="profile-label-margin" style={editScreen ? { color: "#B1B4B6" } : {}}>
+                  <Label className="profile-label-margin" style={editScreen ? { color: "#B1B4B6" } : {}}>
                     {t("CORE_COMMON_PROFILE_CITY")}
-                  </CardLabel>
+                  </Label>
                   <div style={{ width: "100%" }}>
                     <TextInput t={t} type={"text"} name="city" value={t(city)} disable />
                   </div>
                 </LabelFieldPair>
                 <LabelFieldPair>
-                  <CardLabel className="profile-label-margin" style={{}}>
+                  <Label className="profile-label-margin" style={{}}>
                     {t("CORE_COMMON_PROFILE_MOBILE_NUMBER")}*
-                  </CardLabel>
+                  </Label>
                   <div style={{ width: "100%" }}>
                     <MobileNumber value={mobileNumber} name="mobileNumber" disable={true} />
                   </div>
                 </LabelFieldPair>
                 <LabelFieldPair>
-                  <CardLabel className="profile-label-margin" style={editScreen ? { color: "#B1B4B6" } : {}}>
+                  <Label className="profile-label-margin" style={editScreen ? { color: "#B1B4B6" } : {}}>
                     {t("CORE_COMMON_PROFILE_EMAIL")}
-                  </CardLabel>
+                  </Label>
                   <div style={{ width: "100%" }}>
                     <TextInput
                       t={t}
@@ -880,9 +880,9 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
                   </div>
                 </LabelFieldPair>
                 <LabelFieldPair>
-                  <CardLabel className="profile-label-margin" style={editScreen ? { color: "#B1B4B6" } : {}}>
+                  <Label className="profile-label-margin" style={editScreen ? { color: "#B1B4B6" } : {}}>
                     {t("CORE_COMMON_PROFILE_DOB")}
-                  </CardLabel>
+                  </Label>
                   <div style={{ width: "100%" }}>
                     <DatePicker date={dob || dateOfBirth} disable={true} />
                   </div>
@@ -896,19 +896,19 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
               {changepassword && (
                 <div className="formcomposer-section-grid">
                   <LabelFieldPair>
-                    <CardLabel className="profile-label-margin">{t("CORE_COMMON_PROFILE_CURRENT_PASSWORD")}</CardLabel>
+                    <Label className="profile-label-margin">{t("CORE_COMMON_PROFILE_CURRENT_PASSWORD")}</Label>
                     <div style={{ width: "100%" }}>
                       <TextInput t={t} type={"password"} onChange={(e) => setUserCurrentPassword(e.target.value)} disable={editScreen} />
                     </div>
                   </LabelFieldPair>
                   <LabelFieldPair>
-                    <CardLabel className="profile-label-margin">{t("CORE_COMMON_PROFILE_NEW_PASSWORD")}</CardLabel>
+                    <Label className="profile-label-margin">{t("CORE_COMMON_PROFILE_NEW_PASSWORD")}</Label>
                     <div style={{ width: "100%" }}>
                       <TextInput t={t} type={"password"} onChange={(e) => setUserNewPassword(e.target.value)} disable={editScreen} />
                     </div>
                   </LabelFieldPair>
                   <LabelFieldPair>
-                    <CardLabel className="profile-label-margin">{t("CORE_COMMON_PROFILE_CONFIRM_PASSWORD")}</CardLabel>
+                    <Label className="profile-label-margin">{t("CORE_COMMON_PROFILE_CONFIRM_PASSWORD")}</Label>
                     <div style={{ width: "100%" }}>
                       <TextInput t={t} type={"password"} onChange={(e) => setUserConfirmPassword(e.target.value)} disable={editScreen} />
                     </div>

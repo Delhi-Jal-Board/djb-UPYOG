@@ -1,14 +1,15 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
-import CardLabel from "../atoms/CardLabel";
+import Label from "../atoms/Label";
 import TextInput from "../atoms/TextInput";
 import Dropdown from "../atoms/Dropdown";
 import UploadFile from "../atoms/UploadFile";
 import Toast from "../atoms/Toast";
 import FormStep from "./FormStep";
 import { useLocation } from "react-router-dom";
-import LabelFieldPair from "../atoms/LabelFieldPair";
 import CardLabelError from "../atoms/CardLabelError";
+import Modal from "../hoc/Modal";
+import Button from "../atoms/Button";
 
 const allOptions = [
   { name: "Correspondence", code: "CORRESPONDENCE", i18nKey: "COMMON_ADDRESS_TYPE_CORRESPONDENCE" },
@@ -102,6 +103,19 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
   const [wardRemark, setWardRemark] = useState(
     formData?.wardRemark || formData?.address?.wardRemark || formData?.infodetails?.existingDataSet?.address?.wardRemark || ""
   );
+  const [actualAssembly, setActualAssembly] = useState(
+    formData?.actualAssembly || formData?.address?.actualAssembly || formData?.infodetails?.existingDataSet?.address?.actualAssembly || ""
+  );
+  const [actualZone, setActualZone] = useState(
+    formData?.actualZone || formData?.address?.actualZone || formData?.infodetails?.existingDataSet?.address?.actualZone || ""
+  );
+  const [actualWard, setActualWard] = useState(
+    formData?.actualWard || formData?.address?.actualWard || formData?.infodetails?.existingDataSet?.address?.actualWard || ""
+  );
+  const [tempAssembly, setTempAssembly] = useState("");
+  const [tempZone, setTempZone] = useState("");
+  const [tempWard, setTempWard] = useState("");
+  const [showModal, setShowModal] = useState(false);
 
   const {
     control,
@@ -157,6 +171,41 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
     const boundary = revenueData?.boundary || [];
     return Array.isArray(boundary) ? boundary : [boundary];
   }, [egovLocationData]);
+
+  const { assemblyOptions, zoneOptions, wardOptions } = useMemo(() => {
+    const assemblies = new Map();
+    const zones = new Map();
+    const wards = new Map();
+
+    const boundaries = Array.isArray(boundaryData) ? boundaryData : boundaryData ? [boundaryData] : [];
+
+    const traverse = (node) => {
+      if (!node) return;
+      if (node.label === "Zone" || node.label === "ZONE") {
+        const code = node.code || node.localname || node.name;
+        if (code) zones.set(code, { code, i18nKey: code, name: code });
+      }
+      if (node.label === "Ward" || node.label === "WARD" || node.label === "Block" || node.label === "BLOCK") {
+        const code = node.code || node.localname || node.name;
+        if (code) wards.set(code, { code, i18nKey: code, name: code });
+      }
+      if (node.label === "Assembly Constituency" || node.label === "ASSEMBLY_CONSTITUENCY") {
+        const code = node.code || node.localname || node.name;
+        if (code) assemblies.set(code, { code, i18nKey: code, name: code });
+      }
+      if (node.children && node.children.length > 0) {
+        node.children.forEach(traverse);
+      }
+    };
+
+    boundaries.forEach(traverse);
+
+    return {
+      assemblyOptions: Array.from(assemblies.values()),
+      zoneOptions: Array.from(zones.values()),
+      wardOptions: Array.from(wards.values()),
+    };
+  }, [boundaryData]);
 
   const structuredLocalityData = useMemo(() => {
     let localities = [];
@@ -358,6 +407,9 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
       if ((addressData.zro || "") !== zro) setZro(addressData.zro || "");
       if ((addressData.subLocality || "") !== subLocality) setSubLocality(addressData.subLocality || "");
       if ((addressData.wardRemark || "") !== wardRemark) setWardRemark(addressData.wardRemark || "");
+      if ((addressData.actualAssembly || "") !== actualAssembly) setActualAssembly(addressData.actualAssembly || "");
+      if ((addressData.actualZone || "") !== actualZone) setActualZone(addressData.actualZone || "");
+      if ((addressData.actualWard || "") !== actualWard) setActualWard(addressData.actualWard || "");
 
       if (addressData.doorImageId) {
         if (addressData.doorImage !== doorImage) setDoorImage(addressData.doorImage);
@@ -406,6 +458,9 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
       zro,
       subLocality,
       wardRemark,
+      actualAssembly,
+      actualZone,
+      actualWard,
       ...(config?.doorImage ? { doorImage, doorImageId } : {}),
     };
 
@@ -457,6 +512,9 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
       zro,
       subLocality,
       wardRemark,
+      actualAssembly,
+      actualZone,
+      actualWard,
       ...(isEkyc ? { doorImage, doorImageId } : {}),
     };
 
@@ -499,6 +557,9 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
     doorImageId,
     subLocality,
     wardRemark,
+    actualAssembly,
+    actualZone,
+    actualWard,
     config?.key,
     onSelect,
   ]);
@@ -522,6 +583,9 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
       setZro(selectedAddress.zro);
       setSubLocality(selectedAddress.subLocality);
       setWardRemark(selectedAddress.wardRemark);
+      setActualAssembly(selectedAddress.actualAssembly);
+      setActualZone(selectedAddress.actualZone);
+      setActualWard(selectedAddress.actualWard);
       if (config?.doorImage) {
         setDoorImage(selectedAddress.doorImage);
         setDoorImageId(selectedAddress.doorImageId);
@@ -577,7 +641,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
       >
         {userDetails?.addresses?.length && (
           <div style={{ gridColumn: "span 2" }}>
-            <CardLabel>{t("FORM_SELECT_ADDRESS_FROM_LIST")}</CardLabel>
+            <Label>{t("FORM_SELECT_ADDRESS_FROM_LIST")}</Label>
             <Dropdown
               className="form-field"
               selected={selectedAddress}
@@ -595,9 +659,9 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
 
         {showZRO && (
           <div>
-            <CardLabel>
+            <Label>
               {t("WS_ZRO_LOCATION")} <span className="check-page-link-button">*</span>
-            </CardLabel>
+            </Label>
             <div className="field">
               <Controller
                 control={control}
@@ -623,9 +687,9 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
           </div>
         )}
         <div>
-          <CardLabel>
+          <Label>
             {`${t("COMMON_ADDRESS_TYPE")}`} <span className="check-page-link-button">*</span>
-          </CardLabel>
+          </Label>
           <Dropdown
             className="form-field"
             selected={addressType}
@@ -641,9 +705,9 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
         </div>
         {!config?.doorImage && (
           <div>
-            <CardLabel>
+            <Label>
               {`${t("CITY")}`} <span className="check-page-link-button">*</span>
-            </CardLabel>
+            </Label>
             <Controller
               control={control}
               name={"city"}
@@ -667,9 +731,9 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
           </div>
         )}
         <div style={{ position: "relative" }}>
-          <CardLabel>
+          <Label>
             {`${t("PINCODE")}`} <span className="check-page-link-button">*</span>
-          </CardLabel>
+          </Label>
           <TextInput
             value={pincode}
             onChange={(e) => {
@@ -728,9 +792,9 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
           )}
         </div>
         <div>
-          <CardLabel>
+          <Label>
             {`${t("LOCALITY")}`} <span className="check-page-link-button">*</span>
-          </CardLabel>
+          </Label>
           <Controller
             control={control}
             name={"locality"}
@@ -764,7 +828,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
         </div>
 
         <div>
-          <CardLabel>{`${t("SubLocality")}`}</CardLabel>
+          <Label>{`${t("SubLocality")}`}</Label>
           <TextInput
             t={t}
             type={"text"}
@@ -788,7 +852,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
           />
         </div>
         <div>
-          <CardLabel>{`${t("STREET_NAME")}`}</CardLabel>
+          <Label>{`${t("STREET_NAME")}`}</Label>
           <TextInput
             t={t}
             type={"text"}
@@ -811,9 +875,9 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
           />
         </div>
         <div>
-          <CardLabel>
+          <Label>
             {`${t(config?.doorImage ? "EKYC_SUB_LOCALITY" : "ADDRESS_LINE1")}`} <span className="check-page-link-button">*</span>
-          </CardLabel>
+          </Label>
           <TextInput
             t={t}
             type={"text"}
@@ -838,7 +902,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
         </div>
         {!config?.doorImage && (
           <div>
-            <CardLabel>{`${t("ADDRESS_LINE2")}`}</CardLabel>
+            <Label>{`${t("ADDRESS_LINE2")}`}</Label>
             <TextInput
               t={t}
               type={"text"}
@@ -864,9 +928,9 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
         )}
         {config?.doorImage && (
           <div>
-            <CardLabel>
+            <Label>
               {`${t("EKYC_DOOR_IMAGE")}`} <span className="check-page-link-button">*</span>
-            </CardLabel>
+            </Label>
             <UploadFile
               onUpload={uploadFile}
               onDelete={() => {
@@ -882,7 +946,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
         )}
 
         <div>
-          <CardLabel>{`${t("HOUSE_NO")}`}</CardLabel>
+          <Label>{`${t("HOUSE_NO")}`}</Label>
           <TextInput
             t={t}
             type={"text"}
@@ -907,7 +971,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
         </div>
 
         <div>
-          <CardLabel>{`${t("LATITUDE")}`}</CardLabel>
+          <Label>{`${t("LATITUDE")}`}</Label>
 
           <TextInput
             t={t}
@@ -934,7 +998,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
         </div>
 
         <div>
-          <CardLabel>{`${t("LONGITUDE")}`}</CardLabel>
+          <Label>{`${t("LONGITUDE")}`}</Label>
 
           <TextInput
             t={t}
@@ -960,7 +1024,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
           />
         </div>
         <div>
-          <CardLabel>{`${t("ASSEMBLY")}`}</CardLabel>
+          <Label>{`${t("ASSEMBLY")}`}</Label>
           <TextInput
             t={t}
             type={"text"}
@@ -970,56 +1034,40 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
             style={{ width: "100%" }}
             placeholder={"Enter Assembly"}
             onChange={(e) => setAssembly(e.target.value)}
-            disabled={disable}
+            disabled={true}
           />
         </div>
         {/* <div>
-          <CardLabel>
-            {`${t("WARD")}`} <span className="check-page-link-button">*</span>
-          </CardLabel>
+              <Label>
+                {`${t("WARD")}`} <span className="check-page-link-button">*</span>
+              </Label>
+              <TextInput
+                t={t}
+                type={"text"}
+                isMandatory={false}
+                name="ward"
+                value={ward}
+                style={{ width: "100%" }}
+                placeholder={"Enter Ward"}
+                onChange={(e) => setWard(e.target.value)}
+              />
+            </div> */}
+        <div>
+          <Label>{`${t("WARD")}`}</Label>
           <TextInput
             t={t}
             type={"text"}
             isMandatory={false}
-            name="ward"
-            value={ward}
+            name="block"
+            value={block}
             style={{ width: "100%" }}
             placeholder={"Enter Ward"}
-            onChange={(e) => setWard(e.target.value)}
+            onChange={(e) => setBlock(e.target.value)}
+            disabled={true}
           />
-        </div> */}
-        <div style={{ display: "flex", gap: "16px" }}>
-          <div style={{ flex: 1 }}>
-            <CardLabel>{`${t("WARD")}`}</CardLabel>
-            <TextInput
-              t={t}
-              type={"text"}
-              isMandatory={false}
-              name="block"
-              value={block}
-              style={{ width: "100%" }}
-              placeholder={"Enter Ward"}
-              onChange={(e) => setBlock(e.target.value)}
-              disabled={disable}
-            />
-          </div>
-          <div style={{ flex: 1 }}>
-            <CardLabel>{`${t("Actual Ward Number")}`}</CardLabel>
-            <TextInput
-              t={t}
-              type={"text"}
-              isMandatory={false}
-              name="wardRemark"
-              value={wardRemark}
-              style={{ width: "100%" }}
-              placeholder={"Enter Actual Ward Number"}
-              onChange={(e) => setWardRemark(e.target.value)}
-              disabled={disable}
-            />
-          </div>
         </div>
         <div>
-          <CardLabel>{`${t("ZONE")}`}</CardLabel>
+          <Label>{`${t("ZONE")}`}</Label>
           <TextInput
             t={t}
             type={"text"}
@@ -1029,11 +1077,11 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
             style={{ width: "100%" }}
             placeholder={"Enter Zone"}
             onChange={(e) => setZone(e.target.value)}
-            disabled={disable}
+            disabled={true}
           />
         </div>
         <div>
-          <CardLabel>{`${t("LANDMARK")}`}</CardLabel>
+          <Label>{`${t("LANDMARK")}`}</Label>
           <TextInput
             t={t}
             type={"textarea"}
@@ -1056,8 +1104,127 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
             }}
           />
         </div>
-        <div></div>
+        {props?.showMapActualLocation && (
+          <React.Fragment>
+            <div>
+              <Button
+                label={t("MAP ACTUAL LOCATION") || "Map Actual Location"}
+                onButtonClick={() => {
+                  setTempAssembly(actualAssembly);
+                  setTempZone(actualZone);
+                  setTempWard(actualWard);
+                  setShowModal(true);
+                }}
+                type="button"
+              />
+              {(actualAssembly || actualZone || actualWard) && (
+                <div style={{ marginTop: "16px", padding: "16px", border: "1px solid #E3E3E3", backgroundColor: "#FAFAFA", borderRadius: "4px" }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", rowGap: "16px", columnGap: "32px" }}>
+                    {actualAssembly && (
+                      <div style={{ display: "flex" }}>
+                        <span style={{ minWidth: "150px", color: "#505A5F", fontWeight: "400" }}>{t("ACTUAL ASSEMBLY")}</span>
+                        <span style={{ fontWeight: "500", color: "#0B0C0C", wordBreak: "break-word" }}>{actualAssembly}</span>
+                      </div>
+                    )}
+                    {actualWard && (
+                      <div style={{ display: "flex" }}>
+                        <span style={{ minWidth: "150px", color: "#505A5F", fontWeight: "400" }}>{t("ACTUAL WARD")}</span>
+                        <span style={{ fontWeight: "500", color: "#0B0C0C", wordBreak: "break-word" }}>{actualWard}</span>
+                      </div>
+                    )}
+                    {actualZone && (
+                      <div style={{ display: "flex" }}>
+                        <span style={{ minWidth: "150px", color: "#505A5F", fontWeight: "400" }}>{t("ACTUAL ZONE")}</span>
+                        <span style={{ fontWeight: "500", color: "#0B0C0C", wordBreak: "break-word" }}>{actualZone}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </React.Fragment>
+        )}
       </FormStep>
+      {showModal && (
+        <Modal
+          headerBarMain={t("MAP ACTUAL LOCATION") || "View Modal"}
+          headerBarEnd={
+            <div onClick={() => setShowModal(false)} style={{ cursor: "pointer", fontWeight: "bold", padding: "0 10px" }}>
+              X
+            </div>
+          }
+          actionCancelLabel={t("CANCEL")}
+          actionClearLabel={t("CLEAR")}
+          actionClearOnSubmit={(e) => {
+            e?.preventDefault();
+            setTempAssembly("");
+            setTempZone("");
+            setTempWard("");
+          }}
+          actionCancelOnSubmit={(e) => {
+            e?.preventDefault();
+            setShowModal(false);
+          }}
+          actionSaveLabel={t("SAVE")}
+          actionSaveOnSubmit={(e) => {
+            e?.preventDefault();
+            setActualAssembly(tempAssembly);
+            setActualZone(tempZone);
+            setActualWard(tempWard);
+            setShowModal(false);
+          }}
+        >
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+            <div>
+              <Label>{`${t("ACTUAL ASSEMBLY")}`}</Label>
+              <Dropdown
+                className="form-field"
+                selected={
+                  assemblyOptions.find((a) => a.code === tempAssembly) ||
+                  (tempAssembly ? { code: tempAssembly, i18nKey: tempAssembly, name: tempAssembly } : null)
+                }
+                disable={disable}
+                select={(val) => setTempAssembly(val?.code || "")}
+                option={assemblyOptions}
+                optionCardStyles={{ overflowY: "auto", maxHeight: "300px" }}
+                optionKey="i18nKey"
+                t={t}
+                placeholder={"Select Assembly"}
+              />
+            </div>
+
+            <div>
+              <Label>{`${t("ACTUAL ZONE")}`}</Label>
+              <Dropdown
+                className="form-field"
+                selected={zoneOptions.find((z) => z.code === tempZone) || (tempZone ? { code: tempZone, i18nKey: tempZone, name: tempZone } : null)}
+                disable={disable}
+                select={(val) => setTempZone(val?.code || "")}
+                option={zoneOptions}
+                optionCardStyles={{ overflowY: "auto", maxHeight: "300px" }}
+                optionKey="i18nKey"
+                t={t}
+                placeholder={"Select Zone"}
+              />
+            </div>
+
+            <div>
+              <Label>{`${t("ACTUAL WARD")}`}</Label>
+              <Dropdown
+                className="form-field"
+                selected={wardOptions.find((w) => w.code === tempWard) || (tempWard ? { code: tempWard, i18nKey: tempWard, name: tempWard } : null)}
+                disable={disable}
+                select={(val) => setTempWard(val?.code || "")}
+                option={wardOptions}
+                optionCardStyles={{ overflowY: "auto", maxHeight: "300px" }}
+                optionKey="i18nKey"
+                t={t}
+                placeholder={"Select Ward"}
+              />
+            </div>
+          </div>
+        </Modal>
+      )}
       {toast && <Toast label={t(toast.message)} error={toast.type === "error"} onClose={() => setToast(null)} />}
     </React.Fragment>
   );

@@ -28,7 +28,9 @@ export const setAddressDetailsLW = (data) => {
     zroLocation: address?.zro?.code || address?.zro,
     addressType: address?.addressType?.code || address?.addressType,
     subLocality: address?.subLocality || address?.subLocality?.name || address?.subLocality,
-    wardRemark: address?.wardRemark || address?.wardRemark?.name || address?.wardRemark,
+    actualWard: address?.actualWard || address?.actualWard?.name || address?.actualWard,
+    actualAssembly: address?.actualAssembly || address?.actualAssembly?.name || address?.actualAssembly,
+    actualZone: address?.actualZone || address?.actualZone?.name || address?.actualZone,
   };
 
   data.address = propAddress;
