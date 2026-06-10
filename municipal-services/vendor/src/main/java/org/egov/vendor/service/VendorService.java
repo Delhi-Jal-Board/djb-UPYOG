@@ -18,6 +18,7 @@ import org.egov.tracer.model.CustomException;
 import org.egov.vendor.config.VendorConfiguration;
 import org.egov.vendor.driver.web.model.Driver;
 import org.egov.vendor.repository.VendorRepository;
+import org.egov.vendor.supervisor.repository.SupervisorRepository;
 import org.egov.vendor.util.*;
 import org.egov.vendor.validator.VendorValidator;
 import org.egov.vendor.web.model.Vendor;
@@ -62,6 +63,9 @@ public class VendorService {
 
 	@Autowired
 	private VendorConfiguration config;
+
+	@Autowired
+	private SupervisorRepository supervisorRepository;
 
 
 	public Vendor create(VendorRequest vendorRequest) {
@@ -224,7 +228,7 @@ public class VendorService {
 	}
 
 	private void getVehicleDriver(VendorRequest vendorRequest, List<Driver> vendorDriverToBeUpdated,
-			List<Driver> vendorDriverToBeInserted, List<Driver> beforeUpdateOrInsertDriver, String tenantId) {
+	                              List<Driver> vendorDriverToBeInserted, List<Driver> beforeUpdateOrInsertDriver, String tenantId) {
 		if (vendorRequest.getVendor().getDrivers() != null && !vendorRequest.getVendor().getDrivers().isEmpty()) {
 
 			vendorRequest.getVendor().getDrivers().forEach(driver -> {
@@ -242,7 +246,7 @@ public class VendorService {
 	}
 
 	private void getVendorVehicle(VendorRequest vendorRequest, List<Vehicle> vendorVehicleToBeUpdated,
-			List<Vehicle> beforeUpdateOrInsertVehicle, List<Vehicle> vendorVehicleToBeInserted, String tenantId) {
+	                              List<Vehicle> beforeUpdateOrInsertVehicle, List<Vehicle> vendorVehicleToBeInserted, String tenantId) {
 		if (vendorRequest.getVendor().getVehicles() != null && !vendorRequest.getVendor().getVehicles().isEmpty()) {
 			vendorRequest.getVendor().getVehicles().forEach(vehicle -> {
 				List<String> vehicleIds = vendorRepository.getVendorWithVehicles(VendorSearchCriteria.builder()
@@ -306,33 +310,47 @@ public class VendorService {
 
 		return vendorResponse;
 	}
+	/**
+	 * DB-based vendor search scoping — does NOT rely on JWT/DIGIT roles.
+	 *
+	 * ZUUL replaces userInfo.roles with Keycloak realm roles before forwarding.
+	 * DIGIT roles (EKYC_VENDOR, EKYC_SUPERVISOR) are never present here.
+	 * Identify caller by UUID directly in DB:
+	 *
+	 *   UUID in eg_supervisor → supervisor → scope to their vendor only
+	 *   UUID in eg_vendor     → vendor     → scope to their own record
+	 *   Neither + EMPLOYEE    → unrestricted
+	 *   Neither + CITIZEN     → falls through to ownerIds = uuid (no match = empty, safe)
+	 *
+	 * Security: UUID from Keycloak JWT is cryptographically signed — cannot be spoofed.
+	 */
 	private void applyRoleBasedSearchRestrictions(VendorSearchCriteria criteria, RequestInfo requestInfo) {
-		// 1. Guard Clause: If Employee or system call, allow unrestricted search
-		if (isEmployeeUser(requestInfo) || requestInfo == null || requestInfo.getUserInfo() == null) {
+		if (requestInfo == null || requestInfo.getUserInfo() == null) return;
+
+		// SUPERUSER / EMPLOYEE — unrestricted
+		if (isEmployeeUser(requestInfo)) return;
+
+		String loggedInUuid = requestInfo.getUserInfo().getUuid();
+		if (!StringUtils.hasLength(loggedInUuid))
+			throw new CustomException("AUTH_ERROR", "User UUID not found in session. Search restricted.");
+
+		criteria.setMobileNumber(null); // always clear — mobile is encrypted in token
+
+		// Check DB: is this caller a supervisor?
+		List<String> vendorIdsViaSupervisor = supervisorRepository.getVendorIdsByOwner(loggedInUuid);
+		if (!CollectionUtils.isEmpty(vendorIdsViaSupervisor)) {
+			// Supervisor — scope to their vendor only via vendor id
+			criteria.setIds(Collections.singletonList(vendorIdsViaSupervisor.get(0)));
+			criteria.setOwnerIds(null);
+			log.info("Vendor search scoped to vendorId={} for supervisor uuid={}",
+					vendorIdsViaSupervisor.get(0), loggedInUuid);
 			return;
 		}
 
-		// 2. Identify the logged-in User
-		String loggedInUuid = requestInfo.getUserInfo().getUuid();
-
-		// 3. Security Restriction: Force search by UUID
-		// For CITIZEN/VENDOR types, the UUID is the only reliable unencrypted identifier.
-		if (StringUtils.hasLength(loggedInUuid)) {
-			log.info("Restricting search to owner UUID: {}", loggedInUuid);
-
-			// Ensure the Vendor can ONLY see their own records by overriding OwnerIds
-			criteria.setOwnerIds(Collections.singletonList(loggedInUuid));
-
-			/* * 4. CRITICAL FIX: Clear the MobileNumber from criteria.
-			 * The mobileNumber in requestInfo.getUserInfo() is ENCRYPTED for Vendors.
-			 * We MUST nullify it here so the subsequent service logic (userService.getOwner)
-			 * is not triggered with an encrypted string, which would cause an empty result.
-			 */
-			criteria.setMobileNumber(null);
-		} else {
-			// Safety check: if for some reason UUID is missing for a non-employee, block the search
-			throw new CustomException("AUTH_ERROR", "User UUID not found in session. Search restricted.");
-		}
+		// Check DB: is this caller a vendor owner?
+		// Scope via owner_id — vendor can only see their own record
+		criteria.setOwnerIds(Collections.singletonList(loggedInUuid));
+		log.info("Vendor search scoped to ownerUuid={}", loggedInUuid);
 	}
 
 	private boolean isEmployeeUser(RequestInfo requestInfo) {
