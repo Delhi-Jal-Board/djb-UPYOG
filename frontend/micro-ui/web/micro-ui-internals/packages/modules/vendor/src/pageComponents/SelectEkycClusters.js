@@ -56,22 +56,36 @@ const SelectEkycClusters = ({ config, onSelect, t, formData }) => {
         ];
       }
     }
-    setClusters((prev) => {
-      const same = JSON.stringify(prev) === JSON.stringify(allClusters);
-      return same ? prev : allClusters;
-    });
-  }, [formData?.zoneIds, boundaryData]);
+
+    if (allClusters.length > 0) {
+      allClusters = Array.from(new Map(allClusters.map(item => [item.code, item])).values());
+    }
+    setClusters(allClusters);
+  }, [selectedZones, boundaryData]);
+
 
   const handleSelect = (value) => {
-    setSelectedClusters(value);
-    onSelect(config.key, value);
+    const extractedValue = Array.isArray(value) ? value.map(v => Array.isArray(v) ? v[1] : v).filter(Boolean) : value;
+    setSelectedClusters(extractedValue);
+    onSelect(config.key, extractedValue);
   };
+
+  const isDisabled = selectedZones.length === 0;
 
   return (
     <LabelFieldPair>
       <CardLabel>{t(config.label) + (config.isMandatory ? " *" : "")}</CardLabel>
-      <div className="field">
-        <MultiSelectDropdown options={clusters} selected={selectedClusters} onSelect={handleSelect} optionsKey="name" t={t} />
+
+      <div className="field" style={{ position: "relative", zIndex: 9 }}>
+        <MultiSelectDropdown
+          options={clusters}
+          selected={selectedClusters}
+          onSelect={handleSelect}
+          optionsKey="name"
+          t={t}
+          ServerStyle={{ backgroundColor: "#fff" }}
+          disable={isDisabled}
+        />
       </div>
     </LabelFieldPair>
   );

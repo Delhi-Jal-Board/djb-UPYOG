@@ -56,11 +56,11 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
   );
   const [addressLine1, setAddressLine1] = useState(
     formData?.addressLine1 ||
-      formData?.subLocality ||
-      formData?.address?.addressLine1 ||
-      formData?.address?.subLocality ||
-      formData?.infodetails?.existingDataSet?.address?.addressline1 ||
-      ""
+    formData?.subLocality ||
+    formData?.address?.addressLine1 ||
+    formData?.address?.subLocality ||
+    formData?.infodetails?.existingDataSet?.address?.addressline1 ||
+    ""
   );
   const [addressLine2, setAddressLine2] = useState(
     formData?.addressLine2 || formData?.address?.addressLine2 || formData?.infodetails?.existingDataSet?.address?.addressline2 || ""
@@ -71,16 +71,16 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
   const [addressType, setAddressType] = useState(
     convertToObject(formData?.addressType) || formData?.address?.addressType || formData?.infodetails?.existingDataSet?.address?.addressType
       ? allOptions.find(
-          (a) =>
-            a.code ===
-            (formData?.addressType?.code ||
-              formData?.addressType ||
-              formData?.address?.addressType ||
-              formData?.infodetails?.existingDataSet?.address?.addressType)
-        ) ||
-          convertToObject(formData?.addressType) ||
-          formData?.address?.addressType ||
-          formData?.infodetails?.existingDataSet?.address?.addressType
+        (a) =>
+          a.code ===
+          (formData?.addressType?.code ||
+            formData?.addressType ||
+            formData?.address?.addressType ||
+            formData?.infodetails?.existingDataSet?.address?.addressType)
+      ) ||
+      convertToObject(formData?.addressType) ||
+      formData?.address?.addressType ||
+      formData?.infodetails?.existingDataSet?.address?.addressType
       : allOptions.find((a) => a.code === "PERMANENT")
   );
   const [showPincodeSuggestions, setShowPincodeSuggestions] = useState(false);

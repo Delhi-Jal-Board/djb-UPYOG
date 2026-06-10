@@ -83,7 +83,7 @@ const AddSupervisor = ({ parentUrl, heading }) => {
       },
       supervisor: {
         tenantId: tenantId,
-        vendorId: vendorId,
+        // vendorId: vendorId,
         assignedZoneId: data?.assignedZone?.code || data?.assignedZone || null,
         description: data?.description || "",
         owner: {
