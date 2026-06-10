@@ -138,7 +138,19 @@ function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false }
                 )}
                 {!isPhoto && (
                   <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "14px", color: "#0B0C0C", margin: 0 }}>
-                    <input type="checkbox" style={{ width: "18px", height: "18px", accentColor: "#F47738" }} />
+                    <input 
+                      type="checkbox" 
+                      style={{ width: "18px", height: "18px", accentColor: "#F47738" }} 
+                      defaultChecked={value?.originalDoc?.additionalDetails?.isDocumentVerified}
+                      onChange={(e) => {
+                        if (value?.originalDoc) {
+                          if (!value.originalDoc.additionalDetails) {
+                            value.originalDoc.additionalDetails = {};
+                          }
+                          value.originalDoc.additionalDetails.isDocumentVerified = e.target.checked;
+                        }
+                      }}
+                    />
                     Check Verified
                   </label>
                 )}

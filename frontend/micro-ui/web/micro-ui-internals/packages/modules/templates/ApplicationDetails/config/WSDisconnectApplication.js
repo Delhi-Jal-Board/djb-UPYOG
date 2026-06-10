@@ -29,22 +29,22 @@ export const configWSDisConnectApplication = ({
     form: [
       {
         body: [
-          {
-            label: !checkCondtions ? null : t("WF_ASSIGNEE_NAME_LABEL"),
-            placeholder: !checkCondtions ? null : t("WF_ASSIGNEE_NAME_PLACEHOLDER"),
-            // isMandatory: false,
-            type: "dropdown",
-            populators: !checkCondtions ? null : (
-              <Dropdown
-                option={approvers}
-                autoComplete="off"
-                optionKey="name"
-                id="fieldInspector"
-                select={setSelectedApprover}
-                selected={selectedApprover}
-              />
-            ),
-          },
+          // {
+          //   label: !checkCondtions ? null : t("WF_ASSIGNEE_NAME_LABEL"),
+          //   placeholder: !checkCondtions ? null : t("WF_ASSIGNEE_NAME_PLACEHOLDER"),
+          //   // isMandatory: false,
+          //   type: "dropdown",
+          //   populators: !checkCondtions ? null : (
+          //     <Dropdown
+          //       option={approvers}
+          //       autoComplete="off"
+          //       optionKey="name"
+          //       id="fieldInspector"
+          //       select={setSelectedApprover}
+          //       selected={selectedApprover}
+          //     />
+          //   ),
+          // },
           isDatePickerDisplay && {
             label: t("ES_FSM_ACTION_SERVICE_DATE"),
             isMandatory: isDatePickerDisplay ? true : false,

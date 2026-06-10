@@ -27,22 +27,22 @@ export const configWSApproverApplication = ({
     form: [
       {
         body: [
-          {
-            label: !checkCondtions ? null : t("WF_ASSIGNEE_NAME_LABEL"),
-            placeholder: !checkCondtions ? null : t("WF_ASSIGNEE_NAME_PLACEHOLDER"),
-            // isMandatory: false,
-            type: "dropdown",
-            populators: !checkCondtions ? null : (
-              <Dropdown
-                option={approvers}
-                autoComplete="off"
-                optionKey="name"
-                id="fieldInspector"
-                select={setSelectedApprover}
-                selected={selectedApprover}
-              />
-            ),
-          },
+          // {
+          //   label: !checkCondtions ? null : t("WF_ASSIGNEE_NAME_LABEL"),
+          //   placeholder: !checkCondtions ? null : t("WF_ASSIGNEE_NAME_PLACEHOLDER"),
+          //   // isMandatory: false,
+          //   type: "dropdown",
+          //   populators: !checkCondtions ? null : (
+          //     <Dropdown
+          //       option={approvers}
+          //       autoComplete="off"
+          //       optionKey="name"
+          //       id="fieldInspector"
+          //       select={setSelectedApprover}
+          //       selected={selectedApprover}
+          //     />
+          //   ),
+          // },
           {
             label: t("WF_COMMON_COMMENTS"),
             type: "textarea",
