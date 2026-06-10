@@ -3,7 +3,6 @@ import { CardLabel, Dropdown, LabelFieldPair, Loader } from "@djb25/digit-ui-rea
 
 const SelectServiceType = ({ config, onSelect, t, userType, formData }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  const stateId = Digit.ULBService.getStateId();
   const [serviceTypes, setserviceTypes] = useState(formData?.serviceType);
   const [formattedServiceTypes, setFormattedServiceTypes] = useState([]);
 
@@ -38,14 +37,6 @@ const SelectServiceType = ({ config, onSelect, t, userType, formData }) => {
     if (userType === "employee") {
       onSelect(config.key, value);
     }
-  };
-
-  const onSkip = () => {
-    onSelect();
-  };
-
-  const onSubmit = () => {
-    onSelect(config.key, serviceTypes);
   };
 
   if (isLoading) {

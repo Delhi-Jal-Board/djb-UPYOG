@@ -12,7 +12,7 @@ const AddVendor = ({ parentUrl, heading }) => {
   // const queryClient = useQueryClient();
   const [currentStep, setCurrentStep] = useState(1);
   const [showToast, setShowToast] = useState(null);
-  const [canSubmit, setCanSubmit] = useState(false);
+  // const [canSubmit, setCanSubmit] = useState(false);
 
   const [, setMutationHappened] = Digit.Hooks.useSessionStorage("FSM_MUTATION_HAPPENED", false);
 
@@ -48,33 +48,44 @@ const AddVendor = ({ parentUrl, heading }) => {
   const onFormValueChange = (setValue, data) => {
     // Avoid circular JSON error by not stringifying the whole data object
     // Only update formData state if keys that affect dynamic config or child components change
-    if (data?.serviceType?.code !== formData?.serviceType?.code || JSON.stringify(data?.zoneIds) !== JSON.stringify(formData?.zoneIds)) {
-      setFormData(data);
+    const currentZoneCodes = data?.zoneIds?.map((item) => item?.[1]?.code) || [];
+
+    const previousZoneCodes = formData?.zoneIds || [];
+    const zoneChanged = currentZoneCodes.join(",") !== previousZoneCodes.join(",");
+    if (data?.serviceType?.code !== formData?.serviceType?.code || zoneChanged) {
+      setFormData((prev) => ({
+        ...prev,
+        serviceType: data?.serviceType,
+      }));
+    }
+    if (zoneChanged) {
+      setFormData((prev) => ({
+        ...prev,
+        zoneIds: currentZoneCodes,
+      }));
     }
 
-    const isEkyc = data?.serviceType?.code === "EKYC";
+    // const isEkyc = data?.serviceType?.code === "EKYC";
     const isVendorDetailsFilled = data?.vendorName && data?.phone && data?.serviceType?.code;
-    const isAddressFilled = data?.address?.city && data?.address?.locality;
+    // const isAddressFilled = data?.address?.city && data?.address?.locality;
 
-    let isEkycFieldsFilled = true;
-    if (isEkyc) {
-      isEkycFieldsFilled =
-        data?.ownerName &&
-        data?.contractStartDate &&
-        data?.contractEndDate &&
-        data?.zoneIds?.length > 0 &&
-        data?.clusterIds?.length > 0 &&
-        data?.fatherOrHusbandName &&
-        data?.gender &&
-        data?.dob &&
-        data?.relationship;
-    }
+    // let isEkycFieldsFilled = true;
+    // if (isEkyc) {
+    //   isEkycFieldsFilled =
+    //     data?.ownerName &&
+    //     data?.contractStartDate &&
+    //     data?.contractEndDate &&
+    //     data?.zoneIds?.length > 0 &&
+    //     data?.clusterIds?.length > 0 &&
+    //     data?.gender &&
+    //     data?.dob;
+    // }
 
-    if (isVendorDetailsFilled && isAddressFilled && isEkycFieldsFilled) {
-      setCanSubmit(true);
-    } else {
-      setCanSubmit(false);
-    }
+    // if (isVendorDetailsFilled && isAddressFilled) {
+    //   setCanSubmit(true);
+    // } else {
+    //   setCanSubmit(false);
+    // }
 
     if (isVendorDetailsFilled) {
       if (currentStep === 1) {
@@ -106,25 +117,28 @@ const AddVendor = ({ parentUrl, heading }) => {
   };
 
   const onSubmit = (data) => {
+    console.log("-=-=-=-=-=-==-", data);
     // FINAL SUBMIT
     const mergedData = data;
+    const address = mergedData?.propertyAddress;
 
-    console.log(mergedData);
+    const pincode = address?.pincode;
+    const street = address?.streetName;
+    const doorNo = address?.houseNo;
+    const landmark = address?.landmark;
+
+    const city = address?.city?.name;
+    const state = address?.city?.name;
+    const district = address?.city?.name;
+    const region = address?.city?.name;
+
+    const localityCode = address?.locality?.code;
+    const localityName = address?.locality?.name;
+    const localityArea = address?.subLocality;
 
     const name = mergedData?.vendorName;
-    const pincode = mergedData?.pincode;
-    const street = mergedData?.street?.trim();
-    const doorNo = mergedData?.doorNo?.trim();
     const plotNo = mergedData?.plotNo?.trim();
-    const landmark = mergedData?.landmark?.trim();
-    const city = mergedData?.address?.city?.name;
-    const state = mergedData?.address?.city?.state;
-    const district = mergedData?.address?.city?.name;
-    const region = mergedData?.address?.city?.name;
     const buildingName = mergedData?.buildingName?.trim();
-    const localityCode = mergedData?.address?.locality?.code;
-    const localityName = mergedData?.address?.locality?.name;
-    const localityArea = mergedData?.address?.locality?.area;
     const emailId = mergedData?.emailId;
     const phone = mergedData?.phone;
 
@@ -180,13 +194,14 @@ const AddVendor = ({ parentUrl, heading }) => {
     if (isEkyc) {
       vendorData = {
         ...vendorData,
-        zoneIds: mergedData?.zoneIds?.map((z) => z.code) || [],
-        clusterIds: mergedData?.clusterIds?.map((c) => c.code) || [],
+        zoneIds: mergedData?.zoneIds?.map((z) => z?.[1]?.code) || [],
+        clusterIds: mergedData?.clusterIds?.map((c) => c?.[1]?.code) || [],
         contractStartDate: mergedData.contractStartDate ? new Date(mergedData.contractStartDate).getTime() : null,
         contractEndDate: mergedData.contractEndDate ? new Date(mergedData.contractEndDate).getTime() : null,
       };
     }
 
+    console.log(vendorData);
     const payload = {
       vendor: vendorData,
     };
@@ -198,19 +213,19 @@ const AddVendor = ({ parentUrl, heading }) => {
       };
     }
 
-    // mutate(payload, {
-    //   onError: (error) => {
-    //     setShowToast({ key: "error", action: error });
-    //     setTimeout(closeToast, 5000);
-    //   },
-    //   onSuccess: (data, variables) => {
-    //     setShowToast({ key: "success", action: "ADD_VENDOR" });
-    //     setTimeout(() => {
-    //       closeToast();
-    //       history.push("/digit-ui/employee/vendor/search-vendor");
-    //     }, 2000);
-    //   },
-    // });
+    mutate(payload, {
+      onError: (error) => {
+        setShowToast({ key: "error", action: error });
+        setTimeout(closeToast, 5000);
+      },
+      onSuccess: (data, variables) => {
+        setShowToast({ key: "success", action: "ADD_VENDOR" });
+        setTimeout(() => {
+          closeToast();
+          history.push("/digit-ui/employee/vendor/search-vendor");
+        }, 2000);
+      },
+    });
   };
 
   return (
@@ -239,7 +254,7 @@ const AddVendor = ({ parentUrl, heading }) => {
           defaultValues={defaultValues}
           noCard={true}
           noBreakLine={true}
-          isDisabled={!canSubmit}
+          // isDisabled={!canSubmit}
         />
 
         {showToast && (
