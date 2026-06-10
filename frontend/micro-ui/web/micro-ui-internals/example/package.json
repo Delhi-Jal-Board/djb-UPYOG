@@ -21,7 +21,7 @@
     "@djb25/digit-ui-module-finance": "1.0.0",
     "@djb25/digit-ui-module-pgr": "1.0.2",
     "@djb25/digit-ui-module-formio": "1.0.0",
-    "@djb25/digit-ui-module-ekyc": "1.0.21",
+    "@djb25/digit-ui-module-ekyc": "1.0.22",
     "http-proxy-middleware": "1.0.5",
     "@djb25/digit-ui-module-wt": "1.0.65",
     "@djb25/digit-ui-module-asset": "1.0.6",
