@@ -9,11 +9,6 @@ import SearchFormFieldsComponents from "./SearchFormFieldsComponent";
 const AssignEkyc = () => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const location = useLocation();
-  const [sortParams, setSortParams] = useState([{ id: "", desc: true }]);
-  const [pageOffset, setPageOffset] = useState(0);
-  const [pageSize, setPageSize] = useState(10);
-  let paginationParms = { limit: pageSize, offset: pageOffset, sortBy: sortParams?.[0]?.id, sortOrder: sortParams?.[0]?.desc ? "DESC" : "ASC" };
-
   const formInitValue = {
     filterForm: {},
     searchForm: {},
@@ -27,6 +22,13 @@ const AssignEkyc = () => {
 
   const [formState, dispatch] = useReducer(formReducer, formInitValue);
   const userDetails = Digit.SessionStorage.get("User");
+
+  let paginationParms = {
+    limit: formState?.tableForm?.limit || 10,
+    offset: formState?.tableForm?.offset || 0,
+    sortBy: formState?.tableForm?.sortBy || "createdTime",
+    sortOrder: formState?.tableForm?.sortOrder || "DESC",
+  };
 
   const { data: dashboardData, isLoading } = Digit.Hooks.fsm.useSurveyorSearch(
     tenantId,
