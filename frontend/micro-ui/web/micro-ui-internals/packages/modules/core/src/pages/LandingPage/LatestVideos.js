@@ -1,28 +1,46 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 const convertToEmbedLink = (url) => {
-  const videoId = url.split("v=")[1];
-  return `https://www.youtube.com/embed/${videoId}`;
+  if (!url) return "";
+  if (url.includes("youtu.be/")) {
+    const parts = url.split("youtu.be/");
+    if (parts[1]) {
+      const id = parts[1].split("?")[0];
+      return `https://www.youtube.com/embed/${id}`;
+    }
+  }
+  if (url.includes("v=")) {
+    const parts = url.split("v=");
+    if (parts[1]) {
+      const id = parts[1].split("&")[0];
+      return `https://www.youtube.com/embed/${id}`;
+    }
+  }
+  if (url.includes("youtube.com/embed/")) {
+    return url;
+  }
+  return url;
 };
 
 const LatestVideos = ({ videos = [], playlistUrl }) => {
+  const { t } = useTranslation();
   return (
     <section className="videos-section">
-      <h2 className="videos-title">Latest Videos</h2>
+      <h2 className="videos-title">{t("Latest Videos")}</h2>
 
       <div className="videos-wrapper">
         {videos.map((video, index) => (
           <div className="video-card" key={index}>
             <iframe
               src={convertToEmbedLink(video.url)}
-              title={video.title}
+              title={t(video.title)}
               allowFullScreen
             ></iframe>
           </div>
         ))}
       </div>
 
-      {/* ⭐ New Button Added (No logic changed) */}
       {playlistUrl && (
         <a
           href={playlistUrl}
@@ -35,7 +53,7 @@ const LatestVideos = ({ videos = [], playlistUrl }) => {
             alt="YouTube"
             className="yt-icon"
           />
-          View Full Playlist
+          {t("View Full Playlist")}
         </a>
       )}
     </section>
@@ -43,28 +61,3 @@ const LatestVideos = ({ videos = [], playlistUrl }) => {
 };
 
 export default LatestVideos;
-
-// import React from "react";
-
-// const convertToEmbedLink = (url) => {
-//   const videoId = url.split("v=")[1];
-//   return `https://www.youtube.com/embed/${videoId}`;
-// };
-
-// const LatestVideo = ({ videoUrl, title = "Latest Video" }) => {
-//   return (
-//     <section className="videos-section">
-//       <h2 className="videos-title">{title}</h2>
-
-//       <div className="video-card single-video">
-//         <iframe
-//           src={convertToEmbedLink(videoUrl)}
-//           title={title}
-//           allowFullScreen
-//         ></iframe>
-//       </div>
-//     </section>
-//   );
-// };
-
-// export default LatestVideo;

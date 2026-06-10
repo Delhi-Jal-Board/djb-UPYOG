@@ -41,14 +41,7 @@ const EmployeeApp = ({ path, url, userType }) => {
           <div className="employee-form-content">
             <Switch>
               <PrivateRoute exact path={`${path}/`} component={() => <CommonPTLinks matchPath={path} userType={userType} />} />
-              <PrivateRoute
-                path={`${path}/new-application`}
-                component={() => (
-                  <LayoutWrapper layoutClass="action">
-                    <NewApplication path={path} />
-                  </LayoutWrapper>
-                )}
-              />
+              <PrivateRoute path={`${path}/new-application`} component={NewApplication} />
               <PrivateRoute path={`${path}/search`} component={Search} />
               <PrivateRoute path={`${path}/view-property`} component={ViewProperty} />
             </Switch>

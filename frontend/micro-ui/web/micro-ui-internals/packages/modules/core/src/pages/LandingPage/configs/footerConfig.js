@@ -40,9 +40,8 @@ const footerConfig = {
   },
 
   bottom: {
-    // text: "Official Web Portal of Kerala Local Government, Government of Kerala, Owned by Local Self Government Department, Developed by Information Kerala Mission",
-    copyright: "© Copyright2025,All Rights Reserved by Delhi Jal Board.",
-    designedBy: "Designed by NITCON Ltd",
+    copyright: "© Copyright 2026, All Rights Reserved by Delhi Jal Board.",
+    designedBy: "Powered by NITCON Limited.",
   },
 };
 

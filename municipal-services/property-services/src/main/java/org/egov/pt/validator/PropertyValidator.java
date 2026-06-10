@@ -278,7 +278,12 @@ public class PropertyValidator {
 				PTConstants.MDMS_PT_OWNERTYPE,
 				PTConstants.MDMS_PT_USAGECATEGORY,
 				PTConstants.MDMS_PT_OCCUPANCYTYPE,
-				PTConstants.MDMS_PT_CONSTRUCTIONTYPE));
+				PTConstants.MDMS_PT_CONSTRUCTIONTYPE,
+				PTConstants.MDMS_PT_NEW_PROPERTYTYPE,
+				PTConstants.MDMS_PT_PROPERTY_NEW_USAGE_TYPE,
+				PTConstants.MDMS_PT_NUMBER_FLOOR,
+				PTConstants.MDMS_PT_PROPERTY_CATEGORY
+						));
 
 		validateInstitution(property, errorMap);
 		
@@ -359,7 +364,7 @@ public class PropertyValidator {
 			errorMap.put("Invalid OWNERSHIPCATEGORY", "The OwnershipCategory '" + property.getOwnershipCategory() + "' does not exists");
 		}
 
-		if (property.getUsageCategory() != null && !codes.get(PTConstants.MDMS_PT_USAGECATEGORY).contains(property.getUsageCategory())) {
+		if (property.getUsageCategory() != null && !codes.get(PTConstants.MDMS_PT_PROPERTY_CATEGORY).contains(property.getUsageCategory())) {
 			errorMap.put("Invalid USageCategory", "The USageCategory '" + property.getUsageCategory() + "' does not exists");
 		}
 		

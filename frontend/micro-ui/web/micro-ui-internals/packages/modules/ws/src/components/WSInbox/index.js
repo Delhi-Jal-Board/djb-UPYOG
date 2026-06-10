@@ -140,6 +140,39 @@ const WSInbox = ({ parentRoute }) => {
     tenantId,
     filters: { ...formState },
   });
+
+  const cards = useMemo(() => {
+    if (!statuses) return [];
+    const statusMap = {};
+    statuses.forEach((status) => {
+      const appStatus = status.applicationstatus;
+      const statusId = status.statusid;
+      if (!statusMap[appStatus]) {
+        statusMap[appStatus] = {
+          label: `CS_${appStatus}`,
+          count: 0,
+          filter: [],
+        };
+      }
+      statusMap[appStatus].count += status.count;
+      statusMap[appStatus].filter.push(statusId);
+    });
+
+    const colorMap = {
+      PENDING_FOR_DOCUMENT_VERIFICATION: "#3B82F6",
+      PENDING_FOR_FIELD_INSPECTION: "#F59E0B",
+      PENDING_APPROVAL_FOR_CONNECTION: "#10B981",
+      PAYMENT_FAILED: "#8B5CF6",
+      REJECTED: "#EF4444",
+      INITIATED: "#0ea5e9",
+    };
+
+    return Object.entries(statusMap).map(([appStatus, card]) => ({
+      ...card,
+      color: colorMap[appStatus] || "#3B82F6",
+    }));
+  }, [statuses]);
+
   let links = [
     {
       text: t("WS_APPLY_NEW_CONNECTION_HOME_CARD_LABEL"),
@@ -239,6 +272,7 @@ const WSInbox = ({ parentRoute }) => {
           propsForInboxTable,
           propsForInboxMobileCards,
           formState,
+          cards,
         }}
       />
     </div>
