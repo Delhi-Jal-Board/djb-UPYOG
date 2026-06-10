@@ -156,4 +156,7 @@ public class WaterTankerBookingDetail {
 
 	@JsonProperty("driver")
 	private Object driver;
+
+	@JsonProperty("driverTripReport")
+	private Object driverTripReport;
 }

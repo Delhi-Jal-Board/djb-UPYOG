@@ -229,6 +229,8 @@ public WaterTankerBookingDetail createNewWaterTankerBookingRequest(WaterTankerBo
 		// Fetch full nested JSON objects for Vendors, Vehicles, and Drivers
 		enrichmentService.enrichCrossServiceDetails(requestInfo, applications);
 
+		enrichmentService.enrichWithTripReportDetails(requestInfo, applications);
+
 //		List<WaterTankerBookingDetail> applications = requestServiceRepository
 //				.getWaterTankerBookingDetails(waterTankerBookingSearchCriteria);
 //

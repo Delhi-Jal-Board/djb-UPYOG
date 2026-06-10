@@ -17,10 +17,7 @@ import org.upyog.rs.config.RequestServiceConfiguration;
 import org.upyog.rs.enums.RequestServiceStatus;
 import org.upyog.rs.repository.IdGenRepository;
 import org.upyog.rs.repository.RequestServiceRepository;
-import org.upyog.rs.util.IdgenUtil;
-import org.upyog.rs.util.RequestServiceUtil;
-import org.upyog.rs.util.UserUtil;
-import org.upyog.rs.util.VendorUtil;
+import org.upyog.rs.util.*;
 import org.upyog.rs.web.models.Address;
 import org.upyog.rs.web.models.ApplicantDetail;
 import org.upyog.rs.web.models.AuditDetails;
@@ -61,6 +58,9 @@ public class EnrichmentService {
 
 	@Autowired
 	private com.fasterxml.jackson.databind.ObjectMapper mapper;
+
+	@Autowired
+	private DriverTripReportUtil driverTripReportUtil;
 
 	public void enrichCreateWaterTankerRequest(WaterTankerBookingRequest waterTankerRequest) {
 		String bookingId = RequestServiceUtil.getRandonUUID();
@@ -871,6 +871,33 @@ public class EnrichmentService {
 			log.error("Error extracting vehicle IDs by registration number", e);
 		}
 		return vehicleIds;
+	}
+
+	public void enrichWithTripReportDetails(RequestInfo requestInfo,
+											List<WaterTankerBookingDetail> bookings) {
+		if (CollectionUtils.isEmpty(bookings)) return;
+
+		for (WaterTankerBookingDetail booking : bookings) {
+			if (booking.getBookingNo() == null) continue;
+
+			try {
+				Object tripReportResponse = driverTripReportUtil.searchTripReport(
+						requestInfo,
+						booking.getTenantId(),
+						booking.getBookingNo()
+				);
+
+				// Extract only the driverTripReports list, not the full response wrapper
+				if (tripReportResponse != null) {
+					Map<String, Object> responseMap = mapper.convertValue(tripReportResponse, Map.class);
+					Object tripReportList = responseMap.get("driverTripReports");
+					booking.setDriverTripReport(tripReportList);  // will be [] or a list of reports
+				}
+
+			} catch (Exception e) {
+				log.error("Failed to enrich trip report for bookingNo: {}", booking.getBookingNo(), e);
+			}
+		}
 	}
 
 	/**
