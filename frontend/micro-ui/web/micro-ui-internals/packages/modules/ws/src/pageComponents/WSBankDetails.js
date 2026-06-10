@@ -14,7 +14,7 @@ const WSBankDetails = ({ config, onSelect, userType, formData, setError, formSta
       accountNumber: "",
       confirmAccountNumber: "",
       accountHolderName: "",
-    }
+    },
   });
   const formValue = watch();
   const { errors } = localFormState;
@@ -62,117 +62,116 @@ const WSBankDetails = ({ config, onSelect, userType, formData, setError, formSta
   return (
     <React.Fragment>
       <CollapsibleCardPage title={t("WS_BANK_DETAILS")} defaultOpen={true}>
-      <div className="formcomposer-section-grid">
-        {/* Row 1: Bank Name and Branch Name */}
-        <div>
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{t("WS_NAME_OF_BANK") + " *"}</CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name={"bankName"}
-                rules={{ required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
-                render={(props) => (
-                  <TextInput
-                    value={props.value}
-                    placeholder={t("WS_NAME_OF_BANK_PLACEHOLDER")}
-                    onChange={(e) => props.onChange(e.target.value)}
-                    onBlur={props.onBlur}
-                  />
-                )}
-              />
-            </div>
-          </LabelFieldPair>
-          {localFormState.touched?.bankName ? <CardLabelError style={errorStyle}> {errors?.bankName?.message}</CardLabelError> : null}
-        </div>
+        <div className="formcomposer-section-grid">
+          {/* Row 1: Bank Name and Branch Name */}
+          <div>
+            <LabelFieldPair>
+              <CardLabel>{t("WS_NAME_OF_BANK") + " *"}</CardLabel>
+              <div className="field">
+                <Controller
+                  control={control}
+                  name={"bankName"}
+                  rules={{ required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
+                  render={(props) => (
+                    <TextInput
+                      value={props.value}
+                      placeholder={t("WS_NAME_OF_BANK_PLACEHOLDER")}
+                      onChange={(e) => props.onChange(e.target.value)}
+                      onBlur={props.onBlur}
+                    />
+                  )}
+                />
+              </div>
+            </LabelFieldPair>
+            {localFormState.touched?.bankName ? <CardLabelError style={errorStyle}> {errors?.bankName?.message}</CardLabelError> : null}
+          </div>
 
-        <div>
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{t("WS_NAME_OF_BRANCH") + " *"}</CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name={"bankBranchName"}
-                rules={{ required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
-                render={(props) => (
-                  <TextInput
-                    value={props.value}
-                    placeholder={t("WS_NAME_OF_BRANCH_PLACEHOLDER")}
-                    onChange={(e) => props.onChange(e.target.value)}
-                    onBlur={props.onBlur}
-                  />
-                )}
-              />
-            </div>
-          </LabelFieldPair>
-          {localFormState.touched?.bankBranchName ? <CardLabelError style={errorStyle}> {errors?.bankBranchName?.message}</CardLabelError> : null}
-        </div>
+          <div>
+            <LabelFieldPair>
+              <CardLabel>{t("WS_NAME_OF_BRANCH") + " *"}</CardLabel>
+              <div className="field">
+                <Controller
+                  control={control}
+                  name={"bankBranchName"}
+                  rules={{ required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
+                  render={(props) => (
+                    <TextInput
+                      value={props.value}
+                      placeholder={t("WS_NAME_OF_BRANCH_PLACEHOLDER")}
+                      onChange={(e) => props.onChange(e.target.value)}
+                      onBlur={props.onBlur}
+                    />
+                  )}
+                />
+              </div>
+            </LabelFieldPair>
+            {localFormState.touched?.bankBranchName ? <CardLabelError style={errorStyle}> {errors?.bankBranchName?.message}</CardLabelError> : null}
+          </div>
 
-        {/* Row 2: IFSC Code and Account Number */}
-        <div>
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{t("WS_IFSC_CODE") + " *"}</CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name={"ifscCode"}
-                rules={{
-                  required: t("CORE_COMMON_REQUIRED_ERRMSG"),
-                  pattern: { value: /^[A-Z]{4}0[A-Z0-9]{6}$/, message: t("ERR_INVALID_IFSC_CODE") }
-                }}
-                render={(props) => (
-                  <TextInput
-                    value={props.value}
-                    placeholder={t("WS_IFSC_CODE_PLACEHOLDER")}
-                    onChange={(e) => props.onChange(e.target.value.toUpperCase())}
-                    onBlur={props.onBlur}
-                  />
-                )}
-              />
-            </div>
-          </LabelFieldPair>
-          {localFormState.touched?.ifscCode ? <CardLabelError style={errorStyle}> {errors?.ifscCode?.message}</CardLabelError> : null}
-        </div>
+          {/* Row 2: IFSC Code and Account Number */}
+          <div>
+            <LabelFieldPair>
+              <CardLabel>{t("WS_IFSC_CODE") + " *"}</CardLabel>
+              <div className="field">
+                <Controller
+                  control={control}
+                  name={"ifscCode"}
+                  rules={{
+                    required: t("CORE_COMMON_REQUIRED_ERRMSG"),
+                    pattern: { value: /^[A-Z]{4}0[A-Z0-9]{6}$/, message: t("ERR_INVALID_IFSC_CODE") },
+                  }}
+                  render={(props) => (
+                    <TextInput
+                      value={props.value}
+                      placeholder={t("WS_IFSC_CODE_PLACEHOLDER")}
+                      onChange={(e) => props.onChange(e.target.value.toUpperCase())}
+                      onBlur={props.onBlur}
+                    />
+                  )}
+                />
+              </div>
+            </LabelFieldPair>
+            {localFormState.touched?.ifscCode ? <CardLabelError style={errorStyle}> {errors?.ifscCode?.message}</CardLabelError> : null}
+          </div>
 
-        <div>
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{t("WS_BANK_ACCOUNT_NO") + " *"}</CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name={"accountNumber"}
-                rules={{
-                  required: t("CORE_COMMON_REQUIRED_ERRMSG"),
-                  pattern: { value: /^[0-9]{9,18}$/, message: t("ERR_INVALID_BA_ACCOUNT_NUMBER") }
-                }}
-                render={(props) => (
-                  <TextInput
-                    value={props.value}
-                    placeholder={t("WS_BANK_ACCOUNT_NO_PLACEHOLDER")}
-                    onChange={(e) => props.onChange(e.target.value)}
-                    onBlur={props.onBlur}
-                  />
-                )}
-              />
-            </div>
-          </LabelFieldPair>
-          {localFormState.touched?.accountNumber ? <CardLabelError style={errorStyle}> {errors?.accountNumber?.message}</CardLabelError> : null}
-        </div>
+          <div>
+            <LabelFieldPair>
+              <CardLabel>{t("WS_BANK_ACCOUNT_NO") + " *"}</CardLabel>
+              <div className="field">
+                <Controller
+                  control={control}
+                  name={"accountNumber"}
+                  rules={{
+                    required: t("CORE_COMMON_REQUIRED_ERRMSG"),
+                    pattern: { value: /^[0-9]{1,18}$/, message: t("ERR_INVALID_BA_ACCOUNT_NUMBER") },
+                  }}
+                  render={(props) => (
+                    <TextInput
+                      value={props.value}
+                      placeholder={t("WS_BANK_ACCOUNT_NO_PLACEHOLDER")}
+                      onChange={(e) => {
+                        let value = e.target.value.replace(/\D/g, "");
+                        if (value.length > 18) {
+                          value = value.slice(0, 18);
+                        }
+                        props.onChange(value);
+                      }}
+                      onBlur={props.onBlur}
+                      maxLength={18}
+                    />
+                  )}
+                />
+              </div>
+            </LabelFieldPair>
+            {localFormState.touched?.accountNumber ? <CardLabelError style={errorStyle}> {errors?.accountNumber?.message}</CardLabelError> : null}
+          </div>
 
-        {/* Keeping these for data consistency but can be hidden if not needed in UI */}
-        <div style={{ display: "none" }}>
-          <Controller
-            control={control}
-            name={"confirmAccountNumber"}
-            render={(props) => <TextInput value={props.value} />}
-          />
-          <Controller
-            control={control}
-            name={"accountHolderName"}
-            render={(props) => <TextInput value={props.value} />}
-          />
+          {/* Keeping these for data consistency but can be hidden if not needed in UI */}
+          <div style={{ display: "none" }}>
+            <Controller control={control} name={"confirmAccountNumber"} render={(props) => <TextInput value={props.value} />} />
+            <Controller control={control} name={"accountHolderName"} render={(props) => <TextInput value={props.value} />} />
+          </div>
         </div>
-      </div>
       </CollapsibleCardPage>
     </React.Fragment>
   );

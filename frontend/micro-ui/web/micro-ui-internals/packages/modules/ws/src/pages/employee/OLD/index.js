@@ -7,6 +7,7 @@ import * as func from "../../../utils";
 import _ from "lodash";
 import { newConfig as newConfigLocal } from "../../../config/wsCreateConfig";
 import { createPayloadOfWS, updatePayloadOfWS } from "../../../utils";
+import CheckPage from "./CheckPage";
 
 const OLDApplication = () => {
   const { t } = useTranslation();
@@ -21,6 +22,7 @@ const OLDApplication = () => {
   const [waterAndSewerageBoth, setWaterAndSewerageBoth] = useState(null);
   const [config, setConfig] = useState({ body: [] });
   const [currentStep, setCurrentStep] = useState(1);
+  const [showCheckPage, setShowCheckPage] = useState(false);
 
   const timelineConfig = [
     {
@@ -194,8 +196,13 @@ const OLDApplication = () => {
   }, [sessionFormData?.cpt]);
 
   useEffect(() => {
-    setSessionFormData({ ...sessionFormData, cpt: { details: propertyDetails?.Properties?.[0] } });
-  }, [propertyDetails]);
+    if (propertyDetails?.Properties?.[0]) {
+      const newCptDetails = propertyDetails?.Properties?.[0];
+      if (!_.isEqual(sessionFormData?.cpt?.details, newCptDetails)) {
+        setSessionFormData({ ...sessionFormData, cpt: { details: newCptDetails } });
+      }
+    }
+  }, [propertyDetails, sessionFormData]);
 
   const {
     isLoading: creatingWaterApplicationLoading,
@@ -252,9 +259,7 @@ const OLDApplication = () => {
     setShowToast(null);
   };
 
-  const onSubmit = async (data) => {
-    // DEBUG: Remove these logs once issue is confirmed fixed
-
+  const onFormSubmit = (data) => {
     // FIX 3: Proper property validation with clear logging
     if (!data?.cpt?.id && !propertyDetails?.Properties?.[0]) {
       if (!data?.cpt?.details || !propertyDetails) {
@@ -282,6 +287,14 @@ const OLDApplication = () => {
       setShowToast({ warning: true, message: "PLEASE_FILL_MANDATORY_DETAILS" });
       return;
     }
+
+    // Validation passed, show CheckPage
+    setShowCheckPage(true);
+  };
+
+  const processSubmission = async (data) => {
+    // DEBUG: Remove these logs once issue is confirmed fixed
+    const basePath = window.location.href.includes("/employee") ? "/digit-ui/employee/ws" : "/digit-ui/citizen/ws";
 
     if (data?.useDetails?.useDetails) {
       data.useDetails = { ...data.useDetails, ...data.useDetails.useDetails };
@@ -480,7 +493,7 @@ const OLDApplication = () => {
                         setAppDetails((prev) => ({ ...prev, sewerageConnection: sewerageUpdateData?.SewerageConnections?.[0] }));
                         clearSessionFormData();
                         history.push(
-                          `/digit-ui/employee/ws/ws-response?applicationNumber=${waterUpdateData?.WaterConnection?.[0]?.applicationNo}&applicationNumber1=${sewerageUpdateData?.SewerageConnections?.[0]?.applicationNo}`
+                          `${basePath}/ws-response?applicationNumber=${waterUpdateData?.WaterConnection?.[0]?.applicationNo}&applicationNumber1=${sewerageUpdateData?.SewerageConnections?.[0]?.applicationNo}`
                         );
                       },
                     });
@@ -523,7 +536,7 @@ const OLDApplication = () => {
               onSuccess: (data) => {
                 setAppDetails((prev) => ({ ...prev, waterConnection: data?.WaterConnection?.[0] }));
                 clearSessionFormData();
-                history.push(`/digit-ui/employee/ws/ws-response?applicationNumber=${data?.WaterConnection?.[0]?.applicationNo}`);
+                history.push(`${basePath}/ws-response?applicationNumber=${data?.WaterConnection?.[0]?.applicationNo}`);
               },
             });
           },
@@ -561,7 +574,7 @@ const OLDApplication = () => {
               onSuccess: (data) => {
                 setAppDetails((prev) => ({ ...prev, sewerageConnection: data?.SewerageConnections?.[0] }));
                 clearSessionFormData();
-                history.push(`/digit-ui/employee/ws/ws-response?applicationNumber1=${data?.SewerageConnections?.[0]?.applicationNo}`);
+                history.push(`${basePath}/ws-response?applicationNumber1=${data?.SewerageConnections?.[0]?.applicationNo}`);
               },
             });
           },
@@ -578,6 +591,17 @@ const OLDApplication = () => {
     return <Loader />;
   }
 
+  if (showCheckPage) {
+    return (
+      <React.Fragment>
+        <div className="employee-form-section-wrapper">
+          <VerticalTimeline config={timelineConfig} currentActiveIndex={4} showFinalStep={false} />
+          <CheckPage data={sessionFormData} onSubmit={() => processSubmission(sessionFormData)} onEdit={() => setShowCheckPage(false)} />
+        </div>
+      </React.Fragment>
+    );
+  }
+
   return (
     <React.Fragment>
       <div className="employee-form-section-wrapper">
@@ -592,9 +616,9 @@ const OLDApplication = () => {
             updatingWaterApplicationLoading ||
             updatingSewerageApplicationLoading
               ? t("CS_COMMON_SUBMITTING")
-              : t("CS_COMMON_SUBMIT")
+              : t("CS_COMMON_NEXT")
           }
-          onSubmit={onSubmit}
+          onSubmit={onFormSubmit}
           defaultValues={sessionFormData}
           noCard={true}
           noBreakLine={true}

@@ -74,9 +74,9 @@ const PropertyLocationDetails = ({ address, actionCancelOnSubmit, isEdit, onSele
         zroLocation: zroCode,
         zro: zroValue,
         subLocality: addressData.subLocality || "",
-        actualAssembly: additionalDetails.actualAssembly || addressData.additionalDetails?.actualAssembly || "",
-        actualWard: additionalDetails.actualWard || addressData.additionalDetails?.actualWard || "",
-        actualZone: additionalDetails.actualZone || addressData.additionalDetails?.actualZone || "",
+        actualAssembly: addressData.actualAssembly || additionalDetails.actualAssembly || addressData.additionalDetails?.actualAssembly || "",
+        actualWard: addressData.actualWard || additionalDetails.actualWard || addressData.additionalDetails?.actualWard || "",
+        actualZone: addressData.actualZone || additionalDetails.actualZone || addressData.additionalDetails?.actualZone || "",
         address: {
           ...addressData,
           city: addressData.city || "",
@@ -93,9 +93,9 @@ const PropertyLocationDetails = ({ address, actionCancelOnSubmit, isEdit, onSele
           block: additionalDetails.block || addressData.additionalDetails?.block || "",
           zone: additionalDetails.zone || addressData.additionalDetails?.zone || "",
           subLocality: addressData.subLocality || "",
-          actualWard: additionalDetails.actualWard || addressData.additionalDetails?.actualWard || "",
-          actualZone: additionalDetails.actualZone || addressData.additionalDetails?.actualZone || "",
-          actualAssembly: additionalDetails.actualAssembly || addressData.additionalDetails?.actualAssembly || "",
+          actualWard: addressData.actualWard || additionalDetails.actualWard || addressData.additionalDetails?.actualWard || "",
+          actualZone: addressData.actualZone || additionalDetails.actualZone || addressData.additionalDetails?.actualZone || "",
+          actualAssembly: addressData.actualAssembly || additionalDetails.actualAssembly || addressData.additionalDetails?.actualAssembly || "",
         },
       });
     } else if (formDataProp?.cpt === null) {

@@ -235,9 +235,8 @@ export const getFiles = async (filesArray, tenant) => {
 };
 
 export const createPayloadOfWS = async (data) => {
-  console.log(Digit.UserService.getType(), "rtyuhgh")
   const userInfo = Digit.UserService.getUser()?.info;
-  const isCitizen = userInfo?.roles?.some(role => role.code === "CITIZEN");
+  const isCitizen = userInfo?.type === "CITIZEN" || userInfo?.roles?.some(role => role.code === "CITIZEN");
   data?.cpt?.details?.owners?.forEach((owner) => {
     if (owner?.permanentAddress) owner.correspondenceAddress = owner?.permanentAddress;
   });
@@ -390,13 +389,13 @@ export const createPayloadOfWS = async (data) => {
       ownershipDocumentNumber: data?.documents?.ownershipDocumentNumber,
       otherDocumentNumber: data?.documents?.otherDocumentNumber,
       detailsProvidedBy: "",
-      channel: data?.channel || (isCitizen ? "CITIZEN" : "CFC_COUNTER"),
+      channel: isCitizen ? "CITIZEN" : "CFC_COUNTER",
     },
     tenantId: Digit.ULBService.getCurrentTenantId(),
     processInstance: {
       action: "INITIATE",
     },
-    channel: data?.channel || (isCitizen ? "CITIZEN" : "CFC_COUNTER"),
+    channel: isCitizen ? "CITIZEN" : "CFC_COUNTER",
   };
   sessionStorage.setItem("WS_DOCUMENTS_INOF", JSON.stringify(data?.documents?.documents || data?.documents || []));
   sessionStorage.setItem("WS_PROPERTY_INOF", JSON.stringify(data?.cpt?.details || {}));
@@ -502,7 +501,7 @@ export const convertToEditWSUpdate = (data) => {
           : null
         : waterResult?.connectionHolders,
       oldApplication: false,
-      channel: Digit.UserService.getType()?.toUpperCase() === "CITIZEN" ? "CITIZEN" : "CFC_COUNTER",
+      channel: Digit.UserService.getUser()?.info?.type?.toUpperCase() === "CITIZEN" ? "CITIZEN" : "CFC_COUNTER",
       waterSource: (data?.isEditApplication ? data?.waterSource : waterResult?.waterSource) || null,
       meterId: (data?.isEditApplication ? data?.meterId : waterResult?.meterId) || null,
       meterInstallationDate: (data?.isEditApplication ? data?.meterInstallationDate : waterResult?.meterInstallationDate) || null,
@@ -624,7 +623,7 @@ export const convertToEditSWUpdate = (data) => {
           : null
         : SewerageResult?.connectionHolders,
       oldApplication: false,
-      channel: Digit.UserService.getType()?.toUpperCase() === "CITIZEN" ? "CITIZEN" : "CFC_COUNTER",
+      channel: Digit.UserService.getUser()?.info?.type?.toUpperCase() === "CITIZEN" ? "CITIZEN" : "CFC_COUNTER",
       waterSource: (data?.isEditApplication ? data?.waterSource : SewerageResult?.waterSource) || null,
       meterId: (data?.isEditApplication ? data?.meterId : SewerageResult?.meterId) || null,
       meterInstallationDate: (data?.isEditApplication ? data?.meterInstallationDate : SewerageResult?.meterInstallationDate) || null,
@@ -707,7 +706,7 @@ export const convertToSWUpdate = (data) => {
   return formdata;
 };
 export const createPayloadOfWSDisconnection = async (data, storeData, service) => {
-  const user = Digit.UserService.getType();
+  const user = Digit.UserService.getUser()?.info?.type;
   let plumberInfo = [];
   if (storeData?.applicationData?.plumberInfo?.length > 0) {
     // let plumberInfoDetails = storeData?.applicationData?.plumberInfo?.[0];
@@ -827,7 +826,7 @@ export const createPayloadOfWSDisconnection = async (data, storeData, service) =
   return returnObject;
 };
 export const createPayloadOfWSReconnection = async (data, storeData, service) => {
-  const user = Digit.UserService.getType();
+  const user = Digit.UserService.getUser()?.info?.type;
   let plumberInfo = [];
   if (storeData?.applicationData?.plumberInfo?.length > 0) {
     // let plumberInfoDetails = storeData?.applicationData?.plumberInfo?.[0];
@@ -949,7 +948,7 @@ export const createPayloadOfWSReconnection = async (data, storeData, service) =>
   return returnObject;
 };
 export const createPayloadOfWSReSubmitDisconnection = async (data, storeData, service) => {
-  const user = Digit.UserService.getType();
+  const user = Digit.UserService.getUser()?.info?.type;
   let wsPayload = {
     WaterConnection: {
       ...storeData?.applicationData,
@@ -1787,7 +1786,7 @@ export const convertModifyApplicationDetails = async (data, appData, actionData 
   }
   formData.processInstance = { action: actionData };
   formData.action = actionData;
-  formData.channel = Digit.UserService.getType()?.toUpperCase() === "CITIZEN" ? "CITIZEN" : "CFC_COUNTER";
+  formData.channel = Digit.UserService.getUser()?.info?.type?.toUpperCase() === "CITIZEN" ? "CITIZEN" : "CFC_COUNTER";
 
   sessionStorage.setItem("WS_DOCUMENTS_INOF", JSON.stringify(data?.DocumentsRequired?.documents || []));
   sessionStorage.setItem("WS_PROPERTY_INOF", JSON.stringify(data?.cpt?.details));
@@ -1831,4 +1830,12 @@ export const ifUserRoleExists = (role) => {
   if (roleCodes.indexOf(role) > -1) {
     return true;
   } else return false;
+};
+
+export const checkForNotNull = (value = "") => {
+  return value && value != null && value != undefined && value != "" ? true : false;
+};
+
+export const checkForNA = (value = "") => {
+  return checkForNotNull(value) ? value : "CS_NA";
 };

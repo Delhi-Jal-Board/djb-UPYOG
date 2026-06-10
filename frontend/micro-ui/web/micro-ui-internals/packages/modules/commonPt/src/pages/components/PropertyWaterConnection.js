@@ -166,7 +166,10 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
       setValue("useDetails.plotArea", additionalDetails.plotArea || details?.landArea?.toString() || "");
       setValue("useDetails.builtUpArea", additionalDetails.builtUpArea || details?.superBuiltUpArea?.toString() || "");
       setValue("useDetails.SelectYearofConstruction", yearOptions?.find((o) => o.value === additionalDetails.yearOfConstruction) || null);
-      setValue("useDetails.NumberofDwellingUnits", additionalDetails.numberOfDwellingUnits || additionalDetails.noOfDwellingUnits || details?.noOfDwellingUnits || "");
+      setValue(
+        "useDetails.NumberofDwellingUnits",
+        additionalDetails.numberOfDwellingUnits || additionalDetails.noOfDwellingUnits || details?.noOfDwellingUnits || ""
+      );
       setValue("useDetails.NumberofRooms", additionalDetails.numberOfRooms || additionalDetails.noOfRooms || details?.noOfRooms || "");
     } else if (formData?.cpt === null) {
       setValue("useDetails.categoryType", null);
@@ -181,7 +184,17 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
       setValue("useDetails.NumberofRooms", "");
       setValue("useDetails.hospitalBeds", "");
     }
-  }, [formData?.cpt?.details, formData?.cpt, categoryOptions, propertyTypeOptions, usageTypeOptions, floorOptions, yearOptions, categoryTypeList, setValue]);
+  }, [
+    formData?.cpt?.details,
+    formData?.cpt,
+    categoryOptions,
+    propertyTypeOptions,
+    usageTypeOptions,
+    floorOptions,
+    yearOptions,
+    categoryTypeList,
+    setValue,
+  ]);
 
   const lastErrorState = React.useRef(null);
   useEffect(() => {
@@ -373,13 +386,12 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
         )}
 
         <LabelFieldPair>
-          <CardLabel>{`${t("WS_NUMBER_OF_DWELLING_UNITS")}*`}</CardLabel>
+          <CardLabel>{`${t("WS_NUMBER_OF_DWELLING_UNITS")}`}</CardLabel>
           <div className="form-field">
             <TextInput
               t={t}
               inputRef={register({
                 pattern: { value: NUMBER_PATTERN, message: t("ERR_INVALID_NUMBER") },
-                required: t("REQUIRED_FIELD"),
               })}
               name="useDetails.NumberofDwellingUnits"
               disabled={isPropertyFound}

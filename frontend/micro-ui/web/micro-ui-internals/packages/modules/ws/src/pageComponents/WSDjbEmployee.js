@@ -61,7 +61,7 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
                     control={control}
                     name="dor"
                     rules={{ required: isDjbEmployee ? t("CORE_COMMON_REQUIRED_ERRMSG") : false }}
-                    render={(props) => <DatePicker value={props.value} onChange={(date) => props.onChange(date)} />}
+                    render={(props) => <DatePicker date={props.value} onChange={(date) => props.onChange(date)} />}
                   />
                 </div>
               </LabelFieldPair>

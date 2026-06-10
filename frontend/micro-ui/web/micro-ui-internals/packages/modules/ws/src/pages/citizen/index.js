@@ -4,6 +4,7 @@ import { Switch, useLocation, Route } from "react-router-dom";
 import { PrivateRoute, BackButton, LayoutWrapper, ModuleHeader, ArrowLeft, AppContainer } from "@djb25/digit-ui-react-components";
 import TestAcknowledgment from "./TestAcknowledgment";
 import { WSMyApplications } from "./WSMyApplications";
+import WSResponse from "../employee/WSResponse";
 
 const App = ({ path }) => {
   const location = useLocation();
@@ -120,6 +121,7 @@ const App = ({ path }) => {
                 <PrivateRoute path={`${path}/edit-application/:tenantId`} component={WSCitizenEditApplication} />
                 <PrivateRoute path={`${path}/modify-connection/:tenantId`} component={WSCitizenEditApplication} />
                 <PrivateRoute path={`${path}/old-application`} component={WSOLDApplication} />
+                <PrivateRoute path={`${path}/ws-response`} component={WSResponse} />
               </div>
             </div>
           </div>

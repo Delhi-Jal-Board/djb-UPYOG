@@ -78,8 +78,13 @@ const WSConnectionDetails = ({ config, onSelect, userType, formData, setError, f
     const data = connectionDetails.map((e) => {
       return e;
     });
-    onSelect(config?.key, data);
-  }, [connectionDetails]);
+    if (!_.isEqual(formData?.[config.key], data)) {
+      const timer = setTimeout(() => {
+        onSelect(config?.key, data);
+      }, 200);
+      return () => clearTimeout(timer);
+    }
+  }, [connectionDetails, formData, config.key]);
 
   useEffect(() => {
     let list = wsServicesMastersData?.["ws-services-masters"]?.ApplicationType || [];
@@ -304,6 +309,9 @@ const ConnectionDetails = (_props) => {
     let isClear = true;
     connectionDetails &&
       Object.keys(connectionDetails?.[0])?.map((data) => {
+        if (connectionDetails[0]?.domesticType?.code === "INDIVIDUAL" && ["institutionName", "natureOfWork", "orgDeptDocument", "departmentType"].includes(data)) {
+          return;
+        }
         if (!connectionDetails[0][data] && connectionDetails[0][data] != false && isClear) isClear = false;
       });
     if (isClear && Object.keys(connectionDetails?.[0])?.length > 1) {
@@ -325,10 +333,10 @@ const ConnectionDetails = (_props) => {
   useEffect(() => {
     if (Object.keys(errors).length && !_.isEqual(formState.errors[config.key]?.type || {}, errors)) {
       setError(config.key, { type: errors });
-    } else if (!Object.keys(errors).length && formState.errors[config.key] && isErrors) {
+    } else if (!Object.keys(errors).length && formState.errors[config.key]) {
       clearErrors(config.key);
     }
-  }, [errors]);
+  }, [errors, formState.errors]);
 
   const isMobile = window.Digit.Utils.browser.isMobile();
   const isEmployee = window.location.href.includes("/employee");
@@ -488,11 +496,10 @@ const ConnectionDetails = (_props) => {
           />
         </LabelFieldPair>
         <LabelFieldPair>
-          <CardLabel>{`${
-            formValue?.categoryType?.code === "NON_DOMESTIC" || formValue?.categoryType?.name === "Non-Domestic"
+          <CardLabel>{`${formValue?.categoryType?.code === "NON_DOMESTIC" || formValue?.categoryType?.name === "Non-Domestic"
               ? t("WS_NON_DOMESTIC_TYPE")
               : t("WS_DOMESTIC_TYPE")
-          }*`}</CardLabel>
+            }*`}</CardLabel>
           <div className="field">
             <Controller
               control={control}

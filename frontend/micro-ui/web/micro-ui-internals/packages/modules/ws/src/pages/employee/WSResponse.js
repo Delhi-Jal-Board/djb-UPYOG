@@ -88,7 +88,8 @@ const WSResponse = (props) => {
   };
 
   const onSubmit = () => {
-    history.push(`/digit-ui/employee`);
+    let isEmployee = window.location.href.includes("/employee");
+    history.push(isEmployee ? `/digit-ui/employee` : `/digit-ui/citizen`);
   }
 
   return (
