@@ -260,22 +260,6 @@ export const createPayloadOfWS = async (data) => {
   let payload = {
     water: !!isWater,
     sewerage: !!isSewerage,
-    proposedTaps:
-      (data?.useDetails?.noOfTaps || connectionDetailsObject?.proposedTaps) &&
-      Number(data?.useDetails?.noOfTaps || connectionDetailsObject?.proposedTaps),
-    proposedPipeSize:
-      (data?.useDetails?.proposedPipeSize?.size ||
-        connectionDetailsObject?.proposedPipeSize?.size ||
-        connectionDetailsObject?.proposedPipeSize?.code) &&
-      Number(
-        data?.useDetails?.proposedPipeSize?.size || connectionDetailsObject?.proposedPipeSize?.size || connectionDetailsObject?.proposedPipeSize?.code
-      ),
-    proposedWaterClosets:
-      (data?.useDetails?.proposedWaterClosets || connectionDetailsObject?.proposedWaterClosets) &&
-      Number(data?.useDetails?.proposedWaterClosets || connectionDetailsObject?.proposedWaterClosets),
-    proposedToilets:
-      (data?.useDetails?.proposedToilets || connectionDetailsObject?.proposedToilets) &&
-      Number(data?.useDetails?.proposedToilets || connectionDetailsObject?.proposedToilets),
     connectionHolders: connectionHolder
       ? [
         {
@@ -373,7 +357,8 @@ export const createPayloadOfWS = async (data) => {
         connectionDetailsObject?.connectionType?.code ||
         connectionDetailsObject?.connectionType ||
         "Metered",
-      // categoryType: data?.applicationSelection?.categoryType?.code || connectionHolder?.ownerType?.code || connectionHolder?.ownerType,
+      categoryType: useDetailsObject?.categoryType?.code || useDetailsObject?.categoryType || data?.applicationSelection?.categoryType?.code || connectionHolder?.ownerType?.code || connectionHolder?.ownerType,
+      noOfFloors: useDetailsObject?.noOfFloors?.code || useDetailsObject?.noOfFloors,
       subCategory: data?.applicationSelection?.subCategory?.code,
       domesticType: data?.applicationSelection?.domesticType?.code,
       temporaryConnection: data?.applicationSelection?.temporaryConnection?.code,
@@ -391,12 +376,19 @@ export const createPayloadOfWS = async (data) => {
       detailsProvidedBy: "",
       channel: isCitizen ? "CITIZEN" : "CFC_COUNTER",
     },
+    documents: data?.documents?.documents || data?.documents || [],
     tenantId: Digit.ULBService.getCurrentTenantId(),
     processInstance: {
       action: "INITIATE",
     },
     channel: isCitizen ? "CITIZEN" : "CFC_COUNTER",
   };
+
+  delete payload.additionalDetails.proposedPipeSize;
+  delete payload.additionalDetails.proposedTaps;
+  delete payload.additionalDetails.proposedToilets;
+  delete payload.additionalDetails.proposedWaterClosets;
+
   sessionStorage.setItem("WS_DOCUMENTS_INOF", JSON.stringify(data?.documents?.documents || data?.documents || []));
   sessionStorage.setItem("WS_PROPERTY_INOF", JSON.stringify(data?.cpt?.details || {}));
   /* use customiseCreateFormData hook to make some chnages to the water object */
