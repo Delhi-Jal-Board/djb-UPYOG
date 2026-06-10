@@ -189,6 +189,7 @@ const SupervisorAreaAssignment = ({ config, onSelect, t, userType, formData }) =
           optionsKey="name"
           t={t}
           disable={!selectedWard}
+          ServerStyle={{ backgroundColor: "#fff" }}
         />
       </LabelFieldPair>
     </React.Fragment>

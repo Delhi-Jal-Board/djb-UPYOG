@@ -30,8 +30,9 @@ const SelectEkycZones = ({ config, onSelect, t, formData }) => {
   }, [boundaryData, isLoading]);
 
   const handleSelect = (value) => {
-    setSelectedZones(value);
-    onSelect(config.key, value);
+    const extractedValue = Array.isArray(value) ? value.map(v => Array.isArray(v) ? v[1] : v).filter(Boolean) : value;
+    setSelectedZones(extractedValue);
+    onSelect(config.key, extractedValue);
   };
 
   if (isLoading) return <Loader />;
@@ -39,8 +40,16 @@ const SelectEkycZones = ({ config, onSelect, t, formData }) => {
   return (
     <LabelFieldPair>
       <CardLabel>{t(config.label) + (config.isMandatory ? " *" : "")}</CardLabel>
-      <div className="field">
-        <MultiSelectDropdown options={zones} selected={selectedZones} onSelect={handleSelect} optionsKey="name" t={t} />
+
+      <div className="field" style={{ position: "relative", zIndex: 10 }}>
+        <MultiSelectDropdown
+          options={zones}
+          selected={selectedZones}
+          onSelect={handleSelect}
+          optionsKey="name"
+          t={t}
+          ServerStyle={{ backgroundColor: "#fff" }}
+        />
       </div>
     </LabelFieldPair>
   );

@@ -168,6 +168,10 @@ const AddVendor = ({ parentUrl, heading }) => {
           label: "Locality",
           area: localityArea || "",
         },
+        ward: wardCode ? {
+          code: wardCode,
+          name: wardName,
+        } : undefined,
         geoLocation: {
           latitude: mergedData?.address?.latitude || 28.6139,
           longitude: mergedData?.address?.longitude || 77.209,
@@ -254,7 +258,7 @@ const AddVendor = ({ parentUrl, heading }) => {
           defaultValues={defaultValues}
           noCard={true}
           noBreakLine={true}
-          // isDisabled={!canSubmit}
+        // isDisabled={!canSubmit}
         />
 
         {showToast && (

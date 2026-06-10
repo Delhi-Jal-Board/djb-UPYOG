@@ -56,19 +56,19 @@ const SupervisorConfig = (t, agencies = [], reportingManagers = [], disabled = f
             className: "payment-form-text-input-correction",
           },
         },
-        {
-          label: t("ES_VENDOR_SUPERVISOR_EMPLOYEE_ID"),
-          isMandatory: true,
-          type: "text",
-          populators: {
-            name: "employeeId",
-            validation: {
-              required: true,
-            },
-            defaultValue: "",
-            className: "payment-form-text-input-correction",
-          },
-        },
+        // {
+        //   label: t("ES_VENDOR_SUPERVISOR_EMPLOYEE_ID"),
+        //   isMandatory: true,
+        //   type: "text",
+        //   populators: {
+        //     name: "employeeId",
+        //     validation: {
+        //       required: true,
+        //     },
+        //     defaultValue: "",
+        //     className: "payment-form-text-input-correction",
+        //   },
+        // },
         {
           label: t("ES_VENDOR_SUPERVISOR_GENDER"),
           isMandatory: true,

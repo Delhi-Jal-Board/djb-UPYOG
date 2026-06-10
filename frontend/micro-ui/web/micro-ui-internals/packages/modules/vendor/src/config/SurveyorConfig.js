@@ -45,17 +45,17 @@ const SurveyorConfig = (t, agencies = [], reportingManagers = [], disabled = fal
             error: t("ES_VENDOR_INVALID_EMAIL"),
           },
         },
-        {
-          label: "ES_VENDOR_SURVEYOR_STAFF_CODE",
-          isMandatory: true,
-          type: "text",
-          populators: {
-            name: "employeeId",
-            validation: {
-              required: true,
-            },
-          },
-        },
+        // {
+        //   label: "ES_VENDOR_SURVEYOR_STAFF_CODE",
+        //   isMandatory: true,
+        //   type: "text",
+        //   populators: {
+        //     name: "employeeId",
+        //     validation: {
+        //       required: true,
+        //     },
+        //   },
+        // },
         {
           label: t("ES_VENDOR_SURVEYOR_GENDER"),
           isMandatory: true,

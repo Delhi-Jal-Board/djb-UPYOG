@@ -2,7 +2,7 @@ import React, { useEffect, useReducer, useRef, useState } from "react";
 import { ArrowDown, CheckSvg } from "./svgindex";
 import { useTranslation } from "react-i18next";
 
-const MultiSelectDropdown = ({ options, optionsKey, selected = [], onSelect, defaultLabel = "", defaultUnit = "", BlockNumber = 1, isOBPSMultiple = false, props = {}, isPropsNeeded = false, ServerStyle = {}, isSurvey = false }) => {
+const MultiSelectDropdown = ({ options, optionsKey, selected = [], onSelect, defaultLabel = "", defaultUnit = "", BlockNumber = 1, isOBPSMultiple = false, props = {}, isPropsNeeded = false, ServerStyle = {}, isSurvey = false, disable = false }) => {
   const [active, setActive] = useState(false);
   const [searchQuery, setSearchQuery] = useState();
   const [optionIndex, setOptionIndex] = useState(-1);
@@ -138,9 +138,9 @@ const MultiSelectDropdown = ({ options, optionsKey, selected = [], onSelect, def
   };
 
   return (
-    <div className="multi-select-dropdown-wrap" ref={dropdownRef}>
+    <div className={`multi-select-dropdown-wrap ${disable ? "disabled" : ""}`} ref={dropdownRef} style={disable ? { pointerEvents: "none", opacity: 0.5 } : {}}>
       <div className={`master${active ? `-active` : ``}`}>
-        <input className="cursorPointer" type="text" onKeyDown={keyChange} onFocus={() => setActive(true)} value={searchQuery} onChange={onSearch} />
+        <input disabled={disable} className="cursorPointer" type="text" onKeyDown={keyChange} onFocus={() => !disable && setActive(true)} value={searchQuery} onChange={onSearch} />
         <div className="label">
           <p>{alreadyQueuedSelectedState.length > 0 ? `${isSurvey ? alreadyQueuedSelectedState?.filter((ob) => ob?.i18nKey !== undefined).length : alreadyQueuedSelectedState.length} ${defaultUnit}` : defaultLabel}</p>
           <ArrowDown />
