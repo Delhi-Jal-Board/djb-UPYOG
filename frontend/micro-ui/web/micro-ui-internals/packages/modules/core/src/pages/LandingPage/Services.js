@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useHistory } from "react-router-dom";
 import { Card } from "@djb25/digit-ui-react-components";
 import services from "./configs/services.json";
 import WaterDropIcon from "./icons/WaterDrop";
@@ -13,6 +14,7 @@ const moduleIcons = {
 
 const ServiceGrid = () => {
   const { t } = useTranslation();
+  const history = useHistory();
   const modules = services || [];
 
   const activeModules = modules
@@ -22,13 +24,23 @@ const ServiceGrid = () => {
   const [expanded, setExpanded] = useState(false);
   const visibleModules = expanded ? activeModules : activeModules.slice(0, 8);
 
+  const handleCardClick = (link) => {
+    if (link) {
+      if (link.startsWith("http://") || link.startsWith("https://")) {
+        window.open(link, "_blank");
+      } else {
+        history.push(link);
+      }
+    }
+  };
+
   return (
     <section className="upyog-service-wrapper">
       <h2 className="upyog-service-title">{t("Services")}</h2>
 
       <div className="upyog-service-grid">
         {visibleModules.map((item, idx) => (
-          <Card key={idx} className="service-card card-double-wave">
+          <Card key={idx} className="service-card card-double-wave" onClick={() => handleCardClick(item.link)}>
             <img
               src={
                 moduleIcons[item.module] ||
