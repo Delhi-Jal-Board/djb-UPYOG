@@ -183,7 +183,8 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
       if (!node) return;
       if (node.label === "Zone" || node.label === "ZONE") {
         const code = node.code || node.localname || node.name;
-        if (code) zones.set(code, { code, i18nKey: code, name: code });
+        const name = node.name || node.localname || code;
+        if (code) zones.set(code, { code, i18nKey: code, name: name });
       }
       if (node.label === "Ward" || node.label === "WARD" || node.label === "Block" || node.label === "BLOCK") {
         const code = node.code || node.localname || node.name;
@@ -1107,16 +1108,18 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
         {props?.showMapActualLocation && (
           <React.Fragment>
             <div>
-              <Button
-                label={t("MAP ACTUAL LOCATION") || "Map Actual Location"}
-                onButtonClick={() => {
-                  setTempAssembly(actualAssembly);
-                  setTempZone(actualZone);
-                  setTempWard(actualWard);
-                  setShowModal(true);
-                }}
-                type="button"
-              />
+              {!disable && (
+                <Button
+                  label={t("MAP ACTUAL LOCATION") || "Map Actual Location"}
+                  onButtonClick={() => {
+                    setTempAssembly(actualAssembly);
+                    setTempZone(actualZone);
+                    setTempWard(actualWard);
+                    setShowModal(true);
+                  }}
+                  type="button"
+                />
+              )}
               {(actualAssembly || actualZone || actualWard) && (
                 <div style={{ marginTop: "16px", padding: "16px", border: "1px solid #E3E3E3", backgroundColor: "#FAFAFA", borderRadius: "4px" }}>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", rowGap: "16px", columnGap: "32px" }}>
@@ -1202,7 +1205,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
                 select={(val) => setTempZone(val?.code || "")}
                 option={zoneOptions}
                 optionCardStyles={{ overflowY: "auto", maxHeight: "300px" }}
-                optionKey="i18nKey"
+                optionKey="name"
                 t={t}
                 placeholder={"Select Zone"}
               />

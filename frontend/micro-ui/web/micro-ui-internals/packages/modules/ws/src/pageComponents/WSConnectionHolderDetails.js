@@ -233,7 +233,7 @@ const ConnectionDetails = (_props) => {
   const [emailId, setEmailId] = useState(connectionHolderDetail?.emailId);
   const [watsAppMobileNumber, setWatsAppMobileNumber] = useState(connectionHolderDetail?.watsAppMobileNumber);
   const [isWatsappSameAsMobile, setIsWatsappSameAsMobile] = useState(connectionHolderDetail?.isWatsappSameAsMobile || false);
-  const formValue = {
+  const formValue = React.useMemo(() => ({
     name,
     middleName,
     lastName,
@@ -248,7 +248,7 @@ const ConnectionDetails = (_props) => {
     emailId,
     watsAppMobileNumber,
     isWatsappSameAsMobile,
-  };
+  }), [name, middleName, lastName, gender, mobileNumber, guardian, relationship, ownerType, sameAsOwnerDetails, address, uuid, emailId, watsAppMobileNumber, isWatsappSameAsMobile]);
   const { errors } = localFormState;
   const isMobile = window.Digit.Utils.browser.isMobile();
   const isEmployee = window.location.href.includes("/employee");
@@ -401,7 +401,7 @@ const ConnectionDetails = (_props) => {
                 render={(props) => (
                   <div>
                     <TextInput
-                      value={getValues("name")}
+                      value={getValues("name") || ""}
                       autoFocus={focusIndex.index === connectionHolderDetail?.key && focusIndex.type === "name"}
                       errorStyle={localFormState.touched.name && errors?.name?.message ? true : false}
                       onChange={(e) => {
@@ -456,7 +456,7 @@ const ConnectionDetails = (_props) => {
                 render={(props) => (
                   <div>
                     <TextInput
-                      value={getValues("middleName")}
+                      value={getValues("middleName") || ""}
                       autoFocus={focusIndex.index === connectionHolderDetail?.key && focusIndex.type === "middleName"}
                       errorStyle={localFormState.touched.middleName && errors?.middleName?.message ? true : false}
                       onChange={(e) => {
@@ -485,7 +485,7 @@ const ConnectionDetails = (_props) => {
                 render={(props) => (
                   <div>
                     <TextInput
-                      value={getValues("lastName")}
+                      value={getValues("lastName") || ""}
                       autoFocus={focusIndex.index === connectionHolderDetail?.key && focusIndex.type === "lastName"}
                       errorStyle={localFormState.touched.lastName && errors?.lastName?.message ? true : false}
                       onChange={(e) => {
@@ -585,7 +585,7 @@ const ConnectionDetails = (_props) => {
                   render={(props) => (
                     <div>
                       <TextInput
-                        value={getValues("guardian")}
+                        value={getValues("guardian") || ""}
                         autoFocus={focusIndex.index === connectionHolderDetail?.key && focusIndex.type === "guardian"}
                         errorStyle={localFormState.touched.guardian && errors?.guardian?.message ? true : false}
                         onChange={(e) => {
@@ -719,7 +719,7 @@ const ConnectionDetails = (_props) => {
                       <div>
                         <MobileNumber
                           name="mobileNumber"
-                          value={mobileValue}
+                          value={mobileValue || ""}
                           autoFocus={focusIndex.index === connectionHolderDetail?.key && focusIndex.type === "mobileNumber"}
                           errorStyle={localFormState.touched.mobileNumber && errors?.mobileNumber?.message}
                           onChange={(val) => {
@@ -779,34 +779,6 @@ const ConnectionDetails = (_props) => {
               <div className="field">
                 <Controller
                   control={control}
-                  name="isWatsappSameAsMobile"
-                  defaultValue={isWatsappSameAsMobile}
-                  render={(props) => (
-                    <CheckBox
-                      label={t("WS_SAME_AS_MOBILE_NUMBER")}
-                      name={"isWatsappSameAsMobile"}
-                      autoFocus={focusIndex.index === connectionHolderDetail?.key && focusIndex.type === "isWatsappSameAsMobile"}
-                      errorStyle={localFormState.touched.isWatsappSameAsMobile && errors?.isWatsappSameAsMobile?.message ? true : false}
-                      onChange={(e) => {
-                        setIsWatsappSameAsMobile(e.target.checked);
-                        props.onChange(e.target.checked);
-                        setFocusIndex({ index: connectionHolderDetail?.key, type: "isWatsappSameAsMobile" });
-                        if (e.target.checked) {
-                          setWatsAppMobileNumber(mobileNumber);
-                          setValue("watsAppMobileNumber", mobileNumber);
-                        } else {
-                          setWatsAppMobileNumber("");
-                          setValue("watsAppMobileNumber", "");
-                        }
-                      }}
-                      checked={isWatsappSameAsMobile}
-                      onBlur={props.onBlur}
-                      style={{ paddingBottom: "10px" }}
-                    />
-                  )}
-                />
-                <Controller
-                  control={control}
                   name="watsAppMobileNumber"
                   defaultValue={connectionHolderDetail?.watsAppMobileNumber}
                   rules={{
@@ -823,7 +795,7 @@ const ConnectionDetails = (_props) => {
                       <div>
                         <MobileNumber
                           name="watsAppMobileNumber"
-                          value={watsAppmobileValue}
+                          value={watsAppmobileValue || ""}
                           autoFocus={focusIndex.index === connectionHolderDetail?.key && focusIndex.type === "watsAppMobileNumber"}
                           errorStyle={localFormState.touched.watsAppMobileNumber && errors?.watsAppMobileNumber?.message}
                           onChange={(val) => {
@@ -868,6 +840,35 @@ const ConnectionDetails = (_props) => {
                     );
                   }}
                 />
+                <div style={{marginTop:"5px"}}>
+                  <Controller
+                    control={control}
+                    name="isWatsappSameAsMobile"
+                    defaultValue={isWatsappSameAsMobile}
+                    render={(props) => (
+                      <CheckBox
+                        label={t("WS_SAME_AS_MOBILE_NUMBER")}
+                        name={"isWatsappSameAsMobile"}
+                        autoFocus={focusIndex.index === connectionHolderDetail?.key && focusIndex.type === "isWatsappSameAsMobile"}
+                        errorStyle={localFormState.touched.isWatsappSameAsMobile && errors?.isWatsappSameAsMobile?.message ? true : false}
+                        onChange={(e) => {
+                          setIsWatsappSameAsMobile(e.target.checked);
+                          props.onChange(e.target.checked);
+                          setFocusIndex({ index: connectionHolderDetail?.key, type: "isWatsappSameAsMobile" });
+                          if (e.target.checked) {
+                            setWatsAppMobileNumber(mobileNumber);
+                            setValue("watsAppMobileNumber", mobileNumber);
+                          } else {
+                            setWatsAppMobileNumber("");
+                            setValue("watsAppMobileNumber", "");
+                          }
+                        }}
+                        checked={isWatsappSameAsMobile}
+                        onBlur={props.onBlur}
+                      />
+                    )}
+                  />
+                </div>
               </div>
             </LabelFieldPair>
             {localFormState.touched.watsAppMobileNumber && errors?.watsAppMobileNumber?.message && (
@@ -889,7 +890,7 @@ const ConnectionDetails = (_props) => {
                   render={(props) => (
                     <div>
                       <TextInput
-                        value={getValues("emailId")}
+                        value={getValues("emailId") || ""}
                         autoFocus={focusIndex.index === connectionHolderDetail?.key && focusIndex.type === "emailId"}
                         errorStyle={localFormState.touched.emailId && errors?.emailId?.message ? true : false}
                         onChange={(e) => {
