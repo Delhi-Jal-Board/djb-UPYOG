@@ -377,7 +377,7 @@ export const createPayloadOfWS = async (data) => {
       channel: isCitizen ? "CITIZEN" : "CFC_COUNTER",
     },
     documents: data?.documents?.documents || data?.documents || [],
-    tenantId: Digit.ULBService.getCurrentTenantId(),
+    tenantId: "dl.djb",
     processInstance: {
       action: "INITIATE",
     },
