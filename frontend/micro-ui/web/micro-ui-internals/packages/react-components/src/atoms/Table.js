@@ -419,7 +419,7 @@ const Table = ({
   };
 
   return (
-    <div className="basetable">
+    <div className="basetable no-scrollbar">
       {/* ── Top Bar ──────────────────────────────────────────────────────── */}
       <div className="table-topbar">
         {/* Left: title + total badge */}
@@ -506,7 +506,7 @@ const Table = ({
                       <div className="col-head-wrapper" style={{ justifyContent: getFlexJustifyFromAlign(textAlign) }}>
                         <span className={`col-head ${isSorted ? "accentDark" : "textSecondary"}`}>{column.render("Header")}</span>
                         {column.canSort && (
-                          <span style={{ lineHeight: 0, color: isSorted ? T.accent : T.textMuted }}>
+                          <span style={{ lineHeight: 0, color: isSorted ? T.accent : "rgb(7, 8, 9)" }}>
                             {isSorted ? column.isSortedDesc ? <IconSortDesc /> : <IconSortAsc /> : <IconSortNeutral />}
                           </span>
                         )}
@@ -520,7 +520,7 @@ const Table = ({
 
           {/* ── Body ────────────────────────────────────────────────────── */}
           <tbody {...getTableBodyProps()}>
-            {isLoading && page.length === 0 ? (
+            {isLoading ? (
               <tr>
                 <td colSpan={tableColumns.length + (showAutoSerialNo ? 1 : 0)} style={{ padding: "80px 20px", textAlign: "center" }}>
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12 }}>

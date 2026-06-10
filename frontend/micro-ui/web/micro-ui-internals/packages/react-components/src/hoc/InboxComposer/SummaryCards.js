@@ -24,59 +24,31 @@ import React from "react";
  *   ];
  *   <SummaryCards cards={cards} searchParams={{}} t={(k) => k} onCardClick={console.log} />
  */
-const SummaryCards = ({ cards = [], searchParams = {}, t = (k) => k, onCardClick }) => {
-  return (
-    <div className="summary-cards-container" style={{ display: "flex", gap: "12px", flexWrap: "wrap", width: "100%" }}>
-      {cards.map((card, idx) => {
-        const isActive = searchParams?.status?.code ? card.filter?.includes(searchParams.status.code) : card.active;
-
-        return (
-          <div
-            key={idx}
-            className="summary-card"
-            onClick={() => onCardClick?.(card)}
-            style={{
-              backgroundColor: "#fff",
-              borderRadius: "6px",
-              padding: "16px 14px",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
-              flex: "1 1 0%",
-              minWidth: "110px",
-              border: isActive ? `2px solid ${card.color}` : "1px solid #E2E8F0",
-              cursor: "pointer",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-between",
-              transition: "all 0.2s ease-in-out",
-            }}
-          >
-            <div
-              style={{
-                fontSize: "11px",
-                color: "#64748B",
-                fontWeight: "600",
-                textTransform: "uppercase",
-                letterSpacing: "0.5px",
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-              }}
-            >
-              {t(card.label)}
-            </div>
-            <div
-              style={{
-                fontSize: "28px",
-                fontWeight: "700",
-                color: card.color,
-                marginTop: "12px",
-              }}
-            >
-              {String(card.count).padStart(2, "0")}
-            </div>
+const SummaryCards = ({ cards = [], t = (k) => k, onCardClick, isLoading = false }) => {
+  if (isLoading) {
+    return (
+      <div className="summary-cards-container">
+        {Array.from({ length: 6 }).map((_, idx) => (
+          <div key={idx} className="summary-card">
+            <div className="summary-card-label skeleton skeleton-text" />
+            <div className="summary-card-count skeleton skeleton-count" />
           </div>
-        );
-      })}
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div className="summary-cards-container">
+      {cards.map((card, idx) => (
+        <div key={idx} className="summary-card" onClick={() => onCardClick?.(card)}>
+          <div className="summary-card-label">{t(card.label)}</div>
+
+          <div className="summary-card-count" style={{ color: card.color }}>
+            {String(card.count).padStart(2, "0")}
+          </div>
+        </div>
+      ))}
     </div>
   );
 };

@@ -173,7 +173,7 @@
         }
 
         .filter-label {
-          @apply text-heading-m block flex gap-3 items-center;
+          @apply text-heading-m flex gap-3 items-center;
           padding-bottom: 6px;
 
           svg {
@@ -214,6 +214,13 @@
   .status-container {
     margin-bottom: 50px;
   }
+}
+
+.summary-cards-container {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  width: "100%";
 }
 
 .hover-button {

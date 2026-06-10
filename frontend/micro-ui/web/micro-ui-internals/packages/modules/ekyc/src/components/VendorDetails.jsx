@@ -52,7 +52,6 @@ const VendorDetails = () => {
     rejected: row.rejected,
   }));
 
-  console.log(dashboardData);
   if (isLoading) <Loader />;
 
   return (

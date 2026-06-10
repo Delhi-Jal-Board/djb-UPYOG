@@ -5,7 +5,7 @@ import Card from "../atoms/Card";
 import CardLabel from "../atoms/CardLabel";
 import CardText from "../atoms/CardText";
 import CardSubHeader from "../atoms/CardSubHeader";
-import CardSectionHeader from "../atoms/CardSectionHeader";
+// import CardSectionHeader from "../atoms/CardSectionHeader";
 import CardLabelDesc from "../atoms/CardLabelDesc";
 import CardLabelError from "../atoms/CardLabelError";
 import TextArea from "../atoms/TextArea";
@@ -168,7 +168,6 @@ export const FormComposer = (props) => {
             control={control}
           />
         );
-
       case "form":
         return (
           <form className={props.formClassName}>
@@ -231,37 +230,37 @@ export const FormComposer = (props) => {
           marginBottom: "20px",
           borderTop: "0px",
         };
+      default:
     }
   };
 
-  const titleStyle = { color: "#505A5F", fontWeight: "700", fontSize: "16px" };
+  // const titleStyle = { color: "#505A5F", fontWeight: "700", fontSize: "16px" };
 
   // Section headers span both columns in the grid
-  const getCombinedComponent = (section) => {
-    if (section.head && section.subHead) {
-      return (
-        <div className="grid-title">
-          <CardSectionHeader style={props?.sectionHeadStyle ? props?.sectionHeadStyle : { margin: "5px 0px" }} id={section.headId}>
-            {t(section.head)}
-          </CardSectionHeader>
-          <CardSectionHeader style={titleStyle} id={`${section.headId}_DES`}>
-            {t(section.subHead)}
-          </CardSectionHeader>
-        </div>
-      );
-    } else if (section.head) {
-      return (
-        <div className="grid-title">
-          <CardSectionHeader style={props?.sectionHeadStyle ? props?.sectionHeadStyle : {}} id={section.headId}>
-            {t(section.head)}
-          </CardSectionHeader>
-        </div>
-      );
-    } else {
-      return null;
-    }
-  };
-
+  // const getCombinedComponent = (section) => {
+  //   if (section.head && section.subHead) {
+  //     return (
+  //       <div className="grid-title">
+  //         <CardSectionHeader style={props?.sectionHeadStyle ? props?.sectionHeadStyle : { margin: "5px 0px" }} id={section.headId}>
+  //           {t(section.head)}
+  //         </CardSectionHeader>
+  //         <CardSectionHeader style={titleStyle} id={`${section.headId}_DES`}>
+  //           {t(section.subHead)}
+  //         </CardSectionHeader>
+  //       </div>
+  //     );
+  //   } else if (section.head) {
+  //     return (
+  //       <div className="grid-title">
+  //         <CardSectionHeader style={props?.sectionHeadStyle ? props?.sectionHeadStyle : {}} id={section.headId}>
+  //           {t(section.head)}
+  //         </CardSectionHeader>
+  //       </div>
+  //     );
+  //   } else {
+  //     return null;
+  //   }
+  // };
 
   const formFields = useMemo(
     () =>
@@ -276,11 +275,15 @@ export const FormComposer = (props) => {
             */}
             {section?.isCollapsible ? (
               <CollapsibleCardPage title={t(section.head)} defaultOpen={section.isDefaultOpen}>
-                <div className={`formcomposer-section-grid ${props.cardFormWrapperClassName ? props.cardFormWrapperClassName : ""}`}>
+                <div
+                  className={`formcomposer-section-grid ${section.className ? section.className : ""} ${
+                    props.cardFormWrapperClassName ? props.cardFormWrapperClassName : ""
+                  }`}
+                >
                   {section.body.map((field, index) => {
                     const Component =
                       typeof field?.component === "string" ? Digit.ComponentRegistryService.getComponent(field?.component) : field?.component;
-                     
+
                     if (props.inline) {
                       return (
                         <React.Fragment key={index}>
@@ -292,10 +295,7 @@ export const FormComposer = (props) => {
                           >
                             <LabelFieldPair>
                               {!field.withoutLabel && (
-                                <CardLabel
-                                  style={{ color: field.isSectionText ? "#505A5F" : "" }}
-                                  className={field?.disable ? "disabled-label" : ""}
-                                >
+                                <CardLabel style={{ color: field.isSectionText ? "#505A5F" : "" }} className={field?.disable ? "disabled-label" : ""}>
                                   {t(field.label)}
                                   {field.isMandatory ? " * " : null}
                                   {field.labelChildren && field.labelChildren}
@@ -369,18 +369,14 @@ export const FormComposer = (props) => {
                               )}
                               <div style={field.withoutLabel ? { width: "100%", ...props?.fieldStyle } : {}} className="field">
                                 {fieldSelector(field.type, field.populators, field.isMandatory, field?.disable, field?.component, field)}
-                                {field?.description && (
-                                  <CardText style={{ fontSize: "14px", marginTop: "-24px" }}>{t(field?.description)}</CardText>
-                                )}
+                                {field?.description && <CardText style={{ fontSize: "14px", marginTop: "-24px" }}>{t(field?.description)}</CardText>}
                               </div>
                             </LabelFieldPair>
                             {field?.populators?.name &&
                             errors &&
                             errors[field?.populators?.name] &&
                             Object.keys(errors[field?.populators?.name]).length ? (
-                              <CardLabelError
-                                style={{ gridColumn: field?.colSpan ? field.colSpan : "span 1", fontSize: "12px", marginTop: "8px" }}
-                              >
+                              <CardLabelError style={{ gridColumn: field?.colSpan ? field.colSpan : "span 1", fontSize: "12px", marginTop: "8px" }}>
                                 {t(field?.populators?.error || errors[field?.populators?.name]?.message)}
                               </CardLabelError>
                             ) : null}
@@ -392,13 +388,16 @@ export const FormComposer = (props) => {
                 </div>
               </CollapsibleCardPage>
             ) : (
-              <div className={`formcomposer-section-grid ${props.cardFormWrapperClassName ? props.cardFormWrapperClassName : ""}`}>
+              <div
+                className={`formcomposer-section-grid ${section.className ? section.className : ""} ${
+                  props.cardFormWrapperClassName ? props.cardFormWrapperClassName : ""
+                }`}
+              >
                 {/* {section && getCombinedComponent(section)} */}
 
                 {section.body.map((field, index) => {
                   const Component =
                     typeof field?.component === "string" ? Digit.ComponentRegistryService.getComponent(field?.component) : field?.component;
-                  
                   if (props.inline) {
                     return (
                       <React.Fragment key={index}>
@@ -454,6 +453,7 @@ export const FormComposer = (props) => {
                                   setError={setError}
                                   clearErrors={clearErrors}
                                   formState={formState}
+                                  {...field?.props}
                                   style={{
                                     gridColumn: field?.colSpan ? field.colSpan : "span 1",
                                     ...props?.fieldStyle,
@@ -491,9 +491,7 @@ export const FormComposer = (props) => {
                           errors &&
                           errors[field?.populators?.name] &&
                           Object.keys(errors[field?.populators?.name]).length ? (
-                            <CardLabelError
-                              style={{ gridColumn: field?.colSpan ? field.colSpan : "span 1", fontSize: "12px", marginTop: "8px" }}
-                            >
+                            <CardLabelError style={{ gridColumn: field?.colSpan ? field.colSpan : "span 1", fontSize: "12px", marginTop: "8px" }}>
                               {t(field?.populators?.error || errors[field?.populators?.name]?.message)}
                             </CardLabelError>
                           ) : null}
@@ -509,6 +507,7 @@ export const FormComposer = (props) => {
           </React.Fragment>
         );
       }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [props.config, formData]
   );
 
@@ -533,20 +532,12 @@ export const FormComposer = (props) => {
           {!props.childrenAtTheBottom && props.children}
           {props.description && <CardLabelDesc className={"repos"}> {props.description} </CardLabelDesc>}
           {props.text && <CardText>{props.text}</CardText>}
-          <div
-            className={`formcomposer-grid-container-form ${props?.cardFormWrapperClassName ? props.cardFormWrapperClassName : ""}`}
-          >
+          <div className={`formcomposer-grid-container-form ${props?.cardFormWrapperClassName ? props.cardFormWrapperClassName : ""}`}>
             {formFields}
           </div>
           {props.childrenAtTheBottom && props.children}
           {props.submitInForm && (
-            <SubmitBar
-              label={t(props.label)}
-              style={{ ...props?.buttonStyle }}
-              submit="submit"
-              disabled={isDisabled}
-              className="w-full"
-            />
+            <SubmitBar label={t(props.label)} style={{ ...props?.buttonStyle }} submit="submit" disabled={isDisabled} className="w-full" />
           )}
           {props.secondaryActionLabel && (
             <div className="primary-label-btn" style={{ margin: "20px auto 0 auto" }} onClick={onSecondayActionClick}>
@@ -556,9 +547,7 @@ export const FormComposer = (props) => {
           {!props.submitInForm && props.label && (
             <ActionBar>
               <SubmitBar label={t(props.label)} submit="submit" disabled={isDisabled} />
-              {props.onSkip && props.showSkip && (
-                <LinkButton style={props?.skipStyle} label={t(`CS_SKIP_CONTINUE`)} onClick={props.onSkip} />
-              )}
+              {props.onSkip && props.showSkip && <LinkButton style={props?.skipStyle} label={t(`CS_SKIP_CONTINUE`)} onClick={props.onSkip} />}
             </ActionBar>
           )}
         </CollapsibleCardPage>
@@ -568,20 +557,12 @@ export const FormComposer = (props) => {
           {props.heading && <CardSubHeader style={{ ...props.headingStyle }}> {props.heading} </CardSubHeader>}
           {props.description && <CardLabelDesc className={"repos"}> {props.description} </CardLabelDesc>}
           {props.text && <CardText>{props.text}</CardText>}
-          <div
-            className={`formcomposer-grid-container-form ${props?.cardFormWrapperClassName ? props.cardFormWrapperClassName : ""}`}
-          >
+          <div className={`formcomposer-grid-container-form ${props?.cardFormWrapperClassName ? props.cardFormWrapperClassName : ""}`}>
             {formFields}
           </div>
           {props.childrenAtTheBottom && props.children}
           {props.submitInForm && (
-            <SubmitBar
-              label={t(props.label)}
-              style={{ ...props?.buttonStyle }}
-              submit="submit"
-              disabled={isDisabled}
-              className="w-full"
-            />
+            <SubmitBar label={t(props.label)} style={{ ...props?.buttonStyle }} submit="submit" disabled={isDisabled} className="w-full" />
           )}
           {props.secondaryActionLabel && (
             <div className="primary-label-btn" style={{ margin: "20px auto 0 auto" }} onClick={onSecondayActionClick}>
@@ -591,9 +572,7 @@ export const FormComposer = (props) => {
           {!props.submitInForm && props.label && (
             <ActionBar>
               <SubmitBar label={t(props.label)} submit="submit" disabled={isDisabled} />
-              {props.onSkip && props.showSkip && (
-                <LinkButton style={props?.skipStyle} label={t(`CS_SKIP_CONTINUE`)} onClick={props.onSkip} />
-              )}
+              {props.onSkip && props.showSkip && <LinkButton style={props?.skipStyle} label={t(`CS_SKIP_CONTINUE`)} onClick={props.onSkip} />}
             </ActionBar>
           )}
         </React.Fragment>

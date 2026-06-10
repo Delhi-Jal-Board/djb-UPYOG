@@ -26,10 +26,11 @@ const AssignEkyc = () => {
   };
 
   const [formState, dispatch] = useReducer(formReducer, formInitValue);
+  const userDetails = Digit.SessionStorage.get("User");
 
   const { data: dashboardData, isLoading } = Digit.Hooks.fsm.useSurveyorSearch(
     tenantId,
-    { ...paginationParms, status: "ACTIVE,DISABLED" },
+    { ...paginationParms, status: "ACTIVE,DISABLED", vendorId: userDetails?.info?.uuid },
     { enabled: !!tenantId, keepPreviousData: true }
   );
 
@@ -48,6 +49,13 @@ const AssignEkyc = () => {
       tenantId,
       details: searchDetails,
     },
+    {
+      enabled: !!tenantId && !!searchDetails.kno, // 🔥 important
+      keepPreviousData: true,
+    }
+  );
+  const { isLoading: isDataSearchLoading, data } = Digit.Hooks.ekyc.useEkycAssignmentProgress(
+    {},
     {
       enabled: !!tenantId && !!searchDetails.kno, // 🔥 important
       keepPreviousData: true,
@@ -241,42 +249,37 @@ const AssignEkyc = () => {
   const cards = [
     {
       label: "TOTAL_EKYC_APPLICATIONS",
-      count: 364,
+      count: data?.totalKnos || 0,
       color: "#0B2559",
       filter: null,
       active: true,
     },
     {
-      label: "UNASSIGNED_APPLICATIONS",
-      count: 28,
-      color: "#F59E0B",
-      filter: ["UNASSIGNED"],
-    },
-    {
-      label: "ASSIGNED_TO_SURVEYOR",
-      count: 120,
+      label: "TOTAL_ASSIGNMENTS",
+      count: data?.totalAssignments || 0,
       color: "#3B82F6",
       filter: ["ASSIGNED"],
     },
     {
-      label: "IN_PROGRESS",
-      count: 54,
-      color: "#A855F7",
-      filter: ["IN_PROGRESS"],
-    },
-    {
       label: "EKYC_COMPLETED",
-      count: 140,
+      count: data?.completedKnos || 0,
       color: "#10B981",
       filter: ["COMPLETED"],
     },
     {
-      label: "REJECTED_APPLICATIONS",
-      count: 22,
-      color: "#EF4444",
-      filter: ["REJECTED"],
+      label: "PENDING_APPLICATIONS",
+      count: (data?.totalKnos || 0) - (data?.completedKnos || 0),
+      color: "#F59E0B",
+      filter: ["PENDING"],
+    },
+    {
+      label: "OVERALL_PROGRESS",
+      count: `${data?.overallProgressPercent || 0}%`,
+      color: "#A855F7",
+      filter: ["IN_PROGRESS"],
     },
   ];
+
   return (
     <div className="app-container">
       <InboxComposer
@@ -291,6 +294,7 @@ const AssignEkyc = () => {
           formState,
           countData: dashboardData?.dashboardInfo,
           cards,
+          isCardLoading: isDataSearchLoading,
         }}
       />
     </div>

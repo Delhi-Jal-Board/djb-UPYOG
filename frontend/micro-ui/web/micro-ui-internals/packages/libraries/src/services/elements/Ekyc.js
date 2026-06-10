@@ -12,6 +12,7 @@ export const EkycService = {
       auth: true,
       userService: true,
     }),
+
   dashboard: (data, params) =>
     Request({
       url: Urls.ekyc.dashboard,
@@ -21,17 +22,9 @@ export const EkycService = {
       params,
       auth: true,
       userService: true,
+      setTimeParam: false,
     }),
-  application_list: (data, params) =>
-    Request({
-      url: Urls.ekyc.application_list,
-      data: data,
-      useCache: false,
-      method: "POST",
-      params,
-      auth: true,
-      userService: true,
-    }),
+
   application_review: (data, params) =>
     Request({
       url: Urls.ekyc.application_review,
@@ -42,6 +35,7 @@ export const EkycService = {
       auth: true,
       userService: true,
     }),
+
   application_update: (data, tenantId) =>
     Request({
       url: Urls.ekyc.application_update,
@@ -52,6 +46,7 @@ export const EkycService = {
       auth: true,
       userService: true,
     }),
+
   fetchSummary: (data) =>
     Request({
       url: Urls.ekyc.dashboard_summary,
@@ -88,46 +83,7 @@ export const EkycService = {
       auth: true,
       userService: true,
     }),
-  search_connection: (data, tenantId) =>
-    Request({
-      url: Urls.ekyc.application_search,
-      data: data,
-      useCache: false,
-      method: "POST",
-      params: { tenantId },
-      auth: true,
-      userService: true,
-    }),
-  dashboard: (data, params) =>
-    Request({
-      url: Urls.ekyc.dashboard,
-      data: data,
-      useCache: false,
-      method: "POST",
-      params,
-      auth: true,
-      userService: true,
-    }),
-  application_review: (data, params) =>
-    Request({
-      url: Urls.ekyc.application_review,
-      data: { ...data },
-      useCache: false,
-      method: "POST",
-      params: { tenantId: params },
-      auth: true,
-      userService: true,
-    }),
-  application_update: (data, tenantId) =>
-    Request({
-      url: Urls.ekyc.application_update,
-      data: data,
-      useCache: false,
-      method: "POST",
-      params: { tenantId },
-      auth: true,
-      userService: true,
-    }),
+
   application_list: ({
     tenantId = "dl.djb",
     offset = 0,
@@ -139,6 +95,7 @@ export const EkycService = {
     ward = null,
     pincode = null,
     mrkey = null,
+    surveyorId = null,
   } = {}) =>
     Request({
       url: Urls.ekyc.application_list,
@@ -159,58 +116,45 @@ export const EkycService = {
         ward,
         pincode,
         mrkey,
+        surveyorId,
       },
     }),
-  assignment_create: ({ tenantId = "dl.djb", surveyorId, assignmentType, assignmentValue } = {}) =>
-    Request({
+  assignment_create: async ({ tenantId = "dl.djb", surveyorId, assignmentType, assignmentValue, assignmentValues } = {}) => {
+    const response = await Request({
       url: Urls.ekyc.assignment_create,
       method: "POST",
       auth: true,
       userService: true,
       useCache: false,
-      params: {
-        tenantId,
-      },
+      params: { tenantId },
       data: {
         surveyorId,
         assignmentType,
         assignmentValue,
+        assignmentValues,
       },
-    }),
-  fetchSummary: (data) =>
-    Request({
-      url: Urls.ekyc.dashboard_summary,
-      data: data,
-      useCache: false,
+    });
+
+    if (response?.error) {
+      throw response;
+    }
+
+    return response;
+  },
+  assignment_progress: async ({ tenantId = "dl.djb" }) => {
+    const response = await Request({
+      url: Urls.ekyc.assignment_progress,
       method: "POST",
       auth: true,
       userService: true,
-    }),
-  fetchAgencyAnalytics: (data) =>
-    Request({
-      url: Urls.ekyc.agency_search,
-      data: data,
       useCache: false,
-      method: "POST",
-      auth: true,
-      userService: true,
-    }),
-  fetchClusterHeatmap: (data) =>
-    Request({
-      url: Urls.ekyc.cluster_heatmap,
-      data: data,
-      useCache: false,
-      method: "POST",
-      auth: true,
-      userService: true,
-    }),
-  fetchWorkflowTracking: (data) =>
-    Request({
-      url: Urls.ekyc.workflow_tracking,
-      data: data,
-      useCache: false,
-      method: "POST",
-      auth: true,
-      userService: true,
-    }),
+      params: { tenantId },
+    });
+
+    if (response?.error) {
+      throw response;
+    }
+
+    return response;
+  },
 };

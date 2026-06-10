@@ -98,7 +98,10 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
     if (uuid) {
       try {
         const usersResponse = await Digit.UserService.userSearch(tenant, { uuid: [uuid] }, {});
-        const userList = usersResponse && (usersResponse.user || usersResponse.userList || usersResponse.users) ? (usersResponse.user || usersResponse.userList || usersResponse.users) : [];
+        const userList =
+          usersResponse && (usersResponse.user || usersResponse.userList || usersResponse.users)
+            ? usersResponse.user || usersResponse.userList || usersResponse.users
+            : [];
 
         if (userList && userList.length && isMounted.current) {
           const fetchedUser = userList[0];
@@ -329,10 +332,6 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
       }
 
       if (userType === "employee" && !new RegExp(/^[6-9]{1}[0-9]{9}$/).test(mobileNumber)) {
-        throw JSON.stringify({ type: "error", message: t("CORE_COMMON_PROFILE_MOBILE_NUMBER_INVALID") });
-      }
-
-      if (userType === "citizen" && !new RegExp(/^[6-9]{1}[0-9]{9}$/).test(altMobileNumber)) {
         throw JSON.stringify({ type: "error", message: t("CORE_COMMON_PROFILE_MOBILE_NUMBER_INVALID") });
       }
 

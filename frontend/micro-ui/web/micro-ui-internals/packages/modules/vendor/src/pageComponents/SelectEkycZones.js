@@ -11,9 +11,8 @@ const SelectEkycZones = ({ config, onSelect, t, formData }) => {
   useEffect(() => {
     const tenantBoundary = boundaryData?.["egov-location"]?.TenantBoundary?.[0] || boundaryData?.MdmsRes?.["egov-location"]?.TenantBoundary?.[0];
     const boundaries = tenantBoundary?.boundary || tenantBoundary?.children || [];
-    
-    if (Array.isArray(boundaries) && boundaries.length > 0) {
-      const zonesList = boundaries.map((b) => ({
+    if (Array.isArray(boundaries?.children) && boundaries?.children.length > 0) {
+      const zonesList = boundaries?.children.map((b) => ({
         code: b.code,
         name: b.name,
       }));
@@ -41,13 +40,7 @@ const SelectEkycZones = ({ config, onSelect, t, formData }) => {
     <LabelFieldPair>
       <CardLabel>{t(config.label) + (config.isMandatory ? " *" : "")}</CardLabel>
       <div className="field">
-        <MultiSelectDropdown
-          options={zones}
-          selected={selectedZones}
-          onSelect={handleSelect}
-          optionsKey="name"
-          t={t}
-        />
+        <MultiSelectDropdown options={zones} selected={selectedZones} onSelect={handleSelect} optionsKey="name" t={t} />
       </div>
     </LabelFieldPair>
   );

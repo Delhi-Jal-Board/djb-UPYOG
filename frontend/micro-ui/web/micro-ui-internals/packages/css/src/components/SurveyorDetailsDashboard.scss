@@ -18,6 +18,37 @@
       padding: 18px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 
+      .skeleton {
+        background: #e5e7eb;
+        border-radius: 4px;
+        animation: shimmer 1.5s infinite;
+      }
+
+      .skeleton-text {
+        width: 70%;
+        height: 16px;
+        margin-bottom: 12px;
+      }
+
+      .skeleton-number {
+        width: 40%;
+        height: 32px;
+      }
+
+      @keyframes shimmer {
+        0% {
+          opacity: 0.6;
+        }
+
+        50% {
+          opacity: 1;
+        }
+
+        100% {
+          opacity: 0.6;
+        }
+      }
+
       .stat-title {
         font-size: 13px;
         color: #667085;
@@ -156,6 +187,10 @@
   border-radius: 14px;
   padding: 24px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.dashboard-card {
+  padding: 0 !important;
 }
 
 .ekyc-dashboard-header {

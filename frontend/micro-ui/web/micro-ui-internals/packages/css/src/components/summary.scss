@@ -24,6 +24,43 @@
     }
   }
 }
-.summary-card-margin{
-  margin:0 24px 20px 0px !important;
+.summary-card-margin {
+  margin: 0 24px 20px 0px !important;
+}
+
+.summary-card {
+  background-color: #fff;
+  border-radius: 6px;
+  padding: 16px 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+  flex: 1 1 0%;
+  min-width: 110px;
+
+  border: 1px solid #e2e8f0;
+
+  cursor: pointer;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  transition: all 0.2s ease-in-out;
+
+  .summary-card-label {
+    font-size: 11px;
+    color: #64748b;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .summary-card-count {
+    font-size: 28px;
+    font-weight: 700;
+    margin-top: 12px;
+  }
 }

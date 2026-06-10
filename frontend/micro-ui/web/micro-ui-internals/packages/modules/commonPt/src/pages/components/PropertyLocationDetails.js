@@ -3,7 +3,17 @@ import { AddressDetails, CollapsibleCardPage } from "@djb25/digit-ui-react-compo
 import { useTranslation } from "react-i18next";
 import PropertySearchNSummary from "../pageComponents/PropertySearchNSummary";
 
-const PropertyLocationDetails = ({ address, actionCancelOnSubmit, isEdit, onSelect, config, formData: formDataProp, ...props }) => {
+const PropertyLocationDetails = ({
+  address,
+  actionCancelOnSubmit,
+  isEdit,
+  onSelect,
+  config,
+  hidePropertySearch = false,
+  hideZRO,
+  formData: formDataProp,
+  ...props
+}) => {
   const { t } = useTranslation();
   const [showToast, setShowToast] = useState(null);
   const [formData, setFormData] = useState({
@@ -139,25 +149,31 @@ const PropertyLocationDetails = ({ address, actionCancelOnSubmit, isEdit, onSele
 
   return (
     <CollapsibleCardPage title={t("PT_LOCATION_DETAILS")} defaultOpen={true}>
-      {/* {!window.location.href.includes("create-application/create-property") && (
-          <PropertySearchNSummary config={config} onSelect={onSelect} formData={formDataProp} userType={window.location.href.includes("/employee/") ? "employee" : "citizen"} />
-        )} */}
-      {/* <div style={{ marginTop: "20px" }}> */}
-      <AddressDetails
-        t={t}
-        formData={formData}
-        onSelect={(key, data) => {
-          setFormData((prev) => ({ ...prev, ...data }));
-          onSelect(key, data);
-        }}
-        config={{ isCollapsible: false, ...config }}
-        isEdit={isEdit}
-        showZRO={true}
-        showMapActualLocation={true}
-        disable={isPropertyFound}
-        hideNextButton={true}
-      />
-      {/* </div> */}
+      <div style={{ boxShadow: "none", ...props.style }}>
+        {!hidePropertySearch && !window.location.href.includes("create-application/create-property") && (
+          <PropertySearchNSummary
+            config={config}
+            onSelect={onSelect}
+            formData={formDataProp}
+            userType={window.location.href.includes("/employee/") ? "employee" : "citizen"}
+          />
+        )}
+        <div style={{ marginTop: "20px" }}>
+          <AddressDetails
+            t={t}
+            formData={formData}
+            onSelect={(key, data) => {
+              setFormData((prev) => ({ ...prev, ...data }));
+              onSelect(key, data);
+            }}
+            config={{ isCollapsible: false, ...config }}
+            isEdit={isEdit}
+            showZRO={hideZRO ? false : true}
+            disable={isPropertyFound}
+            hideNextButton={true}
+          />
+        </div>
+      </div>
     </CollapsibleCardPage>
   );
 };
