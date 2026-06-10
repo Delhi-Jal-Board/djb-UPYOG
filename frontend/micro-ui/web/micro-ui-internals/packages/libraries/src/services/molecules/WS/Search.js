@@ -630,6 +630,7 @@ export const WSSearch = {
                     documentUid: wsDataDetails?.additionalDetails?.identityProofNumber || identityDoc?.documentUid || "",
                     fileStoreId: identityDoc?.fileStoreId,
                     numberLabel: "Identity Proof Document Number",
+                    originalDoc: identityDoc,
                   }
                 : null,
               ownershipDoc
@@ -640,6 +641,7 @@ export const WSSearch = {
                     documentUid: wsDataDetails?.additionalDetails?.ownershipDocumentNumber || ownershipDoc?.documentUid || "",
                     fileStoreId: ownershipDoc?.fileStoreId,
                     numberLabel: "Ownership Proof Document Number",
+                    originalDoc: ownershipDoc,
                   }
                 : null,
               otherDoc
@@ -650,6 +652,7 @@ export const WSSearch = {
                     documentUid: wsDataDetails?.additionalDetails?.otherDocumentNumber || otherDoc?.documentUid || "",
                     fileStoreId: otherDoc?.fileStoreId,
                     numberLabel: "Other Document Number",
+                    originalDoc: otherDoc,
                   }
                 : null,
               applicantPhoto
@@ -661,6 +664,7 @@ export const WSSearch = {
                     fileStoreId: applicantPhoto?.fileStoreId,
                     numberLabel: "",
                     isPhoto: true,
+                    originalDoc: applicantPhoto,
                   }
                 : null,
             ].filter(Boolean),

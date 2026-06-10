@@ -1,5 +1,6 @@
 import { Header, MultiLink, Button, SubmitBar, EditIcon } from "@djb25/digit-ui-react-components";
 import WTEditApplicationModal from "../../components/WTEditApplicationModal";
+import TripImages from "../../components/TripImages";
 import _ from "lodash";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -100,8 +101,47 @@ const ApplicationDetails = () => {
             </span>
           </div>
         );
+        if (details?.applicationData?.applicationDetails?.length > 0) {
+          details.applicationData.applicationDetails[0].Component = details.applicationDetails[0].Component;
+        }
       } else if (details?.applicationDetails?.length > 0) {
         delete details.applicationDetails[0].Component;
+        if (details?.applicationData?.applicationDetails?.length > 0) {
+          delete details.applicationData.applicationDetails[0].Component;
+        }
+      }
+
+      const tripReport = details?.applicationData?.applicationData?.driverTripReport?.[0];
+      if (tripReport && bookingStatus === "TANKER_DELIVERED") {
+        const newSection = {
+          title: "WT_DRIVER_TRIP_REPORT",
+          asSectionHeader: true,
+          values: [
+            { title: "WT_START_LATITUDE", value: tripReport?.startLatitude?.toString() || t("CS_NA") },
+            { title: "WT_START_LONGITUDE", value: tripReport?.startLongitude?.toString() || t("CS_NA") },
+            { title: "WT_END_LATITUDE", value: tripReport?.endLatitude?.toString() || t("CS_NA") },
+            { title: "WT_END_LONGITUDE", value: tripReport?.endLongitude?.toString() || t("CS_NA") }
+          ],
+          belowComponent: () => <TripImages startFileStoreId={tripReport?.startFileStoreId} endFileStoreId={tripReport?.endFileStoreId} />
+        };
+        
+        if (details?.applicationDetails) {
+          const vehicleIndex = details.applicationDetails.findIndex(sec => sec.title === "WT_VEHICLE_DETAILS");
+          if (vehicleIndex !== -1) {
+            details.applicationDetails.splice(vehicleIndex + 1, 0, newSection);
+          } else {
+            details.applicationDetails.push(newSection);
+          }
+        }
+
+        if (details?.applicationData?.applicationDetails) {
+          const vehicleIndex = details.applicationData.applicationDetails.findIndex(sec => sec.title === "WT_VEHICLE_DETAILS");
+          if (vehicleIndex !== -1) {
+            details.applicationData.applicationDetails.splice(vehicleIndex + 1, 0, newSection);
+          } else {
+            details.applicationData.applicationDetails.push(newSection);
+          }
+        }
       }
 
       setAppDetailsToShow(details);

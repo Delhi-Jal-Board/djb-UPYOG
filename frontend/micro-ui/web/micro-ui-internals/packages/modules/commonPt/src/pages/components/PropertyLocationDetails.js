@@ -169,6 +169,7 @@ const PropertyLocationDetails = ({
             config={{ isCollapsible: false, ...config }}
             isEdit={isEdit}
             showZRO={hideZRO ? false : true}
+            showMapActualLocation={true}
             disable={isPropertyFound}
             hideNextButton={true}
           />

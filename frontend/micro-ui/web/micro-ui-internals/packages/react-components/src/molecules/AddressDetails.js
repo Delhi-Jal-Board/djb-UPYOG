@@ -1126,7 +1126,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
                     {actualZone && (
                       <div style={{ display: "flex" }}>
                         <span style={{ minWidth: "150px", color: "#505A5F", fontWeight: "400" }}>{t("ACTUAL ZONE")}</span>
-                        <span style={{ fontWeight: "500", color: "#0B0C0C", wordBreak: "break-word" }}>{actualZone}</span>
+                        <span style={{ fontWeight: "500", color: "#0B0C0C", wordBreak: "break-word" }}>{t(zoneOptions.find((z) => z.code === actualZone)?.name || actualZone)}</span>
                       </div>
                     )}
                   </div>
