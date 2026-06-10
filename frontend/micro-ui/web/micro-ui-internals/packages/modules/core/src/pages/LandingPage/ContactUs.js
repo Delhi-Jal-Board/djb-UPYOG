@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 const ContactUs = (props) => {
   const { stateInfo } = props;
   const { t } = useTranslation();
-  const orgName = stateInfo?.name || "Delhi Jal Board";
+  const orgName = "Delhi Jal Board";
 
   return (
     <React.Fragment>

@@ -1,86 +1,98 @@
 [
   {
-      "module": "Pay Your Water Bill",
-      "code": "dlR",
-      "bannerImage": "https://i.ibb.co/HpXhVPcS/Paywaterbill.png",
-      "active": true,
-      "order": 2
-    },
-    {
-      "module": "Rain Water Harvesting",
-      "code": "rwh",
-      "bannerImage": "https://i.ibb.co/VW8sTB4K/Rainwaterharvesting.png",
-      "active": true,
-      "order": 5
-    },
-    {
-      "module": "Apply for New Connection",
-      "code": "new-connection",
-      "bannerImage": "https://i.ibb.co/wZxMPgCQ/Applynew.png",
-      "active": true,
-      "order": 1
-    },
-    {
-      "module": "Apply for Mutation",
-      "code": "mutation",
-      "bannerImage": "https://i.ibb.co/bgQd1Gfn/Applymutation.png",
-      "active": true,
-      "order": 3
-    },
-    {
-      "module": "Apply for Grievance",
-      "code": "grievance",
-      "bannerImage": "https://i.ibb.co/p6hQbHK2/Applygriveance.png",
-      "active": true,
-      "order": 4
-    },
-    {
-      "module": "Add Service",
-      "code": "add-service",
-      "bannerImage": "https://i.ibb.co/r9DH9kB/Addservice.png",
-      "active": true,
-      "order": 6
-    },
-    {
-      "module": "Contact Us",
-      "code": "contact-us",
-      "bannerImage": "https://i.ibb.co/QFNqSDF8/Contactus.png",
-      "active": true,
-      "order": 7
-    },
-    {
-      "module": "Apply for Borewell",
-      "code": "borewell",
-      "bannerImage": "https://i.ibb.co/tw04BDH0/Applyborewell.png",
-      "active": true,
-      "order": 8
-    },
-    {
-      "module": "Update Mobile Number",
-      "code": "update-mobile-number",
-      "bannerImage": "https://i.ibb.co/My34VbFK/Updatenumber.png",
-      "active": true,
-      "order": 9
-    },
-    {
-      "module": "Download Center/Circular & Notices",
-      "code": "download-center",
-      "bannerImage": "https://i.ibb.co/xKBD2z2R/Center-Circular-Notices.png",
-      "active": true,
-      "order": 10
-    },
-    {
-      "module": "Apply for Disconnection / Reopening",
-      "code": "disconnection-reopening",
-      "bannerImage": "https://i.ibb.co/V0gJ3yvW/Disconnection-Reopening.png",
-      "active": true,
-      "order": 11
-    },
-    {
-      "module": "Track Application Status",
-      "code": "Application-Status",
-      "bannerImage": "https://i.ibb.co/kVmR2krf/Track-Application.png",
-      "active": true,
-      "order": 12
-    }
-    ]
+    "module": "Pay Your Water Bill",
+    "code": "dlR",
+    "bannerImage": "https://i.ibb.co/HpXhVPcS/Paywaterbill.png",
+    "active": true,
+    "order": 2,
+    "link": "/digit-ui/citizen"
+  },
+  {
+    "module": "Rain Water Harvesting",
+    "code": "rwh",
+    "bannerImage": "https://i.ibb.co/VW8sTB4K/Rainwaterharvesting.png",
+    "active": true,
+    "order": 5,
+    "link": "https://rwh-djb.nitcon.in/rwh/home"
+  },
+  {
+    "module": "Apply for New Connection",
+    "code": "new-connection",
+    "bannerImage": "https://i.ibb.co/wZxMPgCQ/Applynew.png",
+    "active": true,
+    "order": 1,
+    "link": "/digit-ui/citizen"
+  },
+  {
+    "module": "Apply for Mutation",
+    "code": "mutation",
+    "bannerImage": "https://i.ibb.co/bgQd1Gfn/Applymutation.png",
+    "active": true,
+    "order": 3,
+    "link": "/digit-ui/citizen"
+  },
+  {
+    "module": "Apply for Grievance",
+    "code": "grievance",
+    "bannerImage": "https://i.ibb.co/p6hQbHK2/Applygriveance.png",
+    "active": true,
+    "order": 4,
+    "link": "/digit-ui/citizen"
+  },
+  {
+    "module": "Add Service",
+    "code": "add-service",
+    "bannerImage": "https://i.ibb.co/r9DH9kB/Addservice.png",
+    "active": true,
+    "order": 6,
+    "link": "/digit-ui/citizen"
+  },
+  {
+    "module": "Contact Us",
+    "code": "contact-us",
+    "bannerImage": "https://i.ibb.co/QFNqSDF8/Contactus.png",
+    "active": true,
+    "order": 7,
+    "link": "/digit-ui/citizen"
+  },
+  {
+    "module": "Apply for Borewell",
+    "code": "borewell",
+    "bannerImage": "https://i.ibb.co/tw04BDH0/Applyborewell.png",
+    "active": true,
+    "order": 8,
+    "link": "/digit-ui/citizen"
+  },
+  {
+    "module": "Update Mobile Number",
+    "code": "update-mobile-number",
+    "bannerImage": "https://i.ibb.co/My34VbFK/Updatenumber.png",
+    "active": true,
+    "order": 9,
+    "link": "/digit-ui/citizen"
+  },
+  {
+    "module": "Download Center/Circular & Notices",
+    "code": "download-center",
+    "bannerImage": "https://i.ibb.co/xKBD2z2R/Center-Circular-Notices.png",
+    "active": true,
+    "order": 10,
+    "link": "/digit-ui/citizen"
+  },
+  {
+    "module": "Apply for Disconnection / Reopening",
+    "code": "disconnection-reopening",
+    "bannerImage": "https://i.ibb.co/V0gJ3yvW/Disconnection-Reopening.png",
+    "active": true,
+    "order": 11,
+    "link": "/digit-ui/citizen"
+  },
+  {
+    "module": "Track Application Status",
+    "code": "Application-Status",
+    "bannerImage": "https://i.ibb.co/kVmR2krf/Track-Application.png",
+    "active": true,
+    "order": 12,
+    "link": "/digit-ui/citizen"
+  }
+]

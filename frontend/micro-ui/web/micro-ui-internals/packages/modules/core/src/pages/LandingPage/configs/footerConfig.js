@@ -1,3 +1,4 @@
+import React from "react";
 const footerConfig = {
   logos: [
     "https://objectstorage.ap-hyderabad-1.oraclecloud.com/n/axn3czn1s06y/b/djb-dev-asset-bucket/o/DJB_integrated_logo_without_bg_dark.png",
@@ -7,14 +8,7 @@ const footerConfig = {
 
   contact: {
     title: "Get In Touch",
-    lines: [
-      "Delhi Jal Board (HQ)",
-      "Public Relations Office,",
-      "Room No.306, 3rd Floor",
-      "Varunalaya Ph-II",
-      "Jhandewalan, Karol Bagh",
-      "New Delhi-110005",
-    ],
+    lines: ["Delhi Jal Board (HQ)", "Varunalaya Ph-1 & 2", "Jhandewalan, Karol Bagh", "New Delhi-110005"],
     buttonText: "Contact Us",
   },
 
@@ -38,7 +32,7 @@ const footerConfig = {
 
   information: {
     title: "Information",
-    items: ["Disclaimer", "Copyright Policy", "Privacy Policy", "Payment Policy"],
+    items: ["Website Policies", "Copyright Policy", "Privacy Policy", "Hyperlink Policy", "Terms and Conditions", "Help"],
   },
 
   feedback: {
@@ -50,7 +44,15 @@ const footerConfig = {
 
   bottom: {
     copyright: "© Copyright 2026, All Rights Reserved by Delhi Jal Board.",
-    designedBy: "Powered by NITCON Limited.",
+    designedBy: (
+      <span>
+        Powered by{" "}
+        <a href="https://nitcon.org/" target="_blank" rel="noopener noreferrer" style={{ color: "inherit", textDecoration: "underline" }}>
+          NITCON Limited
+        </a>
+        .
+      </span>
+    ),
   },
 };
 

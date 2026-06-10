@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import services from "./configs/services.json";
-
+import { useHistory } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 // 🔀 Fisher–Yates shuffle (does NOT mutate original array)
@@ -15,6 +15,7 @@ const shuffleArray = (array) => {
 
 const SuggestedRow = ({ limit = 3 }) => {
   const { t } = useTranslation();
+  const history = useHistory();
   const suggestedServices = useMemo(() => {
     return shuffleArray(
       services.filter((s) => s.active)
@@ -29,6 +30,15 @@ const SuggestedRow = ({ limit = 3 }) => {
         <button
           key={service.code}
           className="upyog-suggested-btn"
+          onClick={() => {
+            if (service.link) {
+              if (service.link.startsWith("http://") || service.link.startsWith("https://")) {
+                window.open(service.link, "_blank");
+              } else {
+                history.push(service.link);
+              }
+            }
+          }}
         >
           {t(service.module)}
         </button>
@@ -38,3 +48,4 @@ const SuggestedRow = ({ limit = 3 }) => {
 };
 
 export default SuggestedRow;
+
