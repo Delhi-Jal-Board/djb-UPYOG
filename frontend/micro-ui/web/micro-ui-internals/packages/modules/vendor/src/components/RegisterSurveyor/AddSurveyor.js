@@ -77,8 +77,8 @@ const AddSurveyor = ({ parentUrl, heading }) => {
       },
       surveyor: {
         tenantId: tenantId,
-        vendorId: vendorIdParam || data?.agencyName?.code || data?.agencyName?.id || userInfo?.uuid,
-        supervisorId: data?.reportingManager?.code || data?.reportingManager?.id || null,
+        // vendorId: vendorIdParam || data?.agencyName?.code || data?.agencyName?.id || userInfo?.uuid,
+        // supervisorId: data?.reportingManager?.code || data?.reportingManager?.id || null,
         description: data?.description || "",
         additionalDetails: {
           serviceType: "ekyc",
