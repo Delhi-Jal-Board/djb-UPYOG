@@ -27,8 +27,8 @@ const CitizenVendorApp = () => {
         path: "/digit-ui/citizen",
       },
       {
-        label: t("WT_MODULE_NAME"),
-        path: `${path}/wt-Vendor`,
+        label: t("CITIZEN_VENDOR"),
+        path: `${path}/citizen-Vendor`,
       },
     ];
 
@@ -302,7 +302,7 @@ const CitizenVendorApp = () => {
                 <Redirect
                   to={{
                     pathname: `/digit-ui/citizen/login`,
-                    state: { from: `${path}/wt-Vendor`, role: "WT_VENDOR" },
+                    state: { from: `${path}`, role: "CITIZEN_VENDOR" },
                   }}
                 />
               )

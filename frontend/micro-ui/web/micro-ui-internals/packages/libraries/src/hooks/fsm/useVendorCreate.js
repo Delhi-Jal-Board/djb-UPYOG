@@ -6,12 +6,13 @@ const useVendorCreate = (tenantId) => {
 };
 
 const VendorCreateActions = async (vendorData, tenantId) => {
-  try {
-    const response = await FSMService.createVendor(vendorData, tenantId);
-    return response;
-  } catch (error) {
-    throw new Error(error?.response?.data?.Errors[0].message);
+  const response = await FSMService.createVendor(vendorData, tenantId);
+
+  if (response?.error) {
+    throw new Error(response?.data?.Errors?.[0]?.message || response?.message || "Vendor creation failed");
   }
+
+  return response;
 };
 
 export default useVendorCreate;
