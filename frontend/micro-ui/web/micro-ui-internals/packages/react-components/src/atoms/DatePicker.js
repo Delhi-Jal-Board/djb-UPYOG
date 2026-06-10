@@ -150,7 +150,7 @@ const DatePicker = ({ date, onChange, disabled, style, isDOB, minAge = 18 }) => 
           onBlur={handleBlur}
           placeholder="DD/MM/YYYY"
           maxLength="10"
-          className={`registration__input ${disabled ? "disabled" : ""}`}
+          className={`registration__input employee-card-input ${disabled ? "disabled" : ""}`}
         />
 
         {/* Hidden Date Picker */}

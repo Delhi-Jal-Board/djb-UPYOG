@@ -34,10 +34,8 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
     }));
   }, [mappedZROLocation, zroLocationsData]);
 
-  const { data: allCities, isLoading } = Digit.Hooks.useTenants();
-  let validation = {};
+  const { data: allCities } = Digit.Hooks.useTenants();
   const convertToObject = (String) => (String ? { i18nKey: String, code: String, value: String } : null);
-  const user = Digit.UserService.getUser().info;
   const [pincode, setPincode] = useState(
     (formData?.pincode || formData?.address?.pincode || formData?.infodetails?.existingDataSet?.address?.pincode)?.toString().split(".")[0] || ""
   );
@@ -58,11 +56,11 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
   );
   const [addressLine1, setAddressLine1] = useState(
     formData?.addressLine1 ||
-    formData?.subLocality ||
-    formData?.address?.addressLine1 ||
-    formData?.address?.subLocality ||
-    formData?.infodetails?.existingDataSet?.address?.addressline1 ||
-    ""
+      formData?.subLocality ||
+      formData?.address?.addressLine1 ||
+      formData?.address?.subLocality ||
+      formData?.infodetails?.existingDataSet?.address?.addressline1 ||
+      ""
   );
   const [addressLine2, setAddressLine2] = useState(
     formData?.addressLine2 || formData?.address?.addressLine2 || formData?.infodetails?.existingDataSet?.address?.addressline2 || ""
@@ -73,16 +71,16 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
   const [addressType, setAddressType] = useState(
     convertToObject(formData?.addressType) || formData?.address?.addressType || formData?.infodetails?.existingDataSet?.address?.addressType
       ? allOptions.find(
-        (a) =>
-          a.code ===
-          (formData?.addressType?.code ||
-            formData?.addressType ||
-            formData?.address?.addressType ||
-            formData?.infodetails?.existingDataSet?.address?.addressType)
-      ) ||
-      convertToObject(formData?.addressType) ||
-      formData?.address?.addressType ||
-      formData?.infodetails?.existingDataSet?.address?.addressType
+          (a) =>
+            a.code ===
+            (formData?.addressType?.code ||
+              formData?.addressType ||
+              formData?.address?.addressType ||
+              formData?.infodetails?.existingDataSet?.address?.addressType)
+        ) ||
+          convertToObject(formData?.addressType) ||
+          formData?.address?.addressType ||
+          formData?.infodetails?.existingDataSet?.address?.addressType
       : allOptions.find((a) => a.code === "PERMANENT")
   );
   const [showPincodeSuggestions, setShowPincodeSuggestions] = useState(false);
@@ -150,18 +148,15 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
     { enabled: !!searchKno && isEkyc, cacheTime: 0 }
   );
 
-  const usedAddressTypes = location.state?.usedAddressTypes || [];
-
-  const inputStyles = { width: user.type === "EMPLOYEE" ? "50%" : "86%" };
-
   const availableAddressTypeOptions = useMemo(() => {
+    const usedAddressTypes = location.state?.usedAddressTypes || [];
     if (usedAddressTypes.length === 3) {
       // If all are available → show only "Other"
       return allOptions.filter((opt) => opt.code === "OTHER");
     }
     // Otherwise, show whatever is not used
     return allOptions.filter((opt) => !usedAddressTypes.includes(opt.code));
-  }, [usedAddressTypes]);
+  }, [location.state?.usedAddressTypes]);
   const locationTenantId = city?.code || tenantId;
   const { data: egovLocationData } = Digit.Hooks.useCommonMDMS(locationTenantId, "egov-location", ["TenantBoundary"]);
 
@@ -361,6 +356,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
         }
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchData, isEkyc, allCities, structuredLocalityData]);
 
   const uploadFile = async (e) => {
@@ -436,6 +432,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
       const typeObj = allOptions.find((a) => a.code === addressData.addressType);
       if (typeObj && JSON.stringify(typeObj) !== JSON.stringify(addressType)) setAddressType(typeObj);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData?.address, allCities, structuredLocalityData]);
 
   const goNext = async () => {
@@ -539,6 +536,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
         onSelect(addressStep);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     pincode,
     city,
@@ -592,6 +590,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
         setDoorImageId(selectedAddress.doorImageId);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedAddress]);
 
   const lastErrorState = React.useRef(null);
@@ -605,6 +604,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
         props.clearErrors(config.key);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [errors, config?.key, props.setError, props.clearErrors]);
 
   const handleGetLocation = () => {
@@ -893,12 +893,6 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
             }}
             disabled={disable}
             ValidationRequired={false}
-            {...(validation = {
-              isRequired: false,
-              pattern: "^[a-zA-Z,-/ ]*$",
-              type: "textarea",
-              title: t("ADDRESS_ERROR_MESSAGE"),
-            })}
           />
         </div>
         {!config?.doorImage && (
@@ -918,12 +912,6 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
               }}
               disabled={disable}
               ValidationRequired={false}
-              {...(validation = {
-                isRequired: false,
-                pattern: "^[a-zA-Z,-/ ]*$",
-                type: "textarea",
-                title: t("ADDRESS_ERROR_MESSAGE"),
-              })}
             />
           </div>
         )}

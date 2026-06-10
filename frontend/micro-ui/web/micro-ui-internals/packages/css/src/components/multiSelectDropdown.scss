@@ -5,7 +5,7 @@
     border: 2px solid #e5e5e7;
     @apply rounded-md relative h-10 w-full;
     input[type="text"] {
-      @apply rounded-l-md absolute top-0 left-0 min-h-full opacity-0;
+      @apply rounded-l-md absolute top-0 left-0 min-h-full min-w-full opacity-0;
       &:focus {
         @apply outline-none;
       }
@@ -37,7 +37,7 @@
       box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
     }
     input[type="text"] {
-      @apply opacity-100;
+      @apply opacity-100 w-full;
     }
     .label {
       @apply hidden;
@@ -50,6 +50,7 @@
     width: 100% !important;
     max-height: 20vmax;
     overflow: scroll;
+    background-color: #fff;
     @apply absolute z-20;
     div {
       @apply flex w-full bg-white;

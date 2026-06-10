@@ -53,26 +53,25 @@
       .total-records {
         display: inline-flex;
         align-items: center;
-        gap: 6;
+        gap: 6px;
         background: #5282e6;
         color: #fff;
         border-radius: 999;
         padding: 4px 16px;
-        font-size: 11;
+        font-size: 11px;
         font-weight: 600;
         box-shadow: 0 1px 4px rgba(37, 99, 235, 0.28);
         border-radius: 40px;
         .records {
-          background: rgba(255, 255, 255, 0.22);
           border-radius: 999;
           padding: 1px 7px;
-          font-size: 11;
+          font-size: 11px;
           font-weight: 700;
           font-family: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
           color: #fff;
         }
         .title {
-          font-size: 10;
+          font-size: 10px;
           opacity: 0.88;
           text-transform: uppercase;
           letter-spacing: 0.06em;
@@ -84,7 +83,7 @@
     .search-box-wrapper {
       display: flex;
       align-items: center;
-      gap: 8;
+      gap: 8px;
       flex-wrap: wrap;
       border: 1px solid #e2e8f0 !important;
       border-radius: 40px;
@@ -96,7 +95,7 @@
         align-items: center !important;
         .icon {
           position: absolute;
-          left: 9;
+          left: 9px;
           line-height: 0;
           pointer-events: none;
         }
@@ -107,14 +106,14 @@
           color: #94a3b8;
         }
         .search-input {
-          border-radius: 6;
+          border-radius: 6px;
           padding: 6px 10px 6px 30px;
-          font-size: 13;
+          font-size: 13px;
           font-family: DM Sans, Segoe UI, ui-sans-serif, sans-serif;
           color: #0f172a;
           background: #fff;
           outline: none;
-          width: 200;
+          width: 200px;
           transition: border-color 0.15s, box-shadow 0.15s;
         }
         .search-input.shadow {
@@ -122,11 +121,11 @@
         }
         .close-button {
           position: absolute;
-          right: 7;
+          right: 7px;
           background: none;
           border: none;
           cursor: pointer;
-          padding: 2;
+          padding: 2px;
           line-height: 0;
           color: #94a3b8;
           display: flex;
@@ -135,13 +134,13 @@
         .export-button {
           display: flex !important;
           align-items: center;
-          gap: 6;
-          border-radius: 6;
+          gap: 6px;
+          border-radius: 6px;
           padding: 6px 10px;
-          font-size: 12.5;
+          font-size: 12.5px;
           font-weight: 600;
           font-family: "DM Sans", "Segoe UI", ui-sans-serif, sans-serif;
-          line-height: 1;
+          line-height: 1px;
           transition: all 0.15s;
           border: 1px solid;
 
@@ -174,18 +173,18 @@
       width: 100% !important;
       border-collapse: collapse;
       border-spacing: 0;
-      font-size: 13.5;
+      font-size: 13.5px;
       color: #0f172a;
 
       .thead {
         .tr {
           background: #f8fafc;
           .th-s-no {
-            width: 48;
+            width: 48px;
             padding: 12px 8px;
             text-align: center;
             border-bottom: 2px solid #cbd5e1;
-            font-size: 11;
+            font-size: 11px;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.07em;
@@ -208,7 +207,7 @@
             div {
               display: flex;
               align-items: center;
-              gap: 5;
+              gap: 5px;
               justify-content: center;
               width: 100%;
               .col-head-wrapper {
@@ -254,7 +253,6 @@
       white-space: nowrap;
       /* Updated gradient background to match screenshot */
       background: #1f5fa8;
-      color: white;
       @apply font-bold align-middle text-left;
 
       &:first-child {

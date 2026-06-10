@@ -43,15 +43,17 @@ export const useGetFloorCount = (tenantId, config = {}) => {
 };
 
 export const useEkycSurveyorDashboard = (data, params, config = {}) => {
-  const { tenantId, offset, limit } = params;
+  const { tenantId, offset, limit, status, surveyorId } = params;
 
   return useQuery(
-    ["useEkycSurveyorDashboard", tenantId, offset, limit],
+    ["useEkycSurveyorDashboard", tenantId, offset, limit, status, surveyorId],
     () =>
       Digit.EkycService.dashboard(data, {
         tenantId,
         offset,
         limit,
+        status,
+        surveyorId,
       }),
     config
   );
@@ -181,6 +183,10 @@ export const useEkycAssignmentCreate = (config = {}) => {
   return useMutation((data) => Digit.EkycService.assignment_create(data), config);
 };
 
+export const useEkycAssignmentProgress = (config = {}) => {
+  return useQuery(["useEkycAssignmentProgress"], (data) => Digit.EkycService.assignment_progress(data), config);
+};
+
 export const useEkycApplicationList = (data, params, config = {}) => {
   const { tenantId, offset, limit } = params;
 
@@ -196,6 +202,7 @@ export const useEkycApplicationList = (data, params, config = {}) => {
           ward: null,
           pincode: null,
           mrkey: null,
+          surveyorId: null,
           ...data,
         },
         {

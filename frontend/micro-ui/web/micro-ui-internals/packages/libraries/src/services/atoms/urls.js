@@ -345,8 +345,8 @@ const Urls = {
     agency_search: "/analytics-service/v1/agency/_search",
     cluster_heatmap: "/analytics-service/v1/cluster/_heatmap",
     workflow_tracking: "/analytics-service/v1/workflow/_tracking",
-    application_list: "/ekyc-service/user/application/_list",
     assignment_create: "/ekyc-service/assignment/_assign",
+    assignment_progress: "/ekyc-service/assignment/_progress",
   },
   audit: "/inbox/v1/elastic/_search",
 };

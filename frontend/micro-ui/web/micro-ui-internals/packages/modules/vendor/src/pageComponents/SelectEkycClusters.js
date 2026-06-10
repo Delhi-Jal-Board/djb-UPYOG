@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { CardLabel, LabelFieldPair, MultiSelectDropdown, Loader } from "@djb25/digit-ui-react-components";
+import { CardLabel, LabelFieldPair, MultiSelectDropdown } from "@djb25/digit-ui-react-components";
 
 const SelectEkycClusters = ({ config, onSelect, t, formData }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [clusters, setClusters] = useState([]);
   const [selectedClusters, setSelectedClusters] = useState(Array.isArray(formData?.clusterIds) ? formData.clusterIds : []);
-  const selectedZones = Array.isArray(formData?.zoneIds) ? formData.zoneIds : [];
+  const selectedZones = React.useMemo(() => (Array.isArray(formData?.zoneIds) ? formData.zoneIds : []), [formData?.zoneIds]);
 
   const { data: boundaryData } = Digit.Hooks.useCommonMDMS(tenantId, "egov-location", ["TenantBoundary"]);
 
@@ -38,7 +38,7 @@ const SelectEkycClusters = ({ config, onSelect, t, formData }) => {
         "ZONE-04": [{ code: "CLUSTER-04", name: "CLUSTER-04" }],
         "ZONE-05": [{ code: "CLUSTER-05", name: "CLUSTER-05" }],
       };
-      
+
       if (selectedZones.length > 0) {
         selectedZones.forEach((z) => {
           if (staticClusters[z.code]) {
@@ -56,8 +56,11 @@ const SelectEkycClusters = ({ config, onSelect, t, formData }) => {
         ];
       }
     }
-    setClusters(allClusters);
-  }, [selectedZones, boundaryData]);
+    setClusters((prev) => {
+      const same = JSON.stringify(prev) === JSON.stringify(allClusters);
+      return same ? prev : allClusters;
+    });
+  }, [formData?.zoneIds, boundaryData]);
 
   const handleSelect = (value) => {
     setSelectedClusters(value);
@@ -68,13 +71,7 @@ const SelectEkycClusters = ({ config, onSelect, t, formData }) => {
     <LabelFieldPair>
       <CardLabel>{t(config.label) + (config.isMandatory ? " *" : "")}</CardLabel>
       <div className="field">
-        <MultiSelectDropdown
-          options={clusters}
-          selected={selectedClusters}
-          onSelect={handleSelect}
-          optionsKey="name"
-          t={t}
-        />
+        <MultiSelectDropdown options={clusters} selected={selectedClusters} onSelect={handleSelect} optionsKey="name" t={t} />
       </div>
     </LabelFieldPair>
   );

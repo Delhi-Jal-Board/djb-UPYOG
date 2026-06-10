@@ -6,7 +6,6 @@ import VendorConfig from "../../config/VendorConfig";
 
 const AddVendor = ({ parentUrl, heading }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  const stateId = Digit.ULBService.getStateId();
 
   const { t } = useTranslation();
   const history = useHistory();
@@ -49,10 +48,7 @@ const AddVendor = ({ parentUrl, heading }) => {
   const onFormValueChange = (setValue, data) => {
     // Avoid circular JSON error by not stringifying the whole data object
     // Only update formData state if keys that affect dynamic config or child components change
-    if (
-      data?.serviceType?.code !== formData?.serviceType?.code ||
-      JSON.stringify(data?.zoneIds) !== JSON.stringify(formData?.zoneIds)
-    ) {
+    if (data?.serviceType?.code !== formData?.serviceType?.code || JSON.stringify(data?.zoneIds) !== JSON.stringify(formData?.zoneIds)) {
       setFormData(data);
     }
 
@@ -113,6 +109,8 @@ const AddVendor = ({ parentUrl, heading }) => {
     // FINAL SUBMIT
     const mergedData = data;
 
+    console.log(mergedData);
+
     const name = mergedData?.vendorName;
     const pincode = mergedData?.pincode;
     const street = mergedData?.street?.trim();
@@ -158,7 +156,7 @@ const AddVendor = ({ parentUrl, heading }) => {
         },
         geoLocation: {
           latitude: mergedData?.address?.latitude || 28.6139,
-          longitude: mergedData?.address?.longitude || 77.2090,
+          longitude: mergedData?.address?.longitude || 77.209,
         },
       },
       owner: {
@@ -200,19 +198,19 @@ const AddVendor = ({ parentUrl, heading }) => {
       };
     }
 
-    mutate(payload, {
-      onError: (error) => {
-        setShowToast({ key: "error", action: error });
-        setTimeout(closeToast, 5000);
-      },
-      onSuccess: (data, variables) => {
-        setShowToast({ key: "success", action: "ADD_VENDOR" });
-        setTimeout(() => {
-          closeToast();
-          history.push("/digit-ui/employee/vendor/search-vendor");
-        }, 2000);
-      },
-    });
+    // mutate(payload, {
+    //   onError: (error) => {
+    //     setShowToast({ key: "error", action: error });
+    //     setTimeout(closeToast, 5000);
+    //   },
+    //   onSuccess: (data, variables) => {
+    //     setShowToast({ key: "success", action: "ADD_VENDOR" });
+    //     setTimeout(() => {
+    //       closeToast();
+    //       history.push("/digit-ui/employee/vendor/search-vendor");
+    //     }, 2000);
+    //   },
+    // });
   };
 
   return (
@@ -233,18 +231,14 @@ const AddVendor = ({ parentUrl, heading }) => {
       />
       <div style={{ flex: "1", overflowY: "auto" }}>
         <FormComposer
+          config={Config}
+          userType={"employee"}
+          onFormValueChange={onFormValueChange}
           label={t("ES_COMMON_APPLICATION_SUBMIT")}
-          config={Config.filter((i) => !i.hideInEmployee).map((config) => ({
-            ...config,
-            isCollapsible: true,
-            isDefaultOpen: true,
-            body: config.body.filter((a) => !a.hideInEmployee),
-          }))}
           onSubmit={onSubmit}
           defaultValues={defaultValues}
-          onFormValueChange={onFormValueChange}
-          noBreakLine={true}
           noCard={true}
+          noBreakLine={true}
           isDisabled={!canSubmit}
         />
 

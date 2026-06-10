@@ -1,37 +1,25 @@
 import React, { useMemo, useState, useEffect } from "react";
-import { Modal, Close, Table } from "@djb25/digit-ui-react-components";
+import { Modal, Close, Table, Toast } from "@djb25/digit-ui-react-components";
 
 const AssignEkycModal = ({ surveyor, closeModal }) => {
   const [selectedKnos, setSelectedKnos] = useState([]);
-  const [assignmentType, setAssignmentType] = useState("KNO");
+  const [isBulkSelection, setIsBulkSelection] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
+  const [showToast, setShowToast] = useState(false);
+  const [toastData, setToastData] = useState({
+    error: false,
+    label: "",
+  });
   const [filters, setFilters] = useState({
     kno: "", // search value
-    ekycStatus: "",
-    zoneName: "",
-    assembly: "",
-    ward: "",
-    mrkey: "",
     pincode: "",
+    zoneName: "",
+    ward: "",
+    assembly: "",
+    mrkey: "",
+    ekycStatus: "",
   });
-
-  const getAssignmentValue = () => {
-    switch (assignmentType) {
-      case "MRKEY":
-        return filters.mrkey;
-
-      case "ASSEMBLY":
-        return filters.assembly;
-
-      case "WARD":
-        return filters.ward;
-
-      case "KNO":
-      default:
-        return selectedKnos.join(",");
-    }
-  };
 
   const [debouncedFilters, setDebouncedFilters] = useState(filters);
 
@@ -47,7 +35,7 @@ const AssignEkycModal = ({ surveyor, closeModal }) => {
     setCurrentPage(0);
   }, [debouncedFilters]);
 
-  const { data: applicationData, isLoading } = Digit.Hooks.ekyc.useEkycApplicationList(
+  const { data: applicationData, isFetching: isLoading } = Digit.Hooks.ekyc.useEkycApplicationList(
     {
       ...(debouncedFilters.kno && {
         kno: debouncedFilters.kno,
@@ -89,27 +77,87 @@ const AssignEkycModal = ({ surveyor, closeModal }) => {
 
   const assignmentMutation = Digit.Hooks.ekyc.useEkycAssignmentCreate({
     onSuccess: (response) => {
-      console.log("Assignment successful", response);
-      closeModal();
+      if (response?.error) {
+        setToastData({
+          error: true,
+          label: response?.data?.message || "Something went wrong",
+        });
+
+        setShowToast(true);
+        return;
+      }
+
+      setToastData({
+        error: false,
+        label: "Assignment successful",
+      });
+
+      setShowToast(true);
+
+      // optional delay so user can see the success toast
+      setTimeout(() => {
+        closeModal();
+      }, 1000);
     },
+
     onError: (error) => {
-      console.error("Assignment failed", error);
-      // show toast here
+      setToastData({
+        error: true,
+        label: error?.data?.message || error?.response?.data?.message || "Something went wrong",
+      });
+
+      setShowToast(true);
     },
   });
 
   const tableData = applicationData?.consumerList || [];
 
+  const getAssignmentPayload = () => {
+    if (isBulkSelection) {
+      const filterMappings = [
+        { key: "ekycStatus", type: "EKYCSTATUS" },
+        { key: "zoneName", type: "ZONENAME" },
+        { key: "assembly", type: "ASSEMBLY" },
+        { key: "ward", type: "WARD" },
+        { key: "mrkey", type: "MRKEY" },
+        { key: "pincode", type: "PINCODE" },
+      ];
+
+      const appliedFilter = filterMappings.find(({ key }) => debouncedFilters[key]);
+
+      if (appliedFilter) {
+        return {
+          assignmentType: appliedFilter.type,
+          assignmentValue: debouncedFilters[appliedFilter.key],
+        };
+      }
+    }
+
+    console.log("=-=-==-=-=-=-", {
+      assignmentType: "KNO",
+      assignmentValues: selectedKnos,
+    });
+
+    return {
+      assignmentType: "KNO",
+      assignmentValues: selectedKnos,
+    };
+  };
   const handleAssign = () => {
+    const { assignmentType, assignmentValue, assignmentValues } = getAssignmentPayload();
+
     assignmentMutation.mutate({
       tenantId: "dl.djb",
-      surveyorId: surveyor?.uuid,
-      assignmentType: "KNO",
-      assignmentValue: getAssignmentValue(),
+      surveyorId: surveyor?.owner?.uuid,
+      assignmentType,
+      assignmentValue,
+      assignmentValues,
     });
   };
 
   const handleSelectAll = () => {
+    setIsBulkSelection(true);
+
     const pageKnos = tableData.map((item) => item.kno);
 
     const allSelected = pageKnos.length > 0 && pageKnos.every((kno) => selectedKnos.includes(kno));
@@ -224,13 +272,6 @@ const AssignEkycModal = ({ surveyor, closeModal }) => {
             <option value="APPROVED">Approved</option>
             <option value="REJECTED">Rejected</option>
           </select>
-
-          <select className="form-control" value={assignmentType} onChange={(e) => setAssignmentType(e.target.value)}>
-            <option value="KNO">KNO</option>
-            <option value="MRKEY">MR Key</option>
-            <option value="WARD">Ward</option>
-            <option value="ASSEMBLY">Assembly</option>
-          </select>
         </div>
 
         {/* Table */}
@@ -267,6 +308,7 @@ const AssignEkycModal = ({ surveyor, closeModal }) => {
           }}
         />
       </div>
+      {showToast && <Toast error={toastData.error} label={toastData.label} onClose={() => setShowToast(false)} />}
     </Modal>
   );
 };

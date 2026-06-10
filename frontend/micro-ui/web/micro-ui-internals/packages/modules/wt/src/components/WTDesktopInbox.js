@@ -36,107 +36,103 @@ const WTDesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
 
   const columns = React.useMemo(() => (props.isSearch ? tableConfig.searchColumns(props) : tableConfig.inboxColumns(props) || []), []);
 
-  const inboxCsvColumns = React.useMemo(
-    () => {
-      const csvColumns = [
-        {
-          Header: columns?.[0]?.Header || t("WT_BOOKING_NO"),
-          exportAccessor: (row) => row?.searchData?.bookingNo || "",
+  const inboxCsvColumns = React.useMemo(() => {
+    const csvColumns = [
+      {
+        Header: columns?.[0]?.Header || t("WT_BOOKING_NO"),
+        exportAccessor: (row) => row?.searchData?.bookingNo || "",
+      },
+      {
+        Header: columns?.[1]?.Header || t("WT_APPLICANT_NAME"),
+        exportAccessor: (row) => row?.searchData?.applicantDetail?.name || "",
+      },
+      {
+        Header: columns?.[2]?.Header || t("WT_MOBILE_NUMBER"),
+        exportAccessor: (row) => row?.searchData?.applicantDetail?.mobileNumber || "",
+      },
+      {
+        Header: columns?.[3]?.Header || t("LOCALITY"),
+        exportAccessor: (row) => {
+          if (!row?.searchData?.localityCode) return "";
+          const tenant = row?.searchData?.tenantId || Digit.ULBService.getCurrentTenantId() || "djb";
+          const prefix = tenant.replace(".", "_").toUpperCase();
+          return t(`${prefix}_REVENUE_${row.searchData.localityCode}`);
         },
-        {
-          Header: columns?.[1]?.Header || t("WT_APPLICANT_NAME"),
-          exportAccessor: (row) => row?.searchData?.applicantDetail?.name || "",
-        },
-        {
-          Header: columns?.[2]?.Header || t("WT_MOBILE_NUMBER"),
-          exportAccessor: (row) => row?.searchData?.applicantDetail?.mobileNumber || "",
-        },
-        {
-          Header: columns?.[3]?.Header || t("LOCALITY"),
-          exportAccessor: (row) => {
-            if (!row?.searchData?.localityCode) return "";
-            const tenant = row?.searchData?.tenantId || Digit.ULBService.getCurrentTenantId() || "djb";
-            const prefix = tenant.replace(".", "_").toUpperCase();
-            return t(`${prefix}_REVENUE_${row.searchData.localityCode}`);
-          },
-        },
-      ];
+      },
+    ];
 
-      if (columns?.some((column) => column?.id === "fillingPoint")) {
-        csvColumns.push({
-          Header: columns?.find((column) => column?.id === "fillingPoint")?.Header || t("Filling Point"),
-          exportAccessor: (row) => row?.searchData?.fillingPointMetadata?.name || row?.searchData?.fillingPointName || "-",
-        });
-      }
-
-      if (columns?.some((column) => column?.id === "createdTime")) {
-        csvColumns.push({
-          Header: columns?.find((column) => column?.id === "createdTime")?.Header || t("CREATED_AT"),
-          exportAccessor: (row) => getCreatedAtValue(row),
-        });
-      }
-
+    if (columns?.some((column) => column?.id === "fillingPoint")) {
       csvColumns.push({
-        Header: columns?.find((column) => column?.id === "applicationStatus")?.Header || t("WT_STATUS"),
-        exportAccessor: (row) => (row?.workflowData?.state?.applicationStatus ? t(row.workflowData.state.applicationStatus) : ""),
+        Header: columns?.find((column) => column?.id === "fillingPoint")?.Header || t("Filling Point"),
+        exportAccessor: (row) => row?.searchData?.fillingPointMetadata?.name || row?.searchData?.fillingPointName || "-",
       });
+    }
 
-      if (columns?.some((column) => column?.id === "vendorName")) {
-        csvColumns.push({
-          Header: columns?.find((column) => column?.id === "vendorName")?.Header || t("WT_VENDOR_NAME"),
-          exportAccessor: (row) => row?.searchData?.vendor?.name || row?.searchData?.vendorName || "-",
-        });
-      }
+    if (columns?.some((column) => column?.id === "createdTime")) {
+      csvColumns.push({
+        Header: columns?.find((column) => column?.id === "createdTime")?.Header || t("CREATED_AT"),
+        exportAccessor: (row) => getCreatedAtValue(row),
+      });
+    }
 
-      if (columns?.some((column) => column?.id === "vehicleNumber")) {
-        csvColumns.push({
-          Header: columns?.find((column) => column?.id === "vehicleNumber")?.Header || t("WT_VEHICLE_NO"),
-          exportAccessor: (row) => {
-            const searchData = row?.searchData;
-            const mappedVehicle =
-              searchData?.vehicle ||
-              searchData?.vendor?.vehicles?.find((vehicle) => vehicle?.id === searchData?.vehicleId);
-            return mappedVehicle?.registrationNumber || mappedVehicle?.name || mappedVehicle?.type || searchData?.vehicleName || searchData?.vehicleRegistrationNo || "-";
-          },
-        });
-      }
+    csvColumns.push({
+      Header: columns?.find((column) => column?.id === "applicationStatus")?.Header || t("WT_STATUS"),
+      exportAccessor: (row) => (row?.workflowData?.state?.applicationStatus ? t(row.workflowData.state.applicationStatus) : ""),
+    });
 
-      if (columns?.some((column) => column?.id === "driverName")) {
-        csvColumns.push({
-          Header: columns?.find((column) => column?.id === "driverName")?.Header || t("WT_DRIVER_NAME"),
-          exportAccessor: (row) => {
-            const searchData = row?.searchData;
-            const mappedDriver =
-              searchData?.driver ||
-              searchData?.vendor?.drivers?.find(
-                (driver) => driver?.id === searchData?.driverId || driver?.ownerId === searchData?.driverId || driver?.owner?.uuid === searchData?.driverId
-              );
-            return mappedDriver?.name || mappedDriver?.owner?.name || searchData?.driverName || "-";
-          },
-        });
-      }
+    if (columns?.some((column) => column?.id === "vendorName")) {
+      csvColumns.push({
+        Header: columns?.find((column) => column?.id === "vendorName")?.Header || t("WT_VENDOR_NAME"),
+        exportAccessor: (row) => row?.searchData?.vendor?.name || row?.searchData?.vendorName || "-",
+      });
+    }
 
-      return csvColumns;
-    },
-    [columns, getCreatedAtValue, t]
-  );
+    if (columns?.some((column) => column?.id === "vehicleNumber")) {
+      csvColumns.push({
+        Header: columns?.find((column) => column?.id === "vehicleNumber")?.Header || t("WT_VEHICLE_NO"),
+        exportAccessor: (row) => {
+          const searchData = row?.searchData;
+          const mappedVehicle = searchData?.vehicle || searchData?.vendor?.vehicles?.find((vehicle) => vehicle?.id === searchData?.vehicleId);
+          return (
+            mappedVehicle?.registrationNumber ||
+            mappedVehicle?.name ||
+            mappedVehicle?.type ||
+            searchData?.vehicleName ||
+            searchData?.vehicleRegistrationNo ||
+            "-"
+          );
+        },
+      });
+    }
+
+    if (columns?.some((column) => column?.id === "driverName")) {
+      csvColumns.push({
+        Header: columns?.find((column) => column?.id === "driverName")?.Header || t("WT_DRIVER_NAME"),
+        exportAccessor: (row) => {
+          const searchData = row?.searchData;
+          const mappedDriver =
+            searchData?.driver ||
+            searchData?.vendor?.drivers?.find(
+              (driver) =>
+                driver?.id === searchData?.driverId || driver?.ownerId === searchData?.driverId || driver?.owner?.uuid === searchData?.driverId
+            );
+          return mappedDriver?.name || mappedDriver?.owner?.name || searchData?.driverName || "-";
+        },
+      });
+    }
+
+    return csvColumns;
+  }, [columns, getCreatedAtValue, t]);
 
   let result;
   if (props.isLoading) {
     result = <Loader />;
   } else if (clearSearchCalled) {
     result = null;
-  } else if (
-    !data ||
-    data?.length === 0 ||
-    (useNewInboxAPI && data?.[0]?.dataEmpty)
-  ) {
+  } else if (!data || data?.length === 0 || (useNewInboxAPI && data?.[0]?.dataEmpty)) {
     if (EmptyInboxComp) {
       result = <EmptyInboxComp data={data} />;
-    } else if (
-      data?.length === 0 ||
-      (useNewInboxAPI && data?.[0]?.dataEmpty)
-    ) {
+    } else if (data?.length === 0 || (useNewInboxAPI && data?.[0]?.dataEmpty)) {
       result = (
         <Card style={{ marginTop: 20 }}>
           {t("DATA_NOT_FOUND", "Data Not Found")
@@ -203,20 +199,29 @@ const WTDesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
       )}
       <div className="employee-form-content" style={{ flex: 1 }}>
         {!props.isSearch && (
-          <div className="summary-cards-container" style={{ display: "flex", gap: "12px", flexWrap: "wrap", width: "100%" }}>
+          <div className="summary-cards-container">
             {(() => {
               const getCount = (statusList) => {
                 return (data?.[0]?.statusMap || [])
                   .filter((s) => {
-                    const st = (s.applicationStatus || s.applicationstatus || s.bookingStatus || s.bookingstatus || s.statusid || "").toUpperCase().replace(/\s+/g, "_");
+                    const st = (s.applicationStatus || s.applicationstatus || s.bookingStatus || s.bookingstatus || s.statusid || "")
+                      .toUpperCase()
+                      .replace(/\s+/g, "_");
                     return statusList.includes(st);
                   })
                   .reduce((acc, curr) => acc + curr.count, 0);
               };
 
-              const isFixedPoint = props.businessService === "watertanker-fixedpoint" || props.searchParams?.services?.includes("watertanker-fixedpoint");
+              const isFixedPoint =
+                props.businessService === "watertanker-fixedpoint" || props.searchParams?.services?.includes("watertanker-fixedpoint");
               const cards = [
-                { label: "WT_TOTAL_BOOKINGS", count: data?.[0]?.totalCount || 0, color: "#0B2559", filter: null, active: !props.searchParams?.status },
+                {
+                  label: "WT_TOTAL_BOOKINGS",
+                  count: data?.[0]?.totalCount || 0,
+                  color: "#0B2559",
+                  filter: null,
+                  active: !props.searchParams?.status,
+                },
                 { label: "WT_SCHEDULED", count: getCount(["SCHEDULED", "VENDOR_ASSIGNED"]), color: "#F59E0B", filter: ["SCHEDULED"] },
                 { label: "WT_DELIVERED", count: getCount(["TANKER_DELIVERED", "DELIVERED"]), color: "#10B981", filter: ["TANKER_DELIVERED"] },
               ];
@@ -247,7 +252,18 @@ const WTDesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
                     transition: "all 0.2s ease-in-out",
                   }}
                 >
-                  <div style={{ fontSize: "11px", color: "#64748B", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.5px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  <div
+                    style={{
+                      fontSize: "11px",
+                      color: "#64748B",
+                      fontWeight: "600",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.5px",
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
+                  >
                     {t(card.label)}
                   </div>
                   <div style={{ fontSize: "28px", fontWeight: "700", color: card.color, marginTop: "12px" }}>

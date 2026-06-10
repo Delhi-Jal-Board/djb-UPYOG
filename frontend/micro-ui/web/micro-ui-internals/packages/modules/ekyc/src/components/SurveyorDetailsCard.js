@@ -29,35 +29,53 @@ const SurveyorDetailsDashboard = () => {
     return surveyorSearchResponse?.surveyors?.[0] || null;
   }, [surveyorSearchResponse]);
 
-  const knoColumns = React.useMemo(
+  const [currentPage, setCurrentPage] = useState(0);
+  const [pageSize, setPageSize] = useState(20);
+  const queryParams = {
+    tenantId: "dl.djb",
+    offset: currentPage * pageSize,
+    limit: pageSize,
+    surveyorId: surveyor?.owner?.uuid,
+  };
+
+  const { isFetching: isDashboardLoading, data: dashboardData = {} } = Digit.Hooks.ekyc.useEkycSurveyorDashboard({}, queryParams, {
+    enabled: !!queryParams.tenantId && !!queryParams.surveyorId,
+    keepPreviousData: true,
+  });
+
+  const knoColumns = useMemo(
     () => [
       {
-        Header: t("KNO"),
+        Header: "KNO",
         accessor: "kno",
       },
       {
-        Header: t("CONSUMER_NAME"),
-        accessor: "consumerName",
+        Header: "Consumer Name",
+        accessor: (row) => `${row.firstName || ""} ${row.middleName || ""} ${row.lastName || ""}`.trim(),
+        id: "consumerName",
       },
       {
-        Header: t("MOBILE_NO"),
-        accessor: "mobileNumber",
+        Header: "Zone",
+        accessor: "zoneName",
       },
       {
-        Header: t("STATUS"),
+        Header: "Pincode",
+        accessor: "pincode",
+      },
+      {
+        Header: "Status",
         accessor: "status",
-        Cell: ({ value }) => <span className={`status-badge ${value?.toLowerCase() || ""}`}>{value}</span>,
+        Cell: ({ value }) => (
+          <span className={`status-badge ${value === "ACTIVE" ? "verified" : value === "PENDING" ? "pending" : "assigned"}`}>{value}</span>
+        ),
       },
       {
-        Header: t("ASSIGNED_DATE"),
-        accessor: "assignedDate",
-      },
-      {
-        Header: t("COMPLETED_DATE"),
-        accessor: "completedDate",
+        Header: "eKYC Status",
+        accessor: "ekycStatus",
+        Cell: ({ value }) => value || "-",
       },
     ],
-    [t]
+    []
   );
 
   if (isLoading) {
@@ -71,24 +89,6 @@ const SurveyorDetailsDashboard = () => {
       </Card>
     );
   }
-  const assignedKnos = [
-    {
-      kno: "123456789",
-      consumerName: "Rahul Sharma",
-      mobileNumber: "9876543210",
-      status: "Completed",
-      assignedDate: "01-06-2026",
-      completedDate: "02-06-2026",
-    },
-    {
-      kno: "123456790",
-      consumerName: "Amit Kumar",
-      mobileNumber: "9876543211",
-      status: "Pending",
-      assignedDate: "03-06-2026",
-      completedDate: "-",
-    },
-  ];
 
   const weeklyData = [
     { day: "Mon", completed: 4 },
@@ -118,11 +118,19 @@ const SurveyorDetailsDashboard = () => {
     },
   ];
 
-  const StatCard = ({ title, value, type }) => (
+  const StatCard = ({ title, value, type, isLoading }) => (
     <div className={`stat-card ${type}`}>
-      <div className="stat-title">{title}</div>
-
-      <div className="stat-value">{value}</div>
+      {isLoading ? (
+        <React.Fragment>
+          <div className="stat-title skeleton skeleton-text"></div>
+          <div className="stat-value skeleton skeleton-number"></div>
+        </React.Fragment>
+      ) : (
+        <React.Fragment>
+          <div className="stat-title">{title}</div>
+          <div className="stat-value">{value}</div>
+        </React.Fragment>
+      )}
     </div>
   );
 
@@ -158,13 +166,10 @@ const SurveyorDetailsDashboard = () => {
 
       {/* Stats */}
       <div className="stats-wrapper">
-        <StatCard title={t("TODAYS_EKYC")} value={surveyor?.todayCompleted || 0} type="today" />
-
-        <StatCard title={t("THIS_WEEK")} value={surveyor?.weekCompleted || 0} type="week" />
-
-        <StatCard title={t("THIS_MONTH")} value={surveyor?.monthCompleted || 0} type="month" />
-
-        <StatCard title={t("PENDING_CASES")} value={surveyor?.pendingCases || 0} type="pending" />
+        <StatCard title={t("TOTAL_ASSIGNED")} value={dashboardData?.dashboardInfo?.total || 0} type="today" isLoading={isDashboardLoading} />
+        <StatCard title={t("COMPLETED")} value={dashboardData?.dashboardInfo?.completed || 0} type="week" isLoading={isDashboardLoading} />
+        <StatCard title={t("PENDING")} value={dashboardData?.dashboardInfo?.pending || 0} type="pending" isLoading={isDashboardLoading} />
+        <StatCard title={t("SUBMITTED")} value={dashboardData?.dashboardInfo?.submittedCount || 0} type="month" isLoading={isDashboardLoading} />
       </div>
 
       {/* Charts */}
@@ -242,18 +247,40 @@ const SurveyorDetailsDashboard = () => {
           </div>
         </div>
       </div>
-
-      <Table
-        t={t}
-        tableTitle={t("ASSIGNED_KNOS")}
-        data={assignedKnos}
-        columns={knoColumns}
-        totalRecords={assignedKnos?.length}
-        isPaginationRequired={true}
-        pageSizeLimit={10}
-        manualPagination={false}
-      />
-
+      <Card className="dashboard-card">
+        <Table
+          t={t}
+          tableTitle={t("ASSIGNED_KNOS")}
+          tableClass="ekycTable"
+          data={dashboardData?.dashboardInfo?.consumerList || []}
+          columns={knoColumns}
+          isLoading={isDashboardLoading}
+          totalRecords={dashboardData?.dashboardInfo?.total}
+          currentPage={currentPage}
+          pageSizeLimit={pageSize}
+          isPaginationRequired={true}
+          onNextPage={() => {
+            if (currentPage < (dashboardData?.dashboardInfo?.totalPages || 1) - 1) {
+              setCurrentPage((prev) => prev + 1);
+            }
+          }}
+          onPrevPage={() => {
+            if (currentPage > 0) {
+              setCurrentPage((prev) => prev - 1);
+            }
+          }}
+          onFirstPage={() => {
+            setCurrentPage(0);
+          }}
+          onLastPage={() => {
+            setCurrentPage(Math.max((dashboardData?.dashboardInfo?.totalPages || 1) - 1, 0));
+          }}
+          onPageSizeChange={(e) => {
+            setPageSize(Number(e.target.value));
+            setCurrentPage(0);
+          }}
+        />
+      </Card>
       {/* Actions */}
       {(!roles.includes("EKYC_SURVEYOR") || roles.includes("EMPLOYEE")) && (
         <ActionBar>

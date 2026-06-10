@@ -12,8 +12,8 @@ const SearchFormFieldsComponents = ({ searchFormState, controlSearchForm }) => {
       {/* K NUMBER */}
       <span className="mobile-input">
         <Label className="flex-roww flex-gap-2">
-          {t("EKYC_K_NUMBER") || "K Number"}
-          <CustomTooltip message={t("EKYC_K_NUMBER_MESSAGE")} />
+          {t("EKYC_MOBILE_NUMBER") || "Mobile Number"}
+          <CustomTooltip message={t("EKYC_MOBILE_NUMBER_MESSAGE")} />
         </Label>
 
         <Controller

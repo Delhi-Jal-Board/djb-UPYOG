@@ -37,6 +37,7 @@ const InboxComposer = ({
   formState: inboxFormState,
   cards,
   searchParams,
+  isCardLoading,
 }) => {
   const { t } = useTranslation();
 
@@ -205,6 +206,7 @@ const InboxComposer = ({
               cards={cards}
               searchParams={searchParams}
               t={t}
+              isLoading={isCardLoading}
               onCardClick={(card) => {
                 /* your filter handler */
               }}

@@ -1,27 +1,26 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import PropTypes from "prop-types";
 
 const TextInput = (props) => {
   const user_type = Digit.SessionStorage.get("userType");
-  const [date, setDate] = useState();
   const data = props?.watch
     ? {
-      fromDate: props?.watch("fromDate"),
-      toDate: props?.watch("toDate"),
-    }
+        fromDate: props?.watch("fromDate"),
+        toDate: props?.watch("toDate"),
+      }
     : {};
 
-  const handleDate = (event) => {
-    const { value } = event.target;
-    setDate(getDDMMYYYY(value));
-  };
+  const handleDate = (event) => {};
 
   return (
     <React.Fragment>
-      <div className={`text-input ${user_type === "employee" ? "" : "text-input-width"} ${props.className}`} style={props?.textInputStyle ? { ...props.textInputStyle } : {}}>
+      <div
+        className={`text-input ${user_type === "employee" ? "" : "text-input-width"} ${props.className}`}
+        style={props?.textInputStyle ? { ...props.textInputStyle } : {}}
+      >
         {props.isMandatory ? (
           <input
-            type={props?.validation && props.ValidationRequired ? props?.validation?.type : (props.type || "text")}
+            type={props?.validation && props.ValidationRequired ? props?.validation?.type : props.type || "text"}
             name={props.name}
             id={props.id}
             className={`${user_type ? "employee-card-input-error" : "card-input-error"} ${props.disable && "disabled"}`}
@@ -53,10 +52,12 @@ const TextInput = (props) => {
           />
         ) : (
           <input
-            type={props?.validation && props.ValidationRequired ? props?.validation?.type : (props.type || "text")}
+            type={props?.validation && props.ValidationRequired ? props?.validation?.type : props.type || "text"}
             name={props.name}
             id={props.id}
-            className={`${user_type ? "employee-card-input" : "citizen-card-input"} ${props.disable && "disabled"} focus-visible ${props.errorStyle && "employee-card-input-error"}`}
+            className={`${user_type ? "employee-card-input" : "citizen-card-input"} ${props.disable && "disabled"} focus-visible ${
+              props.errorStyle && "employee-card-input-error"
+            }`}
             placeholder={props.placeholder}
             onChange={(event) => {
               if (props?.onChange) {
@@ -73,7 +74,11 @@ const TextInput = (props) => {
             minLength={props.minlength}
             maxLength={props.maxlength}
             max={props.max}
-            required={props?.validation && props.ValidationRequired ? props?.validation?.isRequired : props.isRequired || (props.type === "date" && (props.name === "fromDate" ? data.toDate : data.fromDate))}
+            required={
+              props?.validation && props.ValidationRequired
+                ? props?.validation?.isRequired
+                : props.isRequired || (props.type === "date" && (props.name === "fromDate" ? data.toDate : data.fromDate))
+            }
             pattern={props?.validation && props.ValidationRequired ? props?.validation?.pattern : props.pattern}
             min={props.min}
             readOnly={props.disable}
@@ -88,7 +93,6 @@ const TextInput = (props) => {
         )}
         {/* {props.type === "date" && <DatePicker {...props} date={date} setDate={setDate} data={data} />} */}
         {props.signature ? props.signatureImg : null}
-
       </div>
     </React.Fragment>
   );
@@ -107,35 +111,5 @@ TextInput.propTypes = {
 TextInput.defaultProps = {
   isMandatory: false,
 };
-
-function DatePicker(props) {
-  useEffect(() => {
-    if (props?.shouldUpdate) {
-      props?.setDate(getDDMMYYYY(props?.data[props.name], "yyyymmdd"));
-    }
-  }, [props?.data]);
-
-  useEffect(() => {
-    props.setDate(getDDMMYYYY(props?.defaultValue));
-  }, []);
-
-  return (
-    <input
-      type="text"
-      className={`${props.disable && "disabled"} card-date-input`}
-      name={props.name}
-      id={props.id}
-      placeholder={props.placeholder}
-      defaultValue={props.date}
-      readOnly={true}
-    />
-  );
-}
-
-function getDDMMYYYY(date) {
-  if (!date) return "";
-
-  return new Date(date).toLocaleString("en-In").split(",")[0];
-}
 
 export default TextInput;

@@ -29,7 +29,7 @@ const FormStep = ({
   isCollapsible = true,
   defaultOpen = true,
 }) => {
-  const { register, watch, errors, handleSubmit } = useForm({
+  const { register, errors, handleSubmit } = useForm({
     defaultValues: _defaultValues,
   });
 
