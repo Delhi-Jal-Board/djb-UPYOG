@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { AddressDetails, CollapsibleCardPage } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
-import PropertySearchNSummary from "../pageComponents/PropertySearchNSummary";
+// import PropertySearchNSummary from "../pageComponents/PropertySearchNSummary";
 
 const PropertyLocationDetails = ({
   address,
@@ -9,7 +9,7 @@ const PropertyLocationDetails = ({
   isEdit,
   onSelect,
   config,
-  hidePropertySearch = false,
+  // hidePropertySearch = false,
   hideZRO,
   formData: formDataProp,
   ...props
@@ -150,14 +150,14 @@ const PropertyLocationDetails = ({
   return (
     <CollapsibleCardPage title={t("PT_LOCATION_DETAILS")} defaultOpen={true}>
       <div style={{ boxShadow: "none", ...props.style }}>
-        {!hidePropertySearch && !window.location.href.includes("create-application/create-property") && (
+        {/* {!hidePropertySearch && !window.location.href.includes("create-application/create-property") && (
           <PropertySearchNSummary
             config={config}
             onSelect={onSelect}
             formData={formDataProp}
             userType={window.location.href.includes("/employee/") ? "employee" : "citizen"}
           />
-        )}
+        )} */}
         <div style={{ marginTop: "20px" }}>
           <AddressDetails
             t={t}
