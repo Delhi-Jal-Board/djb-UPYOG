@@ -13,7 +13,7 @@
     "node": ">=18"
   },
   "dependencies": {
-    "@djb25/digit-ui-css": "1.0.65",
+    "@djb25/digit-ui-css": "1.0.66",
     "@djb25/digit-ui-libraries": "1.0.0",
     "@djb25/digit-ui-module-bills": "1.0.2",
     "@djb25/digit-ui-module-common": "1.0.1",
