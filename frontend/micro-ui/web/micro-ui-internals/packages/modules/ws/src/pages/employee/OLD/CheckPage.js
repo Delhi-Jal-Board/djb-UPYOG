@@ -194,10 +194,10 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
             />
             <Row label={t("CORE_COMMON_MOBILE_NUMBER")} text={`${t(checkForNA(holderDetails?.mobileNumber))}`} />
             <Row label={t("CORE_COMMON_WHATSAPP_MOBILE_NUMBER")} text={`${t(checkForNA(holderDetails?.watsAppMobileNumber))}`} />
-            <Row label={t("CORE_COMMON_EMAIL_ID")} text={`${t(checkForNA(holderDetails?.emailId))}`} />
+            <Row label={t("WS_EMAIL_ID")} text={`${t(checkForNA(holderDetails?.emailId))}`} />
           </StatusTable>
 
-          <CardSubHeader>{t("WS_PROPERTY_LOCATION_DETAILS")}</CardSubHeader>
+          <CardSubHeader>{t("WS_PROPERTY_AND_WATER_CONNECTION_USE_DETAILS")}</CardSubHeader>
           <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
             <Row
               label={t("WS_ZRO_LOCATION")}
@@ -295,10 +295,10 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
 
           <CardSubHeader>{t("WS_BANK_DETAILS")}</CardSubHeader>
           <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
-            <Row label={t("WS_BANK_NAME")} text={`${t(checkForNA(bankDetails?.bankName))}`} actionButton={<ActionButton onClick={onEdit} />} />
-            <Row label={t("WS_BRANCH_NAME")} text={`${t(checkForNA(bankDetails?.bankBranchName || bankDetails?.branchName))}`} />
+            <Row label={t("WS_NAME_OF_BANK")} text={`${t(checkForNA(bankDetails?.bankName))}`} actionButton={<ActionButton onClick={onEdit} />} />
+            <Row label={t("WS_NAME_OF_BRANCH")} text={`${t(checkForNA(bankDetails?.bankBranchName || bankDetails?.branchName))}`} />
             <Row label={t("WS_IFSC_CODE")} text={`${t(checkForNA(bankDetails?.ifscCode))}`} />
-            <Row label={t("WS_ACCOUNT_NUMBER")} text={`${t(checkForNA(bankDetails?.bankAccountNumber || bankDetails?.accountNumber))}`} />
+            <Row label={t("WS_BANK_ACCOUNT_NO")} text={`${t(checkForNA(bankDetails?.bankAccountNumber || bankDetails?.accountNumber))}`} />
           </StatusTable>
 
           <CardSubHeader>{t("WS_DOCUMENTS")}</CardSubHeader>

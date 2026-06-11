@@ -96,6 +96,7 @@ const AddVendor = ({ parentUrl, heading }) => {
             label: "Locality",
             area: localityArea || "",
           },
+          ward: data?.address?.ward || "",
           geoLocation: {
             latitude: data?.address?.latitude || 0,
             longitude: data?.address?.longitude || 0,
