@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
@@ -201,7 +202,7 @@ public class UserService {
 						foundDriver = getUserDetailResponse(userDetailResponse, foundDriver, errorMap, requestInfo, roleMapping);
 
 					} else {
-						foundDriver = createDriver(driver.getOwner(), requestInfo, roleMapping);
+						foundDriver = createDriver(driver.getOwner(), requestInfo, roleMapping, vendor);
 					}
 					driver.setOwner(foundDriver);
 					newDrivers.add(driver);
@@ -222,7 +223,7 @@ public class UserService {
 	}
 
 	private User getUserDetailResponse(UserDetailResponse userDetailResponse, User foundDriver,
-	                                   HashMap<String, String> errorMap, RequestInfo requestInfo, ModuleRoleMapping roleMapping) {
+									   HashMap<String, String> errorMap, RequestInfo requestInfo, ModuleRoleMapping roleMapping) {
 		if (foundDriver == null) {
 			foundDriver = userDetailResponse.getUser().get(0);
 			foundDriver.getRoles().add(getRolObj(roleMapping.getRoleCode(), roleMapping.getRoleName()));
@@ -250,7 +251,9 @@ public class UserService {
 	 */
 	private User createVendorOwner(User owner, VendorRequest vendorRequest, ModuleRoleMapping moduleRoleMapping) {
 
-		if (!isUserValid(owner)) {
+		boolean isEkyc = isEkycService(vendorRequest.getVendor());
+
+		if (!isUserValid(owner, isEkyc)) {
 			throw new CustomException(VendorErrorConstants.INVALID_OWNER_ERROR,
 					VendorErrorConstants.INVALID_OWNER_ERROR_MESSAGE);
 		}
@@ -352,9 +355,11 @@ public class UserService {
 	 * @param roleMapping
 	 * @return
 	 */
-	private User createDriver(User driver, RequestInfo requestInfo, ModuleRoleMapping roleMapping) {
+	private User createDriver(User driver, RequestInfo requestInfo, ModuleRoleMapping roleMapping, Vendor vendor) {
 
-		if (!isUserValid(driver)) {
+		boolean isEkyc = isEkycService(vendor);
+
+		if (!isUserValid(driver, isEkyc)) {
 			throw new CustomException(VendorErrorConstants.INVALID_DRIVER_ERROR,
 					VendorErrorConstants.INVALID_OWNER_ERROR_MESSAGE);
 		}
@@ -513,19 +518,43 @@ public class UserService {
 	}
 
 	/**
+	 * Helper method to extract "serviceType" from Vendor's additional details
+	 */
+	private boolean isEkycService(Vendor vendor) {
+		if (vendor != null && vendor.getAdditionalDetails() != null) {
+			try {
+				JsonNode node = mapper.convertValue(vendor.getAdditionalDetails(), JsonNode.class);
+				if (node != null && node.has("serviceType") && "ekyc".equalsIgnoreCase(node.get("serviceType").asText())) {
+					return true;
+				}
+			} catch (Exception e) {
+				log.error("Error parsing additionalDetails to check serviceType", e);
+			}
+		}
+		return false;
+	}
+
+	/**
 	 * Validates the mandatory fields for the user
 	 *
 	 * @param user
+	 * @param isEkyc
 	 * @return
 	 */
 	@SuppressWarnings("deprecation")
-	private Boolean isUserValid(User user) {
-		if (StringUtils.isEmpty(user.getTenantId()) || StringUtils.isEmpty(user.getName())
-				|| StringUtils.isEmpty(user.getFatherOrHusbandName()) || StringUtils.isEmpty(user.getRelationship())
-				|| StringUtils.isEmpty(user.getDob()) || StringUtils.isEmpty(user.getGender())
-				|| StringUtils.isEmpty(user.getEmailId())) {
-
+	private Boolean isUserValid(User user, boolean isEkyc) {
+		// Minimum required fields irrespective of serviceType
+		if (StringUtils.isEmpty(user.getTenantId()) || StringUtils.isEmpty(user.getName())) {
 			return Boolean.FALSE;
+		}
+
+		// Strictly enforce extra fields ONLY for ekyc service
+		if (isEkyc) {
+			if (StringUtils.isEmpty(user.getFatherOrHusbandName()) || StringUtils.isEmpty(user.getRelationship())
+					|| StringUtils.isEmpty(user.getDob()) || StringUtils.isEmpty(user.getGender())
+					|| StringUtils.isEmpty(user.getEmailId())) {
+				return Boolean.FALSE;
+			}
 		}
 
 		return Boolean.TRUE;
