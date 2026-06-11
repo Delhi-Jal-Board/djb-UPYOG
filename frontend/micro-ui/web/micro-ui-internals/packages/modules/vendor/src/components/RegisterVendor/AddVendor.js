@@ -135,6 +135,8 @@ const AddVendor = ({ parentUrl, heading }) => {
     const localityCode = address?.locality?.code;
     const localityName = address?.locality?.name;
     const localityArea = address?.subLocality;
+    const wardCode = address?.ward?.code;
+    const wardName = address?.ward?.name;
 
     const name = mergedData?.vendorName;
     const plotNo = mergedData?.plotNo?.trim();
@@ -168,10 +170,12 @@ const AddVendor = ({ parentUrl, heading }) => {
           label: "Locality",
           area: localityArea || "",
         },
-        ward: wardCode ? {
-          code: wardCode,
-          name: wardName,
-        } : undefined,
+        ward: wardCode
+          ? {
+            code: wardCode,
+            name: wardName,
+          }
+          : undefined,
         geoLocation: {
           latitude: mergedData?.address?.latitude || 28.6139,
           longitude: mergedData?.address?.longitude || 77.209,
@@ -183,7 +187,7 @@ const AddVendor = ({ parentUrl, heading }) => {
         fatherOrHusbandName: mergedData?.fatherOrHusbandName || name,
         relationship: mergedData?.relationship?.code || "OTHER",
         gender: mergedData?.gender?.code || "MALE",
-        dob: mergedData?.dob ? (new Date(mergedData.dob).getTime() / 1000).toString() : "915148800",
+        dob: mergedData?.dob ? new Date(mergedData.dob).getTime() : new Date(`1/1/1970`).getTime(),
         emailId: emailId || "",
         mobileNumber: phone,
       },
