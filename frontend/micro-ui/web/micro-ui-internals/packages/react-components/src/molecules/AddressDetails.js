@@ -380,6 +380,10 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
     if (formData?.address) {
       const addressData = formData.address;
 
+      // Skip processing if this data originated from our own silent update
+      // to prevent an infinite setState loop between the two useEffects
+      if (addressData.silent) return;
+
       const addressStr = JSON.stringify(addressData) + "_" + (structuredLocalityData?.length || 0) + "_" + (allCities?.length || 0);
       if (addressUpdateRef.current === addressStr) return;
       addressUpdateRef.current = addressStr;
