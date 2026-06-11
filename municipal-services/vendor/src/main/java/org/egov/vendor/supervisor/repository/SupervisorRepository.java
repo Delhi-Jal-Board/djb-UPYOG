@@ -2,6 +2,7 @@ package org.egov.vendor.supervisor.repository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.egov.vendor.config.VendorConfiguration;
 import org.egov.vendor.producer.Producer;
@@ -74,5 +75,21 @@ public class SupervisorRepository {
         String query = "SELECT id FROM eg_vendor WHERE owner_id = ?";
         return jdbcTemplate.query(query, new Object[]{ownerUuid},
                 new SingleColumnRowMapper<>(String.class));
+    }
+
+    /**
+     * Look up supervisor profile by their owner UUID.
+     * Returns map with keys: id, vendorId
+     * Used by SupervisorService to auto-scope search when a supervisor logs in.
+     */
+    public Map<String, String> findSupervisorByOwnerUuid(String ownerUuid) {
+        String query = "SELECT id, vendor_id FROM eg_supervisor WHERE owner_id = ? AND status = 'ACTIVE' LIMIT 1";
+        List<Map<String, String>> rows = jdbcTemplate.query(query, new Object[]{ownerUuid}, (rs, rowNum) -> {
+            Map<String, String> map = new java.util.HashMap<>();
+            map.put("id",       rs.getString("id"));
+            map.put("vendorId", rs.getString("vendor_id"));
+            return map;
+        });
+        return rows.isEmpty() ? null : rows.get(0);
     }
 }

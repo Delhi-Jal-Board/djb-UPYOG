@@ -1,11 +1,12 @@
 package org.egov.vendor.supervisor.service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.egov.common.contract.request.RequestInfo;
-import org.egov.common.contract.request.Role;
 import org.egov.tracer.model.CustomException;
 import org.egov.vendor.config.VendorConfiguration;
 import org.egov.vendor.supervisor.repository.SupervisorRepository;
@@ -119,70 +120,63 @@ public class SupervisorService {
     // ── Role-based restriction ────────────────────────────────────────
 
     /**
-     * Access rules:
+     * DB-based supervisor search scoping — does NOT rely on JWT/DIGIT roles.
      *
-     * Unrestricted (see all supervisors):
-     *   EMPLOYEE, SUPERUSER, DJB_ZRO      → system/admin users
-     *   EKYC_SUPERVISOR, EKYC_VENDOR, EKYC_ZRO → ekyc roles
-     *     (VendorServiceClient in ekyc-service already scopes the query
-     *      to ownerIds= so the DB result is already limited to exactly
-     *      the supervisor needed — no further restriction required here)
+     * ZUUL gateway replaces userInfo.roles with Keycloak realm roles before
+     * forwarding. DIGIT roles (EKYC_VENDOR, EKYC_SUPERVISOR) are never present.
+     * Role checks always fail → old code set ids=[] → QueryBuilder ignored
+     * empty list → returned ALL supervisors unscoped.
      *
-     * Vendor-restricted (own vendor's supervisors only):
-     *   WT_VENDOR, DJB_AGENCY
+     * Fix: identify caller by UUID directly in DB:
+     *   UUID in eg_vendor     → vendor owner → scope to their vendor's supervisors
+     *   UUID in eg_supervisor → supervisor   → scope to their vendor's supervisors
+     *   EMPLOYEE type         → unrestricted (SUPERUSER/admin)
+     *   Neither               → unknown citizen → return empty (safe)
      *
-     * All other roles → empty result
+     * Explicit vendorId passed as query param always takes priority.
      */
     private void applyRoleBasedRestriction(SupervisorSearchCriteria criteria,
                                            RequestInfo requestInfo) {
         if (requestInfo == null || requestInfo.getUserInfo() == null) return;
 
-        List<String> roleCodes = requestInfo.getUserInfo().getRoles()
-                .stream().map(Role::getCode).collect(Collectors.toList());
-        String userType = requestInfo.getUserInfo().getType();
+        String userType  = requestInfo.getUserInfo().getType();
+        String callerUuid = requestInfo.getUserInfo().getUuid();
 
-        // ── Unrestricted roles ────────────────────────────────────────
-        boolean isUnrestricted = VendorConstants.EMPLOYEE.equalsIgnoreCase(userType)
-                || roleCodes.stream().anyMatch(r ->
-                "EMPLOYEE".equalsIgnoreCase(r)          ||
-                        "SUPERUSER".equalsIgnoreCase(r)         ||
-                        "DJB_ZRO".equalsIgnoreCase(r)           ||
-                        "EKYC_SUPERVISOR".equalsIgnoreCase(r)   ||
-                        "EKYC_VENDOR".equalsIgnoreCase(r)       ||
-                        "EKYC_ZRO".equalsIgnoreCase(r));
+        // EMPLOYEE / SUPERUSER — unrestricted
+        if (VendorConstants.EMPLOYEE.equalsIgnoreCase(userType)) return;
 
-        if (isUnrestricted) {
-            log.info("Unrestricted role ({}) — no supervisor search restriction", roleCodes);
-            return;
-        }
-
-        // ── Vendor-restricted roles ───────────────────────────────────
-        boolean isVendorRole = roleCodes.stream().anyMatch(r ->
-                "WT_VENDOR".equalsIgnoreCase(r) || "DJB_AGENCY".equalsIgnoreCase(r));
-
-        if (!isVendorRole) {
-            log.info("Unrecognised role for supervisor search — returning empty. roles={}", roleCodes);
-            criteria.setIds(new ArrayList<>());
-            return;
-        }
-
-        // Agency user — restrict to own vendor only
-        String ownerUuid = requestInfo.getUserInfo().getUuid();
-        if (!StringUtils.hasLength(ownerUuid)) {
+        if (!StringUtils.hasLength(callerUuid)) {
             throw new CustomException("AUTH_ERROR", "User UUID not found in token");
         }
 
-        List<String> vendorIds = repository.getVendorIdsByOwner(ownerUuid);
-        if (CollectionUtils.isEmpty(vendorIds)) {
-            log.info("No vendor found for UUID={} — returning empty", ownerUuid);
-            criteria.setIds(new ArrayList<>());
+        // Explicit vendorId passed as query param — respect it, skip auto-scope
+        if (StringUtils.hasLength(criteria.getVendorId())) {
+            log.info("vendorId={} passed explicitly — skipping auto-scope", criteria.getVendorId());
             return;
         }
 
-        // Set vendorId on criteria — QueryBuilder will add WHERE vendor_id = ?
-        // Use first vendorId (an agency owner should have exactly one vendor)
-        if (!StringUtils.hasLength(criteria.getVendorId())) {
+        // Check DB: is this caller a vendor owner?
+        List<String> vendorIds = repository.getVendorIdsByOwner(callerUuid);
+        if (!CollectionUtils.isEmpty(vendorIds)) {
             criteria.setVendorId(vendorIds.get(0));
+            log.info("Supervisor search scoped to vendorId={} for vendor uuid={}",
+                    vendorIds.get(0), callerUuid);
+            return;
         }
+
+        // Check DB: is this caller a supervisor?
+        // Supervisor can see all supervisors under their same vendor
+        Map<String, String> supervisorProfile = repository.findSupervisorByOwnerUuid(callerUuid);
+        if (supervisorProfile != null) {
+            criteria.setVendorId(supervisorProfile.get("vendorId"));
+            log.info("Supervisor search scoped to vendorId={} for supervisor uuid={}",
+                    supervisorProfile.get("vendorId"), callerUuid);
+            return;
+        }
+
+        // Unknown CITIZEN — no vendor/supervisor profile → return empty safely
+        // Use a dummy non-matching id so QueryBuilder adds a WHERE clause
+        log.info("No vendor/supervisor profile for uuid={} — returning empty", callerUuid);
+        criteria.setIds(Collections.singletonList("NO_MATCH"));
     }
 }
