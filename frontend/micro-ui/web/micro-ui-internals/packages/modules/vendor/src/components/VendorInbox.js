@@ -190,6 +190,9 @@ const VendorInbox = (props) => {
   const userRoles = userInfo.info.roles;
   const userType = userInfo.info.type?.toLowerCase();
 
+  const EKYC_ROLES = ["EKYC_VENDOR", "EKYC_SUPERVISOR", "EKYC_SURVEYOR"];
+  const isEkycRole = userRoles?.some((role) => EKYC_ROLES.includes(role?.code || role));
+
   const openWorkOrderModal = (vendorDetails) => {
     setSelectedVendorForWorkOrder(vendorDetails);
     setShowWorkOrderModal(true);
@@ -808,24 +811,28 @@ const VendorInbox = (props) => {
             },
           },
 
-          {
-            Header: t("VIEW_WORKORDER_DETAILS"),
-            disableSortBy: true,
-            Cell: ({ row }) => {
-              return (
-                <button
-                  className="submit-bar"
-                  style={{
-                    backgroundColor: "#417505",
-                    color: "white",
-                  }}
-                  onClick={() => openWorkOrderModal(row.original)}
-                >
-                  {t("VIEW_WORKORDER_DETAILS")}
-                </button>
-              );
-            },
-          },
+          ...(!isEkycRole
+            ? [
+                {
+                  Header: t("VIEW_WORKORDER_DETAILS"),
+                  disableSortBy: true,
+                  Cell: ({ row }) => {
+                    return (
+                      <button
+                        className="submit-bar"
+                        style={{
+                          backgroundColor: "#417505",
+                          color: "white",
+                        }}
+                        onClick={() => openWorkOrderModal(row.original)}
+                      >
+                        {t("VIEW_WORKORDER_DETAILS")}
+                      </button>
+                    );
+                  },
+                },
+              ]
+            : []),
         ];
 
       //if toggle on vehicle then it will show the below columns

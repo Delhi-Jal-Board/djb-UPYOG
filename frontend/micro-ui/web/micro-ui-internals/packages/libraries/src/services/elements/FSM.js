@@ -178,7 +178,7 @@ export const FSMService = {
     Request({
       url: Urls.fsm.createSupervisor,
       data: details,
-      useCache: true,
+      useCache: false,
       userService: true,
       method: "POST",
       params: { tenantId },
@@ -207,7 +207,7 @@ export const FSMService = {
     Request({
       url: Urls.fsm.createSurveyor,
       data: details,
-      useCache: true,
+      useCache: false,
       userService: true,
       method: "POST",
       params: { tenantId },

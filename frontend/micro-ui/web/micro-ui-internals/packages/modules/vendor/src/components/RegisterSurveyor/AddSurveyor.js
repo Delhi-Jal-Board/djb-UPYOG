@@ -3,10 +3,11 @@ import { useTranslation } from "react-i18next";
 import { FormComposer, Toast, VerticalTimeline } from "@djb25/digit-ui-react-components";
 import { useQueryClient } from "react-query";
 import SurveyorConfig from "../../config/SurveyorConfig";
-import { useLocation } from "react-router-dom";
+import { useLocation, useHistory } from "react-router-dom";
 
 const AddSurveyor = ({ parentUrl, heading }) => {
   const { t } = useTranslation();
+  const history = useHistory();
 
   // getCurrentTenantId() returns state-level 'dl' for CITIZEN users.
   // ULB-level tenantId (e.g. 'dl.djb') is required by the surveyor API.
@@ -18,7 +19,7 @@ const AddSurveyor = ({ parentUrl, heading }) => {
   const queryClient = useQueryClient();
   const [canSubmit, setCanSubmit] = useState(false);
 
-  const { mutate } = Digit.Hooks.fsm.useSurveyorCreate(tenantId);
+  const { mutateAsync } = Digit.Hooks.fsm.useSurveyorCreate(tenantId);
   const { search } = useLocation();
   const queryParams = new URLSearchParams(search);
   const vendorIdParam = queryParams.get("vendorId");
@@ -35,7 +36,7 @@ const AddSurveyor = ({ parentUrl, heading }) => {
       formData?.fullName &&
       formData?.mobileNumber &&
       formData?.emailId &&
-      formData?.employeeId &&
+      // formData?.employeeId &&
       formData?.fatherOrHusbandName &&
       formData?.relationship &&
       formData?.dob &&
@@ -52,7 +53,7 @@ const AddSurveyor = ({ parentUrl, heading }) => {
     setShowToast(null);
   };
 
-  const onSubmit = (data) => {
+  const onSubmit = async (data) => {
     const isSupervisor = userInfo?.roles?.some((role) => role.code === "EKYC_SUPERVISOR");
 
     const formData = {
@@ -97,17 +98,18 @@ const AddSurveyor = ({ parentUrl, heading }) => {
       },
     };
 
-    mutate(formData, {
-      onError: (error) => {
-        setShowToast({ key: "error", action: error });
-        setTimeout(closeToast, 5000);
-      },
-      onSuccess: () => {
-        setShowToast({ key: "success", action: "ADD_SURVEYOR" });
-        queryClient.invalidateQueries("SURVEYOR_SEARCH");
-        setTimeout(closeToast, 5000);
-      },
-    });
+    try {
+      await mutateAsync(formData);
+      setShowToast({ key: "success", action: "ADD_SURVEYOR" });
+      queryClient.invalidateQueries("SURVEYOR_SEARCH");
+      setTimeout(() => {
+        closeToast();
+        history.push("/digit-ui/citizen/vendor/search-vendor");
+      }, 3000);
+    } catch (error) {
+      setShowToast({ key: "error", action: error?.message || error });
+      setTimeout(closeToast, 5000);
+    }
   };
 
   return (
