@@ -22,9 +22,6 @@
   height: 2.5rem;
   @extend .light-input-border;
 }
-.text-input-width {
-  max-width: 540px;
-}
 
 .text-input {
   @apply relative w-full;

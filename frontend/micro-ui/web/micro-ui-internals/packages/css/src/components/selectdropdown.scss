@@ -114,8 +114,7 @@
 }
 
 .select-wrap {
-  @apply mb-lg relative;
-  max-width: 540px;
+  @apply relative;
 
   .select {
     @apply relative block w-full h-10 border border-solid border-input-border rounded-md;

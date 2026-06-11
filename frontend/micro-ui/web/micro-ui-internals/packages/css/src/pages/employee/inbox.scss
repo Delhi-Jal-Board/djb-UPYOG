@@ -217,7 +217,7 @@
 }
 
 .summary-cards-container {
-  display: flex;
+  display: flex !important;
   gap: 12px;
   flex-wrap: wrap;
   width: "100%";
