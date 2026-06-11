@@ -103,7 +103,7 @@ export const VendorData = (data) => {
       registrationNo: data?.vendordet?.RegistrationNo,
       status: data?.vendordet?.Status?.code,
       vendorCategory: data?.vendordet?.VendorCategory?.code,
-      vendorId: data?.vendordet?.VendorId,
+      vendorId: data?.vendor_id,
       gstTinNo: data?.vendordet?.GstNo,
       serviceType: data?.vendordet?.VendorType?.code,
       documents: data?.documents?.documents,
