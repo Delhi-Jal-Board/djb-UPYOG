@@ -10,11 +10,19 @@ const VENDORCreate = ({ parentRoute }) => {
   const queryClient = useQueryClient();
   const match = useRouteMatch();
   const { t } = useTranslation();
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   const history = useHistory();
   // const stateId = Digit.ULBService.getStateId();
   let config = [];
   const [params, setParams, clearParams] = Digit.Hooks.useSessionStorage("VENDOR_Test", {});
+
+  React.useEffect(() => {
+    const searchParams = new URLSearchParams(search || window.location.search);
+    const vendorId = searchParams.get("vendorId");
+    if (vendorId && params.vendor_id !== vendorId) {
+      setParams({ ...params, vendor_id: vendorId });
+    }
+  }, [search, window.location.search, params, setParams]);
 
   const goNext = (skipStep, index, isAddMultiple, key) => {
     let currentPath = pathname.split("/").pop(),
