@@ -117,7 +117,6 @@ const AddVendor = ({ parentUrl, heading }) => {
   };
 
   const onSubmit = (data) => {
-    console.log("-=-=-=-=-=-==-", data);
     // FINAL SUBMIT
     const mergedData = data;
     const address = mergedData?.propertyAddress;
@@ -172,9 +171,9 @@ const AddVendor = ({ parentUrl, heading }) => {
         },
         ward: wardCode
           ? {
-            code: wardCode,
-            name: wardName,
-          }
+              code: wardCode,
+              name: wardName,
+            }
           : undefined,
         geoLocation: {
           latitude: mergedData?.address?.latitude || 28.6139,
@@ -209,7 +208,6 @@ const AddVendor = ({ parentUrl, heading }) => {
       };
     }
 
-    console.log(vendorData);
     const payload = {
       vendor: vendorData,
     };
@@ -262,7 +260,7 @@ const AddVendor = ({ parentUrl, heading }) => {
           defaultValues={defaultValues}
           noCard={true}
           noBreakLine={true}
-        // isDisabled={!canSubmit}
+          // isDisabled={!canSubmit}
         />
 
         {showToast && (
