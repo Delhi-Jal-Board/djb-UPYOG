@@ -42,5 +42,8 @@ public class Document {
 
   @JsonProperty("status")
   private Status status;
+
+  @JsonProperty("isVerified")
+  private Boolean isVerified = false;
 }
 
