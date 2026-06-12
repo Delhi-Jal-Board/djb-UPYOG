@@ -67,14 +67,38 @@ public class SupervisorRepository {
     }
 
     /**
-     * Returns vendor IDs owned by the given user UUID.
-     * Used for role-based restriction — agency users can only see
-     * supervisors belonging to their own vendor.
+     * Returns vendor IDs for a given user UUID.
+     * Checks both eg_vendor (vendor owner) and eg_supervisor (supervisor)
+     * so a single method handles both caller types without role checks.
+     *
+     * Flow:
+     *   UUID in eg_vendor.owner_id     → vendor owner  → returns their vendor id
+     *   UUID in eg_supervisor.owner_id → supervisor    → returns their vendor_id
+     *   Neither                        → unknown user  → returns empty list
      */
     public List<String> getVendorIdsByOwner(String ownerUuid) {
-        String query = "SELECT id FROM eg_vendor WHERE owner_id = ?";
-        return jdbcTemplate.query(query, new Object[]{ownerUuid},
-                new SingleColumnRowMapper<>(String.class));
+        // Check eg_vendor first — is this a vendor owner?
+        List<String> vendorIds = jdbcTemplate.queryForList(
+                "SELECT id FROM eg_vendor WHERE owner_id = ? AND status = 'ACTIVE'",
+                String.class, ownerUuid);
+
+        if (!vendorIds.isEmpty()) {
+            log.info("getVendorIdsByOwner: found vendor owner uuid={} vendorId={}", ownerUuid, vendorIds.get(0));
+            return vendorIds;
+        }
+
+        // Not a vendor owner — check eg_supervisor — is this a supervisor?
+        List<String> vendorIdsViaSupervisor = jdbcTemplate.queryForList(
+                "SELECT vendor_id FROM eg_supervisor WHERE owner_id = ? AND status = 'ACTIVE'",
+                String.class, ownerUuid);
+
+        if (!vendorIdsViaSupervisor.isEmpty()) {
+            log.info("getVendorIdsByOwner: found supervisor uuid={} vendorId={}", ownerUuid, vendorIdsViaSupervisor.get(0));
+        } else {
+            log.info("getVendorIdsByOwner: no vendor/supervisor found for uuid={}", ownerUuid);
+        }
+
+        return vendorIdsViaSupervisor;
     }
 
     /**
