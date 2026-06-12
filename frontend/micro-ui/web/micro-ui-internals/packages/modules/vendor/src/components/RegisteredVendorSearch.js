@@ -151,12 +151,10 @@ const RegisteredVendorSearch = ({
   const userType = userInfo.info.type;
   const vendorItems = [
     ...(matchedRoles?.wt?.includes("WT_VENDOR") ? ["VENDOR"] : []),
-
     ...(matchedRoles?.wt?.includes("WT_VENDOR") ? ["DRIVER", "VEHICLE"] : []),
-
     ...(matchedRoles?.ekyc?.includes("EKYC_VENDOR") ? ["SUPERVISOR"] : []),
-
-    ...(matchedRoles?.ekyc?.includes("EKYC_SUPERVISOR") || matchedRoles?.ekyc?.includes("EKYC_VENDOR") ? ["SURVEYOR"] : []),
+    // ...(matchedRoles?.ekyc?.includes("EKYC_SUPERVISOR") || matchedRoles?.ekyc?.includes("EKYC_VENDOR") ? ["SURVEYOR"] : []),
+    ...(matchedRoles?.ekyc?.includes("EKYC_SUPERVISOR") ? ["SURVEYOR"] : []),
   ];
   return (
     <React.Fragment>
@@ -222,6 +220,7 @@ const RegisteredVendorSearch = ({
                   {t("ES_FSM_REGISTRY_INBOX_TAB_SUPERVISOR")}
                 </button>
               )}
+              {/* {(matchedRoles?.ekyc?.includes("EKYC_SUPERVISOR") || matchedRoles?.ekyc?.includes("EKYC_VENDOR")) && ( */}
               {(matchedRoles?.ekyc?.includes("EKYC_SUPERVISOR") || matchedRoles?.ekyc?.includes("EKYC_VENDOR")) && (
                 <button
                   className={selectedTab === "SURVEYOR" ? "search-tab-head-selected" : "search-tab-head"}

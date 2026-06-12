@@ -1406,10 +1406,10 @@ const VendorInbox = (props) => {
       emptyButtonText = "ES_FSM_REGISTRY_EMPTY_BUTTON_VEHICLE";
     } else if (props.selectedTab === "SUPERVISOR") {
       emptyCardText = "ES_FSM_REGISTRY_EMPTY_CARD_SUPERVISOR";
-      emptyButtonText = "ES_FSM_REGISTRY_EMPTY_BUTTON_SUPERVISOR";
+      // emptyButtonText = "ES_FSM_REGISTRY_EMPTY_BUTTON_SUPERVISOR";
     } else if (props.selectedTab === "SURVEYOR") {
       emptyCardText = "ES_FSM_REGISTRY_EMPTY_CARD_SURVEYOR";
-      emptyButtonText = "ES_FSM_REGISTRY_EMPTY_BUTTON_SURVEYOR";
+      // emptyButtonText = "ES_FSM_REGISTRY_EMPTY_BUTTON_SURVEYOR";
     } else {
       emptyCardText = "ES_FSM_REGISTRY_EMPTY_CARD_DRIVER";
       emptyButtonText = "ES_FSM_REGISTRY_EMPTY_BUTTON_DRIVER";
@@ -1417,7 +1417,7 @@ const VendorInbox = (props) => {
     result = (
       <Card className="flex-center flex-box">
         <div style={{ marginTop: "50px", marginBottom: "25px" }}>{t(emptyCardText)}</div>
-        <SubmitBar className="" label={t(emptyButtonText)} onSubmit={onSelectAdd} />
+        {emptyButtonText && <SubmitBar className="" label={t(emptyButtonText)} onSubmit={onSelectAdd} />}
       </Card>
     );
 
