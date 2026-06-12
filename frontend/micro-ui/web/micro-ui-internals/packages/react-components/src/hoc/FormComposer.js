@@ -94,7 +94,7 @@ export const FormComposer = (props) => {
     props.onFormValueChange && props.onFormValueChange(setValue, formData, formState);
   }, [formData]);
 
-  const fieldSelector = (type, populators, isMandatory, disable = false, component, config) => {
+  const fieldSelector = (type, populators, isMandatory, disable = false, component, config, props) => {
     const Component = typeof component === "string" ? Digit.ComponentRegistryService.getComponent(component) : component;
 
     switch (type) {
@@ -146,7 +146,7 @@ export const FormComposer = (props) => {
       case "component":
         return (
           <Controller
-            render={(props) => (
+            render={(prop) => (
               <Component
                 userType={"employee"}
                 t={t}
@@ -157,11 +157,12 @@ export const FormComposer = (props) => {
                 formData={formData}
                 register={register}
                 errors={errors}
-                props={props}
+                props={prop}
                 setError={setError}
                 clearErrors={clearErrors}
                 formState={formState}
-                onBlur={props.onBlur}
+                onBlur={prop.onBlur}
+                {...props}
               />
             )}
             name={config.key}
@@ -185,6 +186,7 @@ export const FormComposer = (props) => {
               clearErrors={clearErrors}
               formState={formState}
               control={control}
+              {...props}
             />
           </form>
         );
@@ -283,7 +285,6 @@ export const FormComposer = (props) => {
                   {section.body.map((field, index) => {
                     const Component =
                       typeof field?.component === "string" ? Digit.ComponentRegistryService.getComponent(field?.component) : field?.component;
-
                     if (props.inline) {
                       return (
                         <React.Fragment key={index}>
@@ -339,6 +340,7 @@ export const FormComposer = (props) => {
                                     setError={setError}
                                     clearErrors={clearErrors}
                                     formState={formState}
+                                    {...field?.props}
                                     style={{
                                       gridColumn: field?.colSpan ? field.colSpan : "span 1",
                                       ...props?.fieldStyle,
