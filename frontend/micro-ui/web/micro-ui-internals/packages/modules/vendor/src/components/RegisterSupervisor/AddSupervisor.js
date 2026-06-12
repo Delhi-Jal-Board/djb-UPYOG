@@ -3,11 +3,9 @@ import { useTranslation } from "react-i18next";
 import { FormComposer, Toast, VerticalTimeline } from "@djb25/digit-ui-react-components";
 import { useQueryClient } from "react-query";
 import SupervisorConfig from "../../config/SupervisorConfig";
-import { useHistory, useLocation } from "react-router-dom";
 
 const AddSupervisor = ({ parentUrl, heading }) => {
   const { t } = useTranslation();
-  const history = useHistory();
 
   // getCurrentTenantId() returns state-level 'dl' for CITIZEN users.
   // ULB-level tenantId (e.g. 'dl.djb') is required by the supervisor API.
@@ -20,13 +18,7 @@ const AddSupervisor = ({ parentUrl, heading }) => {
   const queryClient = useQueryClient();
   const [canSubmit, setCanSubmit] = useState(false);
 
-  const { mutateAsync } = Digit.Hooks.fsm.useSupervisorCreate(tenantId);
-  const { search } = useLocation();
-  const queryParams = new URLSearchParams(search);
-  const vendorIdParam = queryParams.get("vendorId");
-
-  // Use the logged-in user's UUID as vendorId if not provided in URL
-  const vendorId = vendorIdParam || userInfo?.uuid;
+  const { mutate } = Digit.Hooks.fsm.useSupervisorCreate(tenantId);
 
   const Config = SupervisorConfig(t);
 
@@ -35,23 +27,18 @@ const AddSupervisor = ({ parentUrl, heading }) => {
   };
 
   const onFormValueChange = (setValue, formData) => {
-    // Basic validation logic
-    const isBasicDetailsFilled =
-      formData?.fullName &&
-      formData?.mobileNumber &&
-      formData?.emailId &&
-      formData?.fatherOrHusbandName &&
-      formData?.relationship &&
-      formData?.dob &&
-      formData?.gender &&
-      formData?.correspondenceAddress &&
-      formData?.assignedZone;
+    const requiredFields = [
+      formData?.fullName,
+      formData?.mobileNumber,
+      formData?.emailId,
+      formData?.gender,
+      formData?.dob,
+      formData?.correspondenceAddress,
+    ];
 
-    if (isBasicDetailsFilled) {
-      setCanSubmit(true);
-    } else {
-      setCanSubmit(false);
-    }
+    const isBasicDetailsFilled = requiredFields.every(Boolean) && formData?.zoneIds?.length > 0;
+
+    setCanSubmit(isBasicDetailsFilled);
   };
 
   const closeToast = () => {
@@ -60,7 +47,7 @@ const AddSupervisor = ({ parentUrl, heading }) => {
 
   const onSubmit = async (data) => {
     const isVendor = userInfo?.roles?.some((role) => role.code === "EKYC_VENDOR");
-
+    const assignedZone = Array.isArray(data?.zoneIds) ? data?.zoneIds?.map((ele) => ele.code).join(",") || "" : data?.zoneIds;
     const formData = {
       RequestInfo: {
         apiId: "Rainmaker",
@@ -84,13 +71,13 @@ const AddSupervisor = ({ parentUrl, heading }) => {
       supervisor: {
         tenantId: tenantId,
         // vendorId: vendorId,
-        assignedZoneId: data?.assignedZone?.code || data?.assignedZone || null,
+        assignedZoneId: assignedZone,
         description: data?.description || "",
         owner: {
           tenantId: tenantId,
           name: data?.fullName,
-          fatherOrHusbandName: data?.fatherOrHusbandName,
-          relationship: data?.relationship?.code,
+          fatherOrHusbandName: "Static Father",
+          relationship: "FATHER",
           dob: data?.dob ? new Date(data.dob).getTime() : null,
           gender: data?.gender?.code || "OTHERS",
           mobileNumber: data?.mobileNumber,

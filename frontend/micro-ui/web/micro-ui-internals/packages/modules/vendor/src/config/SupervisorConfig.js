@@ -1,5 +1,5 @@
 import React from "react";
-const { Dropdown, DatePicker } = require("@djb25/digit-ui-react-components");
+const { DatePicker } = require("@djb25/digit-ui-react-components");
 
 const SupervisorConfig = (t, agencies = [], reportingManagers = [], disabled = false) => {
   return [
@@ -77,32 +77,6 @@ const SupervisorConfig = (t, agencies = [], reportingManagers = [], disabled = f
           component: "SelectGender",
         },
         {
-          label: t("ES_FSM_REGISTRY_NEW_FATHER_NAME"),
-          isMandatory: true,
-          type: "text",
-          populators: {
-            name: "fatherOrHusbandName",
-            validation: { required: true },
-            className: "payment-form-text-input-correction",
-          },
-        },
-        {
-          label: t("ES_FSM_REGISTRY_NEW_RELATIONSHIP"),
-          isMandatory: true,
-          type: "component",
-          key: "relationship",
-          component: "SelectEkycDropdown",
-          populators: {
-            name: "relationship",
-            options: [
-              { code: "FATHER", name: "ES_COMMON_RELATION_FATHER" },
-              { code: "HUSBAND", name: "ES_COMMON_RELATION_HUSBAND" },
-              { code: "OTHER", name: "ES_COMMON_RELATION_OTHER" },
-            ],
-            optionsKey: "name",
-          },
-        },
-        {
           label: t("ES_FSM_REGISTRY_NEW_DOB"),
           isMandatory: true,
           type: "custom",
@@ -124,22 +98,12 @@ const SupervisorConfig = (t, agencies = [], reportingManagers = [], disabled = f
           },
         },
         {
-          label: t("ES_VENDOR_SUPERVISOR_ASSIGNED_ZONE"),
+          label: "ES_VENDOR_ZONE",
           isMandatory: true,
           type: "component",
-          key: "assignedZone",
-          component: "SelectEkycDropdown",
-          populators: {
-            name: "assignedZone",
-            options: [
-              { code: "ZONE-01", name: "ZONE-01" },
-              { code: "ZONE-02", name: "ZONE-02" },
-              { code: "ZONE-03", name: "ZONE-03" },
-              { code: "ZONE-04", name: "ZONE-04" },
-              { code: "ZONE-05", name: "ZONE-05" },
-            ],
-            optionsKey: "name",
-          },
+          key: "zoneIds",
+          props: { isMultiSelect: false },
+          component: "SelectEkycZones",
         },
         {
           label: t("ES_VENDOR_SUPERVISOR_DESCRIPTION"),
