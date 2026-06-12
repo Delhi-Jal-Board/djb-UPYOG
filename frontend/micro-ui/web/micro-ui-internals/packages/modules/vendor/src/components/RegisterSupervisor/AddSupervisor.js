@@ -20,7 +20,7 @@ const AddSupervisor = ({ parentUrl, heading }) => {
   const queryClient = useQueryClient();
   const [canSubmit, setCanSubmit] = useState(false);
 
-  const { mutate } = Digit.Hooks.fsm.useSupervisorCreate(tenantId);
+  const { mutateAsync } = Digit.Hooks.fsm.useSupervisorCreate(tenantId);
   const { search } = useLocation();
   const queryParams = new URLSearchParams(search);
   const vendorIdParam = queryParams.get("vendorId");
@@ -58,7 +58,7 @@ const AddSupervisor = ({ parentUrl, heading }) => {
     setShowToast(null);
   };
 
-  const onSubmit = (data) => {
+  const onSubmit = async (data) => {
     const isVendor = userInfo?.roles?.some((role) => role.code === "EKYC_VENDOR");
 
     const formData = {
@@ -100,17 +100,18 @@ const AddSupervisor = ({ parentUrl, heading }) => {
       },
     };
 
-    mutate(formData, {
-      onError: (error) => {
-        setShowToast({ key: "error", action: error });
-        setTimeout(closeToast, 5000);
-      },
-      onSuccess: () => {
-        setShowToast({ key: "success", action: "ADD_SUPERVISOR" });
-        queryClient.invalidateQueries("SUPERVISOR_SEARCH");
-        setTimeout(closeToast, 5000);
-      },
-    });
+    try {
+      await mutateAsync(formData);
+      setShowToast({ key: "success", action: "ADD_SUPERVISOR" });
+      queryClient.invalidateQueries("SUPERVISOR_SEARCH");
+      setTimeout(() => {
+        closeToast();
+        history.push("/digit-ui/citizen/vendor/search-vendor");
+      }, 3000);
+    } catch (error) {
+      setShowToast({ key: "error", action: error?.message || error });
+      setTimeout(closeToast, 5000);
+    }
   };
 
   return (
