@@ -156,6 +156,7 @@ const RegisteredVendorSearch = ({
     // ...(matchedRoles?.ekyc?.includes("EKYC_SUPERVISOR") || matchedRoles?.ekyc?.includes("EKYC_VENDOR") ? ["SURVEYOR"] : []),
     ...(matchedRoles?.ekyc?.includes("EKYC_SUPERVISOR") ? ["SURVEYOR"] : []),
   ];
+
   return (
     <React.Fragment>
       <div className="search-container">
@@ -177,16 +178,17 @@ const RegisteredVendorSearch = ({
           )}
           <div className="search-tabs-container">
             <div>
-              <button
-                className={selectedTab === "VENDOR" ? "search-tab-head-selected" : "search-tab-head"}
-                onClick={() => {
-                  clearSearch({});
-                  onTabChange("VENDOR");
-                }}
-              >
-                {t("ES_FSM_REGISTRY_INBOX_TAB_VENDOR")}
-              </button>
-
+              {(matchedRoles?.wt?.includes("WT_VENDOR") || matchedRoles?.ekyc?.includes("EKYC_VENDOR")) && (
+                <button
+                  className={selectedTab === "VENDOR" ? "search-tab-head-selected" : "search-tab-head"}
+                  onClick={() => {
+                    clearSearch({});
+                    onTabChange("VENDOR");
+                  }}
+                >
+                  {t("ES_FSM_REGISTRY_INBOX_TAB_VENDOR")}
+                </button>
+              )}
               {matchedRoles?.wt?.includes("WT_VENDOR") && (
                 <button
                   className={selectedTab === "VEHICLE" ? "search-tab-head-selected" : "search-tab-head"}

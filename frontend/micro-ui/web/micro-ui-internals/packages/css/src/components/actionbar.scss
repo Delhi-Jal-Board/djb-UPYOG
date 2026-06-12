@@ -81,18 +81,19 @@
 }
 
 .action-bar-wrap-registry {
+  @apply relative;
   div {
     @apply w-full;
   }
 
   .menu-wrap {
-    @apply absolute bg-white text-left mb-xs z-30 cursor-pointer;
+    @apply absolute bg-white text-left right-10 rounded-xl z-30 cursor-pointer;
     box-shadow: rgba(0, 0, 0, 0.14) 0 8px 10px 1px, rgba(0, 0, 0, 0.12) 0 3px 14px 2px, rgba(0, 0, 0, 0.2) 0 5px 5px -3px;
-    width: 160px;
-    right: 60px;
+    width: fit-content;
+    border-radius: 10px !important;
 
     div {
-      @apply h-12 pl-sm py-md text-body-l text-text-primary;
+      @apply p-sm text-body-l rounded-xl text-text-primary;
 
       p {
         word-wrap: break-word;

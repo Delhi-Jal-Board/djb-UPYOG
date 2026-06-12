@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { FormComposer, Toast, VerticalTimeline } from "@djb25/digit-ui-react-components";
 import { useQueryClient } from "react-query";
 import SupervisorConfig from "../../config/SupervisorConfig";
+import { useHistory } from "react-router-dom";
 
 const AddSupervisor = ({ parentUrl, heading }) => {
   const { t } = useTranslation();
@@ -18,7 +19,8 @@ const AddSupervisor = ({ parentUrl, heading }) => {
   const queryClient = useQueryClient();
   const [canSubmit, setCanSubmit] = useState(false);
 
-  const { mutate } = Digit.Hooks.fsm.useSupervisorCreate(tenantId);
+  const { mutate: mutateAsync } = Digit.Hooks.fsm.useSupervisorCreate(tenantId);
+  const history = useHistory();
 
   const Config = SupervisorConfig(t);
 

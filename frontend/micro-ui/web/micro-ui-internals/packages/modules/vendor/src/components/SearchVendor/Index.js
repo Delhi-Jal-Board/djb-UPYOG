@@ -5,17 +5,28 @@ import VendorInbox from "../VendorInbox";
 const SearchVendor = () => {
   const { t } = useTranslation();
   const tenantId = Digit.ULBService.getCurrentTenantId();
+  const userInfo = Digit.UserService.getUser();
+  const roles = Digit.UserService.getUser()?.info?.roles?.map((r) => r.name) || [];
+
+  const initialPage =
+    roles.includes("EKYC_VENDOR") || roles.includes("WT_VENDOR")
+      ? "VENDOR"
+      : roles.includes("EKYC_SUPERVISOR")
+      ? "SUPERVISOR"
+      : roles.includes("EKYC_SURVEYOR")
+      ? "SURVEYOR"
+      : "";
+
   const { selectedTabs } = Digit.Hooks.useQueryParams();
+  const [tab, setTab] = useState(selectedTabs || initialPage);
   const [searchParams, setSearchParams] = useState({});
   const [sortParams, setSortParams] = useState([{ id: "createdTime", desc: true }]);
   const [pageOffset, setPageOffset] = useState(0);
   const [pageSize, setPageSize] = useState(10);
-  const [tab, setTab] = useState(selectedTabs || "VENDOR");
   const [vehicleIds, setVehicleIds] = useState("");
   const [driverIds, setDriverIds] = useState("");
   const [tableData, setTableData] = useState([]);
 
-  const userInfo = Digit.UserService.getUser();
   const isCitizen = userInfo?.info?.type === "CITIZEN";
   const loggedInVendorId = userInfo?.info?.uuid;
 
