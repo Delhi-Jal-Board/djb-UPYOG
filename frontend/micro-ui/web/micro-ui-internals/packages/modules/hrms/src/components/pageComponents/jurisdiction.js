@@ -6,7 +6,7 @@ import cleanup from "../Utils/cleanup";
 const Jurisdictions = ({ t, config, onSelect, userType, formData, style }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [inactiveJurisdictions, setInactiveJurisdictions] = useState([]);
-  const { data: data = {}, isLoading } = Digit.Hooks.hrms.useHrmsMDMS(tenantId, "egov-hrms", "HRMSRolesandDesignation") || {};
+  const { data = {}, isLoading } = Digit.Hooks.hrms.useHrmsMDMS(tenantId, "egov-hrms", "HRMSRolesandDesignation") || {};
   const [jurisdictions, setjurisdictions] = useState(
     formData?.Jurisdictions || [
       {
@@ -84,8 +84,8 @@ const Jurisdictions = ({ t, config, onSelect, userType, formData, style }) => {
       setInactiveJurisdictions([...inactiveJurisdictions, res]);
     }
     setjurisdictions((prev) => prev.filter((el) => el.key !== unit.key));
-    if (FormData.errors?.Jurisdictions?.type == unit.key) {
-      clearErrors("Jurisdictions");
+    if (FormData.errors?.Jurisdictions?.type === unit.key) {
+      // clearErrors("Jurisdictions");
     }
     reviseIndexKeys();
   };
@@ -158,18 +158,18 @@ function Jurisdiction({
     selectBoundaryType(
       data?.MdmsRes?.["egov-location"]["TenantBoundary"]
         .filter((ele) => {
-          return ele?.hierarchyType?.code == jurisdiction?.hierarchy?.code;
+          return ele?.hierarchyType?.code === jurisdiction?.hierarchy?.code;
         })
         .map((item) => {
           return { ...item.boundary, i18text: Digit.Utils.locale.convertToLocale(item.boundary.label, "EGOV_LOCATION_BOUNDARYTYPE") };
         })
     );
   }, [jurisdiction?.hierarchy, data?.MdmsRes]);
-  const tenant = Digit.ULBService.getCurrentTenantId();
+  // const tenant = Digit.ULBService.getCurrentTenantId();
   useEffect(() => {
     selectboundary(
       data?.MdmsRes?.tenant?.tenants
-        .filter((city) => city.code != Digit.ULBService.getStateId())
+        .filter((city) => city.code !== Digit.ULBService.getStateId())
         .map((city) => {
           return { ...city, i18text: Digit.Utils.locale.getCityLocale(city.code) };
         })
@@ -178,7 +178,7 @@ function Jurisdiction({
 
   useEffect(() => {
     if (Boundary?.length > 0) {
-      selectedboundary(Boundary?.filter((ele) => ele.code == jurisdiction?.boundary?.code)[0]);
+      selectedboundary(Boundary?.filter((ele) => ele.code === jurisdiction?.boundary?.code)[0]);
     }
   }, [Boundary]);
 
@@ -204,10 +204,7 @@ function Jurisdiction({
     //   res = [{ ...data }, ...jurisdiction?.roles];
     // }
     let res = [];
-    e &&
-      e?.map((ob) => {
-        res.push(ob?.[1]);
-      });
+    e && e?.map((ob) => res.push(ob?.[1]));
 
     res?.forEach((resData) => {
       resData.labelKey = "ACCESSCONTROL_ROLES_ROLES_" + resData.code;
