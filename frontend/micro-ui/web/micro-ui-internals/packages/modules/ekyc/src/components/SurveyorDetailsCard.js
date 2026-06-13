@@ -38,10 +38,14 @@ const SurveyorDetailsDashboard = () => {
     surveyorId: surveyor?.owner?.uuid,
   };
 
-  const { isFetching: isDashboardLoading, data: dashboardData = {} } = Digit.Hooks.ekyc.useEkycSurveyorDashboard({}, queryParams, {
-    enabled: !!queryParams.tenantId && !!queryParams.surveyorId,
-    keepPreviousData: true,
-  });
+  const { isFetching: isDashboardLoading, data: dashboardData = {}, refetch: refetchDashboard } = Digit.Hooks.ekyc.useEkycSurveyorDashboard(
+    {},
+    queryParams,
+    {
+      enabled: !!queryParams.tenantId && !!queryParams.surveyorId,
+      keepPreviousData: true,
+    }
+  );
 
   const knoColumns = useMemo(
     () => [
@@ -143,6 +147,11 @@ const SurveyorDetailsDashboard = () => {
   const handleMenuSelect = (option) => {
     setShowOptions(false); // close menu
     setShowModal(true);
+  };
+
+  const closeModal = async () => {
+    await refetchDashboard();
+    setShowModal(false);
   };
 
   return (
@@ -301,7 +310,7 @@ const SurveyorDetailsDashboard = () => {
         </ActionBar>
       )}
 
-      {showModal && <AssignEkycModal surveyor={surveyor} closeModal={() => setShowModal(false)} />}
+      {showModal && <AssignEkycModal surveyor={surveyor} closeModal={closeModal} />}
     </Card>
   );
 };

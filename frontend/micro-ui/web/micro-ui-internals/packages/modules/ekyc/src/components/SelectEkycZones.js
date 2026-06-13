@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { CardLabel, LabelFieldPair, MultiSelectDropdown, Loader } from "@djb25/digit-ui-react-components";
 
-const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true }) => {
+const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true, placeHolder }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
 
   const [zones, setZones] = useState([]);
@@ -60,6 +60,7 @@ const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true }
           multiple={isMultiSelect}
           ServerStyle={{ backgroundColor: "#fff" }}
           isMultiSelect={isMultiSelect}
+          placeHolder={placeHolder}
           showSelectedLabels={true}
         />
       </div>
