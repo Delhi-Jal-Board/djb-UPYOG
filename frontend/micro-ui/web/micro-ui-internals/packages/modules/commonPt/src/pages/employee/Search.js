@@ -1,6 +1,6 @@
 import React, { memo, useCallback, useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Header, Loader, Localities, Toast } from "@djb25/digit-ui-react-components";
+import { Header, Loader, Localities, Toast, Card, CardText } from "@djb25/digit-ui-react-components";
 import { useLocation } from "react-router-dom";
 
 const PTSearchFields = {
@@ -151,17 +151,18 @@ const Search = ({ path }) => {
 
   return (
     <React.Fragment>
-      <Header>{t("SEARCH_PROPERTY")}</Header>
-      <SearchComponent
-        t={t}
-        payload={formData}
-        searchBy={searchBy}
-        setSearchBy={setSearchBy}
-        PTSearchFields={PTSearchFields}
-        tenantId={tenantId}
-        onSubmit={onSubmit}
-        onReset={onReset}
-      />
+      <Card>
+        <SearchComponent
+          t={t}
+          payload={formData}
+          searchBy={searchBy}
+          setSearchBy={setSearchBy}
+          PTSearchFields={PTSearchFields}
+          tenantId={tenantId}
+          onSubmit={onSubmit}
+          onReset={onReset}
+        />
+      </Card>
       {Object.keys(payload).length > 0 && (
         <SearchResultComponent
           t={t}

@@ -433,22 +433,40 @@ export const WSSearch = {
           title: "LOCALITY",
           value: propertyDataDetails?.address?.locality?.name || propertyDataDetails?.address?.locality?.code || t("NA"),
         },
+        {
+          title: "SUBLOCALITY",
+          value: propertyDataDetails?.address?.subLocality || t("NA"),
+        },
         { title: "PT_PROPERTY_ADDRESS_HOUSE_NO", value: propertyDataDetails?.address?.houseNo || t("NA") },
         { title: "PT_PROPERTY_ADDRESS_STREET_NAME", value: propertyDataDetails?.address?.street || t("NA") },
         { title: "ADDRESS_LINE1", value: propertyDataDetails?.address?.street || t("NA") },
-        { title: "ADDRESS_LINE2", value: propertyDataDetails?.address?.address2 || t("NA") },
-        { title: "LATITUDE", value: propertyDataDetails?.address?.geoLocation?.latitude || t("NA") },
-        { title: "LONGITUDE", value: propertyDataDetails?.address?.geoLocation?.longitude || t("NA") },
+        { title: "ADDRESS_LINE2", value: propertyDataDetails?.address?.address2 || propertyDataDetails?.address?.subLocality || t("NA") },
+        { title: "LATITUDE", value: propertyDataDetails?.address?.locality?.latitude || t("NA") },
+        { title: "LONGITUDE", value: propertyDataDetails?.address?.locality?.longitude || t("NA") },
         {
-          title: "BLOCK",
-          value: propertyDataDetails?.additionalDetails?.block || propertyDataDetails?.address?.additionalDetails?.block || t("NA"),
+          title: "WARD",
+          value:
+            propertyDataDetails?.additionalDetails?.Block ||
+            propertyDataDetails?.address?.additionalDetails?.Block ||
+            propertyDataDetails?.address?.Block ||
+            t("NA"),
         },
         {
           title: "ASSEMBLY",
-          value: propertyDataDetails?.additionalDetails?.assembly || propertyDataDetails?.address?.additionalDetails?.assembly || t("NA"),
+          value:
+            propertyDataDetails?.additionalDetails?.assembly ||
+            propertyDataDetails?.address?.additionalDetails?.assembly ||
+            propertyDataDetails?.address?.assembly ||
+            t("NA"),
         },
         { title: "LANDMARK", value: propertyDataDetails?.address?.landmark || t("NA") },
-        { title: "ZONE", value: propertyDataDetails?.additionalDetails?.zone || propertyDataDetails?.address?.additionalDetails?.zone || t("NA") },
+        {
+          title: "ZONE",
+          value:
+            propertyDataDetails?.additionalDetails?.zone ||
+            propertyDataDetails?.address?.additionalDetails?.zone ||
+            t("NA"),
+        },
       ],
     };
 

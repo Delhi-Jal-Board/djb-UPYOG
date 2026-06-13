@@ -1,4 +1,4 @@
-import { Dropdown, FormComposer, InfoBannerIcon, Loader, Localities, RadioButtons, Toast } from "@djb25/digit-ui-react-components";
+import { Dropdown, FormComposer, InfoBannerIcon, Loader, Localities, RadioButtons, Toast, Card, CardText } from "@djb25/digit-ui-react-components";
 import _ from "lodash";
 import PropTypes from "prop-types";
 import React, { useEffect, useLayoutEffect, useState } from "react";
@@ -21,13 +21,13 @@ const description = {
 const SearchProperty = ({ config: propsConfig, onSelect, redirectToUrl }) => {
   const { t } = useTranslation();
   const history = useHistory();
+
   const { action = 0 } = Digit.Hooks.useQueryParams();
   const [searchData, setSearchData] = useState(() => {
-    const isFirstVisit = sessionStorage.getItem("VisitedCitizenSearchRedirect");
     const mobileNumber = Digit.UserService.getUser()?.info?.mobileNumber;
-    if (!isFirstVisit && mobileNumber && window.location.href.includes("digit-ui/citizen/commonpt/property/citizen-search")) {
-      sessionStorage.setItem("VisitedCitizenSearchRedirect", "true");
-      return { filters: { mobileNumber } };
+    const tenantId = Digit.ULBService.getCurrentTenantId() || Digit.ULBService.getStateId() || "dl";
+    if (mobileNumber && window.location.href.includes("digit-ui/citizen/commonpt/property/citizen-search")) {
+      return { filters: { mobileNumber }, city: tenantId };
     }
     return {};
   });
@@ -298,30 +298,30 @@ const SearchProperty = ({ config: propsConfig, onSelect, redirectToUrl }) => {
           // ...description,
           isMandatory: false,
         },
-        // {
-        //   label: "",
-        //   labelChildren: (
-        //     <div className="tooltip" /* style={{position:"relative"}} */>
-        //       <div style={{ display: "flex", /* alignItems: "center", */ gap: "0 4px" }}>
-        //         <h2>{t(property.label)}</h2>
-        //         <InfoBannerIcon fill="#0b0c0c" />
-        //         <span className="tooltiptext" style={{ position: "absolute", width: "72%", marginLeft: "50%", fontSize: "medium" }}>
-        //           {t(property.description) + " " + "PG-PT-xxxx-xxxxxx"}
-        //         </span>
-        //       </div>
-        //     </div>
-        //   ),
-        //   type: property.type,
-        //   populators: {
-        //     name: property.name,
-        //     defaultValue: "",
-        //     validation: property?.validation,
-        //   },
-        //   ...description,
-        //   isMandatory: false,
-        //   isInsideBox: true,
-        //   placementinbox: 1,
-        // },
+        {
+          label: "",
+          labelChildren: (
+            <div className="tooltip" /* style={{position:"relative"}} */>
+              <div style={{ display: "flex", /* alignItems: "center", */ gap: "0 4px" }}>
+                <h2>{t(property.label)}</h2>
+                <InfoBannerIcon fill="#0b0c0c" />
+                <span className="tooltiptext" style={{ position: "absolute", width: "72%", marginLeft: "50%", fontSize: "medium" }}>
+                  {t(property.description) + " " + "PG-PT-xxxx-xxxxxx"}
+                </span>
+              </div>
+            </div>
+          ),
+          type: property.type,
+          populators: {
+            name: property.name,
+            defaultValue: "",
+            validation: property?.validation,
+          },
+          // ...description,
+          isMandatory: false,
+          isInsideBox: true,
+          placementinbox: 1,
+        },
         // {
         //   label: oldProperty.label,
         //   type: oldProperty.type,
@@ -657,7 +657,13 @@ const SearchProperty = ({ config: propsConfig, onSelect, redirectToUrl }) => {
           }}
           onClick={() => {
             history.replace(`${history.location.pathname}?action=0`);
-            setSearchData({});
+            const mobileNumber = Digit.UserService.getUser()?.info?.mobileNumber;
+            const tenantId = Digit.ULBService.getCurrentTenantId() || Digit.ULBService.getStateId() || "dl";
+            if (mobileNumber) {
+              setSearchData({ filters: { mobileNumber }, city: tenantId });
+            } else {
+              setSearchData({});
+            }
           }}
         >
           {t("PT_KNOW_PTID")}
@@ -673,7 +679,13 @@ const SearchProperty = ({ config: propsConfig, onSelect, redirectToUrl }) => {
           }}
           onClick={() => {
             history.replace(`${history.location.pathname}?action=1`);
-            setSearchData({});
+            const mobileNumber = Digit.UserService.getUser()?.info?.mobileNumber;
+            const tenantId = Digit.ULBService.getCurrentTenantId() || Digit.ULBService.getStateId() || "dl";
+            if (mobileNumber) {
+              setSearchData({ filters: { mobileNumber }, city: tenantId });
+            } else {
+              setSearchData({});
+            }
           }}
         >
           {t("PT_SEARCH_DOOR_NO")}

@@ -4,21 +4,34 @@ import { Controller, useForm } from "react-hook-form";
 
 const SwitchComponent = (props) => {
   return (
-    <div className="w-fullwidth PropertySearchFormSwitcher">
-      {props.keys.map((key) => (
-        <span
-          key={key}
-          className={props.searchBy === key ? "selected" : "non-selected"}
-          onClick={() => {
-            key === "searchDetail" && !sessionStorage.getItem("searchDetailValue") ? sessionStorage.setItem("searchDetailValue", 1) : "";
-            key === "searchId" && sessionStorage.getItem("searchDetailValue") == 1 ? sessionStorage.setItem("searchDetailValue", 2) : "";
-            props.onSwitch(key);
-            props.onReset();
-          }}
-        >
-          {props.t(`PT_SEARCH_BY_${key?.toUpperCase()}`)}
-        </span>
-      ))}
+    <div
+      className="search-tabs-container PropertySearchFormSwitcher"
+      style={{ marginBottom: "16px", display: "flex", gap: "24px", justifyContent: "flex-start", borderBottom: "1px solid #ccc" }}
+    >
+      {props.keys.map((key) => {
+        const isSelected = props.searchBy === key;
+        return (
+          <div
+            key={key}
+            className={`search-tab ${isSelected ? "active" : ""}`}
+            style={{
+              padding: "8px 16px",
+              cursor: "pointer",
+              borderBottom: isSelected ? "2px solid #f47738" : "2px solid transparent",
+              color: isSelected ? "#f47738" : "#0b0c0c",
+              fontWeight: isSelected ? "bold" : "normal",
+            }}
+            onClick={() => {
+              key === "searchDetail" && !sessionStorage.getItem("searchDetailValue") ? sessionStorage.setItem("searchDetailValue", 1) : "";
+              key === "searchId" && sessionStorage.getItem("searchDetailValue") == 1 ? sessionStorage.setItem("searchDetailValue", 2) : "";
+              props.onSwitch(key);
+              props.onReset();
+            }}
+          >
+            {props.t(`PT_SEARCH_BY_${key?.toUpperCase()}`)}
+          </div>
+        );
+      })}
     </div>
   );
 };
@@ -93,19 +106,19 @@ const SearchPTID = ({ tenantId, t, onSubmit, onReset, searchBy, PTSearchFields, 
               );
             })}
         </div>
-        <div className="formcomposer-section-button" style={{ marginTop: "16px" }}>
-          <SearchField className="pt-search-action-reset generic-button clear-search">
+        <div className="formcomposer-section-button" style={{ marginTop: "16px", display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
+          <div className="pt-search-action-reset generic-button clear-search" style={{ margin: 0 }}>
             <p
               onClick={() => {
                 onReset({});
               }}
             >
-              {t(`ES_COMMON_CLEAR_ALL`)}
+              {t(`ES_COMMON_CLEAR_SEARCH`)}
             </p>
-          </SearchField>
-          <SearchField className="pt-search-action-submit submit-bar generic-button">
+          </div>
+          <div className="pt-search-action-submit submit-bar generic-button" style={{ margin: 0 }}>
             <SubmitBar label={t("ES_COMMON_SEARCH")} submit />
-          </SearchField>
+          </div>
         </div>
       </SearchForm>
     </div>
