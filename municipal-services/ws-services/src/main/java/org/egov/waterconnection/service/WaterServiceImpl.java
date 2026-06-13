@@ -147,6 +147,17 @@ public class WaterServiceImpl implements WaterService {
 		if (config.getIsExternalWorkFlowEnabled())
 			wfIntegrator.callWorkFlow(waterConnectionRequest, property);
 
+		// Save middleName/lastName before encryption — the encryption service drops fields
+		// not in its MDMS model definition, so they must be restored after decrypt.
+		Map<String, String[]> holderNameParts = new HashMap<>();
+		if (!CollectionUtils.isEmpty(waterConnectionRequest.getWaterConnection().getConnectionHolders())) {
+			waterConnectionRequest.getWaterConnection().getConnectionHolders().forEach(h -> {
+				if (h.getUuid() != null) {
+					holderNameParts.put(h.getUuid(), new String[]{ h.getMiddleName(), h.getLastName() });
+				}
+			});
+		}
+
 		/* encrypt here */
 		waterConnectionRequest.setWaterConnection(encryptConnectionDetails(waterConnectionRequest.getWaterConnection()));
 		/* encrypt here for connection holder details */
@@ -164,8 +175,17 @@ public class WaterServiceImpl implements WaterService {
 			waterConnectionRequest.setWaterConnection(encryptionDecryptionUtil.decryptObject(waterConnectionRequest.getWaterConnection(), "WnSConnectionPlumberDecrypDisabled", WaterConnection.class, waterConnectionRequest.getRequestInfo()));
 
 		List<OwnerInfo> connectionHolders = waterConnectionRequest.getWaterConnection().getConnectionHolders();
-		if (!CollectionUtils.isEmpty(connectionHolders))
+		if (!CollectionUtils.isEmpty(connectionHolders)) {
 			waterConnectionRequest.getWaterConnection().setConnectionHolders(encryptionDecryptionUtil.decryptObject(connectionHolders, WNS_OWNER_ENCRYPTION_MODEL, OwnerInfo.class, waterConnectionRequest.getRequestInfo()));
+			// Restore middleName/lastName that were dropped by the encryption service
+			waterConnectionRequest.getWaterConnection().getConnectionHolders().forEach(h -> {
+				String[] parts = holderNameParts.get(h.getUuid());
+				if (parts != null) {
+					h.setMiddleName(parts[0]);
+					h.setLastName(parts[1]);
+				}
+			});
+		}
 
 		return Arrays.asList(waterConnectionRequest.getWaterConnection());
 	}
@@ -253,9 +273,7 @@ public class WaterServiceImpl implements WaterService {
 		}
 		
 		log.info("Filtered connection after search" +waterConnectionList.size() );
-		if ((criteria.getIsPropertyDetailsRequired() != null) && criteria.getIsPropertyDetailsRequired()) {
-			waterConnectionList = enrichmentService.enrichPropertyDetails(waterConnectionList, criteria, requestInfo);
-		}
+		waterConnectionList = enrichmentService.enrichPropertyDetails(waterConnectionList, criteria, requestInfo);
 		waterConnectionValidator.validatePropertyForConnection(waterConnectionList);
 		enrichmentService.enrichConnectionHolderDeatils(waterConnectionList, criteria, requestInfo);
 		enrichmentService.enrichProcessInstance(waterConnectionList, criteria, requestInfo);
