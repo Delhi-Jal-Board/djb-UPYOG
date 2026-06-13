@@ -277,7 +277,7 @@ public class WaterServiceImpl implements WaterService {
 		waterConnectionValidator.validatePropertyForConnection(waterConnectionList);
 		enrichmentService.enrichConnectionHolderDeatils(waterConnectionList, criteria, requestInfo);
 		enrichmentService.enrichProcessInstance(waterConnectionList, criteria, requestInfo);
-//		enrichmentService.enrichDocumentDetails(waterConnectionList, criteria, requestInfo);
+		enrichmentService.enrichDocumentDetails(waterConnectionList, criteria, requestInfo);
 
 		requestInfo.setPlainAccessRequest(apiPlainAccessRequest);
 		/* decrypt here */
