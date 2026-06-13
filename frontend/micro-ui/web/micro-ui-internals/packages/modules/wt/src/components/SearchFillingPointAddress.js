@@ -237,6 +237,13 @@ const SearchFillingPointAddress = () => {
     });
   };
 
+  const getLocalityTranslation = (localityCode, tenantId, t) => {
+  if (!localityCode) return "";
+  const tenant = tenantId || Digit.ULBService.getCurrentTenantId() || "djb";
+  const prefix = tenant.replace(".", "_").toUpperCase();
+  return t(`${prefix}_REVENUE_${localityCode}`);
+  
+};
   const columns = React.useMemo(() => {
     if (selectedTab === "FIXED_POINT") {
       return [
@@ -264,7 +271,7 @@ const SearchFillingPointAddress = () => {
         },
         {
           Header: t("WT_LOCALITY"),
-          accessor: (row) => row?.address?.locality || "NA",
+          accessor: (row) => getLocalityTranslation(row?.address?.locality, tenantId, t) || "NA",
           id: "locality",
         },
         {
@@ -358,13 +365,18 @@ const SearchFillingPointAddress = () => {
           Header: t("WT_LOCALITY"),
           // accessor: (row) => row?.address?.locality || "NA",
           Cell: ({ row }) => {
-            const localities =
+            const codes =
               row.original?.fillingPointLocalityCodes?.length > 0
-                ? row.original.fillingPointLocalityCodes.join(", ")
-                : row.original?.address?.locality || "NA";
+                ? row.original.fillingPointLocalityCodes
+                : row.original?.address?.locality
+                ? [row.original.address.locality]
+                : [];
+            const translated = codes.length > 0
+              ? codes.map((code) => getLocalityTranslation(code, tenantId, t)).join(", ")
+              : "NA";
             return (
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <span>{localities}</span>
+                <span>{translated}</span>
               </div>
             );
           },
@@ -524,7 +536,7 @@ const SearchFillingPointAddress = () => {
         },
         {
           Header: t("WT_LOCALITY"),
-          exportAccessor: (row) => row?.address?.locality || "NA",
+          exportAccessor: (row) => getLocalityTranslation(row?.address?.locality, tenantId, t) || "NA",
         },
         {
           Header: t("WT_LATITUDE"),
@@ -614,8 +626,17 @@ const SearchFillingPointAddress = () => {
       },
       {
         Header: t("WT_LOCALITY"),
-        exportAccessor: (row) =>
-          row?.fillingPointLocalityCodes?.length > 0 ? row.fillingPointLocalityCodes.join(", ") : row?.address?.locality || "NA",
+        exportAccessor: (row) => {
+          const codes =
+            row?.fillingPointLocalityCodes?.length > 0
+              ? row.fillingPointLocalityCodes
+              : row?.address?.locality
+              ? [row.address.locality]
+              : [];
+          return codes.length > 0
+            ? codes.map((code) => getLocalityTranslation(code, tenantId, t)).join(", ")
+            : "NA";
+        },
       },
     ];
   }, [selectedTab, t]);
