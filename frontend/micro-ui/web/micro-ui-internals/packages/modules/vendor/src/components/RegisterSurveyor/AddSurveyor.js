@@ -38,7 +38,7 @@ const AddSurveyor = ({ parentUrl, heading }) => {
       formData?.emailId &&
       // formData?.employeeId &&
       formData?.fatherOrHusbandName &&
-      formData?.relationship &&
+      // formData?.relationship &&
       formData?.dob &&
       formData?.correspondenceAddress;
 
@@ -88,7 +88,7 @@ const AddSurveyor = ({ parentUrl, heading }) => {
           tenantId: tenantId,
           name: data?.fullName,
           fatherOrHusbandName: data?.fatherOrHusbandName,
-          relationship: data?.relationship?.code,
+          relationship: "FATHER",
           gender: data?.gender?.code || "OTHERS",
           dob: data?.dob ? new Date(data.dob).getTime() : null,
           emailId: data?.emailId,

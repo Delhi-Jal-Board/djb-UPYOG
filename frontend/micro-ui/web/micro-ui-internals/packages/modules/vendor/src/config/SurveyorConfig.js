@@ -73,22 +73,22 @@ const SurveyorConfig = (t, agencies = [], reportingManagers = [], disabled = fal
             className: "payment-form-text-input-correction",
           },
         },
-        {
-          label: t("ES_FSM_REGISTRY_NEW_RELATIONSHIP"),
-          isMandatory: true,
-          type: "component",
-          key: "relationship",
-          component: "SelectEkycDropdown",
-          populators: {
-            name: "relationship",
-            options: [
-              { code: "FATHER", name: "ES_COMMON_RELATION_FATHER" },
-              { code: "HUSBAND", name: "ES_COMMON_RELATION_HUSBAND" },
-              { code: "OTHER", name: "ES_COMMON_RELATION_OTHER" },
-            ],
-            optionsKey: "name",
-          },
-        },
+        // {
+        //   label: t("ES_FSM_REGISTRY_NEW_RELATIONSHIP"),
+        //   isMandatory: true,
+        //   type: "component",
+        //   key: "relationship",
+        //   component: "SelectEkycDropdown",
+        //   populators: {
+        //     name: "relationship",
+        //     options: [
+        //       { code: "FATHER", name: "ES_COMMON_RELATION_FATHER" },
+        //       { code: "HUSBAND", name: "ES_COMMON_RELATION_HUSBAND" },
+        //       { code: "OTHER", name: "ES_COMMON_RELATION_OTHER" },
+        //     ],
+        //     optionsKey: "name",
+        //   },
+        // },
         {
           label: t("ES_FSM_REGISTRY_NEW_DOB"),
           isMandatory: true,
