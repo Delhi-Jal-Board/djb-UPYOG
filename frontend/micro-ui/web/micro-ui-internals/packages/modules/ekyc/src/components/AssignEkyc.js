@@ -7,7 +7,10 @@ import SearchFormFieldsComponents from "./SearchFormFieldsComponent";
 // Mock data removed in favor of API integration
 
 const AssignEkyc = () => {
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  let tenantId = Digit.ULBService.getCurrentTenantId();
+  if (!tenantId || tenantId === "dl") {
+    tenantId = "dl.djb"; // Force tenantId to dl.djb for EKYC APIs in citizen portal
+  }
   const location = useLocation();
   const formInitValue = {
     filterForm: {},
@@ -30,48 +33,32 @@ const AssignEkyc = () => {
     sortOrder: formState?.tableForm?.sortOrder || "DESC",
   };
 
+  const mobileNumber = formState?.searchForm?.mobileNumber || "";
+  const isSearchActive = !!mobileNumber;
+
+  const filters = {
+    ...paginationParms,
+    status: "ACTIVE,DISABLED",
+  };
+
+  if (isSearchActive) {
+    filters.mobileNumber = mobileNumber;
+  }
+
   const { data: dashboardData, isLoading } = Digit.Hooks.fsm.useSurveyorSearch(
     tenantId,
-    { ...paginationParms, status: "ACTIVE,DISABLED", vendorId: userDetails?.info?.uuid },
+    filters,
     { enabled: !!tenantId, keepPreviousData: true }
   );
 
-  const searchDetails = useMemo(
-    () => ({
-      kno: formState?.searchForm?.kNumber || "",
-      name: formState?.searchForm?.kName || "",
-    }),
-    [formState?.searchForm?.kNumber, formState?.searchForm?.kName]
-  );
-
-  const isSearchActive = !!(searchDetails.kno || searchDetails.name);
-
-  const { isLoading: isSearchLoading, data: searchData } = Digit.Hooks.ekyc.useSearchConnection(
-    {
-      tenantId,
-      details: searchDetails,
-    },
-    {
-      enabled: !!tenantId && !!searchDetails.kno, // 🔥 important
-      keepPreviousData: true,
-    }
-  );
-  const { isLoading: isDataSearchLoading, data } = Digit.Hooks.ekyc.useEkycAssignmentProgress(
-    {},
-    {
-      enabled: !!tenantId && !!searchDetails.kno, // 🔥 important
-      keepPreviousData: true,
-    }
-  );
+  const { isLoading: isDataSearchLoading, data } = Digit.Hooks.ekyc.useEkycAssignmentProgress({
+    enabled: !!tenantId,
+    keepPreviousData: true,
+  });
 
   const sourceData = useMemo(() => {
-    if (isSearchActive) {
-      if (!searchData) return [];
-      return [searchData];
-    }
-
     return dashboardData?.surveyors || [];
-  }, [isSearchActive, searchData, dashboardData]);
+  }, [dashboardData]);
 
   const filteredData = useMemo(() => {
     return (sourceData || []).map((item) => {
@@ -246,7 +233,7 @@ const AssignEkyc = () => {
     },
   });
 
-  const isInboxLoading = isLoading || isSearchLoading;
+  const isInboxLoading = isLoading;
 
   const cards = [
     {

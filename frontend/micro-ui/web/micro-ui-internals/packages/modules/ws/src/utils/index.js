@@ -1354,6 +1354,7 @@ export const convertApplicationData = (data, serviceType, modify = false, editBy
         id: data.id,
         documentUid: data?.documentUid,
         fileStoreId: data?.fileStoreId,
+        isVerified: data?.isVerified,
       });
     });
   }
@@ -1624,6 +1625,7 @@ export const convertDisonnectApplicationData = (data, serviceType, editByConfig 
         id: data.id,
         documentUid: data?.documentUid,
         fileStoreId: data?.fileStoreId,
+        isVerified: data?.isVerified,
       });
     });
   }
