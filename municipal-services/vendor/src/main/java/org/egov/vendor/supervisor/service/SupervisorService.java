@@ -165,12 +165,11 @@ public class SupervisorService {
         }
 
         // Check DB: is this caller a supervisor?
-        // Supervisor can see all supervisors under their same vendor
+        // Supervisor sees ONLY themselves — scope by ownerId, not vendorId
         Map<String, String> supervisorProfile = repository.findSupervisorByOwnerUuid(callerUuid);
         if (supervisorProfile != null) {
-            criteria.setVendorId(supervisorProfile.get("vendorId"));
-            log.info("Supervisor search scoped to vendorId={} for supervisor uuid={}",
-                    supervisorProfile.get("vendorId"), callerUuid);
+            criteria.setOwnerIds(Collections.singletonList(callerUuid));
+            log.info("Supervisor search scoped to self ownerUuid={}", callerUuid);
             return;
         }
 
