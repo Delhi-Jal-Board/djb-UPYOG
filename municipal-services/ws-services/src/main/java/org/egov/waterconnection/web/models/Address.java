@@ -69,4 +69,28 @@ public class Address {
 	
 	@JsonProperty("additionalDetails")
 	private Object additionalDetails;
+
+	@JsonProperty("latitude")
+	private String latitude;
+
+	@JsonProperty("longitude")
+	private String longitude;
+
+	@JsonProperty("zroLocation")
+	private String zroLocation;
+
+	@JsonProperty("subLocality")
+	private String subLocality;
+
+	@JsonProperty("actualWard")
+	private String actualWard;
+
+	@JsonProperty("actualZone")
+	private String actualZone;
+
+	@JsonProperty("actualAssembly")
+	private String actualAssembly;
+
+	@JsonProperty("houseNo")
+	private String houseNo;
 }

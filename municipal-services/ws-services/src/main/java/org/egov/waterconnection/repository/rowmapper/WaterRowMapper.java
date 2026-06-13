@@ -203,7 +203,10 @@ public class WaterRowMapper implements ResultSetExtractor<List<WaterConnection>>
 			OwnerInfo connectionHolderInfo = OwnerInfo.builder()
 					.relationship(rs.getString("holderrelationship"))
 					.status(Status.fromValue(rs.getString("holderstatus"))).tenantId(rs.getString("holdertenantid"))
-					.ownerType(rs.getString("connectionholdertype")).isPrimaryOwner(isPrimaryOwner).uuid(uuid).build();
+					.ownerType(rs.getString("connectionholdertype")).isPrimaryOwner(isPrimaryOwner).uuid(uuid)
+					.middleName(rs.getString("middlename"))
+					.lastName(rs.getString("lastname"))
+					.build();
 			waterConnection.addConnectionHolderInfo(connectionHolderInfo);
 		}
 	}

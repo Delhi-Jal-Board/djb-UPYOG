@@ -1,0 +1,2 @@
+ALTER TABLE eg_ws_connectionholder ADD COLUMN IF NOT EXISTS middlename CHARACTER VARYING (100);
+ALTER TABLE eg_ws_connectionholder ADD COLUMN IF NOT EXISTS lastname CHARACTER VARYING (100);

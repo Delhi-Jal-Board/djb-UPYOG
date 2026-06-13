@@ -50,4 +50,25 @@ public class Locality {
 	@JsonProperty("materializedPath")
 	private String materializedPath;
 
+	@JsonProperty("zone")
+	private String zone;
+
+	@JsonProperty("ward")
+	private String ward;
+
+	@JsonProperty("assembly")
+	private String assembly;
+
+	@JsonProperty("i18nKey")
+	private String i18nKey;
+
+	@JsonProperty("boundaryNum")
+	private Integer boundaryNum;
+
+	@JsonProperty("localname")
+	private String localname;
+
+	@JsonProperty("pincode")
+	private List<Integer> pincode;
+
 }

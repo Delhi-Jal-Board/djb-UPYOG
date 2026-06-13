@@ -94,6 +94,8 @@ public class OwnerInfo extends User{
 		this.setPassword(user.getPassword());
 		this.setSalutation(user.getSalutation());
 		this.setName(user.getName());
+		this.setMiddleName(user.getMiddleName());
+		this.setLastName(user.getLastName());
 		this.setGender(user.getGender());
 		this.setMobileNumber(user.getMobileNumber());
 		this.setEmailId(user.getEmailId());
@@ -122,6 +124,7 @@ public class OwnerInfo extends User{
 
 	@Builder
 	public OwnerInfo(Long id, String uuid, String userName, String password, String salutation, String name,
+			String middleName, String lastName,
 			String gender, String mobileNumber, String emailId, String altContactNumber, String pan,
 			String aadhaarNumber, String permanentAddress, String permanentCity, String permanentPincode,
 			String correspondenceCity, String correspondencePincode, String correspondenceAddress, Boolean active,
@@ -131,16 +134,18 @@ public class OwnerInfo extends User{
 			String ownerInfoUuid, String mobileNumber2, String gender2, String fatherOrHusbandName2,
 			String correspondenceAddress2, Boolean isPrimaryOwner, Double ownerShipPercentage, String ownerType,
 			String institutionId, Status status, List<Document> documents, String relationship) {
-		super(id, uuid, userName, password, salutation, name, gender, mobileNumber, emailId, altContactNumber, pan,
+		super(id, uuid, userName, password, salutation, name, middleName, lastName, gender, mobileNumber, emailId, altContactNumber, pan,
 				aadhaarNumber, permanentAddress, permanentCity, permanentPincode, correspondenceCity,
 				correspondencePincode, correspondenceAddress, active, dob, pwdExpiryDate, locale, type, signature,
 				accountLocked, roles, fatherOrHusbandName, bloodGroup, identificationMark, photo, createdBy,
 				createdDate, lastModifiedBy, lastModifiedDate, tenantId);
+		this.setMiddleName(middleName);
+		this.setLastName(lastName);
 		this.ownerInfoUuid = ownerInfoUuid;
 		this.mobileNumber = mobileNumber2;
-		gender = gender2;
-		fatherOrHusbandName = fatherOrHusbandName2;
-		correspondenceAddress = correspondenceAddress2;
+		this.gender = gender2;
+		this.fatherOrHusbandName = fatherOrHusbandName2;
+		this.correspondenceAddress = correspondenceAddress2;
 		this.isPrimaryOwner = isPrimaryOwner;
 		this.ownerShipPercentage = ownerShipPercentage;
 		this.ownerType = ownerType;

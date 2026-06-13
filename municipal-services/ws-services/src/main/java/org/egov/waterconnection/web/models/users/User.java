@@ -57,6 +57,14 @@ public class User   {
         @JsonProperty("name")
         private String name;
 
+        @Size(max=100)
+        @JsonProperty("middleName")
+        private String middleName;
+
+        @Size(max=100)
+        @JsonProperty("lastName")
+        private String lastName;
+
         @JsonProperty("gender")
         private String gender;
 
