@@ -8,7 +8,7 @@ const WSMyPayments = () => {
 
   const { t } = useTranslation();
   const user = Digit.UserService.getUser();
-  const tenantId = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code || user?.info?.permanentCity || Digit.ULBService.getCurrentTenantId();
+  const tenantId = "dl.djb";
   let filter = window.location.href.split("/").pop();
   let t1;
   let off;
@@ -19,9 +19,11 @@ const WSMyPayments = () => {
     t1 = 4;
   }
 
+  const userMobileNumber = user?.info?.userName?.match(/^[0-9]{10}$/) ? user?.info?.userName : user?.info?.mobileNumber;
+
   let filter1 = !isNaN(parseInt(filter))
-    ? { tenantId: tenantId, mobileNumber: user?.info?.mobileNumber, searchType:"CONNECTION" }
-    : { tenantId: tenantId, mobileNumber: user?.info?.mobileNumber, searchType:"CONNECTION" };
+    ? { tenantId: tenantId, mobileNumber: userMobileNumber, searchType:"CONNECTION" }
+    : { tenantId: tenantId, mobileNumber: userMobileNumber, searchType:"CONNECTION" };
 
   const { isLoading, isError, error, data } = Digit.Hooks.ws.useMyApplicationSearch({ filters: filter1 }, { filters: filter1 });
 
@@ -36,7 +38,7 @@ const WSMyPayments = () => {
   let totalPropertyIds = propertyIdWS ? propertyIdWS?.concat(",",propertyIdSW) : propertyIdSW?.concat(",",propertyIdWS);
   const {data:wspayments, isLoading:iswsLoading} = Digit.Hooks.ws.useMypaymentWS({tenantId : tenantId,filters: {consumerCodes:connectionNoWS},BusinessService:"WS"},{enabled:connectionNoWS!==null?true:false});
   const {data:swpayments, isLoading:isswLoading} = Digit.Hooks.ws.useMypaymentWS({tenantId : tenantId,filters: {consumerCodes:connectionNoSW},BusinessService:"SW"},{enabled:connectionNoSW!==null?true:false});
-  const {data:properties, isLoading:isPropertyLoading} = Digit.Hooks.ws.useWaterPropertySearch({tenantId : tenantId,filters: {propertyids:totalPropertyIds}},{enabled:connectionNoSW!==null?true:false})
+  const {data:properties, isLoading:isPropertyLoading} = Digit.Hooks.ws.useWaterPropertySearch({tenantId : tenantId,filters: {mobileNumber:userMobileNumber}},{enabled:userMobileNumber?true:false})
 
   if (isLoading || iswsLoading||isswLoading||isSWLoading || isPropertyLoading) {
     return <Loader />;

@@ -159,10 +159,23 @@ const PTAcknowledgement = ({ onSuccess, onSelect, formData, redirectUrl, userTyp
   const responseData = propertyFromState ? { Properties: [propertyFromState] } : mutation.data;
 
   const onNext = () => {
-    if (onSelect) {
-      if (isMutationSuccess) {
-        sessionStorage.setItem("Digit_OBPS_PT",JSON.stringify(responseData?.Properties?.[0]))
-        sessionStorage.setItem("Digit_FSM_PT",JSON.stringify(responseData?.Properties?.[0]))
+    if (isMutationSuccess) {
+      sessionStorage.setItem("Digit_OBPS_PT",JSON.stringify(responseData?.Properties?.[0]))
+      sessionStorage.setItem("Digit_FSM_PT",JSON.stringify(responseData?.Properties?.[0]))
+      
+      const queryParams = new URLSearchParams(location.search);
+      const redirectUrlFromQuery = queryParams.get("redirectToUrl");
+      const finalRedirectUrl = (redirectUrl && redirectUrl !== "undefined") ? redirectUrl : (redirectUrlFromQuery && redirectUrlFromQuery !== "undefined" ? redirectUrlFromQuery : null);
+      
+      if (finalRedirectUrl) {
+        history.push(
+          `${finalRedirectUrl}?propertyId=${responseData?.Properties[0]?.propertyId}&tenantId=${responseData?.Properties[0]?.tenantId}`,
+          { ...location?.state?.prevState }
+        );
+        return;
+      }
+
+      if (onSelect) {
         onSelect("cpt", { details: responseData?.Properties?.[0] });
       }
     }
@@ -204,6 +217,8 @@ const PTAcknowledgement = ({ onSuccess, onSelect, formData, redirectUrl, userTyp
                   `${finalRedirectUrl}?propertyId=${responseData?.Properties[0]?.propertyId}&tenantId=${responseData?.Properties[0]?.tenantId}`,
                   { ...location?.state?.prevState }
                 );
+              } else {
+                history.push(window.location.href.includes("/employee/") ? "/digit-ui/employee" : "/digit-ui/citizen");
               }
             }}
           />

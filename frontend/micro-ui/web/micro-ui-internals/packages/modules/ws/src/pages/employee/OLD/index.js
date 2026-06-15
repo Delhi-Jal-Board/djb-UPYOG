@@ -195,14 +195,7 @@ const OLDApplication = () => {
     !propertyId && sessionFormData?.cpt?.details?.propertyId && setPropertyId(sessionFormData?.cpt?.details?.propertyId);
   }, [sessionFormData?.cpt]);
 
-  useEffect(() => {
-    if (propertyDetails?.Properties?.[0]) {
-      const newCptDetails = propertyDetails?.Properties?.[0];
-      if (!_.isEqual(sessionFormData?.cpt?.details, newCptDetails)) {
-        setSessionFormData({ ...sessionFormData, cpt: { details: newCptDetails } });
-      }
-    }
-  }, [propertyDetails, sessionFormData]);
+
 
   const {
     isLoading: creatingWaterApplicationLoading,
@@ -238,8 +231,9 @@ const OLDApplication = () => {
 
   const onFormValueChange = (setValue, formData, formState) => {
     const updatedFormData = { ...sessionFormData, ...formData };
-    if (!_.isEqual(sessionFormData, updatedFormData)) {
-      setSessionFormData(updatedFormData);
+    const cleanedFormData = JSON.parse(JSON.stringify(updatedFormData));
+    if (!_.isEqual(sessionFormData, cleanedFormData)) {
+      setSessionFormData(cleanedFormData);
       sessionStorage.setItem("FORMSTATE_ERRORS", JSON.stringify(formState?.errors));
     }
 
