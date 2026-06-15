@@ -14,6 +14,7 @@ import {
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
 import { useLocation, Link, useHistory } from "react-router-dom";
+
 const getAddress = (address, t) => {
   return `${address?.doorNo ? `${address?.doorNo}, ` : ""} ${address?.street ? `${address?.street}, ` : ""}${
     address?.landmark ? `${address?.landmark}, ` : ""
@@ -36,18 +37,35 @@ const PropertySearchNSummary = ({ config, onSelect, userType, formData, setError
   const urlPropertyId = new URLSearchParams(search).get("propertyId");
   const [propertyId, setPropertyId] = useState(formData?.cptId?.id || (urlPropertyId !== "null" ? urlPropertyId : "") || "");
   const [searchPropertyId, setSearchPropertyId] = useState(urlPropertyId !== "null" ? urlPropertyId : "");
+  const [mobileNumber, setMobileNumber] = useState("");
+  const [searchMobileNumber, setSearchMobileNumber] = useState("");
   const [showToast, setShowToast] = useState(null);
   const isMobile = window.Digit.Utils.browser.isMobile();
-  const serachParams = window.location.href.includes("?")
-    ? window.location.href.substring(window.location.href.indexOf("?") + 1, window.location.href.length)
-    : "";
+
+  const userMobileNumber = Digit.UserService.getUser()?.info?.mobileNumber;
+  const isCitizen = Digit.UserService.getUser()?.info?.type === "CITIZEN";
+  const isWsApplication = window.location.href.includes("/ws/");
+
+  const [selectedProperty, setSelectedProperty] = useState(formData?.cpt?.details || null);
+
+  const searchFilters =
+    isCitizen && isWsApplication
+      ? { mobileNumber: userMobileNumber }
+      : searchMobileNumber
+      ? { mobileNumber: searchMobileNumber }
+      : { propertyIds: searchPropertyId };
 
   const { isLoading, isError, error, data: propertyDetails } = Digit.Hooks.pt.usePropertySearch(
-    { filters: { propertyIds: searchPropertyId }, tenantId: tenantId },
+    { filters: searchFilters, tenantId: tenantId },
     {
-      filters: { propertyIds: searchPropertyId },
+      filters: searchFilters,
       tenantId: tenantId,
-      enabled: searchPropertyId ? true : false,
+      enabled:
+        (isCitizen && isWsApplication && userMobileNumber) ||
+        (!isCitizen && (searchPropertyId || searchMobileNumber)) ||
+        (isCitizen && !isWsApplication && (searchPropertyId || searchMobileNumber))
+          ? true
+          : false,
       privacy: Digit.Utils.getPrivacyObject(),
     }
   );
@@ -58,32 +76,49 @@ const PropertySearchNSummary = ({ config, onSelect, userType, formData, setError
   }, [propertyId]);
 
   useEffect(() => {
-    if ((isLoading == false && error && error == true) || propertyDetails?.Properties?.length == 0) {
+    if (isLoading == false && error && error == true) {
       setShowToast({ error: true, label: "PT_ENTER_VALID_PROPERTY_ID" });
     }
   }, [error, propertyDetails]);
+
   useEffect(() => {
-    onSelect("cpt", { details: propertyDetails?.Properties[0] });
-    sessionStorage.setItem("Digit_FSM_PT", JSON.stringify(propertyDetails?.Properties[0]));
-    localStorage.setItem("pgrProperty", JSON.stringify(propertyDetails?.Properties[0]));
-  }, [propertyDetails, pathname]);
+    const currentCptId = formData?.cpt?.details?.propertyId;
+    if (propertyDetails?.Properties?.length > 0) {
+      if (propertyDetails.Properties.length === 1 && !selectedProperty) {
+        const fetchedId = propertyDetails.Properties[0].propertyId;
+        setSelectedProperty(propertyDetails.Properties[0]);
+        if (currentCptId !== fetchedId) {
+          onSelect("cpt", { details: propertyDetails.Properties[0] });
+          sessionStorage.setItem("Digit_FSM_PT", JSON.stringify(propertyDetails.Properties[0]));
+          localStorage.setItem("pgrProperty", JSON.stringify(propertyDetails.Properties[0]));
+        }
+      }
+    }
+  }, [propertyDetails, pathname, isCitizen, isWsApplication, formData?.cpt?.details?.propertyId]);
 
   const searchProperty = () => {
-    if (!propertyId) {
-      setShowToast({ error: true, label: "PT_ENTER_PROPERTY_ID_AND_SEARCH" });
+    if (!propertyId && !mobileNumber) {
+      setShowToast({ error: true, label: "PT_ENTER_PROPERTY_ID_OR_MOBILE_NUMBER" });
+      return;
     }
     setSearchPropertyId(propertyId);
-    if (window.location.pathname.includes("/tl/new-application")) {
-      history.push(`/digit-ui/employee/tl/new-application?propertyId=${propertyId}`);
-      const scrollConst = 1600;
-      setTimeout(() => window.scrollTo(0, scrollConst), 0);
-    } else if (window.location.pathname.includes("/ws/new-application"))
-      history.push(`/digit-ui/employee/ws/new-application?propertyId=${propertyId}`);
+    setSearchMobileNumber(mobileNumber);
+    if (propertyId) {
+      if (window.location.pathname.includes("/tl/new-application")) {
+        history.push(`/digit-ui/employee/tl/new-application?propertyId=${propertyId}`);
+        const scrollConst = 1600;
+        setTimeout(() => window.scrollTo(0, scrollConst), 0);
+      } else if (window.location.pathname.includes("/ws/new-application"))
+        history.push(`/digit-ui/employee/ws/new-application?propertyId=${propertyId}`);
+    }
   };
 
   const clearSearch = () => {
     setPropertyId("");
     setSearchPropertyId("");
+    setMobileNumber("");
+    setSearchMobileNumber("");
+    setSelectedProperty(null);
     onSelect(config?.key, { id: "" });
     onSelect("cpt", null);
   };
@@ -96,9 +131,12 @@ const PropertySearchNSummary = ({ config, onSelect, userType, formData, setError
 
   let propertyAddress = "";
 
-  if (propertyDetails && propertyDetails?.Properties.length) {
-    propertyAddress = getAddress(propertyDetails?.Properties[0]?.address, t);
+  const activeProperty = selectedProperty ? selectedProperty : propertyDetails?.Properties?.length === 1 ? propertyDetails?.Properties[0] : null;
+
+  if (activeProperty) {
+    propertyAddress = getAddress(activeProperty?.address, t);
   }
+
   const getInputStyles = () => {
     if (window.location.href.includes("/ws/")) {
       return { fontWeight: "700" };
@@ -108,7 +146,7 @@ const PropertySearchNSummary = ({ config, onSelect, userType, formData, setError
   const getOwnerNames = (propertyData) => {
     const getActiveOwners = propertyData?.owners?.filter((owner) => owner?.active);
     const getOwnersList = getActiveOwners
-      .sort((a, b) => a?.additionalDetails?.ownerSequence - b?.additionalDetails?.ownerSequence)
+      ?.sort((a, b) => a?.additionalDetails?.ownerSequence - b?.additionalDetails?.ownerSequence)
       ?.map((activeOwner) => activeOwner?.name)
       ?.join(",");
     return getOwnersList ? getOwnersList : t("NA");
@@ -117,6 +155,13 @@ const PropertySearchNSummary = ({ config, onSelect, userType, formData, setError
   let clns = "";
   if (window.location.href.includes("/ws/")) clns = ":";
 
+  const onPropertySelect = (property) => {
+    setSelectedProperty(property);
+    onSelect("cpt", { details: property });
+    sessionStorage.setItem("Digit_FSM_PT", JSON.stringify(property));
+    localStorage.setItem("pgrProperty", JSON.stringify(property));
+  };
+
   return (
     <React.Fragment>
       <CollapsibleCardPage title={t("PT_PROPERTY_SEARCH")} defaultOpen={true}>
@@ -124,40 +169,115 @@ const PropertySearchNSummary = ({ config, onSelect, userType, formData, setError
           ? !(formData?.tradedetils?.[0]?.structureType?.code === "MOVABLE") && (isEmpNewApplication || isEmpRenewLicense)
           : true) && (
           <React.Fragment>
-            <LabelFieldPair>
-              <Label style={getInputStyles()}>{`${t(`PROPERTY_ID`)}`}</Label>
-              <div style={{ display: "flex", gap: "12px" }}>
-                <TextInput
-                  key={config?.key}
-                  value={propertyId}
-                  //isMandatory={true}
-                  onChange={(e) => {
-                    setPropertyId(e.target.value);
-                    onSelect(config?.key, { id: e.target.value });
-                  }}
-                  style={{ width: "80%", float: "left" }}
-                  placeholder={`${t("PT_ENTER_PROPERTY_ID")}`}
-                />
-                <button className="submit-bar" type="button" style={{ color: "white" }} onClick={searchProperty}>
-                  {`${t("PT_SEARCH")}`}
-                </button>
-                <button className="submit-bar" type="button" style={{ color: "white" }} onClick={clearSearch}>
-                  {`${t("CLEAR")}`}
-                </button>
-
-                <span
-                  onClick={() =>
-                    history.push(`/digit-ui/${userType}/${pathname.split("/")[3]}/create-application/create-property`, { ...state, ...formData })
-                  }
-                >
-                  <button className="submit-bar" type="button" style={{ color: "white" }}>
-                    {t("CPT_CREATE_PROPERTY")}
-                  </button>
-                </span>
+            {isCitizen && isWsApplication ? (
+              <div className="formcomposer-section-grid" style={isMobile ? {} : {}}>
+                <div style={{ marginBottom: "16px" }}>
+                  <LabelFieldPair>
+                    <Label style={getInputStyles()}>{`${t("PROPERTY_ID")}`}</Label>
+                    <div style={{ display: "flex", gap: "12px", width: "100%", flexDirection: "column" }}>
+                      {isLoading ? (
+                        <div>{t("CS_COMMON_LOADING")}</div>
+                      ) : propertyDetails?.Properties && propertyDetails?.Properties?.length > 0 ? (
+                        <Dropdown
+                          option={propertyDetails?.Properties}
+                          optionKey="propertyId"
+                          id="propertyId"
+                          selected={selectedProperty}
+                          select={onPropertySelect}
+                          t={t}
+                          placeholder={t("PT_SELECT_PROPERTY")}
+                        />
+                      ) : (
+                        <span
+                          onClick={() =>
+                            history.push(
+                              `/digit-ui/${userType}/${pathname.split("/")[3]}/create-application/create-property?redirectToUrl=${
+                                window.location.pathname
+                              }`,
+                              { ...state, ...formData }
+                            )
+                          }
+                        >
+                          <button className="submit-bar" type="button" style={{ color: "white" }}>
+                            {t("CPT_CREATE_PROPERTY")}
+                          </button>
+                        </span>
+                      )}
+                    </div>
+                  </LabelFieldPair>
+                </div>
               </div>
-            </LabelFieldPair>
+            ) : (
+              <React.Fragment>
+                <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", gap: "16px", width: "100%", alignItems: "flex-end", marginBottom: "16px" }}>
+                  <div style={{ flex: 1 }}>
+                    <Label>{`${t("CORE_COMMON_MOBILE_NUMBER")}`}</Label>
+                    <TextInput
+                      value={mobileNumber}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val.length <= 10) {
+                          setMobileNumber(val);
+                          if (val.length === 10) {
+                            setSearchMobileNumber(val);
+                          }
+                        }
+                      }}
+                      style={{ width: "100%" }}
+                      placeholder={`${t("PT_ENTER_MOBILE_NUMBER")}`}
+                      maxLength={10}
+                    />
+                  </div>
+                  
+                  <div style={{ flex: 1 }}>
+                    <Label>{`${t("PROPERTY_ID")}`}</Label>
+                    {isLoading ? (
+                      <div>{t("CS_COMMON_LOADING")}</div>
+                    ) : (
+                      <Dropdown
+                        option={propertyDetails?.Properties || []}
+                        optionKey="propertyId"
+                        id="propertyId"
+                        selected={selectedProperty}
+                        select={onPropertySelect}
+                        t={t}
+                        placeholder={t("PT_SELECT_PROPERTY")}
+                      />
+                    )}
+                  </div>
 
-            {searchPropertyId && propertyDetails && propertyDetails?.Properties.length ? (
+                  <div style={{ flex: 1 }}>
+                    <button className="submit-bar" type="button" style={{ color: "white", width: "100%", margin: 0 }} onClick={clearSearch}>
+                      {`${t("CLEAR")}`}
+                    </button>
+                  </div>
+
+                  <div style={{ flex: 1 }}>
+                    {searchMobileNumber && propertyDetails?.Properties?.length === 0 && (
+                      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                        <span style={{ color: "#d60505", fontWeight: "bold", fontSize: "12px", lineHeight: "1" }}>No property created this number</span>
+                        <span
+                          onClick={() =>
+                            history.push(
+                              `/digit-ui/${userType}/${pathname.split("/")[3]}/create-application/create-property?redirectToUrl=${
+                                window.location.pathname
+                              }`,
+                              { ...state, ...formData }
+                            )
+                          }
+                        >
+                          <button className="submit-bar" type="button" style={{ color: "white", width: "100%", margin: 0 }}>
+                            {t("CPT_CREATE_PROPERTY")}
+                          </button>
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </React.Fragment>
+            )}
+
+            {activeProperty ? (
               <React.Fragment>
                 <Card className="card-with-background" style={{ margin: "16px 0px", padding: "20px", boxShadow: "none" }}>
                   <StatusTable style={{ padding: "0", margin: "0" }}>
@@ -167,14 +287,14 @@ const PropertySearchNSummary = ({ config, onSelect, userType, formData, setError
                         labelStyle={isMobile ? { width: "40%" } : { width: "30%", color: "#505a5f", fontWeight: "600" }}
                         textStyle={{ color: "#000" }}
                         label={t(`PROPERTY_ID`)}
-                        text={propertyDetails?.Properties[0]?.propertyId}
+                        text={activeProperty?.propertyId}
                       />
                       <Row
                         className="border-none"
                         labelStyle={isMobile ? { width: "40%" } : { width: "30%", color: "#505a5f", fontWeight: "600" }}
                         textStyle={{ color: "#000" }}
                         label={t(`OWNER_NAME`)}
-                        text={getOwnerNames(propertyDetails?.Properties[0])}
+                        text={getOwnerNames(activeProperty)}
                       />
                       <Row
                         className="border-none"
@@ -183,7 +303,7 @@ const PropertySearchNSummary = ({ config, onSelect, userType, formData, setError
                         label={t(`PROPERTY_ADDRESS`)}
                         text={propertyAddress}
                         privacy={{
-                          uuid: propertyDetails?.Properties[0]?.owners?.[0]?.uuid,
+                          uuid: activeProperty?.owners?.[0]?.uuid,
                           fieldName: ["doorNo", "street", "landmark"],
                           model: "Property",
                           showValue: true,
@@ -191,8 +311,8 @@ const PropertySearchNSummary = ({ config, onSelect, userType, formData, setError
                             serviceName: "/property-services/property/_search",
                             requestBody: {},
                             requestParam: {
-                              tenantId: propertyDetails?.Properties[0]?.tenantId,
-                              propertyIds: propertyDetails?.Properties[0]?.propertyId,
+                              tenantId: activeProperty?.tenantId,
+                              propertyIds: activeProperty?.propertyId,
                             },
                             jsonPath: "Properties[0].address.street",
                             d: (res) => {

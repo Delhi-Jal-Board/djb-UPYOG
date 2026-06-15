@@ -30,6 +30,7 @@ const WSApplicationDetails = () => {
   const { t } = useTranslation();
   const menuRef = useRef();
   const user = Digit.UserService.getUser();
+  const userMobileNumber = user?.info?.userName?.match(/^[0-9]{10}$/) ? user?.info?.userName : user?.info?.mobileNumber;
   const tenantId = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code || user?.info?.permanentCity || Digit.ULBService.getCurrentTenantId();
   // const stateCode = Digit.ULBService.getStateId();
   const [showOptions, setShowOptions] = useState(false);
@@ -446,7 +447,7 @@ const WSApplicationDetails = () => {
                   requestBody: {},
                   requestParam: {
                     tenantId: tenantId,
-                    propertyIds: data?.WaterConnection?.[0]?.propertyId || data?.SewerageConnections?.[0]?.propertyId,
+                    mobileNumber: userMobileNumber,
                   },
                   jsonPath: "Properties[0].address.street",
                   isArray: false,

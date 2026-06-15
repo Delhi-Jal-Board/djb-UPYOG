@@ -7,6 +7,8 @@ import _ from "lodash";
 
 const WSConnection = ({ application }) => {
   const { t } = useTranslation();
+  const user = Digit.UserService.getUser();
+  const userMobileNumber = user?.info?.userName?.match(/^[0-9]{10}$/) ? user?.info?.userName : user?.info?.mobileNumber;
   let encodeApplicationNo = encodeURI(application.applicationNo);
   return (
     <Card>
@@ -15,26 +17,26 @@ const WSConnection = ({ application }) => {
       <KeyNote
         keyValue={t("WS_CONSUMER_NAME")}
         note={
-          application?.connectionHolders?.map((owner) => owner.name).join(",") || application?.property?.owners.sort((a,b)=>a?.additionalDetails?.ownerSequence-b?.additionalDetails?.ownerSequence)?.map((owner) => owner.name).join(",")
+          application?.connectionHolders?.map((owner) => owner.name).join(",") || application?.property?.owners.sort((a, b) => a?.additionalDetails?.ownerSequence - b?.additionalDetails?.ownerSequence)?.map((owner) => owner.name).join(",")
         }
       />
       <KeyNote keyValue={t("WS_MYCONNECTION_ADDRESS")} note={getAddress(application?.property?.address, t)}
-      privacy={{
-        uuid:application?.property?.owners?.[0]?.uuid, 
-        fieldName: ["doorNo" , "street" , "landmark"], 
-        model: "Property",showValue: true,
-        loadData: {
-          serviceName: "/property-services/property/_search",
-          requestBody: {},
-          requestParam: { tenantId : application?.tenantId, propertyIds : application?.property?.propertyId },
-          jsonPath: "Properties[0].address.street",
-          isArray: false,
-          d: (res) => {
-            let resultString = (_.get(res,"Properties[0].address.doorNo") ?  `${_.get(res,"Properties[0].address.doorNo")}, ` : "") + (_.get(res,"Properties[0].address.street")? `${_.get(res,"Properties[0].address.street")}, ` : "") + (_.get(res,"Properties[0].address.landmark") ? `${_.get(res,"Properties[0].address.landmark")}`:"")
-            return resultString;
-          }
-        },
-       }}  />
+        privacy={{
+          uuid: application?.property?.owners?.[0]?.uuid,
+          fieldName: ["doorNo", "street", "landmark"],
+          model: "Property", showValue: true,
+          loadData: {
+            serviceName: "/property-services/property/_search",
+            requestBody: {},
+            requestParam: { tenantId: application?.tenantId || "dl.djb", mobileNumber: userMobileNumber },
+            jsonPath: "Properties[0].address.street",
+            isArray: false,
+            d: (res) => {
+              let resultString = (_.get(res, "Properties[0].address.doorNo") ? `${_.get(res, "Properties[0].address.doorNo")}, ` : "") + (_.get(res, "Properties[0].address.street") ? `${_.get(res, "Properties[0].address.street")}, ` : "") + (_.get(res, "Properties[0].address.landmark") ? `${_.get(res, "Properties[0].address.landmark")}` : "")
+              return resultString;
+            }
+          },
+        }} />
       <KeyNote keyValue={t("WS_MYCONNECTIONS_STATUS")} note={t(application?.status)} />
       <Link to={{ pathname: `/digit-ui/citizen/ws/connection/details/${encodeApplicationNo}`, state: { ...application } }}>
         <SubmitBar label={t("WS_VIEW_DETAILS_LABEL")} />
