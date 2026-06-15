@@ -6,6 +6,7 @@ import AccessDenied from "./components/AccessDenied";
 import LandingPage from "./pages/LandingPage/LandingPage";
 import About from "./pages/LandingPage/About";
 import ContactUs from "./pages/LandingPage/ContactUs";
+import PrivacyPolicy from "./pages/LandingPage/PrivacyPolicy";
 
 export const DigitApp = ({ stateCode, modules, appTenants, logoUrl, initData }) => {
   const history = useHistory();
@@ -104,6 +105,9 @@ export const DigitApp = ({ stateCode, modules, appTenants, logoUrl, initData }) 
       <Route path="/digit-ui/home/contact">
         <ContactUs {...commonProps} />
       </Route>
+      <Route path="/digit-ui/home/privacy-policy">
+        <PrivacyPolicy {...commonProps} />
+      </Route>
       <Route exact path="/digit-ui/home">
         <LandingPage {...commonProps} />
       </Route>
@@ -127,6 +131,9 @@ export const DigitApp = ({ stateCode, modules, appTenants, logoUrl, initData }) 
       </Route>
       <Route path="/digit-ui/citizen/contact">
         <ContactUs {...commonProps} />
+      </Route>
+      <Route path="/digit-ui/citizen/privacy-policy">
+        <PrivacyPolicy {...commonProps} />
       </Route>
       <Route path="/digit-ui/citizen">
         <CitizenApp {...commonProps} />

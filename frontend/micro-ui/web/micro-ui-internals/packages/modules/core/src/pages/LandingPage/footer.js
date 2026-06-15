@@ -110,7 +110,19 @@ const Footer = ({ logoUrl, stateInfo }) => {
                   <line x1="12" y1="8" x2="12.01" y2="8"></line>
                 </svg>
               </span>
-              <span className="link-text">{item}</span>
+              {item === "Privacy Policy" ? (
+                <span
+                  className="link-text"
+                  style={{ cursor: "pointer", transition: "color 0.2s" }}
+                  onClick={() => history.push(`/${window?.contextPath || "digit-ui"}/home/privacy-policy`)}
+                  onMouseEnter={(e) => e.target.style.color = "#005bbb"}
+                  onMouseLeave={(e) => e.target.style.color = ""}
+                >
+                  {item}
+                </span>
+              ) : (
+                <span className="link-text">{item}</span>
+              )}
             </p>
           ))}
         </div>
