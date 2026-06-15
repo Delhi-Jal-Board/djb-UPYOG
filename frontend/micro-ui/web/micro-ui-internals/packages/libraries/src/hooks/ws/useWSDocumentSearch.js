@@ -12,7 +12,7 @@ const useWSDocumentSearch = ({ application }, config = {}, Code, index) => {
     newDocs.push(ob);
   })
   const filesArray = newDocs.map((value) => value?.fileStoreId);
-  const { isLoading, error, data } = useQuery([`ptDocuments-${propertyId}`, filesArray], () => Digit.UploadServices.Filefetch(filesArray, tenant));
+  const { isLoading, error, data } = useQuery([`ptDocuments-${propertyId}`, filesArray], () => Digit.UploadServices.Filefetch(filesArray, tenant), { enabled: filesArray?.length > 0 });
   return { isLoading, error, data: { pdfFiles: data?.data }, revalidate: () => client.invalidateQueries([`ptDocuments-${propertyId}`, filesArray]) };
 };
 

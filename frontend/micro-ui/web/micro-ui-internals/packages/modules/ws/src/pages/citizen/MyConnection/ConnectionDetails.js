@@ -403,7 +403,7 @@ let serviceType = state?.applicationType?.includes("WATER") ? "WATER":"SEWERAGE"
                 loadData: {
                   serviceName: "/property-services/property/_search",
                   requestBody: {},
-                  requestParam: { tenantId : tenantId, propertyIds : state?.propertyId },
+                  requestParam: { tenantId : tenantId, mobileNumber: user?.info?.userName?.match(/^[0-9]{10}$/) ? user?.info?.userName : user?.info?.mobileNumber },
                   jsonPath: "Properties[0].address.street",
                   isArray: false,
                   d: (res) => {

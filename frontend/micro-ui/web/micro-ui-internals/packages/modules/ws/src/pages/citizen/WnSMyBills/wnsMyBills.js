@@ -18,7 +18,8 @@ const WNSMyBills = ({ template, header, actionButtonLabel }) => {
     history.replace(`/digit-ui/citizen/login`, { from: url });
   }
   let filters = {};
-  const { mobileNumber } = Digit.UserService.getUser()?.info || {};
+  const userInfo = Digit.UserService.getUser()?.info || {};
+  const mobileNumber = userInfo?.userName?.match(/^[0-9]{10}$/) ? userInfo?.userName : userInfo?.mobileNumber;
 
   filters = {...filters , searchType:"CONNECTION"}
 
