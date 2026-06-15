@@ -231,64 +231,47 @@ const EmployeeModuleCard = ({ Icon, moduleName, kpis = [], links = [], className
     );
   }
 
-  const mainKpi = kpis.length > 0 ? kpis[0] : null;
-  const secondaryKpis = kpis.length > 1 ? kpis.slice(1) : [];
+  const iconColorClass = getIconColorClass(moduleName, kpis, links);
 
   return (
     <Fragment>
       <div className={`new-employee-card card-home ${className || ""}`} onClick={handleDetailsClick} style={{ cursor: "pointer" }}>
         <div className="card-header-row">
-          <div className={`module-icon-wrap ${getIconColorClass(moduleName, kpis, links)}`}>{getModuleIcon(moduleName, kpis, links, Icon)}</div>
+          <div className={`module-icon-wrap ${iconColorClass}`}>{getModuleIcon(moduleName, kpis, links, Icon)}</div>
           <h2 className="module-title">{moduleName}</h2>
         </div>
 
-        <div className="card-body-row">
-          <div className="main-kpi-section">
-            {mainKpi && (
-              <Fragment>
-                <span className="main-kpi-number">{mainKpi.count || "0"}</span>
-                <span className="main-kpi-label">{mainKpi.label}</span>
-              </Fragment>
-            )}
-          </div>
+        {kpis.length > 0 && (
+          <div className="kpi-tiles-grid">
+            {kpis.map((kpi, index) => {
+              const kpiContent = (
+                <div key={index} className={`kpi-tile kpi-tile--${iconColorClass}`}>
+                  <div className="kpi-tile__accent" />
+                  <span className="kpi-tile__label">{kpi.label}</span>
+                  <span className="kpi-tile__count">{kpi.count ?? "0"}</span>
+                </div>
+              );
 
-          <div className="secondary-kpi-section">
-            {secondaryKpis
-              .filter((kpi) => {
-                const label = String(kpi.label || "").toLowerCase();
-                return label.includes("nearing sla") || label.includes("active employee") || label.includes("online inbox") || label.includes("emergency inbox");
-              })
-              .map((kpi, index) => {
-                const isHeader = !kpi.count && kpi.label === kpi.label?.toUpperCase();
-                return (
-                  <div key={index} className={`secondary-kpi-item ${isHeader ? "sec-kpi-header" : ""}`}>
-                    <span className="sec-kpi-label">
-                      {kpi.link ? (
-                        kpi.link.includes("digit-ui/") ? (
-                          <Link to={kpi.link} style={{ color: "inherit", textDecoration: "none" }} onClick={(e) => e.stopPropagation()}>
-                            {kpi.label}
-                          </Link>
-                        ) : (
-                          <a href={kpi.link} style={{ color: "inherit", textDecoration: "none" }} onClick={(e) => e.stopPropagation()}>
-                            {kpi.label}
-                          </a>
-                        )
-                      ) : (
-                        kpi.label
-                      )}
-                    </span>
-                    {!isHeader && <span className="sec-kpi-value">{kpi.count ? kpi.count : <span className="sec-kpi-dot"></span>}</span>}
-                  </div>
+              if (kpi.link) {
+                return kpi.link.includes("digit-ui/") ? (
+                  <Link key={index} to={kpi.link} style={{ textDecoration: "none" }} onClick={(e) => e.stopPropagation()}>
+                    {kpiContent}
+                  </Link>
+                ) : (
+                  <a key={index} href={kpi.link} style={{ textDecoration: "none" }} onClick={(e) => e.stopPropagation()}>
+                    {kpiContent}
+                  </a>
                 );
-              })}
+              }
+              return kpiContent;
+            })}
           </div>
-        </div>
+        )}
 
         <div className="card-footer-row">
           <div className="footer-links">
             <span className="pill-link" style={{ cursor: "pointer" }} onClick={(e) => e.stopPropagation()}>
               {t("View Reports")}
-
               <ArrowForward />
             </span>
             <span className="pill-link" style={{ cursor: "pointer" }} onClick={(e) => e.stopPropagation()}>
@@ -321,59 +304,43 @@ const ModuleCardFullWidth = ({ Icon, moduleName, kpis = [], links = [], classNam
     history.push("/digit-ui/employee/module/details", { moduleName, links });
   };
 
-  const mainKpi = kpis.length > 0 ? kpis[0] : null;
-  const secondaryKpis = kpis.length > 1 ? kpis.slice(1) : [];
+  const iconColorClass = getIconColorClass(moduleName, kpis, links);
 
   return (
     <div className={`new-employee-card ${className || ""}`} style={styles || {}}>
       <div className="card-header-row">
         {Icon && (
-          <div className={`module-icon-wrap ${getIconColorClass(moduleName, kpis, links)}`}>{getModuleIcon(moduleName, kpis, links, Icon)}</div>
+          <div className={`module-icon-wrap ${iconColorClass}`}>{getModuleIcon(moduleName, kpis, links, Icon)}</div>
         )}
         <h2 className="module-title">{moduleName}</h2>
       </div>
 
-      <div className="card-body-row">
-        <div className="main-kpi-section">
-          {mainKpi && (
-            <Fragment>
-              <span className="main-kpi-number">{mainKpi.count || "0"}</span>
-              <span className="main-kpi-label">{mainKpi.label}</span>
-            </Fragment>
-          )}
-        </div>
+      {kpis.length > 0 && (
+        <div className="kpi-tiles-grid">
+          {kpis.map((kpi, index) => {
+            const kpiContent = (
+              <div key={index} className={`kpi-tile kpi-tile--${iconColorClass}`}>
+                <div className="kpi-tile__accent" />
+                <span className="kpi-tile__label">{kpi.label}</span>
+                <span className="kpi-tile__count">{kpi.count ?? "0"}</span>
+              </div>
+            );
 
-        <div className="secondary-kpi-section">
-          {secondaryKpis
-            .filter((kpi) => {
-              const label = String(kpi.label || "").toLowerCase();
-              return label.includes("nearing sla") || label.includes("active employee") || label.includes("online inbox") || label.includes("emergency inbox");
-            })
-            .map((kpi, index) => {
-              const isHeader = !kpi.count && kpi.label === kpi.label?.toUpperCase();
-              return (
-                <div key={index} className={`secondary-kpi-item ${isHeader ? "sec-kpi-header" : ""}`}>
-                  <span className="sec-kpi-label">
-                    {kpi.link ? (
-                      kpi.link.includes("digit-ui/") ? (
-                        <Link to={kpi.link} style={{ color: "inherit", textDecoration: "none" }}>
-                          {kpi.label}
-                        </Link>
-                      ) : (
-                        <a href={kpi.link} style={{ color: "inherit", textDecoration: "none" }}>
-                          {kpi.label}
-                        </a>
-                      )
-                    ) : (
-                      kpi.label
-                    )}
-                  </span>
-                  {!isHeader && <span className="sec-kpi-value">{kpi.count ? kpi.count : <span className="sec-kpi-dot"></span>}</span>}
-                </div>
+            if (kpi.link) {
+              return kpi.link.includes("digit-ui/") ? (
+                <Link key={index} to={kpi.link} style={{ textDecoration: "none" }} onClick={(e) => e.stopPropagation()}>
+                  {kpiContent}
+                </Link>
+              ) : (
+                <a key={index} href={kpi.link} style={{ textDecoration: "none" }} onClick={(e) => e.stopPropagation()}>
+                  {kpiContent}
+                </a>
               );
-            })}
+            }
+            return kpiContent;
+          })}
         </div>
-      </div>
+      )}
 
       <div className="card-footer-row">
         <div className="footer-links">
