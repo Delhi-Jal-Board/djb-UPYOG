@@ -120,11 +120,11 @@ const ModuleHeader = ({ leftContent, breadcrumbs = [], rightContent, onLeftClick
               const Icon = item.icon;
 
               const handleClick = () => {
-                if (index === 1) {
+                if (item.path) {
+                  history.push(item.path);
+                } else if (index === 1) {
                   const moduleCode = window.location.pathname.split("/")[3];
                   history.push("/digit-ui/employee/module/details", { moduleName: moduleCode ? moduleCode.toUpperCase() : "" });
-                } else if (item.path) {
-                  history.push(item.path);
                 } else if (item.onClick) {
                   item.onClick();
                 }
@@ -172,11 +172,11 @@ const ModuleHeader = ({ leftContent, breadcrumbs = [], rightContent, onLeftClick
               const Icon = item.icon;
 
               const handleClick = () => {
-                if (index === 1) {
+                if (item.path) {
+                  history.push(item.path);
+                } else if (index === 1) {
                   const moduleCode = window.location.pathname.split("/")[3];
                   history.push("/digit-ui/employee/module/details", { moduleName: moduleCode ? moduleCode.toUpperCase() : "" });
-                } else if (item.path) {
-                  history.push(item.path);
                 } else if (item.onClick) {
                   item.onClick();
                 }

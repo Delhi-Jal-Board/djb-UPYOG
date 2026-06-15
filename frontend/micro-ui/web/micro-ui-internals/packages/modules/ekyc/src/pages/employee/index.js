@@ -19,20 +19,49 @@ const EmployeeApp = ({ path }) => {
 
   sessionStorage.removeItem("revalidateddone");
 
-  const getBreadcrumbLabel = () => {
+  const getDynamicBreadcrumbs = () => {
     const pathname = location.pathname;
-    if (pathname.includes("/dashboard")) return "ES_COMMON_INBOX";
-    if (pathname.includes("/create-kyc")) return "EKYC_CREATE_KYC";
-    if (pathname.includes("/k-details")) return "EKYC_K_DETAILS";
-    if (pathname.includes("/consumer-details")) return "EKYC_CONSUMER_DETAILS";
-    if (pathname.includes("/address-details")) return "EKYC_ADDRESS_DETAILS";
-    if (pathname.includes("/property-info")) return "EKYC_PROPERTY_INFO";
-    if (pathname.includes("/meter-details")) return "EKYC_METER_DETAILS";
-    if (pathname.includes("/review")) return "EKYC_REVIEW";
-    return "ES_COMMON_INBOX";
-  };
 
-  const breadcrumbs = [{ icon: HomeIcon, path: "/digit-ui/employee" }, { label: t(getBreadcrumbLabel()) }];
+    // Parent crumb — always present and clickable → redirects to eKYC inbox
+    const crumbs = [
+      { icon: HomeIcon, path: "/digit-ui/employee" },
+      { label: t("ACTION_TEST_EKYC"), path: `/digit-ui/employee/module/details` },
+    ];
+
+    // Child crumb — only appended when on a sub-page (not inbox/dashboard itself)
+    if (pathname.includes("/create-kyc")) {
+      crumbs.push({ label: t("EKYC_CREATE_KYC") });
+    } else if (pathname.includes("/consumer-details")) {
+      crumbs.push({ label: t("EKYC_CONSUMER_DETAILS") });
+    } else if (pathname.includes("/address-details")) {
+      crumbs.push({ label: t("EKYC_ADDRESS_DETAILS") });
+    } else if (pathname.includes("/property-info")) {
+      crumbs.push({ label: t("EKYC_PROPERTY_INFO") });
+    } else if (pathname.includes("/meter-details")) {
+      crumbs.push({ label: t("EKYC_METER_DETAILS") });
+    } else if (pathname.includes("/review")) {
+      crumbs.push({ label: t("EKYC_INBOX"), path: `/digit-ui/employee/ekyc/inbox` });
+      crumbs.push({ label: t("EKYC_REVIEW") });
+    } else if (pathname.includes("/assign/surveyor-details")) {
+      crumbs.push({ label: t("EKYC_ASSIGN"), path: `/digit-ui/employee/ekyc/assign` });
+      crumbs.push({ label: t("EKYC_SURVEYOR_DETAILS") });
+    } else if (pathname.includes("/assign")) {
+      crumbs.push({ label: t("EKYC_ASSIGN") });
+    } else if (pathname.includes("/ceo-dashboard")) {
+      crumbs.push({ label: t("CEO_M.F_DOR_FINANCE_VIEW") });
+    } else if (pathname.includes("/vendors/")) {
+      crumbs.push({ label: t("EKYC_VENDOR_DETAILS") });
+    } else if (pathname.includes("/mapping")) {
+      crumbs.push({ label: t("EKYC_MAPPING") });
+    } else if (pathname.includes("/dashboard")) {
+      crumbs.push({ label: t("EKYC_DASHBOARD") });
+    } else if (pathname.includes("/inbox")) {
+      crumbs.push({ label: t("EKYC_INBOX") });
+    }
+    // dashboard & inbox → no child crumb (only "eKYC Admin" shown)
+
+    return crumbs;
+  };
 
   const formStepRoutes = ["consumer-details", "address-details", "property-info", "meter-details"];
 
@@ -47,7 +76,7 @@ const EmployeeApp = ({ path }) => {
             </React.Fragment>
           }
           onLeftClick={() => window.history.back()}
-          breadcrumbs={breadcrumbs}
+          breadcrumbs={getDynamicBreadcrumbs()}
         />
 
         <div className="employee-form">
