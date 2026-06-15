@@ -1,0 +1,17 @@
+ALTER TABLE eg_pt_address ADD COLUMN IF NOT EXISTS address_line_1 VARCHAR(200);
+
+ALTER TABLE eg_pt_address ADD COLUMN IF NOT EXISTS address_line_2 VARCHAR(500);
+
+ALTER TABLE eg_pt_address ADD COLUMN IF NOT EXISTS assembly VARCHAR(200);
+
+ALTER TABLE eg_pt_address ADD COLUMN IF NOT EXISTS block VARCHAR(500);
+
+ALTER TABLE eg_pt_address ADD COLUMN IF NOT EXISTS zone VARCHAR(500);
+
+
+
+
+
+
+
+

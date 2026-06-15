@@ -84,4 +84,20 @@ public class Address {
 
 	@JsonProperty("additionalDetails")
 	private Object additionalDetails;
+
+	@JsonProperty("zone")
+	private  String zone;
+
+	@JsonProperty("block")
+	private String block;
+
+	@JsonProperty("addressLine1")
+	private String addressLine1;
+
+	@JsonProperty("addressLine2")
+	private String addressLine2;
+
+	@JsonProperty("assembly")
+	private String assembly;
+
 }
