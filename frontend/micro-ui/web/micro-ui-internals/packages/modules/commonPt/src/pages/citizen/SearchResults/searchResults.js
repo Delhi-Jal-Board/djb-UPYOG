@@ -16,7 +16,7 @@ const PropertySearchResults = ({
   isMutation,
   onSelect,
   config,
-  clearParams = () => {},
+  clearParams = () => { },
   stateCode,
   redirectToUrl,
   searchQuery,
@@ -39,8 +39,8 @@ const PropertySearchResults = ({
     t1 = 5;
   }
   let filter1 = !isNaN(parseInt(OfsetForSearch))
-    ? { limit: "5", sortOrder: "ASC", sortBy: "createdTime", offset: off }
-    : { limit: "5", sortOrder: "ASC", sortBy: "createdTime", offset: "0" };
+    ? { sortOrder: "ASC", sortBy: "createdTime", offset: off }
+    : { sortOrder: "ASC", sortBy: "createdTime", offset: "0" };
 
   const closeModal = () => {
     setShowModal(false);
@@ -270,6 +270,8 @@ const PropertySearchResults = ({
             data={searchResults}
             totalCount={searchResults?.length}
             totalRecords={searchResults?.length}
+            manualPagination={false}
+            disableSort={true}
             columns={[
               {
                 Header: t("PT_PROPERTY_PTUID"),
@@ -333,13 +335,10 @@ const PropertySearchResults = ({
               <span className="link">
                 {
                   <Link
-                    to={`/digit-ui/citizen/pt/property/search-results?mobileNumber=${
-                      mobileNumber || searchQuery.mobileNumber ? mobileNumber || searchQuery?.mobileNumber : ""
-                    }&propertyIds=${propertyIds || searchQuery?.propertyIds ? propertyIds || searchQuery?.propertyIds : ""}&oldPropertyIds=${
-                      oldPropertyIds || searchQuery?.oldPropertyIds ? oldPropertyIds || searchQuery?.oldPropertyIds : ""
-                    }&doorNo=${doorNo || searchQuery?.doorNo ? doorNo || searchQuery?.doorNo : ""}&name=${
-                      name || searchQuery?.name ? name || searchQuery?.name : ""
-                    }&city=${city ? city : ""}&locality=${locality || searchQuery?.locality ? locality || searchQuery?.locality : ""}&PToffset=${t1}`}
+                    to={`/digit-ui/citizen/pt/property/search-results?mobileNumber=${mobileNumber || searchQuery.mobileNumber ? mobileNumber || searchQuery?.mobileNumber : ""
+                      }&propertyIds=${propertyIds || searchQuery?.propertyIds ? propertyIds || searchQuery?.propertyIds : ""}&oldPropertyIds=${oldPropertyIds || searchQuery?.oldPropertyIds ? oldPropertyIds || searchQuery?.oldPropertyIds : ""
+                      }&doorNo=${doorNo || searchQuery?.doorNo ? doorNo || searchQuery?.doorNo : ""}&name=${name || searchQuery?.name ? name || searchQuery?.name : ""
+                      }&city=${city ? city : ""}&locality=${locality || searchQuery?.locality ? locality || searchQuery?.locality : ""}&PToffset=${t1}`}
                   >
                     {t("PT_COMMON_CLICK_HERE")}
                   </Link>

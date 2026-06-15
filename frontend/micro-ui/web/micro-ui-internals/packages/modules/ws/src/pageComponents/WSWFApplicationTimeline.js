@@ -11,6 +11,7 @@ const WSWFApplicationTimeline = (props) => {
     tenantId: props.application?.tenantId,
     id: props.id,
     moduleCode: businessService,
+    config: { enabled: !!props.id }
   });
   const [showAllTimeline, setShowAllTimeline]=useState(false);
   function OpenImage(imageSource, index, thumbnailsToShow) {

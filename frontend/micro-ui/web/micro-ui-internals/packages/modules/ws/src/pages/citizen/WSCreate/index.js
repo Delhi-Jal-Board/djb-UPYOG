@@ -54,9 +54,9 @@ const WSCreate = () => {
     }
     let redirectWithHistory = history.push;
     if (nextStep === null) {
-      return redirectWithHistory(`${getPath(match.path, match.params)}/check`);
+      return redirectWithHistory({ pathname: `${getPath(match.path, match.params)}/check`, search: location.search });
     }
-    redirectWithHistory(`${getPath(match.path, match.params)}/${nextStep}`);
+    redirectWithHistory({ pathname: `${getPath(match.path, match.params)}/${nextStep}`, search: location.search });
   }
 
   if(params && Object.keys(params).length>0 && window.location.href.includes("/citizen/ws/create-application/search-property"))
