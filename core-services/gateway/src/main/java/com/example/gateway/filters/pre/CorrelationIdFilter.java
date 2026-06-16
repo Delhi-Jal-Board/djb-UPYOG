@@ -58,7 +58,7 @@ public class CorrelationIdFilter implements GlobalFilter, Ordered {
         String contentType = exchange.getRequest().getHeaders().getFirst(HttpHeaders.CONTENT_TYPE);
         String endPointPath = exchange.getRequest().getPath().value();
 
-        if(endPointPath.contains("/filestore")){
+        if (endPointPath.startsWith("/filestore") || endPointPath.startsWith("/dashboard-analytics")) {
             return chain.filter(exchange);
         }
         else if (contentType != null && (contentType.contains("multipart/form-data") || contentType.contains("application/x-www-form-urlencoded"))) {
