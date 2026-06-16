@@ -115,48 +115,48 @@ const Home = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
+  const handleCardClick = (navigationUrl) => {
+    const kc = window.keycloak;
+    if (!kc?.authenticated) {
+      history.push({
+        pathname: "/digit-ui/citizen/login",
+        state: { from: navigationUrl },
+      });
+    } else {
+      history.push(navigationUrl);
+    }
+  };
+
   const allCitizenServicesProps = {
     header: t(citizenServicesObj?.headerLabel),
     sideOption: {
       name: t(citizenServicesObj?.sideOption?.name),
-      onClick: () => history.push(citizenServicesObj?.sideOption?.navigationUrl),
+      onClick: () => handleCardClick(citizenServicesObj?.sideOption?.navigationUrl),
     },
     options: [
       {
         name: t(infoAndUpdatesObj?.props?.[0]?.label),
         description: t("Return to the main dashboard"),
         Icon: <HomeIcon className="fill-path-primary-main" width="40" height="40" />,
-        onClick: () => history.push(infoAndUpdatesObj?.props?.[0]?.navigationUrl),
+        onClick: () => handleCardClick(infoAndUpdatesObj?.props?.[0]?.navigationUrl),
       },
       {
         name: t("WT_MODULE_NAME"),
         description: t("Request water tanker services"),
         Icon: <CHBIcon className="fill-path-primary-main" />,
-        onClick: () => history.push("/digit-ui/citizen/wt-home"),
+        onClick: () => handleCardClick("/digit-ui/citizen/wt-home"),
       },
-      // {
-      //   name: t(citizenServicesObj?.props?.[1]?.label),
-      //   description: t("Pay your property tax and register property"),
-      //   Icon: <PTIcon className="fill-path-primary-main" />,
-      //   onClick: () => history.push(citizenServicesObj?.props?.[1]?.navigationUrl),
-      // },
-      // {
-      //   name: t(citizenServicesObj?.props?.[2]?.label),
-      //   description: t("View and manage your pending applications"),
-      //   Icon: <CaseIcon className="fill-path-primary-main" />,
-      //   onClick: () => history.push(citizenServicesObj?.props?.[2]?.navigationUrl),
-      // },
       {
         name: t("EKYC_MODULE_NAME"),
         description: t("Verify your identity and connection details"),
         Icon: <DocumentIcon className="fill-path-primary-main" />,
-        onClick: () => history.push("/digit-ui/citizen/ekyc"),
+        onClick: () => handleCardClick("/digit-ui/citizen/ekyc"),
       },
       {
         name: t("ACTION_TEST_WATER_AND_SEWERAGE"),
         description: t("Apply for new water connection"),
         Icon: <DropIcon className="fill-path-primary-main" />,
-        onClick: () => history.push("/digit-ui/citizen/ws-home"),
+        onClick: () => handleCardClick("/digit-ui/citizen/ws-home"),
       },
       ...(Digit.UserService.hasAccess(["WT_VENDOR", "EKYC_VENDOR", "EKYC_SUPERVISOR"])
         ? [
@@ -164,7 +164,7 @@ const Home = () => {
               name: t("ACTION_VENDOR_MANAGEMENT"),
               description: t("Apply for new water connection"),
               Icon: <VendorManagementIcon className="fill-path-primary-main" />,
-              onClick: () => history.push("/digit-ui/citizen/vendor"),
+              onClick: () => handleCardClick("/digit-ui/citizen/vendor"),
             },
           ]
         : []),
@@ -172,14 +172,8 @@ const Home = () => {
         name: t("ACTION_TEST_COMMON_PROPERTY_TAX"),
         description: t("Search and pay property tax"),
         Icon: <PTIcon className="fill-path-primary-main" />,
-        onClick: () => history.push("/digit-ui/citizen/commonpt-home"),
+        onClick: () => handleCardClick("/digit-ui/citizen/commonpt-home"),
       },
-      // {
-      //   name: t(citizenServicesObj?.props?.[3]?.label) === "ACTION_TEST_CHB" ? t("Community Halls") : t(citizenServicesObj?.props?.[3]?.label),
-      //   description: t("Book community halls for your events and functions"),
-      //   Icon: <CHBIcon className="fill-path-primary-main" />,
-      //   onClick: () => history.push(citizenServicesObj?.props?.[3]?.navigationUrl),
-      // },
     ],
     styles: { display: "flex", flexWrap: "wrap", justifyContent: "flex-start", width: "100%" },
   };
@@ -188,33 +182,34 @@ const Home = () => {
     header: t(infoAndUpdatesObj?.headerLabel),
     sideOption: {
       name: t(infoAndUpdatesObj?.sideOption?.name),
-      onClick: () => history.push(infoAndUpdatesObj?.sideOption?.navigationUrl),
+      onClick: () => handleCardClick(infoAndUpdatesObj?.sideOption?.navigationUrl),
     },
     options: [
       {
         name: t(citizenServicesObj?.props?.[0]?.label),
         description: t("File and track your grievances and complaints"),
         Icon: <ComplaintIcon className="fill-path-primary-main" width="40" height="40" />,
-        onClick: () => history.push(citizenServicesObj?.props?.[0]?.navigationUrl),
+        onClick: () => handleCardClick(citizenServicesObj?.props?.[0]?.navigationUrl),
       },
       {
         name: t(infoAndUpdatesObj?.props?.[1]?.label),
         description: t("View events, holidays, and important dates"),
         Icon: <Calender className="fill-path-primary-main" width="40" height="40" />,
-        onClick: () => history.push(infoAndUpdatesObj?.props?.[1]?.navigationUrl),
+        onClick: () => handleCardClick(infoAndUpdatesObj?.props?.[1]?.navigationUrl),
       },
       {
         name: t(infoAndUpdatesObj?.props?.[2]?.label),
         description: t("Access your uploaded documents and certificates"),
         Icon: <DocumentIcon className="fill-path-primary-main" />,
-        onClick: () => history.push(infoAndUpdatesObj?.props?.[2]?.navigationUrl),
+        onClick: () => handleCardClick(infoAndUpdatesObj?.props?.[2]?.navigationUrl),
       },
       {
         name: t(infoAndUpdatesObj?.props?.[3]?.label),
         description: t("Get assistance and find answers to questions"),
         Icon: <HelpIcon className="fill-path-primary-main" />,
-        onClick: () => history.push(infoAndUpdatesObj?.props?.[3]?.navigationUrl),
+        onClick: () => handleCardClick(infoAndUpdatesObj?.props?.[3]?.navigationUrl),
       },
+
     ],
     styles: { display: "flex", flexWrap: "wrap", justifyContent: "flex-start", width: "100%" },
   };

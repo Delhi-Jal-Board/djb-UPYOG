@@ -35,7 +35,11 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
   }, [mappedZROLocation, zroLocationsData]);
 
   const { data: allCities } = Digit.Hooks.useTenants();
-  const convertToObject = (String) => (String ? { i18nKey: String, code: String, value: String } : null);
+  const convertToObject = (value) => {
+    if (!value) return null;
+    if (typeof value === "object") return value;
+    return { i18nKey: value, code: value, value: value };
+  };
   const [pincode, setPincode] = useState(
     (formData?.pincode || formData?.address?.pincode || formData?.infodetails?.existingDataSet?.address?.pincode)?.toString().split(".")[0] || ""
   );

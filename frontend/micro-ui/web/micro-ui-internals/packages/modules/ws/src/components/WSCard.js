@@ -56,7 +56,7 @@ const WSCard = () => {
     // },
     {
       label: t("WS_APPLY_NEW_CONNECTION_HOME_CARD_LABEL"),
-      link: `/digit-ui/employee/ws/old-application`,
+      link: `/digit-ui/employee/ws/info`,
       roles: ["WS_CEMP", "SW_CEMP"],
     },
   ];

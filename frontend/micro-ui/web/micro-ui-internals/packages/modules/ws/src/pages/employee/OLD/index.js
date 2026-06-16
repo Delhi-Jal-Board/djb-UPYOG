@@ -25,21 +25,15 @@ const OLDApplication = () => {
   const [showCheckPage, setShowCheckPage] = useState(false);
 
   const timelineConfig = [
-    {
-      label: "WS_COMMON_PROPERTY_DETAILS",
-    },
-    {
-      label: "WS_COMMON_CONNECTION_DETAIL",
-    },
-    {
-      label: "WS_COMMON_CONNECTION_HOLDER_DETAILS_HEADER",
-    },
-    {
-      label: "WS_COMMON_DOCS",
-    },
-    {
-      label: "WS_COMMON_SUMMARY",
-    },
+    { label: "WS_COMMON_PROPERTY_DETAILS" },
+    { label: "WS_COMMON_CONNECTION_DETAIL" },
+    { label: "WS_COMMON_CONNECTION_HOLDER_DETAILS_HEADER" },
+    { label: "PT_LOCATION_DETAILS" },
+    { label: "WS_PROPERTY_AND_WATER_CONNECTION_USE_DETAILS" },
+    { label: "WS_DJB_EMPLOYEE" },
+    { label: "WS_BANK_DETAILS" },
+    { label: "WS_DOCUMENTS" },
+    { label: "WS_DECLARATION" },
   ].map((step, index) => ({
     route: `step-${index + 1}`,
     timeLine: [{ actions: step.label, currentStep: index + 1 }],
@@ -117,6 +111,7 @@ const OLDApplication = () => {
                   key: "propertyAddress",
                   component: "CPTPropertyLocationDetails",
                   withoutLabel: true,
+                  isAutomaticFill: true,
                 },
               ],
             });
@@ -130,6 +125,7 @@ const OLDApplication = () => {
                   key: "useDetails",
                   component: "PropertyWaterConnection",
                   withoutLabel: true,
+                  isAutomaticFill: true,
                 },
               ],
             });
@@ -606,9 +602,9 @@ const OLDApplication = () => {
           onFormValueChange={onFormValueChange}
           label={
             creatingWaterApplicationLoading ||
-            creatingSewerageApplicationLoading ||
-            updatingWaterApplicationLoading ||
-            updatingSewerageApplicationLoading
+              creatingSewerageApplicationLoading ||
+              updatingWaterApplicationLoading ||
+              updatingSewerageApplicationLoading
               ? t("CS_COMMON_SUBMITTING")
               : t("CS_COMMON_NEXT")
           }
