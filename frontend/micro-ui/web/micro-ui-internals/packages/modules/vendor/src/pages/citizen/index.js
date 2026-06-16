@@ -28,7 +28,7 @@ const CitizenVendorApp = () => {
       },
       {
         label: t("CITIZEN_VENDOR"),
-        path: `${path}/citizen-Vendor`,
+        path: `/digit-ui/citizen/vendor`,
       },
     ];
 

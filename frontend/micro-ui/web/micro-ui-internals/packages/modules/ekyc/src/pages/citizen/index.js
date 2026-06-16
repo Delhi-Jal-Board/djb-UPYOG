@@ -21,18 +21,47 @@ const CitizenApp = () => {
 
   sessionStorage.removeItem("revalidateddone");
 
-  const getBreadcrumbLabel = () => {
+  const getDynamicBreadcrumbs = () => {
     const pathname = location.pathname;
-    if (pathname.includes("/create-kyc")) return "EKYC_CREATE_KYC";
-    if (pathname.includes("/aadhaar-verification")) return "EKYC_AADHAAR_VERIFICATION";
-    if (pathname.includes("/address-details")) return "EKYC_ADDRESS_DETAILS";
-    if (pathname.includes("/property-info")) return "EKYC_PROPERTY_INFO";
-    if (pathname.includes("/meter-details")) return "EKYC_METER_DETAILS";
-    if (pathname.includes("/review")) return "EKYC_REVIEW";
-    return "EKYC_HOME";
-  };
 
-  const breadcrumbs = [{ icon: HomeIcon, path: "/digit-ui/citizen" }, { label: t(getBreadcrumbLabel()) }];
+    // Parent crumb — always present and clickable → redirects to eKYC citizen home
+    const crumbs = [
+      { icon: HomeIcon, path: "/digit-ui/citizen" },
+      { label: t("EKYC_MODULE_NAME"), path: `/digit-ui/citizen/ekyc` },
+    ];
+
+    // Child crumb — only appended when on a sub-page
+    if (pathname.includes("/create-kyc")) {
+      crumbs.push({ label: t("EKYC_CREATE_KYC") });
+    } else if (pathname.includes("/aadhaar-verification")) {
+      crumbs.push({ label: t("EKYC_AADHAAR_VERIFICATION") });
+    } else if (pathname.includes("/address-details")) {
+      crumbs.push({ label: t("EKYC_ADDRESS_DETAILS") });
+    } else if (pathname.includes("/property-info")) {
+      crumbs.push({ label: t("EKYC_PROPERTY_INFO") });
+    } else if (pathname.includes("/meter-details")) {
+      crumbs.push({ label: t("EKYC_METER_DETAILS") });
+    } else if (pathname.includes("/review")) {
+      crumbs.push({ label: t("EKYC_INBOX"), path: `/digit-ui/citizen/ekyc/inbox` });
+      crumbs.push({ label: t("EKYC_REVIEW") });
+    } else if (pathname.includes("/assign/surveyor-details")) {
+      crumbs.push({ label: t("EKYC_ASSIGN"), path: `/digit-ui/citizen/ekyc/assign` });
+      crumbs.push({ label: t("EKYC_SURVEYOR_DETAILS") });
+    } else if (pathname.includes("/assign")) {
+      crumbs.push({ label: t("EKYC_ASSIGN") });
+    } else if (pathname.includes("/surveyor-dashboard")) {
+      crumbs.push({ label: t("EKYC_SURVEYOR_DASHBOARD") });
+    } else if (pathname.includes("/dashboard")) {
+      crumbs.push({ label: t("EKYC_DASHBOARD") });
+    } else if (pathname.includes("/inbox")) {
+      crumbs.push({ label: t("EKYC_INBOX") });
+    } else if (pathname.includes("/status/")) {
+      crumbs.push({ label: t("EKYC_STATUS") });
+    }
+    // home (exact path) → no child crumb
+
+    return crumbs;
+  };
 
   const roles = Digit.SessionStorage.get("User")?.info?.roles.map((ele) => ele.code);
   const isEkyAction = (!roles?.includes("EKYC_SURVEYOR") || roles?.includes("EMPLOYEE"))
@@ -47,7 +76,7 @@ const CitizenApp = () => {
             </React.Fragment>
           }
           onLeftClick={() => window.history.back()}
-          breadcrumbs={breadcrumbs}
+          breadcrumbs={getDynamicBreadcrumbs()}
         />
 
         <Switch>
