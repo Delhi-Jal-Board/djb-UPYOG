@@ -185,7 +185,7 @@ export const PTSearch = {
       },
     };
 
-    const applicationDetails = [propertyDetail, addressDetails, assessmentDetails, ownerdetails];
+    const applicationDetails = [propertyDetail, addressDetails, assessmentDetails];
     return {
       tenantId: property?.tenantId,
       applicationDetails,
@@ -287,121 +287,6 @@ export const PTSearch = {
                 ],
               };
             }),
-        },
-      },
-      {
-        title: "PT_OWNERSHIP_INFO_SUB_HEADER",
-        additionalDetails: {
-          owners: response?.owners?.map((owner, index) => {
-            return {
-              status: owner.status,
-              title: "ES_OWNER",
-              values: [
-                {
-                  title: "PT_OWNERSHIP_INFO_NAME",
-                  value: owner?.name,
-                  /* 
-                  Feature :: Privacy
-                  
-                  Desc :: if field requires a demasking option then privacy object has to set with uuid, fieldName, model
-                  */
-                  // privacy: { uuid: owner?.uuid, fieldName: "name", model: "User" },
-                },
-                { title: "PT_OWNERSHIP_INFO_GENDER", value: owner?.gender, privacy: { uuid: owner?.uuid, fieldName: "gender", model: "User",showValue: false,
-                  loadData: {
-                    serviceName: "/property-services/property/_search",
-                    requestBody: {},
-                    requestParam: { tenantId:response?.tenantId, propertyIds:response?.propertyId },
-                    jsonPath: "Properties[0].owners[0].gender",
-                    isArray: false,
-                  }, } },
-                {
-                  title: "PT_OWNERSHIP_INFO_MOBILE_NO",
-                  value: owner?.mobileNumber,
-                  privacy: { uuid: owner?.uuid, fieldName: "mobileNumber", model: "User",showValue: false,
-                  loadData: {
-                    serviceName: "/property-services/property/_search",
-                    requestBody: {},
-                    requestParam: { tenantId:response?.tenantId, propertyIds:response?.propertyId },
-                    jsonPath: "Properties[0].owners[0].mobileNumber",
-                    isArray: false,
-                  }, },
-                },
-                {
-                  title: "PT_OWNERSHIP_INFO_USER_CATEGORY",
-                  value: `COMMON_MASTERS_OWNERTYPE_${owner?.ownerType}` || "NA",
-                  privacy: { uuid: owner?.uuid, fieldName: "ownerType", model: "User",showValue: false,
-                  loadData: {
-                    serviceName: "/property-services/property/_search",
-                    requestBody: {},
-                    requestParam: { tenantId:response?.tenantId, propertyIds:response?.propertyId },
-                    //function needed here for localisation
-                    jsonPath: "Properties[0].owners[0].ownerType",
-                    isArray: false,
-                  }, },
-                },
-                {
-                  title: "PT_SEARCHPROPERTY_TABEL_GUARDIANNAME",
-                  value: owner?.fatherOrHusbandName,
-                  privacy: { uuid: owner?.uuid, fieldName: "guardian", model: "User",showValue: false,
-                  loadData: {
-                    serviceName: "/property-services/property/_search",
-                    requestBody: {},
-                    requestParam: { tenantId:response?.tenantId, propertyIds:response?.propertyId },
-                    jsonPath: "Properties[0].owners[0].fatherOrHusbandName",
-                    isArray: false,
-                  }, },
-                },
-                { title: "PT_FORM3_OWNERSHIP_TYPE", value: response?.ownershipCategory },
-                {
-                  title: "PT_OWNERSHIP_INFO_EMAIL_ID",
-                  value: owner?.emailId,
-                  privacy: { uuid: owner?.uuid, fieldName: "emailId", model: "User", hide: !(owner?.emailId && owner?.emailId !== "NA"),showValue: false,
-                  loadData: {
-                    serviceName: "/property-services/property/_search",
-                    requestBody: {},
-                    requestParam: { tenantId:response?.tenantId, propertyIds:response?.propertyId },
-                    jsonPath: "Properties[0].owners[0].emailId",
-                    isArray: false,
-                  }, },
-                },
-                {
-                  title: "PT_OWNERSHIP_INFO_CORR_ADDR",
-                  value: owner?.correspondenceAddress || owner?.permanentAddress,
-                  privacy: {
-                    uuid: owner?.uuid,
-                    fieldName: owner?.permanentAddress ? "permanentAddress" : "correspondenceAddress",
-                    model: "User",
-                    hide: !(owner?.permanentAddress || owner?.correspondenceAddress),
-                    showValue: false,
-                    loadData: {
-                      serviceName: "/property-services/property/_search",
-                      requestBody: {},
-                      requestParam: { tenantId:response?.tenantId, propertyIds:response?.propertyId },
-                      jsonPath: owner?.permanentAddress ? "Properties[0].owners[0].permanentAddress" : "Properties[0].owners[0].correspondenceAddress",
-                      isArray: false,
-                    },
-                  },
-                },
-              ],
-            };
-          }),
-          documents: [
-            {
-              title: "PT_COMMON_DOCS",
-              values: response?.documents
-                // ?.filter((e) => e.status === "ACTIVE")
-                ?.map((document) => {
-                  return {
-                    title: `PT_${document?.documentType.replace(".", "_")}`,
-                    documentType: document?.documentType,
-                    documentUid: document?.documentUid,
-                    fileStoreId: document?.fileStoreId,
-                    status: document.status,
-                  };
-                }),
-            },
-          ],
         },
       },
     ];

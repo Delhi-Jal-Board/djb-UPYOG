@@ -503,7 +503,6 @@ function ApplicationDetailsContent({
              </div>
           )) } */}
           {detail?.additionalDetails?.floors && <PropertyFloors floors={detail?.additionalDetails?.floors} />}
-          {detail?.additionalDetails?.owners && <PropertyOwners owners={detail?.additionalDetails?.owners} />}
           {detail?.additionalDetails?.units && <TLTradeUnits units={detail?.additionalDetails?.units} />}
           {detail?.additionalDetails?.accessories && <TLTradeAccessories units={detail?.additionalDetails?.accessories} />}
           {detail?.additionalDetails?.permissions && workflowDetails?.data?.nextActions?.length > 0 && (

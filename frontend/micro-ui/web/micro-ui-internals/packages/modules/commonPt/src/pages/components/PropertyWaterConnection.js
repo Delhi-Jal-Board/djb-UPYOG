@@ -212,7 +212,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
   const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
 
   return (
-    <CollapsibleCardPage title={t("WS_PROPERTY_AND_WATER_CONNECTION_USE_DETAILS")} defaultOpen={true} style={props.style}>
+    <CollapsibleCardPage title={t("WS_PROPERTY_AND_WATER_CONNECTION_USE_DETAILS") + (config?.isAutomaticFill ? " (Automatic Fill by Property )" : "")} defaultOpen={config?.isAutomaticFill ? false : true} style={props.style}>
       <div className="formcomposer-section-grid">
         <LabelFieldPair>
           <CardLabel>{`${t("WS_CATEGORY_TYPE")}*`}</CardLabel>

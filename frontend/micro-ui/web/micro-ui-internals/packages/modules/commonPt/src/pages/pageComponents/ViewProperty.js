@@ -47,9 +47,6 @@ const ViewProperty = () => {
 
   return (
     <div>
-      <div>
-        <Header>{t("PT_PROPERTY_INFO_HEADER")}</Header>
-      </div>
       <ApplicationDetails
         applicationDetails={applicationDetails}
         isLoading={isLoading}

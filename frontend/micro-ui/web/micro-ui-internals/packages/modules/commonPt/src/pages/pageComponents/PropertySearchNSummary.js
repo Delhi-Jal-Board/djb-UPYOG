@@ -84,6 +84,19 @@ const PropertySearchNSummary = ({ config, onSelect, userType, formData, setError
   useEffect(() => {
     const currentCptId = formData?.cpt?.details?.propertyId;
     if (propertyDetails?.Properties?.length > 0) {
+      if (urlPropertyId && (!selectedProperty || selectedProperty.propertyId !== urlPropertyId)) {
+        const matchingProp = propertyDetails.Properties.find(p => p.propertyId === urlPropertyId);
+        if (matchingProp) {
+          setSelectedProperty(matchingProp);
+          if (currentCptId !== urlPropertyId) {
+            onSelect("cpt", { details: matchingProp });
+            sessionStorage.setItem("Digit_FSM_PT", JSON.stringify(matchingProp));
+            localStorage.setItem("pgrProperty", JSON.stringify(matchingProp));
+          }
+          return;
+        }
+      }
+
       if (propertyDetails.Properties.length === 1 && !selectedProperty) {
         const fetchedId = propertyDetails.Properties[0].propertyId;
         setSelectedProperty(propertyDetails.Properties[0]);
@@ -94,7 +107,7 @@ const PropertySearchNSummary = ({ config, onSelect, userType, formData, setError
         }
       }
     }
-  }, [propertyDetails, pathname, isCitizen, isWsApplication, formData?.cpt?.details?.propertyId]);
+  }, [propertyDetails, pathname, isCitizen, isWsApplication, formData?.cpt?.details?.propertyId, urlPropertyId, selectedProperty]);
 
   const searchProperty = () => {
     if (!propertyId && !mobileNumber) {
@@ -169,44 +182,38 @@ const PropertySearchNSummary = ({ config, onSelect, userType, formData, setError
           ? !(formData?.tradedetils?.[0]?.structureType?.code === "MOVABLE") && (isEmpNewApplication || isEmpRenewLicense)
           : true) && (
           <React.Fragment>
-            {isCitizen && isWsApplication ? (
-              <div className="formcomposer-section-grid" style={isMobile ? {} : {}}>
-                <div style={{ marginBottom: "16px" }}>
-                  <LabelFieldPair>
-                    <Label style={getInputStyles()}>{`${t("PROPERTY_ID")}`}</Label>
-                    <div style={{ display: "flex", gap: "12px", width: "100%", flexDirection: "column" }}>
-                      {isLoading ? (
-                        <div>{t("CS_COMMON_LOADING")}</div>
-                      ) : propertyDetails?.Properties && propertyDetails?.Properties?.length > 0 ? (
-                        <Dropdown
-                          option={propertyDetails?.Properties}
-                          optionKey="propertyId"
-                          id="propertyId"
-                          selected={selectedProperty}
-                          select={onPropertySelect}
-                          t={t}
-                          placeholder={t("PT_SELECT_PROPERTY")}
-                        />
-                      ) : (
-                        <span
-                          onClick={() =>
-                            history.push(
-                              `/digit-ui/${userType}/${pathname.split("/")[3]}/create-application/create-property?redirectToUrl=${
-                                window.location.pathname
-                              }`,
-                              { ...state, ...formData }
-                            )
-                          }
-                        >
-                          <button className="submit-bar" type="button" style={{ color: "white" }}>
-                            {t("CPT_CREATE_PROPERTY")}
-                          </button>
-                        </span>
-                      )}
+            {/* {isCitizen && isWsApplication ? (
+              <React.Fragment>
+                {!(propertyDetails?.Properties && propertyDetails?.Properties?.length > 0) && (
+                  <div className="formcomposer-section-grid" style={isMobile ? {} : {}}>
+                    <div style={{ marginBottom: "16px" }}>
+                      <LabelFieldPair>
+                        <Label style={getInputStyles()}>{`${t("PROPERTY_ID")}`}</Label>
+                        <div style={{ display: "flex", gap: "12px", width: "100%", flexDirection: "column" }}>
+                          {isLoading ? (
+                            <div>{t("CS_COMMON_LOADING")}</div>
+                          ) : (
+                            <span
+                              onClick={() =>
+                                history.push(
+                                  `/digit-ui/${userType}/${pathname.split("/")[3]}/create-application/create-property?redirectToUrl=${
+                                    window.location.pathname
+                                  }`,
+                                  { ...state, ...formData }
+                                )
+                              }
+                            >
+                              <button className="submit-bar" type="button" style={{ color: "white" }}>
+                                {t("CPT_CREATE_PROPERTY")}
+                              </button>
+                            </span>
+                          )}
+                        </div>
+                      </LabelFieldPair>
                     </div>
-                  </LabelFieldPair>
-                </div>
-              </div>
+                  </div>
+                )}
+              </React.Fragment>
             ) : (
               <React.Fragment>
                 <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", gap: "16px", width: "100%", alignItems: "flex-end", marginBottom: "16px" }}>
@@ -275,11 +282,11 @@ const PropertySearchNSummary = ({ config, onSelect, userType, formData, setError
                   </div>
                 </div>
               </React.Fragment>
-            )}
+            )} */}
 
             {activeProperty ? (
               <React.Fragment>
-                <Card className="card-with-background" style={{ margin: "16px 0px", padding: "20px", boxShadow: "none" }}>
+                <Card className="card-with-background" style={{ boxShadow: "none" }}>
                   <StatusTable style={{ padding: "0", margin: "0" }}>
                     <div className="formcomposer-section-grid" style={isMobile ? {} : {}}>
                       <Row

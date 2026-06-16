@@ -24,29 +24,27 @@ const CollapsibleCardPage = ({ number, title, children, defaultOpen = false, tab
       </div>
 
       {/* Collapsible body */}
-      {isOpen && (
-        <div className="collapsible-card-body">
-          {/* Tab header */}
-          {tabs && (
-            <div className="collapsible-card-tabs">
-              {tabs.map((tab, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleTabClick(tab)}
-                  className={`collapsible-card-tab-button ${activeTab === tab ? "active" : ""}`}
-                >
-                  {tab}
-                </button>
-              ))}
-            </div>
-          )}
-
-          {/* Tab content */}
-          <div className="collapsible-card-tab-content">
-            {tabs ? <React.Fragment key={activeTab}>{children(activeTab)}</React.Fragment> : children}
+      <div className="collapsible-card-body" style={{ display: isOpen ? "block" : "none" }}>
+        {/* Tab header */}
+        {tabs && (
+          <div className="collapsible-card-tabs">
+            {tabs.map((tab, index) => (
+              <button
+                key={index}
+                onClick={() => handleTabClick(tab)}
+                className={`collapsible-card-tab-button ${activeTab === tab ? "active" : ""}`}
+              >
+                {tab}
+              </button>
+            ))}
           </div>
+        )}
+
+        {/* Tab content */}
+        <div className="collapsible-card-tab-content">
+          {tabs ? <React.Fragment key={activeTab}>{children(activeTab)}</React.Fragment> : children}
         </div>
-      )}
+      </div>
     </div>
   );
 };
