@@ -69,6 +69,7 @@ import WSDisconnectionCheckPage from "./pages/citizen/WSDisconnection/CheckPage"
 import WSRestorationCheckPage from "./pages/citizen/WSRestoration/CheckPage";
 import WSReSubmitDisconnectionCheckPage from "./pages/citizen/ReSubmitDisconnection/CheckPage";
 import WNSMyBillsComponent from "./pages/citizen/WnSMyBills";
+import WSInfoPage from "./pages/citizen/WSInfoPage";
 
 //Employee Components
 import ApplicationBillAmendment from "./pages/employee/ApplicationBillAmendment";
@@ -140,7 +141,7 @@ export const WSLinks = ({ matchPath, userType }) => {
     //   i18nKey: t("ACTION_TEST_MY_PAYMENTS"),
     // },
     {
-      link: `${matchPath}/old-application`,
+      link: `${matchPath}/info`,
       i18nKey: t("ACTION_TEST_APPLY_NEW_CONNECTION"),
     },
     // {
@@ -230,6 +231,7 @@ const componentsToRegister = {
   WSCitizenEditApplication: WSCitizenEditApplication,
   WSReSubmitDisconnectionApplication: WSReSubmitDisconnectionApplication,
   WNSMyBillsComponent: WNSMyBillsComponent,
+  WSInfoPage: WSInfoPage,
   WSCheckPage,
   WSAcknowledgement,
   WSDisconnectionCheckPage,

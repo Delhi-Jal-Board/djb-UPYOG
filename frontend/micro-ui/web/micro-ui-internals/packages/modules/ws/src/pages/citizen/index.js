@@ -31,7 +31,7 @@ const App = ({ path }) => {
     {
       path: "/digit-ui/citizen/ws/create-application",
       label: t("CS_WS_CREATE_APPLICATION"),
-      show: location.pathname.includes("/create-application"),
+      show: location.pathname.includes("/create-application") || location.pathname.includes("/info"),
     },
     {
       path: "/digit-ui/citizen/ws/search",
@@ -84,6 +84,7 @@ const App = ({ path }) => {
   const WSMyConnections = Digit?.ComponentRegistryService?.getComponent("WSMyConnections");
   const WNSMyBillsComponent = Digit?.ComponentRegistryService?.getComponent("WNSMyBillsComponent");
   const WSOLDApplication = Digit?.ComponentRegistryService?.getComponent("WSOLDApplication");
+  const WSInfoPage = Digit?.ComponentRegistryService?.getComponent("WSInfoPage");
   return (
     <React.Fragment>
       <Switch>
@@ -121,6 +122,7 @@ const App = ({ path }) => {
                 <PrivateRoute path={`${path}/edit-application/:tenantId`} component={WSCitizenEditApplication} />
                 <PrivateRoute path={`${path}/modify-connection/:tenantId`} component={WSCitizenEditApplication} />
                 <PrivateRoute path={`${path}/old-application`} component={WSOLDApplication} />
+                <PrivateRoute path={`${path}/info`} component={WSInfoPage} />
                 <PrivateRoute path={`${path}/ws-response`} component={WSResponse} />
               </div>
             </div>

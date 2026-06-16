@@ -1,4 +1,4 @@
-import { Loader } from "@djb25/digit-ui-react-components";
+import { Loader, LayoutWrapper } from "@djb25/digit-ui-react-components";
 import React ,{Fragment}from "react";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "react-query";
@@ -41,7 +41,9 @@ const CreateProperty = ({ parentRoute, onSelect }) => {
   return (
     <Switch>
       <Route exact path={`${match.path}`}>
-        <CreatePropertyForm onSelect={createProperty} value={params} userType={"citizen"} />
+        <LayoutWrapper layoutClass="action">
+          <CreatePropertyForm onSelect={createProperty} value={params} userType={"citizen"} />
+        </LayoutWrapper>
       </Route>
       <Route exact path={`${match.path}/save-property`}>
         <PTAcknowledgement data={params} onSuccess={onSuccess} redirectUrl={redirectUrl} userType={"citizen"} />

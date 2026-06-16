@@ -148,7 +148,7 @@ const PropertyLocationDetails = ({
   }, [showToast]);
 
   return (
-    <CollapsibleCardPage title={t("PT_LOCATION_DETAILS")} defaultOpen={true}>
+    <CollapsibleCardPage title={t("PT_LOCATION_DETAILS") + (config?.isAutomaticFill ? " (Automatic Fill by Property )" : "")} defaultOpen={config?.isAutomaticFill ? false : true}>
       <div style={{ boxShadow: "none", ...props.style }}>
         {/* {!hidePropertySearch && !window.location.href.includes("create-application/create-property") && (
           <PropertySearchNSummary

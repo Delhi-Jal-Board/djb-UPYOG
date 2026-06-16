@@ -14,7 +14,7 @@ const CreatePropertyForm = ({ config, onSelect, value, userType, redirectUrl }) 
   const location = useLocation();
 
   const [canSubmit, setCanSubmit] = useState(true);
-  const defaultValues = { ...value };
+  const defaultValues = React.useMemo(() => ({ ...value }), []);
   const history = useHistory();
   const match = useRouteMatch();
   sessionStorage.setItem("VisitedCommonPTSearch", true);
@@ -94,15 +94,30 @@ const CreatePropertyForm = ({ config, onSelect, value, userType, redirectUrl }) 
   }
 
   const onSubmit = async () => {
-    const ownersArray = owners && owners.length > 0 ? owners : formValue?.owners;
+    let ownersArray = owners && owners.length > 0 ? owners : formValue?.owners;
+    
+    // Inject logged in user details if ownersArray is empty
+    if (!ownersArray || ownersArray.length === 0) {
+      const userInfo = Digit.UserService.getUser()?.info;
+      ownersArray = [
+        {
+          name: userInfo?.name || "Citizen",
+          mobileNumber: userInfo?.mobileNumber,
+          gender: { code: userInfo?.gender || "MALE", name: userInfo?.gender || "Male" },
+          fatherOrHusbandName: "NA",
+          relationship: { code: "FATHER", name: "Father" },
+          ownerType: { code: "NONE", name: "None" },
+          ownershipCategory: "INDIVIDUAL.SINGLEOWNER",
+        }
+      ];
+    }
+
     if (
       (formValue?.owners?.ownershipCategory?.includes("MULTIPLEOWNERS") ||
         formValue?.owners?.[0]?.ownershipCategory?.code?.includes("MULTIPLEOWNERS")) &&
       formValue?.owners?.length == 1
     ) {
       setShowToast({ key: true, label: "PT_COMMON_ONE_MORE_OWNER_INFROMATION_REQUIRED" });
-    } else if (!ownersArray || ownersArray.length === 0) {
-      setShowToast({ key: true, label: t("PT_COMMON_OWNER_DETAILS_REQUIRED") });
     } else {
       const payload = convertToPropertyLightWeight({ ...formValue, owners: ownersArray });
       payload.Property.tenantId = tenantId;

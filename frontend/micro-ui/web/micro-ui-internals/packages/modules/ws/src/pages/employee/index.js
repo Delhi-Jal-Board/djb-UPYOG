@@ -201,12 +201,22 @@ const BILLSBreadCrumbs = ({ location, showPrint }) => {
       icon: HomeIcon,
     },
     {
+      path: "/digit-ui/employee/ws/wsinformation",
+      label: t("WS_COMMON_APPL_NEW_CONNECTION"),
+      show:
+        location.pathname.includes("/create-application") ||
+        location.pathname.includes("/new-application") ||
+        location.pathname.includes("/old-application") ||
+        location.pathname.includes("/info"),
+    },
+    {
       path: "/digit-ui/employee/module/details",
       label: t("ES_TITLE_WATER_AND_SEWERAGE"),
       show:
         location.pathname.includes("/create-application") ||
         location.pathname.includes("/new-application") ||
-        location.pathname.includes("/old-application"),
+        location.pathname.includes("/old-application") ||
+        location.pathname.includes("/info"),
     },
     {
       path: "/digit-ui/employee/ws/create-application",
@@ -515,6 +525,7 @@ const App = ({ path }) => {
   const WSBulkBillGeneration = Digit?.ComponentRegistryService?.getComponent("WSBulkBillGeneration");
   const CPTCreateProperty = Digit?.ComponentRegistryService?.getComponent("CPTCreateProperty");
   const CPTAcknowledgement = Digit?.ComponentRegistryService?.getComponent("CPTAcknowledgement");
+  const WSInfoPage = Digit?.ComponentRegistryService?.getComponent("WSInfoPage");
 
   const locationCheck =
     window.location.href.includes("/employee/ws/new-application") ||
@@ -608,6 +619,7 @@ const App = ({ path }) => {
                 path={`${path}/water/bill-amendment/inbox`}
                 component={(props) => <WSBillIAmendMentInbox {...props} parentRoute={path} />}
               />
+              <PrivateRoute path={`${path}/info`} component={WSInfoPage} />
               <PrivateRoute
                 path={`${path}/sewerage/bill-amendment/inbox`}
                 component={(props) => <WSBillIAmendMentInbox {...props} parentRoute={path} />}

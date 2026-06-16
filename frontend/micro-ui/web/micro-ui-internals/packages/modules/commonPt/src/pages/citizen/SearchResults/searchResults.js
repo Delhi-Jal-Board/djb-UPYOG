@@ -277,6 +277,17 @@ const PropertySearchResults = ({
                 Header: t("PT_PROPERTY_PTUID"),
                 disableSortBy: true,
                 accessor: "property_id",
+                Cell: ({ row }) => {
+                  return (
+                    <div>
+                      <span className="link">
+                        <Link to={`/digit-ui/citizen/commonpt/view-property?propertyId=${row.original.property_id}&tenantId=${tenantId}`}>
+                          {row.original.property_id}
+                        </Link>
+                      </span>
+                    </div>
+                  );
+                },
               },
               {
                 Header: t("PT_OWNER_NAME"),
