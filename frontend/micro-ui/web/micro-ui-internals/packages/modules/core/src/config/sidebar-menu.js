@@ -8,8 +8,7 @@ const SideBarMenu = (t, closeSidebar, redirectToLoginPage, redirectToRegisterPag
       type: "link",
       element: "HOME",
       text: t("COMMON_BOTTOM_NAVIGATION_HOME"),
-      // link: isEmployee ? "/digit-ui/employee" : "/digit-ui/citizen",
-      link: "/digit-ui/home",
+      link: "/digit-ui/citizen",
       icon: "HomeIcon",
       populators: {
         onClick: closeSidebar,
