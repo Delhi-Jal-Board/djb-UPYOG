@@ -273,9 +273,12 @@ public class PropertyUtil extends CommonUtils {
 		JSONObject obj = new JSONObject(codes);
 		JSONArray configArray = obj.getJSONArray("PTWorkflow");
 		JSONObject response = new JSONObject();
-		for(int i=0;i<configArray.length();i++){
-			if(configArray.getJSONObject(i).getBoolean("enable"))
-				response=configArray.getJSONObject(i);
+		for(int i=0; i<configArray.length(); i++){
+			JSONObject config = configArray.getJSONObject(i);
+			if(config.getBoolean("enable") && config.getString("businessService").equals("PT.CREATEWITHWNS")) {
+				response = config;
+				break;
+			}
 		}
 		return response;
 	}
