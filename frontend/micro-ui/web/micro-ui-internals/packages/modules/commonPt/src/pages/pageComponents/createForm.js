@@ -89,6 +89,16 @@ const CreatePropertyForm = ({ config, onSelect, value, userType, redirectUrl }) 
     clearSuccessData();
   }, []);
 
+  const currentConfig = React.useMemo(() => {
+    const isEmployee = userType === "employee" || window.location.href.includes("/employee/");
+    return newConfig.filter((step) => {
+      if (step.head === "PT_OWNERSHIP_DETAILS" && !isEmployee) {
+        return false;
+      }
+      return true;
+    });
+  }, [userType]);
+
   if (isLoading) {
     return <Loader />;
   }
@@ -129,9 +139,15 @@ const CreatePropertyForm = ({ config, onSelect, value, userType, redirectUrl }) 
             return;
           }
           setShowToast({ key: false, label: `${t("CS_NEW_PROPERTY_APPLICATION_CREATED_SUCCESS")} - ${data?.Properties?.[0]?.propertyId}` });
-          if (onSelect) {
-            onSelect("cptNewProperty", { property: data?.Properties?.[0] });
-          }
+          setTimeout(() => {
+            if (onSelect) {
+              onSelect("cptNewProperty", { property: data?.Properties?.[0] });
+            } else {
+              history.push(`${match.path}/save-property?redirectToUrl=${redirectUrl || ""}`, {
+                property: data?.Properties?.[0]
+              });
+            }
+          }, 3000);
         },
         onError: (error) => {
           setShowToast({ key: true, label: error?.response?.data?.Errors?.[0]?.message || t("PT_COMMON_FAILED_TO_CREATE_PROPERTY") });
@@ -173,6 +189,7 @@ const CreatePropertyForm = ({ config, onSelect, value, userType, redirectUrl }) 
     else return t("ES_COMMON_CREATE_PROPERTY_HEADER");
   };
 
+
   return (
     <React.Fragment>
       <div className="employee-form-section-wrapper">
@@ -184,7 +201,7 @@ const CreatePropertyForm = ({ config, onSelect, value, userType, redirectUrl }) 
           onSubmit={onSubmit}
           noBoxShadow
           inline
-          config={newConfig}
+          config={currentConfig}
           label={t("SUBMIT")}
           isDisabled={!canSubmit}
           defaultValues={defaultValues}

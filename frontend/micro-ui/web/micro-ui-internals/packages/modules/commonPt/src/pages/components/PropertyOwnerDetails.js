@@ -39,12 +39,12 @@ const PropertyOwnerDetails = ({ t, config, onSelect, userType, formData, formSta
       gender: (formData.owners && formData.owners[index] && formData.owners[index].gender) || formData?.owners?.gender,
       mobileNumber: (formData.owners && formData.owners[index] && formData.owners[index].mobileNumber) || formData?.owners?.mobileNumber || "",
       fatherOrHusbandName:
-        (formData.owners && formData.owners[index] && formData.owners[index].fatherOrHusbandName) || formData?.owners?.fatherOrHusbandName || "",
-      relationship: (formData.owners && formData.owners[index] && formData.owners[index].relationship) || formData?.owners?.relationship,
+        (formData.owners && formData.owners[index] && formData.owners[index].fatherOrHusbandName) || formData?.owners?.fatherOrHusbandName || "NA",
+      relationship: (formData.owners && formData.owners[index] && formData.owners[index].relationship) || formData?.owners?.relationship || { code: "FATHER", name: "Father", i18nKey: "PT_RELATION_FATHER" },
       ownershipCategory: ownershipCategory,
-      ownerType: (formData.owners && formData.owners[index] && formData.owners[index]?.ownerType) || formData.owners?.ownerType,
+      ownerType: (formData.owners && formData.owners[index] && formData.owners[index]?.ownerType) || formData.owners?.ownerType || { code: "NONE", name: "None", i18nKey: "PT_OWNERSHIP_CATEGORY_NONE" },
       permanentAddress:
-        (formData.owners && formData.owners[index] && formData.owners[index].permanentAddress) || formData?.owners?.permanentAddress || "",
+        (formData.owners && formData.owners[index] && formData.owners[index].permanentAddress) || formData?.owners?.permanentAddress || "NA",
       email: (formData.owners && formData.owners[index] && formData.owners[index].email) || formData?.owners?.emailId || "",
       isCoresAddr: false,
     },
@@ -324,6 +324,7 @@ const PropertyOwnerDetails = ({ t, config, onSelect, userType, formData, formSta
                   <CardLabelError style={errorStyle}>{errors?.["gender" + index]?.message}</CardLabelError>
                 )}
 
+                <div style={{ display: "none" }}>
                 <LabelFieldPair>
                   <CardLabel>{`${t("PT_FORM3_GUARDIAN_NAME")}*`}</CardLabel>
                   <div className="form-field">
@@ -444,6 +445,7 @@ const PropertyOwnerDetails = ({ t, config, onSelect, userType, formData, formSta
                     />
                   </div>
                 </LabelFieldPair>
+                </div>
               </div>
 
               {/* <CheckBox
@@ -471,11 +473,11 @@ const PropertyOwnerDetails = ({ t, config, onSelect, userType, formData, formSta
                     name: "",
                     gender: "",
                     mobileNumber: "",
-                    fatherOrHusbandName: "",
-                    relationship: "",
+                    fatherOrHusbandName: "NA",
+                    relationship: { code: "FATHER", name: "Father", i18nKey: "PT_RELATION_FATHER" },
                     ownershipCategory: ownershipCategory,
-                    ownerType: "",
-                    permanentAddress: "",
+                    ownerType: { code: "NONE", name: "None", i18nKey: "PT_OWNERSHIP_CATEGORY_NONE" },
+                    permanentAddress: "NA",
                     email: "",
                     isCoresAddr: false,
                   },

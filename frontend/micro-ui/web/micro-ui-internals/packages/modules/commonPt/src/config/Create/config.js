@@ -94,26 +94,25 @@ export const newConfig = [
     // isCollapsible: true,
   },
 
-  // {
-  //   head: "PT_OWNERSHIP_DETAILS",
-  //   body: [
-  //     {
-  //       type: "component",
-  //       route: "institutional-owner-address",
-  //       isMandatory: false,
-  //       component: "CPTPropertyOwnerDetails",
-  //       texts: {
-  //         headerCaption: "PT_OWNERS_DETAILS",
-  //         header: "PT_OWNERS_ADDRESS",
-  //         cardText: "",
-  //         submitBarLabel: "PT_COMMON_NEXT",
-  //       },
-  //       key: "owners",
-  //       withoutLabel: true,
-  //       nextStep: "institutional-proof-of-identity",
-  //       colSpan: "span 2",
-  //     },
-  //   ],
-  //   //  isCollapsible: true,
-  // },
+  {
+    head: "PT_OWNERSHIP_DETAILS",
+    body: [
+      {
+        type: "component",
+        route: "institutional-owner-address",
+        isMandatory: false,
+        component: "CPTPropertyOwnerDetails",
+        texts: {
+          headerCaption: "PT_OWNERS_DETAILS",
+          header: "PT_OWNERS_ADDRESS",
+          cardText: "",
+          submitBarLabel: "PT_COMMON_NEXT",
+        },
+        key: "owners",
+        withoutLabel: true,
+        nextStep: "institutional-proof-of-identity",
+        colSpan: "span 2",
+      },
+    ],
+  },
 ];
