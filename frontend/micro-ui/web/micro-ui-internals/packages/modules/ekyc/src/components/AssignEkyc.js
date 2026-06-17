@@ -11,17 +11,6 @@ const AssignEkyc = () => {
   if (!tenantId || tenantId === "dl") {
     tenantId = "dl.djb"; // Force tenantId to dl.djb for EKYC APIs in citizen portal
   }
-  const location = useLocation();
-  const formInitValue = {
-    filterForm: {},
-    searchForm: {},
-    tableForm: {
-      limit: 10,
-      offset: 0,
-      sortBy: "createdTime",
-      sortOrder: "DESC",
-    },
-  };
 
   const [formState, dispatch] = useReducer(formReducer, formInitValue);
 
