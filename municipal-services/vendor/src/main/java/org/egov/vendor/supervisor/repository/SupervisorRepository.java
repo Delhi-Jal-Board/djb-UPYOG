@@ -76,6 +76,19 @@ public class SupervisorRepository {
      *   UUID in eg_supervisor.owner_id → supervisor    → returns their vendor_id
      *   Neither                        → unknown user  → returns empty list
      */
+    /**
+     * Check if this UUID is a TRUE vendor owner — checks ONLY eg_vendor.
+     * Used by SupervisorService.applyRoleBasedRestriction() to distinguish
+     * vendor-owner callers from supervisor callers, since getVendorIdsByOwner()
+     * now checks both tables and would otherwise short-circuit the supervisor
+     * self-scope branch.
+     */
+    public List<String> getVendorIdsByVendorOwnerOnly(String ownerUuid) {
+        return jdbcTemplate.queryForList(
+                "SELECT id FROM eg_vendor WHERE owner_id = ? AND status = 'ACTIVE'",
+                String.class, ownerUuid);
+    }
+
     public List<String> getVendorIdsByOwner(String ownerUuid) {
         // Check eg_vendor first — is this a vendor owner?
         List<String> vendorIds = jdbcTemplate.queryForList(

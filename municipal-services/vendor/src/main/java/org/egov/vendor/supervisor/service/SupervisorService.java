@@ -155,8 +155,10 @@ public class SupervisorService {
             return;
         }
 
-        // Check DB: is this caller a vendor owner?
-        List<String> vendorIds = repository.getVendorIdsByOwner(callerUuid);
+        // Check DB: is this caller a TRUE vendor owner? (eg_vendor only —
+        // NOT the combined getVendorIdsByOwner which also checks eg_supervisor
+        // and would incorrectly short-circuit the supervisor self-scope branch below)
+        List<String> vendorIds = repository.getVendorIdsByVendorOwnerOnly(callerUuid);
         if (!CollectionUtils.isEmpty(vendorIds)) {
             criteria.setVendorId(vendorIds.get(0));
             log.info("Supervisor search scoped to vendorId={} for vendor uuid={}",
