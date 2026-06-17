@@ -10,7 +10,8 @@ const EditSurveyor = () => {
   const history = useHistory();
   const queryClient = useQueryClient();
   const { id: surveyorId } = useParams();
-  
+  const type = Digit.UserService.getUser()?.info?.type;
+
   const userInfo = Digit.UserService.getUser()?.info;
   const rawTenantId = Digit.ULBService.getCurrentTenantId();
   const tenantId = rawTenantId?.includes(".") ? rawTenantId : `${rawTenantId}.djb`;
@@ -20,11 +21,7 @@ const EditSurveyor = () => {
   const [defaultValues, setDefaultValues] = useState({});
   const [surveyorDetails, setSurveyorDetails] = useState({});
 
-  const { data: surveyorSearchResponse, isLoading } = Digit.Hooks.fsm.useSurveyorSearch(
-    tenantId,
-    { ids: surveyorId },
-    { staleTime: Infinity }
-  );
+  const { data: surveyorSearchResponse, isLoading } = Digit.Hooks.fsm.useSurveyorSearch(tenantId, { ids: surveyorId }, { staleTime: Infinity });
 
   const { mutate } = Digit.Hooks.fsm.useSurveyorUpdate(tenantId);
 
@@ -34,7 +31,7 @@ const EditSurveyor = () => {
     if (surveyorSearchResponse && surveyorSearchResponse.surveyors && surveyorSearchResponse.surveyors.length > 0) {
       let details = surveyorSearchResponse.surveyors[0];
       setSurveyorDetails(details);
-      
+
       let values = {
         fullName: details?.owner?.name || details?.name,
         mobileNumber: details?.owner?.mobileNumber || details?.mobileNo,
@@ -42,7 +39,9 @@ const EditSurveyor = () => {
         employeeId: details?.employeeId,
         gender: details?.owner?.gender ? { code: details.owner.gender, name: `COMMON_GENDER_${details.owner.gender}` } : null,
         fatherOrHusbandName: details?.owner?.fatherOrHusbandName,
-        relationship: details?.owner?.relationship ? { code: details.owner.relationship, name: `ES_COMMON_RELATION_${details.owner.relationship}` } : null,
+        relationship: details?.owner?.relationship
+          ? { code: details.owner.relationship, name: `ES_COMMON_RELATION_${details.owner.relationship}` }
+          : null,
         dob: details?.owner?.dob && Digit.DateUtils.ConvertTimestampToDate(details?.owner?.dob, "yyyy-MM-dd"),
         correspondenceAddress: details?.owner?.correspondenceAddress,
         description: details?.description,
@@ -115,15 +114,17 @@ const EditSurveyor = () => {
     mutate(formData, {
       onError: (error) => {
         setShowToast({ key: "error", action: error });
-        setTimeout(closeToast, 5000);
       },
       onSuccess: () => {
         setShowToast({ key: "success", action: "UPDATE_SURVEYOR" });
         queryClient.invalidateQueries("SURVEYOR_SEARCH");
-        setTimeout(() => {
-          closeToast();
-          history.push(`/digit-ui/employee/vendor/registry/surveyor-details/${surveyorId}`);
-        }, 5000);
+
+        history.push({
+          pathname: `/digit-ui/${type}/vendor/registry/surveyor-details/${surveyorId}`,
+          state: {
+            showSuccessToast: true,
+          },
+        });
       },
     });
   };
