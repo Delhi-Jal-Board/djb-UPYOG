@@ -49,15 +49,6 @@ const MultiSelectDropdown = ({
 
   const [alreadyQueuedSelectedState, dispatch] = useReducer(reducer, selected, fnToSelectOptionThroughProvidedSelection);
 
-  useEffect(() => {
-    if (!active) {
-      onSelect(
-        alreadyQueuedSelectedState?.map((e) => e.propsData),
-        props
-      );
-    }
-  }, [active]);
-
   function handleOutsideClickAndSubmitSimultaneously() {
     setActive(false);
   }
@@ -77,40 +68,64 @@ const MultiSelectDropdown = ({
     setSearchQuery(e.target.value);
   }
 
-  function onSelectToAddToQueue(...props) {
-    const isChecked = arguments[0].target.checked;
+  function onSelectToAddToQueue(...args) {
+    const isChecked = args[0].target.checked;
+    const option = args[1];
 
     if (!isMultiSelect) {
-      if (isChecked) {
-        dispatch({
-          type: "REPLACE_COMPLETE_STATE",
-          payload: [
+      const newState = isChecked
+        ? [
             {
-              [optionsKey]: arguments[1]?.[optionsKey],
-              propsData: [...arguments],
+              [optionsKey]: option?.[optionsKey],
+              propsData: args,
             },
-          ],
-        });
-      } else {
-        dispatch({
-          type: "REPLACE_COMPLETE_STATE",
-          payload: [],
-        });
-      }
+          ]
+        : [];
+
+      dispatch({
+        type: "REPLACE_COMPLETE_STATE",
+        payload: newState,
+      });
+
+      // Immediately notify parent
+      onSelect(
+        newState.map((e) => e.propsData),
+        props
+      );
+
       return;
     }
 
-    isChecked
-      ? dispatch({ type: "ADD_TO_SELECTED_EVENT_QUEUE", payload: [...arguments] })
-      : dispatch({ type: "REMOVE_FROM_SELECTED_EVENT_QUEUE", payload: [...arguments] });
-  }
+    let newState;
 
-  // function onSelectToAddToQueue(...props) {
-  //   const isChecked = arguments[0].target.checked;
-  //   isChecked
-  //     ? dispatch({ type: "ADD_TO_SELECTED_EVENT_QUEUE", payload: [...arguments] })
-  //     : dispatch({ type: "REMOVE_FROM_SELECTED_EVENT_QUEUE", payload: [...arguments] });
-  // }
+    if (isChecked) {
+      newState = [
+        ...alreadyQueuedSelectedState,
+        {
+          [optionsKey]: option?.[optionsKey],
+          propsData: args,
+        },
+      ];
+
+      dispatch({
+        type: "ADD_TO_SELECTED_EVENT_QUEUE",
+        payload: args,
+      });
+    } else {
+      newState = alreadyQueuedSelectedState.filter((e) => e?.[optionsKey] !== option?.[optionsKey]);
+
+      dispatch({
+        type: "REMOVE_FROM_SELECTED_EVENT_QUEUE",
+        payload: args,
+      });
+    }
+
+    // Immediately notify parent
+    onSelect(
+      newState.map((e) => e.propsData),
+      props
+    );
+  }
 
   /* Custom function to scroll and select in the dropdowns while using key up and down */
   const keyChange = (e) => {
@@ -214,6 +229,13 @@ const MultiSelectDropdown = ({
     );
   };
 
+  const selectedLabel =
+    alreadyQueuedSelectedState.length > 0
+      ? isMultiSelect
+        ? alreadyQueuedSelectedState.map((item) => item?.[optionsKey]).join(", ")
+        : alreadyQueuedSelectedState?.[0]?.[optionsKey]
+      : placeHolder || defaultLabel;
+
   return (
     <div
       className={`multi-select-dropdown-wrap ${disable ? "disabled" : ""}`}
@@ -233,24 +255,9 @@ const MultiSelectDropdown = ({
         />
         <div className="label">
           {showSelectedLabels ? (
-            <React.Fragment>
-              {alreadyQueuedSelectedState.length > 0
-                ? isMultiSelect
-                  ? alreadyQueuedSelectedState.map((item) => item?.[optionsKey]).join(", ")
-                  : alreadyQueuedSelectedState?.[0]?.[optionsKey]
-                : placeHolder || defaultLabel}
-              <p>
-                {alreadyQueuedSelectedState.length > 0
-                  ? isMultiSelect
-                    ? alreadyQueuedSelectedState.map((item) => item?.[optionsKey]).join(", ")
-                    : alreadyQueuedSelectedState?.[0]?.[optionsKey]
-                  : placeHolder || defaultLabel}
-              </p>
-            </React.Fragment>
+            <p>{selectedLabel}</p>
           ) : alreadyQueuedSelectedState.length > 0 ? (
-            `${
-              isSurvey ? alreadyQueuedSelectedState.filter((ob) => ob?.i18nKey !== undefined).length : alreadyQueuedSelectedState.length
-            } ${defaultUnit}`
+            `${alreadyQueuedSelectedState.length} ${defaultUnit}`
           ) : (
             defaultLabel
           )}

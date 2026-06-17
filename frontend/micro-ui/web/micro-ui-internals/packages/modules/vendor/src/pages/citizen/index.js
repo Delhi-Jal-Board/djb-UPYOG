@@ -11,6 +11,9 @@ import {
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { Redirect, Switch, useRouteMatch, useLocation } from "react-router-dom";
+import AddSurveyor from "../../components/RegisterSurveyor/AddSurveyor";
+import EditSurveyor from "../../components/RegisterSurveyor/EditSurveyor";
+import EditSupervisor from "../../components/RegisterSupervisor/EditSupervisor";
 
 // Main Routing Page used for routing accorss the Water Tanker Module
 const CitizenVendorApp = () => {
@@ -150,7 +153,6 @@ const CitizenVendorApp = () => {
   const EditVendorDetails = Digit.ComponentRegistryService.getComponent("EditVendorDetails");
   const AddSupervisor = Digit.ComponentRegistryService.getComponent("AddSupervisor");
   const SupervisorDetails = Digit.ComponentRegistryService.getComponent("SupervisorDetails");
-  const AddSurveyor = Digit.ComponentRegistryService.getComponent("AddSurveyor");
   const SurveyorDetails = Digit.ComponentRegistryService.getComponent("SurveyorDetails");
   const VendorCreate = Digit.ComponentRegistryService.getComponent("VENDORCreate");
   const AddDriver = Digit.ComponentRegistryService.getComponent("AddDriver");
@@ -275,6 +277,22 @@ const CitizenVendorApp = () => {
             component={(props) => (
               <LayoutWrapper layoutClass="action">
                 <AddSurveyor {...props} parentRoute={path} />
+              </LayoutWrapper>
+            )}
+          />
+          <PrivateRoute
+            path={`${path}/registry/modify-surveyor/:id`}
+            component={(props) => (
+              <LayoutWrapper layoutClass="action">
+                <EditSurveyor {...props} parentRoute={path} />
+              </LayoutWrapper>
+            )}
+          />
+          <PrivateRoute
+            path={`${path}/registry/modify-supervisor/:id`}
+            component={(props) => (
+              <LayoutWrapper layoutClass="action">
+                <EditSupervisor {...props} parentRoute={path} />
               </LayoutWrapper>
             )}
           />

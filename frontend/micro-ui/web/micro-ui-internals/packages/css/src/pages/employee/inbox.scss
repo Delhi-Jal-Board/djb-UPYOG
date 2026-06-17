@@ -798,9 +798,11 @@
   border-radius: 6px;
 
   .card-head {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 30px;
+    @apply flex justify-between items-center;
+    margin-bottom: 10px;
+    h2 {
+      @apply text-heading-m font-bold;
+    }
   }
 
   h2 {

@@ -6,7 +6,7 @@ const SearchVendor = () => {
   const { t } = useTranslation();
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const userInfo = Digit.UserService.getUser();
-  const roles = Digit.UserService.getUser()?.info?.roles?.map((r) => r.name) || [];
+  const roles = Digit.UserService.getUser()?.info?.roles?.map((r) => r.code) || [];
 
   const initialPage =
     roles.includes("EKYC_VENDOR") || roles.includes("WT_VENDOR")
