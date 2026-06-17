@@ -212,8 +212,6 @@ const AssignEkyc = () => {
     },
   ];
 
-  console.log(propsForInboxTable);
-
   return (
     <div className="app-container">
       <InboxComposer
