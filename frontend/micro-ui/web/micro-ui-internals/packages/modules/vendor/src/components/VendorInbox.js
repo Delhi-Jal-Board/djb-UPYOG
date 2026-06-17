@@ -6,7 +6,7 @@ import VENDORLink from "./inbox/VENDORLink";
 import ApplicationTable from "./inbox/ApplicationTable";
 import Filter from "./inbox/Filter";
 import { ToggleSwitch } from "@djb25/digit-ui-react-components";
-import RegistredVendorSearch from "./RegisteredVendorSearch";
+import RegisteredVendorSearch from "./RegisteredVendorSearch";
 import { useQueryClient } from "react-query";
 
 const parseAdditionalDetails = (additionalDetails) => {
@@ -1088,6 +1088,22 @@ const VendorInbox = (props) => {
       case "SURVEYOR":
         return [
           {
+            Header: props.selectedTab === "SUPERVISOR" ? t("ES_FSM_REGISTRY_INBOX_SUPERVISOR_NAME") : t("ES_FSM_REGISTRY_INBOX_SURVEYOR_NAME"),
+            accessor: "name",
+            Cell: ({ row }) => {
+              const detailsPath = props.selectedTab === "SUPERVISOR" ? "supervisor-details" : "surveyor-details";
+              return (
+                <div>
+                  <span className="link">
+                    <Link to={`/digit-ui/${userType}/vendor/registry/${detailsPath}/` + row.original["id"]}>
+                      <div>{`${row.original.name || "N/A"}`}</div>
+                    </Link>
+                  </span>
+                </div>
+              );
+            },
+          },
+          {
             Header: props.selectedTab === "SUPERVISOR" ? t("Supervisor's Mobile No.") : t("Surveyor's Mobile No."),
             id: "userName",
             accessor: (row) => row.owner?.userName || "NA",
@@ -1098,22 +1114,6 @@ const VendorInbox = (props) => {
                   <span className="link">
                     <Link to={`/digit-ui/${userType}/vendor/registry/${detailsPath}/` + row.original["id"]}>
                       <div>{row.original.owner?.userName || "NA"}</div>
-                    </Link>
-                  </span>
-                </div>
-              );
-            },
-          },
-          {
-            Header: props.selectedTab === "SUPERVISOR" ? t("ES_FSM_REGISTRY_INBOX_SUPERVISOR_NAME") : t("ES_FSM_REGISTRY_INBOX_SURVEYOR_NAME"),
-            accessor: "name",
-            Cell: ({ row }) => {
-              const detailsPath = props.selectedTab === "SUPERVISOR" ? "supervisor-details" : "surveyor-details";
-              return (
-                <div>
-                  <span className="link">
-                    <Link to={`/digit-ui/${userType}/vendor/registry/${detailsPath}/` + row.original["id"]}>
-                      <div>{`${row.original.name || "N/A"}`}</div>
                     </Link>
                   </span>
                 </div>
@@ -1143,31 +1143,31 @@ const VendorInbox = (props) => {
             Cell: ({ row }) =>
               GetCell(row.original?.auditDetails?.createdTime ? Digit.DateUtils.ConvertEpochToDate(row.original?.auditDetails?.createdTime) : ""),
           },
-          {
-            Header: props.selectedTab === "SUPERVISOR" ? t("ES_VENDOR_SUPERVISOR_AGENCY_NAME") : t("ES_VENDOR_SURVEYOR_AGENCY_NAME"),
-            id: "vendorName",
-            accessor: (row) => row.vendorData?.name || row.vendor?.name || "NA",
-            minWidth: 250,
-            Cell: ({ row }) => {
-              return (
-                <Dropdown
-                  className="fsm-registry-dropdown"
-                  selected={
-                    vendors?.find((vendor) => (row.original.vendorData?.id || row.original.vendor?.id) === vendor.id) ||
-                    row.original.vendorData ||
-                    row.original.vendor
-                  }
-                  option={vendors}
-                  select={(value) => {
-                    console.log("Updating vendor for", props.selectedTab, value);
-                  }}
-                  style={{ textAlign: "left", width: "100%", minWidth: "250px" }}
-                  optionKey="displayName"
-                  t={t}
-                />
-              );
-            },
-          },
+          // {
+          //   Header: props.selectedTab === "SUPERVISOR" ? t("ES_VENDOR_SUPERVISOR_AGENCY_NAME") : t("ES_VENDOR_SURVEYOR_AGENCY_NAME"),
+          //   id: "vendorName",
+          //   accessor: (row) => row.vendorData?.name || row.vendor?.name || "NA",
+          //   minWidth: 250,
+          //   Cell: ({ row }) => {
+          //     return (
+          //       <Dropdown
+          //         className="fsm-registry-dropdown"
+          //         selected={
+          //           vendors?.find((vendor) => (row.original.vendorData?.id || row.original.vendor?.id) === vendor.id) ||
+          //           row.original.vendorData ||
+          //           row.original.vendor
+          //         }
+          //         option={vendors}
+          //         select={(value) => {
+          //           console.log("Updating vendor for", props.selectedTab, value);
+          //         }}
+          //         style={{ textAlign: "left", width: "100%", minWidth: "250px" }}
+          //         optionKey="displayName"
+          //         t={t}
+          //       />
+          //     );
+          //   },
+          // },
           {
             Header: t("ES_FSM_REGISTRY_INBOX_ENABLED"),
             id: "status",
@@ -1500,7 +1500,7 @@ const VendorInbox = (props) => {
           gap: "12px",
         }}
       >
-        <RegistredVendorSearch
+        <RegisteredVendorSearch
           onSearch={props.onSearch}
           type="desktop"
           searchFields={props.searchFields}

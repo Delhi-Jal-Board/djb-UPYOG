@@ -321,6 +321,7 @@ export const FormComposer = (props) => {
                           <Controller
                             name={field.key}
                             control={control}
+                            defaultValue={props.defaultValues?.[field.key]}
                             render={(props) => {
                               return (
                                 <>
@@ -333,7 +334,7 @@ export const FormComposer = (props) => {
                                     data={formData}
                                     formData={{
                                       ...formData,
-                                      [field.key]: props.value || {}, // ✅ inject latest value
+                                      [field.key]: props.value ?? formData[field.key], // ✅ inject latest value
                                     }}
                                     register={register}
                                     errors={errors}
@@ -436,6 +437,7 @@ export const FormComposer = (props) => {
                         <Controller
                           name={field.key}
                           control={control}
+                          defaultValue={props.defaultValues?.[field.key]}
                           render={(props) => {
                             return (
                               <>
@@ -448,7 +450,7 @@ export const FormComposer = (props) => {
                                   data={formData}
                                   formData={{
                                     ...formData,
-                                    [field.key]: props.value || {}, // ✅ inject latest value
+                                    [field.key]: props.value ?? formData[field.key], // ✅ inject latest value
                                   }}
                                   register={register}
                                   errors={errors}

@@ -6,9 +6,23 @@ const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true }
 
   const [zones, setZones] = useState([]);
 
-  const [selectedZones, setSelectedZones] = useState(Array.isArray(formData?.zoneIds) ? formData.zoneIds : []);
+  const [selectedZones, setSelectedZones] = useState([]);
 
   const { data: boundaryData, isLoading } = Digit.Hooks.useCommonMDMS(tenantId, "egov-location", ["TenantBoundary"]);
+
+  useEffect(() => {
+    if (!zones.length) return;
+
+    if (isMultiSelect) {
+      setSelectedZones(Array.isArray(formData?.zoneIds) ? zones.filter((ele) => formData.zoneIds.includes(ele.code)) : []);
+    } else {
+      const selected = zones.find((ele) => {
+        return ele.code === formData?.zoneIds;
+      });
+
+      setSelectedZones(selected ? [selected] : []);
+    }
+  }, [zones, formData?.zoneIds, isMultiSelect]);
 
   useEffect(() => {
     const tenantBoundary = boundaryData?.["egov-location"]?.TenantBoundary?.[0] || boundaryData?.MdmsRes?.["egov-location"]?.TenantBoundary?.[0];

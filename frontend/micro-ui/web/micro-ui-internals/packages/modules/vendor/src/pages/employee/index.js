@@ -2,6 +2,7 @@ import { PrivateRoute, AppContainer, ModuleHeader, ArrowLeft, HomeIcon, LayoutWr
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { Switch, useLocation } from "react-router-dom";
+import AddSurveyor from "../../components/RegisterSurveyor/AddSurveyor";
 
 const EmployeeApp = ({ path, url, userType }) => {
   const { t } = useTranslation();
@@ -52,7 +53,6 @@ const EmployeeApp = ({ path, url, userType }) => {
   const AddSupervisor = Digit.ComponentRegistryService.getComponent("AddSupervisor");
   const SupervisorDetails = Digit.ComponentRegistryService.getComponent("SupervisorDetails");
   const EditSupervisor = Digit.ComponentRegistryService.getComponent("EditSupervisor");
-  const AddSurveyor = Digit.ComponentRegistryService.getComponent("AddSurveyor");
   const SurveyorDetails = Digit.ComponentRegistryService.getComponent("SurveyorDetails");
   const EditSurveyor = Digit.ComponentRegistryService.getComponent("EditSurveyor");
   const EditDriver = Digit.ComponentRegistryService.getComponent("EditDriver");
@@ -267,7 +267,7 @@ const EmployeeApp = ({ path, url, userType }) => {
                 </LayoutWrapper>
               )}
             />
-            
+
             <PrivateRoute
               path={`${path}/registry/modify-surveyor/:id`}
               component={(props) => (

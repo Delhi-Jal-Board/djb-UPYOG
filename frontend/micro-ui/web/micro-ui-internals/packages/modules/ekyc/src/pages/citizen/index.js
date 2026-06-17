@@ -7,7 +7,6 @@ import PropertyInfo from "../../components/PropertyInfo";
 import MeterDetails from "../../components/MeterDetails";
 import Review from "../../components/Review";
 import Home from "./Home";
-import Dashboard from "../../components/Dashboard";
 import Inbox from "./Inbox";
 import AddressDetails from "../../components/AddressDetails";
 import AssignEkyc from "../../components/AssignEkyc";
@@ -63,8 +62,8 @@ const CitizenApp = () => {
     return crumbs;
   };
 
-  const roles = Digit.SessionStorage.get("User")?.info?.roles.map((ele) => ele.code);
-  const isEkyAction = (!roles?.includes("EKYC_SURVEYOR") || roles?.includes("EMPLOYEE"))
+  // const roles = Digit.SessionStorage.get("User")?.info?.roles.map((ele) => ele.code);
+  // const isEkyAction = (!roles?.includes("EKYC_SURVEYOR") || roles?.includes("EMPLOYEE"))
   return (
     <React.Fragment>
       <div className="ground-container form-container">

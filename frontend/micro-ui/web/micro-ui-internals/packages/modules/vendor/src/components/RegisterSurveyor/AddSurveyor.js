@@ -3,14 +3,12 @@ import { useTranslation } from "react-i18next";
 import { FormComposer, Toast, VerticalTimeline } from "@djb25/digit-ui-react-components";
 import { useQueryClient } from "react-query";
 import SurveyorConfig from "../../config/SurveyorConfig";
-import { useLocation, useHistory } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 
 const AddSurveyor = ({ parentUrl, heading }) => {
   const { t } = useTranslation();
   const history = useHistory();
 
-  // getCurrentTenantId() returns state-level 'dl' for CITIZEN users.
-  // ULB-level tenantId (e.g. 'dl.djb') is required by the surveyor API.
   const userInfo = Digit.UserService.getUser()?.info;
   const rawTenantId = Digit.ULBService.getCurrentTenantId();
   const tenantId = rawTenantId?.includes(".") ? rawTenantId : `${rawTenantId}.djb`;
@@ -20,9 +18,6 @@ const AddSurveyor = ({ parentUrl, heading }) => {
   const [canSubmit, setCanSubmit] = useState(false);
 
   const { mutateAsync } = Digit.Hooks.fsm.useSurveyorCreate(tenantId);
-  const { search } = useLocation();
-  const queryParams = new URLSearchParams(search);
-  const vendorIdParam = queryParams.get("vendorId");
 
   const Config = SurveyorConfig(t);
 
