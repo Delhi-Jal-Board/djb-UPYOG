@@ -258,7 +258,7 @@ public class UserService {
 				.userType("CITIZEN")
 				.tenantId(tenantId)
 				.build();
-
+        
 		Set<String> availableMobileNumbers = new HashSet<>();
 
 		listOfMobileNumbers.forEach(mobilenumber -> {
