@@ -15,7 +15,6 @@ import CitizenVendorApp from "./pages/citizen";
 import EditVendorDetails from "./components/RegisterVendor/EditVendorDetails";
 import AddVendor from "./components/RegisterVendor/AddVendor";
 import AddSupervisor from "./components/RegisterSupervisor/AddSupervisor";
-import SupervisorDetails from "./components/RegisterSupervisor/SupervisorDetails";
 import EditSupervisor from "./components/RegisterSupervisor/EditSupervisor";
 import SurveyorDetails from "./components/RegisterSurveyor/SurveyorDetails";
 import EditSurveyor from "./components/RegisterSurveyor/EditSurveyor";
@@ -52,7 +51,6 @@ const componentsToRegister = {
   DriverDetails,
   VehicleDetails,
   AddSupervisor,
-  SupervisorDetails,
   EditSupervisor,
   SupervisorAreaAssignment,
   SurveyorDetails,

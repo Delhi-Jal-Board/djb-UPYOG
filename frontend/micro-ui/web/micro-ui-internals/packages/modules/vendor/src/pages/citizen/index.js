@@ -14,6 +14,7 @@ import { Redirect, Switch, useRouteMatch, useLocation } from "react-router-dom";
 import AddSurveyor from "../../components/RegisterSurveyor/AddSurveyor";
 import EditSurveyor from "../../components/RegisterSurveyor/EditSurveyor";
 import EditSupervisor from "../../components/RegisterSupervisor/EditSupervisor";
+import SupervisorDetails from "../../components/RegisterSupervisor/SupervisorDetails";
 import SearchVendor from "../../components/SearchVendor/Index";
 
 // Main Routing Page used for routing accorss the Water Tanker Module
@@ -152,7 +153,6 @@ const CitizenVendorApp = () => {
 
   const EditVendorDetails = Digit.ComponentRegistryService.getComponent("EditVendorDetails");
   const AddSupervisor = Digit.ComponentRegistryService.getComponent("AddSupervisor");
-  const SupervisorDetails = Digit.ComponentRegistryService.getComponent("SupervisorDetails");
   const SurveyorDetails = Digit.ComponentRegistryService.getComponent("SurveyorDetails");
   const VendorCreate = Digit.ComponentRegistryService.getComponent("VENDORCreate");
   const AddDriver = Digit.ComponentRegistryService.getComponent("AddDriver");

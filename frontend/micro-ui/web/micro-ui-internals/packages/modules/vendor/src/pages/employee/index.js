@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Switch, useLocation } from "react-router-dom";
 import AddSurveyor from "../../components/RegisterSurveyor/AddSurveyor";
 import SearchVendor from "../../components/SearchVendor/Index";
+import SupervisorDetails from "../../components/RegisterSupervisor/SupervisorDetails";
 
 const EmployeeApp = ({ path, url, userType }) => {
   const { t } = useTranslation();
@@ -51,7 +52,6 @@ const EmployeeApp = ({ path, url, userType }) => {
   const DriverDetails = Digit.ComponentRegistryService.getComponent("DriverDetails");
   const VehicleDetails = Digit.ComponentRegistryService.getComponent("VehicleDetails");
   const AddSupervisor = Digit.ComponentRegistryService.getComponent("AddSupervisor");
-  const SupervisorDetails = Digit.ComponentRegistryService.getComponent("SupervisorDetails");
   const EditSupervisor = Digit.ComponentRegistryService.getComponent("EditSupervisor");
   const SurveyorDetails = Digit.ComponentRegistryService.getComponent("SurveyorDetails");
   const EditSurveyor = Digit.ComponentRegistryService.getComponent("EditSurveyor");
