@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.StringUtils;
 
 @Slf4j
 @Service
@@ -71,6 +72,7 @@ public class VehicleService {
 		if (vehicleRequest.getVehicle().getTenantId().split("\\.").length == 1) {
 			throw new CustomException(VehicleErrorConstants.INVALID_TENANT, " Vehicle cannot be updated at StateLevel");
 		}
+
 		validator.validateCreateOrUpdate(vehicleRequest, mdmsData, true);
 		enrichmentService.enrichVehicleUpdateRequest(vehicleRequest);
 		repository.update(vehicleRequest);
@@ -90,6 +92,14 @@ public class VehicleService {
 	private void applyVehicleSearchRestriction(VehicleSearchCriteria criteria, RequestInfo requestInfo) {
 
 		if (isEmployeeUser(requestInfo)) {
+			return;
+		}
+
+		boolean isExactVehicleSearch =
+				!CollectionUtils.isEmpty(criteria.getIds())
+						|| !CollectionUtils.isEmpty(criteria.getRegistrationNumber());
+
+		if (isExactVehicleSearch && isCitizenUser(requestInfo)) {
 			return;
 		}
 
@@ -139,12 +149,29 @@ public class VehicleService {
 										role.equalsIgnoreCase("WT_CEMP"));
 	}
 
+
+	private boolean isCitizenUser(RequestInfo requestInfo) {
+
+		if (requestInfo == null || requestInfo.getUserInfo() == null) {
+			return false;
+		}
+
+		// User type must be CITIZEN
+		if (Constants.CITIZEN.equalsIgnoreCase(requestInfo.getUserInfo().getType())) {
+			return true;
+		}
+
+		// Role should contain WT_VENDOR
+		return !CollectionUtils.isEmpty(requestInfo.getUserInfo().getRoles())
+				&& requestInfo.getUserInfo().getRoles().stream()
+				.map(Role::getCode)
+				.anyMatch(role -> role.equalsIgnoreCase("WT_VENDOR"));
+	}
+
 	public VehicleResponse search(@Valid VehicleSearchCriteria criteria, RequestInfo requestInfo) {
 		validator.validateSearch(requestInfo, criteria);
 		applyVehicleSearchRestriction(criteria, requestInfo);
 		UserDetailResponse usersRespnse;
-
-
 
 		if (Boolean.TRUE.equals(criteria.getVehicleWithNoDriver())) {
 
@@ -156,8 +183,6 @@ public class VehicleService {
 				criteria.getIds().addAll(vehicleIds);
 			}
 		}
-
-
 		if (criteria.isVehicleWithNoVendor()) {
 			List<String> vehicleIds = repository.fetchVehicleIdsWithNoVendor(criteria);
 			if (CollectionUtils.isEmpty(criteria.getIds())) {
@@ -166,8 +191,6 @@ public class VehicleService {
 				criteria.getIds().addAll(vehicleIds);
 			}
 		}
-
-
 
 		if (criteria.getMobileNumber() != null) {
 			usersRespnse = userService.getOwner(criteria, requestInfo);
