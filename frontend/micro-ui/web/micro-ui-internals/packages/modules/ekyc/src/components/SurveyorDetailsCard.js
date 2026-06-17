@@ -150,7 +150,6 @@ const SurveyorDetailsDashboard = () => {
   };
 
   const closeModal = async () => {
-    await refetchDashboard();
     setShowModal(false);
   };
 
@@ -310,7 +309,7 @@ const SurveyorDetailsDashboard = () => {
         </ActionBar>
       )}
 
-      {showModal && <AssignEkycModal surveyor={surveyor} closeModal={closeModal} />}
+      {showModal && <AssignEkycModal surveyor={surveyor} closeModal={closeModal} refetchDashboard={refetchDashboard} />}
     </Card>
   );
 };

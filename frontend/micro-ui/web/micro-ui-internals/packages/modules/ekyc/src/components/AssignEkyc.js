@@ -1,8 +1,8 @@
-import React, { useMemo, useCallback, useReducer, useState } from "react";
-import { useLocation } from "react-router-dom";
+import React, { useMemo, useCallback, useReducer } from "react";
 import { InboxComposer } from "@djb25/digit-ui-react-components";
 import SupervisorInboxTableConfig from "../hook/SupervisorInboxTableConfig";
 import SearchFormFieldsComponents from "./SearchFormFieldsComponent";
+import { formInitValue, formReducer } from "../../../vendor/src/config/tableConfig";
 
 // Mock data removed in favor of API integration
 
@@ -24,7 +24,6 @@ const AssignEkyc = () => {
   };
 
   const [formState, dispatch] = useReducer(formReducer, formInitValue);
-  const userDetails = Digit.SessionStorage.get("User");
 
   let paginationParms = {
     limit: formState?.tableForm?.limit || 10,
@@ -45,11 +44,7 @@ const AssignEkyc = () => {
     filters.mobileNumber = mobileNumber;
   }
 
-  const { data: dashboardData, isLoading } = Digit.Hooks.fsm.useSurveyorSearch(
-    tenantId,
-    filters,
-    { enabled: !!tenantId, keepPreviousData: true }
-  );
+  const { data: dashboardData, isLoading } = Digit.Hooks.fsm.useSurveyorSearch(tenantId, filters, { enabled: !!tenantId, keepPreviousData: true });
 
   const { isLoading: isDataSearchLoading, data } = Digit.Hooks.ekyc.useEkycAssignmentProgress({
     enabled: !!tenantId,
@@ -63,38 +58,23 @@ const AssignEkyc = () => {
   const filteredData = useMemo(() => {
     return (sourceData || []).map((item) => {
       const owner = item?.owner || {};
-
       const roleCodes = owner?.roles?.map((role) => role.code)?.join(", ") || "";
 
       return {
         ...item,
-
         id: item?.id || "",
-
         surveyorName: item?.name || owner?.name || "",
-
         mobileNo: item?.mobileNo || owner?.mobileNumber || "",
-
         email: owner?.emailId || "",
-
         vendorId: item?.vendorId || "",
-
         tenantId: item?.tenantId || "",
-
         supervisorId: item?.supervisorId || "",
-
         status: item?.status || "",
-
         roleCodes,
-
         userName: owner?.userName || "",
-
         gender: owner?.gender || "",
-
         serviceType: item?.additionalDetails?.serviceType || "",
-
         createdTime: item?.auditDetails?.createdTime || 0,
-
         lastModifiedTime: item?.auditDetails?.lastModifiedTime || 0,
       };
     });
@@ -102,9 +82,8 @@ const AssignEkyc = () => {
 
   const totalRecords = dashboardData?.dashboardInfo?.totalRecords || dashboardData?.totalCount || 0;
 
-  const checkPathName = location.pathname.includes("ekyc/inbox");
   const PropsForInboxLinks = {
-    headerText: checkPathName ? "EKYC_MODULE" : "MODULE_SW",
+    headerText: "EKYC_MODULE",
   };
 
   const SearchFormFields = useCallback(
@@ -123,8 +102,8 @@ const AssignEkyc = () => {
 
   const onSearchFormSubmit = (data) => {
     data.hasOwnProperty("") && delete data?.[""];
-    dispatch({ action: "mutateTableForm", data: { ...tableOrderFormDefaultValues }, checkPathName });
-    dispatch({ action: "mutateSearchForm", data, checkPathName });
+    dispatch({ action: "mutateTableForm", data: { ...tableOrderFormDefaultValues } });
+    dispatch({ action: "mutateSearchForm", data });
   };
 
   const searchFormDefaultValues = {
@@ -162,28 +141,6 @@ const AssignEkyc = () => {
     onFilterFormReset: () => {},
   };
 
-  function formReducer(state, payload) {
-    const storageKey = payload.checkPathName ? "EKYC.INBOX" : "EKYC.SW.INBOX";
-
-    // ✅ safety for SLA
-    switch (payload.action) {
-      case "mutateSearchForm":
-        Digit.SessionStorage.set(storageKey, { ...state, searchForm: payload.data });
-        return { ...state, searchForm: payload.data };
-
-      case "mutateFilterForm":
-        Digit.SessionStorage.set(storageKey, { ...state, filterForm: payload.data });
-        return { ...state, filterForm: payload.data };
-
-      case "mutateTableForm":
-        Digit.SessionStorage.set(storageKey, { ...state, tableForm: payload.data });
-        return { ...state, tableForm: payload.data };
-
-      default:
-        return state; // ✅ IMPORTANT
-    }
-  }
-
   const onPageSizeChange = (e) => {
     const newLimit = Number(e.target.value);
 
@@ -194,7 +151,6 @@ const AssignEkyc = () => {
         limit: newLimit,
         offset: 0, // reset page
       },
-      checkPathName,
     });
   };
 
@@ -212,7 +168,6 @@ const AssignEkyc = () => {
             sortBy: id,
             sortOrder: desc ? "DESC" : "ASC",
           },
-          checkPathName,
         });
       }
     }
@@ -227,7 +182,6 @@ const AssignEkyc = () => {
       dispatch,
       onSortingByData,
       tenantId,
-      checkPathName,
       inboxStyles: { overflowX: "scroll", overflowY: "hidden" },
       tableStyle: { width: "70%" },
     },
@@ -268,6 +222,8 @@ const AssignEkyc = () => {
       filter: ["IN_PROGRESS"],
     },
   ];
+
+  console.log(propsForInboxTable);
 
   return (
     <div className="app-container">

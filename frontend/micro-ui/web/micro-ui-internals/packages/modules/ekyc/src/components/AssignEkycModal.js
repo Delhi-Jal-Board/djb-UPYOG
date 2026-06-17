@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { Modal, Close, Table, Toast } from "@djb25/digit-ui-react-components";
 
-const AssignEkycModal = ({ surveyor, closeModal }) => {
+const AssignEkycModal = ({ surveyor, closeModal, refetchDashboard }) => {
   const [selectedKnos, setSelectedKnos] = useState([]);
   const [isBulkSelection, setIsBulkSelection] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
@@ -95,7 +95,8 @@ const AssignEkycModal = ({ surveyor, closeModal }) => {
       setShowToast(true);
 
       // optional delay so user can see the success toast
-      setTimeout(() => {
+      setTimeout(async () => {
+        await refetchDashboard();
         closeModal();
       }, 1000);
     },
@@ -255,7 +256,23 @@ const AssignEkycModal = ({ surveyor, closeModal }) => {
             onChange={(e) => handleFilterChange("zoneName", e.target.value)}
           />
 
-          <input className="form-control" placeholder="Ward" value={filters.ward} onChange={(e) => handleFilterChange("ward", e.target.value)} />
+          {/* <SelectEkycZones
+            t={t}
+            isMultiSelect={false}
+            config={{
+              key: "zoneCode",
+            }}
+            formData={{
+              zoneIds: filters.zoneCode ? [{ code: filters.zoneCode, name: filters.zoneName }] : [],
+            }}
+            onSelect={(key, value) => {
+              console.log(value);
+              handleFilterChange("zoneName", value);
+            }}
+            placeHolder="Zones"
+          /> */}
+
+          {/* <input className="form-control" placeholder="Ward" value={filters.ward} onChange={(e) => handleFilterChange("ward", e.target.value)} />
 
           <input
             className="form-control"
@@ -271,7 +288,7 @@ const AssignEkycModal = ({ surveyor, closeModal }) => {
             <option value="PENDING">Pending</option>
             <option value="APPROVED">Approved</option>
             <option value="REJECTED">Rejected</option>
-          </select>
+          </select> */}
         </div>
 
         {/* Table */}

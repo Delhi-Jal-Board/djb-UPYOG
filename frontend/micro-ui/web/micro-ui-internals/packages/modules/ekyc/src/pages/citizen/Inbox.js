@@ -102,7 +102,7 @@ const Inbox = ({ parentRoute }) => {
 
   const checkPathName = location.pathname.includes("ekyc/inbox");
   const PropsForInboxLinks = {
-    headerText: checkPathName ? "MODULE_WATER" : "MODULE_SW",
+    headerText: "EKYC_MODULE",
   };
 
   const SearchFormFields = useCallback(
