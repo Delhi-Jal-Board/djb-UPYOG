@@ -10,7 +10,8 @@ const EditSupervisor = () => {
   const history = useHistory();
   const queryClient = useQueryClient();
   const { id: supervisorId } = useParams();
-  
+  const type = Digit.UserService.getUser()?.info?.type;
+
   const userInfo = Digit.UserService.getUser()?.info;
   const rawTenantId = Digit.ULBService.getCurrentTenantId();
   const tenantId = rawTenantId?.includes(".") ? rawTenantId : `${rawTenantId}.djb`;
@@ -20,11 +21,7 @@ const EditSupervisor = () => {
   const [defaultValues, setDefaultValues] = useState({});
   const [supervisorDetails, setSupervisorDetails] = useState({});
 
-  const { data: supervisorSearchResponse, isLoading } = Digit.Hooks.fsm.useSupervisorSearch(
-    tenantId,
-    { ids: supervisorId },
-    { staleTime: Infinity }
-  );
+  const { data: supervisorSearchResponse, isLoading } = Digit.Hooks.fsm.useSupervisorSearch(tenantId, { ids: supervisorId }, { staleTime: Infinity });
 
   const { mutate } = Digit.Hooks.fsm.useSupervisorUpdate(tenantId);
 
@@ -34,19 +31,17 @@ const EditSupervisor = () => {
     if (supervisorSearchResponse && supervisorSearchResponse.supervisors && supervisorSearchResponse.supervisors.length > 0) {
       let details = supervisorSearchResponse.supervisors[0];
       setSupervisorDetails(details);
-      
+
       let values = {
         fullName: details?.owner?.name || details?.name,
         mobileNumber: details?.owner?.mobileNumber || details?.mobileNo,
         emailId: details?.owner?.emailId,
         employeeId: details?.employeeId,
-        gender: details?.owner?.gender ? { code: details.owner.gender, name: `COMMON_GENDER_${details.owner.gender}` } : null,
-        fatherOrHusbandName: details?.owner?.fatherOrHusbandName,
-        relationship: details?.owner?.relationship ? { code: details.owner.relationship, name: `ES_COMMON_RELATION_${details.owner.relationship}` } : null,
+        gender: details?.owner?.gender ? { code: details.owner.gender, active: true, i18nKey: `COMMON_GENDER_${details.owner.gender}` } : null,
         dob: details?.owner?.dob && Digit.DateUtils.ConvertTimestampToDate(details?.owner?.dob, "yyyy-MM-dd"),
         correspondenceAddress: details?.owner?.correspondenceAddress,
         description: details?.description,
-        assignedZone: details?.assignedZoneId ? { code: details.assignedZoneId, name: details.assignedZoneId } : null,
+        zoneIds: details?.assignedZoneId,
       };
       setDefaultValues(values);
     }
@@ -57,12 +52,10 @@ const EditSupervisor = () => {
       formData?.fullName &&
       formData?.mobileNumber &&
       formData?.emailId &&
-      formData?.fatherOrHusbandName &&
-      formData?.relationship &&
       formData?.dob &&
       formData?.gender &&
       formData?.correspondenceAddress &&
-      formData?.assignedZone;
+      formData?.zoneIds;
 
     if (isBasicDetailsFilled) {
       setCanSubmit(true);
@@ -97,12 +90,12 @@ const EditSupervisor = () => {
       supervisor: {
         ...supervisorDetails,
         description: data?.description || supervisorDetails?.description || "",
-        assignedZoneId: data?.assignedZone?.code || supervisorDetails?.assignedZoneId || null,
+        assignedZoneId: data?.zoneIds || supervisorDetails?.assignedZoneId || null,
         owner: {
           ...supervisorDetails.owner,
           name: data?.fullName || supervisorDetails.owner?.name,
-          fatherOrHusbandName: data?.fatherOrHusbandName || supervisorDetails.owner?.fatherOrHusbandName,
-          relationship: data?.relationship?.code || supervisorDetails.owner?.relationship,
+          fatherOrHusbandName: "Static Father",
+          relationship: "FATHER",
           gender: data?.gender?.code || supervisorDetails.owner?.gender || "OTHERS",
           dob: data?.dob ? new Date(data.dob).getTime() : supervisorDetails.owner?.dob,
           emailId: data?.emailId || supervisorDetails.owner?.emailId,
@@ -115,15 +108,17 @@ const EditSupervisor = () => {
     mutate(formData, {
       onError: (error) => {
         setShowToast({ key: "error", action: error });
-        setTimeout(closeToast, 5000);
       },
       onSuccess: () => {
         setShowToast({ key: "success", action: "UPDATE_SUPERVISOR" });
         queryClient.invalidateQueries("SUPERVISOR_SEARCH");
-        setTimeout(() => {
-          closeToast();
-          history.push(`/digit-ui/employee/vendor/registry/supervisor-details/${supervisorId}`);
-        }, 5000);
+
+        history.push({
+          pathname: `/digit-ui/${type}/vendor/registry/supervisor-details/${supervisorId}`,
+          state: {
+            showSuccessToast: true,
+          },
+        });
       },
     });
   };
@@ -165,6 +160,7 @@ const EditSupervisor = () => {
             error={showToast.key === "error"}
             label={t(showToast.key === "success" ? `ES_VENDOR_${showToast.action}_SUCCESS` : showToast.action)}
             onClose={closeToast}
+            duration="5000"
           />
         )}
       </div>

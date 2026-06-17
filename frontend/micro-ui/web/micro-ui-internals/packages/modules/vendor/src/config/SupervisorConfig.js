@@ -56,19 +56,7 @@ const SupervisorConfig = (t, agencies = [], reportingManagers = [], disabled = f
             className: "payment-form-text-input-correction",
           },
         },
-        // {
-        //   label: t("ES_VENDOR_SUPERVISOR_EMPLOYEE_ID"),
-        //   isMandatory: true,
-        //   type: "text",
-        //   populators: {
-        //     name: "employeeId",
-        //     validation: {
-        //       required: true,
-        //     },
-        //     defaultValue: "",
-        //     className: "payment-form-text-input-correction",
-        //   },
-        // },
+
         {
           label: t("ES_VENDOR_SUPERVISOR_GENDER"),
           isMandatory: true,
@@ -116,61 +104,6 @@ const SupervisorConfig = (t, agencies = [], reportingManagers = [], disabled = f
         },
       ],
     },
-    // {
-    //   head: t("ES_VENDOR_SUPERVISOR_ROLE_ACCESS"),
-    //   body: [
-    //     {
-    //       label: t("ES_VENDOR_SUPERVISOR_ROLE"),
-    //       isMandatory: true,
-    //       type: "custom",
-    //       populators: {
-    //         name: "role",
-    //         component: (props, customProps) => (
-    //           <Dropdown
-    //             option={[{ code: "SUPERVISOR", name: "Supervisor" }]}
-    //             optionKey="name"
-    //             select={props.onChange}
-    //             selected={props.value}
-    //             t={t}
-    //             disable={true}
-    //           />
-    //         ),
-    //         defaultValue: { code: "SUPERVISOR", name: "Supervisor" },
-    //       },
-    //     },
-    //     {
-    //       label: t("ES_VENDOR_SUPERVISOR_AGENCY_NAME"),
-    //       isMandatory: true,
-    //       type: "custom",
-    //       populators: {
-    //         name: "agencyName",
-    //         component: (props, customProps) => <Dropdown option={agencies} optionKey="name" select={props.onChange} selected={props.value} t={t} />,
-    //       },
-    //     },
-    //     {
-    //       label: t("ES_VENDOR_SUPERVISOR_REPORTING_MANAGER"),
-    //       isMandatory: false,
-    //       type: "custom",
-    //       populators: {
-    //         name: "reportingManager",
-    //         component: (props, customProps) => (
-    //           <Dropdown option={reportingManagers} optionKey="name" select={props.onChange} selected={props.value} t={t} />
-    //         ),
-    //       },
-    //     },
-    //   ],
-    // },
-    // {
-    //   head: t("ES_VENDOR_SUPERVISOR_AREA_ASSIGNMENT"),
-    //   body: [
-    //     {
-    //       type: "component",
-    //       component: "SupervisorAreaAssignment",
-    //       key: "areaAssignment",
-    //       withoutLabel: true,
-    //     },
-    //   ],
-    // },
   ];
 };
 
