@@ -3,6 +3,7 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { Switch, useLocation } from "react-router-dom";
 import AddSurveyor from "../../components/RegisterSurveyor/AddSurveyor";
+import SearchVendor from "../../components/SearchVendor/Index";
 
 const EmployeeApp = ({ path, url, userType }) => {
   const { t } = useTranslation();
@@ -42,7 +43,6 @@ const EmployeeApp = ({ path, url, userType }) => {
 
   //const Create = Digit?.ComponentRegistryService?.getComponent("VENDOREMPCreate");
   const AddVendor = Digit.ComponentRegistryService.getComponent("AddVendor");
-  const SearchVendor = Digit.ComponentRegistryService.getComponent("SearchVendor");
   const SearchApp = Digit.ComponentRegistryService.getComponent("SearchApp");
   const AddDriver = Digit.ComponentRegistryService.getComponent("AddDriver");
   const EditVendorDetails = Digit.ComponentRegistryService.getComponent("EditVendorDetails");

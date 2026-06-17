@@ -7,7 +7,6 @@ import VendorDocuments from "./pageComponents/VendorDocuments";
 import ServiceDoc from "./pageComponents/ServiceDoc";
 import VendorSelectAddress from "./pageComponents/VendorSelectAddress";
 import SearchApp from "./pages/employee/SearchApp";
-import SearchVendor from "./components/SearchVendor/Index";
 import SelectServiceType from "./pageComponents/SelectServiceType";
 import SelectVehicleType from "./pageComponents/SelectVehicleType";
 import BankDetailsComponent from "./components/BankDetailsComponent";
@@ -41,7 +40,6 @@ const componentsToRegister = {
   AddVendor,
   VendorSelectAddress,
   SearchApp,
-  SearchVendor,
   SelectServiceType,
   SelectVehicleType,
   BankDetailsComponent,
