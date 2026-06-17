@@ -114,7 +114,6 @@ const translateDummy = (text) => {
 };
 
 const Dropdown = (props) => {
-  const user_type = Digit.SessionStorage.get("userType");
   const [dropdownStatus, setDropdownStatus] = useState(false);
   const [selectedOption, setSelectedOption] = useState(props.selected ? props.selected : null);
   const [filterVal, setFilterVal] = useState("");
@@ -296,11 +295,7 @@ const Dropdown = (props) => {
   );
 
   return (
-    <div
-      className={`${user_type === "employee" ? "employee-select-wrap" : "select-wrap"} ${props?.className ? props?.className : ""}`}
-      style={{ ...props.style }}
-      ref={triggerRef}
-    >
+    <div className={`employee-select-wrap ${props?.className ? props?.className : ""}`} style={{ ...props.style }} ref={triggerRef}>
       {hasCustomSelector && (
         <div className={props.showArrow ? "cp flex-right column-gap-5" : "cp"} onClick={dropdownSwitch}>
           {props.customSelector}

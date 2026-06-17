@@ -44,16 +44,6 @@
   @extend .alert-error;
 }
 
-.employee-card-input {
-  border: 2px solid #e5e5e7;
-  @apply pl-sm outline-none block w-full h-10 bg-white leading-10 text-form-field text-text-primary;
-}
-.employee-card-input:disabled {
-  @apply border-grey-dark text-grey-dark !important;
-  pointer-events: none !important;
-  @extend .light-input-border;
-  @extend .light-text-color-disabled;
-}
 .employee-card-input--front {
   width: fit-content !important;
   display: flex;
