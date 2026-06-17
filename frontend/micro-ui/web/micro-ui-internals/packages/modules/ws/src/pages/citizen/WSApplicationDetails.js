@@ -26,6 +26,10 @@ import WSInfoLabel from "../../pageComponents/WSInfoLabel";
 import { getAddress } from "../../utils";
 import _ from "lodash";
 
+const checkForNA = (value) => {
+  return value ? value : "CS_NA";
+};
+
 const WSApplicationDetails = () => {
   const { t } = useTranslation();
   const menuRef = useRef();
@@ -81,10 +85,21 @@ const WSApplicationDetails = () => {
     }
   );
 
+  const propertyId = data?.WaterConnection?.[0]?.propertyId || data?.SewerageConnections?.[0]?.propertyId;
+  const propertyTenantId = data?.WaterConnection?.[0]?.tenantId || data?.SewerageConnections?.[0]?.tenantId || tenantId;
+
   const { isLoading: isPTLoading, isError: isPTError, error: PTerror, data: PTData } = Digit.Hooks.pt.usePropertySearch(
-    { filters: { propertyIds: data?.WaterConnection?.[0]?.propertyId } },
-    { filters: { propertyIds: data?.WaterConnection?.[0]?.propertyId }, privacy: Digit.Utils.getPrivacyObject() }
+    { filters: { propertyIds: propertyId }, tenantId: propertyTenantId },
+    { filters: { propertyIds: propertyId }, tenantId: propertyTenantId, enabled: !!propertyId, privacy: Digit.Utils.getPrivacyObject() }
   );
+
+  const applicationData = data?.WaterConnection?.[0] || data?.SewerageConnections?.[0];
+  const additionalDetails = applicationData?.additionalDetails || {};
+  const connectionDetails = additionalDetails;
+  const useDetails = additionalDetails;
+  const djbEmployee = additionalDetails;
+  const bankDetails = additionalDetails;
+  const propertyAddress = PTData?.Properties?.[0]?.address || additionalDetails;
 
   const checkifPrivacyenabled =
     Digit.Hooks.ws.useToCheckPrivacyEnablement({
@@ -320,7 +335,7 @@ const WSApplicationDetails = () => {
               text={t(`WS_APPLICATION_TYPE_${data?.WaterConnection?.[0]?.applicationType || data?.SewerageConnections?.[0]?.applicationType}`)}
               textStyle={{ wordBreak: "break-word" }}
             />
-            <Row
+            {/* <Row
               className="border-none"
               label={t("WS_COMMON_TABLE_COL_AMT_DUE_LABEL")}
               text={
@@ -329,7 +344,7 @@ const WSApplicationDetails = () => {
                   : t("₹0")
               }
               textStyle={{ whiteSpace: "pre" }}
-            />
+            /> */}
             {(data?.WaterConnection?.[0].applicationType?.includes("DISCONNECT") ||
               data?.SewerageConnections?.[0].applicationType?.includes("DISCONNECT")) && (
               <Row
@@ -414,62 +429,59 @@ const WSApplicationDetails = () => {
             </StatusTable>
           </Card>
         )}
+
         <Card>
-          <CardHeader styles={{ fontSize: "28px" }}>{t("WS_COMMON_PROPERTY_DETAILS")}</CardHeader>
-          <StatusTable>
+          <CardHeader styles={{ fontSize: "28px" }}>{t("WS_COMMON_CONNECTION_DETAIL")}</CardHeader>
+          <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
             <Row
-              className="border-none"
-              label={t("WS_PROPERTY_ID_LABEL")}
-              text={data?.WaterConnection?.[0]?.propertyId || data?.SewerageConnections?.[0]?.propertyId}
-              textStyle={{ wordBreak: "break-word" }}
+              label={t("WS_SERVICE_TYPE")}
+              text={`${t(
+                checkForNA(connectionDetails?.serviceType?.i18nKey || connectionDetails?.serviceType?.code || connectionDetails?.serviceType)
+              )}`}
             />
             <Row
-              className="border-none"
-              label={t("WS_OWN_DETAIL_OWN_NAME_LABEL")}
-              text={
-                PTData?.Properties?.[0]?.owners.sort((a, b) => a?.additionalDetails?.ownerSequence - b?.additionalDetails?.ownerSequence)?.[0]?.name
-              }
-              textStyle={{ whiteSpace: "pre" }}
+              label={t("WS_CONNECTION_TYPE")}
+              text={`${t(
+                checkForNA(connectionDetails?.connectionType?.i18nKey || connectionDetails?.connectionType?.code || connectionDetails?.connectionType)
+              )}`}
             />
             <Row
-              className="border-none"
-              label={t("WS_PROPERTY_ADDRESS")}
-              text={getAddress(PTData?.Properties?.[0]?.address, t) || t("CS_NA")}
-              textStyle={{ wordBreak: "break-word" }}
-              privacy={{
-                uuid: PTData?.Properties?.[0]?.owners?.[0]?.uuid,
-                fieldName: ["doorNo", "street", "landmark"],
-                model: "Property",
-                hide: !PTData?.Properties?.[0]?.address,
-                showValue: true,
-                loadData: {
-                  serviceName: "/property-services/property/_search",
-                  requestBody: {},
-                  requestParam: {
-                    tenantId: tenantId,
-                    mobileNumber: userMobileNumber,
-                  },
-                  jsonPath: "Properties[0].address.street",
-                  isArray: false,
-                  d: (res) => {
-                    let resultString =
-                      (_.get(res, "Properties[0].address.doorNo") ? `${_.get(res, "Properties[0].address.doorNo")}, ` : "") +
-                      (_.get(res, "Properties[0].address.street") ? `${_.get(res, "Properties[0].address.street")}, ` : "") +
-                      (_.get(res, "Properties[0].address.landmark") ? `${_.get(res, "Properties[0].address.landmark")}` : "");
-                    return resultString;
-                  },
-                },
-              }}
+              label={t("WS_WATER_DEMAND_TYPE")}
+              text={`${t(
+                checkForNA(
+                  connectionDetails?.waterDemandType?.i18nKey || connectionDetails?.waterDemandType?.code || connectionDetails?.waterDemandType
+                )
+              )}`}
             />
-            <Link
-              to={`/digit-ui/citizen/commonpt/view-property?propertyId=${
-                data?.WaterConnection?.[0]?.propertyId || data?.SewerageConnections?.[0]?.propertyId
-              }&tenantId=${data?.WaterConnection?.[0]?.tenantId || data?.SewerageConnections?.[0]?.tenantId}`}
-            >
-              <LinkButton style={{ textAlign: "left" }} label={t("WS_VIEW_PROPERTY")} />
-            </Link>
+            <Row
+              label={t("WS_APPLICANT_TYPE")}
+              text={`${t(
+                checkForNA(connectionDetails?.applicantType?.i18nKey || connectionDetails?.applicantType?.code || connectionDetails?.applicantType)
+              )}`}
+            />
+            <Row
+              label={t("WS_SERVICE_TYPE")}
+              text={`${t(
+                checkForNA(connectionDetails?.domesticType?.i18nKey || connectionDetails?.domesticType?.code || connectionDetails?.domesticType)
+              )}`}
+            />
+            {connectionDetails?.domesticType?.code === "ORGANIZATION" && (
+              <React.Fragment>
+                <Row
+                  label={t("WS_DEPARTMENT_TYPE")}
+                  text={`${t(
+                    checkForNA(
+                      connectionDetails?.departmentType?.i18nKey || connectionDetails?.departmentType?.code || connectionDetails?.departmentType
+                    )
+                  )}`}
+                />
+                <Row label={t("WS_ORGANIZATION_DEPARTMENT_NAME")} text={`${t(checkForNA(connectionDetails?.institutionName))}`} />
+                <Row label={t("WS_NATURE_OF_WORK")} text={`${t(checkForNA(connectionDetails?.natureOfWork))}`} />
+              </React.Fragment>
+            )}
           </StatusTable>
         </Card>
+
         {data?.WaterConnection?.[0]?.connectionHolders?.length > 0 || data?.SewerageConnections?.[0]?.connectionHolders?.length > 0 ? (
           <Card>
             <CardHeader styles={{ fontSize: "28px" }}>{t("WS_COMMON_CONNECTION_HOLDER_DETAILS_HEADER")}</CardHeader>
@@ -699,7 +711,215 @@ const WSApplicationDetails = () => {
             </Card>
           </div>
         )}
-        {isDisconnection ? null : (
+        <Card>
+          <CardHeader styles={{ fontSize: "28px" }}>{t("WS_COMMON_PROPERTY_DETAILS")}</CardHeader>
+          <StatusTable>
+            <Row
+              className="border-none"
+              label={t("WS_PROPERTY_ID_LABEL")}
+              text={data?.WaterConnection?.[0]?.propertyId || data?.SewerageConnections?.[0]?.propertyId}
+              textStyle={{ wordBreak: "break-word" }}
+            />
+            <Row
+              className="border-none"
+              label={t("WS_OWN_DETAIL_OWN_NAME_LABEL")}
+              text={
+                PTData?.Properties?.[0]?.owners.sort((a, b) => a?.additionalDetails?.ownerSequence - b?.additionalDetails?.ownerSequence)?.[0]?.name
+              }
+              textStyle={{ whiteSpace: "pre" }}
+            />
+            <Row
+              className="border-none"
+              label={t("WS_PROPERTY_ADDRESS")}
+              text={getAddress(PTData?.Properties?.[0]?.address, t) || t("CS_NA")}
+              textStyle={{ wordBreak: "break-word" }}
+              privacy={{
+                uuid: PTData?.Properties?.[0]?.owners?.[0]?.uuid,
+                fieldName: ["doorNo", "street", "landmark"],
+                model: "Property",
+                hide: !PTData?.Properties?.[0]?.address,
+                showValue: true,
+                loadData: {
+                  serviceName: "/property-services/property/_search",
+                  requestBody: {},
+                  requestParam: {
+                    tenantId: tenantId,
+                    mobileNumber: userMobileNumber,
+                  },
+                  jsonPath: "Properties[0].address.street",
+                  isArray: false,
+                  d: (res) => {
+                    let resultString =
+                      (_.get(res, "Properties[0].address.doorNo") ? `${_.get(res, "Properties[0].address.doorNo")}, ` : "") +
+                      (_.get(res, "Properties[0].address.street") ? `${_.get(res, "Properties[0].address.street")}, ` : "") +
+                      (_.get(res, "Properties[0].address.landmark") ? `${_.get(res, "Properties[0].address.landmark")}` : "");
+                    return resultString;
+                  },
+                },
+              }}
+            />
+            <Link
+              to={`/digit-ui/citizen/commonpt/view-property?propertyId=${
+                data?.WaterConnection?.[0]?.propertyId || data?.SewerageConnections?.[0]?.propertyId
+              }&tenantId=${data?.WaterConnection?.[0]?.tenantId || data?.SewerageConnections?.[0]?.tenantId}`}
+            >
+              <LinkButton style={{ textAlign: "left" }} label={t("WS_VIEW_PROPERTY")} />
+            </Link>
+          </StatusTable>
+        </Card>
+
+        <Card>
+          <CardHeader styles={{ fontSize: "28px" }}>{t("PT_LOCATION_DETAILS")}</CardHeader>
+          <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
+            <Row
+              label={t("WS_ZRO_LOCATION")}
+              text={`${t(
+                checkForNA(
+                  propertyAddress?.zro?.name ||
+                    propertyAddress?.zro ||
+                    propertyAddress?.zroLocation ||
+                    additionalDetails?.zroLocation ||
+                    propertyAddress?.additionalDetails?.zroLocation
+                )
+              )}`}
+            />
+            <Row
+              label={t("COMMON_ADDRESS_TYPE")}
+              text={`${t(checkForNA(propertyAddress?.addressType?.i18nKey || propertyAddress?.addressType?.code || propertyAddress?.addressType))}`}
+            />
+            <Row label={t("CITY")} text={`${t(checkForNA(propertyAddress?.city?.name || propertyAddress?.city?.code || propertyAddress?.city))}`} />
+            <Row label={t("PINCODE")} text={`${t(checkForNA(propertyAddress?.pincode || propertyAddress?.pinCode))}`} />
+            <Row
+              label={t("LOCALITY")}
+              text={`${t(checkForNA(propertyAddress?.locality?.name || propertyAddress?.locality?.code || propertyAddress?.locality))}`}
+            />
+            <Row
+              label={t("SubLocality")}
+              text={`${t(checkForNA(propertyAddress?.subLocality?.name || propertyAddress?.subLocality?.code || propertyAddress?.subLocality))}`}
+            />
+            <Row label={t("STREET_NAME")} text={`${t(checkForNA(propertyAddress?.streetName || propertyAddress?.street))}`} />
+            <Row label={t("ADDRESS_LINE1")} text={`${t(checkForNA(propertyAddress?.addressLine1 || propertyAddress?.street))}`} />
+            <Row label={t("ADDRESS_LINE2")} text={`${t(checkForNA(propertyAddress?.addressLine2))}`} />
+            <Row label={t("HOUSE_NO")} text={`${t(checkForNA(propertyAddress?.houseNo || propertyAddress?.doorNo))}`} />
+            <Row label={t("LATITUDE")} text={`${t(checkForNA(propertyAddress?.latitude))}`} />
+            <Row label={t("LONGITUDE")} text={`${t(checkForNA(propertyAddress?.longitude))}`} />
+            <Row
+              label={t("ASSEMBLY")}
+              text={`${t(
+                checkForNA(
+                  propertyAddress?.assembly?.name || propertyAddress?.assembly?.code || propertyAddress?.assembly || additionalDetails?.assembly
+                )
+              )}`}
+            />
+
+            <Row
+              label={t("WARD")}
+              text={`${t(
+                checkForNA(
+                  propertyAddress?.block?.name ||
+                    propertyAddress?.block?.code ||
+                    propertyAddress?.block ||
+                    propertyAddress?.ward?.name ||
+                    propertyAddress?.ward?.code ||
+                    propertyAddress?.ward ||
+                    additionalDetails?.ward
+                )
+              )}`}
+            />
+            <Row
+              label={t("ZONE")}
+              text={`${t(
+                checkForNA(propertyAddress?.zone?.name || propertyAddress?.zone?.code || propertyAddress?.zone || additionalDetails?.zone)
+              )}`}
+            />
+
+            <Row label={t("ACTUAL ASSEMBLY")} text={`${t(checkForNA(propertyAddress?.actualAssembly || additionalDetails?.actualAssembly))}`} />
+            <Row label={t("ACTUAL WARD")} text={`${t(checkForNA(propertyAddress?.actualWard || additionalDetails?.actualWard))}`} />
+            <Row label={t("ACTUAL ZONE")} text={`${t(checkForNA(propertyAddress?.actualZone || additionalDetails?.actualZone))}`} />
+            <Row label={t("LANDMARK")} text={`${t(checkForNA(propertyAddress?.landmark))}`} />
+          </StatusTable>
+        </Card>
+
+        <Card>
+          <CardHeader styles={{ fontSize: "28px" }}>{t("WS_PROPERTY_AND_WATER_CONNECTION_USE_DETAILS")}</CardHeader>
+          <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
+            <Row
+              label={t("WS_CATEGORY_TYPE")}
+              text={`${t(checkForNA(useDetails?.categoryType?.i18nKey || useDetails?.categoryType?.code || useDetails?.categoryType))}`}
+            />
+            <Row
+              label={t("WS_PROPERTY_CATEGORY")}
+              text={`${t(checkForNA(useDetails?.propertyCategory?.i18nKey || useDetails?.propertyCategory?.code || useDetails?.propertyCategory))}`}
+            />
+            <Row
+              label={t("WS_PROPERTY_TYPE")}
+              text={`${t(checkForNA(useDetails?.propertyType?.i18nKey || useDetails?.propertyType?.code || useDetails?.propertyType))}`}
+            />
+            <Row
+              label={t("WS_WATER_CONNECTION_USAGE_TYPE")}
+              text={`${t(
+                checkForNA(
+                  useDetails?.WaterConnectionUsageType?.i18nKey ||
+                    useDetails?.WaterConnectionUsageType?.code ||
+                    useDetails?.WaterConnectionUsageType ||
+                    useDetails?.waterConnectionUsageType?.i18nKey ||
+                    useDetails?.waterConnectionUsageType?.code ||
+                    useDetails?.waterConnectionUsageType
+                )
+              )}`}
+            />
+            <Row
+              label={t("WS_NUMBER_OF_FLOORS")}
+              text={`${t(checkForNA(useDetails?.noOfFloors?.i18nKey || useDetails?.noOfFloors?.code || useDetails?.noOfFloors))}`}
+            />
+            <Row label={t("WS_PLOT_AREA")} text={`${t(checkForNA(useDetails?.plotArea))}`} />
+            <Row label={t("WS_BUILT_UP_AREA")} text={`${t(checkForNA(useDetails?.builtUpArea))}`} />
+            <Row
+              label={t("WS_SELECT_YEAR_OF_CONSTRUCTION")}
+              text={`${t(
+                checkForNA(
+                  useDetails?.SelectYearofConstruction?.i18nKey ||
+                    useDetails?.SelectYearofConstruction?.value ||
+                    useDetails?.SelectYearofConstruction?.code ||
+                    useDetails?.SelectYearofConstruction ||
+                    useDetails?.constructionYear?.i18nKey ||
+                    useDetails?.constructionYear?.code ||
+                    useDetails?.constructionYear
+                )
+              )}`}
+            />
+            <Row
+              label={t("WS_NUMBER_OF_DWELLING_UNITS")}
+              text={`${t(checkForNA(useDetails?.NumberofDwellingUnits || useDetails?.noOfDwellingUnits))}`}
+            />
+          </StatusTable>
+        </Card>
+
+        <Card>
+          <CardHeader styles={{ fontSize: "28px" }}>{t("WS_DJB_EMPLOYEE")}</CardHeader>
+          <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
+            <Row label={t("WS_DJB_EMPLOYEE")} text={`${djbEmployee?.isDjbEmployee ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}`} />
+            {djbEmployee?.isDjbEmployee && (
+              <React.Fragment>
+                <Row label={t("WS_EMPLOYEE_ID")} text={`${t(checkForNA(djbEmployee?.employeeId))}`} />
+                <Row label={t("WS_DATE_OF_RETIREMENT")} text={`${t(checkForNA(djbEmployee?.dor))}`} />
+                <Row label={t("WS_EMPLOYEE_DESIGNATION")} text={`${t(checkForNA(djbEmployee?.designation))}`} />
+              </React.Fragment>
+            )}
+          </StatusTable>
+        </Card>
+
+        <Card>
+          <CardHeader styles={{ fontSize: "28px" }}>{t("WS_BANK_DETAILS")}</CardHeader>
+          <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
+            <Row label={t("WS_NAME_OF_BANK")} text={`${t(checkForNA(bankDetails?.bankName))}`} />
+            <Row label={t("WS_NAME_OF_BRANCH")} text={`${t(checkForNA(bankDetails?.bankBranchName || bankDetails?.branchName))}`} />
+            <Row label={t("WS_IFSC_CODE")} text={`${t(checkForNA(bankDetails?.ifscCode))}`} />
+            <Row label={t("WS_BANK_ACCOUNT_NO")} text={`${t(checkForNA(bankDetails?.bankAccountNumber || bankDetails?.accountNumber))}`} />
+          </StatusTable>
+        </Card>
+
+        {/* {isDisconnection ? null : (
           <Card>
             <CardHeader styles={{ fontSize: "28px" }}>{t("WS_COMMON_CONNECTION_DETAIL")}</CardHeader>
             {data?.WaterConnection && data?.WaterConnection?.length > 0 && (
@@ -742,7 +962,7 @@ const WSApplicationDetails = () => {
               </StatusTable>
             )}
           </Card>
-        )}
+        )} */}
         {/* <Card>
         <PropertyDocument property={application}></PropertyDocument>
         </Card> */}
