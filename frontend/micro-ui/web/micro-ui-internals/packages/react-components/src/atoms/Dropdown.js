@@ -84,7 +84,7 @@ const TextField = (props) => {
   return (
     <input
       ref={inputRef}
-      className={`employee-select-wrap--elipses ${disable && "disabled"}`}
+      className={`${disable && "disabled"}`}
       type="text"
       value={value}
       onChange={inputChange}
@@ -343,7 +343,7 @@ const Dropdown = (props) => {
             closeOnBlur={false}
             onClick={openDropdown}
           />
-          <ArrowDown onClick={dropdownSwitch} className="cp" disable={props.disable} />
+          <ArrowDown onClick={dropdownSwitch} className="cp" disable={props.disable} color={dropdownStatus ? "#a1a1aa" : "#e5e5e7"} />
         </div>
       )}
       {dropdownStatus && ReactDOM.createPortal(dropdownContent, document.body)}

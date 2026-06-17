@@ -61,12 +61,12 @@ const ArrowDirection = ({ className, styles }) => (
   </svg>
 );
 
-const ArrowDown = ({ className, onClick, styles, disable }) => (
+const ArrowDown = ({ className, onClick, styles, disable, color = "black" }) => (
   <svg
     style={{ ...styles }}
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 24 24"
-    fill={disable ? "#9E9E9E" : "black"}
+    fill={disable ? "#9E9E9E" : color}
     className={className}
     onClick={onClick}
     width="18px"
