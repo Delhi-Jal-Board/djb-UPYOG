@@ -1,5 +1,6 @@
 import React, { Fragment, useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import ReactDOM from "react-dom";
 
 const getLinkLabelText = (linkItem) => String(linkItem?.label || "");
 const shouldRenderLinkCount = (count) => count !== undefined && count !== null && count !== "";
@@ -21,10 +22,15 @@ const CollapsibleModuleSidebar = ({ links = [], moduleName = "Dashboard", Icon }
     const [isCollapsed, setIsCollapsed] = useState(true);
     const [isMobileOpen, setIsMobileOpen] = useState(false);
     const location = useLocation();
+    const [portalTarget, setPortalTarget] = useState(null);
 
     useEffect(() => {
         setIsMobileOpen(false);
     }, [location.pathname]);
+
+    useEffect(() => {
+        setPortalTarget(document.getElementById("module-sidebar-portal-target"));
+    }, []);
 
     const renderNavLink = (linkItem, index, extraClass = "") => {
         const isActive = location.pathname === linkItem.link;
@@ -113,8 +119,54 @@ const CollapsibleModuleSidebar = ({ links = [], moduleName = "Dashboard", Icon }
         );
     };
 
+    const collapseButton = (
+        <button
+            className="collapse-toggle"
+            onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setIsCollapsed(!isCollapsed);
+            }}
+            aria-label="Toggle Sidebar"
+            type="button"
+            style={{
+                background: "#f8fafc",
+                border: "1px solid #e2e8f0",
+                borderRadius: "50%",
+                width: "36px",
+                height: "36px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                color: "#64748b",
+                transition: "all 0.3s ease",
+                boxShadow: "0 2px 4px rgba(0,0,0,0.02)",
+                flexShrink: 0
+            }}
+            onMouseOver={(e) => { e.currentTarget.style.color = "#1a67a3"; e.currentTarget.style.borderColor = "#cbd5e1"; e.currentTarget.style.background = "#fff"; }}
+            onMouseOut={(e) => { e.currentTarget.style.color = "#64748b"; e.currentTarget.style.borderColor = "#e2e8f0"; e.currentTarget.style.background = "#f8fafc"; }}
+        >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                {isCollapsed ? (
+                    <>
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </>
+                ) : (
+                    <>
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </>
+                )}
+            </svg>
+        </button>
+    );
+
     return (
         <div className="module-sidebar-wrapper">
+            {portalTarget && ReactDOM.createPortal(collapseButton, portalTarget)}
             {/* ── Mobile horizontal nav bar (visible only on mobile) ── */}
             {/* <nav className="mobile-tab-bar">
                 {links.map((linkItem, index) => renderMobileTab(linkItem, index))}
@@ -135,7 +187,7 @@ const CollapsibleModuleSidebar = ({ links = [], moduleName = "Dashboard", Icon }
                 <div className="sidebar-header" style={{
                     display: "flex",
                     flexDirection: isCollapsed ? "column" : "row",
-                    justifyContent: isCollapsed ? "center" : "space-between",
+                    justifyContent: "center",
                     alignItems: "center",
                     marginBottom: "32px",
                     padding: "10px 0",
@@ -147,37 +199,6 @@ const CollapsibleModuleSidebar = ({ links = [], moduleName = "Dashboard", Icon }
                         </div>
                         {!isCollapsed && <h2 className="brand-name" style={{ fontSize: "1.25rem", fontWeight: "700", color: "#0f172a", letterSpacing: "-0.5px", margin: 0 }}>{moduleName}</h2>}
                     </div>
-                    <button
-                        className="collapse-toggle"
-                        onClick={() => setIsCollapsed(!isCollapsed)}
-                        aria-label="Toggle Sidebar"
-                        type="button"
-                        style={{
-                            background: "#f8fafc",
-                            border: "1px solid #e2e8f0",
-                            borderRadius: "50%",
-                            width: "36px",
-                            height: "36px",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            cursor: "pointer",
-                            color: "#64748b",
-                            transition: "all 0.3s ease",
-                            boxShadow: "0 2px 4px rgba(0,0,0,0.02)",
-                            flexShrink: 0
-                        }}
-                        onMouseOver={(e) => { e.currentTarget.style.color = "#1a67a3"; e.currentTarget.style.borderColor = "#cbd5e1"; e.currentTarget.style.background = "#fff"; }}
-                        onMouseOut={(e) => { e.currentTarget.style.color = "#64748b"; e.currentTarget.style.borderColor = "#e2e8f0"; e.currentTarget.style.background = "#f8fafc"; }}
-                    >
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            {isCollapsed ? (
-                                <path d="M13 17l5-5-5-5M6 17l5-5-5-5" />
-                            ) : (
-                                <path d="M11 17l-5-5 5-5M18 17l-5-5 5-5" />
-                            )}
-                        </svg>
-                    </button>
                 </div>
                 <nav className="sidebar-nav" style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                     {links.map((linkItem, index) => renderNavLink(linkItem, index))}

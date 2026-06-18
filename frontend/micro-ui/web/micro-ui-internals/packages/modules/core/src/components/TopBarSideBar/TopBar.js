@@ -126,7 +126,7 @@ const TopBar = ({
   //   !!window.keycloak?.token ? false : ["/digit-ui/citizen/select-language", "/digit-ui/citizen/select-location"].includes(pathname);
 
   const kc = window.keycloak;
-  const loggedIn = kc.authenticated;
+  const loggedIn = kc?.authenticated || false;
   if (CITIZEN) {
     return (
       <div className="topbar" style={CITIZEN ? { left: "0px", width: "100%", backgroundColor: "#FFFFFF" } : { backgroundColor: "#FFFFFF" }}>
@@ -170,7 +170,7 @@ const TopBar = ({
                     userOptions={userOptions}
                     roleOptions={[]}
                     selectedRole={null}
-                    handleRoleChange={() => {}}
+                    handleRoleChange={() => { }}
                     profilePic={profilePic}
                     userName={userDetails?.info?.name || userDetails?.info?.userInfo?.name || "Citizen"}
                     userCode={userDetails?.info?.userName}
@@ -194,7 +194,10 @@ const TopBar = ({
   return (
     <div className="topbar" style={{ backgroundColor: "#FFFFFF" }}>
       {mobileView ? <Hamburger handleClick={toggleSidebar} color="#9E9E9E" /> : null}
-      <span className="topbar-content">
+      <span className="topbar-content" style={{ display: "flex", alignItems: "center" }}>
+        {!mobileView && (
+          <div id="module-sidebar-portal-target" style={{ marginLeft: "-37px", marginRight: "25px", display: "flex", alignItems: "center" }}></div>
+        )}
         <div
           className="brand"
           style={{ display: "flex", alignItems: "center", gap: "12px", cursor: "pointer" }}
@@ -242,7 +245,7 @@ const TopBar = ({
             <div className="left">{showLanguageChange && <ChangeLanguage dropdown={true} />}</div>
             <div className="vertical-divider"></div>
 
-            {kc.authenticated && (
+            {kc?.authenticated && (
               <div className="left" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                 <EmployeeDesignationWrapper
                   userDetails={userDetails}
