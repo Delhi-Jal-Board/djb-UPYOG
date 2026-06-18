@@ -9,6 +9,17 @@ const getFormattedCreatedAt = (row) => {
   return `${Digit.DateUtils.ConvertEpochToDate(createdTime)} ${Digit.DateUtils.ConvertEpochToTimeInHours(createdTime)}`;
 };
 
+const getDeliveryDateTime = (row) => {
+  const driverTripReport = row?.searchData?.driverTripReport;
+  if (Array.isArray(driverTripReport) && driverTripReport.length > 0) {
+    const lastModifiedTime = driverTripReport[0]?.auditDetails?.lastModifiedTime;
+    if (lastModifiedTime) {
+      return `${Digit.DateUtils.ConvertEpochToDate(lastModifiedTime)} ${Digit.DateUtils.ConvertEpochToTimeInHours(lastModifiedTime)}`;
+    }
+  }
+  return "-";
+};
+
 const GetSlaCell = (value) => {
   if (isNaN(value)) return <span className="sla-cell-success">0</span>;
   return value < 0 ? <span className="sla-cell-error">{value}</span> : <span className="sla-cell-success">{value}</span>;
@@ -122,6 +133,13 @@ export const TableConfig = (t) => ({
       },
       ...(window.location.href.includes("fixed-point")
         ? [
+          {
+            Header: t("WT_DELIVERY_DATE_TIME"),
+            id: "deliveryDateTime",
+            accessor: (row) => getDeliveryDateTime(row),
+            Cell: ({ row }) => GetCell(getDeliveryDateTime(row?.original)),
+            mobileCell: (original) => GetMobCell(getDeliveryDateTime(original)),
+          },
           {
             Header: t("WT_VENDOR_NAME"),
             id: "vendorName",

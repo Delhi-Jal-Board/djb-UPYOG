@@ -65,15 +65,29 @@ import Keycloak from "keycloak-js";
 
 let _kc;
 
+const NO_KEYCLOAK_PATHS = [
+  "/digit-ui/home",
+];
+
+const requiresNoKeycloak = (path) => {
+  return NO_KEYCLOAK_PATHS.some((p) => {
+    return path === p || path.startsWith(p + "/");
+  });
+};
+
 export const initKeycloak = async () => {
   if (_kc) return _kc;
 
   const path = window.location.pathname;
+  
+  // Skip Keycloak entirely ONLY for landing pages (/digit-ui/home/*)
+  if (requiresNoKeycloak(path)) {
+    return null;
+  }
+
   if (
     !path.includes("/digit-ui/citizen/home") &&
-    !path.includes("/digit-ui/home") &&
     !path.includes("/digit-ui/employee/user/login") &&
-    !path.includes("/digit-ui/citizen/login") &&
     (path.includes("/digit-ui/employee") || path.includes("/digit-ui/citizen"))
   ) {
     sessionStorage.setItem("post_keycloak_redirect", window.location.pathname + window.location.search);
@@ -83,7 +97,6 @@ export const initKeycloak = async () => {
     url: "https://dev-djb.nitcon.in/keycloak",
     realm: "DL",
     clientId: "upyog",
-    // redirectUri: window.location.origin,
   });
 
   try {
