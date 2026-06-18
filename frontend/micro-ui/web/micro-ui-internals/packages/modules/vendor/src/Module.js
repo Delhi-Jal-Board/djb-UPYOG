@@ -18,7 +18,6 @@ import AddVendor from "./components/RegisterVendor/AddVendor";
 import AddSupervisor from "./components/RegisterSupervisor/AddSupervisor";
 import SupervisorDetails from "./components/RegisterSupervisor/SupervisorDetails";
 import EditSupervisor from "./components/RegisterSupervisor/EditSupervisor";
-import AddSurveyor from "./components/RegisterSurveyor/AddSurveyor";
 import SurveyorDetails from "./components/RegisterSurveyor/SurveyorDetails";
 import EditSurveyor from "./components/RegisterSurveyor/EditSurveyor";
 import CheckPage from "./components/Create/CheckPage";
@@ -58,7 +57,6 @@ const componentsToRegister = {
   SupervisorDetails,
   EditSupervisor,
   SupervisorAreaAssignment,
-  AddSurveyor,
   SurveyorDetails,
   EditSurveyor,
   SelectEkycZones,
@@ -76,23 +74,27 @@ export const VENDORModule = ({ stateCode, userType, tenants }) => {
   const { path, url } = useRouteMatch();
   const moduleCode = "VENDOR";
   const language = Digit.StoreData.getCurrentLanguage();
+  const tenantId = Digit.ULBService.getCurrentTenantId();
   // Dont remove this it is requiored for Localization
-  const { isLoading, data: store } = Digit.Services.useStore({ stateCode, moduleCode, language });
+  useEffect(() => {
+    Digit.LocalizationService.getLocale({
+      modules: [`rainmaker-${moduleCode.toLowerCase()}`],
+      locale: language,
+      tenantId: tenantId,
+    });
+  }, [stateCode, language]);
   addComponentsToRegistry();
 
   Digit.SessionStorage.set("VENDOR_TENANTS", tenants);
 
-  useEffect(
-    () =>
-      userType === "employee" &&
+  useEffect(() => {
+    userType === "employee" &&
       Digit.LocalizationService.getLocale({
-        modules: [`rainmaker-${Digit.ULBService.getCurrentTenantId()}`],
-        locale: Digit.StoreData.getCurrentLanguage(),
-        tenantId: Digit.ULBService.getCurrentTenantId(),
-      }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
-  );
+        modules: [`rainmaker-${tenantId}`],
+        locale: language,
+        tenantId: tenantId,
+      });
+  }, []);
 
   if (userType === "employee") return <EmployeeApp path={path} url={url} userType={userType} />;
   return <CitizenVendorApp path={path} url={url} userType={userType} />;

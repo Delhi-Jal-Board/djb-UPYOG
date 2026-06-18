@@ -16,7 +16,23 @@ function ApplicationDetailsActionBar({
 }) {
   const { t } = useTranslation();
   let user = Digit.UserService.getUser();
-  const menuRef = useRef();
+  const menuRef = React.useRef();
+  const [isSubmitDisabled, setIsSubmitDisabled] = React.useState(() => {
+    if (typeof window !== "undefined" && typeof window.isDocumentsVerified !== "undefined") {
+      return !window.isDocumentsVerified;
+    }
+    return false;
+  });
+
+  React.useEffect(() => {
+    const handleDocVerification = (e) => {
+      setIsSubmitDisabled(!e.detail);
+    };
+    if (typeof window !== "undefined") {
+      window.addEventListener("DOCUMENTS_VERIFIED", handleDocVerification);
+      return () => window.removeEventListener("DOCUMENTS_VERIFIED", handleDocVerification);
+    }
+  }, []);
   if (window.location.href.includes("/obps") || window.location.href.includes("/noc")) {
     const userInfos = sessionStorage.getItem("Digit.citizen.userRequestObject");
     const userInfo = userInfos ? JSON.parse(userInfos) : {};
@@ -68,12 +84,12 @@ function ApplicationDetailsActionBar({
           ) : null}
           {businessService === "ewst" ? (
             modified === uuid || modified == null ? (
-              <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
+              <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} disabled={isSubmitDisabled} />
             ) : (
               <CardLabel style={{ color: "red", font: "30px", fontWeight: "bold" }}>{`${t("EW_ALERT_ANOTHER_VENDOR")}`}</CardLabel>
             )
           ) : (
-            <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
+            <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} disabled={isSubmitDisabled} />
           )}
           {/* <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} /> */}
         </ActionBar>

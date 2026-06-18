@@ -2,12 +2,34 @@ import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { CardSubHeader, PDFSvg, StatusTable, Row, ViewsIcon, Modal } from "@djb25/digit-ui-react-components";
 
-function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false }) {
+function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false, applicationStatus }) {
   const { t } = useTranslation();
   const [filesArray, setFilesArray] = useState(() => []);
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [pdfFiles, setPdfFiles] = useState({});
   const [modalFile, setModalFile] = useState(null);
+  const [checkedMap, setCheckedMap] = useState({});
+
+  useEffect(() => {
+    let requiredDocsCount = 0;
+    let checkedCount = 0;
+
+    documents?.forEach(document => {
+      document?.values?.forEach(value => {
+        if (!value.isPhoto) {
+          requiredDocsCount++;
+          const isChecked = checkedMap[value?.originalDoc?.id] ?? value?.originalDoc?.isVerified ?? false;
+          if (isChecked) {
+             checkedCount++;
+          }
+        }
+      });
+    });
+
+    const allChecked = requiredDocsCount === 0 || checkedCount === requiredDocsCount;
+    window.isDocumentsVerified = allChecked;
+    window.dispatchEvent(new CustomEvent("DOCUMENTS_VERIFIED", { detail: allChecked }));
+  }, [checkedMap, documents]);
 
   useEffect(() => {
     let acc = [];
@@ -41,6 +63,40 @@ function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false }
     return last.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   };
 
+  const forceDownload = async (url, fileName) => {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const blob = await response.blob();
+      const contentType = response.headers.get("content-type") || blob.type;
+      
+      const blobUrl = window.URL.createObjectURL(blob);
+      const baseFileName = fileName.replace(/\.[^/.]+$/, "");
+
+      let extension = "pdf";
+      if (contentType) {
+        if (contentType.includes("image/jpeg")) extension = "jpg";
+        else if (contentType.includes("image/png")) extension = "png";
+        else if (contentType.includes("image/webp")) extension = "webp";
+        else if (contentType.includes("application/pdf")) extension = "pdf";
+        else if (contentType.includes("text/plain")) extension = "txt";
+      }
+
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.setAttribute("download", `${baseFileName}.${extension}`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      setTimeout(() => window.URL.revokeObjectURL(blobUrl), 100);
+    } catch (err) {
+      console.error("Error downloading file", err);
+      window.open(url, "_blank"); // Fallback
+    }
+  };
+
   /** Render the image/document preview modal */
   const renderModal = () => {
     if (!modalFile) return null;
@@ -49,11 +105,22 @@ function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false }
       <Modal
         headerBarMain={<h1 className="heading-m">Document Preview</h1>}
         headerBarEnd={
-          <div onClick={() => setModalFile(null)} style={{ cursor: "pointer", padding: "5px", marginTop: "-5px" }}>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#000000" width="24px" height="24px">
-              <path d="M0 0h24v24H0V0z" fill="none" />
-              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
-            </svg>
+          <div style={{ display: "flex", gap: "15px", alignItems: "center", paddingRight: "10px" }}>
+            <div 
+              onClick={() => {
+                forceDownload(modalFile, "Document.pdf");
+              }} 
+              style={{ cursor: "pointer", display: "flex", alignItems: "center" }}
+              title="Download Document"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            </div>
+            <div onClick={() => setModalFile(null)} style={{ cursor: "pointer", display: "flex", alignItems: "center" }}>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#000000" width="24px" height="24px">
+                <path d="M0 0h24v24H0V0z" fill="none" />
+                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+              </svg>
+            </div>
           </div>
         }
         hideSubmit={true}
@@ -136,22 +203,48 @@ function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false }
                     <ViewsIcon />
                   </div>
                 )}
-                {!isPhoto && (
-                  <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "14px", color: "#0B0C0C", margin: 0 }}>
-                    <input 
-                      key={`chk-${value?.originalDoc?.id}-${value?.originalDoc?.isVerified}`}
-                      type="checkbox" 
-                      style={{ width: "18px", height: "18px", accentColor: "#F47738" }} 
-                      defaultChecked={value?.originalDoc?.isVerified}
-                      onChange={(e) => {
-                        if (value?.originalDoc) {
-                          value.originalDoc.isVerified = e.target.checked;
-                        }
-                      }}
-                    />
-                    Check Verified
-                  </label>
-                )}
+                {!isPhoto && (() => {
+                  const isChecked = checkedMap[value?.originalDoc?.id] ?? value?.originalDoc?.isVerified ?? false;
+                  return (
+                    <React.Fragment>
+                      <div 
+                        onClick={() => {
+                          if (fileUrl) {
+                            forceDownload(fileUrl, `${docSubType || "Document"}.pdf`);
+                          }
+                        }}
+                        title="Download Document"
+                        style={{ 
+                          cursor: "pointer", 
+                          display: "flex",
+                          alignItems: "center"
+                        }}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                      </div>
+                      <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "14px", color: "#0B0C0C", margin: 0 }}>
+                        <input 
+                          key={`chk-${value?.originalDoc?.id}-${value?.originalDoc?.isVerified}`}
+                          type="checkbox" 
+                          className="verify-doc-checkbox"
+                          style={{ width: "18px", height: "18px", accentColor: "#F47738", cursor: (applicationStatus && applicationStatus !== "PENDING_FOR_DOCUMENT_VERIFICATION") ? "not-allowed" : "pointer" }} 
+                          disabled={applicationStatus && applicationStatus !== "PENDING_FOR_DOCUMENT_VERIFICATION"}
+                          defaultChecked={value?.originalDoc?.isVerified}
+                          onChange={(e) => {
+                            const checked = e.target.checked;
+                            if (value?.originalDoc) {
+                              value.originalDoc.isVerified = checked;
+                            }
+                            if (value?.originalDoc?.id) {
+                              setCheckedMap(prev => ({ ...prev, [value.originalDoc.id]: checked }));
+                            }
+                          }}
+                        />
+                        Check Verified
+                      </label>
+                    </React.Fragment>
+                  );
+                })()}
               </div>
             }
           />

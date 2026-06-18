@@ -18,7 +18,7 @@ import * as func from "../utils";
 import { getPattern, stringReplaceAll } from "../utils";
 
 const createConnectionHolderDetails = () => ({
-  sameAsOwnerDetails: true,
+  sameAsOwnerDetails: false,
   name: "",
   middleName: "",
   lastName: "",

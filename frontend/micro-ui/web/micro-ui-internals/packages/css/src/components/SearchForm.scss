@@ -1,6 +1,5 @@
 .search-form-wrapper {
-  @apply w-full flex-wrap gap-5 justify-between bg-white;
-  padding: 20px;
+  @apply w-full flex flex-col flex-wrap gap-2 p-md justify-between bg-white;
 
   border-radius: 11px;
   .form-field {

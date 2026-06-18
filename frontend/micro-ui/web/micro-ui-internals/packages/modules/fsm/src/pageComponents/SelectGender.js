@@ -3,14 +3,15 @@ import { CardLabel, Dropdown, FormStep, LabelFieldPair, Loader, RadioOrSelect } 
 import Timeline from "../components/TLTimelineInFSM";
 
 const SelectGender = ({ config, onSelect, t, userType, formData }) => {
-  const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
   const { data: GenderData, isLoading } = Digit.Hooks.fsm.useMDMS(stateId, "common-masters", "FSMGenderType");
-  const [genderType, setGenderType] = useState(formData?.genderType);
+  const [genderType, setGenderType] = useState(formData?.genderType || formData?.gender);
 
   useEffect(() => {
     if (!isLoading && GenderData) {
-      const preFilledGenderType = GenderData.filter((genderType) => genderType.code === (formData?.selectGender?.code || formData?.selectGender))[0];
+      const preFilledGenderType = GenderData.filter(
+        (genderType) => genderType.code === (formData?.selectGender?.code || formData?.selectGender || formData?.gender?.code)
+      )[0];
       setGenderType(preFilledGenderType);
     }
   }, [formData?.selectGender, GenderData]);
