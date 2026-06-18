@@ -8,7 +8,9 @@ import {
   MobileNumber,
   TextInput,
   WrapUnMaskComponent,
+  FormStep,
 } from "@djb25/digit-ui-react-components";
+import Timeline from "../components/Timeline";
 import _ from "lodash";
 import React, { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -46,8 +48,7 @@ const WSConnectionHolderDetails = ({ config, onSelect, userType, formData, setEr
   const [focusIndex, setFocusIndex] = useState({ index: -1, type: "" });
   const stateId = Digit.ULBService.getStateId();
   const [isErrors, setIsErrors] = useState(false);
-  const [uploadedFile, setUploadedFile] = useState(formData?.[config.key]?.fileStoreId || null);
-  const [file, setFile] = useState(null);
+
 
   const { isLoading, data: genderTypeData } = Digit.Hooks.obps.useMDMS(stateId, "common-masters", ["GenderType"]);
 
@@ -57,20 +58,7 @@ const WSConnectionHolderDetails = ({ config, onSelect, userType, formData, setEr
       menu.push({ i18nKey: `COMMON_GENDER_${genderDetails.code}`, code: `${genderDetails.code}`, value: `${genderDetails.code}` });
     });
 
-  let dropdownData = [];
-  const { data: Documentsob = {} } = Digit.Hooks.pt.usePropertyMDMS(stateId, "PropertyTax", "Documents");
-  const docs = Documentsob?.PropertyTax?.Documents;
-  const specialProofIdentity = Array.isArray(docs) && docs.filter((doc) => doc.code.includes("SPECIALCATEGORYPROOF"));
-  if (specialProofIdentity.length > 0) {
-    dropdownData = specialProofIdentity[0]?.dropdownData;
-    dropdownData.forEach((data) => {
-      data.i18nKey = stringReplaceAll(data.code, ".", "_");
-    });
-    dropdownData = dropdownData?.filter((dropdown) => dropdown.parentValue.includes(connectionHolderDetails?.[0]?.ownerType));
-    if (dropdownData.length == 1 && dropdownValue != dropdownData[0]) {
-      setTypeOfDropdownValue(dropdownData[0]);
-    }
-  }
+
 
   const GuardianOptions = [
     { name: "HUSBAND", code: "HUSBAND", i18nKey: "COMMON_MASTERS_OWNERTYPE_HUSBAND" },
@@ -81,10 +69,12 @@ const WSConnectionHolderDetails = ({ config, onSelect, userType, formData, setEr
   Menu ? Menu.sort((a, b) => t(a.i18nKey).localeCompare(t(b.i18nKey))) : "";
 
   useEffect(() => {
-    const data = connectionHolderDetails.map((e) => {
-      return e;
-    });
-    onSelect(config?.key, data);
+    if (userType !== "citizen") {
+      const data = connectionHolderDetails.map((e) => {
+        return e;
+      });
+      onSelect(config?.key, data);
+    }
   }, [connectionHolderDetails]);
 
   useEffect(() => {
@@ -170,14 +160,29 @@ const WSConnectionHolderDetails = ({ config, onSelect, userType, formData, setEr
     connectionHolderDetails,
     filters,
     menu,
-    uploadedFile,
-    setUploadedFile,
-    file,
-    setFile,
-    dropdownData,
+
     GuardianOptions,
     Menu,
   };
+
+  const goNext = () => {
+    if (userType === "citizen") {
+      onSelect(config?.key, connectionHolderDetails);
+    }
+  };
+
+  if (userType === "citizen") {
+    return (
+      <div>
+        <Timeline currentStep={2} />
+        <FormStep t={t} config={config} onSelect={goNext} onSkip={() => onSelect()}>
+          {connectionHolderDetails.map((connectionHolderDetail, index) => (
+            <ConnectionDetails key={connectionHolderDetail.key || index} index={index} connectionHolderDetail={connectionHolderDetail} {...commonProps} />
+          ))}
+        </FormStep>
+      </div>
+    );
+  }
 
   return (
     <React.Fragment>
@@ -288,7 +293,7 @@ const ConnectionDetails = (_props) => {
       if (!connectionHolderDetails[0][data] && connectionHolderDetails[0][data] != false && isClear) isClear = false;
     });
     if (connectionHolderDetails?.[0]?.sameAsOwnerDetails || (isClear && Object.keys(connectionHolderDetails?.[0])?.length > 1)) {
-      clearErrors("ConnectionHolderDetails");
+      if (clearErrors) clearErrors("ConnectionHolderDetails");
     } else {
       trigger();
     }
@@ -296,17 +301,17 @@ const ConnectionDetails = (_props) => {
 
   useEffect(() => {
     if (sameAsOwnerDetails) {
-      clearErrors("ConnectionHolderDetails");
+      if (clearErrors) clearErrors("ConnectionHolderDetails");
     } else {
       trigger();
     }
   }, [sameAsOwnerDetails]);
 
   useEffect(() => {
-    if (Object.keys(errors).length && !_.isEqual(formState.errors[config.key]?.type || {}, errors)) {
-      setError(config.key, { type: errors });
-    } else if (!Object.keys(errors).length && formState.errors[config.key]) {
-      clearErrors(config.key);
+    if (Object.keys(errors).length && !_.isEqual(formState?.errors?.[config.key]?.type || {}, errors)) {
+      if (setError) setError(config.key, { type: errors });
+    } else if (!Object.keys(errors).length && formState?.errors?.[config.key]) {
+      if (clearErrors) clearErrors(config.key);
     }
   }, [errors]);
   const validateEmail = (value) => {
@@ -314,7 +319,7 @@ const ConnectionDetails = (_props) => {
     const errors = sessionStorage.getItem("FORMSTATE_ERRORS");
     let formStateErros = typeof errors === "string" ? JSON.parse(errors) : {};
     if (emailPattern.test(value)) {
-      clearErrors("emailId");
+      if (clearErrors) clearErrors("emailId");
 
       if (
         formStateErros["ConnectionHolderDetails"] &&
@@ -333,7 +338,7 @@ const ConnectionDetails = (_props) => {
 
       return true;
     } else {
-      setError("emailId", {
+      if (setError) setError("emailId", {
         type: "manual",
         message: "email id error",
       });
@@ -538,7 +543,7 @@ const ConnectionDetails = (_props) => {
                               setGender(r);
                               props.onChange(r);
                             }}
-                            iseyevisible={gender["i18nKey"]?.includes("*") ? true : false}
+                            iseyevisible={gender?.i18nKey?.includes("*") ? true : false}
                             privacy={{
                               uuid: connectionHolderDetail?.uuid,
                               fieldName: "gender",

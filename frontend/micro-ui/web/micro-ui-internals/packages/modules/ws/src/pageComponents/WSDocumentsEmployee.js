@@ -1,10 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
-import { CardLabel, LabelFieldPair, Dropdown, UploadFile, Toast, Loader, TextInput, CollapsibleCardPage, Modal, ViewsIcon } from "@djb25/digit-ui-react-components";
+import { CardLabel, LabelFieldPair, Dropdown, UploadFile, Toast, Loader, TextInput, CollapsibleCardPage, Modal, ViewsIcon, FormStep } from "@djb25/digit-ui-react-components";
+import Timeline from "../components/Timeline";
 import { useLocation } from "react-router-dom";
 
 const WSDocumentsEmployee = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  const [documents, setDocuments] = useState(formData?.DocumentsRequired?.documents || []);
+  const [documents, setDocuments] = useState(userType === "citizen" ? formData?.documents?.documents || formData?.documents || [] : formData?.DocumentsRequired?.documents || []);
+  const [enableSubmit, setEnableSubmit] = useState(true);
   const [error, setError] = useState(null);
   const wsDocsData = window.location.href.includes("modify")
     ? "ModifyConnectionDocuments"
@@ -22,12 +24,30 @@ const WSDocumentsEmployee = ({ t, config, onSelect, userType, formData, setError
   const { isLoading, data: wsDocs } = Digit.Hooks.ws.WSSearchMdmsTypes.useWSServicesNewMasters(tenantId, wsDocsData);
 
   const goNext = () => {
-    onSelect(config.key, { documents });
+    if (userType === "citizen") {
+      let documentStep = { ...formData?.documents, documents: documents };
+      onSelect(config.key, documentStep);
+    } else {
+      onSelect(config.key, { documents });
+    }
   };
 
   useEffect(() => {
-    goNext();
-  }, [documents]);
+    let count = 0;
+    wsDocs?.[wsDocsData]?.map((doc) => {
+      let isRequired = false;
+      documents.map((data) => {
+        if (doc.required && data?.documentType.includes(doc.code)) isRequired = true;
+      });
+      if (!isRequired && doc.required) count = count + 1;
+    });
+    if ((count == "0" || count == 0) && documents.length > 0) setEnableSubmit(false);
+    else setEnableSubmit(true);
+
+    if (userType !== "citizen") {
+      goNext();
+    }
+  }, [documents, wsDocs]);
 
   if (isLoading) {
     return <Loader />;
@@ -57,30 +77,46 @@ const WSDocumentsEmployee = ({ t, config, onSelect, userType, formData, setError
     });
   }
 
-  return (
-      <CollapsibleCardPage title={t("WS_DOCUMENTS")} defaultOpen={true}>
-      <div className="formcomposer-section-grid ws-doc-upload">
-        {wsDocs?.[wsDocsData]?.map((document, index) => {
-          return (
-            <SelectDocument
-              key={index}
-              document={document}
-              action={action}
-              t={t}
-              id={`pt-document-${index}`}
-              error={error}
-              setError={setError}
-              setDocuments={setDocuments}
-              documents={documents}
-              formData={formData}
-              setFormError={setFormError}
-              clearFormErrors={clearFormErrors}
-              config={config}
-              formState={formState}
-            />
-          );
-        })}
+  const innerContent = (
+    <div className="formcomposer-section-grid ws-doc-upload">
+      {wsDocs?.[wsDocsData]?.map((document, index) => {
+        return (
+          <SelectDocument
+            key={index}
+            document={document}
+            action={action}
+            t={t}
+            id={`pt-document-${index}`}
+            error={error}
+            setError={setError}
+            setDocuments={setDocuments}
+            documents={documents}
+            formData={formData}
+            setFormError={setFormError}
+            clearFormErrors={clearFormErrors}
+            config={config}
+            formState={formState}
+          />
+        );
+      })}
+    </div>
+  );
+
+  if (userType === "citizen") {
+    return (
+      <div>
+        <Timeline currentStep={3} />
+        <FormStep t={t} config={config} onSelect={goNext} onSkip={() => onSelect()} isDisabled={enableSubmit}>
+          {innerContent}
+          {error && <Toast label={error} onClose={() => setError(null)} error />}
+        </FormStep>
       </div>
+    );
+  }
+
+  return (
+    <CollapsibleCardPage title={t("WS_DOCUMENTS")} defaultOpen={true}>
+      {innerContent}
       {error && <Toast label={error} onClose={() => setError(null)} error />}
     </CollapsibleCardPage>
   );
@@ -104,15 +140,19 @@ function SelectDocument({
 }) {
   const fileRef = useRef();
   const filteredDocument = documents?.filter((item) => item?.documentType?.includes(doc?.code))[0];
-  const [selectedDocument, setSelectedDocument] = useState(
-    filteredDocument
-      ? { ...filteredDocument, code: filteredDocument?.documentType }
+  const [selectedDocument, setSelectedDocument] = useState(() => {
+    if (filteredDocument && doc?.dropdownData) {
+      const match = doc?.dropdownData?.find((d) => d.code === filteredDocument.documentType);
+      if (match) return match;
+    }
+    return filteredDocument
+      ? { ...filteredDocument, code: filteredDocument?.documentType, i18nKey: filteredDocument?.documentType?.replaceAll(".", "_") }
       : doc?.hasDropdown
       ? doc?.dropdownData?.length === 1
         ? doc?.dropdownData[0]
         : {}
-      : doc
-  );
+      : doc;
+  });
   const [file, setFile] = useState(null);
   const [uploadedFile, setUploadedFile] = useState(() => filteredDocument?.fileStoreId || null);
   const [documentUid, setDocumentUid] = useState(() => filteredDocument?.documentUid || "");
@@ -156,9 +196,14 @@ function SelectDocument({
 
   useEffect(() => {
     if (filteredDocument) {
+      let match = null;
+      if (doc?.dropdownData) {
+        match = doc?.dropdownData?.find((d) => d.code === filteredDocument.documentType);
+      }
       setSelectedDocument(
+        match ? match :
         filteredDocument
-          ? { ...filteredDocument, code: filteredDocument?.documentType }
+          ? { ...filteredDocument, code: filteredDocument?.documentType, i18nKey: filteredDocument?.documentType?.replaceAll(".", "_") }
           : doc?.hasDropdown
           ? doc?.dropdownData?.length === 1
             ? doc?.dropdownData[0]
@@ -178,23 +223,23 @@ function SelectDocument({
   const [isHidden, setHidden] = useState(false);
 
   const addError = () => {
-    let type = formState.errors?.[config.key]?.type;
+    let type = formState?.errors?.[config.key]?.type;
     if (!Array.isArray(type)) type = [];
     if (!type.includes(doc.code)) {
       type.push(doc.code);
-      setFormError(config.key, { type });
+      setFormError && setFormError(config.key, { type });
     }
   };
 
   const removeError = () => {
-    let type = formState.errors?.[config.key]?.type;
+    let type = formState?.errors?.[config.key]?.type;
     if (!Array.isArray(type)) type = [];
     if (type.includes(doc?.code)) {
       type = type.filter((e) => e != doc?.code);
       if (!type.length) {
-        clearFormErrors(config.key);
+        clearFormErrors && clearFormErrors(config.key);
       } else {
-        setFormError(config.key, { type });
+        setFormError && setFormError(config.key, { type });
       }
     }
   };

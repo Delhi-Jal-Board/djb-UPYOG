@@ -11,7 +11,9 @@ import {
   CollapsibleCardPage,
   Modal,
   ViewsIcon,
+  FormStep,
 } from "@djb25/digit-ui-react-components";
+import Timeline from "../components/Timeline";
 import React, { useEffect, useState } from "react";
 import { getPattern } from "../utils";
 import { useForm, Controller } from "react-hook-form";
@@ -75,14 +77,16 @@ const WSConnectionDetails = ({ config, onSelect, userType, formData, setError, f
   const { data: commonMastersData } = Digit.Hooks.ws.useMDMS(tenantId, "common-masters", ["InstitutionType"]);
 
   useEffect(() => {
-    const data = connectionDetails.map((e) => {
-      return e;
-    });
-    if (!_.isEqual(formData?.[config.key], data)) {
-      const timer = setTimeout(() => {
-        onSelect(config?.key, data);
-      }, 200);
-      return () => clearTimeout(timer);
+    if (userType !== "citizen") {
+      const data = connectionDetails.map((e) => {
+        return e;
+      });
+      if (!_.isEqual(formData?.[config.key], data)) {
+        const timer = setTimeout(() => {
+          onSelect(config?.key, data);
+        }, 200);
+        return () => clearTimeout(timer);
+      }
     }
   }, [connectionDetails, formData, config.key]);
 
@@ -159,6 +163,31 @@ const WSConnectionDetails = ({ config, onSelect, userType, formData, setError, f
     institutionTypeList,
     formData,
   };
+
+  const goNext = () => {
+    if (userType === "citizen") {
+      if (connectionDetails?.[0]?.serviceType?.code) {
+        sessionStorage.setItem("serviceName", connectionDetails[0].serviceType.code);
+      }
+      onSelect(config?.key, connectionDetails);
+    }
+  };
+
+  if (userType === "citizen") {
+    return (
+      <div>
+        <Timeline currentStep={2} />
+        <FormStep t={t} config={config} onSelect={goNext} onSkip={() => onSelect()} isDisabled={isErrors}>
+          {connectionDetails.map(
+            (connectionDetail, index) =>
+              connectionDetail && (
+                <ConnectionDetails key={connectionDetail?.key || index} index={index} connectionDetail={connectionDetail} {...commonProps} />
+              )
+          )}
+        </FormStep>
+      </div>
+    );
+  }
 
   return (
     <React.Fragment>
@@ -315,28 +344,28 @@ const ConnectionDetails = (_props) => {
         if (!connectionDetails[0][data] && connectionDetails[0][data] != false && isClear) isClear = false;
       });
     if (isClear && Object.keys(connectionDetails?.[0])?.length > 1) {
-      clearErrors("ConnectionDetails");
+      if (clearErrors) clearErrors("ConnectionDetails");
     }
 
     if (!connectionDetails?.[0]?.sewerage) {
-      clearErrors(config.key, { type: "proposedToilets" });
-      clearErrors(config.key, { type: "proposedWaterClosets" });
+      if (clearErrors) clearErrors(config.key, { type: "proposedToilets" });
+      if (clearErrors) clearErrors(config.key, { type: "proposedWaterClosets" });
     }
 
     if (!connectionDetails?.[0]?.water) {
-      clearErrors(config.key, { type: "proposedPipeSize" });
-      clearErrors(config.key, { type: "proposedTaps" });
+      if (clearErrors) clearErrors(config.key, { type: "proposedPipeSize" });
+      if (clearErrors) clearErrors(config.key, { type: "proposedTaps" });
     }
     trigger();
   }, [connectionDetails, waterSewarageSelection, formData?.DocumentsRequired?.documents]);
 
   useEffect(() => {
-    if (Object.keys(errors).length && !_.isEqual(formState.errors[config.key]?.type || {}, errors)) {
-      setError(config.key, { type: errors });
-    } else if (!Object.keys(errors).length && formState.errors[config.key]) {
-      clearErrors(config.key);
+    if (Object.keys(errors).length && !_.isEqual(formState?.errors?.[config.key]?.type || {}, errors)) {
+      if (setError) setError(config.key, { type: errors });
+    } else if (!Object.keys(errors).length && formState?.errors?.[config.key]) {
+      if (clearErrors) clearErrors(config.key);
     }
-  }, [errors, formState.errors]);
+  }, [errors, formState?.errors]);
 
   const isMobile = window.Digit.Utils.browser.isMobile();
   const isEmployee = window.location.href.includes("/employee");

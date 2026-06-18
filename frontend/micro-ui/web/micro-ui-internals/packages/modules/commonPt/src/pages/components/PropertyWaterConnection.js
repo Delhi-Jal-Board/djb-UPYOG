@@ -202,9 +202,9 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
     if (lastErrorState.current !== hasErrors) {
       lastErrorState.current = hasErrors;
       if (hasErrors) {
-        setError(config.key, { type: "custom", message: "Validation failed" });
+        if (setError) setError(config.key, { type: "custom", message: "Validation failed" });
       } else {
-        clearErrors(config.key);
+        if (clearErrors) clearErrors(config.key);
       }
     }
   }, [errors, config.key, setError, clearErrors]);
