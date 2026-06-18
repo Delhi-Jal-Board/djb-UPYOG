@@ -121,7 +121,7 @@ public class SupervisorUserService {
             }
 
             if (found == null)
-                found = addRoleToExistingUser(existing.getUser().get(0), requestInfo, errorMap, roleCode, roleName, roleMapping);
+                found = addRoleToExistingUser(existing.getUser().get(0), ownerInfo, requestInfo, errorMap, roleCode, roleName, roleMapping);
             else
                 found = updateUserDetails(ownerInfo, requestInfo, errorMap);
 
@@ -166,8 +166,25 @@ public class SupervisorUserService {
         return response.getUser().get(0);
     }
 
-    private User addRoleToExistingUser(User existing, RequestInfo requestInfo,
+    /**
+     * Adds the EKYC_SUPERVISOR (+ CITIZEN) role to an existing DIGIT user.
+     *
+     * BUG FIX: previously this method only forwarded the STALE user object
+     * fetched from DIGIT search (`existing`) — it never carried forward
+     * fields the caller typed in THIS request (correspondenceAddress, name,
+     * dob, gender, fatherOrHusbandName etc). DIGIT update overwrote the user
+     * with the stale object, silently dropping correspondenceAddress to null.
+     *
+     * Fix: merge `requestOwner` (current request's owner fields) into
+     * `existing` before sending to DIGIT update, so address and other
+     * details typed in this request are preserved.
+     */
+    private User addRoleToExistingUser(User existing, User requestOwner, RequestInfo requestInfo,
                                        HashMap<String, String> errorMap, String roleCode, String roleName, ModuleRoleMapping roleMapping) {
+
+        // Carry forward fields from the current request — do not lose them
+        mergeOwnerFields(existing, requestOwner);
+
         // Add the MDMS role (EKYC_SUPERVISOR)
         existing.getRoles().add(getRoleObj(roleMapping.getRoleCode(), roleMapping.getRoleName()));
 
@@ -186,6 +203,38 @@ public class SupervisorUserService {
             return response.getUser().get(0);
         errorMap.put(VendorErrorConstants.INVALID_DRIVER_ERROR, "Unable to add Supervisor roles to existing user");
         return null;
+    }
+
+    /**
+     * Merge non-null fields from requestOwner (this request's typed-in values)
+     * into existing (DIGIT's stale fetched record). Only overwrites fields
+     * the caller actually provided — does not blank out existing data with
+     * nulls if the caller omitted a field.
+     */
+    private void mergeOwnerFields(User existing, User requestOwner) {
+        if (requestOwner == null) return;
+        if (StringUtils.hasLength(requestOwner.getCorrespondenceAddress()))
+            existing.setCorrespondenceAddress(requestOwner.getCorrespondenceAddress());
+        if (StringUtils.hasLength(requestOwner.getCorrespondenceCity()))
+            existing.setCorrespondenceCity(requestOwner.getCorrespondenceCity());
+        if (StringUtils.hasLength(requestOwner.getCorrespondencePincode()))
+            existing.setCorrespondencePincode(requestOwner.getCorrespondencePincode());
+        if (StringUtils.hasLength(requestOwner.getPermanentAddress()))
+            existing.setPermanentAddress(requestOwner.getPermanentAddress());
+        if (StringUtils.hasLength(requestOwner.getPermanentCity()))
+            existing.setPermanentCity(requestOwner.getPermanentCity());
+        if (StringUtils.hasLength(requestOwner.getPermanentPincode()))
+            existing.setPermanentPincode(requestOwner.getPermanentPincode());
+        if (StringUtils.hasLength(requestOwner.getName()))
+            existing.setName(requestOwner.getName());
+        if (StringUtils.hasLength(requestOwner.getEmailId()))
+            existing.setEmailId(requestOwner.getEmailId());
+        if (StringUtils.hasLength(requestOwner.getFatherOrHusbandName()))
+            existing.setFatherOrHusbandName(requestOwner.getFatherOrHusbandName());
+        if (requestOwner.getRelationship() != null)
+            existing.setRelationship(requestOwner.getRelationship());
+        if (StringUtils.hasLength(requestOwner.getGender()))
+            existing.setGender(requestOwner.getGender());
     }
 
     private User updateUserDetails(User ownerInfo, RequestInfo requestInfo,
