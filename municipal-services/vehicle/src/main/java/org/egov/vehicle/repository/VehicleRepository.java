@@ -396,4 +396,26 @@ public class VehicleRepository {
 		return jdbcTemplate.query(query, new Object[]{ownerUuid},
 				new SingleColumnRowMapper<>(String.class));
 	}
+
+	public boolean vendorVehicleMappingExists(String vendorId) {
+		String query =
+				"SELECT COUNT(*) FROM eg_vendor_vehicle " +
+						"WHERE vendor_id = ? " +
+						"AND vendorvehiclestatus = 'ACTIVE'";
+		Integer count =
+				jdbcTemplate.queryForObject(query, Integer.class, vendorId);
+		return count != null && count > 0;
+	}
+
+	public String getVendorIdByOwnerId(String ownerId) {
+
+		String query =
+				"SELECT id FROM eg_vendor WHERE owner_id = ? LIMIT 1";
+		List<String> vendorIds =
+				jdbcTemplate.queryForList(query, String.class, ownerId);
+		return CollectionUtils.isEmpty(vendorIds)
+				? null
+				: vendorIds.get(0);
+	}
+
 }
