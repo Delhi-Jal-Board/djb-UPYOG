@@ -201,7 +201,15 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
           <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
             <Row
               label={t("WS_ZRO_LOCATION")}
-              text={`${t(checkForNA(propertyAddress?.zro?.name || propertyAddress?.zro || propertyAddress?.zroLocation || additionalDetails?.zroLocation || propertyAddress?.additionalDetails?.zroLocation))}`}
+              text={`${t(
+                checkForNA(
+                  propertyAddress?.zro?.name ||
+                    propertyAddress?.zro ||
+                    propertyAddress?.zroLocation ||
+                    additionalDetails?.zroLocation ||
+                    propertyAddress?.additionalDetails?.zroLocation
+                )
+              )}`}
               actionButton={<ActionButton onClick={onEdit} />}
             />
             <Row
@@ -226,16 +234,35 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
             <Row label={t("LONGITUDE")} text={`${t(checkForNA(propertyAddress?.longitude))}`} />
             <Row
               label={t("ASSEMBLY")}
-              text={`${t(checkForNA(propertyAddress?.assembly?.name || propertyAddress?.assembly?.code || propertyAddress?.assembly || additionalDetails?.assembly))}`}
+              text={`${t(
+                checkForNA(
+                  propertyAddress?.assembly?.name || propertyAddress?.assembly?.code || propertyAddress?.assembly || additionalDetails?.assembly
+                )
+              )}`}
             />
-
-            <Row label={t("WARD")} text={`${t(checkForNA(propertyAddress?.block?.name || propertyAddress?.block?.code || propertyAddress?.block || propertyAddress?.ward?.name || propertyAddress?.ward?.code || propertyAddress?.ward || additionalDetails?.ward))}`} />
-            <Row label={t("ZONE")} text={`${t(checkForNA(propertyAddress?.zone?.name || propertyAddress?.zone?.code || propertyAddress?.zone || additionalDetails?.zone))}`} />
 
             <Row
-              label={t("ACTUAL ASSEMBLY")}
-              text={`${t(checkForNA(propertyAddress?.actualAssembly || additionalDetails?.actualAssembly))}`}
+              label={t("WARD")}
+              text={`${t(
+                checkForNA(
+                  propertyAddress?.block?.name ||
+                    propertyAddress?.block?.code ||
+                    propertyAddress?.block ||
+                    propertyAddress?.ward?.name ||
+                    propertyAddress?.ward?.code ||
+                    propertyAddress?.ward ||
+                    additionalDetails?.ward
+                )
+              )}`}
             />
+            <Row
+              label={t("ZONE")}
+              text={`${t(
+                checkForNA(propertyAddress?.zone?.name || propertyAddress?.zone?.code || propertyAddress?.zone || additionalDetails?.zone)
+              )}`}
+            />
+
+            <Row label={t("ACTUAL ASSEMBLY")} text={`${t(checkForNA(propertyAddress?.actualAssembly || additionalDetails?.actualAssembly))}`} />
             <Row label={t("ACTUAL WARD")} text={`${t(checkForNA(propertyAddress?.actualWard || additionalDetails?.actualWard))}`} />
             <Row label={t("ACTUAL ZONE")} text={`${t(checkForNA(propertyAddress?.actualZone || additionalDetails?.actualZone))}`} />
             <Row label={t("LANDMARK")} text={`${t(checkForNA(propertyAddress?.landmark))}`} />
@@ -260,7 +287,12 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
               label={t("WS_WATER_CONNECTION_USAGE_TYPE")}
               text={`${t(
                 checkForNA(
-                  useDetails?.WaterConnectionUsageType?.i18nKey || useDetails?.WaterConnectionUsageType?.code || useDetails?.WaterConnectionUsageType || useDetails?.waterConnectionUsageType?.i18nKey || useDetails?.waterConnectionUsageType?.code || useDetails?.waterConnectionUsageType
+                  useDetails?.WaterConnectionUsageType?.i18nKey ||
+                    useDetails?.WaterConnectionUsageType?.code ||
+                    useDetails?.WaterConnectionUsageType ||
+                    useDetails?.waterConnectionUsageType?.i18nKey ||
+                    useDetails?.waterConnectionUsageType?.code ||
+                    useDetails?.waterConnectionUsageType
                 )
               )}`}
             />
@@ -272,9 +304,22 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
             <Row label={t("WS_BUILT_UP_AREA")} text={`${t(checkForNA(useDetails?.builtUpArea))}`} />
             <Row
               label={t("WS_SELECT_YEAR_OF_CONSTRUCTION")}
-              text={`${t(checkForNA(useDetails?.SelectYearofConstruction?.i18nKey || useDetails?.SelectYearofConstruction?.value || useDetails?.SelectYearofConstruction?.code || useDetails?.SelectYearofConstruction || useDetails?.constructionYear?.i18nKey || useDetails?.constructionYear?.code || useDetails?.constructionYear))}`}
+              text={`${t(
+                checkForNA(
+                  useDetails?.SelectYearofConstruction?.i18nKey ||
+                    useDetails?.SelectYearofConstruction?.value ||
+                    useDetails?.SelectYearofConstruction?.code ||
+                    useDetails?.SelectYearofConstruction ||
+                    useDetails?.constructionYear?.i18nKey ||
+                    useDetails?.constructionYear?.code ||
+                    useDetails?.constructionYear
+                )
+              )}`}
             />
-            <Row label={t("WS_NUMBER_OF_DWELLING_UNITS")} text={`${t(checkForNA(useDetails?.NumberofDwellingUnits || useDetails?.noOfDwellingUnits))}`} />
+            <Row
+              label={t("WS_NUMBER_OF_DWELLING_UNITS")}
+              text={`${t(checkForNA(useDetails?.NumberofDwellingUnits || useDetails?.noOfDwellingUnits))}`}
+            />
           </StatusTable>
 
           <CardSubHeader>{t("WS_DJB_EMPLOYEE")}</CardSubHeader>
