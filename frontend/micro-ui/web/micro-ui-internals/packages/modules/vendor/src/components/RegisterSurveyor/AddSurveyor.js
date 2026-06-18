@@ -10,6 +10,7 @@ const AddSurveyor = ({ parentUrl, heading }) => {
   const history = useHistory();
 
   const userInfo = Digit.UserService.getUser()?.info;
+  const userType = userInfo?.type;
   const rawTenantId = Digit.ULBService.getCurrentTenantId();
   const tenantId = rawTenantId?.includes(".") ? rawTenantId : `${rawTenantId}.djb`;
 
@@ -23,19 +24,13 @@ const AddSurveyor = ({ parentUrl, heading }) => {
 
   const defaultValues = {
     role: { code: "SURVEYOR", name: "Surveyor" },
+    mobileNumber: "",
   };
 
   const onFormValueChange = (setValue, formData) => {
     // Basic validation logic
     const isBasicDetailsFilled =
-      formData?.fullName &&
-      formData?.mobileNumber &&
-      formData?.emailId &&
-      // formData?.employeeId &&
-      formData?.fatherOrHusbandName &&
-      // formData?.relationship &&
-      formData?.dob &&
-      formData?.correspondenceAddress;
+      formData?.fullName && formData?.mobileNumber && formData?.emailId && formData?.dob && formData?.correspondenceAddress;
 
     if (isBasicDetailsFilled) {
       setCanSubmit(true);
@@ -65,7 +60,7 @@ const AddSurveyor = ({ parentUrl, heading }) => {
             uuid: userInfo?.uuid,
             userName: userInfo?.userName,
             name: userInfo?.name,
-            type: userInfo?.type,
+            type: userType,
             tenantId: userInfo?.tenantId || rawTenantId,
             roles: userInfo?.roles,
           },
@@ -82,7 +77,7 @@ const AddSurveyor = ({ parentUrl, heading }) => {
         owner: {
           tenantId: tenantId,
           name: data?.fullName,
-          fatherOrHusbandName: data?.fatherOrHusbandName,
+          fatherOrHusbandName: "Static Father",
           relationship: "FATHER",
           gender: data?.gender?.code || "OTHERS",
           dob: data?.dob ? new Date(data.dob).getTime() : null,
@@ -95,15 +90,16 @@ const AddSurveyor = ({ parentUrl, heading }) => {
 
     try {
       await mutateAsync(formData);
-      setShowToast({ key: "success", action: "ADD_SURVEYOR" });
       queryClient.invalidateQueries("SURVEYOR_SEARCH");
-      setTimeout(() => {
-        closeToast();
-        history.push("/digit-ui/citizen/vendor/search-vendor");
-      }, 3000);
+      history.push({
+        pathname: `/digit-ui/${userType}/vendor/search-vendor`,
+        state: {
+          showSuccessToast: true,
+          message: { key: "success", action: `ES_VENDOR_ADD_SURVEYOR_SUCCESS` },
+        },
+      });
     } catch (error) {
       setShowToast({ key: "error", action: error?.message || error });
-      setTimeout(closeToast, 5000);
     }
   };
 

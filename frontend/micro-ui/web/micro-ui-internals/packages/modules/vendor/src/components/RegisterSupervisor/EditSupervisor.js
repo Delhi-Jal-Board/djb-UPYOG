@@ -10,9 +10,9 @@ const EditSupervisor = () => {
   const history = useHistory();
   const queryClient = useQueryClient();
   const { id: supervisorId } = useParams();
-  const type = Digit.UserService.getUser()?.info?.type;
 
   const userInfo = Digit.UserService.getUser()?.info;
+  const userType = userInfo?.type;
   const rawTenantId = Digit.ULBService.getCurrentTenantId();
   const tenantId = rawTenantId?.includes(".") ? rawTenantId : `${rawTenantId}.djb`;
 
@@ -82,7 +82,7 @@ const EditSupervisor = () => {
           uuid: userInfo?.uuid,
           userName: userInfo?.userName,
           name: userInfo?.name,
-          type: userInfo?.type,
+          type: userType,
           tenantId: tenantId,
           roles: userInfo?.roles,
         },
@@ -114,7 +114,7 @@ const EditSupervisor = () => {
         queryClient.invalidateQueries("SUPERVISOR_SEARCH");
 
         history.push({
-          pathname: `/digit-ui/${type}/vendor/registry/supervisor-details/${supervisorId}`,
+          pathname: `/digit-ui/${userType}/vendor/registry/supervisor-details/${supervisorId}`,
           state: {
             showSuccessToast: true,
           },
@@ -160,7 +160,7 @@ const EditSupervisor = () => {
             error={showToast.key === "error"}
             label={t(showToast.key === "success" ? `ES_VENDOR_${showToast.action}_SUCCESS` : showToast.action)}
             onClose={closeToast}
-            duration="5000"
+            duration={5000}
           />
         )}
       </div>

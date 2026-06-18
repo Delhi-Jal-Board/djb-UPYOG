@@ -7,7 +7,6 @@ import VendorDocuments from "./pageComponents/VendorDocuments";
 import ServiceDoc from "./pageComponents/ServiceDoc";
 import VendorSelectAddress from "./pageComponents/VendorSelectAddress";
 import SearchApp from "./pages/employee/SearchApp";
-import SearchVendor from "./components/SearchVendor/Index";
 import SelectServiceType from "./pageComponents/SelectServiceType";
 import SelectVehicleType from "./pageComponents/SelectVehicleType";
 import BankDetailsComponent from "./components/BankDetailsComponent";
@@ -16,7 +15,6 @@ import CitizenVendorApp from "./pages/citizen";
 import EditVendorDetails from "./components/RegisterVendor/EditVendorDetails";
 import AddVendor from "./components/RegisterVendor/AddVendor";
 import AddSupervisor from "./components/RegisterSupervisor/AddSupervisor";
-import SupervisorDetails from "./components/RegisterSupervisor/SupervisorDetails";
 import EditSupervisor from "./components/RegisterSupervisor/EditSupervisor";
 import SurveyorDetails from "./components/RegisterSurveyor/SurveyorDetails";
 import EditSurveyor from "./components/RegisterSurveyor/EditSurveyor";
@@ -41,7 +39,6 @@ const componentsToRegister = {
   AddVendor,
   VendorSelectAddress,
   SearchApp,
-  SearchVendor,
   SelectServiceType,
   SelectVehicleType,
   BankDetailsComponent,
@@ -54,7 +51,6 @@ const componentsToRegister = {
   DriverDetails,
   VehicleDetails,
   AddSupervisor,
-  SupervisorDetails,
   EditSupervisor,
   SupervisorAreaAssignment,
   SurveyorDetails,

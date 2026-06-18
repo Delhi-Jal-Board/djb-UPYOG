@@ -2,8 +2,6 @@ import React from "react";
 import PropTypes from "prop-types";
 
 const MobileNumber = (props) => {
-  const user_type = Digit.SessionStorage.get("userType");
-
   const onChange = (e) => {
     let val = e.target.value;
     if (isNaN(val) || [" ", "e", "E"].some((e) => val.includes(e)) || val.length > (props.maxLength || 10)) {
@@ -25,14 +23,12 @@ const MobileNumber = (props) => {
             +91
           </span>
         ) : null}
-        <div className={`text-input field desktop-w-full ${user_type === "employee" ? "" : "text-mobile-input-width"} ${props.className}`}>
+        <div className={`text-input field desktop-w-full ${props.className}`}>
           <input
             type={"text"}
             name={props.name}
             id={props.id || "Mobile"}
-            className={`${user_type ? "employee-card-input" : "citizen-card-input"} ${props.disable && "disabled"} focus-visible ${
-              props.errorStyle && "employee-card-input-error"
-            }`}
+            className={`employee-card-input ${props.disable && "disabled"} focus-visible ${props.errorStyle && "employee-card-input-error"}`}
             placeholder={props.placeholder}
             onChange={onChange}
             ref={props.inputRef}
