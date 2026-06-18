@@ -16,7 +16,13 @@ public class SurveyorQueryBuilder {
     private VendorConfiguration config;
 
     private static final String QUERY =
-            "SELECT count(*) OVER() AS full_count, surveyor.* FROM eg_surveyor surveyor";
+            "SELECT count(*) OVER() AS full_count,"
+                    + " surveyor.*,"
+                    + " sup.name AS supervisor_name,"
+                    + " v.name   AS vendor_name"
+                    + " FROM eg_surveyor surveyor"
+                    + " LEFT JOIN eg_supervisor sup ON sup.id = surveyor.supervisor_id"
+                    + " LEFT JOIN eg_vendor     v   ON v.id   = surveyor.vendor_id";
 
     private static final String PAGINATION_WRAPPER =
             "SELECT * FROM "
