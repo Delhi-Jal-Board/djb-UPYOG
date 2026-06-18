@@ -30,6 +30,9 @@ public class FillingPointSearchCriteria {
     @JsonProperty("offset")
     private Integer offset;
 
+    @JsonProperty("status")
+    private Boolean status;
+
     @JsonProperty("limit")
     private Integer limit;
 }

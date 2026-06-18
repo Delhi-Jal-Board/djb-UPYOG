@@ -27,8 +27,8 @@ public class FillingPointRepository {
         String query = "INSERT INTO upyog_rs_water_tanker_filling_point " +
                 "(id, tenant_id, filling_point_name, emergency_name, " +
                 "ee_name, ee_email, ee_mobile, ae_name, ae_email, ae_mobile, " +
-                "je_name, je_email, je_mobile, createdby, lastmodifiedby, createdtime, lastmodifiedtime) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"; // ← VALUES added + 17 ?
+                "je_name, je_email, je_mobile, createdby, lastmodifiedby, createdtime, lastmodifiedtime,status) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"; // ← VALUES added + 17 ?
 
         jdbcTemplate.batchUpdate(query, list, list.size(), (ps, fp) -> {
             ps.setString(1, fp.getId());
@@ -48,6 +48,7 @@ public class FillingPointRepository {
             ps.setString(15, fp.getLastModifiedBy());
             ps.setLong(16, fp.getCreatedTime());
             ps.setLong(17, fp.getLastModifiedTime());
+            ps.setBoolean(18, fp.getStatus());
         });
     }
 
@@ -57,7 +58,7 @@ public class FillingPointRepository {
                 "SELECT fp.id, fp.tenant_id, fp.filling_point_name, fp.emergency_name, " +
                         "fp.ee_name, fp.ee_email, fp.ee_mobile, " +
                         "fp.ae_name, fp.ae_email, fp.ae_mobile, " +
-                        "fp.je_name, fp.je_email, fp.je_mobile, " +
+                        "fp.je_name, fp.je_email, fp.je_mobile,fp.status, " +
                         "fp.createdby, fp.lastmodifiedby, fp.createdtime, fp.lastmodifiedtime, " +
                         "ad.address_id, ad.house_no, ad.address_line_1, ad.address_line_2, " +
                         "ad.street_name, ad.landmark, ad.city, ad.city_code, " +
@@ -80,6 +81,11 @@ public class FillingPointRepository {
         if (criteria.getId() != null && !criteria.getId().isEmpty()) {
             query.append(" AND fp.id = ?");
             params.add(criteria.getId());
+        }
+
+        if (criteria.getStatus() != null && !criteria.getStatus()) {
+            query.append(" AND fp.status = ?");
+            params.add(criteria.getStatus());
         }
 
         // fillingPointName filter
@@ -158,6 +164,7 @@ public class FillingPointRepository {
                         newFp.setCreatedTime(rs.getLong("createdtime"));
                         newFp.setLastModifiedTime(rs.getLong("lastmodifiedtime"));
                         newFp.setFillingPointId(rs.getString("filling_point_id"));
+                        newFp.setStatus(rs.getBoolean("status"));
                         newFp.setLocalityCodes(new ArrayList<>());
 
                         String addressId = rs.getString("address_id");
@@ -199,57 +206,6 @@ public class FillingPointRepository {
         return new ArrayList<>(fillingPointMap.values());
     }
 
-
-//        return jdbcTemplate.query(
-//                query.toString(),
-//                params.toArray(),
-//                (rs, rowNum) -> {
-//                    FillingPoint fp = new FillingPoint();
-//                    fp.setId(rs.getString("id"));
-//                    fp.setTenantId(rs.getString("tenant_id"));
-//                    fp.setFillingPointName(rs.getString("filling_point_name"));
-//                    fp.setEmergencyName(rs.getString("emergency_name"));
-//                    fp.setEeName(rs.getString("ee_name"));
-//                    fp.setEeEmail(rs.getString("ee_email"));
-//                    fp.setEeMobile(rs.getString("ee_mobile"));
-//                    fp.setAeName(rs.getString("ae_name"));
-//                    fp.setAeEmail(rs.getString("ae_email"));
-//                    fp.setAeMobile(rs.getString("ae_mobile"));
-//                    fp.setJeName(rs.getString("je_name"));
-//                    fp.setJeEmail(rs.getString("je_email"));
-//                    fp.setJeMobile(rs.getString("je_mobile"));
-//                    fp.setCreatedBy(rs.getString("createdby"));
-//                    fp.setLastModifiedBy(rs.getString("lastmodifiedby"));
-//                    fp.setCreatedTime(rs.getLong("createdtime"));
-//                    fp.setLastModifiedTime(rs.getLong("lastmodifiedtime"));
-//                    fp.setFillingPointId(rs.getString("filling_point_id"));
-//                    fp.setLocalityCodes(new ArrayList<>());
-//
-//                    // Address mapping
-//                    String addressId = rs.getString("address_id");
-//                    if (addressId != null) {
-//                        Address address = new Address();
-//                        address.setAddressId(addressId);
-//                        address.setHouseNo(rs.getString("house_no"));
-//                        address.setAddressLine1(rs.getString("address_line_1"));
-//                        address.setAddressLine2(rs.getString("address_line_2"));
-//                        address.setStreetName(rs.getString("street_name"));
-//                        address.setLandmark(rs.getString("landmark"));
-//                        address.setCity(rs.getString("city"));
-//                        address.setCityCode(rs.getString("city_code"));
-//                        address.setLocality(rs.getString("locality"));
-//                        address.setLocalityCode(rs.getString("locality_code"));
-//                        address.setPincode(rs.getString("pincode"));
-//                        address.setLatitude(rs.getString("latitude"));
-//                        address.setLongitude(rs.getString("longitude"));
-//                        address.setType(rs.getString("addr_type"));
-//                        fp.setAddress(address);
-//                    }
-//
-//                    return fp;
-//                }
-//        );
-//    }
 
 
     public void update(List<FillingPoint> list) {

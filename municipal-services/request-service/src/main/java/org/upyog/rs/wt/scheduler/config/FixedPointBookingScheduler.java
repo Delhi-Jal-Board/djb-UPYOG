@@ -49,28 +49,4 @@ public class FixedPointBookingScheduler {
             log.error("--- Automated Scheduler Failed: {} ---", e.getMessage(), e);
         }
     }
-//    @Scheduled(cron = "${wt.fixedpoint.scheduler.cron}")
-//    public void runFixedPointBookingScheduler() {
-//
-//        log.info("========== Fixed Point Booking Scheduler Started ==========");
-//
-//        if (!Boolean.TRUE.equals(schedulerEnabled)) {
-//            log.warn("Fixed Point Booking Scheduler is disabled");
-//            return;
-//        }
-//
-//        try {
-//            schedulerService.runScheduler(
-//                    tenantId,
-//                    LocalDate.now(),
-//                    null,
-//                    null
-//            );
-//
-//            log.info("========== Fixed Point Booking Scheduler Completed ==========");
-//
-//        } catch (Exception e) {
-//            log.error("Fixed Point Booking Scheduler failed", e);
-//        }
-//    }
 }

@@ -606,7 +606,9 @@ public class EnrichmentService {
 			fp.setCreatedTime(now);
 			fp.setLastModifiedTime(now);
 			fp.setFillingPointId(referenceList.get(0));
-
+			if (fp.getStatus() == null) {
+				fp.setStatus(true);
+			}
 			if (fp.getAddress() != null) {
 				fp.getAddress().setAddressId(RequestServiceUtil.getRandonUUID());
 				fp.getAddress().setApplicantId(fp.getId());
@@ -626,6 +628,9 @@ public class EnrichmentService {
 		for (FillingPoint fp : request.getFillingPoints()) {
 			fp.setLastModifiedBy(userId);
 			fp.setLastModifiedTime(now);
+			if (fp.getStatus() == null) {
+				fp.setStatus(true);
+			}
 
 			// address audit not needed — just ensure type is set
 			if (fp.getAddress() != null && fp.getAddress().getType() == null) {

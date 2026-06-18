@@ -85,6 +85,7 @@ public class FillingPointServiceImpl implements FillingPointService {
         fp.setAeName(meta.getAeName());
         fp.setAeEmail(meta.getAeEmailId());
         fp.setAeMobile(meta.getAeMobileNumber());
+        fp.setStatus(meta.getStatus());
 
         fp.setTenantId(wt.getTenantId());
 
