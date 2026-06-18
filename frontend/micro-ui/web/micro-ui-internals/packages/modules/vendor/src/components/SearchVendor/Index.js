@@ -1,12 +1,17 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import VendorInbox from "../VendorInbox";
+import { Toast } from "@djb25/digit-ui-react-components";
+
+import { useLocation } from "react-router-dom";
 
 const SearchVendor = () => {
   const { t } = useTranslation();
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const userInfo = Digit.UserService.getUser();
   const roles = Digit.UserService.getUser()?.info?.roles?.map((r) => r.code) || [];
+
+  const location = useLocation();
 
   const initialPage =
     roles.includes("EKYC_VENDOR") || roles.includes("WT_VENDOR")
@@ -26,6 +31,7 @@ const SearchVendor = () => {
   const [vehicleIds, setVehicleIds] = useState("");
   const [driverIds, setDriverIds] = useState("");
   const [tableData, setTableData] = useState([]);
+  const [showToast, setShowToast] = useState(null);
 
   const isCitizen = userInfo?.info?.type === "CITIZEN";
   const loggedInVendorId = userInfo?.info?.uuid;
@@ -116,12 +122,13 @@ const SearchVendor = () => {
   useEffect(() => {
     refetch();
     refetchVendor();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (location.state?.showSuccessToast) {
+      setShowToast(location.state?.message);
+    }
   }, []);
 
   useEffect(() => {
     refetch();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams, sortParams, pageOffset, pageSize]);
 
   useEffect(() => {
@@ -173,12 +180,10 @@ const SearchVendor = () => {
     if (tab === "SURVEYOR") {
       setTableData(dsoData?.surveyors || dsoData?.surveyor || []);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dsoData, tab]);
 
   useEffect(() => {
     if (vehicleIds !== "" || driverIds !== "") refetchVendor();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [vehicleIds, driverIds]);
 
   useEffect(() => {
@@ -215,7 +220,6 @@ const SearchVendor = () => {
     return () => {
       mounted = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [vendorData, dsoData]);
 
   //functions to handle search, pagination, sorting and filter
@@ -329,6 +333,10 @@ const SearchVendor = () => {
     refetchVendor();
   };
 
+  const closeToast = () => {
+    setShowToast(null);
+  };
+
   return (
     <React.Fragment>
       {/* <Header>{t("VENDOR_SEARCH")}</Header> */}
@@ -354,6 +362,7 @@ const SearchVendor = () => {
           refetchData={refetchData}
           refetchVendor={refetchVendorData}
         />
+        {showToast && <Toast error={showToast.key === "error"} label={t(showToast.action)} onClose={closeToast} duration={5000} />}
       </div>
     </React.Fragment>
   );

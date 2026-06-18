@@ -149,10 +149,12 @@ const InboxComposer = ({
             text={getSearchActionText()}
             handleActionClick={() => setActiveMobileModal({ type: "set", payload: "SearchFormComponent" })}
           />
-          <FilterAction
-            text={t("ES_COMMON_FILTER")}
-            handleActionClick={() => setActiveMobileModal({ type: "set", payload: "FilterFormComponent" })}
-          />
+          {FilterFormFields ? (
+            <FilterAction
+              text={t("ES_COMMON_FILTER")}
+              handleActionClick={() => setActiveMobileModal({ type: "set", payload: "FilterFormComponent" })}
+            />
+          ) : null}
           <SortAction text={t("COMMON_TABLE_SORT")} handleActionClick={() => setActiveMobileModal({ type: "set", payload: "SortFormComponent" })} />
         </div>
         {currentlyActiveMobileModal ? (
@@ -191,14 +193,16 @@ const InboxComposer = ({
       <div className="inbox-container">
         <div className="filters-container">
           <InboxLinks {...PropsForInboxLinks} />
-          <div>
-            <FilterForm onSubmit={onFilterFormSubmit} handleSubmit={handleFilterFormSubmit} id="filter-form" onResetFilterForm={onResetFilterForm}>
-              <FilterFormFields
-                registerRef={registerFilterFormField}
-                {...{ controlFilterForm, handleFilterFormSubmit, setFilterFormValue, getFilterFormValue }}
-              />
-            </FilterForm>
-          </div>
+          {FilterFormFields ? (
+            <div>
+              <FilterForm onSubmit={onFilterFormSubmit} handleSubmit={handleFilterFormSubmit} id="filter-form" onResetFilterForm={onResetFilterForm}>
+                <FilterFormFields
+                  registerRef={registerFilterFormField}
+                  {...{ controlFilterForm, handleFilterFormSubmit, setFilterFormValue, getFilterFormValue }}
+                />
+              </FilterForm>
+            </div>
+          ) : null}
         </div>
         <div style={propsForInboxTable?.tableStyle ? { flex: 1, ...propsForInboxTable?.tableStyle } : { flex: 1 }}>
           {Array.isArray(cards) && cards.length && (
@@ -254,12 +258,14 @@ const InboxComposer = ({
       <div className="inbox-container">
         <div className="side-panel-item">
           <InboxLinks {...PropsForInboxLinks} />
-          <FilterForm onSubmit={onFilterFormSubmit} handleSubmit={handleFilterFormSubmit} id="filter-form" onResetFilterForm={onResetFilterForm}>
-            <FilterFormFields
-              registerRef={registerFilterFormField}
-              {...{ controlFilterForm, handleFilterFormSubmit, setFilterFormValue, getFilterFormValue }}
-            />
-          </FilterForm>
+          {FilterFormFields ? (
+            <FilterForm onSubmit={onFilterFormSubmit} handleSubmit={handleFilterFormSubmit} id="filter-form" onResetFilterForm={onResetFilterForm}>
+              <FilterFormFields
+                registerRef={registerFilterFormField}
+                {...{ controlFilterForm, handleFilterFormSubmit, setFilterFormValue, getFilterFormValue }}
+              />
+            </FilterForm>
+          ) : null}
         </div>
         <div className="employee-form-content">
           {Array.isArray(cards) && cards.length && (
@@ -306,17 +312,21 @@ const InboxComposer = ({
 
   return (
     <div className="inbox-container">
-      <div className="side-panel-item">
-        <InboxLinks {...PropsForInboxLinks} />
+      {PropsForInboxLinks || FilterFormFields ? (
+        <div className="side-panel-item">
+          {PropsForInboxLinks && <InboxLinks {...PropsForInboxLinks} />}
 
-        <FilterForm onSubmit={onFilterFormSubmit} handleSubmit={handleFilterFormSubmit} id="filter-form" onResetFilterForm={onResetFilterForm}>
-          <FilterFormFields
-            registerRef={registerFilterFormField}
-            {...{ controlFilterForm, handleFilterFormSubmit, setFilterFormValue, getFilterFormValue }}
-          />
-          {/* <SubmitBar label={t("ES_COMMON_SEARCH")} submit form="filter-form"/> */}
-        </FilterForm>
-      </div>
+          {FilterFormFields ? (
+            <FilterForm onSubmit={onFilterFormSubmit} handleSubmit={handleFilterFormSubmit} id="filter-form" onResetFilterForm={onResetFilterForm}>
+              <FilterFormFields
+                registerRef={registerFilterFormField}
+                {...{ controlFilterForm, handleFilterFormSubmit, setFilterFormValue, getFilterFormValue }}
+              />
+              {/* <SubmitBar label={t("ES_COMMON_SEARCH")} submit form="filter-form"/> */}
+            </FilterForm>
+          ) : null}
+        </div>
+      ) : null}
       <div className="employee-form-content">
         {Array.isArray(cards) && cards.length && (
           <SummaryCards

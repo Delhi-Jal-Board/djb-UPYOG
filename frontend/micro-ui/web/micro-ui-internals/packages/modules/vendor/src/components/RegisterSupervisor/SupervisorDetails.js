@@ -524,7 +524,7 @@ const SupervisorDetails = (props) => {
           error={showToast.key === "error"}
           label={t(showToast.key === "success" ? `ES_VENDOR_${showToast.action}_SUCCESS` : showToast.action)}
           onClose={closeToast}
-          duration="5000"
+          duration={5000}
         />
       )}
       <ActionBar style={{ zIndex: "19" }}>

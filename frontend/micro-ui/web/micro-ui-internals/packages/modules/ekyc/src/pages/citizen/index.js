@@ -8,7 +8,6 @@ import MeterDetails from "../../components/MeterDetails";
 import Review from "../../components/Review";
 import Home from "./Home";
 import Inbox from "./Inbox";
-import AddressDetails from "../../components/AddressDetails";
 import AssignEkyc from "../../components/AssignEkyc";
 import SurveyorDetailsCard from "../../components/SurveyorDetailsCard";
 import VendorDetails from "../../components/VendorDetails";
@@ -114,14 +113,14 @@ const CitizenApp = () => {
             )}
           />
 
-          <PrivateRoute
+          {/* <PrivateRoute
             path={`${path}/address-details`}
             component={() => (
               <LayoutWrapper layoutClass="normal">
                 <AddressDetails />
               </LayoutWrapper>
             )}
-          />
+          /> */}
 
           <PrivateRoute
             path={`${path}/property-info`}

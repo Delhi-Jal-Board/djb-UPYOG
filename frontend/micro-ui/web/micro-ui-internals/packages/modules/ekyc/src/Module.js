@@ -12,7 +12,6 @@ import CitizenApp from "./pages/citizen";
 import PropertyInfo from "./components/PropertyInfo";
 import MeterDetails from "./components/MeterDetails";
 import AadhaarVerification from "./components/AadhaarVerification";
-import AddressDetails from "./components/AddressDetails";
 
 export const EkycModule = ({ stateCode, userType, tenants }) => {
   const { path, url } = useRouteMatch();
@@ -66,7 +65,6 @@ const componentsToRegister = {
   EKYC_INBOX_FILTER: (props) => <Filter {...props} />,
   EkycLinks,
   AadhaarVerification,
-  AddressDetails,
   PropertyInfo,
   MeterDetails,
 };

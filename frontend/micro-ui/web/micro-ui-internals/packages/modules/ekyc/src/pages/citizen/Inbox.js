@@ -154,10 +154,10 @@ const Inbox = ({ parentRoute }) => {
 
   const propsForFilterForm = {
     FilterFormFields,
-    onFilterFormSubmit: () => {},
+    onFilterFormSubmit: () => { },
     filterFormDefaultValues: "",
     resetFilterFormDefaultValues: "",
-    onFilterFormReset: () => {},
+    onFilterFormReset: () => { },
   };
 
   function formReducer(state, payload) {
@@ -239,9 +239,9 @@ const Inbox = ({ parentRoute }) => {
       <InboxComposer
         {...{
           isInboxLoading,
-          PropsForInboxLinks,
+          // PropsForInboxLinks,
           ...propsForSearchForm,
-          ...propsForFilterForm,
+          // ...propsForFilterForm,
           // ...propsForMobileSortForm,
           propsForInboxTable,
           // propsForInboxMobileCards,

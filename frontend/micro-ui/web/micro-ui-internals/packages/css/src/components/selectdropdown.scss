@@ -45,7 +45,13 @@
     }
 
     svg {
+      color: #e5e5e7;
       @apply absolute right-0 float-right h-6 w-6 mt-sm mr-sm;
+    }
+    &:hover {
+      svg {
+        color: #a1a1aa;
+      }
     }
   }
 
@@ -117,7 +123,7 @@
   @apply relative;
 
   .select {
-    @apply relative block w-full h-10 border border-solid border-input-border rounded-md;
+    @apply relative block w-full h-10 rounded-md;
 
     input[type="text"] {
       width: calc(100% - 32px);

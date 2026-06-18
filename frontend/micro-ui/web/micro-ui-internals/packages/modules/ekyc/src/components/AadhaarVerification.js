@@ -1,17 +1,6 @@
-
 import React, { useState, Fragment, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import {
-  CardLabel,
-  TextInput,
-  Dropdown,
-  UploadFile,
-  RadioButtons,
-  Toast,
-  FormStep,
-  Loader,
-  CheckBox
-} from "@djb25/digit-ui-react-components";
+import { CardLabel, TextInput, Dropdown, UploadFile, RadioButtons, Toast, FormStep, Loader, CheckBox } from "@djb25/digit-ui-react-components";
 const AadhaarVerification = ({ config, onSelect, formData }) => {
   const location = useLocation();
   const flowState = location.state || {};
@@ -122,30 +111,13 @@ const AadhaarVerification = ({ config, onSelect, formData }) => {
   }, [searchData, formData?.connectionDetails, searchKno]);
 
   // 🔹 OPTIONS
-  const consumerTypeOptions = [
-    { name: "Individual" },
-    { name: "Govt" },
-    { name: "Company_Society_Org" },
-  ];
+  const consumerTypeOptions = [{ name: "Individual" }, { name: "Govt" }, { name: "Company_Society_Org" }];
 
-  const occupantOptions = [
-    { name: "Self" },
-    { name: "Tenanted" },
-  ];
+  const occupantOptions = [{ name: "Self" }, { name: "Tenanted" }];
 
-  const genderOptions = [
-    { name: "Male" },
-    { name: "Female" },
-    { name: "Others" },
-    { name: "Not prefer to say" },
-  ];
+  const genderOptions = [{ name: "Male" }, { name: "Female" }, { name: "Others" }, { name: "Not prefer to say" }];
 
-  const identityTypeOptions = [
-    { name: "Aadhaar Card" },
-    { name: "Driving License" },
-    { name: "Passport" },
-    { name: "Voter ID" },
-  ];
+  const identityTypeOptions = [{ name: "Aadhaar Card" }, { name: "Driving License" }, { name: "Passport" }, { name: "Voter ID" }];
 
   const yesNo = [{ name: "Yes" }, { name: "No" }];
 
@@ -176,8 +148,7 @@ const AadhaarVerification = ({ config, onSelect, formData }) => {
     if (!mobile) return false;
     if (!residents || Number(residents) <= 0) return false;
 
-    if (occupantType?.name === "Tenanted" && !documentId && !ownerMobile)
-      return false;
+    if (occupantType?.name === "Tenanted" && !documentId && !ownerMobile) return false;
 
     return consent; // consent must be true
   };
@@ -230,7 +201,7 @@ const AadhaarVerification = ({ config, onSelect, formData }) => {
       await updateMutation.mutateAsync({
         RequestInfo: {},
         updateType: "CONSUMER",
-        ...data
+        ...data,
       });
       setToast({ type: "success", message: "Data updated successfully!" });
       onSelect(config.key, data);
@@ -246,7 +217,6 @@ const AadhaarVerification = ({ config, onSelect, formData }) => {
   return (
     <Fragment>
       <FormStep onSelect={onStepSelect} config={config} isDisabled={!isValid()}>
-
         <div>
           <CardLabel>Consumer Type *</CardLabel>
           <Dropdown option={consumerTypeOptions} selected={consumerType} select={setConsumerType} />
@@ -306,8 +276,7 @@ const AadhaarVerification = ({ config, onSelect, formData }) => {
           <CardLabel>No. of Residents *</CardLabel>
           <TextInput value={residents} onChange={(e) => setResidents(e.target.value)} />
         </div>
-<div>
-  {console.log("identityType",identityType)}
+        <div>
           <CardLabel>Type of Identity *</CardLabel>
           <Dropdown option={identityTypeOptions} selected={identityType} select={setIdentityType} />
         </div>
@@ -322,10 +291,10 @@ const AadhaarVerification = ({ config, onSelect, formData }) => {
 
         <div>
           <CardLabel>Informant Is Consumer</CardLabel>
-          <CheckBox 
-            label="Yes, the informant is the consumer" 
-            checked={informantIsConsumer} 
-            onChange={(e) => setInformantIsConsumer(e.target.checked)} 
+          <CheckBox
+            label="Yes, the informant is the consumer"
+            checked={informantIsConsumer}
+            onChange={(e) => setInformantIsConsumer(e.target.checked)}
           />
         </div>
 
@@ -401,13 +370,7 @@ const AadhaarVerification = ({ config, onSelect, formData }) => {
           </Fragment>
         )}
       </FormStep>
-      {toast && (
-        <Toast
-          error={toast.type === "error"}
-          label={toast.message}
-          onClose={() => setToast(null)}
-        />
-      )}
+      {toast && <Toast error={toast.type === "error"} label={toast.message} onClose={() => setToast(null)} />}
     </Fragment>
   );
 };
