@@ -60,11 +60,11 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
   );
   const [addressLine1, setAddressLine1] = useState(
     formData?.addressLine1 ||
-    formData?.subLocality ||
-    formData?.address?.addressLine1 ||
-    formData?.address?.subLocality ||
-    formData?.infodetails?.existingDataSet?.address?.addressline1 ||
-    ""
+      formData?.subLocality ||
+      formData?.address?.addressLine1 ||
+      formData?.address?.subLocality ||
+      formData?.infodetails?.existingDataSet?.address?.addressline1 ||
+      ""
   );
   const [addressLine2, setAddressLine2] = useState(
     formData?.addressLine2 || formData?.address?.addressLine2 || formData?.infodetails?.existingDataSet?.address?.addressline2 || ""
@@ -75,16 +75,16 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
   const [addressType, setAddressType] = useState(
     convertToObject(formData?.addressType) || formData?.address?.addressType || formData?.infodetails?.existingDataSet?.address?.addressType
       ? allOptions.find(
-        (a) =>
-          a.code ===
-          (formData?.addressType?.code ||
-            formData?.addressType ||
-            formData?.address?.addressType ||
-            formData?.infodetails?.existingDataSet?.address?.addressType)
-      ) ||
-      convertToObject(formData?.addressType) ||
-      formData?.address?.addressType ||
-      formData?.infodetails?.existingDataSet?.address?.addressType
+          (a) =>
+            a.code ===
+            (formData?.addressType?.code ||
+              formData?.addressType ||
+              formData?.address?.addressType ||
+              formData?.infodetails?.existingDataSet?.address?.addressType)
+        ) ||
+          convertToObject(formData?.addressType) ||
+          formData?.address?.addressType ||
+          formData?.infodetails?.existingDataSet?.address?.addressType
       : allOptions.find((a) => a.code === "PERMANENT")
   );
   const [showPincodeSuggestions, setShowPincodeSuggestions] = useState(false);
@@ -360,7 +360,6 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
         }
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchData, isEkyc, allCities, structuredLocalityData]);
 
   const uploadFile = async (e) => {
@@ -440,7 +439,6 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
       const typeObj = allOptions.find((a) => a.code === addressData.addressType);
       if (typeObj && JSON.stringify(typeObj) !== JSON.stringify(addressType)) setAddressType(typeObj);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData?.address, allCities, structuredLocalityData]);
 
   const goNext = async () => {
@@ -497,6 +495,8 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
   /* If `config` is undefined and all required address fields are filled, it creates an `addressStep` object
     containing the address details and calls the `onSelect` function with it.
    **/
+
+  // This one
   const lastSentValue = React.useRef(null);
   useEffect(() => {
     const isEkyc = config?.doorImage;
@@ -533,7 +533,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
       }
       if (isDifferent) {
         lastSentValue.current = addressStep;
-        onSelect(config.key, { ...addressStep, silent: true }, false);
+        onSelect(config.key, { ...addressStep, silent: true }, false, null, false, true);
       }
     } else if (config === undefined) {
       const mandatoryFields = isEkyc
@@ -544,7 +544,6 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
         onSelect(addressStep);
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     pincode,
     city,
@@ -598,7 +597,6 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
         setDoorImageId(selectedAddress.doorImageId);
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedAddress]);
 
   const lastErrorState = React.useRef(null);
@@ -612,7 +610,6 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
         props.clearErrors(config.key);
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [errors, config?.key, props.setError, props.clearErrors]);
 
   const handleGetLocation = () => {
@@ -1134,7 +1131,9 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
                     {actualZone && (
                       <div style={{ display: "flex" }}>
                         <span style={{ minWidth: "150px", color: "#505A5F", fontWeight: "400" }}>{t("ACTUAL ZONE")}</span>
-                        <span style={{ fontWeight: "500", color: "#0B0C0C", wordBreak: "break-word" }}>{t(zoneOptions.find((z) => z.code === actualZone)?.name || actualZone)}</span>
+                        <span style={{ fontWeight: "500", color: "#0B0C0C", wordBreak: "break-word" }}>
+                          {t(zoneOptions.find((z) => z.code === actualZone)?.name || actualZone)}
+                        </span>
                       </div>
                     )}
                   </div>

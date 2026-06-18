@@ -1,12 +1,12 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { useQueryClient } from "react-query";
+// import { useQueryClient } from "react-query";
 import { Redirect, Route, Switch, useHistory, useLocation, useRouteMatch } from "react-router-dom";
-import { Header, VerticalTimeline } from "@djb25/digit-ui-react-components";
+import { VerticalTimeline } from "@djb25/digit-ui-react-components";
 import { ekycConfig } from "../../config/config";
 
 const EKYCForm = ({ path: passedPath }) => {
-  const queryClient = useQueryClient();
+  // const queryClient = useQueryClient();
   const match = useRouteMatch();
   const { t } = useTranslation();
   const location = useLocation();
@@ -14,9 +14,7 @@ const EKYCForm = ({ path: passedPath }) => {
   const history = useHistory();
 
   let config = [];
-  const [params, setParams, clearParams] = Digit.Hooks.useSessionStorage("EKYC_CREATE", {});
-  const userInfo = Digit.UserService.getUser();
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const [params, setParams] = Digit.Hooks.useSessionStorage("EKYC_CREATE", {});
 
   useEffect(() => {
     if (location.state && Object.keys(location.state).length > 0) {
@@ -31,7 +29,7 @@ const EKYCForm = ({ path: passedPath }) => {
     if (!routeObj) routeObj = config.find((routeObj) => routeObj.route === currentPath);
 
     let nextStep = null;
-    const currentIndex = config.findIndex(c => c.route === routeObj.route);
+    const currentIndex = config.findIndex((c) => c.route === routeObj.route);
     if (currentIndex > -1 && currentIndex < config.length - 1) {
       nextStep = config[currentIndex + 1].route;
     }
@@ -41,7 +39,7 @@ const EKYCForm = ({ path: passedPath }) => {
       redirectWithHistory = history.replace;
     }
 
-    const base = passedPath || match.path.split('/').slice(0, -1).join('/');
+    const base = passedPath || match.path.split("/").slice(0, -1).join("/");
     if (nextStep === null) {
       return redirectWithHistory(`${base}/review`, { ...params, edits: params });
     }
@@ -49,15 +47,17 @@ const EKYCForm = ({ path: passedPath }) => {
     redirectWithHistory(`${base}/${nextStep}`, { ...params });
   };
 
-  function handleSelect(key, data, skipStep, index, isAddMultiple = false) {
-    setParams({ ...params, ...{ [key]: { ...params[key], ...data } } });
-    goNext(skipStep, index, isAddMultiple, key);
+  function handleSelect(key, data, skipStep, index, isAddMultiple = false, silent = false) {
+    setParams((prev) => ({ ...prev, [key]: { ...params[key], ...data } }));
+    if (!silent) {
+      goNext(skipStep, index, isAddMultiple, key);
+    }
   }
 
-  const onSuccess = () => {
-    clearParams();
-    queryClient.invalidateQueries("EKYC_CREATE");
-  };
+  // const onSuccess = () => {
+  //   clearParams();
+  //   queryClient.invalidateQueries("EKYC_CREATE");
+  // };
 
   ekycConfig.forEach((obj) => {
     config = config.concat(obj.body);
@@ -65,7 +65,7 @@ const EKYCForm = ({ path: passedPath }) => {
 
   config.indexRoute = "consumer-details";
 
-  const formStepRoutes = config.map(c => c.route);
+  const formStepRoutes = config.map((c) => c.route);
   const isFormStep = formStepRoutes.some((route) => pathname.includes(route));
 
   const sectionRefs = useRef({});
@@ -85,10 +85,10 @@ const EKYCForm = ({ path: passedPath }) => {
         <VerticalTimeline config={config} showFinalStep={true} />
         <div className="employee-form-section">
           <Switch>
-            <Route path={formStepRoutes.map((route) => `${(passedPath || match.path.split('/').slice(0, -1).join('/'))}/${route}`)}>
+            <Route path={formStepRoutes.map((route) => `${passedPath || match.path.split("/").slice(0, -1).join("/")}/${route}`)}>
               <div className="single-page-form-container">
                 {config.map((routeObj, index) => {
-                  const { component, key } = routeObj;
+                  const { component } = routeObj;
                   const Component = typeof component === "string" ? Digit.ComponentRegistryService.getComponent(component) : component;
 
                   return (
@@ -98,6 +98,7 @@ const EKYCForm = ({ path: passedPath }) => {
                         onSelect={handleSelect}
                         t={t}
                         formData={params}
+                        // formData={{ ...params, address: params.addressDetails }}
                       />
                     </div>
                   );
@@ -105,7 +106,7 @@ const EKYCForm = ({ path: passedPath }) => {
               </div>
             </Route>
             <Route>
-              <Redirect to={`${(passedPath || match.path.split('/').slice(0, -1).join('/'))}/${config.indexRoute}`} />
+              <Redirect to={`${passedPath || match.path.split("/").slice(0, -1).join("/")}/${config.indexRoute}`} />
             </Route>
           </Switch>
         </div>
