@@ -12,24 +12,24 @@ const SearchFormFieldsComponents = ({ searchFormState, controlSearchForm }) => {
       {/* MOBILE NUMBER */}
       <span className="mobile-input">
         <Label className="flex-roww flex-gap-2">
-          {t("EKYC_MOBILE_NUMBER") || "Mobile Number"}
+          {t("EKYC_K.NUMBER") || "K Number"}
           <CustomTooltip message={t("EKYC_MOBILE_NUMBER_MESSAGE")} />
         </Label>
 
         <Controller
-          name="mobileNumber"
+          name="kNumber"
           control={controlSearchForm}
           defaultValue=""
           rules={{
             pattern: {
               value: /^[0-9]{10}$/,
-              message: t("ERR_INVALID_MOBILE_NO"),
+              message: t("ERR_INVALID_KNO"),
             },
           }}
           render={({ onChange, value }) => <TextInput value={value || ""} onChange={(e) => onChange(e.target.value)} />}
         />
 
-        {errors?.mobileNumber && <CardLabelError>{errors.mobileNumber.message}</CardLabelError>}
+        {errors?.kNumber && <CardLabelError>{errors.kNumber.message}</CardLabelError>}
       </span>
 
       {/* K NAME */}

@@ -24,7 +24,11 @@ const Inbox = ({ parentRoute, businessService = "EKYC", initialStates = {}, filt
   const [formState, dispatch] = useReducer(formReducer, formInitValue);
 
   const filters = useMemo(() => {
-    return formState?.searchForm || {};
+    const searchForm = formState?.searchForm || {};
+    return {
+      ...searchForm,
+      ...(searchForm.kNumber && { kno: searchForm.kNumber }),
+    };
   }, [formState?.searchForm]);
 
   const queryParams = useMemo(() => {
@@ -130,13 +134,13 @@ const Inbox = ({ parentRoute, businessService = "EKYC", initialStates = {}, filt
   };
 
   const searchFormDefaultValues = {
-    mobileNumber: "",
+    kNumber: "",
     applicationNumber: "",
     consumerNo: "",
   };
 
   const onSearchFormReset = (setSearchFormValue) => {
-    setSearchFormValue("mobileNumber", null);
+    setSearchFormValue("kNumber", null);
     setSearchFormValue("applicationNumber", null);
     setSearchFormValue("consumerNo", null);
     dispatch({ action: "mutateSearchForm", data: searchFormDefaultValues });
@@ -158,10 +162,10 @@ const Inbox = ({ parentRoute, businessService = "EKYC", initialStates = {}, filt
 
   const propsForFilterForm = {
     FilterFormFields,
-    onFilterFormSubmit: () => {},
+    onFilterFormSubmit: () => { },
     filterFormDefaultValues: "",
     resetFilterFormDefaultValues: "",
-    onFilterFormReset: () => {},
+    onFilterFormReset: () => { },
   };
 
   function formReducer(state, payload) {
@@ -243,9 +247,9 @@ const Inbox = ({ parentRoute, businessService = "EKYC", initialStates = {}, filt
       <InboxComposer
         {...{
           isInboxLoading,
-          PropsForInboxLinks,
+          // PropsForInboxLinks,
           ...propsForSearchForm,
-          ...propsForFilterForm,
+          // ...propsForFilterForm,
           // ...propsForMobileSortForm,
           propsForInboxTable,
           // propsForInboxMobileCards,

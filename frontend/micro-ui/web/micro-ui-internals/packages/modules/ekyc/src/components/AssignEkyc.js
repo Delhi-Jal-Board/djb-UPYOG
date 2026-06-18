@@ -124,10 +124,10 @@ const AssignEkyc = () => {
 
   const propsForFilterForm = {
     FilterFormFields,
-    onFilterFormSubmit: () => {},
+    onFilterFormSubmit: () => { },
     filterFormDefaultValues: "",
     resetFilterFormDefaultValues: "",
-    onFilterFormReset: () => {},
+    onFilterFormReset: () => { },
   };
 
   const onPageSizeChange = (e) => {
@@ -217,9 +217,9 @@ const AssignEkyc = () => {
       <InboxComposer
         {...{
           isInboxLoading,
-          PropsForInboxLinks,
+          // PropsForInboxLinks,
           ...propsForSearchForm,
-          ...propsForFilterForm,
+          // ...propsForFilterForm,
           // ...propsForMobileSortForm,
           propsForInboxTable,
           // propsForInboxMobileCards,
