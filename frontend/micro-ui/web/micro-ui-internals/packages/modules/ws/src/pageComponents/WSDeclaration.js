@@ -25,6 +25,7 @@ const WSDeclaration = ({ config, onSelect, userType, formData, setError, formSta
       submittedBy: formData?.declarationData?.submittedBy || { code: "SELF", i18nKey: "WS_SUBMITTED_BY_SELF" },
       signatureFile: formData?.declarationData?.signatureFile || null,
       signatureFileStoreId: formData?.declarationData?.signatureFileStoreId || null,
+      signatureFileName: formData?.declarationData?.signatureFileName || "",
       declarations: formData?.declarationData?.declarations || Array(9).fill(formData?.declarationData?.agree || false),
     },
   });
@@ -60,8 +61,8 @@ const WSDeclaration = ({ config, onSelect, userType, formData, setError, formSta
       signatureFile,
     };
     if (!_.isEqual(lastSentValue.current, currentValues)) {
-      lastSentValue.current = currentValues;
       const timer = setTimeout(() => {
+        lastSentValue.current = currentValues;
         onSelect(config?.key, currentValues);
       }, 200);
       return () => clearTimeout(timer);
@@ -82,6 +83,7 @@ const WSDeclaration = ({ config, onSelect, userType, formData, setError, formSta
             setSignatureFile(file);
             setValue("signatureFileStoreId", fsId);
             setValue("signatureFile", file);
+            setValue("signatureFileName", file.name);
           }
         } catch (err) {
           console.error("Signature upload failed", err);
@@ -183,6 +185,16 @@ const WSDeclaration = ({ config, onSelect, userType, formData, setError, formSta
                     textStyles={{ width: "100%" }}
                     buttonType="button"
                     accept="image/*, .pdf, .png, .jpeg, .jpg"
+                    uploadedFiles={
+                      signatureFileStoreId && !signatureFile ? [[formValue?.signatureFileName || "Document", { fileStoreId: signatureFileStoreId }]] : undefined
+                    }
+                    removeTargetedFile={() => {
+                      setSignatureFile(null);
+                      setSignatureFileStoreId(null);
+                      setValue("signatureFile", null);
+                      setValue("signatureFileStoreId", null);
+                      setValue("signatureFileName", "");
+                    }}
                   />
                 </div>
                 {signatureFileStoreId && (

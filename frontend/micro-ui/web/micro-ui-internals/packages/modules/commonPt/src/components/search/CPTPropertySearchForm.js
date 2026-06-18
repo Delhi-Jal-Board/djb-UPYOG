@@ -1,4 +1,4 @@
-import { CardLabelError, SearchField, SearchForm, SubmitBar, TextInput, Localities } from "@djb25/digit-ui-react-components";
+import { CardLabelError, SearchField, SearchForm, SubmitBar, TextInput, Localities, MobileNumber } from "@djb25/digit-ui-react-components";
 import React, { useState, useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 
@@ -83,13 +83,17 @@ const SearchPTID = ({ tenantId, t, onSubmit, onReset, searchBy, PTSearchFields, 
                         />
                       )}
                     />
+                  ) : field?.componentInFront ? (
+                    <MobileNumber
+                      name={key}
+                      inputRef={register({
+                        value: getValues(key),
+                        shouldUnregister: true,
+                        ...validation,
+                      })}
+                    />
                   ) : (
                     <div className="field-container">
-                      {field?.componentInFront ? (
-                        <span className="employee-card-input employee-card-input--front" style={{ flex: "none" }}>
-                          {field?.componentInFront}
-                        </span>
-                      ) : null}
                       <TextInput
                         name={key}
                         type={field?.type}
@@ -106,7 +110,7 @@ const SearchPTID = ({ tenantId, t, onSubmit, onReset, searchBy, PTSearchFields, 
               );
             })}
         </div>
-        <div className="formcomposer-section-button" style={{ marginTop: "16px", display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
+        <div className="formcomposer-section-button" style={{ marginTop: "16px", display: "flex", justifyContent: "flex-end", alignItems: "center", width: "100%", gap: "16px" }}>
           <div className="pt-search-action-reset generic-button clear-search" style={{ margin: 0 }}>
             <p
               onClick={() => {

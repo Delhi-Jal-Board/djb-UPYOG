@@ -370,16 +370,16 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
             ))}
           </StatusTable>
 
-          {/* <CardSubHeader>{t("WS_DECLARATION")}</CardSubHeader>
+          <CardSubHeader>{t("WS_DECLARATION")}</CardSubHeader>
           <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
             <Row
               label={t("WS_SUBMITTED_BY")}
-              text={`${t(checkForNA(declaration?.submittedBy?.name || declaration?.submittedBy?.code || declaration?.submittedBy))}`}
+              text={`${t(declaration?.submittedBy?.name || declaration?.submittedBy?.code || declaration?.submittedBy)}`}
               actionButton={<ActionButton onClick={onEdit} />}
             />
             {(declaration?.signatureFileStoreId || declaration?.signatureFile) && (
               <React.Fragment>
-                <Row label={t("WS_UPLOAD_SIGNATURE_FILE")} text={checkForNA(declaration?.signatureFile?.name || "1")} />
+                <Row label={t("WS_UPLOAD_SIGNATURE_FILE")} text={declaration?.signatureFileName || declaration?.signatureFile?.name || "Document"} />
                 <Row
                   text={
                     <span
@@ -392,8 +392,8 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
                 />
               </React.Fragment>
             )}
-            <Row label={t("WS_AGREE_DECLARATION")} text={declaration?.agree ? t("CS_COMMON_YES") : t("CS_COMMON_NO")} />
-          </StatusTable> */}
+            <Row label={t("WS_I_AGREE_TO_ALL_DECLARATIONS")} text={declaration?.agree ? t("Yes") : t("No")} />
+          </StatusTable>
         </div>
 
         <ActionBar>
