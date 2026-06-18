@@ -104,4 +104,11 @@ public class Surveyor {
 
     @JsonProperty("auditDetails")
     private AuditDetails auditDetails = null;
+
+    // ── Joined fields — populated on search, read-only ──────────────
+    @JsonProperty("supervisorName")
+    private String supervisorName = null;
+
+    @JsonProperty("vendorName")
+    private String vendorName = null;
 }

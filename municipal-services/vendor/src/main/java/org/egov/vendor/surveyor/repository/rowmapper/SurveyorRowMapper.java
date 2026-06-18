@@ -37,15 +37,18 @@ public class SurveyorRowMapper implements ResultSetExtractor<List<Surveyor>> {
         this.setFullCount(0);
 
         while (rs.next()) {
-            String id          = rs.getString("id");
-            String tenantId    = rs.getString("tenantid");
-            String vendorId    = rs.getString("vendor_id");
-            String name        = rs.getString("name");
-            String mobileNo    = rs.getString("mobile_no");
-            String supervisorId  = rs.getString("supervisor_id");
-            String ownerId     = rs.getString("owner_id");
-            String description = rs.getString("description");
-            String status      = rs.getString("status");
+            String id             = rs.getString("id");
+            String tenantId       = rs.getString("tenantid");
+            String vendorId       = rs.getString("vendor_id");
+            String name           = rs.getString("name");
+            String mobileNo       = rs.getString("mobile_no");
+            String supervisorId   = rs.getString("supervisor_id");
+            String ownerId        = rs.getString("owner_id");
+            String description    = rs.getString("description");
+            String status         = rs.getString("status");
+            // Joined fields from eg_supervisor and eg_vendor
+            String supervisorName = rs.getString("supervisor_name");
+            String vendorName     = rs.getString("vendor_name");
             Object additionalDetails = getAdditionalDetail("additionaldetails", rs);
             this.setFullCount(rs.getInt("full_count"));
 
@@ -58,11 +61,13 @@ public class SurveyorRowMapper implements ResultSetExtractor<List<Surveyor>> {
                         .vendorId(vendorId)
                         .name(name)
                         .mobileNo(mobileNo)
-                        .supervisorId(rs.getString("supervisor_id"))
+                        .supervisorId(supervisorId)
                         .ownerId(ownerId)
                         .description(description)
                         .status(StatusEnum.valueOf(status))
                         .additionalDetails(additionalDetails)
+                        .supervisorName(supervisorName)
+                        .vendorName(vendorName)
                         .build();
                 surveyorMap.put(id, current);
             }
