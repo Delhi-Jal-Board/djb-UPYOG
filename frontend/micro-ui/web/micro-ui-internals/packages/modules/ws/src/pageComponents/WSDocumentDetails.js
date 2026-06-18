@@ -132,7 +132,7 @@ function SelectDocument({ t, key, document: doc, setDocuments, error, setError, 
       <UploadFile
         id={`noc-doc-${key}`}
         extraStyleName={"propertyCreate"}
-        accept= "image/*, .pdf, .png, .jpeg, .jpg"
+        accept="image/*, .pdf, .png, .jpeg, .jpg"
         onUpload={selectfile}
         onDelete={() => {
           setUploadedFile(null);
@@ -140,6 +140,11 @@ function SelectDocument({ t, key, document: doc, setDocuments, error, setError, 
         }}
         message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`ES_NO_FILE_SELECTED_LABEL`)}
         error={error}
+        uploadedFiles={uploadedFile ? [[file?.name || filteredDocument?.documentType || "Document", { fileStoreId: uploadedFile }]] : []}
+        removeTargetedFile={() => {
+          setUploadedFile(null);
+          setCheckRequiredFields(true);
+        }}
       />
     </div>
   );
