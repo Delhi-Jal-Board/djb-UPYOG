@@ -103,6 +103,13 @@ public class VehicleService {
 			return;
 		}
 
+		String vendorId = repository.getVendorIdByOwnerId(criteria.getVendorId());
+
+		if (StringUtils.hasText(vendorId)
+				&& repository.vendorVehicleMappingExists(vendorId)) {
+			criteria.setVendorId(vendorId);
+
+		}
 		if (requestInfo == null || requestInfo.getUserInfo() == null) {
 			throw new CustomException("AUTH_ERROR", "Invalid user session");
 		}
