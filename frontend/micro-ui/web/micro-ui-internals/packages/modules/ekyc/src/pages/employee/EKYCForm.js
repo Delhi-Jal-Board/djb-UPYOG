@@ -98,7 +98,7 @@ const EKYCForm = ({ path: passedPath }) => {
                         onSelect={handleSelect}
                         t={t}
                         formData={params}
-                        // formData={{ ...params, address: params.addressDetails }}
+                      // formData={{ ...params, address: params.addressDetails }}
                       />
                     </div>
                   );

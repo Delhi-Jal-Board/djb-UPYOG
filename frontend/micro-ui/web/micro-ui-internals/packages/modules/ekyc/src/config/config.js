@@ -23,6 +23,7 @@ export const ekycConfig = [
         component: "AddressDetails",
         key: "addressDetails",
         doorImage: true,
+        showMapActualLocation: false,
         texts: {
           header: "EKYC_ADDRESS_DETAILS",
           submitBarLabel: "COMMON_SAVE_NEXT",
