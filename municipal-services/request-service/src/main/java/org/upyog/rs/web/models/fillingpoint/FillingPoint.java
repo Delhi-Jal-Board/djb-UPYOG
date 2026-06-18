@@ -66,5 +66,8 @@ public class FillingPoint {
     @JsonProperty("fillingPointLocalityCodes")
     private List<String> localityCodes;
 
+    @JsonProperty("status")
+    private Boolean status;
+
     private Address address;
 }

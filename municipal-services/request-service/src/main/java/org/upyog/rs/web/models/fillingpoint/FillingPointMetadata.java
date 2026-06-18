@@ -32,6 +32,7 @@ public class FillingPointMetadata {
     private String aeName;
     private String aeMobileNumber;
     private String aeEmailId;
+    private Boolean status;
 
     private String type;
 }

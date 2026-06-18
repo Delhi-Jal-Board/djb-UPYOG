@@ -16,6 +16,7 @@ import org.egov.waterconnection.service.WaterFieldValidator;
 import org.egov.waterconnection.web.models.SearchCriteria;
 
 import org.egov.waterconnection.util.EncryptionDecryptionUtil;
+import org.egov.waterconnection.web.models.Document;
 import org.egov.waterconnection.web.models.OwnerInfo;
 
 import org.egov.waterconnection.web.models.ValidatorResult;
@@ -112,10 +113,43 @@ public class WaterConnectionValidator {
 	public void validateUpdate(WaterConnectionRequest request, WaterConnection searchResult, int reqType) {
 		validateAllIds(request.getWaterConnection(), searchResult);
 		validateDuplicateDocuments(request);
+		validateDocumentVerification(request);
 		setFieldsFromSearch(request, searchResult, reqType);
 		
 	}
-   
+
+	/**
+	 * Validates if all documents are verified before proceeding with update
+	 * 
+	 * @param request The WaterConnectionRequest containing updated connection details
+	 */
+     private void validateDocumentVerification(WaterConnectionRequest request) {
+       if (request.getWaterConnection().getProcessInstance() != null
+            && !StringUtils.isEmpty(request.getWaterConnection().getProcessInstance().getAction())) {
+
+        String action = request.getWaterConnection().getProcessInstance().getAction();
+        if (action.equalsIgnoreCase("VERIFY_AND_FORWARD")) {
+            List<Document> documents = request.getWaterConnection().getDocuments();
+
+            if (!CollectionUtils.isEmpty(documents)) {
+                for (Document document : documents) {
+
+                    // Skip verification check for Applicant Photo
+                    if ("OWNER.APPLICANTPHOTO".equalsIgnoreCase(document.getDocumentType())) {
+                        continue;
+                    }
+
+                    if (document.getIsVerified() == null || !document.getIsVerified()) {
+                        throw new CustomException(
+                                "DOCUMENTS_NOT_VERIFIED",
+                                "All mandatory documents must be verified to proceed."
+                        );
+                    }
+                }
+            }
+        }
+    }
+}   
 	/**
 	 * Validates if all ids are same as obtained from search result
 	 * 
