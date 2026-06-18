@@ -68,17 +68,17 @@ const addComponentsToRegistry = () => {
 
 export const VENDORModule = ({ stateCode, userType, tenants }) => {
   const { path, url } = useRouteMatch();
-  const moduleCode = "VENDOR";
   const language = Digit.StoreData.getCurrentLanguage();
   const tenantId = Digit.ULBService.getCurrentTenantId();
   // Dont remove this it is requiored for Localization
+
   useEffect(() => {
     Digit.LocalizationService.getLocale({
-      modules: [`rainmaker-${moduleCode.toLowerCase()}`],
+      modules: ["rainmaker-vendor"],
       locale: language,
-      tenantId: tenantId,
+      tenantId: "dl",
     });
-  }, [stateCode, language]);
+  }, [language, tenantId]);
   addComponentsToRegistry();
 
   Digit.SessionStorage.set("VENDOR_TENANTS", tenants);
