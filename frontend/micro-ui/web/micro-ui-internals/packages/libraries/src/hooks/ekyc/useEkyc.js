@@ -204,8 +204,6 @@ export const useEkycApplicationList = (data, params, config = {}) => {
           mrkey: null,
           surveyorId: null,
           ...data,
-        },
-        {
           tenantId,
           offset,
           limit,

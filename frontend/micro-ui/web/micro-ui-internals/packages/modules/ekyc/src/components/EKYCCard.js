@@ -17,9 +17,13 @@ const EKYCCard = () => {
     ],
     links: [
       {
-        label: t("EKYC_DASHBOARD"),
-        link: `/digit-ui/employee/ekyc/dashboard`,
+        label: t("CEO_M.F_DOR_FINANCE_VIEW"),
+        link: `/digit-ui/employee/ekyc/ceo-dashboard`,
       },
+      // {
+      //   label: t("EKYC_DASHBOARD"),
+      //   link: `/digit-ui/employee/ekyc/dashboard`,
+      // },
       {
         label: t("EKYC_INBOX"),
         link: `/digit-ui/employee/ekyc/inbox`,
@@ -32,16 +36,10 @@ const EKYCCard = () => {
       //     label: t("EKYC_UPDATE_KYC"),
       //     link: `/digit-ui/employee/ekyc/update-kyc`
       // },
-      {
-        label: t("CEO_M.F_DOR_FINANCE_VIEW"),
-        link: `/digit-ui/employee/ekyc/ceo-dashboard`,
-      },
-
       // {
       //   label: t("EKYC_MAPPING"),
       //   link: `/digit-ui/employee/ekyc/mapping`,
       // },
-
       {
         label: t("EKYC_ASSIGN"),
         link: `/digit-ui/employee/ekyc/assign`,

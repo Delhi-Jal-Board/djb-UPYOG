@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useRef, useEffect } from "react";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, PieChart, Pie, Cell, Legend } from "recharts";
 
 import { Card, SubmitBar, ActionBar, Menu, Loader, Table } from "@djb25/digit-ui-react-components";
@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
 
 import AssignEkycModal from "./AssignEkycModal";
+import { downloadSurveyorPDF } from "../utils/reportDownloader";
 
 const SurveyorDetailsDashboard = () => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -28,6 +29,25 @@ const SurveyorDetailsDashboard = () => {
   const surveyor = useMemo(() => {
     return surveyorSearchResponse?.surveyors?.[0] || null;
   }, [surveyorSearchResponse]);
+
+  const { data: vendorData } = Digit.Hooks.fsm.useDsoSearch(tenantId, { status: "ACTIVE" }, { enabled: !!tenantId });
+  const { data: supervisorSearchResponse } = Digit.Hooks.fsm.useSupervisorSearch(tenantId, { status: "ACTIVE" }, { enabled: !!tenantId });
+
+  const vendorName = useMemo(() => {
+    if (!vendorData || !surveyor?.vendorId) return "N/A";
+    const mappedVendor = vendorData.find((v) => v.dsoDetails?.id === surveyor.vendorId || v.dsoDetails?.vendorId === surveyor.vendorId);
+    return mappedVendor?.dsoDetails?.name || surveyor.vendorId || "N/A";
+  }, [vendorData, surveyor?.vendorId]);
+
+  const supervisorName = useMemo(() => {
+    if (!supervisorSearchResponse?.supervisors || !surveyor?.supervisorId) return "N/A";
+    const mappedSupervisor = supervisorSearchResponse.supervisors.find((s) => s.id === surveyor.supervisorId || s.owner?.uuid === surveyor.supervisorId);
+    return mappedSupervisor?.name || mappedSupervisor?.owner?.name || surveyor.supervisorId || "N/A";
+  }, [supervisorSearchResponse, surveyor?.supervisorId]);
+
+  const fullName = surveyor?.owner?.name || surveyor?.name || "N/A";
+  const employeeId = surveyor?.employeeId || surveyor?.owner?.uuid || surveyor?.id;
+  const mobileNumber = surveyor?.owner?.mobileNumber || surveyor?.mobileNo || "N/A";
 
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize, setPageSize] = useState(20);
@@ -82,6 +102,24 @@ const SurveyorDetailsDashboard = () => {
     []
   );
 
+  // ─── Download Report hooks (must be before any early returns) ───────
+
+  const [showReportMenu, setShowReportMenu] = useState(false);
+  const [customDate, setCustomDate] = useState({ from: "", to: "" });
+  const [showCustomPicker, setShowCustomPicker] = useState(false);
+  const reportMenuRef = useRef(null);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (reportMenuRef.current && !reportMenuRef.current.contains(e.target)) {
+        setShowReportMenu(false);
+        setShowCustomPicker(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
   if (isLoading) {
     return <Loader />;
   }
@@ -122,6 +160,85 @@ const SurveyorDetailsDashboard = () => {
     },
   ];
 
+  const getDateRange = (filter) => {
+    const now = new Date();
+    const start = new Date(now);
+    if (filter === "today") {
+      start.setHours(0, 0, 0, 0);
+      return { from: start, to: now };
+    }
+    if (filter === "week") {
+      start.setDate(now.getDate() - now.getDay());
+      start.setHours(0, 0, 0, 0);
+      return { from: start, to: now };
+    }
+    if (filter === "month") {
+      start.setDate(1);
+      start.setHours(0, 0, 0, 0);
+      return { from: start, to: now };
+    }
+    return null;
+  };
+
+  const handlePresetDownload = (filter) => {
+    const allRows = dashboardData?.dashboardInfo?.consumerList || [];
+
+    const range = getDateRange(filter);
+
+    if (!range) return;
+
+    const filtered = allRows.filter((r) => {
+      const ts =
+        r.submittedAt ||
+        r.createdTime ||
+        r.lastModifiedTime ||
+        0;
+
+      return ts >= range.from.getTime() && ts <= range.to.getTime();
+    });
+
+    downloadSurveyorPDF({
+      rows: filtered.length ? filtered : allRows,
+      surveyorName: fullName,
+      vendorName,
+      supervisorName,
+      employeeId,
+      mobileNumber,
+      dashboardInfo: dashboardData?.dashboardInfo,
+      t,
+    });
+
+    setShowReportMenu(false);
+    setShowCustomPicker(false);
+  };
+
+  const handleCustomDownload = () => {
+    if (!customDate.from || !customDate.to) {
+      alert(t("SELECT_DATE_RANGE") || "Please select both From and To dates.");
+      return;
+    }
+    const from = new Date(customDate.from);
+    const to = new Date(customDate.to);
+    to.setHours(23, 59, 59, 999);
+    const allRows = dashboardData?.dashboardInfo?.consumerList || [];
+    const filtered = allRows.filter((r) => {
+      const ts = r.createdTime || r.lastModifiedTime || 0;
+      return ts >= from.getTime() && ts <= to.getTime();
+    });
+    downloadSurveyorPDF({
+      rows: filtered.length ? filtered : allRows,
+      surveyorName: fullName,
+      vendorName,
+      supervisorName,
+      employeeId,
+      mobileNumber,
+      dashboardInfo: dashboardData?.dashboardInfo,
+      t,
+    });
+    setShowReportMenu(false);
+    setShowCustomPicker(false);
+  };
+
   const StatCard = ({ title, value, type, isLoading }) => (
     <div className={`stat-card ${type}`}>
       {isLoading ? (
@@ -140,10 +257,6 @@ const SurveyorDetailsDashboard = () => {
 
   const options = [{ action: "Assign" }];
 
-  const fullName = surveyor?.owner?.name || surveyor?.name || "N/A";
-
-  const employeeId = surveyor?.employeeId || surveyor?.owner?.uuid || surveyor?.id;
-
   const handleMenuSelect = (option) => {
     setShowOptions(false); // close menu
     setShowModal(true);
@@ -155,7 +268,7 @@ const SurveyorDetailsDashboard = () => {
 
   return (
     <Card className="surveyor-dashboard">
-      {/* Header */}
+      {/* Header + Download Report */}
       <div className="ekyc-dashboard-section">
         <div className="ekyc-dashboard-header">
           <div className="avatar">{fullName?.charAt(0)?.toUpperCase()}</div>
@@ -169,6 +282,83 @@ const SurveyorDetailsDashboard = () => {
               {t("EMPLOYEE_ID")}: {employeeId}
             </div>
           </div>
+        </div>
+
+        {/* Download Report — far right */}
+        <div className="report-download" ref={reportMenuRef}>
+          <button
+            className="download-btn"
+            onClick={() => {
+              setShowReportMenu((p) => !p);
+              setShowCustomPicker(false);
+            }}
+          >
+            {t("DOWNLOAD_REPORT") || "Download Report"}
+          </button>
+
+          {showReportMenu && (
+            <div className="report-menu">
+              {[
+                { label: t("TODAY") || "Today", key: "today" },
+                { label: t("THIS_WEEK") || "This Week", key: "week" },
+                { label: t("THIS_MONTH") || "This Month", key: "month" },
+              ].map(({ label, key }) => (
+                <div
+                  key={key}
+                  className="menu-item"
+                  onClick={() => handlePresetDownload(key)}
+                >
+                  {label}
+                </div>
+              ))}
+
+              <div
+                className="custom-date-trigger"
+                onClick={() => setShowCustomPicker((p) => !p)}
+              >
+                {t("CUSTOM_DATE") || "Custom Date"}
+              </div>
+
+              {showCustomPicker && (
+                <div className="custom-picker">
+                  <div className="date-field">
+                    <label className="date-label">
+                      {t("FROM_DATE") || "From"}
+                    </label>
+                    <input
+                      type="date"
+                      className="date-input"
+                      value={customDate.from}
+                      onChange={(e) =>
+                        setCustomDate((d) => ({ ...d, from: e.target.value }))
+                      }
+                    />
+                  </div>
+
+                  <div className="date-field">
+                    <label className="date-label">
+                      {t("TO_DATE") || "To"}
+                    </label>
+                    <input
+                      type="date"
+                      className="date-input"
+                      value={customDate.to}
+                      onChange={(e) =>
+                        setCustomDate((d) => ({ ...d, to: e.target.value }))
+                      }
+                    />
+                  </div>
+
+                  <button
+                    className="download-action-btn"
+                    onClick={handleCustomDownload}
+                  >
+                    {t("DOWNLOAD") || "Download"}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -290,27 +480,31 @@ const SurveyorDetailsDashboard = () => {
         />
       </Card>
       {/* Actions */}
-      {(!roles.includes("EKYC_SURVEYOR") || roles.includes("EMPLOYEE")) && (
-        <ActionBar>
-          <SubmitBar label={t("EKYC_ASSIGN_KNOS")} onSubmit={() => setShowOptions((prev) => !prev)} />
+      {
+        (!roles.includes("EKYC_SURVEYOR") || roles.includes("EMPLOYEE")) && (
+          <ActionBar>
+            <SubmitBar label={t("EKYC_ASSIGN_KNOS")} onSubmit={() => setShowOptions((prev) => !prev)} />
 
-          {showOptions && (
-            <Menu
-              options={options}
-              optionKey={"action"}
-              t={t}
-              onSelect={handleMenuSelect}
-              style={{
-                color: "#FFFFFF",
-                fontSize: "18px",
-              }}
-            />
-          )}
-        </ActionBar>
-      )}
+            {showOptions && (
+              <Menu
+                options={options}
+                optionKey={"action"}
+                t={t}
+                onSelect={handleMenuSelect}
+                style={{
+                  color: "#FFFFFF",
+                  fontSize: "18px",
+                }}
+              />
+            )}
+          </ActionBar>
+          
+        )
+      }
 
       {showModal && <AssignEkycModal surveyor={surveyor} closeModal={closeModal} refetchDashboard={refetchDashboard} />}
     </Card>
+
   );
 };
 

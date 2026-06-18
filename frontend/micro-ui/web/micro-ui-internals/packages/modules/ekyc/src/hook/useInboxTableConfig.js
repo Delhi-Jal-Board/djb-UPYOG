@@ -106,17 +106,17 @@ const useInboxTableConfig = ({
     manualPagination: true,
     initSortId: "applicationDate",
     onPageSizeChange: onPageSizeChange,
-    currentPage: Math.floor(offset / limit),
+    currentPage: offset,
     onNextPage: () =>
       dispatch({
         action: "mutateTableForm",
-        data: { ...formState.tableForm, offset: parseInt(formState.tableForm?.offset) + parseInt(formState.tableForm?.limit) },
+        data: { ...formState.tableForm, offset: parseInt(formState.tableForm?.offset) + 10 },
         checkPathName,
       }),
     onPrevPage: () =>
       dispatch({
         action: "mutateTableForm",
-        data: { ...formState.tableForm, offset: parseInt(formState.tableForm?.offset) - parseInt(formState.tableForm?.limit) },
+        data: { ...formState.tableForm, offset: parseInt(formState.tableForm?.offset) - 10 },
         checkPathName,
       }),
     pageSizeLimit: limit,
@@ -127,7 +127,7 @@ const useInboxTableConfig = ({
     onLastPage: () =>
       dispatch({
         action: "mutateTableForm",
-        data: { ...formState.tableForm, offset: Math.ceil(totalCount / 10) * 10 - parseInt(formState.tableForm?.limit) },
+        data: { ...formState.tableForm, offset: Math.max(0, Math.ceil(totalCount / limit) - 10) },
         checkPathName,
       }),
     onFirstPage: () => dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, offset: 0 }, checkPathName }),
