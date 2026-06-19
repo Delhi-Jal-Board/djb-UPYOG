@@ -143,7 +143,7 @@ function SelectDocument({
   const [selectedDocument, setSelectedDocument] = useState(() => {
     if (filteredDocument && doc?.dropdownData) {
       const match = doc?.dropdownData?.find((d) => d.code === filteredDocument.documentType);
-      if (match) return match;
+      if (match) return { ...filteredDocument, ...match };
     }
     return filteredDocument
       ? { ...filteredDocument, code: filteredDocument?.documentType, i18nKey: filteredDocument?.documentType?.replaceAll(".", "_") }
@@ -201,7 +201,7 @@ function SelectDocument({
         match = doc?.dropdownData?.find((d) => d.code === filteredDocument.documentType);
       }
       setSelectedDocument(
-        match ? match :
+        match ? { ...filteredDocument, ...match } :
         filteredDocument
           ? { ...filteredDocument, code: filteredDocument?.documentType, i18nKey: filteredDocument?.documentType?.replaceAll(".", "_") }
           : doc?.hasDropdown

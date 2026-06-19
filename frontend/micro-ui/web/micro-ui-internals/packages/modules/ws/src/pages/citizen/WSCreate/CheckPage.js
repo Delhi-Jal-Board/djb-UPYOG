@@ -197,7 +197,7 @@ const CheckPage = ({ onSubmit, value }) => {
           label={t("COMMON_ADDRESS_TYPE")}
           text={`${t(checkForNA(propertyAddress?.addressType?.i18nKey || propertyAddress?.addressType?.code || propertyAddress?.addressType))}`}
         />
-        <Row label={t("CITY")} text={`${t(checkForNA(propertyAddress?.city?.name || propertyAddress?.city?.code || propertyAddress?.city))}`} />
+        <Row label={t("CORE_COMMON_PROFILE_CITY")} text={`${t(checkForNA(propertyAddress?.city?.name || propertyAddress?.city?.code || propertyAddress?.city))}`} />
         <Row label={t("PINCODE")} text={`${t(checkForNA(propertyAddress?.pincode || propertyAddress?.pinCode))}`} />
         <Row
           label={t("LOCALITY")}
@@ -211,17 +211,17 @@ const CheckPage = ({ onSubmit, value }) => {
         <Row label={t("ADDRESS_LINE1")} text={`${t(checkForNA(propertyAddress?.addressLine1 || propertyAddress?.street))}`} />
         <Row label={t("ADDRESS_LINE2")} text={`${t(checkForNA(propertyAddress?.addressLine2))}`} />
         <Row label={t("HOUSE_NO")} text={`${t(checkForNA(propertyAddress?.houseNo || propertyAddress?.doorNo))}`} />
-        <Row label={t("LATITUDE")} text={`${t(checkForNA(propertyAddress?.latitude))}`} />
-        <Row label={t("LONGITUDE")} text={`${t(checkForNA(propertyAddress?.longitude))}`} />
+        <Row label={t("LATITUDE_GEOTAG")} text={`${t(checkForNA(propertyAddress?.latitude))}`} />
+        <Row label={t("LONGITUDE_GEOTAG")} text={`${t(checkForNA(propertyAddress?.longitude))}`} />
         <Row
-          label={t("ASSEMBLY")}
+          label={t("COMMON_ASSEMBLY")}
           text={`${t(
             checkForNA(propertyAddress?.assembly?.name || propertyAddress?.assembly?.code || propertyAddress?.assembly || additionalDetails?.assembly)
           )}`}
         />
 
         <Row
-          label={t("WARD")}
+          label={t("COMMON_WARD")}
           text={`${t(
             checkForNA(
               propertyAddress?.block?.name ||
@@ -235,13 +235,13 @@ const CheckPage = ({ onSubmit, value }) => {
           )}`}
         />
         <Row
-          label={t("ZONE")}
+          label={t("COMMON_ZONE")}
           text={`${t(checkForNA(propertyAddress?.zone?.name || propertyAddress?.zone?.code || propertyAddress?.zone || additionalDetails?.zone))}`}
         />
 
-        <Row label={t("ACTUAL ASSEMBLY")} text={`${t(checkForNA(propertyAddress?.actualAssembly || additionalDetails?.actualAssembly))}`} />
-        <Row label={t("ACTUAL WARD")} text={`${t(checkForNA(propertyAddress?.actualWard || additionalDetails?.actualWard))}`} />
-        <Row label={t("ACTUAL ZONE")} text={`${t(checkForNA(propertyAddress?.actualZone || additionalDetails?.actualZone))}`} />
+        <Row label={t("COMMON_CURRENT_ASSEMBLY")} text={`${t(checkForNA(propertyAddress?.actualAssembly || additionalDetails?.actualAssembly))}`} />
+        <Row label={t("COMMON_CURRENT_WARD")} text={`${t(checkForNA(propertyAddress?.actualWard || additionalDetails?.actualWard))}`} />
+        <Row label={t("COMMON_CURRENT_ZONE")} text={`${t(checkForNA(propertyAddress?.actualZone || additionalDetails?.actualZone))}`} />
         <Row label={t("LANDMARK")} text={`${t(checkForNA(propertyAddress?.landmark))}`} />
       </StatusTable>
 

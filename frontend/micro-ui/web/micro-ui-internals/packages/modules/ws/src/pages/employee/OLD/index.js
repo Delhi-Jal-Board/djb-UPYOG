@@ -322,7 +322,7 @@ const OLDApplication = () => {
       const docs = data.DocumentsRequired.documents;
       const identityDoc = docs.find((d) => d?.documentType?.includes("IDENTITYPROOF"));
       const ownershipDoc = docs.find((d) => d?.documentType?.includes("ADDRESSPROOF") || d?.documentType?.includes("OWNERSHIPPROOF"));
-      const otherDoc = docs.find((d) => !d?.documentType?.includes("IDENTITYPROOF") && !d?.documentType?.includes("ADDRESSPROOF"));
+      const otherDoc = docs.find((d) => d?.documentType?.includes("OTHERDOCUMENTS"));
 
       data.documents = {
         documents: docs,

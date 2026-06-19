@@ -27,9 +27,12 @@ function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false, 
     });
 
     const allChecked = requiredDocsCount === 0 || checkedCount === requiredDocsCount;
-    window.isDocumentsVerified = allChecked;
-    window.dispatchEvent(new CustomEvent("DOCUMENTS_VERIFIED", { detail: allChecked }));
-  }, [checkedMap, documents]);
+    const isDocVerifState = !applicationStatus || applicationStatus === "PENDING_FOR_DOCUMENT_VERIFICATION";
+    const finalVerified = isDocVerifState ? allChecked : true;
+    
+    window.isDocumentsVerified = finalVerified;
+    window.dispatchEvent(new CustomEvent("DOCUMENTS_VERIFIED", { detail: finalVerified }));
+  }, [checkedMap, documents, applicationStatus]);
 
   useEffect(() => {
     let acc = [];
