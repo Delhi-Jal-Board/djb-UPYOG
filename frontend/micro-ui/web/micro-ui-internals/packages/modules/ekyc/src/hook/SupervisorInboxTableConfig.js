@@ -25,13 +25,6 @@ const SupervisorInboxTableConfig = ({
   const offset = formState?.tableForm?.offset || 0;
 
   return {
-    getCellProps: () => ({
-      style: {
-        padding: "8px",
-        fontSize: "12px",
-      },
-    }),
-
     disableSort: false,
     autoSort: false,
     manualPagination: true,

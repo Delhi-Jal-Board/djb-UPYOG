@@ -83,6 +83,7 @@
 @import "./components/plusMinus.scss";
 @import "./components/financeUi.scss";
 @import "./components/landingpage.scss";
+@import "./components/reusableClasses.scss";
 
 @import "./pages/employee/index.scss";
 @import "./pages/employee/cardfix.scss";
@@ -139,70 +140,6 @@ h5,
 h6 {
   font-size: inherit;
   font-weight: inherit;
-}
-
-.flex-one {
-  @apply flex-1;
-}
-
-.flex-roww {
-  display: flex;
-}
-
-.display-flex-gap-2 {
-  @apply flex gap-3;
-}
-
-.rm-mb {
-  margin-bottom: unset !important;
-}
-
-.w-fullwidth {
-  @apply w-full;
-}
-
-.margin-unset {
-  margin: unset !important;
-}
-
-.text-align-center {
-  @apply text-center;
-}
-
-.desktop-only {
-  @apply hidden;
-}
-
-@screen dt {
-  .desktop-only {
-    @apply block;
-  }
-}
-
-.mobile-only {
-  @apply block;
-}
-
-@screen dt {
-  .mobile-only {
-    @apply hidden;
-  }
-}
-
-.dark {
-  @apply text-text-primary;
-}
-
-.mrlg {
-  @apply mr-lg;
-}
-
-.mrsm {
-  @apply mr-sm;
-}
-
-.mbsm {
-  @apply mb-sm;
 }
 
 .home-link {
@@ -906,67 +843,6 @@ input[type="number"] {
   margin-right: -27%;
   max-height: 120px;
   margin-top: 90px;
-}
-
-.flex-box {
-  display: flex;
-  width: 100%;
-  height: 100%;
-  max-width: 100%;
-}
-
-.flex-box-center {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  height: 100%;
-}
-
-.flex-box-col {
-  flex-direction: column;
-}
-
-.flex-box-content-between {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  height: 100%;
-}
-
-.flex-center {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.flex-gap-1 {
-  gap: 4px;
-}
-
-.flex-gap-2 {
-  gap: 8px;
-}
-
-.flex-gap-3 {
-  gap: 12px;
-}
-
-.flex-gap-4 {
-  gap: 16px;
-}
-
-.flex-gap-5 {
-  gap: 20px;
-}
-
-.bc-white {
-  background-color: #fff;
-}
-
-.round-medium {
-  border-radius: 6px;
 }
 
 .rdrDateDisplayItem {

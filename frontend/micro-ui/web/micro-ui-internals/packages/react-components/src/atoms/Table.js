@@ -523,11 +523,11 @@ const Table = ({
             {isLoading ? (
               <tr>
                 <td colSpan={tableColumns.length + (showAutoSerialNo ? 1 : 0)} style={{ padding: "80px 20px", textAlign: "center" }}>
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 12 }}>
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "12px" }}>
                     <div
                       style={{
-                        width: 44,
-                        height: 44,
+                        width: "44px",
+                        height: "44px",
                         border: `3px solid ${T.borderStrong}`,
                         borderTop: `3px solid ${T.accent}`,
                         borderRadius: "50%",
@@ -548,7 +548,7 @@ const Table = ({
                 <td colSpan={tableColumns.length + (showAutoSerialNo ? 1 : 0)} style={{ padding: "48px 20px", textAlign: "center" }}>
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
                     <LayoutGrid />
-                    <p style={{ margin: 0, fontSize: 14, fontWeight: 500, color: T.textMuted }}>{t ? t("CS_NO_DATA") : "No records found"}</p>
+                    <p style={{ margin: 0, fontSize: "14", fontWeight: 500, color: T.textMuted }}>{t ? t("CS_NO_DATA") : "No records found"}</p>
                   </div>
                 </td>
               </tr>
@@ -575,11 +575,11 @@ const Table = ({
                             display: "inline-flex",
                             alignItems: "center",
                             justifyContent: "center",
-                            width: 22,
-                            height: 22,
+                            width: "22px",
+                            height: "22px",
                             background: T.border,
-                            borderRadius: 4,
-                            fontSize: 10,
+                            borderRadius: "4px",
+                            fontSize: "10px",
                             fontWeight: 700,
                             color: T.textMuted,
                             fontFamily: T.fontMono,
@@ -592,6 +592,7 @@ const Table = ({
                     {row.cells.map((cell) => {
                       const cellProps = getCellProps ? getCellProps(cell) : {};
                       const cellStyleFromProps = cellProps?.style || {};
+                      console.log("-=-=-=-=-=-=-=-=-=-", cellStyleFromProps);
                       const textAlign = normalizeTextAlign(cellStyleFromProps.textAlign, getColumnAlign(cell.column));
                       const renderedCell = cell.attachment_link ? (
                         <a
@@ -607,9 +608,9 @@ const Table = ({
                         <td
                           {...cell.getCellProps([cellProps])}
                           style={{
-                            padding: "12px 14px",
+                            padding: "12px 18px",
                             verticalAlign: "middle",
-                            fontSize: 13.5,
+                            fontSize: "16px",
                             color: T.textPrimary,
                             lineHeight: 1.45,
                             whiteSpace: "nowrap",
@@ -637,7 +638,7 @@ const Table = ({
               display: "flex",
               alignItems: "center",
               justifyContent: "flex-end",
-              gap: 12,
+              gap: "12px",
               padding: "12px 16px",
               background: T.surfaceAlt,
               flexWrap: "wrap",
@@ -646,7 +647,7 @@ const Table = ({
             }}
           >
             {/* Rows per page */}
-            <span style={{ fontSize: 12, color: T.textMuted, whiteSpace: "nowrap" }}>{t ? t("CS_COMMON_ROWS_PER_PAGE") : "Rows per page"} :</span>
+            <span style={{ fontSize: "12px", color: T.textMuted, whiteSpace: "nowrap" }}>{t ? t("CS_COMMON_ROWS_PER_PAGE") : "Rows per page"} :</span>
             <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
               <select
                 value={pageSize}
@@ -656,15 +657,15 @@ const Table = ({
                   WebkitAppearance: "none",
                   background: T.surface,
                   border: `1.5px solid ${T.borderStrong}`,
-                  borderRadius: 5,
+                  borderRadius: "5px",
                   padding: "5px 26px 5px 9px",
-                  fontSize: 12.5,
+                  fontSize: "12.5px",
                   fontFamily: T.fontBody,
                   fontWeight: 600,
                   color: T.textPrimary,
                   cursor: "pointer",
                   outline: "none",
-                  marginRight: 8,
+                  marginRight: "8px",
                 }}
               >
                 {[10, 20, 30, 40, 50].map((ps) => (
@@ -673,18 +674,18 @@ const Table = ({
                   </option>
                 ))}
               </select>
-              <span style={{ position: "absolute", right: 15, pointerEvents: "none", lineHeight: 0, color: T.textMuted }}>
+              <span style={{ position: "absolute", right: "15px", pointerEvents: "none", lineHeight: 0, color: T.textMuted }}>
                 <ChevronDown />
               </span>
             </div>
 
             {/* Record range — original display logic */}
-            <span style={{ fontSize: 12.5 }}>
-              <strong style={{ fontFamily: T.fontMono, fontWeight: 700, color: T.textPrimary, fontSize: 12 }}>
+            <span style={{ fontSize: "12.5px" }}>
+              <strong style={{ fontFamily: T.fontMono, fontWeight: 700, color: T.textPrimary, fontSize: "12px" }}>
                 {Number.isNaN(pageIndex * pageSize + 1) ? 0 : pageIndex * pageSize + 1}
               </strong>
               {"–"}
-              <strong style={{ fontFamily: T.fontMono, fontWeight: 700, color: T.textPrimary, fontSize: 12 }}>
+              <strong style={{ fontFamily: T.fontMono, fontWeight: 700, color: T.textPrimary, fontSize: "12px" }}>
                 {Number.isNaN(rangeEnd) ? 0 : rangeEnd}
               </strong>{" "}
               {totalLabel}
