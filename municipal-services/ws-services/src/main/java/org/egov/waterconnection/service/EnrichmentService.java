@@ -686,5 +686,47 @@ public class EnrichmentService {
 		return userDetailResponse.getUser().get(0);
 	}
 
+	/**
+	 * Enriches the Document objects inside WaterConnection with documentNumber from additionalDetails.
+	 *
+	 * @param waterConnectionList List of WaterConnection
+	 */
+	public void enrichDocumentNumbers(List<WaterConnection> waterConnectionList) {
+		if (CollectionUtils.isEmpty(waterConnectionList))
+			return;
+
+		for (WaterConnection waterConnection : waterConnectionList) {
+			if (waterConnection.getAdditionalDetails() == null || CollectionUtils.isEmpty(waterConnection.getDocuments()))
+				continue;
+
+			try {
+				Map<String, Object> additionalDetailsMap = mapper.convertValue(waterConnection.getAdditionalDetails(), Map.class);
+				if (CollectionUtils.isEmpty(additionalDetailsMap))
+					continue;
+
+				String identityProofNumber = additionalDetailsMap.get("identityProofNumber") != null ? String.valueOf(additionalDetailsMap.get("identityProofNumber")) : null;
+				String ownershipDocumentNumber = additionalDetailsMap.get("ownershipDocumentNumber") != null ? String.valueOf(additionalDetailsMap.get("ownershipDocumentNumber")) : null;
+				String otherDocumentNumber = additionalDetailsMap.get("otherDocumentNumber") != null ? String.valueOf(additionalDetailsMap.get("otherDocumentNumber")) : null;
+
+				for (Document document : waterConnection.getDocuments()) {
+					if (document == null || StringUtils.isEmpty(document.getDocumentType()))
+						continue;
+
+					String docType = document.getDocumentType().toUpperCase();
+					if (docType.contains("IDENTITYPROOF") || docType.contains("IDENTITY")) {
+						document.setDocumentNumber(identityProofNumber);
+					} else if (docType.contains("ADDRESSPROOF") || docType.contains("OWNERSHIP") || docType.contains("PROPERTY")) {
+						document.setDocumentNumber(ownershipDocumentNumber);
+					} else if (docType.contains("OTHER") || docType.contains("ELECTRICITY") || docType.contains("PLUMBER") || docType.contains("BUILDING") || docType.contains("TAX")) {
+						document.setDocumentNumber(otherDocumentNumber);
+					}
+				}
+			} catch (Exception e) {
+				log.error("Error while enriching document numbers: ", e);
+			}
+		}
+	}
+
 }
+
 

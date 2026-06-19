@@ -352,6 +352,7 @@ public WaterTankerBookingDetail createNewWaterTankerBookingRequest(WaterTankerBo
 			// If action is APPROVE, create demand
 			if (RequestServiceConstants.ACTION_APPROVE
 					.equals(waterTankerRequest.getWaterTankerBookingDetail().getWorkflow().getAction())) {
+				log.info("Application approved. Generating demand for Booking No: {}", bookingNo);
 				demandService.createDemand(waterTankerRequest);
 			}
 		}

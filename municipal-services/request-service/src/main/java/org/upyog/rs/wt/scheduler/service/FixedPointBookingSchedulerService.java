@@ -266,28 +266,46 @@ public class FixedPointBookingSchedulerService {
         if (!StringUtils.hasText(data.getMobileNumber())) throw new IllegalStateException("mobileNumber is missing");
     }
 
+//    public void runAutomatedDailyJob() {
+//        log.info("Starting automated daily Fixed Point Booking Job for tenant: {}", tenantId);
+//
+//        List<String> activeFillingPoints = fixedPointDetailsRepository.getAllActiveFillingPoints(tenantId);
+//        if (activeFillingPoints == null || activeFillingPoints.isEmpty()) {
+//            log.warn("No active filling points found. Scheduler nothing to do.");
+//            return;
+//        }
+//        for (String fillingPointId : activeFillingPoints) {
+//            try {
+//                log.info("Automated job processing fillingPointId: {}", fillingPointId);
+//                runScheduler(tenantId, LocalDate.now(), null, null);
+//            } catch (Exception e) {
+//                log.error("Failed to process automated booking for fillingPointId: {}", fillingPointId, e);
+//            }
+//        }
     // Inside FixedPointBookingSchedulerService.java
 
     public void runAutomatedDailyJob() {
         log.info("Starting automated daily Fixed Point Booking Job for tenant: {}", tenantId);
 
-        // 1. Fetch all active filling points (using your repository)
-//        List<String> activeFillingPoints = fixedPointDetailsRepository.getAllActiveFillingPoints(tenantId);
+        String dayOfWeek = LocalDate.now().getDayOfWeek().name();
 
-//        if (activeFillingPoints == null || activeFillingPoints.isEmpty()) {
-//            log.warn("No active filling points found. Scheduler nothing to do.");
-//            return;
-//        }
+        // 1. Fetch IDs that are active (fp.status=true) AND have enabled schedules for today (tt.is_enable=true)
+        List<String> validFillingPoints = fixedPointDetailsRepository.getValidFillingPointIdsForToday(tenantId, dayOfWeek);
 
-        // 2. Iterate and trigger the scheduling logic for each filling point
-        // We pass null for fillingPointId to process all, or loop through the list:
-//        for (String fillingPointId : activeFillingPoints) {
-//            try {
-//                log.info("Automated job processing fillingPointId: {}", fillingPointId);
-                runScheduler(tenantId, LocalDate.now(), null, null);
-//            } catch (Exception e) {
-//                log.error("Failed to process automated booking for fillingPointId: {}", fillingPointId, e);
-//            }
-//        }
+        if (validFillingPoints.isEmpty()) {
+            log.warn("No active/enabled filling points found for {}. Job skipped.", dayOfWeek);
+            return;
+        }
+
+        // 2. Iterate and process each validated filling point
+        for (String fillingPointId : validFillingPoints) {
+            try {
+                log.info("Automated job processing valid fillingPointId: {}", fillingPointId);
+                // This method fetches all rows for the ID; the stream filter inside handles individual is_enable status
+                runScheduler(tenantId, LocalDate.now(), fillingPointId, null);
+            } catch (Exception e) {
+                log.error("Failed to process automated booking for fillingPointId: {}", fillingPointId, e);
+            }
+        }
     }
 }

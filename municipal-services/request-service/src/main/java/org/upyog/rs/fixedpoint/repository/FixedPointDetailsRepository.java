@@ -37,4 +37,9 @@ public interface FixedPointDetailsRepository  {
     );
 
     List<String> getAllActiveFillingPoints(String tenantId);
+
+    // Inside FillingPointRepository.java
+    List<String> getActiveFillingPointIds(String tenantId);
+
+    List<String> getValidFillingPointIdsForToday(String tenantId, String dayOfWeek);
 }

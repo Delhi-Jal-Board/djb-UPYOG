@@ -37,6 +37,10 @@ public class Document {
   @JsonProperty("documentUid")
   private String documentUid ;
 
+  @SafeHtml
+  @JsonProperty("documentNumber")
+  private String documentNumber ;
+
   @JsonProperty("auditDetails")
   private AuditDetails auditDetails;
 
