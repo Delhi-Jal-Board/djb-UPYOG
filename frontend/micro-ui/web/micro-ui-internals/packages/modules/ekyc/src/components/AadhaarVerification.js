@@ -1,15 +1,28 @@
 import React, { useState, Fragment, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { CardLabel, TextInput, Dropdown, UploadFile, RadioButtons, Toast, FormStep, Loader, CheckBox } from "@djb25/digit-ui-react-components";
+import { Toast, Loader, FormComposer } from "@djb25/digit-ui-react-components";
+import { useTranslation } from "react-i18next";
+import AadhaarVerificationConfig from "../config/AadhaarVerificationConfig";
+
 const AadhaarVerification = ({ config, onSelect, formData }) => {
+  const { t } = useTranslation();
   const location = useLocation();
   const flowState = location.state || {};
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  const searchKno = flowState?.kNumber || flowState?.kno || formData?.kNumber || formData?.kno || sessionStorage.getItem("EKYC_K_NUMBER");
+  const queryParams = new URLSearchParams(location.search);
+  const urlKno = queryParams.get("kno");
+  const searchKno =
+    urlKno ||
+    flowState?.kNumber ||
+    flowState?.kno ||
+    formData?.kNumber ||
+    formData?.kno ||
+    sessionStorage.getItem("EKYC_K_NUMBER") ||
+    "";
 
   const { isLoading, data: searchData } = Digit.Hooks.ekyc.useSearchConnection(
-    { tenantId, details: { kno: searchKno } },
+    { tenantId, details: { kno: searchKno, fetchType: "CONNECTION" } },
     { enabled: !!searchKno, cacheTime: 0 }
   );
 
@@ -18,195 +31,250 @@ const AadhaarVerification = ({ config, onSelect, formData }) => {
   const savedData = formData?.aadhaarVerification || {};
 
   // 🔹 STATES
-  const [kno, setKno] = useState(savedData.kno || searchKno || "");
-  const [consumerType, setConsumerType] = useState(savedData.consumerType ? { name: savedData.consumerType } : null);
-  const [occupantType, setOccupantType] = useState(savedData.occupantType ? { name: savedData.occupantType } : null);
-  const [categoryType, setCategoryType] = useState(savedData.categoryType ? { name: savedData.categoryType } : null);
-
-  const [consumerName, setConsumerName] = useState(savedData.consumerName || "");
-  const [firstName, setFirstName] = useState(savedData.firstName || "");
-  const [middleName, setMiddleName] = useState(savedData.middleName || "");
-  const [lastName, setLastName] = useState(savedData.lastName || "");
-
-  const [gender, setGender] = useState(savedData.gender ? { name: savedData.gender } : null);
-  const [parentSpouseName, setParentSpouseName] = useState(savedData.parentSpouseName || "");
-  const [relation, setRelation] = useState(savedData.relation || "");
-
-  const [mobile, setMobile] = useState(savedData.mobile || "");
-  const [whatsapp, setWhatsapp] = useState(savedData.whatsapp || "");
-  const [email, setEmail] = useState(savedData.email || "");
-  const [residents, setResidents] = useState(savedData.residents || "");
-
-  // Tenant
-  const [documentProof, setDocumentProof] = useState(savedData.documentProof || null);
   const [documentId, setDocumentId] = useState(savedData.documentId || null);
-  const [ownerMobile, setOwnerMobile] = useState(savedData.ownerMobile || "");
-  const [tenantVerification, setTenantVerification] = useState(savedData.tenantVerification || "");
-
-  // Govt
-  const [designation, setDesignation] = useState(savedData.designation || "");
-  const [department, setDepartment] = useState(savedData.department || "");
-  const [employeeId, setEmployeeId] = useState(savedData.employeeId || "");
-  const [landline, setLandline] = useState(savedData.landline || "");
-
-  // Other Entity
-  const [entityRelation, setEntityRelation] = useState(savedData.entityRelation || "");
-  const [contactPerson, setContactPerson] = useState(savedData.contactPerson || "");
-  const [entityName, setEntityName] = useState(savedData.entityName || "");
-
-  // Identity
-  const [idProof, setIdProof] = useState(savedData.idProof ? { name: savedData.idProof } : null);
-  const [idNumber, setIdNumber] = useState(savedData.idNumber || "");
-  const [documentNumber, setDocumentNumber] = useState(savedData.documentNumber || "");
-  const [identityType, setIdentityType] = useState(savedData.identityType ? { name: savedData.identityType } : null);
-  const [idFile, setIdFile] = useState(savedData.idFile || null);
-
-  // Consent
-  const [consent, setConsent] = useState(savedData.consent || false);
-  const [informantIsConsumer, setInformantIsConsumer] = useState(savedData.informantIsConsumer ?? true);
-  const [informantName, setInformantName] = useState(savedData.informantName || "");
-  const [informantRelation, setInformantRelation] = useState(savedData.informantRelation || "");
-
+  const [documentProof, setDocumentProof] = useState(savedData.documentProof || null);
   const [toast, setToast] = useState(null);
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
+  const [canSubmit, setCanSubmit] = useState(false);
+
+  const [defaultValues, setDefaultValues] = useState(() => ({
+    kno: savedData.kno || searchKno || "",
+    consumerType: savedData.consumerType ? { name: savedData.consumerType } : null,
+    occupantType: savedData.occupantType ? { name: savedData.occupantType } : null,
+    categoryType: savedData.categoryType ? { name: savedData.categoryType } : null,
+    firstName: savedData.firstName || "",
+    middleName: savedData.middleName || "",
+    lastName: savedData.lastName || "",
+    gender: savedData.gender ? { name: savedData.gender } : null,
+    parentSpouseName: savedData.parentSpouseName || "",
+    mobile: savedData.mobile || "",
+    whatsapp: savedData.whatsapp || "",
+    email: savedData.email || "",
+    residents: savedData.residents || "",
+    identityType: savedData.identityType ? { name: savedData.identityType } : null,
+    documentNumber: savedData.documentNumber || "",
+    informantIsConsumer: savedData.informantIsConsumer ?? true,
+    informantName: savedData.informantName || "",
+    informantRelation: savedData.informantRelation || "",
+    documentId: savedData.documentId || null,
+    documentProof: savedData.documentProof || null,
+    idFile: savedData.idFile || null,
+    ownerMobile: savedData.ownerMobile || "",
+    tenantVerification: savedData.tenantVerification || "",
+    designation: savedData.designation || "",
+    department: savedData.department || "",
+    employeeId: savedData.employeeId || "",
+    entityName: savedData.entityName || "",
+    contactPerson: savedData.contactPerson || "",
+    consent: savedData.consent || false,
+  }));
+
+  const [localFormData, setLocalFormData] = useState(defaultValues);
+
+  const extractApplicationData = (searchData) => {
+    if (!searchData) return null;
+    const reviewWrapper =
+      searchData?.applicationReviewInfo || searchData?.applicationReview || searchData;
+    const applicationData = (Array.isArray(reviewWrapper) ? reviewWrapper[0] : reviewWrapper) || {};
+    return applicationData?.newData || applicationData;
+  };
 
   useEffect(() => {
-    const rawData = searchData || formData?.connectionDetails;
+    const appData = extractApplicationData(searchData);
+    const rawData = appData || formData?.connectionDetails;
     const details = rawData?.connectionDetails || rawData || {};
     const addrDetails = rawData?.addressDetails || {};
 
-    if (details && Object.keys(details).length > 0 && !savedData.firstName) {
-      if (!kno && searchKno) setKno(searchKno);
+    if (details && Object.keys(details).length > 0 && !isDataLoaded) {
+      let fName = "";
+      let mName = "";
+      let lName = "";
 
       if (details.firstName) {
-        setFirstName(details.firstName);
-        if (details.middleName) setMiddleName(details.middleName);
-        if (details.lastName) setLastName(details.lastName);
+        fName = details.firstName;
+        mName = details.middleName || "";
+        lName = details.lastName || "";
       } else if (details.consumerName) {
-        setConsumerName(details.consumerName);
         const parts = details.consumerName.trim().split(/\s+/);
-        setFirstName(parts[0] || "");
-        if (parts.length === 2) setLastName(parts[1]);
+        fName = parts[0] || "";
+        if (parts.length === 2) lName = parts[1];
         if (parts.length > 2) {
-          setMiddleName(parts.slice(1, -1).join(" "));
-          setLastName(parts[parts.length - 1]);
+          mName = parts.slice(1, -1).join(" ");
+          lName = parts[parts.length - 1];
         }
       }
 
-      if (details.phoneNumber || addrDetails.mobileNo) setMobile(details.phoneNumber || addrDetails.mobileNo);
-      if (details.email || addrDetails.email) setEmail(details.email || addrDetails.email);
-      if (addrDetails.whatsappNo) setWhatsapp(addrDetails.whatsappNo);
-      if (addrDetails.noOfPerson) setResidents(String(addrDetails.noOfPerson));
+      const updatedDefaults = {
+        kno: savedData.kno || searchKno || "",
+        consumerType: savedData.consumerType
+          ? { name: savedData.consumerType }
+          : details.consumerType
+            ? { name: details.consumerType }
+            : null,
+        occupantType: savedData.occupantType
+          ? { name: savedData.occupantType }
+          : details.occupantType
+            ? { name: details.occupantType }
+            : null,
+        categoryType: savedData.categoryType ? { name: savedData.categoryType } : null,
+        firstName: savedData.firstName || fName,
+        middleName: savedData.middleName || mName,
+        lastName: savedData.lastName || lName,
+        gender: savedData.gender
+          ? { name: savedData.gender }
+          : details.gender
+            ? { name: details.gender }
+            : null,
+        parentSpouseName: savedData.parentSpouseName || details.parentSpouse || "",
+        mobile: savedData.mobile || details.phoneNumber || addrDetails.mobileNo || "",
+        whatsapp: savedData.whatsapp || addrDetails.whatsappNo || "",
+        email: savedData.email || details.email || addrDetails.email || "",
+        residents: savedData.residents || (addrDetails.noOfPerson ? String(addrDetails.noOfPerson) : ""),
+        identityType: savedData.identityType ? { name: savedData.identityType } : null,
+        documentNumber: savedData.documentNumber || "",
+        informantIsConsumer: savedData.informantIsConsumer ?? true,
+        informantName: savedData.informantName || details.informantName || "",
+        informantRelation: savedData.informantRelation || details.informantRelation || "",
+        documentId: savedData.documentId || details.documentNumber || null,
+        documentProof: savedData.documentProof || null,
+        idFile: savedData.idFile || null,
+        ownerMobile: savedData.ownerMobile || "",
+        tenantVerification: savedData.tenantVerification || "",
+        designation: savedData.designation || "",
+        department: savedData.department || "",
+        employeeId: savedData.employeeId || "",
+        entityName: savedData.entityName || "",
+        contactPerson: savedData.contactPerson || "",
+        consent: savedData.consent || false,
+      };
 
-      if (details.consumerType) setConsumerType({ name: details.consumerType });
-      if (details.occupantType) setOccupantType({ name: details.occupantType });
-      if (details.gender) setGender({ name: details.gender });
-      if (details.parentSpouse) setParentSpouseName(details.parentSpouse);
-      if (details.documentNumber) {
-        setDocumentId(details.documentNumber);
-        setIdNumber(details.documentNumber);
+      setDefaultValues(updatedDefaults);
+      setLocalFormData(updatedDefaults);
+      if (updatedDefaults.documentId) {
+        setDocumentId(updatedDefaults.documentId);
       }
-      if (details.informantName) setInformantName(details.informantName);
-      if (details.informantRelation) setInformantRelation(details.informantRelation);
+      if (updatedDefaults.documentProof) {
+        setDocumentProof(updatedDefaults.documentProof);
+      }
+      setIsDataLoaded(true);
     }
-  }, [searchData, formData?.connectionDetails, searchKno]);
-
-  // 🔹 OPTIONS
-  const consumerTypeOptions = [{ name: "Individual" }, { name: "Govt" }, { name: "Company_Society_Org" }];
-
-  const occupantOptions = [{ name: "Self" }, { name: "Tenanted" }];
-
-  const genderOptions = [{ name: "Male" }, { name: "Female" }, { name: "Others" }, { name: "Not prefer to say" }];
-
-  const identityTypeOptions = [{ name: "Aadhaar Card" }, { name: "Driving License" }, { name: "Passport" }, { name: "Voter ID" }];
-
-  const yesNo = [{ name: "Yes" }, { name: "No" }];
+  }, [searchData, formData?.connectionDetails, isDataLoaded]);
 
   // 🔹 FILE UPLOAD
-  const uploadFile = async (e, setter, idSetter) => {
+  const handleUploadProof = async (e, onChange) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    try {
-      const res = await Digit.UploadServices.Filestorage("EKYC", file);
-      const id = res?.data?.files?.[0]?.fileStoreId;
-      if (id) {
-        setter(file.name);
-        idSetter(id);
-      }
-    } catch {
-      setToast({ type: "error", message: "Upload failed" });
-    }
-  };
-
-  // 🔹 VALIDATION
-  const isValid = () => {
-    if (!kno) return false;
-    if (!consumerType) return false;
-    if (!occupantType) return false;
-    if (!categoryType) return false;
-    if (!firstName) return false;
-    if (!mobile) return false;
-    if (!residents || Number(residents) <= 0) return false;
-
-    if (occupantType?.name === "Tenanted" && !documentId && !ownerMobile) return false;
-
-    return consent; // consent must be true
-  };
-
-  // 🔹 SUBMIT
-  const onStepSelect = async () => {
-    // If not valid, just show a warning (or uncomment below to enforce)
-    /*
-    if (!isValid()) {
-      setToast({ type: "error", message: "Fill required fields" });
+    if (file.size > 2000000) {
+      setToast({ type: "error", message: t("Max size 2MB exceeded") });
       return;
     }
-    */
 
-    const data = {
-      kno,
-      consumerType: consumerType?.name,
-      occupantType: occupantType?.name,
-      categoryType: categoryType?.name,
-      consumerName,
-      firstName,
-      middleName,
-      lastName,
-      gender: gender?.name,
-      parentSpouseName,
-      relation,
-      mobile,
-      whatsapp,
-      email,
-      residents,
-      documentId,
-      ownerMobile,
-      tenantVerification,
-      designation,
-      department,
-      employeeId,
-      landline,
-      entityRelation,
-      contactPerson,
-      entityName,
-      idProof: idProof?.name,
-      idNumber,
-      consent,
-      informantIsConsumer,
-      informantName,
-      informantRelation,
+    try {
+      const res = await Digit.UploadServices.Filestorage("EKYC", file, tenantId);
+      const fileStoreId = res?.data?.files?.[0]?.fileStoreId;
+      if (fileStoreId) {
+        onChange(file.name);
+        setDocumentProof(file.name);
+        setDocumentId(fileStoreId);
+        setToast({ type: "success", message: t("Upload successful") });
+      }
+    } catch {
+      setToast({ type: "error", message: t("Upload failed") });
+    }
+  };
+
+  const onFormValueChange = (setValue, data) => {
+    // Avoid updating states on every keypress unless they affect conditional visibility
+    const consumerTypeChanged =
+      (data?.consumerType?.name || data?.consumerType) !==
+      (localFormData?.consumerType?.name || localFormData?.consumerType);
+    const occupantTypeChanged =
+      (data?.occupantType?.name || data?.occupantType) !==
+      (localFormData?.occupantType?.name || localFormData?.occupantType);
+    const informantIsConsumerChanged = data?.informantIsConsumer !== localFormData?.informantIsConsumer;
+
+    if (consumerTypeChanged || occupantTypeChanged || informantIsConsumerChanged) {
+      setLocalFormData((prev) => ({
+        ...prev,
+        ...data,
+      }));
+    }
+
+    // Determine validation
+    const knoVal = data?.kno || searchKno;
+    const consumerTypeVal = data?.consumerType;
+    const occupantTypeVal = data?.occupantType;
+    const categoryTypeVal = data?.categoryType;
+    const firstNameVal = data?.firstName;
+    const mobileVal = data?.mobile;
+    const residentsVal = data?.residents;
+    const consentVal = data?.consent;
+    const docId = data?.documentId || documentId;
+    const ownerMobileVal = data?.ownerMobile;
+
+    let valid = true;
+    if (!knoVal) valid = false;
+    if (!consumerTypeVal) valid = false;
+    if (!occupantTypeVal) valid = false;
+    if (!categoryTypeVal) valid = false;
+    if (!firstNameVal) valid = false;
+    if (!mobileVal || !/^[6-9]\d{9}$/.test(mobileVal)) valid = false;
+    if (!residentsVal || Number(residentsVal) <= 0) valid = false;
+    if (occupantTypeVal?.name === "Tenanted" && !docId && !ownerMobileVal) valid = false;
+    if (!consentVal) valid = false;
+
+    if (valid !== canSubmit) {
+      setCanSubmit(valid);
+    }
+  };
+
+  const onSubmit = async (data) => {
+    const submitData = {
+      kno: data.kno || searchKno,
+      consumerType: data.consumerType?.name || data.consumerType,
+      occupantType: data.occupantType?.name || data.occupantType,
+      categoryType: data.categoryType?.name || data.categoryType,
+      consumerName: data.consumerName || `${data.firstName || ""} ${data.middleName || ""} ${data.lastName || ""}`.trim(),
+      firstName: data.firstName,
+      middleName: data.middleName,
+      lastName: data.lastName,
+      gender: data.gender?.name || data.gender,
+      parentSpouseName: data.parentSpouseName,
+      relation: data.relation || savedData.relation || "",
+      mobile: data.mobile,
+      whatsapp: data.whatsapp,
+      email: data.email,
+      residents: data.residents,
+      documentId: documentId,
+      documentProof: documentProof,
+      ownerMobile: data.ownerMobile,
+      tenantVerification: data.tenantVerification,
+      designation: data.designation,
+      department: data.department,
+      employeeId: data.employeeId,
+      landline: data.landline || savedData.landline || "",
+      entityRelation: data.entityRelation || savedData.entityRelation || "",
+      contactPerson: data.contactPerson,
+      entityName: data.entityName,
+      idProof: data.identityType?.name || data.identityType,
+      idNumber: data.documentNumber,
+      consent: data.consent,
+      informantIsConsumer: data.informantIsConsumer ?? true,
+      informantName: data.informantName,
+      informantRelation: data.informantRelation,
     };
 
     try {
       await updateMutation.mutateAsync({
         RequestInfo: {},
         updateType: "CONSUMER",
-        ...data,
+        ...submitData,
       });
-      setToast({ type: "success", message: "Data updated successfully!" });
-      onSelect(config.key, data);
+      setToast({ type: "success", message: t("Data updated successfully!") });
+      onSelect(config.key, submitData);
     } catch (error) {
-      setToast({ type: "error", message: "Failed to update consumer details" });
+      setToast({ type: "error", message: t("Failed to update consumer details") });
     }
   };
 
@@ -214,163 +282,32 @@ const AadhaarVerification = ({ config, onSelect, formData }) => {
     return <Loader />;
   }
 
+  const Config = AadhaarVerificationConfig(t, localFormData, handleUploadProof, setDocumentId, documentId);
+
   return (
     <Fragment>
-      <FormStep onSelect={onStepSelect} config={config} isDisabled={!isValid()}>
-        <div>
-          <CardLabel>Consumer Type *</CardLabel>
-          <Dropdown option={consumerTypeOptions} selected={consumerType} select={setConsumerType} />
-        </div>
-
-        <div>
-          <CardLabel>Occupant Type *</CardLabel>
-          <Dropdown option={occupantOptions} selected={occupantType} select={setOccupantType} />
-        </div>
-
-        <div>
-          <CardLabel>Category Type *</CardLabel>
-          <Dropdown option={[]} selected={categoryType} select={setCategoryType} />
-        </div>
-
-        <div>
-          <CardLabel>First Name *</CardLabel>
-          <TextInput value={firstName} onChange={(e) => setFirstName(e.target.value)} />
-        </div>
-
-        <div>
-          <CardLabel>Middle Name</CardLabel>
-          <TextInput value={middleName} onChange={(e) => setMiddleName(e.target.value)} />
-        </div>
-
-        <div>
-          <CardLabel>Last Name</CardLabel>
-          <TextInput value={lastName} onChange={(e) => setLastName(e.target.value)} />
-        </div>
-
-        <div>
-          <CardLabel>Gender</CardLabel>
-          <Dropdown option={genderOptions} selected={gender} select={setGender} />
-        </div>
-
-        <div>
-          <CardLabel>Parent/Spouse Name </CardLabel>
-          <TextInput value={parentSpouseName} onChange={(e) => setParentSpouseName(e.target.value)} />
-        </div>
-
-        <div>
-          <CardLabel>Mobile *</CardLabel>
-          <TextInput value={mobile} onChange={(e) => setMobile(e.target.value)} />
-        </div>
-
-        <div>
-          <CardLabel>WhatsApp</CardLabel>
-          <TextInput value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} />
-        </div>
-
-        <div>
-          <CardLabel>Email</CardLabel>
-          <TextInput value={email} onChange={(e) => setEmail(e.target.value)} />
-        </div>
-
-        <div>
-          <CardLabel>No. of Residents *</CardLabel>
-          <TextInput value={residents} onChange={(e) => setResidents(e.target.value)} />
-        </div>
-        <div>
-          <CardLabel>Type of Identity *</CardLabel>
-          <Dropdown option={identityTypeOptions} selected={identityType} select={setIdentityType} />
-        </div>
-        <div>
-          <CardLabel>Proof of Identity</CardLabel>
-          <UploadFile onUpload={(e) => uploadFile(e, setDocumentProof, setDocumentId)} />
-        </div>
-        <div>
-          <CardLabel>Document Number</CardLabel>
-          <TextInput value={documentNumber} onChange={(e) => setDocumentNumber(e.target.value)} />
-        </div>
-
-        <div>
-          <CardLabel>Informant Is Consumer</CardLabel>
-          <CheckBox
-            label="Yes, the informant is the consumer"
-            checked={informantIsConsumer}
-            onChange={(e) => setInformantIsConsumer(e.target.checked)}
-          />
-        </div>
-
-        {!informantIsConsumer && (
-          <Fragment>
-            <div>
-              <CardLabel>Informant Name</CardLabel>
-              <TextInput value={informantName} onChange={(e) => setInformantName(e.target.value)} />
-            </div>
-            <div>
-              <CardLabel>Informant Relation</CardLabel>
-              <TextInput value={informantRelation} onChange={(e) => setInformantRelation(e.target.value)} />
-            </div>
-          </Fragment>
-        )}
-
-        {/* TENANT LOGIC */}
-        {occupantType?.name === "Tenanted" && (
-          <Fragment>
-            <div>
-              <CardLabel>Document Proof</CardLabel>
-              <UploadFile onUpload={(e) => uploadFile(e, setDocumentProof, setDocumentId)} />
-            </div>
-
-            {!documentId && (
-              <Fragment>
-                <div>
-                  <CardLabel>Owner Mobile *</CardLabel>
-                  <TextInput value={ownerMobile} onChange={(e) => setOwnerMobile(e.target.value)} />
-                </div>
-
-                <div>
-                  <CardLabel>Tenant Verification</CardLabel>
-                  <TextInput value={tenantVerification} onChange={(e) => setTenantVerification(e.target.value)} />
-                </div>
-              </Fragment>
-            )}
-          </Fragment>
-        )}
-
-        {/* GOVT */}
-        {consumerType?.name === "Govt" && (
-          <Fragment>
-            <div>
-              <CardLabel>Designation</CardLabel>
-              <TextInput value={designation} onChange={(e) => setDesignation(e.target.value)} />
-            </div>
-
-            <div>
-              <CardLabel>Department</CardLabel>
-              <TextInput value={department} onChange={(e) => setDepartment(e.target.value)} />
-            </div>
-
-            <div>
-              <CardLabel>Employee ID</CardLabel>
-              <TextInput value={employeeId} onChange={(e) => setEmployeeId(e.target.value)} />
-            </div>
-          </Fragment>
-        )}
-
-        {/* OTHER ENTITY */}
-        {consumerType?.name === "Company_Society_Org" && (
-          <Fragment>
-            <div>
-              <CardLabel>Entity Name</CardLabel>
-              <TextInput value={entityName} onChange={(e) => setEntityName(e.target.value)} />
-            </div>
-
-            <div>
-              <CardLabel>Contact Person</CardLabel>
-              <TextInput value={contactPerson} onChange={(e) => setContactPerson(e.target.value)} />
-            </div>
-          </Fragment>
-        )}
-      </FormStep>
-      {toast && <Toast error={toast.type === "error"} label={toast.message} onClose={() => setToast(null)} />}
+      <FormComposer
+        key={isDataLoaded ? "loaded" : "loading"}
+        isDisabled={!canSubmit}
+        label={t("ES_COMMON_CONTINUE")}
+        config={Config.map((item) => ({
+          ...item,
+          isCollapsible: true,
+          isDefaultOpen: true,
+        }))}
+        onSubmit={onSubmit}
+        defaultValues={defaultValues}
+        onFormValueChange={onFormValueChange}
+        noCard={false}
+        submitInForm={true}
+      />
+      {toast && (
+        <Toast
+          error={toast.type === "error"}
+          label={toast.message}
+          onClose={() => setToast(null)}
+        />
+      )}
     </Fragment>
   );
 };

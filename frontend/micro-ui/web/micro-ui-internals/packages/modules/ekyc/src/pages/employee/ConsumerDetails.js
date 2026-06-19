@@ -1,38 +1,63 @@
-import React, { useState, Fragment } from "react";
-import { CardLabel, TextInput, Dropdown, UploadFile, Toast, FormStep } from "@djb25/digit-ui-react-components";
+import React, { useState, Fragment, useEffect } from "react";
+import { CardLabel, TextInput, Dropdown, UploadFile, Toast, FormStep, Loader } from "@djb25/digit-ui-react-components";
+import { useLocation } from "react-router-dom";
 
-const ConsumerDetails = ({ config, onSelect }) => {
+const ConsumerDetails = ({ config, onSelect, formData }) => {
+  const location = useLocation();
+  const flowState = location.state || {};
+  const tenantId = Digit.ULBService.getCurrentTenantId();
+
+  const queryParams = new URLSearchParams(location.search);
+  const urlKno = queryParams.get("kno");
+
+  const searchKno = urlKno || flowState?.kNumber || flowState?.kno || formData?.kNumber || formData?.kno || sessionStorage.getItem("EKYC_K_NUMBER") || "";
+
+  const { isLoading, data: searchData } = Digit.Hooks.ekyc.useSearchConnection(
+    { tenantId, details: { kno: searchKno } },
+    { enabled: !!searchKno, cacheTime: 0 }
+  );
+
+  const savedData = formData?.consumerDetails || {};
+
   // 🔹 STATES
-  const [kno, setKno] = useState("");
-  const [consumerType, setConsumerType] = useState(null);
-  const [occupantType, setOccupantType] = useState(null);
-  const [categoryType, setCategoryType] = useState(null);
+  const [kno, setKno] = useState(savedData.kno || "");
+  const [consumerType, setConsumerType] = useState(
+    savedData.consumerType ? { name: savedData.consumerType } : null
+  );
+  const [occupantType, setOccupantType] = useState(
+    savedData.occupantType ? { name: savedData.occupantType } : null
+  );
+  const [categoryType, setCategoryType] = useState(
+    savedData.categoryType ? { name: savedData.categoryType } : null
+  );
 
-  const [firstName, setFirstName] = useState("");
-  const [middleName, setMiddleName] = useState("");
-  const [lastName, setLastName] = useState("");
+  const [firstName, setFirstName] = useState(savedData.firstName || "");
+  const [middleName, setMiddleName] = useState(savedData.middleName || "");
+  const [lastName, setLastName] = useState(savedData.lastName || "");
 
-  const [gender, setGender] = useState(null);
+  const [gender, setGender] = useState(
+    savedData.gender ? { name: savedData.gender } : null
+  );
 
-  const [mobile, setMobile] = useState("");
-  const [whatsapp, setWhatsapp] = useState("");
-  const [email, setEmail] = useState("");
-  const [residents, setResidents] = useState("");
+  const [mobile, setMobile] = useState(savedData.mobile || "");
+  const [whatsapp, setWhatsapp] = useState(savedData.whatsapp || "");
+  const [email, setEmail] = useState(savedData.email || "");
+  const [residents, setResidents] = useState(savedData.residents || "");
 
   // Tenant
   const [, setDocumentProof] = useState(null);
-  const [documentId, setDocumentId] = useState(null);
-  const [ownerMobile, setOwnerMobile] = useState("");
-  const [tenantVerification, setTenantVerification] = useState("");
+  const [documentId, setDocumentId] = useState(savedData.documentId || null);
+  const [ownerMobile, setOwnerMobile] = useState(savedData.ownerMobile || "");
+  const [tenantVerification, setTenantVerification] = useState(savedData.tenantVerification || "");
 
   // Govt
-  const [designation, setDesignation] = useState("");
-  const [department, setDepartment] = useState("");
-  const [employeeId, setEmployeeId] = useState("");
+  const [designation, setDesignation] = useState(savedData.designation || "");
+  const [department, setDepartment] = useState(savedData.department || "");
+  const [employeeId, setEmployeeId] = useState(savedData.employeeId || "");
 
   // Other Entity
-  const [contactPerson, setContactPerson] = useState("");
-  const [entityName, setEntityName] = useState("");
+  const [contactPerson, setContactPerson] = useState(savedData.contactPerson || "");
+  const [entityName, setEntityName] = useState(savedData.entityName || "");
 
   // Identity
 
@@ -44,6 +69,35 @@ const ConsumerDetails = ({ config, onSelect }) => {
   const occupantOptions = [{ name: "Self" }, { name: "Tenanted" }];
 
   const genderOptions = [{ name: "Male" }, { name: "Female" }, { name: "Others" }, { name: "Not prefer to say" }];
+
+  // 🔹 PREFILL FROM SEARCH DATA
+  useEffect(() => {
+    const rawData = searchData || formData?.connectionDetails;
+    const details = rawData?.connectionDetails || rawData || {};
+
+    if (searchKno && !kno) {
+      setKno(searchKno);
+    }
+
+    if (details && Object.keys(details).length > 0 && !savedData.firstName) {
+      if (details.consumerName) {
+        const nameParts = details.consumerName.trim().split(/\s+/);
+        if (nameParts.length > 0) setFirstName(nameParts[0]);
+        if (nameParts.length > 2) {
+          setMiddleName(nameParts.slice(1, -1).join(" "));
+          setLastName(nameParts[nameParts.length - 1]);
+        } else if (nameParts.length === 2) {
+          setLastName(nameParts[1]);
+        }
+      }
+      if (details.phoneNumber) {
+        setMobile(details.phoneNumber);
+      }
+      if (details.email) {
+        setEmail(details.email);
+      }
+    }
+  }, [searchData, formData?.connectionDetails, searchKno]);
 
   // 🔹 FILE UPLOAD
   const uploadFile = async (e, setter, idSetter) => {
@@ -74,7 +128,7 @@ const ConsumerDetails = ({ config, onSelect }) => {
 
     if (occupantType?.name === "Tenanted" && !documentId && !ownerMobile) return false;
 
-    return false;
+    return true;
   };
 
   // 🔹 SUBMIT
@@ -109,6 +163,10 @@ const ConsumerDetails = ({ config, onSelect }) => {
 
     onSelect(config.key, data);
   };
+
+  if (isLoading) {
+    return <Loader />;
+  }
 
   return (
     <Fragment>

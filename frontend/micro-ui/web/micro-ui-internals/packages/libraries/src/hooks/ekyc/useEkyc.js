@@ -9,7 +9,7 @@ export const useSearchConnection = ({ tenantId, details }, config = {}) => {
   const client = useQueryClient();
 
   const { isLoading, error, data } = useQuery(
-    ["ekycSearchConnection", tenantId, details?.kno, details?.name],
+    ["ekycSearchConnection", tenantId, details?.kno, details?.name, details?.fetchType],
     () => Digit.EkycService.search_connection(details, tenantId),
     config
   );
@@ -18,7 +18,7 @@ export const useSearchConnection = ({ tenantId, details }, config = {}) => {
     isLoading,
     error,
     data,
-    revalidate: () => client.invalidateQueries(["ekycSearchConnection", tenantId, details?.kno, details?.name]),
+    revalidate: () => client.invalidateQueries(["ekycSearchConnection", tenantId, details?.kno, details?.name, details?.fetchType]),
   };
 };
 

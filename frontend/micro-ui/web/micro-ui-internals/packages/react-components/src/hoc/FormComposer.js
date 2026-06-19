@@ -298,7 +298,7 @@ export const FormComposer = (props) => {
                               {!field.withoutLabel && (
                                 <CardLabel style={{ color: field.isSectionText ? "#505A5F" : "" }} className={field?.disable ? "disabled-label" : ""}>
                                   {t(field.label)}
-                                  {field.isMandatory ? " * " : null}
+                                  {field.isMandatory ? <span className="check-page-link-button"> * </span> : null}
                                   {field.labelChildren && field.labelChildren}
                                 </CardLabel>
                               )}
@@ -366,7 +366,7 @@ export const FormComposer = (props) => {
                                   }}
                                 >
                                   {t(field.label)}
-                                  {field.isMandatory ? " * " : null}
+                                  {field.isMandatory ? <span className="check-page-link-button"> * </span> : null}
                                   {field.labelChildren && field.labelChildren}
                                 </CardLabel>
                               )}
@@ -414,7 +414,7 @@ export const FormComposer = (props) => {
                             {!field.withoutLabel && (
                               <CardLabel style={{ color: field.isSectionText ? "#505A5F" : "" }} className={field?.disable ? "disabled-label" : ""}>
                                 {t(field.label)}
-                                {field.isMandatory ? " * " : null}
+                                {field.isMandatory ? <span className="check-page-link-button"> * </span> : null}
                                 {field.labelChildren && field.labelChildren}
                               </CardLabel>
                             )}
@@ -482,7 +482,7 @@ export const FormComposer = (props) => {
                                 }}
                               >
                                 {t(field.label)}
-                                {field.isMandatory ? " * " : null}
+                                {field.isMandatory ? <span className="check-page-link-button"> * </span> : null}
                                 {field.labelChildren && field.labelChildren}
                               </CardLabel>
                             )}

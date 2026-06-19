@@ -47,6 +47,17 @@ export const EkycService = {
       userService: true,
     }),
 
+  application_approve: (data, tenantId) =>
+    Request({
+      url: Urls.ekyc.application_approve,
+      data: data,
+      useCache: false,
+      method: "POST",
+      params: { tenantId },
+      auth: true,
+      userService: true,
+    }),
+
   fetchSummary: (data) =>
     Request({
       url: Urls.ekyc.dashboard_summary,

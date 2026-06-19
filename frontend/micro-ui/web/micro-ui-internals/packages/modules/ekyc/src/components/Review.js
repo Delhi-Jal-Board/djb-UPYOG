@@ -11,6 +11,8 @@ import {
   LinkButton,
   EditIcon,
   GenericFileIcon,
+  Menu,
+  Toast,
 } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useHistory, useLocation, useParams } from "react-router-dom";
@@ -34,9 +36,7 @@ const boolToYesNo = (value, t) => {
   if (value === false || value === "false" || String(value).toLowerCase() === "no") return t("CORE_COMMON_NO");
   if (value === "true") return t("CORE_COMMON_YES");
   if (value === "false") return t("CORE_COMMON_NO");
-  return "N/A";
 };
-
 /**
  * Robust data extraction for comparison.
  * The API returns { applicationReviewInfo: { newData: { ... }, oldData: { ... } } }
@@ -172,6 +172,14 @@ const Review = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [previewUrl, setPreviewUrl] = useState("");
+  const [showOptions, setShowOptions] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [toastData, setToastData] = useState({ error: false, label: "" });
+
+  const options = [
+    { action: t("Approve") },
+    { action: t("Reject") }
+  ];
 
   const flowState = location.state || {};
   const { edits = {} } = flowState;
@@ -373,6 +381,7 @@ const Review = () => {
         apiId: "Rainmaker",
         ver: "1.0",
         msgId: "message-id",
+        tenantId: tenantId,
         authToken: Digit.UserService.getUser()?.access_token,
       },
       kno: activeKno,
@@ -397,6 +406,7 @@ const Review = () => {
         apiId: "Rainmaker",
         ver: "1.0",
         msgId: "message-id",
+        tenantId: tenantId,
         authToken: Digit.UserService.getUser()?.access_token,
       },
       kno: activeKno,
@@ -408,10 +418,22 @@ const Review = () => {
     try {
       const result = await workflowMutation.mutateAsync(payload);
       if (result) {
-        history.push("/digit-ui/employee/ekyc/response", { success: true, result });
+        setToastData({
+          error: false,
+          label: t("EKYC_APPLICATION_APPROVE_SUCCESSFUL") || "Application Approved Successfully",
+        });
+        setShowToast(true);
+        setTimeout(() => {
+          history.push("/digit-ui/employee/ekyc/inbox");
+        }, 2000);
       }
     } catch (err) {
       console.error("Approve Error:", err);
+      setToastData({
+        error: true,
+        label: err?.message || err?.response?.data?.message || "Approve Error",
+      });
+      setShowToast(true);
     }
   };
 
@@ -447,6 +469,15 @@ const Review = () => {
     setShowPreview(true);
   };
 
+  const handleMenuSelect = (option) => {
+    setShowOptions(false); // close menu
+    if (option.action === t("Approve")) {
+      handleApprove();
+    } else if (option.action === t("Reject")) {
+      handleReject();
+    }
+  };
+
   if (isSearchLoading || isSubmitting) return <Loader />;
 
   const baseUrl = "/digit-ui/employee/ekyc";
@@ -461,8 +492,8 @@ const Review = () => {
           newData={connectionData}
           oldData={oldDataRaw?.connection}
           t={t}
-          jumpTo={`${baseUrl}/consumer-details`}
-          state={{ ...flowState, reviewData: searchData, edits }}
+          jumpTo={`${baseUrl}/consumer-details?kno=${kno}`}
+          state={{ ...flowState, kNumber: kno, kno, reviewData: searchData, edits }}
         />
 
         {/* ── 2. Address Details ──────────────────────────────────────── */}
@@ -472,8 +503,8 @@ const Review = () => {
           newData={addressData}
           oldData={oldDataRaw?.address}
           t={t}
-          jumpTo={`${baseUrl}/address-details`}
-          state={{ ...flowState, reviewData: searchData, edits }}
+          jumpTo={`${baseUrl}/address-details?kno=${kno}`}
+          state={{ ...flowState, kNumber: kno, kno, reviewData: searchData, edits }}
         />
 
         {/* ── 3. Property Info ────────────────────────────────────────── */}
@@ -483,8 +514,8 @@ const Review = () => {
           newData={propertyData}
           oldData={oldDataRaw?.property}
           t={t}
-          jumpTo={`${baseUrl}/property-info`}
-          state={{ ...flowState, reviewData: searchData, edits }}
+          jumpTo={`${baseUrl}/property-info?kno=${kno}`}
+          state={{ ...flowState, kNumber: kno, kno, reviewData: searchData, edits }}
         />
 
         {/* ── 4. Meter Details ────────────────────────────────────────── */}
@@ -494,8 +525,8 @@ const Review = () => {
           newData={meterData}
           oldData={oldDataRaw?.meter}
           t={t}
-          jumpTo={`${baseUrl}/meter-details`}
-          state={{ ...flowState, reviewData: searchData, edits }}
+          jumpTo={`${baseUrl}/meter-details?kno=${kno}`}
+          state={{ ...flowState, kNumber: kno, kno, reviewData: searchData, edits }}
         />
 
         {/* ── 5. Documents ────────────────────────────────────────────── */}
@@ -559,10 +590,29 @@ const Review = () => {
           />
         </div>
 
-        <ActionBar>
+        {/* <ActionBar>
           <SubmitBar label={t("EKYC_REJECT")} onSubmit={handleReject} disabled={!agree} />
           <SubmitBar label={t("EKYC_APPROVE")} onSubmit={handleApprove} disabled={!agree} />
-          {/* <SubmitBar label={t("EKYC_SUBMIT_APPLICATION")} onSubmit={handleFinalSubmit} disabled={!agree} /> */}
+          <SubmitBar label={t("EKYC_SUBMIT_APPLICATION")} onSubmit={handleFinalSubmit} disabled={!agree} />
+        </ActionBar> */}
+        <ActionBar>
+          <SubmitBar
+            label={t("TAKE_ACTION_FOR_APPROVE_REJECT")}
+            onSubmit={() => setShowOptions((prev) => !prev)}
+            disabled={!agree}
+          />
+          {showOptions && (
+            <Menu
+              options={options}
+              optionKey={"action"}
+              t={t}
+              onSelect={handleMenuSelect}
+              style={{
+                color: "#FFFFFF",
+                fontSize: "18px",
+              }}
+            />
+          )}
         </ActionBar>
       </Card>
 
@@ -631,6 +681,13 @@ const Review = () => {
             </div>
           </div>
         </div>
+      )}
+      {showToast && (
+        <Toast
+          error={toastData.error}
+          label={toastData.label}
+          onClose={() => setShowToast(false)}
+        />
       )}
     </Fragment>
   );
