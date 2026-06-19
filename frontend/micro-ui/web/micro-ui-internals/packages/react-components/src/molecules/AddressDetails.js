@@ -712,7 +712,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
         {!config?.doorImage && (
           <div>
             <Label>
-              {`${t("CITY")}`} <span className="check-page-link-button">*</span>
+              {`${t("CORE_COMMON_PROFILE_CITY")}`} <span className="check-page-link-button">*</span>
             </Label>
             <Controller
               control={control}
@@ -965,7 +965,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
         </div>
 
         <div>
-          <Label>{`${t("LATITUDE")}`}</Label>
+          <Label>{`${t("LATITUDE_GEOTAG")}`}</Label>
 
           <TextInput
             t={t}
@@ -992,7 +992,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
         </div>
 
         <div>
-          <Label>{`${t("LONGITUDE")}`}</Label>
+          <Label>{`${t("LONGITUDE_GEOTAG")}`}</Label>
 
           <TextInput
             t={t}
@@ -1018,7 +1018,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
           />
         </div>
         <div>
-          <Label>{`${t("ASSEMBLY")}`}</Label>
+          <Label>{`${t("COMMON_ASSEMBLY")}`}</Label>
           <TextInput
             t={t}
             type={"text"}
@@ -1047,7 +1047,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
               />
             </div> */}
         <div>
-          <Label>{`${t("WARD")}`}</Label>
+          <Label>{`${t("COMMON_WARD")}`}</Label>
           <TextInput
             t={t}
             type={"text"}
@@ -1061,7 +1061,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
           />
         </div>
         <div>
-          <Label>{`${t("ZONE")}`}</Label>
+          <Label>{`${t("COMMON_ZONE")}`}</Label>
           <TextInput
             t={t}
             type={"text"}
@@ -1174,7 +1174,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
         >
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
             <div>
-              <Label>{`${t("ACTUAL ASSEMBLY")}`}</Label>
+              <Label>{`${t("COMMON_CURRENT_ASSEMBLY")}`}</Label>
               <Dropdown
                 className="form-field"
                 selected={
@@ -1192,7 +1192,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
             </div>
 
             <div>
-              <Label>{`${t("ACTUAL ZONE")}`}</Label>
+              <Label>{`${t("COMMON_CURRENT_ZONE")}`}</Label>
               <Dropdown
                 className="form-field"
                 selected={zoneOptions.find((z) => z.code === tempZone) || (tempZone ? { code: tempZone, i18nKey: tempZone, name: tempZone } : null)}
@@ -1207,7 +1207,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
             </div>
 
             <div>
-              <Label>{`${t("ACTUAL WARD")}`}</Label>
+              <Label>{`${t("COMMON_CURRENT_WARD")}`}</Label>
               <Dropdown
                 className="form-field"
                 selected={wardOptions.find((w) => w.code === tempWard) || (tempWard ? { code: tempWard, i18nKey: tempWard, name: tempWard } : null)}

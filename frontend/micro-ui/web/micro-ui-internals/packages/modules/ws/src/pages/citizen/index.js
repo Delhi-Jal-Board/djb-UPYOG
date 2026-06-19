@@ -5,10 +5,12 @@ import { PrivateRoute, BackButton, LayoutWrapper, ModuleHeader, ArrowLeft, AppCo
 import TestAcknowledgment from "./TestAcknowledgment";
 import { WSMyApplications } from "./WSMyApplications";
 import WSResponse from "../employee/WSResponse";
+import { HomeIcon } from "@djb25/digit-ui-react-components";
 
 const App = ({ path }) => {
   const location = useLocation();
   const { t } = useTranslation();
+  let isMobile = window.Digit.Utils.browser.isMobile();
   let isCommonPTPropertyScreen = window.location.href.includes("/ws/create-application/property-details");
   let isAcknowledgement = window.location.href.includes("/acknowledgement") || window.location.href.includes("/disconnect-acknowledge");
   const WSDisconnectAcknowledgement = Digit?.ComponentRegistryService?.getComponent("WSDisconnectAcknowledgement");
@@ -23,14 +25,20 @@ const App = ({ path }) => {
   };
 
   const crumbs = [
+    // {
+    //   path: "/digit-ui/citizen",
+    //   label: t("CS_COMMON_HOME"),
+    //   show: true,
+    // },
     {
-      path: "/digit-ui/citizen",
-      label: t("CS_COMMON_HOME"),
+      path: "/digit-ui/employee",
       show: true,
+      style: isMobile ? { width: "20%" } : {},
+      icon: HomeIcon,
     },
     {
       path: "/digit-ui/citizen/ws/create-application",
-      label: t("CS_WS_CREATE_APPLICATION"),
+      label: t("WS_COMMON_APPL_NEW_CONNECTION"),
       show: location.pathname.includes("/create-application") || location.pathname.includes("/info"),
     },
     {
@@ -40,7 +48,7 @@ const App = ({ path }) => {
     },
     {
       path: "/digit-ui/citizen/ws/my-applications",
-      label: t("CS_WS_MY_APPLICATIONS"),
+      label: t("CS_HOME_MY_APPLICATIONS"),
       show: location.pathname.includes("/my-applications"),
     },
     {
@@ -60,7 +68,7 @@ const App = ({ path }) => {
     },
     {
       path: "/digit-ui/citizen/ws/old-application",
-      label: t("WS_OLD_APPLICATION"),
+      label: t("WS_COMMON_APPL_NEW_CONNECTION"),
       show: location.pathname.includes("/old-application"),
     },
   ];

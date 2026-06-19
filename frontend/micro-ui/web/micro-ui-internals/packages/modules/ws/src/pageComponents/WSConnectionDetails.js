@@ -240,6 +240,7 @@ const ConnectionDetails = (_props) => {
         institutionName: connectionDetail?.institutionName || "",
         natureOfWork: connectionDetail?.natureOfWork || "",
         orgDeptDocument: connectionDetail?.orgDeptDocument || "",
+        orgDeptDocumentName: connectionDetail?.orgDeptDocumentName || "",
       },
     }
   );
@@ -274,6 +275,7 @@ const ConnectionDetails = (_props) => {
             const fsId = response?.data?.files[0]?.fileStoreId;
             setUploadedFile(fsId);
             setValue("orgDeptDocument", fsId);
+            setValue("orgDeptDocumentName", file.name);
           } else {
             setFileUploadError(t("CS_FILE_UPLOAD_ERROR") || "File Upload Error");
           }
@@ -661,6 +663,14 @@ const ConnectionDetails = (_props) => {
                         }}
                         message={uploadedFile ? `1 ${t("WS_ACTION_FILEUPLOADED")}` : t("WS_ACTION_NO_FILEUPLOADED")}
                         accept="image/*, .pdf"
+                        uploadedFiles={
+                          uploadedFile && !file ? [[connectionDetail?.orgDeptDocumentName || "Document", { fileStoreId: uploadedFile }]] : undefined
+                        }
+                        removeTargetedFile={() => {
+                          setUploadedFile(null);
+                          setFile(null);
+                          props.onChange(null);
+                        }}
                       />
                     )}
                   />

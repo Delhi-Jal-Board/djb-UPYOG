@@ -1831,5 +1831,5 @@ export const checkForNotNull = (value = "") => {
 };
 
 export const checkForNA = (value = "") => {
-  return checkForNotNull(value) ? value : "CS_NA";
+  return (value && value != null && value !== undefined && value !== "" && value !== "Image") ? value : " NA";
 };

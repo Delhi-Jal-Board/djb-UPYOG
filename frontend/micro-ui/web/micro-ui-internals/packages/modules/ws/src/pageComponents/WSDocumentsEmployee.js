@@ -259,6 +259,7 @@ function SelectDocument({
           {
             documentType: selectedDocument?.code,
             fileStoreId: uploadedFile,
+            fileName: file?.name || filteredDocument?.fileName || "",
             documentUid: documentUid,
             i18nKey: selectedDocument?.code,
             id: selectedDocument?.id,
@@ -367,7 +368,7 @@ function SelectDocument({
                 error={!uploadedFile}
                 accept={doc?.code === "OWNER.APPLICANTPHOTO" ? "image/jpeg, image/png, .jpg, .jpeg, .png" : "image/*, .pdf, .png, .jpeg, .jpg"}
                 uploadedFiles={
-                  uploadedFile && file && isCameraFile ? [[file?.name || "applicant_photo.jpg", { fileStoreId: uploadedFile }]] : undefined
+                  uploadedFile && !file ? [[filteredDocument?.fileName || file?.name || t("CS_COMMON_DOCUMENT"), { fileStoreId: uploadedFile }]] : undefined
                 }
                 removeTargetedFile={() => {
                   setUploadedFile(null);

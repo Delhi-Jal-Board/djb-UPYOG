@@ -16,7 +16,8 @@ const EmployeeApp = ({ path, url, userType }) => {
 
   const getBreadcrumbLabel = () => {
     const pathname = location.pathname;
-    if (pathname.includes("/commonpt/search")) return "SEARCH_PROPERTY";
+    if (pathname.includes("/commonpt/new-application")) return "PT_CREATE_PROPERTY";
+    else if (pathname.includes("/commonpt/search")) return "SEARCH_PROPERTY";
     else if (pathname.includes("/view-property")) return "PT_PROPERTY_INFORMATION";
 
     return "ES_COMMON_INBOX";
