@@ -142,6 +142,32 @@ export const WSSearch = {
       response.SewerageConnections[0] = wsApplicationDetails;
     }
 
+    if (response?.WaterConnection?.[0]?.documents && Array.isArray(response.WaterConnection[0].documents)) {
+      const uniqueDocsMap = new Map();
+      const otherDocs = [];
+      response.WaterConnection[0].documents.forEach((doc) => {
+        if (doc?.documentType) {
+          uniqueDocsMap.set(doc.documentType, doc);
+        } else {
+          otherDocs.push(doc);
+        }
+      });
+      response.WaterConnection[0].documents = [...Array.from(uniqueDocsMap.values()), ...otherDocs];
+    }
+
+    if (response?.SewerageConnections?.[0]?.documents && Array.isArray(response.SewerageConnections[0].documents)) {
+      const uniqueDocsMap = new Map();
+      const otherDocs = [];
+      response.SewerageConnections[0].documents.forEach((doc) => {
+        if (doc?.documentType) {
+          uniqueDocsMap.set(doc.documentType, doc);
+        } else {
+          otherDocs.push(doc);
+        }
+      });
+      response.SewerageConnections[0].documents = [...Array.from(uniqueDocsMap.values()), ...otherDocs];
+    }
+
     const wsData = cloneDeep(serviceType == "WATER" ? response?.WaterConnection : response?.SewerageConnections);
 
     wsData?.forEach((item) => {
