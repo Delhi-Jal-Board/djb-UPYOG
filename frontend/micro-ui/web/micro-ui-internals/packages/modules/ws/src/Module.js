@@ -38,6 +38,7 @@ import WSDisconnectionAppDetails from "./pageComponents/WSDisconnectionAppDetail
 import WSBankDetails from "./pageComponents/WSBankDetails";
 import WSDeclaration from "./pageComponents/WSDeclaration";
 import WSDjbEmployee from "./pageComponents/WSDjbEmployee";
+import WSPropertyWaterConnection from "./pageComponents/WSPropertyWaterConnection";
 
 //Components
 import WSInbox from "./components/WSInbox";
@@ -70,6 +71,7 @@ import WSRestorationCheckPage from "./pages/citizen/WSRestoration/CheckPage";
 import WSReSubmitDisconnectionCheckPage from "./pages/citizen/ReSubmitDisconnection/CheckPage";
 import WNSMyBillsComponent from "./pages/citizen/WnSMyBills";
 import WSInfoPage from "./pages/citizen/WSInfoPage";
+import WSPropertyLocationDetails from "./pageComponents/WSPropertyLocationDetails";
 
 //Employee Components
 import ApplicationBillAmendment from "./pages/employee/ApplicationBillAmendment";
@@ -119,7 +121,7 @@ export const WSModule = ({ stateCode, userType, tenants }) => {
   if (isLoading) {
     return <Loader />;
   }
-  
+
 
   if (userType === "citizen") {
     return <CitizenApp path={path} stateCode={stateCode} />;
@@ -173,13 +175,16 @@ const componentsToRegister = {
   WSLinks,
 
   // PageComponents
-  WSServiceName,
+  WSServiceName: WSConnectionDetails,
   WSWaterConnectionDetails,
+  CPTPropertyLocationDetails: WSPropertyLocationDetails,
+  PTPropertyLocationDetails: WSPropertyLocationDetails,
+  WSPropertyWaterConnection,
   WSDocsRequired,
-  WSDocumentDetails,
+  WSDocumentDetails: WSDocumentsEmployee,
   WSSewerageConnectionDetails,
   WSPlumberPreference,
-  WSConnectionHolder,
+  WSConnectionHolder: WSConnectionHolderDetails,
   WSInfoLabel,
   WSActivationDetails,
   WSConnectionDetails,

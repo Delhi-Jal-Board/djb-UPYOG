@@ -85,7 +85,9 @@ const WSCreate = () => {
   newConfig = newConfig?.WSCreateConfig ? newConfig?.WSCreateConfig : newConfigWS;
   //newConfig = newConfigWS;
   newConfig.forEach((obj) => {
-    config = config.concat(obj.body.filter((a) => !a.hideInCitizen));
+    if (!obj.hideInCitizen) {
+      config = config.concat(obj.body.filter((a) => !a.hideInCitizen));
+    }
   });
   config.indexRoute = "search-property";
 

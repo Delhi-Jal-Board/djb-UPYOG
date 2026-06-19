@@ -118,8 +118,11 @@ const WSInfoPage = () => {
                     name="mobileNumber"
                     value={searchMobileNumber}
                     onChange={(e) => {
-                      setSearchMobileNumber(e.target.value);
-                      setSelectedProperty(null);
+                      const val = e.target.value;
+                      if (val.length <= 10) {
+                        setSearchMobileNumber(val);
+                        setSelectedProperty(null);
+                      }
                     }}
                     placeholder={t("Enter mobile number")}
                     maxLength={10}

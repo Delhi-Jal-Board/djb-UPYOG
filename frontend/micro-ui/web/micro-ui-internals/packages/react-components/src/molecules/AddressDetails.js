@@ -60,11 +60,11 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
   );
   const [addressLine1, setAddressLine1] = useState(
     formData?.addressLine1 ||
-      formData?.subLocality ||
-      formData?.address?.addressLine1 ||
-      formData?.address?.subLocality ||
-      formData?.infodetails?.existingDataSet?.address?.addressline1 ||
-      ""
+    formData?.subLocality ||
+    formData?.address?.addressLine1 ||
+    formData?.address?.subLocality ||
+    formData?.infodetails?.existingDataSet?.address?.addressline1 ||
+    ""
   );
   const [addressLine2, setAddressLine2] = useState(
     formData?.addressLine2 || formData?.address?.addressLine2 || formData?.infodetails?.existingDataSet?.address?.addressline2 || ""
@@ -75,16 +75,16 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
   const [addressType, setAddressType] = useState(
     convertToObject(formData?.addressType) || formData?.address?.addressType || formData?.infodetails?.existingDataSet?.address?.addressType
       ? allOptions.find(
-          (a) =>
-            a.code ===
-            (formData?.addressType?.code ||
-              formData?.addressType ||
-              formData?.address?.addressType ||
-              formData?.infodetails?.existingDataSet?.address?.addressType)
-        ) ||
-          convertToObject(formData?.addressType) ||
-          formData?.address?.addressType ||
-          formData?.infodetails?.existingDataSet?.address?.addressType
+        (a) =>
+          a.code ===
+          (formData?.addressType?.code ||
+            formData?.addressType ||
+            formData?.address?.addressType ||
+            formData?.infodetails?.existingDataSet?.address?.addressType)
+      ) ||
+      convertToObject(formData?.addressType) ||
+      formData?.address?.addressType ||
+      formData?.infodetails?.existingDataSet?.address?.addressType
       : allOptions.find((a) => a.code === "PERMANENT")
   );
   const [showPincodeSuggestions, setShowPincodeSuggestions] = useState(false);
@@ -143,12 +143,14 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
   const location = useLocation();
 
   const isEkyc = window.location.pathname.includes("/ekyc");
+  const queryParams = new URLSearchParams(location.search);
+  const urlKno = queryParams.get("kno");
   const searchKno = isEkyc
-    ? location?.state?.kNumber || location?.state?.kno || formData?.kNumber || formData?.kno || sessionStorage.getItem("EKYC_K_NUMBER")
+    ? urlKno || location?.state?.kNumber || location?.state?.kno || formData?.kNumber || formData?.kno || sessionStorage.getItem("EKYC_K_NUMBER")
     : null;
 
   const { data: searchData } = Digit.Hooks.ekyc.useSearchConnection(
-    { tenantId, details: { kno: searchKno } },
+    { tenantId, details: { kno: searchKno, fetchType: "ADDRESS" } },
     { enabled: !!searchKno && isEkyc, cacheTime: 0 }
   );
 
@@ -306,9 +308,17 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
     handleGetLocation();
   }, []);
 
+  const extractApplicationData = (searchData) => {
+    if (!searchData) return null;
+    const reviewWrapper = searchData?.applicationReviewInfo || searchData?.applicationReview || searchData;
+    const applicationData = (Array.isArray(reviewWrapper) ? reviewWrapper[0] : reviewWrapper) || {};
+    return applicationData?.newData || applicationData;
+  };
+
   useEffect(() => {
     if (isEkyc && searchData) {
-      const rawData = searchData || formData?.connectionDetails;
+      const appData = extractApplicationData(searchData);
+      const rawData = appData || formData?.connectionDetails;
       const apiAddress =
         rawData?.addressDetails || rawData?.address || rawData?.propertyInfo?.address || rawData?.connectionDetails?.address || rawData || {};
 
@@ -712,7 +722,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
         {!config?.doorImage && (
           <div>
             <Label>
-              {`${t("CITY")}`} <span className="check-page-link-button">*</span>
+              {`${t("CORE_COMMON_PROFILE_CITY")}`} <span className="check-page-link-button">*</span>
             </Label>
             <Controller
               control={control}
@@ -965,7 +975,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
         </div>
 
         <div>
-          <Label>{`${t("LATITUDE")}`}</Label>
+          <Label>{`${t("LATITUDE_GEOTAG")}`}</Label>
 
           <TextInput
             t={t}
@@ -992,7 +1002,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
         </div>
 
         <div>
-          <Label>{`${t("LONGITUDE")}`}</Label>
+          <Label>{`${t("LONGITUDE_GEOTAG")}`}</Label>
 
           <TextInput
             t={t}
@@ -1018,7 +1028,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
           />
         </div>
         <div>
-          <Label>{`${t("ASSEMBLY")}`}</Label>
+          <Label>{`${t("COMMON_ASSEMBLY")}`}</Label>
           <TextInput
             t={t}
             type={"text"}
@@ -1047,7 +1057,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
               />
             </div> */}
         <div>
-          <Label>{`${t("WARD")}`}</Label>
+          <Label>{`${t("COMMON_WARD")}`}</Label>
           <TextInput
             t={t}
             type={"text"}
@@ -1061,7 +1071,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
           />
         </div>
         <div>
-          <Label>{`${t("ZONE")}`}</Label>
+          <Label>{`${t("COMMON_ZONE")}`}</Label>
           <TextInput
             t={t}
             type={"text"}
@@ -1174,7 +1184,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
         >
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
             <div>
-              <Label>{`${t("ACTUAL ASSEMBLY")}`}</Label>
+              <Label>{`${t("COMMON_CURRENT_ASSEMBLY")}`}</Label>
               <Dropdown
                 className="form-field"
                 selected={
@@ -1192,7 +1202,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
             </div>
 
             <div>
-              <Label>{`${t("ACTUAL ZONE")}`}</Label>
+              <Label>{`${t("COMMON_CURRENT_ZONE")}`}</Label>
               <Dropdown
                 className="form-field"
                 selected={zoneOptions.find((z) => z.code === tempZone) || (tempZone ? { code: tempZone, i18nKey: tempZone, name: tempZone } : null)}
@@ -1207,7 +1217,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
             </div>
 
             <div>
-              <Label>{`${t("ACTUAL WARD")}`}</Label>
+              <Label>{`${t("COMMON_CURRENT_WARD")}`}</Label>
               <Dropdown
                 className="form-field"
                 selected={wardOptions.find((w) => w.code === tempWard) || (tempWard ? { code: tempWard, i18nKey: tempWard, name: tempWard } : null)}

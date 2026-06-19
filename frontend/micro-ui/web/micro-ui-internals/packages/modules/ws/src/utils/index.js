@@ -473,21 +473,21 @@ export const convertToEditWSUpdate = (data) => {
       applicationType: data?.isEditApplication ? data?.applicationType : "MODIFY_WATER_CONNECTION",
       dateEffectiveFrom: convertDateToEpoch(Date.now() + 86400000),
       connectionHolders: data?.isEditApplication
-        ? !data?.ConnectionHolderDetails?.isOwnerSame
+        ? !data?.ConnectionHolderDetails?.[0]?.isOwnerSame
           ? [
             {
-              correspondenceAddress: data?.ConnectionHolderDetails?.address || "",
-              fatherOrHusbandName: data?.ConnectionHolderDetails?.guardian || "",
-              gender: data?.ConnectionHolderDetails?.gender?.code || "",
-              mobileNumber: data?.ConnectionHolderDetails?.mobileNumber || "",
-              name: data?.ConnectionHolderDetails?.name || "",
-              middleName: data?.ConnectionHolderDetails?.middleName || "",
-              lastName: data?.ConnectionHolderDetails?.lastName || "",
-              emailId: data?.ConnectionHolderDetails?.emailId || "",
-              watsAppMobileNumber: data?.ConnectionHolderDetails?.watsAppMobileNumber || "",
-              ownerType: data?.ConnectionHolderDetails?.specialCategoryType?.code || "",
-              relationship: data?.ConnectionHolderDetails?.relationship?.code || "",
-              sameAsPropertyAddress: data?.ConnectionHolderDetails?.sameAsOwnerDetails,
+              correspondenceAddress: data?.ConnectionHolderDetails?.[0]?.address || "",
+              fatherOrHusbandName: data?.ConnectionHolderDetails?.[0]?.guardian || "",
+              gender: data?.ConnectionHolderDetails?.[0]?.gender?.code || "",
+              mobileNumber: data?.ConnectionHolderDetails?.[0]?.mobileNumber || "",
+              name: data?.ConnectionHolderDetails?.[0]?.name || "",
+              middleName: data?.ConnectionHolderDetails?.[0]?.middleName || "",
+              lastName: data?.ConnectionHolderDetails?.[0]?.lastName || "",
+              emailId: data?.ConnectionHolderDetails?.[0]?.emailId || "",
+              watsAppMobileNumber: data?.ConnectionHolderDetails?.[0]?.watsAppMobileNumber || "",
+              ownerType: data?.ConnectionHolderDetails?.[0]?.specialCategoryType?.code || "",
+              relationship: data?.ConnectionHolderDetails?.[0]?.relationship?.code || "",
+              sameAsPropertyAddress: data?.ConnectionHolderDetails?.[0]?.sameAsOwnerDetails,
             },
           ]
           : null
@@ -595,21 +595,21 @@ export const convertToEditSWUpdate = (data) => {
       applicationType: data?.isEditApplication ? data?.applicationType : "MODIFY_WATER_CONNECTION",
       dateEffectiveFrom: convertDateToEpoch(Date.now() + 86400000),
       connectionHolders: data?.isEditApplication
-        ? !data?.ConnectionHolderDetails?.isOwnerSame
+        ? !data?.ConnectionHolderDetails?.[0]?.isOwnerSame
           ? [
             {
-              correspondenceAddress: data?.ConnectionHolderDetails?.address || "",
-              fatherOrHusbandName: data?.ConnectionHolderDetails?.guardian || "",
-              gender: data?.ConnectionHolderDetails?.gender?.code || "",
-              mobileNumber: data?.ConnectionHolderDetails?.mobileNumber || "",
-              name: data?.ConnectionHolderDetails?.name || "",
-              middleName: data?.ConnectionHolderDetails?.middleName || "",
-              lastName: data?.ConnectionHolderDetails?.lastName || "",
-              emailId: data?.ConnectionHolderDetails?.emailId || "",
-              watsAppMobileNumber: data?.ConnectionHolderDetails?.watsAppMobileNumber || "",
-              ownerType: data?.ConnectionHolderDetails?.specialCategoryType?.code || "",
-              relationship: data?.ConnectionHolderDetails?.relationship?.code || "",
-              sameAsPropertyAddress: data?.ConnectionHolderDetails?.sameAsOwnerDetails,
+              correspondenceAddress: data?.ConnectionHolderDetails?.[0]?.address || "",
+              fatherOrHusbandName: data?.ConnectionHolderDetails?.[0]?.guardian || "",
+              gender: data?.ConnectionHolderDetails?.[0]?.gender?.code || "",
+              mobileNumber: data?.ConnectionHolderDetails?.[0]?.mobileNumber || "",
+              name: data?.ConnectionHolderDetails?.[0]?.name || "",
+              middleName: data?.ConnectionHolderDetails?.[0]?.middleName || "",
+              lastName: data?.ConnectionHolderDetails?.[0]?.lastName || "",
+              emailId: data?.ConnectionHolderDetails?.[0]?.emailId || "",
+              watsAppMobileNumber: data?.ConnectionHolderDetails?.[0]?.watsAppMobileNumber || "",
+              ownerType: data?.ConnectionHolderDetails?.[0]?.specialCategoryType?.code || "",
+              relationship: data?.ConnectionHolderDetails?.[0]?.relationship?.code || "",
+              sameAsPropertyAddress: data?.ConnectionHolderDetails?.[0]?.sameAsOwnerDetails,
             },
           ]
           : null
@@ -1831,5 +1831,5 @@ export const checkForNotNull = (value = "") => {
 };
 
 export const checkForNA = (value = "") => {
-  return checkForNotNull(value) ? value : "CS_NA";
+  return (value && value != null && value !== undefined && value !== "" && value !== "Image") ? value : " NA";
 };

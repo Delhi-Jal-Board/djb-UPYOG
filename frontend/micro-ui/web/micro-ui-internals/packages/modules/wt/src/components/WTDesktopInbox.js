@@ -80,6 +80,22 @@ const WTDesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
       exportAccessor: (row) => (row?.workflowData?.state?.applicationStatus ? t(row.workflowData.state.applicationStatus) : ""),
     });
 
+    if (columns?.some((column) => column?.id === "deliveryDateTime")) {
+      csvColumns.push({
+        Header: columns?.find((column) => column?.id === "deliveryDateTime")?.Header || t("WT_DELIVERY_DATE_TIME"),
+        exportAccessor: (row) => {
+          const driverTripReport = row?.searchData?.driverTripReport;
+          if (Array.isArray(driverTripReport) && driverTripReport.length > 0) {
+            const lastModifiedTime = driverTripReport[0]?.auditDetails?.lastModifiedTime;
+            if (lastModifiedTime) {
+              return `${Digit.DateUtils.ConvertEpochToDate(lastModifiedTime)} ${Digit.DateUtils.ConvertEpochToTimeInHours(lastModifiedTime)}`;
+            }
+          }
+          return "-";
+        },
+      });
+    }
+
     if (columns?.some((column) => column?.id === "vendorName")) {
       csvColumns.push({
         Header: columns?.find((column) => column?.id === "vendorName")?.Header || t("WT_VENDOR_NAME"),

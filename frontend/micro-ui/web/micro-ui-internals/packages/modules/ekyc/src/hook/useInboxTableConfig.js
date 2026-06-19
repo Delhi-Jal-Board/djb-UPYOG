@@ -70,7 +70,7 @@ const useInboxTableConfig = ({
       Header: t("EKYC_EKYC_STATUS"),
       accessor: "ekycStatus",
       Cell: ({ row }) => {
-        const ekycStatus = row.original?.ekycstatus || "NA";
+        const ekycStatus = row.original?.ekycStatus || row.original?.ekycstatus || "NA";
         return <span className={`ekyc-status-tag ${ekycStatus}`}>{t(`${ekycStatus}`)}</span>;
       },
     },

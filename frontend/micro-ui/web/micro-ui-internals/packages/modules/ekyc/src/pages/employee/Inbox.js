@@ -87,6 +87,7 @@ const Inbox = ({ parentRoute, businessService = "EKYC", initialStates = {}, filt
           applicationNumber: item.propertyInfo?.kno || "",
           citizenName: item.connectionDetails?.consumerName || "",
           status: item.connectionDetails?.statusflag || "",
+          ekycStatus: item.connectionDetails?.ekycStatus || item.connectionDetails?.ekycstatus || item.ekycStatus || item.ekycstatus || "NA",
           sla: 0,
         };
       }
@@ -101,6 +102,7 @@ const Inbox = ({ parentRoute, businessService = "EKYC", initialStates = {}, filt
         applicationNumber: item.kno || item.applicationNumber || "",
         citizenName: fullName || item.consumerName || item.citizenName || "",
         status: item.status || "",
+        ekycStatus: item.ekycStatus || item.ekycstatus || "NA",
         sla: item.sla ?? 0,
       };
     });

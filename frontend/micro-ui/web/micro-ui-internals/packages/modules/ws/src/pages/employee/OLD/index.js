@@ -585,7 +585,7 @@ const OLDApplication = () => {
     return (
       <React.Fragment>
         <div className="employee-form-section-wrapper">
-          <VerticalTimeline config={timelineConfig} currentActiveIndex={4} showFinalStep={false} />
+          <VerticalTimeline config={timelineConfig} currentActiveIndex={9} showFinalStep={false} />
           <CheckPage data={sessionFormData} onSubmit={() => processSubmission(sessionFormData)} onEdit={() => setShowCheckPage(false)} />
         </div>
       </React.Fragment>

@@ -32,7 +32,15 @@ const Inbox = ({ parentRoute }) => {
     };
   }, [tenantId, formState?.tableForm?.offset, formState?.tableForm?.limit, formState?.searchForm]);
 
-  const { isLoading, data: dashboardData = {} } = Digit.Hooks.ekyc.useEkycSurveyorDashboard({}, queryParams, {
+  const filters = useMemo(() => {
+    const searchForm = formState?.searchForm || {};
+    return {
+      ...searchForm,
+      ...(searchForm.kNumber && { kno: searchForm.kNumber }),
+    };
+  }, [formState?.searchForm]);
+
+  const { isLoading, data: dashboardData = {} } = Digit.Hooks.ekyc.useEkycApplicationList(filters, queryParams, {
     enabled: !!tenantId,
     keepPreviousData: true,
   });
@@ -64,7 +72,7 @@ const Inbox = ({ parentRoute }) => {
       return [searchData];
     }
 
-    return dashboardData?.dashboardInfo?.consumerList || [];
+    return dashboardData?.consumerList || [];
   }, [isSearchActive, searchData, dashboardData]);
 
   const filteredData = useMemo(() => {
@@ -80,6 +88,7 @@ const Inbox = ({ parentRoute }) => {
           applicationNumber: item.propertyInfo?.kno || "",
           citizenName: item.connectionDetails?.consumerName || "",
           status: item.connectionDetails?.statusflag || "",
+          ekycStatus: item.connectionDetails?.ekycStatus || item.connectionDetails?.ekycstatus || item.ekycStatus || item.ekycstatus || "NA",
           sla: 0,
         };
       }
@@ -93,6 +102,7 @@ const Inbox = ({ parentRoute }) => {
         applicationNumber: item.kno || item.applicationNumber || "",
         citizenName: item.consumerName || item.citizenName || "",
         status: item.status || "",
+        ekycStatus: item.ekycStatus || item.ekycstatus || "NA",
         sla: item.sla ?? 0,
       };
     });
@@ -126,13 +136,13 @@ const Inbox = ({ parentRoute }) => {
   };
 
   const searchFormDefaultValues = {
-    mobileNumber: "",
+    kNumber: "",
     applicationNumber: "",
     consumerNo: "",
   };
 
   const onSearchFormReset = (setSearchFormValue) => {
-    setSearchFormValue("mobileNumber", null);
+    setSearchFormValue("kNumber", null);
     setSearchFormValue("applicationNumber", null);
     setSearchFormValue("consumerNo", null);
     dispatch({ action: "mutateSearchForm", data: searchFormDefaultValues });
