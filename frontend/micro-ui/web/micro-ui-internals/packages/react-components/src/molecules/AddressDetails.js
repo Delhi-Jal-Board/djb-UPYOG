@@ -1128,19 +1128,19 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", rowGap: "16px", columnGap: "32px" }}>
                     {actualAssembly && (
                       <div style={{ display: "flex" }}>
-                        <span style={{ minWidth: "150px", color: "#505A5F", fontWeight: "400" }}>{t("ACTUAL ASSEMBLY")}</span>
+                        <span style={{ minWidth: "150px", color: "#505A5F", fontWeight: "400" }}>{t("COMMON_CURRENT_ASSEMBLY")}</span>
                         <span style={{ fontWeight: "500", color: "#0B0C0C", wordBreak: "break-word" }}>{actualAssembly}</span>
                       </div>
                     )}
                     {actualWard && (
                       <div style={{ display: "flex" }}>
-                        <span style={{ minWidth: "150px", color: "#505A5F", fontWeight: "400" }}>{t("ACTUAL WARD")}</span>
+                        <span style={{ minWidth: "150px", color: "#505A5F", fontWeight: "400" }}>{t("COMMON_CURRENT_WARD")}</span>
                         <span style={{ fontWeight: "500", color: "#0B0C0C", wordBreak: "break-word" }}>{actualWard}</span>
                       </div>
                     )}
                     {actualZone && (
                       <div style={{ display: "flex" }}>
-                        <span style={{ minWidth: "150px", color: "#505A5F", fontWeight: "400" }}>{t("ACTUAL ZONE")}</span>
+                        <span style={{ minWidth: "150px", color: "#505A5F", fontWeight: "400" }}>{t("COMMON_CURRENT_ZONE")}</span>
                         <span style={{ fontWeight: "500", color: "#0B0C0C", wordBreak: "break-word" }}>
                           {t(zoneOptions.find((z) => z.code === actualZone)?.name || actualZone)}
                         </span>

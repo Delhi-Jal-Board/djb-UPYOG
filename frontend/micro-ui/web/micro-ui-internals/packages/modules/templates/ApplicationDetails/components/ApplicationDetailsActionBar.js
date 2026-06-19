@@ -25,6 +25,9 @@ function ApplicationDetailsActionBar({
   });
 
   React.useEffect(() => {
+    if (typeof window !== "undefined" && typeof window.isDocumentsVerified !== "undefined") {
+      setIsSubmitDisabled(!window.isDocumentsVerified);
+    }
     const handleDocVerification = (e) => {
       setIsSubmitDisabled(!e.detail);
     };
