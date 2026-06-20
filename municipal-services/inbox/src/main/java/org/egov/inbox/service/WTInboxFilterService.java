@@ -26,6 +26,10 @@ import org.egov.inbox.web.model.InboxSearchCriteria;
 import org.egov.inbox.web.model.workflow.ProcessInstanceSearchCriteria;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -74,6 +78,12 @@ public class WTInboxFilterService {
 
 		@Value("${egov.searcher.wtf.search.desc.path}")
 		private String wtFixedPointInboxSearcherDescEndpoint;
+
+	@Value("${egov.requestservice.host}")
+	private String requestServiceHost;
+
+	@Value("${egov.requestservice.search.path}")
+	private String requestServiceSearchEndpoint;
 
 		@Autowired
 		private RestTemplate restTemplate;
@@ -239,7 +249,57 @@ public class WTInboxFilterService {
 			return userUuids;
 		}
 
+	public Map<String, Integer> fetchStatusCounts(InboxSearchCriteria criteria, RequestInfo requestInfo) {
 
+		Map<String, Integer> statusCounts = new HashMap<>();
 
+		try {
+			ProcessInstanceSearchCriteria processCriteria = criteria.getProcessSearchCriteria();
+			HashMap moduleSearchCriteria = criteria.getModuleSearchCriteria();
+
+			// 1. Build the Search URL
+			StringBuilder url = new StringBuilder(requestServiceHost + requestServiceSearchEndpoint);
+			url.append("?tenantId=").append(criteria.getTenantId());
+
+			// Map the business service to applicationType
+			if (processCriteria.getBusinessService() != null) {
+				url.append("&applicationType=").append(processCriteria.getBusinessService());
+			}
+
+			// Append other filters if they exist (mobileNumber, locality, etc.)
+			if (moduleSearchCriteria != null) {
+				if (moduleSearchCriteria.containsKey(MOBILE_NUMBER_PARAM) && moduleSearchCriteria.get(MOBILE_NUMBER_PARAM) != null) {
+					url.append("&mobileNumber=").append(moduleSearchCriteria.get(MOBILE_NUMBER_PARAM));
+				}
+				if (moduleSearchCriteria.containsKey(LOCALITY_PARAM) && moduleSearchCriteria.get(LOCALITY_PARAM) != null) {
+					url.append("&localityCode=").append(moduleSearchCriteria.get(LOCALITY_PARAM));
+				}
+			}
+
+			// We only need the counts, limit=1 makes it fast
+			url.append("&limit=1");
+
+			// 2. Build the Payload
+			Map<String, Object> request = new HashMap<>();
+			request.put("RequestInfo", requestInfo);
+
+			HttpHeaders headers = new HttpHeaders();
+			headers.setContentType(MediaType.APPLICATION_JSON);
+			HttpEntity<Map<String, Object>> entity = new HttpEntity<>(request, headers);
+
+			// 3. Make the API Call
+			log.info("Fetching status counts from Request Service: {}", url.toString());
+			ResponseEntity<Map> response = restTemplate.postForEntity(url.toString(), entity, Map.class);
+
+			if (response.getBody() != null && response.getBody().containsKey("statusCounts")) {
+				statusCounts = (Map<String, Integer>) response.getBody().get("statusCounts");
+			}
+
+		} catch (Exception e) {
+			log.error("Failed to fetch status counts from request-service", e);
+		}
+
+		return statusCounts;
+	}
 
 }
