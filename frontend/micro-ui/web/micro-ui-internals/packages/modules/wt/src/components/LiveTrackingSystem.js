@@ -93,7 +93,7 @@ const Address = ({ lat, lng, fallback = "Resolving area" }) => {
   return <span title={`${lat?.toFixed(6)}, ${lng?.toFixed(6)}`}>{address}</span>;
 };
 
-const SOCKET_URL = "https://dev-djb.nitcon.in";
+const SOCKET_URL = "https://dev-djberp.nitcon.in";
 
 // Component to handle map centering
 

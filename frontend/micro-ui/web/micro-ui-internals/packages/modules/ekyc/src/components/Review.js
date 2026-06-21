@@ -464,7 +464,7 @@ const Review = () => {
 
   const handleViewDocument = (fileStoreId) => {
     if (!fileStoreId) return;
-    const documentUrl = `https://dev-djb.nitcon.in/filestore/v1/files/id?tenantId=dl.djb&fileStoreId=${fileStoreId}`;
+    const documentUrl = `https://dev-djberp.nitcon.in/filestore/v1/files/id?tenantId=dl.djb&fileStoreId=${fileStoreId}`;
     setPreviewUrl(documentUrl);
     setShowPreview(true);
   };
