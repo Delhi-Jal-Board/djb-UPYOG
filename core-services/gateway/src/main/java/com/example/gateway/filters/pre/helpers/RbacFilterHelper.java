@@ -58,6 +58,9 @@ public class RbacFilterHelper implements RewriteFunction<Map, Map> {
         log.debug("Incoming request body keys: {}", map != null ? map.keySet() : "NULL BODY");
 
         isIncomingURIInAuthorizedActionList(serverWebExchange,map);
+        if (map == null) {
+            throw new CustomException("INVALID_REQUEST","Request body is missing");
+        }
         return Mono.just(map);
     }
 
@@ -66,11 +69,18 @@ public class RbacFilterHelper implements RewriteFunction<Map, Map> {
         String requestUri = exchange.getRequest().getURI().getPath();
         log.debug("Full request map: {}", map);
 
-        RequestInfo requestInfo = objectMapper.convertValue(map.get(REQUEST_INFO_FIELD_NAME_PASCAL_CASE), RequestInfo.class);
+        User user;
+        if (CommonUtils.isRequestBodyCompatible(exchange.getRequest())) {
+            if (map == null || map.get(REQUEST_INFO_FIELD_NAME_PASCAL_CASE) == null) {
+                throw new CustomException("INVALID_REQUEST","RequestInfo is missing");
+            }
+            RequestInfo requestInfo = objectMapper.convertValue(map.get(REQUEST_INFO_FIELD_NAME_PASCAL_CASE), RequestInfo.class);
+            user = requestInfo.getUserInfo();
+        }else {
+            user = exchange.getAttribute(USER_INFO_KEY);
+        }
 
         log.info("Parsed RequestInfo successfully");
-
-        User user = requestInfo.getUserInfo();
 
         log.info("RBAC parsed user: id={}, userName={}, tenantId={}, type={}",
                 user != null ? user.getId() : null,

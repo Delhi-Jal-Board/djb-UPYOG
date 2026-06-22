@@ -1,6 +1,8 @@
 package com.example.gateway.filters.pre;
 
 import com.example.gateway.filters.pre.helpers.AuthCheckFilterHelper;
+import com.example.gateway.utils.CommonUtils;
+
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpHeaders;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -32,15 +34,16 @@ public class AuthFilter implements GlobalFilter, Ordered {
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
 
         Boolean doAuth = exchange.getAttribute(AUTH_BOOLEAN_FLAG_NAME);
-
-        if(doAuth) {
-            return modifyRequestBodyFilter.apply(new ModifyRequestBodyGatewayFilterFactory.Config()
-                            .setRewriteFunction(Map.class, Map.class, authCheckFilterHelper))
-                    .filter(exchange, chain);
-        }
-        else {
+        if (Boolean.FALSE.equals(doAuth)) {
             return chain.filter(exchange);
         }
+        if (!CommonUtils.isRequestBodyCompatible(exchange.getRequest())) {
+
+            return authCheckFilterHelper.authenticateHeader(exchange, chain);
+        }
+        return modifyRequestBodyFilter.apply(new ModifyRequestBodyGatewayFilterFactory.Config()
+            .setRewriteFunction(Map.class, Map.class, authCheckFilterHelper))
+            .filter(exchange, chain);
     }
 
     @Override

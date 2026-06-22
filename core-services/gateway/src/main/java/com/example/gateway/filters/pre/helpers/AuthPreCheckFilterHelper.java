@@ -1,6 +1,7 @@
 package com.example.gateway.filters.pre.helpers;
 
 import com.example.gateway.config.ApplicationProperties;
+import com.example.gateway.utils.CommonUtils;
 import com.example.gateway.utils.UserUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -8,6 +9,7 @@ import org.egov.common.contract.request.RequestInfo;
 import org.egov.tracer.model.CustomException;
 import org.reactivestreams.Publisher;
 import org.springframework.cloud.gateway.filter.factory.rewrite.RewriteFunction;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
@@ -16,6 +18,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static com.example.gateway.constants.GatewayConstants.*;
 
@@ -40,25 +43,34 @@ public class AuthPreCheckFilterHelper implements RewriteFunction<Map, Map> {
         this.openEndpointsWhitelist = applicationProperties.getOpenEndpointsWhitelist();
         this.mixedModeEndpointsWhitelist = applicationProperties.getMixedModeEndpointsWhitelist();
         this.objectMapper = objectMapper;
+        this.userUtils = userUtils;
     }
 
 
     @Override
     public Publisher<Map> apply(ServerWebExchange exchange, Map body) {
 
-        String authToken;
+        String authToken = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
         String endPointPath = exchange.getRequest().getPath().value();
         log.info("my end point: {}", endPointPath);
         log.info("Open endpoint list: {}", openEndpointsWhitelist.toString());
         if (openEndpointsWhitelist.contains(endPointPath)) {
             exchange.getAttributes().put(AUTH_BOOLEAN_FLAG_NAME, Boolean.FALSE);
             log.info(OPEN_ENDPOINT_MESSAGE, endPointPath);
-            return Mono.just(body);
+            return Objects.isNull(body) ? Mono.empty() : Mono.just(body);
         }
 
         try {
-            RequestInfo requestInfo = objectMapper.convertValue(body.get(REQUEST_INFO_FIELD_NAME_PASCAL_CASE), RequestInfo.class);
-            authToken = requestInfo.getAuthToken();
+            if (CommonUtils.isRequestBodyCompatible(exchange.getRequest())) {
+                if (body == null) {
+                    throw new CustomException("INVALID_REQUEST","Request body is missing.");
+                }
+                RequestInfo requestInfo = objectMapper.convertValue(body.get(REQUEST_INFO_FIELD_NAME_PASCAL_CASE), RequestInfo.class);
+                if (!ObjectUtils.isEmpty(requestInfo.getAuthToken())) {
+                    authToken = requestInfo.getAuthToken();
+                } 
+            }
+            
         } catch (Exception e) {
             log.error(AUTH_TOKEN_RETRIEVE_FAILURE_MESSAGE, e);
             throw new CustomException(AUTH_TOKEN_RETRIEVE_FAILURE_MESSAGE, e.getMessage());
