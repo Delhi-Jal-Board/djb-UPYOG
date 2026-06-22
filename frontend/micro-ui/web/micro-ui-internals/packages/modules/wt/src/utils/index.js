@@ -192,6 +192,7 @@ export const fillingPointPayload = (data) => {
         jeName: data?.owner?.jeName,
         jeEmail: data?.owner?.jeEmail,
         jeMobile: data?.owner?.jeMobile,
+        status: data?.status,
         address: {
           houseNo: data?.address?.houseNo,
           streetName: data?.address?.streetName,
