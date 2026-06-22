@@ -74,6 +74,9 @@ public class CorrelationIdFilterHelper implements RewriteFunction<Map, Map> {
         exchange.getAttributes().put(CORRELATION_ID_KEY, correlationId);
         log.debug(RECEIVED_REQUEST_MESSAGE, requestURI);
 
+        if (body == null) {
+            throw new CustomException("INVALID_REQUEST","Request body is missing");
+        }
         return Mono.just(body);
     }
 

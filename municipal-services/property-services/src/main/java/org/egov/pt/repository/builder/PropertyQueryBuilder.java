@@ -134,6 +134,17 @@ public class PropertyQueryBuilder {
 			+ "WHERE offset_ > ? AND offset_ <= ?";
 
 	private static final String LATEST_EXECUTED_MIGRATION_QUERY = "select * from eg_pt_enc_audit where tenantid = ? order by createdTime desc limit 1;";
+	
+	private static final String PLOT_BY_HASH_QUERY =
+	        "SELECT " +
+	        "id, plotid, tenantid, plotno, doorno, buildingname, " +
+	        "street, locality, sub_locality, addresshash, " +
+	        "additionaldetails, createdby, createdtime, " +
+	        "lastmodifiedby, lastmodifiedtime " +
+	        "FROM {schema}.eg_pt_plot " +
+	        "WHERE tenantid = ? " +
+	        "AND addresshash = ?";
+	
 	private String PROPERTY_AUDIT_ENC_QUERY;
 
 	private String addPaginationWrapper(String query, List<Object> preparedStmtList, PropertyCriteria criteria) {
@@ -391,6 +402,10 @@ public class PropertyQueryBuilder {
 			builder.append(" tenantId= ? ");
 			preparedStmtList.add(tenantId);
 		}
+	}
+	
+	public String getPlotByHashQuery() {
+	    return PLOT_BY_HASH_QUERY;
 	}
 
 
