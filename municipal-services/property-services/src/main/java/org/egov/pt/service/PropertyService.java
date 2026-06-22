@@ -8,7 +8,10 @@ import java.util.stream.Collectors;
 import jakarta.validation.Valid;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.pt.config.PropertyConfiguration;
+import org.egov.pt.models.Address;
+import org.egov.pt.models.AuditDetails;
 import org.egov.pt.models.OwnerInfo;
+import org.egov.pt.models.Plot;
 import org.egov.pt.models.Property;
 import org.egov.pt.models.PropertyCriteria;
 import org.egov.pt.models.collection.BillDetail;
@@ -97,7 +100,7 @@ public class PropertyService {
 
 		propertyValidator.validateCreateRequest(request);
 		enrichmentService.enrichCreateRequest(request);
-		String tenantId = request.getProperty().getTenantId();
+		createOrReusePlot(request);
 		userService.createUser(request);
 		if (config.getIsWorkflowEnabled()
 				&& !request.getProperty().getCreationReason().equals(CreationReason.DATA_UPLOAD)) {
@@ -252,6 +255,7 @@ public class PropertyService {
 
 		String tenantId = request.getProperty().getTenantId();
 		propertyValidator.validateRequestForUpdate(request, propertyFromSearch);
+		updateOrReusePlot(request, propertyFromSearch);
 		if (CreationReason.CREATE.equals(request.getProperty().getCreationReason())) {
 			userService.createUser(request);
 		} else if (request.getProperty().getSource().toString().equals("WS")
@@ -652,6 +656,79 @@ public class PropertyService {
 		propertyCriteria.setIsInboxSearch(false);
 		Integer count = repository.getCount(propertyCriteria, requestInfo);
 		return count;
+	}
+	
+	private void createOrReusePlot(PropertyRequest request) {
+
+	    Property property = request.getProperty();
+
+	    String addressHash = util.generateAddressHash(property.getAddress());
+
+	    Plot existingPlot = repository.getExistingPlot(property.getTenantId(), addressHash);
+
+	    if (existingPlot != null) {
+	        property.setPlotId(existingPlot.getId());
+	        property.setPlot(existingPlot);
+	        return;
+	    }
+	    createNewPlot(request, addressHash);
+	}
+	
+	private void createNewPlot(PropertyRequest request, String hash) {
+
+	    Property property = request.getProperty();
+	    Address address = property.getAddress();
+//	    AuditDetails asdf  = property.getAuditDetails();
+	    Plot plot = Plot.builder()
+	            .id(UUID.randomUUID().toString())
+	            .plotId(util.getIdList(
+	                    request.getRequestInfo(),
+	                    property.getTenantId(),
+	                    config.getPlotIdGenName(),
+	                    config.getPlotIdGenFormat(),
+	                    1).get(0))
+	            .tenantId(property.getTenantId())
+	            .plotNo(address.getPlotNo())
+	            .doorNo(address.getDoorNo())
+	            .buildingName(address.getBuildingName())
+	            .street(address.getStreet())
+	            .locality(address.getLocality().getCode())
+	            .subLocality(address.getSubLocality())
+	            .addressHash(hash)
+	            .auditDetails(property.getAuditDetails())
+	            .build();
+
+	    property.setPlotId(plot.getId());
+	    property.setPlot(plot);
+
+	}
+	
+	private void updateOrReusePlot(PropertyRequest request,Property propertyFromSearch) {
+		
+		Property property = request.getProperty();
+
+		String oldHash = util.generateAddressHash(propertyFromSearch.getAddress());
+		
+		String newHash = util.generateAddressHash(property.getAddress());
+		
+		// Address unchanged
+		if (oldHash.equals(newHash)) {
+			property.setPlotId(propertyFromSearch.getPlotId());
+			property.setPlot(propertyFromSearch.getPlot());
+			return;
+		}
+		
+		// Address changed
+		Plot existingPlot = repository.getExistingPlot(
+		property.getTenantId(),
+		newHash);
+		
+		if (existingPlot != null) {
+			property.setPlotId(existingPlot.getId());
+			property.setPlot(existingPlot);
+			return;
+		}
+		createNewPlot(request, newHash);
 	}
 
 }

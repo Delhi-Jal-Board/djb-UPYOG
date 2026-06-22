@@ -102,6 +102,9 @@ public class Property extends PropertyInfo {
 	@JsonProperty("workflow")
 	private ProcessInstance workflow;
 	
+	@JsonProperty("plot")
+	private Plot plot;
+	
 	@JsonProperty("AlternateUpdated")
 	private boolean AlternateUpdated;
 
@@ -109,13 +112,13 @@ public class Property extends PropertyInfo {
 	@JsonProperty("isOldDataEncryptionRequest")
 	private boolean isOldDataEncryptionRequest = false;
 
-	public Property(String id, String propertyId, String surveyId, List<String> linkedProperties, String tenantId,
+	public Property(String id, String propertyId, String plotId, String surveyId, List<String> linkedProperties, String tenantId,
 			String accountId, String oldPropertyId, Status status, Address address, String acknowldgementNumber,
 			String propertyType, String ownershipCategory, List<OwnerInfo> owners, Institution institution,
 			CreationReason creationReason, String usageCategory, Long noOfFloors, Double landArea,
 			BigDecimal superBuiltUpArea, Source source, Channel channel, List<Document> documents, List<Unit> units,
-			JsonNode additionalDetails, AuditDetails auditDetails, ProcessInstance workflow) {
-		super(id, propertyId, surveyId, linkedProperties, tenantId, accountId, oldPropertyId, status, address);
+			JsonNode additionalDetails, AuditDetails auditDetails, ProcessInstance workflow, Plot plot) {
+		super(id, propertyId, plotId, surveyId, linkedProperties, tenantId, accountId, oldPropertyId, status, address);
 		this.acknowldgementNumber = acknowldgementNumber;
 		this.propertyType = propertyType;
 		this.ownershipCategory = ownershipCategory;
@@ -133,6 +136,7 @@ public class Property extends PropertyInfo {
 		this.additionalDetails = additionalDetails;
 		this.auditDetails = auditDetails;
 		this.workflow = workflow;
+		this.plot = plot;
 	}
 
 	public Property addOwnersItem(OwnerInfo ownersItem) {
