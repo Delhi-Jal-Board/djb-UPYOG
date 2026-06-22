@@ -2,8 +2,10 @@ package org.egov.pt.repository;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -27,6 +29,7 @@ import org.egov.pt.service.UserService;
 import org.egov.pt.util.PropertyUtil;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Repository;
@@ -353,6 +356,32 @@ public class PropertyRepository {
 
 		String query = queryBuilder.getpropertyAuditEncQuery();
 		return jdbcTemplate.query(query, criteria.getPropertyIds().toArray(), propertyAuditEncRowMapper);
+	}
+	
+	public Plot getExistingPlot(String tenantId, String hash) {
+
+	    List<Object> preparedStmt = new ArrayList<>();
+	    preparedStmt.add(tenantId);
+	    preparedStmt.add(hash);
+
+	    String query = queryBuilder.getPlotByHashQuery();
+
+	    try {
+	        query = centralUtil.replaceSchemaPlaceholder(query, tenantId);
+	    } catch (InvalidTenantIdException e) {
+	        throw new CustomException(
+	                "EG_PT_AS_TENANTID_ERROR",
+	                "TenantId length is not sufficient");
+	    }
+
+	    try {
+	    	return jdbcTemplate.queryForObject(
+	    	        query,
+	    	        (rs, rowNum) -> rowSearchMapper.getPlot(rs),
+	    	        preparedStmt.toArray());
+	    } catch (EmptyResultDataAccessException ex) {
+	        return null;
+	    }
 	}
 }
 

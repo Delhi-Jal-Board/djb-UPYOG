@@ -34,6 +34,9 @@ public class PropertyInfo {
 
 	@JsonProperty("propertyId")
 	private String propertyId;
+	
+	@JsonProperty("plotId")
+	private String plotId;
 
 	@JsonProperty("surveyId")
 	private String surveyId;
@@ -56,4 +59,5 @@ public class PropertyInfo {
 
 	@JsonProperty("address")
 	private Address address;
+	
 }

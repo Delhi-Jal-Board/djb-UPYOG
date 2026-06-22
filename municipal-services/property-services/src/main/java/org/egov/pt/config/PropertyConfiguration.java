@@ -112,6 +112,12 @@ public class PropertyConfiguration {
 
     @Value("${egov.idgen.ptid.format}")
     private String propertyIdGenFormat;
+    
+    @Value("${egov.idgen.plot.name}")
+    private String plotIdGenName;
+
+    @Value("${egov.idgen.plot.format}")
+    private String plotIdGenFormat;
 
 
     //NOTIFICATION TOPICS

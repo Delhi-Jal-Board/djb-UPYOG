@@ -19,6 +19,7 @@ import org.egov.pt.models.GeoLocation;
 import org.egov.pt.models.Institution;
 import org.egov.pt.models.Locality;
 import org.egov.pt.models.OwnerInfo;
+import org.egov.pt.models.Plot;
 import org.egov.pt.models.Property;
 import org.egov.pt.models.Unit;
 import org.egov.pt.models.enums.Channel;
@@ -34,6 +35,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 @Component
@@ -56,7 +58,7 @@ public class PropertySearchRowMapper implements ResultSetExtractor<List<Property
 			if (null == currentProperty) {
 
 				Address address = getAddress(rs, tenanId);
-
+				Plot plot = getPlot(rs);
 				AuditDetails auditdetails = getAuditDetail(rs, "property");
 
 				Double landArea = rs.getDouble("landArea");
@@ -87,6 +89,10 @@ public class PropertySearchRowMapper implements ResultSetExtractor<List<Property
 
 
 				setPropertyInfo(currentProperty, rs, tenanId, propertyUuId, linkedProperties, address);
+				currentProperty.setPlot(plot);
+				if (plot != null) {
+				    currentProperty.setPlotId(plot.getId()); 
+				}
 				currentProperty.setDueAmount(rs.getString("taxDue"));
 				currentProperty.setDueAmountYear(rs.getString("taxDueYear"));
 				addChildrenToProperty(rs, currentProperty);
@@ -405,6 +411,35 @@ public class PropertySearchRowMapper implements ResultSetExtractor<List<Property
 		currentProperty.setLinkedProperties(linkedProperties);
 		currentProperty.setTenantId(tenantId);
 		currentProperty.setId(propertyUuId);
+	}
+	
+	public Plot getPlot(ResultSet rs) throws SQLException {
+
+	    String id = rs.getString("id");
+
+	    if (id == null) {
+	        return null;
+	    }
+	    
+	    return Plot.builder()
+	            .id(id)
+	            .plotId(rs.getString("plotid"))
+	            .tenantId(rs.getString("tenantid"))
+	            .plotNo(rs.getString("plotno"))
+	            .doorNo(rs.getString("doorno"))
+	            .buildingName(rs.getString("buildingname"))
+	            .street(rs.getString("street"))
+	            .locality(rs.getString("locality"))
+	            .subLocality(rs.getString("sub_locality"))
+	            .addressHash(rs.getString("addresshash"))
+	            .auditDetails(
+	                AuditDetails.builder()
+	                    .createdBy(rs.getString("createdby"))
+	                    .createdTime(rs.getLong("createdtime"))
+	                    .lastModifiedBy(rs.getString("lastmodifiedby"))
+	                    .lastModifiedTime(rs.getLong("lastmodifiedtime"))
+	                    .build())
+	            .build();
 	}
 
 }

@@ -36,6 +36,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import org.egov.pt.models.Address;
+import org.springframework.util.StringUtils;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Component
@@ -281,5 +287,52 @@ public class PropertyUtil extends CommonUtils {
 			}
 		}
 		return response;
+	}
+	
+	/**
+	 * Generates a unique hash for identifying a Plot.
+	 * Properties having the same physical plot should generate the same hash.
+	 */
+	public String generateAddressHash(Address address) {
+
+	    String rawAddress = String.join("|",
+	            normalize(address.getLocality() != null ? address.getLocality().getCode() : null),
+	            normalize(address.getSubLocality()),
+	            normalize(address.getStreet()),
+	            normalize(address.getBuildingName()),
+	            normalize(address.getDoorNo()),
+	            normalize(address.getPlotNo())
+	    );
+
+	    try {
+	        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+	        byte[] hashBytes = digest.digest(rawAddress.getBytes(StandardCharsets.UTF_8));
+
+	        StringBuilder hash = new StringBuilder();
+
+	        for (byte b : hashBytes) {
+	            hash.append(String.format("%02x", b));
+	        }
+
+	        return hash.toString();
+
+	    } catch (NoSuchAlgorithmException e) {
+	        throw new RuntimeException("Error while generating Address Hash", e);
+	    }
+	}
+
+
+	/**
+	 * Normalizes address fields before hashing.
+	 */
+	private String normalize(String value) {
+
+	    if (!StringUtils.hasText(value)) {
+	        return "";
+	    }
+
+	    return value.trim()
+	            .toLowerCase()
+	            .replaceAll("\\s+", " ");
 	}
 }

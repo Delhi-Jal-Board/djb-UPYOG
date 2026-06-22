@@ -79,12 +79,7 @@ public class PropertyController {
 
             }
         }
-        String beforecreateBy = propertyRequest.getProperty().getAccountId();
-        System.out.println("Created By : ======================= "+beforecreateBy);
         Property property = propertyService.createProperty(propertyRequest);
-        String afterCreateBy = property.getAuditDetails().getCreatedBy();
-        System.out.println("Created By : ======================= "+afterCreateBy);
-
         ResponseInfo resInfo = responseInfoFactory.createResponseInfoFromRequestInfo(propertyRequest.getRequestInfo(), true);
         PropertyResponse response = PropertyResponse.builder()
                 .properties(Arrays.asList(property))
