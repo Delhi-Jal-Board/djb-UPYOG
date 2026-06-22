@@ -46,6 +46,7 @@ const AddFillingPointAddress = () => {
         setFormData({
           id: data.id,
           tenantId: data.tenantId,
+          status: data.status,
           owner: {
             fillingPointName: data.fillingPointName,
             emergencyName: data.emergencyName,

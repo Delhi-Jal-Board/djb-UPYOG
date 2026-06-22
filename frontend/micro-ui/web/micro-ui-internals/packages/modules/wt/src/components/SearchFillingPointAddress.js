@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Card, Menu, AddIcon, TextInput, Dropdown, Label, SubmitBar, Toast } from "@djb25/digit-ui-react-components";
+import { Card, Menu, AddIcon, TextInput, Dropdown, Label, SubmitBar, Toast, ToggleSwitch } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useHistory, Link, useLocation } from "react-router-dom";
 import LocalityModal from "./LocalityModal";
@@ -27,6 +27,8 @@ const SearchFillingPointAddress = () => {
   const [modalMode, setModalMode] = useState("ADD"); // ADD, UPDATE, VIEW
   const [pageSize, setPageSize] = useState(50);
   const [pageOffset, setPageOffset] = useState(0);
+  const [fillingPointStatusOverrides, setFillingPointStatusOverrides] = useState({});
+  const [updatingFillingPointIds, setUpdatingFillingPointIds] = useState({});
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
 
@@ -75,6 +77,7 @@ const SearchFillingPointAddress = () => {
 
   // ✅ Hook for Mapping
   const { mutate: mapFixedFilling } = Digit.Hooks.wt.useVendorFillingMapping(tenantId);
+  const { mutate: updateFillingPoint } = Digit.Hooks.wt.useUpdateFillPoint(tenantId);
 
   const isLoading = selectedTab === "FIXED_POINT" ? isFixedLoading : isFillingLoading;
   const tableData = React.useMemo(() => {
@@ -193,6 +196,99 @@ const SearchFillingPointAddress = () => {
           error: true,
         });
         setTimeout(closeToast, 5000);
+      },
+    });
+  };
+
+  const getFillingPointRowId = (row) => row?.id || row?.bookingId || row?.fillingPointId || row?.uuid;
+
+  const getFillingPointStatus = (row) => {
+    const rowId = getFillingPointRowId(row);
+    if (rowId && Object.prototype.hasOwnProperty.call(fillingPointStatusOverrides, rowId)) {
+      return fillingPointStatusOverrides[rowId];
+    }
+    return row?.status === true || row?.status === "true" || row?.status === "ACTIVE";
+  };
+
+  const buildFillingPointStatusPayload = (row, status) => ({
+    RequestInfo: {
+      userInfo: {
+        uuid: Digit.UserService.getUser()?.info?.uuid || "user-123",
+      },
+    },
+    fillingPoints: [
+      {
+        id: row?.id,
+        bookingId: row?.bookingId,
+        fillingPointId: row?.fillingPointId,
+        tenantId: row?.tenantId || tenantId,
+        fillingPointName: row?.fillingPointName,
+        emergencyName: row?.emergencyName,
+        eeName: row?.eeName,
+        eeEmail: row?.eeEmail,
+        eeMobile: row?.eeMobile,
+        aeName: row?.aeName,
+        aeEmail: row?.aeEmail,
+        aeMobile: row?.aeMobile,
+        jeName: row?.jeName,
+        jeEmail: row?.jeEmail,
+        jeMobile: row?.jeMobile,
+        fillingPointLocalityCodes: row?.fillingPointLocalityCodes,
+        status,
+        address: row?.address
+          ? {
+              addressId: row.address.addressId,
+              applicantId: row.address.applicantId,
+              doorNo: row.address.doorNo,
+              houseNo: row.address.houseNo,
+              streetName: row.address.streetName,
+              addressLine1: row.address.addressLine1,
+              addressLine2: row.address.addressLine2,
+              landmark: row.address.landmark,
+              city: row.address.city,
+              cityCode: row.address.cityCode,
+              locality: row.address.locality,
+              localityCode: row.address.localityCode,
+              pincode: row.address.pincode,
+              latitude: row.address.latitude,
+              longitude: row.address.longitude,
+              ward: row.address.ward,
+              zone: row.address.zone,
+              constituency: row.address.constituency,
+              type: row.address.type || "FILLING-POINT",
+              addressType: row.address.addressType,
+            }
+          : undefined,
+      },
+    ],
+  });
+
+  const onFillingPointStatusToggle = (row) => {
+    const fillingPoint = row.original;
+    const rowId = getFillingPointRowId(fillingPoint);
+    const nextStatus = !getFillingPointStatus(fillingPoint);
+
+    if (!rowId || updatingFillingPointIds[rowId]) return;
+
+    setFillingPointStatusOverrides((prev) => ({ ...prev, [rowId]: nextStatus }));
+    setUpdatingFillingPointIds((prev) => ({ ...prev, [rowId]: true }));
+
+    updateFillingPoint(buildFillingPointStatusPayload(fillingPoint, nextStatus), {
+      onSuccess: () => {
+        setToast({ label: t(nextStatus ? "WT_FILLING_POINT_ENABLED_SUCCESS" : "WT_FILLING_POINT_DISABLED_SUCCESS", nextStatus ? "Filling point enabled successfully" : "Filling point disabled successfully") });
+        setTimeout(closeToast, 5000);
+        refetchFilling();
+      },
+      onError: (err) => {
+        setFillingPointStatusOverrides((prev) => ({ ...prev, [rowId]: !nextStatus }));
+        setToast({
+          label: err?.response?.data?.Errors?.[0]?.message || t("WT_FILLING_POINT_STATUS_UPDATE_ERROR", "Unable to update filling point status"),
+          error: true,
+        });
+        setTimeout(closeToast, 5000);
+      },
+      onSettled: () => {
+        setUpdatingFillingPointIds((prev) => ({ ...prev, [rowId]: false }));
       },
     });
   };
@@ -439,9 +535,31 @@ const SearchFillingPointAddress = () => {
             );
           },
         },
+        {
+          Header: t("WT_ENABLE_DISABLE", "Enable/Disable"),
+          id: "status",
+          disableSortBy: true,
+          Cell: ({ row }) => {
+            const rowId = getFillingPointRowId(row.original);
+            const isUpdating = rowId && updatingFillingPointIds[rowId];
+            return (
+              <ToggleSwitch
+                style={{
+                  display: "flex",
+                  justifyContent: "left",
+                  opacity: isUpdating ? 0.6 : 1,
+                  pointerEvents: isUpdating ? "none" : "auto",
+                }}
+                value={getFillingPointStatus(row.original)}
+                onChange={() => onFillingPointStatusToggle(row)}
+                name={`filling-point-status-${rowId || row.id}`}
+              />
+            );
+          },
+        },
       ];
     }
-  }, [allFillingPoints, selectedTab, t]);
+  }, [allFillingPoints, fillingPointStatusOverrides, selectedTab, t, updatingFillingPointIds]);
 
   const isMobile = window.Digit.Utils.browser.isMobile();
 
@@ -770,9 +888,12 @@ const SearchFillingPointAddress = () => {
               style: {
                 padding: "20px 18px",
                 fontSize: "16px",
+                whiteSpace: "normal",
+                wordBreak: "break-word",
+                overflowWrap: "anywhere",
               },
             })}
-            styles={{ minWidth: "1200px" }}
+            styles={{ width: "1200px", minWidth: "1200px", tableLayout: "fixed" }}
             inboxStyles={{ overflowX: "auto" }}
             t={t}
             isLoading={isLoading || isAllFillingPointsLoading}
