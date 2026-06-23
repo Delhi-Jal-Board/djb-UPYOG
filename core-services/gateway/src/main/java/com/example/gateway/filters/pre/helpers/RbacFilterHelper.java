@@ -58,10 +58,10 @@ public class RbacFilterHelper implements RewriteFunction<Map, Map> {
         log.debug("Incoming request body keys: {}", map != null ? map.keySet() : "NULL BODY");
 
         isIncomingURIInAuthorizedActionList(serverWebExchange,map);
-        if (map == null) {
-            throw new CustomException("INVALID_REQUEST","Request body is missing");
+        if (CommonUtils.isRequestBodyCompatible(serverWebExchange.getRequest()) && map == null) {
+            throw new CustomException("INVALID_REQUEST", "Request body is missing");
         }
-        return Mono.just(map);
+        return Mono.justOrEmpty(map);
     }
 
     private void isIncomingURIInAuthorizedActionList(ServerWebExchange exchange, Map map) {

@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.tracer.model.CustomException;
 import org.reactivestreams.Publisher;
+import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.factory.rewrite.RewriteFunction;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -94,5 +95,38 @@ public class AuthPreCheckFilterHelper implements RewriteFunction<Map, Map> {
         }
 
         return Mono.just(body);
+    }
+
+
+
+    public Mono<Void> processWithoutBody(ServerWebExchange exchange, GatewayFilterChain chain) {
+
+        String authToken = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+
+        String endPointPath = exchange.getRequest().getPath().value();
+
+        if (ObjectUtils.isEmpty(authToken)) {
+
+            if (mixedModeEndpointsWhitelist.contains(endPointPath)) {
+
+                exchange.getAttributes().put(AUTH_BOOLEAN_FLAG_NAME, Boolean.FALSE);
+
+            } else {
+
+                CustomException ex =
+                        new CustomException(UNAUTHORIZED_USER_MESSAGE,
+                                UNAUTHORIZED_USER_MESSAGE);
+
+                ex.setCode(HttpStatus.UNAUTHORIZED.toString());
+
+                throw ex;
+            }
+
+        } else {
+
+            exchange.getAttributes().put(AUTH_BOOLEAN_FLAG_NAME, Boolean.TRUE);
+        }
+
+        return chain.filter(exchange);
     }
 }
