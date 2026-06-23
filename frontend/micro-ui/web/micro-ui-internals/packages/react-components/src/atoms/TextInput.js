@@ -12,10 +12,13 @@ const TextInput = (props) => {
 
   const handleDate = (event) => {};
 
+  console.log(props.disabled, props.name);
   return (
     <React.Fragment>
       <div
-        className={`text-input ${user_type === "employee" ? "" : "text-input-width"} ${props.className}`}
+        className={`text-input ${props.disabled ? "not-allowed" : ""} ${user_type === "employee" ? "" : "text-input-width"} ${
+          props.className ? props.className : ""
+        }`}
         style={props?.textInputStyle ? { ...props.textInputStyle } : {}}
       >
         {props.isMandatory ? (
@@ -23,7 +26,7 @@ const TextInput = (props) => {
             type={props?.validation && props.ValidationRequired ? props?.validation?.type : props.type || "text"}
             name={props.name}
             id={props.id}
-            className={`${user_type ? "employee-card-input-error" : "card-input-error"} ${props.disable && "disabled"}`}
+            className={`${user_type ? "employee-card-input-error" : "card-input-error"} ${props.disabled ? "disabled" : ""}`}
             placeholder={props.placeholder}
             onChange={(event) => {
               if (props?.onChange) {
@@ -42,7 +45,7 @@ const TextInput = (props) => {
             max={props.max}
             pattern={props?.validation && props.ValidationRequired ? props?.validation?.pattern : props.pattern}
             min={props.min}
-            readOnly={props.disable}
+            readOnly={props.disabled}
             title={props?.validation && props.ValidationRequired ? props?.validation?.title : props.title}
             step={props.step}
             autoFocus={props.autoFocus}
@@ -55,7 +58,7 @@ const TextInput = (props) => {
             type={props?.validation && props.ValidationRequired ? props?.validation?.type : props.type || "text"}
             name={props.name}
             id={props.id}
-            className={`${user_type ? "employee-card-input" : "citizen-card-input"} ${props.disable && "disabled"} focus-visible ${
+            className={`${user_type ? "employee-card-input" : "citizen-card-input"} ${props.disabled ? "disabled" : ""} focus-visible ${
               props.errorStyle && "employee-card-input-error"
             }`}
             placeholder={props.placeholder}
@@ -81,7 +84,7 @@ const TextInput = (props) => {
             }
             pattern={props?.validation && props.ValidationRequired ? props?.validation?.pattern : props.pattern}
             min={props.min}
-            readOnly={props.disable}
+            readOnly={props.disabled}
             title={props?.validation && props.ValidationRequired ? props?.validation?.title : props.title}
             step={props.step}
             autoFocus={props.autoFocus}
