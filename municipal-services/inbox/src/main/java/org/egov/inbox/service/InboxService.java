@@ -1262,6 +1262,28 @@ public class InboxService {
 				totalCount = wtApplicationNumbers.size();
 		}
 
+		if (processCriteria != null && !ObjectUtils.isEmpty(processCriteria.getModuleName())
+				&& processCriteria.getModuleName().equals(REQUEST_SERVICE_WATER_TANKER)) {
+
+			Map<String, Integer> exactCounts = WTInboxFilterService.fetchStatusCounts(criteria, requestInfo);
+
+			if (exactCounts != null && !exactCounts.isEmpty()) {
+				List<HashMap<String, Object>> wtStatusCountMap = new ArrayList<>();
+				for (Map.Entry<String, Integer> entry : exactCounts.entrySet()) {
+					HashMap<String, Object> map = new HashMap<>();
+					map.put("applicationstatus", entry.getKey());
+					map.put("statusid", entry.getKey());
+					map.put("businessservice", processCriteria.getBusinessService().get(0));
+					map.put("count", entry.getValue());
+					wtStatusCountMap.add(map);
+				}
+
+				statusCountMap = wtStatusCountMap;
+			}
+
+			response.setStatusCounts(exactCounts);
+		}
+
 		response.setTotalCount(totalCount);
 		response.setNearingSlaCount(nearingSlaProcessCount);
 		response.setStatusMap(statusCountMap);
