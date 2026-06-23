@@ -26,7 +26,7 @@ const Heading = (props) => {
 
 const CloseBtn = (props) => {
   return (
-    <div className="icon-bg-secondary" onClick={props.onClick}>
+    <div onClick={props.onClick}>
       <CloseSvg />
     </div>
   );
@@ -38,6 +38,8 @@ const SurveyorDetails = (props) => {
   const history = useHistory();
   const queryClient = useQueryClient();
   const { id: surveyorId } = useParams();
+  const userInfo = Digit.UserService.getUser()?.info;
+  const userType = userInfo?.type;
 
   const [displayMenu, setDisplayMenu] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
@@ -106,9 +108,9 @@ const SurveyorDetails = (props) => {
       case "DELETE_VENDOR":
         return setShowModal(true);
       case "EDIT":
-        return history.push("/digit-ui/employee/vendor/registry/modify-surveyor/" + surveyorId);
+        return history.push(`/digit-ui/${userType}/vendor/registry/modify-surveyor/${surveyorId}`);
       case "HOME":
-        return history.push("/digit-ui/employee/vendor/search-vendor?selectedTabs=SURVEYOR");
+        return history.push(`/digit-ui/${userType}/vendor/search-vendor?selectedTabs=SURVEYOR`);
       default:
         break;
     }
@@ -153,7 +155,7 @@ const SurveyorDetails = (props) => {
         queryClient.invalidateQueries("SURVEYOR_SEARCH");
         setTimeout(() => {
           closeToast();
-          history.push(`/digit-ui/employee/vendor/search-vendor`);
+          history.push(`/digit-ui/${userType}/vendor/search-vendor`);
         }, 5000);
       },
     });
