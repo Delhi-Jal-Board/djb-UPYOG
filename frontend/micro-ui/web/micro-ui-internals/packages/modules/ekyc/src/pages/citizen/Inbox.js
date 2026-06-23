@@ -111,9 +111,9 @@ const Inbox = ({ parentRoute }) => {
   const totalRecords = dashboardData?.dashboardInfo?.totalRecords || dashboardData?.totalCount || 0;
 
   const checkPathName = location.pathname.includes("ekyc/inbox");
-  const PropsForInboxLinks = {
-    headerText: "EKYC_MODULE",
-  };
+  // const PropsForInboxLinks = {
+  //   headerText: "EKYC_MODULE",
+  // };
 
   const SearchFormFields = useCallback(
     ({ registerRef, searchFormState, controlSearchForm }) => (
@@ -157,18 +157,18 @@ const Inbox = ({ parentRoute }) => {
     className: "search-form-wns-inbox",
   };
 
-  const FilterFormFields = useCallback(
-    ({ registerRef, controlFilterForm, setFilterFormValue, getFilterFormValue }) => <React.Fragment></React.Fragment>,
-    []
-  );
+  // const FilterFormFields = useCallback(
+  //   ({ registerRef, controlFilterForm, setFilterFormValue, getFilterFormValue }) => <React.Fragment></React.Fragment>,
+  //   []
+  // );
 
-  const propsForFilterForm = {
-    FilterFormFields,
-    onFilterFormSubmit: () => { },
-    filterFormDefaultValues: "",
-    resetFilterFormDefaultValues: "",
-    onFilterFormReset: () => { },
-  };
+  // const propsForFilterForm = {
+  //   FilterFormFields,
+  //   onFilterFormSubmit: () => { },
+  //   filterFormDefaultValues: "",
+  //   resetFilterFormDefaultValues: "",
+  //   onFilterFormReset: () => { },
+  // };
 
   function formReducer(state, payload) {
     const storageKey = payload.checkPathName ? "EKYC.INBOX" : "EKYC.SW.INBOX";
