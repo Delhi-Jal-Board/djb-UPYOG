@@ -3,6 +3,7 @@ package com.example.gateway.filters.pre;
 import com.example.gateway.config.ApplicationProperties;
 import com.example.gateway.filters.pre.helpers.CorrIdFormDataFilterHelper;
 import com.example.gateway.filters.pre.helpers.CorrelationIdFilterHelper;
+import com.example.gateway.utils.CommonUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpHeaders;
@@ -58,7 +59,7 @@ public class CorrelationIdFilter implements GlobalFilter, Ordered {
         String contentType = exchange.getRequest().getHeaders().getFirst(HttpHeaders.CONTENT_TYPE);
         String endPointPath = exchange.getRequest().getPath().value();
 
-        if (endPointPath.startsWith("/filestore") || endPointPath.startsWith("/dashboard-analytics")) {
+        if (endPointPath.startsWith("/filestore")) {
             return chain.filter(exchange);
         }
         else if (contentType != null && (contentType.contains("multipart/form-data") || contentType.contains("application/x-www-form-urlencoded"))) {
@@ -67,9 +68,13 @@ public class CorrelationIdFilter implements GlobalFilter, Ordered {
                     .filter(exchange, chain);
         }
         else {
-            return modifyRequestBodyFilter.apply(new ModifyRequestBodyGatewayFilterFactory.Config()
+            if (!CommonUtils.isRequestBodyCompatible(exchange.getRequest())) {
+                return chain.filter(exchange);
+            }
+            return modifyRequestBodyFilter.apply(
+                    new ModifyRequestBodyGatewayFilterFactory.Config()
                             .setRewriteFunction(Map.class, Map.class, correlationIdFilterHelper))
-                            .filter(exchange, chain);
+                    .filter(exchange, chain);
         }
     }
 

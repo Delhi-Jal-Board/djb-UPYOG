@@ -1,6 +1,7 @@
 package com.example.gateway.filters.pre.helpers;
 
 import com.example.gateway.constants.GatewayConstants;
+import com.example.gateway.utils.CommonUtils;
 import com.example.gateway.utils.UserUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -33,8 +34,8 @@ public class AuthCheckFilterHelper implements RewriteFunction<Map, Map> {
     @Override
     public Publisher<Map> apply(ServerWebExchange serverWebExchange, Map body) {
         try {
-            if (body == null) {
-                throw new CustomException("INVALID_REQUEST","Request body is missing");
+            if (CommonUtils.isRequestBodyCompatible(serverWebExchange.getRequest()) && body == null) {
+                throw new CustomException("INVALID_REQUEST", "Request body is missing");
             }
             RequestInfo requestInfo = objectMapper.convertValue(body.get(REQUEST_INFO_FIELD_NAME_PASCAL_CASE), RequestInfo.class);
             requestInfo.setUserInfo(userUtils.getUser(requestInfo.getAuthToken()));
@@ -48,12 +49,16 @@ public class AuthCheckFilterHelper implements RewriteFunction<Map, Map> {
         }
     }
 
-    public Mono<Void> authenticateHeader(ServerWebExchange exchange,GatewayFilterChain chain) {
+    public Mono<Void> authenticateHeader(ServerWebExchange exchange, GatewayFilterChain chain) {
 
         String authToken = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
 
         if (authToken == null || authToken.isBlank()) {
             throw new CustomException("AUTHENTICATION_ERROR", "Authorization header missing");
+        }
+
+        if (authToken.startsWith("Bearer ")) {
+            authToken = authToken.substring(7);
         }
 
         User user = userUtils.getUser(authToken);
