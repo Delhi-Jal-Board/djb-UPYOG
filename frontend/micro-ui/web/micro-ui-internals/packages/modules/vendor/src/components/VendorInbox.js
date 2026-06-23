@@ -1544,20 +1544,7 @@ const VendorInbox = (props) => {
         >
           <div style={{ padding: "16px" }}>
             {selectedVendorForWorkOrder?.dsoDetails?.vendorWorkOrder?.length > 0 ? (
-              <Table
-                t={t}
-                data={selectedVendorForWorkOrder.dsoDetails.vendorWorkOrder}
-                columns={workOrderColumns}
-                getCellProps={(cellInfo) => {
-                  return {
-                    style: {
-                      minWidth: "150px",
-                      padding: "8px 12px",
-                      fontSize: "13.5px",
-                    },
-                  };
-                }}
-              />
+              <Table t={t} data={selectedVendorForWorkOrder.dsoDetails.vendorWorkOrder} columns={workOrderColumns} />
             ) : (
               <p style={{ textAlign: "center", marginTop: "20px" }}>{t("ES_VENDOR_NO_WORKORDERS")}</p>
             )}
