@@ -243,31 +243,6 @@
     padding: 48px 20px;
   }
 
-  .table-loading {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-  }
-
-  .table-loader {
-    width: 44px;
-    height: 44px;
-    border: 3px solid #cbd5e1;
-    border-top: 3px solid #5282e6;
-    border-radius: 50%;
-    animation: table-spin 0.8s linear infinite;
-  }
-
-  .table-loading-text {
-    margin: 0;
-    font-size: 14px;
-    font-weight: 600;
-    color: #475569;
-    letter-spacing: 0.02em;
-  }
-
   .table-empty {
     display: flex;
     flex-direction: column;
@@ -339,7 +314,7 @@
       transition: background-color 0.2s ease;
 
       &:nth-child(even) {
-        background: #f8fafc;
+        background: #97b9e529;
       }
 
       &:hover {

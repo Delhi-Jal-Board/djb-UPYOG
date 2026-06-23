@@ -15,6 +15,7 @@ import {
   LayoutGrid,
   FastForward,
 } from "./svgindex";
+import { Loader } from "./Loader";
 
 const getSearchableText = (obj) => {
   if (obj === null || obj === undefined) return "";
@@ -458,11 +459,8 @@ const Table = ({
           <tbody {...getTableBodyProps()}>
             {isLoading ? (
               <tr>
-                <td colSpan={tableColumns.length + (showAutoSerialNo ? 1 : 0)} className="table-state-cell">
-                  <div className="table-loading">
-                    <div className="table-loader" />
-                    <p className="table-loading-text">{t ? t("CS_LOADING") : "Loading records..."}</p>
-                  </div>
+                <td colSpan={tableColumns.length + (showAutoSerialNo ? 1 : 0)} className="table-state-cell rel">
+                  <Loader />
                 </td>
               </tr>
             ) : page.length === 0 ? (
