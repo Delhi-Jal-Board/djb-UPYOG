@@ -15,8 +15,10 @@
 }
 
 .employee-card-input:disabled {
-  @apply border-grey-dark text-grey-dark !important;
+  @apply text-grey-dark !important;
+  border: 2px solid #e5e5e7;
   pointer-events: none !important;
+  cursor: not-allowed;
   @extend .light-input-border;
   @extend .light-text-color-disabled;
 }

@@ -71,9 +71,9 @@ const AssignEkyc = () => {
 
   const totalRecords = dashboardData?.dashboardInfo?.totalRecords || dashboardData?.totalCount || 0;
 
-  const PropsForInboxLinks = {
-    headerText: "EKYC_MODULE",
-  };
+  // const PropsForInboxLinks = {
+  //   headerText: "EKYC_MODULE",
+  // };
 
   const SearchFormFields = useCallback(
     ({ registerRef, searchFormState, controlSearchForm }) => (
@@ -117,18 +117,18 @@ const AssignEkyc = () => {
     className: "search-form-wns-inbox",
   };
 
-  const FilterFormFields = useCallback(
-    ({ registerRef, controlFilterForm, setFilterFormValue, getFilterFormValue }) => <React.Fragment></React.Fragment>,
-    []
-  );
+  // const FilterFormFields = useCallback(
+  //   ({ registerRef, controlFilterForm, setFilterFormValue, getFilterFormValue }) => <React.Fragment></React.Fragment>,
+  //   []
+  // );
 
-  const propsForFilterForm = {
-    FilterFormFields,
-    onFilterFormSubmit: () => { },
-    filterFormDefaultValues: "",
-    resetFilterFormDefaultValues: "",
-    onFilterFormReset: () => { },
-  };
+  // const propsForFilterForm = {
+  //   FilterFormFields,
+  //   onFilterFormSubmit: () => { },
+  //   filterFormDefaultValues: "",
+  //   resetFilterFormDefaultValues: "",
+  //   onFilterFormReset: () => { },
+  // };
 
   const onPageSizeChange = (e) => {
     const newLimit = Number(e.target.value);

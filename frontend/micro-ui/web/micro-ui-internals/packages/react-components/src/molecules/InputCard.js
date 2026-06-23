@@ -1,7 +1,5 @@
 import React from "react";
 import PropTypes from "prop-types";
-
-import Card from "../atoms/Card";
 import CardHeader from "../atoms/CardHeader";
 import CardText from "../atoms/CardText";
 import SubmitBar from "../atoms/SubmitBar";

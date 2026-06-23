@@ -7,6 +7,7 @@ import CardLabelError from "../atoms/CardLabelError";
 import TextInput from "../atoms/TextInput";
 import InputCard from "./InputCard";
 import CollapsibleCardPage from "../hoc/CollapsibleCardPage";
+import Card from "../atoms/Card";
 const FormStep = ({
   t,
   children,
@@ -28,6 +29,8 @@ const FormStep = ({
   className,
   isCollapsible = true,
   defaultOpen = true,
+  formClassName,
+  cardClassName,
 }) => {
   const { register, errors, handleSubmit } = useForm({
     defaultValues: _defaultValues,
@@ -99,19 +102,38 @@ const FormStep = ({
         </React.Fragment>
       );
     }
+    return null;
   });
 
   const _isCollapsible = config.isCollapsible !== undefined ? config.isCollapsible : isCollapsible;
   const _defaultOpen = config.defaultOpen !== undefined ? config.defaultOpen : defaultOpen;
 
   return (
-    <form style={{ flex: "1" }} onSubmit={handleSubmit(goNext)}>
-      {_isCollapsible ? (
-        <CollapsibleCardPage title={t(config?.texts?.header)} defaultOpen={_defaultOpen}>
+    <form className={`${formClassName} no-scrollbar`} style={{ flex: "1" }} onSubmit={handleSubmit(goNext)}>
+      <Card className={`form-composer-card ${cardClassName ? cardClassName : ""}`}>
+        {_isCollapsible ? (
+          <CollapsibleCardPage title={t(config?.texts?.header)} defaultOpen={_defaultOpen}>
+            <InputCard
+              {...{ isDisable: isDisable, isMultipleAllow: isMultipleAllow }}
+              {...config}
+              texts={{ ...config.texts, header: null }}
+              cardStyle={cardStyle}
+              submit
+              {...{ onSkip: onSkip, onAdd: onAdd }}
+              t={t}
+              className={className || ""}
+            >
+              {!childrenAtTheBottom && children}
+              {inputs}
+              {forcedError && !showErrorBelowChildren && <CardLabelError>{t(forcedError)}</CardLabelError>}
+              {childrenAtTheBottom && children}
+              {forcedError && showErrorBelowChildren && <CardLabelError>{t(forcedError)}</CardLabelError>}
+            </InputCard>
+          </CollapsibleCardPage>
+        ) : (
           <InputCard
             {...{ isDisable: isDisable, isMultipleAllow: isMultipleAllow }}
             {...config}
-            texts={{ ...config.texts, header: null }}
             cardStyle={cardStyle}
             submit
             {...{ onSkip: onSkip, onAdd: onAdd }}
@@ -124,24 +146,8 @@ const FormStep = ({
             {childrenAtTheBottom && children}
             {forcedError && showErrorBelowChildren && <CardLabelError>{t(forcedError)}</CardLabelError>}
           </InputCard>
-        </CollapsibleCardPage>
-      ) : (
-        <InputCard
-          {...{ isDisable: isDisable, isMultipleAllow: isMultipleAllow }}
-          {...config}
-          cardStyle={cardStyle}
-          submit
-          {...{ onSkip: onSkip, onAdd: onAdd }}
-          t={t}
-          className={className || ""}
-        >
-          {!childrenAtTheBottom && children}
-          {inputs}
-          {forcedError && !showErrorBelowChildren && <CardLabelError>{t(forcedError)}</CardLabelError>}
-          {childrenAtTheBottom && children}
-          {forcedError && showErrorBelowChildren && <CardLabelError>{t(forcedError)}</CardLabelError>}
-        </InputCard>
-      )}
+        )}
+      </Card>
     </form>
   );
 };

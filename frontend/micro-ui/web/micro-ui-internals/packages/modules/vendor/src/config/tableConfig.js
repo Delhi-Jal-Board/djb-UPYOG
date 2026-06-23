@@ -39,25 +39,22 @@ export const tableColumnConfig = (t, handleReview) => [
     Cell: ({ row }) => {
       const id = row.original?.id;
       return (
-        <span className="ekyc-application-link" style={{ color: "#add8f7", cursor: "pointer", fontWeight: "bold" }} onClick={() => handleReview(id)}>
+        <span className="ekyc-application-link" style={{ color: "#318ED0", cursor: "pointer", fontSize: "16px" }} onClick={() => handleReview(id)}>
           {row.original?.surveyorName || row.original?.name || "NA"}
         </span>
       );
     },
   },
-
   // {
   //   Header: t("SURVEYOR_NAME"),
   //   accessor: "surveyorName",
   //   Cell: ({ row }) => <span>{row.original?.surveyorName || row.original?.name || "NA"}</span>,
   // },
-
   {
     Header: t("MOBILE_NUMBER"),
     accessor: "mobileNo",
     Cell: ({ row }) => <span>{row.original?.mobileNo || row.original?.owner?.mobileNumber || "NA"}</span>,
   },
-
   {
     Header: t("STATUS"),
     accessor: "status",
@@ -66,7 +63,6 @@ export const tableColumnConfig = (t, handleReview) => [
       return <span className={`ekyc-status-tag ${status}`}>{t(status)}</span>;
     },
   },
-
   {
     Header: t("SERVICE_TYPE"),
     accessor: "serviceType",

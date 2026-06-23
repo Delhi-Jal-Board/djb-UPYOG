@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useForm, Controller } from "react-hook-form";
-import Label from "../atoms/Label";
 import TextInput from "../atoms/TextInput";
 import Dropdown from "../atoms/Dropdown";
 import UploadFile from "../atoms/UploadFile";
@@ -10,6 +9,8 @@ import { useLocation } from "react-router-dom";
 import CardLabelError from "../atoms/CardLabelError";
 import Modal from "../hoc/Modal";
 import Button from "../atoms/Button";
+import LabelFieldPair from "../atoms/LabelFieldPair";
+import CardLabel from "../atoms/CardLabel";
 
 const allOptions = [
   { name: "Correspondence", code: "CORRESPONDENCE", i18nKey: "COMMON_ADDRESS_TYPE_CORRESPONDENCE" },
@@ -60,11 +61,11 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
   );
   const [addressLine1, setAddressLine1] = useState(
     formData?.addressLine1 ||
-    formData?.subLocality ||
-    formData?.address?.addressLine1 ||
-    formData?.address?.subLocality ||
-    formData?.infodetails?.existingDataSet?.address?.addressline1 ||
-    ""
+      formData?.subLocality ||
+      formData?.address?.addressLine1 ||
+      formData?.address?.subLocality ||
+      formData?.infodetails?.existingDataSet?.address?.addressline1 ||
+      ""
   );
   const [addressLine2, setAddressLine2] = useState(
     formData?.addressLine2 || formData?.address?.addressLine2 || formData?.infodetails?.existingDataSet?.address?.addressline2 || ""
@@ -75,16 +76,16 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
   const [addressType, setAddressType] = useState(
     convertToObject(formData?.addressType) || formData?.address?.addressType || formData?.infodetails?.existingDataSet?.address?.addressType
       ? allOptions.find(
-        (a) =>
-          a.code ===
-          (formData?.addressType?.code ||
-            formData?.addressType ||
-            formData?.address?.addressType ||
-            formData?.infodetails?.existingDataSet?.address?.addressType)
-      ) ||
-      convertToObject(formData?.addressType) ||
-      formData?.address?.addressType ||
-      formData?.infodetails?.existingDataSet?.address?.addressType
+          (a) =>
+            a.code ===
+            (formData?.addressType?.code ||
+              formData?.addressType ||
+              formData?.address?.addressType ||
+              formData?.infodetails?.existingDataSet?.address?.addressType)
+        ) ||
+          convertToObject(formData?.addressType) ||
+          formData?.address?.addressType ||
+          formData?.infodetails?.existingDataSet?.address?.addressType
       : allOptions.find((a) => a.code === "PERMANENT")
   );
   const [showPincodeSuggestions, setShowPincodeSuggestions] = useState(false);
@@ -654,10 +655,11 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
             ? !houseNo || !locality || !pincode || !addressLine1 || !streetName || !doorImageId
             : !houseNo || !city || !locality || !pincode || !addressLine1 || (showZRO && !zro)
         }
+        className="no-box-shadow flex-box flex-box-col flex-gap-3 p-top-0"
       >
         {userDetails?.addresses?.length && (
-          <div style={{ gridColumn: "span 2" }}>
-            <Label>{t("FORM_SELECT_ADDRESS_FROM_LIST")}</Label>
+          <LabelFieldPair style={{ gridColumn: "span 2" }}>
+            <CardLabel>{t("FORM_SELECT_ADDRESS_FROM_LIST")}</CardLabel>
             <Dropdown
               className="form-field"
               selected={selectedAddress}
@@ -670,14 +672,14 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
               style={{ width: "100%" }}
               placeholder={"Select Address Type"}
             />
-          </div>
+          </LabelFieldPair>
         )}
 
         {showZRO && (
-          <div>
-            <Label>
+          <LabelFieldPair>
+            <CardLabel>
               {t("WS_ZRO_LOCATION")} <span className="check-page-link-button">*</span>
-            </Label>
+            </CardLabel>
             <div className="field">
               <Controller
                 control={control}
@@ -700,12 +702,12 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
               />
               {getFieldError("zro") && <CardLabelError>{getFieldError("zro")?.message}</CardLabelError>}
             </div>
-          </div>
+          </LabelFieldPair>
         )}
-        <div>
-          <Label>
+        <LabelFieldPair>
+          <CardLabel>
             {`${t("COMMON_ADDRESS_TYPE")}`} <span className="check-page-link-button">*</span>
-          </Label>
+          </CardLabel>
           <Dropdown
             className="form-field"
             selected={addressType}
@@ -718,12 +720,12 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
             style={{ width: "100%" }}
             placeholder={"Select Address Type"}
           />
-        </div>
+        </LabelFieldPair>
         {!config?.doorImage && (
-          <div>
-            <Label>
+          <LabelFieldPair>
+            <CardLabel>
               {`${t("CORE_COMMON_PROFILE_CITY")}`} <span className="check-page-link-button">*</span>
-            </Label>
+            </CardLabel>
             <Controller
               control={control}
               name={"city"}
@@ -744,12 +746,12 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
                 />
               )}
             />
-          </div>
+          </LabelFieldPair>
         )}
-        <div style={{ position: "relative" }}>
-          <Label>
+        <LabelFieldPair style={{ position: "relative" }}>
+          <CardLabel>
             {`${t("PINCODE")}`} <span className="check-page-link-button">*</span>
-          </Label>
+          </CardLabel>
           <TextInput
             value={pincode}
             onChange={(e) => {
@@ -806,11 +808,11 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
                 ))}
             </div>
           )}
-        </div>
-        <div>
-          <Label>
+        </LabelFieldPair>
+        <LabelFieldPair>
+          <CardLabel>
             {`${t("LOCALITY")}`} <span className="check-page-link-button">*</span>
-          </Label>
+          </CardLabel>
           <Controller
             control={control}
             name={"locality"}
@@ -841,10 +843,10 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
               />
             )}
           />
-        </div>
+        </LabelFieldPair>
 
-        <div>
-          <Label>{`${t("SubLocality")}`}</Label>
+        <LabelFieldPair>
+          <CardLabel>{`${t("SubLocality")}`}</CardLabel>
           <TextInput
             t={t}
             type={"text"}
@@ -866,9 +868,9 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
               title: t("SUB_LOCALITY_ERROR_MESSAGE"),
             }}
           />
-        </div>
-        <div>
-          <Label>{`${t("STREET_NAME")}`}</Label>
+        </LabelFieldPair>
+        <LabelFieldPair>
+          <CardLabel>{`${t("STREET_NAME")}`}</CardLabel>
           <TextInput
             t={t}
             type={"text"}
@@ -889,11 +891,11 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
               title: t("STREET_NAME_ERROR_MESSAGE"),
             }}
           />
-        </div>
-        <div>
-          <Label>
+        </LabelFieldPair>
+        <LabelFieldPair>
+          <CardLabel>
             {`${t(config?.doorImage ? "EKYC_SUB_LOCALITY" : "ADDRESS_LINE1")}`} <span className="check-page-link-button">*</span>
-          </Label>
+          </CardLabel>
           <TextInput
             t={t}
             type={"text"}
@@ -909,10 +911,10 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
             disabled={disable}
             ValidationRequired={false}
           />
-        </div>
+        </LabelFieldPair>
         {!config?.doorImage && (
-          <div>
-            <Label>{`${t("ADDRESS_LINE2")}`}</Label>
+          <LabelFieldPair>
+            <CardLabel>{`${t("ADDRESS_LINE2")}`}</CardLabel>
             <TextInput
               t={t}
               type={"text"}
@@ -928,13 +930,13 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
               disabled={disable}
               ValidationRequired={false}
             />
-          </div>
+          </LabelFieldPair>
         )}
         {config?.doorImage && (
-          <div>
-            <Label>
+          <LabelFieldPair>
+            <CardLabel>
               {`${t("EKYC_DOOR_IMAGE")}`} <span className="check-page-link-button">*</span>
-            </Label>
+            </CardLabel>
             <UploadFile
               onUpload={uploadFile}
               onDelete={() => {
@@ -946,11 +948,11 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
               accept="image/*"
               buttonProps={{ label: t("CS_COMMON_CHOOSE_FILE") }}
             />
-          </div>
+          </LabelFieldPair>
         )}
 
-        <div>
-          <Label>{`${t("HOUSE_NO")}`}</Label>
+        <LabelFieldPair>
+          <CardLabel>{`${t("HOUSE_NO")}`}</CardLabel>
           <TextInput
             t={t}
             type={"text"}
@@ -972,11 +974,10 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
               title: t("HOUSE_NO_ERROR_MESSAGE"),
             }}
           />
-        </div>
+        </LabelFieldPair>
 
-        <div>
-          <Label>{`${t("LATITUDE_GEOTAG")}`}</Label>
-
+        <LabelFieldPair>
+          <CardLabel>{`${t("LATITUDE_GEOTAG")}`}</CardLabel>
           <TextInput
             t={t}
             type="text"
@@ -999,11 +1000,10 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
             step="any"
             className="form-field"
           />
-        </div>
+        </LabelFieldPair>
 
-        <div>
-          <Label>{`${t("LONGITUDE_GEOTAG")}`}</Label>
-
+        <LabelFieldPair>
+          <CardLabel>{`${t("LONGITUDE_GEOTAG")}`}</CardLabel>
           <TextInput
             t={t}
             type="text"
@@ -1026,9 +1026,9 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
             step="any"
             className="form-field"
           />
-        </div>
-        <div>
-          <Label>{`${t("COMMON_ASSEMBLY")}`}</Label>
+        </LabelFieldPair>
+        <LabelFieldPair>
+          <CardLabel>{`${t("COMMON_ASSEMBLY")}`}</CardLabel>
           <TextInput
             t={t}
             type={"text"}
@@ -1040,11 +1040,11 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
             onChange={(e) => setAssembly(e.target.value)}
             disabled={true}
           />
-        </div>
-        {/* <div>
-              <Label>
+        </LabelFieldPair>
+        {/* <LabelFieldPair>
+              <CardLabel>
                 {`${t("WARD")}`} <span className="check-page-link-button">*</span>
-              </Label>
+              </CardLabel>
               <TextInput
                 t={t}
                 type={"text"}
@@ -1055,9 +1055,9 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
                 placeholder={"Enter Ward"}
                 onChange={(e) => setWard(e.target.value)}
               />
-            </div> */}
-        <div>
-          <Label>{`${t("COMMON_WARD")}`}</Label>
+            </LabelFieldPair> */}
+        <LabelFieldPair>
+          <CardLabel>{`${t("COMMON_WARD")}`}</CardLabel>
           <TextInput
             t={t}
             type={"text"}
@@ -1069,9 +1069,9 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
             onChange={(e) => setBlock(e.target.value)}
             disabled={true}
           />
-        </div>
-        <div>
-          <Label>{`${t("COMMON_ZONE")}`}</Label>
+        </LabelFieldPair>
+        <LabelFieldPair>
+          <CardLabel>{`${t("COMMON_ZONE")}`}</CardLabel>
           <TextInput
             t={t}
             type={"text"}
@@ -1083,9 +1083,9 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
             onChange={(e) => setZone(e.target.value)}
             disabled={true}
           />
-        </div>
-        <div>
-          <Label>{`${t("LANDMARK")}`}</Label>
+        </LabelFieldPair>
+        <LabelFieldPair>
+          <CardLabel>{`${t("LANDMARK")}`}</CardLabel>
           <TextInput
             t={t}
             type={"textarea"}
@@ -1107,7 +1107,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
               title: t("LANDMARK_ERROR_MESSAGE"),
             }}
           />
-        </div>
+        </LabelFieldPair>
         {props?.showMapActualLocation && (
           <React.Fragment>
             <div>
@@ -1183,8 +1183,8 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
           }}
         >
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-            <div>
-              <Label>{`${t("COMMON_CURRENT_ASSEMBLY")}`}</Label>
+            <LabelFieldPair>
+              <CardLabel>{`${t("COMMON_CURRENT_ASSEMBLY")}`}</CardLabel>
               <Dropdown
                 className="form-field"
                 selected={
@@ -1199,10 +1199,10 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
                 t={t}
                 placeholder={"Select Assembly"}
               />
-            </div>
+            </LabelFieldPair>
 
-            <div>
-              <Label>{`${t("COMMON_CURRENT_ZONE")}`}</Label>
+            <LabelFieldPair>
+              <CardLabel>{`${t("COMMON_CURRENT_ZONE")}`}</CardLabel>
               <Dropdown
                 className="form-field"
                 selected={zoneOptions.find((z) => z.code === tempZone) || (tempZone ? { code: tempZone, i18nKey: tempZone, name: tempZone } : null)}
@@ -1214,10 +1214,10 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
                 t={t}
                 placeholder={"Select Zone"}
               />
-            </div>
+            </LabelFieldPair>
 
-            <div>
-              <Label>{`${t("COMMON_CURRENT_WARD")}`}</Label>
+            <LabelFieldPair>
+              <CardLabel>{`${t("COMMON_CURRENT_WARD")}`}</CardLabel>
               <Dropdown
                 className="form-field"
                 selected={wardOptions.find((w) => w.code === tempWard) || (tempWard ? { code: tempWard, i18nKey: tempWard, name: tempWard } : null)}
@@ -1229,7 +1229,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
                 t={t}
                 placeholder={"Select Ward"}
               />
-            </div>
+            </LabelFieldPair>
           </div>
         </Modal>
       )}

@@ -134,25 +134,20 @@ const AssignEkycModal = ({ surveyor, closeModal, refetchDashboard }) => {
       }
     }
 
-    console.log("=-=-==-=-=-=-", {
-      assignmentType: "KNO",
-      assignmentValues: selectedKnos,
-    });
-
     return {
       assignmentType: "KNO",
-      assignmentValues: selectedKnos,
+      assignmentValue: selectedKnos,
     };
   };
+
   const handleAssign = () => {
-    const { assignmentType, assignmentValue, assignmentValues } = getAssignmentPayload();
+    const { assignmentType, assignmentValue } = getAssignmentPayload();
 
     assignmentMutation.mutate({
       tenantId: "dl.djb",
       surveyorId: surveyor?.owner?.uuid,
       assignmentType,
       assignmentValue,
-      assignmentValues,
     });
   };
 
