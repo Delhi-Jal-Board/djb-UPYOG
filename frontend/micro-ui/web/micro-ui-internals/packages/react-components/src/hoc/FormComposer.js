@@ -264,6 +264,8 @@ export const FormComposer = (props) => {
   //   }
   // };
 
+  const isDisabled = props.isDisabled || false;
+
   const formFields = useMemo(
     () =>
       props.config?.map((section, index, array) => {
@@ -389,6 +391,11 @@ export const FormComposer = (props) => {
                     );
                   })}
                 </div>
+                {props.submitInForm && (
+                  <div className="formcomposer-section-button">
+                    <SubmitBar label={t(props.label)} style={{ ...props?.buttonStyle }} submit="submit" disabled={isDisabled} className="w-full" />
+                  </div>
+                )}
               </CollapsibleCardPage>
             ) : (
               <div
@@ -504,6 +511,11 @@ export const FormComposer = (props) => {
                     </Fragment>
                   );
                 })}
+                {props.submitInForm && (
+                  <div className="formcomposer-section-button">
+                    <SubmitBar label={t(props.label)} style={{ ...props?.buttonStyle }} submit="submit" disabled={isDisabled} className="w-full" />
+                  </div>
+                )}
               </div>
             )}
 
@@ -511,7 +523,6 @@ export const FormComposer = (props) => {
           </React.Fragment>
         );
       }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [props.config, formData]
   );
 
@@ -521,7 +532,6 @@ export const FormComposer = (props) => {
     return styles;
   };
 
-  const isDisabled = props.isDisabled || false;
   const checkKeyDown = (e) => {
     const keyCode = e.keyCode ? e.keyCode : e.key ? e.key : e.which;
     if (keyCode === 13) {
@@ -541,7 +551,9 @@ export const FormComposer = (props) => {
           </div>
           {props.childrenAtTheBottom && props.children}
           {props.submitInForm && (
+            // <div className="formcomposer-section-button">
             <SubmitBar label={t(props.label)} style={{ ...props?.buttonStyle }} submit="submit" disabled={isDisabled} className="w-full" />
+            // </div>
           )}
           {props.secondaryActionLabel && (
             <div className="primary-label-btn" style={{ margin: "20px auto 0 auto" }} onClick={onSecondayActionClick}>
@@ -549,10 +561,10 @@ export const FormComposer = (props) => {
             </div>
           )}
           {!props.submitInForm && props.label && (
-            <ActionBar>
+            <div className="formcomposer-section-button">
               <SubmitBar label={t(props.label)} submit="submit" disabled={isDisabled} />
               {props.onSkip && props.showSkip && <LinkButton style={props?.skipStyle} label={t(`CS_SKIP_CONTINUE`)} onClick={props.onSkip} />}
-            </ActionBar>
+            </div>
           )}
         </CollapsibleCardPage>
       ) : (
@@ -565,19 +577,19 @@ export const FormComposer = (props) => {
             {formFields}
           </div>
           {props.childrenAtTheBottom && props.children}
-          {props.submitInForm && (
-            <SubmitBar label={t(props.label)} style={{ ...props?.buttonStyle }} submit="submit" disabled={isDisabled} className="w-full" />
-          )}
+
           {props.secondaryActionLabel && (
             <div className="primary-label-btn" style={{ margin: "20px auto 0 auto" }} onClick={onSecondayActionClick}>
               {props.secondaryActionLabel}
             </div>
           )}
           {!props.submitInForm && props.label && (
-            <ActionBar>
-              <SubmitBar label={t(props.label)} submit="submit" disabled={isDisabled} />
-              {props.onSkip && props.showSkip && <LinkButton style={props?.skipStyle} label={t(`CS_SKIP_CONTINUE`)} onClick={props.onSkip} />}
-            </ActionBar>
+            <div className="formcomposer-section-button">
+              <ActionBar>
+                <SubmitBar label={t(props.label)} submit="submit" disabled={isDisabled} />
+                {props.onSkip && props.showSkip && <LinkButton style={props?.skipStyle} label={t(`CS_SKIP_CONTINUE`)} onClick={props.onSkip} />}
+              </ActionBar>
+            </div>
           )}
         </React.Fragment>
       )}
