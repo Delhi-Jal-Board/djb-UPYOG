@@ -77,7 +77,7 @@ const AssignEkyc = () => {
 
   const SearchFormFields = useCallback(
     ({ registerRef, searchFormState, controlSearchForm }) => (
-      <SearchFormFieldsComponents {...{ registerRef, searchFormState, controlSearchForm }} className="search" />
+      <SearchFormFieldsComponents {...{ registerRef, searchFormState, controlSearchForm }} searchType="mobile" className="search" />
     ),
     []
   );

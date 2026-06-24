@@ -5,19 +5,18 @@ const TextInput = (props) => {
   const user_type = Digit.SessionStorage.get("userType");
   const data = props?.watch
     ? {
-        fromDate: props?.watch("fromDate"),
-        toDate: props?.watch("toDate"),
-      }
+      fromDate: props?.watch("fromDate"),
+      toDate: props?.watch("toDate"),
+    }
     : {};
 
-  const handleDate = (event) => {};
+  const handleDate = (event) => { };
 
   return (
     <React.Fragment>
       <div
-        className={`text-input ${props.disabled ? "not-allowed" : ""} ${user_type === "employee" ? "" : "text-input-width"} ${
-          props.className ? props.className : ""
-        }`}
+        className={`text-input ${props.disabled ? "not-allowed" : ""} ${user_type === "employee" ? "" : "text-input-width"} ${props.className ? props.className : ""
+          }`}
         style={props?.textInputStyle ? { ...props.textInputStyle } : {}}
       >
         {props.isMandatory ? (
@@ -57,9 +56,8 @@ const TextInput = (props) => {
             type={props?.validation && props.ValidationRequired ? props?.validation?.type : props.type || "text"}
             name={props.name}
             id={props.id}
-            className={`${user_type ? "employee-card-input" : "citizen-card-input"} ${props.disabled ? "disabled" : ""} focus-visible ${
-              props.errorStyle && "employee-card-input-error"
-            }`}
+            className={`${user_type ? "employee-card-input" : "citizen-card-input"} ${props.disabled ? "disabled" : ""} focus-visible ${props.errorStyle && "employee-card-input-error"
+              }`}
             placeholder={props.placeholder}
             onChange={(event) => {
               if (props?.onChange) {

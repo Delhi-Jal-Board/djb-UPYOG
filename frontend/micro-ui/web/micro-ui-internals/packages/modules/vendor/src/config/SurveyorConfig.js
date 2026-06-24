@@ -61,7 +61,7 @@ const SurveyorConfig = (t, agencies = [], reportingManagers = [], disabled = fal
           populators: {
             name: "dob",
             validation: { required: true },
-            component: (props, customProps) => <DatePicker onChange={props.onChange} date={props.value} {...customProps} />,
+            component: (props, customProps) => <DatePicker onChange={props.onChange} date={props.value} isDOB={true} minAge={18} {...customProps} />,
           },
         },
         {

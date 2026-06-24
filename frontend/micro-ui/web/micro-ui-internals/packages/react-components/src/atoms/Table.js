@@ -324,15 +324,15 @@ const Table = ({
       const exportSource =
         typeof getCSVExportData === "function"
           ? await getCSVExportData({
-              currentPage,
-              pageIndex,
-              pageSize,
-              pageSizeLimit,
-              manualPagination,
-              sortBy,
-              globalFilter,
-              totalRecords,
-            })
+            currentPage,
+            pageIndex,
+            pageSize,
+            pageSizeLimit,
+            manualPagination,
+            sortBy,
+            globalFilter,
+            totalRecords,
+          })
           : csvExportData ?? (manualPagination ? [] : tableData);
 
       const exportRows = normalizeExportRows(exportSource);

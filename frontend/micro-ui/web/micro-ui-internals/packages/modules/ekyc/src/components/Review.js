@@ -177,8 +177,8 @@ const Review = () => {
   const [toastData, setToastData] = useState({ error: false, label: "" });
 
   const options = [
-    { action: t("Approve") },
-    { action: t("Reject") }
+    { action: t("APPROVE") },
+    { action: t("REJECT") }
   ];
 
   const flowState = location.state || {};

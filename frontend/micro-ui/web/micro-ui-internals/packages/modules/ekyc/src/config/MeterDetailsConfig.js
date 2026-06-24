@@ -110,7 +110,7 @@ const MeterDetailsConfig = (t, formData = {}, uploadPhoto, meterPhoto, meterPhot
 
     if (meterStatus === "Metered") {
       fields.push({
-        label: t("Meter Photo *"),
+        label: t("Meter Photo"),
         isMandatory: true,
         type: "custom",
         key: "meterPhoto",
@@ -201,7 +201,7 @@ const MeterDetailsConfig = (t, formData = {}, uploadPhoto, meterPhoto, meterPhot
   // 🔹 Bill-received fields
   if (lastBillReceived === "Yes") {
     fields.push({
-      label: t("When was the last bill received *"),
+      label: t("When was the last bill received"),
       isMandatory: true,
       type: "custom",
       key: "billMonthYear",

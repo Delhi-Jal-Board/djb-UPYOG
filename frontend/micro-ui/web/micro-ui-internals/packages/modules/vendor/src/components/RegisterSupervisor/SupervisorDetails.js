@@ -137,8 +137,8 @@ const SupervisorDetails = (props) => {
 
   const { data: dashboardData, isLoading: isDashboradLoading } = Digit.Hooks.fsm.useSurveyorSearch(
     tenantId,
-    { ...paginationParms, status: "ACTIVE,DISABLED" },
-    { enabled: !!tenantId, keepPreviousData: true }
+    { ...paginationParms, status: "ACTIVE,DISABLED", supervisorId },
+    { enabled: !!tenantId, keepPreviousData: true },
   );
 
   const closeToast = () => {
