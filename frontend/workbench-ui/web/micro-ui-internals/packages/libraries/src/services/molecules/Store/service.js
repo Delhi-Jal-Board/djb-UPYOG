@@ -55,9 +55,22 @@ export const StoreService = {
     return await Promise.all(allBoundries);
   },
   digitInitData: async (stateCode, enabledModules) => {
-    const { MdmsRes } = await MdmsService.init(stateCode);
-    const stateInfo = MdmsRes["common-masters"]?.StateInfo?.[0]||{};
-    const uiHomePage = MdmsRes["common-masters"]?.uiHomePage?.[0]||{};
+    const response = await MdmsService.init(stateCode);
+
+    // Guard: if the MDMS call failed, `response` will be an error object
+    // (from the Request catch block) or have no MdmsRes key.
+    const MdmsRes = response?.MdmsRes ?? response;
+    if (!MdmsRes || MdmsRes.error || !MdmsRes["common-masters"]) {
+      console.error("[digitInitData] MDMS init failed or returned invalid data:", response);
+      throw new Error(
+        `MDMS init failed for stateCode "${stateCode}". ` +
+        `Check REACT_APP_PROXY_API and ensure the backend is reachable. ` +
+        `Response: ${JSON.stringify(response)}`
+      );
+    }
+
+    const stateInfo = MdmsRes["common-masters"]?.StateInfo?.[0] || {};
+    const uiHomePage = MdmsRes["common-masters"]?.uiHomePage?.[0] || {};
     const localities = {};
     const revenue_localities = {};
     const initData = {
@@ -71,11 +84,10 @@ export const StoreService = {
         bannerUrl: stateInfo.bannerUrl,
       },
       localizationModules: stateInfo.localizationModules,
-      modules: MdmsRes?.tenant?.citymodule?.filter((module) => module?.active)?.filter((module) => enabledModules?.includes(module?.code))?.sort((x,y)=>x?.order-y?.order),
+      modules: MdmsRes?.tenant?.citymodule?.filter((module) => module?.active)?.filter((module) => enabledModules?.includes(module?.code))?.sort((x, y) => x?.order - y?.order),
       uiHomePage: uiHomePage
     };
 
-  
     initData.selectedLanguage = Digit.SessionStorage.get("locale") || initData.languages[0].value;
 
     ApiCacheService.saveSetting(MdmsRes["DIGIT-UI"]?.ApiCachingSettings);

@@ -1,15 +1,14 @@
 import Urls from "../../atoms/urls";
-import { Request, ServiceRequest } from "../../atoms/Utils/Request";
+import { PublicRequest, Request, ServiceRequest } from "../../atoms/Utils/Request";
 import { Storage } from "../../atoms/Utils/Storage";
 
 export const UserService = {
-  authenticate: async (details) => {
+  authenticate: (details) => {
     const data = new URLSearchParams();
     Object.entries(details).forEach(([key, value]) => data.append(key, value));
     data.append("scope", "read");
     data.append("grant_type", "password");
-
-    let authResponse = await ServiceRequest({
+    return ServiceRequest({
       serviceName: "authenticate",
       url: Urls.Authenticate,
       data,
@@ -18,52 +17,118 @@ export const UserService = {
         "Content-Type": "application/x-www-form-urlencoded",
       },
     });
-    const invalidRoles = window?.globalConfigs?.getConfig("INVALIDROLES") || [];
-    if (invalidRoles && invalidRoles.length > 0 && authResponse && authResponse?.UserRequest?.roles?.some((role) => invalidRoles.includes(role.code))) {
-      throw new Error("ES_ERROR_USER_NOT_PERMITTED");
-    }
-    return authResponse;
   },
-  logoutUser: () => {
-    let user = UserService.getUser();
-    if (!user || !user.info || !user.access_token) return false;
-    const { type } = user.info;
-    return ServiceRequest({
-      serviceName: "logoutUser",
-      url: Urls.UserLogout,
-      data: { access_token: user?.access_token },
-      auth: true,
-      params: { tenantId: type === "CITIZEN" ? Digit.ULBService.getStateId() : Digit.ULBService.getCurrentTenantId() },
-    });
+  logoutUser: async (userType) => {
+    const kc = window.keycloak;
+    const ctx = window.contextPath || "digit-ui";
+    const isEmployee = userType ? userType !== "citizen" : !window.location.pathname.includes("/citizen");
+    const loginRedirectUri = isEmployee
+      ? `/${ctx}/employee/user/login`
+      : `/${ctx}/citizen/login`;
+
+    // 1️⃣ Call backend logout (fire-and-forget, don't block)
+    if (kc?.authenticated) {
+      try {
+        const user = UserService.getUser();
+        await ServiceRequest({
+          serviceName: "logoutUser",
+          url: Urls.UserLogout,
+          data: { access_token: kc.token },
+          auth: true,
+          params: {
+            tenantId: isEmployee
+              ? Digit.ULBService.getCurrentTenantId()
+              : Digit.ULBService.getStateId(),
+          },
+        });
+      } catch (e) {
+        console.warn("[logoutUser] Backend logout failed (continuing):", e);
+      }
+    }
+
+    // 2️⃣ Clear all client-side storage BEFORE navigating
+    try {
+      Digit.SessionStorage.del("User");
+      Digit.SessionStorage.del("userType");
+      Digit.SessionStorage.del("user_type");
+    } catch (_) {}
+    sessionStorage.clear();
+    localStorage.clear();
+
+    // 3️⃣ Navigate away
+    if (kc?.authenticated) {
+      // Keycloak handles the redirect – do NOT also call window.location.replace()
+      kc.logout({
+        redirectUri: window.location.origin + loginRedirectUri,
+      });
+    } else {
+      // No active KC session – navigate manually
+      window.location.replace(loginRedirectUri);
+    }
+
+    return true;
   },
   getType: () => {
-    return Storage.get("userType") || "citizen";
+    return Storage.get("userType") || localStorage.getItem("Digit.userType") || "citizen";
   },
   setType: (userType) => {
     Storage.set("userType", userType);
     Storage.set("user_type", userType);
+    localStorage.setItem("Digit.userType", userType);
   },
   getUser: () => {
-    return Digit.SessionStorage.get("User");
+    // If Keycloak is fully initialised (not just undefined) and says NOT authenticated,
+    // that is authoritative for employee sessions. Clear any stale localStorage user
+    // so the app doesn't show a phantom logged-in state.
+    const kc = window.keycloak;
+    const isEmployeePath = window.location.pathname.includes("/employee");
+    if (kc !== undefined && kc !== null && kc.authenticated === false && isEmployeePath) {
+      return null;
+    }
+
+    let user = Digit.SessionStorage.get("User");
+
+    // 🔄 Fallback to localStorage if sessionStorage is lost or corrupted
+    if (!user || !user.info) {
+      const localUser = JSON.parse(localStorage.getItem("Digit.User") || "null");
+      const infoOnly =
+        JSON.parse(localStorage.getItem("user-info") || "null") ||
+        JSON.parse(localStorage.getItem("Citizen.user-info") || "null") ||
+        JSON.parse(localStorage.getItem("Employee.user-info") || "null");
+
+      if (localUser && localUser.info) {
+        user = localUser;
+      } else if (infoOnly) {
+        user = { info: infoOnly };
+      }
+
+      if (user && user.info) {
+        Digit.SessionStorage.set("User", user);
+      }
+    }
+    return user;
   },
   logout: async () => {
-    const userType = UserService.getType();
+    const userType = UserService.getType(); // capture BEFORE storage is cleared
     try {
-      await UserService.logoutUser();
+      // logoutUser() clears storage and redirects (via kc.logout or window.location.replace).
+      // Do NOT call window.location.replace() again here — that causes a race condition
+      // when Keycloak is doing its own redirect.
+      await UserService.logoutUser(userType);
     } catch (e) {
-    }
-    finally{
+      console.error("[logout] Unexpected error:", e);
+      // Last-resort fallback navigation (logoutUser should have already navigated)
+      const ctx = window.contextPath || "digit-ui";
+      const isCitizen = userType === "citizen";
       window.localStorage.clear();
       window.sessionStorage.clear();
-      if (userType === "citizen") {
-        window.location.replace(`/${window?.contextPath}/citizen`);
-      } else {
-        window.location.replace(`/${window?.contextPath}/employee/user/language-selection`);
-      }
+      window.location.replace(
+        isCitizen ? `/${ctx}/citizen/login` : `/${ctx}/employee/user/login`
+      );
     }
   },
   sendOtp: (details, stateCode) =>
-    ServiceRequest({
+    PublicRequest({
       serviceName: "sendOtp",
       url: Urls.OTP_Send,
       data: details,
@@ -71,11 +136,18 @@ export const UserService = {
       params: { tenantId: stateCode },
     }),
   setUser: (data) => {
-    return Digit.SessionStorage.set("User", data);
+    Digit.SessionStorage.set("User", data);
+    localStorage.setItem("Digit.User", JSON.stringify(data));
+    if (data?.info) {
+      const prefix = data.info.type === "CITIZEN" ? "Citizen" : "Employee";
+      localStorage.setItem("user-info", JSON.stringify(data.info));
+      localStorage.setItem(`${prefix}.user-info`, JSON.stringify(data.info));
+    }
   },
   setExtraRoleDetails: (data) => {
-    const userDetails = Digit.SessionStorage.get("User");
-    return Digit.SessionStorage.set("User", { ...userDetails, extraRoleInfo: data });
+    const userDetails = UserService.getUser();
+    const updatedUser = { ...userDetails, extraRoleInfo: data };
+    UserService.setUser(updatedUser);
   },
   getExtraRoleDetails: () => {
     return Digit.SessionStorage.get("User")?.extraRoleInfo;
@@ -99,6 +171,7 @@ export const UserService = {
       },
       params: { tenantId: stateCode },
     }),
+
   hasAccess: (accessTo) => {
     const user = Digit.UserService.getUser();
     if (!user || !user.info) return false;
@@ -124,16 +197,63 @@ export const UserService = {
       auth: true,
     });
   },
+  //GET captcha for user
+  userCaptchaSearch: async (tenantId, data) => {
+    return Request({
+      url: Urls.UserCaptcha,
+      method: "GET",
+    });
+  },
   userSearch: async (tenantId, data, filters) => {
-
-    return ServiceRequest({
+    return Request({
       url: Urls.UserSearch,
       params: { ...filters },
       method: "POST",
       auth: true,
-      useCache: true,
       userService: true,
       data: data.pageSize ? { tenantId, ...data } : { tenantId, ...data, pageSize: "100" },
+    });
+  },
+  // user search for user profile
+  userSearchNewV2: async (tenantId, data, filters) => {
+    return Request({
+      url: Urls.UserSearchNewV2,
+      params: { ...filters },
+      method: "POST",
+      auth: true,
+      userService: true,
+      data: data.pageSize ? { tenantId, ...data } : { tenantId, ...data, pageSize: "100" },
+    });
+  },
+  fetchUserDetails: async (kc) => {
+    if (!kc) {
+      throw new Error("Keycloak instance (kc) is required");
+    }
+
+    if (!kc?.token) {
+      throw new Error("Keycloak token not available");
+    }
+
+    const requestData = {
+      tenantId: Digit.ULBService.getCurrentTenantId(),
+      uuid: kc?.uuid,
+      userName: kc?.userName,
+      userInfo: {
+        email: kc?.email || "",
+        name: kc?.userName || "",
+        tenantId: Digit.ULBService.getCurrentTenantId() || "",
+      },
+    };
+
+    return Request({
+      url: Urls.UserDetails,
+      method: "POST",
+      auth: true,
+      userService: true,
+      params: {
+        access_token: kc.token,
+      },
+      data: requestData,
     });
   },
 };
