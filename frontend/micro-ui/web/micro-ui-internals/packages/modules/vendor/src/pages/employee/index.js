@@ -5,6 +5,8 @@ import { Switch, useLocation } from "react-router-dom";
 import AddSurveyor from "../../components/RegisterSurveyor/AddSurveyor";
 import SearchVendor from "../../components/SearchVendor/Index";
 import SupervisorDetails from "../../components/RegisterSupervisor/SupervisorDetails";
+import SurveyorDetails from "../../components/RegisterSurveyor/SurveyorDetails";
+import EditVendorDetails from "../../components/RegisterVendor/EditVendorDetails";
 
 const EmployeeApp = ({ path, url, userType }) => {
   const { t } = useTranslation();
@@ -46,14 +48,12 @@ const EmployeeApp = ({ path, url, userType }) => {
   const AddVendor = Digit.ComponentRegistryService.getComponent("AddVendor");
   const SearchApp = Digit.ComponentRegistryService.getComponent("SearchApp");
   const AddDriver = Digit.ComponentRegistryService.getComponent("AddDriver");
-  const EditVendorDetails = Digit.ComponentRegistryService.getComponent("EditVendorDetails");
   const AddVehicle = Digit.ComponentRegistryService.getComponent("AddVehicle");
   const VendorCreate = Digit.ComponentRegistryService.getComponent("VENDORCreate");
   const DriverDetails = Digit.ComponentRegistryService.getComponent("DriverDetails");
   const VehicleDetails = Digit.ComponentRegistryService.getComponent("VehicleDetails");
   const AddSupervisor = Digit.ComponentRegistryService.getComponent("AddSupervisor");
   const EditSupervisor = Digit.ComponentRegistryService.getComponent("EditSupervisor");
-  const SurveyorDetails = Digit.ComponentRegistryService.getComponent("SurveyorDetails");
   const EditSurveyor = Digit.ComponentRegistryService.getComponent("EditSurveyor");
   const EditDriver = Digit.ComponentRegistryService.getComponent("EditDriver");
   const EditVehicle = Digit.ComponentRegistryService.getComponent("EditVehicle");

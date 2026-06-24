@@ -12,7 +12,6 @@ const TextInput = (props) => {
 
   const handleDate = (event) => {};
 
-  console.log(props.disabled, props.name);
   return (
     <React.Fragment>
       <div

@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useGlobalFilter, usePagination, useRowSelect, useSortBy, useTable } from "react-table";
 import {
-  ArrowBack,
-  ArrowForward,
-  ArrowToFirst,
+  ForwardIcon,
+  FastBackward,
+  Backward,
   ArrowToLast,
   ChevronDown,
   IconClose,
@@ -13,9 +13,9 @@ import {
   IconSortDesc,
   IconSortNeutral,
   LayoutGrid,
+  FastForward,
 } from "./svgindex";
-
-const noop = () => {};
+import { Loader } from "./Loader";
 
 const getSearchableText = (obj) => {
   if (obj === null || obj === undefined) return "";
@@ -25,7 +25,6 @@ const getSearchableText = (obj) => {
 
 const VALID_TEXT_ALIGN = new Set(["left", "right", "center", "start", "end", "justify"]);
 const DEFAULT_TEXT_ALIGN = "left";
-const DEFAULT_ROW_HEIGHT = 52;
 
 const normalizeTextAlign = (value, fallback = DEFAULT_TEXT_ALIGN) => {
   if (!value || typeof value !== "string") return fallback;
@@ -43,26 +42,6 @@ const getFlexJustifyFromAlign = (align = DEFAULT_TEXT_ALIGN) => {
 };
 
 /* ─── Design Tokens ─────────────────────────────────────────────────────────── */
-const T = {
-  accent: "#5282e6",
-  accentDark: "#5282e6",
-  accentLight: "#eff6ff",
-  accentMid: "#bfdbfe",
-  surface: "#ffffff",
-  surfaceAlt: "#f8fafc",
-  surfaceHover: "#f0f4ff",
-  border: "#e2e8f0",
-  borderStrong: "#cbd5e1",
-  textPrimary: "#0f172a",
-  textSecondary: "#475569",
-  textMuted: "#94a3b8",
-  warn: "#f59e0b",
-  warnLight: "#fffbeb",
-  warnBorder: "#fde68a",
-  warnDark: "#b45309",
-  fontBody: "'DM Sans', 'Segoe UI', ui-sans-serif, sans-serif",
-  fontMono: "'JetBrains Mono', 'Fira Code', ui-monospace, monospace",
-};
 
 const flattenColumnsForExport = (columnDefs = []) =>
   (Array.isArray(columnDefs) ? columnDefs : []).reduce((acc, column) => {
@@ -189,49 +168,9 @@ const normalizeExportRows = (value) => {
 };
 
 /* ─── Pagination Button ─────────────────────────────────────────────────────── */
-const PagBtn = ({ onClick, disabled, title, children, active = false }) => {
-  const [hovered, setHovered] = useState(false);
-  const base = {
-    display: "inline-flex",
-    alignItems: "center",
-    justifyContent: "center",
-    width: 30,
-    height: 30,
-    borderRadius: 5,
-    cursor: disabled ? "not-allowed" : "pointer",
-    fontFamily: T.fontMono,
-    fontSize: 12,
-    fontWeight: 600,
-    lineHeight: 0,
-    opacity: disabled ? 0.35 : 1,
-    transition: "all 0.15s",
-  };
-  if (active) {
-    return (
-      <button
-        onClick={onClick}
-        disabled={disabled}
-        title={title}
-        style={{ ...base, background: T.accent, border: `1.5px solid ${T.accent}`, color: "#fff", boxShadow: "0 2px 6px rgba(37,99,235,0.30)" }}
-      >
-        {children}
-      </button>
-    );
-  }
+const PagBtn = ({ onClick, disabled, title, children, active = false, isLoading }) => {
   return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      title={title}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        ...base,
-        background: hovered && !disabled ? T.accentLight : T.surface,
-        border: `1.5px solid ${hovered && !disabled ? T.accentMid : T.borderStrong}`,
-        color: hovered && !disabled ? T.accent : T.textSecondary,
-      }}
-    >
+    <button onClick={onClick} disabled={disabled || isLoading} title={title} className={`page-btn ${active ? "active" : ""}`}>
       {children}
     </button>
   );
@@ -256,7 +195,7 @@ const Table = ({
   onNextPage,
   onPrevPage,
   globalSearch,
-  onSort = noop,
+  onSort = () => {},
   onPageSizeChange,
   onLastPage,
   onFirstPage,
@@ -267,7 +206,6 @@ const Table = ({
   styles = {},
   tableTopComponent,
   tableRef,
-  isReportTable = false,
   inboxStyles,
   tableTitle,
   showCSVExport = false,
@@ -278,7 +216,6 @@ const Table = ({
   csvExportButtonLabel,
   isLoading,
 }) => {
-  const [hoveredRow, setHoveredRow] = useState(null);
   const [internalSearch, setInternalSearch] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
   const [isCsvExporting, setIsCsvExporting] = useState(false);
@@ -301,7 +238,7 @@ const Table = ({
     previousPage,
     setPageSize,
     setGlobalFilter,
-    state: { pageIndex = 0, pageSize = 10, sortBy, globalFilter },
+    state: { pageIndex = 0, pageSize = 20, sortBy, globalFilter },
   } = useTable(
     {
       columns: tableColumns,
@@ -497,7 +434,7 @@ const Table = ({
                   const mergedStyle = {
                     ...(headerProps.style || {}),
                     cursor: column.canSort ? "pointer" : "default",
-                    background: isSorted ? T.accentLight : T.surfaceAlt,
+                    background: isSorted ? "#eff6ff" : "#f8fafc",
                     textAlign,
                   };
 
@@ -506,7 +443,7 @@ const Table = ({
                       <div className="col-head-wrapper" style={{ justifyContent: getFlexJustifyFromAlign(textAlign) }}>
                         <span className={`col-head ${isSorted ? "accentDark" : "textSecondary"}`}>{column.render("Header")}</span>
                         {column.canSort && (
-                          <span style={{ lineHeight: 0, color: isSorted ? T.accent : "rgb(7, 8, 9)" }}>
+                          <span style={{ lineHeight: 0, color: isSorted ? "#5282e6" : "rgb(7, 8, 9)" }}>
                             {isSorted ? column.isSortedDesc ? <IconSortDesc /> : <IconSortAsc /> : <IconSortNeutral />}
                           </span>
                         )}
@@ -522,82 +459,37 @@ const Table = ({
           <tbody {...getTableBodyProps()}>
             {isLoading ? (
               <tr>
-                <td colSpan={tableColumns.length + (showAutoSerialNo ? 1 : 0)} style={{ padding: "80px 20px", textAlign: "center" }}>
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "12px" }}>
-                    <div
-                      style={{
-                        width: "44px",
-                        height: "44px",
-                        border: `3px solid ${T.borderStrong}`,
-                        borderTop: `3px solid ${T.accent}`,
-                        borderRadius: "50%",
-                        animation: "spin 0.8s linear infinite",
-                      }}
-                    />
-                    <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: T.textSecondary, letterSpacing: "0.02em" }}>
-                      {t ? t("CS_LOADING") : "Loading records..."}
-                    </p>
-                  </div>
-                  <style>{`
-                    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-                  `}</style>
+                <td colSpan={tableColumns.length + (showAutoSerialNo ? 1 : 0)} className="table-state-cell rel">
+                  <Loader />
                 </td>
               </tr>
             ) : page.length === 0 ? (
               <tr>
-                <td colSpan={tableColumns.length + (showAutoSerialNo ? 1 : 0)} style={{ padding: "48px 20px", textAlign: "center" }}>
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+                <td colSpan={tableColumns.length + (showAutoSerialNo ? 1 : 0)} className="table-state-cell table-state-cell-empty">
+                  <div className="table-empty">
                     <LayoutGrid />
-                    <p style={{ margin: 0, fontSize: "14", fontWeight: 500, color: T.textMuted }}>{t ? t("CS_NO_DATA") : "No records found"}</p>
+                    <p className="table-empty-text">{t ? t("CS_NO_DATA") : "No records found"}</p>
                   </div>
                 </td>
               </tr>
             ) : (
               page.map((row, i) => {
                 prepareRow(row);
-                const isHovered = hoveredRow === i;
                 return (
-                  <tr
-                    {...row.getRowProps()}
-                    onMouseEnter={() => setHoveredRow(i)}
-                    onMouseLeave={() => setHoveredRow(null)}
-                    style={{
-                      background: isHovered ? T.surfaceHover : i % 2 === 0 ? T.surface : T.surfaceAlt,
-                      borderBottom: `1px solid ${T.border}`,
-                      transition: "background 0.12s",
-                      height: DEFAULT_ROW_HEIGHT,
-                    }}
-                  >
+                  <tr {...row.getRowProps()}>
                     {showAutoSerialNo && (
-                      <td style={{ padding: "12px 8px", textAlign: "center", verticalAlign: "middle" }}>
-                        <span
-                          style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            width: "22px",
-                            height: "22px",
-                            background: T.border,
-                            borderRadius: "4px",
-                            fontSize: "10px",
-                            fontWeight: 700,
-                            color: T.textMuted,
-                            fontFamily: T.fontMono,
-                          }}
-                        >
-                          {pageIndex * pageSize + i + 1}
-                        </span>
+                      <td>
+                        <span>{pageIndex * pageSize + i + 1}</span>
                       </td>
                     )}
                     {row.cells.map((cell) => {
                       const cellProps = getCellProps ? getCellProps(cell) : {};
                       const cellStyleFromProps = cellProps?.style || {};
-                      console.log("-=-=-=-=-=-=-=-=-=-", cellStyleFromProps);
                       const textAlign = normalizeTextAlign(cellStyleFromProps.textAlign, getColumnAlign(cell.column));
                       const renderedCell = cell.attachment_link ? (
                         <a
                           href={cell.attachment_link}
-                          style={{ color: T.accent, textDecoration: "none", fontWeight: 500, borderBottom: `1px solid ${T.accentMid}` }}
+                          style={{ color: "#5282e6", textDecoration: "none", fontWeight: 500, borderBottom: `1px solid #bfdbfe` }}
                         >
                           {cell.render("Cell")}
                         </a>
@@ -605,19 +497,7 @@ const Table = ({
                         cell.render("Cell")
                       );
                       return (
-                        <td
-                          {...cell.getCellProps([cellProps])}
-                          style={{
-                            padding: "12px 18px",
-                            verticalAlign: "middle",
-                            fontSize: "16px",
-                            color: T.textPrimary,
-                            lineHeight: 1.45,
-                            whiteSpace: "nowrap",
-                            ...cellStyleFromProps,
-                            textAlign,
-                          }}
-                        >
+                        <td {...cell.getCellProps([cellProps])} style={{ ...cellStyleFromProps, textAlign }}>
                           {renderedCell}
                         </td>
                       );
@@ -632,101 +512,69 @@ const Table = ({
 
       {/* ── Pagination — original logic, modernised UI ───────────────────── */}
       {isPaginationRequired && (
-        <div style={{ borderTop: `1px solid ${T.border}`, borderRadius: "0 0 12px 12px" }}>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "flex-end",
-              gap: "12px",
-              padding: "12px 16px",
-              background: T.surfaceAlt,
-              flexWrap: "wrap",
-              fontFamily: T.fontBody,
-              color: T.textSecondary,
-            }}
-          >
-            {/* Rows per page */}
-            <span style={{ fontSize: "12px", color: T.textMuted, whiteSpace: "nowrap" }}>{t ? t("CS_COMMON_ROWS_PER_PAGE") : "Rows per page"} :</span>
-            <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-              <select
-                value={pageSize}
-                onChange={manualPagination ? onPageSizeChange : (e) => setPageSize(Number(e.target.value))}
-                style={{
-                  appearance: "none",
-                  WebkitAppearance: "none",
-                  background: T.surface,
-                  border: `1.5px solid ${T.borderStrong}`,
-                  borderRadius: "5px",
-                  padding: "5px 26px 5px 9px",
-                  fontSize: "12.5px",
-                  fontFamily: T.fontBody,
-                  fontWeight: 600,
-                  color: T.textPrimary,
-                  cursor: "pointer",
-                  outline: "none",
-                  marginRight: "8px",
-                }}
-              >
-                {[10, 20, 30, 40, 50].map((ps) => (
-                  <option key={ps} value={ps}>
-                    {ps}
-                  </option>
-                ))}
-              </select>
-              <span style={{ position: "absolute", right: "15px", pointerEvents: "none", lineHeight: 0, color: T.textMuted }}>
-                <ChevronDown />
-              </span>
-            </div>
+        <div className="table-pagination">
+          <span className="page-size-label">{t ? t("CS_COMMON_ROWS_PER_PAGE") : "Rows per page"}:</span>
 
-            {/* Record range — original display logic */}
-            <span style={{ fontSize: "12.5px" }}>
-              <strong style={{ fontFamily: T.fontMono, fontWeight: 700, color: T.textPrimary, fontSize: "12px" }}>
-                {Number.isNaN(pageIndex * pageSize + 1) ? 0 : pageIndex * pageSize + 1}
-              </strong>
-              {"–"}
-              <strong style={{ fontFamily: T.fontMono, fontWeight: 700, color: T.textPrimary, fontSize: "12px" }}>
-                {Number.isNaN(rangeEnd) ? 0 : rangeEnd}
-              </strong>{" "}
-              {totalLabel}
+          <div className="page-size-wrapper">
+            <select
+              className="page-size-select"
+              value={pageSize}
+              onChange={manualPagination ? onPageSizeChange : (e) => setPageSize(Number(e.target.value))}
+            >
+              {[10, 20, 30, 40, 50].map((ps) => (
+                <option key={ps} value={ps}>
+                  {ps}
+                </option>
+              ))}
+            </select>
+
+            <span className="page-size-icon">
+              <ChevronDown />
             </span>
+          </div>
 
-            {/* ── Navigation — original conditions, modernised buttons ─────── */}
+          <div className="pagination-actions">
             {/* First page */}
             {!manualPagination && pageIndex !== 0 && (
-              <PagBtn title="First page" onClick={() => gotoPage(0)}>
-                <ArrowToFirst />
+              <PagBtn isLoading={isLoading} title="First page" onClick={() => gotoPage(0)}>
+                <FastBackward />
               </PagBtn>
             )}
             {canPreviousPage && manualPagination && onFirstPage && (
-              <PagBtn title="First page" onClick={() => onFirstPage()}>
-                <ArrowToFirst />
+              <PagBtn isLoading={isLoading} title="First page" onClick={() => onFirstPage()}>
+                <FastBackward />
               </PagBtn>
             )}
 
             {/* Previous */}
             {canPreviousPage && (
-              <PagBtn title="Previous page" onClick={() => (manualPagination ? onPrevPage() : previousPage())}>
-                <ArrowBack />
+              <PagBtn isLoading={isLoading} title="Previous page" onClick={() => (manualPagination ? onPrevPage() : previousPage())}>
+                <Backward />
               </PagBtn>
             )}
 
+            <span className="range-info">
+              <strong>{Number.isNaN(pageIndex * pageSize + 1) ? 0 : pageIndex * pageSize + 1}</strong>-
+              <strong>{Number.isNaN(rangeEnd) ? 0 : rangeEnd}</strong>
+              {totalLabel}
+            </span>
+
             {/* Next */}
             {canNextPage && (
-              <PagBtn title="Next page" onClick={() => (manualPagination ? onNextPage() : nextPage())}>
-                <ArrowForward />
+              <PagBtn isLoading={isLoading} title="Next page" onClick={() => (manualPagination ? onNextPage() : nextPage())}>
+                <ForwardIcon />
               </PagBtn>
             )}
 
             {/* Last page */}
             {!manualPagination && pageIndex !== pageCount - 1 && (
-              <PagBtn title="Last page" onClick={() => gotoPage(pageCount - 1)}>
+              <PagBtn isLoading={isLoading} title="Last page" onClick={() => gotoPage(pageCount - 1)}>
                 <ArrowToLast />
               </PagBtn>
             )}
             {rows.length === pageSizeLimit && canNextPage && manualPagination && onLastPage && (
-              <PagBtn title="Last page" onClick={() => onLastPage()}>
-                <ArrowToLast />
+              <PagBtn isLoading={isLoading} title="Last page" onClick={() => onLastPage()}>
+                <FastForward />
               </PagBtn>
             )}
           </div>

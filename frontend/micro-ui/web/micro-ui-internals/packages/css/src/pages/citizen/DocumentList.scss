@@ -191,7 +191,7 @@
 }
 
 .documentDetails_pdf {
-  @apply  cursor-pointer;
+  @apply cursor-pointer;
 }
 .grid_section {
   @apply grid grid-cols-4 gap-4;
@@ -272,7 +272,6 @@
   }
 }
 .confirmation_box {
-  height: 130px;
   display: flex;
   align-items: center;
   padding-left: 8px;

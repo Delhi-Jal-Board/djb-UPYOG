@@ -299,8 +299,10 @@
   }
 
   .ekyc-application-link {
+    font-size: 16px;
+    cursor: pointer;
     font-weight: 600;
-    color: #3a8dcc;
+    color: #318ed0 !important;
   }
 
   /* SearchConsumer Styles */
@@ -1017,4 +1019,10 @@
       }
     }
   }
+}
+
+.ekyc-application-link {
+  font-size: 16px;
+  cursor: pointer;
+  color: #318ed0 !important;
 }

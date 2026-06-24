@@ -67,10 +67,21 @@ const Modal = ({
         <div className="popup-module-main">
           {children}
           <div className="popup-module-action-bar" style={{ ...popupModuleActionBarStyles }}>
-            {actionCancelLabel ? <ButtonSelector theme="border" label={actionCancelLabel} onSubmit={actionCancelOnSubmit} style={style} /> : null}
-            {actionClearLabel ? <ButtonSelector theme="border" label={actionClearLabel} onSubmit={actionClearOnSubmit} style={style} /> : null}
+            {actionCancelLabel ? (
+              <ButtonSelector className="generic-button" theme="border" label={actionCancelLabel} onSubmit={actionCancelOnSubmit} style={style} />
+            ) : null}
+            {actionClearLabel ? (
+              <ButtonSelector className="generic-button" theme="border" label={actionClearLabel} onSubmit={actionClearOnSubmit} style={style} />
+            ) : null}
             {!hideSubmit ? (
-              <ButtonSelector label={actionSaveLabel} onSubmit={actionSaveOnSubmit} formId={formId} isDisabled={isDisabled} style={style} />
+              <ButtonSelector
+                className="generic-button"
+                label={actionSaveLabel}
+                onSubmit={actionSaveOnSubmit}
+                formId={formId}
+                isDisabled={isDisabled}
+                style={style}
+              />
             ) : null}
             {actionSingleLabel ? (
               <ActionBar
@@ -83,7 +94,7 @@ const Modal = ({
                 }}
               >
                 <div style={{ width: "100%" }}>
-                  <SubmitBar style={{ width: "100%" }} label={actionSingleLabel} onSubmit={actionSingleSubmit} />
+                  <SubmitBar className="generic-button" style={{ width: "100%" }} label={actionSingleLabel} onSubmit={actionSingleSubmit} />
                 </div>
               </ActionBar>
             ) : null}
