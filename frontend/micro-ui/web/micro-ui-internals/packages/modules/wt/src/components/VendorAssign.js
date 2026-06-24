@@ -31,7 +31,7 @@ const VendorAssign = ({ parentUrl, heading }) => {
 
   const { data: allFillingPointsData } = Digit.Hooks.wt.useFillPointSearch({
     tenantId,
-    filters: { status: "ACTIVE" },
+    filters: { status: true },
   });
   const allFillingPoints = allFillingPointsData?.fillingPoints || [];
 
