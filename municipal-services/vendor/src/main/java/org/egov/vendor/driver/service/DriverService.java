@@ -66,6 +66,7 @@ public class DriverService {
 		}
 		userService.manageDrivers(driverRequest, false);
 		enrichmentService.enrichUpdate(driverRequest);
+		//driverRepository.updateVendorDriverHistory(driverRequest);
 		driverRepository.update(driverRequest);
 		return driverRequest.getDriver();
 
@@ -156,6 +157,7 @@ public class DriverService {
 		// Only restrict if STRICTLY vendor or citizen (no employee roles)
 		if (!isVendor && !isCitizen) {
 			log.info("No vendor/citizen role found. Skipping restrictions.");
+				//System.out.println("test2 ");
 			return;
 		}
 
@@ -217,8 +219,20 @@ private boolean isEmployeeUser(RequestInfo requestInfo) {
 			applyDriverRoleBasedRestriction(criteria, requestInfo);
 		}
 		else {
-			// vendorId explicitly passed — but validate ownership for VENDOR/CITIZEN
-			validateVendorAccess(criteria.getVendorId(), requestInfo);
+
+			List<String> vendorIds =
+					driverRepository.getVendorIdsByOwner(criteria.getVendorId());
+
+			if (!CollectionUtils.isEmpty(vendorIds)) {
+				String vendorId = vendorIds.get(0);
+				List<String> driverIds =
+						driverRepository.getDriverIdsByVendorId(vendorId);
+
+				if (!CollectionUtils.isEmpty(driverIds)) {
+					criteria.setVendorId(vendorId);
+				}
+			}
+				validateVendorAccess(criteria.getVendorId(), requestInfo);
 		}
 
 		if (criteria.isDriverWithNoVendor()) {
