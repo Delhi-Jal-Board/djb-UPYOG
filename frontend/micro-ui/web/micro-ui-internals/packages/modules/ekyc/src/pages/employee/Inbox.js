@@ -87,7 +87,7 @@ const Inbox = ({ parentRoute, businessService = "EKYC", initialStates = {}, filt
           applicationNumber: item.propertyInfo?.kno || "",
           citizenName: item.connectionDetails?.consumerName || "",
           status: item.connectionDetails?.statusflag || "",
-          ekycStatus: item.connectionDetails?.ekycStatus || item.connectionDetails?.ekycstatus || item.ekycStatus || item.ekycstatus || "NA",
+          ekycStatus: (item.connectionDetails?.ekycStatus || item.connectionDetails?.ekycstatus || item.ekycStatus || item.ekycstatus || "NA").toUpperCase(),
           sla: 0,
         };
       }
@@ -102,7 +102,7 @@ const Inbox = ({ parentRoute, businessService = "EKYC", initialStates = {}, filt
         applicationNumber: item.kno || item.applicationNumber || "",
         citizenName: fullName || item.consumerName || item.citizenName || "",
         status: item.status || "",
-        ekycStatus: item.ekycStatus || item.ekycstatus || "NA",
+        ekycStatus: (item.ekycStatus || item.ekycstatus || "NA").toUpperCase(),
         sla: item.sla ?? 0,
       };
     });
@@ -117,7 +117,7 @@ const Inbox = ({ parentRoute, businessService = "EKYC", initialStates = {}, filt
 
   const SearchFormFields = useCallback(
     ({ registerRef, searchFormState, controlSearchForm }) => (
-      <SearchFormFieldsComponents {...{ registerRef, searchFormState, controlSearchForm }} className="search" />
+      <SearchFormFieldsComponents {...{ registerRef, searchFormState, controlSearchForm }} searchType="kno" className="search" />
     ),
     []
   );

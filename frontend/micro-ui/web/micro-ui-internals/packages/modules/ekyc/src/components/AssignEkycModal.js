@@ -1,7 +1,9 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { Modal, Close, Table, Toast } from "@djb25/digit-ui-react-components";
+import { useTranslation } from "react-i18next";
 
 const AssignEkycModal = ({ surveyor, closeModal, refetchDashboard }) => {
+  const { t } = useTranslation();
   const [selectedKnos, setSelectedKnos] = useState([]);
   const [isBulkSelection, setIsBulkSelection] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
@@ -14,6 +16,7 @@ const AssignEkycModal = ({ surveyor, closeModal, refetchDashboard }) => {
   const [filters, setFilters] = useState({
     kno: "", // search value
     pincode: "",
+    zoneCode: "",
     zoneName: "",
     ward: "",
     assembly: "",
@@ -22,6 +25,95 @@ const AssignEkycModal = ({ surveyor, closeModal, refetchDashboard }) => {
   });
 
   const [debouncedFilters, setDebouncedFilters] = useState(filters);
+
+  const { data: zroLocationsData, isLoading: isZroLoading } = Digit.Hooks.ws.useWSConfigMDMS.ZROLocation("dl.djb");
+  const mappedZROLocation = useMemo(() => {
+    return (zroLocationsData || []).map((item) => ({
+      code: item.code,
+      name: item.name,
+    }));
+  }, [zroLocationsData]);
+
+  const { data: egovLocationData } = Digit.Hooks.useCommonMDMS("dl.djb", "egov-location", ["TenantBoundary"]);
+
+  const boundaryData = useMemo(() => {
+    const tenantBoundary = egovLocationData?.["egov-location"]?.TenantBoundary || [];
+    const revenueData = tenantBoundary.find((item) => item?.hierarchyType?.code === "REVENUE");
+    const boundary = revenueData?.boundary || [];
+    return Array.isArray(boundary) ? boundary : [boundary];
+  }, [egovLocationData]);
+
+  const { assemblyOptions, wardOptions } = useMemo(() => {
+    const assemblies = new Map();
+    const wards = new Map();
+
+    const boundaries = Array.isArray(boundaryData) ? boundaryData : boundaryData ? [boundaryData] : [];
+
+    const traverse = (node) => {
+      if (!node) return;
+      if (node.label === "Ward" || node.label === "WARD" || node.label === "Block" || node.label === "BLOCK") {
+        const code = node.code || node.localname || node.name;
+        const name = node.name || node.localname || code;
+        if (code) wards.set(code, { code, name: name });
+      }
+      if (node.label === "Assembly Constituency" || node.label === "ASSEMBLY_CONSTITUENCY") {
+        const code = node.code || node.localname || node.name;
+        const name = node.name || node.localname || code;
+        if (code) assemblies.set(code, { code, name: name });
+      }
+      if (node.children && node.children.length > 0) {
+        node.children.forEach(traverse);
+      }
+    };
+
+    boundaries.forEach(traverse);
+
+    return {
+      assemblyOptions: Array.from(assemblies.values()).sort((a, b) => a.name.localeCompare(b.name)),
+      wardOptions: Array.from(wards.values()).sort((a, b) => a.name.localeCompare(b.name)),
+    };
+  }, [boundaryData]);
+
+  const structuredLocalityData = useMemo(() => {
+    let localities = [];
+    const boundaries = Array.isArray(boundaryData) ? boundaryData : boundaryData ? [boundaryData] : [];
+
+    const extractLocalities = (node) => {
+      if (!node) return;
+
+      if (node.label === "Locality" || node.label === "LOCALITY") {
+        localities.push({
+          ...node,
+          name: node.localname || node.name || node.code,
+        });
+      }
+      if (node.children && node.children.length > 0) {
+        node.children.forEach((child) => extractLocalities(child));
+      }
+    };
+
+    boundaries.forEach((rootNode) => extractLocalities(rootNode));
+
+    return localities;
+  }, [boundaryData]);
+
+  const fetchedPincodes = useMemo(() => {
+    const pinSet = new Set();
+
+    structuredLocalityData.forEach((loc) => {
+      if (loc.pincode) {
+        const pins = Array.isArray(loc.pincode) ? loc.pincode : [loc.pincode];
+        pins.forEach((p) => {
+          if (p) {
+            const sanitizedPin = p.toString().split(".")[0];
+            pinSet.add(sanitizedPin);
+          }
+        });
+      }
+    });
+
+    return Array.from(pinSet).sort();
+  }, [structuredLocalityData]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -33,12 +125,17 @@ const AssignEkycModal = ({ surveyor, closeModal, refetchDashboard }) => {
 
   useEffect(() => {
     setCurrentPage(0);
-  }, [debouncedFilters]);
+  }, [debouncedFilters, filters.kno]);
 
   const { data: applicationData, isFetching: isLoading } = Digit.Hooks.ekyc.useEkycApplicationList(
     {
+      /*
       ...(debouncedFilters.kno && {
         kno: debouncedFilters.kno,
+      }),
+      */
+      ...(filters.kno && {
+        kno: filters.kno,
       }),
 
       ...(debouncedFilters.ekycStatus && {
@@ -237,44 +334,65 @@ const AssignEkycModal = ({ surveyor, closeModal, refetchDashboard }) => {
         <div className="filters-grid">
           <input className="form-control" placeholder="KNO" value={filters.kno} onChange={(e) => handleFilterChange("kno", e.target.value)} />
 
-          <input
+          <select
             className="form-control"
-            placeholder="Pincode"
             value={filters.pincode}
             onChange={(e) => handleFilterChange("pincode", e.target.value)}
-          />
+          >
+            <option value="">Select Pincode</option>
+            {fetchedPincodes.map((pin) => (
+              <option key={pin} value={pin}>
+                {pin}
+              </option>
+            ))}
+          </select>
 
-          <input
+          <select
             className="form-control"
-            placeholder="Zone"
             value={filters.zoneName}
-            onChange={(e) => handleFilterChange("zoneName", e.target.value)}
-          />
-
-          {/* <SelectEkycZones
-            t={t}
-            isMultiSelect={false}
-            config={{
-              key: "zoneCode",
+            onChange={(e) => {
+              const val = e.target.value;
+              setFilters((prev) => ({
+                ...prev,
+                zoneCode: val,
+                zoneName: val,
+              }));
             }}
-            formData={{
-              zoneIds: filters.zoneCode ? [{ code: filters.zoneCode, name: filters.zoneName }] : [],
-            }}
-            onSelect={(key, value) => {
-              console.log(value);
-              handleFilterChange("zoneName", value);
-            }}
-            placeHolder="Zones"
-          /> */}
+            disabled={isZroLoading}
+          >
+            <option value="">{isZroLoading ? "Loading ZRO Locations..." : "Select ZRO Location"}</option>
+            {mappedZROLocation.map((loc) => (
+              <option key={loc.code} value={loc.name}>
+                {loc.name}
+              </option>
+            ))}http://localhost:3000/digit-ui/employee/ekyc/assign
+          </select>
 
-          {/* <input className="form-control" placeholder="Ward" value={filters.ward} onChange={(e) => handleFilterChange("ward", e.target.value)} />
-
-          <input
+          <select
             className="form-control"
-            placeholder="Assembly"
+            value={filters.ward}
+            onChange={(e) => handleFilterChange("ward", e.target.value)}
+          >
+            <option value="">Select Ward</option>
+            {wardOptions.map((ward) => (
+              <option key={ward.code} value={ward.name}>
+                {ward.name}
+              </option>
+            ))}
+          </select>
+
+          <select
+            className="form-control"
             value={filters.assembly}
             onChange={(e) => handleFilterChange("assembly", e.target.value)}
-          />
+          >
+            <option value="">Select Assembly</option>
+            {assemblyOptions.map((assembly) => (
+              <option key={assembly.code} value={assembly.name}>
+                {assembly.name}
+              </option>
+            ))}
+          </select>
 
           <input className="form-control" placeholder="MR Key" value={filters.mrkey} onChange={(e) => handleFilterChange("mrkey", e.target.value)} />
 
@@ -283,7 +401,7 @@ const AssignEkycModal = ({ surveyor, closeModal, refetchDashboard }) => {
             <option value="PENDING">Pending</option>
             <option value="APPROVED">Approved</option>
             <option value="REJECTED">Rejected</option>
-          </select> */}
+          </select>
         </div>
 
         {/* Table */}

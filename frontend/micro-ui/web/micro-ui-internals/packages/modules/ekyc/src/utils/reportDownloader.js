@@ -27,13 +27,26 @@ export const downloadSurveyorPDF = async ({
     const email = "contact@delhijalboard.nic.in";
     const phoneNumber = "+91-11-23538416";
 
+    const currentDate = new Date();
+    const formattedDate = currentDate.toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric"
+    });
+    const formattedTime = currentDate.toLocaleTimeString("en-IN", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false
+    });
+    const downloadDateTime = `${formattedDate} ${formattedTime}`;
+
     const details = [
         {
             title: t("SURVEYOR_DETAILS"),
             asSectionHeader: true,
             values: [
                 { title: t("SURVEYOR_NAME"), value: surveyorName },
-                { title: t("EMPLOYEE_ID"), value: employeeId },
                 { title: t("MOBILE_NUMBER"), value: mobileNumber },
                 { title: t("VENDOR_NAME"), value: vendorName },
                 { title: t("SUPERVISOR_NAME"), value: supervisorName }
@@ -68,6 +81,8 @@ export const downloadSurveyorPDF = async ({
             applicationNumber: employeeId,
             rows,
             t,
+            hideApplicationNumber: true,
+            downloadTime: downloadDateTime,
         });
     } else {
         console.error("Digit.Utils.pdf.generateSurveyorReport is not available");

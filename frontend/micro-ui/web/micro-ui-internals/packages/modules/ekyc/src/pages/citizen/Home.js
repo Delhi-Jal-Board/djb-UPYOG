@@ -15,7 +15,7 @@ const Home = () => {
     links: [],
   };
   const citizenInfo = Digit.SessionStorage.get("User")?.info?.roles;
-  const roles = citizenInfo.map((ele) => ele.code);
+  const roles = Array.isArray(citizenInfo) ? citizenInfo.map((ele) => ele.code) : [];
 
   if (roles.includes("EKYC_SURVEYOR")) {
     propsForModuleCard.links.push({
