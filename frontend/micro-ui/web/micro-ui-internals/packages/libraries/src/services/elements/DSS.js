@@ -9,6 +9,7 @@ export const DSSService = {
       userService: false,
       method: "GET",
       authHeader: true,
+      params: { tenantId: Digit.ULBService.getCurrentTenantId() }
     }),
   getCharts: (data) =>
     Request({
@@ -17,6 +18,7 @@ export const DSSService = {
       userService: false,
       method: "POST",
       auth: true,
+            params: { tenantId: Digit.ULBService.getCurrentTenantId() },
       data,
     }),
 };
