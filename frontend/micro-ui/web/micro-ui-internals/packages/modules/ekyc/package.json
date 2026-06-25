@@ -1,10 +1,13 @@
 {
   "name": "@djb25/digit-ui-module-ekyc",
-  "version": "1.0.30",
+  "version": "1.0.31",
   "description": "Digit UI Module for Ekyc",
   "main": "dist/index.js",
   "module": "dist/index.modern.js",
   "source": "src/Module.js",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "start": "microbundle-crl watch --no-compress --format modern,cjs",
     "build": "microbundle-crl --compress --no-sourcemap --format cjs",
