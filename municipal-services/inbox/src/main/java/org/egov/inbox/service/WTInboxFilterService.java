@@ -257,16 +257,14 @@ public class WTInboxFilterService {
 			ProcessInstanceSearchCriteria processCriteria = criteria.getProcessSearchCriteria();
 			HashMap moduleSearchCriteria = criteria.getModuleSearchCriteria();
 
-			// 1. Build the Search URL
 			StringBuilder url = new StringBuilder(requestServiceHost + requestServiceSearchEndpoint);
 			url.append("?tenantId=").append(criteria.getTenantId());
 
-			// Map the business service to applicationType
-			if (processCriteria.getBusinessService() != null) {
-				url.append("&applicationType=").append(processCriteria.getBusinessService());
+			if (processCriteria.getBusinessService() != null && !processCriteria.getBusinessService().isEmpty()) {
+				String appTypes = String.join(",", processCriteria.getBusinessService());
+				url.append("&applicationType=").append(appTypes);
 			}
 
-			// Append other filters if they exist (mobileNumber, locality, etc.)
 			if (moduleSearchCriteria != null) {
 				if (moduleSearchCriteria.containsKey(MOBILE_NUMBER_PARAM) && moduleSearchCriteria.get(MOBILE_NUMBER_PARAM) != null) {
 					url.append("&mobileNumber=").append(moduleSearchCriteria.get(MOBILE_NUMBER_PARAM));
@@ -276,10 +274,8 @@ public class WTInboxFilterService {
 				}
 			}
 
-			// We only need the counts, limit=1 makes it fast
 			url.append("&limit=1");
 
-			// 2. Build the Payload
 			Map<String, Object> request = new HashMap<>();
 			request.put("RequestInfo", requestInfo);
 
@@ -287,12 +283,12 @@ public class WTInboxFilterService {
 			headers.setContentType(MediaType.APPLICATION_JSON);
 			HttpEntity<Map<String, Object>> entity = new HttpEntity<>(request, headers);
 
-			// 3. Make the API Call
 			log.info("Fetching status counts from Request Service: {}", url.toString());
-			ResponseEntity<Map> response = restTemplate.postForEntity(url.toString(), entity, Map.class);
 
-			if (response.getBody() != null && response.getBody().containsKey("statusCounts")) {
-				statusCounts = (Map<String, Integer>) response.getBody().get("statusCounts");
+			Map<String, Object> response = restTemplate.postForObject(url.toString(), entity, Map.class);
+
+			if (response != null && response.containsKey("statusCounts")) {
+				statusCounts = (Map<String, Integer>) response.get("statusCounts");
 			}
 
 		} catch (Exception e) {
