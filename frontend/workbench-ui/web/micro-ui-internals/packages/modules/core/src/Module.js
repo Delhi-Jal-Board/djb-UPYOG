@@ -11,10 +11,34 @@ import { useState } from "react";
 import ErrorBoundary from "./components/ErrorBoundaries";
 import getStore from "./redux/store";
 
-const DigitUIWrapper = ({ stateCode, enabledModules, moduleReducers,defaultLanding }) => {
-  const { isLoading, data: initData } = Digit.Hooks.useInitStore(stateCode, enabledModules);
+const DigitUIWrapper = ({ stateCode, enabledModules, moduleReducers, defaultLanding }) => {
+  const { isLoading, data: initData, isError, error } = Digit.Hooks.useInitStore(stateCode, enabledModules);
+
   if (isLoading) {
     return <Loader page={true} />;
+  }
+
+  // If the init data failed to load, show a friendly error instead of
+  // crashing into the Redux store (which would cause an infinite retry loop).
+  if (isError || !initData) {
+    console.error("[DigitUIWrapper] Init data failed to load:", error);
+    return (
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100vh", gap: 12, fontFamily: "sans-serif" }}>
+        <h2 style={{ color: "#e74c3c" }}>Application failed to load</h2>
+        <p style={{ color: "#555", maxWidth: 500, textAlign: "center" }}>
+          Could not connect to the backend server. Please check that the proxy API is reachable and refresh the page.
+        </p>
+        <pre style={{ background: "#f5f5f5", padding: 12, borderRadius: 4, fontSize: 12, maxWidth: 600, overflow: "auto" }}>
+          {error?.message || "Unknown error"}
+        </pre>
+        <button
+          style={{ padding: "8px 24px", background: "#F47738", color: "#fff", border: "none", borderRadius: 4, cursor: "pointer" }}
+          onClick={() => window.location.reload()}
+        >
+          Retry
+        </button>
+      </div>
+    );
   }
 
   const i18n = getI18n();
@@ -25,8 +49,8 @@ const DigitUIWrapper = ({ stateCode, enabledModules, moduleReducers,defaultLandi
           <DigitApp
             initData={initData}
             stateCode={stateCode}
-            modules={initData?.modules}
-            appTenants={initData.tenants}
+            modules={initData?.modules || []}
+            appTenants={initData?.tenants || []}
             logoUrl={initData?.stateInfo?.logoUrl}
             defaultLanding={defaultLanding}
           />

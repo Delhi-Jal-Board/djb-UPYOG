@@ -31,6 +31,7 @@ const Urls = {
 
   UserSearch: "/user/_search",
   UserLogout: "/user/_logout",
+  UserDetails: "/user/_details",
 
   Shortener: "/egov-url-shortening/shortener",
 
