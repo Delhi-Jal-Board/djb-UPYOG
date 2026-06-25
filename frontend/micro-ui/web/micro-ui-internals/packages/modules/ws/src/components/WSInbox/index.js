@@ -36,7 +36,7 @@ const WSInbox = ({ parentRoute }) => {
     sortOrder: "DESC",
   };
   sessionStorage.removeItem("Digit.BILL.INBOX");
-  sessionStorage.removeItem("Digit.SW.INBOX");
+  sessionStorage.removeItem("Digit.BILL.SW.INBOX");
 
   function formReducer(state, payload) {
     if (checkPathName) {
@@ -70,7 +70,10 @@ const WSInbox = ({ parentRoute }) => {
     }
   }
 
-  const InboxObjectInSessionStorage = Digit.SessionStorage.get("BILL.INBOX");
+
+  const InboxObjectInSessionStorage = checkPathName
+    ? Digit.SessionStorage.get("BILL.INBOX")
+    : Digit.SessionStorage.get("BILL.SW.INBOX");
 
   const onSearchFormReset = (setSearchFormValue) => {
     setSearchFormValue("mobileNumber", null);
