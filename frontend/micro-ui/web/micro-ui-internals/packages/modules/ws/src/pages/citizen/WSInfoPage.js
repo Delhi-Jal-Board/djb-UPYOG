@@ -273,7 +273,7 @@ const WSInfoPage = () => {
         {!hasProperty || (hasProperty?.code === "YES" && !selectedProperty) ? (
           <SubmitBar label={t("CS_COMMON_NEXT")} onSubmit={() => {}} disabled={true} />
         ) : (
-          <SubmitBar label={t("CS_COMMON_NEXT")} onSubmit={handleNext} disabled={(hasProperty?.code === "NO" && isEmployee)}/>
+          <SubmitBar label={t("CS_COMMON_NEXT")} onSubmit={handleNext} disabled={(hasProperty?.code === "NO")} />
         )}
       </Card>
     </React.Fragment>
