@@ -14,7 +14,7 @@ const Inbox = ({ parentRoute }) => {
     filterForm: {},
     searchForm: {},
     tableForm: {
-      limit: 10,
+      limit: 20,
       offset: 0,
       sortBy: "createdTime",
       sortOrder: "DESC",
@@ -27,7 +27,7 @@ const Inbox = ({ parentRoute }) => {
     return {
       tenantId,
       offset: formState?.tableForm?.offset || 0,
-      limit: formState?.tableForm?.limit || 10,
+      limit: formState?.tableForm?.limit || 20,
       search: formState?.searchForm || {},
     };
   }, [tenantId, formState?.tableForm?.offset, formState?.tableForm?.limit, formState?.searchForm]);
@@ -81,12 +81,17 @@ const Inbox = ({ parentRoute }) => {
       const isSearchItem = !!item.connectionDetails;
 
       if (isSearchItem) {
+        const searchDetails = item.connectionDetails || {};
+        const fullName = (searchDetails.firstName || searchDetails.middleName || searchDetails.lastName)
+          ? `${searchDetails.firstName || ""} ${searchDetails.middleName || ""} ${searchDetails.lastName || ""}`.trim().replace(/\s+/g, " ")
+          : searchDetails.consumerName || "";
+
         return {
           applicationNo: item.propertyInfo?.kno || "",
           connectionNo: item.propertyInfo?.kno || "",
-          owner: item.connectionDetails?.consumerName || "",
+          owner: fullName,
           applicationNumber: item.propertyInfo?.kno || "",
-          citizenName: item.connectionDetails?.consumerName || "",
+          citizenName: fullName,
           status: item.connectionDetails?.statusflag || "",
           ekycStatus: (item.connectionDetails?.ekycStatus || item.connectionDetails?.ekycstatus || item.ekycStatus || item.ekycstatus || "NA").toUpperCase(),
           sla: 0,
@@ -94,13 +99,17 @@ const Inbox = ({ parentRoute }) => {
       }
 
       // ✅ dashboard mapping
+      const fullName = (item.firstName || item.middleName || item.lastName)
+        ? `${item.firstName || ""} ${item.middleName || ""} ${item.lastName || ""}`.trim().replace(/\s+/g, " ")
+        : item.consumerName || item.citizenName || "";
+
       return {
         ...item,
         applicationNo: item.kno || item.applicationNumber || "",
         connectionNo: item.connectionNo || "",
-        owner: item.consumerName || item.citizenName || "",
+        owner: fullName,
         applicationNumber: item.kno || item.applicationNumber || "",
-        citizenName: item.consumerName || item.citizenName || "",
+        citizenName: fullName,
         status: item.status || "",
         ekycStatus: (item.ekycStatus || item.ekycstatus || "NA").toUpperCase(),
         sla: item.sla ?? 0,
@@ -124,7 +133,7 @@ const Inbox = ({ parentRoute }) => {
 
   const tableOrderFormDefaultValues = {
     sortBy: "createdTime",
-    limit: window.Digit.Utils.browser.isMobile() ? 50 : 10,
+    limit: window.Digit.Utils.browser.isMobile() ? 50 : 20,
     offset: 0,
     sortOrder: "DESC",
   };

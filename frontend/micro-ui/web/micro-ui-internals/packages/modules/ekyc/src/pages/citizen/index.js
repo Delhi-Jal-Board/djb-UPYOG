@@ -10,6 +10,7 @@ import Home from "./Home";
 import Inbox from "./Inbox";
 import AssignEkyc from "../../components/AssignEkyc";
 import SurveyorDetailsCard from "../../components/SurveyorDetailsCard";
+import SupervisorDetailsCard from "../../components/SupervisorDetailsCard";
 import VendorDetails from "../../components/VendorDetails";
 
 const CitizenApp = () => {
@@ -55,6 +56,8 @@ const CitizenApp = () => {
       crumbs.push({ label: t("EKYC_INBOX") });
     } else if (pathname.includes("/status/")) {
       crumbs.push({ label: t("EKYC_STATUS") });
+    } else if (pathname.includes("/supervisor-dashboard")) {
+      crumbs.push({ label: t("EKYC_SUPERVISOR_DASHBOARD") });
     }
     // home (exact path) → no child crumb
 
@@ -187,6 +190,14 @@ const CitizenApp = () => {
             component={() => (
               <LayoutWrapper layoutClass="normal">
                 <Review />
+              </LayoutWrapper>
+            )}
+          />
+          <PrivateRoute
+            path={`${path}/supervisor-dashboard`}
+            component={() => (
+              <LayoutWrapper layoutClass="normal">
+                <SupervisorDetailsCard />
               </LayoutWrapper>
             )}
           />

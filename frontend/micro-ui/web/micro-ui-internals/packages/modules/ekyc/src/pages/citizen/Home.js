@@ -41,6 +41,13 @@ const Home = () => {
     );
   }
 
+  if (roles.includes("EKYC_SUPERVISOR")) {
+    propsForModuleCard.links.push({
+      label: t("EKYC_SUPERVISOR_DASHBOARD"),
+      link: `/digit-ui/citizen/ekyc/supervisor-dashboard`,
+    });
+  }
+
   if (roles.length === 1 && roles.includes("CITIZEN")) {
     propsForModuleCard.links.push({
       label: t("EKYC_STATUS"),
