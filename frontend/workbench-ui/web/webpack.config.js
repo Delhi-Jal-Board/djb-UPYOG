@@ -29,12 +29,7 @@ module.exports = {
   output: {
     filename: "[name].bundle.js",
     path: path.resolve(__dirname, "build"),
-    publicPath: "/finance-ui/",
-  },
-  resolve: {
-    fallback: {
-      fs: false,
-    },
+    publicPath: "/workbench-ui/",
   },
   optimization: {
     splitChunks: {
