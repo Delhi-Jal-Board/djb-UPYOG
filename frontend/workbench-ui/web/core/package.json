@@ -58,7 +58,9 @@
     "**/@babel/preset-env": "7.14.0",
     "**/@babel/plugin-transform-modules-commonjs": "7.14.0",
     "**/polished":"4.2.2",
-    "fast-uri":"2.1.0"
+    "fast-uri":"2.1.0",
+    "lru-cache": "^6.0.0",
+    "**/lru-cache": "^10.2.2"
   },
   "scripts": {
     "start": "react-scripts start",

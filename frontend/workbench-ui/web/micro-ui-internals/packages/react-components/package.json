@@ -61,7 +61,9 @@
   },
   "resolutions": {
     "**/ajv": "8.11.2",
-    "fast-uri":"2.1.0"
+    "fast-uri":"2.1.0",
+    "lru-cache": "^6.0.0",
+    "**/lru-cache": "^10.2.2"
   },
   "browserslist": {
     "production": [

@@ -6,7 +6,7 @@ const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 module.exports = {
   // mode: 'development',
   entry: "./src/index.js",
-  devtool: "none",
+  devtool: false,
   module: {
     rules: [
       {
@@ -30,6 +30,11 @@ module.exports = {
     filename: "[name].bundle.js",
     path: path.resolve(__dirname, "build"),
     publicPath: "/finance-ui/",
+  },
+  resolve: {
+    fallback: {
+      fs: false,
+    },
   },
   optimization: {
     splitChunks: {
