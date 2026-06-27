@@ -62,6 +62,21 @@ public class SurveyorQueryBuilder {
             preparedStmtList.add(criteria.getSupervisorId());
         }
 
+        // name filter — search surveyors by name (partial, case-insensitive)
+        if (org.apache.commons.lang3.StringUtils.isNotBlank(criteria.getName())) {
+            addClauseIfRequired(preparedStmtList, builder);
+            builder.append(" LOWER(surveyor.name) LIKE ? ESCAPE '_'");
+            preparedStmtList.add('%' + criteria.getName().toLowerCase() + '%');
+        }
+
+        // vendorName filter — search surveyors by agency name (partial, case-insensitive)
+        // Relies on LEFT JOIN eg_vendor v already in QUERY constant
+        if (org.apache.commons.lang3.StringUtils.isNotBlank(criteria.getVendorName())) {
+            addClauseIfRequired(preparedStmtList, builder);
+            builder.append(" LOWER(v.name) LIKE ? ESCAPE '_'");
+            preparedStmtList.add('%' + criteria.getVendorName().toLowerCase() + '%');
+        }
+
         List<String> ownerIds = criteria.getOwnerIds();
         if (!CollectionUtils.isEmpty(ownerIds)) {
             addClauseIfRequired(preparedStmtList, builder);

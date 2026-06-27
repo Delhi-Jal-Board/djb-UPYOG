@@ -70,6 +70,7 @@ public class SurveyorRepository {
 
     /**
      * Check if a given ownerUuid belongs to a vendor owner.
+     * Returns list of vendor entity IDs (usually 1).
      * Used by applyRoleBasedScoping to auto-scope vendor's surveyor search.
      */
     public List<String> getVendorIdsByOwnerUuid(String ownerUuid) {
@@ -80,11 +81,8 @@ public class SurveyorRepository {
 
     /**
      * Look up supervisor profile by their owner UUID.
-     *
      * Used by SurveyorService.create() to auto-derive supervisorId and vendorId
-     * from the logged-in supervisor's token UUID instead of requiring the
-     * frontend to send them manually.
-     *
+     * from the logged-in supervisor's token UUID.
      * Returns map with keys: "id" (supervisor entity ID), "vendorId"
      * Returns null if no ACTIVE supervisor found for this UUID.
      */

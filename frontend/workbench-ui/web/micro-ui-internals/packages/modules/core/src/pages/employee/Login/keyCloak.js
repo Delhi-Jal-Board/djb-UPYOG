@@ -6,12 +6,10 @@ let _kc = null;
  * Paths where Keycloak should be completely skipped.
  * Citizen flows use OTP-based login, not Keycloak.
  */
-const SKIP_KEYCLOAK_PATHS = ["/digit-ui/citizen", "/digit-ui/home"];
+const SKIP_KEYCLOAK_PATHS = ["/workbench-ui/citizen", "/workbench-ui/home"];
 
 const shouldSkipKeycloak = (path) => {
-  return SKIP_KEYCLOAK_PATHS.some(
-    (p) => path === p || path.startsWith(p + "/") || path.startsWith(p + "?")
-  );
+  return SKIP_KEYCLOAK_PATHS.some((p) => path === p || path.startsWith(p + "/") || path.startsWith(p + "?"));
 };
 
 /**
@@ -28,7 +26,7 @@ export const initKeycloak = async () => {
   if (_kc) return _kc;
 
   const path = window.location.pathname;
-  const ctx = window.contextPath || "digit-ui";
+  const ctx = window.contextPath || "workbench-ui";
 
   // Skip Keycloak entirely for citizen paths – they use OTP login
   if (shouldSkipKeycloak(path)) {
@@ -37,24 +35,20 @@ export const initKeycloak = async () => {
 
   // Save the intended destination so we can redirect back after login.
   // Only do this when on a protected route (not the login callback itself).
-  const isLoginCallback =
-    path.includes("/employee/user/login") && hasKeycloakParams();
+  const isLoginCallback = path.includes("/employee/user/login") && hasKeycloakParams();
   const isProtectedRoute =
-    path.includes("/digit-ui/employee") &&
-    !path.includes("/digit-ui/employee/user/login") &&
-    !path.includes("/digit-ui/employee/user/language-selection");
+    path.includes("/workbench-ui/employee") &&
+    !path.includes("/workbench-ui/employee/user/login") &&
+    !path.includes("/workbench-ui/employee/user/language-selection");
 
   if (isProtectedRoute) {
-    sessionStorage.setItem(
-      "post_keycloak_redirect",
-      window.location.pathname + window.location.search
-    );
+    sessionStorage.setItem("post_keycloak_redirect", window.location.pathname + window.location.search);
   }
 
   _kc = new Keycloak({
     url: "https://dev-djberp.nitcon.in/keycloak",
     realm: "DL",
-    clientId: "local-upyog",
+    clientId: "upyog",
   });
 
   try {
@@ -103,17 +97,15 @@ export const triggerKeycloakLogin = () => {
   const kc = _kc;
   if (!kc) {
     // KC not initialised — do a manual redirect to KC login
-    const ctx = window.contextPath || "digit-ui";
+    const ctx = window.contextPath || "workbench-ui";
     const kcBase = "https://dev-djberp.nitcon.in/keycloak";
     const realm = "DL";
-    const clientId = "local-upyog";
-    const redirectUri = encodeURIComponent(
-      window.location.origin + `/${ctx}/employee/user/login`
-    );
+    const clientId = "upyog";
+    const redirectUri = encodeURIComponent(window.location.origin + `/${ctx}/employee/user/login`);
     window.location.href = `${kcBase}/realms/${realm}/protocol/openid-connect/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=openid`;
     return;
   }
-  const ctx = window.contextPath || "digit-ui";
+  const ctx = window.contextPath || "workbench-ui";
   kc.login({
     redirectUri: window.location.origin + `/${ctx}/employee/user/login`,
   });

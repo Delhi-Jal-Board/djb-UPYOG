@@ -56,6 +56,7 @@ public class SupervisorRowMapper implements ResultSetExtractor<List<Supervisor>>
                         .description(rs.getString("description"))
                         .status(StatusEnum.valueOf(status))
                         .additionalDetails(getAdditionalDetail("additionaldetails", rs))
+                        .vendorName(rs.getString("vendor_name"))
                         .auditDetails(AuditDetails.builder()
                                 .createdBy(rs.getString("createdby"))
                                 .createdTime(rs.getLong("createdtime"))
