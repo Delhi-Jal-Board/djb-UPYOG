@@ -500,7 +500,9 @@ const generateSurveyorReport = async ({
   details,
   applicationNumber,
   rows,
-  t = (text) => text
+  t = (text) => text,
+  hideApplicationNumber = false,
+  downloadTime = null
 }) => {
   const dd = {
     background: [{
@@ -510,18 +512,47 @@ const generateSurveyorReport = async ({
     }],
     margin: [20, 20, 20, 20],
 
-    header: {},
+    // header: function (currentPage, pageCount) {
+    //   return {
+    //     columns: [
+    //       ...(downloadTime ? [{ text: `${downloadTime}`, alignment: "left", margin: [0, -5, 0, 0], fontSize: 9, color: "#6f777c", font: "Hind" }] : []),
+    //     ],
+    //   };
+    // },
+
+    // footer: function (currentPage, pageCount) {
+    //   return {
+    //     columns: [
+    //       { text: `Page ${currentPage}`, alignment: "right", margin: [0, -5, 50, 0], fontSize: 9, color: "#6f777c", font: "Hind" },
+    //     ],
+    //   };
+    // },
 
     footer: function (currentPage, pageCount) {
       return {
         columns: [
-          { text: `Page ${currentPage}`, alignment: "right", margin: [0, -17, 50, 0], fontSize: 11, color: "#6f777c", font: "Hind" },
+          {
+            text: downloadTime || "",
+            alignment: "left",
+            margin: [50, -5, 0, 0],
+            fontSize: 9,
+            color: "#6f777c",
+            font: "Hind",
+          },
+          {
+            text: `Page ${currentPage}`,
+            alignment: "right",
+            margin: [0, -5, 50, 0],
+            fontSize: 9,
+            color: "#6f777c",
+            font: "Hind",
+          },
         ],
       };
     },
 
     content: [
-      ...createHeaderDetails(details, name, phoneNumber, email, logo, tenantId, heading, applicationNumber),
+      ...createHeaderDetails(details, name, phoneNumber, email, logo, tenantId, heading, applicationNumber, hideApplicationNumber),
       ...createContent(details, logo, tenantId, phoneNumber, breakPageLimit),
 
       {
@@ -1012,7 +1043,7 @@ function createContentDetails(details) {
   });
   return detailsHeaders;
 }
-function createHeaderDetails(details, name, phoneNumber, email, logo, tenantId, heading, applicationNumber) {
+function createHeaderDetails(details, name, phoneNumber, email, logo, tenantId, heading, applicationNumber, hideApplicationNumber = false) {
   let headerData = [];
   headerData.push({
     style: 'tableExample',
@@ -1089,26 +1120,28 @@ function createHeaderDetails(details, name, phoneNumber, email, logo, tenantId, 
       ]
     }
   })
-  headerData.push({
-    style: 'tableExample',
-    layout: "noBorders",
-    margin: [0, -45, 7, 0],
+  if (!hideApplicationNumber && applicationNumber) {
+    headerData.push({
+      style: 'tableExample',
+      layout: "noBorders",
+      margin: [0, -45, 7, 0],
 
-    table: {
-      widths: ['100%'],
-      body: [
-        [
-          {
+      table: {
+        widths: ['100%'],
+        body: [
+          [
+            {
 
-            text: `Application Number: ${applicationNumber}`,
-            alignment: "right",
-            fontSize: 9,
-            //bold: true      
-          },
+              text: `Application Number: ${applicationNumber}`,
+              alignment: "right",
+              fontSize: 9,
+              //bold: true      
+            },
+          ]
         ]
-      ]
-    }
-  })
+      }
+    })
+  }
 
   return headerData;
   console.log("details", details)

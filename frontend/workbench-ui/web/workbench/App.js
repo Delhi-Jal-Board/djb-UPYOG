@@ -1,6 +1,7 @@
 import React from "react";
 import { initLibraries } from "@egovernments/digit-ui-libraries";
 import { DigitUI } from "@egovernments/digit-ui-module-core";
+import { initKeycloak } from "@egovernments/digit-ui-module-core/src/pages/employee/Login/keyCloak";
 import { initHRMSComponents } from "@egovernments/digit-ui-module-hrms";
 import { UICustomizations } from "./Customisations/UICustomizations";
 import { initWorkbenchComponents } from "@nudmcdgnpm/digit-ui-module-workbench";
@@ -40,7 +41,9 @@ const initDigitUI = () => {
   initWorkbenchComponents();
 };
 
-initLibraries().then(() => {
+initLibraries().then(async () => {
+  const kc = await initKeycloak();
+  window.keycloak = kc;
   initDigitUI();
 });
 

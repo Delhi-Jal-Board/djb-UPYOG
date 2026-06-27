@@ -5,7 +5,7 @@
   "module": "dist/index.modern.js",
   "source": "src/index.js",
   "engines": {
-    "node": ">=14"
+    "node": ">=18"
   },
   "homepage": "https://unified-dev.digit.org/storybook-svg/",
   "author": "Jagankumar <jagan.kumar@egov.org.in>",
@@ -38,7 +38,7 @@
     "lint-staged": "12.3.7",
     "microbundle-crl": "0.13.11",
     "react": "17.0.2",
-    "react-scripts": "^4.0.1",
+    "react-scripts": "^5.0.1",
     "react-dom": "17.0.2"
   },
   "files": [

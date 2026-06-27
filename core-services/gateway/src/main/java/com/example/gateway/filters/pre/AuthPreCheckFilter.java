@@ -2,6 +2,8 @@ package com.example.gateway.filters.pre;
 
 import com.example.gateway.config.ApplicationProperties;
 import com.example.gateway.filters.pre.helpers.AuthPreCheckFilterHelper;
+import com.example.gateway.utils.CommonUtils;
+
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpHeaders;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -16,7 +18,6 @@ import java.util.List;
 import java.util.Map;
 
 import static com.example.gateway.constants.GatewayConstants.*;
-import static com.example.gateway.constants.GatewayConstants.OPEN_ENDPOINT_MESSAGE;
 
 @Slf4j
 @Component
@@ -45,11 +46,14 @@ public class AuthPreCheckFilter implements GlobalFilter, Ordered {
             log.info(OPEN_ENDPOINT_MESSAGE, endPointPath);
             return chain.filter(exchange);
         }
-        else {
-            return modifyRequestBodyFilter.apply(new ModifyRequestBodyGatewayFilterFactory.Config()
-                            .setRewriteFunction(Map.class, Map.class, authPreCheckFilterHelper))
-                            .filter(exchange, chain);
+        if (!CommonUtils.isRequestBodyCompatible(exchange.getRequest())) {
+            return authPreCheckFilterHelper.processWithoutBody(exchange, chain);
         }
+
+        return modifyRequestBodyFilter.apply(
+                new ModifyRequestBodyGatewayFilterFactory.Config()
+                        .setRewriteFunction(Map.class, Map.class, authPreCheckFilterHelper))
+                .filter(exchange, chain);
     }
 
     @Override

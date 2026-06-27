@@ -28,6 +28,21 @@ const AddSupervisor = ({ parentUrl, heading }) => {
     role: { code: "SUPERVISOR", name: "Supervisor" },
   };
 
+  const isValidAge = (dateStr) => {
+    if (!dateStr) return false;
+    const today = new Date();
+    const dob = new Date(dateStr);
+
+    let age = today.getFullYear() - dob.getFullYear();
+    const m = today.getMonth() - dob.getMonth();
+
+    if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+      age--;
+    }
+
+    return age >= 18;
+  };
+
   const onFormValueChange = (setValue, formData) => {
     const requiredFields = [
       formData?.fullName,
@@ -38,7 +53,7 @@ const AddSupervisor = ({ parentUrl, heading }) => {
       formData?.correspondenceAddress,
     ];
 
-    const isBasicDetailsFilled = requiredFields.every(Boolean) && formData?.zoneIds?.length > 0;
+    const isBasicDetailsFilled = requiredFields.every(Boolean) && formData?.zoneIds?.length > 0 && isValidAge(formData?.dob);
 
     setCanSubmit(isBasicDetailsFilled);
   };

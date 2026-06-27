@@ -88,7 +88,7 @@ const Inbox = ({ parentRoute }) => {
           applicationNumber: item.propertyInfo?.kno || "",
           citizenName: item.connectionDetails?.consumerName || "",
           status: item.connectionDetails?.statusflag || "",
-          ekycStatus: item.connectionDetails?.ekycStatus || item.connectionDetails?.ekycstatus || item.ekycStatus || item.ekycstatus || "NA",
+          ekycStatus: (item.connectionDetails?.ekycStatus || item.connectionDetails?.ekycstatus || item.ekycStatus || item.ekycstatus || "NA").toUpperCase(),
           sla: 0,
         };
       }
@@ -102,7 +102,7 @@ const Inbox = ({ parentRoute }) => {
         applicationNumber: item.kno || item.applicationNumber || "",
         citizenName: item.consumerName || item.citizenName || "",
         status: item.status || "",
-        ekycStatus: item.ekycStatus || item.ekycstatus || "NA",
+        ekycStatus: (item.ekycStatus || item.ekycstatus || "NA").toUpperCase(),
         sla: item.sla ?? 0,
       };
     });
@@ -111,13 +111,13 @@ const Inbox = ({ parentRoute }) => {
   const totalRecords = dashboardData?.dashboardInfo?.totalRecords || dashboardData?.totalCount || 0;
 
   const checkPathName = location.pathname.includes("ekyc/inbox");
-  const PropsForInboxLinks = {
-    headerText: "EKYC_MODULE",
-  };
+  // const PropsForInboxLinks = {
+  //   headerText: "EKYC_MODULE",
+  // };
 
   const SearchFormFields = useCallback(
     ({ registerRef, searchFormState, controlSearchForm }) => (
-      <SearchFormFieldsComponents {...{ registerRef, searchFormState, controlSearchForm }} className="search" />
+      <SearchFormFieldsComponents {...{ registerRef, searchFormState, controlSearchForm }} searchType="kno" className="search" />
     ),
     []
   );
@@ -157,18 +157,18 @@ const Inbox = ({ parentRoute }) => {
     className: "search-form-wns-inbox",
   };
 
-  const FilterFormFields = useCallback(
-    ({ registerRef, controlFilterForm, setFilterFormValue, getFilterFormValue }) => <React.Fragment></React.Fragment>,
-    []
-  );
+  // const FilterFormFields = useCallback(
+  //   ({ registerRef, controlFilterForm, setFilterFormValue, getFilterFormValue }) => <React.Fragment></React.Fragment>,
+  //   []
+  // );
 
-  const propsForFilterForm = {
-    FilterFormFields,
-    onFilterFormSubmit: () => { },
-    filterFormDefaultValues: "",
-    resetFilterFormDefaultValues: "",
-    onFilterFormReset: () => { },
-  };
+  // const propsForFilterForm = {
+  //   FilterFormFields,
+  //   onFilterFormSubmit: () => { },
+  //   filterFormDefaultValues: "",
+  //   resetFilterFormDefaultValues: "",
+  //   onFilterFormReset: () => { },
+  // };
 
   function formReducer(state, payload) {
     const storageKey = payload.checkPathName ? "EKYC.INBOX" : "EKYC.SW.INBOX";

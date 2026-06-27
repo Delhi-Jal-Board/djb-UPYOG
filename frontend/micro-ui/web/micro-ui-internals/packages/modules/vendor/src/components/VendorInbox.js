@@ -137,9 +137,9 @@ const getDriverFillingPointIdentifiers = (driver = {}) => {
 const getVendorDriversForFillingPoint = (vendor, fillingPoint) => {
   const vendorDrivers = Array.isArray(vendor?.drivers)
     ? vendor.drivers.filter(Boolean).map((d) => ({
-        ...d,
-        displayName: `${d.name} (${d.owner?.mobileNumber || "N/A"})`,
-      }))
+      ...d,
+      displayName: `${d.name} (${d.owner?.mobileNumber || "N/A"})`,
+    }))
     : [];
   if (!fillingPoint) return [];
 
@@ -813,25 +813,25 @@ const VendorInbox = (props) => {
 
           ...(!isEkycRole
             ? [
-                {
-                  Header: t("VIEW_WORKORDER_DETAILS"),
-                  disableSortBy: true,
-                  Cell: ({ row }) => {
-                    return (
-                      <button
-                        className="submit-bar"
-                        style={{
-                          backgroundColor: "#417505",
-                          color: "white",
-                        }}
-                        onClick={() => openWorkOrderModal(row.original)}
-                      >
-                        {t("VIEW_WORKORDER_DETAILS")}
-                      </button>
-                    );
-                  },
+              {
+                Header: t("VIEW_WORKORDER_DETAILS"),
+                disableSortBy: true,
+                Cell: ({ row }) => {
+                  return (
+                    <button
+                      className="submit-bar"
+                      style={{
+                        backgroundColor: "#417505",
+                        color: "white",
+                      }}
+                      onClick={() => openWorkOrderModal(row.original)}
+                    >
+                      {t("VIEW_WORKORDER_DETAILS")}
+                    </button>
+                  );
                 },
-              ]
+              },
+            ]
             : []),
         ];
 
@@ -1123,12 +1123,12 @@ const VendorInbox = (props) => {
 
           ...(props.selectedTab === "SURVEYOR"
             ? [
-                {
-                  Header: t("ES_FSM_REGISTRY_INBOX_SUPERVISOR_NAME"),
-                  accessor: (row) => row.reportingManager?.name || "NA",
-                  Cell: ({ row }) => <div>{row.original?.reportingManager?.name || "NA"}</div>,
-                },
-              ]
+              {
+                Header: t("ES_FSM_REGISTRY_INBOX_SUPERVISOR_NAME"),
+                accessor: (row) => row.reportingManager?.name || "NA",
+                Cell: ({ row }) => <div>{row.original?.reportingManager?.name || "NA"}</div>,
+              },
+            ]
             : []),
           {
             Header: t("WT_MOBILE_NUMBER"),
@@ -1168,23 +1168,23 @@ const VendorInbox = (props) => {
           //     );
           //   },
           // },
-          {
-            Header: t("ES_FSM_REGISTRY_INBOX_ENABLED"),
-            id: "status",
-            accessor: (row) => row.status || "",
-            Cell: ({ row }) => {
-              return (
-                <ToggleSwitch
-                  style={{ display: "flex", justifyContent: "left" }}
-                  value={row.original?.status === "DISABLED" ? false : true}
-                  onChange={() => {
-                    console.log("Updating status for", props.selectedTab, row.original.id);
-                  }}
-                  name={`switch-${row.id}`}
-                />
-              );
-            },
-          },
+          // {
+          //   Header: t("ES_FSM_REGISTRY_INBOX_ENABLED"),
+          //   id: "status",
+          //   accessor: (row) => row.status || "",
+          //   Cell: ({ row }) => {
+          //     return (
+          //       <ToggleSwitch
+          //         style={{ display: "flex", justifyContent: "left" }}
+          //         value={row.original?.status === "DISABLED" ? false : true}
+          //         onChange={() => {
+          //           console.log("Updating status for", props.selectedTab, row.original.id);
+          //         }}
+          //         name={`switch-${row.id}`}
+          //       />
+          //     );
+          //   },
+          // },
         ];
       default:
         return [];
@@ -1199,8 +1199,7 @@ const VendorInbox = (props) => {
           {
             Header: t("ES_VENDOR_INBOX_VENDOR_NAME"),
             exportAccessor: (row) =>
-              `${row?.name || row?.dsoDetails?.name || "NA"} (${
-                row?.mobileNumber || row?.owner?.mobileNumber || row?.dsoDetails?.mobileNumber || row?.dsoDetails?.owner?.mobileNumber || "NA"
+              `${row?.name || row?.dsoDetails?.name || "NA"} (${row?.mobileNumber || row?.owner?.mobileNumber || row?.dsoDetails?.mobileNumber || row?.dsoDetails?.owner?.mobileNumber || "NA"
               })`,
           },
           {
@@ -1233,12 +1232,11 @@ const VendorInbox = (props) => {
           {
             Header: "Map Vendor",
             exportAccessor: (row) =>
-              `${row?.vendor?.name || row?.vendorData?.name || "NA"} (${
-                row?.vendor?.mobileNumber ||
-                row?.vendor?.owner?.mobileNumber ||
-                row?.vendorData?.mobileNumber ||
-                row?.vendorData?.owner?.mobileNumber ||
-                "NA"
+              `${row?.vendor?.name || row?.vendorData?.name || "NA"} (${row?.vendor?.mobileNumber ||
+              row?.vendor?.owner?.mobileNumber ||
+              row?.vendorData?.mobileNumber ||
+              row?.vendorData?.owner?.mobileNumber ||
+              "NA"
               })`,
           },
           {
@@ -1252,8 +1250,7 @@ const VendorInbox = (props) => {
           {
             Header: t("ES_FSM_REGISTRY_SELECT_DRIVER"),
             exportAccessor: (row) =>
-              `${row?.driverData?.name || row?.driver?.name || "NA"} (${
-                row?.driverData?.owner?.mobileNumber || row?.driver?.owner?.mobileNumber || "NA"
+              `${row?.driverData?.name || row?.driver?.name || "NA"} (${row?.driverData?.owner?.mobileNumber || row?.driver?.owner?.mobileNumber || "NA"
               })`,
           },
           {
@@ -1278,12 +1275,11 @@ const VendorInbox = (props) => {
           {
             Header: t("ES_FSM_REGISTRY_INBOX_VENDOR_NAME"),
             exportAccessor: (row) =>
-              `${row?.vendorData?.name || row?.vendor?.name || "NA"} (${
-                row?.vendorData?.mobileNumber ||
-                row?.vendorData?.owner?.mobileNumber ||
-                row?.vendor?.mobileNumber ||
-                row?.vendor?.owner?.mobileNumber ||
-                "NA"
+              `${row?.vendorData?.name || row?.vendor?.name || "NA"} (${row?.vendorData?.mobileNumber ||
+              row?.vendorData?.owner?.mobileNumber ||
+              row?.vendor?.mobileNumber ||
+              row?.vendor?.owner?.mobileNumber ||
+              "NA"
               })`,
           },
           {
@@ -1312,12 +1308,11 @@ const VendorInbox = (props) => {
           {
             Header: t("ES_FSM_REGISTRY_INBOX_VENDOR_NAME"),
             exportAccessor: (row) =>
-              `${row?.vendorData?.name || row?.vendor?.name || "NA"} ${
-                row?.vendorData?.mobileNumber ||
-                row?.vendorData?.owner?.mobileNumber ||
-                row?.vendor?.mobileNumber ||
-                row?.vendor?.owner?.mobileNumber ||
-                "NA"
+              `${row?.vendorData?.name || row?.vendor?.name || "NA"} ${row?.vendorData?.mobileNumber ||
+              row?.vendorData?.owner?.mobileNumber ||
+              row?.vendor?.mobileNumber ||
+              row?.vendor?.owner?.mobileNumber ||
+              "NA"
               }`,
           },
           {
@@ -1342,23 +1337,21 @@ const VendorInbox = (props) => {
           {
             Header: t("ES_FSM_REGISTRY_INBOX_VENDOR_NAME"),
             exportAccessor: (row) =>
-              `${row?.vendorData?.name || row?.vendor?.name || "NA"} ${
-                row?.vendorData?.mobileNumber ||
-                row?.vendorData?.owner?.mobileNumber ||
-                row?.vendor?.mobileNumber ||
-                row?.vendor?.owner?.mobileNumber ||
-                "NA"
+              `${row?.vendorData?.name || row?.vendor?.name || "NA"} ${row?.vendorData?.mobileNumber ||
+              row?.vendorData?.owner?.mobileNumber ||
+              row?.vendor?.mobileNumber ||
+              row?.vendor?.owner?.mobileNumber ||
+              "NA"
               }`,
           },
           {
             Header: t("ES_VENDOR_SUPERVISOR_AGENCY_NAME"),
             exportAccessor: (row) =>
-              `${row?.vendorData?.name || row?.vendor?.name || "NA"} ${
-                row?.vendorData?.mobileNumber ||
-                row?.vendorData?.owner?.mobileNumber ||
-                row?.vendor?.mobileNumber ||
-                row?.vendor?.owner?.mobileNumber ||
-                "NA"
+              `${row?.vendorData?.name || row?.vendor?.name || "NA"} ${row?.vendorData?.mobileNumber ||
+              row?.vendorData?.owner?.mobileNumber ||
+              row?.vendor?.mobileNumber ||
+              row?.vendor?.owner?.mobileNumber ||
+              "NA"
               }`,
           },
           {
@@ -1544,20 +1537,7 @@ const VendorInbox = (props) => {
         >
           <div style={{ padding: "16px" }}>
             {selectedVendorForWorkOrder?.dsoDetails?.vendorWorkOrder?.length > 0 ? (
-              <Table
-                t={t}
-                data={selectedVendorForWorkOrder.dsoDetails.vendorWorkOrder}
-                columns={workOrderColumns}
-                getCellProps={(cellInfo) => {
-                  return {
-                    style: {
-                      minWidth: "150px",
-                      padding: "8px 12px",
-                      fontSize: "13.5px",
-                    },
-                  };
-                }}
-              />
+              <Table t={t} data={selectedVendorForWorkOrder.dsoDetails.vendorWorkOrder} columns={workOrderColumns} />
             ) : (
               <p style={{ textAlign: "center", marginTop: "20px" }}>{t("ES_VENDOR_NO_WORKORDERS")}</p>
             )}

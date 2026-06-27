@@ -36,5 +36,8 @@ public class InboxResponse {
     
     @JsonProperty("items")
 	private List<Inbox> items = null;
+
+    @JsonProperty("statusCounts")
+    private Map<String, Integer> statusCounts = null;
 }
 

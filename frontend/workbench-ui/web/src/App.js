@@ -6,6 +6,7 @@ import {
   PaymentModule,
 } from "@egovernments/digit-ui-module-common";
 import { DigitUI } from "@egovernments/digit-ui-module-core";
+import { initKeycloak } from "@egovernments/digit-ui-module-core/src/pages/employee/Login/keyCloak";
 import { initDSSComponents } from "@egovernments/digit-ui-module-dss";
 import { initEngagementComponents } from "@egovernments/digit-ui-module-engagement";
 import { initHRMSComponents } from "@egovernments/digit-ui-module-hrms";
@@ -54,7 +55,9 @@ const initDigitUI = () => {
   };
 };
 
-initLibraries().then(() => {
+initLibraries().then(async () => {
+  const kc = await initKeycloak();
+  window.keycloak = kc;
   initDigitUI();
 });
 

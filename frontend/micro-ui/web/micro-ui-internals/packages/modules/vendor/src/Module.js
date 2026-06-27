@@ -12,11 +12,9 @@ import SelectVehicleType from "./pageComponents/SelectVehicleType";
 import BankDetailsComponent from "./components/BankDetailsComponent";
 import SupervisorAreaAssignment from "./pageComponents/SupervisorAreaAssignment";
 import CitizenVendorApp from "./pages/citizen";
-import EditVendorDetails from "./components/RegisterVendor/EditVendorDetails";
 import AddVendor from "./components/RegisterVendor/AddVendor";
 import AddSupervisor from "./components/RegisterSupervisor/AddSupervisor";
 import EditSupervisor from "./components/RegisterSupervisor/EditSupervisor";
-import SurveyorDetails from "./components/RegisterSurveyor/SurveyorDetails";
 import EditSurveyor from "./components/RegisterSurveyor/EditSurveyor";
 import CheckPage from "./components/Create/CheckPage";
 import NewResponse from "./components/Create/NewResponse";
@@ -43,7 +41,6 @@ const componentsToRegister = {
   SelectVehicleType,
   BankDetailsComponent,
   AddDriver,
-  EditVendorDetails,
   AddVehicle,
   VENDORCreate,
   VENDORCheckPage: CheckPage,
@@ -53,7 +50,6 @@ const componentsToRegister = {
   AddSupervisor,
   EditSupervisor,
   SupervisorAreaAssignment,
-  SurveyorDetails,
   EditSurveyor,
   SelectEkycZones,
   SelectEkycClusters,

@@ -4,7 +4,10 @@ import { commonReducer } from "./reducers";
 
 const getRootReducer = (defaultStore, moduleReducers) =>
   combineReducers({
-    common: commonReducer(defaultStore),
+    // Guard: Redux requires reducers to return a non-undefined initial state.
+    // If defaultStore is undefined (MDMS init failed), fall back to {} so
+    // the store can still be created without crashing.
+    common: commonReducer(defaultStore || {}),
     ...moduleReducers,
   });
 
@@ -19,6 +22,6 @@ const enhancer = composeEnhancers(
 );
 
 const getStore = (defaultStore, moduleReducers = {}) => {
-  return createStore(getRootReducer(defaultStore, moduleReducers), enhancer);
+  return createStore(getRootReducer(defaultStore || {}, moduleReducers), enhancer);
 };
 export default getStore;

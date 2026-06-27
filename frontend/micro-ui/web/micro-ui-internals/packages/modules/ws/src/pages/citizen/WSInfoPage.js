@@ -20,7 +20,7 @@ const getAddress = (address, t) => {
     address?.landmark ? `${address?.landmark}, ` : ""
   }${t(Digit.Utils.pt.getMohallaLocale(address?.locality.code, address?.tenantId))}, ${t(Digit.Utils.pt.getCityLocale(address?.tenantId))}${
     address?.pincode && t(address?.pincode) ? `, ${address.pincode}` : " "
-  }`;
+    }`;
 };
 
 const WSInfoPage = () => {
@@ -273,7 +273,7 @@ const WSInfoPage = () => {
         {!hasProperty || (hasProperty?.code === "YES" && !selectedProperty) ? (
           <SubmitBar label={t("CS_COMMON_NEXT")} onSubmit={() => {}} disabled={true} />
         ) : (
-          <SubmitBar label={t("CS_COMMON_NEXT")} onSubmit={handleNext} />
+          <SubmitBar label={t("CS_COMMON_NEXT")} onSubmit={handleNext} disabled={(hasProperty?.code === "NO" && isEmployee)}/>
         )}
       </Card>
     </React.Fragment>

@@ -47,6 +47,21 @@ const EditSupervisor = () => {
     }
   }, [supervisorSearchResponse]);
 
+  const isValidAge = (dateStr) => {
+    if (!dateStr) return false;
+    const today = new Date();
+    const dob = new Date(dateStr);
+
+    let age = today.getFullYear() - dob.getFullYear();
+    const m = today.getMonth() - dob.getMonth();
+
+    if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+      age--;
+    }
+
+    return age >= 18;
+  };
+
   const onFormValueChange = (setValue, formData) => {
     const isBasicDetailsFilled =
       formData?.fullName &&
@@ -57,7 +72,7 @@ const EditSupervisor = () => {
       formData?.correspondenceAddress &&
       formData?.zoneIds;
 
-    if (isBasicDetailsFilled) {
+    if (isBasicDetailsFilled && isValidAge(formData?.dob)) {
       setCanSubmit(true);
     } else {
       setCanSubmit(false);

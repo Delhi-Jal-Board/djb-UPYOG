@@ -43,11 +43,7 @@ const useInboxTableConfig = ({
       Cell: ({ row }) => {
         const kno = row.original?.kno || row.original?.applicationNumber || "NA";
         return (
-          <span
-            className="ekyc-application-link"
-            style={{ color: "#add8f7", cursor: "pointer", fontWeight: "bold" }}
-            onClick={() => handleReview(kno)}
-          >
+          <span className="ekyc-application-link" onClick={() => handleReview(kno)}>
             {kno}
           </span>
         );
@@ -70,7 +66,7 @@ const useInboxTableConfig = ({
       Header: t("EKYC_EKYC_STATUS"),
       accessor: "ekycStatus",
       Cell: ({ row }) => {
-        const ekycStatus = row.original?.ekycStatus || row.original?.ekycstatus || "NA";
+        const ekycStatus = (row.original?.ekycStatus || row.original?.ekycstatus || "NA").toUpperCase();
         return <span className={`ekyc-status-tag ${ekycStatus}`}>{t(`${ekycStatus}`)}</span>;
       },
     },
@@ -93,14 +89,6 @@ const useInboxTableConfig = ({
   ];
 
   return {
-    getCellProps: (cellInfo) => {
-      return {
-        style: {
-          padding: "8px",
-          fontSize: "12px",
-        },
-      };
-    },
     disableSort: false,
     autoSort: false,
     manualPagination: true,

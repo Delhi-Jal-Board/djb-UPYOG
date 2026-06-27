@@ -278,9 +278,10 @@ const SurveyorDetailsDashboard = () => {
 
             <div className="designation">{surveyor?.description || t("FIELD_SURVEYOR")}</div>
 
-            <div className="employee-id">
+            {/* <div className="employee-id">
               {t("EMPLOYEE_ID")}: {employeeId}
-            </div>
+            </div> */}
+            
           </div>
         </div>
 
@@ -373,7 +374,7 @@ const SurveyorDetailsDashboard = () => {
       {/* Charts */}
       <div className="charts-wrapper">
         {/* Weekly Chart */}
-        <div className="chart-card">
+        {/* <div className="chart-card">
           <h3 className="chart-title">{t("WEEKLY_SURVEY_PROGRESS")}</h3>
 
           <ResponsiveContainer width="100%" height={300}>
@@ -389,10 +390,10 @@ const SurveyorDetailsDashboard = () => {
               <Bar dataKey="completed" fill="#0B2559" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
-        </div>
+        </div> */}
 
         {/* Pie Chart */}
-        <div className="chart-card">
+        {/* <div className="chart-card">
           <h3 className="chart-title">{t("CASE_DISTRIBUTION")}</h3>
 
           <ResponsiveContainer width="100%" height={300}>
@@ -408,7 +409,7 @@ const SurveyorDetailsDashboard = () => {
               <Legend />
             </PieChart>
           </ResponsiveContainer>
-        </div>
+        </div> */}
       </div>
 
       {/* Details */}
@@ -440,8 +441,8 @@ const SurveyorDetailsDashboard = () => {
           </div>
 
           <div className="detail-item">
-            <span className="label">{t("VENDOR_ID")}:</span>
-            <span className="value">{surveyor?.vendorId || "N/A"}</span>
+            <span className="label">{t("VENDOR_NAME") || "Vendor Name"}:</span>
+            <span className="value">{vendorName}</span>
           </div>
         </div>
       </div>
@@ -498,7 +499,7 @@ const SurveyorDetailsDashboard = () => {
               />
             )}
           </ActionBar>
-          
+
         )
       }
 
