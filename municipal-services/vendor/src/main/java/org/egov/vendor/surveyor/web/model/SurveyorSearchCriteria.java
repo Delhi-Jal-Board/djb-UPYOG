@@ -47,6 +47,12 @@ public class SurveyorSearchCriteria {
     @JsonProperty("status")
     private List<String> status;
 
+    @JsonProperty("name")
+    private String name;
+
+    @JsonProperty("vendorName")
+    private String vendorName;
+
     @JsonProperty("sortBy")
     private SortBy sortBy;
 
@@ -64,6 +70,7 @@ public class SurveyorSearchCriteria {
     public boolean isEmpty() {
         return (this.tenantId == null && this.offset == null && this.limit == null
                 && this.mobileNumber == null && this.supervisorId == null && this.ownerIds == null
+                && this.name == null && this.vendorName == null
                 && CollectionUtils.isEmpty(this.ids)
                 && CollectionUtils.isEmpty(this.status)
                 && this.vendorId == null);
