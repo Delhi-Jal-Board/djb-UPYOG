@@ -211,6 +211,7 @@ const AssignEkyc = () => {
       filter: ["IN_PROGRESS"],
     },
   ];
+  
 
   return (
     <div className="app-container">

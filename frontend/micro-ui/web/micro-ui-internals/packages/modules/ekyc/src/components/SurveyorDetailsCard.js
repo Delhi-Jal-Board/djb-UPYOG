@@ -32,19 +32,19 @@ const SurveyorDetailsDashboard = () => {
 
   const { data: vendorData } = Digit.Hooks.fsm.useDsoSearch(tenantId, { status: "ACTIVE" }, { enabled: !!tenantId });
   const { data: supervisorSearchResponse } = Digit.Hooks.fsm.useSupervisorSearch(tenantId, { status: "ACTIVE" }, { enabled: !!tenantId });
-
   const vendorName = useMemo(() => {
+    if (surveyor?.vendorName) return surveyor.vendorName;
     if (!vendorData || !surveyor?.vendorId) return "N/A";
     const mappedVendor = vendorData.find((v) => v.dsoDetails?.id === surveyor.vendorId || v.dsoDetails?.vendorId === surveyor.vendorId);
     return mappedVendor?.dsoDetails?.name || surveyor.vendorId || "N/A";
-  }, [vendorData, surveyor?.vendorId]);
+  }, [vendorData, surveyor?.vendorId, surveyor?.vendorName]);
 
   const supervisorName = useMemo(() => {
+    if (surveyor?.supervisorName) return surveyor.supervisorName;
     if (!supervisorSearchResponse?.supervisors || !surveyor?.supervisorId) return "N/A";
     const mappedSupervisor = supervisorSearchResponse.supervisors.find((s) => s.id === surveyor.supervisorId || s.owner?.uuid === surveyor.supervisorId);
     return mappedSupervisor?.name || mappedSupervisor?.owner?.name || surveyor.supervisorId || "N/A";
-  }, [supervisorSearchResponse, surveyor?.supervisorId]);
-
+  }, [supervisorSearchResponse, surveyor?.supervisorId, surveyor?.supervisorName]);
   const fullName = surveyor?.owner?.name || surveyor?.name || "N/A";
   const employeeId = surveyor?.employeeId || surveyor?.owner?.uuid || surveyor?.id;
   const mobileNumber = surveyor?.owner?.mobileNumber || surveyor?.mobileNo || "N/A";
@@ -82,10 +82,10 @@ const SurveyorDetailsDashboard = () => {
         Header: "Zone",
         accessor: "zoneName",
       },
-      {
-        Header: "Pincode",
-        accessor: "pincode",
-      },
+      // {
+      //   Header: "Pincode",
+      //   accessor: "pincode",
+      // },
       {
         Header: "Status",
         accessor: "status",
@@ -107,6 +107,7 @@ const SurveyorDetailsDashboard = () => {
   const [showReportMenu, setShowReportMenu] = useState(false);
   const [customDate, setCustomDate] = useState({ from: "", to: "" });
   const [showCustomPicker, setShowCustomPicker] = useState(false);
+  const [reportLoading, setReportLoading] = useState(false);
   const reportMenuRef = useRef(null);
 
   useEffect(() => {
@@ -180,63 +181,88 @@ const SurveyorDetailsDashboard = () => {
     return null;
   };
 
-  const handlePresetDownload = (filter) => {
-    const allRows = dashboardData?.dashboardInfo?.consumerList || [];
-
+  const handlePresetDownload = async (filter) => {
     const range = getDateRange(filter);
-
     if (!range) return;
 
-    const filtered = allRows.filter((r) => {
-      const ts =
-        r.submittedAt ||
-        r.createdTime ||
-        r.lastModifiedTime ||
-        0;
+    setReportLoading(true);
+    try {
+      const response = await Digit.EkycService.dashboard(
+        {},
+        {
+          tenantId: "dl.djb",
+          offset: 0,
+          limit: 1000,
+          surveyorId: surveyor?.owner?.uuid,
+          fromDate: range.from.getTime(),
+          toDate: range.to.getTime(),
+        }
+      );
 
-      return ts >= range.from.getTime() && ts <= range.to.getTime();
-    });
+      const rows = response?.dashboardInfo?.consumerList || [];
 
-    downloadSurveyorPDF({
-      rows: filtered.length ? filtered : allRows,
-      surveyorName: fullName,
-      vendorName,
-      supervisorName,
-      employeeId,
-      mobileNumber,
-      dashboardInfo: dashboardData?.dashboardInfo,
-      t,
-    });
-
-    setShowReportMenu(false);
-    setShowCustomPicker(false);
+      downloadSurveyorPDF({
+        rows: rows,
+        surveyorName: fullName,
+        vendorName,
+        supervisorName,
+        employeeId,
+        mobileNumber,
+        dashboardInfo: response?.dashboardInfo || {},
+        t,
+      });
+    } catch (err) {
+      console.error("Failed to fetch dashboard data for report download:", err);
+    } finally {
+      setReportLoading(false);
+      setShowReportMenu(false);
+      setShowCustomPicker(false);
+    }
   };
 
-  const handleCustomDownload = () => {
+  const handleCustomDownload = async () => {
     if (!customDate.from || !customDate.to) {
       alert(t("SELECT_DATE_RANGE") || "Please select both From and To dates.");
       return;
     }
     const from = new Date(customDate.from);
+    from.setHours(0, 0, 0, 0);
     const to = new Date(customDate.to);
     to.setHours(23, 59, 59, 999);
-    const allRows = dashboardData?.dashboardInfo?.consumerList || [];
-    const filtered = allRows.filter((r) => {
-      const ts = r.createdTime || r.lastModifiedTime || 0;
-      return ts >= from.getTime() && ts <= to.getTime();
-    });
-    downloadSurveyorPDF({
-      rows: filtered.length ? filtered : allRows,
-      surveyorName: fullName,
-      vendorName,
-      supervisorName,
-      employeeId,
-      mobileNumber,
-      dashboardInfo: dashboardData?.dashboardInfo,
-      t,
-    });
-    setShowReportMenu(false);
-    setShowCustomPicker(false);
+
+    setReportLoading(true);
+    try {
+      const response = await Digit.EkycService.dashboard(
+        {},
+        {
+          tenantId: "dl.djb",
+          offset: 0,
+          limit: 1000,
+          surveyorId: surveyor?.owner?.uuid,
+          fromDate: from.getTime(),
+          toDate: to.getTime(),
+        }
+      );
+
+      const rows = response?.dashboardInfo?.consumerList || [];
+
+      downloadSurveyorPDF({
+        rows: rows,
+        surveyorName: fullName,
+        vendorName,
+        supervisorName,
+        employeeId,
+        mobileNumber,
+        dashboardInfo: response?.dashboardInfo || {},
+        t,
+      });
+    } catch (err) {
+      console.error("Failed to fetch custom dashboard data for report download:", err);
+    } finally {
+      setReportLoading(false);
+      setShowReportMenu(false);
+      setShowCustomPicker(false);
+    }
   };
 
   const StatCard = ({ title, value, type, isLoading }) => (
@@ -289,12 +315,13 @@ const SurveyorDetailsDashboard = () => {
         <div className="report-download" ref={reportMenuRef}>
           <button
             className="download-btn"
+            disabled={reportLoading}
             onClick={() => {
               setShowReportMenu((p) => !p);
               setShowCustomPicker(false);
             }}
           >
-            {t("DOWNLOAD_REPORT") || "Download Report"}
+            {reportLoading ? t("DOWNLOADING") || "Downloading..." : t("DOWNLOAD_REPORT") || "Download Report"}
           </button>
 
           {showReportMenu && (
@@ -439,10 +466,14 @@ const SurveyorDetailsDashboard = () => {
             <span className="label">{t("SERVICE_TYPE")}:</span>
             <span className="value">{surveyor?.additionalDetails?.serviceType || "N/A"}</span>
           </div>
-
           <div className="detail-item">
             <span className="label">{t("VENDOR_NAME") || "Vendor Name"}:</span>
             <span className="value">{vendorName}</span>
+          </div>
+
+          <div className="detail-item">
+            <span className="label">{t("SUPERVISOR_NAME") || "Supervisor Name"}:</span>
+            <span className="value">{supervisorName}</span>
           </div>
         </div>
       </div>
