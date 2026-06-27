@@ -72,7 +72,7 @@ const SurveyorDetails = (props) => {
               { title: "ES_VENDOR_SURVEYOR_FULL_NAME", value: data?.name },
               { title: "ES_VENDOR_SURVEYOR_MOBILE_NUMBER", value: data?.owner?.mobileNumber || data?.mobileNo },
               { title: "ES_VENDOR_SURVEYOR_EMAIL_ID", value: data?.owner?.emailId },
-              { title: "ES_VENDOR_SURVEYOR_STAFF_CODE", value: data?.employeeId || "N/A" },
+              // { title: "ES_VENDOR_SURVEYOR_STAFF_CODE", value: data?.employeeId || "N/A" },
               { title: "ES_VENDOR_SURVEYOR_GENDER", value: data?.owner?.gender },
               { title: "ES_FSM_REGISTRY_INBOX_SUPERVISOR_NAME", value: supervisorName },
               {
@@ -315,7 +315,7 @@ const SurveyorDetails = (props) => {
                           )}
                           {value.value !== "ES_FSM_REGISTRY_DETAILS_ADD_VENDOR" && (
                             <React.Fragment>
-                              <div
+                              {/* <div
                                 className="add-details-link hover-button"
                                 onClick={() => setSelectedAction("EDIT_VENDOR")}
                                 style={{ cursor: "pointer" }}
@@ -328,7 +328,7 @@ const SurveyorDetails = (props) => {
                                 style={{ cursor: "pointer" }}
                               >
                                 <DeleteIcon fill="#a82227" />
-                              </div>
+                              </div> */}
                             </React.Fragment>
                           )}
                         </div>
