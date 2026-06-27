@@ -16,7 +16,11 @@ public class SupervisorQueryBuilder {
     private VendorConfiguration config;
 
     private static final String BASE_QUERY =
-            "SELECT count(*) OVER() AS full_count, supervisor.* FROM eg_supervisor supervisor";
+            "SELECT count(*) OVER() AS full_count,"
+                    + " supervisor.*,"
+                    + " v.name AS vendor_name"
+                    + " FROM eg_supervisor supervisor"
+                    + " LEFT JOIN eg_vendor v ON v.id = supervisor.vendor_id";
 
     private static final String PAGINATION_WRAPPER =
             "SELECT * FROM "
@@ -64,6 +68,20 @@ public class SupervisorQueryBuilder {
                 flag = true;
             }
             builder.append(" ) ");
+        }
+
+        // mobileNumber filter — search supervisors by mobile number
+        if (StringUtils.isNotBlank(criteria.getMobileNumber())) {
+            addClauseIfRequired(preparedStmtList, builder);
+            builder.append(" supervisor.mobile_no = ?");
+            preparedStmtList.add(criteria.getMobileNumber());
+        }
+
+        // vendorName filter — search supervisors by agency name (partial, case-insensitive)
+        if (StringUtils.isNotBlank(criteria.getVendorName())) {
+            addClauseIfRequired(preparedStmtList, builder);
+            builder.append(" LOWER(v.name) LIKE ? ESCAPE '_'");
+            preparedStmtList.add('%' + criteria.getVendorName().toLowerCase() + '%');
         }
 
         List<String> ownerIds = criteria.getOwnerIds();

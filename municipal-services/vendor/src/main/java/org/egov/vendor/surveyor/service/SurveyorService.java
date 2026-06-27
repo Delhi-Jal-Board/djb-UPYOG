@@ -94,13 +94,10 @@ public class SurveyorService {
 
     public SurveyorResponse search(SurveyorSearchCriteria criteria, RequestInfo requestInfo) {
 
-        // ── Auto-scope by role ────────────────────────────────────────
-        // EKYC_SUPERVISOR: sees only their own surveyors
-        //   → derive supervisorId from token UUID, set on criteria
-        // EKYC_VENDOR: sees all surveyors under their vendor
-        //   → criteria.vendorId already set by frontend OR could be
-        //     derived similarly — for now frontend passes vendorId
-        // SUPERUSER/EMPLOYEE/others: unrestricted, no modification
+        // ── Auto-scope by DB profile (not JWT roles) ──────────────────
+        // ZUUL replaces userInfo.roles with Keycloak realm roles —
+        // DIGIT roles (EKYC_SUPERVISOR etc.) are NOT present in token.
+        // We check DB directly by caller UUID instead.
         applyRoleBasedScoping(criteria, requestInfo);
 
         // Mobile number → resolve to ownerIds via user service
@@ -141,14 +138,6 @@ public class SurveyorService {
     // ── Role-based scoping for search ─────────────────────────────────
 
     /**
-     * EKYC_SUPERVISOR → auto-derive supervisorId from token and set on
-     * criteria so the DB query is scoped to their linked surveyors only.
-     * The supervisor never needs to know their own entity ID.
-     *
-     * All other roles → no modification (unrestricted or handled by
-     * explicit criteria params passed by the caller).
-     */
-    /**
      * DB-based scoping — does NOT rely on JWT roles.
      *
      * ZUUL gateway replaces userInfo.roles with Keycloak realm roles
@@ -157,9 +146,14 @@ public class SurveyorService {
      *
      *   UUID in eg_supervisor → supervisor → scope to their surveyors only
      *   UUID in eg_vendor     → vendor     → scope to their vendor
+     *                           supervisorId from request still respected
+     *                           for drill-down, but vendorId always forced
+     *                           from DB — security boundary
      *   Neither               → SUPERUSER  → no restriction
      *
-     * Explicit supervisorId/vendorId passed as query param always takes priority.
+     * Explicit supervisorId passed as query param takes priority for
+     * supervisor callers only. For vendor callers, vendorId is always
+     * overridden from DB regardless of what frontend passes.
      */
     private void applyRoleBasedScoping(SurveyorSearchCriteria criteria,
                                        RequestInfo requestInfo) {
@@ -168,36 +162,37 @@ public class SurveyorService {
         String callerUuid = requestInfo.getUserInfo().getUuid();
         if (callerUuid == null) return;
 
-        // Explicit supervisorId passed as query param — respect it, skip auto-scope
-        if (StringUtils.hasLength(criteria.getSupervisorId())) {
-            log.info("supervisorId={} passed explicitly — skipping auto-scope",
-                    criteria.getSupervisorId());
-            return;
-        }
-
-        // Check DB: is this caller a supervisor?
+        // ── Check DB: is this caller a supervisor? ────────────────────
         Map<String, String> supervisorProfile =
                 surveyorRepository.findSupervisorByOwnerUuid(callerUuid);
 
         if (supervisorProfile != null) {
+            // Explicit supervisorId passed — respect it (supervisor viewing own team)
+            if (StringUtils.hasLength(criteria.getSupervisorId())) {
+                log.info("supervisorId={} passed explicitly by supervisor uuid={} — kept",
+                        criteria.getSupervisorId(), callerUuid);
+                return;
+            }
+            // Auto-scope to their own surveyors
             criteria.setSupervisorId(supervisorProfile.get("id"));
             log.info("Auto-scoped surveyor search to supervisorId={} for uuid={}",
                     supervisorProfile.get("id"), callerUuid);
             return;
         }
 
-        // Check DB: is this caller a vendor owner?
-        if (!StringUtils.hasLength(criteria.getVendorId())) {
-            List<String> vendorIds = surveyorRepository.getVendorIdsByOwnerUuid(callerUuid);
-            if (!CollectionUtils.isEmpty(vendorIds)) {
-                criteria.setVendorId(vendorIds.get(0));
-                log.info("Auto-scoped surveyor search to vendorId={} for uuid={}",
-                        vendorIds.get(0), callerUuid);
-                return;
-            }
+        // ── Check DB: is this caller a vendor owner? ──────────────────
+        // Security boundary — vendorId always forced from DB.
+        // Even if frontend passes wrong vendorId, token overrides it.
+        // supervisorId from frontend respected for drill-down.
+        List<String> vendorIds = surveyorRepository.getVendorIdsByOwnerUuid(callerUuid);
+        if (!CollectionUtils.isEmpty(vendorIds)) {
+            criteria.setVendorId(vendorIds.get(0)); // always override vendorId
+            log.info("Auto-scoped surveyor search to vendorId={} for uuid={}",
+                    vendorIds.get(0), callerUuid);
+            return;
         }
 
-        // Neither — SUPERUSER/admin — no restriction
+        // ── Neither — SUPERUSER/admin — no restriction ────────────────
         log.info("No supervisor/vendor profile for uuid={} — unrestricted search", callerUuid);
     }
 }

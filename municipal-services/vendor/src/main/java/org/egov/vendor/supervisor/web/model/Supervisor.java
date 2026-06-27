@@ -104,4 +104,8 @@ public class Supervisor {
 
     @JsonProperty("auditDetails")
     private AuditDetails auditDetails = null;
+
+    // ── Joined field — populated on search, read-only ────────────────
+    @JsonProperty("vendorName")
+    private String vendorName = null;
 }

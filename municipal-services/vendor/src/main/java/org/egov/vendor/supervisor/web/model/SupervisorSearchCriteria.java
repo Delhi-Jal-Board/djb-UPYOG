@@ -39,9 +39,13 @@ public class SupervisorSearchCriteria {
     @JsonProperty("assignedZoneId")
     private String assignedZoneId;
 
+    @JsonProperty("vendorName")
+    private String vendorName;
+
     public boolean isEmpty() {
         return (this.tenantId == null && this.offset == null && this.limit == null
                 && this.mobileNumber == null && this.vendorId == null
+                && this.vendorName == null
                 && CollectionUtils.isEmpty(this.ownerIds)
                 && CollectionUtils.isEmpty(this.name)
                 && CollectionUtils.isEmpty(this.ids)
