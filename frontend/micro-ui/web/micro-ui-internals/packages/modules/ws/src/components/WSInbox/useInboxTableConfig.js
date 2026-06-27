@@ -36,11 +36,11 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
           );
         },
       },
-      {
-        Header: t("WS_COMMON_TABLE_COL_CONSUMER_NO_LABEL"),
-        accessor: "connectionNo",
-        disableSortBy: true,
-      },
+      // {
+      //   Header: t("WS_COMMON_TABLE_COL_CONSUMER_NO_LABEL"),
+      //   accessor: "connectionNo",
+      //   disableSortBy: true,
+      // },
       {
         Header: t("WS_COMMON_TABLE_COL_OWN_NAME_LABEL"),
         accessor: "owner",
