@@ -125,13 +125,13 @@ const EditSupervisor = () => {
         setShowToast({ key: "error", action: error });
       },
       onSuccess: () => {
-        setShowToast({ key: "success", action: "UPDATE_SUPERVISOR" });
         queryClient.invalidateQueries("SUPERVISOR_SEARCH");
 
         history.push({
           pathname: `/digit-ui/${userType}/vendor/registry/supervisor-details/${supervisorId}`,
           state: {
             showSuccessToast: true,
+            message: { key: "success", action: "UPDATE_SUPERVISOR" },
           },
         });
       },

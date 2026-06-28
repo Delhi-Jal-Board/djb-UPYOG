@@ -12,6 +12,7 @@ const AddSupervisor = ({ parentUrl, heading }) => {
   // ULB-level tenantId (e.g. 'dl.djb') is required by the supervisor API.
   // If the id has no '.' it means it's state-level, so we append '.djb'.
   const userInfo = Digit.UserService.getUser()?.info;
+  const userType = userInfo?.type;
   const rawTenantId = Digit.ULBService.getCurrentTenantId();
   const tenantId = rawTenantId?.includes(".") ? rawTenantId : `${rawTenantId}.djb`;
 
@@ -79,7 +80,7 @@ const AddSupervisor = ({ parentUrl, heading }) => {
             uuid: userInfo?.uuid,
             userName: userInfo?.userName,
             name: userInfo?.name,
-            type: userInfo?.type,
+            type: userType,
             tenantId: userInfo?.tenantId || rawTenantId,
             roles: userInfo?.roles,
           },
@@ -108,13 +109,15 @@ const AddSupervisor = ({ parentUrl, heading }) => {
       await mutateAsync(formData);
       setShowToast({ key: "success", action: "ADD_SUPERVISOR" });
       queryClient.invalidateQueries("SUPERVISOR_SEARCH");
-      setTimeout(() => {
-        closeToast();
-        history.push("/digit-ui/citizen/vendor/search-vendor");
-      }, 3000);
+      history.push({
+        pathname: `/digit-ui/${userType}/vendor/search-vendor`,
+        state: {
+          showSuccessToast: true,
+          message: { key: "success", action: `ES_VENDOR_ADD_SURVEYOR_SUCCESS` },
+        },
+      });
     } catch (error) {
       setShowToast({ key: "error", action: error?.message || error });
-      setTimeout(closeToast, 5000);
     }
   };
 
