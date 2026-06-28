@@ -1,7 +1,6 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { Modal, Close, Table, Toast } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
-
 const AssignEkycModal = ({ surveyor, closeModal, refetchDashboard }) => {
   const { t } = useTranslation();
   const [selectedKnos, setSelectedKnos] = useState([]);
@@ -382,17 +381,14 @@ const AssignEkycModal = ({ surveyor, closeModal, refetchDashboard }) => {
       actionCancelOnSubmit={closeModal}
       actionSaveLabel={`Assign ${selectedKnos.length} KNOs`}
       actionSaveOnSubmit={handleAssign}
+      isDisabled={!selectedKnos?.length}
     >
       <div className="assign-knos-modal">
         {/* Filters */}
         <div className="filters-grid">
           <input className="form-control" placeholder="KNO" value={filters.kno} onChange={(e) => handleFilterChange("kno", e.target.value)} />
 
-          <select
-            className="form-control"
-            value={filters.pincode}
-            onChange={(e) => handleFilterChange("pincode", e.target.value)}
-          >
+          <select className="form-control" value={filters.pincode} onChange={(e) => handleFilterChange("pincode", e.target.value)}>
             <option value="">Select Pincode</option>
             {fetchedPincodes.map((pin) => (
               <option key={pin} value={pin}>
@@ -419,14 +415,11 @@ const AssignEkycModal = ({ surveyor, closeModal, refetchDashboard }) => {
               <option key={loc.code} value={loc.name}>
                 {loc.name}
               </option>
-            ))}http://localhost:3000/digit-ui/employee/ekyc/assign
+            ))}
+            http://localhost:3000/digit-ui/employee/ekyc/assign
           </select>
 
-          <select
-            className="form-control"
-            value={filters.ward}
-            onChange={(e) => handleFilterChange("ward", e.target.value)}
-          >
+          <select className="form-control" value={filters.ward} onChange={(e) => handleFilterChange("ward", e.target.value)}>
             <option value="">Select Ward</option>
             {wardOptions.map((ward) => (
               <option key={ward.code} value={ward.name}>
@@ -435,11 +428,7 @@ const AssignEkycModal = ({ surveyor, closeModal, refetchDashboard }) => {
             ))}
           </select>
 
-          <select
-            className="form-control"
-            value={filters.assembly}
-            onChange={(e) => handleFilterChange("assembly", e.target.value)}
-          >
+          <select className="form-control" value={filters.assembly} onChange={(e) => handleFilterChange("assembly", e.target.value)}>
             <option value="">Select Assembly</option>
             {assemblyOptions.map((assembly) => (
               <option key={assembly.code} value={assembly.name}>
