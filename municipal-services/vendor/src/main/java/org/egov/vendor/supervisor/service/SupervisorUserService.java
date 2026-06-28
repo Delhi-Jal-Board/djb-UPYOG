@@ -3,6 +3,7 @@ package org.egov.vendor.supervisor.service;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.Calendar;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.Role;
@@ -239,6 +240,10 @@ public class SupervisorUserService {
 
     private User updateUserDetails(User ownerInfo, RequestInfo requestInfo,
                                    HashMap<String, String> errorMap) {
+        // If DOB is being changed on update — validate minimum age
+        if (ownerInfo.getDob() != null && ownerInfo.getDob() != 0L) {
+            validateMinimumAge(ownerInfo.getDob(), "Supervisor");
+        }
         StringBuilder uri = new StringBuilder(config.getUserHost())
                 .append(config.getUserContextPath()).append(config.getUserUpdateEndpoint());
         UserDetailResponse response = ownerCall(
@@ -270,12 +275,38 @@ public class SupervisorUserService {
 
     @SuppressWarnings("deprecation")
     private Boolean isUserValid(User user) {
-        return !StringUtils.isEmpty(user.getTenantId())
-                && !StringUtils.isEmpty(user.getName())
-                && !StringUtils.isEmpty(user.getFatherOrHusbandName())
-                && !StringUtils.isEmpty(user.getRelationship())
-                && !StringUtils.isEmpty(user.getDob())
-                && !StringUtils.isEmpty(user.getGender());
+        if (StringUtils.isEmpty(user.getTenantId())
+                || StringUtils.isEmpty(user.getName())
+                || StringUtils.isEmpty(user.getFatherOrHusbandName())
+                || StringUtils.isEmpty(user.getRelationship())
+                || StringUtils.isEmpty(user.getDob())
+                || StringUtils.isEmpty(user.getGender())) {
+            return false;
+        }
+        // Minimum age validation — supervisor must be at least 18 years old (legal requirement)
+        validateMinimumAge(user.getDob(), "Supervisor");
+        return true;
+    }
+
+    /**
+     * Validates that a person is at least 18 years old.
+     * Called on CREATE (mandatory) and UPDATE (only if DOB is being changed).
+     * Supports both String formats (dd/MM/yyyy, yyyy-MM-dd) and Long (epoch millis).
+     * Throws CustomException with code INVALID_AGE if under 18.
+     */
+    /**
+     * DOB is always stored as epoch milliseconds (Long) in DIGIT user service.
+     * Simplified — no String parsing needed.
+     */
+    void validateMinimumAge(Long dob, String role) {
+        if (dob == null || dob == 0L) return;
+        Calendar dobCal = Calendar.getInstance();
+        dobCal.setTimeInMillis(dob);
+        dobCal.add(Calendar.YEAR, 18);
+        if (dobCal.after(Calendar.getInstance())) {
+            throw new CustomException("INVALID_AGE",
+                    role + " must be at least 18 years of age as per legal requirement.");
+        }
     }
 
     @SuppressWarnings("rawtypes")
