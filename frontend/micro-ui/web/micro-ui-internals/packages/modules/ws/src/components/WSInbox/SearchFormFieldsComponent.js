@@ -26,7 +26,7 @@ const SearchFormFieldsComponents = ({ registerRef, searchFormState }) => {
           })}
         />
       </SearchField>
-      <SearchField className="wns-search-field">
+      {/* <SearchField className="wns-search-field">
         <label>{t("WS_MYCONNECTIONS_CONSUMER_NO")}</label>
         <TextInput
           name="consumerNo"
@@ -38,7 +38,7 @@ const SearchFormFieldsComponents = ({ registerRef, searchFormState }) => {
             title: t("ERR_INVALID_CONSUMER_NO"),
           })}
         />
-      </SearchField>
+      </SearchField> */}
       <SearchField className="wns-search-field">
         <label>{t("CORE_COMMON_MOBILE_NUMBER")}</label>
         <MobileNumber name="mobileNumber" type="number" inputRef={registerRef({})} {...propsForMobileNumber} />
