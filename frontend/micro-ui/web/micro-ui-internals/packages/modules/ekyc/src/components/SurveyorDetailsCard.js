@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useRef, useEffect } from "react";
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, PieChart, Pie, Cell, Legend } from "recharts";
+// import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, PieChart, Pie, Cell, Legend } from "recharts";
 
 import { Card, SubmitBar, ActionBar, Menu, Loader, Table } from "@djb25/digit-ui-react-components";
 
@@ -42,7 +42,9 @@ const SurveyorDetailsDashboard = () => {
   const supervisorName = useMemo(() => {
     if (surveyor?.supervisorName) return surveyor.supervisorName;
     if (!supervisorSearchResponse?.supervisors || !surveyor?.supervisorId) return "N/A";
-    const mappedSupervisor = supervisorSearchResponse.supervisors.find((s) => s.id === surveyor.supervisorId || s.owner?.uuid === surveyor.supervisorId);
+    const mappedSupervisor = supervisorSearchResponse.supervisors.find(
+      (s) => s.id === surveyor.supervisorId || s.owner?.uuid === surveyor.supervisorId
+    );
     return mappedSupervisor?.name || mappedSupervisor?.owner?.name || surveyor.supervisorId || "N/A";
   }, [supervisorSearchResponse, surveyor?.supervisorId, surveyor?.supervisorName]);
   const fullName = surveyor?.owner?.name || surveyor?.name || "N/A";
@@ -133,33 +135,33 @@ const SurveyorDetailsDashboard = () => {
     );
   }
 
-  const weeklyData = [
-    { day: "Mon", completed: 4 },
-    { day: "Tue", completed: 6 },
-    { day: "Wed", completed: 3 },
-    { day: "Thu", completed: 8 },
-    { day: "Fri", completed: 5 },
-    { day: "Sat", completed: 7 },
-    { day: "Sun", completed: 2 },
-  ];
+  // const weeklyData = [
+  //   { day: "Mon", completed: 4 },
+  //   { day: "Tue", completed: 6 },
+  //   { day: "Wed", completed: 3 },
+  //   { day: "Thu", completed: 8 },
+  //   { day: "Fri", completed: 5 },
+  //   { day: "Sat", completed: 7 },
+  //   { day: "Sun", completed: 2 },
+  // ];
 
-  const statusData = [
-    {
-      name: "Completed",
-      value: surveyor?.completedCases || 0,
-      color: "#10B981",
-    },
-    {
-      name: "Pending",
-      value: surveyor?.pendingCases || 0,
-      color: "#F59E0B",
-    },
-    {
-      name: "Rejected",
-      value: surveyor?.rejectedCases || 0,
-      color: "#EF4444",
-    },
-  ];
+  // const statusData = [
+  //   {
+  //     name: "Completed",
+  //     value: surveyor?.completedCases || 0,
+  //     color: "#10B981",
+  //   },
+  //   {
+  //     name: "Pending",
+  //     value: surveyor?.pendingCases || 0,
+  //     color: "#F59E0B",
+  //   },
+  //   {
+  //     name: "Rejected",
+  //     value: surveyor?.rejectedCases || 0,
+  //     color: "#EF4444",
+  //   },
+  // ];
 
   const getDateRange = (filter) => {
     const now = new Date();
@@ -307,7 +309,6 @@ const SurveyorDetailsDashboard = () => {
             {/* <div className="employee-id">
               {t("EMPLOYEE_ID")}: {employeeId}
             </div> */}
-            
           </div>
         </div>
 
@@ -331,56 +332,38 @@ const SurveyorDetailsDashboard = () => {
                 { label: t("THIS_WEEK") || "This Week", key: "week" },
                 { label: t("THIS_MONTH") || "This Month", key: "month" },
               ].map(({ label, key }) => (
-                <div
-                  key={key}
-                  className="menu-item"
-                  onClick={() => handlePresetDownload(key)}
-                >
+                <div key={key} className="menu-item" onClick={() => handlePresetDownload(key)}>
                   {label}
                 </div>
               ))}
 
-              <div
-                className="custom-date-trigger"
-                onClick={() => setShowCustomPicker((p) => !p)}
-              >
+              <div className="custom-date-trigger" onClick={() => setShowCustomPicker((p) => !p)}>
                 {t("CUSTOM_DATE") || "Custom Date"}
               </div>
 
               {showCustomPicker && (
                 <div className="custom-picker">
                   <div className="date-field">
-                    <label className="date-label">
-                      {t("FROM_DATE") || "From"}
-                    </label>
+                    <label className="date-label">{t("FROM_DATE") || "From"}</label>
                     <input
                       type="date"
                       className="date-input"
                       value={customDate.from}
-                      onChange={(e) =>
-                        setCustomDate((d) => ({ ...d, from: e.target.value }))
-                      }
+                      onChange={(e) => setCustomDate((d) => ({ ...d, from: e.target.value }))}
                     />
                   </div>
 
                   <div className="date-field">
-                    <label className="date-label">
-                      {t("TO_DATE") || "To"}
-                    </label>
+                    <label className="date-label">{t("TO_DATE") || "To"}</label>
                     <input
                       type="date"
                       className="date-input"
                       value={customDate.to}
-                      onChange={(e) =>
-                        setCustomDate((d) => ({ ...d, to: e.target.value }))
-                      }
+                      onChange={(e) => setCustomDate((d) => ({ ...d, to: e.target.value }))}
                     />
                   </div>
 
-                  <button
-                    className="download-action-btn"
-                    onClick={handleCustomDownload}
-                  >
+                  <button className="download-action-btn" onClick={handleCustomDownload}>
                     {t("DOWNLOAD") || "Download"}
                   </button>
                 </div>
@@ -512,31 +495,27 @@ const SurveyorDetailsDashboard = () => {
         />
       </Card>
       {/* Actions */}
-      {
-        (!roles.includes("EKYC_SURVEYOR") || roles.includes("EMPLOYEE")) && (
-          <ActionBar>
-            <SubmitBar label={t("EKYC_ASSIGN_KNOS")} onSubmit={() => setShowOptions((prev) => !prev)} />
+      {(!roles.includes("EKYC_SURVEYOR") || roles.includes("EMPLOYEE")) && (
+        <ActionBar>
+          <SubmitBar label={t("EKYC_ASSIGN_KNOS")} onSubmit={() => setShowOptions((prev) => !prev)} />
 
-            {showOptions && (
-              <Menu
-                options={options}
-                optionKey={"action"}
-                t={t}
-                onSelect={handleMenuSelect}
-                style={{
-                  color: "#FFFFFF",
-                  fontSize: "18px",
-                }}
-              />
-            )}
-          </ActionBar>
-
-        )
-      }
+          {showOptions && (
+            <Menu
+              options={options}
+              optionKey={"action"}
+              t={t}
+              onSelect={handleMenuSelect}
+              style={{
+                color: "#FFFFFF",
+                fontSize: "18px",
+              }}
+            />
+          )}
+        </ActionBar>
+      )}
 
       {showModal && <AssignEkycModal surveyor={surveyor} closeModal={closeModal} refetchDashboard={refetchDashboard} />}
     </Card>
-
   );
 };
 
