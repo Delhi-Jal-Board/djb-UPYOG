@@ -386,7 +386,17 @@ const Home = ({
                 <EDCRAcknowledgement />
               </Route>
 
-              <ErrorBoundary initData={initData}>
+              <ErrorBoundary
+                initData={initData}
+                goToHome={() => {
+                  if (window.history.length > 1) {
+                    window.history.back();
+                  } else {
+                    const path = "/digit-ui/citizen";
+                    window.location.href = path;
+                  }
+                }}
+              >
                 <div className="app-wrapper emtb-page-push">
                   <AppContainer>
                     {ModuleLevelLinkHomePages}
