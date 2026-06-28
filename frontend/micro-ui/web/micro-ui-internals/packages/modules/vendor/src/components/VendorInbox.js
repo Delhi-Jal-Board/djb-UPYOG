@@ -308,6 +308,9 @@ const VendorInbox = (props) => {
     mutate: mutateDriver,
   } = Digit.Hooks.fsm.useDriverUpdate(tenantId);
 
+  const { mutate: mutateSupervisor } = Digit.Hooks.fsm.useSupervisorUpdate(tenantId);
+  const { mutate: mutateSurveyor } = Digit.Hooks.fsm.useSurveyorUpdate(tenantId);
+
   useEffect(() => {
     setTableData(props?.data?.table || []);
   }, [props]);
@@ -456,6 +459,78 @@ const VendorInbox = (props) => {
         setShowToast({ key: "success", action: "DRIVER" });
         queryClient.invalidateQueries("FSM_DRIVER_SEARCH");
         props.refetchVendor();
+        props.refetchData();
+        setTimeout(closeToast, 3000);
+      },
+    });
+  };
+
+  const onSupervisorUpdate = (row) => {
+    let formDetails = row.original;
+    const newStatus = formDetails?.status === "ACTIVE" ? "DISABLED" : "ACTIVE";
+    const newActive = newStatus === "ACTIVE";
+    const formData = {
+      supervisor: {
+        ...formDetails,
+        status: newStatus,
+        active: newActive,
+        owner: {
+          ...formDetails?.owner,
+          active: newActive,
+          gender: formDetails?.owner?.gender || "OTHERS",
+          dob: formDetails?.owner?.dob || new Date(`1/1/1970`).getTime(),
+          emailId: formDetails?.owner?.emailId || "abc@egov.com",
+          relationship: formDetails?.owner?.relationship || "OTHER",
+        },
+      },
+    };
+
+    mutateSupervisor(formData, {
+      onError: (error, variables) => {
+        setShowToast({ key: "error", action: error?.message || error });
+        setTimeout(closeToast, 5000);
+      },
+      onSuccess: (data, variables) => {
+        setShowToast({ key: "success", action: "SUPERVISOR" });
+        queryClient.invalidateQueries("FSM_SUPERVISOR_SEARCH");
+        queryClient.invalidateQueries("SUPERVISOR_SEARCH");
+        props.refetchData();
+        setTimeout(closeToast, 3000);
+      },
+    });
+  };
+
+  const onSurveyorUpdate = (row) => {
+    let formDetails = row.original;
+    const newStatus = formDetails?.status === "ACTIVE" ? "DISABLED" : "ACTIVE";
+    const newActive = newStatus === "ACTIVE";
+    const formData = {
+      surveyor: {
+        ...formDetails,
+        status: newStatus,
+        active: newActive,
+        owner: {
+          ...formDetails?.owner,
+          active: newActive,
+          gender: formDetails?.owner?.gender || "OTHERS",
+          dob: formDetails?.owner?.dob || new Date(`1/1/1970`).getTime(),
+          emailId: formDetails?.owner?.emailId || "abc@egov.com",
+          relationship: formDetails?.owner?.relationship || "OTHER",
+        },
+      },
+    };
+
+    console.log("formData", JSON.stringify(formData));
+
+    mutateSurveyor(formData, {
+      onError: (error, variables) => {
+        setShowToast({ key: "error", action: error?.message || error });
+        setTimeout(closeToast, 5000);
+      },
+      onSuccess: (data, variables) => {
+        setShowToast({ key: "success", action: "SURVEYOR" });
+        queryClient.invalidateQueries("FSM_SURVEYOR_SEARCH");
+        queryClient.invalidateQueries("SURVEYOR_SEARCH");
         props.refetchData();
         setTimeout(closeToast, 3000);
       },
@@ -1125,8 +1200,8 @@ const VendorInbox = (props) => {
             ? [
               {
                 Header: t("ES_FSM_REGISTRY_INBOX_SUPERVISOR_NAME"),
-                accessor: (row) => row.reportingManager?.name || "NA",
-                Cell: ({ row }) => <div>{row.original?.reportingManager?.name || "NA"}</div>,
+                accessor: (row) => row.supervisorName || row.reportingManager?.name || "NA",
+                Cell: ({ row }) => <div>{row.original?.supervisorName || row.original?.reportingManager?.name || "NA"}</div>,
               },
             ]
             : []),
@@ -1299,7 +1374,7 @@ const VendorInbox = (props) => {
           },
           {
             Header: t("ES_FSM_REGISTRY_INBOX_SUPERVISOR_NAME"),
-            exportAccessor: (row) => row?.reportingManager?.name || "NA",
+            exportAccessor: (row) => row?.supervisorName || row?.reportingManager?.name || "NA",
           },
           {
             Header: t("ES_FSM_REGISTRY_INBOX_DATE_DRIVER_CREATION"),

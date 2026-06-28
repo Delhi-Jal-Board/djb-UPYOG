@@ -1026,3 +1026,30 @@
   cursor: pointer;
   color: #318ed0 !important;
 }
+
+.status-search-composer-wrapper {
+  .inbox-container {
+    padding: 0;
+    margin: 0;
+    background: transparent;
+  }
+  .employee-form-content {
+    padding: 0;
+    margin: 0;
+    background: transparent;
+    > *:not(#search-form) {
+      display: none !important;
+    }
+  }
+  #search-form {
+    background: transparent;
+    padding: 0;
+    box-shadow: none;
+    border: none;
+  }
+  .search-complaint-container {
+    padding: 0;
+    background: transparent;
+  }
+}
+

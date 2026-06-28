@@ -626,7 +626,130 @@ const generateSurveyorReport = async ({
   downloadPDFFileUsingBase64(generatedPDF, `EKYC_SURVEYOR_REPORT_${Date.now()}.pdf`);
 };
 
-export default { generate: jsPdfGenerator, generateTable: jsPdfGeneratorForTable, generatev1: jsPdfGeneratorv1, generateModifyPdf: jsPdfGeneratorForModifyPDF, generateBillAmendPDF, generateSurveyorReport };
+const generateSupervisorReport = async ({
+  breakPageLimit = null,
+  tenantId,
+  logo,
+  name,
+  email,
+  phoneNumber,
+  heading,
+  details,
+  applicationNumber,
+  rows,
+  t = (text) => text,
+  hideApplicationNumber = false,
+  downloadTime = null
+}) => {
+  const dd = {
+    background: [{
+      image: AcknowledgmentPage,
+      width: 595,
+      height: 842
+    }],
+    margin: [20, 20, 20, 20],
+
+    footer: function (currentPage, pageCount) {
+      return {
+        columns: [
+          {
+            text: downloadTime || "",
+            alignment: "left",
+            margin: [50, -5, 0, 0],
+            fontSize: 9,
+            color: "#6f777c",
+            font: "Hind",
+          },
+          {
+            text: `Page ${currentPage}`,
+            alignment: "right",
+            margin: [0, -5, 50, 0],
+            fontSize: 9,
+            color: "#6f777c",
+            font: "Hind",
+          },
+        ],
+      };
+    },
+
+    content: [
+      ...createHeaderDetails(details, name, phoneNumber, email, logo, tenantId, heading, applicationNumber, hideApplicationNumber),
+      ...createContent(details, logo, tenantId, phoneNumber, breakPageLimit),
+
+      {
+        text: t("CONNECTED_SURVEYORS") || "Connected Surveyors",
+        color: "#0b2559",
+        style: "header",
+        fontSize: 14,
+        bold: true,
+        margin: [10, 20, 10, 5]
+      },
+      {
+        style: 'tableExample',
+        margin: [10, 0, 10, 0],
+        table: {
+          headerRows: 1,
+          widths: ["20%", "15%", "15%", "15%", "15%", "10%", "10%"],
+          body: [
+            [
+              { text: t("SURVEYOR_NAME") || "Surveyor Name", bold: true, fillColor: "#0b2559", color: "#FFFFFF" },
+              { text: t("MOBILE_NUMBER") || "Mobile Number", bold: true, fillColor: "#0b2559", color: "#FFFFFF" },
+              { text: t("STATUS") || "Status", bold: true, fillColor: "#0b2559", color: "#FFFFFF" },
+              { text: t("TOTAL_EKYC_APPLICATIONS") || "Total eKYC Applications", bold: true, fillColor: "#0b2559", color: "#FFFFFF" },
+              { text: t("EKYC_COMPLETED") || "eKYC Completed", bold: true, fillColor: "#0b2559", color: "#FFFFFF" },
+              { text: t("PENDING_APPLICATIONS") || "Pending Applications", bold: true, fillColor: "#0b2559", color: "#FFFFFF" },
+              { text: t("OVERALL_PROGRESS") || "Overall Progress", bold: true, fillColor: "#0b2559", color: "#FFFFFF" }
+            ],
+            ...rows.map((row) => [
+              { text: row.name || row.owner?.name || "-", fontSize: 9 },
+              { text: row.owner?.mobileNumber || row.mobileNo || "-", fontSize: 9 },
+              { text: row.status || "-", fontSize: 9 },
+              { text: row.total || 0, fontSize: 9 },
+              { text: row.completed || 0, fontSize: 9 },
+              { text: row.pending || 0, fontSize: 9 },
+              { text: row.progress || "0%", fontSize: 9 }
+            ])
+          ]
+        },
+        layout: {
+          hLineWidth: function (i, node) {
+            return (i === 0 || i === node.table.body.length) ? 1 : 0.5;
+          },
+          vLineWidth: function (i, node) {
+            return (i === 0 || i === node.table.widths.length) ? 1 : 0.5;
+          },
+          hLineColor: function (i) {
+            return i === 0 ? "#F47738" : "#e0e0e0";
+          },
+          vLineColor: function () {
+            return "#e0e0e0";
+          }
+        }
+      },
+      {
+        text: t("PDF_SYSTEM_GENERATED_ACKNOWLEDGEMENT"),
+        font: "Hind",
+        fontSize: 11,
+        color: "#6f777c",
+        margin: [10, 20, 10, 10],
+      }
+    ],
+
+    defaultStyle: {
+      font: "Hind",
+      margin: [20, 10, 20, 10]
+    },
+  };
+
+  pdfMake.vfs = Fonts;
+  let locale = Digit.SessionStorage.get("locale") || "en_IN";
+  let Hind = pdfFonts[locale] || pdfFonts["Hind"];
+  pdfMake.fonts = { Hind: { ...Hind } };
+  const generatedPDF = pdfMake.createPdf(dd);
+  downloadPDFFileUsingBase64(generatedPDF, `EKYC_SUPERVISOR_REPORT_${Date.now()}.pdf`);
+};
+
+export default { generate: jsPdfGenerator, generateTable: jsPdfGeneratorForTable, generatev1: jsPdfGeneratorv1, generateModifyPdf: jsPdfGeneratorForModifyPDF, generateBillAmendPDF, generateSurveyorReport, generateSupervisorReport };
 
 const createBodyContentBillAmend = (table, t) => {
   let bodyData = []

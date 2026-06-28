@@ -98,13 +98,13 @@ const useInboxTableConfig = ({
     onNextPage: () =>
       dispatch({
         action: "mutateTableForm",
-        data: { ...formState.tableForm, offset: parseInt(formState.tableForm?.offset) + 10 },
+        data: { ...formState.tableForm, offset: parseInt(formState.tableForm?.offset) + limit },
         checkPathName,
       }),
     onPrevPage: () =>
       dispatch({
         action: "mutateTableForm",
-        data: { ...formState.tableForm, offset: parseInt(formState.tableForm?.offset) - 10 },
+        data: { ...formState.tableForm, offset: parseInt(formState.tableForm?.offset) - limit },
         checkPathName,
       }),
     pageSizeLimit: limit,
@@ -115,7 +115,7 @@ const useInboxTableConfig = ({
     onLastPage: () =>
       dispatch({
         action: "mutateTableForm",
-        data: { ...formState.tableForm, offset: Math.max(0, Math.ceil(totalCount / limit) - 10) },
+        data: { ...formState.tableForm, offset: Math.max(0, Math.floor((totalCount - 1) / limit) * limit) },
         checkPathName,
       }),
     onFirstPage: () => dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, offset: 0 }, checkPathName }),

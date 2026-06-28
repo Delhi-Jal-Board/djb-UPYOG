@@ -175,10 +175,50 @@ const AssignEkycModal = ({ surveyor, closeModal, refetchDashboard }) => {
   const assignmentMutation = Digit.Hooks.ekyc.useEkycAssignmentCreate({
     onSuccess: (response) => {
       if (response?.error) {
-        setToastData({
-          error: true,
-          label: response?.data?.message || "Something went wrong",
-        });
+        const errMsg = response?.data?.message || "";
+        const isMrKeyAlreadyAssigned =
+          errMsg.toLowerCase().includes("already assigned") ||
+          errMsg.toLowerCase().includes("already assign") ||
+          errMsg.toLowerCase().includes("mrkey") ||
+          errMsg.toLowerCase().includes("mr key");
+
+        if (isMrKeyAlreadyAssigned) {
+          setToastData({
+            error: true,
+            label: t("EKYC_MR_KEY_ALREADY_ASSIGNED_WITH_ANOTHER_SURVEYOR") || "mr key is already assign with another surveyor",
+          });
+        } else {
+          setToastData({
+            error: true,
+            label: t(errMsg) || errMsg || t("EKYC_SOMETHING_WENT_WRONG") || "Something went wrong",
+          });
+        }
+
+        setShowToast(true);
+        return;
+      }
+
+      // Check for skipped assignments (e.g. 200 OK but skipped)
+      if (response?.skipped && response.skipped.length > 0) {
+        const reason = response.skipped[0]?.reason || "";
+        const isMrKeyAlreadyAssigned =
+          reason.toLowerCase().includes("already exists") ||
+          reason.toLowerCase().includes("already assign") ||
+          reason.toLowerCase().includes("active assignment") ||
+          reason.toLowerCase().includes("mrkey") ||
+          reason.toLowerCase().includes("mr key");
+
+        if (isMrKeyAlreadyAssigned) {
+          setToastData({
+            error: true,
+            label: t("EKYC_MR_KEY_ALREADY_ASSIGNED_WITH_ANOTHER_SURVEYOR") || "mr key is already assign with another surveyor",
+          });
+        } else {
+          setToastData({
+            error: true,
+            label: t(reason) || reason || t("EKYC_ASSIGNMENT_SKIPPED") || "Assignment skipped",
+          });
+        }
 
         setShowToast(true);
         return;
@@ -186,7 +226,7 @@ const AssignEkycModal = ({ surveyor, closeModal, refetchDashboard }) => {
 
       setToastData({
         error: false,
-        label: "Assignment successful",
+        label: t("EKYC_ASSIGNMENT_SUCCESSFUL") || "Assignment successful",
       });
 
       setShowToast(true);
@@ -199,10 +239,24 @@ const AssignEkycModal = ({ surveyor, closeModal, refetchDashboard }) => {
     },
 
     onError: (error) => {
-      setToastData({
-        error: true,
-        label: error?.data?.message || error?.response?.data?.message || "Something went wrong",
-      });
+      const errMsg = error?.data?.message || error?.response?.data?.message || "";
+      const isMrKeyAlreadyAssigned =
+        errMsg.toLowerCase().includes("already assigned") ||
+        errMsg.toLowerCase().includes("already assign") ||
+        errMsg.toLowerCase().includes("mrkey") ||
+        errMsg.toLowerCase().includes("mr key");
+
+      if (isMrKeyAlreadyAssigned) {
+        setToastData({
+          error: true,
+          label: t("EKYC_MR_KEY_ALREADY_ASSIGNED_WITH_ANOTHER_SURVEYOR") || "mr key is already assign with another surveyor",
+        });
+      } else {
+        setToastData({
+          error: true,
+          label: t(errMsg) || errMsg || t("EKYC_SOMETHING_WENT_WRONG") || "Something went wrong",
+        });
+      }
 
       setShowToast(true);
     },
