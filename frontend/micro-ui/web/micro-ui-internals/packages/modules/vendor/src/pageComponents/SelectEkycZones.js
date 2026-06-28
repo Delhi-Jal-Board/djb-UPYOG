@@ -46,8 +46,6 @@ const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true }
   const handleSelect = (value) => {
     if (isMultiSelect) {
       const extractedValue = Array.isArray(value) ? value.map((v) => (Array.isArray(v) ? v[1] : v)).filter(Boolean) : [];
-
-      setSelectedZones(extractedValue);
       onSelect(config.key, extractedValue);
     } else {
       const selectedZone = Array.isArray(value) ? (Array.isArray(value[0]) ? value[0][1] : value[0]) : value;
@@ -74,9 +72,19 @@ const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true }
           multiple={isMultiSelect}
           ServerStyle={{ backgroundColor: "#fff" }}
           isMultiSelect={isMultiSelect}
-          showSelectedLabels={true}
+          showSelectedLabels={!isMultiSelect}
+          defaultLabel={isMultiSelect ? (formData?.zoneIds?.length || 0) + " Selected" : ""}
         />
       </div>
+      {isMultiSelect && Array.isArray(formData?.zoneIds) && formData.zoneIds.length > 0 && (
+        <div className="selected-zones">
+          {formData.zoneIds.map((zone) => (
+            <span key={zone.code} className="selected-zone-chip">
+              {zone.name}
+            </span>
+          ))}
+        </div>
+      )}
     </LabelFieldPair>
   );
 };

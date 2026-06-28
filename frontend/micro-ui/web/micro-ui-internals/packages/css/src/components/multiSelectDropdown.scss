@@ -88,3 +88,24 @@
     }
   }
 }
+
+.selected-zones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.selected-zone-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  background: #eef6ff;
+  color: #0b5ed7;
+  border: 1px solid #cfe2ff;
+  border-radius: 16px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+}

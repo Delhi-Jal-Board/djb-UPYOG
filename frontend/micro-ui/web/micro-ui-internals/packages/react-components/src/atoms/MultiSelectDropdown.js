@@ -257,9 +257,9 @@ const MultiSelectDropdown = ({
           {showSelectedLabels ? (
             <p>{selectedLabel}</p>
           ) : alreadyQueuedSelectedState.length > 0 ? (
-            `${alreadyQueuedSelectedState.length} ${defaultUnit}`
+            `${alreadyQueuedSelectedState.length} ${defaultUnit} Selected`
           ) : (
-            defaultLabel
+            <p>{defaultLabel}</p>
           )}
 
           <ArrowDown />
