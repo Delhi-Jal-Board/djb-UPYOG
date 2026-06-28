@@ -54,7 +54,7 @@ const extractReviewData = (searchData, flowState) => {
   };
 };
 
-const ReviewSection = ({ title, fields, newData, oldData, t, jumpTo, state }) => {
+const ReviewSection = ({ title, fields, newData, oldData, t, jumpTo, state, hideEditButton }) => {
   return (
     <div
       className="review-section-wrapper"
@@ -71,7 +71,7 @@ const ReviewSection = ({ title, fields, newData, oldData, t, jumpTo, state }) =>
         }}
       >
         <CardSubHeader style={{ margin: 0, fontSize: "18px", color: "#101828", fontWeight: "700" }}>{title}</CardSubHeader>
-        {jumpTo && <ActionButton jumpTo={jumpTo} state={state} />}
+        {jumpTo && !hideEditButton && <ActionButton jumpTo={jumpTo} state={state} />}
       </div>
 
       <div style={{ padding: "0 24px" }}>
@@ -166,7 +166,7 @@ const Review = () => {
   const { t } = useTranslation();
   const history = useHistory();
   const location = useLocation();
-  let { kno } = useParams();
+  let { kno, applicationId } = useParams();
 
   const [agree, setAgree] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -183,7 +183,7 @@ const Review = () => {
 
   const flowState = location.state || {};
   const { edits = {} } = flowState;
-  const activeKno = kno;
+  const activeKno = kno || applicationId;
 
   const { aadhaarData = {}, addressDetails: editedAddress = {}, propertyDetails: editedProperty = {}, meterDetails: editedMeter = {} } = edits;
 
@@ -194,6 +194,12 @@ const Review = () => {
   const { data: searchData, isLoading: isSearchLoading } = Digit.Hooks.ekyc.useEkycSearchReview({ kno: activeKno, fetchType: "REVIEW" }, tenantId, {
     enabled: !!activeKno,
   });
+
+  const userRoles = Digit.SessionStorage.get("User")?.info?.roles?.map((ele) => ele.code) || [];
+  const isZRO = userRoles.includes("EKYC_ZRO") || userRoles.includes("ZRO");
+  const isSupervisorOrSurveyorOrVendor = userRoles.includes("EKYC_SUPERVISOR") || userRoles.includes("EKYC_SURVEYOR") || userRoles.includes("EKYC_VENDOR");
+  const isStatusView = location.pathname.includes("/status/");
+  const hideEditButton = (isSupervisorOrSurveyorOrVendor && !isZRO) || isStatusView;
 
   // ── Data Consolidation ──────────────────────────────────────────────────
   const { newData: apiNewData, oldData: apiOldData } = extractReviewData(searchData, flowState);
@@ -492,8 +498,9 @@ const Review = () => {
           newData={connectionData}
           oldData={oldDataRaw?.connection}
           t={t}
-          jumpTo={`${baseUrl}/consumer-details?kno=${kno}`}
-          state={{ ...flowState, kNumber: kno, kno, reviewData: searchData, edits }}
+          jumpTo={`${baseUrl}/consumer-details?kno=${activeKno}`}
+          state={{ ...flowState, kNumber: activeKno, kno: activeKno, reviewData: searchData, edits }}
+          hideEditButton={hideEditButton}
         />
 
         {/* ── 2. Address Details ──────────────────────────────────────── */}
@@ -503,8 +510,9 @@ const Review = () => {
           newData={addressData}
           oldData={oldDataRaw?.address}
           t={t}
-          jumpTo={`${baseUrl}/address-details?kno=${kno}`}
-          state={{ ...flowState, kNumber: kno, kno, reviewData: searchData, edits }}
+          jumpTo={`${baseUrl}/address-details?kno=${activeKno}`}
+          state={{ ...flowState, kNumber: activeKno, kno: activeKno, reviewData: searchData, edits }}
+          hideEditButton={hideEditButton}
         />
 
         {/* ── 3. Property Info ────────────────────────────────────────── */}
@@ -514,8 +522,9 @@ const Review = () => {
           newData={propertyData}
           oldData={oldDataRaw?.property}
           t={t}
-          jumpTo={`${baseUrl}/property-info?kno=${kno}`}
-          state={{ ...flowState, kNumber: kno, kno, reviewData: searchData, edits }}
+          jumpTo={`${baseUrl}/property-info?kno=${activeKno}`}
+          state={{ ...flowState, kNumber: activeKno, kno: activeKno, reviewData: searchData, edits }}
+          hideEditButton={hideEditButton}
         />
 
         {/* ── 4. Meter Details ────────────────────────────────────────── */}
@@ -525,8 +534,9 @@ const Review = () => {
           newData={meterData}
           oldData={oldDataRaw?.meter}
           t={t}
-          jumpTo={`${baseUrl}/meter-details?kno=${kno}`}
-          state={{ ...flowState, kNumber: kno, kno, reviewData: searchData, edits }}
+          jumpTo={`${baseUrl}/meter-details?kno=${activeKno}`}
+          state={{ ...flowState, kNumber: activeKno, kno: activeKno, reviewData: searchData, edits }}
+          hideEditButton={hideEditButton}
         />
 
         {/* ── 5. Documents ────────────────────────────────────────────── */}
@@ -580,40 +590,44 @@ const Review = () => {
           </StatusTable>
         </div>
 
-        <div style={{ marginTop: "40px", paddingTop: "30px", borderTop: "1px solid #EAECF0" }}>
-          <CheckBox
-            id="agreeDeclaration"
-            name="agreeDeclaration"
-            label={<span style={{ fontSize: "16px", color: "#344054" }}>{t("EKYC_FINAL_DECLARATION")}</span>}
-            onChange={handleDeclaration}
-            checked={agree}
-          />
-        </div>
+        {!hideEditButton && (
+          <div style={{ marginTop: "40px", paddingTop: "30px", borderTop: "1px solid #EAECF0" }}>
+            <CheckBox
+              id="agreeDeclaration"
+              name="agreeDeclaration"
+              label={<span style={{ fontSize: "16px", color: "#344054" }}>{t("EKYC_FINAL_DECLARATION")}</span>}
+              onChange={handleDeclaration}
+              checked={agree}
+            />
+          </div>
+        )}
 
         {/* <ActionBar>
           <SubmitBar label={t("EKYC_REJECT")} onSubmit={handleReject} disabled={!agree} />
           <SubmitBar label={t("EKYC_APPROVE")} onSubmit={handleApprove} disabled={!agree} />
           <SubmitBar label={t("EKYC_SUBMIT_APPLICATION")} onSubmit={handleFinalSubmit} disabled={!agree} />
         </ActionBar> */}
-        <ActionBar>
-          <SubmitBar
-            label={t("TAKE_ACTION_FOR_APPROVE_REJECT")}
-            onSubmit={() => setShowOptions((prev) => !prev)}
-            disabled={!agree}
-          />
-          {showOptions && (
-            <Menu
-              options={options}
-              optionKey={"action"}
-              t={t}
-              onSelect={handleMenuSelect}
-              style={{
-                color: "#FFFFFF",
-                fontSize: "18px",
-              }}
+        {!hideEditButton && (
+          <ActionBar>
+            <SubmitBar
+              label={t("TAKE_ACTION_FOR_APPROVE_REJECT")}
+              onSubmit={() => setShowOptions((prev) => !prev)}
+              disabled={!agree}
             />
-          )}
-        </ActionBar>
+            {showOptions && (
+              <Menu
+                options={options}
+                optionKey={"action"}
+                t={t}
+                onSelect={handleMenuSelect}
+                style={{
+                  color: "#FFFFFF",
+                  fontSize: "18px",
+                }}
+              />
+            )}
+          </ActionBar>
+        )}
       </Card>
 
       {/* ── Document Preview Modal ────────────────────────────────────── */}

@@ -47,7 +47,7 @@ const Home = () => {
       link: `/digit-ui/citizen/ekyc/supervisor-dashboard`,
     });
   }
-
+  
   if (roles.length === 1 && roles.includes("CITIZEN")) {
     propsForModuleCard.links.push({
       label: t("EKYC_STATUS"),

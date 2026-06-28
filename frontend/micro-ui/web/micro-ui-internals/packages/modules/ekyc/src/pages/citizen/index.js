@@ -12,6 +12,7 @@ import AssignEkyc from "../../components/AssignEkyc";
 import SurveyorDetailsCard from "../../components/SurveyorDetailsCard";
 import SupervisorDetailsCard from "../../components/SupervisorDetailsCard";
 import VendorDetails from "../../components/VendorDetails";
+import EkycStatus from "./EkycStatus";
 
 const CitizenApp = () => {
   const { t } = useTranslation();
@@ -46,18 +47,19 @@ const CitizenApp = () => {
     } else if (pathname.includes("/assign/surveyor-details")) {
       crumbs.push({ label: t("EKYC_ASSIGN"), path: `/digit-ui/citizen/ekyc/assign` });
       crumbs.push({ label: t("EKYC_SURVEYOR_DETAILS") });
-    } else if (pathname.includes("/assign")) {
-      crumbs.push({ label: t("EKYC_ASSIGN") });
+    } else if (pathname.includes("/inbox")) {
+      crumbs.push({ label: t("EKYC_INBOX") });
+    } else if (pathname.includes("/supervisor-dashboard")) {
+      crumbs.push({ label: t("EKYC_SUPERVISOR_DASHBOARD") });
     } else if (pathname.includes("/surveyor-dashboard")) {
       crumbs.push({ label: t("EKYC_SURVEYOR_DASHBOARD") });
     } else if (pathname.includes("/dashboard")) {
       crumbs.push({ label: t("EKYC_DASHBOARD") });
-    } else if (pathname.includes("/inbox")) {
-      crumbs.push({ label: t("EKYC_INBOX") });
-    } else if (pathname.includes("/status/")) {
-      crumbs.push({ label: t("EKYC_STATUS") });
-    } else if (pathname.includes("/supervisor-dashboard")) {
-      crumbs.push({ label: t("EKYC_SUPERVISOR_DASHBOARD") });
+    } else if (pathname.includes("/assign")) {
+      crumbs.push({ label: t("EKYC_ASSIGN") });
+    } else if (pathname.includes("/status/") || /^\/digit-ui\/citizen\/ekyc\/[^/]+$/.test(pathname)) {
+      const statusLabel = t("EKYC_STATUS");
+      crumbs.push({ label: statusLabel === "EKYC_STATUS" || statusLabel === "STATUS" ? "eKYC Status" : statusLabel });
     }
     // home (exact path) → no child crumb
 
@@ -198,6 +200,14 @@ const CitizenApp = () => {
             component={() => (
               <LayoutWrapper layoutClass="normal">
                 <SupervisorDetailsCard />
+              </LayoutWrapper>
+            )}
+          />
+          <PrivateRoute
+            path={`${path}/:id`}
+            component={() => (
+              <LayoutWrapper layoutClass="normal">
+                <EkycStatus />
               </LayoutWrapper>
             )}
           />
