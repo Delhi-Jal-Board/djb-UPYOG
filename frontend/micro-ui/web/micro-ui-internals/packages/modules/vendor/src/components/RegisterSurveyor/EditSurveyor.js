@@ -67,14 +67,7 @@ const EditSurveyor = () => {
 
   const onFormValueChange = (setValue, formData) => {
     const isBasicDetailsFilled =
-      formData?.fullName &&
-      formData?.mobileNumber &&
-      formData?.emailId &&
-      formData?.employeeId &&
-      formData?.fatherOrHusbandName &&
-      formData?.relationship &&
-      formData?.dob &&
-      formData?.correspondenceAddress;
+      formData?.fullName && formData?.mobileNumber && formData?.emailId && formData?.dob && formData?.gender && formData?.correspondenceAddress;
 
     if (isBasicDetailsFilled && isValidAge(formData?.dob)) {
       setCanSubmit(true);
@@ -131,13 +124,12 @@ const EditSurveyor = () => {
         setShowToast({ key: "error", action: error });
       },
       onSuccess: () => {
-        setShowToast({ key: "success", action: "UPDATE_SURVEYOR" });
         queryClient.invalidateQueries("SURVEYOR_SEARCH");
-
         history.push({
           pathname: `/digit-ui/${type}/vendor/registry/surveyor-details/${surveyorId}`,
           state: {
             showSuccessToast: true,
+            message: { key: "success", action: "UPDATE_SURVEYOR" },
           },
         });
       },

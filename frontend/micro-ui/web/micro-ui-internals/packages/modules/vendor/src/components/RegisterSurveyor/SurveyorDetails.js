@@ -8,8 +8,6 @@ import {
   ActionBar,
   Menu,
   Toast,
-  EditIcon,
-  DeleteIcon,
   Modal,
   CardText,
   Dropdown,
@@ -17,7 +15,7 @@ import {
   CloseSvg,
 } from "@djb25/digit-ui-react-components";
 import { useQueryClient } from "react-query";
-import { useHistory, useParams } from "react-router-dom";
+import { useHistory, useLocation, useParams } from "react-router-dom";
 import ConfirmationBox from "../../components/Confirmation";
 
 const Heading = (props) => {
@@ -36,6 +34,7 @@ const SurveyorDetails = (props) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const { t } = useTranslation();
   const history = useHistory();
+  const location = useLocation();
   const queryClient = useQueryClient();
   const { id: surveyorId } = useParams();
   const userInfo = Digit.UserService.getUser()?.info;
@@ -88,7 +87,6 @@ const SurveyorDetails = (props) => {
   }, [surveyorSearchResponse, vendorData]);
 
   const { mutate: mutateSurveyor } = Digit.Hooks.fsm.useSurveyorUpdate(tenantId);
-  const { mutate: mutateVendor } = Digit.Hooks.fsm.useVendorUpdate(tenantId);
 
   useEffect(() => {
     if (vendorData) {
@@ -99,6 +97,9 @@ const SurveyorDetails = (props) => {
 
   useEffect(() => {
     refetch();
+    if (location.state?.showSuccessToast) {
+      setShowToast(location.state?.message);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -127,12 +128,6 @@ const SurveyorDetails = (props) => {
     switch (selectedAction) {
       case "DELETE":
         return handleDeleteSurveyor();
-      case "DELETE_VENDOR":
-        return handleDeleteVendor();
-      case "ADD_VENDOR":
-        return handleAddVendor();
-      case "EDIT_VENDOR":
-        return handleEditVendor();
       default:
         break;
     }
@@ -150,106 +145,19 @@ const SurveyorDetails = (props) => {
     mutateSurveyor(formData, {
       onError: (error) => {
         setShowToast({ key: "error", action: error });
-        setTimeout(closeToast, 5000);
       },
       onSuccess: () => {
-        setShowToast({ key: "success", action: "DELETE_SURVEYOR" });
         queryClient.invalidateQueries("SURVEYOR_SEARCH");
-        setTimeout(() => {
-          closeToast();
-          history.push(`/digit-ui/${userType}/vendor/search-vendor`);
-        }, 5000);
+        history.push({
+          pathname: `/digit-ui/${userType}/vendor/search-vendor`,
+          state: {
+            showSuccessToast: true,
+            message: { key: "success", action: `ES_VENDOR_DELETE_SURVEYOR_SUCCESS` },
+          },
+        });
       },
     });
     setShowModal(false);
-  };
-
-  const handleDeleteVendor = () => {
-    let dsoDetails = surveyorData?.[0]?.vendorDetails?.vendor?.[0];
-    let getSurveyorVendorDetails = dsoDetails?.surveyors || [];
-
-    getSurveyorVendorDetails = getSurveyorVendorDetails.map((data) => {
-      if (data.id === surveyorId) {
-        data.vendorSurveyorStatus = "INACTIVE";
-      }
-      return data;
-    });
-
-    const formData = {
-      vendor: {
-        ...dsoDetails,
-        surveyors: getSurveyorVendorDetails,
-      },
-    };
-
-    mutateVendor(formData, {
-      onError: (error) => {
-        setShowToast({ key: "error", action: error });
-        setTimeout(closeToast, 5000);
-      },
-      onSuccess: () => {
-        setShowToast({ key: "success", action: "DELETE_VENDOR" });
-        queryClient.invalidateQueries("FSM_VENDOR_SEARCH");
-        refetch();
-        setTimeout(closeToast, 5000);
-      },
-    });
-    setShowModal(false);
-  };
-
-  const handleAddVendor = () => {
-    let dsoDetails = selectedOption;
-    let details = surveyorData?.[0]?.surveyorData;
-    details.vendorSurveyorStatus = "ACTIVE";
-    const formData = {
-      vendor: {
-        ...dsoDetails,
-        surveyors: dsoDetails.surveyors ? [...dsoDetails.surveyors, details] : [details],
-      },
-    };
-    mutateVendor(formData, {
-      onError: (error) => {
-        setShowToast({ key: "error", action: error });
-        refetch();
-        setTimeout(closeToast, 5000);
-      },
-      onSuccess: () => {
-        setShowToast({ key: "success", action: "ADD_VENDOR" });
-        queryClient.invalidateQueries("SURVEYOR_SEARCH");
-        refetch();
-        setTimeout(closeToast, 5000);
-      },
-    });
-    setShowModal(false);
-    setSelectedAction(null);
-  };
-
-  const handleEditVendor = () => {
-    let dsoDetails = selectedOption;
-    let details = surveyorData?.[0]?.surveyorData;
-    details.vendorSurveyorStatus = "ACTIVE";
-
-    const formData = {
-      vendor: {
-        ...dsoDetails,
-        surveyors: dsoDetails.surveyors ? [...dsoDetails.surveyors, details] : [details],
-      },
-    };
-
-    mutateVendor(formData, {
-      onError: (error) => {
-        setShowToast({ key: "error", action: error });
-        setTimeout(closeToast, 5000);
-      },
-      onSuccess: () => {
-        setShowToast({ key: "success", action: "EDIT_VENDOR" });
-        refetch();
-        queryClient.invalidateQueries("SURVEYOR_SEARCH");
-        setTimeout(closeToast, 5000);
-      },
-    });
-    setShowModal(false);
-    setSelectedAction(null);
   };
 
   const closeModal = () => {
