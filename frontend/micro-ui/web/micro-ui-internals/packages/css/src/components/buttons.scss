@@ -13,6 +13,11 @@
 .selector-button-border {
   @apply h-8 bg-border text-center border-b-2 border-input-border border-solid outline-none px-lg;
 
+  &:hover {
+    h2 {
+      color: #fff;
+    }
+  }
   &:focus {
     @apply outline-none;
   }
