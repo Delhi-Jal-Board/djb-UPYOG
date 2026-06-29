@@ -1,7 +1,7 @@
 import React from "react";
 const footerConfig = {
   logos: [
-    "https://objectstorage.ap-hyderabad-1.oraclecloud.com/n/axn3czn1s06y/b/djb-dev-asset-bucket/o/DJB_integrated_logo_without_bg_dark.png",
+    "https://objectstorage.ap-mumbai-1.oraclecloud.com/n/bmycsh2g2wu7/b/DJB-EDP-LZ-UPYOG-DEV-ASSET-BUCKET-BOM/o/DJB_integrated_logo_without_bg_dark.png",
     "http://master-jalshakti-ddws.digifootprint.gov.in/static/uploads/2023/12/9ece68c76acc2e39a8669def05f95430.png",
     "https://www.logopeople.in/wp-content/uploads/2013/01/government-of-india.jpg",
   ],

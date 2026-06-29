@@ -147,7 +147,7 @@ const TopBar = ({
                 overflow: "hidden",
               }}
             >
-              <img src="https://objectstorage.ap-hyderabad-1.oraclecloud.com/n/axn3czn1s06y/b/djb-dev-asset-bucket/o/djb_logo.png" alt="DJB Logo" />
+              <img src="https://objectstorage.ap-mumbai-1.oraclecloud.com/n/bmycsh2g2wu7/b/DJB-EDP-LZ-UPYOG-DEV-ASSET-BUCKET-BOM/o/djb_logo.png" alt="DJB Logo" />
             </div>
             <div className="btx">
               <h1 style={{ fontFamily: "'Crimson Pro', serif", fontSize: "29px", fontWeight: "700", color: "#003366" }}>Delhi Jal Board</h1>
@@ -181,7 +181,7 @@ const TopBar = ({
 
               <img
                 className="state"
-                src="https://objectstorage.ap-hyderabad-1.oraclecloud.com/n/axn3czn1s06y/b/djb-dev-asset-bucket/o/SBM_IMG.png"
+                src="https://objectstorage.ap-mumbai-1.oraclecloud.com/n/bmycsh2g2wu7/b/DJB-EDP-LZ-UPYOG-DEV-ASSET-BUCKET-BOM/o/SBM_IMG.png"
                 alt="SBM Img"
               />
             </div>
@@ -217,7 +217,7 @@ const TopBar = ({
               overflow: "hidden",
             }}
           >
-            <img src="https://objectstorage.ap-hyderabad-1.oraclecloud.com/n/axn3czn1s06y/b/djb-dev-asset-bucket/o/djb_logo.png" alt="DJB Logo" />
+            <img src="https://objectstorage.ap-mumbai-1.oraclecloud.com/n/bmycsh2g2wu7/b/DJB-EDP-LZ-UPYOG-DEV-ASSET-BUCKET-BOM/o/djb_logo.png" alt="DJB Logo" />
           </div>
           <div className="btx">
             <h1 style={{ fontFamily: "'Crimson Pro', serif", fontSize: "29px", fontWeight: "700", color: "#003366" }}>Delhi Jal Board</h1>
@@ -260,7 +260,7 @@ const TopBar = ({
             )}
             <img
               className="spect-icon"
-              src="https://objectstorage.ap-hyderabad-1.oraclecloud.com/n/axn3czn1s06y/b/djb-dev-asset-bucket/o/SBM_IMG.png"
+              src="https://objectstorage.ap-mumbai-1.oraclecloud.com/n/bmycsh2g2wu7/b/DJB-EDP-LZ-UPYOG-DEV-ASSET-BUCKET-BOM/o/SBM_IMG.png"
               alt="Swatch Bharat Icon"
             />
           </div>
