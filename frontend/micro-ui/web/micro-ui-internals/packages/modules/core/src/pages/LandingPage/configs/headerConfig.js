@@ -54,7 +54,7 @@ const headerConfig = {
      🔹 Branding
   ========================= */
   branding: {
-    logo: "https://objectstorage.ap-hyderabad-1.oraclecloud.com/n/axn3czn1s06y/b/djb-dev-asset-bucket/o/DJB_integrated_logo_without_bg_dark.png",
+    logo: "https://objectstorage.ap-mumbai-1.oraclecloud.com/n/bmycsh2g2wu7/b/DJB-EDP-LZ-UPYOG-DEV-ASSET-BUCKET-BOM/o/DJB_integrated_logo_without_bg_dark.png",
     alt: "ALT_INDIA_EMBLEM",
   },
 

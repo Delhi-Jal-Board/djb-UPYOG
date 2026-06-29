@@ -332,7 +332,7 @@ const HeaderBar = ({ logoUrl, stateInfo }) => {
       <div className="upyog-header">
         <div className="branding" onClick={() => { setMobileMenuOpen(false); window.location.href = "/digit-ui/home"; }} style={{ cursor: "pointer" }}>
           <div className="brand-mark">
-            <img src="https://objectstorage.ap-hyderabad-1.oraclecloud.com/n/axn3czn1s06y/b/djb-dev-asset-bucket/o/djb_logo.png" alt="DJB Logo" />
+            <img src="https://objectstorage.ap-mumbai-1.oraclecloud.com/n/bmycsh2g2wu7/b/DJB-EDP-LZ-UPYOG-DEV-ASSET-BUCKET-BOM/o/djb_logo.png" alt="DJB Logo" />
           </div>
           <div className="btx">
             <h1 className="brand-title">Delhi Jal Board</h1>
