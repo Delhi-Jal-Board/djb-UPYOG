@@ -1,12 +1,18 @@
-import { PrivateRoute, AppContainer, ModuleHeader, ArrowLeft, HomeIcon, LayoutWrapper } from "@djb25/digit-ui-react-components";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { Switch, useLocation } from "react-router-dom";
+import { PrivateRoute, AppContainer, ModuleHeader, ArrowLeft, HomeIcon, LayoutWrapper } from "@djb25/digit-ui-react-components";
 import AddSurveyor from "../../components/RegisterSurveyor/AddSurveyor";
 import SearchVendor from "../../components/SearchVendor/Index";
 import SupervisorDetails from "../../components/RegisterSupervisor/SupervisorDetails";
+import AddSupervisor from "../../components/RegisterSupervisor/AddSupervisor";
 import SurveyorDetails from "../../components/RegisterSurveyor/SurveyorDetails";
 import EditVendorDetails from "../../components/RegisterVendor/EditVendorDetails";
+import AddVendor from "../../components/RegisterVendor/AddVendor";
+import SearchApp from "./SearchApp";
+import EditSupervisor from "../../components/RegisterSupervisor/EditSupervisor";
+import EditSurveyor from "../../components/RegisterSurveyor/EditSurveyor";
+import VENDORCreate from "../../components/Create/index";
 
 const EmployeeApp = ({ path, url, userType }) => {
   const { t } = useTranslation();
@@ -45,16 +51,10 @@ const EmployeeApp = ({ path, url, userType }) => {
   // }
 
   //const Create = Digit?.ComponentRegistryService?.getComponent("VENDOREMPCreate");
-  const AddVendor = Digit.ComponentRegistryService.getComponent("AddVendor");
-  const SearchApp = Digit.ComponentRegistryService.getComponent("SearchApp");
   const AddDriver = Digit.ComponentRegistryService.getComponent("AddDriver");
   const AddVehicle = Digit.ComponentRegistryService.getComponent("AddVehicle");
-  const VendorCreate = Digit.ComponentRegistryService.getComponent("VENDORCreate");
   const DriverDetails = Digit.ComponentRegistryService.getComponent("DriverDetails");
   const VehicleDetails = Digit.ComponentRegistryService.getComponent("VehicleDetails");
-  const AddSupervisor = Digit.ComponentRegistryService.getComponent("AddSupervisor");
-  const EditSupervisor = Digit.ComponentRegistryService.getComponent("EditSupervisor");
-  const EditSurveyor = Digit.ComponentRegistryService.getComponent("EditSurveyor");
   const EditDriver = Digit.ComponentRegistryService.getComponent("EditDriver");
   const EditVehicle = Digit.ComponentRegistryService.getComponent("EditVehicle");
 
@@ -156,7 +156,7 @@ const EmployeeApp = ({ path, url, userType }) => {
 
                 return (
                   <LayoutWrapper layoutClass={isInfoPage ? "action" : "normal"}>
-                    <VendorCreate {...props} parentRoute={path} />
+                    <VENDORCreate {...props} parentRoute={path} />
                   </LayoutWrapper>
                 );
               }}

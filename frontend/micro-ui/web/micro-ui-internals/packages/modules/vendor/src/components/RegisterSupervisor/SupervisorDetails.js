@@ -8,8 +8,6 @@ import {
   ActionBar,
   Menu,
   Toast,
-  EditIcon,
-  DeleteIcon,
   Modal,
   CardText,
   Dropdown,
@@ -138,7 +136,7 @@ const SupervisorDetails = (props) => {
   const { data: dashboardData, isLoading: isDashboradLoading } = Digit.Hooks.fsm.useSurveyorSearch(
     tenantId,
     { ...paginationParms, status: "ACTIVE,DISABLED", supervisorId },
-    { enabled: !!tenantId, keepPreviousData: true },
+    { enabled: !!tenantId, keepPreviousData: true }
   );
 
   const closeToast = () => {
@@ -407,8 +405,6 @@ const SupervisorDetails = (props) => {
   const handleReview = (id) => {
     history.push(`/digit-ui/${userType}/ekyc/assign/surveyor-details/${id}`);
   };
-
-  console.log(userInfo?.roles?.map((ele) => ele.code)?.includes("SUPERVISOR"));
 
   return (
     <React.Fragment>

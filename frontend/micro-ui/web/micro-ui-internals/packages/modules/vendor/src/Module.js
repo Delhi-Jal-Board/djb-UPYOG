@@ -6,19 +6,13 @@ import VendorDetails from "./pageComponents/VendorDetails";
 import VendorDocuments from "./pageComponents/VendorDocuments";
 import ServiceDoc from "./pageComponents/ServiceDoc";
 import VendorSelectAddress from "./pageComponents/VendorSelectAddress";
-import SearchApp from "./pages/employee/SearchApp";
 import SelectServiceType from "./pageComponents/SelectServiceType";
 import SelectVehicleType from "./pageComponents/SelectVehicleType";
 import BankDetailsComponent from "./components/BankDetailsComponent";
 import SupervisorAreaAssignment from "./pageComponents/SupervisorAreaAssignment";
 import CitizenVendorApp from "./pages/citizen";
-import AddVendor from "./components/RegisterVendor/AddVendor";
-import AddSupervisor from "./components/RegisterSupervisor/AddSupervisor";
-import EditSupervisor from "./components/RegisterSupervisor/EditSupervisor";
-import EditSurveyor from "./components/RegisterSurveyor/EditSurveyor";
 import CheckPage from "./components/Create/CheckPage";
 import NewResponse from "./components/Create/NewResponse";
-import VENDORCreate from "./components/Create/index";
 import AddDriver from "./components/RegisterDriver/AddDriver";
 import DriverDetails from "./components/RegisterDriver/DriverDetails";
 import AddVehicle from "./components/RegisterVehicle/AddVehicle";
@@ -34,23 +28,17 @@ const componentsToRegister = {
   // VendorPincode,
   VendorDocuments,
   ServiceDoc,
-  AddVendor,
   VendorSelectAddress,
-  SearchApp,
   SelectServiceType,
   SelectVehicleType,
   BankDetailsComponent,
   AddDriver,
   AddVehicle,
-  VENDORCreate,
   VENDORCheckPage: CheckPage,
   NewResponse,
   DriverDetails,
   VehicleDetails,
-  AddSupervisor,
-  EditSupervisor,
   SupervisorAreaAssignment,
-  EditSurveyor,
   SelectEkycZones,
   SelectEkycClusters,
   SelectEkycDropdown,

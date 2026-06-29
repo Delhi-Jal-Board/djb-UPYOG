@@ -15,8 +15,10 @@ import AddSurveyor from "../../components/RegisterSurveyor/AddSurveyor";
 import EditSurveyor from "../../components/RegisterSurveyor/EditSurveyor";
 import SurveyorDetails from "../../components/RegisterSurveyor/SurveyorDetails";
 import EditSupervisor from "../../components/RegisterSupervisor/EditSupervisor";
+import AddSupervisor from "../../components/RegisterSupervisor/AddSupervisor";
 import SupervisorDetails from "../../components/RegisterSupervisor/SupervisorDetails";
 import SearchVendor from "../../components/SearchVendor/Index";
+import VENDORCreate from "../../components/Create";
 import EditVendorDetails from "../../components/RegisterVendor/EditVendorDetails";
 
 // Main Routing Page used for routing accorss the Water Tanker Module
@@ -153,8 +155,6 @@ const CitizenVendorApp = () => {
     return crumbs;
   };
 
-  const AddSupervisor = Digit.ComponentRegistryService.getComponent("AddSupervisor");
-  const VendorCreate = Digit.ComponentRegistryService.getComponent("VENDORCreate");
   const AddDriver = Digit.ComponentRegistryService.getComponent("AddDriver");
   const DriverDetails = Digit.ComponentRegistryService.getComponent("DriverDetails");
   const AddVehicle = Digit.ComponentRegistryService.getComponent("AddVehicle");
@@ -257,7 +257,7 @@ const CitizenVendorApp = () => {
 
               return (
                 <LayoutWrapper layoutClass={isInfoPage ? "action" : "normal"}>
-                  <VendorCreate {...props} parentRoute={path} />
+                  <VENDORCreate {...props} parentRoute={path} />
                 </LayoutWrapper>
               );
             }}

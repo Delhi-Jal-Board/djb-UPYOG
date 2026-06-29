@@ -4,11 +4,14 @@ import { FormComposer, Toast, VerticalTimeline } from "@djb25/digit-ui-react-com
 import { useHistory } from "react-router-dom";
 import VendorConfig from "../../config/VendorConfig";
 
-const AddVendor = ({ parentUrl, heading }) => {
+const AddVendor = () => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
 
   const { t } = useTranslation();
   const history = useHistory();
+
+  const userInfo = Digit.UserService.getUser()?.info;
+  const userType = userInfo?.type;
   // const queryClient = useQueryClient();
   const [currentStep, setCurrentStep] = useState(1);
   const [showToast, setShowToast] = useState(null);
@@ -43,12 +46,12 @@ const AddVendor = ({ parentUrl, heading }) => {
   };
 
   const [formData, setFormData] = useState(defaultValues);
-  const Config = VendorConfig(t, false, formData);
+
+  const Config = React.useMemo(() => VendorConfig(t, false, formData), [t, formData.serviceType?.code]);
 
   const onFormValueChange = (setValue, data) => {
-    // Avoid circular JSON error by not stringifying the whole data object
     // Only update formData state if keys that affect dynamic config or child components change
-    const currentZoneCodes = data?.zoneIds?.map((item) => item?.[1]?.code) || [];
+    const currentZoneCodes = data?.zoneIds?.map((item) => item?.code) || [];
 
     const previousZoneCodes = formData?.zoneIds || [];
     const zoneChanged = currentZoneCodes.join(",") !== previousZoneCodes.join(",");
@@ -63,6 +66,22 @@ const AddVendor = ({ parentUrl, heading }) => {
         ...prev,
         zoneIds: currentZoneCodes,
       }));
+    }
+
+    const startDate = data?.contractStartDate;
+    const endDate = data?.contractEndDate;
+
+    if (startDate && endDate) {
+      const isInvalid = new Date(endDate) < new Date(startDate);
+
+      if (isInvalid && showToast?.action !== "INVALID_CONTRACT_DATE") {
+        setShowToast({
+          key: "error",
+          action: "INVALID_CONTRACT_DATE",
+        });
+      } else if (!isInvalid && showToast) {
+        setShowToast(null);
+      }
     }
 
     // const isEkyc = data?.serviceType?.code === "EKYC";
@@ -222,14 +241,15 @@ const AddVendor = ({ parentUrl, heading }) => {
     mutate(payload, {
       onError: (error) => {
         setShowToast({ key: "error", action: error });
-        setTimeout(closeToast, 5000);
       },
-      onSuccess: (data, variables) => {
-        setShowToast({ key: "success", action: "ADD_VENDOR" });
-        setTimeout(() => {
-          closeToast();
-          history.push("/digit-ui/employee/vendor/search-vendor");
-        }, 2000);
+      onSuccess: () => {
+        history.push({
+          pathname: `/digit-ui/${userType}/vendor/search-vendor`,
+          state: {
+            showSuccessToast: true,
+            message: { key: "success", action: `ES_VENDOR_ADD_VENDOR` },
+          },
+        });
       },
     });
   };
@@ -253,7 +273,7 @@ const AddVendor = ({ parentUrl, heading }) => {
       <div style={{ flex: "1", overflowY: "auto" }}>
         <FormComposer
           config={Config}
-          userType={"employee"}
+          userType={userType}
           onFormValueChange={onFormValueChange}
           label={t("ES_COMMON_APPLICATION_SUBMIT")}
           onSubmit={onSubmit}
@@ -262,11 +282,14 @@ const AddVendor = ({ parentUrl, heading }) => {
           noBreakLine={true}
           // isDisabled={!canSubmit}
         />
-
         {showToast && (
           <Toast
             error={showToast.key === "error"}
-            label={t(showToast.key === "success" ? `ES_FSM_REGISTRY_${showToast.action}_SUCCESS` : showToast.action)}
+            label={
+              showToast.action === "INVALID_CONTRACT_DATE"
+                ? `${t("ES_VENDOR_CONTRACT_END_DATE")} cannot be earlier than ${t("ES_VENDOR_CONTRACT_START_DATE")}`
+                : t(showToast.key === "success" ? `ES_FSM_REGISTRY_${showToast.action}_SUCCESS` : showToast.action)
+            }
             onClose={closeToast}
           />
         )}

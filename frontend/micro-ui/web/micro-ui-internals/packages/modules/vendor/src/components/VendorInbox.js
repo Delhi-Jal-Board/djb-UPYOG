@@ -137,9 +137,9 @@ const getDriverFillingPointIdentifiers = (driver = {}) => {
 const getVendorDriversForFillingPoint = (vendor, fillingPoint) => {
   const vendorDrivers = Array.isArray(vendor?.drivers)
     ? vendor.drivers.filter(Boolean).map((d) => ({
-      ...d,
-      displayName: `${d.name} (${d.owner?.mobileNumber || "N/A"})`,
-    }))
+        ...d,
+        displayName: `${d.name} (${d.owner?.mobileNumber || "N/A"})`,
+      }))
     : [];
   if (!fillingPoint) return [];
 
@@ -267,13 +267,11 @@ const VendorInbox = (props) => {
 
   const queryClient = useQueryClient();
 
-  const {
-    data: vendorData,
-    // isLoading: isVendorLoading,
-    // isSuccess: isVendorSuccess,
-    // error: vendorError,
-    refetch: refetchVendor,
-  } = Digit.Hooks.fsm.useDsoSearch(tenantId, { sortBy: "name", sortOrder: "ASC", status: "ACTIVE" }, { enabled: false });
+  const { data: vendorData, refetch: refetchVendor } = Digit.Hooks.fsm.useDsoSearch(
+    tenantId,
+    { sortBy: "name", sortOrder: "ASC", status: "ACTIVE" },
+    { enabled: false }
+  );
 
   const { data: driverData, refetch: refetchDriver } = Digit.Hooks.fsm.useDriverSearch({
     tenantId,
@@ -284,32 +282,14 @@ const VendorInbox = (props) => {
     },
   });
 
-  const {
-    // isLoading: isUpdateVendorLoading,
-    // isError: vendorUpdateError,
-    // data: updateVendorResponse,
-    // error: updateVendorError,
-    mutate: mutateVendor,
-  } = Digit.Hooks.fsm.useVendorUpdate(tenantId);
+  const { mutate: mutateVendor } = Digit.Hooks.fsm.useVendorUpdate(tenantId);
 
-  const {
-    // isLoading: isUpdateVehicleLoading,
-    // isError: vehicleUpdateError,
-    // data: updateVehicleResponse,
-    // error: updateVehicleError,
-    mutate: mutateVehicle,
-  } = Digit.Hooks.fsm.useUpdateVehicle(tenantId);
+  const { mutate: mutateVehicle } = Digit.Hooks.fsm.useUpdateVehicle(tenantId);
 
-  const {
-    // isLoading: isDriverLoading,
-    // isError: driverUpdateError,
-    // data: updateDriverResponse,
-    // error: updateDriverError,
-    mutate: mutateDriver,
-  } = Digit.Hooks.fsm.useDriverUpdate(tenantId);
+  const { mutate: mutateDriver } = Digit.Hooks.fsm.useDriverUpdate(tenantId);
 
-  const { mutate: mutateSupervisor } = Digit.Hooks.fsm.useSupervisorUpdate(tenantId);
-  const { mutate: mutateSurveyor } = Digit.Hooks.fsm.useSurveyorUpdate(tenantId);
+  // const { mutate: mutateSupervisor } = Digit.Hooks.fsm.useSupervisorUpdate(tenantId);
+  // const { mutate: mutateSurveyor } = Digit.Hooks.fsm.useSurveyorUpdate(tenantId);
 
   useEffect(() => {
     setTableData(props?.data?.table || []);
@@ -403,13 +383,11 @@ const VendorInbox = (props) => {
     mutateVendor(formData, {
       onError: (error, variables) => {
         setShowToast({ key: "error", action: error });
-        setTimeout(closeToast, 5000);
       },
       onSuccess: (data, variables) => {
         setShowToast({ key: "success", action: "VENDOR" });
         queryClient.invalidateQueries("DSO_SEARCH");
         props.refetchData();
-        setTimeout(closeToast, 3000);
       },
     });
   };
@@ -422,14 +400,12 @@ const VendorInbox = (props) => {
     mutateVehicle(formData, {
       onError: (error, variables) => {
         setShowToast({ key: "error", action: error });
-        setTimeout(closeToast, 5000);
       },
       onSuccess: (data, variables) => {
         setShowToast({ key: "success", action: "VEHICLE" });
         queryClient.invalidateQueries("FSM_VEICLES_SEARCH");
         props.refetchVendor();
         props.refetchData();
-        setTimeout(closeToast, 3000);
       },
     });
   };
@@ -453,89 +429,78 @@ const VendorInbox = (props) => {
     mutateDriver(formData, {
       onError: (error, variables) => {
         setShowToast({ key: "error", action: error });
-        setTimeout(closeToast, 5000);
       },
       onSuccess: (data, variables) => {
         setShowToast({ key: "success", action: "DRIVER" });
         queryClient.invalidateQueries("FSM_DRIVER_SEARCH");
         props.refetchVendor();
         props.refetchData();
-        setTimeout(closeToast, 3000);
       },
     });
   };
 
-  const onSupervisorUpdate = (row) => {
-    let formDetails = row.original;
-    const newStatus = formDetails?.status === "ACTIVE" ? "DISABLED" : "ACTIVE";
-    const newActive = newStatus === "ACTIVE";
-    const formData = {
-      supervisor: {
-        ...formDetails,
-        status: newStatus,
-        active: newActive,
-        owner: {
-          ...formDetails?.owner,
-          active: newActive,
-          gender: formDetails?.owner?.gender || "OTHERS",
-          dob: formDetails?.owner?.dob || new Date(`1/1/1970`).getTime(),
-          emailId: formDetails?.owner?.emailId || "abc@egov.com",
-          relationship: formDetails?.owner?.relationship || "OTHER",
-        },
-      },
-    };
-
-    mutateSupervisor(formData, {
-      onError: (error, variables) => {
-        setShowToast({ key: "error", action: error?.message || error });
-        setTimeout(closeToast, 5000);
-      },
-      onSuccess: (data, variables) => {
-        setShowToast({ key: "success", action: "SUPERVISOR" });
-        queryClient.invalidateQueries("FSM_SUPERVISOR_SEARCH");
-        queryClient.invalidateQueries("SUPERVISOR_SEARCH");
-        props.refetchData();
-        setTimeout(closeToast, 3000);
-      },
-    });
-  };
-
-  const onSurveyorUpdate = (row) => {
-    let formDetails = row.original;
-    const newStatus = formDetails?.status === "ACTIVE" ? "DISABLED" : "ACTIVE";
-    const newActive = newStatus === "ACTIVE";
-    const formData = {
-      surveyor: {
-        ...formDetails,
-        status: newStatus,
-        active: newActive,
-        owner: {
-          ...formDetails?.owner,
-          active: newActive,
-          gender: formDetails?.owner?.gender || "OTHERS",
-          dob: formDetails?.owner?.dob || new Date(`1/1/1970`).getTime(),
-          emailId: formDetails?.owner?.emailId || "abc@egov.com",
-          relationship: formDetails?.owner?.relationship || "OTHER",
-        },
-      },
-    };
-
-    console.log("formData", JSON.stringify(formData));
-
-    mutateSurveyor(formData, {
-      onError: (error, variables) => {
-        setShowToast({ key: "error", action: error?.message || error });
-        setTimeout(closeToast, 5000);
-      },
-      onSuccess: (data, variables) => {
-        setShowToast({ key: "success", action: "SURVEYOR" });
-        queryClient.invalidateQueries("FSM_SURVEYOR_SEARCH");
-        queryClient.invalidateQueries("SURVEYOR_SEARCH");
-        props.refetchData();
-        setTimeout(closeToast, 3000);
-      },
-    });
-  };
+  // const onSupervisorUpdate = (row) => {
+  //   let formDetails = row.original;
+  //   const newStatus = formDetails?.status === "ACTIVE" ? "DISABLED" : "ACTIVE";
+  //   const newActive = newStatus === "ACTIVE";
+  //   const formData = {
+  //     supervisor: {
+  //       ...formDetails,
+  //       status: newStatus,
+  //       active: newActive,
+  //       owner: {
+  //         ...formDetails?.owner,
+  //         active: newActive,
+  //         gender: formDetails?.owner?.gender || "OTHERS",
+  //         dob: formDetails?.owner?.dob || new Date(`1/1/1970`).getTime(),
+  //         emailId: formDetails?.owner?.emailId || "abc@egov.com",
+  //         relationship: formDetails?.owner?.relationship || "OTHER",
+  //       },
+  //     },
+  //   };
+  //   mutateSupervisor(formData, {
+  //     onError: (error, variables) => {
+  //       setShowToast({ key: "error", action: error?.message || error });
+  //     },
+  //     onSuccess: (data, variables) => {
+  //       setShowToast({ key: "success", action: "SUPERVISOR" });
+  //       queryClient.invalidateQueries("FSM_SUPERVISOR_SEARCH");
+  //       queryClient.invalidateQueries("SUPERVISOR_SEARCH");
+  //       props.refetchData();
+  //     },
+  //   });
+  // };
+  // const onSurveyorUpdate = (row) => {
+  //   let formDetails = row.original;
+  //   const newStatus = formDetails?.status === "ACTIVE" ? "DISABLED" : "ACTIVE";
+  //   const newActive = newStatus === "ACTIVE";
+  //   const formData = {
+  //     surveyor: {
+  //       ...formDetails,
+  //       status: newStatus,
+  //       active: newActive,
+  //       owner: {
+  //         ...formDetails?.owner,
+  //         active: newActive,
+  //         gender: formDetails?.owner?.gender || "OTHERS",
+  //         dob: formDetails?.owner?.dob || new Date(`1/1/1970`).getTime(),
+  //         emailId: formDetails?.owner?.emailId || "abc@egov.com",
+  //         relationship: formDetails?.owner?.relationship || "OTHER",
+  //       },
+  //     },
+  //   };
+  //   mutateSurveyor(formData, {
+  //     onError: (error, variables) => {
+  //       setShowToast({ key: "error", action: error?.message || error });
+  //     },
+  //     onSuccess: (data, variables) => {
+  //       setShowToast({ key: "success", action: "SURVEYOR" });
+  //       queryClient.invalidateQueries("FSM_SURVEYOR_SEARCH");
+  //       queryClient.invalidateQueries("SURVEYOR_SEARCH");
+  //       props.refetchData();
+  //     },
+  //   });
+  // };
 
   //vendor dropdown in driver
   const onVendorSelect = (row, selectedOption) => {
@@ -569,14 +534,12 @@ const VendorInbox = (props) => {
     mutateVendor(formData, {
       onError: (error, variables) => {
         setShowToast({ key: "error", action: error });
-        setTimeout(closeToast, 5000);
       },
       onSuccess: (data, variables) => {
         setShowToast({ key: "success", action: "VENDOR" });
         queryClient.invalidateQueries("DSO_SEARCH");
         props.refetchVendor();
         props.refetchData();
-        setTimeout(closeToast, 3000);
       },
     });
   };
@@ -623,7 +586,6 @@ const VendorInbox = (props) => {
       mutateVendor(getVendorPayloadForVehicle(selectedVendor, selectedVendorVehicles), {
         onError: (error) => {
           setShowToast({ key: "error", action: error });
-          setTimeout(closeToast, 5000);
         },
         onSuccess: () => {
           updateVehicleRowState(currentVehicle?.id, {
@@ -637,7 +599,6 @@ const VendorInbox = (props) => {
           queryClient.invalidateQueries("FSM_VEICLES_SEARCH");
           props.refetchData();
           props.refetchVendor && props.refetchVendor();
-          setTimeout(closeToast, 3000);
         },
       });
     };
@@ -650,7 +611,6 @@ const VendorInbox = (props) => {
       mutateVendor(getVendorPayloadForVehicle(existingVendor, existingVendorVehicles), {
         onError: (error) => {
           setShowToast({ key: "error", action: error });
-          setTimeout(closeToast, 5000);
         },
         onSuccess: addVehicleToSelectedVendor,
       });
@@ -668,7 +628,6 @@ const VendorInbox = (props) => {
     mutateVehicle(formData, {
       onError: (error, variables) => {
         setShowToast({ key: "error", action: error });
-        setTimeout(closeToast, 5000);
       },
       onSuccess: (data, variables) => {
         updateVehicleRowState(row.original?.id, {
@@ -680,7 +639,6 @@ const VendorInbox = (props) => {
         queryClient.invalidateQueries("DSO_SEARCH");
         props.refetchData();
         props.refetchVendor();
-        setTimeout(closeToast, 3000);
       },
     });
   };
@@ -696,7 +654,6 @@ const VendorInbox = (props) => {
           key: "error",
           label: error?.message || error?.response?.data?.Errors?.[0]?.message || "Failed to map filling point",
         });
-        setTimeout(closeToast, 5000);
       },
       onSuccess: () => {
         const mappedVendor = getSelectedVendorOption(row.original, vendors);
@@ -720,7 +677,6 @@ const VendorInbox = (props) => {
         queryClient.invalidateQueries("DSO_SEARCH");
         props.refetchData();
         props.refetchVendor && props.refetchVendor();
-        setTimeout(closeToast, 3000);
       },
     });
   };
@@ -851,62 +807,96 @@ const VendorInbox = (props) => {
               );
             },
           },
+          // {
+          //   Header: t("ES_VENDOR_ADDITIONAL_DETAILS"),
+          //   disableSortBy: true,
+          //   Cell: ({ row }) => {
+          //     const vendorId = row.original?.id;
 
-          {
-            Header: t("ES_VENDOR_ADDITIONAL_DETAILS"),
-            disableSortBy: true,
-            Cell: ({ row }) => {
-              const vendorId = row.original?.id;
+          //     // Guard: if data not yet loaded, show a neutral state
+          //     if (!additionalVendorData) {
+          //       return <span>Loading...</span>;
+          //     }
 
-              // Guard: if data not yet loaded, show a neutral state
-              if (!additionalVendorData) {
-                return <span>Loading...</span>;
-              }
+          //     const hasDetails = row.original?.vendorAdditionalDetails !== null;
+          //     return (
+          //       <Link
+          //         to={
+          //           hasDetails
+          //             ? `/digit-ui/${userType}/vendor/registry/additionaldetails/info?vendorId=` + vendorId
+          //             : `/digit-ui/${userType}/vendor/registry/additionaldetails/vendor-details?vendorId=` + vendorId
+          //         }
+          //       >
+          //         <button
+          //           className="submit-bar"
+          //           style={{
+          //             backgroundColor: hasDetails ? "#417505" : "#3A8DCC",
+          //             color: "white",
+          //           }}
+          //         >
+          //           {hasDetails ? "View Details" : "Add Details"}
+          //         </button>
+          //       </Link>
+          //     );
+          //   },
+          // },
+          ...(!(userType !== "CITIZEN" && isEkycRole)
+            ? {
+                Header: t("ES_VENDOR_ADDITIONAL_DETAILS"),
+                disableSortBy: true,
+                Cell: ({ row }) => {
+                  const vendorId = row.original?.id;
 
-              const hasDetails = row.original?.vendorAdditionalDetails !== null;
-              return (
-                <Link
-                  to={
-                    hasDetails
-                      ? `/digit-ui/${userType}/vendor/registry/additionaldetails/info?vendorId=` + vendorId
-                      : `/digit-ui/${userType}/vendor/registry/additionaldetails/vendor-details?vendorId=` + vendorId
+                  // Guard: if data not yet loaded, show a neutral state
+                  if (!additionalVendorData) {
+                    return <span>Loading...</span>;
                   }
-                >
-                  <button
-                    className="submit-bar"
-                    style={{
-                      backgroundColor: hasDetails ? "#417505" : "#3A8DCC",
-                      color: "white",
-                    }}
-                  >
-                    {hasDetails ? "View Details" : "Add Details"}
-                  </button>
-                </Link>
-              );
-            },
-          },
+
+                  const hasDetails = row.original?.vendorAdditionalDetails !== null;
+                  return (
+                    <Link
+                      to={
+                        hasDetails
+                          ? `/digit-ui/${userType}/vendor/registry/additionaldetails/info?vendorId=` + vendorId
+                          : `/digit-ui/${userType}/vendor/registry/additionaldetails/vendor-details?vendorId=` + vendorId
+                      }
+                    >
+                      <button
+                        className="submit-bar"
+                        style={{
+                          backgroundColor: hasDetails ? "#417505" : "#3A8DCC",
+                          color: "white",
+                        }}
+                      >
+                        {hasDetails ? "View Details" : "Add Details"}
+                      </button>
+                    </Link>
+                  );
+                },
+              }
+            : ""),
 
           ...(!isEkycRole
             ? [
-              {
-                Header: t("VIEW_WORKORDER_DETAILS"),
-                disableSortBy: true,
-                Cell: ({ row }) => {
-                  return (
-                    <button
-                      className="submit-bar"
-                      style={{
-                        backgroundColor: "#417505",
-                        color: "white",
-                      }}
-                      onClick={() => openWorkOrderModal(row.original)}
-                    >
-                      {t("VIEW_WORKORDER_DETAILS")}
-                    </button>
-                  );
+                {
+                  Header: t("VIEW_WORKORDER_DETAILS"),
+                  disableSortBy: true,
+                  Cell: ({ row }) => {
+                    return (
+                      <button
+                        className="submit-bar"
+                        style={{
+                          backgroundColor: "#417505",
+                          color: "white",
+                        }}
+                        onClick={() => openWorkOrderModal(row.original)}
+                      >
+                        {t("VIEW_WORKORDER_DETAILS")}
+                      </button>
+                    );
+                  },
                 },
-              },
-            ]
+              ]
             : []),
         ];
 
@@ -1198,12 +1188,12 @@ const VendorInbox = (props) => {
 
           ...(props.selectedTab === "SURVEYOR"
             ? [
-              {
-                Header: t("ES_FSM_REGISTRY_INBOX_SUPERVISOR_NAME"),
-                accessor: (row) => row.supervisorName || row.reportingManager?.name || "NA",
-                Cell: ({ row }) => <div>{row.original?.supervisorName || row.original?.reportingManager?.name || "NA"}</div>,
-              },
-            ]
+                {
+                  Header: t("ES_FSM_REGISTRY_INBOX_SUPERVISOR_NAME"),
+                  accessor: (row) => row.supervisorName || row.reportingManager?.name || "NA",
+                  Cell: ({ row }) => <div>{row.original?.supervisorName || row.original?.reportingManager?.name || "NA"}</div>,
+                },
+              ]
             : []),
           {
             Header: t("WT_MOBILE_NUMBER"),
@@ -1274,7 +1264,8 @@ const VendorInbox = (props) => {
           {
             Header: t("ES_VENDOR_INBOX_VENDOR_NAME"),
             exportAccessor: (row) =>
-              `${row?.name || row?.dsoDetails?.name || "NA"} (${row?.mobileNumber || row?.owner?.mobileNumber || row?.dsoDetails?.mobileNumber || row?.dsoDetails?.owner?.mobileNumber || "NA"
+              `${row?.name || row?.dsoDetails?.name || "NA"} (${
+                row?.mobileNumber || row?.owner?.mobileNumber || row?.dsoDetails?.mobileNumber || row?.dsoDetails?.owner?.mobileNumber || "NA"
               })`,
           },
           {
@@ -1307,11 +1298,12 @@ const VendorInbox = (props) => {
           {
             Header: "Map Vendor",
             exportAccessor: (row) =>
-              `${row?.vendor?.name || row?.vendorData?.name || "NA"} (${row?.vendor?.mobileNumber ||
-              row?.vendor?.owner?.mobileNumber ||
-              row?.vendorData?.mobileNumber ||
-              row?.vendorData?.owner?.mobileNumber ||
-              "NA"
+              `${row?.vendor?.name || row?.vendorData?.name || "NA"} (${
+                row?.vendor?.mobileNumber ||
+                row?.vendor?.owner?.mobileNumber ||
+                row?.vendorData?.mobileNumber ||
+                row?.vendorData?.owner?.mobileNumber ||
+                "NA"
               })`,
           },
           {
@@ -1325,7 +1317,8 @@ const VendorInbox = (props) => {
           {
             Header: t("ES_FSM_REGISTRY_SELECT_DRIVER"),
             exportAccessor: (row) =>
-              `${row?.driverData?.name || row?.driver?.name || "NA"} (${row?.driverData?.owner?.mobileNumber || row?.driver?.owner?.mobileNumber || "NA"
+              `${row?.driverData?.name || row?.driver?.name || "NA"} (${
+                row?.driverData?.owner?.mobileNumber || row?.driver?.owner?.mobileNumber || "NA"
               })`,
           },
           {
@@ -1350,11 +1343,12 @@ const VendorInbox = (props) => {
           {
             Header: t("ES_FSM_REGISTRY_INBOX_VENDOR_NAME"),
             exportAccessor: (row) =>
-              `${row?.vendorData?.name || row?.vendor?.name || "NA"} (${row?.vendorData?.mobileNumber ||
-              row?.vendorData?.owner?.mobileNumber ||
-              row?.vendor?.mobileNumber ||
-              row?.vendor?.owner?.mobileNumber ||
-              "NA"
+              `${row?.vendorData?.name || row?.vendor?.name || "NA"} (${
+                row?.vendorData?.mobileNumber ||
+                row?.vendorData?.owner?.mobileNumber ||
+                row?.vendor?.mobileNumber ||
+                row?.vendor?.owner?.mobileNumber ||
+                "NA"
               })`,
           },
           {
@@ -1383,11 +1377,12 @@ const VendorInbox = (props) => {
           {
             Header: t("ES_FSM_REGISTRY_INBOX_VENDOR_NAME"),
             exportAccessor: (row) =>
-              `${row?.vendorData?.name || row?.vendor?.name || "NA"} ${row?.vendorData?.mobileNumber ||
-              row?.vendorData?.owner?.mobileNumber ||
-              row?.vendor?.mobileNumber ||
-              row?.vendor?.owner?.mobileNumber ||
-              "NA"
+              `${row?.vendorData?.name || row?.vendor?.name || "NA"} ${
+                row?.vendorData?.mobileNumber ||
+                row?.vendorData?.owner?.mobileNumber ||
+                row?.vendor?.mobileNumber ||
+                row?.vendor?.owner?.mobileNumber ||
+                "NA"
               }`,
           },
           {
@@ -1412,21 +1407,23 @@ const VendorInbox = (props) => {
           {
             Header: t("ES_FSM_REGISTRY_INBOX_VENDOR_NAME"),
             exportAccessor: (row) =>
-              `${row?.vendorData?.name || row?.vendor?.name || "NA"} ${row?.vendorData?.mobileNumber ||
-              row?.vendorData?.owner?.mobileNumber ||
-              row?.vendor?.mobileNumber ||
-              row?.vendor?.owner?.mobileNumber ||
-              "NA"
+              `${row?.vendorData?.name || row?.vendor?.name || "NA"} ${
+                row?.vendorData?.mobileNumber ||
+                row?.vendorData?.owner?.mobileNumber ||
+                row?.vendor?.mobileNumber ||
+                row?.vendor?.owner?.mobileNumber ||
+                "NA"
               }`,
           },
           {
             Header: t("ES_VENDOR_SUPERVISOR_AGENCY_NAME"),
             exportAccessor: (row) =>
-              `${row?.vendorData?.name || row?.vendor?.name || "NA"} ${row?.vendorData?.mobileNumber ||
-              row?.vendorData?.owner?.mobileNumber ||
-              row?.vendor?.mobileNumber ||
-              row?.vendor?.owner?.mobileNumber ||
-              "NA"
+              `${row?.vendorData?.name || row?.vendor?.name || "NA"} ${
+                row?.vendorData?.mobileNumber ||
+                row?.vendorData?.owner?.mobileNumber ||
+                row?.vendor?.mobileNumber ||
+                row?.vendor?.owner?.mobileNumber ||
+                "NA"
               }`,
           },
           {

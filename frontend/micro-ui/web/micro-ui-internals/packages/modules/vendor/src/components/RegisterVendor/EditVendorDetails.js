@@ -109,8 +109,6 @@ const EditVendorDetails = (props) => {
   const userInfo = Digit.SessionStorage.get("User");
   const userType = userInfo.info.type?.toLowerCase();
 
-  console.log(supervisorData, surveyorData);
-
   useEffect(() => {
     switch (selectedAction) {
       case "DELETE":
@@ -186,20 +184,26 @@ const EditVendorDetails = (props) => {
     }
 
     mutate(formData, {
-      onError: (error, variables) => {
+      onError: (error) => {
         setShowToast({ key: "error", action: error });
-        setTimeout(closeToast, 5000);
       },
-      onSuccess: (data, variables) => {
-        setShowToast({ key: "success", action: selectedAction === "DELETE" ? "DELETE_VENDOR" : selectedAction });
+      onSuccess: () => {
         queryClient.invalidateQueries("DSO_SEARCH");
         refetchDso();
         refetchVehicle();
         refetchDriver();
-        setTimeout(() => {
-          closeToast();
-          if (selectedAction === "DELETE") history.push(`/digit-ui/${userType}/fsm/registry`);
-        }, 5000);
+
+        if (selectedAction === "DELETE") {
+          history.push({
+            pathname: `/digit-ui/${userType}/vendor/search-vendor`,
+            state: {
+              showSuccessToast: true,
+              message: { key: "success", action: `DELETE_VENDOR` },
+            },
+          });
+        } else {
+          setShowToast({ key: "success", action: selectedAction === "DELETE" ? "DELETE_VENDOR" : selectedAction });
+        }
       },
     });
     setShowModal(false);
@@ -460,14 +464,17 @@ const EditVendorDetails = (props) => {
                                 </div>
                               </Card>
                             ) : (
-                              <div
-                                onClick={() =>
-                                  history.push(`/digit-ui/${userType}/vendor/registry/additionaldetails/vendor-details?vendorId=${dsoId}`)
-                                }
-                                className="add-details-link hover-button"
-                              >
-                                {t("Add Additional Details")}
-                              </div>
+                              userType !== "CITIZEN" &&
+                              !isEkyc && (
+                                <div
+                                  onClick={() =>
+                                    history.push(`/digit-ui/${userType}/vendor/registry/additionaldetails/vendor-details?vendorId=${dsoId}`)
+                                  }
+                                  className="add-details-link hover-button"
+                                >
+                                  {t("Add Additional Details")}
+                                </div>
+                              )
                             )}
                           </React.Fragment>
                         );
@@ -560,12 +567,12 @@ const EditVendorDetails = (props) => {
                     pageSizeLimit={10}
                     t={t}
                   />
-                  <div
+                  {/* <div
                     className="add-details-link hover-button"
                     onClick={() => history.push(`/digit-ui/${userType}/vendor/registry/new-surveyor?vendorId=${dsoId}`)}
                   >
                     {t(`ES_VENDOR_ADD_SURVEYOR`)}
-                  </div>
+                  </div> */}
                 </div>
               </React.Fragment>
             )}
