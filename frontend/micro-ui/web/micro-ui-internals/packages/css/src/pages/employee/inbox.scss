@@ -265,6 +265,17 @@
   }
 }
 
+.popup-module-action-bar {
+  .generic-button {
+    &:hover {
+      color: #fff !important;
+      h2 {
+        color: #fff !important;
+      }
+    }
+  }
+}
+
 .clear-search,
 .clear-search .link-label {
   @apply border-focus text-focus;
