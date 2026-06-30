@@ -24,6 +24,19 @@ const App = ({ path }) => {
     return goBacktoFromProperty;
   };
 
+  const user = window.Digit.UserService.getUser();
+  const tenantId = "dl.djb";
+  const userMobileNumber = user?.info?.userName?.match(/^[0-9]{10}$/) ? user?.info?.userName : user?.info?.mobileNumber;
+  const isMyApps = location.pathname.includes("/my-applications");
+  
+  const { data: wsData } = window.Digit.Hooks.ws.useMyApplicationSearch({ filters: { tenantId, mobileNumber: userMobileNumber } }, { filters: { tenantId, mobileNumber: userMobileNumber }, enabled: isMyApps });
+  const { data: swData } = window.Digit.Hooks.ws.useMyApplicationSearch({ filters: { tenantId, mobileNumber: userMobileNumber }, BusinessService: "SW" }, { filters: { tenantId, mobileNumber: userMobileNumber }, enabled: isMyApps });
+  
+  let wsCount = wsData?.WaterConnection?.filter((ob) => ob?.applicationType !== "MODIFY_WATER_CONNECTION")?.length || 0;
+  let swCount = swData?.SewerageConnections?.filter((ob) => ob?.applicationType !== "MODIFY_SEWERAGE_CONNECTION")?.length || 0;
+  let totalAppsCount = wsCount + swCount;
+
+
   const crumbs = [
     // {
     //   path: "/digit-ui/citizen",
@@ -48,7 +61,7 @@ const App = ({ path }) => {
     },
     {
       path: "/digit-ui/citizen/ws/my-applications",
-      label: t("CS_HOME_MY_APPLICATIONS"),
+      label: `${t("CS_HOME_MY_APPLICATIONS")} ${totalAppsCount ? `(${totalAppsCount})` : ""}`,
       show: location.pathname.includes("/my-applications"),
     },
     {
@@ -70,6 +83,11 @@ const App = ({ path }) => {
       path: "/digit-ui/citizen/ws/old-application",
       label: t("WS_COMMON_APPL_NEW_CONNECTION"),
       show: location.pathname.includes("/old-application"),
+    },
+    {
+      path: location.pathname,
+      label: t("WS_APPLICATION_DETAILS_HEADER"),
+      show: location.pathname.includes("/connection/application"),
     },
   ];
 
