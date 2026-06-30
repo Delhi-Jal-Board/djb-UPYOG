@@ -74,8 +74,8 @@ const WSApplicationDetails = () => {
           ? "SW"
           : "SW.ONE_TIME_FEE"
         : applicationNobyData?.includes("DC")
-        ? "WS"
-        : "WS.ONE_TIME_FEE",
+          ? "WS"
+          : "WS.ONE_TIME_FEE",
       ...fetchBillParams,
       tenantId: tenantId,
     },
@@ -114,9 +114,9 @@ const WSApplicationDetails = () => {
 
   const isPaid =
     data?.WaterConnection?.[0]?.applicationStatus === "CONNECTION_ACTIVATED" ||
-    data?.WaterConnection?.[0]?.applicationStatus === "PENDING_FOR_CONNECTION_ACTIVATION" ||
-    data?.SewerageConnections?.[0]?.applicationStatus === "CONNECTION_ACTIVATED" ||
-    data?.SewerageConnections?.[0]?.applicationStatus === "PENDING_FOR_CONNECTION_ACTIVATION"
+      data?.WaterConnection?.[0]?.applicationStatus === "PENDING_FOR_CONNECTION_ACTIVATION" ||
+      data?.SewerageConnections?.[0]?.applicationStatus === "CONNECTION_ACTIVATED" ||
+      data?.SewerageConnections?.[0]?.applicationStatus === "PENDING_FOR_CONNECTION_ACTIVATION"
       ? true
       : false;
   if (isLoading) {
@@ -293,50 +293,63 @@ const WSApplicationDetails = () => {
   sessionStorage.setItem("ApplicationNoState", applicationNobyData);
   return (
     <React.Fragment>
-      <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
-        <Header>{t("WS_APPLICATION_DETAILS_HEADER")}</Header>
-        <div style={{ zIndex: "10", display: "flex", flexDirection: "row-reverse", alignItems: "center", marginTop: "-25px" }}>
-          {downloadOptions && downloadOptions.length > 0 && (
-            <div ref={menuRef}>
-              <MultiLink
-                className="multilinkWrapper"
-                onHeadClick={() => setShowOptions(!showOptions)}
-                displayOptions={showOptions}
-                options={downloadOptions}
-                // optionsStyle={{margin: '0px'}}
+      <div className={"employee-main-application-details"} style={{ display: "flex", gap: "20px" }}>
+        {/* Left Column: Workflow Timeline */}
+        <div className={`workflow-timeline-wrapper no-scrollbar`} style={{ flex: "1 1 300px", maxWidth: "400px" }}>
+          <Card>
+            <div id="timeline">
+              <WSWFApplicationTimeline
+                application={data?.WaterConnection?.[0] || data?.SewerageConnections?.[0]}
+                id={data?.WaterConnection?.[0]?.applicationNo || data?.SewerageConnections?.[0]?.applicationNo}
+                paymentbuttonenabled={false}
               />
             </div>
-          )}
-          <LinkButton label={t("VIEW_TIMELINE")} style={{ color: "#A52A2A" }} onClick={handleViewTimeline}></LinkButton>
+          </Card>
         </div>
-      </div>
-      {checkifPrivacyenabled && <WSInfoLabel t={t} />}
-      <div className="hide-seperator">
-        <Card>
-          <StatusTable>
-            <Row
-              className="border-none"
-              label={t("WS_MYCONNECTIONS_APPLICATION_NO")}
-              text={data?.WaterConnection?.[0]?.applicationNo || data?.SewerageConnections?.[0]?.applicationNo}
-              textStyle={{}}
-            />
-            {(data?.WaterConnection?.[0].applicationType?.includes("DISCONNECT") ||
-              data?.SewerageConnections?.[0].applicationType?.includes("DISCONNECT")) && (
-              <Row
-                className="border-none"
-                label={t("WS_MYCONNECTIONS_CONSUMER_NO")}
-                text={data?.WaterConnection?.[0]?.connectionNo || data?.SewerageConnections?.[0]?.connectionNo}
-                textStyle={{ wordBreak: "break-word" }}
-              />
-            )}
-            <Row
-              className="border-none"
-              label={t("WS_SERVICE_NAME_LABEL")}
-              text={t(`WS_APPLICATION_TYPE_${data?.WaterConnection?.[0]?.applicationType || data?.SewerageConnections?.[0]?.applicationType}`)}
-              textStyle={{ wordBreak: "break-word" }}
-            />
-            {/* <Row
-              className="border-none"
+
+        {/* Right Column: Application Details */}
+        <div style={{ flex: "2 1 500px" }}>
+
+          <Card>
+            <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
+              {/* <Header>{t("WS_APPLICATION_DETAILS_HEADER")}</Header> */}
+              <div style={{ zIndex: "10", display: "flex", flexDirection: "row-reverse", alignItems: "center", marginTop: "-25px" }}>
+                {downloadOptions && downloadOptions.length > 0 && (
+                  <div ref={menuRef}>
+                    <MultiLink
+                      className="multilinkWrapper"
+                      onHeadClick={() => setShowOptions(!showOptions)}
+                      displayOptions={showOptions}
+                      options={downloadOptions}
+                    // optionsStyle={{margin: '0px'}}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+            {checkifPrivacyenabled && <WSInfoLabel t={t} />}
+            <div className="hide-seperator">
+              <StatusTable>
+                <Row
+                  label={t("WS_MYCONNECTIONS_APPLICATION_NO")}
+                  text={data?.WaterConnection?.[0]?.applicationNo || data?.SewerageConnections?.[0]?.applicationNo}
+                  textStyle={{}}
+                />
+                {(data?.WaterConnection?.[0].applicationType?.includes("DISCONNECT") ||
+                  data?.SewerageConnections?.[0].applicationType?.includes("DISCONNECT")) && (
+                    <Row
+                      label={t("WS_MYCONNECTIONS_CONSUMER_NO")}
+                      text={data?.WaterConnection?.[0]?.connectionNo || data?.SewerageConnections?.[0]?.connectionNo}
+                      textStyle={{ wordBreak: "break-word" }}
+                    />
+                  )}
+                <Row
+                  label={t("WS_SERVICE_NAME_LABEL")}
+                  text={t(`WS_APPLICATION_TYPE_${data?.WaterConnection?.[0]?.applicationType || data?.SewerageConnections?.[0]?.applicationType}`)}
+                  textStyle={{ wordBreak: "break-word" }}
+                />
+                {/* <Row
+              
               label={t("WS_COMMON_TABLE_COL_AMT_DUE_LABEL")}
               text={
                 paymentDetails?.data?.Bill?.[0]?.billDetails?.[0]?.amount
@@ -345,789 +358,703 @@ const WSApplicationDetails = () => {
               }
               textStyle={{ whiteSpace: "pre" }}
             /> */}
-            {(data?.WaterConnection?.[0].applicationType?.includes("DISCONNECT") ||
-              data?.SewerageConnections?.[0].applicationType?.includes("DISCONNECT")) && (
-              <Row
-                className="border-none"
-                label={t("WS_DISCONNECTION_PROPOSED_DATE")}
-                text={
-                  applicationNobyData?.includes("WS")
-                    ? convertEpochToDate(data?.WaterConnection?.[0]?.dateEffectiveFrom)
-                    : convertEpochToDate(data?.SewerageConnections?.[0]?.dateEffectiveFrom)
-                }
-                textStyle={{ wordBreak: "break-word" }}
-              />
-            )}
-            {(data?.WaterConnection?.[0].applicationType?.includes("DISCONNECT") ||
-              data?.SewerageConnections?.[0].applicationType?.includes("DISCONNECT")) && (
-              <Row
-                className="border-none"
-                label={t("WS_DISCONNECTION_EXECUTED_DATE")}
-                text={
-                  applicationNobyData?.includes("WS")
-                    ? convertEpochToDate(data?.WaterConnection?.[0]?.disconnectionExecutionDate)
-                    : convertEpochToDate(data?.SewerageConnections?.[0]?.disconnectionExecutionDate)
-                }
-                textStyle={{ wordBreak: "break-word" }}
-              />
-            )}
-            {(data?.WaterConnection?.[0].applicationType?.includes("DISCONNECT") ||
-              data?.SewerageConnections?.[0].applicationType?.includes("DISCONNECT")) && (
-              <Row
-                className="border-none"
-                label={t("WS_DISCONNECTION_REASON")}
-                text={
-                  data?.WaterConnection?.[0]?.disconnectionReason != null
-                    ? data?.WaterConnection?.[0]?.disconnectionReason
-                    : data?.SewerageConnections?.[0]?.disconnectionReason != null
-                    ? data?.SewerageConnections?.[0]?.disconnectionReason
-                    : t("NA")
-                }
-                textStyle={{ wordBreak: "break-word" }}
-              />
-            )}
-          </StatusTable>
-        </Card>
-        {paymentDetails?.data?.Bill?.[0]?.billDetails?.[0]?.billAccountDetails.length > 0 && (
-          <Card>
-            <CardHeader styles={{ fontSize: "28px" }}>{t("WS_FEE_DEATAILS_HEADER")}</CardHeader>
-            <StatusTable>
-              {paymentDetails?.data?.Bill?.[0]?.billDetails?.[0]?.billAccountDetails.map((bill) => (
-                <Row
-                  className="border-none"
-                  label={t(bill?.taxHeadCode)}
-                  text={`₹${Number(bill?.amount).toFixed(2)}`}
-                  textStyle={{ textAlign: "right" }}
-                />
-              ))}
-              <Row
-                className="border-none"
-                label={t("WS_TOTAL_AMOUNT_DUE")}
-                text={`₹${Number(isPaid ? 0 : paymentDetails?.data?.Bill?.[0]?.billDetails?.[0]?.amount).toFixed(2)}`}
-                textStyle={{ textAlign: "right", fontSize: "18px", fontWeight: "700" }}
-              />
-              <Row
-                className="border-none"
-                label={t("WS_COMMON_TABLE_COL_APPLICATION_STATUS")}
-                text={
-                  isPaid || Number(paymentDetails?.data?.Bill?.[0]?.billDetails?.[0]?.amount).toFixed(2) == 0
-                    ? t("WS_COMMON_PAID_LABEL")
-                    : t("WS_COMMON_NOT_PAID")
-                }
-                textStyle={
-                  isPaid || Number(paymentDetails?.data?.Bill?.[0]?.billDetails?.[0]?.amount).toFixed(2) == 0
-                    ? { textAlign: "right", color: "darkgreen" }
-                    : { textAlign: "right", color: "red" }
-                }
-              />
-              {/* <Row label={t("One time Fee")} text={"₹ 16500.00"} textStyle={{textAlign: "right" }} />
+                {(data?.WaterConnection?.[0].applicationType?.includes("DISCONNECT") ||
+                  data?.SewerageConnections?.[0].applicationType?.includes("DISCONNECT")) && (
+                    <Row
+                      label={t("WS_DISCONNECTION_PROPOSED_DATE")}
+                      text={
+                        applicationNobyData?.includes("WS")
+                          ? convertEpochToDate(data?.WaterConnection?.[0]?.dateEffectiveFrom)
+                          : convertEpochToDate(data?.SewerageConnections?.[0]?.dateEffectiveFrom)
+                      }
+                      textStyle={{ wordBreak: "break-word" }}
+                    />
+                  )}
+                {(data?.WaterConnection?.[0].applicationType?.includes("DISCONNECT") ||
+                  data?.SewerageConnections?.[0].applicationType?.includes("DISCONNECT")) && (
+                    <Row
+                      label={t("WS_DISCONNECTION_EXECUTED_DATE")}
+                      text={
+                        applicationNobyData?.includes("WS")
+                          ? convertEpochToDate(data?.WaterConnection?.[0]?.disconnectionExecutionDate)
+                          : convertEpochToDate(data?.SewerageConnections?.[0]?.disconnectionExecutionDate)
+                      }
+                      textStyle={{ wordBreak: "break-word" }}
+                    />
+                  )}
+                {(data?.WaterConnection?.[0].applicationType?.includes("DISCONNECT") ||
+                  data?.SewerageConnections?.[0].applicationType?.includes("DISCONNECT")) && (
+                    <Row
+                      label={t("WS_DISCONNECTION_REASON")}
+                      text={
+                        data?.WaterConnection?.[0]?.disconnectionReason != null
+                          ? data?.WaterConnection?.[0]?.disconnectionReason
+                          : data?.SewerageConnections?.[0]?.disconnectionReason != null
+                            ? data?.SewerageConnections?.[0]?.disconnectionReason
+                            : t("NA")
+                      }
+                      textStyle={{ wordBreak: "break-word" }}
+                    />
+                  )}
+              </StatusTable>
+              {paymentDetails?.data?.Bill?.[0]?.billDetails?.[0]?.billAccountDetails.length > 0 && (
+                <React.Fragment>
+                  <CardHeader styles={{ fontSize: "28px" }}>{t("WS_FEE_DEATAILS_HEADER")}</CardHeader>
+                  <StatusTable>
+                    {paymentDetails?.data?.Bill?.[0]?.billDetails?.[0]?.billAccountDetails.map((bill) => (
+                      <Row
+                        label={t(bill?.taxHeadCode)}
+                        text={`₹${Number(bill?.amount).toFixed(2)}`}
+                        textStyle={{ textAlign: "right" }}
+                      />
+                    ))}
+                    <Row
+                      label={t("WS_TOTAL_AMOUNT_DUE")}
+                      text={`₹${Number(isPaid ? 0 : paymentDetails?.data?.Bill?.[0]?.billDetails?.[0]?.amount).toFixed(2)}`}
+                      textStyle={{ textAlign: "right", fontSize: "18px", fontWeight: "700" }}
+                    />
+                    <Row
+                      label={t("WS_COMMON_TABLE_COL_APPLICATION_STATUS")}
+                      text={
+                        isPaid || Number(paymentDetails?.data?.Bill?.[0]?.billDetails?.[0]?.amount).toFixed(2) == 0
+                          ? t("WS_COMMON_PAID_LABEL")
+                          : t("WS_COMMON_NOT_PAID")
+                      }
+                      textStyle={
+                        isPaid || Number(paymentDetails?.data?.Bill?.[0]?.billDetails?.[0]?.amount).toFixed(2) == 0
+                          ? { textAlign: "right", color: "darkgreen" }
+                          : { textAlign: "right", color: "red" }
+                      }
+                    />
+                    {/* <Row label={t("One time Fee")} text={"₹ 16500.00"} textStyle={{textAlign: "right" }} />
             <Row label={t("Security Charge")} text={"₹ 500.00"} textStyle={{textAlign: "right" }} />
             <Row label={t("Meter Charge")} text={"₹ 2000.00"} textStyle={{textAlign: "right" }} />
             <Row label={t("Tax")} text={" ₹ 200.00"} textStyle={{textAlign: "right" }} />
             <Row label={t("WS_COMMON_TOTAL_AMT")} text={"₹ 15000.00"} textStyle={{textAlign: "right" }} />
             <Row label={t("Status")} text={"Unpaid"} textStyle={{textAlign: "right" }} /> */}
-            </StatusTable>
-          </Card>
-        )}
+                  </StatusTable>
+                </React.Fragment>
+              )}
 
-        <Card>
-          <CardHeader styles={{ fontSize: "28px" }}>{t("WS_COMMON_CONNECTION_DETAIL")}</CardHeader>
-          <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
-            <Row
-              label={t("WS_SERVICE_TYPE")}
-              text={`${t(
-                checkForNA(connectionDetails?.serviceType?.i18nKey || connectionDetails?.serviceType?.code || connectionDetails?.serviceType)
-              )}`}
-            />
-            <Row
-              label={t("WS_CONNECTION_TYPE")}
-              text={`${t(
-                checkForNA(connectionDetails?.connectionType?.i18nKey || connectionDetails?.connectionType?.code || connectionDetails?.connectionType)
-              )}`}
-            />
-            <Row
-              label={t("WS_WATER_DEMAND_TYPE")}
-              text={`${t(
-                checkForNA(
-                  connectionDetails?.waterDemandType?.i18nKey || connectionDetails?.waterDemandType?.code || connectionDetails?.waterDemandType
-                )
-              )}`}
-            />
-            <Row
-              label={t("WS_APPLICANT_TYPE")}
-              text={`${t(
-                checkForNA(connectionDetails?.applicantType?.i18nKey || connectionDetails?.applicantType?.code || connectionDetails?.applicantType)
-              )}`}
-            />
-            <Row
-              label={t("WS_SERVICE_TYPE")}
-              text={`${t(
-                checkForNA(connectionDetails?.domesticType?.i18nKey || connectionDetails?.domesticType?.code || connectionDetails?.domesticType)
-              )}`}
-            />
-            {connectionDetails?.domesticType?.code === "ORGANIZATION" && (
-              <React.Fragment>
+              <CardHeader styles={{ fontSize: "28px" }}>{t("WS_COMMON_CONNECTION_DETAIL")}</CardHeader>
+              <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
                 <Row
-                  label={t("WS_DEPARTMENT_TYPE")}
+                  label={t("WS_SERVICE_TYPE")}
+                  text={`${t(
+                    checkForNA(connectionDetails?.serviceType?.i18nKey || connectionDetails?.serviceType?.code || connectionDetails?.serviceType)
+                  )}`}
+                />
+                <Row
+                  label={t("WS_CONNECTION_TYPE")}
+                  text={`${t(
+                    checkForNA(connectionDetails?.connectionType?.i18nKey || connectionDetails?.connectionType?.code || connectionDetails?.connectionType)
+                  )}`}
+                />
+                <Row
+                  label={t("WS_WATER_DEMAND_TYPE")}
                   text={`${t(
                     checkForNA(
-                      connectionDetails?.departmentType?.i18nKey || connectionDetails?.departmentType?.code || connectionDetails?.departmentType
+                      connectionDetails?.waterDemandType?.i18nKey || connectionDetails?.waterDemandType?.code || connectionDetails?.waterDemandType
                     )
                   )}`}
                 />
-                <Row label={t("WS_ORGANIZATION_DEPARTMENT_NAME")} text={`${t(checkForNA(connectionDetails?.institutionName))}`} />
-                <Row label={t("WS_NATURE_OF_WORK")} text={`${t(checkForNA(connectionDetails?.natureOfWork))}`} />
-              </React.Fragment>
-            )}
-          </StatusTable>
-        </Card>
+                <Row
+                  label={t("WS_APPLICANT_TYPE")}
+                  text={`${t(
+                    checkForNA(connectionDetails?.applicantType?.i18nKey || connectionDetails?.applicantType?.code || connectionDetails?.applicantType)
+                  )}`}
+                />
+                <Row
+                  label={t("WS_SERVICE_TYPE")}
+                  text={`${t(
+                    checkForNA(connectionDetails?.domesticType?.i18nKey || connectionDetails?.domesticType?.code || connectionDetails?.domesticType)
+                  )}`}
+                />
+                {connectionDetails?.domesticType?.code === "ORGANIZATION" && (
+                  <React.Fragment>
+                    <Row
+                      label={t("WS_DEPARTMENT_TYPE")}
+                      text={`${t(
+                        checkForNA(
+                          connectionDetails?.departmentType?.i18nKey || connectionDetails?.departmentType?.code || connectionDetails?.departmentType
+                        )
+                      )}`}
+                    />
+                    <Row label={t("WS_ORGANIZATION_DEPARTMENT_NAME")} text={`${t(checkForNA(connectionDetails?.institutionName))}`} />
+                    <Row label={t("WS_NATURE_OF_WORK")} text={`${t(checkForNA(connectionDetails?.natureOfWork))}`} />
+                  </React.Fragment>
+                )}
+              </StatusTable>
 
-        {data?.WaterConnection?.[0]?.connectionHolders?.length > 0 || data?.SewerageConnections?.[0]?.connectionHolders?.length > 0 ? (
-          <Card>
-            <CardHeader styles={{ fontSize: "28px" }}>{t("WS_COMMON_CONNECTION_HOLDER_DETAILS_HEADER")}</CardHeader>
-            <StatusTable>
-              <Row
-                className="border-none"
-                label={t("WS_OWN_DETAIL_MOBILE_NO_LABEL")}
-                text={
-                  data?.WaterConnection?.[0]?.connectionHolders?.[0]?.mobileNumber ||
-                  data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.mobileNumber
-                }
-                textStyle={{ whiteSpace: "pre" }}
-                privacy={{
-                  uuid: applicationNobyData?.includes("WS")
-                    ? data?.WaterConnection?.[0]?.connectionHolders?.[0]?.uuid
-                    : data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.uuid,
-                  fieldName: "connectionHoldersMobileNumber",
-                  model: "WnSConnectionOwner",
-                  showValue: false,
-                  loadData: {
-                    serviceName: serviceType === "WATER" ? "/ws-services/wc/_search" : "/sw-services/swc/_search",
-                    requestBody: {},
-                    requestParam: { tenantId, applicationNumber: applicationNobyData },
-                    jsonPath:
-                      serviceType === "WATER"
-                        ? "WaterConnection[0].connectionHolders[0].mobileNumber"
-                        : "SewerageConnections[0].connectionHolders[0].mobileNumber",
-                    isArray: false,
-                  },
-                }}
-              />
-              <Row
-                className="border-none"
-                label={t("WS_OWN_DETAIL_OWN_NAME_LABEL")}
-                text={data?.WaterConnection?.[0]?.connectionHolders?.[0]?.name || data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.name}
-                textStyle={{ whiteSpace: "pre" }}
-              />
-              <Row
-                className="border-none"
-                label={t("WS_OWN_DETAIL_GENDER_LABEL")}
-                text={t(data?.WaterConnection?.[0]?.connectionHolders?.[0]?.gender || data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.gender)}
-                textStyle={{ whiteSpace: "pre" }}
-                privacy={{
-                  uuid: applicationNobyData?.includes("WS")
-                    ? data?.WaterConnection?.[0]?.connectionHolders?.[0]?.uuid
-                    : data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.uuid,
-                  fieldName: "gender",
-                  model: "WnSConnectionOwner",
-                  showValue: false,
-                  loadData: {
-                    serviceName: serviceType === "WATER" ? "/ws-services/wc/_search" : "/sw-services/swc/_search",
-                    requestBody: {},
-                    requestParam: { tenantId, applicationNumber: applicationNobyData },
-                    jsonPath:
-                      serviceType === "WATER"
-                        ? "WaterConnection[0].connectionHolders[0].gender"
-                        : "SewerageConnections[0].connectionHolders[0].gender",
-                    isArray: false,
-                  },
-                }}
-              />
-              <Row
-                className="border-none"
-                label={t("WS_OWN_DETAIL_FATHER_OR_HUSBAND_NAME")}
-                text={
-                  data?.WaterConnection?.[0]?.connectionHolders?.[0]?.fatherOrHusbandName ||
-                  data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.fatherOrHusbandName ||
-                  t("CS_NA")
-                }
-                textStyle={{ whiteSpace: "pre" }}
-                privacy={{
-                  uuid: applicationNobyData?.includes("WS")
-                    ? data?.WaterConnection?.[0]?.connectionHolders?.[0]?.uuid
-                    : data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.uuid,
-                  fieldName: "fatherOrHusbandName",
-                  model: "WnSConnectionOwner", //applicationNobyData?.includes("WS") ? "WaterConnectionOwner" : "User"
-                  showValue: false,
-                  loadData: {
-                    serviceName: serviceType === "WATER" ? "/ws-services/wc/_search" : "/sw-services/swc/_search",
-                    requestBody: {},
-                    requestParam: { tenantId, applicationNumber: applicationNobyData },
-                    jsonPath:
-                      serviceType === "WATER"
-                        ? "WaterConnection[0].connectionHolders[0].fatherOrHusbandName"
-                        : "SewerageConnections[0].connectionHolders[0].fatherOrHusbandName",
-                    isArray: false,
-                  },
-                }}
-              />
-              <Row
-                className="border-none"
-                label={t("WS_OWN_DETAIL_RELATION_LABEL")}
-                text={
-                  data?.WaterConnection?.[0]?.connectionHolders?.[0]?.relationship ||
-                  data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.relationship ||
-                  t("CS_NA")
-                }
-                textStyle={{ whiteSpace: "pre" }}
-                privacy={{
-                  uuid: applicationNobyData?.includes("WS")
-                    ? data?.WaterConnection?.[0]?.connectionHolders?.[0]?.uuid
-                    : data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.uuid,
-                  fieldName: "relationship",
-                  model: "WnSConnection",
-                  showValue: false,
-                  loadData: {
-                    serviceName: serviceType === "WATER" ? "/ws-services/wc/_search" : "/sw-services/swc/_search",
-                    requestBody: {},
-                    requestParam: { tenantId, applicationNumber: applicationNobyData },
-                    jsonPath:
-                      serviceType === "WATER"
-                        ? "WaterConnection[0].connectionHolders[0].relationship"
-                        : "SewerageConnections[0].connectionHolders[0].relationship",
-                    isArray: false,
-                  },
-                }}
-              />
-              <Row
-                className="border-none"
-                label={t("WS_OWN_DETAIL_CROSADD")}
-                text={
-                  data?.WaterConnection?.[0]?.connectionHolders?.[0]?.correspondenceAddress ||
-                  data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.correspondenceAddress ||
-                  t("CS_NA")
-                }
-                //textStyle={{ whiteSpace: "pre" }}
-                privacy={{
-                  uuid: applicationNobyData?.includes("WS")
-                    ? data?.WaterConnection?.[0]?.connectionHolders?.[0]?.uuid
-                    : data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.uuid,
-                  fieldName: "correspondenceAddress",
-                  model: "WnSConnectionOwner",
-                  showValue: false,
-                  loadData: {
-                    serviceName: serviceType === "WATER" ? "/ws-services/wc/_search" : "/sw-services/swc/_search",
-                    requestBody: {},
-                    requestParam: { tenantId, applicationNumber: applicationNobyData },
-                    jsonPath:
-                      serviceType === "WATER"
-                        ? "WaterConnection[0].connectionHolders[0].correspondenceAddress"
-                        : "SewerageConnections[0].connectionHolders[0].correspondenceAddress",
-                    isArray: false,
-                  },
-                }}
-              />
-              <Row
-                className="border-none"
-                label={t("WS_OWN_DETAIL_SPECIAL_APPLICANT_LABEL")}
-                text={
-                  (
-                    applicationNobyData?.includes("WS")
-                      ? !data?.WaterConnection?.[0]?.connectionHolders?.[0]?.ownerType?.includes("*")
-                      : !data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.ownerType?.includes("*")
-                  )
-                    ? t(
-                        `COMMON_MASTERS_OWNERTYPE_${
+              {data?.WaterConnection?.[0]?.connectionHolders?.length > 0 || data?.SewerageConnections?.[0]?.connectionHolders?.length > 0 ? (
+                <React.Fragment>
+                  <CardHeader styles={{ fontSize: "28px" }}>{t("WS_COMMON_CONNECTION_HOLDER_DETAILS_HEADER")}</CardHeader>
+                  <StatusTable>
+                    <Row
+
+                      label={t("WS_OWN_DETAIL_MOBILE_NO_LABEL")}
+                      text={
+                        data?.WaterConnection?.[0]?.connectionHolders?.[0]?.mobileNumber ||
+                        data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.mobileNumber
+                      }
+                      textStyle={{ whiteSpace: "pre" }}
+                      privacy={{
+                        uuid: applicationNobyData?.includes("WS")
+                          ? data?.WaterConnection?.[0]?.connectionHolders?.[0]?.uuid
+                          : data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.uuid,
+                        fieldName: "connectionHoldersMobileNumber",
+                        model: "WnSConnectionOwner",
+                        showValue: false,
+                        loadData: {
+                          serviceName: serviceType === "WATER" ? "/ws-services/wc/_search" : "/sw-services/swc/_search",
+                          requestBody: {},
+                          requestParam: { tenantId, applicationNumber: applicationNobyData },
+                          jsonPath:
+                            serviceType === "WATER"
+                              ? "WaterConnection[0].connectionHolders[0].mobileNumber"
+                              : "SewerageConnections[0].connectionHolders[0].mobileNumber",
+                          isArray: false,
+                        },
+                      }}
+                    />
+                    <Row
+
+                      label={t("WS_OWN_DETAIL_OWN_NAME_LABEL")}
+                      text={data?.WaterConnection?.[0]?.connectionHolders?.[0]?.name || data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.name}
+                      textStyle={{ whiteSpace: "pre" }}
+                    />
+                    <Row
+
+                      label={t("WS_OWN_DETAIL_GENDER_LABEL")}
+                      text={t(data?.WaterConnection?.[0]?.connectionHolders?.[0]?.gender || data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.gender)}
+                      textStyle={{ whiteSpace: "pre" }}
+                      privacy={{
+                        uuid: applicationNobyData?.includes("WS")
+                          ? data?.WaterConnection?.[0]?.connectionHolders?.[0]?.uuid
+                          : data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.uuid,
+                        fieldName: "gender",
+                        model: "WnSConnectionOwner",
+                        showValue: false,
+                        loadData: {
+                          serviceName: serviceType === "WATER" ? "/ws-services/wc/_search" : "/sw-services/swc/_search",
+                          requestBody: {},
+                          requestParam: { tenantId, applicationNumber: applicationNobyData },
+                          jsonPath:
+                            serviceType === "WATER"
+                              ? "WaterConnection[0].connectionHolders[0].gender"
+                              : "SewerageConnections[0].connectionHolders[0].gender",
+                          isArray: false,
+                        },
+                      }}
+                    />
+                    <Row
+
+                      label={t("WS_OWN_DETAIL_FATHER_OR_HUSBAND_NAME")}
+                      text={
+                        data?.WaterConnection?.[0]?.connectionHolders?.[0]?.fatherOrHusbandName ||
+                        data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.fatherOrHusbandName ||
+                        t("CS_NA")
+                      }
+                      textStyle={{ whiteSpace: "pre" }}
+                      privacy={{
+                        uuid: applicationNobyData?.includes("WS")
+                          ? data?.WaterConnection?.[0]?.connectionHolders?.[0]?.uuid
+                          : data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.uuid,
+                        fieldName: "fatherOrHusbandName",
+                        model: "WnSConnectionOwner", //applicationNobyData?.includes("WS") ? "WaterConnectionOwner" : "User"
+                        showValue: false,
+                        loadData: {
+                          serviceName: serviceType === "WATER" ? "/ws-services/wc/_search" : "/sw-services/swc/_search",
+                          requestBody: {},
+                          requestParam: { tenantId, applicationNumber: applicationNobyData },
+                          jsonPath:
+                            serviceType === "WATER"
+                              ? "WaterConnection[0].connectionHolders[0].fatherOrHusbandName"
+                              : "SewerageConnections[0].connectionHolders[0].fatherOrHusbandName",
+                          isArray: false,
+                        },
+                      }}
+                    />
+                    <Row
+
+                      label={t("WS_OWN_DETAIL_RELATION_LABEL")}
+                      text={
+                        data?.WaterConnection?.[0]?.connectionHolders?.[0]?.relationship ||
+                        data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.relationship ||
+                        t("CS_NA")
+                      }
+                      textStyle={{ whiteSpace: "pre" }}
+                      privacy={{
+                        uuid: applicationNobyData?.includes("WS")
+                          ? data?.WaterConnection?.[0]?.connectionHolders?.[0]?.uuid
+                          : data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.uuid,
+                        fieldName: "relationship",
+                        model: "WnSConnection",
+                        showValue: false,
+                        loadData: {
+                          serviceName: serviceType === "WATER" ? "/ws-services/wc/_search" : "/sw-services/swc/_search",
+                          requestBody: {},
+                          requestParam: { tenantId, applicationNumber: applicationNobyData },
+                          jsonPath:
+                            serviceType === "WATER"
+                              ? "WaterConnection[0].connectionHolders[0].relationship"
+                              : "SewerageConnections[0].connectionHolders[0].relationship",
+                          isArray: false,
+                        },
+                      }}
+                    />
+                    <Row
+
+                      label={t("WS_OWN_DETAIL_CROSADD")}
+                      text={
+                        data?.WaterConnection?.[0]?.connectionHolders?.[0]?.correspondenceAddress ||
+                        data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.correspondenceAddress ||
+                        t("CS_NA")
+                      }
+                      //textStyle={{ whiteSpace: "pre" }}
+                      privacy={{
+                        uuid: applicationNobyData?.includes("WS")
+                          ? data?.WaterConnection?.[0]?.connectionHolders?.[0]?.uuid
+                          : data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.uuid,
+                        fieldName: "correspondenceAddress",
+                        model: "WnSConnectionOwner",
+                        showValue: false,
+                        loadData: {
+                          serviceName: serviceType === "WATER" ? "/ws-services/wc/_search" : "/sw-services/swc/_search",
+                          requestBody: {},
+                          requestParam: { tenantId, applicationNumber: applicationNobyData },
+                          jsonPath:
+                            serviceType === "WATER"
+                              ? "WaterConnection[0].connectionHolders[0].correspondenceAddress"
+                              : "SewerageConnections[0].connectionHolders[0].correspondenceAddress",
+                          isArray: false,
+                        },
+                      }}
+                    />
+                    {/* <Row
+                      label={t("WS_OWN_DETAIL_SPECIAL_APPLICANT_LABEL")}
+                      text={
+                        (
                           applicationNobyData?.includes("WS")
+                            ? !data?.WaterConnection?.[0]?.connectionHolders?.[0]?.ownerType?.includes("*")
+                            : !data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.ownerType?.includes("*")
+                        )
+                          ? t(
+                            `COMMON_MASTERS_OWNERTYPE_${applicationNobyData?.includes("WS")
+                              ? data?.WaterConnection?.[0]?.connectionHolders?.[0]?.ownerType
+                              : data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.ownerType
+                            }`
+                          )
+                          : applicationNobyData?.includes("WS")
                             ? data?.WaterConnection?.[0]?.connectionHolders?.[0]?.ownerType
                             : data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.ownerType
-                        }`
-                      )
-                    : applicationNobyData?.includes("WS")
-                    ? data?.WaterConnection?.[0]?.connectionHolders?.[0]?.ownerType
-                    : data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.ownerType
-                }
-                textStyle={{ whiteSpace: "pre" }}
-                privacy={{
-                  uuid: applicationNobyData?.includes("WS")
-                    ? data?.WaterConnection?.[0]?.connectionHolders?.[0]?.uuid
-                    : data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.uuid,
-                  fieldName: "ownerType",
-                  model: "WnSConnection",
-                  showValue: false,
-                  loadData: {
-                    serviceName: serviceType === "WATER" ? "/ws-services/wc/_search" : "/sw-services/swc/_search",
-                    requestBody: {},
-                    requestParam: { tenantId, applicationNumber: applicationNobyData },
-                    jsonPath:
-                      serviceType === "WATER"
-                        ? "WaterConnection[0].connectionHolders[0].ownerType"
-                        : "SewerageConnections[0].connectionHolders[0].ownerType",
-                    isArray: false,
-                    d: (res) => {
-                      let resultString = res?.WaterConnection?.[0]
-                        ? t(`PROPERTYTAX_OWNERTYPE_${res?.WaterConnection?.[0]?.connectionHolders?.[0]?.ownerType?.toUpperCase()}`)
-                        : t(`PROPERTYTAX_OWNERTYPE_${res?.SewerageConnections?.[0]?.connectionHolders?.[0]?.ownerType?.toUpperCase()}`);
-                      return resultString;
-                    },
-                  },
-                }}
-              />
-              <Row
-                className="border-none"
-                label={t("WS_OWN_DETAIL_EMAIL_ID_LABEL")}
-                text={
-                  data?.WaterConnection?.[0]?.connectionHolders?.[0]?.emailId ||
-                  data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.emailId ||
-                  "NA"
-                }
-                textStyle={{ whiteSpace: "pre" }}
-                privacy={{
-                  uuid: applicationNobyData?.includes("WS")
-                    ? data?.WaterConnection?.[0]?.connectionHolders?.[0]?.uuid
-                    : data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.uuid,
-                  fieldName: "connectionHoldersEmailId",
-                  model: "WnSConnectionOwner",
-                  showValue: false,
-                  loadData: {
-                    serviceName: serviceType === "WATER" ? "/ws-services/wc/_search" : "/sw-services/swc/_search",
-                    requestBody: {},
-                    requestParam: { tenantId, applicationNumber: applicationNobyData },
-                    jsonPath:
-                      serviceType === "WATER"
-                        ? "WaterConnection[0].connectionHolders[0].emailId"
-                        : "SewerageConnections[0].connectionHolders[0].emailId",
-                    isArray: false,
-                  },
-                }}
-              />
-            </StatusTable>
-          </Card>
-        ) : (
-          <div>
-            <Card>
-              <CardSubHeader>{t("WS_COMMON_CONNECTION_HOLDER_DETAILS_HEADER")}</CardSubHeader>
-              <CardText>{t("WS_SAME_AS_PROPERTY_OWNERS")}</CardText>
-            </Card>
-          </div>
-        )}
-        <Card>
-          <CardHeader styles={{ fontSize: "28px" }}>{t("WS_COMMON_PROPERTY_DETAILS")}</CardHeader>
-          <StatusTable>
-            <Row
-              className="border-none"
-              label={t("WS_PROPERTY_ID_LABEL")}
-              text={data?.WaterConnection?.[0]?.propertyId || data?.SewerageConnections?.[0]?.propertyId}
-              textStyle={{ wordBreak: "break-word" }}
-            />
-            <Row
-              className="border-none"
-              label={t("WS_OWN_DETAIL_OWN_NAME_LABEL")}
-              text={
-                PTData?.Properties?.[0]?.owners.sort((a, b) => a?.additionalDetails?.ownerSequence - b?.additionalDetails?.ownerSequence)?.[0]?.name
-              }
-              textStyle={{ whiteSpace: "pre" }}
-            />
-            <Row
-              className="border-none"
-              label={t("WS_PROPERTY_ADDRESS")}
-              text={getAddress(PTData?.Properties?.[0]?.address, t) || t("CS_NA")}
-              textStyle={{ wordBreak: "break-word" }}
-              privacy={{
-                uuid: PTData?.Properties?.[0]?.owners?.[0]?.uuid,
-                fieldName: ["doorNo", "street", "landmark"],
-                model: "Property",
-                hide: !PTData?.Properties?.[0]?.address,
-                showValue: true,
-                loadData: {
-                  serviceName: "/property-services/property/_search",
-                  requestBody: {},
-                  requestParam: {
-                    tenantId: tenantId,
-                    mobileNumber: userMobileNumber,
-                  },
-                  jsonPath: "Properties[0].address.street",
-                  isArray: false,
-                  d: (res) => {
-                    let resultString =
-                      (_.get(res, "Properties[0].address.doorNo") ? `${_.get(res, "Properties[0].address.doorNo")}, ` : "") +
-                      (_.get(res, "Properties[0].address.street") ? `${_.get(res, "Properties[0].address.street")}, ` : "") +
-                      (_.get(res, "Properties[0].address.landmark") ? `${_.get(res, "Properties[0].address.landmark")}` : "");
-                    return resultString;
-                  },
-                },
-              }}
-            />
-            <Link
-              to={`/digit-ui/citizen/commonpt/view-property?propertyId=${
-                data?.WaterConnection?.[0]?.propertyId || data?.SewerageConnections?.[0]?.propertyId
-              }&tenantId=${data?.WaterConnection?.[0]?.tenantId || data?.SewerageConnections?.[0]?.tenantId}`}
-            >
-              <LinkButton style={{ textAlign: "left" }} label={t("WS_VIEW_PROPERTY")} />
-            </Link>
-          </StatusTable>
-        </Card>
-
-        <Card>
-          <CardHeader styles={{ fontSize: "28px" }}>{t("PT_LOCATION_DETAILS")}</CardHeader>
-          <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
-            <Row
-              label={t("WS_ZRO_LOCATION")}
-              text={`${t(
-                checkForNA(
-                  propertyAddress?.zro?.name ||
-                    propertyAddress?.zro ||
-                    propertyAddress?.zroLocation ||
-                    additionalDetails?.zroLocation ||
-                    propertyAddress?.additionalDetails?.zroLocation
-                )
-              )}`}
-            />
-            <Row
-              label={t("COMMON_ADDRESS_TYPE")}
-              text={`${t(checkForNA(propertyAddress?.addressType?.i18nKey || propertyAddress?.addressType?.code || propertyAddress?.addressType))}`}
-            />
-            <Row label={t("CORE_COMMON_PROFILE_CITY")} text={`${t(checkForNA(propertyAddress?.city?.name || propertyAddress?.city?.code || propertyAddress?.city))}`} />
-            <Row label={t("PINCODE")} text={`${t(checkForNA(propertyAddress?.pincode || propertyAddress?.pinCode))}`} />
-            <Row
-              label={t("LOCALITY")}
-              text={`${t(checkForNA(propertyAddress?.locality?.name || propertyAddress?.locality?.code || propertyAddress?.locality))}`}
-            />
-            <Row
-              label={t("SubLocality")}
-              text={`${t(checkForNA(propertyAddress?.subLocality?.name || propertyAddress?.subLocality?.code || propertyAddress?.subLocality))}`}
-            />
-            <Row label={t("STREET_NAME")} text={`${t(checkForNA(propertyAddress?.streetName || propertyAddress?.street))}`} />
-            <Row label={t("ADDRESS_LINE1")} text={`${t(checkForNA(propertyAddress?.addressLine1 || propertyAddress?.street))}`} />
-            <Row label={t("ADDRESS_LINE2")} text={`${t(checkForNA(propertyAddress?.addressLine2))}`} />
-            <Row label={t("HOUSE_NO")} text={`${t(checkForNA(propertyAddress?.houseNo || propertyAddress?.doorNo))}`} />
-            <Row label={t("LATITUDE_GEOTAG")} text={`${t(checkForNA(propertyAddress?.latitude))}`} />
-            <Row label={t("LONGITUDE_GEOTAG")} text={`${t(checkForNA(propertyAddress?.longitude))}`} />
-            <Row
-              label={t("COMMON_ASSEMBLY")}
-              text={`${t(
-                checkForNA(
-                  propertyAddress?.assembly?.name || propertyAddress?.assembly?.code || propertyAddress?.assembly || additionalDetails?.assembly
-                )
-              )}`}
-            />
-
-            <Row
-              label={t("COMMON_WARD")}
-              text={`${t(
-                checkForNA(
-                  propertyAddress?.block?.name ||
-                    propertyAddress?.block?.code ||
-                    propertyAddress?.block ||
-                    propertyAddress?.ward?.name ||
-                    propertyAddress?.ward?.code ||
-                    propertyAddress?.ward ||
-                    additionalDetails?.ward
-                )
-              )}`}
-            />
-            <Row
-              label={t("COMMON_ZONE")}
-              text={`${t(
-                checkForNA(propertyAddress?.zone?.name || propertyAddress?.zone?.code || propertyAddress?.zone || additionalDetails?.zone)
-              )}`}
-            />
-
-            <Row label={t("COMMON_CURRENT_ASSEMBLY")} text={`${t(checkForNA(propertyAddress?.actualAssembly || additionalDetails?.actualAssembly))}`} />
-            <Row label={t("COMMON_CURRENT_WARD")} text={`${t(checkForNA(propertyAddress?.actualWard || additionalDetails?.actualWard))}`} />
-            <Row label={t("COMMON_CURRENT_ZONE")} text={`${t(checkForNA(propertyAddress?.actualZone || additionalDetails?.actualZone))}`} />
-            <Row label={t("LANDMARK")} text={`${t(checkForNA(propertyAddress?.landmark))}`} />
-          </StatusTable>
-        </Card>
-
-        <Card>
-          <CardHeader styles={{ fontSize: "28px" }}>{t("WS_PROPERTY_AND_WATER_CONNECTION_USE_DETAILS")}</CardHeader>
-          <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
-            <Row
-              label={t("WS_CATEGORY_TYPE")}
-              text={`${t(checkForNA(useDetails?.categoryType?.i18nKey || useDetails?.categoryType?.code || useDetails?.categoryType))}`}
-            />
-            <Row
-              label={t("WS_PROPERTY_CATEGORY")}
-              text={`${t(checkForNA(useDetails?.propertyCategory?.i18nKey || useDetails?.propertyCategory?.code || useDetails?.propertyCategory))}`}
-            />
-            <Row
-              label={t("WS_PROPERTY_TYPE")}
-              text={`${t(checkForNA(useDetails?.propertyType?.i18nKey || useDetails?.propertyType?.code || useDetails?.propertyType))}`}
-            />
-            <Row
-              label={t("WS_WATER_CONNECTION_USAGE_TYPE")}
-              text={`${t(
-                checkForNA(
-                  useDetails?.WaterConnectionUsageType?.i18nKey ||
-                    useDetails?.WaterConnectionUsageType?.code ||
-                    useDetails?.WaterConnectionUsageType ||
-                    useDetails?.waterConnectionUsageType?.i18nKey ||
-                    useDetails?.waterConnectionUsageType?.code ||
-                    useDetails?.waterConnectionUsageType
-                )
-              )}`}
-            />
-            <Row
-              label={t("WS_NUMBER_OF_FLOORS")}
-              text={`${t(checkForNA(useDetails?.noOfFloors?.i18nKey || useDetails?.noOfFloors?.code || useDetails?.noOfFloors))}`}
-            />
-            <Row label={t("WS_PLOT_AREA")} text={`${t(checkForNA(useDetails?.plotArea))}`} />
-            <Row label={t("WS_BUILT_UP_AREA")} text={`${t(checkForNA(useDetails?.builtUpArea))}`} />
-            <Row
-              label={t("WS_SELECT_YEAR_OF_CONSTRUCTION")}
-              text={`${t(
-                checkForNA(
-                  useDetails?.SelectYearofConstruction?.i18nKey ||
-                    useDetails?.SelectYearofConstruction?.value ||
-                    useDetails?.SelectYearofConstruction?.code ||
-                    useDetails?.SelectYearofConstruction ||
-                    useDetails?.constructionYear?.i18nKey ||
-                    useDetails?.constructionYear?.code ||
-                    useDetails?.constructionYear
-                )
-              )}`}
-            />
-            <Row
-              label={t("WS_NUMBER_OF_DWELLING_UNITS")}
-              text={`${t(checkForNA(useDetails?.NumberofDwellingUnits || useDetails?.noOfDwellingUnits))}`}
-            />
-          </StatusTable>
-        </Card>
-
-        <Card>
-          <CardHeader styles={{ fontSize: "28px" }}>{t("WS_DJB_EMPLOYEE")}</CardHeader>
-          <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
-            <Row label={t("WS_DJB_EMPLOYEE")} text={`${djbEmployee?.isDjbEmployee ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}`} />
-            {djbEmployee?.isDjbEmployee && (
+                      }
+                      textStyle={{ whiteSpace: "pre" }}
+                      privacy={{
+                        uuid: applicationNobyData?.includes("WS")
+                          ? data?.WaterConnection?.[0]?.connectionHolders?.[0]?.uuid
+                          : data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.uuid,
+                        fieldName: "ownerType",
+                        model: "WnSConnection",
+                        showValue: false,
+                        loadData: {
+                          serviceName: serviceType === "WATER" ? "/ws-services/wc/_search" : "/sw-services/swc/_search",
+                          requestBody: {},
+                          requestParam: { tenantId, applicationNumber: applicationNobyData },
+                          jsonPath:
+                            serviceType === "WATER"
+                              ? "WaterConnection[0].connectionHolders[0].ownerType"
+                              : "SewerageConnections[0].connectionHolders[0].ownerType",
+                          isArray: false,
+                          d: (res) => {
+                            let resultString = res?.WaterConnection?.[0]
+                              ? t(`PROPERTYTAX_OWNERTYPE_${res?.WaterConnection?.[0]?.connectionHolders?.[0]?.ownerType?.toUpperCase()}`)
+                              : t(`PROPERTYTAX_OWNERTYPE_${res?.SewerageConnections?.[0]?.connectionHolders?.[0]?.ownerType?.toUpperCase()}`);
+                            return resultString;
+                          },
+                        },
+                      }}
+                    /> */}
+                    <Row
+                      label={t("WS_OWN_DETAIL_EMAIL_ID_LABEL")}
+                      text={
+                        data?.WaterConnection?.[0]?.connectionHolders?.[0]?.emailId ||
+                        data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.emailId ||
+                        "NA"
+                      }
+                      textStyle={{ whiteSpace: "pre" }}
+                      privacy={{
+                        uuid: applicationNobyData?.includes("WS")
+                          ? data?.WaterConnection?.[0]?.connectionHolders?.[0]?.uuid
+                          : data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.uuid,
+                        fieldName: "connectionHoldersEmailId",
+                        model: "WnSConnectionOwner",
+                        showValue: false,
+                        loadData: {
+                          serviceName: serviceType === "WATER" ? "/ws-services/wc/_search" : "/sw-services/swc/_search",
+                          requestBody: {},
+                          requestParam: { tenantId, applicationNumber: applicationNobyData },
+                          jsonPath:
+                            serviceType === "WATER"
+                              ? "WaterConnection[0].connectionHolders[0].emailId"
+                              : "SewerageConnections[0].connectionHolders[0].emailId",
+                          isArray: false,
+                        },
+                      }}
+                    />
+                  </StatusTable>
+                </React.Fragment>
+              ) : (
+                <div>
+                  <CardSubHeader>{t("WS_COMMON_CONNECTION_HOLDER_DETAILS_HEADER")}</CardSubHeader>
+                  <CardText>{t("WS_SAME_AS_PROPERTY_OWNERS")}</CardText>
+                </div>
+              )}
               <React.Fragment>
-                <Row label={t("WS_EMPLOYEE_ID")} text={`${t(checkForNA(djbEmployee?.employeeId))}`} />
-                <Row label={t("WS_DATE_OF_RETIREMENT")} text={`${t(checkForNA(djbEmployee?.dor))}`} />
-                <Row label={t("WS_EMPLOYEE_DESIGNATION")} text={`${t(checkForNA(djbEmployee?.designation))}`} />
+                <CardHeader styles={{ fontSize: "28px" }}>{t("WS_COMMON_PROPERTY_DETAILS")}</CardHeader>
+                <StatusTable>
+                  <Row
+                    label={t("WS_PROPERTY_ID_LABEL")}
+                    text={data?.WaterConnection?.[0]?.propertyId || data?.SewerageConnections?.[0]?.propertyId}
+                    textStyle={{ wordBreak: "break-word" }}
+                  />
+                  <Row
+                    label={t("WS_OWN_DETAIL_OWN_NAME_LABEL")}
+                    text={
+                      PTData?.Properties?.[0]?.owners.sort((a, b) => a?.additionalDetails?.ownerSequence - b?.additionalDetails?.ownerSequence)?.[0]?.name
+                    }
+                    textStyle={{ whiteSpace: "pre" }}
+                  />
+                  <Row
+                    label={t("WS_PROPERTY_ADDRESS")}
+                    text={getAddress(PTData?.Properties?.[0]?.address, t) || t("CS_NA")}
+                    textStyle={{ wordBreak: "break-word" }}
+                    privacy={{
+                      uuid: PTData?.Properties?.[0]?.owners?.[0]?.uuid,
+                      fieldName: ["doorNo", "street", "landmark"],
+                      model: "Property",
+                      hide: !PTData?.Properties?.[0]?.address,
+                      showValue: true,
+                      loadData: {
+                        serviceName: "/property-services/property/_search",
+                        requestBody: {},
+                        requestParam: {
+                          tenantId: tenantId,
+                          mobileNumber: userMobileNumber,
+                        },
+                        jsonPath: "Properties[0].address.street",
+                        isArray: false,
+                        d: (res) => {
+                          let resultString =
+                            (_.get(res, "Properties[0].address.doorNo") ? `${_.get(res, "Properties[0].address.doorNo")}, ` : "") +
+                            (_.get(res, "Properties[0].address.street") ? `${_.get(res, "Properties[0].address.street")}, ` : "") +
+                            (_.get(res, "Properties[0].address.landmark") ? `${_.get(res, "Properties[0].address.landmark")}` : "");
+                          return resultString;
+                        },
+                      },
+                    }}
+                  />
+                  <Link
+                    to={`/digit-ui/citizen/commonpt/view-property?propertyId=${data?.WaterConnection?.[0]?.propertyId || data?.SewerageConnections?.[0]?.propertyId
+                      }&tenantId=${data?.WaterConnection?.[0]?.tenantId || data?.SewerageConnections?.[0]?.tenantId}`}
+                  >
+                    <LinkButton style={{ textAlign: "left" }} label={t("WS_VIEW_PROPERTY")} />
+                  </Link>
+                </StatusTable>
               </React.Fragment>
-            )}
-          </StatusTable>
-        </Card>
 
-        <Card>
-          <CardHeader styles={{ fontSize: "28px" }}>{t("WS_BANK_DETAILS")}</CardHeader>
-          <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
-            <Row label={t("WS_NAME_OF_BANK")} text={`${t(checkForNA(bankDetails?.bankName))}`} />
-            <Row label={t("WS_NAME_OF_BRANCH")} text={`${t(checkForNA(bankDetails?.bankBranchName || bankDetails?.branchName))}`} />
-            <Row label={t("WS_IFSC_CODE")} text={`${t(checkForNA(bankDetails?.ifscCode))}`} />
-            <Row label={t("WS_BANK_ACCOUNT_NO")} text={`${t(checkForNA(bankDetails?.bankAccountNumber || bankDetails?.accountNumber))}`} />
-          </StatusTable>
-        </Card>
-
-        {/* {isDisconnection ? null : (
-          <Card>
-            <CardHeader styles={{ fontSize: "28px" }}>{t("WS_COMMON_CONNECTION_DETAIL")}</CardHeader>
-            {data?.WaterConnection && data?.WaterConnection?.length > 0 && (
-              <StatusTable>
+              <CardHeader styles={{ fontSize: "28px" }}>{t("PT_LOCATION_DETAILS")}</CardHeader>
+              <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
                 <Row
-                  className="border-none"
-                  label={t("WS_TASK_DETAILS_CONN_DETAIL_NO_OF_TAPS_PROPOSED")}
-                  text={data?.WaterConnection?.[0]?.proposedTaps || t("CS_NA")}
-                  textStyle={{ whiteSpace: "pre" }}
+                  label={t("WS_ZRO_LOCATION")}
+                  text={`${t(
+                    checkForNA(
+                      propertyAddress?.zro?.name ||
+                      propertyAddress?.zro ||
+                      propertyAddress?.zroLocation ||
+                      additionalDetails?.zroLocation ||
+                      propertyAddress?.additionalDetails?.zroLocation
+                    )
+                  )}`}
                 />
                 <Row
-                  className="border-none"
-                  label={t("WS_SERV_DETAIL_PIPE_SIZE")}
-                  text={`${data?.WaterConnection?.[0]?.proposedPipeSize} ${t("WS_INCHES_LABEL")}` || t("CS_NA")}
-                  textStyle={{ whiteSpace: "pre" }}
+                  label={t("COMMON_ADDRESS_TYPE")}
+                  text={`${t(checkForNA(propertyAddress?.addressType?.i18nKey || propertyAddress?.addressType?.code || propertyAddress?.addressType))}`}
+                />
+                <Row label={t("CORE_COMMON_PROFILE_CITY")} text={`${t(checkForNA(propertyAddress?.city?.name || propertyAddress?.city?.code || propertyAddress?.city))}`} />
+                <Row label={t("PINCODE")} text={`${t(checkForNA(propertyAddress?.pincode || propertyAddress?.pinCode))}`} />
+                <Row
+                  label={t("LOCALITY")}
+                  text={`${t(checkForNA(propertyAddress?.locality?.name || propertyAddress?.locality?.code || propertyAddress?.locality))}`}
+                />
+                <Row
+                  label={t("SubLocality")}
+                  text={`${t(checkForNA(propertyAddress?.subLocality?.name || propertyAddress?.subLocality?.code || propertyAddress?.subLocality))}`}
+                />
+                <Row label={t("STREET_NAME")} text={`${t(checkForNA(propertyAddress?.streetName || propertyAddress?.street))}`} />
+                <Row label={t("ADDRESS_LINE1")} text={`${t(checkForNA(propertyAddress?.addressLine1 || propertyAddress?.street))}`} />
+                <Row label={t("ADDRESS_LINE2")} text={`${t(checkForNA(propertyAddress?.addressLine2))}`} />
+                <Row label={t("HOUSE_NO")} text={`${t(checkForNA(propertyAddress?.houseNo || propertyAddress?.doorNo))}`} />
+                <Row label={t("LATITUDE_GEOTAG")} text={`${t(checkForNA(propertyAddress?.latitude))}`} />
+                <Row label={t("LONGITUDE_GEOTAG")} text={`${t(checkForNA(propertyAddress?.longitude))}`} />
+                <Row
+                  label={t("COMMON_ASSEMBLY")}
+                  text={`${t(
+                    checkForNA(
+                      propertyAddress?.assembly?.name || propertyAddress?.assembly?.code || propertyAddress?.assembly || additionalDetails?.assembly
+                    )
+                  )}`}
                 />
 
-                <Link to={`/digit-ui/citizen/ws/connection/additional/${data?.WaterConnection?.[0]?.applicationNo}`}>
-                  <LinkButton style={{ textAlign: "left" }} label={t("WS_ADDITIONAL_DETAILS")} />
-                </Link>
+                <Row
+                  label={t("COMMON_WARD")}
+                  text={`${t(
+                    checkForNA(
+                      propertyAddress?.block?.name ||
+                      propertyAddress?.block?.code ||
+                      propertyAddress?.block ||
+                      propertyAddress?.ward?.name ||
+                      propertyAddress?.ward?.code ||
+                      propertyAddress?.ward ||
+                      additionalDetails?.ward
+                    )
+                  )}`}
+                />
+                <Row
+                  label={t("COMMON_ZONE")}
+                  text={`${t(
+                    checkForNA(propertyAddress?.zone?.name || propertyAddress?.zone?.code || propertyAddress?.zone || additionalDetails?.zone)
+                  )}`}
+                />
+
+                <Row label={t("COMMON_CURRENT_ASSEMBLY")} text={`${t(checkForNA(propertyAddress?.actualAssembly || additionalDetails?.actualAssembly))}`} />
+                <Row label={t("COMMON_CURRENT_WARD")} text={`${t(checkForNA(propertyAddress?.actualWard || additionalDetails?.actualWard))}`} />
+                <Row label={t("COMMON_CURRENT_ZONE")} text={`${t(checkForNA(propertyAddress?.actualZone || additionalDetails?.actualZone))}`} />
+                <Row label={t("LANDMARK")} text={`${t(checkForNA(propertyAddress?.landmark))}`} />
               </StatusTable>
-            )}
-            {data?.SewerageConnections && data?.SewerageConnections?.length > 0 && (
-              <StatusTable>
+
+              <CardHeader styles={{ fontSize: "28px" }}>{t("WS_PROPERTY_AND_WATER_CONNECTION_USE_DETAILS")}</CardHeader>
+              <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
                 <Row
-                  className="border-none"
-                  label={t("WS_NO_OF_WATER_CLOSETS_LABEL")}
-                  text={data?.SewerageConnections?.[0]?.proposedWaterClosets}
-                  textStyle={{ whiteSpace: "pre" }}
+                  label={t("WS_CATEGORY_TYPE")}
+                  text={`${t(checkForNA(useDetails?.categoryType?.i18nKey || useDetails?.categoryType?.code || useDetails?.categoryType))}`}
                 />
                 <Row
-                  className="border-none"
-                  label={t("WS_SERV_DETAIL_NO_OF_TOILETS")}
-                  text={data?.SewerageConnections?.[0]?.proposedToilets || t("CS_NA")}
-                  textStyle={{ whiteSpace: "pre" }}
+                  label={t("WS_PROPERTY_CATEGORY")}
+                  text={`${t(checkForNA(useDetails?.propertyCategory?.i18nKey || useDetails?.propertyCategory?.code || useDetails?.propertyCategory))}`}
                 />
-                <Link to={`/digit-ui/citizen/ws/connection/additional/${data?.SewerageConnections?.[0]?.applicationNo}`}>
-                  <LinkButton style={{ textAlign: "left" }} label={t("WS_ADDITIONAL_DETAILS")} />
-                </Link>
+                <Row
+                  label={t("WS_PROPERTY_TYPE")}
+                  text={`${t(checkForNA(useDetails?.propertyType?.i18nKey || useDetails?.propertyType?.code || useDetails?.propertyType))}`}
+                />
+                <Row
+                  label={t("WS_WATER_CONNECTION_USAGE_TYPE")}
+                  text={`${t(
+                    checkForNA(
+                      useDetails?.WaterConnectionUsageType?.i18nKey ||
+                      useDetails?.WaterConnectionUsageType?.code ||
+                      useDetails?.WaterConnectionUsageType ||
+                      useDetails?.waterConnectionUsageType?.i18nKey ||
+                      useDetails?.waterConnectionUsageType?.code ||
+                      useDetails?.waterConnectionUsageType
+                    )
+                  )}`}
+                />
+                <Row
+                  label={t("WS_NUMBER_OF_FLOORS")}
+                  text={`${t(checkForNA(useDetails?.noOfFloors?.i18nKey || useDetails?.noOfFloors?.code || useDetails?.noOfFloors))}`}
+                />
+                <Row label={t("WS_PLOT_AREA")} text={`${t(checkForNA(useDetails?.plotArea))}`} />
+                <Row label={t("WS_BUILT_UP_AREA")} text={`${t(checkForNA(useDetails?.builtUpArea))}`} />
+                <Row
+                  label={t("WS_SELECT_YEAR_OF_CONSTRUCTION")}
+                  text={`${t(
+                    checkForNA(
+                      useDetails?.SelectYearofConstruction?.i18nKey ||
+                      useDetails?.SelectYearofConstruction?.value ||
+                      useDetails?.SelectYearofConstruction?.code ||
+                      useDetails?.SelectYearofConstruction ||
+                      useDetails?.constructionYear?.i18nKey ||
+                      useDetails?.constructionYear?.code ||
+                      useDetails?.constructionYear
+                    )
+                  )}`}
+                />
+                <Row
+                  label={t("WS_NUMBER_OF_DWELLING_UNITS")}
+                  text={`${t(checkForNA(useDetails?.NumberofDwellingUnits || useDetails?.noOfDwellingUnits))}`}
+                />
               </StatusTable>
-            )}
-          </Card>
-        )} */}
-        {/* <Card>
-        <PropertyDocument property={application}></PropertyDocument>
-        </Card> */}
-        <Card>
-          <CardHeader styles={{ fontSize: "28px" }}>{t("WS_COMMON_DOCUMENT_DETAILS")}</CardHeader>
-          {data?.WaterConnection?.[0]?.documents &&
-            data?.WaterConnection?.[0]?.documents.map((doc, index) => (
-              <div key={`doc-${index}`}>
-                {
-                  <div>
-                    <CardSectionHeader>{t(doc?.documentType?.split(".").slice(0, 2).join("_"))}</CardSectionHeader>
-                    <StatusTable>
-                      {<WSDocument value={data?.WaterConnection?.[0]?.documents} Code={doc?.documentType} index={index} />}
-                      {data?.WaterConnection?.[0]?.documents.length != index + 1 ? (
-                        <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
-                      ) : null}
-                    </StatusTable>
-                  </div>
-                }
-              </div>
-            ))}
-          {data?.SewerageConnections?.[0]?.documents &&
-            data?.SewerageConnections?.[0]?.documents.map((doc, index) => (
-              <div key={`doc-${index}`}>
-                {
-                  <div>
-                    <CardSectionHeader>{t(doc?.documentType?.split(".").slice(0, 2).join("_"))}</CardSectionHeader>
-                    <StatusTable>
-                      {<WSDocument value={data?.SewerageConnections?.[0]?.documents} Code={doc?.documentType} index={index} />}
-                      {data?.SewerageConnections?.[0]?.documents.length != index + 1 ? (
-                        <hr style={{ color: "white", backgroundColor: "white", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
-                      ) : null}
-                    </StatusTable>
-                  </div>
-                }
-              </div>
-            ))}
-        </Card>
-        <Card>
-          <div id="timeline">
-            {/* <PTWFApplicationTimeline application={application} id={acknowledgementIds} /> */}
 
-            <WSWFApplicationTimeline
-              application={data?.WaterConnection?.[0] || data?.SewerageConnections?.[0]}
-              id={data?.WaterConnection?.[0]?.applicationNo || data?.SewerageConnections?.[0]?.applicationNo}
-              paymentbuttonenabled={false}
-            />
-          </div>
-
-          {data?.WaterConnection?.[0]?.applicationStatus === "PENDING_FOR_PAYMENT" ||
-          data?.SewerageConnections?.[0]?.applicationStatus === "PENDING_FOR_PAYMENT" ? (
-            <Link
-              to={{
-                pathname: `/digit-ui/citizen/payment/my-bills/${paymentDetails?.data?.Bill?.[0]?.businessService}/${
-                  applicationNobyData?.includes("DC")
-                    ? stringReplaceAll(data?.WaterConnection?.[0]?.connectionNo, "/", "+") ||
-                      stringReplaceAll(data?.SewerageConnections?.[0]?.connectionNo, "/", "+")
-                    : stringReplaceAll(data?.WaterConnection?.[0]?.applicationNo, "/", "+") ||
-                      stringReplaceAll(data?.SewerageConnections?.[0]?.applicationNo, "/", "+")
-                }?workflow=WNS&tenantId=${data?.WaterConnection?.[0]?.tenantId || data?.SewerageConnections?.[0]?.tenantId}&ConsumerName=${
-                  data?.WaterConnection?.[0]?.connectionHolders?.map((owner) => owner.name).join(",") ||
-                  data?.SewerageConnections?.[0]?.connectionHolders?.map((owner) => owner.name).join(",") ||
-                  PTData?.Properties?.[0]?.owners?.map((owner) => owner.name).join(",")
-                }&isDisoconnectFlow=${applicationNobyData?.includes("DC") ? true : false}`,
-                state: {},
-              }}
-            >
-              <SubmitBar label={t("MAKE_PAYMENT")} />
-            </Link>
-          ) : null}
-          {(!data?.WaterConnection?.[0]?.applicationType.includes("DISCONNECT") &&
-            data?.WaterConnection?.[0]?.applicationStatus.includes("PENDING_FOR_CITIZEN_ACTION")) ||
-          (!data?.SewerageConnections?.[0]?.applicationType.includes("DISCONNECT") &&
-            data?.SewerageConnections?.[0]?.applicationStatus.includes("PENDING_FOR_CITIZEN_ACTION")) ? (
-            <Link
-              to={{
-                pathname: `/digit-ui/citizen/ws/edit-application/${data?.WaterConnection?.[0]?.tenantId || data?.SewerageConnections?.[0]?.tenantId}`,
-                state: { id: `${data?.WaterConnection?.[0]?.applicationNo || data?.SewerageConnections?.[0]?.applicationNo}` },
-              }}
-            >
-              <SubmitBar label={t("COMMON_EDIT")} />
-            </Link>
-          ) : null}
-          {(data?.WaterConnection?.[0]?.applicationType.includes("DISCONNECT") &&
-            data?.WaterConnection?.[0]?.applicationStatus.includes("PENDING_FOR_CITIZEN_ACTION")) ||
-          (data?.SewerageConnections?.[0]?.applicationType.includes("DISCONNECT") &&
-            data?.SewerageConnections?.[0]?.applicationStatus.includes("PENDING_FOR_CITIZEN_ACTION")) ? (
-            <Link
-              to={{
-                pathname: `/digit-ui/citizen/ws/resubmit-disconnect-application`,
-                state: { id: `${data?.WaterConnection?.[0]?.applicationNo || data?.SewerageConnections?.[0]?.applicationNo}` },
-              }}
-            >
-              <SubmitBar
-                label={t("RESUBMIT_APPLICATION")}
-                onSubmit={Digit.SessionStorage.set(
-                  "WS_DISCONNECTION",
-                  applicationNobyData?.includes("SW")
-                    ? {
-                        applicationData: data?.SewerageConnections?.[0],
-                        serviceType: "SEWERAGE",
-                        WSDisconnectionForm: {
-                          type: data?.SewerageConnections?.[0]?.isDisconnectionTemporary
-                            ? {
-                                code: "type",
-                                value: {
-                                  name: "Temporary",
-                                  i18nKey: "WS_DISCONNECTIONTYPE_TEMPORARY",
-                                  active: true,
-                                  code: "Temporary",
-                                },
-                              }
-                            : {
-                                code: "type",
-                                value: {
-                                  name: "Permanent",
-                                  i18nKey: "WS_DISCONNECTIONTYPE_PERMANENT",
-                                  active: true,
-                                  code: "Permanent",
-                                },
-                              },
-                          date: convertEpochToDateDMY(data?.SewerageConnections?.[0]?.dateEffectiveFrom, true),
-                          reason: {
-                            code: "reason",
-                            value: data?.SewerageConnections?.[0]?.disconnectionReason,
-                          },
-                          documents: data?.SewerageConnections?.[0]?.documents,
-                        },
-                      }
-                    : {
-                        applicationData: data?.WaterConnection?.[0],
-                        serviceType: "WATER",
-                        WSDisconnectionForm: {
-                          type: data?.WaterConnection?.[0]?.isDisconnectionTemporary
-                            ? {
-                                code: "type",
-                                value: {
-                                  name: "Temporary",
-                                  i18nKey: "WS_DISCONNECTIONTYPE_TEMPORARY",
-                                  active: true,
-                                  code: "Temporary",
-                                },
-                              }
-                            : {
-                                code: "type",
-                                value: {
-                                  name: "Permanent",
-                                  i18nKey: "WS_DISCONNECTIONTYPE_PERMANENT",
-                                  active: true,
-                                  code: "Permanent",
-                                },
-                              },
-                          date: convertEpochToDateDMY(data?.WaterConnection?.[0]?.dateEffectiveFrom, true),
-                          reason: {
-                            code: "reason",
-                            value: data?.WaterConnection?.[0]?.disconnectionReason,
-                          },
-                          documents: data?.WaterConnection?.[0]?.documents,
-                        },
-                      }
+              <CardHeader styles={{ fontSize: "28px" }}>{t("WS_DJB_EMPLOYEE")}</CardHeader>
+              <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
+                <Row label={t("WS_DJB_EMPLOYEE")} text={`${djbEmployee?.isDjbEmployee ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}`} />
+                {djbEmployee?.isDjbEmployee && (
+                  <React.Fragment>
+                    <Row label={t("WS_EMPLOYEE_ID")} text={`${t(checkForNA(djbEmployee?.employeeId))}`} />
+                    <Row label={t("WS_DATE_OF_RETIREMENT")} text={`${t(checkForNA(djbEmployee?.dor))}`} />
+                    <Row label={t("WS_EMPLOYEE_DESIGNATION")} text={`${t(checkForNA(djbEmployee?.designation))}`} />
+                  </React.Fragment>
                 )}
-              />
-            </Link>
-          ) : null}
-        </Card>
+              </StatusTable>
+
+              <CardHeader styles={{ fontSize: "28px" }}>{t("WS_BANK_DETAILS")}</CardHeader>
+              <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
+                <Row label={t("WS_NAME_OF_BANK")} text={`${t(checkForNA(bankDetails?.bankName))}`} />
+                <Row label={t("WS_NAME_OF_BRANCH")} text={`${t(checkForNA(bankDetails?.bankBranchName || bankDetails?.branchName))}`} />
+                <Row label={t("WS_IFSC_CODE")} text={`${t(checkForNA(bankDetails?.ifscCode))}`} />
+                <Row label={t("WS_BANK_ACCOUNT_NO")} text={`${t(checkForNA(bankDetails?.bankAccountNumber || bankDetails?.accountNumber))}`} />
+              </StatusTable>
+              <CardHeader styles={{ fontSize: "28px" }}>{t("WS_COMMON_DOCUMENT_DETAILS")}</CardHeader>
+              {data?.WaterConnection?.[0]?.documents &&
+                data?.WaterConnection?.[0]?.documents.map((doc, index) => (
+                  <div key={`doc-${index}`}>
+                    {
+                      <div>
+                        <CardSectionHeader>{t(doc?.documentType?.split(".").slice(0, 2).join("_"))}</CardSectionHeader>
+                        <StatusTable>
+                          {<WSDocument value={data?.WaterConnection?.[0]?.documents} Code={doc?.documentType} index={index} />}
+                          {data?.WaterConnection?.[0]?.documents.length != index + 1 ? (
+                            <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
+                          ) : null}
+                        </StatusTable>
+                      </div>
+                    }
+                  </div>
+                ))}
+              {data?.SewerageConnections?.[0]?.documents &&
+                data?.SewerageConnections?.[0]?.documents.map((doc, index) => (
+                  <div key={`doc-${index}`}>
+                    {
+                      <div>
+                        <CardSectionHeader>{t(doc?.documentType?.split(".").slice(0, 2).join("_"))}</CardSectionHeader>
+                        <StatusTable>
+                          {<WSDocument value={data?.SewerageConnections?.[0]?.documents} Code={doc?.documentType} index={index} />}
+                          {data?.SewerageConnections?.[0]?.documents.length != index + 1 ? (
+                            <hr style={{ color: "white", backgroundColor: "white", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
+                          ) : null}
+                        </StatusTable>
+                      </div>
+                    }
+                  </div>
+                ))}
+
+              {data?.WaterConnection?.[0]?.applicationStatus === "PENDING_FOR_PAYMENT" ||
+                data?.SewerageConnections?.[0]?.applicationStatus === "PENDING_FOR_PAYMENT" ? (
+                <Link
+                  to={{
+                    pathname: `/digit-ui/citizen/payment/my-bills/${paymentDetails?.data?.Bill?.[0]?.businessService}/${applicationNobyData?.includes("DC")
+                      ? stringReplaceAll(data?.WaterConnection?.[0]?.connectionNo, "/", "+") ||
+                      stringReplaceAll(data?.SewerageConnections?.[0]?.connectionNo, "/", "+")
+                      : stringReplaceAll(data?.WaterConnection?.[0]?.applicationNo, "/", "+") ||
+                      stringReplaceAll(data?.SewerageConnections?.[0]?.applicationNo, "/", "+")
+                      }?workflow=WNS&tenantId=${data?.WaterConnection?.[0]?.tenantId || data?.SewerageConnections?.[0]?.tenantId}&ConsumerName=${data?.WaterConnection?.[0]?.connectionHolders?.map((owner) => owner.name).join(",") ||
+                      data?.SewerageConnections?.[0]?.connectionHolders?.map((owner) => owner.name).join(",") ||
+                      PTData?.Properties?.[0]?.owners?.map((owner) => owner.name).join(",")
+                      }&isDisoconnectFlow=${applicationNobyData?.includes("DC") ? true : false}`,
+                    state: {},
+                  }}
+                >
+                  <SubmitBar label={t("MAKE_PAYMENT")} />
+                </Link>
+              ) : null}
+              {(!data?.WaterConnection?.[0]?.applicationType.includes("DISCONNECT") &&
+                data?.WaterConnection?.[0]?.applicationStatus.includes("PENDING_FOR_CITIZEN_ACTION")) ||
+                (!data?.SewerageConnections?.[0]?.applicationType.includes("DISCONNECT") &&
+                  data?.SewerageConnections?.[0]?.applicationStatus.includes("PENDING_FOR_CITIZEN_ACTION")) ? (
+                <Link
+                  to={{
+                    pathname: `/digit-ui/citizen/ws/edit-application/${data?.WaterConnection?.[0]?.tenantId || data?.SewerageConnections?.[0]?.tenantId}`,
+                    state: { id: `${data?.WaterConnection?.[0]?.applicationNo || data?.SewerageConnections?.[0]?.applicationNo}` },
+                  }}
+                >
+                  <SubmitBar label={t("COMMON_EDIT")} />
+                </Link>
+              ) : null}
+              {(data?.WaterConnection?.[0]?.applicationType.includes("DISCONNECT") &&
+                data?.WaterConnection?.[0]?.applicationStatus.includes("PENDING_FOR_CITIZEN_ACTION")) ||
+                (data?.SewerageConnections?.[0]?.applicationType.includes("DISCONNECT") &&
+                  data?.SewerageConnections?.[0]?.applicationStatus.includes("PENDING_FOR_CITIZEN_ACTION")) ? (
+                <Link
+                  to={{
+                    pathname: `/digit-ui/citizen/ws/resubmit-disconnect-application`,
+                    state: { id: `${data?.WaterConnection?.[0]?.applicationNo || data?.SewerageConnections?.[0]?.applicationNo}` },
+                  }}
+                >
+                  <SubmitBar
+                    label={t("RESUBMIT_APPLICATION")}
+                    onSubmit={Digit.SessionStorage.set(
+                      "WS_DISCONNECTION",
+                      applicationNobyData?.includes("SW")
+                        ? {
+                          applicationData: data?.SewerageConnections?.[0],
+                          serviceType: "SEWERAGE",
+                          WSDisconnectionForm: {
+                            type: data?.SewerageConnections?.[0]?.isDisconnectionTemporary
+                              ? {
+                                code: "type",
+                                value: {
+                                  name: "Temporary",
+                                  i18nKey: "WS_DISCONNECTIONTYPE_TEMPORARY",
+                                  active: true,
+                                  code: "Temporary",
+                                },
+                              }
+                              : {
+                                code: "type",
+                                value: {
+                                  name: "Permanent",
+                                  i18nKey: "WS_DISCONNECTIONTYPE_PERMANENT",
+                                  active: true,
+                                  code: "Permanent",
+                                },
+                              },
+                            date: convertEpochToDateDMY(data?.SewerageConnections?.[0]?.dateEffectiveFrom, true),
+                            reason: {
+                              code: "reason",
+                              value: data?.SewerageConnections?.[0]?.disconnectionReason,
+                            },
+                            documents: data?.SewerageConnections?.[0]?.documents,
+                          },
+                        }
+                        : {
+                          applicationData: data?.WaterConnection?.[0],
+                          serviceType: "WATER",
+                          WSDisconnectionForm: {
+                            type: data?.WaterConnection?.[0]?.isDisconnectionTemporary
+                              ? {
+                                code: "type",
+                                value: {
+                                  name: "Temporary",
+                                  i18nKey: "WS_DISCONNECTIONTYPE_TEMPORARY",
+                                  active: true,
+                                  code: "Temporary",
+                                },
+                              }
+                              : {
+                                code: "type",
+                                value: {
+                                  name: "Permanent",
+                                  i18nKey: "WS_DISCONNECTIONTYPE_PERMANENT",
+                                  active: true,
+                                  code: "Permanent",
+                                },
+                              },
+                            date: convertEpochToDateDMY(data?.WaterConnection?.[0]?.dateEffectiveFrom, true),
+                            reason: {
+                              code: "reason",
+                              value: data?.WaterConnection?.[0]?.disconnectionReason,
+                            },
+                            documents: data?.WaterConnection?.[0]?.documents,
+                          },
+                        }
+                    )}
+                  />
+                </Link>
+              ) : null}
+            </div>
+          </Card>
+        </div>
       </div>
     </React.Fragment>
   );
