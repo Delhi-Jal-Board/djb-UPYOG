@@ -1226,6 +1226,7 @@ public class InboxService {
 		log.info("statusCountMap size :::: " + statusCountMap.size());
 
 
+
 		if(wtApplicationNumbers!=null) {
 
 			if (processCriteria.getBusinessService().contains("watertanker-fixedpoint")) {
