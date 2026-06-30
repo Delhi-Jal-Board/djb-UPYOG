@@ -398,7 +398,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
       // to prevent an infinite setState loop between the two useEffects
       if (addressData.silent) return;
 
-      const addressStr = JSON.stringify(addressData) + "_" + (structuredLocalityData?.length || 0) + "_" + (allCities?.length || 0);
+      const addressStr = JSON.stringify(addressData) + "_" + (structuredLocalityData?.length || 0) + "_" + (allCities?.length || 0) + "_" + (_mappedZROLocation?.length || 0);
       if (addressUpdateRef.current === addressStr) return;
       addressUpdateRef.current = addressStr;
 
@@ -419,7 +419,9 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
       if ((addressData.addressLine2 || "") !== addressLine2) setAddressLine2(addressData.addressLine2 || "");
       if ((addressData.latitude || "") !== latitude) setLatitude(addressData.latitude || "");
       if ((addressData.longitude || "") !== longitude) setLongitude(addressData.longitude || "");
-      if ((addressData.zro || "") !== zro) setZro(addressData.zro || "");
+      const zroCodeStr = addressData.zro?.code || addressData.zro || addressData.zroLocation || "";
+      const zroObj = _mappedZROLocation?.find((z) => z.code === zroCodeStr || z.name === zroCodeStr) || addressData.zro || "";
+      if (JSON.stringify(zroObj) !== JSON.stringify(zro)) setZro(zroObj);
       if ((addressData.subLocality || "") !== subLocality) setSubLocality(addressData.subLocality || "");
       if ((addressData.wardRemark || "") !== wardRemark) setWardRemark(addressData.wardRemark || "");
       if ((addressData.actualAssembly || "") !== actualAssembly) setActualAssembly(addressData.actualAssembly || "");
@@ -450,7 +452,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
       const typeObj = allOptions.find((a) => a.code === addressData.addressType);
       if (typeObj && JSON.stringify(typeObj) !== JSON.stringify(addressType)) setAddressType(typeObj);
     }
-  }, [formData?.address, allCities, structuredLocalityData]);
+  }, [formData?.address, allCities, structuredLocalityData, _mappedZROLocation]);
 
   const goNext = async () => {
     let ownerAddress = formData.address;
