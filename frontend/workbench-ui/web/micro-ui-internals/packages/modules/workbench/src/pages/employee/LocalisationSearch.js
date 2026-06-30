@@ -11,7 +11,7 @@ const LocalisationSearch = () => {
   const { t } = useTranslation();
   const queryClient = useQueryClient()
   const history = useHistory();
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const tenantId = Digit.ULBService.getStateId();
   const [showToast, setShowToast] = useState(false);
   const [modalConfig, setModalConfig] = useState(null);
   const [showModal, setShowModal] = useState(false);
