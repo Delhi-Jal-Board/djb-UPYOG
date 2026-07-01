@@ -147,7 +147,7 @@ public class DemandService {
 		return Demand.builder().consumerCode(consumerCode).demandDetails(demandDetails).payer(owner).tenantId(tenantId)
 				.taxPeriodFrom(RequestServiceUtil.getCurrentTimestamp()).taxPeriodTo(RequestServiceUtil.getFinancialYearEnd())
 				.consumerType(RequestServiceConstants.WATER_TANKER_SERVICE_NAME)
-				.businessService(config.getWtModuleName()).additionalDetails(null).build();
+				.businessService(config.getBusinessServiceName()).additionalDetails(null).build();
 	}
 
 }
