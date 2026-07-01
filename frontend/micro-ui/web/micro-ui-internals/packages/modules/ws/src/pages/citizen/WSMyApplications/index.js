@@ -64,7 +64,7 @@ export const WSMyApplications = () => {
     });
   return (
     <React.Fragment>
-      <Header>{`${t("CS_HOME_MY_APPLICATIONS")} ${applicationsList ? `(${applicationsList.length})` : ""}`}</Header>
+      {/* <Header>{`${t("CS_HOME_MY_APPLICATIONS")} ${applicationsList ? `(${applicationsList.length})` : ""}`}</Header> */}
       {/* For UM-4418 changes */}
       <WSInfoLabel t={t} />
       <div>

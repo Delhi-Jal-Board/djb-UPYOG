@@ -1226,41 +1226,43 @@ public class InboxService {
 		log.info("statusCountMap size :::: " + statusCountMap.size());
 
 
-		if(processCriteria.getBusinessService().contains("watertanker-fixedpoint"))
-		{
-			Object fromDateObj = moduleSearchCriteria.get("fromDate");
-			Object toDateObj = moduleSearchCriteria.get("toDate");
 
-			Long fromDate;
-			Long toDate;
+		if(wtApplicationNumbers!=null) {
 
-			if (fromDateObj != null && !fromDateObj.toString().isEmpty()) {
-				fromDate = Long.valueOf(fromDateObj.toString());
+			if (processCriteria.getBusinessService().contains("watertanker-fixedpoint")) {
+				Object fromDateObj = moduleSearchCriteria.get("fromDate");
+				Object toDateObj = moduleSearchCriteria.get("toDate");
+
+				Long fromDate;
+				Long toDate;
+
+				if (fromDateObj != null && !fromDateObj.toString().isEmpty()) {
+					fromDate = Long.valueOf(fromDateObj.toString());
+				} else {
+
+					fromDate = null;
+				}
+
+				if (toDateObj != null && !toDateObj.toString().isEmpty()) {
+					toDate = Long.valueOf(toDateObj.toString());
+				} else {
+					toDate = null;
+				}
+
+
+				if (mobileStr == null && bookingStr == null && fromDate == null && toDate == null) {
+
+				} else
+					totalCount = wtApplicationNumbers.size();
+
 			} else {
+				if (mobileStr == null && bookingStr == null) {
 
-				fromDate = null;
+				} else
+					totalCount = wtApplicationNumbers.size();
 			}
-
-			if (toDateObj != null && !toDateObj.toString().isEmpty()) {
-				toDate = Long.valueOf(toDateObj.toString());
-			} else {
-				toDate = null;
-			}
-
-
-			if (mobileStr == null && bookingStr == null && fromDate==null && toDate==null)  {
-
-			} else
-				totalCount = wtApplicationNumbers.size();
 		}
 
-
-		else {
-			if (mobileStr == null && bookingStr == null) {
-
-			} else
-				totalCount = wtApplicationNumbers.size();
-		}
 
 		if (processCriteria != null && !ObjectUtils.isEmpty(processCriteria.getModuleName())
 				&& processCriteria.getModuleName().equals(REQUEST_SERVICE_WATER_TANKER)) {
@@ -1283,7 +1285,6 @@ public class InboxService {
 
 			response.setStatusCounts(exactCounts);
 		}
-
 		response.setTotalCount(totalCount);
 		response.setNearingSlaCount(nearingSlaProcessCount);
 		response.setStatusMap(statusCountMap);

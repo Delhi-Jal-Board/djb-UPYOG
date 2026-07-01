@@ -243,7 +243,7 @@ function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false, 
                             }
                           }}
                         />
-                        Check Verified
+                        {t("Check Verified")}
                       </label>
                     </React.Fragment>
                   );
