@@ -67,7 +67,7 @@ public class CalculationService {
 	 * 
 	 */
 	public void calculateFeeAndGenerateDemand(WaterConnectionRequest request, Property property) {
-		if(WCConstants.APPROVE_CONNECTION_CONST.equalsIgnoreCase(request.getWaterConnection().getProcessInstance().getAction()) && !(request.isReconnectRequest() || request.getWaterConnection().getApplicationType().equalsIgnoreCase(WCConstants.WATER_RECONNECTION))) {
+		if(WCConstants.SUBMIT_APPLICATION_CONST.equalsIgnoreCase(request.getWaterConnection().getProcessInstance().getAction()) && !(request.isReconnectRequest() || request.getWaterConnection().getApplicationType().equalsIgnoreCase(WCConstants.WATER_RECONNECTION))) {
 			CalculationCriteria criteria = CalculationCriteria.builder()
 					.applicationNo(request.getWaterConnection().getApplicationNo())
 					.waterConnection(request.getWaterConnection())
