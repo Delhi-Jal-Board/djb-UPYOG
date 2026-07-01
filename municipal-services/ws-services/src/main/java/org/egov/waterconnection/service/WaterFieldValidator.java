@@ -57,16 +57,16 @@ public class WaterFieldValidator implements WaterActionValidator {
 				errorMap.put("INVALID_WATER_SOURCE", "WaterConnection cannot be created  without water source");
 			}
 			
-			if(waterConnectionRequest.getWaterConnection().getRoadCuttingInfo() == null){
-				errorMap.put("INVALID_ROAD_INFO", "Road Cutting Information should not be empty");
-			}
-			if(waterConnectionRequest.getWaterConnection().getRoadCuttingInfo() != null){
-				for(RoadCuttingInfo roadCuttingInfo : waterConnectionRequest.getWaterConnection().getRoadCuttingInfo()){
-					if(StringUtils.isEmpty(roadCuttingInfo.getRoadType())){
-						errorMap.put("INVALID_ROAD_TYPE", "Road type should not be empty");
-					}
-				}
-			}
+//			if(waterConnectionRequest.getWaterConnection().getRoadCuttingInfo() == null){
+//				errorMap.put("INVALID_ROAD_INFO", "Road Cutting Information should not be empty");
+//			}
+//			if(waterConnectionRequest.getWaterConnection().getRoadCuttingInfo() != null){
+//				for(RoadCuttingInfo roadCuttingInfo : waterConnectionRequest.getWaterConnection().getRoadCuttingInfo()){
+//					if(StringUtils.isEmpty(roadCuttingInfo.getRoadType())){
+//						errorMap.put("INVALID_ROAD_TYPE", "Road type should not be empty");
+//					}
+//				}
+//			}
 			if (StringUtils.isEmpty(waterConnectionRequest.getWaterConnection().getConnectionExecutionDate()) ||
 					waterConnectionRequest.getWaterConnection().getConnectionExecutionDate().equals(WCConstants.INVALID_CONEECTION_EXECUTION_DATE)) {
 				errorMap.put("INVALID_CONNECTION_EXECUTION_DATE", "Connection execution date should not be empty");
@@ -76,20 +76,20 @@ public class WaterFieldValidator implements WaterActionValidator {
 		if (WCConstants.APPROVE_CONNECTION_CONST
 				.equalsIgnoreCase(waterConnectionRequest.getWaterConnection().getProcessInstance().getAction())) {
 
-			if(waterConnectionRequest.getWaterConnection().getRoadCuttingInfo() == null){
-				errorMap.put("INVALID_ROAD_INFO", "Road Cutting Information should not be empty");
-			}
-
-			if(waterConnectionRequest.getWaterConnection().getRoadCuttingInfo() != null){
-				for(RoadCuttingInfo roadCuttingInfo : waterConnectionRequest.getWaterConnection().getRoadCuttingInfo()){
-					if(StringUtils.isEmpty(roadCuttingInfo.getRoadType())){
-						errorMap.put("INVALID_ROAD_TYPE", "Road type should not be empty");
-					}
-					if(roadCuttingInfo.getRoadCuttingArea() == null){
-						errorMap.put("INVALID_ROAD_CUTTING_AREA", "Road cutting area should not be empty");
-					}
-				}
-			}
+//			if(waterConnectionRequest.getWaterConnection().getRoadCuttingInfo() == null){
+//				errorMap.put("INVALID_ROAD_INFO", "Road Cutting Information should not be empty");
+//			}
+//
+//			if(waterConnectionRequest.getWaterConnection().getRoadCuttingInfo() != null){
+//				for(RoadCuttingInfo roadCuttingInfo : waterConnectionRequest.getWaterConnection().getRoadCuttingInfo()){
+//					if(StringUtils.isEmpty(roadCuttingInfo.getRoadType())){
+//						errorMap.put("INVALID_ROAD_TYPE", "Road type should not be empty");
+//					}
+//					if(roadCuttingInfo.getRoadCuttingArea() == null){
+//						errorMap.put("INVALID_ROAD_CUTTING_AREA", "Road cutting area should not be empty");
+//					}
+//				}
+//			}
 		}
 	}
 	
