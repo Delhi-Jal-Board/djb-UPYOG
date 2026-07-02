@@ -28,10 +28,10 @@ const App = ({ path }) => {
   const tenantId = "dl.djb";
   const userMobileNumber = user?.info?.userName?.match(/^[0-9]{10}$/) ? user?.info?.userName : user?.info?.mobileNumber;
   const isMyApps = location.pathname.includes("/my-applications");
-  
+
   const { data: wsData } = window.Digit.Hooks.ws.useMyApplicationSearch({ filters: { tenantId, mobileNumber: userMobileNumber } }, { filters: { tenantId, mobileNumber: userMobileNumber }, enabled: isMyApps });
   const { data: swData } = window.Digit.Hooks.ws.useMyApplicationSearch({ filters: { tenantId, mobileNumber: userMobileNumber }, BusinessService: "SW" }, { filters: { tenantId, mobileNumber: userMobileNumber }, enabled: isMyApps });
-  
+
   let wsCount = wsData?.WaterConnection?.filter((ob) => ob?.applicationType !== "MODIFY_WATER_CONNECTION")?.length || 0;
   let swCount = swData?.SewerageConnections?.filter((ob) => ob?.applicationType !== "MODIFY_SEWERAGE_CONNECTION")?.length || 0;
   let totalAppsCount = wsCount + swCount;
@@ -66,7 +66,7 @@ const App = ({ path }) => {
     },
     {
       path: "/digit-ui/citizen/ws/my-connections",
-      label: t("CS_WS_MY_CONNECTIONS"),
+      label: t("WS_MYCONNECTIONS_HEADER"),
       show: location.pathname.includes("/my-connections"),
     },
     {
@@ -88,6 +88,11 @@ const App = ({ path }) => {
       path: location.pathname,
       label: t("WS_APPLICATION_DETAILS_HEADER"),
       show: location.pathname.includes("/connection/application"),
+    },
+    {
+      path: location.pathname,
+      label: t("WS_APPLICATION_DETAILS_HEADER"),
+      show: location.pathname.includes("ws-response"),
     },
   ];
 
@@ -120,7 +125,7 @@ const App = ({ path }) => {
               leftContent={
                 <React.Fragment>
                   <ArrowLeft className="icon" />
-                  Back
+                  {t("CS_COMMON_BACK")}
                 </React.Fragment>
               }
               onLeftClick={() => window.history.back()}

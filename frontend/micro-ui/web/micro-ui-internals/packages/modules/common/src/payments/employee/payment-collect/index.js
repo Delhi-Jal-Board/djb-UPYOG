@@ -17,11 +17,11 @@ export const CollectPayment = (props) => {
   const { t } = useTranslation();
   const history = useHistory();
   const queryClient = useQueryClient();
-  const {state,search}=useLocation();
+  const { state, search } = useLocation();
   const { path: currentPath } = useRouteMatch();
   let { consumerCode, businessService } = useParams();
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  const [Time, setTime ] = useState(0);
+  const [Time, setTime] = useState(0);
   if (window.location.href.includes("ISWSAPP")) consumerCode = new URLSearchParams(search).get("applicationNumber");
   if (window.location.href.includes("ISWSCON") || ModuleWorkflow === "WS") consumerCode = decodeURIComponent(consumerCode);
 
@@ -90,7 +90,7 @@ export const CollectPayment = (props) => {
 
     if (
       BillDetailsFormConfig({ consumerCode, businessService }, t)[
-        ModuleWorkflow ? (businessService === "SW" && ModuleWorkflow === "WS" ? businessService : ModuleWorkflow) : businessService
+      ModuleWorkflow ? (businessService === "SW" && ModuleWorkflow === "WS" ? businessService : ModuleWorkflow) : businessService
       ] &&
       !data?.amount?.paymentAllowed
     ) {
@@ -186,12 +186,10 @@ export const CollectPayment = (props) => {
       const resposne = await Digit.PaymentService.createReciept(tenantId, recieptRequest);
       queryClient.invalidateQueries();
       history.push(
-        IsDisconnectionFlow ? `${props.basePath}/success/${businessService}/${resposne?.Payments[0]?.paymentDetails[0]?.receiptNumber.replace(/\//g, "%2F")}/${
-          resposne?.Payments[0]?.paymentDetails[0]?.bill?.consumerCode
-        }?IsDisconnectionFlow=${IsDisconnectionFlow}` : 
-        `${props.basePath}/success/${businessService}/${resposne?.Payments[0]?.paymentDetails[0]?.receiptNumber.replace(/\//g, "%2F")}/${
-          resposne?.Payments[0]?.paymentDetails[0]?.bill?.consumerCode
-        }?IsDisconnectionFlow=${IsDisconnectionFlow}`
+        IsDisconnectionFlow ? `${props.basePath}/success/${businessService}/${resposne?.Payments[0]?.paymentDetails[0]?.receiptNumber.replace(/\//g, "%2F")}/${resposne?.Payments[0]?.paymentDetails[0]?.bill?.consumerCode
+          }?IsDisconnectionFlow=${IsDisconnectionFlow}` :
+          `${props.basePath}/success/${businessService}/${resposne?.Payments[0]?.paymentDetails[0]?.receiptNumber.replace(/\//g, "%2F")}/${resposne?.Payments[0]?.paymentDetails[0]?.bill?.consumerCode
+          }?IsDisconnectionFlow=${IsDisconnectionFlow}`
       );
     } catch (error) {
       setToast({ key: "error", action: error?.response?.data?.Errors?.map((e) => t(e.code)) })?.join(" , ");
@@ -206,7 +204,7 @@ export const CollectPayment = (props) => {
   }, [selectedPaymentMode]);
 
   let config = [
-        {
+    {
       head: !ModuleWorkflow && businessService !== "TL" ? t("COMMON_PAYMENT_HEAD") : "",
       body: [
         {
@@ -268,9 +266,16 @@ export const CollectPayment = (props) => {
           type: "text",
           populators: {
             name: "payerMobile",
+            maxlength: 10,
+            maxLength: 10,
             validation: {
               required: true,
               pattern: /^[6-9]\d{9}$/,
+              maxLength: 10,
+              minLength: 10,
+            },
+            onInput: (e) => {
+              e.target.value = e.target.value.replace(/\D/g, "").slice(0, 10);
             },
             error: t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID"),
             className: "payment-form-text-input-correction",
@@ -315,7 +320,7 @@ export const CollectPayment = (props) => {
   const getFormConfig = () => {
     if (
       BillDetailsFormConfig({ consumerCode, businessService }, t)[
-        ModuleWorkflow ? (businessService === "SW" && ModuleWorkflow === "WS" ? businessService : ModuleWorkflow) : businessService
+      ModuleWorkflow ? (businessService === "SW" && ModuleWorkflow === "WS" ? businessService : ModuleWorkflow) : businessService
       ] ||
       ModuleWorkflow ||
       businessService === "TL" ||
@@ -329,8 +334,8 @@ export const CollectPayment = (props) => {
       ModuleWorkflow ? (businessService === "SW" && ModuleWorkflow === "WS" ? businessService : ModuleWorkflow) : businessService
     ]
       ? BillDetailsFormConfig({ consumerCode, businessService }, t)[
-          ModuleWorkflow ? (businessService === "SW" && ModuleWorkflow === "WS" ? businessService : ModuleWorkflow) : businessService
-        ].concat(conf)
+        ModuleWorkflow ? (businessService === "SW" && ModuleWorkflow === "WS" ? businessService : ModuleWorkflow) : businessService
+      ].concat(conf)
       : conf;
   };
   const checkFSM = window.location.href.includes("FSM");
@@ -341,13 +346,13 @@ export const CollectPayment = (props) => {
 
   return (
     <React.Fragment>
-       <div style={{ display: "flex", justifyContent: "space-between" }}>
-      <Header styles={{ marginLeft: "15px" }}>{checkFSM ? t("PAYMENT_COLLECT_LABEL") : t("PAYMENT_COLLECT")}</Header>
-      {timerEnabledForBusinessService(businessService) && (
-            <Header styles={{ marginRight: "15px" }}>
-            <TimerServices businessService={businessService} setTime={setTime} timerValues={state?.timerValue} t={t} SlotSearchData={state?.SlotSearchData}/>
-            </Header>
-          )}
+      <div style={{ display: "flex", justifyContent: "space-between" }}>
+        {/* <Header styles={{ marginLeft: "15px" }}>{checkFSM ? t("PAYMENT_COLLECT_LABEL") : t("PAYMENT_COLLECT")}</Header> */}
+        {timerEnabledForBusinessService(businessService) && (
+          <Header styles={{ marginRight: "15px" }}>
+            <TimerServices businessService={businessService} setTime={setTime} timerValues={state?.timerValue} t={t} SlotSearchData={state?.SlotSearchData} />
+          </Header>
+        )}
       </div>
       <FormComposer
         cardStyle={{ paddingBottom: "100px" }}
@@ -356,7 +361,7 @@ export const CollectPayment = (props) => {
         onSubmit={onSubmit}
         formState={formState}
         defaultValues={getDefaultValues()}
-        isDisabled={(IsDisconnectionFlow ? false : businessService === "SW" || "WS" ?false:bill?.totalAmount ? !bill.totalAmount > 0 : true) || (timerEnabledForBusinessService(businessService) && Time === 0)}
+        isDisabled={(IsDisconnectionFlow ? false : businessService === "SW" || "WS" ? false : bill?.totalAmount ? !bill.totalAmount > 0 : true) || (timerEnabledForBusinessService(businessService) && Time === 0)}
         // isDisabled={BillDetailsFormConfig({ consumerCode }, t)[businessService] ? !}
         onFormValueChange={(setValue, formValue) => {
           if (!isEqual(formValue.paymentMode, selectedPaymentMode)) {
