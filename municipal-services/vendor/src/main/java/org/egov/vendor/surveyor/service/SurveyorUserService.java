@@ -36,8 +36,6 @@ public class SurveyorUserService {
     @Autowired private VendorConfiguration config;
     @Autowired private ServiceRequestRepository serviceRequestRepository;
     @Autowired private ObjectMapper mapper;
-
-    // inject ModuleRoleService — roles come from MDMS, not application.properties
     @Autowired private ModuleRoleService moduleRoleService;
 
     public void manageSurveyors(SurveyorRequest surveyorRequest, boolean isCreate) {
@@ -52,9 +50,6 @@ public class SurveyorUserService {
             throw new CustomException(errorMap);
         }
 
-        // FIX: get role mapping from MDMS once at top — pass to inner methods
-        // Previously: config.getSurveyorRoleCode() — hardcoded, wrong design
-        // Now: MDMS → ModuleRoleMappings → DJB_SURVEYOR resolved at runtime
         ModuleRoleMapping roleMapping = moduleRoleService.getModuleRoleMapping(
                 surveyorRequest, MappingType.SURVEYOR);
 
@@ -73,7 +68,6 @@ public class SurveyorUserService {
 
         if (existing != null && !CollectionUtils.isEmpty(existing.getUser())) {
             for (User u : existing.getUser()) {
-                // FIX: use roleMapping.getRoleCode() from MDMS
                 if (surveyor.getOwner().getMobileNumber().equals(u.getMobileNumber())
                         && !u.getUuid().equals(surveyorRequest.getSurveyor().getOwnerId())) {
                     u.getRoles().forEach(r -> {
@@ -90,40 +84,92 @@ public class SurveyorUserService {
             }
 
             if (foundUser == null) {
-                foundUser = assignRole(existing.getUser().get(0), requestInfo,
+                foundUser = assignRole(existing.getUser().get(0), ownerInfo, requestInfo,
                         errorMap, roleMapping);
             } else {
-                updateUserDetails(ownerInfo, requestInfo, errorMap);
+                foundUser = fetchMergeAndUpdate(foundUser, ownerInfo, requestInfo, errorMap);
             }
 
         } else if (isCreate) {
             foundUser = createSurveyorUser(ownerInfo, requestInfo, roleMapping);
-            surveyorRequest.getSurveyor().setOwner(foundUser);
         } else {
-            updateUserDetails(ownerInfo, requestInfo, errorMap);
+            foundUser = updateUserDetails(ownerInfo, requestInfo, errorMap);
+        }
+
+        if (foundUser != null) {
+            surveyorRequest.getSurveyor().setOwner(foundUser);
         }
     }
 
-    private User assignRole(User user, RequestInfo requestInfo,
+    private User assignRole(User existingDigitUser, User requestOwner, RequestInfo requestInfo,
                             HashMap<String, String> errorMap, ModuleRoleMapping roleMapping) {
-        // Add the MDMS role (EKYC_SURVEYOR)
-        user.getRoles().add(getRoleObj(roleMapping.getRoleCode(), roleMapping.getRoleName()));
-
-        // Also add CITIZEN role if not already present
-        boolean hasCitizen = user.getRoles().stream()
+        mergeOwnerFields(existingDigitUser, requestOwner);
+        existingDigitUser.getRoles().add(getRoleObj(roleMapping.getRoleCode(), roleMapping.getRoleName()));
+        boolean hasCitizen = existingDigitUser.getRoles().stream()
                 .anyMatch(r -> "CITIZEN".equals(r.getCode()));
         if (!hasCitizen) {
-            user.getRoles().add(getRoleObj("CITIZEN", "Citizen"));
+            existingDigitUser.getRoles().add(getRoleObj("CITIZEN", "Citizen"));
         }
-
         StringBuilder uri = new StringBuilder(config.getUserHost())
                 .append(config.getUserContextPath()).append(config.getUserUpdateEndpoint());
         UserDetailResponse resp = ownerCall(UserRequest.builder()
-                .user(user).requestInfo(requestInfo).build(), uri);
+                .user(existingDigitUser).requestInfo(requestInfo).build(), uri);
         if (resp != null && !resp.getUser().isEmpty()) return resp.getUser().get(0);
-        errorMap.put(VendorErrorConstants.INVALID_DRIVER_ERROR,
-                "Unable to assign Surveyor roles");
+        errorMap.put(VendorErrorConstants.INVALID_DRIVER_ERROR, "Unable to assign Surveyor roles");
         return null;
+    }
+
+    private User fetchMergeAndUpdate(User existingDigitUser, User requestOwner,
+                                     RequestInfo requestInfo, HashMap<String, String> errorMap) {
+        mergeOwnerFields(existingDigitUser, requestOwner);
+        if (requestOwner.getDob() != null) {
+            validateMinimumAge(requestOwner.getDob(), "Surveyor");
+        }
+        StringBuilder uri = new StringBuilder(config.getUserHost())
+                .append(config.getUserContextPath()).append(config.getUserUpdateEndpoint());
+        UserDetailResponse resp = ownerCall(UserRequest.builder()
+                .user(existingDigitUser).requestInfo(requestInfo).build(), uri);
+        if (resp != null && !resp.getUser().isEmpty()) return resp.getUser().get(0);
+        errorMap.put(VendorErrorConstants.INVALID_DRIVER_ERROR, "Unable to update Surveyor user details");
+        return null;
+    }
+
+    private void mergeOwnerFields(User existingUser, User requestOwner) {
+        if (requestOwner == null) return;
+        if (StringUtils.hasLength(requestOwner.getName()))
+            existingUser.setName(requestOwner.getName());
+        if (StringUtils.hasLength(requestOwner.getGender()))
+            existingUser.setGender(requestOwner.getGender());
+        if (requestOwner.getDob() != null)
+            existingUser.setDob(requestOwner.getDob());
+        if (StringUtils.hasLength(requestOwner.getFatherOrHusbandName()))
+            existingUser.setFatherOrHusbandName(requestOwner.getFatherOrHusbandName());
+        if (requestOwner.getRelationship() != null)
+            existingUser.setRelationship(requestOwner.getRelationship());
+        if (StringUtils.hasLength(requestOwner.getEmailId()))
+            existingUser.setEmailId(requestOwner.getEmailId());
+        if (StringUtils.hasLength(requestOwner.getCorrespondenceAddress()))
+            existingUser.setCorrespondenceAddress(requestOwner.getCorrespondenceAddress());
+        if (StringUtils.hasLength(requestOwner.getCorrespondenceCity()))
+            existingUser.setCorrespondenceCity(requestOwner.getCorrespondenceCity());
+        if (StringUtils.hasLength(requestOwner.getCorrespondencePincode()))
+            existingUser.setCorrespondencePincode(requestOwner.getCorrespondencePincode());
+        if (StringUtils.hasLength(requestOwner.getPermanentAddress()))
+            existingUser.setPermanentAddress(requestOwner.getPermanentAddress());
+        if (StringUtils.hasLength(requestOwner.getPermanentCity()))
+            existingUser.setPermanentCity(requestOwner.getPermanentCity());
+        if (StringUtils.hasLength(requestOwner.getPermanentPincode()))
+            existingUser.setPermanentPincode(requestOwner.getPermanentPincode());
+        if (StringUtils.hasLength(requestOwner.getAadhaarNumber()))
+            existingUser.setAadhaarNumber(requestOwner.getAadhaarNumber());
+        if (StringUtils.hasLength(requestOwner.getAltContactNumber()))
+            existingUser.setAltContactNumber(requestOwner.getAltContactNumber());
+        if (StringUtils.hasLength(requestOwner.getPhoto()))
+            existingUser.setPhoto(requestOwner.getPhoto());
+        if (StringUtils.hasLength(requestOwner.getBloodGroup()))
+            existingUser.setBloodGroup(requestOwner.getBloodGroup());
+        if (StringUtils.hasLength(requestOwner.getIdentificationMark()))
+            existingUser.setIdentificationMark(requestOwner.getIdentificationMark());
     }
 
     private User updateUserDetails(User ownerInfo, RequestInfo requestInfo,
@@ -144,7 +190,7 @@ public class SurveyorUserService {
     private User createSurveyorUser(User owner, RequestInfo requestInfo, ModuleRoleMapping roleMapping) {
         if (!isUserValid(owner)) {
             throw new CustomException(VendorErrorConstants.INVALID_DRIVER_ERROR,
-                    "Name, DOB, gender, fatherName, relationship and emailId are mandatory for Surveyor");
+                    "Name, DOB, gender, fatherOrHusbandName and relationship are mandatory for Surveyor");
         }
 
         // Create the primary role from MDMS (EKYC_SURVEYOR)
@@ -176,7 +222,6 @@ public class SurveyorUserService {
         UserSearchRequest req = new UserSearchRequest();
         req.setRequestInfo(requestInfo);
         req.setUuid(criteria.getIds());
-        // FIX: null check before split (Issue 4)
         if (criteria.getTenantId() != null)
             req.setTenantId(criteria.getTenantId().split("\\.")[0]);
         StringBuilder uri = new StringBuilder(config.getUserHost()).append(config.getUserSearchEndpoint());
@@ -186,7 +231,6 @@ public class SurveyorUserService {
     public UserDetailResponse getOwner(SurveyorSearchCriteria criteria, RequestInfo requestInfo) {
         UserSearchRequest req = new UserSearchRequest();
         req.setRequestInfo(requestInfo);
-        // FIX: null check before split (Issue 4)
         if (criteria.getTenantId() != null)
             req.setTenantId(criteria.getTenantId().split("\\.")[0]);
         req.setMobileNumber(criteria.getMobileNumber());
@@ -198,7 +242,6 @@ public class SurveyorUserService {
 
     private UserDetailResponse userExists(User owner) {
         UserSearchRequest req = new UserSearchRequest();
-        // FIX: null check before split (Issue 4)
         if (owner.getTenantId() != null)
             req.setTenantId(owner.getTenantId().split("\\.")[0]);
         if (!StringUtils.isEmpty(owner.getMobileNumber()))
@@ -230,8 +273,7 @@ public class SurveyorUserService {
                 || StringUtils.isEmpty(user.getFatherOrHusbandName())
                 || StringUtils.isEmpty(user.getRelationship())
                 || StringUtils.isEmpty(user.getDob())
-                || StringUtils.isEmpty(user.getGender())
-                || StringUtils.isEmpty(user.getEmailId())) {
+                || StringUtils.isEmpty(user.getGender())) {
             return false;
         }
         // Minimum age validation — surveyor must be at least 18 years old (legal requirement)
@@ -239,16 +281,6 @@ public class SurveyorUserService {
         return true;
     }
 
-    /**
-     * Validates that a person is at least 18 years old.
-     * Called on CREATE (mandatory) and UPDATE (only if DOB is being changed).
-     * Supports both String formats (dd/MM/yyyy, yyyy-MM-dd) and Long (epoch millis).
-     * Throws CustomException with code INVALID_AGE if under 18.
-     */
-    /**
-     * DOB is always stored as epoch milliseconds (Long) in DIGIT user service.
-     * Simplified — no String parsing needed.
-     */
     void validateMinimumAge(Long dob, String role) {
         if (dob == null || dob == 0L) return;
         java.util.Calendar dobCal = java.util.Calendar.getInstance();
@@ -310,8 +342,6 @@ public class SurveyorUserService {
     private Long dateToLong(String date, String format) {
         try {
             return new SimpleDateFormat(format).parse(date).getTime();
-        } catch (ParseException e) {
-            return 0L;
-        }
+        } catch (ParseException e) { return 0L; }
     }
 }

@@ -167,19 +167,6 @@ public class SupervisorUserService {
         return response.getUser().get(0);
     }
 
-    /**
-     * Adds the EKYC_SUPERVISOR (+ CITIZEN) role to an existing DIGIT user.
-     *
-     * BUG FIX: previously this method only forwarded the STALE user object
-     * fetched from DIGIT search (`existing`) — it never carried forward
-     * fields the caller typed in THIS request (correspondenceAddress, name,
-     * dob, gender, fatherOrHusbandName etc). DIGIT update overwrote the user
-     * with the stale object, silently dropping correspondenceAddress to null.
-     *
-     * Fix: merge `requestOwner` (current request's owner fields) into
-     * `existing` before sending to DIGIT update, so address and other
-     * details typed in this request are preserved.
-     */
     private User addRoleToExistingUser(User existing, User requestOwner, RequestInfo requestInfo,
                                        HashMap<String, String> errorMap, String roleCode, String roleName, ModuleRoleMapping roleMapping) {
 
@@ -206,12 +193,6 @@ public class SupervisorUserService {
         return null;
     }
 
-    /**
-     * Merge non-null fields from requestOwner (this request's typed-in values)
-     * into existing (DIGIT's stale fetched record). Only overwrites fields
-     * the caller actually provided — does not blank out existing data with
-     * nulls if the caller omitted a field.
-     */
     private void mergeOwnerFields(User existing, User requestOwner) {
         if (requestOwner == null) return;
         if (StringUtils.hasLength(requestOwner.getCorrespondenceAddress()))
@@ -236,6 +217,18 @@ public class SupervisorUserService {
             existing.setRelationship(requestOwner.getRelationship());
         if (StringUtils.hasLength(requestOwner.getGender()))
             existing.setGender(requestOwner.getGender());
+        if (requestOwner.getDob() != null)
+            existing.setDob(requestOwner.getDob());
+        if (StringUtils.hasLength(requestOwner.getAadhaarNumber()))
+            existing.setAadhaarNumber(requestOwner.getAadhaarNumber());
+        if (StringUtils.hasLength(requestOwner.getAltContactNumber()))
+            existing.setAltContactNumber(requestOwner.getAltContactNumber());
+        if (StringUtils.hasLength(requestOwner.getPhoto()))
+            existing.setPhoto(requestOwner.getPhoto());
+        if (StringUtils.hasLength(requestOwner.getBloodGroup()))
+            existing.setBloodGroup(requestOwner.getBloodGroup());
+        if (StringUtils.hasLength(requestOwner.getIdentificationMark()))
+            existing.setIdentificationMark(requestOwner.getIdentificationMark());
     }
 
     private User updateUserDetails(User ownerInfo, RequestInfo requestInfo,
@@ -243,6 +236,12 @@ public class SupervisorUserService {
         // If DOB is being changed on update — validate minimum age
         if (ownerInfo.getDob() != null && ownerInfo.getDob() != 0L) {
             validateMinimumAge(ownerInfo.getDob(), "Supervisor");
+        }
+        UserDetailResponse fetchResp = userExists(ownerInfo);
+        if (fetchResp != null && !CollectionUtils.isEmpty(fetchResp.getUser())) {
+            User existingDigitUser = fetchResp.getUser().get(0);
+            mergeOwnerFields(existingDigitUser, ownerInfo);
+            ownerInfo = existingDigitUser;
         }
         StringBuilder uri = new StringBuilder(config.getUserHost())
                 .append(config.getUserContextPath()).append(config.getUserUpdateEndpoint());
@@ -288,16 +287,6 @@ public class SupervisorUserService {
         return true;
     }
 
-    /**
-     * Validates that a person is at least 18 years old.
-     * Called on CREATE (mandatory) and UPDATE (only if DOB is being changed).
-     * Supports both String formats (dd/MM/yyyy, yyyy-MM-dd) and Long (epoch millis).
-     * Throws CustomException with code INVALID_AGE if under 18.
-     */
-    /**
-     * DOB is always stored as epoch milliseconds (Long) in DIGIT user service.
-     * Simplified — no String parsing needed.
-     */
     void validateMinimumAge(Long dob, String role) {
         if (dob == null || dob == 0L) return;
         Calendar dobCal = Calendar.getInstance();
