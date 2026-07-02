@@ -9,7 +9,7 @@ const BillRoutes = ({ billsList, paymentRules, businessService }) => {
 
   return (
     <React.Fragment>
-      <BackButton />
+      {/* <BackButton /> */}
       <Switch>
         <Route exact path={`${currentPath}`} component={() => <BillList {...{ billsList, currentPath, paymentRules, businessService }} />} />
         <Route path={`${currentPath}/:consumerCode`} component={() => <BillDetails {...{ paymentRules, businessService }} />} />

@@ -229,7 +229,7 @@ const AddFixFillAddress = ({ t, config, formData, onSelect, isEdit, userDetails 
         setLatitude(pos.coords.latitude);
         setLongitude(pos.coords.longitude);
       },
-      () => {}
+      () => { }
     );
   }, []);
 
@@ -335,10 +335,6 @@ const AddFixFillAddress = ({ t, config, formData, onSelect, isEdit, userDetails 
   return (
     <CollapsibleCardPage title={t("WT_ADDRESS_DETAILS")} defaultOpen={true}>
       <div className="formcomposer-section-grid">
-       
-
-
-
         <div style={{ position: "relative" }}>
           <CardLabel>{t("PINCODE")}</CardLabel>
           <TextInput

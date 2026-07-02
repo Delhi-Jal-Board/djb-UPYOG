@@ -405,13 +405,12 @@ const WSApplicationDetails = () => {
                       <Row
                         label={t(bill?.taxHeadCode)}
                         text={`₹${Number(bill?.amount).toFixed(2)}`}
-                        textStyle={{ textAlign: "right" }}
+
                       />
                     ))}
                     <Row
                       label={t("WS_TOTAL_AMOUNT_DUE")}
                       text={`₹${Number(isPaid ? 0 : paymentDetails?.data?.Bill?.[0]?.billDetails?.[0]?.amount).toFixed(2)}`}
-                      textStyle={{ textAlign: "right", fontSize: "18px", fontWeight: "700" }}
                     />
                     <Row
                       label={t("WS_COMMON_TABLE_COL_APPLICATION_STATUS")}
@@ -422,8 +421,8 @@ const WSApplicationDetails = () => {
                       }
                       textStyle={
                         isPaid || Number(paymentDetails?.data?.Bill?.[0]?.billDetails?.[0]?.amount).toFixed(2) == 0
-                          ? { textAlign: "right", color: "darkgreen" }
-                          : { textAlign: "right", color: "red" }
+                          ? { color: "darkgreen" }
+                          : { color: "red" }
                       }
                     />
                     {/* <Row label={t("One time Fee")} text={"₹ 16500.00"} textStyle={{textAlign: "right" }} />

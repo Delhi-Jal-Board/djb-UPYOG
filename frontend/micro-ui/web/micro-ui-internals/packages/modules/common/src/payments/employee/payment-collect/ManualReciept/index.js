@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { TextInput, SearchIconSvg, DatePicker } from "@djb25/digit-ui-react-components";
+import { TextInput, SearchIconSvg, DatePicker, CardLabel } from "@djb25/digit-ui-react-components";
 
 export const useCashPaymentDetails = (props, t) => {
   const config = [
@@ -42,31 +42,19 @@ const CashDetailsComponent = ({ ...props }) => {
 
   return (
     <React.Fragment>
-      <div className="label-field-pair">
-        <h2 className="card-label">{t("NOC_PAYMENT_RCPT_NO_LABEL")}</h2>
-        <div className="field">
-          <div className="field-container">
-            <input
-              className="employee-card-input"
-              value={manualReceiptNumber}
-              type="text"
-              name="instrumentNumber"
-              onChange={(e) => setManualReceiptNumber(e.target.value)}
-            />
-          </div>
+      <div className="formcomposer-section-grid">
+        <div>
+          <CardLabel>{t("NOC_PAYMENT_RCPT_NO_LABEL")}</CardLabel>
+          <TextInput value={manualReceiptNumber} onChange={(e) => setManualReceiptNumber(e.target.value)} />
         </div>
-      </div>
-      <div className="label-field-pair">
-        <h2 className="card-label">{t("NOC_PAYMENT_RECEIPT_ISSUE_DATE_LABEL")} </h2>
-        <div className="field">
-          <div className="field-container">
-            <DatePicker
-              date={manualReceiptDate}
-              onChange={(d) => {
-                setManualReceiptDate(d);
-              }}
-            />
-          </div>
+        <div>
+          <CardLabel>{t("NOC_PAYMENT_RECEIPT_ISSUE_DATE_LABEL")}</CardLabel>
+          <DatePicker
+            date={manualReceiptDate}
+            onChange={(d) => {
+              setManualReceiptDate(d);
+            }}
+          />
         </div>
       </div>
     </React.Fragment>

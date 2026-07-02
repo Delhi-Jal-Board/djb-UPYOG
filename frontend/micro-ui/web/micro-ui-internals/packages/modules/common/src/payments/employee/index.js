@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from "react";
 // import { useTranslation } from "react-i18next";
-import { useRouteMatch, Switch, Route, Link } from "react-router-dom";
+import { useRouteMatch, Switch, Link } from "react-router-dom";
 import { CollectPayment } from "./payment-collect";
 import { SuccessfulPayment, FailedPayment } from "./response";
-// import { SubformComposer } from "../../hoc";
-// import { subFormRegistry } from "../../hoc/subFormClass";
 import { testForm } from "../../hoc/testForm-config";
 import { subFormRegistry } from "@djb25/digit-ui-libraries";
+import { AppContainer, PrivateRoute, ModuleHeader, ArrowLeft, HomeIcon, LayoutWrapper } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import IFrameInterface from "./IFrameInterface";
 
@@ -24,26 +23,61 @@ const EmployeePayment = ({ stateCode, cityCode, moduleCode }) => {
 
   const isFsm = location?.pathname?.includes("fsm") || location?.pathname?.includes("FSM");
 
+  const getDynamicBreadcrumbs = () => {
+    const pathname = location.pathname;
+    let crumbs = [
+      { icon: HomeIcon, path: "/digit-ui/employee" },
+      { label: t("ES_COMMON_HOME"), path: "/digit-ui/employee" },
+    ];
+    if (pathname.includes("/fsm/home")) {
+      crumbs.push({ label: t("ES_TITLE_FSM"), path: "/digit-ui/employee/fsm/home" });
+    } else if (pathname.includes("/fsm/inbox")) {
+      crumbs.push({ label: t("ES_TITLE_INBOX"), path: "/digit-ui/employee/fsm/inbox" });
+    }
+    return crumbs;
+  };
+
+
   return (
     <React.Fragment>
-      <p className="breadcrumb" style={{ marginLeft: "15px" }}>
+      {/* <p className="breadcrumb" style={{ marginLeft: "15px" }}>
         <Link to={`/digit-ui/employee`}>{t("ES_COMMON_HOME")}</Link>
         {isFsm ? <Link to={`/digit-ui/employee/fsm/home`}>/ {t("ES_TITLE_FSM")} </Link> : null}
         {isFsm ? <Link to={`/digit-ui/employee/fsm/inbox`}>/ {t("ES_TITLE_INBOX")}</Link> : null}/ {link}
-      </p>
+      </p> */}
       <Switch>
-        <Route path={`${currentPath}/collect/:businessService/:consumerCode`}>
-          <CollectPayment {...commonProps} basePath={currentPath} />
-        </Route>
-        <Route path={`${currentPath}/success/:businessService/:receiptNumber/:consumerCode`}>
-          <SuccessfulPayment {...commonProps} />
-        </Route>
-        <Route path={`${currentPath}/integration/:moduleName/:pageName`}>
-          <IFrameInterface {...commonProps} />
-        </Route>
-        <Route path={`${currentPath}/failure`}>
-          <FailedPayment {...commonProps} />
-        </Route>
+        <AppContainer>
+          <div className="ground-container employee-app-container form-container">
+            <ModuleHeader
+              leftContent={
+                <React.Fragment>
+                  <ArrowLeft className="icon" />
+                  {t("CS_COMMON_BACK")}
+                </React.Fragment>
+              }
+              onLeftClick={() => window.history.back()}
+              breadcrumbs={getDynamicBreadcrumbs()}
+            />
+            {/* ----------------------------- ROUTES ----------------------------- */}
+            <div className="employee-form">
+              <div className="employee-form-content">
+                <PrivateRoute path={`${currentPath}/collect/:businessService/:consumerCode`}>
+                  <CollectPayment {...commonProps} basePath={currentPath} />
+                </PrivateRoute>
+                <PrivateRoute path={`${currentPath}/success/:businessService/:receiptNumber/:consumerCode`}>
+                  <SuccessfulPayment {...commonProps} />
+                </PrivateRoute>
+                <PrivateRoute path={`${currentPath}/integration/:moduleName/:pageName`}>
+                  <IFrameInterface {...commonProps} />
+                </PrivateRoute>
+                <PrivateRoute path={`${currentPath}/failure`}>
+                  <FailedPayment {...commonProps} />
+                </PrivateRoute>
+              </div>
+            </div>
+          </div>
+        </AppContainer>
+
       </Switch>
     </React.Fragment>
   );
