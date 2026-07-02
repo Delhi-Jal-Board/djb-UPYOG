@@ -149,3 +149,25 @@
     }
   }
 }
+
+/* WT Collapsible Sidebar Panel */
+.wt-sidebar-panel {
+  flex-shrink: 0;
+  transition: width 0.25s ease, min-width 0.25s ease;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  button:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(11, 37, 89, 0.4);
+  }
+}
+
+/* Ensure the table content area can shrink in flexbox */
+.inbox-container > .employee-form-content,
+.inbox-container > div:last-child {
+  min-width: 0;
+  overflow: visible;
+}

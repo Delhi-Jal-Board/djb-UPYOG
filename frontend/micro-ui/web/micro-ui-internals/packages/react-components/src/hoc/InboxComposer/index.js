@@ -311,7 +311,7 @@ const InboxComposer = ({
   }
 
   return (
-    <div className="inbox-container">
+    <div className="inbox-container" style={{ display: "flex", flexDirection: "row", gap: "12px", overflow: "visible", width: "100%" }}>
       {PropsForInboxLinks || FilterFormFields ? (
         <div className="side-panel-item">
           {PropsForInboxLinks && <InboxLinks {...PropsForInboxLinks} />}
@@ -327,7 +327,7 @@ const InboxComposer = ({
           ) : null}
         </div>
       ) : null}
-      <div className="employee-form-content">
+      <div className="employee-form-content" style={{ flex: 1, minWidth: 0, overflow: "visible" }}>
         {Array.isArray(cards) && cards.length && (
           <SummaryCards
             cards={cards}
@@ -356,7 +356,9 @@ const InboxComposer = ({
             {propsForInboxTable.noResultsMessage ? t(propsForInboxTable.noResultsMessage) : t("CS_MYAPPLICATIONS_NO_APPLICATION")}
           </Card>
         ) : (
-          <Table t={t} {...propsForInboxTable} />
+          <div style={{ overflowX: "auto", width: "100%" }}>
+            <Table t={t} {...propsForInboxTable} />
+          </div>
         )}
       </div>
     </div>
