@@ -7,7 +7,7 @@ import CitizenApp from "./pages/citizen";
 import EmployeeApp from "./pages/employee";
 
 import CPTPropertyAssemblyDetails from "./pages/components/PropertyAssemblyDetails";
-import CPTPropertyLocationDetails from "./pages/components/PropertyLocationDetails";
+import PropertyLocationDetails from "./pages/components/PropertyLocationDetails";
 import CPTPropertyOwnerDetails from "./pages/components/PropertyOwnerDetails";
 import PropertyWaterConnection from "./pages/components/PropertyWaterConnection";
 import CPTSearchProperty from "./pages/citizen/SearchProperty";
@@ -77,7 +77,7 @@ const componentsToRegister = {
   CPTPropertySearchResults,
   CPTSearchProperty,
   CPTPropertyAssemblyDetails,
-  CPTPropertyLocationDetails,
+  PropertyLocationDetails,
   CPTPropertyOwnerDetails,
   PropertyWaterConnection,
   CPTKnowYourProperty,

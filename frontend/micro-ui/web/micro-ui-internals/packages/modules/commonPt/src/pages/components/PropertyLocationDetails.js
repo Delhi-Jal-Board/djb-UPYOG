@@ -145,7 +145,7 @@ const PropertyLocationDetails = ({
         setFormData((prev) => ({ ...prev, ...data }));
         onSelect(key, data);
       }}
-      config={{ isCollapsible: false, ...config }}
+      config={{ isCollapsible: true, ...config }}
       isEdit={isEdit}
       showZRO={hideZRO ? false : true}
       showMapActualLocation={true}

@@ -5,7 +5,6 @@ import SearchFormFieldsComponents from "./SearchFormFieldsComponent";
 import FilterFormFieldsComponent from "./FilterFormFieldsComponent";
 import useInboxTableConfig from "./useInboxTableConfig";
 import useInboxMobileCardsData from "./useInboxMobileCardsData";
-import { checkForEmployee } from "../../utils";
 
 const WSInbox = ({ parentRoute }) => {
   const { t } = useTranslation();
@@ -70,10 +69,7 @@ const WSInbox = ({ parentRoute }) => {
     }
   }
 
-
-  const InboxObjectInSessionStorage = checkPathName
-    ? Digit.SessionStorage.get("BILL.INBOX")
-    : Digit.SessionStorage.get("BILL.SW.INBOX");
+  const InboxObjectInSessionStorage = checkPathName ? Digit.SessionStorage.get("BILL.INBOX") : Digit.SessionStorage.get("BILL.SW.INBOX");
 
   const onSearchFormReset = (setSearchFormValue) => {
     setSearchFormValue("mobileNumber", null);
@@ -176,15 +172,15 @@ const WSInbox = ({ parentRoute }) => {
     }));
   }, [statuses]);
 
-  let links = [
-    {
-      text: t("WS_APPLY_NEW_CONNECTION_HOME_CARD_LABEL"),
-      link: `/digit-ui/employee/ws/create-application`,
-      roles: ["WS_CEMP", "SW_CEMP"],
-    },
-  ];
+  // let links = [
+  //   {
+  //     text: t("WS_APPLY_NEW_CONNECTION_HOME_CARD_LABEL"),
+  //     link: `/digit-ui/employee/ws/create-application`,
+  //     roles: ["WS_CEMP", "SW_CEMP"],
+  //   },
+  // ];
 
-  links = links.filter((link) => (link.roles ? checkForEmployee(link.roles) : true));
+  // links = links.filter((link) => (link.roles ? checkForEmployee(link.roles) : true));
   const PropsForInboxLinks = {
     logoIcon: <DropIcon />,
     headerText: checkPathName ? "MODULE_WATER" : "MODULE_SW",

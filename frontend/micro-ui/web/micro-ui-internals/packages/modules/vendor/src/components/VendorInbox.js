@@ -735,11 +735,9 @@ const VendorInbox = (props) => {
             Cell: ({ row }) => {
               return (
                 <div>
-                  <span className="link">
-                    <Link to={`/digit-ui/${userType}/vendor/registry/vendor-details/` + row.original["id"]}>
-                      <div>{row.original.name}</div>
-                    </Link>
-                  </span>
+                  <Link to={`/digit-ui/${userType}/vendor/registry/vendor-details/` + row.original["id"]}>
+                    <span className="link">{row.original.name}</span>
+                  </Link>
                 </div>
               );
             },
@@ -1490,16 +1488,10 @@ const VendorInbox = (props) => {
   } else if (tableData.length > 0) {
     result = (
       <ApplicationTable
-        className="table registryTable"
+        className="table"
         t={t}
         data={tableData}
         columns={columns}
-        getCellProps={() => ({
-          style: {
-            padding: "8px 12px",
-            fontSize: "13.5px",
-          },
-        })}
         onPageSizeChange={props.onPageSizeChange}
         currentPage={props.currentPage}
         onNextPage={props.onNextPage}

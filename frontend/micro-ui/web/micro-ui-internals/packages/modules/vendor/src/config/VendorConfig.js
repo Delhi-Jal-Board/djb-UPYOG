@@ -185,7 +185,7 @@ const VendorConfig = (t, disabled = false, formData = {}) => {
         {
           type: "component",
           key: "propertyAddress",
-          component: "CPTPropertyLocationDetails",
+          component: "PropertyLocationDetails",
           withoutLabel: true,
           props: {
             hidePropertySearch: true,

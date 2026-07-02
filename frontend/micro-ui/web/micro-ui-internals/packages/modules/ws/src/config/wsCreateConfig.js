@@ -110,7 +110,7 @@ export const newConfig = [
       },
       {
         route: "property-location-details",
-        component: "CPTPropertyLocationDetails",
+        component: "WSPropertyLocationDetails",
         key: "propertyLocationDetails",
         nextStep: "property-water-details",
         hideInEmployee: true,

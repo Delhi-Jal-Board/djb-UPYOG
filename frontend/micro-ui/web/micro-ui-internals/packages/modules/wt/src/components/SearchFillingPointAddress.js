@@ -275,7 +275,12 @@ const SearchFillingPointAddress = () => {
 
     updateFillingPoint(buildFillingPointStatusPayload(fillingPoint, nextStatus), {
       onSuccess: () => {
-        setToast({ label: t(nextStatus ? "WT_FILLING_POINT_ENABLED_SUCCESS" : "WT_FILLING_POINT_DISABLED_SUCCESS", nextStatus ? "Filling point enabled successfully" : "Filling point disabled successfully") });
+        setToast({
+          label: t(
+            nextStatus ? "WT_FILLING_POINT_ENABLED_SUCCESS" : "WT_FILLING_POINT_DISABLED_SUCCESS",
+            nextStatus ? "Filling point enabled successfully" : "Filling point disabled successfully"
+          ),
+        });
         setTimeout(closeToast, 5000);
         refetchFilling();
       },
@@ -334,12 +339,11 @@ const SearchFillingPointAddress = () => {
   };
 
   const getLocalityTranslation = (localityCode, tenantId, t) => {
-  if (!localityCode) return "";
-  const tenant = tenantId || Digit.ULBService.getCurrentTenantId() || "djb";
-  const prefix = tenant.replace(".", "_").toUpperCase();
-  return t(`${prefix}_REVENUE_${localityCode}`);
-  
-};
+    if (!localityCode) return "";
+    const tenant = tenantId || Digit.ULBService.getCurrentTenantId() || "djb";
+    const prefix = tenant.replace(".", "_").toUpperCase();
+    return t(`${prefix}_REVENUE_${localityCode}`);
+  };
   const columns = React.useMemo(() => {
     if (selectedTab === "FIXED_POINT") {
       return [
@@ -467,11 +471,9 @@ const SearchFillingPointAddress = () => {
                 : row.original?.address?.locality
                 ? [row.original.address.locality]
                 : [];
-            const translated = codes.length > 0
-              ? codes.map((code) => getLocalityTranslation(code, tenantId, t)).join(", ")
-              : "NA";
+            const translated = codes.length > 0 ? codes.map((code) => getLocalityTranslation(code, tenantId, t)).join(", ") : "NA";
             return (
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", maxWidth: "200px", textWrap: "wrap" }}>
                 <span>{translated}</span>
               </div>
             );
@@ -746,14 +748,8 @@ const SearchFillingPointAddress = () => {
         Header: t("WT_LOCALITY"),
         exportAccessor: (row) => {
           const codes =
-            row?.fillingPointLocalityCodes?.length > 0
-              ? row.fillingPointLocalityCodes
-              : row?.address?.locality
-              ? [row.address.locality]
-              : [];
-          return codes.length > 0
-            ? codes.map((code) => getLocalityTranslation(code, tenantId, t)).join(", ")
-            : "NA";
+            row?.fillingPointLocalityCodes?.length > 0 ? row.fillingPointLocalityCodes : row?.address?.locality ? [row.address.locality] : [];
+          return codes.length > 0 ? codes.map((code) => getLocalityTranslation(code, tenantId, t)).join(", ") : "NA";
         },
       },
     ];
@@ -779,8 +775,6 @@ const SearchFillingPointAddress = () => {
             >
               {t("WT_FIXED_POINT")}
             </button>
-
-            
 
             <button
               className={selectedTab === "VIEW_ON_MAP" ? "search-tab-head-selected" : "search-tab-head"}
@@ -884,17 +878,17 @@ const SearchFillingPointAddress = () => {
             data={tableData}
             columns={columns}
             pageSize={pageSize}
-            getCellProps={() => ({
-              style: {
-                padding: "20px 18px",
-                fontSize: "16px",
-                whiteSpace: "normal",
-                wordBreak: "break-word",
-                overflowWrap: "anywhere",
-              },
-            })}
-            styles={{ width: "1200px", minWidth: "1200px", tableLayout: "fixed" }}
-            inboxStyles={{ overflowX: "auto" }}
+            // getCellProps={() => ({
+            //   style: {
+            //     padding: "20px 18px",
+            //     fontSize: "16px",
+            //     whiteSpace: "normal",
+            //     wordBreak: "break-word",
+            //     overflowWrap: "anywhere",
+            //   },
+            // })}
+            // styles={{ width: "1200px", minWidth: "1200px", tableLayout: "fixed" }}
+            // inboxStyles={{ overflowX: "auto" }}
             t={t}
             isLoading={isLoading || isAllFillingPointsLoading}
             onPageSizeChange={handlePageSizeChange}

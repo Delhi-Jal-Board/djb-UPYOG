@@ -9,8 +9,6 @@ import {
   Menu,
   Toast,
   Modal,
-  CardText,
-  Dropdown,
   AddIcon,
   Table,
   CloseSvg,
@@ -22,14 +20,6 @@ import { formInitValue, formReducer, tableColumnConfig } from "../../config/tabl
 
 const Heading = (props) => {
   return <h1 className="heading-m">{props.label}</h1>;
-};
-
-const CloseBtn = (props) => {
-  return (
-    <div className="icon-bg-secondary" onClick={props.onClick}>
-      <CloseSvg />
-    </div>
-  );
 };
 
 const SupervisorDetails = (props) => {
@@ -46,8 +36,6 @@ const SupervisorDetails = (props) => {
   const [selectedAction, setSelectedAction] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [showToast, setShowToast] = useState(null);
-  const [vendors, setVendors] = useState([]);
-  const [selectedOption, setSelectedOption] = useState({});
   const { data: vendorData } = Digit.Hooks.fsm.useDsoSearch(tenantId, { sortBy: "name", sortOrder: "ASC", status: "ACTIVE" }, {});
   const { data: supervisorSearchResponse, isLoading, refetch } = Digit.Hooks.fsm.useSupervisorSearch(
     tenantId,
@@ -88,14 +76,6 @@ const SupervisorDetails = (props) => {
   }, [supervisorSearchResponse, vendorData]);
 
   const { mutate: mutateSupervisor } = Digit.Hooks.fsm.useSupervisorUpdate(tenantId);
-  const { mutate: mutateVendor } = Digit.Hooks.fsm.useVendorUpdate(tenantId);
-
-  useEffect(() => {
-    if (vendorData) {
-      let vendors = vendorData.map((data) => data.dsoDetails);
-      setVendors(vendors);
-    }
-  }, [vendorData]);
 
   useEffect(() => {
     refetch();
@@ -109,19 +89,15 @@ const SupervisorDetails = (props) => {
 
   useEffect(() => {
     switch (selectedAction) {
-      case "DELETE":
-      case "ADD_VENDOR":
-      case "EDIT_VENDOR":
-      case "DELETE_VENDOR":
-        return setShowModal(true);
       case "EDIT":
         return history.push(`/digit-ui/${userType}/vendor/registry/modify-supervisor/${supervisorId}`);
       case "HOME":
         return history.push(`/digit-ui/${userType}/vendor/search-vendor?selectedTabs=SUPERVISOR`);
+      case "DELETE":
+        return setShowModal(true);
       default:
         break;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedAction]);
 
   const [formState, dispatch] = useReducer(formReducer, formInitValue);
@@ -139,25 +115,6 @@ const SupervisorDetails = (props) => {
     { enabled: !!tenantId, keepPreviousData: true }
   );
 
-  const closeToast = () => {
-    setShowToast(null);
-  };
-
-  const handleModalAction = () => {
-    switch (selectedAction) {
-      case "DELETE":
-        return handleDeleteSupervisor();
-      case "DELETE_VENDOR":
-        return handleDeleteVendor();
-      case "ADD_VENDOR":
-        return handleAddVendor();
-      case "EDIT_VENDOR":
-        return handleEditVendor();
-      default:
-        break;
-    }
-  };
-
   const handleDeleteSupervisor = () => {
     let details = supervisorData?.[0]?.supervisorData;
     const formData = {
@@ -170,139 +127,24 @@ const SupervisorDetails = (props) => {
     mutateSupervisor(formData, {
       onError: (error) => {
         setShowToast({ key: "error", action: error });
-        setTimeout(closeToast, 5000);
       },
       onSuccess: () => {
-        setShowToast({ key: "success", action: "DELETE_SUPERVISOR" });
         queryClient.invalidateQueries("SUPERVISOR_SEARCH");
-        setTimeout(() => {
-          closeToast();
-          history.push(`/digit-ui/${userType}/vendor/search-vendor`);
-        }, 5000);
+        history.push({
+          pathname: `/digit-ui/${userType}/vendor/search-vendor`,
+          state: {
+            showSuccessToast: true,
+            message: { key: "success", action: `DELETE_SUPERVISOR` },
+          },
+        });
       },
     });
     setShowModal(false);
-  };
-
-  const handleDeleteVendor = () => {
-    let dsoDetails = supervisorData?.[0]?.vendorDetails?.vendor?.[0];
-    let getSupervisorVendorDetails = dsoDetails?.supervisors || [];
-
-    getSupervisorVendorDetails = getSupervisorVendorDetails.map((data) => {
-      if (data.id === supervisorId) {
-        data.vendorSupervisorStatus = "INACTIVE";
-      }
-      return data;
-    });
-
-    const formData = {
-      vendor: {
-        ...dsoDetails,
-        supervisors: getSupervisorVendorDetails,
-      },
-    };
-
-    mutateVendor(formData, {
-      onError: (error) => {
-        setShowToast({ key: "error", action: error });
-        setTimeout(closeToast, 5000);
-      },
-      onSuccess: () => {
-        setShowToast({ key: "success", action: "DELETE_VENDOR" });
-        queryClient.invalidateQueries("FSM_VENDOR_SEARCH");
-        refetch();
-        setTimeout(closeToast, 5000);
-      },
-    });
-    setShowModal(false);
-  };
-
-  const handleAddVendor = () => {
-    let dsoDetails = selectedOption;
-    let details = supervisorData?.[0]?.supervisorData;
-    details.vendorSupervisorStatus = "ACTIVE";
-    const formData = {
-      vendor: {
-        ...dsoDetails,
-        supervisors: dsoDetails.supervisors ? [...dsoDetails.supervisors, details] : [details],
-      },
-    };
-    mutateVendor(formData, {
-      onError: (error) => {
-        setShowToast({ key: "error", action: error });
-        refetch();
-        setTimeout(closeToast, 5000);
-      },
-      onSuccess: () => {
-        setShowToast({ key: "success", action: "ADD_VENDOR" });
-        queryClient.invalidateQueries("SUPERVISOR_SEARCH");
-        refetch();
-        setTimeout(closeToast, 5000);
-      },
-    });
-    setShowModal(false);
-    setSelectedAction(null);
-  };
-
-  const handleEditVendor = () => {
-    let dsoDetails = selectedOption;
-    let details = supervisorData?.[0]?.supervisorData;
-    details.vendorSupervisorStatus = "ACTIVE";
-
-    const formData = {
-      vendor: {
-        ...dsoDetails,
-        supervisors: dsoDetails.supervisors ? [...dsoDetails.supervisors, details] : [details],
-      },
-    };
-
-    mutateVendor(formData, {
-      onError: (error) => {
-        setShowToast({ key: "error", action: error });
-        setTimeout(closeToast, 5000);
-      },
-      onSuccess: () => {
-        setShowToast({ key: "success", action: "EDIT_VENDOR" });
-        refetch();
-        queryClient.invalidateQueries("SUPERVISOR_SEARCH");
-        setTimeout(closeToast, 5000);
-      },
-    });
-    setShowModal(false);
-    setSelectedAction(null);
   };
 
   const closeModal = () => {
     setSelectedAction(null);
-    setSelectedOption({});
     setShowModal(false);
-  };
-
-  const modalHeading = () => {
-    switch (selectedAction) {
-      case "DELETE":
-      case "DELETE_VENDOR":
-        return "ES_VENDOR_SUPERVISOR_DELETE_POPUP_HEADER";
-      case "ADD_VENDOR":
-      case "EDIT_VENDOR":
-        return "ES_VENDOR_SUPERVISOR_ADD_VENDOR_POPUP_HEADER";
-      default:
-        break;
-    }
-  };
-
-  const renderModalContent = () => {
-    if (selectedAction === "DELETE" || selectedAction === "DELETE_VENDOR") {
-      return <ConfirmationBox t={t} title={"ES_VENDOR_SUPERVISOR_DELETE_TEXT"} />;
-    }
-    if (selectedAction === "ADD_VENDOR" || selectedAction === "EDIT_VENDOR") {
-      return (
-        <React.Fragment>
-          <CardText>{t(`ES_FSM_REGISTRY_SELECT_VENODOR`)}</CardText>
-          <Dropdown t={t} option={vendors} value={selectedOption} selected={selectedOption} select={setSelectedOption} optionKey={"name"} />
-        </React.Fragment>
-      );
-    }
   };
 
   const filteredData = React.useMemo(() => {
@@ -422,33 +264,6 @@ const SupervisorDetails = (props) => {
                           <div className="additional-label">{t(value.title)}</div>
                           <div className="additional-value" style={{ color: "#a82227", display: "flex", gap: "20px", alignItems: "center" }}>
                             {t(value.value) || "N/A"}
-                            {value.value === "ES_FSM_REGISTRY_DETAILS_ADD_VENDOR" && (
-                              <span
-                                className="add-details-link hover-button"
-                                onClick={() => setSelectedAction("ADD_VENDOR")}
-                                style={{ cursor: "pointer" }}
-                              >
-                                <AddIcon fill="#a82227" />
-                              </span>
-                            )}
-                            {value.value !== "ES_FSM_REGISTRY_DETAILS_ADD_VENDOR" && (
-                              <React.Fragment>
-                                {/* <div
-                                  className="add-details-link hover-button"
-                                  onClick={() => setSelectedAction("EDIT_VENDOR")}
-                                  style={{ cursor: "pointer" }}
-                                >
-                                  <EditIcon />
-                                </div>
-                                <div
-                                  className="add-details-link hover-button"
-                                  onClick={() => setSelectedAction("DELETE_VENDOR")}
-                                  style={{ cursor: "pointer" }}
-                                >
-                                  <DeleteIcon fill="#a82227" />
-                                </div> */}
-                              </React.Fragment>
-                            )}
                           </div>
                         </React.Fragment>
                       ) : (
@@ -505,21 +320,23 @@ const SupervisorDetails = (props) => {
       </div>
       {showModal && (
         <Modal
-          headerBarMain={<Heading label={t(modalHeading())} />}
-          headerBarEnd={<CloseBtn onClick={closeModal} />}
+          headerBarMain={<Heading label={t("ES_VENDOR_SUPERVISOR_DELETE_POPUP_HEADER")} />}
+          headerBarEnd={<CloseSvg onClick={closeModal} />}
           actionCancelLabel={t("CS_COMMON_CANCEL")}
           actionCancelOnSubmit={closeModal}
-          actionSaveLabel={t(selectedAction === "DELETE" || selectedAction === "DELETE_VENDOR" ? "ES_EVENT_DELETE" : "CS_COMMON_SUBMIT")}
-          actionSaveOnSubmit={handleModalAction}
+          actionSaveLabel={t("ES_EVENT_DELETE")}
+          actionSaveOnSubmit={handleDeleteSupervisor}
         >
-          <Card style={{ boxShadow: "none" }}>{renderModalContent()}</Card>
+          <Card style={{ boxShadow: "none" }}>
+            <ConfirmationBox t={t} title={"ES_VENDOR_SUPERVISOR_DELETE_TEXT"} />
+          </Card>
         </Modal>
       )}
       {showToast && (
         <Toast
           error={showToast.key === "error"}
           label={t(showToast.key === "success" ? `ES_VENDOR_${showToast.action}_SUCCESS` : showToast.action)}
-          onClose={closeToast}
+          onClose={() => setShowToast(null)}
           duration={5000}
         />
       )}
