@@ -298,13 +298,6 @@
     font-size: 16px;
   }
 
-  .ekyc-application-link {
-    font-size: 16px;
-    cursor: pointer;
-    font-weight: 600;
-    color: #318ed0 !important;
-  }
-
   /* SearchConsumer Styles */
   .search-consumer-wrapper {
     background: #f5f7fa;
@@ -1021,10 +1014,23 @@
   }
 }
 
-.ekyc-application-link {
-  font-size: 16px;
-  cursor: pointer;
-  color: #318ed0 !important;
+.ekyc-status-tag {
+  padding: 2px 12px;
+  border-radius: 100px;
+  &.SUBMITTED {
+    background-color: #fef3c7;
+    color: #b45309;
+  }
+
+  &.APPROVED {
+    background-color: #d0f0d5;
+    color: #0b6623;
+  }
+
+  &.REJECTED {
+    background-color: #fdecea;
+    color: #b42318;
+  }
 }
 
 .status-search-composer-wrapper {
@@ -1052,4 +1058,3 @@
     background: transparent;
   }
 }
-

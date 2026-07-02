@@ -39,7 +39,7 @@ export const tableColumnConfig = (t, handleReview) => [
     Cell: ({ row }) => {
       const id = row.original?.id;
       return (
-        <span className="ekyc-application-link" style={{ color: "#318ED0", cursor: "pointer", fontSize: "16px" }} onClick={() => handleReview(id)}>
+        <span className="link" onClick={() => handleReview(id)}>
           {row.original?.surveyorName || row.original?.name || "NA"}
         </span>
       );
