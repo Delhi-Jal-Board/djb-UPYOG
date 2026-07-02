@@ -1,27 +1,21 @@
-import { FormComposer, Header, Loader, Toast, VerticalTimeline } from "@djb25/digit-ui-react-components";
-import cloneDeep from "lodash/cloneDeep";
+import { FormComposer, Loader, Toast, VerticalTimeline } from "@djb25/digit-ui-react-components";
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useHistory } from "react-router-dom";
-import * as func from "../../../utils";
 import _ from "lodash";
-import { newConfig as newConfigLocal } from "../../../config/wsCreateConfig";
 import { createPayloadOfWS, updatePayloadOfWS } from "../../../utils";
 import CheckPage from "./CheckPage";
 
 const OLDApplication = () => {
   const { t } = useTranslation();
-  const location = useLocation();
-  const { state } = location;
   const history = useHistory();
-  let filters = func.getQueryStringParams(location.search);
-  const [canSubmit, setSubmitValve] = useState(false);
+  // const [canSubmit, setSubmitValve] = useState(false);
   const [isEnableLoader, setIsEnableLoader] = useState(false);
   const [showToast, setShowToast] = useState(null);
-  const [appDetails, setAppDetails] = useState({});
-  const [waterAndSewerageBoth, setWaterAndSewerageBoth] = useState(null);
+  // const [appDetails, setAppDetails] = useState({});
+  // const [waterAndSewerageBoth, setWaterAndSewerageBoth] = useState(null);
   const [config, setConfig] = useState({ body: [] });
-  const [currentStep, setCurrentStep] = useState(1);
+  // const [currentStep, setCurrentStep] = useState(1);
   const [showCheckPage, setShowCheckPage] = useState(false);
 
   const timelineConfig = [
@@ -54,7 +48,7 @@ const OLDApplication = () => {
 
   const { data: propertyDetails } = Digit.Hooks.pt.usePropertySearch(
     { filters: { propertyIds: propertyId }, tenantId: tenantId },
-    { filters: { propertyIds: propertyId }, tenantId: tenantId, enabled: propertyId && propertyId != "" ? true : false }
+    { filters: { propertyIds: propertyId }, tenantId: tenantId, enabled: propertyId && propertyId !== "" ? true : false }
   );
 
   // FIX 2: Clear stale FORMSTATE_ERRORS from sessionStorage on component mount
@@ -76,7 +70,7 @@ const OLDApplication = () => {
           "CPTPropertySearchNSummary",
           "WSConnectionDetails",
           "WSConnectionHolderDetails",
-          "CPTPropertyLocationDetails",
+          "WSPropertyLocationDetails",
           "PropertyWaterConnection",
           "WSDjbEmployee",
           "WSActivationPlumberDetails",
@@ -101,7 +95,7 @@ const OLDApplication = () => {
             if (compName === "WSDocumentsEmployee");
 
             reorderedBody.push(section);
-          } else if (compName === "CPTPropertyLocationDetails") {
+          } else if (compName === "WSPropertyLocationDetails") {
             reorderedBody.push({
               // head: "WS_PROPERTY_LOCATION_DETAILS",
               isCreateConnection: true,
@@ -109,7 +103,7 @@ const OLDApplication = () => {
                 {
                   type: "component",
                   key: "propertyAddress",
-                  component: "CPTPropertyLocationDetails",
+                  component: "WSPropertyLocationDetails",
                   withoutLabel: true,
                   isAutomaticFill: true,
                 },
@@ -191,37 +185,27 @@ const OLDApplication = () => {
     !propertyId && sessionFormData?.cpt?.details?.propertyId && setPropertyId(sessionFormData?.cpt?.details?.propertyId);
   }, [sessionFormData?.cpt]);
 
-
-
   const {
     isLoading: creatingWaterApplicationLoading,
-    isError: createWaterApplicationError,
-    data: createWaterResponse,
-    error: createWaterError,
+
     mutate: waterMutation,
   } = Digit.Hooks.ws.useWaterCreateAPI("WATER");
 
   const {
     isLoading: updatingWaterApplicationLoading,
-    isError: updateWaterApplicationError,
-    data: updateWaterResponse,
-    error: updateWaterError,
+
     mutate: waterUpdateMutation,
   } = Digit.Hooks.ws.useWSApplicationActions("WATER");
 
   const {
     isLoading: creatingSewerageApplicationLoading,
-    isError: createSewerageApplicationError,
-    data: createSewerageResponse,
-    error: createSewerageError,
+
     mutate: sewerageMutation,
   } = Digit.Hooks.ws.useWaterCreateAPI("SEWERAGE");
 
   const {
     isLoading: updatingSewerageApplicationLoading,
-    isError: updateSewerageApplicationError,
-    data: updateSewerageResponse,
-    error: updateSewerageError,
+
     mutate: sewerageUpdateMutation,
   } = Digit.Hooks.ws.useWSApplicationActions("SEWERAGE");
 
@@ -233,16 +217,16 @@ const OLDApplication = () => {
       sessionStorage.setItem("FORMSTATE_ERRORS", JSON.stringify(formState?.errors));
     }
 
-    if (
-      Object.keys(formState.errors).length > 0 &&
-      Object.keys(formState.errors).length == 1 &&
-      formState?.errors?.["ConnectionHolderDetails"]?.type &&
-      Object.keys(formState?.errors?.["ConnectionHolderDetails"]?.type)?.length == 1 &&
-      formState.errors["ConnectionHolderDetails"] &&
-      Object.values(formState.errors["ConnectionHolderDetails"].type).filter((ob) => ob.type === "required" && ob?.ref?.value !== "").length > 0
-    )
-      setSubmitValve(true);
-    else setSubmitValve(!Object.keys(formState.errors).length);
+    // if (
+    //   Object.keys(formState.errors).length > 0 &&
+    //   Object.keys(formState.errors).length === 1 &&
+    //   formState?.errors?.["ConnectionHolderDetails"]?.type &&
+    //   Object.keys(formState?.errors?.["ConnectionHolderDetails"]?.type)?.length === 1 &&
+    //   formState.errors["ConnectionHolderDetails"] &&
+    //   Object.values(formState.errors["ConnectionHolderDetails"].type).filter((ob) => ob.type === "required" && ob?.ref?.value !== "").length > 0
+    // )
+    //   setSubmitValve(true);
+    // else setSubmitValve(!Object.keys(formState.errors).length);
   };
 
   const closeToastOfError = () => {
@@ -266,9 +250,9 @@ const OLDApplication = () => {
     if (
       Object.keys(formStateErros).length > 0 &&
       !(
-        Object.keys(formStateErros).length == 1 &&
+        Object.keys(formStateErros).length === 1 &&
         formStateErros?.["ConnectionHolderDetails"]?.type &&
-        Object.keys(formStateErros?.["ConnectionHolderDetails"]?.type)?.length == 1 &&
+        Object.keys(formStateErros?.["ConnectionHolderDetails"]?.type)?.length === 1 &&
         formStateErros["ConnectionHolderDetails"] &&
         Object.values(formStateErros["ConnectionHolderDetails"].type).filter((ob) => ob.type === "required" && ob?.ref?.value !== "").length > 0
       )
@@ -398,7 +382,7 @@ const OLDApplication = () => {
       ownerContactNumber: data?.ConnectionHolderDetails?.[0]?.mobileNumber || data?.cpt?.details?.owners?.[0]?.mobileNumber,
     };
 
-    const allDetails = cloneDeep(data);
+    // const allDetails = cloneDeep(data);
     const payload = await createPayloadOfWS(data);
 
     // DEBUG: Log payload to confirm water/sewerage fields are present
@@ -410,19 +394,19 @@ const OLDApplication = () => {
       return;
     }
 
-    let waterAndSewerageLoader = false,
-      waterLoader = false,
-      sewerageLoader = false;
+    let waterAndSewerageLoader = false;
+    // waterLoader = false,
+    // sewerageLoader = false;
 
     if (payload?.water && payload?.sewerage) waterAndSewerageLoader = true;
-    if (payload?.water && !payload?.sewerage) waterLoader = true;
-    if (!payload?.water && payload?.sewerage) sewerageLoader = true;
+    // if (payload?.water && !payload?.sewerage) waterLoader = true;
+    // if (!payload?.water && payload?.sewerage) sewerageLoader = true;
 
     let waterConnection = { WaterConnection: payload, disconnectRequest: false, reconnectRequest: false };
     let sewerageConnection = { SewerageConnection: payload, disconnectRequest: false, reconnectRequest: false };
 
     if (waterAndSewerageLoader) {
-      setWaterAndSewerageBoth(true);
+      // setWaterAndSewerageBoth(true);
       sessionStorage.setItem("setWaterAndSewerageBoth", JSON.stringify(true));
     } else {
       sessionStorage.setItem("setWaterAndSewerageBoth", JSON.stringify(false));
@@ -455,7 +439,7 @@ const OLDApplication = () => {
                 setTimeout(closeToastOfError, 5000);
               },
               onSuccess: async (waterUpdateData) => {
-                setAppDetails((prev) => ({ ...prev, waterConnection: waterUpdateData?.WaterConnection?.[0] }));
+                // setAppDetails((prev) => ({ ...prev, waterConnection: waterUpdateData?.WaterConnection?.[0] }));
 
                 await sewerageMutation(sewerageConnection, {
                   onError: (error) => {
@@ -480,7 +464,7 @@ const OLDApplication = () => {
                         setTimeout(closeToastOfError, 5000);
                       },
                       onSuccess: async (sewerageUpdateData) => {
-                        setAppDetails((prev) => ({ ...prev, sewerageConnection: sewerageUpdateData?.SewerageConnections?.[0] }));
+                        // setAppDetails((prev) => ({ ...prev, sewerageConnection: sewerageUpdateData?.SewerageConnections?.[0] }));
                         clearSessionFormData();
                         history.push(
                           `${basePath}/ws-response?applicationNumber=${waterUpdateData?.WaterConnection?.[0]?.applicationNo}&applicationNumber1=${sewerageUpdateData?.SewerageConnections?.[0]?.applicationNo}`
@@ -524,7 +508,7 @@ const OLDApplication = () => {
                 setTimeout(closeToastOfError, 5000);
               },
               onSuccess: (data) => {
-                setAppDetails((prev) => ({ ...prev, waterConnection: data?.WaterConnection?.[0] }));
+                // setAppDetails((prev) => ({ ...prev, waterConnection: data?.WaterConnection?.[0] }));
                 clearSessionFormData();
                 history.push(`${basePath}/ws-response?applicationNumber=${data?.WaterConnection?.[0]?.applicationNo}`);
               },
@@ -562,7 +546,7 @@ const OLDApplication = () => {
                 setTimeout(closeToastOfError, 5000);
               },
               onSuccess: (data) => {
-                setAppDetails((prev) => ({ ...prev, sewerageConnection: data?.SewerageConnections?.[0] }));
+                // setAppDetails((prev) => ({ ...prev, sewerageConnection: data?.SewerageConnections?.[0] }));
                 clearSessionFormData();
                 history.push(`${basePath}/ws-response?applicationNumber1=${data?.SewerageConnections?.[0]?.applicationNo}`);
               },
@@ -595,16 +579,16 @@ const OLDApplication = () => {
   return (
     <React.Fragment>
       <div className="employee-form-section-wrapper">
-        <VerticalTimeline config={timelineConfig} currentActiveIndex={currentStep - 1} showFinalStep={false} />
+        <VerticalTimeline config={timelineConfig} currentActiveIndex={0} showFinalStep={false} />
         <FormComposer
           config={config.body}
           userType={"employee"}
           onFormValueChange={onFormValueChange}
           label={
             creatingWaterApplicationLoading ||
-              creatingSewerageApplicationLoading ||
-              updatingWaterApplicationLoading ||
-              updatingSewerageApplicationLoading
+            creatingSewerageApplicationLoading ||
+            updatingWaterApplicationLoading ||
+            updatingSewerageApplicationLoading
               ? t("CS_COMMON_SUBMITTING")
               : t("CS_COMMON_NEXT")
           }

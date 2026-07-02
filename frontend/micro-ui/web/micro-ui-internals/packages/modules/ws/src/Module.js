@@ -6,13 +6,10 @@ import CitizenApp from "./pages/citizen";
 import EmployeeApp from "./pages/employee";
 
 //Page Components
-import WSServiceName from "./pageComponents/WSServiceName";
 import WSWaterConnectionDetails from "./pageComponents/WSWaterConnectionDetails";
 import WSDocsRequired from "./pageComponents/WSDocsRequired";
-import WSDocumentDetails from "./pageComponents/WSDocumentDetails";
 import WSSewerageConnectionDetails from "./pageComponents/WSSewerageConnectionDetails";
 import WSPlumberPreference from "./pageComponents/WSPlumberPreference";
-import WSConnectionHolder from "./pageComponents/WSConnectionHolder";
 import WSInfoLabel from "./pageComponents/WSInfoLabel";
 import WSActivationDetails from "./pageComponents/WSActivationDetails";
 import WSConnectionDetails from "./pageComponents/WSConnectionDetails";
@@ -105,9 +102,9 @@ import OLDApplication from "./pages/employee/OLD";
 export const WSModule = ({ stateCode, userType, tenants }) => {
   const tenantId = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code || Digit.ULBService.getCurrentTenantId();
   const moduleCode = ["ws", "pt", "common", tenantId, "bill-amend", "abg"];
-  const { path, url } = useRouteMatch();
+  const { path } = useRouteMatch();
   const language = Digit.StoreData.getCurrentLanguage();
-  const { isLoading, data: store } = Digit.Services.useStore({
+  const { isLoading } = Digit.Services.useStore({
     stateCode,
     moduleCode,
     language,
@@ -121,7 +118,6 @@ export const WSModule = ({ stateCode, userType, tenants }) => {
   if (isLoading) {
     return <Loader />;
   }
-
 
   if (userType === "citizen") {
     return <CitizenApp path={path} stateCode={stateCode} />;
@@ -177,8 +173,7 @@ const componentsToRegister = {
   // PageComponents
   WSServiceName: WSConnectionDetails,
   WSWaterConnectionDetails,
-  CPTPropertyLocationDetails: WSPropertyLocationDetails,
-  PTPropertyLocationDetails: WSPropertyLocationDetails,
+  WSPropertyLocationDetails,
   WSPropertyWaterConnection,
   WSDocsRequired,
   WSDocumentDetails: WSDocumentsEmployee,
