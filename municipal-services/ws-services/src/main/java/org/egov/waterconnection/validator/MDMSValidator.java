@@ -189,20 +189,20 @@ public class MDMSValidator {
 			errorMap.put("INVALID_WATER_ROAD_TYPE", messageBuilder.toString());
 		}*/
 
-		if(waterConnection.getRoadCuttingInfo() == null){
-			errorMap.put("INVALID_ROAD_INFO", "Road Cutting Information should not be empty");
-		}
-
-		if(waterConnection.getRoadCuttingInfo() != null){
-			for(RoadCuttingInfo roadCuttingInfo : waterConnection.getRoadCuttingInfo()){
-				if (!StringUtils.isEmpty(roadCuttingInfo.getRoadType())
-						&& !codes.get(WCConstants.WC_ROADTYPE_MASTER).contains(roadCuttingInfo.getRoadType())) {
-					messageBuilder = new StringBuilder();
-					messageBuilder.append("Road type value is invalid, please enter proper value! ");
-					errorMap.put("INVALID_WATER_ROAD_TYPE", messageBuilder.toString());
-				}
-			}
-		}
+//		if(waterConnection.getRoadCuttingInfo() == null){
+//			errorMap.put("INVALID_ROAD_INFO", "Road Cutting Information should not be empty");
+//		}
+//
+//		if(waterConnection.getRoadCuttingInfo() != null){
+//			for(RoadCuttingInfo roadCuttingInfo : waterConnection.getRoadCuttingInfo()){
+//				if (!StringUtils.isEmpty(roadCuttingInfo.getRoadType())
+//						&& !codes.get(WCConstants.WC_ROADTYPE_MASTER).contains(roadCuttingInfo.getRoadType())) {
+//					messageBuilder = new StringBuilder();
+//					messageBuilder.append("Road type value is invalid, please enter proper value! ");
+//					errorMap.put("INVALID_WATER_ROAD_TYPE", messageBuilder.toString());
+//				}
+//			}
+//		}
 		if (!errorMap.isEmpty())
 			throw new CustomException(errorMap);
 	}
