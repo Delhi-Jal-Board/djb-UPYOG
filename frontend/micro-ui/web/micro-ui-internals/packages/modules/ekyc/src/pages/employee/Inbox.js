@@ -6,7 +6,7 @@ import SearchFormFieldsComponents from "../../components/SearchFormFieldsCompone
 
 // Mock data removed in favor of API integration
 
-const Inbox = ({ parentRoute, businessService = "EKYC", initialStates = {}, filterComponent, isInbox }) => {
+const Inbox = ({ parentRoute }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const location = useLocation();
 
@@ -87,7 +87,13 @@ const Inbox = ({ parentRoute, businessService = "EKYC", initialStates = {}, filt
           applicationNumber: item.propertyInfo?.kno || "",
           citizenName: item.connectionDetails?.consumerName || "",
           status: item.connectionDetails?.statusflag || "",
-          ekycStatus: (item.connectionDetails?.ekycStatus || item.connectionDetails?.ekycstatus || item.ekycStatus || item.ekycstatus || "NA").toUpperCase(),
+          ekycStatus: (
+            item.connectionDetails?.ekycStatus ||
+            item.connectionDetails?.ekycstatus ||
+            item.ekycStatus ||
+            item.ekycstatus ||
+            "NA"
+          ).toUpperCase(),
           sla: 0,
         };
       }
@@ -111,9 +117,6 @@ const Inbox = ({ parentRoute, businessService = "EKYC", initialStates = {}, filt
   const totalRecords = listData?.totalCount || 0;
 
   const checkPathName = location.pathname.includes("ekyc/inbox");
-  const PropsForInboxLinks = {
-    headerText: checkPathName ? "EKYC_MODULE" : "MODULE_SW",
-  };
 
   const SearchFormFields = useCallback(
     ({ registerRef, searchFormState, controlSearchForm }) => (
@@ -157,34 +160,19 @@ const Inbox = ({ parentRoute, businessService = "EKYC", initialStates = {}, filt
     className: "search-form-wns-inbox",
   };
 
-  const FilterFormFields = useCallback(
-    ({ registerRef, controlFilterForm, setFilterFormValue, getFilterFormValue }) => <React.Fragment></React.Fragment>,
-    []
-  );
-
-  const propsForFilterForm = {
-    FilterFormFields,
-    onFilterFormSubmit: () => { },
-    filterFormDefaultValues: "",
-    resetFilterFormDefaultValues: "",
-    onFilterFormReset: () => { },
-  };
-
   function formReducer(state, payload) {
-    const storageKey = payload.checkPathName ? "EKYC.INBOX" : "EKYC.SW.INBOX";
-
     // ✅ safety for SLA
     switch (payload.action) {
       case "mutateSearchForm":
-        Digit.SessionStorage.set(storageKey, { ...state, searchForm: payload.data });
+        Digit.SessionStorage.set("EKYC.INBOX", { ...state, searchForm: payload.data });
         return { ...state, searchForm: payload.data };
 
       case "mutateFilterForm":
-        Digit.SessionStorage.set(storageKey, { ...state, filterForm: payload.data });
+        Digit.SessionStorage.set("EKYC.INBOX", { ...state, filterForm: payload.data });
         return { ...state, filterForm: payload.data };
 
       case "mutateTableForm":
-        Digit.SessionStorage.set(storageKey, { ...state, tableForm: payload.data });
+        Digit.SessionStorage.set("EKYC.INBOX", { ...state, tableForm: payload.data });
         return { ...state, tableForm: payload.data };
 
       default:
