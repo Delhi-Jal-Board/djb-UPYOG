@@ -152,6 +152,14 @@ public class Connection {
 	@JsonProperty("disconnectionExecutionDate")
 	private Long disconnectionExecutionDate = null;
 
+	/**
+	 * Due verification records fetched from external system during field inspection.
+	 * Each entry is keyed by kno (K-Number). A single application can have multiple entries.
+	 */
+	@JsonProperty("dueVerification")
+	@Valid
+	private List<DueVerification> dueVerification = null;
+
 	public Connection id(String id) {
 		this.id = id;
 		return this;
