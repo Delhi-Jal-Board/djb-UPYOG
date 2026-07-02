@@ -2,7 +2,18 @@ import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
-const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData, tenantId, inboxStyles={}, tableStyle={} }) => {
+const useInboxTableConfig = ({
+  parentRoute,
+  onPageSizeChange,
+  formState,
+  totalCount,
+  table,
+  dispatch,
+  onSortingByData,
+  tenantId,
+  inboxStyles = {},
+  tableStyle = {},
+}) => {
   const { t } = useTranslation();
 
   const GetCell = (value) => <span className="cell-text styled-cell">{value}</span>;
@@ -20,9 +31,9 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
           if (row.original["applicationNo"].includes("SW")) service = "SEWERAGE";
           let application = "application";
           if (row?.original?.["applicationType"]?.toUpperCase()?.includes("DISCONNECT")) {
-            application = "disconnection"
+            application = "disconnection";
           } else if (row?.original?.["applicationType"]?.toUpperCase()?.includes("MODIFY")) {
-            application = "modify"
+            application = "modify";
           }
           return (
             <div>
@@ -64,14 +75,14 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
   });
 
   return {
-    getCellProps: (cellInfo) => {
-      return {
-        style: {
-          padding: "20px 18px",
-          fontSize: "16px",
-        },
-      };
-    },
+    // getCellProps: (cellInfo) => {
+    //   return {
+    //     style: {
+    //       padding: "20px 18px",
+    //       fontSize: "16px",
+    //     },
+    //   };
+    // },
     disableSort: false,
     autoSort: false,
     manualPagination: true,
@@ -103,8 +114,8 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
     // searchQueryForTable,
     data: table,
     columns: tableColumnConfig,
-    inboxStyles:{...inboxStyles},
-    tableStyle:{...tableStyle},
+    inboxStyles: { ...inboxStyles },
+    tableStyle: { ...tableStyle },
   };
 };
 
