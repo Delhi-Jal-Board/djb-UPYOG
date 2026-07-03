@@ -1,15 +1,26 @@
 .HomePageWrapper {
-  margin-top: -25px;
+  margin-top: 0;
+  padding: 24px 24px 56px;
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  position: relative;
+  align-items: stretch;
+  z-index: 1;
 
   .BannerWithSearch {
     margin-bottom: 40px;
     width: 100%;
     @apply relative;
+
     .Search {
       width: calc(100% - 32px);
       bottom: -18px;
       @apply mx-md absolute;
     }
+
     img {
       height: 33vw;
       @apply w-full object-cover;
@@ -18,96 +29,376 @@
 
   .ServicesSection {
     @apply flex flex-wrap;
-    padding: 40px 15px 0 15px;
+    padding: 100px 15px 0 15px;
   }
 
   @screen dt {
     .ServicesSection {
       @apply flex flex-wrap;
-      padding: 40px 15px 0 15px;
+      padding: 100px 15px 0 15px;
       width: 100%;
     }
   }
 
   .WhatsNewSection {
     @apply m-sm;
-    padding: 0 15px;
+    padding: 24px 32px;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 1);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    border-radius: 20px;
+    position: relative;
+    margin: 0px !important;
+
     .headSection {
       @apply flex mb-sm justify-between;
+      align-items: center;
+
       h2 {
-        @apply text-heading-s font-bold text-text-primary pl-sm;
+        @apply text-heading-s font-bold text-text-primary;
+        padding-left: 0;
+        font-size: 22px;
+        color: #1e293b;
       }
+
       p {
-        @apply text-link text-primary-main font-medium cursor-pointer;
+        @apply font-medium cursor-pointer;
+        color: #fff;
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        padding: 8px 16px;
+        border-radius: 999px;
+        font-size: 14px;
+        box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+        transition: all 0.3s ease;
+
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 14px rgba(59, 130, 246, 0.4);
+          background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+        }
       }
     }
+
     @media (min-width: 780px) {
-      padding: 0 15px;
+      padding: 32px 36px;
+
+      &::before {
+        left: 36px;
+        right: 36px;
+      }
     }
   }
 
-  .WhatsAppBanner{
+  .WhatsAppBanner {
     width: 100%;
     padding: 0px 20px 0px 20px;
     margin: auto;
     cursor: pointer;
+
     img {
       width: 100%;
     }
   }
+
+  /* ===== Citizen Theme ===== */
+  .citizen-app-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    padding: 32px;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .citizen-app-container > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .citizen-module-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+
+    .citizen-header-top-section {
+      width: 100% !important;
+      background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%) !important;
+      padding: 24px 32px !important;
+      border-radius: 20px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      min-height: 80px !important;
+      box-shadow: 0 15px 30px rgba(59, 130, 246, 0.3) !important;
+      position: relative;
+      overflow: hidden;
+
+      &::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3z' fill='rgba(255,255,255,0.05)' fill-rule='evenodd'/%3E%3C/svg%3E");
+        opacity: 0.8;
+      }
+
+      &::after {
+        content: "";
+        position: absolute;
+        right: -80px;
+        top: -80px;
+        width: 250px;
+        height: 250px;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0));
+        border-radius: 50%;
+      }
+    }
+
+    .citizen-header-title {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: 0.5px;
+      text-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+  }
+
+  .citizen-module-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 24px;
+    padding: 0;
+    width: 100%;
+  }
 }
 
+/* ============================================================
+   .citizen-service-card — MUST be at root level (not nested
+   inside .HomePageWrapper) so BEM & selectors compile correctly
+   ============================================================ */
+.citizen-service-card {
+  background: #ffffff !important;
+  border: 0.5px solid rgba(0, 0, 0, 0.08) !important;
+  border-radius: 16px !important;
+  padding: 18px 16px !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 14px !important;
+  cursor: pointer !important;
+  min-height: 82px !important;
+  overflow: hidden !important;
+  position: relative;
+  transition: border-color 0.25s ease, transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s ease !important;
+
+  &:hover {
+    border-color: #93c5fd !important;
+    transform: translateY(-3px) !important;
+    background: #f8fbff !important;
+  }
+
+  &__icon {
+    width: 44px !important;
+    height: 44px !important;
+    flex-shrink: 0 !important;
+    background: #eff6ff;
+    border-radius: 12px;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 10px;
+    transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.25s ease;
+
+    svg {
+      width: 22px !important;
+      height: 22px !important;
+      fill: #2563eb !important;
+    }
+  }
+
+  &:hover &__icon {
+    background: #dbeafe;
+    transform: scale(1.1) rotate(4deg);
+  }
+
+  /* Fixed height + overflow:hidden is what clips the sliding text */
+  &__content {
+    flex: 1;
+    position: relative;
+    height: 40px;
+    overflow: hidden;
+    display: block;
+    /* NOT flex — flex breaks absolute child stacking */
+  }
+
+  /* Label: visible by default, slides out upward on hover */
+  &__label {
+    position: absolute !important;
+    inset: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    margin: 0 !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    color: #1e293b !important;
+    line-height: 1.35 !important;
+    transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease !important;
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  /* Description: hidden below by default, slides up into view on hover */
+  &__description {
+    position: absolute !important;
+    inset: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    margin: 0 !important;
+    font-size: 12.5px !important;
+    font-weight: 400 !important;
+    color: #2563eb !important;
+    line-height: 1.4 !important;
+    transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease !important;
+    transform: translateY(110%);
+    /* starts hidden below */
+    opacity: 0;
+  }
+
+  &:hover &__label {
+    transform: translateY(-110%);
+    /* slides out upward */
+    opacity: 0;
+  }
+
+  &:hover &__description {
+    transform: translateY(0);
+    /* slides in from below */
+    opacity: 1;
+  }
+}
+
+/* ============================================================
+   Rest of the file — unchanged
+   ============================================================ */
 @media (min-width: 780px) {
   .SideBarStatic {
-    width: 219px;
-    background: theme(colors.white);
+    display: flex;
+    align-items: flex-start;
+    align-self: flex-start;
+    height: calc(100vh - 72px);
+    overflow-y: scroll;
   }
 }
 
 @media (max-width: 780px) {
+  /* On mobile, SideBarStatic shouldn't prevent the drawer from appearing. */
   .SideBarStatic {
-    display: none;
-  }
-}
-.HomePageContainer {
-  @media (min-width: 780px) {
-    display: flex;
-    width: calc(100% - 219px);
-    height: calc(100%-30px);
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    width: 0;
+    /* No physical width so it doesn't push map content */
+    height: 100vh;
   }
 }
 
+.HomePageContainer {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  padding-bottom: 40px;
+  height: calc(100vh - 72px);
+  overflow-y: scroll;
+}
+
 .moduleLinkHomePage {
-  @media (min-width: 780px) {
-    width: calc(100% - 219px);
-  }
+  flex: 1;
+  min-width: 0;
   margin-top: -25px;
+  position: relative;
+
   img {
     height: 33vw;
-    filter: grayscale(100%);
-    @apply w-full object-cover;
+    min-height: 220px;
+    filter: brightness(0.65) contrast(1.1);
+    @apply w-full object-cover rounded-b-2xl;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    transition: filter 0.3s ease;
   }
+
   h1 {
     position: absolute;
     top: 100px;
+    /* Base position */
     left: 21px;
-    @apply text-heading-xl text-white font-bold;
+    @apply text-heading-xl;
+    /* Kept this as it's likely a custom framework class */
+    color: #ffffff;
+    /* text-white equivalent */
+    font-weight: 800;
+    /* font-extrabold equivalent */
+    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    letter-spacing: 0.5px;
   }
+
   .moduleLinkHomePageBackButton {
     border: none;
-    top: 76px;
-    svg {
-      fill: theme(colors.white);
+    position: absolute;
+    top: 80px;
+    /* Align nicer */
+    left: 16px;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background 0.2s ease;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.4);
     }
-    @apply absolute text-white text-heading-s ml-md;
+
+    svg {
+      fill: #ffffff !important;
+    }
+
+    /* remove ml-md inside so it centers */
   }
 }
 
 .moduleLinkHomePageModuleLinks {
-  @apply mt-md;
+  @apply mt-lg px-md;
+
   .CitizenHomeCard {
+    background: rgba(255, 255, 255, 0.72) !important;
+
+    backdrop-filter: blur(24px);
+
+    border: 1px solid rgba(255, 255, 255, 0.9);
+
+    box-shadow: 0 12px 40px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+
     .header {
-      @apply hidden;
+      display: flex !important;
     }
   }
 }
@@ -118,11 +409,13 @@
     .BannerWithSearch {
       margin-bottom: 56px;
       width: 100% !important;
+
       .Search {
         width: 100%;
         margin: 0;
         padding: 0 15px 0 15px;
       }
+
       img {
         height: 20vw;
       }
@@ -130,29 +423,37 @@
 
     .WhatsAppBanner {
       width: 100%;
-      img{
+
+      img {
         height: 20vw;
         width: 100%;
       }
     }
-
   }
+
   .moduleLinkHomePage {
     img {
       min-width: 100vw;
       height: 20vw;
+      border-radius: 0 0 24px 24px;
+      /* Smoother curve on desktop */
     }
+
     h1 {
-      top: calc(10vw + 40px);
-      left: 15.8rem;
+      top: calc(10vw + 60px);
+      left: calc(15.8rem + 40px);
+      /* Align slightly right of back button */
+      font-size: 38px;
     }
+
     .moduleLinkHomePageBackButton {
       top: calc(10vw + 16px);
-      @apply ml-md;
+      left: 15.8rem;
     }
   }
 
   .moduleLinkHomePageModuleLinks {
     width: 100%;
+    padding: 0 2rem;
   }
 }

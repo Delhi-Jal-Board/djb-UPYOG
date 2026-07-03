@@ -33,7 +33,22 @@
 }
 
 .employee-data-table {
+  .employee-role-list-value {
+    max-height: 150px;
+    overflow-y: scroll;
+  }
+  .row-content {
+    display: flex !important;
+    width: 30% !important;
+    @media (max-width: 768px) {
+      width: fit-content !important;
+    }
+  }
+
   .row {
+    @media (max-width: 768px) {
+      justify-content: space-between;
+    }
     @apply flex pb-sm mb-sm;
 
     span {
@@ -51,6 +66,10 @@
       @apply text-heading-s;
       white-space: break-spaces !important;
       word-break: break-all;
+      text-align: start;
+      @media (max-width: 768px) {
+        width: fit-content !important;
+      }
     }
 
     .caption {
@@ -109,7 +128,7 @@
   }
   &.status-radio-table {
     margin-top: 1rem;
-    .row {  
+    .row {
       span {
         width: 24px;
         display: block;
@@ -120,15 +139,17 @@
   }
 
   &.view-header {
-   .row {
-    display: grid;
-    grid-template-columns: 1fr 68%;
-   }
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 68%;
+    }
   }
 }
 
-
-.pt-citizen {.data-table {.row {
-  justify-content: space-between;
-
-}}}
+.pt-citizen {
+  .data-table {
+    .row {
+      justify-content: space-between;
+    }
+  }
+}

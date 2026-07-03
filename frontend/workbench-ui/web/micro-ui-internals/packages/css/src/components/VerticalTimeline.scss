@@ -1,0 +1,189 @@
+.vertical-timeline-container {
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  background-color: #fff;
+  border-radius: 12px;
+  overflow-y: scroll;
+  height: fit-content;
+
+  @media (min-width: 769px) {
+    max-width: 25%;
+    min-width: 250px;
+    min-height: 500px;
+  }
+}
+
+.vertical-timeline-step {
+  display: flex;
+  position: relative;
+  gap: 16px;
+
+  @media (min-width: 769px) {
+    min-height: 80px;
+    padding-bottom: 20px;
+  }
+}
+
+.vertical-timeline-step:last-child {
+  padding-bottom: 0;
+  min-height: auto;
+}
+
+.vertical-timeline-connector {
+  position: absolute;
+  top: 36px;
+  left: 17px;
+  width: 3px;
+  height: calc(100% - 10px);
+  /* Adjust based on padding/spacing */
+  background-color: #e0e0e0;
+  z-index: 0;
+}
+
+.vertical-timeline-step:last-child .vertical-timeline-connector {
+  display: none;
+}
+
+.vertical-timeline-connector.completed {
+  background-color: #1f5fa8;
+}
+
+.vertical-timeline-pill {
+  width: 38px;
+  /* Larger pill */
+  height: 38px;
+  border-radius: 50%;
+  background-color: #fff;
+  border: 3px solid #d1d5db;
+  /* Thicker border */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 16px;
+  /* Larger text */
+  color: #6b7280;
+  z-index: 1;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.vertical-timeline-step.active .vertical-timeline-pill {
+  background-color: #1f5fa8;
+  border-color: #1f5fa8;
+  color: #fff;
+  box-shadow: 0 0 0 5px rgba(244, 119, 56, 0.2);
+  /* Enhanced glow */
+  transform: scale(1.1);
+  /* Slight pulse effect */
+}
+
+.vertical-timeline-step.completed .vertical-timeline-pill {
+  background-color: #1f5fa8;
+  border-color: #1f5fa8;
+  color: #fff;
+}
+
+.vertical-timeline-content {
+  display: flex;
+  flex-direction: column;
+
+  @media (min-width: 769px) {
+    min-height: 38px;
+    margin-top: 10px;
+  }
+}
+
+.vertical-timeline-label {
+  font-size: 16px;
+  color: #4b5563;
+  font-weight: 500;
+  line-height: normal;
+  word-wrap: anywhere;
+}
+
+.vertical-timeline-step.active .vertical-timeline-label {
+  color: #121416;
+  font-weight: 700;
+}
+
+.vertical-timeline-step.completed .vertical-timeline-label {
+  color: #111827;
+}
+
+@media (max-width: 768px) {
+  .vertical-timeline-container {
+    flex-direction: row;
+    gap: 12px;
+    padding: 12px;
+    height: fit-content;
+    max-width: 100%;
+    min-width: auto;
+    min-height: auto;
+  }
+
+  .vertical-timeline-wrapper {
+    display: flex;
+    border-radius: 99999px;
+    padding: 0.25rem;
+    background-color: #1f5fa836;
+    overflow-x: scroll;
+    max-width: 100%;
+  }
+
+  .activeTimeline {
+    background-color: #fff;
+    border-radius: 99999px;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-inline: 1rem;
+  }
+
+  .vertical-timeline-step {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    height: 2rem;
+    padding-inline: 24px;
+    flex-shrink: 0;
+    min-width: 120px;
+  }
+
+  /* 🔥 pill becomes tab */
+  .vertical-timeline-pill {
+    display: none;
+  }
+
+  /* label below */
+  .vertical-timeline-content {
+    align-items: center;
+  }
+
+  .vertical-timeline-label {
+    font-size: 12px;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .vertical-timeline-connector {
+    display: none;
+  }
+
+  /* active tab */
+  .vertical-timeline-step.active .vertical-timeline-pill {
+    background-color: #1f5fa8;
+    color: #fff;
+    transform: none;
+    box-shadow: none;
+  }
+
+  /* completed tab */
+  .vertical-timeline-step.completed .vertical-timeline-pill {
+    background-color: #1f5fa8;
+    color: #fff;
+  }
+}

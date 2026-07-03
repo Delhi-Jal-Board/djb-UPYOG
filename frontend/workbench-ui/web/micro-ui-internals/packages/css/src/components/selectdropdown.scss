@@ -19,18 +19,20 @@
 }
 */
 .employee-select-wrap {
-  @apply mb-lg relative;
+  @apply relative rounded-md;
 
   .select {
-    @apply relative block w-full h-10 border border-solid border-input-border;
+    border: 2px solid #e5e5e7;
+    @apply relative block w-full h-10 rounded-md;
     &:hover {
-      @apply border-2 border-solid border-primary-main;
+      border: 2px solid #a1a1aa;
+      @apply rounded-md;
     }
     input[type="text"] {
       width: calc(100% - 32px);
       background-color: transparent;
 
-      @apply absolute z-10 w-full h-full outline-none text-text-primary text-form-field pl-sm;
+      @apply absolute z-10 w-full h-full outline-none text-text-primary text-form-field pl-sm rounded-md;
     }
 
     p {
@@ -43,18 +45,27 @@
     }
 
     svg {
+      color: #e5e5e7;
       @apply absolute right-0 float-right h-6 w-6 mt-sm mr-sm;
+    }
+    &:hover {
+      svg {
+        color: #a1a1aa;
+      }
     }
   }
 
   .select-active {
-    @apply relative block w-full h-10 border-2 border-solid border-primary-main;
+    outline: none;
+    border: 2px solid #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+    @apply relative block w-full h-10 rounded-md;
 
     input[type="text"] {
       width: calc(100% - 32px);
       background-color: transparent;
 
-      @apply absolute z-10 w-full h-full outline-none text-text-primary text-form-field pl-sm;
+      @apply absolute z-10 w-full h-full outline-none text-text-primary text-form-field pl-sm rounded-md;
     }
 
     p {
@@ -75,9 +86,13 @@
   }
 
   .options-card {
+    position: absolute;
+    top: 100%;
+    margin-top: 4px;
+    z-index: 2;
     width: 100% !important;
     box-shadow: 0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12), 0 5px 5px -3px rgba(0, 0, 0, 0.2);
-    max-height: 400px;
+    max-height: 200px;
     overflow: auto;
     @apply absolute z-20 mt-xs bg-white max-w-full;
 
@@ -90,6 +105,11 @@
       }
     }
   }
+  & .options-card.open-up {
+    top: auto;
+    bottom: 100%;
+    margin-bottom: 4px;
+  }
 }
 
 .employee-select-wrap--elipses {
@@ -100,17 +120,16 @@
 }
 
 .select-wrap {
-  @apply mb-lg relative;
-  max-width: 540px;
+  @apply relative;
 
   .select {
-    @apply relative block w-full h-10 border border-solid border-input-border;
+    @apply relative block w-full h-10 rounded-md;
 
     input[type="text"] {
       width: calc(100% - 32px);
       background-color: transparent;
 
-      @apply absolute z-10 w-full h-full outline-none text-text-primary text-form-field pl-sm;
+      @apply absolute z-10 w-full h-full outline-none text-text-primary text-form-field pl-sm rounded-md;
     }
 
     p {
@@ -128,13 +147,16 @@
   }
 
   .select-active {
-    @apply relative block w-full h-10 border-2 border-solid border-primary-main;
+    outline: none;
+    border: 2px solid #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+    @apply relative block w-full h-10 rounded-md;
 
     input[type="text"] {
       width: calc(100% - 32px);
       background-color: transparent;
 
-      @apply absolute z-10 w-full h-full outline-none text-text-primary text-form-field pl-sm;
+      @apply absolute z-10 w-full h-full outline-none text-text-primary text-form-field pl-sm rounded-md;
     }
 
     p {

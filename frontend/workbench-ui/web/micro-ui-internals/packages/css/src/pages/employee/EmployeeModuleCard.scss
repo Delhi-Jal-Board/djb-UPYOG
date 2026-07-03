@@ -1,0 +1,135 @@
+.emtb-root {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .emtb-root {
+    display: flex;
+    position: fixed;
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    background: #ffffff;
+    border-bottom: 2px solid #e5e7eb;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding: 0 8px;
+    gap: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    height: 48px;
+    align-items: stretch;
+  }
+
+  .emtb-root::-webkit-scrollbar {
+    display: none;
+  }
+
+  .emtb-page-push {
+    padding-top: 48px !important;
+  }
+
+  .emtb-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 16px;
+    white-space: nowrap;
+    cursor: pointer;
+    position: relative;
+    color: #6b7280;
+    font-size: 13px;
+    font-weight: 500;
+    height: 100%;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px; /* overlap the nav border-bottom */
+    transition: color 0.15s ease, border-color 0.15s ease;
+    flex-shrink: 0;
+  }
+
+  .emtb-tab:hover {
+    color: #1a67a3;
+  }
+
+  .emtb-tab--active {
+    color: #1a67a3;
+    font-weight: 600;
+    border-bottom-color: #1a67a3;
+  }
+
+  .emtb-tab--disabled {
+    opacity: 0.4;
+    pointer-events: none;
+  }
+
+  .emtb-tab__icon {
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .emtb-tab__icon svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .emtb-tab__initials {
+    font-size: 10px;
+    font-weight: 700;
+    background: #e5e7eb;
+    color: #6b7280;
+    border-radius: 4px;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .emtb-tab--active .emtb-tab__initials {
+    background: #dbeafe;
+    color: #1a67a3;
+  }
+
+  .emtb-tab__label {
+    line-height: 1;
+  }
+
+  .emtb-tab__content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .emtb-tab__sublabel {
+    font-size: 10px;
+    line-height: 1;
+    color: #94a3b8;
+  }
+
+  .emtb-tab--active .emtb-tab__sublabel {
+    color: #1a67a3;
+  }
+
+  .emtb-tab__count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 6px;
+    border-radius: 9999px;
+    background: #e0f2fe;
+    color: #1a67a3;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+    margin-left: 2px;
+  }
+}

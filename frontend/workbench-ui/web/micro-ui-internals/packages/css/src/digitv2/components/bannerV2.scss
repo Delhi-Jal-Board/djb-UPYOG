@@ -2,7 +2,7 @@
 
 .digit-banner-success-wrap,
 .digit-banner-emp-success-wrap {
-  @apply block bg-success w-full text-center text-white pt-md pb-sm mb-md;
+  @apply block bg-success-gradient w-full text-center text-white pt-md pb-sm mb-md;
 
   header {
     @apply block mb-sm font-rc font-bold text-heading-xl;
@@ -42,7 +42,6 @@
 .digit-banner-error-wrap,
 .digit-banner-emp-error-wrap {
   @apply block bg-error w-full text-center text-white pt-md pb-sm mb-md;
-
 
   header {
     @apply block mb-sm font-rc font-bold text-heading-xl;

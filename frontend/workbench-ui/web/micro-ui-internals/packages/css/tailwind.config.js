@@ -11,8 +11,8 @@ module.exports = {
     },
     colors: {
       primary: {
-        light: "#F18F5E",
-        main: "#F47738",
+        light: "#0B2E5B",
+        main: "#667eea",
         dark: "#C8602B",
       },
       secondary: "#22394D",
@@ -27,9 +27,9 @@ module.exports = {
       border: "#D6D5D4",
       inputBorder: "#464646",
       "input-border": "#464646",
-      focus: "#F47738",
-      error: "#D4351C",
-      success: "#00703C",
+      focus: "#667eea",
+      error: "#D83A2F",
+      success: "#2E9E8F",
       black: "#000000",
       grey: {
         dark: "#9E9E9E",
@@ -91,19 +91,29 @@ module.exports = {
       4: "4px",
       10: "10px",
     },
+    boderRadius: {
+      default: "5px",
+      0: "0",
+      2: "2px",
+    },
     boxShadow: {
       card: "0 1px 2px 0 rgba(0, 0, 0, 0.16)",
-      radiobtn: "0 0 0 5px #F47738",
+      radiobtn: "0 0 0 5px #667eea",
     },
     inset: {
       0: 0,
       6: "6px",
       10: "10px",
     },
-    extend: {},
+    extend: {
+      backgroundImage: {
+        "success-gradient": "linear-gradient(135deg, #22c55e, #15803d)",
+        "error-gradient": "linear-gradient(135deg, #ef4444, #b91c1c)",
+      },
+    },
     digitv2: {
       lightTheme: {
-        primary: "#F47738",
+        primary: "#667eea",
         "text-color-primary": "#0B0C0C",
         "text-color-secondary": "#505A5F",
         "text-color-disabled": "#B1B4B6",
@@ -116,9 +126,9 @@ module.exports = {
         "primary-bg": "#FEEFE7",
       },
       alert: {
-        error: "#D4351C",
+        error: "#D83A2F",
         "error-bg": "#EFC7C1",
-        success: "#00703C",
+        success: "#2E9E8F",
         "success-bg": "#BAD6C9",
         info: "#3498DB",
         "info-bg": "#C7E0F1",

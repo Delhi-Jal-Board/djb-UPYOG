@@ -1,5 +1,6 @@
 .popup-wrap {
   background: rgba(0, 0, 0, 0.7);
+  padding: 100px;
   @apply flex  fixed w-full h-full overflow-auto top-0 left-0 min-h-screen;
   z-index: 10000;
 }
@@ -7,10 +8,11 @@
 @screen dt {
   .popup-wrap {
     background: rgba(0, 0, 0, 0.7);
+    z-index: 99999;
     @apply min-h-screen;
   }
 }
 
-.popup-close-icon{
+.popup-close-icon {
   @apply flex justify-end;
 }

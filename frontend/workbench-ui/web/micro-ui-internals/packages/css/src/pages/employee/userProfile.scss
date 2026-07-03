@@ -1,0 +1,254 @@
+.profile-card {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 12px;
+  background: #fff;
+  width: fit-content;
+
+  &.employee {
+    @media (min-width: 768px) {
+      overflow-y: scroll;
+      width: 33.33%;
+      height: fit-content;
+      min-width: 250px;
+    }
+    @media (max-width: 768px) {
+      width: 100%;
+    }
+    box-shadow: 1px 1px 4px 0px rgba(0, 0, 0, 0.2);
+    padding: 8px;
+  }
+
+  &.citizen {
+    flex: 1;
+    box-shadow: none;
+    border: 8px solid #fff;
+    padding: 8px;
+  }
+}
+
+.profile-image-wrapper {
+  &.employee {
+    padding: 16px;
+    position: relative;
+    width: 100%;
+    max-width: 450px;
+    aspect-ratio: 1/1;
+  }
+
+  &.citizen {
+    height: 114px;
+    width: 114px;
+  }
+}
+
+.profile-image {
+  margin: auto;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 1/1;
+  object-fit: cover;
+  display: block;
+  border-radius: 50%;
+  z-index: 11;
+  position: inherit;
+}
+
+.profile-camera-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 8px;
+  background: #82ade5;
+  border-radius: 50%;
+  z-index: 12;
+  &:hover {
+    background: #395dec;
+  }
+}
+
+.profile-action-bar {
+  height: 88px;
+  background-color: #ffffff;
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 64px;
+  align-items: center;
+}
+
+.profile-save-btn {
+  margin-top: 24px;
+  background-color: #a82227;
+  height: 40px;
+  float: right;
+  color: white;
+  border-bottom: 1px solid black;
+  cursor: pointer;
+  z-index: 999;
+
+  &.desktop {
+    width: 248px;
+    margin-right: 31px;
+  }
+
+  &.mobile {
+    width: 100%;
+    margin: 0 16px;
+    margin-right: 16px;
+  }
+}
+
+.login {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  height: 100%;
+  @media (min-width: 768px) {
+    padding-inline: 20px;
+  }
+  .generic-button {
+    color: #fff;
+    cursor: pointer;
+    position: relative;
+    border-radius: 10px;
+    background-color: #7696e7;
+  }
+}
+
+@media (min-width: 768px) {
+  .login {
+    height: 100%;
+    padding-inline: 58px;
+  }
+}
+
+.user-profile-container {
+  margin: 24px;
+  position: relative;
+}
+
+.login {
+  .user-profile-wrapper {
+    padding-bottom: 24px;
+    @media (min-width: 768px) {
+      padding-bottom: 76px;
+    }
+    .user-form {
+      flex: 1;
+      width: 100%;
+      @media (min-width: 768px) {
+        overflow-y: scroll;
+      }
+    }
+  }
+}
+
+.user-profile-wrapper {
+  display: flex;
+  flex: 1;
+  align-self: center;
+
+  @media (min-width: 768px) {
+    flex-direction: row;
+  }
+  @media (max-width: 768px) {
+    align-items: center;
+    overflow-y: scroll;
+  }
+
+  .save-btn {
+    background-color: #7696e7 !important;
+  }
+
+  &.employee {
+    gap: 16px;
+    max-width: unset;
+    box-shadow: none;
+    background: none;
+    border-radius: 0;
+    width: 100%;
+
+    @media (max-width: 768px) {
+      margin: 24px;
+      margin-top: 0;
+      flex-direction: column;
+      min-width: unset;
+    }
+  }
+
+  &.citizen {
+    @media (max-width: 768px) {
+      margin: 24px;
+      margin-top: 0;
+      flex-direction: column;
+      min-width: unset;
+    }
+    margin: 8px;
+    gap: unset;
+    max-width: 960px;
+
+    &.default-tab {
+      box-shadow: 1px 1px 4px 0px rgba(0, 0, 0, 0.2);
+      background: white;
+      border-radius: 4px;
+    }
+
+    &.address-tab {
+      box-shadow: none;
+      background: none;
+      border-radius: 0;
+    }
+  }
+}
+
+.profile-content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: fit-content;
+  padding-bottom: 20px;
+  gap: 8px;
+
+  &.employee {
+    padding: 24px;
+  }
+
+  &.citizen {
+    flex: 1;
+    padding: 8px;
+    box-shadow: none;
+  }
+
+  &.default-tab {
+    border-radius: 12px;
+    background: white;
+  }
+
+  &.address-tab {
+    border-radius: unset;
+    background: none;
+  }
+}
+
+.profile-image-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 50%;
+  background: #82ade5;
+  z-index: 10;
+  border-radius: 10px 10px 0 0;
+}
+
+.profile-circle-wrapper {
+  position: relative;
+}
+
+.save-button-wrapper {
+  display: flex;
+  justify-content: flex-end;
+}

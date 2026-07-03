@@ -20,10 +20,22 @@
   }
 }
 
+@media (max-width: 768px) {
+  .search-form-wns-inbox {
+    grid-template-columns: 1fr;
+  }
+}
+
+.formcomposer-section-button {
+  .clear-search {
+    min-width: 200px;
+  }
+}
+
 @screen dt {
   .InboxComposerWrapper {
     grid-template-columns: calc(25% - 32px) 75%;
-    @apply grid gap-x-8 gap-y-6;
+    @apply grid gap-x-4 gap-y-4;
   }
 
   .wns-inbox-composer {
@@ -43,7 +55,7 @@
     .SubmitAndClearAllContainer {
       width: 100%;
       display: flex;
-      justify-content: end;
+      justify-content: flex-end;
       align-items: center;
       .clear-search {
         width: 30%;
@@ -68,6 +80,10 @@
   }
 
   .search-form-wns-inbox {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+
     .clear-search-container {
       grid-column: 2/3;
       text-align: right;
@@ -82,10 +98,13 @@
 
     .filter-form {
       height: fit-content;
+      border-radius: 6px;
+      background-color: #ffff;
     }
 
     .search-complaint-container {
       flex-direction: column;
+      border-radius: 6px;
       align-items: flex-start;
       --bg-opacity: 1;
       background-color: #fff;
@@ -110,6 +129,23 @@
     .submit {
       margin-top: 0;
       right: 0;
+    }
+  }
+}
+
+.side-panel-item {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: scroll;
+  scrollbar-width: none;
+  @media (min-width: 768px) {
+    width: 240px;
+  }
+
+  .inboxLinks {
+    @media (max-width: 768px) {
+      display: none;
     }
   }
 }

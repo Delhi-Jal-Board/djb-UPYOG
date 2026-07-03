@@ -1,53 +1,95 @@
 .checkbox-wrap {
-  @apply flex mb-md relative items-baseline;
+  display: flex;
+  align-items: center;
+  position: relative;
+  margin-bottom: 16px;
+  gap: 8px;
+}
 
-  input {
-    width: 38px;
-    height: 38px;
-    @apply opacity-0 absolute top-0 left-0 z-10;
-  }
+/* Hide default checkbox */
+.checkbox-wrap input {
+  width: 38px;
+  height: 38px;
+  opacity: 0;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 0;
+  z-index: 10;
+  cursor: pointer;
+}
 
-  .input-emp {
-    @extend input;
-    width: 24px;
-    height: 24px;
-  }
+/* Employee size */
+.checkbox-wrap input.input-emp {
+  width: 24px;
+  height: 24px;
+}
 
-  .custom-checkbox {
-    width: 38px;
-    height: 38px;
-    @apply absolute top-0 left-0 border border-solid border-input-border z-0;
+/* Custom checkbox box */
+.checkbox-wrap .custom-checkbox {
+  width: 38px;
+  height: 38px;
+  border: 2px solid #ccc;
+  background-color: #fff;
+  border-radius: 2px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s ease;
+}
 
-    img {
-      @apply opacity-0;
-    }
+/* Employee checkbox size */
+.checkbox-wrap .custom-checkbox-emp {
+  width: 24px;
+  height: 24px;
+  border: 2px solid #ccc;
+  background-color: #fff;
+  border-radius: 2px;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 0;
+  z-index: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s ease;
+}
 
-    svg {
-      @apply opacity-0;
-    }
-  }
+/* SVG tick */
+.checkbox-wrap .custom-checkbox svg,
+.checkbox-wrap .custom-checkbox-emp svg {
+  opacity: 0;
+  color: #00497e;
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+}
 
-  .custom-checkbox-emp {
-    @extend .custom-checkbox;
-    width: 24px;
-    height: 24px;
-  }
+/* Checked state */
+.checkbox-wrap input:checked + .custom-checkbox,
+.checkbox-wrap input:checked + .custom-checkbox-emp {
+  border-color: #00497e;
+}
 
-  input:checked ~ .custom-checkbox,
-  input:hover ~ .custom-checkbox {
-    @apply border-2 border-primary-main;
-  }
+.checkbox-wrap input:checked + .custom-checkbox svg,
+.checkbox-wrap input:checked + .custom-checkbox-emp svg {
+  opacity: 1;
+}
 
-  input:checked ~ .custom-checkbox img {
-    @apply opacity-100;
-  }
+/* Disabled */
+.checkbox-wrap input:disabled + .custom-checkbox,
+.checkbox-wrap input:disabled + .custom-checkbox-emp {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
-  input:checked ~ .custom-checkbox svg {
-    @apply opacity-100;
-  }
-
-  .label {
-    margin-left: 56px;
-    @apply text-form-field text-text-primary;
-  }
+/* Label */
+.checkbox-wrap .label {
+  margin-left: 48px;
+  font-size: 14px;
+  color: #333;
 }

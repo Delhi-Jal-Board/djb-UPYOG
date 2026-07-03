@@ -39,8 +39,7 @@
 
   input:checked ~ .digit-custom-checkbox,
   input:hover ~ .digit-custom-checkbox {
-    @apply border-2 border-primary-main;
-    @extend .light-input-border;
+    border: 2px solid #a1a1aa;
   }
 
   input:checked ~ .digit-custom-checkbox img {

@@ -4,11 +4,17 @@
 }
 
 .page-loader {
-  padding-top: 88px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .module-loader {
-  padding: 16px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 @keyframes ldio-pjg92h09b2o {
