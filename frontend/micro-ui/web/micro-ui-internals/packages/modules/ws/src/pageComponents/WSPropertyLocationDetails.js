@@ -11,7 +11,14 @@ const WSPropertyLocationDetails = (props) => {
   };
 
   const onSkip = () => onSelect();
-  const PropertyLocationDetails = Digit.ComponentRegistryService.setComponent("PropertyLocationDetails");
+
+  const PropertyLocationDetails =
+    Digit.ComponentRegistryService.getComponent("PropertyLocationDetails");
+
+  // Guard: if the CommonPT module hasn't registered PropertyLocationDetails yet, render nothing
+  if (!PropertyLocationDetails) {
+    return null;
+  }
 
   if (userType === "citizen") {
     return (
@@ -35,3 +42,4 @@ const WSPropertyLocationDetails = (props) => {
 };
 
 export default WSPropertyLocationDetails;
+

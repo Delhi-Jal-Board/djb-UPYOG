@@ -26,6 +26,7 @@ const componentsToRegister = {
   CPTSearchProperty,
   CPTPropertyAssemblyDetails,
   CPTPropertyLocationDetails,
+  PropertyLocationDetails: CPTPropertyLocationDetails, // alias — WS module getComponent("PropertyLocationDetails")
   CPTPropertyOwnerDetails,
   CPTKnowYourProperty,
   CPTPropertyDetails,
