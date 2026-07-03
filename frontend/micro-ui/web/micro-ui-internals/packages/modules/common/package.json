@@ -1,6 +1,6 @@
 {
   "name": "@djb25/digit-ui-module-common",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "license": "MIT",
   "description": "Digit Common Payment Module",
   "main": "dist/index.js",
@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@djb25/digit-ui-libraries": "1.0.0",
-     "@djb25/digit-ui-react-components": "1.0.0",
+    "@djb25/digit-ui-react-components": "1.0.0",
     "microbundle-crl": "^0.13.11",
     "react": "17.0.2",
     "react-dom": "17.0.2",

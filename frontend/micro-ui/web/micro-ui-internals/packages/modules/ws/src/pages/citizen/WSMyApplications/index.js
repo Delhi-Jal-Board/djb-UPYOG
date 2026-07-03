@@ -1,9 +1,9 @@
-import { Header, Loader } from "@djb25/digit-ui-react-components";
-import React from "react";
+import { Loader, Table } from "@djb25/digit-ui-react-components";
+import React, { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import WSApplication from "./ws-application";
-import { propertyCardBodyStyle } from "../../../utils";
+import { propertyCardBodyStyle, stringReplaceAll, getAddress } from "../../../utils";
 import WSInfoLabel from "../../../pageComponents/WSInfoLabel";
 
 export const WSMyApplications = () => {
@@ -47,6 +47,99 @@ export const WSMyApplications = () => {
     { tenantId: tenantId, filters: { mobileNumber: userMobileNumber } },
     { filters: { mobileNumber: userMobileNumber }, enabled: userMobileNumber ? true : false }
   );
+
+  const [pageOffset, setPageOffset] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
+  const isMobile = window.Digit.Utils.browser.isMobile();
+
+  const GetCell = (value) => <span className="cell-text">{value}</span>;
+
+  const columns = useMemo(() => {
+    return [
+      {
+        Header: t("WS_MYCONNECTIONS_APPLICATION_NO"),
+        disableSortBy: true,
+        Cell: ({ row }) => {
+          return (
+            <span className="link">
+              <Link to={`/digit-ui/citizen/ws/connection/application/${encodeURI(row.original?.applicationNo)}`}>
+                {row.original?.applicationNo || "NA"}
+              </Link>
+            </span>
+          );
+        },
+      },
+      {
+        Header: t("WS_SERVICE_NAME"),
+        disableSortBy: true,
+        Cell: ({ row }) => GetCell(t(`WS_APPLICATION_TYPE_${row.original?.applicationType}`)),
+      },
+      {
+        Header: t("WS_CONSUMER_NAME"),
+        disableSortBy: true,
+        Cell: ({ row }) => {
+          const names = row.original?.connectionHolders?.map((owner) => owner.name).join(",") ||
+            row.original?.property?.owners?.sort((a, b) => a?.additionalDetails?.ownerSequence - b?.additionalDetails?.ownerSequence).map((owner) => owner.name).join(",") ||
+            t("CS_NA");
+          return GetCell(names);
+        },
+      },
+      {
+        Header: t("WS_PROPERTY_ID"),
+        disableSortBy: true,
+        Cell: ({ row }) => GetCell(row.original?.propertyId || t("CS_NA")),
+      },
+      {
+        Header: t("WS_STATUS"),
+        disableSortBy: true,
+        Cell: ({ row }) => GetCell(t(`CS_${row.original?.applicationStatus}`) || t("CS_NA")),
+      },
+      {
+        Header: t("WS_SLA"),
+        disableSortBy: true,
+        Cell: ({ row }) => {
+          const slaDays = Math.round(row.original?.sla / (24 * 60 * 60 * 1000));
+          return GetCell(slaDays ? `${slaDays} Days` : t("CS_NA"));
+        },
+      },
+      {
+        Header: t("WS_VIEW_DETAILS"),
+        disableSortBy: true,
+        Cell: ({ row }) => {
+          const application = row.original;
+          return (
+            <span className="link">
+              <Link to={`/digit-ui/citizen/ws/connection/application/${encodeURI(application?.applicationNo)}`}>
+                {t("WS_VIEW_DETAILS_LABEL")}
+              </Link>
+            </span>
+          );
+        },
+      },
+      {
+        Header: t("MAKE_PAYMENT"),
+        disableSortBy: true,
+        Cell: ({ row }) => {
+          const application = row.original;
+          const businessService = application?.applicationNo?.includes("SW") ? (application?.applicationNo?.includes("DC") ? "SW" : "SW.ONE_TIME_FEE") : (application?.applicationNo?.includes("DC") ? "WS" : "WS.ONE_TIME_FEE");
+
+          return application?.applicationStatus === "PENDING_FOR_PAYMENT" ? (
+            <span className="link">
+              <Link
+                to={{
+                  pathname: `/digit-ui/citizen/payment/my-bills/${businessService}/${application?.applicationNo?.includes("DC") ? (stringReplaceAll(application?.connectionNo, "/", "+") || stringReplaceAll(application?.connectionNo, "/", "+")) : (stringReplaceAll(application?.applicationNo, "/", "+") || stringReplaceAll(application?.applicationNo, "/", "+"))}?workflow=WNS&tenantId=${application?.tenantId}&ConsumerName=${application?.connectionHolders?.map((owner) => owner.name).join(",") || application?.connectionHolders?.map((owner) => owner.name).join(",") || application?.property?.owners?.map((owner) => owner.name).join(",")}&isDisoconnectFlow=${application?.applicationNo?.includes("DC") ? true : false}`,
+                  state: {},
+                }}
+              >
+                {t("MAKE_PAYMENT")}
+              </Link>
+            </span>
+          ) : null;
+        },
+      }
+    ];
+  }, [t]);
+
   if (isLoading || isSWLoading || PTisLoading) {
     return <Loader />;
   }
@@ -62,22 +155,41 @@ export const WSMyApplications = () => {
     applicationsList.map((ob) => {
       return { ...ob, property: PTdata?.Properties?.filter((pt) => pt?.propertyId === ob?.propertyId)[0] };
     });
+
+  const sortedApplications = applicationsList?.length > 0
+    ? applicationsList.sort((a, b) => b.auditDetails?.lastModifiedTime - a.auditDetails?.lastModifiedTime)
+    : [];
+
   return (
     <React.Fragment>
-      {/* <Header>{`${t("CS_HOME_MY_APPLICATIONS")} ${applicationsList ? `(${applicationsList.length})` : ""}`}</Header> */}
-      {/* For UM-4418 changes */}
       <WSInfoLabel t={t} />
       <div>
-        {applicationsList?.length > 0 &&
-          applicationsList.sort((a, b) => b.auditDetails?.lastModifiedTime - a.auditDetails?.lastModifiedTime).map((application, index) => (
-            <div key={index}>
-              <WSApplication application={application} />
-            </div>
-          ))}
-        {!applicationsList?.length > 0 && <p style={{ marginLeft: "16px", marginTop: "16px" }}>{t("WS_NO_APPLICATION_FOUND_MSG")}</p>}
-
+        {sortedApplications?.length > 0 ? (
+          isMobile ? (
+            sortedApplications.map((application, index) => (
+              <div key={index}>
+                <WSApplication application={application} />
+              </div>
+            ))
+          ) : (
+            <Table
+              t={t}
+              data={sortedApplications.slice(pageOffset, pageOffset + pageSize)}
+              totalRecords={sortedApplications.length}
+              columns={columns}
+              onPageSizeChange={(e) => setPageSize(Number(e.target.value))}
+              currentPage={Math.floor(pageOffset / pageSize)}
+              onNextPage={() => setPageOffset(pageOffset + pageSize)}
+              onPrevPage={() => setPageOffset(pageOffset - pageSize)}
+              pageSizeLimit={pageSize}
+              disableSort={true}
+            />
+          )
+        ) : (
+          <p style={{ marginLeft: "16px", marginTop: "16px" }}>{t("WS_NO_APPLICATION_FOUND_MSG")}</p>
+        )}
       </div>
-
     </React.Fragment>
   );
 };
+
