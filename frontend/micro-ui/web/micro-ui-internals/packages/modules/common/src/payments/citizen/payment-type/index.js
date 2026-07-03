@@ -76,10 +76,12 @@ export const SelectPaymentType = (props) => {
           },
         ],
         user: {
+          uuid: userInfo?.info?.uuid || billDetails?.payerId,
           name: name || userInfo?.info?.name || billDetails?.payerName,
           mobileNumber: mobileNumber || userInfo?.info?.mobileNumber || billDetails?.mobileNumber,
           tenantId: billDetails?.tenantId,
-          emailId: "sriranjan.srivastava@owc.com",
+          emailId: userInfo?.info?.emailId || billDetails?.emailId,
+          username: userInfo?.info?.userName || billDetails?.userName,
         },
         // success
         callbackUrl:

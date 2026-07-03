@@ -11,6 +11,7 @@ import {
   WhatsNewCard,
   CHBIcon,
   PTIcon,
+  CollectionIcon
 } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useHistory, useLocation } from "react-router-dom";
@@ -174,6 +175,12 @@ const Home = () => {
         Icon: <PTIcon className="fill-path-primary-main" />,
         onClick: () => handleCardClick("/digit-ui/citizen/commonpt-home"),
       },
+      {
+        name: t("ACTION_TEST_BILLGENIE"),
+        description: t("Search and pay your bills"),
+        Icon: <CollectionIcon className="fill-path-primary-main" />,
+        onClick: () => handleCardClick("/digit-ui/citizen/bills-home"),
+      }
     ],
     styles: { display: "flex", flexWrap: "wrap", justifyContent: "flex-start", width: "100%" },
   };
