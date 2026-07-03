@@ -121,6 +121,18 @@ const ApplicationDetails = () => {
     mutate,
   } = Digit.Hooks.ws.useWSApplicationActions(serviceType);
 
+  const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
+    {
+      tenantId: tenantId,
+      businessService: serviceType == "WATER" ? "WS.ONE_TIME_FEE" : "SW.ONE_TIME_FEE",
+      consumerCodes: applicationDetails?.applicationData?.applicationNo,
+    },
+    {
+      enabled: applicationDetails?.applicationData?.applicationType?.includes("NEW_") ? true : false,
+      privacy: Digit.Utils.getPrivacyObject(),
+    }
+  );
+
   const clearDataDetails = () => {
     clearSessionFormData();
     setSessionFormData({});

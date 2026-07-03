@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import getPDFData from "../../utils/getWSAcknowledgementData";
 import getModifyPDFData from "../../utils/getWsAckDataForModifyPdfs"
-import { useHistory } from "react-router-dom";
+import { useHistory, Link } from "react-router-dom";
 import * as func from "../../utils";
 
 
@@ -120,6 +120,44 @@ const WSResponse = (props) => {
             </svg>
             {t("WS_PRINT_SEWERAGE_APPLICATION_LABEL")}
           </div>}
+        </div>
+        <div>
+          {waterApplicationData?.applicationData?.applicationStatus === "PENDING_FOR_PAYMENT" ? (
+            <Link
+              to={{
+                pathname: `/digit-ui/citizen/payment/my-bills/${
+                  waterApplicationData?.applicationData?.applicationNo?.includes("SW") ? (waterApplicationData?.applicationData?.applicationNo?.includes("DC") ? "SW" : "SW.ONE_TIME_FEE") : (waterApplicationData?.applicationData?.applicationNo?.includes("DC") ? "WS" : "WS.ONE_TIME_FEE")
+                }/${
+                  waterApplicationData?.applicationData?.applicationNo?.includes("DC") 
+                    ? func.stringReplaceAll(waterApplicationData?.applicationData?.connectionNo, "/", "+")
+                    : func.stringReplaceAll(waterApplicationData?.applicationData?.applicationNo, "/", "+")
+                }?workflow=WNS&tenantId=${waterApplicationData?.applicationData?.tenantId}&ConsumerName=${waterApplicationData?.applicationData?.connectionHolders?.map((owner) => owner.name).join(",") || waterApplicationData?.propertyDetails?.owners?.map((owner) => owner.name).join(",")}&isDisconnectFlow=${waterApplicationData?.applicationData?.applicationNo?.includes("DC") ? true : false}`,
+                state: {},
+              }}
+            >
+              <div style={{ marginTop: "10px" }}>
+                <SubmitBar label={t("MAKE_PAYMENT")} />
+              </div>
+            </Link>
+          ) : null}
+          {sewerageApplicationData?.applicationData?.applicationStatus === "PENDING_FOR_PAYMENT" ? (
+            <Link
+              to={{
+                pathname: `/digit-ui/citizen/payment/my-bills/${
+                  sewerageApplicationData?.applicationData?.applicationNo?.includes("SW") ? (sewerageApplicationData?.applicationData?.applicationNo?.includes("DC") ? "SW" : "SW.ONE_TIME_FEE") : (sewerageApplicationData?.applicationData?.applicationNo?.includes("DC") ? "WS" : "WS.ONE_TIME_FEE")
+                }/${
+                  sewerageApplicationData?.applicationData?.applicationNo?.includes("DC") 
+                    ? func.stringReplaceAll(sewerageApplicationData?.applicationData?.connectionNo, "/", "+")
+                    : func.stringReplaceAll(sewerageApplicationData?.applicationData?.applicationNo, "/", "+")
+                }?workflow=WNS&tenantId=${sewerageApplicationData?.applicationData?.tenantId}&ConsumerName=${sewerageApplicationData?.applicationData?.connectionHolders?.map((owner) => owner.name).join(",") || sewerageApplicationData?.propertyDetails?.owners?.map((owner) => owner.name).join(",")}&isDisconnectFlow=${sewerageApplicationData?.applicationData?.applicationNo?.includes("DC") ? true : false}`,
+                state: {},
+              }}
+            >
+              <div style={{ marginTop: "10px", marginLeft: "10px" }}>
+                <SubmitBar label={t("MAKE_PAYMENT")} />
+              </div>
+            </Link>
+          ) : null}
         </div>
         <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
           <SubmitBar

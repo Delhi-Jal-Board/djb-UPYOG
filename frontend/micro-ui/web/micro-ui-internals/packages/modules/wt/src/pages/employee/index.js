@@ -139,7 +139,7 @@ const EmployeeApp = ({ path }) => {
             leftContent={
               <React.Fragment>
                 <ArrowLeft className="icon" />
-                Back
+                {t("CS_COMMON_BACK")}
               </React.Fragment>
             }
             onLeftClick={() => window.history.back()}

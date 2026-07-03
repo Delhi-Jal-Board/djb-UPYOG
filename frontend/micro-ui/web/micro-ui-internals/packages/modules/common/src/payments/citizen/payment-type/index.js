@@ -57,7 +57,7 @@ export const SelectPaymentType = (props) => {
   }, []);
   const { name, mobileNumber } = state;
 
-  const billDetails = paymentdetails?.Bill ? paymentdetails?.Bill[0] : {};
+  const billDetails = paymentdetails?.Bill?.length ? paymentdetails?.Bill[0] : {};
 
   const onSubmit = async (d) => {
     const filterData = {
@@ -84,12 +84,10 @@ export const SelectPaymentType = (props) => {
         // success
         callbackUrl:
           window.location.href.includes("mcollect") || wrkflow === "WNS"
-            ? `${window.location.protocol}//${window.location.host}/digit-ui/citizen/payment/success/${businessService}/${
-                wrkflow === "WNS" ? consumerCode : consumerCode
-              }/${tenantId}?workflow=${wrkflow === "WNS" ? wrkflow : "mcollect"}`
-            : `${window.location.protocol}//${window.location.host}/digit-ui/citizen/payment/success/${businessService}/${
-                wrkflow === "WNS" ? encodeURIComponent(consumerCode) : consumerCode
-              }/${tenantId}?propertyId=${consumerCode}`,
+            ? `${window.location.protocol}//${window.location.host}/digit-ui/citizen/payment/success/${businessService}/${wrkflow === "WNS" ? consumerCode : consumerCode
+            }/${tenantId}?workflow=${wrkflow === "WNS" ? wrkflow : "mcollect"}`
+            : `${window.location.protocol}//${window.location.host}/digit-ui/citizen/payment/success/${businessService}/${wrkflow === "WNS" ? encodeURIComponent(consumerCode) : consumerCode
+            }/${tenantId}?propertyId=${consumerCode}`,
         additionalDetails: {
           isWhatsapp: false,
         },
@@ -202,9 +200,9 @@ export const SelectPaymentType = (props) => {
 
   return (
     <React.Fragment>
-      <BackButton>{t("CS_COMMON_BACK")}</BackButton>
+      {/* <BackButton>{t("CS_COMMON_BACK")}</BackButton> */}
       <form onSubmit={handleSubmit(onSubmit)}>
-        <Header>{t("PAYMENT_CS_HEADER")}</Header>
+        {/* <Header>{t("PAYMENT_CS_HEADER")}</Header> */}
         <Card>
           {timerEnabledForBusinessService(businessService) && (
             <CardSubHeader
@@ -222,7 +220,7 @@ export const SelectPaymentType = (props) => {
               />
             </CardSubHeader>
           )}
-          <div className="payment-amount-info" style={{ marginBottom: "26px" }}>
+          <div className="payment-amount-info">
             <CardLabel className="dark">{t("PAYMENT_CS_TOTAL_AMOUNT_DUE")}</CardLabel>
             <CardSectionHeader>
               {" "}
@@ -239,11 +237,13 @@ export const SelectPaymentType = (props) => {
             />
           )}
           {!showToast && (
-            <SubmitBar
-              label={t("PAYMENT_CS_BUTTON_LABEL")}
-              submit={true}
-              disabled={timerEnabledForBusinessService(businessService) ? Time === 0 : null}
-            />
+            <div style={{ marginTop: "10px" }}>
+              <SubmitBar
+                label={t("PAYMENT_CS_BUTTON_LABEL")}
+                submit={true}
+                disabled={timerEnabledForBusinessService(businessService) ? Time === 0 : null}
+              />
+            </div>
           )}
         </Card>
       </form>

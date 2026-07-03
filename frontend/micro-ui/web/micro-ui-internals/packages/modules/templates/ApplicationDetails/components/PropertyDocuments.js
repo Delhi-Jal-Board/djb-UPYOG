@@ -225,26 +225,28 @@ function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false, 
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                       </div>
-                      <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "14px", color: "#0B0C0C", margin: 0 }}>
-                        <input 
-                          key={`chk-${value?.originalDoc?.id}-${value?.originalDoc?.isVerified}`}
-                          type="checkbox" 
-                          className="verify-doc-checkbox"
-                          style={{ width: "18px", height: "18px", accentColor: "#F47738", cursor: (applicationStatus && applicationStatus !== "PENDING_FOR_DOCUMENT_VERIFICATION") ? "not-allowed" : "pointer" }} 
-                          disabled={applicationStatus && applicationStatus !== "PENDING_FOR_DOCUMENT_VERIFICATION"}
-                          defaultChecked={value?.originalDoc?.isVerified}
-                          onChange={(e) => {
-                            const checked = e.target.checked;
-                            if (value?.originalDoc) {
-                              value.originalDoc.isVerified = checked;
-                            }
-                            if (value?.originalDoc?.id) {
-                              setCheckedMap(prev => ({ ...prev, [value.originalDoc.id]: checked }));
-                            }
-                          }}
-                        />
-                        {t("Check Verified")}
-                      </label>
+                      {applicationStatus !== "PENDING_FOR_PAYMENT" && applicationStatus !== "WF_PENDING_FOR_PAYMENT" && (
+                        <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "14px", color: "#0B0C0C", margin: 0 }}>
+                          <input 
+                            key={`chk-${value?.originalDoc?.id}-${value?.originalDoc?.isVerified}`}
+                            type="checkbox" 
+                            className="verify-doc-checkbox"
+                            style={{ width: "18px", height: "18px", accentColor: "#F47738", cursor: (applicationStatus && applicationStatus !== "PENDING_FOR_DOCUMENT_VERIFICATION") ? "not-allowed" : "pointer" }} 
+                            disabled={applicationStatus && applicationStatus !== "PENDING_FOR_DOCUMENT_VERIFICATION"}
+                            defaultChecked={value?.originalDoc?.isVerified}
+                            onChange={(e) => {
+                              const checked = e.target.checked;
+                              if (value?.originalDoc) {
+                                value.originalDoc.isVerified = checked;
+                              }
+                              if (value?.originalDoc?.id) {
+                                setCheckedMap(prev => ({ ...prev, [value.originalDoc.id]: checked }));
+                              }
+                            }}
+                          />
+                          {t("Check Verified")}
+                        </label>
+                      )}
                     </React.Fragment>
                   );
                 })()}

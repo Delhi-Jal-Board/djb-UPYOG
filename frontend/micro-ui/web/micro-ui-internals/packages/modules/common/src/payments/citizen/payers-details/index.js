@@ -167,10 +167,10 @@ const SelectPaymentType = (props) => {
 
   return (
     <React.Fragment>
-      <BackButton>{t("CS_COMMON_BACK")}</BackButton>
+      {/* <BackButton>{t("CS_COMMON_BACK")}</BackButton> */}
       <form onSubmit={handleSubmit(onSubmit)}>
         {/*  <Header>{t("PAYMENT_CS_HEADER")}</Header> */}
-        <Header>{t("PAYERS_DETAILS_HEADER")}</Header>
+        {/* <Header>{t("PAYERS_DETAILS_HEADER")}</Header> */}
         <Card>
           <span className="card-label-error">{t(mobileNumberError)}</span>
           <RadioButtons
@@ -206,15 +206,15 @@ const SelectPaymentType = (props) => {
           </div>
 
           {isCCFEnabled?.isCitizenConsentFormEnabled && !isLoggedIn?.access_token && <div>
-            <CheckBox
-              className="form-field"
-              label={checkLabels()}
-              value={isCheckBox}
-              checked={isCheckBox}
-              style={{ marginTop: "5px", marginLeft: "55px" }}
-              styles={{marginBottom: "30px"}}
-              onChange={setTermsAndPolicyDetails}
-            />
+            <div style={{ marginTop: "10px" }}>
+              <CheckBox
+                className="form-field"
+                label={checkLabels()}
+                value={isCheckBox ? "true" : "false"}
+                checked={isCheckBox}
+                onChange={setTermsAndPolicyDetails}
+              />
+            </div>
 
             <CitizenConsentForm
               styles={{}}
