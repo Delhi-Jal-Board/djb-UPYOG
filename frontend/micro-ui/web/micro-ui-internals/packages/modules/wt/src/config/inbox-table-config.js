@@ -164,7 +164,7 @@ export const TableConfig = (t) => ({
         ]
         : []),
     ],
-    serviceRequestIdKey: (original) => original?.[t("WT_INBOX_UNIQUE_BOOKING_NO")]?.props?.children,
+    serviceRequestIdKey: (original) => original?.[t("WT_BOOKING_NO")]?.props?.children,
   },
 
   MT: {
@@ -225,7 +225,7 @@ export const TableConfig = (t) => ({
         mobileCell: (original) => GetMobCell(t(`ES_WT_COMMON_STATUS_${original?.workflowData?.state?.["applicationStatus"]}`)),
       },
     ],
-    serviceRequestIdKey: (original) => original?.[t("WT_INBOX_UNIQUE_BOOKING_NO")]?.props?.children,
+    serviceRequestIdKey: (original) => original?.[t("MT_BOOKING_NO")]?.props?.children,
   },
   TP: {
     inboxColumns: (props) => [
@@ -285,6 +285,6 @@ export const TableConfig = (t) => ({
         mobileCell: (original) => GetMobCell(t(`ES_WT_COMMON_STATUS_${original?.workflowData?.state?.["applicationStatus"]}`)),
       },
     ],
-    serviceRequestIdKey: (original) => original?.[t("WT_INBOX_UNIQUE_BOOKING_NO")]?.props?.children,
+    serviceRequestIdKey: (original) => original?.[t("MT_BOOKING_NO")]?.props?.children,
   },
 });

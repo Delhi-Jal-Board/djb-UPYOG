@@ -60,6 +60,14 @@ const ApplicationDetails = (props) => {
   function onActionSelect(action) {
     sessionStorage.setItem("SELECTED_ACTION", action?.action);
     if (action) {
+      if (action?.action === "PAY" && !action?.redirectionUrl && !action?.redirectionUrll) {
+        if (window.location.href.includes("/employee")) {
+            history.push(`/digit-ui/employee/payment/collect/${businessService}/${applicationNumber}?tenantId=${tenantId}`);
+        } else {
+            history.push(`/digit-ui/citizen/payment/my-bills/${businessService}/${applicationNumber}?tenantId=${tenantId}`);
+        }
+        return;
+      }
       if (action?.isToast) {
         setShowToast({ key: "error", error: { message: action?.toastMessage } });
         setTimeout(closeToast, 5000);

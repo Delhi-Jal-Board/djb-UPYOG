@@ -13,9 +13,10 @@ import SearchApplication from "./inbox/search";
  * - Shows a "no application" message or a custom empty result component if no data is available.
  * - Renders an application table if data exists, supporting pagination, sorting, and filtering.
  * The component also handles the display of filters and search components, and conditionally shows additional links related to the WT service.
+ * A toggle button allows users to collapse/expand the filter sidebar to give more space to the table.
  *
  * @param {Object} props - The properties passed to the component.
- * @returns {JSX.Element} A desktop inbox UI for Water Tanker applications, with search, filter, and table display.
+ * @returns {JSX.Element} A desktop inbox UI for Water Tanker applications, with search, filter, pagination, and sorting features.
  */
 
 const WTDesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
@@ -33,6 +34,7 @@ const WTDesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
   });
 
   const [clearSearchCalled, setClearSearchCalled] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   const columns = React.useMemo(() => (props.isSearch ? tableConfig.searchColumns(props) : tableConfig.inboxColumns(props) || []), []);
 
@@ -194,12 +196,81 @@ const WTDesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
   }
 
   return (
-    <div className="inbox-container">
+    <div
+      className="inbox-container"
+      style={{
+        display: "flex",
+        flexDirection: "row",
+        gap: "12px",
+        alignItems: "flex-start",
+        width: "100%",
+        minHeight: 0,
+        overflow: "visible",
+      }}
+    >
+      {/* -------- Collapsible Sidebar -------- */}
       {!props.isSearch && (
-        <div className="side-panel-item">
-          <InboxLinks parentRoute={props.parentRoute} businessService={props.moduleCode} />
-          <div className="filter-form ">
-            {
+        <div
+          className="wt-sidebar-panel"
+          style={{
+            width: isSidebarCollapsed ? "40px" : "240px",
+            minWidth: isSidebarCollapsed ? "40px" : "240px",
+            flexShrink: 0,
+            transition: "width 0.25s ease, min-width 0.25s ease",
+            overflow: "hidden",
+            display: "flex",
+            flexDirection: "column",
+            gap: "8px",
+          }}
+        >
+          {/* Toggle button */}
+          <button
+            onClick={() => setIsSidebarCollapsed((prev) => !prev)}
+            title={isSidebarCollapsed ? "Expand Filters" : "Collapse Filters"}
+            style={{
+              alignSelf: "flex-end",
+              background: "#0B2559",
+              border: "none",
+              borderRadius: "6px",
+              width: "32px",
+              height: "32px",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+              boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+              transition: "background 0.2s ease",
+              marginBottom: "4px",
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = "#1a3a7a")}
+            onMouseLeave={(e) => (e.currentTarget.style.background = "#0B2559")}
+          >
+            {isSidebarCollapsed ? (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M9 18l6-6-6-6" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            ) : (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M15 18l-6-6 6-6" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            )}
+          </button>
+
+          {/* Sidebar content - hidden when collapsed */}
+          <div
+            style={{
+              opacity: isSidebarCollapsed ? 0 : 1,
+              visibility: isSidebarCollapsed ? "hidden" : "visible",
+              transition: "opacity 0.2s ease, visibility 0.2s ease",
+              display: "flex",
+              flexDirection: "column",
+              gap: "8px",
+              overflow: "hidden",
+            }}
+          >
+            <InboxLinks parentRoute={props.parentRoute} businessService={props.moduleCode} />
+            <div className="filter-form">
               <FilterComponent
                 defaultSearchParams={props.defaultSearchParams}
                 onFilterChange={props.onFilterChange}
@@ -209,13 +280,23 @@ const WTDesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
                 statusMap={useNewInboxAPI ? data?.[0].statusMap : null}
                 moduleCode={props.moduleCode}
               />
-            }
+            </div>
           </div>
         </div>
       )}
-      <div className="employee-form-content" style={{ flex: 1 }}>
+
+      {/* -------- Main Content Area -------- */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "12px", minWidth: 0, overflow: "hidden" }}>
         {!props.isSearch && (
-          <div className="summary-cards-container">
+          <div
+            className="summary-cards-container"
+            style={{
+              display: "flex",
+              gap: "10px",
+              flexWrap: "wrap",
+              width: "100%",
+            }}
+          >
             {(() => {
               const getCount = (statusList) => {
                 return (data?.[0]?.statusMap || [])
@@ -228,8 +309,6 @@ const WTDesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
                   .reduce((acc, curr) => acc + curr.count, 0);
               };
 
-              const isFixedPoint =
-                props.businessService === "watertanker-fixedpoint" || props.searchParams?.services?.includes("watertanker-fixedpoint");
               const cards = [
                 {
                   label: "WT_TOTAL_BOOKINGS",
@@ -240,12 +319,11 @@ const WTDesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
                 },
                 { label: "WT_SCHEDULED", count: getCount(["SCHEDULED", "VENDOR_ASSIGNED"]), color: "#F59E0B", filter: ["SCHEDULED"] },
                 { label: "WT_DELIVERED", count: getCount(["TANKER_DELIVERED", "DELIVERED"]), color: "#10B981", filter: ["TANKER_DELIVERED"] },
-              ];
-              cards.push(
                 { label: "IN_TRANSIT", count: getCount(["IN_TRANSIT", "DELIVERY_PENDING"]), color: "#A855F7", filter: ["IN_TRANSIT"] },
                 { label: "MISSED", count: getCount(["MISSED", "DELIVERY_MISSED"]), color: "#EF4444", filter: ["MISSED"] },
-                { label: "REJECTED", count: getCount(["CANCELLED", "REJECTED", "REQUEST_REJECTED"]), color: "#64748B", filter: ["CANCELLED"] }
-              );
+                { label: "REJECTED", count: getCount(["CANCELLED", "REJECTED", "REQUEST_REJECTED"]), color: "#64748B", filter: ["CANCELLED"] },
+              ];
+
               return cards;
             })().map((card, idx) => {
               const isActive = props.searchParams?.status?.code ? card.filter?.includes(props.searchParams?.status?.code) : card.active;
@@ -256,10 +334,10 @@ const WTDesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
                   style={{
                     backgroundColor: "#fff",
                     borderRadius: "6px",
-                    padding: "16px 14px",
+                    padding: "12px 14px",
                     boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
-                    flex: "1 1 0%",
-                    minWidth: "110px",
+                    flex: "1 1 110px",
+                    minWidth: "100px",
                     border: isActive ? `2px solid ${card.color}` : "1px solid #E2E8F0",
                     cursor: "pointer",
                     display: "flex",
@@ -270,7 +348,7 @@ const WTDesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
                 >
                   <div
                     style={{
-                      fontSize: "11px",
+                      fontSize: "10px",
                       color: "#64748B",
                       fontWeight: "600",
                       textTransform: "uppercase",
@@ -282,7 +360,7 @@ const WTDesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
                   >
                     {t(card.label)}
                   </div>
-                  <div style={{ fontSize: "28px", fontWeight: "700", color: card.color, marginTop: "12px" }}>
+                  <div style={{ fontSize: "24px", fontWeight: "700", color: card.color, marginTop: "8px" }}>
                     {String(card.count).padStart(2, "0")}
                   </div>
                 </div>
@@ -302,7 +380,7 @@ const WTDesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
           searchParams={props.searchParams}
           clearSearch={() => setClearSearchCalled(true)}
         />
-        <div className="result" style={{ flex: 1 }}>
+        <div className="result" style={{ flex: 1, minWidth: 0, overflowX: "auto" }}>
           {result}
         </div>
       </div>
