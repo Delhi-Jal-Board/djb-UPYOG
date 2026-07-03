@@ -3,20 +3,21 @@
 .app-container {
   @extend .light-background;
   width: 100%;
+
   form {
     .card {
       max-width: 960px;
+
       h2 {
         @extend .light-text-color-primary;
         text-align: left;
       }
-      .field-container {
-        max-width: 540px;
-      }
+
       button {
         @extend .light-primary-button;
         max-width: 240px;
       }
+
       .input-otp-wrap,
       .card-text-button {
         @extend .light-primary-button;
@@ -33,18 +34,23 @@
 
   .app-container {
     width: 100%;
+
     form {
       .card {
         max-width: 960px;
+
         h2 {
           text-align: left;
         }
+
         .field-container {
           max-width: 540px;
         }
+
         button {
           max-width: 240px;
         }
+
         .input-otp-wrap,
         .card-text-button {
           text-align: left;

@@ -131,7 +131,7 @@
 
   .card-label-error {
     @extend .alert-error;
-    @apply block text-body-s text-error mb-md;
+    @apply block text-body-s text-error;
   }
 
   .card-label-desc {
@@ -150,21 +150,6 @@
     margin-bottom: 0px !important;
     padding-bottom: 0px;
     padding-left: 25px;
-  }
-}
-
-.header-wrap {
-  @apply flex mb-md;
-
-  .header-start {
-    margin-right: auto;
-  }
-
-  .header-content {
-  }
-
-  .header-end {
-    margin-left: auto;
   }
 }
 
@@ -323,9 +308,6 @@
 
     .header-start {
       margin-right: auto;
-    }
-
-    .header-content {
     }
 
     .header-end {

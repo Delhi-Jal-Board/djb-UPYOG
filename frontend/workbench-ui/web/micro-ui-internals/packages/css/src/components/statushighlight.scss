@@ -9,7 +9,7 @@
   }
 
   &.success {
-    @apply bg-success;
+    @apply bg-success-gradient;
     p {
       @apply text-success;
     }

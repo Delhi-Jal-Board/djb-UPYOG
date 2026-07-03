@@ -3,7 +3,6 @@
 .field-container {
   display: flex;
   align-items: center;
-  max-width: 540px;
   @apply flex  items-center;
 
   .component-in-front {
@@ -22,9 +21,6 @@
   outline: transparent solid 1px;
   height: 2.5rem;
   @extend .light-input-border;
-}
-.text-input-width {
-  max-width: 540px;
 }
 
 .text-input {
@@ -48,20 +44,11 @@
   @extend .alert-error;
 }
 
-.employee-card-input {
-  @apply mb-lg pl-sm outline-none block border w-full h-10 border-input-border border-solid bg-white leading-10 text-form-field text-text-primary;
-  @extend .light-input-border;
-}
-.employee-card-input:disabled {
-  @apply border-grey-dark text-grey-dark !important;
-  pointer-events: none !important;
-  @extend .light-input-border;
-  @extend .light-text-color-disabled;
-}
 .employee-card-input--front {
   width: fit-content !important;
   display: flex;
   align-items: center;
+  color: #98989c;
   /* background: theme(colors.grey.mid); */
   @extend .light-background;
   border-right: 0;
@@ -75,15 +62,12 @@
 
 .card-textarea,
 .employee-card-textarea {
-  @apply block outline-none mt-md mb-lg border w-full border-input-border border-solid bg-white h-24 text-form-field text-text-primary p-sm;
+  @apply block outline-none w-full bg-white h-24 text-form-field text-text-primary p-sm;
   @extend .light-input-border;
-}
-.employee-card-textarea {
-  @apply w-full;
 }
 
 .citizen-card-input {
-  @apply mb-lg pl-sm outline-none block border w-full h-10 border-input-border border-solid bg-white leading-10 text-form-field text-text-primary;
+  @apply pl-sm outline-none block border w-full h-10 border-input-border border-solid bg-white leading-10 text-form-field text-text-primary;
   @extend .light-input-border;
 }
 .citizen-card-input--front {
@@ -115,6 +99,6 @@
   width: fit-content;
 }
 
-.digit-form-composer-header{
-   font-size:theme(digitv2.fontSize.heading-l-dt);
+.digit-form-composer-header {
+  font-size: theme(digitv2.fontSize.heading-l-dt);
 }

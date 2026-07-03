@@ -20,7 +20,7 @@ body {
 
 .link-label {
   @extend .light-primary;
-  @apply block mb-md ml-md cursor-pointer;
+  @apply block cursor-pointer;
 
   &:hover {
     @extend .light-text-color-primary;
@@ -31,9 +31,5 @@ body {
   .h1 {
     margin-left: 0;
     @apply text-heading-l-dt;
-  }
-
-  .link-label {
-    margin-left: 0;
   }
 }

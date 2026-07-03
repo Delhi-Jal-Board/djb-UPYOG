@@ -7,11 +7,20 @@
 }
 
 .employee-card-input {
-  @apply mb-lg pl-sm outline-none block border w-full h-10 border-input-border border-solid bg-white leading-10 text-form-field text-text-primary;
+  border: 2px solid #e5e5e7;
+  @apply pl-sm outline-none block w-full h-10 bg-white leading-10 text-form-field text-text-primary rounded-md;
+  &:hover {
+    border: 2px solid #a1a1aa;
+  }
 }
+
 .employee-card-input:disabled {
-  @apply border-grey-dark text-grey-dark !important;
+  @apply text-grey-dark !important;
+  border: 2px solid #e5e5e7;
   pointer-events: none !important;
+  cursor: not-allowed;
+  @extend .light-input-border;
+  @extend .light-text-color-disabled;
 }
 .employee-card-input--front {
   width: fit-content !important;
@@ -20,6 +29,8 @@
   background: theme(colors.grey.mid);
   border-right: 0;
   padding-right: 5px;
+  border-radius: 6px 0 0 6px;
+  color: #e5e5e7;
 }
 .employee-card-input-error {
   @apply mb-lg pl-sm block w-full h-10 outline-none border-2 border-error border-solid bg-white leading-10 text-form-field text-text-primary;
@@ -27,7 +38,11 @@
 
 .card-textarea,
 .employee-card-textarea {
-  @apply block outline-none mt-md mb-lg border w-full border-input-border border-solid bg-white h-24 text-form-field text-text-primary p-sm;
+  border: 2px solid #e5e5e7;
+  @apply block outline-none w-full bg-white h-24 text-form-field text-text-primary p-sm rounded-md;
+  &:hover {
+    border: 2px solid #a1a1aa;
+  }
 }
 
 .inputWrapper {
@@ -55,22 +70,10 @@
     width: 240px;
   }
 
-  .card-input-error {
-    width: 480px;
-  }
-
-  .employee-card-input {
-    @apply w-full;
-  }
-
-  .employee-card-input-error {
-    @apply w-full;
-  }
-
   .card-textarea {
-   /* //width: 480px; */
+    /* //width: 480px; */
     @apply w-full;
-    max-width:540px;
+    max-width: 540px;
   }
 
   .employee-card-textarea {
@@ -80,17 +83,4 @@
   .card-input-emp {
     width: 240px;
   }
-}
-
-.citizen-card-input {
-  @apply mb-lg pl-sm outline-none block border w-full h-10 border-input-border border-solid bg-white leading-10 text-form-field text-text-primary;
-}
-
-.citizen-card-input--front {
-  width: fit-content !important;
-  display: flex;
-  align-items: center;
-  background: theme(colors.grey.mid);
-  border-right: 0;
-  padding-right: 5px;
 }

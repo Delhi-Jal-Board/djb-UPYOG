@@ -1,0 +1,254 @@
+:root {
+  /* -- Core Colors -- */
+  --tl-color-primary: #3b82f6;
+  /* Blue */
+  --tl-color-success: #10b981;
+  /* Emerald */
+  --tl-color-line: #e5e7eb;
+  /* Light Gray */
+  --tl-bg-card: #ffffff;
+  /* -- Text Colors -- */
+  --tl-text-main: #1f2937;
+  /* Dark Slate */
+  --tl-text-muted: #6b7280;
+  /* Medium Gray */
+  /* -- Sizing Variables -- */
+  --tl-circle-size: 26px;
+  --tl-line-width: 2px;
+  --tl-item-spacing: 20px;
+  --tl-card-padding: 12px;
+}
+
+/* Ensure standard box sizing */
+.workflow-timeline-card2 *,
+.workflow-timeline-card2 *::before,
+.workflow-timeline-card2 *::after {
+  box-sizing: border-box;
+}
+
+.workflow-timeline-wrapper.hide-workflow {
+  @media (max-width: 768px) {
+    width: fit-content;
+  }
+}
+
+.workflow-timeline-wrapper {
+  overflow-y: scroll;
+  @media (max-width: 768px) {
+    width: 100%;
+  }
+  @media (min-width: 768px) {
+    max-width: 25%;
+  }
+}
+
+.hidden-content {
+  display: none !important;
+}
+
+@media (max-width: 768px) {
+  .hidden-card {
+    display: none !important;
+  }
+}
+
+.timeline-container2 {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  padding: 10px 0;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.timeline-item2 {
+  display: flex;
+  position: relative;
+  padding-bottom: var(--tl-item-spacing);
+}
+
+.timeline-item2:last-child {
+  padding-bottom: 0;
+}
+
+/* --- Left Column: Marker & Line --- */
+.timeline-marker2 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-right: 16px;
+  min-width: var(--tl-circle-size);
+  position: relative;
+}
+
+/* The vertical connecting line */
+.timeline-line2 {
+  position: absolute;
+  top: var(--tl-circle-size);
+  bottom: calc(-1 * var(--tl-item-spacing));
+  width: var(--tl-line-width);
+  background-color: var(--tl-color-line);
+  z-index: 0;
+}
+
+/* Color the line green if the *current* step is completed */
+.timeline-item2.completed2 .timeline-line2 {
+  background-color: var(--tl-color-success);
+}
+
+/* The Circle Node */
+.timeline-circle2 {
+  width: var(--tl-circle-size);
+  height: var(--tl-circle-size);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #fff;
+  border: 2px solid var(--tl-color-line);
+  z-index: 10;
+  transition: all 0.3s ease;
+  color: #fff;
+  overflow: hidden;
+}
+
+/* Status Styles */
+.timeline-item2.completed2 .timeline-circle2 {
+  background-color: var(--tl-color-success);
+  border-color: var(--tl-color-success);
+}
+
+.timeline-item2.current2 .timeline-circle2 {
+  background-color: var(--tl-color-primary);
+  border-color: var(--tl-color-primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+/* --- Right Column: Card Content --- */
+.timeline-content2 {
+  flex: 1;
+  background: var(--tl-bg-card);
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  padding: var(--tl-card-padding);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  position: relative;
+  min-width: 0;
+}
+
+/* Tiny triangle pointer pointing to the circle */
+.timeline-content2::before {
+  content: "";
+  position: absolute;
+  left: -5px;
+  top: calc(var(--tl-circle-size) / 2 - 5px);
+  width: 10px;
+  height: 10px;
+  background: var(--tl-bg-card);
+  border-left: 1px solid #f0f0f0;
+  border-bottom: 1px solid #f0f0f0;
+  transform: rotate(45deg);
+}
+
+/* Header section: Title and Date */
+.timeline-header2 {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.timeline-title2 {
+  font-weight: 600;
+  font-size: 13.5px;
+  color: var(--tl-text-main);
+  margin-right: 8px;
+  line-height: 1.3;
+}
+
+.timeline-date2 {
+  font-size: 11px;
+  color: var(--tl-text-muted);
+  white-space: nowrap;
+  background: #f9fafb;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* Body section: Status tag and comment */
+.timeline-body2 {
+  margin-bottom: 8px;
+}
+
+.timeline-status-tag2 {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 3px 8px;
+  border-radius: 10px;
+  margin-bottom: 6px;
+}
+
+.status-completed2 {
+  color: #065f46;
+  background: #d1fae5;
+}
+
+.status-current2 {
+  color: #1e40af;
+  background: #dbeafe;
+}
+
+.timeline-comment2 {
+  font-size: 12.5px;
+  color: #4b5563;
+  line-height: 1.4;
+  background-color: #f9fafb;
+  padding: 8px;
+  border-radius: 6px;
+  border-left: 2px solid #d1d5db;
+}
+
+.timeline-header-wrapper {
+  transition: transform 0.3s ease;
+  transform-origin: center;
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.timeline-arrow.collapsed {
+  transform: rotate(180deg);
+}
+
+/* Footer section: Assignee */
+.timeline-footer2 {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #f3f4f6;
+  font-size: 11px;
+  color: var(--tl-text-muted);
+}
+
+@keyframes spin-time2 {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Apply animation ONLY to the hands of the clock when the item is 'current' */
+.timeline-item2.current2 .clock-hands2 {
+  transform-origin: 12px 12px;
+  animation: spin-time2 3s linear infinite;
+}
+
+/* Optional: Make the whole clock pulse gently if it's the current item */
+.timeline-item2.current2 .timeline-circle2 svg {
+  filter: drop-shadow(0 0 2px rgba(59, 130, 246, 0.5));
+}

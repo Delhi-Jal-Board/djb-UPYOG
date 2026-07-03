@@ -1,11 +1,12 @@
 .loginFormStyleEmployee {
   .employeeCard {
+    background-color: transparent !important;
     .submit-bar {
       @apply w-full;
     }
   }
 }
-.banner .bannerCard{
+.banner .bannerCard {
   min-width: 420px !important;
 }
 .employeeForgotPassword .employeeCard .field .field-container .component-in-front {
@@ -18,10 +19,12 @@
   .employeeForgotPassword .employeeCard .field .field-container .component-in-front {
     padding: 7px;
   }
- .loginFormStyleEmployee .employeeCard, .banner .bannerCard{
+  .loginFormStyleEmployee .employeeCard,
+  .banner .bannerCard {
     min-width: 420px !important;
   }
-  .employeeForgotPassword .employeeCard, .employeeChangePassword .employeeCard{
+  .employeeForgotPassword .employeeCard,
+  .employeeChangePassword .employeeCard {
     max-width: 420px !important;
     min-width: 420px !important;
   }
@@ -62,7 +65,8 @@
 .employeeCard .card-sub-header {
   font-size: 24px;
 }
-.loginFormStyleEmployee .employeeCard .card-label, .employeeForgotPassword .employeeCard .card-label{
+.loginFormStyleEmployee .employeeCard .card-label,
+.employeeForgotPassword .employeeCard .card-label {
   font-weight: normal;
   font-size: 16px;
   line-height: 19px;
@@ -72,14 +76,11 @@
 .banner .bannerHeader {
   margin-bottom: 20px;
 }
-.employeeCard .card-label{
+.employeeCard .card-label {
   font-weight: normal;
   font-size: 16px;
   line-height: 19px;
   color: theme(colors.text.primary);
-}
-.profile-label-margin{
-   margin-top: 10px;
 }
 
 .employeeForgotPassword .employeeCard .card-label-desc {
@@ -113,109 +114,188 @@
   padding-top: 0px !important;
 }
 .banner {
-  height: calc(100vh ) !important;
+  height: calc(100vh) !important;
 }
 
-.employeeChangePassword .employeeCard .field .field-container{
+.employeeChangePassword .employeeCard .field .field-container {
   margin-bottom: 24px;
 }
 
-.employeeForgotPassword .employeeCard  .employee-card-sub-header, .employeeChangePassword .employeeCard  .employee-card-sub-header, .loginFormStyleEmployee .employeeCard .employee-card-sub-header{
+.employeeForgotPassword .employeeCard .employee-card-sub-header,
+.employeeChangePassword .employeeCard .employee-card-sub-header,
+.loginFormStyleEmployee .employeeCard .employee-card-sub-header {
   font-size: 24px !important;
   line-height: 28px !important;
   margin-bottom: 0px !important;
 }
-@media screen and (max-width : 768px){
-  .employeeForgotPassword .employeeCard  .employee-card-sub-header, .employeeChangePassword .employeeCard  .employee-card-sub-header, .loginFormStyleEmployee .employeeCard .employee-card-sub-header{
+@media screen and (max-width: 768px) {
+  .employeeForgotPassword .employeeCard .employee-card-sub-header,
+  .employeeChangePassword .employeeCard .employee-card-sub-header,
+  .loginFormStyleEmployee .employeeCard .employee-card-sub-header {
     font-size: 18px !important;
     line-height: 21px !important;
     margin-bottom: 0px !important;
   }
-  .loginFormStyleEmployee .employeeCard, .banner .bannerCard{
+  .loginFormStyleEmployee .employeeCard,
+  .banner .bannerCard {
     min-width: 340px !important;
     margin: 10px !important;
   }
-  .employeeForgotPassword .employeeCard, .employeeChangePassword .employeeCard{
+  .employeeForgotPassword .employeeCard,
+  .employeeChangePassword .employeeCard {
     max-width: 360px !important;
     min-width: 340px !important;
     margin: 10px !important;
   }
 }
-.employeeChangePassword .employeeCard .card-text{
+.employeeChangePassword .employeeCard .card-text {
   margin-top: 18px !important;
   margin-bottom: 20px !important;
 }
-.employeeBackbuttonAlign{
+.employeeBackbuttonAlign {
   display: none;
 }
-.resend-otp{
+.resend-otp {
   cursor: pointer;
 }
 
 .employee-select-wrap.login-city-dd {
-  .options-card{
-  max-height: 200px;
+  .options-card {
+    max-height: 200px;
   }
 }
-@media screen and (max-width: 768px){
-  .employeeBackbuttonAlign{
+@media screen and (max-width: 768px) {
+  .employeeBackbuttonAlign {
     display: block;
     position: absolute;
     top: 20px;
     left: 20px;
   }
-  .banner{
+  .banner {
     align-items: flex-end;
     padding-bottom: 40px;
     height: 100vh !important;
   }
-  .topbar{
-    background: rgba(34, 57, 77, var(--bg-opacity)) !important;
-    color: white;
-  }
-  .employee .loginContainer{
+
+  .employee .loginContainer {
     padding-top: 0px !important;
   }
-  .removeBottomMargin{
+  .removeBottomMargin {
     margin-bottom: 0px !important;
   }
   .employee-select-wrap.login-city-dd {
-    .options-card{
-    max-height: 160px;
+    .options-card {
+      max-height: 160px;
     }
   }
 }
 
+@media (max-width: 768px) {
+  .modernFinanceUIWelcomeContainer,
+  .modernFinanceUIWelcomeContent,
+  .financeUI-background-decor1,
+  .financeUI-background-decor3,
+  .financeUI-background-decor4,
+  .financeUI-background-decor2 {
+    display: none !important;
+  }
+
+  .modernFinanceUILoginFormRightContainer {
+    width: 100% !important;
+  }
+
+  .loginContainer {
+    padding: 0 !important;
+    background: #fff !important; /* optional */
+  }
+}
 
 .loginFormStyleEmployee {
-
   .loginCardSubHeaderClassName {
     text-align: center !important;
   }
   .loginCardClassName {
-    margin: auto !important; 
+    background-color: transparent !important;
+    margin: auto !important;
     min-width: 408px !important;
-    header.employee-card-sub-header{
+    header.employee-card-sub-header {
       text-align: center;
       margin-top: 10px;
     }
   }
   .buttonClassName {
     max-width: 100% !important;
-    width: 100% !important
+    width: 100% !important;
   }
   .field .field-container .text-input input {
     margin-bottom: 5px !important;
   }
   .bannerHeader {
     margin-bottom: 0px !important;
+    display: flex;
+    -ms-flex-pack: center;
+    justify-content: center;
+    -ms-flex-align: center;
+    align-items: center;
+    margin-bottom: 24px;
   }
-  
+  .bannerLogo {
+    width: 150px;
+    height: auto;
+    -o-object-fit: contain;
+    object-fit: contain;
+    padding-right: 10px;
+    margin-right: 10px;
+    border-right: 1px solid #0b0c0c;
+  }
+
   .primary-label-btn {
     margin: 20px auto 0 auto !important;
   }
 
   .employee-select-wrap .options-card {
     max-height: 150px !important;
+  }
+}
+@media screen and (max-width: 768px) {
+  /* remove ALL fixed/min widths */
+  .loginCardClassName,
+  .employeeCard,
+  .loginFormStyleEmployee .employeeCard,
+  .bannerCard,
+  .banner .bannerCard,
+  .employeeForgotPassword .employeeCard,
+  .employeeChangePassword .employeeCard {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+  }
+
+  /* make main container full width */
+  .modernFinanceUIMainContainer,
+  .modernFinanceUILoginFormRightContainer,
+  .loginContainer {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 12px !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  /* center logo + header & shrink them */
+  .bannerHeader,
+  .bannerLogo {
+    margin: 0 auto !important;
+    text-align: center !important;
+    width: auto !important;
+  }
+
+  .bannerLogo {
+    width: 100px !important;
+    height: auto !important;
+    border-right: none !important;
+    padding: 0 !important;
+    margin-bottom: 8px !important;
   }
 }

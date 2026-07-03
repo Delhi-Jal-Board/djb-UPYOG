@@ -1,4 +1,6 @@
 .tag-container {
+  max-height: 120px;
+  overflow: scroll;
   @apply flex flex-wrap mb-md;
   .tag {
     @apply bg-grey-mid rounded-2xl pt-sm pb-sm flex justify-between items-center;
