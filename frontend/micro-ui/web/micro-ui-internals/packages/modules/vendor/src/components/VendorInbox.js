@@ -137,9 +137,9 @@ const getDriverFillingPointIdentifiers = (driver = {}) => {
 const getVendorDriversForFillingPoint = (vendor, fillingPoint) => {
   const vendorDrivers = Array.isArray(vendor?.drivers)
     ? vendor.drivers.filter(Boolean).map((d) => ({
-        ...d,
-        displayName: `${d.name} (${d.owner?.mobileNumber || "N/A"})`,
-      }))
+      ...d,
+      displayName: `${d.name} (${d.owner?.mobileNumber || "N/A"})`,
+    }))
     : [];
   if (!fillingPoint) return [];
 
@@ -839,62 +839,64 @@ const VendorInbox = (props) => {
           //   },
           // },
           ...(!(userType !== "CITIZEN" && isEkycRole)
-            ? {
-                Header: t("ES_VENDOR_ADDITIONAL_DETAILS"),
-                disableSortBy: true,
-                Cell: ({ row }) => {
-                  const vendorId = row.original?.id;
+            ? [
+                {
+                  Header: t("ES_VENDOR_ADDITIONAL_DETAILS"),
+                  disableSortBy: true,
+                  Cell: ({ row }) => {
+                    const vendorId = row.original?.id;
 
-                  // Guard: if data not yet loaded, show a neutral state
-                  if (!additionalVendorData) {
-                    return <span>Loading...</span>;
-                  }
+                    // Guard: if data not yet loaded, show a neutral state
+                    if (!additionalVendorData) {
+                      return <span>Loading...</span>;
+                    }
 
-                  const hasDetails = row.original?.vendorAdditionalDetails !== null;
-                  return (
-                    <Link
-                      to={
-                        hasDetails
-                          ? `/digit-ui/${userType}/vendor/registry/additionaldetails/info?vendorId=` + vendorId
-                          : `/digit-ui/${userType}/vendor/registry/additionaldetails/vendor-details?vendorId=` + vendorId
-                      }
-                    >
-                      <button
-                        className="submit-bar"
-                        style={{
-                          backgroundColor: hasDetails ? "#417505" : "#3A8DCC",
-                          color: "white",
-                        }}
+                    const hasDetails = row.original?.vendorAdditionalDetails !== null;
+                    return (
+                      <Link
+                        to={
+                          hasDetails
+                            ? `/digit-ui/${userType}/vendor/registry/additionaldetails/info?vendorId=` + vendorId
+                            : `/digit-ui/${userType}/vendor/registry/additionaldetails/vendor-details?vendorId=` + vendorId
+                        }
                       >
-                        {hasDetails ? "View Details" : "Add Details"}
-                      </button>
-                    </Link>
-                  );
-                },
-              }
-            : ""),
+                        <button
+                          className="submit-bar"
+                          style={{
+                            backgroundColor: hasDetails ? "#417505" : "#3A8DCC",
+                            color: "white",
+                          }}
+                        >
+                          {hasDetails ? "View Details" : "Add Details"}
+                        </button>
+                      </Link>
+                    );
+                  },
+                }
+              ]
+            : []),
 
           ...(!isEkycRole
             ? [
-                {
-                  Header: t("VIEW_WORKORDER_DETAILS"),
-                  disableSortBy: true,
-                  Cell: ({ row }) => {
-                    return (
-                      <button
-                        className="submit-bar"
-                        style={{
-                          backgroundColor: "#417505",
-                          color: "white",
-                        }}
-                        onClick={() => openWorkOrderModal(row.original)}
-                      >
-                        {t("VIEW_WORKORDER_DETAILS")}
-                      </button>
-                    );
-                  },
+              {
+                Header: t("VIEW_WORKORDER_DETAILS"),
+                disableSortBy: true,
+                Cell: ({ row }) => {
+                  return (
+                    <button
+                      className="submit-bar"
+                      style={{
+                        backgroundColor: "#417505",
+                        color: "white",
+                      }}
+                      onClick={() => openWorkOrderModal(row.original)}
+                    >
+                      {t("VIEW_WORKORDER_DETAILS")}
+                    </button>
+                  );
                 },
-              ]
+              },
+            ]
             : []),
         ];
 
@@ -1167,39 +1169,33 @@ const VendorInbox = (props) => {
             },
           },
           {
-            Header: props.selectedTab === "SUPERVISOR" ? t("Supervisor's Mobile No.") : t("Surveyor's Mobile No."),
-            id: "userName",
-            accessor: (row) => row.owner?.userName || "NA",
-            Cell: ({ row }) => {
-              const detailsPath = props.selectedTab === "SUPERVISOR" ? "supervisor-details" : "surveyor-details";
-              return (
-                <div>
-                  <span className="link">
-                    <Link to={`/digit-ui/${userType}/vendor/registry/${detailsPath}/` + row.original["id"]}>
-                      <div>{row.original.owner?.userName || "NA"}</div>
-                    </Link>
-                  </span>
-                </div>
-              );
-            },
-          },
-
-          ...(props.selectedTab === "SURVEYOR"
-            ? [
-                {
-                  Header: t("ES_FSM_REGISTRY_INBOX_SUPERVISOR_NAME"),
-                  accessor: (row) => row.supervisorName || row.reportingManager?.name || "NA",
-                  Cell: ({ row }) => <div>{row.original?.supervisorName || row.original?.reportingManager?.name || "NA"}</div>,
-                },
-              ]
-            : []),
-          {
             Header: t("WT_MOBILE_NUMBER"),
             accessor: "mobileNumber",
             Cell: ({ row }) => {
               return <div>{row.original?.owner?.mobileNumber || "N/A"}</div>;
             },
           },
+          ...(props.selectedTab === "SUPERVISOR"
+            ? [
+              {
+                Header: t("ES_VENDOR_SUPERVISOR_AGENCY_NAME") || "Agency Name",
+                id: "agencyName",
+                accessor: (row) => row.vendorName || row.vendorData?.name || row.vendor?.name || "NA",
+                Cell: ({ row }) => {
+                  return <div>{row.original?.vendorName || row.original?.vendorData?.name || row.original?.vendor?.name || "NA"}</div>;
+                },
+              },
+            ]
+            : []),
+          ...(props.selectedTab === "SURVEYOR"
+            ? [
+              {
+                Header: t("ES_FSM_REGISTRY_INBOX_SUPERVISOR_NAME"),
+                accessor: (row) => row.supervisorName || row.reportingManager?.name || "NA",
+                Cell: ({ row }) => <div>{row.original?.supervisorName || row.original?.reportingManager?.name || "NA"}</div>,
+              },
+            ]
+            : []),
           {
             Header: t("ES_FSM_REGISTRY_INBOX_DATE_CREATION"),
             accessor: "createdTime",
@@ -1210,25 +1206,8 @@ const VendorInbox = (props) => {
           //   Header: props.selectedTab === "SUPERVISOR" ? t("ES_VENDOR_SUPERVISOR_AGENCY_NAME") : t("ES_VENDOR_SURVEYOR_AGENCY_NAME"),
           //   id: "vendorName",
           //   accessor: (row) => row.vendorData?.name || row.vendor?.name || "NA",
-          //   minWidth: 250,
           //   Cell: ({ row }) => {
-          //     return (
-          //       <Dropdown
-          //         className="fsm-registry-dropdown"
-          //         selected={
-          //           vendors?.find((vendor) => (row.original.vendorData?.id || row.original.vendor?.id) === vendor.id) ||
-          //           row.original.vendorData ||
-          //           row.original.vendor
-          //         }
-          //         option={vendors}
-          //         select={(value) => {
-          //           console.log("Updating vendor for", props.selectedTab, value);
-          //         }}
-          //         style={{ textAlign: "left", width: "100%", minWidth: "250px" }}
-          //         optionKey="displayName"
-          //         t={t}
-          //       />
-          //     );
+          //     return <div>{row.original.vendorData?.name || row.original.vendor?.name || "NA"}</div>;
           //   },
           // },
           // {
@@ -1262,8 +1241,7 @@ const VendorInbox = (props) => {
           {
             Header: t("ES_VENDOR_INBOX_VENDOR_NAME"),
             exportAccessor: (row) =>
-              `${row?.name || row?.dsoDetails?.name || "NA"} (${
-                row?.mobileNumber || row?.owner?.mobileNumber || row?.dsoDetails?.mobileNumber || row?.dsoDetails?.owner?.mobileNumber || "NA"
+              `${row?.name || row?.dsoDetails?.name || "NA"} (${row?.mobileNumber || row?.owner?.mobileNumber || row?.dsoDetails?.mobileNumber || row?.dsoDetails?.owner?.mobileNumber || "NA"
               })`,
           },
           {
@@ -1296,12 +1274,11 @@ const VendorInbox = (props) => {
           {
             Header: "Map Vendor",
             exportAccessor: (row) =>
-              `${row?.vendor?.name || row?.vendorData?.name || "NA"} (${
-                row?.vendor?.mobileNumber ||
-                row?.vendor?.owner?.mobileNumber ||
-                row?.vendorData?.mobileNumber ||
-                row?.vendorData?.owner?.mobileNumber ||
-                "NA"
+              `${row?.vendor?.name || row?.vendorData?.name || "NA"} (${row?.vendor?.mobileNumber ||
+              row?.vendor?.owner?.mobileNumber ||
+              row?.vendorData?.mobileNumber ||
+              row?.vendorData?.owner?.mobileNumber ||
+              "NA"
               })`,
           },
           {
@@ -1315,8 +1292,7 @@ const VendorInbox = (props) => {
           {
             Header: t("ES_FSM_REGISTRY_SELECT_DRIVER"),
             exportAccessor: (row) =>
-              `${row?.driverData?.name || row?.driver?.name || "NA"} (${
-                row?.driverData?.owner?.mobileNumber || row?.driver?.owner?.mobileNumber || "NA"
+              `${row?.driverData?.name || row?.driver?.name || "NA"} (${row?.driverData?.owner?.mobileNumber || row?.driver?.owner?.mobileNumber || "NA"
               })`,
           },
           {
@@ -1341,12 +1317,11 @@ const VendorInbox = (props) => {
           {
             Header: t("ES_FSM_REGISTRY_INBOX_VENDOR_NAME"),
             exportAccessor: (row) =>
-              `${row?.vendorData?.name || row?.vendor?.name || "NA"} (${
-                row?.vendorData?.mobileNumber ||
-                row?.vendorData?.owner?.mobileNumber ||
-                row?.vendor?.mobileNumber ||
-                row?.vendor?.owner?.mobileNumber ||
-                "NA"
+              `${row?.vendorData?.name || row?.vendor?.name || "NA"} (${row?.vendorData?.mobileNumber ||
+              row?.vendorData?.owner?.mobileNumber ||
+              row?.vendor?.mobileNumber ||
+              row?.vendor?.owner?.mobileNumber ||
+              "NA"
               })`,
           },
           {
@@ -1375,12 +1350,11 @@ const VendorInbox = (props) => {
           {
             Header: t("ES_FSM_REGISTRY_INBOX_VENDOR_NAME"),
             exportAccessor: (row) =>
-              `${row?.vendorData?.name || row?.vendor?.name || "NA"} ${
-                row?.vendorData?.mobileNumber ||
-                row?.vendorData?.owner?.mobileNumber ||
-                row?.vendor?.mobileNumber ||
-                row?.vendor?.owner?.mobileNumber ||
-                "NA"
+              `${row?.vendorData?.name || row?.vendor?.name || "NA"} ${row?.vendorData?.mobileNumber ||
+              row?.vendorData?.owner?.mobileNumber ||
+              row?.vendor?.mobileNumber ||
+              row?.vendor?.owner?.mobileNumber ||
+              "NA"
               }`,
           },
           {
@@ -1405,23 +1379,21 @@ const VendorInbox = (props) => {
           {
             Header: t("ES_FSM_REGISTRY_INBOX_VENDOR_NAME"),
             exportAccessor: (row) =>
-              `${row?.vendorData?.name || row?.vendor?.name || "NA"} ${
-                row?.vendorData?.mobileNumber ||
-                row?.vendorData?.owner?.mobileNumber ||
-                row?.vendor?.mobileNumber ||
-                row?.vendor?.owner?.mobileNumber ||
-                "NA"
+              `${row?.vendorData?.name || row?.vendor?.name || "NA"} ${row?.vendorData?.mobileNumber ||
+              row?.vendorData?.owner?.mobileNumber ||
+              row?.vendor?.mobileNumber ||
+              row?.vendor?.owner?.mobileNumber ||
+              "NA"
               }`,
           },
           {
             Header: t("ES_VENDOR_SUPERVISOR_AGENCY_NAME"),
             exportAccessor: (row) =>
-              `${row?.vendorData?.name || row?.vendor?.name || "NA"} ${
-                row?.vendorData?.mobileNumber ||
-                row?.vendorData?.owner?.mobileNumber ||
-                row?.vendor?.mobileNumber ||
-                row?.vendor?.owner?.mobileNumber ||
-                "NA"
+              `${row?.vendorData?.name || row?.vendor?.name || "NA"} ${row?.vendorData?.mobileNumber ||
+              row?.vendorData?.owner?.mobileNumber ||
+              row?.vendor?.mobileNumber ||
+              row?.vendor?.owner?.mobileNumber ||
+              "NA"
               }`,
           },
           {
