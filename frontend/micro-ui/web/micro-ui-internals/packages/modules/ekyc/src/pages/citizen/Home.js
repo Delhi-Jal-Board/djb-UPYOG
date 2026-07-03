@@ -1,6 +1,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { ModuleLinksView } from "@djb25/digit-ui-react-components";
+import { CitizenHomeCard, DocumentIcon } from "@djb25/digit-ui-react-components";
+
 const Home = () => {
   const { t } = useTranslation();
   const propsForModuleCard = {
@@ -47,15 +48,44 @@ const Home = () => {
       link: `/digit-ui/citizen/ekyc/supervisor-dashboard`,
     });
   }
-  
-  if (roles.length === 1 && roles.includes("CITIZEN")) {
+
+  if (roles.includes("EKYC_SUPERVISOR") || roles.includes("EKYC_VENDOR")) {
     propsForModuleCard.links.push({
-      label: t("EKYC_STATUS"),
-      link: `/digit-ui/citizen/ekyc/:id`,
+      label: t("TITLE_VENDOR_MANAGEMENT"),
+      link: `/digit-ui/citizen/vendor/search-vendor`,
     });
   }
 
-  return <ModuleLinksView links={propsForModuleCard.links} />;
+  if (roles.length === 1 && roles.includes("CITIZEN")) {
+    propsForModuleCard.links.push(
+      {
+        label: t("EKYC_CREATE_KYC"),
+        link: `/digit-ui/citizen/ekyc/create-kyc`,
+      },
+      {
+        label: t("EKYC_UPDATE_KYC"),
+        link: `/digit-ui/citizen/ekyc/update-kyc`,
+      },
+      {
+        label: t("EKYC_STATUS"),
+        link: `/digit-ui/citizen/ekyc/:id`,
+      }
+    );
+  }
+
+  const formattedLinks = propsForModuleCard.links.map((l) => ({
+    i18nKey: l.label,
+    link: l.link,
+    count: l.count,
+  }));
+
+  return (
+    <CitizenHomeCard
+      header={t("EKYC_MODULE_NAME")}
+      links={formattedLinks}
+      Icon={() => <DocumentIcon className="fill-path-primary-main" />}
+    />
+  );
 };
 
 export default Home;

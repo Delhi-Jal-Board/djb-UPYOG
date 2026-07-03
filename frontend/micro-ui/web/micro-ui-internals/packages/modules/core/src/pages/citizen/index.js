@@ -221,25 +221,13 @@ const Home = ({
       <React.Fragment key={index}>
         <Route key={index} path={`${path}/${code.toLowerCase()}-home`}>
           <div className="moduleLinkHomePage">
-            <img src={stateInfo?.bannerUrl} alt="noimagefound" />
-            <BackButton className="moduleLinkHomePageBackButton" />
-            {isMobile ? (
-              <h4
-                style={{
-                  top: "calc(16vw + 40px)",
-                  left: "1.5rem",
-                  position: "absolute",
-                  color: "white",
-                  width: "50px",
-                  fontSize: "15px",
-                  marginTop: "6px",
-                }}
-              >
-                {t("MODULE_" + code.toUpperCase())}
-              </h4>
-            ) : (
-              <h1 style={{ width: "230px", marginTop: "15px" }}>{t("MODULE_" + code.toUpperCase())}</h1>
-            )}
+            <div style={{ position: "relative" }}>
+              <img src={stateInfo?.bannerUrl} alt="noimagefound" />
+              <BackButton className="moduleLinkHomePageBackButton" />
+              <div className="moduleTitle">
+                {isMobile ? <h4>{t("MODULE_" + code.toUpperCase())}</h4> : <h1>{t("MODULE_" + code.toUpperCase())}</h1>}
+              </div>
+            </div>
             <div className="moduleLinkHomePageModuleLinks">
               {mdmsDataObj?.links?.filter((ele) => ele?.link)?.length > 0 ? (
                 <CitizenHomeCard
