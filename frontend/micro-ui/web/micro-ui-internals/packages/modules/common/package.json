@@ -1,6 +1,6 @@
 {
   "name": "@djb25/digit-ui-module-common",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "license": "MIT",
   "description": "Digit Common Payment Module",
   "main": "dist/index.js",
