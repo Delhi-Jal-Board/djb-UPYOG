@@ -20,6 +20,7 @@ const InputCard = ({
   isMultipleAllow = false,
   cardStyle = {},
   className,
+  noGrid=false
 }) => {
   const isMobile = window.Digit.Utils.browser.isMobile();
   // TODO: inputs handle
@@ -28,7 +29,7 @@ const InputCard = ({
       {texts.headerCaption && <CardCaption>{t(texts.headerCaption)}</CardCaption>}
       {texts?.header && <CardHeader>{t(texts.header)}</CardHeader>}
       {texts?.cardText && <CardText>{t(texts.cardText)}</CardText>}
-      <div className="formcomposer-section-grid">{children}</div>
+      <div className={noGrid?"":"formcomposer-section-grid"}>{children}</div>
 
       {texts.submitBarLabel ? (
         <div className="formcomposer-section-button">

@@ -9,11 +9,13 @@ export const commonConfig = [
         key: "serviceType",
         type: "component",
         nextStep: "info",
+        isCollapsible: false,
         hideInEmployee: true,
         isMandatory: true,
         texts: {
           submitBarLabel: "COMMON_SAVE_NEXT",
         },
+        noGrid: true,
       },
       {
         route: "info",

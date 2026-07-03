@@ -120,6 +120,7 @@ const FormStep = ({
             {...{ onSkip: onSkip, onAdd: onAdd }}
             t={t}
             className={className || ""}
+            noGrid={config.noGrid || false}
           >
             {!childrenAtTheBottom && children}
             {inputs}
