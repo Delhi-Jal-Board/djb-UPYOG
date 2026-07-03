@@ -126,7 +126,7 @@ const App = () => {
               <PrivateRoute path={`${path}/booking-details/:id`} component={() => <ApplicationDetails parentRoute={path} />} />
               <PrivateRoute path={`${path}/bookingsearch/booking-details/:id`} component={() => <ApplicationDetails parentRoute={path} />} />
               <PrivateRoute
-                path={`${path}/vendor`}
+                path={`${path}/wt-Vendor`}
                 component={() =>
                   Digit.UserService.hasAccess(["WT_VENDOR"]) ? (
                     <div style={{ display: "flex", gap: "24px", flexWrap: "wrap", width: "100%", padding: "8px 0" }}>

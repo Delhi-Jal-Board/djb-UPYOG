@@ -13,6 +13,25 @@
     gap: 8px;
   }
 
+  .clear-selected-btn {
+    height: 48px;
+    background: transparent;
+    border: none;
+    color: #1f5fa8;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: underline;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 4px;
+    width: fit-content;
+
+    &:hover {
+      color: #0b2e5b;
+    }
+  }
+
   .form-control {
     height: 48px;
     width: 100%;

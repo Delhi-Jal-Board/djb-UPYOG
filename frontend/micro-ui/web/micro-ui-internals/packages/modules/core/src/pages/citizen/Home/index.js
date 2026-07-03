@@ -158,7 +158,7 @@ const Home = () => {
         Icon: <DropIcon className="fill-path-primary-main" />,
         onClick: () => handleCardClick("/digit-ui/citizen/ws-home"),
       },
-      /* ...(Digit.UserService.hasAccess(["WT_VENDOR", "EKYC_VENDOR", "EKYC_SUPERVISOR"])
+      ...(Digit.UserService.hasAccess(["WT_VENDOR", "EKYC_VENDOR", "EKYC_SUPERVISOR"])
         ? [
           {
             name: t("ACTION_VENDOR_MANAGEMENT"),
@@ -167,7 +167,7 @@ const Home = () => {
             onClick: () => handleCardClick("/digit-ui/citizen/vendor"),
           },
         ]
-        : []), */
+        : []),
       {
         name: t("ACTION_TEST_COMMON_PROPERTY_TAX"),
         description: t("Search and pay property tax"),

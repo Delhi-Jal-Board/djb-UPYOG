@@ -17,7 +17,7 @@ const SearchVendor = () => {
     roles.includes("EKYC_VENDOR") || roles.includes("WT_VENDOR")
       ? "VENDOR"
       : roles.includes("EKYC_SUPERVISOR")
-      ? "SUPERVISOR"
+      ? "SURVEYOR"
       : roles.includes("EKYC_SURVEYOR")
       ? "SURVEYOR"
       : "";

@@ -394,7 +394,6 @@ const AssignEkycModal = ({ surveyor, closeModal, refetchDashboard }) => {
                 {loc.name}
               </option>
             ))}
-            http://localhost:3000/digit-ui/employee/ekyc/assign
           </select>
 
           <select className="form-control" value={filters.ward} onChange={(e) => handleFilterChange("ward", e.target.value)}>
@@ -417,12 +416,18 @@ const AssignEkycModal = ({ surveyor, closeModal, refetchDashboard }) => {
 
           <input className="form-control" placeholder="MR Key" value={filters.mrkey} onChange={(e) => handleFilterChange("mrkey", e.target.value)} />
 
-          <select className="form-control" value={filters.ekycStatus} onChange={(e) => handleFilterChange("ekycStatus", e.target.value)}>
+          {selectedKnos.length > 0 && (
+            <button className="clear-selected-btn" type="button" onClick={() => setSelectedKnos([])}>
+              {t("EKYC_CLEAR_SELECTION") || `Clear Selected (${selectedKnos.length})`}
+            </button>
+          )}
+
+          {/* <select className="form-control" value={filters.ekycStatus} onChange={(e) => handleFilterChange("ekycStatus", e.target.value)}>
             <option value="">All eKYC Status</option>
             <option value="PENDING">Pending</option>
             <option value="APPROVED">Approved</option>
             <option value="REJECTED">Rejected</option>
-          </select>
+          </select> */}
         </div>
 
         {/* Table */}
