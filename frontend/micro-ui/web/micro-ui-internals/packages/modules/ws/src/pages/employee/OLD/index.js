@@ -106,6 +106,10 @@ const OLDApplication = () => {
                   component: "WSPropertyLocationDetails",
                   withoutLabel: true,
                   isAutomaticFill: true,
+                  texts: {
+                    header: `PT_LOCATION_DETAILS ${t("(Automatic Fill by Property)")}`,
+                  },
+                  defaultOpen: false,
                 },
               ],
             });
@@ -227,10 +231,6 @@ const OLDApplication = () => {
     // )
     //   setSubmitValve(true);
     // else setSubmitValve(!Object.keys(formState.errors).length);
-  };
-
-  const closeToastOfError = () => {
-    setShowToast(null);
   };
 
   const onFormSubmit = (data) => {
@@ -423,7 +423,6 @@ const OLDApplication = () => {
               key: "error",
               message: error?.response?.data?.Errors?.[0]?.message || error?.message || "ERR_UNKNOWN",
             });
-            setTimeout(closeToastOfError, 5000);
           },
           onSuccess: async (waterData) => {
             let response = await updatePayloadOfWS(waterData?.WaterConnection?.[0], "WATER");
@@ -436,7 +435,6 @@ const OLDApplication = () => {
                   key: "error",
                   message: error?.response?.data?.Errors?.[0]?.message || error?.message || "ERR_UNKNOWN",
                 });
-                setTimeout(closeToastOfError, 5000);
               },
               onSuccess: async (waterUpdateData) => {
                 // setAppDetails((prev) => ({ ...prev, waterConnection: waterUpdateData?.WaterConnection?.[0] }));
@@ -448,7 +446,6 @@ const OLDApplication = () => {
                       key: "error",
                       message: error?.response?.data?.Errors?.[0]?.message || error?.message || "ERR_UNKNOWN",
                     });
-                    setTimeout(closeToastOfError, 5000);
                   },
                   onSuccess: async (sewerageData) => {
                     let response = await updatePayloadOfWS(sewerageData?.SewerageConnections?.[0], "SEWERAGE");
@@ -461,7 +458,6 @@ const OLDApplication = () => {
                           key: "error",
                           message: error?.response?.data?.Errors?.[0]?.message || error?.message || "ERR_UNKNOWN",
                         });
-                        setTimeout(closeToastOfError, 5000);
                       },
                       onSuccess: async (sewerageUpdateData) => {
                         // setAppDetails((prev) => ({ ...prev, sewerageConnection: sewerageUpdateData?.SewerageConnections?.[0] }));
@@ -491,7 +487,6 @@ const OLDApplication = () => {
               key: "error",
               message: error?.response?.data?.Errors?.[0]?.message || error?.message || "ERR_UNKNOWN",
             });
-            setTimeout(closeToastOfError, 5000);
           },
           onSuccess: async (data) => {
             let response = await updatePayloadOfWS(data?.WaterConnection?.[0], "WATER");
@@ -505,7 +500,6 @@ const OLDApplication = () => {
                   key: "error",
                   message: error?.response?.data?.Errors?.[0]?.message || error?.message || "ERR_UNKNOWN",
                 });
-                setTimeout(closeToastOfError, 5000);
               },
               onSuccess: (data) => {
                 // setAppDetails((prev) => ({ ...prev, waterConnection: data?.WaterConnection?.[0] }));
@@ -529,7 +523,6 @@ const OLDApplication = () => {
               key: "error",
               message: error?.response?.data?.Errors?.[0]?.message || error?.message || "ERR_UNKNOWN",
             });
-            setTimeout(closeToastOfError, 5000);
           },
           onSuccess: async (data) => {
             let response = await updatePayloadOfWS(data?.SewerageConnections?.[0], "SEWERAGE");
@@ -543,7 +536,6 @@ const OLDApplication = () => {
                   key: "error",
                   message: error?.response?.data?.Errors?.[0]?.message || error?.message || "ERR_UNKNOWN",
                 });
-                setTimeout(closeToastOfError, 5000);
               },
               onSuccess: (data) => {
                 // setAppDetails((prev) => ({ ...prev, sewerageConnection: data?.SewerageConnections?.[0] }));
@@ -601,6 +593,7 @@ const OLDApplication = () => {
         {showToast && (
           <Toast
             isDleteBtn={true}
+            duration={5000}
             error={showToast?.key === "error" ? true : false}
             warning={showToast?.warning}
             label={t(showToast?.message)}
