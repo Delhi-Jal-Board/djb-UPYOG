@@ -52,6 +52,7 @@ public class WsQueryBuilder {
 			+ " plumber.name as plumber_name, plumber.licenseno, roadcuttingInfo.id as roadcutting_id, roadcuttingInfo.roadtype as roadcutting_roadtype, roadcuttingInfo.roadcuttingarea as roadcutting_roadcuttingarea, roadcuttingInfo.roadcuttingarea as roadcutting_roadcuttingarea,"
 			+ " roadcuttingInfo.active as roadcutting_active, plumber.mobilenumber as plumber_mobileNumber, plumber.gender as plumber_gender, plumber.fatherorhusbandname, plumber.correspondenceaddress,"
 			+ " plumber.relationship, " + holderSelectValues
+			+ ", dv.kno as dv_kno, dv.fullname as dv_fullname, dv.fulladdress as dv_fulladdress, dv.dueamount as dv_dueamount, dv.totalamount as dv_totalamount"
 			+ " FROM {schema}.eg_ws_connection conn "
 			+  INNER_JOIN_STRING 
 			+ " {schema}.eg_ws_service wc ON wc.connection_id = conn.id"
@@ -62,7 +63,9 @@ public class WsQueryBuilder {
 		    +  LEFT_OUTER_JOIN_STRING
 		    + "{schema}.eg_ws_connectionholder connectionholder ON connectionholder.connectionid = conn.id"
 			+  LEFT_OUTER_JOIN_STRING
-			+ "{schema}.eg_ws_roadcuttinginfo roadcuttingInfo ON roadcuttingInfo.wsid = conn.id AND roadcuttingInfo.active != 'INACTIVE'" ;
+			+ "{schema}.eg_ws_roadcuttinginfo roadcuttingInfo ON roadcuttingInfo.wsid = conn.id AND roadcuttingInfo.active != 'INACTIVE'"
+			+  LEFT_OUTER_JOIN_STRING
+			+ "{schema}.eg_ws_due_verification dv ON dv.applicationno = conn.applicationno" ;
 
 	private static final String SEARCH_COUNT_QUERY =  " FROM {schema}.eg_ws_connection conn "
 			+  INNER_JOIN_STRING 
