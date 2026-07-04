@@ -53,7 +53,7 @@ public class TransactionValidator {
      */
     public void validateCreateTxn(TransactionRequest transactionRequest) {
         Map<String, String> errorMap = new HashMap<>();
-        isUserDetailPresent(transactionRequest, errorMap);
+//        isUserDetailPresent(transactionRequest, errorMap);
         isGatewayActive(transactionRequest.getTransaction(), errorMap);
         validateIfTxnExistsForBill(transactionRequest, errorMap);
         validateTxnAmount(transactionRequest, errorMap);
@@ -151,13 +151,13 @@ public class TransactionValidator {
 
     }
 
-    private void isUserDetailPresent(TransactionRequest transactionRequest, Map<String, String> errorMap) {
-        User user = transactionRequest.getRequestInfo().getUserInfo();
-        if (isNull(user) || isNull(user.getUuid()) || isEmpty(user.getName()) || isNull(user.getUserName()) ||
-                isNull(user.getTenantId()) || isNull(user.getMobileNumber()))
-            errorMap.put("INVALID_USER_DETAILS", "User UUID, Name, Username, Mobile Number and Tenant Id are " +
-                    "mandatory");
-    }
+//    private void isUserDetailPresent(TransactionRequest transactionRequest, Map<String, String> errorMap) {
+//        User user = transactionRequest.getRequestInfo().getUserInfo();
+//        if (isNull(user) || isNull(user.getUuid()) || isEmpty(user.getName()) || isNull(user.getUserName()) ||
+//                isNull(user.getTenantId()) || isNull(user.getMobileNumber()))
+//            errorMap.put("INVALID_USER_DETAILS", "User UUID, Name, Username, Mobile Number and Tenant Id are " +
+//                    "mandatory");
+//    }
 
     private void validateTxnAmount(TransactionRequest transactionRequest, Map<String, String> errorMap){
         Transaction txn = transactionRequest.getTransaction();

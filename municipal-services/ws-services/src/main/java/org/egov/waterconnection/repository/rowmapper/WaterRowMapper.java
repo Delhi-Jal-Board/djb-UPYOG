@@ -127,6 +127,7 @@ public class WaterRowMapper implements ResultSetExtractor<List<WaterConnection>>
 		addPlumberInfoToWaterConnection(rs, waterConnection);
 		addHoldersDeatilsToWaterConnection(rs, waterConnection);
 		addRoadCuttingInfotToWaterConnection(rs, waterConnection);
+		addDueVerificationToWaterConnection(rs, waterConnection);
 	}
 
 	private void addDocumentToWaterConnection(ResultSet rs, WaterConnection waterConnection) throws SQLException {
@@ -209,5 +210,32 @@ public class WaterRowMapper implements ResultSetExtractor<List<WaterConnection>>
 					.build();
 			waterConnection.addConnectionHolderInfo(connectionHolderInfo);
 		}
+	}
+
+	private void addDueVerificationToWaterConnection(ResultSet rs, WaterConnection waterConnection) throws SQLException {
+		String kno = rs.getString("dv_kno");
+		if (StringUtils.isEmpty(kno))
+			return;
+
+		// Duplicate check — a single connection row may appear multiple times due to JOINs
+		List<DueVerification> existing = waterConnection.getDueVerification();
+		if (!CollectionUtils.isEmpty(existing)) {
+			for (DueVerification dv : existing) {
+				if (kno.equals(dv.getKno()))
+					return;
+			}
+		}
+
+		DueVerification dv = DueVerification.builder()
+				.kno(kno)
+				.fullName(rs.getString("dv_fullname"))
+				.fullAddress(rs.getString("dv_fulladdress"))
+				.dueAmount(rs.getString("dv_dueamount"))
+				.totalAmount(rs.getString("dv_totalamount"))
+				.build();
+
+		if (waterConnection.getDueVerification() == null)
+			waterConnection.setDueVerification(new ArrayList<>());
+		waterConnection.getDueVerification().add(dv);
 	}
 }
