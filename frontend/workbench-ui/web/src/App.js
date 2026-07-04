@@ -34,9 +34,9 @@ const initDigitUI = () => {
     PGR: {},
     commonUiConfig: UICustomizations,
   };
-  initPGRComponents();
+  // initPGRComponents();
   initEngagementComponents();
-  initHRMSComponents();
+  // initHRMSComponents();
   initUtilitiesComponents();
   initWorkbenchComponents();
 };

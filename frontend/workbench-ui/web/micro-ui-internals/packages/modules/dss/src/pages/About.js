@@ -1,4 +1,4 @@
-import { Card, Loader, Header, CardSubHeader } from "@egovernments/digit-ui-react-components";
+import { Card, Loader, Header, CardSubHeader } from "@djb25/digit-ui-react-components";
 import React, { Fragment } from "react";
 import { useTranslation } from "react-i18next";
 const About = () => {

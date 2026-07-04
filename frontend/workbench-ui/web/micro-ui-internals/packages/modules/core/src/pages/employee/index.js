@@ -10,7 +10,7 @@ import LanguageSelection from "./LanguageSelection";
 import EmployeeLogin from "./Login";
 import UserProfile from "../citizen/Home/UserProfile";
 import ErrorComponent from "../../components/ErrorComponent";
-import { PrivateRoute } from "@egovernments/digit-ui-react-components";
+import { PrivateRoute } from "@djb25/digit-ui-react-components";
 
 const userScreensExempted = ["user/profile", "user/error"];
 
@@ -58,42 +58,52 @@ const EmployeeApp = ({
               showLanguageChange={!showLanguageChange}
             />
           )}
-          <div
+          {/* <div
             className={isUserProfile ? "grounded-container" : "loginContainer"}
             style={
               isUserProfile
                 ? { padding: 0, paddingTop: "80px", marginLeft: mobileView ? "" : "64px" }
                 : { "--banner-url": `url(${stateInfo?.bannerUrl})`, padding: "0px" }
             }
+          > */}
+          <div
+            className={isUserProfile ? "main" : "loginContainer"}
+            style={isUserProfile ? { padding: 0, paddingTop: "72px" } : { "--banner-url": `url(${stateInfo?.bannerUrl})`, padding: "0px" }}
           >
-            <Switch>
-              <Route path={`${path}/user/login`}>
-                <EmployeeLogin />
-              </Route>
-              <Route path={`${path}/user/forgot-password`}>
-                <ForgotPassword />
-              </Route>
-              <Route path={`${path}/user/change-password`}>
-                <ChangePassword />
-              </Route>
-              <PrivateRoute path={`${path}/user/profile`}>
-                <UserProfile stateCode={stateCode} userType={"employee"} cityDetails={cityDetails} />
-              </PrivateRoute>
-              <Route path={`${path}/user/error`}>
-                <ErrorComponent
-                  initData={initData}
-                  goToHome={() => {
-                    history.push(`/${window?.contextPath}/${Digit?.UserService?.getType?.()}`);
-                  }}
-                />
-              </Route>
-              <Route path={`${path}/user/language-selection`}>
-                <LanguageSelection />
-              </Route>
-              <Route>
-                <Redirect to={`${path}/user/login`} />
-              </Route>
-            </Switch>
+            <div className="employee-app-wrapper">
+              <div className="ground-container employee-app-container form-container" style={{ width: "100%" }}>
+                <div className="login">
+                  <Switch>
+                    <Route path={`${path}/user/login`}>
+                      <EmployeeLogin />
+                    </Route>
+                    <Route path={`${path}/user/forgot-password`}>
+                      <ForgotPassword />
+                    </Route>
+                    <Route path={`${path}/user/change-password`}>
+                      <ChangePassword />
+                    </Route>
+                    <PrivateRoute path={`${path}/user/profile`}>
+                      <UserProfile stateCode={stateCode} userType={"employee"} cityDetails={cityDetails} />
+                    </PrivateRoute>
+                    <Route path={`${path}/user/error`}>
+                      <ErrorComponent
+                        initData={initData}
+                        goToHome={() => {
+                          history.push(`/${window?.contextPath}/${Digit?.UserService?.getType?.()}`);
+                        }}
+                      />
+                    </Route>
+                    <Route path={`${path}/user/language-selection`}>
+                      <LanguageSelection />
+                    </Route>
+                    <Route>
+                      <Redirect to={`${path}/user/login`} />
+                    </Route>
+                  </Switch>
+                </div>
+              </div>
+            </div>
           </div>
         </Route>
         <Route>
@@ -114,7 +124,7 @@ const EmployeeApp = ({
                 <AppModules stateCode={stateCode} userType="employee" modules={modules} appTenants={appTenants} />
               </ErrorBoundary>
             </div>
-            <div className="employee-home-footer">
+            {/* <div className="employee-home-footer">
               <img
                 alt="Powered by DIGIT"
                 src={window?.globalConfigs?.getConfig?.("DIGIT_FOOTER")}
@@ -123,6 +133,46 @@ const EmployeeApp = ({
                   window.open(window?.globalConfigs?.getConfig?.("DIGIT_HOME_URL"), "_blank").focus();
                 }}
               />
+            </div> */}
+            <div
+              style={{
+                width: "100%",
+                height: "30px",
+                position: "fixed",
+                bottom: 0,
+                backgroundColor: "#FFF",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                zIndex: "100000",
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "center", color: "black", opacity: "0.5" }}>
+                <span
+                  className="upyog-copyright-footer"
+                  style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile() ? "12px" : "14px", fontWeight: "600" }}
+                  onClick={() => {
+                    window.open("https://delhijalboard.delhi.gov.in/", "_blank").focus();
+                  }}
+                >
+                  Copyright © 2026 Delhi Jal Board
+                </span>
+                <span
+                  className="upyog-copyright-footer"
+                  style={{ margin: "0 10px", fontSize: window.Digit.Utils.browser.isMobile() ? "12px" : "14px" }}
+                >
+                  |
+                </span>
+                <span
+                  className="upyog-copyright-footer"
+                  style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile() ? "12px" : "14px", fontWeight: "600" }}
+                  onClick={() => {
+                    window.open("https://nitcon.org/", "_blank").focus();
+                  }}
+                >
+                  Designed & Developed By NITCON Ltd
+                </span>
+              </div>
             </div>
           </div>
         </Route>

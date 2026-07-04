@@ -48,7 +48,7 @@ export const initKeycloak = async () => {
   _kc = new Keycloak({
     url: "https://dev-djberp.nitcon.in/keycloak",
     realm: "DL",
-    clientId: "workbench",
+    clientId: "local-workbench",
   });
 
   try {
@@ -102,7 +102,7 @@ export const triggerKeycloakLogin = () => {
     const ctx = window.contextPath || "workbench-ui";
     const kcBase = "https://dev-djberp.nitcon.in/keycloak";
     const realm = "DL";
-    const clientId = "workbench";
+    const clientId = "local-workbench";
     const redirectUri = encodeURIComponent(window.location.origin + `/${ctx}/employee/user/login`);
     window.location.href = `${kcBase}/realms/${realm}/protocol/openid-connect/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=openid`;
     return;
