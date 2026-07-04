@@ -87,6 +87,37 @@ public class SMSProperties {
     @Value("${sms.enabled:false}")
     private boolean smsEnabled;
 
+    @Value("${mishtel.sms.url}")
+    private String mishtelUrl;
+
+    @Value("${mishtel.sms.api.key}")
+    private String mishtelApiKey;
+
+    @Value("${mishtel.sms.sender.id}")
+    private String mishtelSenderId;
+
+    @Value("${mishtel.sms.channel:Trans}")
+    private String mishtelChannel;
+
+    @Value("${mishtel.sms.dcs:0}")
+    private String mishtelDcs;
+
+    @Value("${mishtel.sms.flash.sms:0}")
+    private String mishtelFlashSms;
+
+    @Value("${mishtel.sms.route:21}")
+    private String mishtelRoute;
+
+    @Value("${mishtel.sms.dlt.template.id}")
+    private String mishtelTemplateId;
+
+    @Value("${mishtel.sms.enabled:true}")
+    private boolean mishtelSmsEnabled;
+
+    @Value("${mishtel.sms.debug:false}")
+    private boolean mishtelDebug;
+
+
     @Setter(AccessLevel.PROTECTED) private List<Pattern> whitelistPatterns;
     @Setter(AccessLevel.PROTECTED) private List<Pattern> blacklistPatterns;
 
