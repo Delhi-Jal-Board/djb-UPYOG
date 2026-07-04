@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.security.KeyManagementException;
@@ -13,6 +14,8 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
 import javax.net.ssl.HttpsURLConnection;
@@ -106,67 +109,112 @@ public class NICSMSServiceImpl extends BaseSMSService {
 	}
 
 	protected void submitToExternalSmsService(Sms sms) {
+
 		log.info("submitToExternalSmsService() start");
-		try {
 
-			String final_data = "";
-			final_data += "username=" + smsProperties.getUsername();
-			final_data += "&pin=" + smsProperties.getPassword();
+			HttpURLConnection conn = null;
 
-			String smsBody = sms.getMessage();
+			try {
+				if (sms == null || !sms.isValid()) {
+					log.warn("Invalid SMS request. SMS not sent.");
+					return;
+				}
 
-			if (smsBody.split("#").length > 1) {
-				String templateId = smsBody.split("#")[1];
+//				String smsBody = sms.getMessage();
+//				System.out.println(smsBody);
+//				//System.out.println();
+//
+//				if (smsBody.contains("#")) {
+//					String[] parts = smsBody.split("#", 2);
+//					smsBody = parts[0];
+//					sms.setTemplateId(parts[1]);
+//				}
 
-				sms.setTemplateId(templateId);
-				smsBody = smsBody.split("#")[0];
+				String smsMessage = sms.getMessage();
+				//String smsBody1 = "Dear Citizen, Your OTP to complete your mSeva Registration is 123456.";
 
-			} else if (StringUtils.isEmpty(sms.getTemplateId())) {
-				log.info("No template Id, Message Not sent" + smsBody);
-				return;
-			}
+				Pattern pattern = Pattern.compile("\\b\\d{6}\\b");
+				Matcher matcher = pattern.matcher(smsMessage);
+				String otp="";
+				if (matcher.find()) {
+					otp = matcher.group();
+				}
+				String smsBody = "Dear User,\n\n"
+						+ "Your OTP for login to Delhi Jal Board portal is "
+						+ otp
+						+ ". OTP is valid for 10 minutes. Do not share this OTP with anyone.\n\n"
+						+ "Delhi Jal Board";
 
-			String message = "" + smsBody;
-			message = URLEncoder.encode(message, "UTF-8");
 
-			final_data += "&message=" + message;
-			final_data += "&mnumber=91" + sms.getMobileNumber();
-			final_data += "&signature=" + smsProperties.getSenderid();
-			final_data += "&dlt_entity_id=" + smsProperties.getSmsEntityId();
-			if (null == sms.getTemplateId()) {
-				final_data += "&dlt_template_id=" + smsProperties.getSmsDefaultTmplid();
-			} else
-				final_data += "&dlt_template_id=" + sms.getTemplateId();
+				if (StringUtils.isEmpty(sms.getTemplateId())) {
+					sms.setTemplateId(smsProperties.getMishtelTemplateId());
+				}
 
-			if (smsProperties.isSmsEnabled()) {
-				HttpsURLConnection conn = (HttpsURLConnection) new URL(smsProperties.getUrl() + "?" + final_data)
-						.openConnection();
-				conn.setSSLSocketFactory(sslContext.getSocketFactory());
-				conn.setDoOutput(true);
-                conn.setRequestMethod("POST");
-                conn.setRequestProperty("Content-Type", "application/json");
-                conn.connect();
-				final BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-				final StringBuffer stringBuffer = new StringBuffer();
+				String mobileNumber = sms.getMobileNumber();
+
+				if (!mobileNumber.startsWith("91")) {
+					mobileNumber = "91" + mobileNumber;
+				}
+
+				String finalData = "";
+				finalData += "apikey=" + URLEncoder.encode(smsProperties.getMishtelApiKey(), "UTF-8");
+				finalData += "&senderid=" + URLEncoder.encode(smsProperties.getMishtelSenderId(), "UTF-8");
+				finalData += "&channel=" + URLEncoder.encode(smsProperties.getMishtelChannel(), "UTF-8");
+				finalData += "&DCS=" + URLEncoder.encode(smsProperties.getMishtelDcs(), "UTF-8");
+				finalData += "&flashsms=" + URLEncoder.encode(smsProperties.getMishtelFlashSms(), "UTF-8");
+				finalData += "&number=" + URLEncoder.encode(mobileNumber, "UTF-8");
+				finalData += "&text=" + URLEncoder.encode(smsBody, "UTF-8");
+				finalData += "&route=" + URLEncoder.encode(smsProperties.getMishtelRoute(), "UTF-8");
+				finalData += "&DLTTemplateId=" + URLEncoder.encode(sms.getTemplateId(), "UTF-8");
+
+				String finalUrl = smsProperties.getMishtelUrl() + "?" + finalData;
+
+				if (!smsProperties.isMishtelSmsEnabled()) {
+					log.info("Mishtel SMS disabled. SMS Data: {}", finalData);
+					return;
+				}
+
+				conn = (HttpURLConnection) new URL(finalUrl).openConnection();
+				conn.setRequestMethod("GET");
+				conn.setConnectTimeout(10000);
+				conn.setReadTimeout(10000);
+
+				int responseCode = conn.getResponseCode();
+
+				BufferedReader rd = new BufferedReader(
+						new InputStreamReader(
+								responseCode >= 200 && responseCode < 300
+										? conn.getInputStream()
+										: conn.getErrorStream()
+						)
+				);
+
+				StringBuilder response = new StringBuilder();
 				String line;
+
 				while ((line = rd.readLine()) != null) {
-					stringBuffer.append(line);
+					response.append(line);
 				}
-				log.info("conn: " + conn.toString());
-				if (smsProperties.isDebugMsggateway()) {
-					log.info("sms api url : " + smsProperties.getUrl());
-					log.info("sms response: " + stringBuffer.toString());
-					log.info("sms data: " + final_data);
-				}
+
 				rd.close();
-				conn.disconnect();
-			} else {
-				log.info("SMS Data: " + final_data);
+
+				log.info("Mishtel SMS API responseCode: {}", responseCode);
+				log.info("Mishtel SMS API response: {}", response);
+
+				if (smsProperties.isMishtelDebug()) {
+					log.info("Mishtel sms api url: {}", smsProperties.getMishtelUrl());
+					log.info("Mishtel sms data: {}", finalData);
+					log.info("Mishtel sms response: {}", response);
+				}
+
+			} catch (Exception e) {
+				log.error("Error occurred while sending SMS to: {}", sms != null ? sms.getMobileNumber() : null, e);
+			} finally {
+				if (conn != null) {
+					conn.disconnect();
+				}
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			log.error("Error occurred while sending SMS to : " + sms.getMobileNumber(), e);
-		}
+
 	}
 
 	private boolean textIsInEnglish(String text) {
