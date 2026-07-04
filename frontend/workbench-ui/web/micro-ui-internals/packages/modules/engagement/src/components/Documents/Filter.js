@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { CloseSvg, Loader, SubmitBar, Dropdown, RefreshIcon } from "@egovernments/digit-ui-react-components";
+import { CloseSvg, Loader, SubmitBar, Dropdown, RefreshIcon } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 
 

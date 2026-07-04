@@ -1,4 +1,4 @@
-import { Loader, Modal, FormComposer } from "@egovernments/digit-ui-react-components";
+import { Loader, Modal, FormComposer } from "@djb25/digit-ui-react-components";
 import React, { useState, useEffect } from "react";
 import { configWSApproverApplication, configWSDisConnectApplication } from "../config";
 import * as predefinedConfig from "../config";

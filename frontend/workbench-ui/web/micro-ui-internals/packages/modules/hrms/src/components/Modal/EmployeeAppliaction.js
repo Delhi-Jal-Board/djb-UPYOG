@@ -1,5 +1,5 @@
 import React from "react";
-import { UploadFile, Dropdown } from "@egovernments/digit-ui-react-components";
+import { UploadFile, Dropdown } from "@djb25/digit-ui-react-components"
 import { convertEpochToDate } from "../Utils/index";
 
 export const configEmployeeApplication = ({ t, action, selectFile, uploadedFile, setUploadedFile, selectedReason, Reasons, selectReason }) => {

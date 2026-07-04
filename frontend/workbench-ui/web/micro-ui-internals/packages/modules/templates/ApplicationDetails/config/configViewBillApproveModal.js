@@ -1,5 +1,5 @@
 import React from 'react'
-import { LabelFieldPair,CardLabel} from '@egovernments/digit-ui-react-components';
+import { LabelFieldPair,CardLabel} from '@djb25/digit-ui-react-components';
 
 const configViewBillApprovalModal = ({
     t,

@@ -1,5 +1,6 @@
-import { Dropdown } from "@egovernments/digit-ui-react-components";
-import React, { useEffect, useState } from "react";
+import { Dropdown, ArrowDown } from "@djb25/digit-ui-react-components";
+import React, { useState, useEffect } from "react";
+import { CustomButton, Menu } from "@djb25/digit-ui-react-components";
 import { useHistory } from "react-router-dom";
 
 const stringReplaceAll = (str = "", searcher = "", replaceWith = "") => {
@@ -43,28 +44,32 @@ const ChangeCity = (prop) => {
     let unique = teantsArray.filter((item, i, ar) => ar.indexOf(item) === i);
     unique?.forEach((uniCode) => {
       filteredArray.push({
-        label: `TENANT_TENANTS_${stringReplaceAll(uniCode, ".", "_")?.toUpperCase()}`,
+        label: prop?.t(`TENANT_TENANTS_${stringReplaceAll(uniCode, ".", "_")?.toUpperCase()}`),
         value: uniCode,
       });
     });
     selectedCities = filteredArray?.filter((select) => select.value == Digit.SessionStorage.get("Employee.tenantId"));
     setSelectCityData(filteredArray);
+    if (selectedCities.length > 0 && !dropDownData) {
+      setDropDownData(selectedCities[0]);
+    }
   }, [dropDownData]);
 
   // if (isDropdown) {
   return (
-    <div style={prop?.mobileView ? { color: "#767676" } : {}}>
+    <div className="city-selector-container">
       <Dropdown
-        t={prop?.t}
         option={selectCityData}
-        selected={selectCityData.find((cityValue) => cityValue.value === dropDownData?.value)}
+        selected={selectCityData.find((cityValue) => cityValue.value === (dropDownData?.value || Digit.SessionStorage.get("Employee.tenantId")))}
         optionKey={"label"}
         select={handleChangeCity}
         freeze={true}
+        showArrow={false}
         customSelector={
-          <label className="cp">
-            {prop?.t(`TENANT_TENANTS_${stringReplaceAll(Digit.SessionStorage.get("Employee.tenantId"), ".", "_")?.toUpperCase()}`)}
-          </label>
+          <div className="topbar-item-wrapper">
+            <span className="city-label">{prop?.t(`TENANT_TENANTS_DL_DJB`)}</span>
+            <ArrowDown className="chevron-icon" />
+          </div>
         }
       />
     </div>
