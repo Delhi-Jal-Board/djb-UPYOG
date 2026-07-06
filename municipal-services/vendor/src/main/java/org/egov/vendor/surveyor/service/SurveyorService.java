@@ -1,6 +1,7 @@
 package org.egov.vendor.surveyor.service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -82,6 +83,72 @@ public class SurveyorService {
         if (surveyorRequest.getSurveyor().getTenantId().split("\\.").length == 1) {
             throw new CustomException("INVALID_TENANT",
                     "Surveyor cannot be updated at State level");
+        }
+
+        Surveyor surveyor = surveyorRequest.getSurveyor();
+
+        // ── Supervisor remapping — ekyc_assignment sync ───────────────
+        // When a vendor remaps a surveyor to a different supervisor,
+        // existing ACTIVE assignments in ekyc_assignment still carry the
+        // old supervisor_id — causing wrong KNO counts in _progress and
+        // hierarchy reports.
+        //
+        // We detect a supervisor change by fetching the current DB state
+        // BEFORE persisting the update, then syncing ekyc_assignment if
+        // supervisorId has changed.
+        //
+        // Security: surveyorId and newSupervisorId come from the validated
+        // request, ownerId from DB — never directly from frontend. The sync
+        // only touches ACTIVE assignments for this specific surveyor's
+        // ownerUUID — no cross-surveyor/cross-vendor side effects possible.
+        //
+        // Failure isolation: if sync fails (e.g. ekyc_assignment table
+        // unavailable), we log a warning but DO NOT block the surveyor
+        // update — eg_surveyor is the source of truth; the sync is a
+        // derived operation that self-heals on next assignment activity.
+        if (StringUtils.hasLength(surveyor.getId())
+                && StringUtils.hasLength(surveyor.getSupervisorId())) {
+
+            try {
+                // Fetch current surveyor state from DB to detect supervisor change
+                SurveyorSearchCriteria currentCriteria = SurveyorSearchCriteria.builder()
+                        .ids(java.util.Arrays.asList(surveyor.getId()))
+                        .tenantId(surveyor.getTenantId())
+                        .limit(1)
+                        .offset(0)
+                        .build();
+
+                SurveyorResponse currentResponse = surveyorRepository.getSurveyorData(currentCriteria);
+
+                if (currentResponse != null
+                        && !CollectionUtils.isEmpty(currentResponse.getSurveyors())) {
+
+                    Surveyor current = currentResponse.getSurveyors().get(0);
+                    String oldSupervisorId = current.getSupervisorId();
+                    String newSupervisorId = surveyor.getSupervisorId();
+
+                    // Only sync if supervisor has actually changed
+                    if (StringUtils.hasLength(oldSupervisorId)
+                            && !oldSupervisorId.equals(newSupervisorId)
+                            && StringUtils.hasLength(current.getOwnerId())) {
+
+                        log.info("Surveyor {} supervisorId changed: {} → {}. " +
+                                        "Syncing ekyc_assignment...",
+                                surveyor.getId(), oldSupervisorId, newSupervisorId);
+
+                        int synced = surveyorRepository.syncEkycAssignmentSupervisor(
+                                current.getOwnerId(), newSupervisorId);
+
+                        log.info("ekyc_assignment sync complete: {} rows updated " +
+                                "for surveyorOwnerId={}", synced, current.getOwnerId());
+                    }
+                }
+            } catch (Exception e) {
+                // Soft failure — surveyor update must not be blocked
+                log.warn("ekyc_assignment supervisor sync failed for surveyorId={}. " +
+                        "Surveyor update will proceed. Manual DB fix may be needed. " +
+                        "Error: {}", surveyor.getId(), e.getMessage());
+            }
         }
 
         userService.manageSurveyors(surveyorRequest, false);
