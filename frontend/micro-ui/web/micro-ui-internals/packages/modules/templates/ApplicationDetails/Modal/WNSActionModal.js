@@ -231,6 +231,18 @@ const ActionModal = ({
         applicationData.additionalDetails.adhocRebateComment = parsedAdhocRebateData?.value?.adhocRebateComment || "";
       if (parsedAdhocRebateData?.value?.adhocRebateReason)
         applicationData.additionalDetails.adhocRebateReason = parsedAdhocRebateData?.value?.adhocRebateReason || "";
+      
+
+
+      const inspectionInformationData = sessionStorage.getItem("Digit.INSPECTION_INFORMATION_DATA");
+      if (inspectionInformationData) {
+        try {
+          applicationData.inspectionInformation = JSON.parse(inspectionInformationData);
+        } catch(e) {
+          console.error("Error parsing inspection information data", e);
+        }
+      }
+
       applicationData?.serviceType == "WATER"
         ? submitAction({ WaterConnection: applicationData, disconnectRequest: false, reconnectRequest: false })
         : submitAction({ SewerageConnection: applicationData, disconnectRequest: false, reconnectRequest: false });

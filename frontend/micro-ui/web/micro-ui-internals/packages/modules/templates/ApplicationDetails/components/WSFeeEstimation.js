@@ -69,11 +69,17 @@ const WSFeeEstimation = ({ wsAdditionalDetails, workflowDetails }) => {
   useEffect(() => {
     const data = { ...wsAdditionalDetails?.additionalDetails?.appDetails?.additionalDetails };
     if (sessionFormData?.billDetails?.length > 0) {
-      const values = [
-        { title: "WS_APPLICATION_FEE_HEADER", value: <span>&#8377;{sessionFormData?.billDetails?.[0]?.fee}</span> },
-        { title: "WS_SERVICE_FEE_HEADER", value: <span>&#8377;{sessionFormData?.billDetails?.[0]?.charge}</span> },
-        { title: "WS_TAX_HEADER", value: <span>&#8377;{sessionFormData?.billDetails?.[0]?.taxAmount}</span> },
-      ];
+      const billAccountDetails = sessionFormData?.billDetails?.[0]?.billAccountDetails || [];
+      const values = billAccountDetails.length > 0 
+        ? billAccountDetails.map((bill) => ({
+            title: bill?.taxHeadCode,
+            value: <span>&#8377;{Number(bill?.amount).toFixed(2)}</span>
+          }))
+        : [
+            { title: "WS_APPLICATION_FEE_HEADER", value: <span>&#8377;{sessionFormData?.billDetails?.[0]?.fee}</span> },
+            { title: "WS_SERVICE_FEE_HEADER", value: <span>&#8377;{sessionFormData?.billDetails?.[0]?.charge}</span> },
+            { title: "WS_TAX_HEADER", value: <span>&#8377;{sessionFormData?.billDetails?.[0]?.taxAmount}</span> },
+          ];
       setValues(values);
       setBillDetails(sessionFormData?.billDetails?.[0]);
     } else {
@@ -150,11 +156,17 @@ const WSFeeEstimation = ({ wsAdditionalDetails, workflowDetails }) => {
             }
 
             result.Calculation[0].billSlabData = _.groupBy(result?.Calculation?.[0]?.taxHeadEstimates, "category");
-            const values = [
-              { title: "WS_APPLICATION_FEE_HEADER", value: result.Calculation?.[0]?.fee },
-              { title: "WS_SERVICE_FEE_HEADER", value: result.Calculation?.[0]?.charge },
-              { title: "WS_TAX_HEADER", value: result.Calculation?.[0]?.taxAmount },
-            ];
+            const taxHeadEstimates = result?.Calculation?.[0]?.taxHeadEstimates || [];
+            const values = taxHeadEstimates.length > 0 
+              ? taxHeadEstimates.map((data) => ({
+                  title: data?.taxHeadCode,
+                  value: <span>&#8377;{Number(data?.estimateAmount).toFixed(2)}</span>
+                }))
+              : [
+                  { title: "WS_APPLICATION_FEE_HEADER", value: result.Calculation?.[0]?.fee },
+                  { title: "WS_SERVICE_FEE_HEADER", value: result.Calculation?.[0]?.charge },
+                  { title: "WS_TAX_HEADER", value: result.Calculation?.[0]?.taxAmount },
+                ];
             setSessionBillFormData(cloneDeep(result.Calculation[0]));
             setBillDetails(result?.Calculation?.[0]);
             setValues(values);
