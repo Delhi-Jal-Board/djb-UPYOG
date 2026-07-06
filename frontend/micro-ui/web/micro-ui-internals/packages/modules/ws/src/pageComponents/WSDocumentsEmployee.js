@@ -11,8 +11,8 @@ const WSDocumentsEmployee = ({ t, config, onSelect, userType, formData, setError
   const wsDocsData = window.location.href.includes("modify")
     ? "ModifyConnectionDocuments"
     : window.location.href.includes("disconnection")
-    ? "DisconnectionDocuments"
-    : "NewWSDocuments";
+      ? "DisconnectionDocuments"
+      : "NewWSDocuments";
   let action = "create";
 
   const { pathname } = useLocation();
@@ -148,14 +148,14 @@ function SelectDocument({
     return filteredDocument
       ? { ...filteredDocument, code: filteredDocument?.documentType, i18nKey: filteredDocument?.documentType?.replaceAll(".", "_") }
       : doc?.hasDropdown
-      ? doc?.dropdownData?.length === 1
-        ? doc?.dropdownData[0]
-        : {}
-      : doc;
+        ? doc?.dropdownData?.length === 1
+          ? doc?.dropdownData[0]
+          : {}
+        : doc;
   });
   const [file, setFile] = useState(null);
   const [uploadedFile, setUploadedFile] = useState(() => filteredDocument?.fileStoreId || null);
-  const [documentUid, setDocumentUid] = useState(() => filteredDocument?.documentUid || "");
+  const [documentUid, setDocumentUid] = useState(() => filteredDocument?.documentUid || filteredDocument?.documentNumber || "");
   const [showCamera, setShowCamera] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isCameraFile, setIsCameraFile] = useState(false);
@@ -202,13 +202,13 @@ function SelectDocument({
       }
       setSelectedDocument(
         match ? { ...filteredDocument, ...match } :
-        filteredDocument
-          ? { ...filteredDocument, code: filteredDocument?.documentType, i18nKey: filteredDocument?.documentType?.replaceAll(".", "_") }
-          : doc?.hasDropdown
-          ? doc?.dropdownData?.length === 1
-            ? doc?.dropdownData[0]
-            : {}
-          : doc
+          filteredDocument
+            ? { ...filteredDocument, code: filteredDocument?.documentType, i18nKey: filteredDocument?.documentType?.replaceAll(".", "_") }
+            : doc?.hasDropdown
+              ? doc?.dropdownData?.length === 1
+                ? doc?.dropdownData[0]
+                : {}
+              : doc
       );
     }
   }, []);
@@ -316,132 +316,132 @@ function SelectDocument({
 
   return (
     <div style={{ gridColumn: "span 2", display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "20px", width: "100%", marginBottom: "20px" }}>
-        {doc?.hasDropdown ? (
-          <LabelFieldPair>
-            <CardLabel>{doc?.required ? `${t(doc?.i18nKey)}*` : `${t(doc?.i18nKey)}`}</CardLabel>
-            <Dropdown
-              id={`doc-${doc?.code}`}
-              key={`doc-${doc?.code}`}
-              className="form-field"
-              selected={selectedDocument ? selectedDocument : filteredDocument ? filteredDocument : selectedDocument}
-              option={dropDownData.map((e) => ({ ...e, i18nKey: e.code?.replaceAll(".", "_") }))}
-              select={handleSelectDocument}
-              optionKey="i18nKey"
-              t={t}
-            />
-          </LabelFieldPair>
-        ) : null}
-
-        {doc?.code !== "OWNER.APPLICANTPHOTO" && (
-          <LabelFieldPair>
-            <CardLabel>{t(`${doc?.i18nKey?.replaceAll(".", "_")}_DOCUMENT_NO`)}</CardLabel>
-            <div className="field">
-              <TextInput
-                type="text"
-                value={documentUid}
-                onChange={(e) => setDocumentUid(e.target.value)}
-                placeholder={t("WS_IDENTITY_NO_PLACEHOLDER")}
-              />
-            </div>
-          </LabelFieldPair>
-        )}
-
+      {doc?.hasDropdown ? (
         <LabelFieldPair>
-          <CardLabel>
-            {doc?.required
-              ? `${t(`${doc?.i18nKey?.replaceAll(".", "_")}_UPLOAD_DOCUMENT`)}*`
-              : `${t(`${doc?.i18nKey?.replaceAll(".", "_")}_UPLOAD_DOCUMENT`)}`}
-          </CardLabel>
-          <div className="field" style={{ display: "flex", gap: "20px", alignItems: "center", width: "100%" }}>
-            <div style={{ flex: 1 }}>
-              <UploadFile
-                onUpload={selectfile}
-                onDelete={() => {
-                  setUploadedFile(null);
-                  setFile(null);
-                  setIsCameraFile(false);
-                }}
-                id={id}
-                message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
-                textStyles={{ width: "100%" }}
-                buttonType="button"
-                error={!uploadedFile}
-                accept={doc?.code === "OWNER.APPLICANTPHOTO" ? "image/jpeg, image/png, .jpg, .jpeg, .png" : "image/*, .pdf, .png, .jpeg, .jpg"}
-                uploadedFiles={
-                  uploadedFile && !file ? [[filteredDocument?.fileName || file?.name || t("CS_COMMON_DOCUMENT"), { fileStoreId: uploadedFile }]] : undefined
-                }
-                removeTargetedFile={() => {
-                  setUploadedFile(null);
-                  setFile(null);
-                  setIsCameraFile(false);
-                }}
-              />
-            </div>
-            {uploadedFile && (
-              <div onClick={viewDocument} style={{ cursor: "pointer" }}>
-                <ViewsIcon />
-              </div>
-            )}
-            {doc?.code === "OWNER.APPLICANTPHOTO" && (
-              <div style={{ flex: 1, display: "flex", flexDirection: "column", marginTop: "-20px" }}>
-                <CardLabel>{t("WS_CLICK_APPLICANT_PHOTO") || "Click Applicant Photo"}</CardLabel>
-                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                  <button
-                    type="button"
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: "8px",
-                      padding: "6px 16px",
-                      background: "#f0f0f0",
-                      border: "1px solid #ccc",
-                      borderRadius: "2px",
-                      cursor: isUploading ? "not-allowed" : "pointer",
-                      width: "fit-content",
-                      opacity: isUploading ? 0.5 : 1,
-                    }}
-                    onClick={() => !isUploading && setShowCamera(true)}
-                    disabled={isUploading}
-                  >
-                    <span>📸</span> {t("WS_CLICK_PHOTO") || "Click Photo"}
-                  </button>
-                  {isUploading && (
-                    <span style={{ color: "#00497e", fontWeight: "bold", fontSize: "14px" }}>{t("CS_COMMON_UPLOADING") || "Uploading..."}</span>
-                  )}
-                  {uploadedFile && !isUploading && <span style={{ color: "green", fontWeight: "bold", fontSize: "14px" }}>✔ Uploaded</span>}
-                </div>
-              </div>
-            )}
+          <CardLabel>{doc?.required ? `${t(doc?.i18nKey)}*` : `${t(doc?.i18nKey)}`}</CardLabel>
+          <Dropdown
+            id={`doc-${doc?.code}`}
+            key={`doc-${doc?.code}`}
+            className="form-field"
+            selected={selectedDocument ? selectedDocument : filteredDocument ? filteredDocument : selectedDocument}
+            option={dropDownData.map((e) => ({ ...e, i18nKey: e.code?.replaceAll(".", "_") }))}
+            select={handleSelectDocument}
+            optionKey="i18nKey"
+            t={t}
+          />
+        </LabelFieldPair>
+      ) : null}
+
+      {doc?.code !== "OWNER.APPLICANTPHOTO" && (
+        <LabelFieldPair>
+          <CardLabel>{t(`${doc?.i18nKey?.replaceAll(".", "_")}_DOCUMENT_NO`)}</CardLabel>
+          <div className="field">
+            <TextInput
+              type="text"
+              value={documentUid}
+              onChange={(e) => setDocumentUid(e.target.value)}
+              placeholder={t("WS_IDENTITY_NO_PLACEHOLDER")}
+            />
           </div>
         </LabelFieldPair>
-        {showCamera && <CameraCaptureModal onCapture={handleCapture} onClose={() => setShowCamera(false)} t={t} />}
-        {showDocModal && (
-          <Modal
-            open={showDocModal}
-            headerBarMain={t("WS_VIEW_DOCUMENT") || "View Document"}
-            headerBarEnd={
-              <div className="icon-bg-secondary" onClick={() => setShowDocModal(false)} style={{ cursor: "pointer", padding: "5px" }}>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FFFFFF" width="24" height="24">
-                  <path d="M0 0h24v24H0V0z" fill="none" />
-                  <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
-                </svg>
-              </div>
-            }
-            center
-            actionCancelOnSubmit={() => setShowDocModal(false)}
-            actionCancelLabel={t("CS_COMMON_CLOSE") || "Close"}
-            popupStyles={{ width: "80%", maxWidth: "800px" }}
-          >
-            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", padding: "20px", minHeight: "300px" }}>
-              {docFileType === "pdf" ? (
-                <iframe src={docFileUrl} title="Document Preview" width="100%" height="500px" style={{ border: "none" }} />
-              ) : (
-                <img src={docFileUrl} alt="Document Preview" style={{ maxWidth: "100%", maxHeight: "500px", objectFit: "contain", borderRadius: "4px" }} />
-              )}
+      )}
+
+      <LabelFieldPair>
+        <CardLabel>
+          {doc?.required
+            ? `${t(`${doc?.i18nKey?.replaceAll(".", "_")}_UPLOAD_DOCUMENT`)}*`
+            : `${t(`${doc?.i18nKey?.replaceAll(".", "_")}_UPLOAD_DOCUMENT`)}`}
+        </CardLabel>
+        <div className="field" style={{ display: "flex", gap: "20px", alignItems: "center", width: "100%" }}>
+          <div style={{ flex: 1 }}>
+            <UploadFile
+              onUpload={selectfile}
+              onDelete={() => {
+                setUploadedFile(null);
+                setFile(null);
+                setIsCameraFile(false);
+              }}
+              id={id}
+              message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
+              textStyles={{ width: "100%" }}
+              buttonType="button"
+              error={!uploadedFile}
+              accept={doc?.code === "OWNER.APPLICANTPHOTO" ? "image/jpeg, image/png, .jpg, .jpeg, .png" : "image/*, .pdf, .png, .jpeg, .jpg"}
+              uploadedFiles={
+                uploadedFile && !file ? [[filteredDocument?.fileName || file?.name || t("CS_COMMON_DOCUMENT"), { fileStoreId: uploadedFile }]] : undefined
+              }
+              removeTargetedFile={() => {
+                setUploadedFile(null);
+                setFile(null);
+                setIsCameraFile(false);
+              }}
+            />
+          </div>
+          {uploadedFile && (
+            <div onClick={viewDocument} style={{ cursor: "pointer" }}>
+              <ViewsIcon />
             </div>
-          </Modal>
-        )}
+          )}
+          {doc?.code === "OWNER.APPLICANTPHOTO" && (
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", marginTop: "-20px" }}>
+              <CardLabel>{t("WS_CLICK_APPLICANT_PHOTO") || "Click Applicant Photo"}</CardLabel>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <button
+                  type="button"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "8px",
+                    padding: "6px 16px",
+                    background: "#f0f0f0",
+                    border: "1px solid #ccc",
+                    borderRadius: "2px",
+                    cursor: isUploading ? "not-allowed" : "pointer",
+                    width: "fit-content",
+                    opacity: isUploading ? 0.5 : 1,
+                  }}
+                  onClick={() => !isUploading && setShowCamera(true)}
+                  disabled={isUploading}
+                >
+                  <span>📸</span> {t("WS_CLICK_PHOTO") || "Click Photo"}
+                </button>
+                {isUploading && (
+                  <span style={{ color: "#00497e", fontWeight: "bold", fontSize: "14px" }}>{t("CS_COMMON_UPLOADING") || "Uploading..."}</span>
+                )}
+                {uploadedFile && !isUploading && <span style={{ color: "green", fontWeight: "bold", fontSize: "14px" }}>✔ Uploaded</span>}
+              </div>
+            </div>
+          )}
+        </div>
+      </LabelFieldPair>
+      {showCamera && <CameraCaptureModal onCapture={handleCapture} onClose={() => setShowCamera(false)} t={t} />}
+      {showDocModal && (
+        <Modal
+          open={showDocModal}
+          headerBarMain={t("WS_VIEW_DOCUMENT") || "View Document"}
+          headerBarEnd={
+            <div className="icon-bg-secondary" onClick={() => setShowDocModal(false)} style={{ cursor: "pointer", padding: "5px" }}>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FFFFFF" width="24" height="24">
+                <path d="M0 0h24v24H0V0z" fill="none" />
+                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+              </svg>
+            </div>
+          }
+          center
+          actionCancelOnSubmit={() => setShowDocModal(false)}
+          actionCancelLabel={t("CS_COMMON_CLOSE") || "Close"}
+          popupStyles={{ width: "80%", maxWidth: "800px" }}
+        >
+          <div style={{ display: "flex", justifyContent: "center", alignItems: "center", padding: "20px", minHeight: "300px" }}>
+            {docFileType === "pdf" ? (
+              <iframe src={docFileUrl} title="Document Preview" width="100%" height="500px" style={{ border: "none" }} />
+            ) : (
+              <img src={docFileUrl} alt="Document Preview" style={{ maxWidth: "100%", maxHeight: "500px", objectFit: "contain", borderRadius: "4px" }} />
+            )}
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }

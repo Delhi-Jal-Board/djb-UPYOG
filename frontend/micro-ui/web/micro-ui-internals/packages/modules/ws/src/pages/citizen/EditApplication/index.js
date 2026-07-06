@@ -1,5 +1,5 @@
-import { Loader } from "@djb25/digit-ui-react-components";
-import React, { useEffect } from "react";
+import { Loader, VerticalTimeline, SubmitBar } from "@djb25/digit-ui-react-components";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "react-query";
 import { Redirect, Route, Switch, useHistory, useLocation, useParams, useRouteMatch } from "react-router-dom";
@@ -15,11 +15,11 @@ const getPath = (path, params) => {
 };
 
 const getEditDetails = (waterResult, sewerageresult, t) => {
-    if (waterResult) {
+  if (waterResult) {
     waterResult.ConnectionHolderDetails = waterResult?.connectionHolders
       ? [
-          {
-            ...waterResult?.connectionHolders?.[0],
+        {
+          ...waterResult?.connectionHolders?.[0],
           address: waterResult?.connectionHolders?.[0]?.correspondenceAddress,
           documentId: "",
           documentType: "",
@@ -30,24 +30,25 @@ const getEditDetails = (waterResult, sewerageresult, t) => {
           guardian: waterResult?.connectionHolders?.[0]?.fatherOrHusbandName,
           isOwnerSame: waterResult?.connectionHolders?.length > 0 ? false : true,
           mobileNumber: waterResult?.connectionHolders?.[0]?.mobileNumber,
+          isWatsappSameAsMobile: waterResult?.connectionHolders?.[0]?.mobileNumber && waterResult?.connectionHolders?.[0]?.mobileNumber === waterResult?.connectionHolders?.[0]?.watsAppMobileNumber ? true : false,
           name: waterResult?.connectionHolders?.[0]?.name,
           relationship: waterResult?.connectionHolders?.[0]?.relationship
             ? {
-                code: waterResult?.connectionHolders?.[0]?.relationship,
-                i18nKey: `COMMON_MASTERS_OWNERTYPE_${waterResult?.connectionHolders?.[0]?.relationship}`,
-              }
+              code: waterResult?.connectionHolders?.[0]?.relationship,
+              i18nKey: `COMMON_MASTERS_OWNERTYPE_${waterResult?.connectionHolders?.[0]?.relationship}`,
+            }
             : null,
           specialCategoryType: waterResult?.connectionHolders?.[0]?.ownerType
             ? {
-                code: waterResult?.connectionHolders?.[0]?.ownerType,
-                i18nKey: `PROPERTYTAX_OWNERTYPE_${waterResult?.connectionHolders?.[0]?.ownerType}`,
-              }
+              code: waterResult?.connectionHolders?.[0]?.ownerType,
+              i18nKey: `PROPERTYTAX_OWNERTYPE_${waterResult?.connectionHolders?.[0]?.ownerType}`,
+            }
             : "",
-          }
-        ]
+        }
+      ]
       : [
-          {
-            address: waterResult?.property?.owners?.[0]?.correspondenceAddress,
+        {
+          address: waterResult?.property?.owners?.[0]?.correspondenceAddress,
           documentId: "",
           documentType: "",
           filestoreId: null,
@@ -60,22 +61,22 @@ const getEditDetails = (waterResult, sewerageresult, t) => {
           name: waterResult?.property?.owners?.[0]?.name,
           relationship: waterResult?.property?.owners?.[0]?.relationship
             ? {
-                code: waterResult?.property?.owners?.[0]?.relationship,
-                i18nKey: `COMMON_MASTERS_OWNERTYPE_${waterResult?.property?.owners?.[0]?.relationship}`,
-              }
+              code: waterResult?.property?.owners?.[0]?.relationship,
+              i18nKey: `COMMON_MASTERS_OWNERTYPE_${waterResult?.property?.owners?.[0]?.relationship}`,
+            }
             : null,
           specialCategoryType: waterResult?.connectionHolders?.[0]?.ownerType
             ? {
-                code: waterResult?.connectionHolders?.[0]?.ownerType,
-                i18nKey: `PROPERTYTAX_OWNERTYPE_${waterResult?.connectionHolders?.[0]?.ownerType}`,
-              }
+              code: waterResult?.connectionHolders?.[0]?.ownerType,
+              i18nKey: `PROPERTYTAX_OWNERTYPE_${waterResult?.connectionHolders?.[0]?.ownerType}`,
+            }
             : "",
-          }
-        ];
+        }
+      ];
     waterResult.WaterConnectionResult = { WaterConnection: [{ ...waterResult }] };
     waterResult.cpt = { details: { ...waterResult?.property } };
     waterResult.cptId = { id: waterResult?.propertyId };
-    waterResult.documents = { documents: waterResult?.documents };
+    waterResult.DocumentsRequired = { documents: waterResult?.documents || [] };
     waterResult.plumberPreference = { plumberPreference: { code: "ULB", i18nKey: "WS_I_WOULD_PREFER_FROM_MUNICIPAL_OFFICE" } };
     waterResult.serviceName = waterResult?.applicationType?.includes("WATER")
       ? { code: "WATER", i18nKey: "WS_WATER_CONNECTION_ONLY" }
@@ -93,10 +94,12 @@ const getEditDetails = (waterResult, sewerageresult, t) => {
         water: true,
         sewerage: false,
         serviceType: { code: "WATER", i18nKey: "WS_APPLICATION_TYPE_WATER" },
-        connectionType: waterResult?.additionalDetails?.connectionType
-          ? { code: waterResult?.additionalDetails?.connectionType, i18nKey: `WS_CONNECTION_${waterResult?.additionalDetails?.connectionType}` }
+        connectionType: waterResult?.connectionType
+          ? { code: waterResult?.connectionType, i18nKey: `WS_CONNECTION_${waterResult?.connectionType}` }
           : null,
-        waterDemandType: waterResult?.additionalDetails?.waterDemandType || null,
+        waterDemandType: waterResult?.additionalDetails?.waterDemandType
+          ? { code: waterResult?.additionalDetails?.waterDemandType, i18nKey: `WS_WATER_DEMAND_${waterResult?.additionalDetails?.waterDemandType}` }
+          : null,
         applicantType: waterResult?.additionalDetails?.applicantType
           ? { code: waterResult?.additionalDetails?.applicantType, i18nKey: `WS_APPLICANT_${waterResult?.additionalDetails?.applicantType}` }
           : null,
@@ -105,10 +108,10 @@ const getEditDetails = (waterResult, sewerageresult, t) => {
           : null,
         proposedPipeSize: waterResult?.proposedPipeSize
           ? {
-              code: waterResult?.proposedPipeSize,
-              i18nKey: `${waterResult?.proposedPipeSize} ${t("WS_INCHES_LABEL")}`,
-              size: waterResult?.proposedPipeSize,
-            }
+            code: waterResult?.proposedPipeSize,
+            i18nKey: `${waterResult?.proposedPipeSize} ${t("WS_INCHES_LABEL")}`,
+            size: waterResult?.proposedPipeSize,
+          }
           : null,
         proposedTaps: waterResult?.proposedTaps,
       }
@@ -130,8 +133,8 @@ const getEditDetails = (waterResult, sewerageresult, t) => {
   } else if (sewerageresult) {
     sewerageresult.ConnectionHolderDetails = sewerageresult?.connectionHolders
       ? [
-          {
-            ...sewerageresult?.connectionHolders?.[0],
+        {
+          ...sewerageresult?.connectionHolders?.[0],
           address: sewerageresult?.connectionHolders?.[0]?.correspondenceAddress,
           documentId: "",
           documentType: "",
@@ -142,24 +145,25 @@ const getEditDetails = (waterResult, sewerageresult, t) => {
           guardian: sewerageresult?.connectionHolders?.[0]?.fatherOrHusbandName,
           isOwnerSame: sewerageresult?.connectionHolders?.length > 0 ? false : true,
           mobileNumber: sewerageresult?.connectionHolders?.[0]?.mobileNumber,
+          isWatsappSameAsMobile: sewerageresult?.connectionHolders?.[0]?.mobileNumber && sewerageresult?.connectionHolders?.[0]?.mobileNumber === sewerageresult?.connectionHolders?.[0]?.watsAppMobileNumber ? true : false,
           name: sewerageresult?.connectionHolders?.[0]?.name,
           relationship: sewerageresult?.connectionHolders?.[0]?.relationship
             ? {
-                code: sewerageresult?.connectionHolders?.[0]?.relationship,
-                i18nKey: `COMMON_MASTERS_OWNERTYPE_${sewerageresult?.connectionHolders?.[0]?.relationship}`,
-              }
+              code: sewerageresult?.connectionHolders?.[0]?.relationship,
+              i18nKey: `COMMON_MASTERS_OWNERTYPE_${sewerageresult?.connectionHolders?.[0]?.relationship}`,
+            }
             : null,
           specialCategoryType: sewerageresult?.connectionHolders?.[0]?.ownerType
             ? {
-                code: sewerageresult?.connectionHolders?.[0]?.ownerType,
-                i18nKey: `PROPERTYTAX_OWNERTYPE_${sewerageresult?.connectionHolders?.[0]?.ownerType}`,
-              }
+              code: sewerageresult?.connectionHolders?.[0]?.ownerType,
+              i18nKey: `PROPERTYTAX_OWNERTYPE_${sewerageresult?.connectionHolders?.[0]?.ownerType}`,
+            }
             : "",
-          }
-        ]
+        }
+      ]
       : [
-          {
-            address: sewerageresult?.property?.owners?.[0]?.correspondenceAddress,
+        {
+          address: sewerageresult?.property?.owners?.[0]?.correspondenceAddress,
           documentId: "",
           documentType: "",
           filestoreId: null,
@@ -172,22 +176,22 @@ const getEditDetails = (waterResult, sewerageresult, t) => {
           name: sewerageresult?.property?.owners?.[0]?.name,
           relationship: sewerageresult?.property?.owners?.[0]?.relationship
             ? {
-                code: sewerageresult?.property?.owners?.[0]?.relationship,
-                i18nKey: `COMMON_MASTERS_OWNERTYPE_${sewerageresult?.property?.owners?.[0]?.relationship}`,
-              }
+              code: sewerageresult?.property?.owners?.[0]?.relationship,
+              i18nKey: `COMMON_MASTERS_OWNERTYPE_${sewerageresult?.property?.owners?.[0]?.relationship}`,
+            }
             : null,
           specialCategoryType: sewerageresult?.connectionHolders?.[0]?.ownerType
             ? {
-                code: sewerageresult?.connectionHolders?.[0]?.ownerType,
-                i18nKey: `PROPERTYTAX_OWNERTYPE_${sewerageresult?.connectionHolders?.[0]?.ownerType}`,
-              }
+              code: sewerageresult?.connectionHolders?.[0]?.ownerType,
+              i18nKey: `PROPERTYTAX_OWNERTYPE_${sewerageresult?.connectionHolders?.[0]?.ownerType}`,
+            }
             : "",
-          }
-        ];
+        }
+      ];
     sewerageresult.SewerageConnectionResult = { SewerageConnections: [{ ...sewerageresult }] };
     sewerageresult.cpt = { details: { ...sewerageresult?.property } };
     sewerageresult.cptId = { id: sewerageresult?.propertyId };
-    sewerageresult.documents = { documents: [...sewerageresult?.documents] };
+    sewerageresult.DocumentsRequired = { documents: sewerageresult?.documents || [] };
     sewerageresult.plumberPreference = { plumberPreference: { code: "ULB", i18nKey: "WS_I_WOULD_PREFER_FROM_MUNICIPAL_OFFICE" } };
     sewerageresult.serviceName = sewerageresult?.applicationType.includes("WATER")
       ? { code: "WATER", i18nKey: "WS_WATER_CONNECTION_ONLY" }
@@ -201,10 +205,12 @@ const getEditDetails = (waterResult, sewerageresult, t) => {
         water: false,
         sewerage: true,
         serviceType: { code: "SEWERAGE", i18nKey: "WS_APPLICATION_TYPE_SEWERAGE" },
-        connectionType: sewerageresult?.additionalDetails?.connectionType
-          ? { code: sewerageresult?.additionalDetails?.connectionType, i18nKey: `WS_CONNECTION_${sewerageresult?.additionalDetails?.connectionType}` }
+        connectionType: sewerageresult?.connectionType
+          ? { code: sewerageresult?.connectionType, i18nKey: `WS_CONNECTION_${sewerageresult?.connectionType}` }
+          : { code: "Non Metered", i18nKey: "WS_CONNECTION_Non Metered" },
+        waterDemandType: sewerageresult?.additionalDetails?.waterDemandType
+          ? { code: sewerageresult?.additionalDetails?.waterDemandType, i18nKey: `WS_WATER_DEMAND_${sewerageresult?.additionalDetails?.waterDemandType}` }
           : null,
-        waterDemandType: sewerageresult?.additionalDetails?.waterDemandType || null,
         applicantType: sewerageresult?.additionalDetails?.applicantType
           ? { code: sewerageresult?.additionalDetails?.applicantType, i18nKey: `WS_APPLICANT_${sewerageresult?.additionalDetails?.applicantType}` }
           : null,
@@ -246,7 +252,14 @@ const EditApplication = ({ parentRoute }) => {
   let config = [];
   let waterapplication = {};
   let sewerageapplication = {};
-  const [params, setParams, clearParams] = Digit.Hooks.useSessionStorage("WS_EDIT_APPLICATION_V3", {});
+  const [params, setParams, clearParams] = Digit.Hooks.useSessionStorage("WS_EDIT_APPLICATION_V5", {});
+
+  let initialConfig = [];
+  newConfigWS?.forEach((obj) => {
+    if (!obj.hideInCitizen) {
+      initialConfig = initialConfig.concat(obj.body.filter((a) => !a.hideInCitizen));
+    }
+  });
 
   const stateId = Digit.ULBService.getStateId();
   let { data: newConfig, isLoading: configLoading } = Digit.Hooks.ws.useWSConfigMDMS.getFormConfig(stateId, {});
@@ -307,39 +320,14 @@ const EditApplication = ({ parentRoute }) => {
     //if (setCustomEditState) setCustomEditState({ data, setParams, params, licenseNo, tenantId });
   }, [Waterresult, Sewarageresult]);
 
-  const goNext = (skipStep) => {
-    const currentPath = pathname.split("/").pop();
-    let { nextStep } = config.find((routeObj) => routeObj.route === currentPath);
-    let routeObject = config.find((routeObj) => routeObj.route === currentPath && routeObj);
-    if (typeof nextStep == "object" && nextStep != null) {
-      if (
-        nextStep[sessionStorage.getItem("KnowProperty")] &&
-        (nextStep[sessionStorage.getItem("KnowProperty")] === "search-property" ||
-          nextStep[sessionStorage.getItem("KnowProperty")] === "create-property")
-      ) {
-        nextStep = `${nextStep[sessionStorage.getItem("KnowProperty")]}`;
-      }
-    }
-    if (routeObject[sessionStorage.getItem("serviceName")]) nextStep = routeObject[sessionStorage.getItem("serviceName")];
-    if (
-      (params?.cptId?.id || params?.cpt?.details?.propertyId || (isModifyEdit && params?.cpt?.details?.propertyId)) &&
-      nextStep === "know-your-property"
-    ) {
-      nextStep = "property-details";
-    }
-    if (nextStep === "docsrequired" && sessionStorage.getItem("changePropertySelected") === "yes") {
-      nextStep = "property-details";
-    }
-    let redirectWithHistory = history.push;
-    if (nextStep === null) {
-      return redirectWithHistory(`${getPath(match.path, match.params)}/check`);
-    }
-    redirectWithHistory(`${getPath(match.path, match.params)}/${nextStep}`);
-  };
+  // Stepper navigation removed for long form implementation
   const onSuccess = () => {
     queryClient.invalidateQueries("WS_CREATE");
   };
   const createApplication = async () => {
+    if (params?.DocumentsRequired?.documents) {
+      params.documents = { documents: params.DocumentsRequired.documents };
+    }
     history.push(`${getPath(match.path, match.params)}/acknowledgement`);
   };
 
@@ -347,53 +335,98 @@ const EditApplication = ({ parentRoute }) => {
     if (isFromCreateApi) setParams(data);
     else if (key === "") setParams({ ...data });
     else setParams({ ...params, ...{ [key]: { ...params[key], ...data } } });
-    goNext(skipStep);
   };
-  const handleSkip = () => {};
+  const handleSkip = () => { };
   newConfig = newConfigWS; // Override MDMS config with local config to ensure property-location-details change takes effect
   newConfig?.forEach((obj) => {
     if (!obj.hideInCitizen) {
       config = config.concat(obj.body.filter((a) => !a.hideInCitizen));
     }
   });
-  config.indexRoute = "property-details";
+
+  // Exclude property-details so it starts from connection-details as requested
+  const startIndex = config.findIndex(c => c.route === "connection-details");
+  if (startIndex !== -1) {
+    config = config.slice(startIndex);
+  }
+
+  // Filter out informational/summary steps that are unnecessary in a long form
+  config = config.filter(c => c.route !== "docsrequired" && c.route !== "check");
+
+  // Swap WSDocumentDetails with WSDocumentsEmployee for proper form integration
+  config.forEach(c => {
+    if (c.component === "WSDocumentDetails") {
+      c.component = "WSDocumentsEmployee";
+      c.key = "DocumentsRequired";
+    }
+  });
+
+  config = config.map((routeObj, index) => ({
+    ...routeObj,
+    timeLine: [
+      {
+        currentStep: index + 1,
+        actions: routeObj.texts?.header || routeObj.route,
+      },
+    ],
+  }));
+
   if (
     (((Waterresult && Object.keys(Waterresult).length > 0) || !Sewarageresult) && Waterresult?.isLoading) ||
     Sewarageresult?.isLoading ||
-    configLoading
+    configLoading ||
+    Object.keys(params).length === 0 // Ensure params are populated before rendering to prevent empty initial states
   ) {
     return <Loader />;
   }
-  const CheckPage = Digit?.ComponentRegistryService?.getComponent("WSCheckPage");
   const Acknowledgement = Digit?.ComponentRegistryService?.getComponent("WSAcknowledgement");
-  //const CheckPage = Digit?.ComponentRegistryService?.getComponent('TLCheckPage') ;
-  //const TLAcknowledgement = Digit?.ComponentRegistryService?.getComponent('TLAcknowledgement');
+
   return (
     <Switch>
-      {config.map((routeObj, index) => {
-        const { component, texts, inputs, key, isSkipEnabled } = routeObj;
-        const Component = typeof component === "string" ? Digit.ComponentRegistryService.getComponent(component) : component;
-        return (
-          <Route path={`${getPath(match.path, match.params)}/${routeObj.route}`} key={index}>
-            <Component
-              config={{ texts, inputs, key, isSkipEnabled }}
-              onSelect={handleSelect}
-              onSkip={handleSkip}
-              t={t}
-              formData={params}
-              userType={"citizen"}
-            />
-          </Route>
-        );
-      })}
-      <Route path={`${getPath(match.path, match.params)}/check`}>
-        <CheckPage onSubmit={createApplication} value={params} />
-      </Route>
       <Route path={`${getPath(match.path, match.params)}/acknowledgement`}>
         <Acknowledgement data={params} onSuccess={onSuccess} clearParams={clearParams} />
       </Route>
       <Route>
-        <Redirect to={`${getPath(match.path, match.params)}/${config.indexRoute}`} />
+        <div className="citizen-single-screen-edit">
+          <style>{`
+            .citizen-single-screen-edit .timeline-container { display: none !important; }
+            .citizen-single-screen-edit .form-step-footer { display: none !important; }
+          `}</style>
+          <div style={{ display: "flex", flexDirection: "row", gap: "24px", alignItems: "flex-start", marginBottom: "2rem" }}>
+            {/* 
+            <div style={{ flex: "0 0 280px", position: "sticky", top: "100px", height: "calc(100vh - 100px)", overflowY: "auto" }}>
+              <VerticalTimeline 
+                config={config} 
+                currentActiveIndex={0} 
+                onSelect={(route, index) => {
+                   document.getElementById(`step-${index}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }}
+              />
+            </div>
+            */}
+            <div style={{ flex: "1", display: "flex", flexDirection: "column", gap: "24px" }}>
+              {config.map((routeObj, index) => {
+                const { component, texts, inputs, key, isSkipEnabled } = routeObj;
+                const Component = typeof component === "string" ? Digit.ComponentRegistryService.getComponent(component) : component;
+                return (
+                  <div id={`step-${index}`} key={index}>
+                    <Component
+                      config={{ texts, inputs, key, isSkipEnabled }}
+                      onSelect={handleSelect}
+                      onSkip={handleSkip}
+                      t={t}
+                      formData={params}
+                      userType={"employee"}
+                    />
+                  </div>
+                );
+              })}
+              <div style={{ marginTop: "24px" }}>
+                <SubmitBar label={t("SUBMIT")} onSubmit={createApplication} />
+              </div>
+            </div>
+          </div>
+        </div>
       </Route>
     </Switch>
   );
