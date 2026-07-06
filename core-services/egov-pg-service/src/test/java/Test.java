@@ -4,6 +4,7 @@ import org.egov.pg.service.Gateway;
 import org.egov.pg.service.gateways.axis.AxisGateway;
 import org.egov.pg.service.gateways.paytm.PaytmGateway;
 import org.egov.pg.service.gateways.phonepe.PhonepeGateway;
+import org.egov.pg.service.gateways.razorpay.RazorpayGateway;
 import org.egov.pg.utils.Utils;
 import org.egov.pg.web.models.User;
 import org.junit.Before;
@@ -16,6 +17,7 @@ import java.math.BigDecimal;
 import java.net.URI;
 import java.text.DecimalFormat;
 import java.util.Collections;
+import java.util.Map;
 
 @Ignore
 public class Test {
@@ -158,6 +160,50 @@ public class Test {
         BigDecimal decimal1 = new BigDecimal(10488);
         System.out.println(decimal.longValueExact());
         System.out.println(decimal == decimal1);
+    }
+
+    @org.junit.Test
+    public void razorpayTest() {
+        Transaction txn = Transaction.builder().txnAmount("100")
+                .txnId("ABC231")
+                .billId("ORDER001")
+                .productInfo("Property Tax Payment")
+                .gateway("RAZORPAY")
+                .callbackUrl("http://your-callback-url.com/update")
+                .user(user).build();
+
+        // Ensure KEY_ID and KEY_SECRET are present in the MockEnvironment
+        ((MockEnvironment) environment).setProperty("razorpay.active", "true");
+        ((MockEnvironment) environment).setProperty("razorpay.key.id", "test_key");
+        ((MockEnvironment) environment).setProperty("razorpay.key.secret", "test_secret");
+
+        Gateway gateway = new RazorpayGateway(environment);
+        URI redirectUri = gateway.generateRedirectURI(txn);
+
+        System.out.println("Redirect URI: " + redirectUri);
+        // Add assertions here, e.g., assertNotNull(redirectUri);
+    }
+
+    @org.junit.Test
+    public void razorpayStatusTest() {
+        Transaction txn = Transaction.builder().txnAmount("100")
+                .txnId("ABC231")
+                .gateway("RAZORPAY")
+                .build();
+
+        ((MockEnvironment) environment).setProperty("razorpay.key.secret", "test_secret");
+
+        Gateway gateway = new RazorpayGateway(environment);
+
+        // Simulate a callback map with required fields
+        Map<String, String> params = new java.util.HashMap<>();
+        params.put("razorpay_order_id", "order_123");
+        params.put("razorpay_payment_id", "pay_456");
+        // Note: You would need to calculate a valid signature here for a true unit test
+        params.put("razorpay_signature", "invalid_signature_for_test");
+
+        Transaction updatedTxn = gateway.fetchStatus(txn, params);
+        System.out.println("Status: " + updatedTxn.getTxnStatus());
     }
 
     @org.junit.Test
