@@ -16,6 +16,7 @@ import java.math.BigDecimal;
 import java.net.URI;
 import java.text.DecimalFormat;
 import java.util.Collections;
+import java.util.Map;
 
 @Ignore
 public class Test {
@@ -159,6 +160,7 @@ public class Test {
         System.out.println(decimal.longValueExact());
         System.out.println(decimal == decimal1);
     }
+
 
     @org.junit.Test
     public void name3() {
