@@ -1,4 +1,4 @@
-import { EmployeeModuleCard, ArrowRightInbox, WorksMgmtIcon } from "@djb25/digit-ui-react-components"
+import { CitizenHomeCard, WorksMgmtIcon } from "@djb25/digit-ui-react-components"
 import React from "react";
 import { useTranslation } from "react-i18next";
 
@@ -44,17 +44,21 @@ const WorkbenchCard = () => {
     //   link: `/${window?.contextPath}/employee/workbench/mdms-search-v2?masterName=common-masters&moduleName=Sample`,
     //   roles: ROLES.MDMS,
     // },
+
   ];
 
   links = links.filter((link) => (link?.roles && link?.roles?.length > 0 ? Digit.Utils.didEmployeeHasAtleastOneRole(link?.roles) : true));
 
   const propsForModuleCard = {
-    Icon: <WorksMgmtIcon />,
-    moduleName: t("ACTION_TEST_WORKBENCH"),
-    kpis: [],
-    links: links,
+    header: t("ACTION_TEST_WORKBENCH"),
+    subTitle: t("WORKBENCH SERVICES"),
+    Icon: WorksMgmtIcon,
+    links: links.map((link) => ({
+      i18nKey: link.label,
+      link: link.link,
+    })),
   };
-  return <EmployeeModuleCard {...propsForModuleCard} />;
+  return <CitizenHomeCard {...propsForModuleCard} />;
 };
 
 export default WorkbenchCard;
