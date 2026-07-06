@@ -58,14 +58,14 @@ const Home = () => {
 
   if (roles.length === 1 && roles.includes("CITIZEN")) {
     propsForModuleCard.links.push(
-      {
-        label: t("EKYC_CREATE_KYC"),
-        link: `/digit-ui/citizen/ekyc/create-kyc`,
-      },
-      {
-        label: t("EKYC_UPDATE_KYC"),
-        link: `/digit-ui/citizen/ekyc/update-kyc`,
-      },
+      // {
+      //   label: t("EKYC_CREATE_KYC"),
+      //   link: `/digit-ui/citizen/ekyc/create-kyc`,
+      // },
+      // {
+      //   label: t("EKYC_UPDATE_KYC"),
+      //   link: `/digit-ui/citizen/ekyc/update-kyc`,
+      // },
       {
         label: t("EKYC_STATUS"),
         link: `/digit-ui/citizen/ekyc/:id`,

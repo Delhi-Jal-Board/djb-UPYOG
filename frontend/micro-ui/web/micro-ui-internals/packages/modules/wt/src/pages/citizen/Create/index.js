@@ -204,7 +204,7 @@ const WTCreate = () => {
                 return (
                   <Route path={`${match.path}/${routeObj.route}`} key={index}>
                     <Component
-                      config={{ texts, inputs, key, additionaFields }}
+                      config={{ ...routeObj,texts, inputs, key, additionaFields }}
                       onSelect={handleSelect}
                       t={t}
                       formData={params}
