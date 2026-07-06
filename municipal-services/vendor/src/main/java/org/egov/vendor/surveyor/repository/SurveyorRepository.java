@@ -80,18 +80,59 @@ public class SurveyorRepository {
     }
 
     /**
+     * Syncs supervisor_id in ekyc_assignment when a surveyor is remapped
+     * to a different supervisor via _update.
+     *
+     * WHY THIS IS NEEDED:
+     *   ekyc_assignment stores supervisor_id at assignment time. When a surveyor
+     *   is moved to a different supervisor in eg_surveyor (via vendor _update),
+     *   existing ACTIVE assignments still point to the old supervisor — causing
+     *   wrong KNO counts in _progress and hierarchy reports.
+     *
+     * WHAT IT DOES:
+     *   Updates supervisor_id on all ACTIVE assignments for this surveyorId
+     *   (ownerUUID) to the new supervisorId. INACTIVE assignments are left
+     *   untouched — they are historical audit records.
+     *
+     * SECURITY:
+     *   surveyorOwnerId comes from eg_surveyor.owner_id (DB, not frontend).
+     *   newSupervisorId comes from the validated surveyor.supervisorId field
+     *   after enrichment in SurveyorService.update().
+     *   Never called directly from controller — always via update() service method.
+     *
+     * SAFETY:
+     *   If no ACTIVE assignments exist for this surveyor, update affects 0 rows
+     *   — completely safe, no error thrown.
+     *
+     * @param surveyorOwnerId ownerUUID of the surveyor (ekyc_assignment.surveyor_id)
+     * @param newSupervisorId new supervisor entity ID to set
+     * @return number of assignment rows updated
+     */
+    public int syncEkycAssignmentSupervisor(String surveyorOwnerId, String newSupervisorId) {
+        String sql = "UPDATE ekyc_assignment " +
+                "SET supervisor_id = ?, " +
+                "    last_modified_time = EXTRACT(EPOCH FROM NOW())::BIGINT " +
+                "WHERE surveyor_id = ? " +
+                "  AND status = 'ACTIVE'";
+        int updatedRows = jdbcTemplate.update(sql, newSupervisorId, surveyorOwnerId);
+        log.info("syncEkycAssignment: updated {} ACTIVE assignment(s) " +
+                        "for surveyorOwnerId={} to supervisorId={}",
+                updatedRows, surveyorOwnerId, newSupervisorId);
+        return updatedRows;
+    }
+
+    /**
      * Look up supervisor profile by their owner UUID.
-     * Used by SurveyorService.create() to auto-derive supervisorId and vendorId
-     * from the logged-in supervisor's token UUID.
-     * Returns map with keys: "id" (supervisor entity ID), "vendorId"
+     * Used by SurveyorService.create() and SurveyorService.update() to
+     * auto-derive supervisorId and vendorId from token UUID.
+     * Returns map with keys: "id" (supervisor entity ID), "vendorId".
      * Returns null if no ACTIVE supervisor found for this UUID.
      */
     public Map<String, String> findSupervisorByOwnerUuid(String ownerUuid) {
-        String query =
-                "SELECT id, vendor_id " +
-                        "FROM eg_supervisor " +
-                        "WHERE owner_id = ? AND status = 'ACTIVE' " +
-                        "LIMIT 1";
+        String query = "SELECT id, vendor_id " +
+                "FROM eg_supervisor " +
+                "WHERE owner_id = ? AND status = 'ACTIVE' " +
+                "LIMIT 1";
 
         List<Map<String, String>> results = jdbcTemplate.query(
                 query,
