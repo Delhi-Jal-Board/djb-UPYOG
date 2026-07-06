@@ -395,6 +395,18 @@ export const WSSearch = {
       };
     }
 
+    const billAccountDetails = fetchBillData?.Bill?.[0]?.billDetails?.[0]?.billAccountDetails || [];
+    const feeValues = billAccountDetails.length > 0 
+      ? billAccountDetails.map((bill) => ({
+          title: bill?.taxHeadCode,
+          value: <span>&#8377;{Number(bill?.amount).toFixed(2)}</span>
+        }))
+      : [
+          { title: "WS_APPLICATION_FEE_HEADER", value: <span>&#8377;{fetchBillData?.Bill?.[0]?.fee || 0}</span> },
+          { title: "WS_SERVICE_FEE_HEADER", value: <span>&#8377;{fetchBillData?.Bill?.[0]?.charge || 0}</span> },
+          { title: "WS_TAX_HEADER", value: <span>&#8377;{fetchBillData?.Bill?.[0]?.taxAmount || 0}</span> },
+        ];
+
     const feeEstimation = {
       title: "WS_TASK_DETAILS_FEE_ESTIMATE",
       asSectionHeader: true,
@@ -406,11 +418,7 @@ export const WSSearch = {
         isVisible: isVisible,
         isPaid: colletionData?.Payments?.length > 0 ? true : false,
         isViewBreakup: isVisible,
-        values: [
-          { title: "WS_APPLICATION_FEE_HEADER", value: <span>&#8377;{fetchBillData?.Bill?.[0]?.fee || 0}</span> },
-          { title: "WS_SERVICE_FEE_HEADER", value: <span>&#8377;{fetchBillData?.Bill?.[0]?.charge || 0}</span> },
-          { title: "WS_TAX_HEADER", value: <span>&#8377;{fetchBillData?.Bill?.[0]?.taxAmount || 0}</span> },
-        ],
+        values: feeValues,
       },
     };
 
@@ -940,6 +948,7 @@ export const WSSearch = {
       ...details,
       isLabelShow,
       applicationHeaderDetails,
+      feeEstimation,
       AdditionalDetailsByWS,
       ...(djbEmployeeDetails ? [djbEmployeeDetails] : []),
       connectionHolderDetails,

@@ -1,14 +1,28 @@
-import React, { useState, useMemo } from "react";
-import { TextInput, Table } from "@djb25/digit-ui-react-components";
+import React, { useState, useMemo, useEffect } from "react";
+import { TextInput, Table, AddIcon } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 
-const DueVerification = () => {
+const DueVerification = ({ applicationData }) => {
   const { t } = useTranslation();
   const [kno, setKno] = useState("");
+  const [remarks, setRemarks] = useState("");
   const [tableData, setTableData] = useState([]);
 
-  const columns = useMemo(
-    () => [
+  const handleRemarkChange = React.useCallback((index, value) => {
+    setTableData((prevData) => {
+      const newData = [...prevData];
+      newData[index] = { ...newData[index], remarks: value };
+      if (applicationData) {
+        applicationData.dueVerification = newData;
+      }
+      return newData;
+    });
+  }, [applicationData]);
+
+  const isPendingApproval = applicationData?.applicationStatus === "PENDING_APPROVAL_FOR_CONNECTION";
+
+  const columns = useMemo(() => {
+    const baseColumns = [
       {
         Header: t("K No."),
         accessor: "kno",
@@ -29,9 +43,30 @@ const DueVerification = () => {
         Header: t("Total Amount"),
         accessor: "totalAmount",
       },
-    ],
-    [t]
-  );
+    ];
+
+    if (isPendingApproval) {
+      baseColumns.push({
+        Header: t("Remarks"),
+        accessor: "remarks",
+        Cell: ({ row, value }) => (
+          <TextInput
+            style={{ marginBottom: "0px", minWidth: "150px" }}
+            value={value || ""}
+            onChange={(e) => handleRemarkChange(row.index, e.target.value)}
+          />
+        ),
+      });
+    }
+
+    return baseColumns;
+  }, [t, handleRemarkChange, isPendingApproval]);
+
+  useEffect(() => {
+    if (applicationData?.dueVerification && Array.isArray(applicationData.dueVerification)) {
+      setTableData(applicationData.dueVerification);
+    }
+  }, [applicationData]);
 
   const handleAdd = () => {
     if (kno) {
@@ -40,16 +75,22 @@ const DueVerification = () => {
         fullName: "John Doe",
         fullAddress: "123 Main St, New Delhi, Delhi 110001",
         dueAmount: "1500",
-        totalAmount: "1500"
+        totalAmount: "1500",
+        remarks: remarks,
       };
-      setTableData([...tableData, mockData]);
+      const newTableData = [...tableData, mockData];
+      setTableData(newTableData);
+      if (applicationData) {
+        applicationData.dueVerification = newTableData;
+      }
       setKno("");
+      setRemarks("");
     }
   };
 
   return (
     <div style={{ marginBottom: "20px" }}>
-      <h2 style={{ fontSize: "24px", fontWeight: "bold", color: "#4f6cfc", marginBottom: "16px" }}>{t("Due Verification")}</h2>
+      <h2 style={{ fontSize: "24px", fontWeight: "bold", marginBottom: "16px" }}>{t("Due Verification")}</h2>
       <div style={{ display: "flex", alignItems: "flex-end", gap: "20px", marginBottom: "20px" }}>
         <div style={{ flex: 1 }}>
           <span style={{ fontSize: "16px", color: "#0B0C0C", marginBottom: "8px", display: "inline-block" }}>
@@ -58,8 +99,18 @@ const DueVerification = () => {
           <TextInput type="number" value={kno} onChange={(e) => setKno(e.target.value)} style={{ width: "100%", marginBottom: "0" }} />
         </div>
         <div style={{ flex: 1, paddingBottom: "2px" }}>
-          <button type="button" onClick={handleAdd} style={{ backgroundColor: "#4f6cfc", color: "white", padding: "8px 24px", borderRadius: "4px", border: "none", cursor: "pointer" }}>
-            {t("Add")}
+          <button
+            type="button"
+            onClick={handleAdd}
+            style={{
+              background: "linear-gradient(135deg, #1f5fa8, #0b2e5b)",
+              padding: "8px 24px",
+              borderRadius: "4px",
+              border: "none",
+              cursor: "pointer",
+            }}
+          >
+            <AddIcon />
           </button>
         </div>
       </div>

@@ -25,8 +25,8 @@ export const CollectPayment = (props) => {
   if (window.location.href.includes("ISWSAPP")) consumerCode = new URLSearchParams(search).get("applicationNumber");
   if (window.location.href.includes("ISWSCON") || ModuleWorkflow === "WS") consumerCode = decodeURIComponent(consumerCode);
 
-  const { data: paymentdetails, isLoading } = Digit.Hooks.useFetchPayment({ tenantId: tenantId, consumerCode, businessService: "request-service.water_tanker" });
-  const bill = paymentdetails?.Bill ? paymentdetails?.Bill[0] : {};
+  const { data: paymentdetails, isLoading } = Digit.Hooks.useFetchPayment({ tenantId: tenantId, consumerCode, businessService });
+  const bill = paymentdetails?.Bill?.length > 0 ? paymentdetails?.Bill[0] : {};
   const { data: applicationData } = Digit.Hooks.fsm.useSearch(
     tenantId,
     { applicationNos: consumerCode },
@@ -361,7 +361,7 @@ export const CollectPayment = (props) => {
         onSubmit={onSubmit}
         formState={formState}
         defaultValues={getDefaultValues()}
-        isDisabled={(IsDisconnectionFlow ? false : businessService === "SW" || "WS" ? false : bill?.totalAmount ? !bill.totalAmount > 0 : true) || (timerEnabledForBusinessService(businessService) && Time === 0)}
+        isDisabled={(IsDisconnectionFlow ? false : businessService === "SW" || businessService === "WS" ? false : bill?.totalAmount ? !bill.totalAmount > 0 : true) || (timerEnabledForBusinessService(businessService) && Time === 0)}
         // isDisabled={BillDetailsFormConfig({ consumerCode }, t)[businessService] ? !}
         onFormValueChange={(setValue, formValue) => {
           if (!isEqual(formValue.paymentMode, selectedPaymentMode)) {
