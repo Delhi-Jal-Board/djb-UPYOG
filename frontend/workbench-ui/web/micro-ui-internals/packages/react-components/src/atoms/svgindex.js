@@ -1,41 +1,96 @@
 import React from "react";
 
-const CreateEstimateIcon = ({ className, style = {}, fill = "#F47738" }) => (
-  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" className={className} style={style} xmlns="http://www.w3.org/2000/svg">
+const ADSIconComp = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <defs>
+      <linearGradient id="ads-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#14b8a6" />
+        <stop offset="100%" stopColor="#0f766e" />
+      </linearGradient>
+    </defs>
     <path
-      d="M14 8.75C14.6125 8.75 15.1987 8.86375 15.75 9.05625V5.25L10.5 0H1.75C0.77875 0 0 0.77875 0 1.75V14C0 14.9712 0.7875 15.75 1.75 15.75H9.05625C8.86375 15.1987 8.75 14.6125 8.75 14C8.75 11.1037 11.1037 8.75 14 8.75ZM9.625 1.3125L14.4375 6.125H9.625V1.3125ZM17.5 13.125V14.875H14.875V17.5H13.125V14.875H10.5V13.125H13.125V10.5H14.875V13.125H17.5Z"
+      d="M18 11V7l4 3-4 3v-2h-3v-3h3zM12 9c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-3-4l4 3-4 3V5zM3 9c-1.1 0-2 .9-2 2v2c0 1.1.9 2 2 2h2v4h2v-4h1l5 3V6L8 9H3z"
+      fill="url(#ads-grad)"
+    />
+  </svg>
+);
+
+const AddFileFilled = ({ className = "", fill = "", style = {} }) => (
+  <svg width="19" className={className} height="18" style={style} viewBox="0 0 19 18" fill={fill} xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M14.6016 8.75C15.2141 8.75 15.8003 8.86375 16.3516 9.05625V5.25L11.1016 0H2.35156C1.38031 0 0.601562 0.77875 0.601562 1.75V14C0.601562 14.9712 1.38906 15.75 2.35156 15.75H9.65781C9.46531 15.1987 9.35156 14.6125 9.35156 14C9.35156 11.1037 11.7053 8.75 14.6016 8.75ZM10.2266 1.3125L15.0391 6.125H10.2266V1.3125ZM18.1016 13.125V14.875H15.4766V17.5H13.7266V14.875H11.1016V13.125H13.7266V10.5H15.4766V13.125H18.1016Z"
+      fill="#F47738"
+    />
+  </svg>
+);
+
+const AddFilled = ({ style = {} }) => (
+  <svg width="15" height="15" style={style} viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M12.8828 2.98323C10.1643 0.227501 5.7393 0.19747 2.98357 2.91604C0.227848 5.63461 0.197817 10.0596 2.91639 12.8153C5.63496 15.571 10.0599 15.6011 12.8157 12.8825C15.5714 10.1639 15.6014 5.73895 12.8828 2.98323ZM8.56866 12.1557L7.17286 12.1463L7.19698 8.59243L3.64314 8.56831L3.65261 7.17251L7.20645 7.19663L7.23057 3.6428L8.62637 3.65227L8.60225 7.20611L12.1561 7.23022L12.1466 8.62602L8.59278 8.6019L8.56866 12.1557Z"
+      fill="#F47738"
+    />
+  </svg>
+);
+
+const AddIcon = ({ styles, className, fill = "white" }) => (
+  <svg width="14" height="14" className={className} style={{ ...styles }} viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M11.7896 2.58402C9.24786 0.0490554 5.13886 0.0490554 2.59717 2.58402C0.0554699 5.11898 0.0554701 9.21709 2.59717 11.752C5.13886 14.287 9.24786 14.287 11.7896 11.752C14.3312 9.21709 14.3312 5.11898 11.7896 2.58402ZM7.84142 11.1057H6.5453V7.81438H3.24523L3.24523 6.52169H6.5453V3.23036H7.84142V6.52169H11.1415L11.1415 7.81438H7.84142V11.1057Z"
       fill={fill}
     />
   </svg>
 );
 
-const GotoInboxIcon = ({ className, style = {}, fill = "#F47738" }) => (
-  <svg width="15" height="13" viewBox="0 0 15 13" fill="none" className={className} style={style} xmlns="http://www.w3.org/2000/svg">
+const AddNewIcon = ({ style }) => (
+  <svg style={style} width="24" height="24" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path
-      d="M2.14286 6.5C2.14286 2.91056 5.02143 0 8.57143 0C12.1214 0 15 2.91056 15 6.5C15 10.0894 12.1214 13 8.57143 13C7.1 13 5.74286 12.4944 4.65714 11.6567L5.67143 10.6167C6.49286 11.2017 7.49286 11.5556 8.57143 11.5556C11.3357 11.5556 13.5714 9.295 13.5714 6.5C13.5714 3.705 11.3357 1.44444 8.57143 1.44444C5.80714 1.44444 3.57143 3.705 3.57143 6.5H5.71429L2.85714 9.38889L0 6.5H2.14286Z"
-      fill={fill}
+      d="M23.3333 14.5833C24.3542 14.5833 25.3312 14.7729 26.25 15.0938V8.75L17.5 0H2.91667C1.29792 0 0 1.29792 0 2.91667V23.3333C0 24.9521 1.3125 26.25 2.91667 26.25H15.0938C14.7729 25.3312 14.5833 24.3542 14.5833 23.3333C14.5833 18.5062 18.5062 14.5833 23.3333 14.5833ZM16.0417 2.1875L24.0625 10.2083H16.0417V2.1875ZM29.1667 21.875V24.7917H24.7917V29.1667H21.875V24.7917H17.5V21.875H21.875V17.5H24.7917V21.875H29.1667Z"
+      fill="#F47738"
     />
   </svg>
 );
 
-const ArrowLeft = ({ className }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black" className={className} width="19px">
-    <path d="M24 0v24H0V0h24z" fill="none" opacity=".87" />
-    <path d="M14 7l-5 5 5 5V7z" />
+const AddressBookIcon = ({ styles, className }) => (
+  <svg className={className} style={{ ...styles }} viewBox="0 0 20 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M18 0H2V2H18V0ZM2 24H18V22H2V24ZM18 4H2C0.9 4 0 4.9 0 6V18C0 19.1 0.9 20 2 20H18C19.1 20 20 19.1 20 18V6C20 4.9 19.1 4 18 4ZM10 6.75C11.24 6.75 12.25 7.76 12.25 9C12.25 10.24 11.24 11.25 10 11.25C8.76 11.25 7.75 10.24 7.75 9C7.75 7.76 8.76 6.75 10 6.75ZM15 17H5V15.5C5 13.83 8.33 13 10 13C11.67 13 15 13.83 15 15.5V17Z"
+      fill="#B1B4B6"
+    />
   </svg>
 );
 
-const ArrowLeftWhite = ({ className, fill = "white", style = {} }) => (
-  <svg width="16" height="16" viewBox="0 0 16 16" className={className} fill="none" style={style} xmlns="http://www.w3.org/2000/svg">
-    <path d="M16 7H3.83L9.42 1.41L8 0L0 8L8 16L9.41 14.59L3.83 9H16V7Z" fill={fill} />
+const AnnouncementIcon = () => (
+  <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M24.6665 0.666016H3.33317C1.8665 0.666016 0.679837 1.86602 0.679837 3.33268L0.666504 27.3327L5.99984 21.9993H24.6665C26.1332 21.9993 27.3332 20.7993 27.3332 19.3327V3.33268C27.3332 1.86602 26.1332 0.666016 24.6665 0.666016ZM15.3332 12.666H12.6665V4.66602H15.3332V12.666ZM15.3332 17.9993H12.6665V15.3327H15.3332V17.9993Z"
+      fill="#F47738"
+    />
   </svg>
 );
-const PrivacyMaskIcon = ({ className, style = {} }) => (
-  <svg width="22" height="15" viewBox="0 0 22 15" fill="none" xmlns="http://www.w3.org/2000/svg" className={className} style={style}>
-    <path
-      d="M11 0C6 0 1.73 3.11 0 7.5C1.73 11.89 6 15 11 15C16 15 20.27 11.89 22 7.5C20.27 3.11 16 0 11 0ZM11 12.5C8.24 12.5 6 10.26 6 7.5C6 4.74 8.24 2.5 11 2.5C13.76 2.5 16 4.74 16 7.5C16 10.26 13.76 12.5 11 12.5ZM11 4.5C9.34 4.5 8 5.84 8 7.5C8 9.16 9.34 10.5 11 10.5C12.66 10.5 14 9.16 14 7.5C14 5.84 12.66 4.5 11 4.5Z"
-      fill="#EEEEEE"
-    />
+
+const ArrowBack = ({ className, onClick }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black" className={className} onClick={onClick} width="18px" height="18px">
+    <path d="M0 0h24v24H0z" fill="none" />
+    <path d="M11.67 3.87L9.9 2.1 0 12l9.9 9.9 1.77-1.77L3.54 12z" />
+  </svg>
+);
+
+const ArrowCollapseDown = () => (
+  <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M1.41 0.59L-2.62268e-07 2L6 8L12 2L10.59 0.59L6 5.17L1.41 0.59Z" fill="#0B0C0C" />
+  </svg>
+);
+
+const ArrowCollapseUp = () => (
+  <svg width="13" height="8" viewBox="0 0 13 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10.6369 7.3491L12.029 5.9214L5.9536 -0.00228767L0.0299208 6.07307L1.45763 7.46514L5.98937 2.82749L10.6369 7.3491Z" fill="#0B0C0C" />
+  </svg>
+);
+
+const ArrowDirection = ({ className, styles }) => (
+  <svg style={{ ...styles }} className={className} viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+    <path d="M8.0013 2.66669L7.0613 3.60669L10.7813 7.33335H2.66797V8.66669H10.7813L7.0613 12.3934L8.0013 13.3334L13.3346 8.00002L8.0013 2.66669Z" />
   </svg>
 );
 
@@ -55,17 +110,29 @@ const ArrowDown = ({ className, onClick, styles, disable }) => (
   </svg>
 );
 
-const ArrowBack = ({ className, onClick }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black" className={className} onClick={onClick} width="18px" height="18px">
-    <path d="M0 0h24v24H0z" fill="none" />
-    <path d="M11.67 3.87L9.9 2.1 0 12l9.9 9.9 1.77-1.77L3.54 12z" />
-  </svg>
-);
-
 const ArrowForward = ({ className, onClick }) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black" className={className} onClick={onClick} width="18px" height="18px">
     <path d="M0 0h24v24H0z" fill="none" />
     <path d="M5.88 4.12L13.76 12l-7.88 7.88L8 22l10-10L8 2z" />
+  </svg>
+);
+
+const ArrowLeft = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black" className={className} width="19px">
+    <path d="M24 0v24H0V0h24z" fill="none" opacity=".87" />
+    <path d="M14 7l-5 5 5 5V7z" />
+  </svg>
+);
+
+const ArrowLeftWhite = ({ className, fill = "white", style = {} }) => (
+  <svg width="16" height="16" viewBox="0 0 16 16" className={className} fill="none" style={style} xmlns="http://www.w3.org/2000/svg">
+    <path d="M16 7H3.83L9.42 1.41L8 0L0 8L8 16L9.41 14.59L3.83 9H16V7Z" fill={fill} />
+  </svg>
+);
+
+const ArrowRightInbox = ({ style }) => (
+  <svg width="20" height="14" viewBox="0 0 20 14" fill="none" xmlns="http://www.w3.org/2000/svg" style={style}>
+    <path d="M13 0L11.59 1.41L16.17 6H0V8H16.17L11.58 12.59L13 14L20 7L13 0Z" fill="#F47738" />
   </svg>
 );
 
@@ -81,667 +148,64 @@ const ArrowToLast = ({ className, onClick }) => (
   </svg>
 );
 
-const DownloadPrefixIcon = ({ className, onClick }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
-    <path d="M0 0h24v24H0z" fill="none" />
-    <path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" />
+const ArrowVectorDown = ({ className, styles }) => (
+  <svg style={{ ...styles }} className={className} viewBox="0 0 16 11" xmlns="http://www.w3.org/2000/svg">
+    <path d="M16 2.33331L14.12 0.453308L8 6.55997L1.88 0.453307L-8.21774e-08 2.33331L8 10.3333L16 2.33331Z" fill="#F47738" />
   </svg>
 );
 
-const CameraSvg = ({ className }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    enableBackground="new 0 0 24 24"
-    className={className}
-    viewBox="0 0 24 24"
-    fill="black"
-    width="46px"
-    height="42px"
-  >
-    <rect fill="none" height="24" width="24" />
-    <path d="M3,4V1h2v3h3v2H5v3H3V6H0V4H3z M6,10V7h3V4h7l1.83,2H21c1.1,0,2,0.9,2,2v12c0,1.1-0.9,2-2,2H5c-1.1,0-2-0.9-2-2V10H6z M13,19c2.76,0,5-2.24,5-5s-2.24-5-5-5s-5,2.24-5,5S10.24,19,13,19z M9.8,14c0,1.77,1.43,3.2,3.2,3.2s3.2-1.43,3.2-3.2 s-1.43-3.2-3.2-3.2S9.8,12.23,9.8,14z" />
+const AssetIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z" fill="#8b5cf6" />
   </svg>
 );
 
-const DeleteBtn = ({ className, onClick, fill }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" className={className} onClick={onClick} width="18px" height="18px">
-    <path d="M0 0h24v24H0V0z" fill={fill} />
-    <path d="M18.3 5.71c-.39-.39-1.02-.39-1.41 0L12 10.59 7.11 5.7c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41L10.59 12 5.7 16.89c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0L12 13.41l4.89 4.89c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4z" />
-  </svg>
-);
-
-const SuccessSvg = ({ className }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#00703C" className={className}>
-    <path d="M0 0h24v24H0V0z" fill="none" />
-    <path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z" />
-  </svg>
-);
-
-const ErrorSvg = ({ className }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#d4351c" className={className}>
-    <path d="M0 0h24v24H0V0z" fill="none" />
-    <circle cx="12" cy="19" r="2" />
-    <path d="M10 3h4v12h-4z" />
-  </svg>
-);
-
-const StarFilled = ({ className, id, onClick, styles, percentage = 100 }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    enableBackground="new 0 0 24 24"
-    className={className}
-    style={styles}
-    onClick={onClick}
-    viewBox="0 0 24 24"
-    fill="#F47738"
-    width="48px"
-    height="48px"
-  >
-    <linearGradient id={id} x1="0" x2="1" y1="0" y2="0">
-      <stop offset="0%" stopColor="#F47738" stopOpacity={1}></stop>
-      <stop offset={`${percentage}%`} stopColor="#F47738" stopOpacity={1}></stop>
-      <stop offset={`${percentage}%`} stopColor="white" stopOpacity={0}></stop>
-    </linearGradient>
-    <g>
-      <path d="M0,0h24v24H0V0z" fill="none" />
-      <path d="M0,0h24v24H0V0z" fill="none" />
-    </g>
-    <g>
-      <path
-        d="M12,17.27L18.18,21l-1.64-7.03L22,9.24l-7.19-0.61L12,2L9.19,8.63L2,9.24l5.46,4.73L5.82,21L12,17.27z"
-        fill={`url(#${id})`}
-        stroke="#F47738"
-        strokeWidth={1}
-      />
-    </g>
-  </svg>
-);
-
-const StarEmpty = ({ className, onClick, styles }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="#F47738"
-    className={className}
-    style={styles}
-    width="48px"
-    height="48px"
-    onClick={onClick}
-  >
-    <path d="M0 0h24v24H0V0z" fill="none" />
+const AttendanceIcon = ({ className = "", fill = "none", style = {} }) => (
+  <svg width="32" height="32" viewBox="0 0 32 32" className={className} style={style} fill={fill} xmlns="http://www.w3.org/2000/svg">
     <path
-      d="M22 9.24l-7.19-.62L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27 18.18 21l-1.63-7.03L22 9.24zM12 15.4l-3.76 2.27 1-4.28-3.32-2.88 4.38-.38L12 6.1l1.71 4.04 4.38.38-3.32 2.88 1 4.28L12 15.4z"
-      strokeWidth={1}
+      d="M23.9674 19.9844C21.0132 19.9844 18.5968 22.2203 18.3063 25.096C18.287 25.2879 18.2773 25.4831 18.2773 25.6798C18.2773 25.8687 18.2875 26.0542 18.3053 26.2382C18.3104 26.2924 18.3208 26.3463 18.3274 26.4004C18.6807 29.2087 21.0613 31.3745 23.9674 31.3745C26.8736 31.3745 29.258 29.2087 29.612 26.4004C29.6186 26.3463 29.6291 26.2924 29.6341 26.2382C29.6519 26.0542 29.6621 25.8687 29.6621 25.6798C29.6621 22.5289 27.1186 19.9844 23.9674 19.9844ZM26.6029 23.0278C26.7603 23.0232 26.9122 23.0839 27.0233 23.1958C27.2439 23.4177 27.2439 23.7765 27.0233 23.9984L23.804 27.2221C23.716 27.3105 23.6017 27.3675 23.4781 27.3845C23.4624 27.3868 23.4464 27.3883 23.4304 27.3891C23.2687 27.3977 23.1109 27.337 22.9967 27.2221L20.9839 25.2083C20.8769 25.1016 20.8167 24.9567 20.8167 24.8052C20.8167 24.654 20.8769 24.5091 20.9839 24.4021C21.0864 24.2986 21.2244 24.2381 21.3698 24.2331C21.5274 24.229 21.6794 24.2902 21.7902 24.4021L23.4003 26.0112L26.2203 23.1957C26.322 23.0933 26.4588 23.0333 26.6029 23.0277L26.6029 23.0278Z"
+      fill="white"
     />
-  </svg>
-);
-
-const DownloadImgIcon = () => (
-  <svg width="14" height="17" viewBox="0 0 14 17" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M14 6H10V0H4V6H0L7 13L14 6ZM0 15V17H14V15H0Z" fill="#F47738" />
-  </svg>
-);
-
-const PrevIcon = () => (
-  <svg width="8" height="12" viewBox="0 0 8 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M1.99997 0L0.589966 1.41L5.16997 6L0.589966 10.59L1.99997 12L7.99997 6L1.99997 0Z" fill="#0B0C0C" />
-  </svg>
-);
-
-const ViewsIcon = () => (
-  <svg width="22" height="16" viewBox="0 0 22 16" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path
-      d="M11 0.5C6 0.5 1.73 3.61 0 8C1.73 12.39 6 15.5 11 15.5C16 15.5 20.27 12.39 22 8C20.27 3.61 16 0.5 11 0.5ZM11 13C8.24 13 6 10.76 6 8C6 5.24 8.24 3 11 3C13.76 3 16 5.24 16 8C16 10.76 13.76 13 11 13ZM11 5C9.34 5 8 6.34 8 8C8 9.66 9.34 11 11 11C12.66 11 14 9.66 14 8C14 6.34 12.66 5 11 5Z"
-      fill="#F47738"
+      d="M5.18073 14.0079C5.73151 14.0079 6.25584 14.1431 6.76753 14.2959C6.48515 14.9735 6.31943 15.7296 6.31943 16.5666V22.2623H0.625V17.7065C0.625 16.454 1.16028 15.5837 1.99929 14.962C2.83852 14.3403 4.00518 14.0078 5.18075 14.0078L5.18073 14.0079Z"
+      fill="white"
     />
-  </svg>
-);
-
-const DocumentIcon = () => (
-  <svg width="100" height="100" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path
-      d="M16 0H2C0.9 0 0 0.9 0 2V16C0 17.1 0.9 18 2 18H16C17.1 18 18 17.1 18 16V2C18 0.9 17.1 0 16 0ZM11 14H4V12H11V14ZM14 10H4V8H14V10ZM14 6H4V4H14V6Z"
-      fill="#F47738"
+      d="M13.4337 11.5879C14.5168 11.5879 15.5471 11.898 16.4705 12.3362C15.9083 13.0822 15.5441 13.9667 15.4575 14.9739C15.4376 15.1211 15.4252 15.2721 15.4252 15.4286V23.9687H7.45703V16.5673C7.45703 16.337 7.47228 16.1179 7.49922 15.9068C7.50202 15.8831 7.50837 15.8613 7.51142 15.8379C7.60089 15.2139 7.80067 14.6674 8.08737 14.1843L8.08763 14.1845C8.10212 14.1593 8.11482 14.1334 8.12524 14.1065C8.42694 13.6238 8.81509 13.2093 9.27739 12.861C10.3835 12.0274 11.9045 11.5879 13.4341 11.5879L13.4337 11.5879Z"
+      fill="white"
     />
-  </svg>
-);
-
-const DocumentIconSolid = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#FFFFFF">
-    <path d="M0 0h24v24H0V0z" fill="none" />
-    <path d="M8 16h8v2H8zm0-4h8v2H8zm6-10H6c-1.1 0-2 .9-2 2v16c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z" />
-  </svg>
-);
-
-const SurveyIconSolid = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#FFFFFF">
-    <path d="M0 0h24v24H0V0z" fill="none" />
-    <path d="M11 7h6v2h-6zm0 4h6v2h-6zm0 4h6v2h-6zM7 7h2v2H7zm0 4h2v2H7zm0 4h2v2H7zM20.1 3H3.9c-.5 0-.9.4-.9.9v16.2c0 .4.4.9.9.9h16.2c.4 0 .9-.5.9-.9V3.9c0-.5-.5-.9-.9-.9zM19 19H5V5h14v14z" />
-  </svg>
-);
-
-const PMBIcon = () => (
-  <svg width="32" height="16" viewBox="0 0 32 16" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path
-      d="M16 9C18.1733 9 20.0933 9.52 21.6533 10.2C23.0933 10.84 24 12.28 24 13.84V16H8V13.8533C8 12.28 8.90667 10.84 10.3467 10.2133C11.9067 9.52 13.8267 9 16 9ZM5.33333 9.33333C6.8 9.33333 8 8.13333 8 6.66667C8 5.2 6.8 4 5.33333 4C3.86667 4 2.66667 5.2 2.66667 6.66667C2.66667 8.13333 3.86667 9.33333 5.33333 9.33333ZM6.84 10.8C6.34667 10.72 5.85333 10.6667 5.33333 10.6667C4.01333 10.6667 2.76 10.9467 1.62667 11.44C0.64 11.8667 0 12.8267 0 13.9067V16H6V13.8533C6 12.7467 6.30667 11.7067 6.84 10.8ZM26.6667 9.33333C28.1333 9.33333 29.3333 8.13333 29.3333 6.66667C29.3333 5.2 28.1333 4 26.6667 4C25.2 4 24 5.2 24 6.66667C24 8.13333 25.2 9.33333 26.6667 9.33333ZM32 13.9067C32 12.8267 31.36 11.8667 30.3733 11.44C29.24 10.9467 27.9867 10.6667 26.6667 10.6667C26.1467 10.6667 25.6533 10.72 25.16 10.8C25.6933 11.7067 26 12.7467 26 13.8533V16H32V13.9067ZM16 0C18.2133 0 20 1.78667 20 4C20 6.21333 18.2133 8 16 8C13.7867 8 12 6.21333 12 4C12 1.78667 13.7867 0 16 0Z"
-      fill="#F47738"
+      d="M23.9678 10.4473C25.8723 10.4473 27.7755 10.8999 29.1495 11.7504C30.5236 12.6011 31.3735 13.7817 31.3735 15.4277V26.2465H30.7508C30.7643 26.0876 30.7859 25.9305 30.7943 25.7717C30.7994 25.7412 30.8022 25.7104 30.8022 25.6794C30.8022 25.6629 30.8001 25.6469 30.7999 25.6303V25.6306V25.626C30.7762 22.5737 28.7388 19.9906 25.9539 19.1419C25.7444 19.0781 25.5317 19.0232 25.3144 18.9795C25.3068 18.978 25.2986 18.9777 25.291 18.9762C25.0818 18.935 24.8693 18.9023 24.6538 18.8806C24.6528 18.8806 24.6515 18.8796 24.6505 18.8796C24.4261 18.857 24.1983 18.8451 23.9678 18.8451C23.7324 18.8451 23.4999 18.8573 23.2706 18.8806C19.8307 19.2314 17.1391 22.1483 17.1391 25.6795C17.1391 25.8709 17.1513 26.059 17.1668 26.2466H16.5664V24.5686V24.5688C16.5667 24.5591 16.5667 24.5495 16.5664 24.5398V15.4278C16.5664 15.2425 16.5809 15.0656 16.602 14.8918C16.6083 14.8402 16.6172 14.7898 16.6254 14.7395C16.6444 14.6198 16.6688 14.5034 16.6976 14.3893C16.7123 14.3313 16.7258 14.2734 16.7431 14.217C16.7751 14.111 16.8147 14.009 16.8554 13.9079C16.9065 13.7826 16.9642 13.6603 17.0277 13.5421C17.0519 13.4969 17.0753 13.4509 17.1012 13.4064C17.1579 13.3106 17.2186 13.2176 17.2834 13.1263C17.2982 13.1052 17.3137 13.0849 17.3289 13.064C17.4799 12.8597 17.6504 12.666 17.8403 12.4825L17.8408 12.4822C17.8553 12.4675 17.869 12.4517 17.882 12.4355C18.1504 12.1861 18.4546 11.9584 18.7904 11.7505C20.1644 10.8998 22.0633 10.4474 23.9678 10.4474L23.9678 10.4473Z"
+      fill="white"
     />
-  </svg>
-);
-
-const PMBIconSolid = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" enableBackground="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#FFFFFF">
-    <g>
-      <rect fill="none" height="24" width="24" />
-    </g>
-    <path d="M18,11c0,0.67,0,1.33,0,2c1.2,0,2.76,0,4,0c0-0.67,0-1.33,0-2C20.76,11,19.2,11,18,11z" />
-    <path d="M16,17.61c0.96,0.71,2.21,1.65,3.2,2.39c0.4-0.53,0.8-1.07,1.2-1.6c-0.99-0.74-2.24-1.68-3.2-2.4 C16.8,16.54,16.4,17.08,16,17.61z" />
-    <path d="M20.4,5.6C20,5.07,19.6,4.53,19.2,4c-0.99,0.74-2.24,1.68-3.2,2.4c0.4,0.53,0.8,1.07,1.2,1.6 C18.16,7.28,19.41,6.35,20.4,5.6z" />
-    <path d="M4,9c-1.1,0-2,0.9-2,2v2c0,1.1,0.9,2,2,2h1v4h2v-4h1l5,3V6L8,9H4z M9.03,10.71L11,9.53v4.94l-1.97-1.18L8.55,13H8H4v-2h4 h0.55L9.03,10.71z" />
-    <path d="M15.5,12c0-1.33-0.58-2.53-1.5-3.35v6.69C14.92,14.53,15.5,13.33,15.5,12z" />
-  </svg>
-);
-
-const EventsIconSolid = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#FFFFFF">
-    <path d="M0 0h24v24H0V0z" fill="none" />
-    <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V9h14v10zm0-12H5V5h14v2zm-2 5h-5v5h5v-5z" />
-  </svg>
-);
-
-const DustbinIcon = () => (
-  <svg width="14" height="18" viewBox="0 0 14 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M1 16C1 17.1 1.9 18 3 18H11C12.1 18 13 17.1 13 16V4H1V16ZM3 6H11V16H3V6ZM10.5 1L9.5 0H4.5L3.5 1H0V3H14V1H10.5Z" fill="#F47738" />
-  </svg>
-);
-
-const ImageIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
-    <path d="M0 0h24v24H0V0z" fill="none" />
-    <path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-4.86 8.86l-3 3.87L9 13.14 6 17h12l-3.86-5.14z" />
-  </svg>
-);
-
-// const DocumentSVG = ({className}) => <svg xmlns = "http://www.w3.org/2000/svg" className={className} height = "48px" viewBox = "0 0 24 24" width = "48px" fill = "#000000" > < path d = "M0 0h24v24H0V0z" fill = "none" />
-// < path d = "M8 16h8v2H8zm0-4h8v2H8zm6-10H6c-1.1 0-2 .9-2 2v16c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z" />
-// </svg>
-
-// const PDFSvg = ({className, width = 100, height = 100, style, viewBox="0 0 34 34" }) => <svg style={style} xmlns="http://www.w3.org/2000/svg" className={className} width={width} height={height} viewBox={viewBox} fill="gray">
-// <path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm10 5.5h1v-3h-1v3z" />
-// </svg>
-
-const DocumentSVG = () => (
-  <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path
-      d="M46.6667 6.6665H20C16.3334 6.6665 13.3667 9.6665 13.3667 13.3332L13.3334 66.6665C13.3334 70.3332 16.3 73.3332 19.9667 73.3332H60C63.6667 73.3332 66.6667 70.3332 66.6667 66.6665V26.6665L46.6667 6.6665ZM53.3334 59.9998H26.6667V53.3332H53.3334V59.9998ZM53.3334 46.6665H26.6667V39.9998H53.3334V46.6665ZM43.3334 29.9998V11.6665L61.6667 29.9998H43.3334Z"
-      fill="#505A5F"
+      d="M5.17963 7.46096C6.12974 7.46096 6.88537 8.21789 6.88537 9.16794C6.88537 10.118 6.12974 10.8782 5.17963 10.8782C4.22952 10.8782 3.47266 10.118 3.47266 9.16794C3.47266 9.04924 3.4846 8.93359 3.50722 8.82202C3.66506 8.04069 4.34827 7.46096 5.17963 7.46096Z"
+      fill="white"
     />
-  </svg>
-);
-
-const PDFSvg = ({
-  className,
-  width = 80,
-  height = 80,
-  style = { background: "#f6f6f6", padding: "8px", boxShadow: "0px 2px 0px #d6d5d3", borderRadius: "4px" },
-  viewBox = "0 0 80 80",
-}) => (
-  <svg {...{ className, width, height, style, viewBox }} fill="none" xmlns="http://www.w3.org/2000/svg">
     <path
-      d="M46.6667 6.6665H20C16.3334 6.6665 13.3667 9.6665 13.3667 13.3332L13.3334 66.6665C13.3334 70.3332 16.3 73.3332 19.9667 73.3332H60C63.6667 73.3332 66.6667 70.3332 66.6667 66.6665V26.6665L46.6667 6.6665ZM53.3334 59.9998H26.6667V53.3332H53.3334V59.9998ZM53.3334 46.6665H26.6667V39.9998H53.3334V46.6665ZM43.3334 29.9998V11.6665L61.6667 29.9998H43.3334Z"
-      fill="#505A5F"
+      d="M13.1504 2.90457C13.249 2.90457 13.3468 2.9094 13.4429 2.91906H13.4462C13.541 2.92872 13.6346 2.94371 13.7263 2.96252C14.6555 3.15162 15.4173 3.78985 15.777 4.64282C15.8847 4.89877 15.9559 5.17429 15.9849 5.46228C15.9945 5.5581 15.9994 5.6557 15.9994 5.75457C15.9994 5.85319 15.9945 5.95003 15.9849 6.04585C15.9559 6.33383 15.8847 6.60985 15.777 6.86531C15.4176 7.7173 14.6559 8.35372 13.7263 8.54229C13.5418 8.57965 13.3507 8.59973 13.1547 8.59998C13.0561 8.59998 12.9582 8.59414 12.8621 8.58448C11.6136 8.45892 10.6081 7.53657 10.3624 6.32951C10.3248 6.14371 10.3047 5.95207 10.3047 5.75458C10.3047 5.65596 10.3095 5.55811 10.3192 5.46203C10.3288 5.36595 10.3436 5.2714 10.3626 5.17838C10.6084 3.97034 11.6139 3.04488 12.8624 2.91878C12.9569 2.90938 13.0533 2.9043 13.1504 2.9043V2.90457Z"
+      fill="white"
     />
-  </svg>
-);
-
-const SearchIconSvg = ({ className, onClick }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#f47738" className={className} width="24px" height="24px" onClick={onClick}>
-    <path d="M0 0h24v24H0z" fill="none" />
-    <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
-  </svg>
-);
-
-const CheckSvg = ({ className, style = {} }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#F47738" className={className} style={style}>
-    <path d="M0 0h24v24H0z" fill="none" />
-    <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" />
-  </svg>
-);
-
-const RoundedCheck = ({ className }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FFFFFF" className={className}>
-    <path d="M0 0h24v24H0V0z" fill="none" />
-    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM9.29 16.29L5.7 12.7c-.39-.39-.39-1.02 0-1.41.39-.39 1.02-.39 1.41 0L10 14.17l6.88-6.88c.39-.39 1.02-.39 1.41 0 .39.39.39 1.02 0 1.41l-7.59 7.59c-.38.39-1.02.39-1.41 0z" />
-  </svg>
-);
-
-const Calender = ({ className, onClick, styles, width = "24", height = "24", ...props }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="currentColor"
-    className={className}
-    onClick={onClick}
-    style={styles}
-    width={width}
-    height={height}
-    {...props}
-  >
-    <path d="M0 0h24v24H0z" fill="none" />
-    <path d="M20 3h-1V1h-2v2H7V1H5v2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 18H4V8h16v13z" />
-  </svg>
-);
-
-const Phone = ({ className, fillcolor, style }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill={fillcolor ? fillcolor : "#f47738"}
-    viewBox="0 0 24 24"
-    style={style ? style : {}}
-    className={className}
-  >
-    <path d="M0 0h24v24H0z" fill="none" />
-    <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />
-  </svg>
-);
-
-const FilterSvg = ({ className }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="#f47738" width="24" height="24" viewBox="0 0 24 24" className={className}>
-    <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z" />
-  </svg>
-);
-
-const SortSvg = ({ className }) => (
-  <svg width="24" height="16" viewBox="0 0 24 16" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-    <path d="M8 16H24V13.3333H8V16ZM0 0V2.66667H24V0H0ZM8 9.33333H24V6.66667H8V9.33333Z" fill="#505A5F" />
-  </svg>
-);
-
-const Close = ({ className, style }) => (
-  <svg style={{ ...style }} focusable="false" viewBox="0 0 24 24" aria-hidden="true" width="24" height="24" fill="#9E9E9E" className={className}>
-    <path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z"></path>
-  </svg>
-);
-
-const Feedback = ({ className }) => (
-  <svg focusable="false" viewBox="0 0 24 24" aria-hidden="true">
-    <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 12h-2v-2h2v2zm0-4h-2V6h2v4z" className={className}></path>
-  </svg>
-);
-
-// Download Icon
-
-const GetApp = ({ className }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#f47738" className={className}>
-    <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
-  </svg>
-);
-
-const HamburgerIcon = ({ className, styles, color = "#fdfdfd" }) => (
-  <svg style={{ ...styles }} width="24" height="24" focusable="false" viewBox="0 0 24 24" aria-hidden="true">
-    <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" fill={color}></path>
-  </svg>
-);
-
-export const HomeIcon = ({ className, styles }) => (
-  <svg className={className} viewBox="0 0 24 24" style={{ ...styles }}>
-    <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"></path>
-  </svg>
-);
-
-export const LanguageIcon = ({ className, styles }) => (
-  <svg className={className} viewBox="0 0 24 24" style={{ ...styles }}>
-    <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm6.93 6h-2.95c-.32-1.25-.78-2.45-1.38-3.56 1.84.63 3.37 1.91 4.33 3.56zM12 4.04c.83 1.2 1.48 2.53 1.91 3.96h-3.82c.43-1.43 1.08-2.76 1.91-3.96zM4.26 14C4.1 13.36 4 12.69 4 12s.1-1.36.26-2h3.38c-.08.66-.14 1.32-.14 2 0 .68.06 1.34.14 2H4.26zm.82 2h2.95c.32 1.25.78 2.45 1.38 3.56-1.84-.63-3.37-1.9-4.33-3.56zm2.95-8H5.08c.96-1.66 2.49-2.93 4.33-3.56C8.81 5.55 8.35 6.75 8.03 8zM12 19.96c-.83-1.2-1.48-2.53-1.91-3.96h3.82c-.43 1.43-1.08 2.76-1.91 3.96zM14.34 14H9.66c-.09-.66-.16-1.32-.16-2 0-.68.07-1.35.16-2h4.68c.09.65.16 1.32.16 2 0 .68-.07 1.34-.16 2zm.25 5.56c.6-1.11 1.06-2.31 1.38-3.56h2.95c-.96 1.65-2.49 2.93-4.33 3.56zM16.36 14c.08-.66.14-1.32.14-2 0-.68-.06-1.34-.14-2h3.38c.16.64.26 1.31.26 2s-.1 1.36-.26 2h-3.38z"></path>
-  </svg>
-);
-
-export const LogoutIcon = ({ className, styles }) => (
-  <svg className={className} viewBox="0 0 24 24" style={{ ...styles }}>
-    <path d="M13 3h-2v10h2V3zm4.83 2.17l-1.42 1.42C17.99 7.86 19 9.81 19 12c0 3.87-3.13 7-7 7s-7-3.13-7-7c0-2.19 1.01-4.14 2.58-5.42L6.17 5.17C4.23 6.82 3 9.26 3 12c0 4.97 4.03 9 9 9s9-4.03 9-9c0-2.74-1.23-5.18-3.17-6.83z"></path>
-  </svg>
-);
-
-const CalendarIcon = (props) => (
-  <svg {...props} fill={props.isdisabled ? "#e3e3e3" : "Black"} xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
-    <path d="M0 0h24v24H0z" fill="none" />
-    <path d="M20 3h-1V1h-2v2H7V1H5v2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 18H4V8h16v13z" />
-  </svg>
-);
-
-const SortDown = (style) => (
-  <svg
-    style={{ display: "inline-block", height: "16px", ...style }}
-    xmlns="http://www.w3.org/2000/svg"
-    enableBackground="new 0 0 24 24"
-    height="24"
-    viewBox="0 0 24 24"
-    width="24"
-  >
-    <rect fill="none" height="24" width="24" />
-    <path d="M19,15l-1.41-1.41L13,18.17V2H11v16.17l-4.59-4.59L5,15l7,7L19,15z" />
-  </svg>
-);
-
-const SortUp = (style) => (
-  <svg
-    style={{ display: "inline-block", height: "16px", ...style }}
-    xmlns="http://www.w3.org/2000/svg"
-    enableBackground="new 0 0 24 24"
-    height="24"
-    viewBox="0 0 24 24"
-    width="24"
-  >
-    <rect fill="none" height="24" width="24" />
-    <path d="M5,9l1.41,1.41L11,5.83V22H13V5.83l4.59,4.59L19,9l-7-7L5,9z" />
-  </svg>
-);
-
-const ArrowRightInbox = ({ style }) => (
-  <svg width="20" height="14" viewBox="0 0 20 14" fill="none" xmlns="http://www.w3.org/2000/svg" style={style}>
-    <path d="M13 0L11.59 1.41L16.17 6H0V8H16.17L11.58 12.59L13 14L20 7L13 0Z" fill="#F47738" />
-  </svg>
-);
-
-const ShippingTruck = ({ className, styles }) => (
-  <svg style={{ ...styles }} className={className} xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
-    <path d="M0 0h24v24H0z" fill="none" />
     <path
-      d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"
-    />
-  </svg>
-);
-
-function CloseSvg({ onClick }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24" onClick={onClick}>
-      <path d="M0 0h24v24H0z" fill="none" />
-      <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
-    </svg>
-  );
-}
-
-const UpwardArrow = ({ color = "#00703C", rotate = 0, marginRight = 0 }) => (
-  <svg
-    style={{ display: "inline-block", verticalAlign: "baseline", transform: `rotate(${rotate}deg)`, marginRight: `${marginRight}px` }}
-    width="11"
-    height="16"
-    viewBox="0 0 11 16"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path d="M0 5.6L1.10786 6.728L4.71429 3.064V16H6.28571V3.064L9.89214 6.736L11 5.6L5.5 0L0 5.6Z" fill={color} />
-  </svg>
-);
-
-const DownwardArrow = (props) => <UpwardArrow {...props} color="#e54d42" rotate={180} />;
-
-const DownloadIcon = ({ styles, className, onClick,fill="#505A5F" }) => (
-  <svg
-    style={{ ...styles }}
-    width="19"
-    height="24"
-    viewBox="0 0 19 24"
-    fill={fill}
-    xmlns="http://www.w3.org/2000/svg"
-    className={className}
-    onClick={onClick}
-  >
-    <path
-      d="M18.8337 8.5H13.5003V0.5H5.50033V8.5H0.166992L9.50033 17.8333L18.8337 8.5ZM0.166992 20.5V23.1667H18.8337V20.5H0.166992Z"
-      fill={fill}
-    />
-  </svg>
-);
-
-const GenericFileIcon = () => (
-  <svg width="80" height="100" viewBox="0 0 80 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M50 0H10C4.5 0 0.0500011 4.5 0.0500011 10L0 90C0 95.5 4.45 100 9.95 100H70C75.5 100 80 95.5 80 90V30L50 0ZM60 80H20V70H60V80ZM60 60H20V50H60V60ZM45 35V7.5L72.5 35H45Z"
-      fill="#505A5F"
-    />
-  </svg>
-);
-
-const ExternalLinkIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M16 16H2V2H9V0H2C0.89 0 0 0.9 0 2V16C0 17.1 0.89 18 2 18H16C17.1 18 18 17.1 18 16V9H16V16ZM11 0V2H14.59L4.76 11.83L6.17 13.24L16 3.41V7H18V0H11Z"
-      fill="#F47738"
-    />
-  </svg>
-);
-
-const PrimaryDownlaodIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#f47738">
-    <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
-  </svg>
-);
-
-const Ellipsis = ({ className, onClick }) => (
-  <svg width="4" height="16" viewBox="0 0 4 16" fill="none" xmlns="http://www.w3.org/2000/svg" className={className} onClick={onClick}>
-    <path
-      d="M2 4C3.1 4 4 3.1 4 2C4 0.9 3.1 0 2 0C0.9 0 0 0.9 0 2C0 3.1 0.9 4 2 4ZM2 6C0.9 6 0 6.9 0 8C0 9.1 0.9 10 2 10C3.1 10 4 9.1 4 8C4 6.9 3.1 6 2 6ZM2 12C0.9 12 0 12.9 0 14C0 15.1 0.9 16 2 16C3.1 16 4 15.1 4 14C4 12.9 3.1 12 2 12Z"
-      fill="#B1B4B6"
-    />
-  </svg>
-);
-
-const Poll = () => (
-  <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M0 6C0 2.68629 2.68629 0 6 0H34C37.3137 0 40 2.68629 40 6V34C40 37.3137 37.3137 40 34 40H6C2.68629 40 0 37.3137 0 34V6Z" fill="white" />
-    <path
-      d="M31.6667 5H8.33333C6.5 5 5 6.5 5 8.33333V31.6667C5 33.5 6.5 35 8.33333 35H31.6667C33.5 35 35 33.5 35 31.6667V8.33333C35 6.5 33.5 5 31.6667 5ZM15 28.3333H11.6667V16.6667H15V28.3333ZM21.6667 28.3333H18.3333V11.6667H21.6667V28.3333ZM28.3333 28.3333H25V21.6667H28.3333V28.3333Z"
-      fill="#F47738"
-    />
-  </svg>
-);
-
-const Details = () => (
-  <svg width="22" height="16" viewBox="0 0 22 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M11 0.5C6 0.5 1.73 3.61 0 8C1.73 12.39 6 15.5 11 15.5C16 15.5 20.27 12.39 22 8C20.27 3.61 16 0.5 11 0.5ZM11 13C8.24 13 6 10.76 6 8C6 5.24 8.24 3 11 3C13.76 3 16 5.24 16 8C16 10.76 13.76 13 11 13ZM11 5C9.34 5 8 6.34 8 8C8 9.66 9.34 11 11 11C12.66 11 14 9.66 14 8C14 6.34 12.66 5 11 5Z"
-      fill="#505A5F"
-    />
-  </svg>
-);
-
-const FilterIcon = ({ onClick }) => (
-  <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg" onClick={onClick}>
-    <path
-      d="M0.666904 2.48016C3.36024 5.9335 8.33357 12.3335 8.33357 12.3335V20.3335C8.33357 21.0668 8.93357 21.6668 9.6669 21.6668H12.3336C13.0669 21.6668 13.6669 21.0668 13.6669 20.3335V12.3335C13.6669 12.3335 18.6269 5.9335 21.3202 2.48016C22.0002 1.60016 21.3736 0.333496 20.2669 0.333496H1.72024C0.613571 0.333496 -0.0130959 1.60016 0.666904 2.48016Z"
-      fill="#505A5F"
-    />
-  </svg>
-);
-
-const RefreshIcon = () => (
-  <svg width="16" height="22" viewBox="0 0 16 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M8 5V8L12 4L8 0V3C3.58 3 0 6.58 0 11C0 12.57 0.46 14.03 1.24 15.26L2.7 13.8C2.25 12.97 2 12.01 2 11C2 7.69 4.69 5 8 5ZM14.76 6.74L13.3 8.2C13.74 9.04 14 9.99 14 11C14 14.31 11.31 17 8 17V14L4 18L8 22V19C12.42 19 16 15.42 16 11C16 9.43 15.54 7.97 14.76 6.74Z"
-      fill="#0B0C0C"
-    />
-  </svg>
-);
-
-const RefreshSVG = () => (
-  <svg width="17" height="17" viewBox="0 0 16 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M8 5V8L12 4L8 0V3C3.58 3 0 6.58 0 11C0 12.57 0.46 14.03 1.24 15.26L2.7 13.8C2.25 12.97 2 12.01 2 11C2 7.69 4.69 5 8 5ZM14.76 6.74L13.3 8.2C13.74 9.04 14 9.99 14 11C14 14.31 11.31 17 8 17V14L4 18L8 22V19C12.42 19 16 15.42 16 11C16 9.43 15.54 7.97 14.76 6.74Z"
-      fill="#505A5F"
-    />
-  </svg>
-);
-
-const PrintIcon = () => (
-  <svg width="20" height="18" viewBox="0 0 20 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M17 5H3C1.34 5 0 6.34 0 8V14H4V18H16V14H20V8C20 6.34 18.66 5 17 5ZM14 16H6V11H14V16ZM17 9C16.45 9 16 8.55 16 8C16 7.45 16.45 7 17 7C17.55 7 18 7.45 18 8C18 8.55 17.55 9 17 9ZM16 0H4V4H16V0Z"
-      fill="#505A5F"
-    />
-  </svg>
-);
-function PropertyHouse({ className, styles }) {
-  return (
-    <svg className={className} fill="#FFFFFF" style={{ ...styles }} width="24" height="24" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
-      <path d="M13.6167 9.5L1.66667 17.4667V35H10V21.6667H16.6667V35H25V17.0833L13.6167 9.5Z" />
-      <path d="M16.6667 5V7.51667L20 9.73333L22.8833 11.6667H25V13.0833L28.3333 15.3167V18.3333H31.6667V21.6667H28.3333V25H31.6667V28.3333H28.3333V35H38.3333V5H16.6667ZM31.6667 15H28.3333V11.6667H31.6667V15Z" />
-    </svg>
-  );
-}
-
-const InfoBannerIcon = ({ fill = "#3498DB",styles }) => {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none" style={styles}>
-      <path
-        d="M10 0C4.48 0 0 4.48 0 10C0 15.52 4.48 20 10 20C15.52 20 20 15.52 20 10C20 4.48 15.52 0 10 0ZM11 15H9V9H11V15ZM11 7H9V5H11V7Z"
-        fill={fill}
-      />
-    </svg>
-  );
-};
-const ShareIcon = ({ styles, className,fill="#505A5F" }) => (
-  <svg style={{ ...styles }} className={className} width="18" height="20" viewBox="0 0 18 20" fill={fill} xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M15 14.08C14.24 14.08 13.56 14.38 13.04 14.85L5.91 10.7C5.96 10.47 6 10.24 6 10C6 9.76 5.96 9.53 5.91 9.3L12.96 5.19C13.5 5.69 14.21 6 15 6C16.66 6 18 4.66 18 3C18 1.34 16.66 0 15 0C13.34 0 12 1.34 12 3C12 3.24 12.04 3.47 12.09 3.7L5.04 7.81C4.5 7.31 3.79 7 3 7C1.34 7 0 8.34 0 10C0 11.66 1.34 13 3 13C3.79 13 4.5 12.69 5.04 12.19L12.16 16.35C12.11 16.56 12.08 16.78 12.08 17C12.08 18.61 13.39 19.92 15 19.92C16.61 19.92 17.92 18.61 17.92 17C17.92 15.39 16.61 14.08 15 14.08Z"
-      fill={fill}
-    />
-  </svg>
-);
-
-const RupeeIcon = ({ className }) => (
-  <svg width="48" className={className} height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect width="48" height="48" rx="6" fill="#F47738" />
-  </svg>
-);
-
-const ComplaintIcon = ({ className, styles }) => (
-  <svg style={{ ...styles }} className={className} viewBox="0 0 48 48" fill="#ffffff" xmlns="http://www.w3.org/2000/svg">
-    <path d="M42.6667 0.666748H5.33335C2.76669 0.666748 0.69002 2.76675 0.69002 5.33342L0.666687 47.3334L10 38.0001H42.6667C45.2334 38.0001 47.3334 35.9001 47.3334 33.3334V5.33342C47.3334 2.76675 45.2334 0.666748 42.6667 0.666748ZM26.3334 21.6667H21.6667V7.66675H26.3334V21.6667ZM26.3334 31.0001H21.6667V26.3334H26.3334V31.0001Z" />
-  </svg>
-);
-
-const DropIcon = ({ className, styles }) => (
-  <svg width="28" height="34" style={{ ...styles }} viewBox="0 0 28 34" className={className} fill="#ffffff" xmlns="http://www.w3.org/2000/svg">
-    <path d="M23.4333 10.3332L14 0.916504L4.56663 10.3332C1.96663 12.9332 0.666626 16.3998 0.666626 19.7332C0.666626 23.0665 1.96663 26.5832 4.56663 29.1832C7.16663 31.7832 10.5833 33.0998 14 33.0998C17.4166 33.0998 20.8333 31.7832 23.4333 29.1832C26.0333 26.5832 27.3333 23.0665 27.3333 19.7332C27.3333 16.3998 26.0333 12.9332 23.4333 10.3332ZM3.99996 20.3332C4.01663 16.9998 5.03329 14.8832 6.93329 12.9998L14 5.78317L21.0666 13.0832C22.9666 14.9498 23.9833 16.9998 24 20.3332H3.99996Z" />
-  </svg>
-);
-
-const Person = (style) => (
-  <svg
-    style={{ display: "inline-block", fontSize: "16px", ...style }}
-    width="24"
-    height="24"
-    viewBox="0 0 40 40"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path d="M13.6167 9.5L1.66667 17.4667V35H10V21.6667H16.6667V35H25V17.0833L13.6167 9.5Z" fill="white" />
-    <path
-      d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"
+      d="M23.9677 0.626961C24.0861 0.626961 24.2028 0.633061 24.3179 0.644753C25.815 0.795729 27.021 1.90491 27.3158 3.35344C27.3611 3.57635 27.3847 3.80611 27.3847 4.04302C27.3847 4.27965 27.3611 4.51069 27.3158 4.73358C27.021 6.18211 25.815 7.29131 24.3179 7.44227C24.2043 7.45371 24.0889 7.45981 23.972 7.46006C23.8536 7.46006 23.7369 7.45396 23.6218 7.44227C23.5066 7.43058 23.393 7.4138 23.2814 7.39118C22.0558 7.14184 21.0732 6.24007 20.7082 5.06145C20.6086 4.74018 20.5547 4.39782 20.5547 4.04301C20.5547 3.92457 20.5608 3.8079 20.5725 3.69277C20.5956 3.46249 20.6419 3.23984 20.7082 3.02557C21.0732 1.84726 22.0555 0.945432 23.2814 0.695833C23.3927 0.673212 23.5066 0.656183 23.6218 0.644745C23.7354 0.633308 23.8508 0.626961 23.9677 0.626961Z"
       fill="white"
     />
   </svg>
 );
 
-const WhatsappIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M0.0566406 24L1.74364 17.837C0.702641 16.033 0.155641 13.988 0.156641 11.891C0.159641 5.335 5.49464 0 12.0496 0C15.2306 0.001 18.2166 1.24 20.4626 3.488C22.7076 5.736 23.9436 8.724 23.9426 11.902C23.9396 18.459 18.6046 23.794 12.0496 23.794C10.0596 23.793 8.09864 23.294 6.36164 22.346L0.0566406 24ZM6.65364 20.193C8.32964 21.188 9.92964 21.784 12.0456 21.785C17.4936 21.785 21.9316 17.351 21.9346 11.9C21.9366 6.438 17.5196 2.01 12.0536 2.008C6.60164 2.008 2.16664 6.442 2.16464 11.892C2.16364 14.117 2.81564 15.783 3.91064 17.526L2.91164 21.174L6.65364 20.193ZM18.0406 14.729C17.9666 14.605 17.7686 14.531 17.4706 14.382C17.1736 14.233 15.7126 13.514 15.4396 13.415C15.1676 13.316 14.9696 13.266 14.7706 13.564C14.5726 13.861 14.0026 14.531 13.8296 14.729C13.6566 14.927 13.4826 14.952 13.1856 14.803C12.8886 14.654 11.9306 14.341 10.7956 13.328C9.91264 12.54 9.31564 11.567 9.14264 11.269C8.96964 10.972 9.12464 10.811 9.27264 10.663C9.40664 10.53 9.56964 10.316 9.71864 10.142C9.86964 9.97 9.91864 9.846 10.0186 9.647C10.1176 9.449 10.0686 9.275 9.99364 9.126C9.91864 8.978 9.32464 7.515 9.07764 6.92C8.83564 6.341 8.59064 6.419 8.40864 6.41L7.83864 6.4C7.64064 6.4 7.31864 6.474 7.04664 6.772C6.77464 7.07 6.00664 7.788 6.00664 9.251C6.00664 10.714 7.07164 12.127 7.21964 12.325C7.36864 12.523 9.31464 15.525 12.2956 16.812C13.0046 17.118 13.5586 17.301 13.9896 17.438C14.7016 17.664 15.3496 17.632 15.8616 17.556C16.4326 17.471 17.6196 16.837 17.8676 16.143C18.1156 15.448 18.1156 14.853 18.0406 14.729Z"
-      fill="#F47738"
-    />
-  </svg>
-);
+const AttentionListIcon =({ className = "", fill = "none", style = {} })=>(
+<svg width="36" height="36" viewBox="0 0 24 27" fill={fill } className={className} style={style} xmlns="http://www.w3.org/2000/svg">
+<path d="M21.3333 3.00065H15.76C15.2 1.45398 13.7333 0.333984 12 0.333984C10.2667 0.333984 8.8 1.45398 8.24 3.00065H2.66667C1.2 3.00065 0 4.20065 0 5.66732V24.334C0 25.8007 1.2 27.0007 2.66667 27.0007H21.3333C22.8 27.0007 24 25.8007 24 24.334V5.66732C24 4.20065 22.8 3.00065 21.3333 3.00065ZM12 3.00065C12.7333 3.00065 13.3333 3.60065 13.3333 4.33398C13.3333 5.06732 12.7333 5.66732 12 5.66732C11.2667 5.66732 10.6667 5.06732 10.6667 4.33398C10.6667 3.60065 11.2667 3.00065 12 3.00065ZM12.6667 21.6673H5.33333V19.0007H12.6667V21.6673ZM18.6667 16.334H5.33333V13.6673H18.6667V16.334ZM18.6667 11.0007H5.33333V8.33398H18.6667V11.0007Z" fill="#F47738"/>
+</svg>
+)
 
-const EmailIcon = () => (
-  <svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M18 0H2C0.9 0 0.00999999 0.9 0.00999999 2L0 14C0 15.1 0.9 16 2 16H18C19.1 16 20 15.1 20 14V2C20 0.9 19.1 0 18 0ZM18 4L10 9L2 4V2L10 7L18 2V4Z"
-      fill="#F47738"
-    />
-  </svg>
-);
-
-const CaseIcon = ({ className, styles }) => (
-  <svg className={className} style={{ ...styles }} fill="#ffffff" width="24" height="24" viewBox="0 0 34 32" xmlns="http://www.w3.org/2000/svg">
-    <path d="M30.3333 6.99967H23.6667V3.66634C23.6667 1.81634 22.1833 0.333008 20.3333 0.333008H13.6667C11.8167 0.333008 10.3333 1.81634 10.3333 3.66634V6.99967H3.66667C1.81667 6.99967 0.350001 8.48301 0.350001 10.333L0.333334 28.6663C0.333334 30.5163 1.81667 31.9997 3.66667 31.9997H30.3333C32.1833 31.9997 33.6667 30.5163 33.6667 28.6663V10.333C33.6667 8.48301 32.1833 6.99967 30.3333 6.99967ZM20.3333 6.99967H13.6667V3.66634H20.3333V6.99967Z" />
-  </svg>
-);
-
-const TLIcon = ({ className, styles }) => (
-  <svg className={className} style={{ ...styles }} fill="#ffffff" width="24" height="24" viewBox="0 0 34 32" xmlns="http://www.w3.org/2000/svg">
-    <path d="M30.3333 6.99967H23.6667V3.66634C23.6667 1.81634 22.1833 0.333008 20.3333 0.333008H13.6667C11.8167 0.333008 10.3333 1.81634 10.3333 3.66634V6.99967H3.66667C1.81667 6.99967 0.350001 8.48301 0.350001 10.333L0.333334 28.6663C0.333334 30.5163 1.81667 31.9997 3.66667 31.9997H30.3333C32.1833 31.9997 33.6667 30.5163 33.6667 28.6663V10.333C33.6667 8.48301 32.1833 6.99967 30.3333 6.99967ZM20.3333 6.99967H13.6667V3.66634H20.3333V6.99967Z" />
-  </svg>
-);
-
-const PersonIcon = ({ className, styles }) => (
-  <svg className={className} style={{ ...styles }} width="24" height="24" viewBox="0 0 38 24" fill="#ffffff" xmlns="http://www.w3.org/2000/svg">
-    <path d="M25.6667 10.3333C28.4334 10.3333 30.65 8.1 30.65 5.33333C30.65 2.56666 28.4334 0.333328 25.6667 0.333328C22.9 0.333328 20.6667 2.56666 20.6667 5.33333C20.6667 8.1 22.9 10.3333 25.6667 10.3333ZM12.3334 10.3333C15.1 10.3333 17.3167 8.1 17.3167 5.33333C17.3167 2.56666 15.1 0.333328 12.3334 0.333328C9.56669 0.333328 7.33335 2.56666 7.33335 5.33333C7.33335 8.1 9.56669 10.3333 12.3334 10.3333ZM12.3334 13.6667C8.45002 13.6667 0.666687 15.6167 0.666687 19.5V23.6667H24V19.5C24 15.6167 16.2167 13.6667 12.3334 13.6667ZM25.6667 13.6667C25.1834 13.6667 24.6334 13.7 24.05 13.75C25.9834 15.15 27.3334 17.0333 27.3334 19.5V23.6667H37.3334V19.5C37.3334 15.6167 29.55 13.6667 25.6667 13.6667Z" />
-  </svg>
-);
-
-const ReceiptIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
-    <path d="M0 0h24v24H0z" fill="none"></path>
-    <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 9h-2V5h2v6zm0 4h-2v-2h2v2z" fill="white"></path>
-  </svg>
-);
-
-const AnnouncementIcon = () => (
-  <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M24.6665 0.666016H3.33317C1.8665 0.666016 0.679837 1.86602 0.679837 3.33268L0.666504 27.3327L5.99984 21.9993H24.6665C26.1332 21.9993 27.3332 20.7993 27.3332 19.3327V3.33268C27.3332 1.86602 26.1332 0.666016 24.6665 0.666016ZM15.3332 12.666H12.6665V4.66602H15.3332V12.666ZM15.3332 17.9993H12.6665V15.3327H15.3332V17.9993Z"
-      fill="#F47738"
-    />
-  </svg>
-);
-
-const PTIcon = ({ className, styles }) => (
-  <svg width="34" height="30" style={{ ...styles }} viewBox="0 0 34 30" fill="#ffffff" className={className} xmlns="http://www.w3.org/2000/svg">
-    <path d="M16.9999 6.66667V0H0.333252V30H33.6666V6.66667H16.9999ZM6.99992 26.6667H3.66659V23.3333H6.99992V26.6667ZM6.99992 20H3.66659V16.6667H6.99992V20ZM6.99992 13.3333H3.66659V10H6.99992V13.3333ZM6.99992 6.66667H3.66659V3.33333H6.99992V6.66667ZM13.6666 26.6667H10.3333V23.3333H13.6666V26.6667ZM13.6666 20H10.3333V16.6667H13.6666V20ZM13.6666 13.3333H10.3333V10H13.6666V13.3333ZM13.6666 6.66667H10.3333V3.33333H13.6666V6.66667ZM30.3333 26.6667H16.9999V23.3333H20.3333V20H16.9999V16.6667H20.3333V13.3333H16.9999V10H30.3333V26.6667ZM26.9999 13.3333H23.6666V16.6667H26.9999V13.3333ZM26.9999 20H23.6666V23.3333H26.9999V20Z" />
-  </svg>
-);
-
-const OBPSIcon = ({ className, styles }) => (
-  <svg className={className} style={{ ...styles }} width="34" height="30" viewBox="0 0 34 30" fill="#ffffff" xmlns="http://www.w3.org/2000/svg">
+const BPAHomeIcon = ({ className, styles }) => (
+  <svg width="34" height="30" className={className} style={{ ...styles }} viewBox="0 0 34 30" fill="#ffffff" xmlns="http://www.w3.org/2000/svg">
     <path
       fillRule="evenodd"
       clipRule="evenodd"
       d="M30.3333 0H3.66659C1.83325 0 0.333252 1.5 0.333252 3.33333V26.6667C0.333252 28.5 1.83325 30 3.66659 30H30.3333C32.1666 30 33.6666 28.5 33.6666 26.6667V3.33333C33.6666 1.5 32.1666 0 30.3333 0ZM13.6666 23.3333H5.33325V20H13.6666V23.3333ZM13.6666 16.6667H5.33325V13.3333H13.6666V16.6667ZM13.6666 10H5.33325V6.66667H13.6666V10ZM21.6999 20L16.9999 15.2667L19.3499 12.9167L21.6999 15.2833L26.9833 10L29.3499 12.3667L21.6999 20Z"
-    />
-  </svg>
-);
-
-const OBPSIconSolidBg = () => (
-  <svg width="34" height="30" viewBox="0 0 34 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path
-      fillRule="evenodd"
-      clipRule="evenodd"
-      d="M30.333 0H3.66634C1.83301 0 0.333008 1.5 0.333008 3.33333V26.6667C0.333008 28.5 1.83301 30 3.66634 30H30.333C32.1663 30 33.6663 28.5 33.6663 26.6667V3.33333C33.6663 1.5 32.1663 0 30.333 0ZM13.6663 23.3333H5.33301V20H13.6663V23.3333ZM13.6663 16.6667H5.33301V13.3333H13.6663V16.6667ZM13.6663 10H5.33301V6.66667H13.6663V10ZM21.6997 20L16.9997 15.2667L19.3497 12.9167L21.6997 15.2833L26.983 10L29.3497 12.3667L21.6997 20Z"
       fill="white"
-    />
-  </svg>
-);
-
-const CitizenTruck = ({ className }) => (
-  <svg width="40" height="40" viewBox="0 0 23 19" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path
-      fill={"#F47738"}
-      d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"
-    />
-  </svg>
-);
-
-const FSMIcon = ({ className, styles }) => (
-  <svg width="40" height="40" viewBox="0 0 23 19" className={className} style={{ ...styles }} fill="#ffffff" xmlns="http://www.w3.org/2000/svg">
-    <path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z" />
-  </svg>
-);
-
-const EDCRIcon = ({ className }) => (
-  <svg width="30" height="32" viewBox="0 0 30 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M20 15.3333V5.33333L15 0.333334L10 5.33333V8.66667H0V32H30V15.3333H20ZM6.66667 28.6667H3.33333V25.3333H6.66667V28.6667ZM6.66667 22H3.33333V18.6667H6.66667V22ZM6.66667 15.3333H3.33333V12H6.66667V15.3333ZM16.6667 28.6667H13.3333V25.3333H16.6667V28.6667ZM16.6667 22H13.3333V18.6667H16.6667V22ZM16.6667 15.3333H13.3333V12H16.6667V15.3333ZM16.6667 8.66667H13.3333V5.33333H16.6667V8.66667ZM26.6667 28.6667H23.3333V25.3333H26.6667V28.6667ZM26.6667 22H23.3333V18.6667H26.6667V22Z"
-      fill="#F47738"
     />
   </svg>
 );
@@ -762,119 +226,109 @@ const BPAIcon = ({ className }) => (
   </svg>
 );
 
-const BPAHomeIcon = ({ className, styles }) => (
-  <svg width="34" height="30" className={className} style={{ ...styles }} viewBox="0 0 34 30" fill="#ffffff" xmlns="http://www.w3.org/2000/svg">
+const Backward = ({ size = 24, color = "currentColor", className = "", ...props }) => (
+  <svg
+    viewBox="0 0 512 512"
+    width={size}
+    height={size}
+    fill={color}
+    stroke={color}
+    className={className}
+    xmlns="http://www.w3.org/2000/svg"
+    {...props}
+  >
+    <path d="M11.5 280.6l192 160c20.6 17.2 52.5 2.8 52.5-24.6V96c0-27.4-31.9-41.8-52.5-24.6l-192 160c-15.3 12.8-15.3 36.4 0 49.2zm256 0l192 160c20.6 17.2 52.5 2.8 52.5-24.6V96c0-27.4-31.9-41.8-52.5-24.6l-192 160c-15.3 12.8-15.3 36.4 0 49.2z" />
+  </svg>
+);
+
+const BillsIcon = ({ styles, className }) => (
+  <svg width="24" height="27" className={className} style={{ ...styles }} viewBox="0 0 24 27" fill="#ffffff" xmlns="http://www.w3.org/2000/svg">
+    <path d="M21.3333 2.99967H15.76C15.2 1.45301 13.7333 0.333008 12 0.333008C10.2667 0.333008 8.8 1.45301 8.24 2.99967H2.66667C1.2 2.99967 0 4.19967 0 5.66634V24.333C0 25.7997 1.2 26.9997 2.66667 26.9997H21.3333C22.8 26.9997 24 25.7997 24 24.333V5.66634C24 4.19967 22.8 2.99967 21.3333 2.99967ZM12 2.99967C12.7333 2.99967 13.3333 3.59967 13.3333 4.33301C13.3333 5.06634 12.7333 5.66634 12 5.66634C11.2667 5.66634 10.6667 5.06634 10.6667 4.33301C10.6667 3.59967 11.2667 2.99967 12 2.99967ZM14.6667 21.6663H5.33333V18.9997H14.6667V21.6663ZM18.6667 16.333H5.33333V13.6663H18.6667V16.333ZM18.6667 10.9997H5.33333V8.33301H18.6667V10.9997Z" />
+  </svg>
+);
+
+const BillsIconComp = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <defs>
+      <linearGradient id="bills-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#f97316" />
+        <stop offset="100%" stopColor="#ea580c" />
+      </linearGradient>
+    </defs>
     <path
-      fillRule="evenodd"
-      clipRule="evenodd"
-      d="M30.3333 0H3.66659C1.83325 0 0.333252 1.5 0.333252 3.33333V26.6667C0.333252 28.5 1.83325 30 3.66659 30H30.3333C32.1666 30 33.6666 28.5 33.6666 26.6667V3.33333C33.6666 1.5 32.1666 0 30.3333 0ZM13.6666 23.3333H5.33325V20H13.6666V23.3333ZM13.6666 16.6667H5.33325V13.3333H13.6666V16.6667ZM13.6666 10H5.33325V6.66667H13.6666V10ZM21.6999 20L16.9999 15.2667L19.3499 12.9167L21.6999 15.2833L26.9833 10L29.3499 12.3667L21.6999 20Z"
-      fill="white"
+      d="M18 17H6v-2h12v2zm0-4H6v-2h12v2zm0-4H6V7h12v2zM3 22l1.5-1.5L6 22l1.5-1.5L9 22l1.5-1.5L12 22l1.5-1.5L15 22l1.5-1.5L18 22l1.5-1.5L21 22V2l-1.5 1.5L18 2l-1.5 1.5L15 2l-1.5 1.5L12 2l-1.5 1.5L9 2l-1.5 1.5L6 2l-1.5 1.5L3 2v20z"
+      fill="url(#bills-grad)"
     />
   </svg>
 );
 
-const HelpIcon = () => (
-  <svg width="24" height="18" viewBox="0 0 24 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+const BioMetricIcon = ({ fill = "#F47738" }) => (
+  <svg width="30" height="34" viewBox="0 0 30 34" fill={"none"} xmlns="http://www.w3.org/2000/svg">
     <path
-      d="M22 0H2C0.9 0 0 0.9 0 2V16C0 17.1 0.9 18 2 18H22C23.1 18 23.99 17.1 23.99 16L24 2C24 0.9 23.1 0 22 0ZM8 3C9.66 3 11 4.34 11 6C11 7.66 9.66 9 8 9C6.34 9 5 7.66 5 6C5 4.34 6.34 3 8 3ZM14 15H2V14C2 12 6 10.9 8 10.9C10 10.9 14 12 14 14V15ZM17.85 11H19.49L21 13L19.01 14.99C17.7 14.01 16.73 12.61 16.28 11C16.1 10.36 16 9.69 16 9C16 8.31 16.1 7.64 16.28 7C16.73 5.38 17.7 3.99 19.01 3.01L21 5L19.49 7H17.85C17.63 7.63 17.5 8.3 17.5 9C17.5 9.7 17.63 10.37 17.85 11Z"
-      fill="#F47738"
-    />
-  </svg>
-);
-const EventCalendar = () => {
-  return (
-    <svg width="24" height="27" viewBox="0 0 24 27" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path
-        d="M18.6667 15.0002H12V21.6668H18.6667V15.0002ZM17.3333 0.333496V3.00016H6.66667V0.333496H4V3.00016H2.66667C1.18667 3.00016 0.0133333 4.20016 0.0133333 5.66683L0 24.3335C0 25.8002 1.18667 27.0002 2.66667 27.0002H21.3333C22.8 27.0002 24 25.8002 24 24.3335V5.66683C24 4.20016 22.8 3.00016 21.3333 3.00016H20V0.333496H17.3333ZM21.3333 24.3335H2.66667V9.66683H21.3333V24.3335Z"
-        fill="#F47738"
-      />
-    </svg>
-  );
-};
-
-const NotificationBell = () => (
-  <svg width="16" height="20" viewBox="0 0 16 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M8 20C9.1 20 10 19.1 10 18H6C6 19.1 6.89 20 8 20ZM14 14V9C14 5.93 12.36 3.36 9.5 2.68V2C9.5 1.17 8.83 0.5 8 0.5C7.17 0.5 6.5 1.17 6.5 2V2.68C3.63 3.36 2 5.92 2 9V14L0 16V17H16V16L14 14Z"
-      fill="white"
-    />
-  </svg>
-);
-
-const MapMarker = () => (
-  <svg width="10" height="14" viewBox="0 0 10 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M5 0.333496C2.42 0.333496 0.333328 2.42016 0.333328 5.00016C0.333328 6.16016 0.666661 7.24683 1.27333 8.22683C1.90666 9.2535 2.73999 10.1335 3.37999 11.1602C3.69333 11.6602 3.91999 12.1268 4.15999 12.6668C4.33333 13.0335 4.47333 13.6668 5 13.6668C5.52666 13.6668 5.66666 13.0335 5.83333 12.6668C6.08 12.1268 6.29999 11.6602 6.61333 11.1602C7.25333 10.1402 8.08666 9.26016 8.72 8.22683C9.33333 7.24683 9.66666 6.16016 9.66666 5.00016C9.66666 2.42016 7.58 0.333496 5 0.333496ZM5 6.8335C4.07999 6.8335 3.33333 6.08683 3.33333 5.16683C3.33333 4.24683 4.07999 3.50016 5 3.50016C5.92 3.50016 6.66666 4.24683 6.66666 5.16683C6.66666 6.08683 5.92 6.8335 5 6.8335Z"
-      fill="#505A5F"
-    />
-  </svg>
-);
-
-const Clock = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path
-      fillRule="evenodd"
-      clipRule="evenodd"
-      d="M7.992 0C3.576 0 0 3.584 0 8C0 12.416 3.576 16 7.992 16C12.416 16 16 12.416 16 8C16 3.584 12.416 0 7.992 0ZM7.99994 14.4C4.46393 14.4 1.59993 11.536 1.59993 7.99999C1.59993 4.46399 4.46393 1.59999 7.99994 1.59999C11.5359 1.59999 14.3999 4.46399 14.3999 7.99999C14.3999 11.536 11.5359 14.4 7.99994 14.4ZM7.20003 4H8.40003V8.2L12 10.336L11.4 11.32L7.20003 8.8V4Z"
-      fill="#505A5F"
-    />
-  </svg>
-);
-
-const TickMark = ({ fillColor = "white" }) => (
-  <svg style={{ display: "inline-block", margin: "auto" }} width="14" height="11" viewBox="0 0 14 11" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M4.75012 8.1275L1.62262 5L0.557617 6.0575L4.75012 10.25L13.7501 1.25L12.6926 0.192505L4.75012 8.1275Z" fill={fillColor} />
-  </svg>
-);
-
-const EditIcon = ({ style }) => (
-  <svg style={style} width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M9.126 5.125L11.063 3.188L14.81 6.935L12.873 8.873L9.126 5.125ZM17.71 2.63L15.37 0.289999C15.1826 0.103748 14.9292 -0.000793457 14.665 -0.000793457C14.4008 -0.000793457 14.1474 0.103748 13.96 0.289999L12.13 2.12L15.88 5.87L17.71 4C17.8844 3.81454 17.9815 3.56956 17.9815 3.315C17.9815 3.06044 17.8844 2.81546 17.71 2.63ZM5.63 8.63L0 14.25V18H3.75L9.38 12.38L12.873 8.873L9.126 5.125L5.63 8.63Z"
-      fill="#F47738"
-    />
-  </svg>
-);
-
-const SearchIcon = ({ className }) => (
-  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M12.5 11H11.71L11.43 10.73C12.41 9.59 13 8.11 13 6.5C13 2.91 10.09 0 6.5 0C2.91 0 0 2.91 0 6.5C0 10.09 2.91 13 6.5 13C8.11 13 9.59 12.41 10.73 11.43L11 11.71V12.5L16 17.49L17.49 16L12.5 11ZM6.5 11C4.01 11 2 8.99 2 6.5C2 4.01 4.01 2 6.5 2C8.99 2 11 4.01 11 6.5C11 8.99 8.99 11 6.5 11Z"
-      fill="#505A5F"
-    />
-  </svg>
-);
-
-const DeleteIcon = ({ style, fill }) => (
-  <svg width="14" height="18" viewBox="0 0 14 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M1 16C1 17.1 1.9 18 3 18H11C12.1 18 13 17.1 13 16V4H1V16ZM3 6H11V16H3V6ZM10.5 1L9.5 0H4.5L3.5 1H0V3H14V1H10.5Z" fill={fill} />
-  </svg>
-);
-
-const CreateLoiIcon = ({ style, fill = "#F47738" }) => (
-  <svg style={style} width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M9.126 5.12506L11.063 3.18806L14.81 6.93506L12.873 8.87306L9.126 5.12506ZM17.71 2.63006L15.37 0.29006C15.1826 0.103809 14.9292 -0.000732422 14.665 -0.000732422C14.4008 -0.000732422 14.1474 0.103809 13.96 0.29006L12.13 2.12006L15.88 5.87006L17.71 4.00006C17.8844 3.8146 17.9815 3.56962 17.9815 3.31506C17.9815 3.0605 17.8844 2.81552 17.71 2.63006ZM5.63 8.63006L0 14.2501V18.0001H3.75L9.38 12.3801L12.873 8.87306L9.126 5.12506L5.63 8.63006Z"
+      d="M24.6886 4.11667C24.5553 4.11667 24.4219 4.08333 24.3053 4.01667C21.1053 2.36667 18.3386 1.66667 15.0219 1.66667C11.7219 1.66667 8.5886 2.45 5.7386 4.01667C5.3386 4.23333 4.8386 4.08333 4.60527 3.68333C4.3886 3.28333 4.5386 2.76667 4.9386 2.55C8.0386 0.866667 11.4386 0 15.0219 0C18.5719 0 21.6719 0.783333 25.0719 2.53333C25.4886 2.75 25.6386 3.25 25.4219 3.65C25.2719 3.95 24.9886 4.11667 24.6886 4.11667ZM0.838598 12.8667C0.671931 12.8667 0.505265 12.8167 0.355265 12.7167C-0.0280686 12.45 -0.111402 11.9333 0.155265 11.55C1.80526 9.21667 3.90527 7.38333 6.40527 6.1C11.6386 3.4 18.3386 3.38333 23.5886 6.08333C26.0886 7.36667 28.1886 9.18333 29.8386 11.5C30.1053 11.8667 30.0219 12.4 29.6386 12.6667C29.2553 12.9333 28.7386 12.85 28.4719 12.4667C26.9719 10.3667 25.0719 8.71667 22.8219 7.56667C18.0386 5.11667 11.9219 5.11667 7.15527 7.58333C4.8886 8.75 2.9886 10.4167 1.4886 12.5167C1.35526 12.75 1.10526 12.8667 0.838598 12.8667ZM11.2553 32.9833C11.0386 32.9833 10.8219 32.9 10.6719 32.7333C9.22193 31.2833 8.4386 30.35 7.32193 28.3333C6.17193 26.2833 5.57193 23.7833 5.57193 21.1C5.57193 16.15 9.80526 12.1167 15.0053 12.1167C20.2053 12.1167 24.4386 16.15 24.4386 21.1C24.4386 21.5667 24.0719 21.9333 23.6053 21.9333C23.1386 21.9333 22.7719 21.5667 22.7719 21.1C22.7719 17.0667 19.2886 13.7833 15.0053 13.7833C10.7219 13.7833 7.2386 17.0667 7.2386 21.1C7.2386 23.5 7.77193 25.7167 8.7886 27.5167C9.85527 29.4333 10.5886 30.25 11.8719 31.55C12.1886 31.8833 12.1886 32.4 11.8719 32.7333C11.6886 32.9 11.4719 32.9833 11.2553 32.9833ZM23.2053 29.9C21.2219 29.9 19.4719 29.4 18.0386 28.4167C15.5553 26.7333 14.0719 24 14.0719 21.1C14.0719 20.6333 14.4386 20.2667 14.9053 20.2667C15.3719 20.2667 15.7386 20.6333 15.7386 21.1C15.7386 23.45 16.9386 25.6667 18.9719 27.0333C20.1553 27.8333 21.5386 28.2167 23.2053 28.2167C23.6053 28.2167 24.2719 28.1667 24.9386 28.05C25.3886 27.9667 25.8219 28.2667 25.9053 28.7333C25.9886 29.1833 25.6886 29.6167 25.2219 29.7C24.2719 29.8833 23.4386 29.9 23.2053 29.9ZM19.8553 33.3333C19.7886 33.3333 19.7053 33.3167 19.6386 33.3C16.9886 32.5667 15.2553 31.5833 13.4386 29.8C11.1053 27.4833 9.82193 24.4 9.82193 21.1C9.82193 18.4 12.1219 16.2 14.9553 16.2C17.7886 16.2 20.0886 18.4 20.0886 21.1C20.0886 22.8833 21.6386 24.3333 23.5553 24.3333C25.4719 24.3333 27.0219 22.8833 27.0219 21.1C27.0219 14.8167 21.6053 9.71667 14.9386 9.71667C10.2053 9.71667 5.87193 12.35 3.92193 16.4333C3.27193 17.7833 2.9386 19.3667 2.9386 21.1C2.9386 22.4 3.05526 24.45 4.05526 27.1167C4.22193 27.55 4.00526 28.0333 3.57193 28.1833C3.1386 28.35 2.65526 28.1167 2.50526 27.7C1.6886 25.5167 1.2886 23.35 1.2886 21.1C1.2886 19.1 1.67193 17.2833 2.42193 15.7C4.6386 11.05 9.55526 8.03333 14.9386 8.03333C22.5219 8.03333 28.6886 13.8833 28.6886 21.0833C28.6886 23.7833 26.3886 25.9833 23.5553 25.9833C20.7219 25.9833 18.4219 23.7833 18.4219 21.0833C18.4219 19.3 16.8719 17.85 14.9553 17.85C13.0386 17.85 11.4886 19.3 11.4886 21.0833C11.4886 23.9333 12.5886 26.6 14.6053 28.6C16.1886 30.1667 17.7053 31.0333 20.0553 31.6833C20.5053 31.8 20.7553 32.2667 20.6386 32.7C20.5553 33.0833 20.2053 33.3333 19.8553 33.3333Z"
       fill={fill}
     />
   </svg>
 );
 
-const WSICon = ({ className, styles }) => (
-  <svg width="28" height="34" viewBox="0 0 28 34" fill="#ffffff" style={{ ...styles }} className={className} xmlns="http://www.w3.org/2000/svg">
-    <path d="M23.4332 10.3337L13.9998 0.916992L4.5665 10.3337C1.9665 12.9337 0.666504 16.4003 0.666504 19.7337C0.666504 23.067 1.9665 26.5837 4.5665 29.1837C7.1665 31.7837 10.5832 33.1003 13.9998 33.1003C17.4165 33.1003 20.8332 31.7837 23.4332 29.1837C26.0332 26.5837 27.3332 23.067 27.3332 19.7337C27.3332 16.4003 26.0332 12.9337 23.4332 10.3337ZM3.99984 20.3337C4.0165 17.0003 5.03317 14.8837 6.93317 13.0003L13.9998 5.78366L21.0665 13.0837C22.9665 14.9503 23.9832 17.0003 23.9998 20.3337H3.99984Z" />
+const BirthIcon = ({ styles, className }) => (
+  <svg width="35" height="39" className={className} style={{ ...styles }} viewBox="0 0 35 39" fill="#ffffff" xmlns="http://www.w3.org/2000/svg">
+    <path d="M20.7502 0.916016H3.25016C1.646 0.916016 0.333496 2.22852 0.333496 3.83268V27.166C0.333496 28.7702 1.646 30.0827 3.25016 30.0827H20.7502C22.3543 30.0827 23.6668 28.7702 23.6668 27.166V3.83268C23.6668 2.22852 22.3543 0.916016 20.7502 0.916016ZM3.25016 3.83268H10.5418V15.4994L6.896 13.3119L3.25016 15.4994V3.83268Z" />
   </svg>
 );
 
-const ArrowVectorDown = ({ className, styles }) => (
-  <svg style={{ ...styles }} className={className} viewBox="0 0 16 11" xmlns="http://www.w3.org/2000/svg">
-    <path d="M16 2.33331L14.12 0.453308L8 6.55997L1.88 0.453307L-8.21774e-08 2.33331L8 10.3333L16 2.33331Z" fill="#F47738" />
+const CHBIcon = ({ styles, className, width = "24", height = "24", ...props }) => (
+  <svg
+    width={width}
+    height={height}
+    className={className}
+    style={{ ...styles }}
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    xmlns="http://www.w3.org/2000/svg"
+    {...props}
+  >
+    <path d="M7 10H4V17H7V10Z" />
+    <path d="M13.5 10H10.5V17H13.5V10Z" />
+    <path d="M22 19H2V22H22V19Z" />
+    <path d="M20 10H17V17H20V10Z" />
+    <path d="M12 1L2 6V8H22V6L12 1Z" />
   </svg>
 );
 
-const ArrowDirection = ({ className, styles }) => (
-  <svg style={{ ...styles }} className={className} viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-    <path d="M8.0013 2.66669L7.0613 3.60669L10.7813 7.33335H2.66797V8.66669H10.7813L7.0613 12.3934L8.0013 13.3334L13.3346 8.00002L8.0013 2.66669Z" />
+const CHBIconComp = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <defs>
+      <linearGradient id="chb-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#7c3aed" />
+        <stop offset="100%" stopColor="#5b21b6" />
+      </linearGradient>
+    </defs>
+    <path d="M12 3L2 12h3v8h6v-6h2v6h6v-8h3L12 3z" fill="url(#chb-grad)" />
+  </svg>
+);
+
+const CalendarIcon = (props) => (
+  <svg {...props} fill={props.isdisabled ? "#e3e3e3" : "Black"} xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
+    <path d="M0 0h24v24H0z" fill="none" />
+    <path d="M20 3h-1V1h-2v2H7V1H5v2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 18H4V8h16v13z" />
+  </svg>
+);
+
+const Calender = ({ className, onClick, styles, width = "24", height = "24", ...props }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    className={className}
+    onClick={onClick}
+    style={styles}
+    width={width}
+    height={height}
+    {...props}
+  >
+    <path d="M0 0h24v24H0z" fill="none" />
+    <path d="M20 3h-1V1h-2v2H7V1H5v2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 18H4V8h16v13z" />
   </svg>
 );
 
@@ -890,60 +344,107 @@ const CameraIcon = () => (
     />
   </svg>
 );
-const RemoveIcon = () => (
-  <svg width="24" height="30" viewBox="0 0 24 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+
+const CameraSvg = ({ className }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    enableBackground="new 0 0 24 24"
+    className={className}
+    viewBox="0 0 24 24"
+    fill="black"
+    width="46px"
+    height="42px"
+  >
+    <rect fill="none" height="24" width="24" />
+    <path d="M3,4V1h2v3h3v2H5v3H3V6H0V4H3z M6,10V7h3V4h7l1.83,2H21c1.1,0,2,0.9,2,2v12c0,1.1-0.9,2-2,2H5c-1.1,0-2-0.9-2-2V10H6z M13,19c2.76,0,5-2.24,5-5s-2.24-5-5-5s-5,2.24-5,5S10.24,19,13,19z M9.8,14c0,1.77,1.43,3.2,3.2,3.2s3.2-1.43,3.2-3.2 s-1.43-3.2-3.2-3.2S9.8,12.23,9.8,14z" />
+  </svg>
+);
+
+const CaseIcon = ({ className, styles }) => (
+  <svg className={className} style={{ ...styles }} fill="#ffffff" width="24" height="24" viewBox="0 0 34 32" xmlns="http://www.w3.org/2000/svg">
+    <path d="M30.3333 6.99967H23.6667V3.66634C23.6667 1.81634 22.1833 0.333008 20.3333 0.333008H13.6667C11.8167 0.333008 10.3333 1.81634 10.3333 3.66634V6.99967H3.66667C1.81667 6.99967 0.350001 8.48301 0.350001 10.333L0.333334 28.6663C0.333334 30.5163 1.81667 31.9997 3.66667 31.9997H30.3333C32.1833 31.9997 33.6667 30.5163 33.6667 28.6663V10.333C33.6667 8.48301 32.1833 6.99967 30.3333 6.99967ZM20.3333 6.99967H13.6667V3.66634H20.3333V6.99967Z" />
+  </svg>
+);
+
+const CheckSvg = ({ className, style = {} }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#F47738" className={className} style={style}>
+    <path d="M0 0h24v24H0z" fill="none" />
+    <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" />
+  </svg>
+);
+
+const ChevronDown = () => (
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="6 9 12 15 18 9" />
+  </svg>
+);
+
+const ChevronForwardOutline = ({ size = 20, color = "currentColor", strokeWidth = 48, className = "", style = {}, onClick, rotate = 0 }) => {
+  return (
+    <svg
+      stroke={color}
+      fill="none"
+      strokeWidth={strokeWidth}
+      viewBox="0 0 512 512"
+      height={size}
+      width={size}
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      style={{
+        transform: `rotate(${rotate}deg)`,
+        cursor: onClick ? "pointer" : "default",
+        ...style,
+      }}
+      onClick={onClick}
+    >
+      <path d="m184 112 144 144-144 144" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+};
+
+const CitizenTruck = ({ className }) => (
+  <svg width="40" height="40" viewBox="0 0 23 19" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
     <path
-      d="M2.00016 26.6667C2.00016 28.5 3.50016 30 5.3335 30H18.6668C20.5002 30 22.0002 28.5 22.0002 26.6667V6.66667H2.00016V26.6667ZM23.6668 1.66667H17.8335L16.1668 0H7.8335L6.16683 1.66667H0.333496V5H23.6668V1.66667Z"
-      fill="#F47738"
+      fill={"#F47738"}
+      d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"
     />
   </svg>
 );
 
-const GalleryIcon = () => (
-  <svg width="40" height="34" viewBox="0 0 40 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+const Clock = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path
-      d="M3.33333 7.00016H0V15.3335H0.0166667L0 30.3335C0 32.1668 1.5 33.6668 3.33333 33.6668H33.3333V30.3335H3.33333V7.00016ZM36.6667 3.66683H23.3333L20 0.333496H10C8.16667 0.333496 6.68333 1.8335 6.68333 3.66683L6.66667 23.6668C6.66667 25.5002 8.16667 27.0002 10 27.0002H36.6667C38.5 27.0002 40 25.5002 40 23.6668V7.00016C40 5.16683 38.5 3.66683 36.6667 3.66683ZM11.6667 22.0002L19.1667 12.0002L25 19.5168L29.1667 14.5002L35 22.0002H11.6667Z"
-      fill="#F47738"
-    />
-  </svg>
-);
-
-const EditPencilIcon = ({ className, width = 18, height = 18 }) => (
-  <svg className={className} width={width} height={height} viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M9.126 5.12482L11.063 3.18782L14.81 6.93482L12.873 8.87282L9.126 5.12482ZM17.71 2.62982L15.37 0.289816C15.1826 0.103565 14.9292 -0.000976562 14.665 -0.000976562C14.4008 -0.000976563 14.1474 0.103565 13.96 0.289816L12.13 2.11982L15.88 5.86982L17.71 3.99982C17.8844 3.81436 17.9815 3.56938 17.9815 3.31482C17.9815 3.06025 17.8844 2.81528 17.71 2.62982ZM5.63 8.62982L0 14.2498V17.9998H3.75L9.38 12.3798L12.873 8.87282L9.126 5.12482L5.63 8.62982Z"
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M7.992 0C3.576 0 0 3.584 0 8C0 12.416 3.576 16 7.992 16C12.416 16 16 12.416 16 8C16 3.584 12.416 0 7.992 0ZM7.99994 14.4C4.46393 14.4 1.59993 11.536 1.59993 7.99999C1.59993 4.46399 4.46393 1.59999 7.99994 1.59999C11.5359 1.59999 14.3999 4.46399 14.3999 7.99999C14.3999 11.536 11.5359 14.4 7.99994 14.4ZM7.20003 4H8.40003V8.2L12 10.336L11.4 11.32L7.20003 8.8V4Z"
       fill="#505A5F"
     />
   </svg>
 );
-const AddressBookIcon = ({ styles, className }) => (
-  <svg className={className} style={{ ...styles }} viewBox="0 0 20 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M18 0H2V2H18V0ZM2 24H18V22H2V24ZM18 4H2C0.9 4 0 4.9 0 6V18C0 19.1 0.9 20 2 20H18C19.1 20 20 19.1 20 18V6C20 4.9 19.1 4 18 4ZM10 6.75C11.24 6.75 12.25 7.76 12.25 9C12.25 10.24 11.24 11.25 10 11.25C8.76 11.25 7.75 10.24 7.75 9C7.75 7.76 8.76 6.75 10 6.75ZM15 17H5V15.5C5 13.83 8.33 13 10 13C11.67 13 15 13.83 15 15.5V17Z"
-      fill="#B1B4B6"
-    />
+
+const Close = ({ className, style }) => (
+  <svg style={{ ...style }} focusable="false" viewBox="0 0 24 24" aria-hidden="true" width="24" height="24" fill="#9E9E9E" className={className}>
+    <path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z"></path>
   </svg>
 );
 
-const LocationIcon = ({ styles, className }) => (
-  <svg className={className} style={{ ...styles }} viewBox="0 0 14 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M7 0C3.13 0 0 3.13 0 7C0 8.74 0.5 10.37 1.41 11.84C2.36 13.38 3.61 14.7 4.57 16.24C5.04 16.99 5.38 17.69 5.74 18.5C6 19.05 6.21 20 7 20C7.79 20 8 19.05 8.25 18.5C8.62 17.69 8.95 16.99 9.42 16.24C10.38 14.71 11.63 13.39 12.58 11.84C13.5 10.37 14 8.74 14 7C14 3.13 10.87 0 7 0ZM7 9.75C5.62 9.75 4.5 8.63 4.5 7.25C4.5 5.87 5.62 4.75 7 4.75C8.38 4.75 9.5 5.87 9.5 7.25C9.5 8.63 8.38 9.75 7 9.75Z"
-      fill="#B1B4B6"
-    />
-  </svg>
-);
-const CollectionsBookmarIcons = ({ styles, className }) => (
-  <svg width="22" height="28" className={className} style={{ ...styles }} viewBox="0 0 22 28" fill="#ffffff" xmlns="http://www.w3.org/2000/svg">
-    <path d="M18.9999 0.666992H2.99992C1.53325 0.666992 0.333252 1.86699 0.333252 3.33366V24.667C0.333252 26.1337 1.53325 27.3337 2.99992 27.3337H18.9999C20.4666 27.3337 21.6666 26.1337 21.6666 24.667V3.33366C21.6666 1.86699 20.4666 0.666992 18.9999 0.666992ZM2.99992 3.33366H9.66658V14.0003L6.33325 12.0003L2.99992 14.0003V3.33366Z" />
-  </svg>
-);
-
-const FinanceChartIcon = ({ styles, className }) => (
-  <svg width="30" height="30" className={className} style={{ ...styles }} viewBox="0 0 30 30" fill="#ffffff" xmlns="http://www.w3.org/2000/svg">
-    <path d="M26.6667 0H3.33333C1.5 0 0 1.5 0 3.33333V26.6667C0 28.5 1.5 30 3.33333 30H26.6667C28.5 30 30 28.5 30 26.6667V3.33333C30 1.5 28.5 0 26.6667 0ZM10 23.3333H6.66667V11.6667H10V23.3333ZM16.6667 23.3333H13.3333V6.66667H16.6667V23.3333ZM23.3333 23.3333H20V16.6667H23.3333V23.3333Z" />
-  </svg>
-);
+const CollapseIcon = ({ isCollapsed = false, width = 18, height = 18, stroke = "currentColor", strokeWidth = 2, className = "" }) => {
+  return (
+    <svg
+      width={width}
+      height={height}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={stroke}
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d={isCollapsed ? "M13 17l5-5-5-5M6 17l5-5-5-5" : "M11 17l-5-5 5-5M18 17l-5-5 5-5"} />
+    </svg>
+  );
+};
 
 const CollectionIcon = ({ styles, className }) => (
   <svg width="24" height="27" className={className} style={{ ...styles }} viewBox="0 0 24 27" fill="#ffffff" xmlns="http://www.w3.org/2000/svg">
@@ -951,36 +452,78 @@ const CollectionIcon = ({ styles, className }) => (
   </svg>
 );
 
-const BillsIcon = ({ styles, className }) => (
-  <svg width="24" height="27" className={className} style={{ ...styles }} viewBox="0 0 24 27" fill="#ffffff" xmlns="http://www.w3.org/2000/svg">
-    <path d="M21.3333 2.99967H15.76C15.2 1.45301 13.7333 0.333008 12 0.333008C10.2667 0.333008 8.8 1.45301 8.24 2.99967H2.66667C1.2 2.99967 0 4.19967 0 5.66634V24.333C0 25.7997 1.2 26.9997 2.66667 26.9997H21.3333C22.8 26.9997 24 25.7997 24 24.333V5.66634C24 4.19967 22.8 2.99967 21.3333 2.99967ZM12 2.99967C12.7333 2.99967 13.3333 3.59967 13.3333 4.33301C13.3333 5.06634 12.7333 5.66634 12 5.66634C11.2667 5.66634 10.6667 5.06634 10.6667 4.33301C10.6667 3.59967 11.2667 2.99967 12 2.99967ZM14.6667 21.6663H5.33333V18.9997H14.6667V21.6663ZM18.6667 16.333H5.33333V13.6663H18.6667V16.333ZM18.6667 10.9997H5.33333V8.33301H18.6667V10.9997Z" />
+const CollectionsBookmarIcons = ({ styles, className }) => (
+  <svg width="22" height="28" className={className} style={{ ...styles }} viewBox="0 0 22 28" fill="#ffffff" xmlns="http://www.w3.org/2000/svg">
+    <path d="M18.9999 0.666992H2.99992C1.53325 0.666992 0.333252 1.86699 0.333252 3.33366V24.667C0.333252 26.1337 1.53325 27.3337 2.99992 27.3337H18.9999C20.4666 27.3337 21.6666 26.1337 21.6666 24.667V3.33366C21.6666 1.86699 20.4666 0.666992 18.9999 0.666992ZM2.99992 3.33366H9.66658V14.0003L6.33325 12.0003L2.99992 14.0003V3.33366Z" />
   </svg>
 );
 
-const MCollectIcon = ({ styles, className }) => (
-  <svg width="37" height="35" className={className} style={{ ...styles }} viewBox="0 0 37 35" fill="#ffffff" xmlns="http://www.w3.org/2000/svg">
-    <path d="M34.375 28.75V30.625C34.375 32.6875 32.6875 34.375 30.625 34.375H4.375C2.29375 34.375 0.625 32.6875 0.625 30.625V4.375C0.625 2.3125 2.29375 0.625 4.375 0.625H30.625C32.6875 0.625 34.375 2.3125 34.375 4.375V6.25H17.5C15.4187 6.25 13.75 7.9375 13.75 10V25C13.75 27.0625 15.4187 28.75 17.5 28.75H34.375ZM17.5 25H36.25V10H17.5V25ZM25 20.3125C23.4438 20.3125 22.1875 19.0562 22.1875 17.5C22.1875 15.9438 23.4438 14.6875 25 14.6875C26.5562 14.6875 27.8125 15.9438 27.8125 17.5C27.8125 19.0562 26.5562 20.3125 25 20.3125Z" />
+const ComplaintIcon = ({ className, styles }) => (
+  <svg style={{ ...styles }} className={className} viewBox="0 0 48 48" fill="#ffffff" xmlns="http://www.w3.org/2000/svg">
+    <path d="M42.6667 0.666748H5.33335C2.76669 0.666748 0.69002 2.76675 0.69002 5.33342L0.666687 47.3334L10 38.0001H42.6667C45.2334 38.0001 47.3334 35.9001 47.3334 33.3334V5.33342C47.3334 2.76675 45.2334 0.666748 42.6667 0.666748ZM26.3334 21.6667H21.6667V7.66675H26.3334V21.6667ZM26.3334 31.0001H21.6667V26.3334H26.3334V31.0001Z" />
   </svg>
 );
 
-const PGRIcon = ({ styles, className }) => (
-  <svg width="35" height="39" className={className} style={{ ...styles }} viewBox="0 0 35 39" fill="#ffffff" xmlns="http://www.w3.org/2000/svg">
-    <path d="M31.168 0.75H3.83464C1.95547 0.75 0.435052 2.4375 0.435052 4.5L0.417969 38.25L7.2513 30.75H31.168C33.0471 30.75 34.5846 29.0625 34.5846 27V4.5C34.5846 2.4375 33.0471 0.75 31.168 0.75ZM19.2096 17.625H15.793V6.375H19.2096V17.625ZM19.2096 25.125H15.793V21.375H19.2096V25.125Z" />
-  </svg>
-);
-const FirenocIcon = ({ styles, className }) => (
-  <svg width="35" height="39" className={className} style={{ ...styles }} viewBox="0 0 35 39" fill="#ffffff" xmlns="http://www.w3.org/2000/svg">
+const ContractIcon = ({ className = "", fill = "none", style = {} }) => (
+  <svg width="24" height="27" className={className} style={style} viewBox="0 0 24 27" fill={fill} xmlns="http://www.w3.org/2000/svg">
     <path
-      d="M21.5142857,14.0571429 C21.12,13.5428571 20.6571429,13.0971429 20.2114286,12.6514286 C19.0971429,11.6228571 17.8114286,10.8857143 16.7314286,9.80571429 C14.2285714,7.30285714 13.7142857,3.17142857 15.2742857,0 C13.7142857,0.394285714 12.2742857,1.28571429 11.0742857,2.26285714 C6.72,5.82857143 5.00571429,12.12 7.06285714,17.52 C7.13142857,17.6914286 7.2,17.8628571 7.2,18.0857143 C7.2,18.4628571 6.94285714,18.8057143 6.6,18.9428571 C6.22285714,19.1142857 5.81142857,19.0114286 5.50285714,18.7371429 C5.4,18.6514286 5.33142857,18.5657143 5.24571429,18.4457143 C3.36,15.9942857 3.05142857,12.48 4.33714286,9.66857143 C1.52571429,12 8.60422844e-16,15.9428571 0.24,19.6628571 C0.308571429,20.52 0.411428571,21.3771429 0.702857143,22.2342857 C0.942857143,23.2628571 1.38857143,24.2914286 1.93714286,25.2 C3.72,28.1657143 6.85714286,30.2914286 10.2342857,30.72 C13.8342857,31.1828571 17.6914286,30.5142857 20.4514286,27.9771429 C23.5371429,25.1314286 24.6514286,20.5714286 23.0228571,16.6628571 L22.8,16.2171429 C22.4571429,15.4285714 21.9942857,14.7257143 21.4285714,14.0742857 L21.5142857,14.0571429 L21.5142857,14.0571429 Z M16.2,24.8571429 C15.72,25.2685714 14.9485714,25.7142857 14.3485714,25.8857143 C12.4628571,26.5714286 10.5771429,25.6114286 9.42857143,24.48 C11.4685714,24 12.6685714,22.4914286 13.0114286,20.9657143 C13.3028571,19.5942857 12.7714286,18.4628571 12.5485714,17.1428571 C12.3428571,15.8742857 12.3771429,14.7942857 12.8571429,13.6114286 C13.1485714,14.2628571 13.4914286,14.9142857 13.8857143,15.4285714 C15.1885714,17.1428571 17.2285714,17.8971429 17.6571429,20.2285714 C17.7257143,20.4685714 17.76,20.7085714 17.76,20.9657143 C17.8114286,22.3714286 17.2114286,23.9142857 16.1828571,24.8571429 L16.2,24.8571429 Z"
-      id="Shape"
-    ></path>
+      d="M21.3333 3.00065H15.76C15.2 1.45398 13.7333 0.333984 12 0.333984C10.2667 0.333984 8.8 1.45398 8.24 3.00065H2.66667C1.2 3.00065 0 4.20065 0 5.66732V24.334C0 25.8007 1.2 27.0007 2.66667 27.0007H21.3333C22.8 27.0007 24 25.8007 24 24.334V5.66732C24 4.20065 22.8 3.00065 21.3333 3.00065ZM12 3.00065C12.7333 3.00065 13.3333 3.60065 13.3333 4.33398C13.3333 5.06732 12.7333 5.66732 12 5.66732C11.2667 5.66732 10.6667 5.06732 10.6667 4.33398C10.6667 3.60065 11.2667 3.00065 12 3.00065Z"
+      fill="white"
+    />
+    <g clip-path="url(#clip0_1_3)">
+      <path d="M14.9269 16.7879L13.3359 18.3789L17.8331 22.8761L19.4241 21.2851L14.9269 16.7879Z" fill="#0B4B66" />
+      <path
+        d="M16.1242 14.4996C17.5717 14.4996 18.7492 13.3221 18.7492 11.8746C18.7492 11.4396 18.6292 11.0346 18.4417 10.6746L16.4167 12.6996L15.2992 11.5821L17.3242 9.55711C16.9642 9.36961 16.5592 9.24961 16.1242 9.24961C14.6767 9.24961 13.4992 10.4271 13.4992 11.8746C13.4992 12.1821 13.5592 12.4746 13.6567 12.7446L12.2692 14.1321L10.9342 12.7971L11.4667 12.2646L10.4092 11.2071L11.9992 9.61711C11.1217 8.73961 9.69672 8.73961 8.81922 9.61711L6.16422 12.2721L7.22172 13.3296H5.10672L4.57422 13.8621L7.22922 16.5171L7.76172 15.9846V13.8621L8.81922 14.9196L9.35172 14.3871L10.6867 15.7221L5.12922 21.2796L6.71922 22.8696L15.2542 14.3421C15.5242 14.4396 15.8167 14.4996 16.1242 14.4996Z"
+        fill="#0B4B66"
+      />
+    </g>
+    <defs>
+      <clipPath id="clip0_1_3">
+        <rect width="18" height="18" fill="white" transform="translate(3 7)" />
+      </clipPath>
+    </defs>
   </svg>
 );
-const BirthIcon = ({ styles, className }) => (
-  <svg width="35" height="39" className={className} style={{ ...styles }} viewBox="0 0 35 39" fill="#ffffff" xmlns="http://www.w3.org/2000/svg">
-    <path d="M20.7502 0.916016H3.25016C1.646 0.916016 0.333496 2.22852 0.333496 3.83268V27.166C0.333496 28.7702 1.646 30.0827 3.25016 30.0827H20.7502C22.3543 30.0827 23.6668 28.7702 23.6668 27.166V3.83268C23.6668 2.22852 22.3543 0.916016 20.7502 0.916016ZM3.25016 3.83268H10.5418V15.4994L6.896 13.3119L3.25016 15.4994V3.83268Z" />
+
+const CreateEstimateIcon = ({ className, style = {}, fill = "#F47738" }) => (
+  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" className={className} style={style} xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M14 8.75C14.6125 8.75 15.1987 8.86375 15.75 9.05625V5.25L10.5 0H1.75C0.77875 0 0 0.77875 0 1.75V14C0 14.9712 0.7875 15.75 1.75 15.75H9.05625C8.86375 15.1987 8.75 14.6125 8.75 14C8.75 11.1037 11.1037 8.75 14 8.75ZM9.625 1.3125L14.4375 6.125H9.625V1.3125ZM17.5 13.125V14.875H14.875V17.5H13.125V14.875H10.5V13.125H13.125V10.5H14.875V13.125H17.5Z"
+      fill={fill}
+    />
   </svg>
 );
+
+const CreateLoiIcon = ({ style, fill = "#F47738" }) => (
+  <svg style={style} width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M9.126 5.12506L11.063 3.18806L14.81 6.93506L12.873 8.87306L9.126 5.12506ZM17.71 2.63006L15.37 0.29006C15.1826 0.103809 14.9292 -0.000732422 14.665 -0.000732422C14.4008 -0.000732422 14.1474 0.103809 13.96 0.29006L12.13 2.12006L15.88 5.87006L17.71 4.00006C17.8844 3.8146 17.9815 3.56962 17.9815 3.31506C17.9815 3.0605 17.8844 2.81552 17.71 2.63006ZM5.63 8.63006L0 14.2501V18.0001H3.75L9.38 12.3801L12.873 8.87306L9.126 5.12506L5.63 8.63006Z"
+      fill={fill}
+    />
+  </svg>
+);
+
+const DSSIconComp = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <defs>
+      <linearGradient id="dss-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#9333ea" />
+        <stop offset="100%" stopColor="#7e22ce" />
+      </linearGradient>
+    </defs>
+    <path
+      d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"
+      fill="url(#dss-grad)"
+    />
+  </svg>
+);
+
+const DashboardIcon = ({ className = "", fill = "none", style = {} }) => (
+  <svg width="24" height="24" className={className} style={style} viewBox="0 0 24 24" fill={fill} xmlns="http://www.w3.org/2000/svg">
+    <path d="M0 13.3333H10.6667V0H0V13.3333ZM0 24H10.6667V16H0V24ZM13.3333 24H24V10.6667H13.3333V24ZM13.3333 0V8H24V0H13.3333Z" fill="white" />
+  </svg>
+);
+
 const DeathIcon = ({ styles, className }) => (
   <svg width="35" height="39" className={className} style={{ ...styles }} viewBox="0 0 35 39" fill="#ffffff" xmlns="http://www.w3.org/2000/svg">
     <path
@@ -990,110 +533,17 @@ const DeathIcon = ({ styles, className }) => (
     />
   </svg>
 );
-const ErrorIcon = ({ className }) => (
-  <svg width="20" height="20" viewBox="0 0 20 20" fill="#FFFFFF" xmlns="http://www.w3.org/2000/svg" className={className}>
-    <path
-      d="M10 0C4.48 0 0 4.48 0 10C0 15.52 4.48 20 10 20C15.52 20 20 15.52 20 10C20 4.48 15.52 0 10 0ZM11 15H9V13H11V15ZM11 11H9V5H11V11Z"
-      fill="white"
-    />
-  </svg>
-);
-const DownloadBtnCommon = () => (
-  <svg width="112" height="32" viewBox="0 0 112 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M25.3337 12H20.0003V4H12.0003V12H6.66699L16.0003 21.3333L25.3337 12ZM6.66699 24V26.6667H25.3337V24H6.66699Z" fill="#F47738" />
-    <path
-      d="M44.3984 21.5H42.0234L42.0391 20.2734H44.3984C45.2109 20.2734 45.888 20.1042 46.4297 19.7656C46.9714 19.4219 47.3776 18.9427 47.6484 18.3281C47.9245 17.7083 48.0625 16.9844 48.0625 16.1562V15.4609C48.0625 14.8099 47.9844 14.2318 47.8281 13.7266C47.6719 13.2161 47.4427 12.7865 47.1406 12.4375C46.8385 12.0833 46.4688 11.8151 46.0312 11.6328C45.599 11.4505 45.1016 11.3594 44.5391 11.3594H41.9766V10.125H44.5391C45.2839 10.125 45.9635 10.25 46.5781 10.5C47.1927 10.7448 47.7214 11.1016 48.1641 11.5703C48.612 12.0339 48.9557 12.5964 49.1953 13.2578C49.4349 13.9141 49.5547 14.6536 49.5547 15.4766V16.1562C49.5547 16.9792 49.4349 17.7214 49.1953 18.3828C48.9557 19.0391 48.6094 19.599 48.1562 20.0625C47.7083 20.526 47.1667 20.8828 46.5312 21.1328C45.901 21.3776 45.1901 21.5 44.3984 21.5ZM42.8281 10.125V21.5H41.3203V10.125H42.8281ZM51.2188 17.3672V17.1875C51.2188 16.5781 51.3073 16.013 51.4844 15.4922C51.6615 14.9661 51.9167 14.5104 52.25 14.125C52.5833 13.7344 52.987 13.4323 53.4609 13.2188C53.9349 13 54.4661 12.8906 55.0547 12.8906C55.6484 12.8906 56.1823 13 56.6562 13.2188C57.1354 13.4323 57.5417 13.7344 57.875 14.125C58.2135 14.5104 58.4714 14.9661 58.6484 15.4922C58.8255 16.013 58.9141 16.5781 58.9141 17.1875V17.3672C58.9141 17.9766 58.8255 18.5417 58.6484 19.0625C58.4714 19.5833 58.2135 20.0391 57.875 20.4297C57.5417 20.8151 57.138 21.1172 56.6641 21.3359C56.1953 21.5495 55.6641 21.6562 55.0703 21.6562C54.4766 21.6562 53.9427 21.5495 53.4688 21.3359C52.9948 21.1172 52.5885 20.8151 52.25 20.4297C51.9167 20.0391 51.6615 19.5833 51.4844 19.0625C51.3073 18.5417 51.2188 17.9766 51.2188 17.3672ZM52.6641 17.1875V17.3672C52.6641 17.7891 52.7135 18.1875 52.8125 18.5625C52.9115 18.9323 53.0599 19.2604 53.2578 19.5469C53.4609 19.8333 53.7135 20.0599 54.0156 20.2266C54.3177 20.388 54.6693 20.4688 55.0703 20.4688C55.4661 20.4688 55.8125 20.388 56.1094 20.2266C56.4115 20.0599 56.6615 19.8333 56.8594 19.5469C57.0573 19.2604 57.2057 18.9323 57.3047 18.5625C57.4089 18.1875 57.4609 17.7891 57.4609 17.3672V17.1875C57.4609 16.7708 57.4089 16.3776 57.3047 16.0078C57.2057 15.6328 57.0547 15.3021 56.8516 15.0156C56.6536 14.724 56.4036 14.4948 56.1016 14.3281C55.8047 14.1615 55.4557 14.0781 55.0547 14.0781C54.6589 14.0781 54.3099 14.1615 54.0078 14.3281C53.7109 14.4948 53.4609 14.724 53.2578 15.0156C53.0599 15.3021 52.9115 15.6328 52.8125 16.0078C52.7135 16.3776 52.6641 16.7708 52.6641 17.1875ZM62.8672 20L65.0391 13.0469H65.9922L65.8047 14.4297L63.5938 21.5H62.6641L62.8672 20ZM61.4062 13.0469L63.2578 20.0781L63.3906 21.5H62.4141L59.9609 13.0469H61.4062ZM68.0703 20.0234L69.8359 13.0469H71.2734L68.8203 21.5H67.8516L68.0703 20.0234ZM66.2031 13.0469L68.3281 19.8828L68.5703 21.5H67.6484L65.375 14.4141L65.1875 13.0469H66.2031ZM74.2031 14.8516V21.5H72.7578V13.0469H74.125L74.2031 14.8516ZM73.8594 16.9531L73.2578 16.9297C73.263 16.3516 73.349 15.8177 73.5156 15.3281C73.6823 14.8333 73.9167 14.4036 74.2188 14.0391C74.5208 13.6745 74.8802 13.3932 75.2969 13.1953C75.7188 12.9922 76.1849 12.8906 76.6953 12.8906C77.112 12.8906 77.487 12.9479 77.8203 13.0625C78.1536 13.1719 78.4375 13.349 78.6719 13.5938C78.9115 13.8385 79.0938 14.1562 79.2188 14.5469C79.3438 14.9323 79.4062 15.4036 79.4062 15.9609V21.5H77.9531V15.9453C77.9531 15.5026 77.888 15.1484 77.7578 14.8828C77.6276 14.612 77.4375 14.4167 77.1875 14.2969C76.9375 14.1719 76.6302 14.1094 76.2656 14.1094C75.9062 14.1094 75.5781 14.1849 75.2812 14.3359C74.9896 14.487 74.737 14.6953 74.5234 14.9609C74.3151 15.2266 74.151 15.5312 74.0312 15.875C73.9167 16.2135 73.8594 16.5729 73.8594 16.9531ZM83.1719 9.5V21.5H81.7188V9.5H83.1719ZM85.1094 17.3672V17.1875C85.1094 16.5781 85.1979 16.013 85.375 15.4922C85.5521 14.9661 85.8073 14.5104 86.1406 14.125C86.474 13.7344 86.8776 13.4323 87.3516 13.2188C87.8255 13 88.3568 12.8906 88.9453 12.8906C89.5391 12.8906 90.0729 13 90.5469 13.2188C91.026 13.4323 91.4323 13.7344 91.7656 14.125C92.1042 14.5104 92.362 14.9661 92.5391 15.4922C92.7161 16.013 92.8047 16.5781 92.8047 17.1875V17.3672C92.8047 17.9766 92.7161 18.5417 92.5391 19.0625C92.362 19.5833 92.1042 20.0391 91.7656 20.4297C91.4323 20.8151 91.0286 21.1172 90.5547 21.3359C90.0859 21.5495 89.5547 21.6562 88.9609 21.6562C88.3672 21.6562 87.8333 21.5495 87.3594 21.3359C86.8854 21.1172 86.4792 20.8151 86.1406 20.4297C85.8073 20.0391 85.5521 19.5833 85.375 19.0625C85.1979 18.5417 85.1094 17.9766 85.1094 17.3672ZM86.5547 17.1875V17.3672C86.5547 17.7891 86.6042 18.1875 86.7031 18.5625C86.8021 18.9323 86.9505 19.2604 87.1484 19.5469C87.3516 19.8333 87.6042 20.0599 87.9062 20.2266C88.2083 20.388 88.5599 20.4688 88.9609 20.4688C89.3568 20.4688 89.7031 20.388 90 20.2266C90.3021 20.0599 90.5521 19.8333 90.75 19.5469C90.9479 19.2604 91.0964 18.9323 91.1953 18.5625C91.2995 18.1875 91.3516 17.7891 91.3516 17.3672V17.1875C91.3516 16.7708 91.2995 16.3776 91.1953 16.0078C91.0964 15.6328 90.9453 15.3021 90.7422 15.0156C90.5443 14.724 90.2943 14.4948 89.9922 14.3281C89.6953 14.1615 89.3464 14.0781 88.9453 14.0781C88.5495 14.0781 88.2005 14.1615 87.8984 14.3281C87.6016 14.4948 87.3516 14.724 87.1484 15.0156C86.9505 15.3021 86.8021 15.6328 86.7031 16.0078C86.6042 16.3776 86.5547 16.7708 86.5547 17.1875ZM99.6016 20.0547V15.7031C99.6016 15.3698 99.5339 15.0807 99.3984 14.8359C99.2682 14.5859 99.0703 14.3932 98.8047 14.2578C98.5391 14.1224 98.2109 14.0547 97.8203 14.0547C97.4557 14.0547 97.1354 14.1172 96.8594 14.2422C96.5885 14.3672 96.375 14.5312 96.2188 14.7344C96.0677 14.9375 95.9922 15.1562 95.9922 15.3906H94.5469C94.5469 15.0885 94.625 14.7891 94.7812 14.4922C94.9375 14.1953 95.1615 13.9271 95.4531 13.6875C95.75 13.4427 96.1042 13.25 96.5156 13.1094C96.9323 12.9635 97.3958 12.8906 97.9062 12.8906C98.5208 12.8906 99.0625 12.9948 99.5312 13.2031C100.005 13.4115 100.375 13.7266 100.641 14.1484C100.911 14.5651 101.047 15.0885 101.047 15.7188V19.6562C101.047 19.9375 101.07 20.237 101.117 20.5547C101.169 20.8724 101.245 21.1458 101.344 21.375V21.5H99.8359C99.763 21.3333 99.7057 21.112 99.6641 20.8359C99.6224 20.5547 99.6016 20.2943 99.6016 20.0547ZM99.8516 16.375L99.8672 17.3906H98.4062C97.9948 17.3906 97.6276 17.4245 97.3047 17.4922C96.9818 17.5547 96.7109 17.651 96.4922 17.7812C96.2734 17.9115 96.1068 18.0755 95.9922 18.2734C95.8776 18.4661 95.8203 18.6927 95.8203 18.9531C95.8203 19.2188 95.8802 19.4609 96 19.6797C96.1198 19.8984 96.2995 20.0729 96.5391 20.2031C96.7839 20.3281 97.0833 20.3906 97.4375 20.3906C97.8802 20.3906 98.2708 20.2969 98.6094 20.1094C98.9479 19.9219 99.2161 19.6927 99.4141 19.4219C99.6172 19.151 99.7266 18.888 99.7422 18.6328L100.359 19.3281C100.323 19.5469 100.224 19.7891 100.062 20.0547C99.901 20.3203 99.6849 20.5755 99.4141 20.8203C99.1484 21.0599 98.8307 21.2604 98.4609 21.4219C98.0964 21.5781 97.6849 21.6562 97.2266 21.6562C96.6536 21.6562 96.151 21.5443 95.7188 21.3203C95.2917 21.0964 94.9583 20.7969 94.7188 20.4219C94.4844 20.0417 94.3672 19.6172 94.3672 19.1484C94.3672 18.6953 94.4557 18.2969 94.6328 17.9531C94.8099 17.6042 95.0651 17.3151 95.3984 17.0859C95.7318 16.8516 96.1328 16.6745 96.6016 16.5547C97.0703 16.4349 97.5938 16.375 98.1719 16.375H99.8516ZM108.648 19.8594V9.5H110.102V21.5H108.773L108.648 19.8594ZM102.961 17.3672V17.2031C102.961 16.5573 103.039 15.9714 103.195 15.4453C103.357 14.9141 103.583 14.4583 103.875 14.0781C104.172 13.6979 104.523 13.4062 104.93 13.2031C105.341 12.9948 105.799 12.8906 106.305 12.8906C106.836 12.8906 107.299 12.9844 107.695 13.1719C108.096 13.3542 108.435 13.6224 108.711 13.9766C108.992 14.3255 109.214 14.7474 109.375 15.2422C109.536 15.737 109.648 16.2969 109.711 16.9219V17.6406C109.654 18.2604 109.542 18.8177 109.375 19.3125C109.214 19.8073 108.992 20.2292 108.711 20.5781C108.435 20.9271 108.096 21.1953 107.695 21.3828C107.294 21.5651 106.826 21.6562 106.289 21.6562C105.794 21.6562 105.341 21.5495 104.93 21.3359C104.523 21.1224 104.172 20.8229 103.875 20.4375C103.583 20.0521 103.357 19.599 103.195 19.0781C103.039 18.5521 102.961 17.9818 102.961 17.3672ZM104.414 17.2031V17.3672C104.414 17.7891 104.456 18.1849 104.539 18.5547C104.628 18.9245 104.763 19.25 104.945 19.5312C105.128 19.8125 105.359 20.0339 105.641 20.1953C105.922 20.3516 106.258 20.4297 106.648 20.4297C107.128 20.4297 107.521 20.3281 107.828 20.125C108.141 19.9219 108.391 19.6536 108.578 19.3203C108.766 18.987 108.911 18.625 109.016 18.2344V16.3516C108.953 16.0651 108.862 15.7891 108.742 15.5234C108.628 15.2526 108.477 15.013 108.289 14.8047C108.107 14.5911 107.88 14.4219 107.609 14.2969C107.344 14.1719 107.029 14.1094 106.664 14.1094C106.268 14.1094 105.927 14.1927 105.641 14.3594C105.359 14.5208 105.128 14.7448 104.945 15.0312C104.763 15.3125 104.628 15.6406 104.539 16.0156C104.456 16.3854 104.414 16.7812 104.414 17.2031Z"
-      fill="#F47738"
-    />
+
+const DeleteBtn = ({ className, onClick, fill }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" className={className} onClick={onClick} width="18px" height="18px">
+    <path d="M0 0h24v24H0V0z" fill={fill} />
+    <path d="M18.3 5.71c-.39-.39-1.02-.39-1.41 0L12 10.59 7.11 5.7c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41L10.59 12 5.7 16.89c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0L12 13.41l4.89 4.89c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4z" />
   </svg>
 );
 
-const PrintBtnCommon = () => (
-  <svg width="41" height="41" viewBox="0 0 41 41" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M32.1663 13.8333H8.83301C6.06634 13.8333 3.83301 16.0667 3.83301 18.8333V28.8333H10.4997V35.5H30.4997V28.8333H37.1663V18.8333C37.1663 16.0667 34.933 13.8333 32.1663 13.8333ZM27.1663 32.1667H13.833V23.8333H27.1663V32.1667ZM32.1663 20.5C31.2497 20.5 30.4997 19.75 30.4997 18.8333C30.4997 17.9167 31.2497 17.1667 32.1663 17.1667C33.083 17.1667 33.833 17.9167 33.833 18.8333C33.833 19.75 33.083 20.5 32.1663 20.5ZM30.4997 5.5H10.4997V12.1667H30.4997V5.5Z"
-      fill="#505A5F"
-    />
-  </svg>
-);
-
-const WhatsappIconGreen = ({ className, styles }) => (
-  <svg className={className} style={{ ...styles }} width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M0.0566406 24L1.74364 17.837C0.702641 16.033 0.155641 13.988 0.156641 11.891C0.159641 5.335 5.49464 0 12.0496 0C15.2306 0.001 18.2166 1.24 20.4626 3.488C22.7076 5.736 23.9436 8.724 23.9426 11.902C23.9396 18.459 18.6046 23.794 12.0496 23.794C10.0596 23.793 8.09864 23.294 6.36164 22.346L0.0566406 24ZM6.65364 20.193C8.32964 21.188 9.92964 21.784 12.0456 21.785C17.4936 21.785 21.9316 17.351 21.9346 11.9C21.9366 6.438 17.5196 2.01 12.0536 2.008C6.60164 2.008 2.16664 6.442 2.16464 11.892C2.16364 14.117 2.81564 15.783 3.91064 17.526L2.91164 21.174L6.65364 20.193ZM18.0406 14.729C17.9666 14.605 17.7686 14.531 17.4706 14.382C17.1736 14.233 15.7126 13.514 15.4396 13.415C15.1676 13.316 14.9696 13.266 14.7706 13.564C14.5726 13.861 14.0026 14.531 13.8296 14.729C13.6566 14.927 13.4826 14.952 13.1856 14.803C12.8886 14.654 11.9306 14.341 10.7956 13.328C9.91264 12.54 9.31564 11.567 9.14264 11.269C8.96964 10.972 9.12464 10.811 9.27264 10.663C9.40664 10.53 9.56964 10.316 9.71864 10.142C9.86964 9.97 9.91864 9.846 10.0186 9.647C10.1176 9.449 10.0686 9.275 9.99364 9.126C9.91864 8.978 9.32464 7.515 9.07764 6.92C8.83564 6.341 8.59064 6.419 8.40864 6.41L7.83864 6.4C7.64064 6.4 7.31864 6.474 7.04664 6.772C6.77464 7.07 6.00664 7.788 6.00664 9.251C6.00664 10.714 7.07164 12.127 7.21964 12.325C7.36864 12.523 9.31464 15.525 12.2956 16.812C13.0046 17.118 13.5586 17.301 13.9896 17.438C14.7016 17.664 15.3496 17.632 15.8616 17.556C16.4326 17.471 17.6196 16.837 17.8676 16.143C18.1156 15.448 18.1156 14.853 18.0406 14.729Z"
-      fill="#25D366"
-    />
-  </svg>
-);
-
-const HelpLineIcon = ({ className, styles }) => (
-  <svg className={className} style={{ ...styles }} width="24" height="18" viewBox="0 0 24 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M22 0H2C0.9 0 0 0.9 0 2V16C0 17.1 0.9 18 2 18H22C23.1 18 23.99 17.1 23.99 16L24 2C24 0.9 23.1 0 22 0ZM8 3C9.66 3 11 4.34 11 6C11 7.66 9.66 9 8 9C6.34 9 5 7.66 5 6C5 4.34 6.34 3 8 3ZM14 15H2V14C2 12 6 10.9 8 10.9C10 10.9 14 12 14 14V15ZM17.85 11H19.49L21 13L19.01 14.99C17.7 14.01 16.73 12.61 16.28 11C16.1 10.36 16 9.69 16 9C16 8.31 16.1 7.64 16.28 7C16.73 5.38 17.7 3.99 19.01 3.01L21 5L19.49 7H17.85C17.63 7.63 17.5 8.3 17.5 9C17.5 9.7 17.63 10.37 17.85 11Z"
-      fill="#0B0C0C"
-    />
-  </svg>
-);
-
-const ServiceCenterIcon = ({ className, styles }) => (
-  <svg className={className} style={{ ...styles }} width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M7 10H4V17H7V10Z" fill="#0B0C0C" />
-    <path d="M13.5 10H10.5V17H13.5V10Z" fill="#0B0C0C" />
-    <path d="M22 19H2V22H22V19Z" fill="#0B0C0C" />
-    <path d="M20 10H17V17H20V10Z" fill="#0B0C0C" />
-    <path d="M12 1L2 6V8H22V6L12 1Z" fill="#0B0C0C" />
-  </svg>
-);
-
-const TimerIcon = ({ className, styles }) => (
-  <svg className={className} style={{ ...styles }} width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M13.0998 17.3701L14.0998 19.1101C13.1398 19.5501 12.0898 19.84 10.9998 19.9501V17.93C11.7398 17.84 12.4398 17.6501 13.0998 17.3701ZM2.0698 11H0.0498047C0.159805 12.1 0.449805 13.14 0.889805 14.1L2.6298 13.1C2.3498 12.44 2.1598 11.74 2.0698 11ZM13.0998 2.63005L14.0998 0.890049C13.1398 0.450049 12.0998 0.160049 10.9998 0.0500488V2.07005C11.7398 2.16005 12.4398 2.35005 13.0998 2.63005ZM17.9298 9.00005H19.9498C19.8398 7.90005 19.5498 6.86005 19.1098 5.90005L17.3698 6.90005C17.6498 7.56005 17.8398 8.26005 17.9298 9.00005ZM6.8998 17.3701L5.89981 19.1101C6.85981 19.5501 7.9098 19.84 8.9998 19.9501V17.93C8.2598 17.84 7.5598 17.6501 6.8998 17.3701ZM8.9998 2.07005V0.0500488C7.8998 0.160049 6.85981 0.450049 5.89981 0.890049L6.8998 2.63005C7.5598 2.35005 8.2598 2.16005 8.9998 2.07005ZM16.3598 5.17005L18.0998 4.16005C17.4698 3.29005 16.6998 2.52005 15.8298 1.89005L14.8198 3.63005C15.4098 4.08005 15.9198 4.59005 16.3598 5.17005ZM2.6298 6.90005L0.889805 5.90005C0.449805 6.86005 0.159805 7.90005 0.0498047 9.00005H2.0698C2.1598 8.26005 2.3498 7.56005 2.6298 6.90005ZM17.9298 11C17.8398 11.74 17.6498 12.44 17.3698 13.1L19.1098 14.1C19.5498 13.14 19.8398 12.09 19.9498 11H17.9298ZM14.8298 16.3601L15.8398 18.1C16.7098 17.4701 17.4798 16.7 18.1098 15.83L16.3698 14.82C15.9198 15.41 15.4098 15.9201 14.8298 16.3601ZM5.1698 3.64005L4.1698 1.89005C3.2898 2.53005 2.5298 3.29005 1.8998 4.17005L3.6398 5.18005C4.0798 4.59005 4.5898 4.08005 5.1698 3.64005ZM3.6398 14.83L1.8998 15.83C2.5298 16.7 3.2998 17.4701 4.1698 18.1L5.1798 16.3601C4.5898 15.9201 4.0798 15.41 3.6398 14.83ZM10.9998 5.00005H8.9998V10.41L13.2898 14.7L14.6998 13.29L10.9998 9.59005V5.00005Z"
-      fill="#F47738"
-    />
-  </svg>
-);
-
-const RupeeSymbol = ({ className, styles }) => (
-  <svg className={className} style={{ ...styles }} width="13" height="18" viewBox="0 0 13 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M11.5781 3.26953H9.12891C9.48828 3.83203 9.72266 4.48438 9.83203 5.22656H12.1875L11.5664 7.54688H9.82031C9.64062 8.71094 9.17578 9.63672 8.42578 10.3242C7.67578 11.0117 6.59766 11.4922 5.19141 11.7656L10.3125 17.8359V18H6.43359L0.761719 11.3555L0.75 9.29297H3.52734C4.97266 9.29297 5.87891 8.71094 6.24609 7.54688H0.46875L1.07812 5.22656H6.17578C5.79297 4.28125 4.95312 3.80078 3.65625 3.78516H0.46875L1.16016 0.9375H12.1875L11.5781 3.26953Z"
-      fill="#F47738"
-    />
-  </svg>
-);
-
-const ValidityTimeIcon = ({ className, styles }) => (
-  <svg className={className} style={{ ...styles }} width="21" height="18" viewBox="0 0 21 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M12 0C7.03 0 3 4.03 3 9H0L3.89 12.89L3.96 13.03L8 9H5C5 5.13 8.13 2 12 2C15.87 2 19 5.13 19 9C19 12.87 15.87 16 12 16C10.07 16 8.32 15.21 7.06 13.94L5.64 15.36C7.27 16.99 9.51 18 12 18C16.97 18 21 13.97 21 9C21 4.03 16.97 0 12 0ZM11 5V10L15.28 12.54L16 11.33L12.5 9.25V5H11Z"
-      fill="#F47738"
-    />
-  </svg>
-);
-
-const AddIcon = ({ styles, className, fill = "white" }) => (
-  <svg width="14" height="14" className={className} style={{ ...styles }} viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M11.7896 2.58402C9.24786 0.0490554 5.13886 0.0490554 2.59717 2.58402C0.0554699 5.11898 0.0554701 9.21709 2.59717 11.752C5.13886 14.287 9.24786 14.287 11.7896 11.752C14.3312 9.21709 14.3312 5.11898 11.7896 2.58402ZM7.84142 11.1057H6.5453V7.81438H3.24523L3.24523 6.52169H6.5453V3.23036H7.84142V6.52169H11.1415L11.1415 7.81438H7.84142V11.1057Z"
-      fill={fill}
-    />
-  </svg>
-);
-
-const UploadIcon = ({styles, className, fill = "white",height="64",width="64" }) => (
-  <svg style={{...styles}} className={className} width={width} height={height} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <g clip-path="url(#clip0_431_5084)">
-      <path
-        d="M24.0007 42.6667H40.0007V26.6667H50.6673L32.0007 8L13.334 26.6667H24.0007V42.6667ZM13.334 48H50.6673V53.3333H13.334V48Z"
-        fill="#B1B4B6"
-      />
-    </g>
-    <defs>
-      <clipPath id="clip0_431_5084">
-        <rect width={width} height={height} fill={fill} />
-      </clipPath>
-    </defs>
+const DeleteIcon = ({ style, fill }) => (
+  <svg width="14" height="18" viewBox="0 0 14 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M1 16C1 17.1 1.9 18 3 18H11C12.1 18 13 17.1 13 16V4H1V16ZM3 6H11V16H3V6ZM10.5 1L9.5 0H4.5L3.5 1H0V3H14V1H10.5Z" fill={fill} />
   </svg>
 );
 
@@ -1110,11 +560,284 @@ const DeleteIconv2 = ({styles, className, fill = "#F47738",height="24",width="24
   </svg>
 );
 
-const InfoIconOutline = ({styles, className, fill = "#505A5F",height="20",width="20" }) => (
-  <svg style={styles} className={className} xmlns="http://www.w3.org/2000/svg" width={width} height={height} viewBox="0 0 20 20" fill={fill}>
-  <path d="M8.7085 5.54171H10.2918V7.12504H8.7085V5.54171ZM8.7085 8.70837H10.2918V13.4584H8.7085V8.70837ZM9.50016 1.58337C5.13016 1.58337 1.5835 5.13004 1.5835 9.50004C1.5835 13.87 5.13016 17.4167 9.50016 17.4167C13.8702 17.4167 17.4168 13.87 17.4168 9.50004C17.4168 5.13004 13.8702 1.58337 9.50016 1.58337ZM9.50016 15.8334C6.00891 15.8334 3.16683 12.9913 3.16683 9.50004C3.16683 6.00879 6.00891 3.16671 9.50016 3.16671C12.9914 3.16671 15.8335 6.00879 15.8335 9.50004C15.8335 12.9913 12.9914 15.8334 9.50016 15.8334Z" fill="#505A5F"/>
-</svg>
+const Details = () => (
+  <svg width="22" height="16" viewBox="0 0 22 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M11 0.5C6 0.5 1.73 3.61 0 8C1.73 12.39 6 15.5 11 15.5C16 15.5 20.27 12.39 22 8C20.27 3.61 16 0.5 11 0.5ZM11 13C8.24 13 6 10.76 6 8C6 5.24 8.24 3 11 3C13.76 3 16 5.24 16 8C16 10.76 13.76 13 11 13ZM11 5C9.34 5 8 6.34 8 8C8 9.66 9.34 11 11 11C12.66 11 14 9.66 14 8C14 6.34 12.66 5 11 5Z"
+      fill="#505A5F"
+    />
+  </svg>
+);
+
+const DocumentIcon = () => (
+  <svg width="100" height="100" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M16 0H2C0.9 0 0 0.9 0 2V16C0 17.1 0.9 18 2 18H16C17.1 18 18 17.1 18 16V2C18 0.9 17.1 0 16 0ZM11 14H4V12H11V14ZM14 10H4V8H14V10ZM14 6H4V4H14V6Z"
+      fill="#F47738"
+    />
+  </svg>
+);
+
+const DocumentIconSolid = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#FFFFFF">
+    <path d="M0 0h24v24H0V0z" fill="none" />
+    <path d="M8 16h8v2H8zm0-4h8v2H8zm6-10H6c-1.1 0-2 .9-2 2v16c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z" />
+  </svg>
+);
+
+const DocumentSVG = () => (
+  <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M46.6667 6.6665H20C16.3334 6.6665 13.3667 9.6665 13.3667 13.3332L13.3334 66.6665C13.3334 70.3332 16.3 73.3332 19.9667 73.3332H60C63.6667 73.3332 66.6667 70.3332 66.6667 66.6665V26.6665L46.6667 6.6665ZM53.3334 59.9998H26.6667V53.3332H53.3334V59.9998ZM53.3334 46.6665H26.6667V39.9998H53.3334V46.6665ZM43.3334 29.9998V11.6665L61.6667 29.9998H43.3334Z"
+      fill="#505A5F"
+    />
+  </svg>
+);
+
+const DoubleTickIcon = ({ className = "", fill = "none", style = {} }) => (
+  <svg width="32" height="19" viewBox="0 0 32 19" className={className} style={style} fill={fill} xmlns="http://www.w3.org/2000/svg">
+    <path d="M24.0002 2.33312L22.1202 0.453125L13.6669 8.90646L15.5469 10.7865L24.0002 2.33312ZM29.6535 0.453125L15.5469 14.5598L9.97354 8.99979L8.09354 10.8798L15.5469 18.3331L31.5469 2.33312L29.6535 0.453125ZM0.546875 10.8798L8.00021 18.3331L9.88021 16.4531L2.44021 8.99979L0.546875 10.8798Z" fill="#F47738"/>
+  </svg>
 )
+
+const DownloadBtnCommon = () => (
+  <svg width="112" height="32" viewBox="0 0 112 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M25.3337 12H20.0003V4H12.0003V12H6.66699L16.0003 21.3333L25.3337 12ZM6.66699 24V26.6667H25.3337V24H6.66699Z" fill="#F47738" />
+    <path
+      d="M44.3984 21.5H42.0234L42.0391 20.2734H44.3984C45.2109 20.2734 45.888 20.1042 46.4297 19.7656C46.9714 19.4219 47.3776 18.9427 47.6484 18.3281C47.9245 17.7083 48.0625 16.9844 48.0625 16.1562V15.4609C48.0625 14.8099 47.9844 14.2318 47.8281 13.7266C47.6719 13.2161 47.4427 12.7865 47.1406 12.4375C46.8385 12.0833 46.4688 11.8151 46.0312 11.6328C45.599 11.4505 45.1016 11.3594 44.5391 11.3594H41.9766V10.125H44.5391C45.2839 10.125 45.9635 10.25 46.5781 10.5C47.1927 10.7448 47.7214 11.1016 48.1641 11.5703C48.612 12.0339 48.9557 12.5964 49.1953 13.2578C49.4349 13.9141 49.5547 14.6536 49.5547 15.4766V16.1562C49.5547 16.9792 49.4349 17.7214 49.1953 18.3828C48.9557 19.0391 48.6094 19.599 48.1562 20.0625C47.7083 20.526 47.1667 20.8828 46.5312 21.1328C45.901 21.3776 45.1901 21.5 44.3984 21.5ZM42.8281 10.125V21.5H41.3203V10.125H42.8281ZM51.2188 17.3672V17.1875C51.2188 16.5781 51.3073 16.013 51.4844 15.4922C51.6615 14.9661 51.9167 14.5104 52.25 14.125C52.5833 13.7344 52.987 13.4323 53.4609 13.2188C53.9349 13 54.4661 12.8906 55.0547 12.8906C55.6484 12.8906 56.1823 13 56.6562 13.2188C57.1354 13.4323 57.5417 13.7344 57.875 14.125C58.2135 14.5104 58.4714 14.9661 58.6484 15.4922C58.8255 16.013 58.9141 16.5781 58.9141 17.1875V17.3672C58.9141 17.9766 58.8255 18.5417 58.6484 19.0625C58.4714 19.5833 58.2135 20.0391 57.875 20.4297C57.5417 20.8151 57.138 21.1172 56.6641 21.3359C56.1953 21.5495 55.6641 21.6562 55.0703 21.6562C54.4766 21.6562 53.9427 21.5495 53.4688 21.3359C52.9948 21.1172 52.5885 20.8151 52.25 20.4297C51.9167 20.0391 51.6615 19.5833 51.4844 19.0625C51.3073 18.5417 51.2188 17.9766 51.2188 17.3672ZM52.6641 17.1875V17.3672C52.6641 17.7891 52.7135 18.1875 52.8125 18.5625C52.9115 18.9323 53.0599 19.2604 53.2578 19.5469C53.4609 19.8333 53.7135 20.0599 54.0156 20.2266C54.3177 20.388 54.6693 20.4688 55.0703 20.4688C55.4661 20.4688 55.8125 20.388 56.1094 20.2266C56.4115 20.0599 56.6615 19.8333 56.8594 19.5469C57.0573 19.2604 57.2057 18.9323 57.3047 18.5625C57.4089 18.1875 57.4609 17.7891 57.4609 17.3672V17.1875C57.4609 16.7708 57.4089 16.3776 57.3047 16.0078C57.2057 15.6328 57.0547 15.3021 56.8516 15.0156C56.6536 14.724 56.4036 14.4948 56.1016 14.3281C55.8047 14.1615 55.4557 14.0781 55.0547 14.0781C54.6589 14.0781 54.3099 14.1615 54.0078 14.3281C53.7109 14.4948 53.4609 14.724 53.2578 15.0156C53.0599 15.3021 52.9115 15.6328 52.8125 16.0078C52.7135 16.3776 52.6641 16.7708 52.6641 17.1875ZM62.8672 20L65.0391 13.0469H65.9922L65.8047 14.4297L63.5938 21.5H62.6641L62.8672 20ZM61.4062 13.0469L63.2578 20.0781L63.3906 21.5H62.4141L59.9609 13.0469H61.4062ZM68.0703 20.0234L69.8359 13.0469H71.2734L68.8203 21.5H67.8516L68.0703 20.0234ZM66.2031 13.0469L68.3281 19.8828L68.5703 21.5H67.6484L65.375 14.4141L65.1875 13.0469H66.2031ZM74.2031 14.8516V21.5H72.7578V13.0469H74.125L74.2031 14.8516ZM73.8594 16.9531L73.2578 16.9297C73.263 16.3516 73.349 15.8177 73.5156 15.3281C73.6823 14.8333 73.9167 14.4036 74.2188 14.0391C74.5208 13.6745 74.8802 13.3932 75.2969 13.1953C75.7188 12.9922 76.1849 12.8906 76.6953 12.8906C77.112 12.8906 77.487 12.9479 77.8203 13.0625C78.1536 13.1719 78.4375 13.349 78.6719 13.5938C78.9115 13.8385 79.0938 14.1562 79.2188 14.5469C79.3438 14.9323 79.4062 15.4036 79.4062 15.9609V21.5H77.9531V15.9453C77.9531 15.5026 77.888 15.1484 77.7578 14.8828C77.6276 14.612 77.4375 14.4167 77.1875 14.2969C76.9375 14.1719 76.6302 14.1094 76.2656 14.1094C75.9062 14.1094 75.5781 14.1849 75.2812 14.3359C74.9896 14.487 74.737 14.6953 74.5234 14.9609C74.3151 15.2266 74.151 15.5312 74.0312 15.875C73.9167 16.2135 73.8594 16.5729 73.8594 16.9531ZM83.1719 9.5V21.5H81.7188V9.5H83.1719ZM85.1094 17.3672V17.1875C85.1094 16.5781 85.1979 16.013 85.375 15.4922C85.5521 14.9661 85.8073 14.5104 86.1406 14.125C86.474 13.7344 86.8776 13.4323 87.3516 13.2188C87.8255 13 88.3568 12.8906 88.9453 12.8906C89.5391 12.8906 90.0729 13 90.5469 13.2188C91.026 13.4323 91.4323 13.7344 91.7656 14.125C92.1042 14.5104 92.362 14.9661 92.5391 15.4922C92.7161 16.013 92.8047 16.5781 92.8047 17.1875V17.3672C92.8047 17.9766 92.7161 18.5417 92.5391 19.0625C92.362 19.5833 92.1042 20.0391 91.7656 20.4297C91.4323 20.8151 91.0286 21.1172 90.5547 21.3359C90.0859 21.5495 89.5547 21.6562 88.9609 21.6562C88.3672 21.6562 87.8333 21.5495 87.3594 21.3359C86.8854 21.1172 86.4792 20.8151 86.1406 20.4297C85.8073 20.0391 85.5521 19.5833 85.375 19.0625C85.1979 18.5417 85.1094 17.9766 85.1094 17.3672ZM86.5547 17.1875V17.3672C86.5547 17.7891 86.6042 18.1875 86.7031 18.5625C86.8021 18.9323 86.9505 19.2604 87.1484 19.5469C87.3516 19.8333 87.6042 20.0599 87.9062 20.2266C88.2083 20.388 88.5599 20.4688 88.9609 20.4688C89.3568 20.4688 89.7031 20.388 90 20.2266C90.3021 20.0599 90.5521 19.8333 90.75 19.5469C90.9479 19.2604 91.0964 18.9323 91.1953 18.5625C91.2995 18.1875 91.3516 17.7891 91.3516 17.3672V17.1875C91.3516 16.7708 91.2995 16.3776 91.1953 16.0078C91.0964 15.6328 90.9453 15.3021 90.7422 15.0156C90.5443 14.724 90.2943 14.4948 89.9922 14.3281C89.6953 14.1615 89.3464 14.0781 88.9453 14.0781C88.5495 14.0781 88.2005 14.1615 87.8984 14.3281C87.6016 14.4948 87.3516 14.724 87.1484 15.0156C86.9505 15.3021 86.8021 15.6328 86.7031 16.0078C86.6042 16.3776 86.5547 16.7708 86.5547 17.1875ZM99.6016 20.0547V15.7031C99.6016 15.3698 99.5339 15.0807 99.3984 14.8359C99.2682 14.5859 99.0703 14.3932 98.8047 14.2578C98.5391 14.1224 98.2109 14.0547 97.8203 14.0547C97.4557 14.0547 97.1354 14.1172 96.8594 14.2422C96.5885 14.3672 96.375 14.5312 96.2188 14.7344C96.0677 14.9375 95.9922 15.1562 95.9922 15.3906H94.5469C94.5469 15.0885 94.625 14.7891 94.7812 14.4922C94.9375 14.1953 95.1615 13.9271 95.4531 13.6875C95.75 13.4427 96.1042 13.25 96.5156 13.1094C96.9323 12.9635 97.3958 12.8906 97.9062 12.8906C98.5208 12.8906 99.0625 12.9948 99.5312 13.2031C100.005 13.4115 100.375 13.7266 100.641 14.1484C100.911 14.5651 101.047 15.0885 101.047 15.7188V19.6562C101.047 19.9375 101.07 20.237 101.117 20.5547C101.169 20.8724 101.245 21.1458 101.344 21.375V21.5H99.8359C99.763 21.3333 99.7057 21.112 99.6641 20.8359C99.6224 20.5547 99.6016 20.2943 99.6016 20.0547ZM99.8516 16.375L99.8672 17.3906H98.4062C97.9948 17.3906 97.6276 17.4245 97.3047 17.4922C96.9818 17.5547 96.7109 17.651 96.4922 17.7812C96.2734 17.9115 96.1068 18.0755 95.9922 18.2734C95.8776 18.4661 95.8203 18.6927 95.8203 18.9531C95.8203 19.2188 95.8802 19.4609 96 19.6797C96.1198 19.8984 96.2995 20.0729 96.5391 20.2031C96.7839 20.3281 97.0833 20.3906 97.4375 20.3906C97.8802 20.3906 98.2708 20.2969 98.6094 20.1094C98.9479 19.9219 99.2161 19.6927 99.4141 19.4219C99.6172 19.151 99.7266 18.888 99.7422 18.6328L100.359 19.3281C100.323 19.5469 100.224 19.7891 100.062 20.0547C99.901 20.3203 99.6849 20.5755 99.4141 20.8203C99.1484 21.0599 98.8307 21.2604 98.4609 21.4219C98.0964 21.5781 97.6849 21.6562 97.2266 21.6562C96.6536 21.6562 96.151 21.5443 95.7188 21.3203C95.2917 21.0964 94.9583 20.7969 94.7188 20.4219C94.4844 20.0417 94.3672 19.6172 94.3672 19.1484C94.3672 18.6953 94.4557 18.2969 94.6328 17.9531C94.8099 17.6042 95.0651 17.3151 95.3984 17.0859C95.7318 16.8516 96.1328 16.6745 96.6016 16.5547C97.0703 16.4349 97.5938 16.375 98.1719 16.375H99.8516ZM108.648 19.8594V9.5H110.102V21.5H108.773L108.648 19.8594ZM102.961 17.3672V17.2031C102.961 16.5573 103.039 15.9714 103.195 15.4453C103.357 14.9141 103.583 14.4583 103.875 14.0781C104.172 13.6979 104.523 13.4062 104.93 13.2031C105.341 12.9948 105.799 12.8906 106.305 12.8906C106.836 12.8906 107.299 12.9844 107.695 13.1719C108.096 13.3542 108.435 13.6224 108.711 13.9766C108.992 14.3255 109.214 14.7474 109.375 15.2422C109.536 15.737 109.648 16.2969 109.711 16.9219V17.6406C109.654 18.2604 109.542 18.8177 109.375 19.3125C109.214 19.8073 108.992 20.2292 108.711 20.5781C108.435 20.9271 108.096 21.1953 107.695 21.3828C107.294 21.5651 106.826 21.6562 106.289 21.6562C105.794 21.6562 105.341 21.5495 104.93 21.3359C104.523 21.1224 104.172 20.8229 103.875 20.4375C103.583 20.0521 103.357 19.599 103.195 19.0781C103.039 18.5521 102.961 17.9818 102.961 17.3672ZM104.414 17.2031V17.3672C104.414 17.7891 104.456 18.1849 104.539 18.5547C104.628 18.9245 104.763 19.25 104.945 19.5312C105.128 19.8125 105.359 20.0339 105.641 20.1953C105.922 20.3516 106.258 20.4297 106.648 20.4297C107.128 20.4297 107.521 20.3281 107.828 20.125C108.141 19.9219 108.391 19.6536 108.578 19.3203C108.766 18.987 108.911 18.625 109.016 18.2344V16.3516C108.953 16.0651 108.862 15.7891 108.742 15.5234C108.628 15.2526 108.477 15.013 108.289 14.8047C108.107 14.5911 107.88 14.4219 107.609 14.2969C107.344 14.1719 107.029 14.1094 106.664 14.1094C106.268 14.1094 105.927 14.1927 105.641 14.3594C105.359 14.5208 105.128 14.7448 104.945 15.0312C104.763 15.3125 104.628 15.6406 104.539 16.0156C104.456 16.3854 104.414 16.7812 104.414 17.2031Z"
+      fill="#F47738"
+    />
+  </svg>
+);
+
+const DownloadIcon = ({ styles, className, onClick,fill="#505A5F" }) => (
+  <svg
+    style={{ ...styles }}
+    width="19"
+    height="24"
+    viewBox="0 0 19 24"
+    fill={fill}
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+    onClick={onClick}
+  >
+    <path
+      d="M18.8337 8.5H13.5003V0.5H5.50033V8.5H0.166992L9.50033 17.8333L18.8337 8.5ZM0.166992 20.5V23.1667H18.8337V20.5H0.166992Z"
+      fill={fill}
+    />
+  </svg>
+);
+
+const DownloadImgIcon = () => (
+  <svg width="14" height="17" viewBox="0 0 14 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M14 6H10V0H4V6H0L7 13L14 6ZM0 15V17H14V15H0Z" fill="#F47738" />
+  </svg>
+);
+
+const DownloadPrefixIcon = ({ className, onClick }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
+    <path d="M0 0h24v24H0z" fill="none" />
+    <path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" />
+  </svg>
+);
+
+const DownwardArrow = (props) => <UpwardArrow {...props} color="#e54d42" rotate={180} />;
+
+const DropIcon = ({ className, styles }) => (
+  <svg width="28" height="34" style={{ ...styles }} viewBox="0 0 28 34" className={className} fill="#ffffff" xmlns="http://www.w3.org/2000/svg">
+    <path d="M23.4333 10.3332L14 0.916504L4.56663 10.3332C1.96663 12.9332 0.666626 16.3998 0.666626 19.7332C0.666626 23.0665 1.96663 26.5832 4.56663 29.1832C7.16663 31.7832 10.5833 33.0998 14 33.0998C17.4166 33.0998 20.8333 31.7832 23.4333 29.1832C26.0333 26.5832 27.3333 23.0665 27.3333 19.7332C27.3333 16.3998 26.0333 12.9332 23.4333 10.3332ZM3.99996 20.3332C4.01663 16.9998 5.03329 14.8832 6.93329 12.9998L14 5.78317L21.0666 13.0832C22.9666 14.9498 23.9833 16.9998 24 20.3332H3.99996Z" />
+  </svg>
+);
+
+const DustbinIcon = () => (
+  <svg width="14" height="18" viewBox="0 0 14 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M1 16C1 17.1 1.9 18 3 18H11C12.1 18 13 17.1 13 16V4H1V16ZM3 6H11V16H3V6ZM10.5 1L9.5 0H4.5L3.5 1H0V3H14V1H10.5Z" fill="#F47738" />
+  </svg>
+);
+
+const EDCRIcon = ({ className }) => (
+  <svg width="30" height="32" viewBox="0 0 30 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M20 15.3333V5.33333L15 0.333334L10 5.33333V8.66667H0V32H30V15.3333H20ZM6.66667 28.6667H3.33333V25.3333H6.66667V28.6667ZM6.66667 22H3.33333V18.6667H6.66667V22ZM6.66667 15.3333H3.33333V12H6.66667V15.3333ZM16.6667 28.6667H13.3333V25.3333H16.6667V28.6667ZM16.6667 22H13.3333V18.6667H16.6667V22ZM16.6667 15.3333H13.3333V12H16.6667V15.3333ZM16.6667 8.66667H13.3333V5.33333H16.6667V8.66667ZM26.6667 28.6667H23.3333V25.3333H26.6667V28.6667ZM26.6667 22H23.3333V18.6667H26.6667V22Z"
+      fill="#F47738"
+    />
+  </svg>
+);
+
+const EditIcon = ({ style }) => (
+  <svg style={style} width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M9.126 5.125L11.063 3.188L14.81 6.935L12.873 8.873L9.126 5.125ZM17.71 2.63L15.37 0.289999C15.1826 0.103748 14.9292 -0.000793457 14.665 -0.000793457C14.4008 -0.000793457 14.1474 0.103748 13.96 0.289999L12.13 2.12L15.88 5.87L17.71 4C17.8844 3.81454 17.9815 3.56956 17.9815 3.315C17.9815 3.06044 17.8844 2.81546 17.71 2.63ZM5.63 8.63L0 14.25V18H3.75L9.38 12.38L12.873 8.873L9.126 5.125L5.63 8.63Z"
+      fill="#F47738"
+    />
+  </svg>
+);
+
+const EditPencilIcon = ({ className, width = 18, height = 18 }) => (
+  <svg className={className} width={width} height={height} viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M9.126 5.12482L11.063 3.18782L14.81 6.93482L12.873 8.87282L9.126 5.12482ZM17.71 2.62982L15.37 0.289816C15.1826 0.103565 14.9292 -0.000976562 14.665 -0.000976562C14.4008 -0.000976563 14.1474 0.103565 13.96 0.289816L12.13 2.11982L15.88 5.86982L17.71 3.99982C17.8844 3.81436 17.9815 3.56938 17.9815 3.31482C17.9815 3.06025 17.8844 2.81528 17.71 2.62982ZM5.63 8.62982L0 14.2498V17.9998H3.75L9.38 12.3798L12.873 8.87282L9.126 5.12482L5.63 8.62982Z"
+      fill="#505A5F"
+    />
+  </svg>
+);
+
+const Ellipsis = ({ className, onClick }) => (
+  <svg width="4" height="16" viewBox="0 0 4 16" fill="none" xmlns="http://www.w3.org/2000/svg" className={className} onClick={onClick}>
+    <path
+      d="M2 4C3.1 4 4 3.1 4 2C4 0.9 3.1 0 2 0C0.9 0 0 0.9 0 2C0 3.1 0.9 4 2 4ZM2 6C0.9 6 0 6.9 0 8C0 9.1 0.9 10 2 10C3.1 10 4 9.1 4 8C4 6.9 3.1 6 2 6ZM2 12C0.9 12 0 12.9 0 14C0 15.1 0.9 16 2 16C3.1 16 4 15.1 4 14C4 12.9 3.1 12 2 12Z"
+      fill="#B1B4B6"
+    />
+  </svg>
+);
+
+const EmailIcon = () => (
+  <svg width="20" height="16" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M18 0H2C0.9 0 0.00999999 0.9 0.00999999 2L0 14C0 15.1 0.9 16 2 16H18C19.1 16 20 15.1 20 14V2C20 0.9 19.1 0 18 0ZM18 4L10 9L2 4V2L10 7L18 2V4Z"
+      fill="#F47738"
+    />
+  </svg>
+);
+
+const EngagementIconComp = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <defs>
+      <linearGradient id="eng-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#3b82f6" />
+        <stop offset="100%" stopColor="#1d4ed8" />
+      </linearGradient>
+    </defs>
+    <path
+      d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"
+      fill="url(#eng-grad)"
+    />
+  </svg>
+);
+
+const ErrorIcon = ({ className }) => (
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="#FFFFFF" xmlns="http://www.w3.org/2000/svg" className={className}>
+    <path
+      d="M10 0C4.48 0 0 4.48 0 10C0 15.52 4.48 20 10 20C15.52 20 20 15.52 20 10C20 4.48 15.52 0 10 0ZM11 15H9V13H11V15ZM11 11H9V5H11V11Z"
+      fill="white"
+    />
+  </svg>
+);
+
+const ErrorSvg = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#d4351c" className={className}>
+    <path d="M0 0h24v24H0V0z" fill="none" />
+    <circle cx="12" cy="19" r="2" />
+    <path d="M10 3h4v12h-4z" />
+  </svg>
+);
+
+const EstimateIcon = ({ className = "", fill = "none", style = {} }) => (
+  <svg width="28" height="31" viewBox="0 0 28 31" className={className} style={style} fill={fill} xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M21.3333 3.00065H15.76C15.2 1.45398 13.7333 0.333984 12 0.333984C10.2667 0.333984 8.8 1.45398 8.24 3.00065H2.66667C1.2 3.00065 0 4.20065 0 5.66732V24.334C0 25.8007 1.2 27.0007 2.66667 27.0007H21.3333C22.8 27.0007 24 25.8007 24 24.334V5.66732C24 4.20065 22.8 3.00065 21.3333 3.00065ZM12 3.00065C12.7333 3.00065 13.3333 3.60065 13.3333 4.33398C13.3333 5.06732 12.7333 5.66732 12 5.66732C11.2667 5.66732 10.6667 5.06732 10.6667 4.33398C10.6667 3.60065 11.2667 3.00065 12 3.00065ZM12.6667 21.6673H5.33333V19.0007H12.6667V21.6673ZM18.6667 16.334H5.33333V13.6673H18.6667V16.334ZM18.6667 11.0007H5.33333V8.33398H18.6667V11.0007Z"
+      fill="white"
+    />
+    <circle cx="21" cy="24" r="6.5" fill="#F8F8F8" stroke="#0B4B66" />
+    <path
+      d="M23.998 22.1797L23.6992 23.3164H18.1738L18.4785 22.1797H23.998ZM21.168 28.5723L18.3438 25.2266L18.3379 24.2246H19.7148C20.0352 24.2246 20.2988 24.1621 20.5059 24.0371C20.7129 23.9121 20.8672 23.7441 20.9688 23.5332C21.0703 23.3184 21.1211 23.0801 21.1211 22.8184C21.1211 22.5449 21.0742 22.3027 20.9805 22.0918C20.8867 21.8809 20.7363 21.7168 20.5293 21.5996C20.3223 21.4785 20.0469 21.418 19.7031 21.418H18.1797L18.5254 20.041H19.7031C20.4062 20.041 20.9922 20.1465 21.4609 20.3574C21.9297 20.5684 22.2812 20.873 22.5156 21.2715C22.75 21.666 22.8672 22.1445 22.8672 22.707C22.8672 23.1992 22.7891 23.6309 22.6328 24.002C22.4766 24.373 22.2285 24.6797 21.8887 24.9219C21.5488 25.1602 21.1016 25.3281 20.5469 25.4258L23.0898 28.4902V28.5723H21.168ZM24.0098 20.041L23.7051 21.1719H19.1289L19.4336 20.041H24.0098Z"
+      fill="#0B4B66"
+    />
+  </svg>
+);
+
+const EventCalendar = () => {
+  return (
+    <svg width="24" height="27" viewBox="0 0 24 27" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path
+        d="M18.6667 15.0002H12V21.6668H18.6667V15.0002ZM17.3333 0.333496V3.00016H6.66667V0.333496H4V3.00016H2.66667C1.18667 3.00016 0.0133333 4.20016 0.0133333 5.66683L0 24.3335C0 25.8002 1.18667 27.0002 2.66667 27.0002H21.3333C22.8 27.0002 24 25.8002 24 24.3335V5.66683C24 4.20016 22.8 3.00016 21.3333 3.00016H20V0.333496H17.3333ZM21.3333 24.3335H2.66667V9.66683H21.3333V24.3335Z"
+        fill="#F47738"
+      />
+    </svg>
+  );
+};
+
+const EventsIconComp = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <defs>
+      <linearGradient id="event-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#60a5fa" />
+        <stop offset="100%" stopColor="#3b82f6" />
+      </linearGradient>
+    </defs>
+    <path
+      d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z"
+      fill="url(#event-grad)"
+    />
+  </svg>
+);
+
+const EventsIconSolid = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#FFFFFF">
+    <path d="M0 0h24v24H0V0z" fill="none" />
+    <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V9h14v10zm0-12H5V5h14v2zm-2 5h-5v5h5v-5z" />
+  </svg>
+);
+
+const ExpenditureIcon = BillsIcon;
+
+const ExternalLinkIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M16 16H2V2H9V0H2C0.89 0 0 0.9 0 2V16C0 17.1 0.89 18 2 18H16C17.1 18 18 17.1 18 16V9H16V16ZM11 0V2H14.59L4.76 11.83L6.17 13.24L16 3.41V7H18V0H11Z"
+      fill="#F47738"
+    />
+  </svg>
+);
+
+const FSMIcon = ({ className, styles }) => (
+  <svg width="40" height="40" viewBox="0 0 23 19" className={className} style={{ ...styles }} fill="#ffffff" xmlns="http://www.w3.org/2000/svg">
+    <path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z" />
+  </svg>
+);
+
+const FastBackward = ({ size = 24, color = "currentColor", className = "", ...props }) => {
+  return (
+    <svg
+      viewBox="0 0 512 512"
+      width={size}
+      height={size}
+      fill={color}
+      stroke={color}
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      {...props}
+    >
+      <path d="M0 436V76c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v151.9L235.5 71.4C256.1 54.3 288 68.6 288 96v131.9L459.5 71.4C480.1 54.3 512 68.6 512 96v320c0 27.4-31.9 41.7-52.5 24.6L288 285.3V416c0 27.4-31.9 41.7-52.5 24.6L64 285.3V436c0 6.6-5.4 12-12 12H12c-6.6 0-12-5.4-12-12z" />
+    </svg>
+  );
+};
+
+const FastForward = ({ size = 24, color = "currentColor", className = "", style = {} }) => {
+  return (
+    <svg
+      stroke={color}
+      fill={color}
+      strokeWidth="0"
+      viewBox="0 0 512 512"
+      height={size}
+      width={size}
+      className={className}
+      style={style}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path d="M512 76v360c0 6.6-5.4 12-12 12h-40c-6.6 0-12-5.4-12-12V284.1L276.5 440.6c-20.6 17.2-52.5 2.8-52.5-24.6V284.1L52.5 440.6C31.9 457.8 0 443.4 0 416V96c0-27.4 31.9-41.7 52.5-24.6L224 226.8V96c0-27.4 31.9-41.7 52.5-24.6L448 226.8V76c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12z" />
+    </svg>
+  );
+};
+
+const Feedback = ({ className }) => (
+  <svg focusable="false" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 12h-2v-2h2v2zm0-4h-2V6h2v4z" className={className}></path>
+  </svg>
+);
+
+// Download Icon
 
 const FileIcon = ({ styles, className, fill = "white", height = "64", width = "64" }) => (
   <svg styles={styles} className={className} width="24" height="24" viewBox="0 0 24 24" fill={fill} xmlns="http://www.w3.org/2000/svg">
@@ -1132,29 +855,266 @@ const FileIcon = ({ styles, className, fill = "white", height = "64", width = "6
   </svg>
 );
 
-const SubtractIcon = ({ styles, className, fill = "white" }) => (
-  <svg width="12" height="14" className={className} style={{ ...styles }} viewBox="0 0 12 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M9.24609 0.783203V3.45508H0.667969V0.783203H9.24609Z" fill={fill} />
+const FilterIcon = ({ onClick }) => (
+  <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg" onClick={onClick}>
+    <path
+      d="M0.666904 2.48016C3.36024 5.9335 8.33357 12.3335 8.33357 12.3335V20.3335C8.33357 21.0668 8.93357 21.6668 9.6669 21.6668H12.3336C13.0669 21.6668 13.6669 21.0668 13.6669 20.3335V12.3335C13.6669 12.3335 18.6269 5.9335 21.3202 2.48016C22.0002 1.60016 21.3736 0.333496 20.2669 0.333496H1.72024C0.613571 0.333496 -0.0130959 1.60016 0.666904 2.48016Z"
+      fill="#505A5F"
+    />
   </svg>
 );
 
-const AddNewIcon = ({ style }) => (
-  <svg style={style} width="24" height="24" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+const FilterSvg = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="#f47738" width="24" height="24" viewBox="0 0 24 24" className={className}>
+    <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z" />
+  </svg>
+);
+
+const FinanceChartIcon = ({ styles, className }) => (
+  <svg width="30" height="30" className={className} style={{ ...styles }} viewBox="0 0 30 30" fill="#ffffff" xmlns="http://www.w3.org/2000/svg">
+    <path d="M26.6667 0H3.33333C1.5 0 0 1.5 0 3.33333V26.6667C0 28.5 1.5 30 3.33333 30H26.6667C28.5 30 30 28.5 30 26.6667V3.33333C30 1.5 28.5 0 26.6667 0ZM10 23.3333H6.66667V11.6667H10V23.3333ZM16.6667 23.3333H13.3333V6.66667H16.6667V23.3333ZM23.3333 23.3333H20V16.6667H23.3333V23.3333Z" />
+  </svg>
+);
+
+const FirenocIcon = ({ styles, className }) => (
+  <svg width="35" height="39" className={className} style={{ ...styles }} viewBox="0 0 35 39" fill="#ffffff" xmlns="http://www.w3.org/2000/svg">
     <path
-      d="M23.3333 14.5833C24.3542 14.5833 25.3312 14.7729 26.25 15.0938V8.75L17.5 0H2.91667C1.29792 0 0 1.29792 0 2.91667V23.3333C0 24.9521 1.3125 26.25 2.91667 26.25H15.0938C14.7729 25.3312 14.5833 24.3542 14.5833 23.3333C14.5833 18.5062 18.5062 14.5833 23.3333 14.5833ZM16.0417 2.1875L24.0625 10.2083H16.0417V2.1875ZM29.1667 21.875V24.7917H24.7917V29.1667H21.875V24.7917H17.5V21.875H21.875V17.5H24.7917V21.875H29.1667Z"
+      d="M21.5142857,14.0571429 C21.12,13.5428571 20.6571429,13.0971429 20.2114286,12.6514286 C19.0971429,11.6228571 17.8114286,10.8857143 16.7314286,9.80571429 C14.2285714,7.30285714 13.7142857,3.17142857 15.2742857,0 C13.7142857,0.394285714 12.2742857,1.28571429 11.0742857,2.26285714 C6.72,5.82857143 5.00571429,12.12 7.06285714,17.52 C7.13142857,17.6914286 7.2,17.8628571 7.2,18.0857143 C7.2,18.4628571 6.94285714,18.8057143 6.6,18.9428571 C6.22285714,19.1142857 5.81142857,19.0114286 5.50285714,18.7371429 C5.4,18.6514286 5.33142857,18.5657143 5.24571429,18.4457143 C3.36,15.9942857 3.05142857,12.48 4.33714286,9.66857143 C1.52571429,12 8.60422844e-16,15.9428571 0.24,19.6628571 C0.308571429,20.52 0.411428571,21.3771429 0.702857143,22.2342857 C0.942857143,23.2628571 1.38857143,24.2914286 1.93714286,25.2 C3.72,28.1657143 6.85714286,30.2914286 10.2342857,30.72 C13.8342857,31.1828571 17.6914286,30.5142857 20.4514286,27.9771429 C23.5371429,25.1314286 24.6514286,20.5714286 23.0228571,16.6628571 L22.8,16.2171429 C22.4571429,15.4285714 21.9942857,14.7257143 21.4285714,14.0742857 L21.5142857,14.0571429 L21.5142857,14.0571429 Z M16.2,24.8571429 C15.72,25.2685714 14.9485714,25.7142857 14.3485714,25.8857143 C12.4628571,26.5714286 10.5771429,25.6114286 9.42857143,24.48 C11.4685714,24 12.6685714,22.4914286 13.0114286,20.9657143 C13.3028571,19.5942857 12.7714286,18.4628571 12.5485714,17.1428571 C12.3428571,15.8742857 12.3771429,14.7942857 12.8571429,13.6114286 C13.1485714,14.2628571 13.4914286,14.9142857 13.8857143,15.4285714 C15.1885714,17.1428571 17.2285714,17.8971429 17.6571429,20.2285714 C17.7257143,20.4685714 17.76,20.7085714 17.76,20.9657143 C17.8114286,22.3714286 17.2114286,23.9142857 16.1828571,24.8571429 L16.2,24.8571429 Z"
+      id="Shape"
+    ></path>
+  </svg>
+);
+
+const ForwardIcon = ({ size = 24, color = "currentColor", className = "", ...props }) => (
+  <svg
+    viewBox="0 0 512 512"
+    width={size}
+    height={size}
+    fill={color}
+    stroke={color}
+    className={className}
+    xmlns="http://www.w3.org/2000/svg"
+    {...props}
+  >
+    <path d="M500.5 231.4l-192-160C287.9 54.3 256 68.6 256 96v320c0 27.4 31.9 41.8 52.5 24.6l192-160c15.3-12.8 15.3-36.4 0-49.2zm-256 0l-192-160C31.9 54.3 0 68.6 0 96v320c0 27.4 31.9 41.8 52.5 24.6l192-160c15.3-12.8 15.3-36.4 0-49.2z" />
+  </svg>
+);
+
+const FsmIconComp = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <defs>
+      <linearGradient id="fsm-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#92400e" />
+        <stop offset="100%" stopColor="#78350f" />
+      </linearGradient>
+    </defs>
+    <path
+      d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"
+      fill="url(#fsm-grad)"
+    />
+  </svg>
+);
+
+const GalleryIcon = () => (
+  <svg width="40" height="34" viewBox="0 0 40 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M3.33333 7.00016H0V15.3335H0.0166667L0 30.3335C0 32.1668 1.5 33.6668 3.33333 33.6668H33.3333V30.3335H3.33333V7.00016ZM36.6667 3.66683H23.3333L20 0.333496H10C8.16667 0.333496 6.68333 1.8335 6.68333 3.66683L6.66667 23.6668C6.66667 25.5002 8.16667 27.0002 10 27.0002H36.6667C38.5 27.0002 40 25.5002 40 23.6668V7.00016C40 5.16683 38.5 3.66683 36.6667 3.66683ZM11.6667 22.0002L19.1667 12.0002L25 19.5168L29.1667 14.5002L35 22.0002H11.6667Z"
       fill="#F47738"
     />
   </svg>
 );
 
-const ViewReportIcon = () => (
-  <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+const GenericFileIcon = () => (
+  <svg width="80" height="100" viewBox="0 0 80 100" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path
-      d="M26.6667 0H3.33333C1.5 0 0 1.5 0 3.33333V26.6667C0 28.5 1.5 30 3.33333 30H26.6667C28.5 30 30 28.5 30 26.6667V3.33333C30 1.5 28.5 0 26.6667 0ZM18.3333 23.3333H6.66667V20H18.3333V23.3333ZM23.3333 16.6667H6.66667V13.3333H23.3333V16.6667ZM23.3333 10H6.66667V6.66667H23.3333V10Z"
+      d="M50 0H10C4.5 0 0.0500011 4.5 0.0500011 10L0 90C0 95.5 4.45 100 9.95 100H70C75.5 100 80 95.5 80 90V30L50 0ZM60 80H20V70H60V80ZM60 60H20V50H60V60ZM45 35V7.5L72.5 35H45Z"
+      fill="#505A5F"
+    />
+  </svg>
+);
+
+const GetApp = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#f47738" className={className}>
+    <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
+  </svg>
+);
+
+const GotoInboxIcon = ({ className, style = {}, fill = "#F47738" }) => (
+  <svg width="15" height="13" viewBox="0 0 15 13" fill="none" className={className} style={style} xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M2.14286 6.5C2.14286 2.91056 5.02143 0 8.57143 0C12.1214 0 15 2.91056 15 6.5C15 10.0894 12.1214 13 8.57143 13C7.1 13 5.74286 12.4944 4.65714 11.6567L5.67143 10.6167C6.49286 11.2017 7.49286 11.5556 8.57143 11.5556C11.3357 11.5556 13.5714 9.295 13.5714 6.5C13.5714 3.705 11.3357 1.44444 8.57143 1.44444C5.80714 1.44444 3.57143 3.705 3.57143 6.5H5.71429L2.85714 9.38889L0 6.5H2.14286Z"
+      fill={fill}
+    />
+  </svg>
+);
+
+const GridIcon = ({ width = 20, height = 20, stroke = "currentColor", strokeWidth = 2.5, className = "" }) => {
+  return (
+    <svg
+      width={width}
+      height={height}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={stroke}
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <rect x="3" y="3" width="7" height="7" />
+      <rect x="14" y="3" width="7" height="7" />
+      <rect x="14" y="14" width="7" height="7" />
+      <rect x="3" y="14" width="7" height="7" />
+    </svg>
+  );
+};
+
+const HRIcon = ({ className = "", fill = "none", style = {} }) => (
+  <svg width="28" height="28" className={className} style={style} viewBox="0 0 28 28" fill={fill} xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M3.33464 6.00033H0.667969V24.667C0.667969 26.1337 1.86797 27.3337 3.33464 27.3337H22.0013V24.667H3.33464V6.00033ZM24.668 0.666992H8.66797C7.2013 0.666992 6.0013 1.86699 6.0013 3.33366V19.3337C6.0013 20.8003 7.2013 22.0003 8.66797 22.0003H24.668C26.1346 22.0003 27.3346 20.8003 27.3346 19.3337V3.33366C27.3346 1.86699 26.1346 0.666992 24.668 0.666992ZM16.668 3.33366C18.8813 3.33366 20.668 5.12033 20.668 7.33366C20.668 9.54699 18.8813 11.3337 16.668 11.3337C14.4546 11.3337 12.668 9.54699 12.668 7.33366C12.668 5.12033 14.4546 3.33366 16.668 3.33366ZM24.668 19.3337H8.66797V17.3337C8.66797 14.6803 14.0013 13.3337 16.668 13.3337C19.3346 13.3337 24.668 14.6803 24.668 17.3337V19.3337Z"
+      fill="white"
+    />
+  </svg>
+);
+
+const HamburgerIcon = ({ className, styles, color = "#fdfdfd" }) => (
+  <svg style={{ ...styles }} width="24" height="24" focusable="false" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" fill={color}></path>
+  </svg>
+);
+
+const HelpIcon = () => (
+  <svg width="24" height="18" viewBox="0 0 24 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M22 0H2C0.9 0 0 0.9 0 2V16C0 17.1 0.9 18 2 18H22C23.1 18 23.99 17.1 23.99 16L24 2C24 0.9 23.1 0 22 0ZM8 3C9.66 3 11 4.34 11 6C11 7.66 9.66 9 8 9C6.34 9 5 7.66 5 6C5 4.34 6.34 3 8 3ZM14 15H2V14C2 12 6 10.9 8 10.9C10 10.9 14 12 14 14V15ZM17.85 11H19.49L21 13L19.01 14.99C17.7 14.01 16.73 12.61 16.28 11C16.1 10.36 16 9.69 16 9C16 8.31 16.1 7.64 16.28 7C16.73 5.38 17.7 3.99 19.01 3.01L21 5L19.49 7H17.85C17.63 7.63 17.5 8.3 17.5 9C17.5 9.7 17.63 10.37 17.85 11Z"
       fill="#F47738"
     />
   </svg>
 );
+
+const HelpLineIcon = ({ className, styles }) => (
+  <svg className={className} style={{ ...styles }} width="24" height="18" viewBox="0 0 24 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M22 0H2C0.9 0 0 0.9 0 2V16C0 17.1 0.9 18 2 18H22C23.1 18 23.99 17.1 23.99 16L24 2C24 0.9 23.1 0 22 0ZM8 3C9.66 3 11 4.34 11 6C11 7.66 9.66 9 8 9C6.34 9 5 7.66 5 6C5 4.34 6.34 3 8 3ZM14 15H2V14C2 12 6 10.9 8 10.9C10 10.9 14 12 14 14V15ZM17.85 11H19.49L21 13L19.01 14.99C17.7 14.01 16.73 12.61 16.28 11C16.1 10.36 16 9.69 16 9C16 8.31 16.1 7.64 16.28 7C16.73 5.38 17.7 3.99 19.01 3.01L21 5L19.49 7H17.85C17.63 7.63 17.5 8.3 17.5 9C17.5 9.7 17.63 10.37 17.85 11Z"
+      fill="#0B0C0C"
+    />
+  </svg>
+);
+
+const HelperIcon = ({ className = "", fill = "none", style = {} }) => (
+  <svg width="32" height="32" className={className} style={style} viewBox="0 0 32 32" fill={fill} xmlns="http://www.w3.org/2000/svg">
+    <g clip-path="url(#clip0_4347_41530)">
+      <path
+        d="M14.668 24.0003H17.3346V21.3337H14.668V24.0003ZM16.0013 2.66699C8.6413 2.66699 2.66797 8.64033 2.66797 16.0003C2.66797 23.3603 8.6413 29.3337 16.0013 29.3337C23.3613 29.3337 29.3346 23.3603 29.3346 16.0003C29.3346 8.64033 23.3613 2.66699 16.0013 2.66699ZM16.0013 26.667C10.1213 26.667 5.33464 21.8803 5.33464 16.0003C5.33464 10.1203 10.1213 5.33366 16.0013 5.33366C21.8813 5.33366 26.668 10.1203 26.668 16.0003C26.668 21.8803 21.8813 26.667 16.0013 26.667ZM16.0013 8.00033C13.0546 8.00033 10.668 10.387 10.668 13.3337H13.3346C13.3346 11.867 14.5346 10.667 16.0013 10.667C17.468 10.667 18.668 11.867 18.668 13.3337C18.668 16.0003 14.668 15.667 14.668 20.0003H17.3346C17.3346 17.0003 21.3346 16.667 21.3346 13.3337C21.3346 10.387 18.948 8.00033 16.0013 8.00033Z"
+        fill="white"
+      />
+    </g>
+    <defs>
+      <clipPath id="clip0_4347_41530">
+        <rect width="32" height="32" fill="white" />
+      </clipPath>
+    </defs>
+  </svg>
+);
+
+const HistoryIcon =({ className = "", fill = "none", style = {} })=>(
+  <svg width="36" height="36" viewBox="0 0 36 36" fill={fill } className={className} style={style}  xmlns="http://www.w3.org/2000/svg">
+<path d="M30.7437 5.30394C23.7393 -1.76798 12.3808 -1.76798 5.37636 5.30394L3.33196 7.36803V3.88935C3.33196 2.97184 2.5748 2.20731 1.66598 2.20731C0.757234 2.20731 0 2.97177 0 3.88935V11.42C0 12.3375 0.757166 13.102 1.66598 13.102H9.12473C10.0335 13.102 10.7907 12.3376 10.7907 11.42C10.7907 10.5025 10.0335 9.73794 9.12473 9.73794H5.67925L7.72365 7.67385C10.5633 4.80685 14.3116 3.35418 18.0599 3.35418C21.8083 3.35444 25.5565 4.80713 28.3961 7.67412C31.3493 10.6558 32.9017 14.7843 32.6366 18.9892C32.5988 19.9067 33.2802 20.7093 34.189 20.7858H34.3025C35.1733 20.7858 35.8927 20.0979 35.9685 19.2185C36.2714 14.0577 34.3783 8.97375 30.7435 5.304L30.7437 5.30394Z" fill="#F47738"/>
+<path d="M18.2519 8.16797C17.3432 8.16797 16.5859 8.93243 16.5859 9.85001V18.1069C16.5859 18.8714 17.0782 19.5213 17.7976 19.7125L23.8176 21.4326C24.6883 21.7003 25.6349 21.1267 25.862 20.2857C26.1271 19.4066 25.5968 18.4509 24.6883 18.2216L19.9178 16.8073V9.85007C19.9178 8.93277 19.1984 8.16804 18.2519 8.16804L18.2519 8.16797Z" fill="#F47738"/>
+<path d="M25.4454 31.0611C24.5746 31.5581 23.6659 31.9786 22.7194 32.2845C22.3406 32.3991 22.038 32.6668 21.8486 33.0108C21.6592 33.3548 21.6592 33.7753 21.7728 34.1577C22.038 34.9222 22.8707 35.3427 23.6281 35.1134C24.764 34.731 25.8619 34.2342 26.8842 33.6607C27.6036 33.2402 27.8307 32.3611 27.4143 31.6347C27.0733 30.9083 26.1646 30.6406 25.4454 31.0611Z" fill="#F47738"/>
+<path d="M3.40851 20.1747C3.37074 19.7923 3.14335 19.4483 2.84069 19.1808C2.57553 18.9897 2.27287 18.875 1.96994 18.875H1.78058C1.40185 18.9131 1.06114 19.1427 0.796242 19.4483C0.569113 19.7541 0.455548 20.1362 0.531082 20.5567C0.682414 21.7801 0.947574 22.9651 1.36404 24.0736C1.6292 24.838 2.49996 25.2585 3.25712 24.9911C3.63585 24.8764 3.9385 24.5706 4.09008 24.2266C4.24141 23.8826 4.27944 23.4621 4.16588 23.0797C3.78715 22.1622 3.55977 21.1684 3.40844 20.1746L3.40851 20.1747Z" fill="#F47738"/>
+<path d="M7.60837 28.6674C7.38124 28.4381 7.19188 28.2088 6.96476 27.9794C6.66183 27.6355 6.28338 27.4824 5.8669 27.4824C5.52621 27.4824 5.18553 27.5971 4.88257 27.8648C4.27672 28.4 4.20119 29.3556 4.769 29.9673C4.99613 30.235 5.26128 30.5025 5.52617 30.7702C6.09398 31.3435 6.73788 31.9171 7.38146 32.4138C8.02507 32.9109 8.97165 32.7578 9.42585 32.108C9.65298 31.8021 9.76655 31.42 9.72878 30.9995C9.69101 30.6172 9.46362 30.2732 9.16096 30.0057C8.63064 29.6231 8.10057 29.1645 7.6083 28.6675L7.60837 28.6674Z" fill="#F47738"/>
+<path d="M33.281 24.1352C33.0538 24.0206 32.8645 23.9824 32.6374 23.9824C32.486 23.9824 32.3344 24.0206 32.1831 24.0589C31.8044 24.1736 31.5017 24.4413 31.3123 24.8234C30.8581 25.7026 30.328 26.582 29.7222 27.3464C29.2299 27.9963 29.3434 28.9138 29.9493 29.449C30.5551 29.946 31.5395 29.8313 32.0317 29.2196C32.7512 28.264 33.3948 27.2702 33.9248 26.1999C34.1142 25.8559 34.1142 25.4354 34.0006 25.053C33.8868 24.5939 33.6217 24.288 33.281 24.1352Z" fill="#F47738"/>
+<path d="M17.1491 33.0137C16.1648 32.9371 15.1802 32.7844 14.2337 32.5166C14.1201 32.4785 13.9685 32.4785 13.855 32.4785C13.5898 32.4785 13.3627 32.555 13.1355 32.6697C12.7948 32.8609 12.5677 33.2049 12.4542 33.5872C12.227 34.3901 12.7193 35.1927 13.4765 35.422C14.6124 35.7279 15.7861 35.919 16.9975 35.9953H17.0733C17.8305 35.9953 18.4741 35.3836 18.5499 34.6192C18.5877 33.7784 17.9441 33.0521 17.1491 33.0137Z" fill="#F47738"/>
+</svg>)
+
+export const HomeIcon = ({ className, styles }) => (
+  <svg className={className} viewBox="0 0 24 24" style={{ ...styles }}>
+    <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"></path>
+  </svg>
+);
+
+const HrmsIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <defs>
+      <linearGradient id="hrms-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#14b8a6" />
+        <stop offset="100%" stopColor="#0f766e" />
+      </linearGradient>
+    </defs>
+    <path
+      d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"
+      fill="url(#hrms-grad)"
+    />
+  </svg>
+);
+
+const IconClose = ({ color = "currentColor" }) => (
+  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="18" y1="6" x2="6" y2="18" />
+    <line x1="6" y1="6" x2="18" y2="18" />
+  </svg>
+);
+
+const IconDownload = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 3v12" />
+    <path d="m7 10 5 5 5-5" />
+    <path d="M4 20h16" />
+  </svg>
+);
+
+const IconSearch = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="11" cy="11" r="8" />
+    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+  </svg>
+);
+
+const IconSortAsc = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 19V5m0 0-7 7m7-7 7 7" />
+  </svg>
+);
+
+const IconSortDesc = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 5v14m0 0 7-7m-7 7-7-7" />
+  </svg>
+);
+
+const IconSortNeutral = () => (
+  <svg
+    width="13"
+    height="13"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    style={{ opacity: 0.3 }}
+  >
+    <path d="M7 16V4m0 0L3 8m4-4 4 4" />
+    <path d="M17 8v12m0 0 4-4m-4 4-4-4" />
+  </svg>
+);
+
+const ImageIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
+    <path d="M0 0h24v24H0V0z" fill="none" />
+    <path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-4.86 8.86l-3 3.87L9 13.14 6 17h12l-3.86-5.14z" />
+  </svg>
+);
+
+// const DocumentSVG = ({className}) => <svg xmlns = "http://www.w3.org/2000/svg" className={className} height = "48px" viewBox = "0 0 24 24" width = "48px" fill = "#000000" > < path d = "M0 0h24v24H0V0z" fill = "none" />
+// < path d = "M8 16h8v2H8zm0-4h8v2H8zm6-10H6c-1.1 0-2 .9-2 2v16c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z" />
+// </svg>
+
+// const PDFSvg = ({className, width = 100, height = 100, style, viewBox="0 0 34 34" }) => <svg style={style} xmlns="http://www.w3.org/2000/svg" className={className} width={width} height={height} viewBox={viewBox} fill="gray">
+// <path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm10 5.5h1v-3h-1v3z" />
+// </svg>
 
 const InboxIcon = () => (
   <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1165,24 +1125,190 @@ const InboxIcon = () => (
   </svg>
 );
 
-const ArrowCollapseUp = () => (
-  <svg width="13" height="8" viewBox="0 0 13 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M10.6369 7.3491L12.029 5.9214L5.9536 -0.00228767L0.0299208 6.07307L1.45763 7.46514L5.98937 2.82749L10.6369 7.3491Z" fill="#0B0C0C" />
-  </svg>
-);
+const InfoBannerIcon = ({ fill = "#3498DB",styles }) => {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none" style={styles}>
+      <path
+        d="M10 0C4.48 0 0 4.48 0 10C0 15.52 4.48 20 10 20C15.52 20 20 15.52 20 10C20 4.48 15.52 0 10 0ZM11 15H9V9H11V15ZM11 7H9V5H11V7Z"
+        fill={fill}
+      />
+    </svg>
+  );
+};
 
-const ArrowCollapseDown = () => (
-  <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M1.41 0.59L-2.62268e-07 2L6 8L12 2L10.59 0.59L6 5.17L1.41 0.59Z" fill="#0B0C0C" />
+const InfoIcon = ({ className = "", fill = "none", style = {} }) => (
+  <svg width="20" height="20" viewBox="0 0 20 20" className={className} style={style} fill={fill} xmlns="http://www.w3.org/2000/svg">
+    <path d="M9 5H11V7H9V5ZM9 9H11V15H9V9ZM10 0C4.48 0 0 4.48 0 10C0 15.52 4.48 20 10 20C15.52 20 20 15.52 20 10C20 4.48 15.52 0 10 0ZM10 18C5.59 18 2 14.41 2 10C2 5.59 5.59 2 10 2C14.41 2 18 5.59 18 10C18 14.41 14.41 18 10 18Z" fill="#505A5F"/>
   </svg>
-);
+)
 
-const AddFilled = ({ style = {} }) => (
-  <svg width="15" height="15" style={style} viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+const InfoIconOutline = ({styles, className, fill = "#505A5F",height="20",width="20" }) => (
+  <svg style={styles} className={className} xmlns="http://www.w3.org/2000/svg" width={width} height={height} viewBox="0 0 20 20" fill={fill}>
+  <path d="M8.7085 5.54171H10.2918V7.12504H8.7085V5.54171ZM8.7085 8.70837H10.2918V13.4584H8.7085V8.70837ZM9.50016 1.58337C5.13016 1.58337 1.5835 5.13004 1.5835 9.50004C1.5835 13.87 5.13016 17.4167 9.50016 17.4167C13.8702 17.4167 17.4168 13.87 17.4168 9.50004C17.4168 5.13004 13.8702 1.58337 9.50016 1.58337ZM9.50016 15.8334C6.00891 15.8334 3.16683 12.9913 3.16683 9.50004C3.16683 6.00879 6.00891 3.16671 9.50016 3.16671C12.9914 3.16671 15.8335 6.00879 15.8335 9.50004C15.8335 12.9913 12.9914 15.8334 9.50016 15.8334Z" fill="#505A5F"/>
+</svg>
+)
+
+const KycIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <defs>
+      <linearGradient id="kyc-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#10b981" />
+        <stop offset="100%" stopColor="#059669" />
+      </linearGradient>
+    </defs>
     <path
-      d="M12.8828 2.98323C10.1643 0.227501 5.7393 0.19747 2.98357 2.91604C0.227848 5.63461 0.197817 10.0596 2.91639 12.8153C5.63496 15.571 10.0599 15.6011 12.8157 12.8825C15.5714 10.1639 15.6014 5.73895 12.8828 2.98323ZM8.56866 12.1557L7.17286 12.1463L7.19698 8.59243L3.64314 8.56831L3.65261 7.17251L7.20645 7.19663L7.23057 3.6428L8.62637 3.65227L8.60225 7.20611L12.1561 7.23022L12.1466 8.62602L8.59278 8.6019L8.56866 12.1557Z"
-      fill="#F47738"
+      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+      fill="url(#kyc-grad)"
     />
+  </svg>
+);
+
+export const LanguageIcon = ({ className, styles }) => (
+  <svg className={className} viewBox="0 0 24 24" style={{ ...styles }}>
+    <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm6.93 6h-2.95c-.32-1.25-.78-2.45-1.38-3.56 1.84.63 3.37 1.91 4.33 3.56zM12 4.04c.83 1.2 1.48 2.53 1.91 3.96h-3.82c.43-1.43 1.08-2.76 1.91-3.96zM4.26 14C4.1 13.36 4 12.69 4 12s.1-1.36.26-2h3.38c-.08.66-.14 1.32-.14 2 0 .68.06 1.34.14 2H4.26zm.82 2h2.95c.32 1.25.78 2.45 1.38 3.56-1.84-.63-3.37-1.9-4.33-3.56zm2.95-8H5.08c.96-1.66 2.49-2.93 4.33-3.56C8.81 5.55 8.35 6.75 8.03 8zM12 19.96c-.83-1.2-1.48-2.53-1.91-3.96h3.82c-.43 1.43-1.08 2.76-1.91 3.96zM14.34 14H9.66c-.09-.66-.16-1.32-.16-2 0-.68.07-1.35.16-2h4.68c.09.65.16 1.32.16 2 0 .68-.07 1.34-.16 2zm.25 5.56c.6-1.11 1.06-2.31 1.38-3.56h2.95c-.96 1.65-2.49 2.93-4.33 3.56zM16.36 14c.08-.66.14-1.32.14-2 0-.68-.06-1.34-.14-2h3.38c.16.64.26 1.31.26 2s-.1 1.36-.26 2h-3.38z"></path>
+  </svg>
+);
+
+const LayoutGrid = () => (
+  <svg
+    width="44"
+    height="44"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="#94a3b8"
+    strokeWidth="1.2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    style={{ opacity: 0.4 }}
+  >
+    <rect x="3" y="3" width="18" height="18" rx="2" />
+    <line x1="3" y1="9" x2="21" y2="9" />
+    <line x1="9" y1="21" x2="9" y2="9" />
+  </svg>
+);
+
+const LeftArrowIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M15 18l-6-6 6-6" />
+  </svg>
+);
+
+const LocateIcon = ({ className = "" }) => (
+  <svg width="22" height="22" viewBox="0 0 22 22" fill="none" className={className} xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M11 7C8.79 7 7 8.79 7 11C7 13.21 8.79 15 11 15C13.21 15 15 13.21 15 11C15 8.79 13.21 7 11 7ZM19.94 10C19.48 5.83 16.17 2.52 12 2.06V0H10V2.06C5.83 2.52 2.52 5.83 2.06 10H0V12H2.06C2.52 16.17 5.83 19.48 10 19.94V22H12V19.94C16.17 19.48 19.48 16.17 19.94 12H22V10H19.94ZM11 18C7.13 18 4 14.87 4 11C4 7.13 7.13 4 11 4C14.87 4 18 7.13 18 11C18 14.87 14.87 18 11 18Z"
+      fill="#505A5F"
+    />
+  </svg>
+);
+
+const LocationIcon = ({ styles, className }) => (
+  <svg className={className} style={{ ...styles }} viewBox="0 0 14 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M7 0C3.13 0 0 3.13 0 7C0 8.74 0.5 10.37 1.41 11.84C2.36 13.38 3.61 14.7 4.57 16.24C5.04 16.99 5.38 17.69 5.74 18.5C6 19.05 6.21 20 7 20C7.79 20 8 19.05 8.25 18.5C8.62 17.69 8.95 16.99 9.42 16.24C10.38 14.71 11.63 13.39 12.58 11.84C13.5 10.37 14 8.74 14 7C14 3.13 10.87 0 7 0ZM7 9.75C5.62 9.75 4.5 8.63 4.5 7.25C4.5 5.87 5.62 4.75 7 4.75C8.38 4.75 9.5 5.87 9.5 7.25C9.5 8.63 8.38 9.75 7 9.75Z"
+      fill="#B1B4B6"
+    />
+  </svg>
+);
+
+export const LoginIcon = ({ className, styles }) => (
+  <svg className={className} viewBox="0 0 24 24" style={{ ...styles }}>
+    <path d="M13 3h-2v10h2V3zm4.83 2.17l-1.42 1.42C17.99 7.86 19 9.81 19 12c0 3.87-3.13 7-7 7s-7-3.13-7-7c0-2.19 1.01-4.14 2.58-5.42L6.17 5.17C4.23 6.82 3 9.26 3 12c0 4.97 4.03 9 9 9s9-4.03 9-9c0-2.74-1.23-5.18-3.17-6.83z"></path>
+  </svg>
+);
+
+export const LogoutIcon = ({ className, styles }) => (
+  <svg className={className} viewBox="0 0 24 24" style={{ ...styles }}>
+    <path d="M13 3h-2v10h2V3zm4.83 2.17l-1.42 1.42C17.99 7.86 19 9.81 19 12c0 3.87-3.13 7-7 7s-7-3.13-7-7c0-2.19 1.01-4.14 2.58-5.42L6.17 5.17C4.23 6.82 3 9.26 3 12c0 4.97 4.03 9 9 9s9-4.03 9-9c0-2.74-1.23-5.18-3.17-6.83z"></path>
+  </svg>
+);
+
+const LuCalendarIcon = ({ size = 24, color = "#d1d1d1", hoverColor, isHovered = false, strokeWidth = 2, className = "", style = {}, onClick }) => {
+  const strokeColor = isHovered && hoverColor ? hoverColor : color;
+
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={strokeColor}
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      style={{ cursor: onClick ? "pointer" : "default", ...style }}
+      onClick={onClick}
+    >
+      <path d="M8 2v4" />
+      <path d="M16 2v4" />
+      <rect width="18" height="18" x="3" y="4" rx="2" />
+      <path d="M3 10h18" />
+      <path d="M8 14h.01" />
+      <path d="M12 14h.01" />
+      <path d="M16 14h.01" />
+      <path d="M8 18h.01" />
+      <path d="M12 18h.01" />
+      <path d="M16 18h.01" />
+    </svg>
+  );
+};
+
+const MCollectIcon = ({ styles, className }) => (
+  <svg width="37" height="35" className={className} style={{ ...styles }} viewBox="0 0 37 35" fill="#ffffff" xmlns="http://www.w3.org/2000/svg">
+    <path d="M34.375 28.75V30.625C34.375 32.6875 32.6875 34.375 30.625 34.375H4.375C2.29375 34.375 0.625 32.6875 0.625 30.625V4.375C0.625 2.3125 2.29375 0.625 4.375 0.625H30.625C32.6875 0.625 34.375 2.3125 34.375 4.375V6.25H17.5C15.4187 6.25 13.75 7.9375 13.75 10V25C13.75 27.0625 15.4187 28.75 17.5 28.75H34.375ZM17.5 25H36.25V10H17.5V25ZM25 20.3125C23.4438 20.3125 22.1875 19.0562 22.1875 17.5C22.1875 15.9438 23.4438 14.6875 25 14.6875C26.5562 14.6875 27.8125 15.9438 27.8125 17.5C27.8125 19.0562 26.5562 20.3125 25 20.3125Z" />
+  </svg>
+);
+
+const MCollectIconComp = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <defs>
+      <linearGradient id="mcollect-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#7c3aed" />
+        <stop offset="100%" stopColor="#6d28d9" />
+      </linearGradient>
+    </defs>
+    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="url(#mcollect-grad)" />
+  </svg>
+);
+
+const MapMarker = () => (
+  <svg width="10" height="14" viewBox="0 0 10 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M5 0.333496C2.42 0.333496 0.333328 2.42016 0.333328 5.00016C0.333328 6.16016 0.666661 7.24683 1.27333 8.22683C1.90666 9.2535 2.73999 10.1335 3.37999 11.1602C3.69333 11.6602 3.91999 12.1268 4.15999 12.6668C4.33333 13.0335 4.47333 13.6668 5 13.6668C5.52666 13.6668 5.66666 13.0335 5.83333 12.6668C6.08 12.1268 6.29999 11.6602 6.61333 11.1602C7.25333 10.1402 8.08666 9.26016 8.72 8.22683C9.33333 7.24683 9.66666 6.16016 9.66666 5.00016C9.66666 2.42016 7.58 0.333496 5 0.333496ZM5 6.8335C4.07999 6.8335 3.33333 6.08683 3.33333 5.16683C3.33333 4.24683 4.07999 3.50016 5 3.50016C5.92 3.50016 6.66666 4.24683 6.66666 5.16683C6.66666 6.08683 5.92 6.8335 5 6.8335Z"
+      fill="#505A5F"
+    />
+  </svg>
+);
+
+const MdClose = ({ width = 24, height = 24, fill = "white", className = "" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width={width} height={height} fill={fill} className={className}>
+    <path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+  </svg>
+);
+
+const MdUploadIcon = ({ size = 24, color = "currentColor", className = "", ...props }) => {
+  return (
+    <svg
+      stroke={color}
+      fill={color}
+      strokeWidth="0"
+      viewBox="0 0 24 24"
+      height={size}
+      width={size}
+      className={className}
+      xmlns="http://www.w3.org/2000/svg"
+      {...props}
+    >
+      <path fill="none" d="M0 0h24v24H0z"></path>
+      <path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"></path>
+    </svg>
+  );
+};
+
+const MuktaHomeIcon = ({ className = "", fill = "none", style = {} }) => (
+  <svg width="28" height="23" className={className} style={style} viewBox="0 0 28 23" fill={fill} xmlns="http://www.w3.org/2000/svg">
+    <path d="M11.3346 22.6667V14.6667H16.668V22.6667H23.3346V12H27.3346L14.0013 0L0.667969 12H4.66797V22.6667H11.3346Z" fill="white" />
   </svg>
 );
 
@@ -1584,67 +1710,51 @@ const NoResultsFoundIcon = () => (
   </svg>
 );
 
-const WorksMgmtIcon = ({ fill = "white" }) => (
-  <svg width="34" height="36" viewBox="0 0 34 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+const NotificationBell = () => (
+  <svg width="16" height="20" viewBox="0 0 16 20" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path
-      d="M33.1161 29.2786L24.2827 20.4453H22.6327L18.3994 24.6786V26.3286L27.2327 35.162C27.8827 35.812 28.9327 35.812 29.5827 35.162L33.1161 31.6286C33.7661 30.9953 33.7661 29.9286 33.1161 29.2786Z"
-      fill={fill}
-    />
-    <path
-      d="M25.8997 15.9807L28.2497 13.6307L31.783 17.1641C33.733 15.2141 33.733 12.0474 31.783 10.0974L25.883 4.1974L23.533 6.5474V1.8474L22.3663 0.664062L16.4663 6.56406L17.6497 7.7474H22.3663L20.0163 10.0974L21.783 11.8641L16.9663 16.6807L10.083 9.7974V7.43073L5.04967 2.3974L0.333008 7.11406L5.38301 12.1641H7.73301L14.6163 19.0474L13.1997 20.4641H9.66634L0.833008 29.2974C0.183008 29.9474 0.183008 30.9974 0.833008 31.6474L4.36634 35.1807C5.01634 35.8307 6.06634 35.8307 6.71634 35.1807L15.5497 26.3474V22.8141L24.133 14.2307L25.8997 15.9807Z"
-      fill={fill}
-    />
-  </svg>
-);
-
-const BioMetricIcon = ({ fill = "#F47738" }) => (
-  <svg width="30" height="34" viewBox="0 0 30 34" fill={"none"} xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M24.6886 4.11667C24.5553 4.11667 24.4219 4.08333 24.3053 4.01667C21.1053 2.36667 18.3386 1.66667 15.0219 1.66667C11.7219 1.66667 8.5886 2.45 5.7386 4.01667C5.3386 4.23333 4.8386 4.08333 4.60527 3.68333C4.3886 3.28333 4.5386 2.76667 4.9386 2.55C8.0386 0.866667 11.4386 0 15.0219 0C18.5719 0 21.6719 0.783333 25.0719 2.53333C25.4886 2.75 25.6386 3.25 25.4219 3.65C25.2719 3.95 24.9886 4.11667 24.6886 4.11667ZM0.838598 12.8667C0.671931 12.8667 0.505265 12.8167 0.355265 12.7167C-0.0280686 12.45 -0.111402 11.9333 0.155265 11.55C1.80526 9.21667 3.90527 7.38333 6.40527 6.1C11.6386 3.4 18.3386 3.38333 23.5886 6.08333C26.0886 7.36667 28.1886 9.18333 29.8386 11.5C30.1053 11.8667 30.0219 12.4 29.6386 12.6667C29.2553 12.9333 28.7386 12.85 28.4719 12.4667C26.9719 10.3667 25.0719 8.71667 22.8219 7.56667C18.0386 5.11667 11.9219 5.11667 7.15527 7.58333C4.8886 8.75 2.9886 10.4167 1.4886 12.5167C1.35526 12.75 1.10526 12.8667 0.838598 12.8667ZM11.2553 32.9833C11.0386 32.9833 10.8219 32.9 10.6719 32.7333C9.22193 31.2833 8.4386 30.35 7.32193 28.3333C6.17193 26.2833 5.57193 23.7833 5.57193 21.1C5.57193 16.15 9.80526 12.1167 15.0053 12.1167C20.2053 12.1167 24.4386 16.15 24.4386 21.1C24.4386 21.5667 24.0719 21.9333 23.6053 21.9333C23.1386 21.9333 22.7719 21.5667 22.7719 21.1C22.7719 17.0667 19.2886 13.7833 15.0053 13.7833C10.7219 13.7833 7.2386 17.0667 7.2386 21.1C7.2386 23.5 7.77193 25.7167 8.7886 27.5167C9.85527 29.4333 10.5886 30.25 11.8719 31.55C12.1886 31.8833 12.1886 32.4 11.8719 32.7333C11.6886 32.9 11.4719 32.9833 11.2553 32.9833ZM23.2053 29.9C21.2219 29.9 19.4719 29.4 18.0386 28.4167C15.5553 26.7333 14.0719 24 14.0719 21.1C14.0719 20.6333 14.4386 20.2667 14.9053 20.2667C15.3719 20.2667 15.7386 20.6333 15.7386 21.1C15.7386 23.45 16.9386 25.6667 18.9719 27.0333C20.1553 27.8333 21.5386 28.2167 23.2053 28.2167C23.6053 28.2167 24.2719 28.1667 24.9386 28.05C25.3886 27.9667 25.8219 28.2667 25.9053 28.7333C25.9886 29.1833 25.6886 29.6167 25.2219 29.7C24.2719 29.8833 23.4386 29.9 23.2053 29.9ZM19.8553 33.3333C19.7886 33.3333 19.7053 33.3167 19.6386 33.3C16.9886 32.5667 15.2553 31.5833 13.4386 29.8C11.1053 27.4833 9.82193 24.4 9.82193 21.1C9.82193 18.4 12.1219 16.2 14.9553 16.2C17.7886 16.2 20.0886 18.4 20.0886 21.1C20.0886 22.8833 21.6386 24.3333 23.5553 24.3333C25.4719 24.3333 27.0219 22.8833 27.0219 21.1C27.0219 14.8167 21.6053 9.71667 14.9386 9.71667C10.2053 9.71667 5.87193 12.35 3.92193 16.4333C3.27193 17.7833 2.9386 19.3667 2.9386 21.1C2.9386 22.4 3.05526 24.45 4.05526 27.1167C4.22193 27.55 4.00526 28.0333 3.57193 28.1833C3.1386 28.35 2.65526 28.1167 2.50526 27.7C1.6886 25.5167 1.2886 23.35 1.2886 21.1C1.2886 19.1 1.67193 17.2833 2.42193 15.7C4.6386 11.05 9.55526 8.03333 14.9386 8.03333C22.5219 8.03333 28.6886 13.8833 28.6886 21.0833C28.6886 23.7833 26.3886 25.9833 23.5553 25.9833C20.7219 25.9833 18.4219 23.7833 18.4219 21.0833C18.4219 19.3 16.8719 17.85 14.9553 17.85C13.0386 17.85 11.4886 19.3 11.4886 21.0833C11.4886 23.9333 12.5886 26.6 14.6053 28.6C16.1886 30.1667 17.7053 31.0333 20.0553 31.6833C20.5053 31.8 20.7553 32.2667 20.6386 32.7C20.5553 33.0833 20.2053 33.3333 19.8553 33.3333Z"
-      fill={fill}
-    />
-  </svg>
-);
-
-const AddFileFilled = ({ className = "", fill = "", style = {} }) => (
-  <svg width="19" className={className} height="18" style={style} viewBox="0 0 19 18" fill={fill} xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M14.6016 8.75C15.2141 8.75 15.8003 8.86375 16.3516 9.05625V5.25L11.1016 0H2.35156C1.38031 0 0.601562 0.77875 0.601562 1.75V14C0.601562 14.9712 1.38906 15.75 2.35156 15.75H9.65781C9.46531 15.1987 9.35156 14.6125 9.35156 14C9.35156 11.1037 11.7053 8.75 14.6016 8.75ZM10.2266 1.3125L15.0391 6.125H10.2266V1.3125ZM18.1016 13.125V14.875H15.4766V17.5H13.7266V14.875H11.1016V13.125H13.7266V10.5H15.4766V13.125H18.1016Z"
-      fill="#F47738"
-    />
-  </svg>
-);
-
-const LocateIcon = ({ className = "" }) => (
-  <svg width="22" height="22" viewBox="0 0 22 22" fill="none" className={className} xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M11 7C8.79 7 7 8.79 7 11C7 13.21 8.79 15 11 15C13.21 15 15 13.21 15 11C15 8.79 13.21 7 11 7ZM19.94 10C19.48 5.83 16.17 2.52 12 2.06V0H10V2.06C5.83 2.52 2.52 5.83 2.06 10H0V12H2.06C2.52 16.17 5.83 19.48 10 19.94V22H12V19.94C16.17 19.48 19.48 16.17 19.94 12H22V10H19.94ZM11 18C7.13 18 4 14.87 4 11C4 7.13 7.13 4 11 4C14.87 4 18 7.13 18 11C18 14.87 14.87 18 11 18Z"
-      fill="#505A5F"
-    />
-  </svg>
-);
-
-const ProjectIcon = ({ className = "", fill = "none", style = {} }) => (
-  <svg width="28" height="22" viewBox="0 0 28 22" className={className} style={style} fill={fill} xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M11.3346 0.333984H3.33464C1.86797 0.333984 0.681302 1.53398 0.681302 3.00065L0.667969 19.0007C0.667969 20.4673 1.86797 21.6673 3.33464 21.6673H24.668C26.1346 21.6673 27.3346 20.4673 27.3346 19.0007V5.66732C27.3346 4.20065 26.1346 3.00065 24.668 3.00065H14.0013L11.3346 0.333984Z"
+      d="M8 20C9.1 20 10 19.1 10 18H6C6 19.1 6.89 20 8 20ZM14 14V9C14 5.93 12.36 3.36 9.5 2.68V2C9.5 1.17 8.83 0.5 8 0.5C7.17 0.5 6.5 1.17 6.5 2V2.68C3.63 3.36 2 5.92 2 9V14L0 16V17H16V16L14 14Z"
       fill="white"
     />
   </svg>
 );
-const EstimateIcon = ({ className = "", fill = "none", style = {} }) => (
-  <svg width="28" height="31" viewBox="0 0 28 31" className={className} style={style} fill={fill} xmlns="http://www.w3.org/2000/svg">
+
+const OBPSIcon = ({ className, styles }) => (
+  <svg className={className} style={{ ...styles }} width="34" height="30" viewBox="0 0 34 30" fill="#ffffff" xmlns="http://www.w3.org/2000/svg">
     <path
-      d="M21.3333 3.00065H15.76C15.2 1.45398 13.7333 0.333984 12 0.333984C10.2667 0.333984 8.8 1.45398 8.24 3.00065H2.66667C1.2 3.00065 0 4.20065 0 5.66732V24.334C0 25.8007 1.2 27.0007 2.66667 27.0007H21.3333C22.8 27.0007 24 25.8007 24 24.334V5.66732C24 4.20065 22.8 3.00065 21.3333 3.00065ZM12 3.00065C12.7333 3.00065 13.3333 3.60065 13.3333 4.33398C13.3333 5.06732 12.7333 5.66732 12 5.66732C11.2667 5.66732 10.6667 5.06732 10.6667 4.33398C10.6667 3.60065 11.2667 3.00065 12 3.00065ZM12.6667 21.6673H5.33333V19.0007H12.6667V21.6673ZM18.6667 16.334H5.33333V13.6673H18.6667V16.334ZM18.6667 11.0007H5.33333V8.33398H18.6667V11.0007Z"
-      fill="white"
-    />
-    <circle cx="21" cy="24" r="6.5" fill="#F8F8F8" stroke="#0B4B66" />
-    <path
-      d="M23.998 22.1797L23.6992 23.3164H18.1738L18.4785 22.1797H23.998ZM21.168 28.5723L18.3438 25.2266L18.3379 24.2246H19.7148C20.0352 24.2246 20.2988 24.1621 20.5059 24.0371C20.7129 23.9121 20.8672 23.7441 20.9688 23.5332C21.0703 23.3184 21.1211 23.0801 21.1211 22.8184C21.1211 22.5449 21.0742 22.3027 20.9805 22.0918C20.8867 21.8809 20.7363 21.7168 20.5293 21.5996C20.3223 21.4785 20.0469 21.418 19.7031 21.418H18.1797L18.5254 20.041H19.7031C20.4062 20.041 20.9922 20.1465 21.4609 20.3574C21.9297 20.5684 22.2812 20.873 22.5156 21.2715C22.75 21.666 22.8672 22.1445 22.8672 22.707C22.8672 23.1992 22.7891 23.6309 22.6328 24.002C22.4766 24.373 22.2285 24.6797 21.8887 24.9219C21.5488 25.1602 21.1016 25.3281 20.5469 25.4258L23.0898 28.4902V28.5723H21.168ZM24.0098 20.041L23.7051 21.1719H19.1289L19.4336 20.041H24.0098Z"
-      fill="#0B4B66"
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M30.3333 0H3.66659C1.83325 0 0.333252 1.5 0.333252 3.33333V26.6667C0.333252 28.5 1.83325 30 3.66659 30H30.3333C32.1666 30 33.6666 28.5 33.6666 26.6667V3.33333C33.6666 1.5 32.1666 0 30.3333 0ZM13.6666 23.3333H5.33325V20H13.6666V23.3333ZM13.6666 16.6667H5.33325V13.3333H13.6666V16.6667ZM13.6666 10H5.33325V6.66667H13.6666V10ZM21.6999 20L16.9999 15.2667L19.3499 12.9167L21.6999 15.2833L26.9833 10L29.3499 12.3667L21.6999 20Z"
     />
   </svg>
 );
+
+const OBPSIconComp = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <defs>
+      <linearGradient id="obps-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#3b82f6" />
+        <stop offset="100%" stopColor="#2563eb" />
+      </linearGradient>
+    </defs>
+    <path
+      d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-8h8v8zm-2-6h-4v4h4v-4z"
+      fill="url(#obps-grad)"
+    />
+  </svg>
+);
+
+const OBPSIconSolidBg = () => (
+  <svg width="34" height="30" viewBox="0 0 34 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M30.333 0H3.66634C1.83301 0 0.333008 1.5 0.333008 3.33333V26.6667C0.333008 28.5 1.83301 30 3.66634 30H30.333C32.1663 30 33.6663 28.5 33.6663 26.6667V3.33333C33.6663 1.5 32.1663 0 30.333 0ZM13.6663 23.3333H5.33301V20H13.6663V23.3333ZM13.6663 16.6667H5.33301V13.3333H13.6663V16.6667ZM13.6663 10H5.33301V6.66667H13.6663V10ZM21.6997 20L16.9997 15.2667L19.3497 12.9167L21.6997 15.2833L26.983 10L29.3497 12.3667L21.6997 20Z"
+      fill="white"
+    />
+  </svg>
+);
+
 const OrganisationIcon = ({ className = "", fill = "none", style = {} }) => (
   <svg width="32" height="32" viewBox="0 0 32 32" className={className} style={style} fill={fill} xmlns="http://www.w3.org/2000/svg">
     <path
@@ -1653,111 +1763,105 @@ const OrganisationIcon = ({ className = "", fill = "none", style = {} }) => (
     />
   </svg>
 );
-const WageseekerIcon = ({ className = "", fill = "none", style = {} }) => (
-  <svg width="32" height="26" className={className} style={style} viewBox="0 0 32 26" fill={fill} xmlns="http://www.w3.org/2000/svg">
+
+const PDFSvg = ({
+  className,
+  width = 80,
+  height = 80,
+  style = { background: "#f6f6f6", padding: "8px", boxShadow: "0px 2px 0px #d6d5d3", borderRadius: "4px" },
+  viewBox = "0 0 80 80",
+}) => (
+  <svg {...{ className, width, height, style, viewBox }} fill="none" xmlns="http://www.w3.org/2000/svg">
     <path
-      fill-rule="evenodd"
-      clip-rule="evenodd"
-      d="M15.9997 0C18.0699 0 19.7467 1.6356 19.7467 3.65442C19.7467 5.67349 18.0702 7.30883 15.9997 7.30883C13.9298 7.30883 12.2533 5.67373 12.2533 3.65442C12.2533 1.6356 13.9298 0 15.9997 0ZM6.36438 0C8.43458 0 10.1113 1.6356 10.1113 3.65442C10.1113 5.67349 8.43483 7.30883 6.36438 7.30883C4.29444 7.30883 2.61793 5.67373 2.61793 3.65442C2.61793 1.6356 4.29444 0 6.36438 0ZM10.178 17.0607V25.9994H2.55385V15.9281H0.5V12.5096C0.5 10.151 2.47417 8.22564 4.89249 8.22564H7.83697C8.75633 8.22564 9.61452 8.50528 10.3214 8.97954C9.48153 9.92812 8.97393 11.1619 8.97393 12.5096V17.0602H10.178L10.178 17.0607ZM25.6354 0C27.7053 0 29.3818 1.6356 29.3818 3.65442C29.3818 5.67349 27.7053 7.30883 25.6354 7.30883C23.5652 7.30883 21.8884 5.67373 21.8884 3.65442C21.8884 1.6356 23.5649 0 25.6354 0ZM29.4484 15.9288V26H21.825V17.0613H23.0261V12.5107C23.0261 11.163 22.5182 9.92948 21.6786 8.98065C22.3855 8.50637 23.2437 8.22675 24.163 8.22675H27.1075C29.5258 8.22675 31.5 10.1522 31.5 12.5107V15.9293H29.4486L29.4484 15.9288ZM19.8131 15.9288V26H12.1896V15.9288H10.1352V12.5103C10.1352 10.1517 12.1094 8.22626 14.5277 8.22626H17.4722C19.8905 8.22626 21.8647 10.1517 21.8647 12.5103V15.9288H19.8131Z"
-      fill="white"
+      d="M46.6667 6.6665H20C16.3334 6.6665 13.3667 9.6665 13.3667 13.3332L13.3334 66.6665C13.3334 70.3332 16.3 73.3332 19.9667 73.3332H60C63.6667 73.3332 66.6667 70.3332 66.6667 66.6665V26.6665L46.6667 6.6665ZM53.3334 59.9998H26.6667V53.3332H53.3334V59.9998ZM53.3334 46.6665H26.6667V39.9998H53.3334V46.6665ZM43.3334 29.9998V11.6665L61.6667 29.9998H43.3334Z"
+      fill="#505A5F"
     />
   </svg>
 );
-const ContractIcon = ({ className = "", fill = "none", style = {} }) => (
-  <svg width="24" height="27" className={className} style={style} viewBox="0 0 24 27" fill={fill} xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M21.3333 3.00065H15.76C15.2 1.45398 13.7333 0.333984 12 0.333984C10.2667 0.333984 8.8 1.45398 8.24 3.00065H2.66667C1.2 3.00065 0 4.20065 0 5.66732V24.334C0 25.8007 1.2 27.0007 2.66667 27.0007H21.3333C22.8 27.0007 24 25.8007 24 24.334V5.66732C24 4.20065 22.8 3.00065 21.3333 3.00065ZM12 3.00065C12.7333 3.00065 13.3333 3.60065 13.3333 4.33398C13.3333 5.06732 12.7333 5.66732 12 5.66732C11.2667 5.66732 10.6667 5.06732 10.6667 4.33398C10.6667 3.60065 11.2667 3.00065 12 3.00065Z"
-      fill="white"
-    />
-    <g clip-path="url(#clip0_1_3)">
-      <path d="M14.9269 16.7879L13.3359 18.3789L17.8331 22.8761L19.4241 21.2851L14.9269 16.7879Z" fill="#0B4B66" />
-      <path
-        d="M16.1242 14.4996C17.5717 14.4996 18.7492 13.3221 18.7492 11.8746C18.7492 11.4396 18.6292 11.0346 18.4417 10.6746L16.4167 12.6996L15.2992 11.5821L17.3242 9.55711C16.9642 9.36961 16.5592 9.24961 16.1242 9.24961C14.6767 9.24961 13.4992 10.4271 13.4992 11.8746C13.4992 12.1821 13.5592 12.4746 13.6567 12.7446L12.2692 14.1321L10.9342 12.7971L11.4667 12.2646L10.4092 11.2071L11.9992 9.61711C11.1217 8.73961 9.69672 8.73961 8.81922 9.61711L6.16422 12.2721L7.22172 13.3296H5.10672L4.57422 13.8621L7.22922 16.5171L7.76172 15.9846V13.8621L8.81922 14.9196L9.35172 14.3871L10.6867 15.7221L5.12922 21.2796L6.71922 22.8696L15.2542 14.3421C15.5242 14.4396 15.8167 14.4996 16.1242 14.4996Z"
-        fill="#0B4B66"
-      />
-    </g>
+
+const PGRIcon = ({ styles, className }) => (
+  <svg width="35" height="39" className={className} style={{ ...styles }} viewBox="0 0 35 39" fill="#ffffff" xmlns="http://www.w3.org/2000/svg">
+    <path d="M31.168 0.75H3.83464C1.95547 0.75 0.435052 2.4375 0.435052 4.5L0.417969 38.25L7.2513 30.75H31.168C33.0471 30.75 34.5846 29.0625 34.5846 27V4.5C34.5846 2.4375 33.0471 0.75 31.168 0.75ZM19.2096 17.625H15.793V6.375H19.2096V17.625ZM19.2096 25.125H15.793V21.375H19.2096V25.125Z" />
+  </svg>
+);
+
+const PGRIconComp = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
     <defs>
-      <clipPath id="clip0_1_3">
-        <rect width="18" height="18" fill="white" transform="translate(3 7)" />
-      </clipPath>
+      <linearGradient id="pgr-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#78350f" />
+        <stop offset="100%" stopColor="#451a03" />
+      </linearGradient>
     </defs>
+    <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 12h-2v-2h2v2zm0-4h-2V6h2v4z" fill="url(#pgr-grad)" />
   </svg>
 );
-const DashboardIcon = ({ className = "", fill = "none", style = {} }) => (
-  <svg width="24" height="24" className={className} style={style} viewBox="0 0 24 24" fill={fill} xmlns="http://www.w3.org/2000/svg">
-    <path d="M0 13.3333H10.6667V0H0V13.3333ZM0 24H10.6667V16H0V24ZM13.3333 24H24V10.6667H13.3333V24ZM13.3333 0V8H24V0H13.3333Z" fill="white" />
+
+const PMBIcon = () => (
+  <svg width="32" height="16" viewBox="0 0 32 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M16 9C18.1733 9 20.0933 9.52 21.6533 10.2C23.0933 10.84 24 12.28 24 13.84V16H8V13.8533C8 12.28 8.90667 10.84 10.3467 10.2133C11.9067 9.52 13.8267 9 16 9ZM5.33333 9.33333C6.8 9.33333 8 8.13333 8 6.66667C8 5.2 6.8 4 5.33333 4C3.86667 4 2.66667 5.2 2.66667 6.66667C2.66667 8.13333 3.86667 9.33333 5.33333 9.33333ZM6.84 10.8C6.34667 10.72 5.85333 10.6667 5.33333 10.6667C4.01333 10.6667 2.76 10.9467 1.62667 11.44C0.64 11.8667 0 12.8267 0 13.9067V16H6V13.8533C6 12.7467 6.30667 11.7067 6.84 10.8ZM26.6667 9.33333C28.1333 9.33333 29.3333 8.13333 29.3333 6.66667C29.3333 5.2 28.1333 4 26.6667 4C25.2 4 24 5.2 24 6.66667C24 8.13333 25.2 9.33333 26.6667 9.33333ZM32 13.9067C32 12.8267 31.36 11.8667 30.3733 11.44C29.24 10.9467 27.9867 10.6667 26.6667 10.6667C26.1467 10.6667 25.6533 10.72 25.16 10.8C25.6933 11.7067 26 12.7467 26 13.8533V16H32V13.9067ZM16 0C18.2133 0 20 1.78667 20 4C20 6.21333 18.2133 8 16 8C13.7867 8 12 6.21333 12 4C12 1.78667 13.7867 0 16 0Z"
+      fill="#F47738"
+    />
   </svg>
 );
-const HelperIcon = ({ className = "", fill = "none", style = {} }) => (
-  <svg width="32" height="32" className={className} style={style} viewBox="0 0 32 32" fill={fill} xmlns="http://www.w3.org/2000/svg">
-    <g clip-path="url(#clip0_4347_41530)">
-      <path
-        d="M14.668 24.0003H17.3346V21.3337H14.668V24.0003ZM16.0013 2.66699C8.6413 2.66699 2.66797 8.64033 2.66797 16.0003C2.66797 23.3603 8.6413 29.3337 16.0013 29.3337C23.3613 29.3337 29.3346 23.3603 29.3346 16.0003C29.3346 8.64033 23.3613 2.66699 16.0013 2.66699ZM16.0013 26.667C10.1213 26.667 5.33464 21.8803 5.33464 16.0003C5.33464 10.1203 10.1213 5.33366 16.0013 5.33366C21.8813 5.33366 26.668 10.1203 26.668 16.0003C26.668 21.8803 21.8813 26.667 16.0013 26.667ZM16.0013 8.00033C13.0546 8.00033 10.668 10.387 10.668 13.3337H13.3346C13.3346 11.867 14.5346 10.667 16.0013 10.667C17.468 10.667 18.668 11.867 18.668 13.3337C18.668 16.0003 14.668 15.667 14.668 20.0003H17.3346C17.3346 17.0003 21.3346 16.667 21.3346 13.3337C21.3346 10.387 18.948 8.00033 16.0013 8.00033Z"
-        fill="white"
-      />
+
+const PMBIconSolid = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" enableBackground="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#FFFFFF">
+    <g>
+      <rect fill="none" height="24" width="24" />
     </g>
+    <path d="M18,11c0,0.67,0,1.33,0,2c1.2,0,2.76,0,4,0c0-0.67,0-1.33,0-2C20.76,11,19.2,11,18,11z" />
+    <path d="M16,17.61c0.96,0.71,2.21,1.65,3.2,2.39c0.4-0.53,0.8-1.07,1.2-1.6c-0.99-0.74-2.24-1.68-3.2-2.4 C16.8,16.54,16.4,17.08,16,17.61z" />
+    <path d="M20.4,5.6C20,5.07,19.6,4.53,19.2,4c-0.99,0.74-2.24,1.68-3.2,2.4c0.4,0.53,0.8,1.07,1.2,1.6 C18.16,7.28,19.41,6.35,20.4,5.6z" />
+    <path d="M4,9c-1.1,0-2,0.9-2,2v2c0,1.1,0.9,2,2,2h1v4h2v-4h1l5,3V6L8,9H4z M9.03,10.71L11,9.53v4.94l-1.97-1.18L8.55,13H8H4v-2h4 h0.55L9.03,10.71z" />
+    <path d="M15.5,12c0-1.33-0.58-2.53-1.5-3.35v6.69C14.92,14.53,15.5,13.33,15.5,12z" />
+  </svg>
+);
+
+const PTIcon = ({ className, styles }) => (
+  <svg width="34" height="30" style={{ ...styles }} viewBox="0 0 34 30" fill="#ffffff" className={className} xmlns="http://www.w3.org/2000/svg">
+    <path d="M16.9999 6.66667V0H0.333252V30H33.6666V6.66667H16.9999ZM6.99992 26.6667H3.66659V23.3333H6.99992V26.6667ZM6.99992 20H3.66659V16.6667H6.99992V20ZM6.99992 13.3333H3.66659V10H6.99992V13.3333ZM6.99992 6.66667H3.66659V3.33333H6.99992V6.66667ZM13.6666 26.6667H10.3333V23.3333H13.6666V26.6667ZM13.6666 20H10.3333V16.6667H13.6666V20ZM13.6666 13.3333H10.3333V10H13.6666V13.3333ZM13.6666 6.66667H10.3333V3.33333H13.6666V6.66667ZM30.3333 26.6667H16.9999V23.3333H20.3333V20H16.9999V16.6667H20.3333V13.3333H16.9999V10H30.3333V26.6667ZM26.9999 13.3333H23.6666V16.6667H26.9999V13.3333ZM26.9999 20H23.6666V23.3333H26.9999V20Z" />
+  </svg>
+);
+
+const PTIconComp = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
     <defs>
-      <clipPath id="clip0_4347_41530">
-        <rect width="32" height="32" fill="white" />
-      </clipPath>
+      <linearGradient id="pt-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#a855f7" />
+        <stop offset="100%" stopColor="#7e22ce" />
+      </linearGradient>
     </defs>
+    <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8h5z" fill="url(#pt-grad)" />
   </svg>
 );
-const AttendanceIcon = ({ className = "", fill = "none", style = {} }) => (
-  <svg width="32" height="32" viewBox="0 0 32 32" className={className} style={style} fill={fill} xmlns="http://www.w3.org/2000/svg">
+
+const PTRIcon = ({ className, styles }) => (
+  <svg width="512" height="512" style={{ ...styles }} viewBox="0 0 512 512" fill="#ffffff" className={className} xmlns="http://www.w3.org/2000/svg">
     <path
-      d="M23.9674 19.9844C21.0132 19.9844 18.5968 22.2203 18.3063 25.096C18.287 25.2879 18.2773 25.4831 18.2773 25.6798C18.2773 25.8687 18.2875 26.0542 18.3053 26.2382C18.3104 26.2924 18.3208 26.3463 18.3274 26.4004C18.6807 29.2087 21.0613 31.3745 23.9674 31.3745C26.8736 31.3745 29.258 29.2087 29.612 26.4004C29.6186 26.3463 29.6291 26.2924 29.6341 26.2382C29.6519 26.0542 29.6621 25.8687 29.6621 25.6798C29.6621 22.5289 27.1186 19.9844 23.9674 19.9844ZM26.6029 23.0278C26.7603 23.0232 26.9122 23.0839 27.0233 23.1958C27.2439 23.4177 27.2439 23.7765 27.0233 23.9984L23.804 27.2221C23.716 27.3105 23.6017 27.3675 23.4781 27.3845C23.4624 27.3868 23.4464 27.3883 23.4304 27.3891C23.2687 27.3977 23.1109 27.337 22.9967 27.2221L20.9839 25.2083C20.8769 25.1016 20.8167 24.9567 20.8167 24.8052C20.8167 24.654 20.8769 24.5091 20.9839 24.4021C21.0864 24.2986 21.2244 24.2381 21.3698 24.2331C21.5274 24.229 21.6794 24.2902 21.7902 24.4021L23.4003 26.0112L26.2203 23.1957C26.322 23.0933 26.4588 23.0333 26.6029 23.0277L26.6029 23.0278Z"
-      fill="white"
-    />
-    <path
-      d="M5.18073 14.0079C5.73151 14.0079 6.25584 14.1431 6.76753 14.2959C6.48515 14.9735 6.31943 15.7296 6.31943 16.5666V22.2623H0.625V17.7065C0.625 16.454 1.16028 15.5837 1.99929 14.962C2.83852 14.3403 4.00518 14.0078 5.18075 14.0078L5.18073 14.0079Z"
-      fill="white"
-    />
-    <path
-      d="M13.4337 11.5879C14.5168 11.5879 15.5471 11.898 16.4705 12.3362C15.9083 13.0822 15.5441 13.9667 15.4575 14.9739C15.4376 15.1211 15.4252 15.2721 15.4252 15.4286V23.9687H7.45703V16.5673C7.45703 16.337 7.47228 16.1179 7.49922 15.9068C7.50202 15.8831 7.50837 15.8613 7.51142 15.8379C7.60089 15.2139 7.80067 14.6674 8.08737 14.1843L8.08763 14.1845C8.10212 14.1593 8.11482 14.1334 8.12524 14.1065C8.42694 13.6238 8.81509 13.2093 9.27739 12.861C10.3835 12.0274 11.9045 11.5879 13.4341 11.5879L13.4337 11.5879Z"
-      fill="white"
-    />
-    <path
-      d="M23.9678 10.4473C25.8723 10.4473 27.7755 10.8999 29.1495 11.7504C30.5236 12.6011 31.3735 13.7817 31.3735 15.4277V26.2465H30.7508C30.7643 26.0876 30.7859 25.9305 30.7943 25.7717C30.7994 25.7412 30.8022 25.7104 30.8022 25.6794C30.8022 25.6629 30.8001 25.6469 30.7999 25.6303V25.6306V25.626C30.7762 22.5737 28.7388 19.9906 25.9539 19.1419C25.7444 19.0781 25.5317 19.0232 25.3144 18.9795C25.3068 18.978 25.2986 18.9777 25.291 18.9762C25.0818 18.935 24.8693 18.9023 24.6538 18.8806C24.6528 18.8806 24.6515 18.8796 24.6505 18.8796C24.4261 18.857 24.1983 18.8451 23.9678 18.8451C23.7324 18.8451 23.4999 18.8573 23.2706 18.8806C19.8307 19.2314 17.1391 22.1483 17.1391 25.6795C17.1391 25.8709 17.1513 26.059 17.1668 26.2466H16.5664V24.5686V24.5688C16.5667 24.5591 16.5667 24.5495 16.5664 24.5398V15.4278C16.5664 15.2425 16.5809 15.0656 16.602 14.8918C16.6083 14.8402 16.6172 14.7898 16.6254 14.7395C16.6444 14.6198 16.6688 14.5034 16.6976 14.3893C16.7123 14.3313 16.7258 14.2734 16.7431 14.217C16.7751 14.111 16.8147 14.009 16.8554 13.9079C16.9065 13.7826 16.9642 13.6603 17.0277 13.5421C17.0519 13.4969 17.0753 13.4509 17.1012 13.4064C17.1579 13.3106 17.2186 13.2176 17.2834 13.1263C17.2982 13.1052 17.3137 13.0849 17.3289 13.064C17.4799 12.8597 17.6504 12.666 17.8403 12.4825L17.8408 12.4822C17.8553 12.4675 17.869 12.4517 17.882 12.4355C18.1504 12.1861 18.4546 11.9584 18.7904 11.7505C20.1644 10.8998 22.0633 10.4474 23.9678 10.4474L23.9678 10.4473Z"
-      fill="white"
-    />
-    <path
-      d="M5.17963 7.46096C6.12974 7.46096 6.88537 8.21789 6.88537 9.16794C6.88537 10.118 6.12974 10.8782 5.17963 10.8782C4.22952 10.8782 3.47266 10.118 3.47266 9.16794C3.47266 9.04924 3.4846 8.93359 3.50722 8.82202C3.66506 8.04069 4.34827 7.46096 5.17963 7.46096Z"
-      fill="white"
-    />
-    <path
-      d="M13.1504 2.90457C13.249 2.90457 13.3468 2.9094 13.4429 2.91906H13.4462C13.541 2.92872 13.6346 2.94371 13.7263 2.96252C14.6555 3.15162 15.4173 3.78985 15.777 4.64282C15.8847 4.89877 15.9559 5.17429 15.9849 5.46228C15.9945 5.5581 15.9994 5.6557 15.9994 5.75457C15.9994 5.85319 15.9945 5.95003 15.9849 6.04585C15.9559 6.33383 15.8847 6.60985 15.777 6.86531C15.4176 7.7173 14.6559 8.35372 13.7263 8.54229C13.5418 8.57965 13.3507 8.59973 13.1547 8.59998C13.0561 8.59998 12.9582 8.59414 12.8621 8.58448C11.6136 8.45892 10.6081 7.53657 10.3624 6.32951C10.3248 6.14371 10.3047 5.95207 10.3047 5.75458C10.3047 5.65596 10.3095 5.55811 10.3192 5.46203C10.3288 5.36595 10.3436 5.2714 10.3626 5.17838C10.6084 3.97034 11.6139 3.04488 12.8624 2.91878C12.9569 2.90938 13.0533 2.9043 13.1504 2.9043V2.90457Z"
-      fill="white"
-    />
-    <path
-      d="M23.9677 0.626961C24.0861 0.626961 24.2028 0.633061 24.3179 0.644753C25.815 0.795729 27.021 1.90491 27.3158 3.35344C27.3611 3.57635 27.3847 3.80611 27.3847 4.04302C27.3847 4.27965 27.3611 4.51069 27.3158 4.73358C27.021 6.18211 25.815 7.29131 24.3179 7.44227C24.2043 7.45371 24.0889 7.45981 23.972 7.46006C23.8536 7.46006 23.7369 7.45396 23.6218 7.44227C23.5066 7.43058 23.393 7.4138 23.2814 7.39118C22.0558 7.14184 21.0732 6.24007 20.7082 5.06145C20.6086 4.74018 20.5547 4.39782 20.5547 4.04301C20.5547 3.92457 20.5608 3.8079 20.5725 3.69277C20.5956 3.46249 20.6419 3.23984 20.7082 3.02557C21.0732 1.84726 22.0555 0.945432 23.2814 0.695833C23.3927 0.673212 23.5066 0.656183 23.6218 0.644745C23.7354 0.633308 23.8508 0.626961 23.9677 0.626961Z"
-      fill="white"
+      d="M256 224c-79.41 0-192 122.76-192 200.25 0 34.9 26.81 55.75 71.74 55.75 48.84 0 81.09-25.08 120.26-25.08 39.51 0 71.85 25.08 120.26 25.08 44.93 0 71.74-20.85 71.74-55.75C448 346.76 335.41 224 256 224zm-147.28-12.61c-10.4-34.65-42.44-57.09-71.56-50.13-29.12 6.96-44.29 40.69-33.89
+75.34 10.4 34.65 42.44 57.09 71.56 50.13 29.12-6.96 44.29-40.69 33.89-75.34zm84.72-20.78c30.94-8.14 46.42-49.94 34.58-93.36s-46.52-72.01-77.46-63.87-46.42 49.94-34.58 93.36c11.84 43.42 46.53 72.02 77.46 63.87zm281.39-29.34c-29.12-6.96-61.15 15.48-71.56
+50.13-10.4 34.65 4.77 68.38 33.89 75.34 29.12 6.96 61.15-15.48 71.56-50.13 10.4-34.65-4.77-68.38-33.89-75.34zm-156.27 29.34c30.94 8.14 65.62-20.45 77.46-63.87 11.84-43.42-3.64-85.21-34.58-93.36s-65.62 20.45-77.46 63.87c-11.84 43.42 3.64 85.22 34.58 93.36z"
     />
   </svg>
 );
-const HRIcon = ({ className = "", fill = "none", style = {} }) => (
-  <svg width="28" height="28" className={className} style={style} viewBox="0 0 28 28" fill={fill} xmlns="http://www.w3.org/2000/svg">
+
+const PTRIconComp = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <defs>
+      <linearGradient id="ptr-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#10b981" />
+        <stop offset="100%" stopColor="#059669" />
+      </linearGradient>
+    </defs>
     <path
-      d="M3.33464 6.00033H0.667969V24.667C0.667969 26.1337 1.86797 27.3337 3.33464 27.3337H22.0013V24.667H3.33464V6.00033ZM24.668 0.666992H8.66797C7.2013 0.666992 6.0013 1.86699 6.0013 3.33366V19.3337C6.0013 20.8003 7.2013 22.0003 8.66797 22.0003H24.668C26.1346 22.0003 27.3346 20.8003 27.3346 19.3337V3.33366C27.3346 1.86699 26.1346 0.666992 24.668 0.666992ZM16.668 3.33366C18.8813 3.33366 20.668 5.12033 20.668 7.33366C20.668 9.54699 18.8813 11.3337 16.668 11.3337C14.4546 11.3337 12.668 9.54699 12.668 7.33366C12.668 5.12033 14.4546 3.33366 16.668 3.33366ZM24.668 19.3337H8.66797V17.3337C8.66797 14.6803 14.0013 13.3337 16.668 13.3337C19.3346 13.3337 24.668 14.6803 24.668 17.3337V19.3337Z"
-      fill="white"
+      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5.5 13c-.83 0-1.5-.67-1.5-1.5S16.67 12 17.5 12s1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM12 17c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm-5.5-2c-.83 0-1.5-.67-1.5-1.5S5.67 12 6.5 12s1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM12 9c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2z"
+      fill="url(#ptr-grad)"
     />
   </svg>
 );
-const MuktaHomeIcon = ({ className = "", fill = "none", style = {} }) => (
-  <svg width="28" height="23" className={className} style={style} viewBox="0 0 28 23" fill={fill} xmlns="http://www.w3.org/2000/svg">
-    <path d="M11.3346 22.6667V14.6667H16.668V22.6667H23.3346V12H27.3346L14.0013 0L0.667969 12H4.66797V22.6667H11.3346Z" fill="white" />
-  </svg>
-);
-const DoubleTickIcon = ({ className = "", fill = "none", style = {} }) => (
-  <svg width="32" height="19" viewBox="0 0 32 19" className={className} style={style} fill={fill} xmlns="http://www.w3.org/2000/svg">
-    <path d="M24.0002 2.33312L22.1202 0.453125L13.6669 8.90646L15.5469 10.7865L24.0002 2.33312ZM29.6535 0.453125L15.5469 14.5598L9.97354 8.99979L8.09354 10.8798L15.5469 18.3331L31.5469 2.33312L29.6535 0.453125ZM0.546875 10.8798L8.00021 18.3331L9.88021 16.4531L2.44021 8.99979L0.546875 10.8798Z" fill="#F47738"/>
-  </svg>
-)
-const InfoIcon = ({ className = "", fill = "none", style = {} }) => (
-  <svg width="20" height="20" viewBox="0 0 20 20" className={className} style={style} fill={fill} xmlns="http://www.w3.org/2000/svg">
-    <path d="M9 5H11V7H9V5ZM9 9H11V15H9V9ZM10 0C4.48 0 0 4.48 0 10C0 15.52 4.48 20 10 20C15.52 20 20 15.52 20 10C20 4.48 15.52 0 10 0ZM10 18C5.59 18 2 14.41 2 10C2 5.59 5.59 2 10 2C14.41 2 18 5.59 18 10C18 14.41 14.41 18 10 18Z" fill="#505A5F"/>
-  </svg>
-)
+
 const PaymentIcon = ({ className = "", fill = "none", style = {} }) => (
   <svg width="34" height="34" viewBox="0 0 34 34" className={className} style={style} fill={fill} xmlns="http://www.w3.org/2000/svg">
     <g clip-path="url(#clip0_7555_25801)">
@@ -1774,16 +1878,569 @@ const PaymentIcon = ({ className = "", fill = "none", style = {} }) => (
   </svg>
 );
 
-const HistoryIcon =({ className = "", fill = "none", style = {} })=>(
-  <svg width="36" height="36" viewBox="0 0 36 36" fill={fill } className={className} style={style}  xmlns="http://www.w3.org/2000/svg">
-<path d="M30.7437 5.30394C23.7393 -1.76798 12.3808 -1.76798 5.37636 5.30394L3.33196 7.36803V3.88935C3.33196 2.97184 2.5748 2.20731 1.66598 2.20731C0.757234 2.20731 0 2.97177 0 3.88935V11.42C0 12.3375 0.757166 13.102 1.66598 13.102H9.12473C10.0335 13.102 10.7907 12.3376 10.7907 11.42C10.7907 10.5025 10.0335 9.73794 9.12473 9.73794H5.67925L7.72365 7.67385C10.5633 4.80685 14.3116 3.35418 18.0599 3.35418C21.8083 3.35444 25.5565 4.80713 28.3961 7.67412C31.3493 10.6558 32.9017 14.7843 32.6366 18.9892C32.5988 19.9067 33.2802 20.7093 34.189 20.7858H34.3025C35.1733 20.7858 35.8927 20.0979 35.9685 19.2185C36.2714 14.0577 34.3783 8.97375 30.7435 5.304L30.7437 5.30394Z" fill="#F47738"/>
-<path d="M18.2519 8.16797C17.3432 8.16797 16.5859 8.93243 16.5859 9.85001V18.1069C16.5859 18.8714 17.0782 19.5213 17.7976 19.7125L23.8176 21.4326C24.6883 21.7003 25.6349 21.1267 25.862 20.2857C26.1271 19.4066 25.5968 18.4509 24.6883 18.2216L19.9178 16.8073V9.85007C19.9178 8.93277 19.1984 8.16804 18.2519 8.16804L18.2519 8.16797Z" fill="#F47738"/>
-<path d="M25.4454 31.0611C24.5746 31.5581 23.6659 31.9786 22.7194 32.2845C22.3406 32.3991 22.038 32.6668 21.8486 33.0108C21.6592 33.3548 21.6592 33.7753 21.7728 34.1577C22.038 34.9222 22.8707 35.3427 23.6281 35.1134C24.764 34.731 25.8619 34.2342 26.8842 33.6607C27.6036 33.2402 27.8307 32.3611 27.4143 31.6347C27.0733 30.9083 26.1646 30.6406 25.4454 31.0611Z" fill="#F47738"/>
-<path d="M3.40851 20.1747C3.37074 19.7923 3.14335 19.4483 2.84069 19.1808C2.57553 18.9897 2.27287 18.875 1.96994 18.875H1.78058C1.40185 18.9131 1.06114 19.1427 0.796242 19.4483C0.569113 19.7541 0.455548 20.1362 0.531082 20.5567C0.682414 21.7801 0.947574 22.9651 1.36404 24.0736C1.6292 24.838 2.49996 25.2585 3.25712 24.9911C3.63585 24.8764 3.9385 24.5706 4.09008 24.2266C4.24141 23.8826 4.27944 23.4621 4.16588 23.0797C3.78715 22.1622 3.55977 21.1684 3.40844 20.1746L3.40851 20.1747Z" fill="#F47738"/>
-<path d="M7.60837 28.6674C7.38124 28.4381 7.19188 28.2088 6.96476 27.9794C6.66183 27.6355 6.28338 27.4824 5.8669 27.4824C5.52621 27.4824 5.18553 27.5971 4.88257 27.8648C4.27672 28.4 4.20119 29.3556 4.769 29.9673C4.99613 30.235 5.26128 30.5025 5.52617 30.7702C6.09398 31.3435 6.73788 31.9171 7.38146 32.4138C8.02507 32.9109 8.97165 32.7578 9.42585 32.108C9.65298 31.8021 9.76655 31.42 9.72878 30.9995C9.69101 30.6172 9.46362 30.2732 9.16096 30.0057C8.63064 29.6231 8.10057 29.1645 7.6083 28.6675L7.60837 28.6674Z" fill="#F47738"/>
-<path d="M33.281 24.1352C33.0538 24.0206 32.8645 23.9824 32.6374 23.9824C32.486 23.9824 32.3344 24.0206 32.1831 24.0589C31.8044 24.1736 31.5017 24.4413 31.3123 24.8234C30.8581 25.7026 30.328 26.582 29.7222 27.3464C29.2299 27.9963 29.3434 28.9138 29.9493 29.449C30.5551 29.946 31.5395 29.8313 32.0317 29.2196C32.7512 28.264 33.3948 27.2702 33.9248 26.1999C34.1142 25.8559 34.1142 25.4354 34.0006 25.053C33.8868 24.5939 33.6217 24.288 33.281 24.1352Z" fill="#F47738"/>
-<path d="M17.1491 33.0137C16.1648 32.9371 15.1802 32.7844 14.2337 32.5166C14.1201 32.4785 13.9685 32.4785 13.855 32.4785C13.5898 32.4785 13.3627 32.555 13.1355 32.6697C12.7948 32.8609 12.5677 33.2049 12.4542 33.5872C12.227 34.3901 12.7193 35.1927 13.4765 35.422C14.6124 35.7279 15.7861 35.919 16.9975 35.9953H17.0733C17.8305 35.9953 18.4741 35.3836 18.5499 34.6192C18.5877 33.7784 17.9441 33.0521 17.1491 33.0137Z" fill="#F47738"/>
-</svg>)
+const Person = (style) => (
+  <svg
+    style={{ display: "inline-block", fontSize: "16px", ...style }}
+    width="24"
+    height="24"
+    viewBox="0 0 40 40"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path d="M13.6167 9.5L1.66667 17.4667V35H10V21.6667H16.6667V35H25V17.0833L13.6167 9.5Z" fill="white" />
+    <path
+      d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"
+      fill="white"
+    />
+  </svg>
+);
+
+const PersonIcon = ({ className, styles }) => (
+  <svg className={className} style={{ ...styles }} width="24" height="24" viewBox="0 0 38 24" fill="#ffffff" xmlns="http://www.w3.org/2000/svg">
+    <path d="M25.6667 10.3333C28.4334 10.3333 30.65 8.1 30.65 5.33333C30.65 2.56666 28.4334 0.333328 25.6667 0.333328C22.9 0.333328 20.6667 2.56666 20.6667 5.33333C20.6667 8.1 22.9 10.3333 25.6667 10.3333ZM12.3334 10.3333C15.1 10.3333 17.3167 8.1 17.3167 5.33333C17.3167 2.56666 15.1 0.333328 12.3334 0.333328C9.56669 0.333328 7.33335 2.56666 7.33335 5.33333C7.33335 8.1 9.56669 10.3333 12.3334 10.3333ZM12.3334 13.6667C8.45002 13.6667 0.666687 15.6167 0.666687 19.5V23.6667H24V19.5C24 15.6167 16.2167 13.6667 12.3334 13.6667ZM25.6667 13.6667C25.1834 13.6667 24.6334 13.7 24.05 13.75C25.9834 15.15 27.3334 17.0333 27.3334 19.5V23.6667H37.3334V19.5C37.3334 15.6167 29.55 13.6667 25.6667 13.6667Z" />
+  </svg>
+);
+
+const Phone = ({ className, fillcolor, style }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    fill={fillcolor ? fillcolor : "#f47738"}
+    viewBox="0 0 24 24"
+    style={style ? style : {}}
+    className={className}
+  >
+    <path d="M0 0h24v24H0z" fill="none" />
+    <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />
+  </svg>
+);
+
+const Poll = () => (
+  <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0 6C0 2.68629 2.68629 0 6 0H34C37.3137 0 40 2.68629 40 6V34C40 37.3137 37.3137 40 34 40H6C2.68629 40 0 37.3137 0 34V6Z" fill="white" />
+    <path
+      d="M31.6667 5H8.33333C6.5 5 5 6.5 5 8.33333V31.6667C5 33.5 6.5 35 8.33333 35H31.6667C33.5 35 35 33.5 35 31.6667V8.33333C35 6.5 33.5 5 31.6667 5ZM15 28.3333H11.6667V16.6667H15V28.3333ZM21.6667 28.3333H18.3333V11.6667H21.6667V28.3333ZM28.3333 28.3333H25V21.6667H28.3333V28.3333Z"
+      fill="#F47738"
+    />
+  </svg>
+);
+
+const PresentationIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%">
+    <rect x="8" y="38" width="14" height="32" rx="1" fill="#ffffff" opacity="0.4" />
+    <rect x="5" y="30" width="8" height="8" rx="1" fill="#ffffff" opacity="0.4" />
+    <rect x="25" y="26" width="20" height="44" rx="1" fill="#ffffff" opacity="0.6" />
+    <circle cx="35" cy="12" r="2.5" fill="#ffffff" opacity="0.5" />
+
+    <rect x="48" y="34" width="14" height="36" rx="1" fill="#ffffff" opacity="0.45" />
+    <rect x="65" y="28" width="18" height="42" rx="1" fill="#ffffff" opacity="0.55" />
+    <rect x="86" y="40" width="12" height="30" rx="1" fill="#ffffff" opacity="0.4" />
+
+    <line x1="4" y1="70" x2="96" y2="70" stroke="#ffffff" strokeWidth="1" opacity="0.2" />
+
+    <path
+      d="M4 78 Q16 70 28 78 Q40 86 52 78 Q64 70 76 78 Q88 86 96 78"
+      fill="none"
+      stroke="#ffffff"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      opacity="0.9"
+    />
+    <path d="M4 86 Q18 80 32 86 Q46 92 60 86 Q74 80 88 86" fill="none" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" opacity="0.4" />
+  </svg>
+);
+
+const PrevIcon = () => (
+  <svg width="8" height="12" viewBox="0 0 8 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M1.99997 0L0.589966 1.41L5.16997 6L0.589966 10.59L1.99997 12L7.99997 6L1.99997 0Z" fill="#0B0C0C" />
+  </svg>
+);
+
+const PrimaryDownlaodIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#f47738">
+    <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
+  </svg>
+);
+
+const PrintBtnCommon = () => (
+  <svg width="41" height="41" viewBox="0 0 41 41" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M32.1663 13.8333H8.83301C6.06634 13.8333 3.83301 16.0667 3.83301 18.8333V28.8333H10.4997V35.5H30.4997V28.8333H37.1663V18.8333C37.1663 16.0667 34.933 13.8333 32.1663 13.8333ZM27.1663 32.1667H13.833V23.8333H27.1663V32.1667ZM32.1663 20.5C31.2497 20.5 30.4997 19.75 30.4997 18.8333C30.4997 17.9167 31.2497 17.1667 32.1663 17.1667C33.083 17.1667 33.833 17.9167 33.833 18.8333C33.833 19.75 33.083 20.5 32.1663 20.5ZM30.4997 5.5H10.4997V12.1667H30.4997V5.5Z"
+      fill="#505A5F"
+    />
+  </svg>
+);
+
+const PrintIcon = () => (
+  <svg width="20" height="18" viewBox="0 0 20 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M17 5H3C1.34 5 0 6.34 0 8V14H4V18H16V14H20V8C20 6.34 18.66 5 17 5ZM14 16H6V11H14V16ZM17 9C16.45 9 16 8.55 16 8C16 7.45 16.45 7 17 7C17.55 7 18 7.45 18 8C18 8.55 17.55 9 17 9ZM16 0H4V4H16V0Z"
+      fill="#505A5F"
+    />
+  </svg>
+);
+function PropertyHouse({ className, styles }) {
+  return (
+    <svg className={className} fill="#FFFFFF" style={{ ...styles }} width="24" height="24" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+      <path d="M13.6167 9.5L1.66667 17.4667V35H10V21.6667H16.6667V35H25V17.0833L13.6167 9.5Z" />
+      <path d="M16.6667 5V7.51667L20 9.73333L22.8833 11.6667H25V13.0833L28.3333 15.3167V18.3333H31.6667V21.6667H28.3333V25H31.6667V28.3333H28.3333V35H38.3333V5H16.6667ZM31.6667 15H28.3333V11.6667H31.6667V15Z" />
+    </svg>
+  );
+}
+
+const PrivacyMaskIcon = ({ className, style = {} }) => (
+  <svg width="22" height="15" viewBox="0 0 22 15" fill="none" xmlns="http://www.w3.org/2000/svg" className={className} style={style}>
+    <path
+      d="M11 0C6 0 1.73 3.11 0 7.5C1.73 11.89 6 15 11 15C16 15 20.27 11.89 22 7.5C20.27 3.11 16 0 11 0ZM11 12.5C8.24 12.5 6 10.26 6 7.5C6 4.74 8.24 2.5 11 2.5C13.76 2.5 16 4.74 16 7.5C16 10.26 13.76 12.5 11 12.5ZM11 4.5C9.34 4.5 8 5.84 8 7.5C8 9.16 9.34 10.5 11 10.5C12.66 10.5 14 9.16 14 7.5C14 5.84 12.66 4.5 11 4.5Z"
+      fill="#EEEEEE"
+    />
+  </svg>
+);
+
+const ProjectIcon = ({ className = "", fill = "none", style = {} }) => (
+  <svg width="28" height="22" viewBox="0 0 28 22" className={className} style={style} fill={fill} xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M11.3346 0.333984H3.33464C1.86797 0.333984 0.681302 1.53398 0.681302 3.00065L0.667969 19.0007C0.667969 20.4673 1.86797 21.6673 3.33464 21.6673H24.668C26.1346 21.6673 27.3346 20.4673 27.3346 19.0007V5.66732C27.3346 4.20065 26.1346 3.00065 24.668 3.00065H14.0013L11.3346 0.333984Z"
+      fill="white"
+    />
+  </svg>
+);
+
+const ReceiptIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
+    <path d="M0 0h24v24H0z" fill="none"></path>
+    <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 9h-2V5h2v6zm0 4h-2v-2h2v2z" fill="white"></path>
+  </svg>
+);
+
+const ReceiptsIconComp = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <defs>
+      <linearGradient id="receipts-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#14b8a6" />
+        <stop offset="100%" stopColor="#0d9488" />
+      </linearGradient>
+    </defs>
+    <path
+      d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 14H7v-2h10v2zm0-4H7v-2h10v2zm0-4H7V7h10v2z"
+      fill="url(#receipts-grad)"
+    />
+  </svg>
+);
+
+const RefreshIcon = () => (
+  <svg width="16" height="22" viewBox="0 0 16 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M8 5V8L12 4L8 0V3C3.58 3 0 6.58 0 11C0 12.57 0.46 14.03 1.24 15.26L2.7 13.8C2.25 12.97 2 12.01 2 11C2 7.69 4.69 5 8 5ZM14.76 6.74L13.3 8.2C13.74 9.04 14 9.99 14 11C14 14.31 11.31 17 8 17V14L4 18L8 22V19C12.42 19 16 15.42 16 11C16 9.43 15.54 7.97 14.76 6.74Z"
+      fill="#0B0C0C"
+    />
+  </svg>
+);
+
+const RefreshSVG = () => (
+  <svg width="17" height="17" viewBox="0 0 16 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M8 5V8L12 4L8 0V3C3.58 3 0 6.58 0 11C0 12.57 0.46 14.03 1.24 15.26L2.7 13.8C2.25 12.97 2 12.01 2 11C2 7.69 4.69 5 8 5ZM14.76 6.74L13.3 8.2C13.74 9.04 14 9.99 14 11C14 14.31 11.31 17 8 17V14L4 18L8 22V19C12.42 19 16 15.42 16 11C16 9.43 15.54 7.97 14.76 6.74Z"
+      fill="#505A5F"
+    />
+  </svg>
+);
+
+const RemoveIcon = () => (
+  <svg width="24" height="30" viewBox="0 0 24 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M2.00016 26.6667C2.00016 28.5 3.50016 30 5.3335 30H18.6668C20.5002 30 22.0002 28.5 22.0002 26.6667V6.66667H2.00016V26.6667ZM23.6668 1.66667H17.8335L16.1668 0H7.8335L6.16683 1.66667H0.333496V5H23.6668V1.66667Z"
+      fill="#F47738"
+    />
+  </svg>
+);
+
+const RightArrowIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M9 18l6-6-6-6" />
+  </svg>
+);
+
+const RoundedCheck = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FFFFFF" className={className}>
+    <path d="M0 0h24v24H0V0z" fill="none" />
+    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM9.29 16.29L5.7 12.7c-.39-.39-.39-1.02 0-1.41.39-.39 1.02-.39 1.41 0L10 14.17l6.88-6.88c.39-.39 1.02-.39 1.41 0 .39.39.39 1.02 0 1.41l-7.59 7.59c-.38.39-1.02.39-1.41 0z" />
+  </svg>
+);
+
+const RupeeIcon = ({ className }) => (
+  <svg width="48" className={className} height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="48" height="48" rx="6" fill="#F47738" />
+  </svg>
+);
+
+const RupeeSymbol = ({ className, styles }) => (
+  <svg className={className} style={{ ...styles }} width="13" height="18" viewBox="0 0 13 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M11.5781 3.26953H9.12891C9.48828 3.83203 9.72266 4.48438 9.83203 5.22656H12.1875L11.5664 7.54688H9.82031C9.64062 8.71094 9.17578 9.63672 8.42578 10.3242C7.67578 11.0117 6.59766 11.4922 5.19141 11.7656L10.3125 17.8359V18H6.43359L0.761719 11.3555L0.75 9.29297H3.52734C4.97266 9.29297 5.87891 8.71094 6.24609 7.54688H0.46875L1.07812 5.22656H6.17578C5.79297 4.28125 4.95312 3.80078 3.65625 3.78516H0.46875L1.16016 0.9375H12.1875L11.5781 3.26953Z"
+      fill="#F47738"
+    />
+  </svg>
+);
+
+const SearchIcon = ({ className }) => (
+  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M12.5 11H11.71L11.43 10.73C12.41 9.59 13 8.11 13 6.5C13 2.91 10.09 0 6.5 0C2.91 0 0 2.91 0 6.5C0 10.09 2.91 13 6.5 13C8.11 13 9.59 12.41 10.73 11.43L11 11.71V12.5L16 17.49L17.49 16L12.5 11ZM6.5 11C4.01 11 2 8.99 2 6.5C2 4.01 4.01 2 6.5 2C8.99 2 11 4.01 11 6.5C11 8.99 8.99 11 6.5 11Z"
+      fill="#505A5F"
+    />
+  </svg>
+);
+
+const SearchIconSvg = ({ className, onClick }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#f47738" className={className} width="24px" height="24px" onClick={onClick}>
+    <path d="M0 0h24v24H0z" fill="none" />
+    <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+  </svg>
+);
+
+const ServiceCenterIcon = ({ className, styles }) => (
+  <svg className={className} style={{ ...styles }} width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M7 10H4V17H7V10Z" fill="#0B0C0C" />
+    <path d="M13.5 10H10.5V17H13.5V10Z" fill="#0B0C0C" />
+    <path d="M22 19H2V22H22V19Z" fill="#0B0C0C" />
+    <path d="M20 10H17V17H20V10Z" fill="#0B0C0C" />
+    <path d="M12 1L2 6V8H22V6L12 1Z" fill="#0B0C0C" />
+  </svg>
+);
+
+const ShareIcon = ({ styles, className,fill="#505A5F" }) => (
+  <svg style={{ ...styles }} className={className} width="18" height="20" viewBox="0 0 18 20" fill={fill} xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M15 14.08C14.24 14.08 13.56 14.38 13.04 14.85L5.91 10.7C5.96 10.47 6 10.24 6 10C6 9.76 5.96 9.53 5.91 9.3L12.96 5.19C13.5 5.69 14.21 6 15 6C16.66 6 18 4.66 18 3C18 1.34 16.66 0 15 0C13.34 0 12 1.34 12 3C12 3.24 12.04 3.47 12.09 3.7L5.04 7.81C4.5 7.31 3.79 7 3 7C1.34 7 0 8.34 0 10C0 11.66 1.34 13 3 13C3.79 13 4.5 12.69 5.04 12.19L12.16 16.35C12.11 16.56 12.08 16.78 12.08 17C12.08 18.61 13.39 19.92 15 19.92C16.61 19.92 17.92 18.61 17.92 17C17.92 15.39 16.61 14.08 15 14.08Z"
+      fill={fill}
+    />
+  </svg>
+);
+
+const ShippingTruck = ({ className, styles }) => (
+  <svg style={{ ...styles }} className={className} xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
+    <path d="M0 0h24v24H0z" fill="none" />
+    <path
+      d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"
+    />
+  </svg>
+);
+
+function CloseSvg({ onClick }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24" onClick={onClick}>
+      <path d="M0 0h24v24H0z" fill="none" />
+      <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+    </svg>
+  );
+}
+
+const SortDown = (style) => (
+  <svg
+    style={{ display: "inline-block", height: "16px", ...style }}
+    xmlns="http://www.w3.org/2000/svg"
+    enableBackground="new 0 0 24 24"
+    height="24"
+    viewBox="0 0 24 24"
+    width="24"
+  >
+    <rect fill="none" height="24" width="24" />
+    <path d="M19,15l-1.41-1.41L13,18.17V2H11v16.17l-4.59-4.59L5,15l7,7L19,15z" />
+  </svg>
+);
+
+const SortSvg = ({ className }) => (
+  <svg width="24" height="16" viewBox="0 0 24 16" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+    <path d="M8 16H24V13.3333H8V16ZM0 0V2.66667H24V0H0ZM8 9.33333H24V6.66667H8V9.33333Z" fill="#505A5F" />
+  </svg>
+);
+
+const SortUp = (style) => (
+  <svg
+    style={{ display: "inline-block", height: "16px", ...style }}
+    xmlns="http://www.w3.org/2000/svg"
+    enableBackground="new 0 0 24 24"
+    height="24"
+    viewBox="0 0 24 24"
+    width="24"
+  >
+    <rect fill="none" height="24" width="24" />
+    <path d="M5,9l1.41,1.41L11,5.83V22H13V5.83l4.59,4.59L19,9l-7-7L5,9z" />
+  </svg>
+);
+
+const StarEmpty = ({ className, onClick, styles }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="#F47738"
+    className={className}
+    style={styles}
+    width="48px"
+    height="48px"
+    onClick={onClick}
+  >
+    <path d="M0 0h24v24H0V0z" fill="none" />
+    <path
+      d="M22 9.24l-7.19-.62L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27 18.18 21l-1.63-7.03L22 9.24zM12 15.4l-3.76 2.27 1-4.28-3.32-2.88 4.38-.38L12 6.1l1.71 4.04 4.38.38-3.32 2.88 1 4.28L12 15.4z"
+      strokeWidth={1}
+    />
+  </svg>
+);
+
+const StarFilled = ({ className, id, onClick, styles, percentage = 100 }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    enableBackground="new 0 0 24 24"
+    className={className}
+    style={styles}
+    onClick={onClick}
+    viewBox="0 0 24 24"
+    fill="#F47738"
+    width="48px"
+    height="48px"
+  >
+    <linearGradient id={id} x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0%" stopColor="#F47738" stopOpacity={1}></stop>
+      <stop offset={`${percentage}%`} stopColor="#F47738" stopOpacity={1}></stop>
+      <stop offset={`${percentage}%`} stopColor="white" stopOpacity={0}></stop>
+    </linearGradient>
+    <g>
+      <path d="M0,0h24v24H0V0z" fill="none" />
+      <path d="M0,0h24v24H0V0z" fill="none" />
+    </g>
+    <g>
+      <path
+        d="M12,17.27L18.18,21l-1.64-7.03L22,9.24l-7.19-0.61L12,2L9.19,8.63L2,9.24l5.46,4.73L5.82,21L12,17.27z"
+        fill={`url(#${id})`}
+        stroke="#F47738"
+        strokeWidth={1}
+      />
+    </g>
+  </svg>
+);
+
+const SubtractIcon = ({ styles, className, fill = "white" }) => (
+  <svg width="12" height="14" className={className} style={{ ...styles }} viewBox="0 0 12 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M9.24609 0.783203V3.45508H0.667969V0.783203H9.24609Z" fill={fill} />
+  </svg>
+);
+
+const SuccessSvg = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#00703C" className={className}>
+    <path d="M0 0h24v24H0V0z" fill="none" />
+    <path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z" />
+  </svg>
+);
+
+const SurveyIconComp = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <defs>
+      <linearGradient id="survey-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#3b82f6" />
+        <stop offset="100%" stopColor="#2563eb" />
+      </linearGradient>
+    </defs>
+    <path
+      d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 15H7v-2h10v2zm0-4H7v-2h10v2zm0-4H7V7h10v2z"
+      fill="url(#survey-grad)"
+    />
+  </svg>
+);
+
+const SurveyIconSolid = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#FFFFFF">
+    <path d="M0 0h24v24H0V0z" fill="none" />
+    <path d="M11 7h6v2h-6zm0 4h6v2h-6zm0 4h6v2h-6zM7 7h2v2H7zm0 4h2v2H7zm0 4h2v2H7zM20.1 3H3.9c-.5 0-.9.4-.9.9v16.2c0 .4.4.9.9.9h16.2c.4 0 .9-.5.9-.9V3.9c0-.5-.5-.9-.9-.9zM19 19H5V5h14v14z" />
+  </svg>
+);
+
+const TLIcon = ({ className, styles }) => (
+  <svg className={className} style={{ ...styles }} fill="#ffffff" width="24" height="24" viewBox="0 0 34 32" xmlns="http://www.w3.org/2000/svg">
+    <path d="M30.3333 6.99967H23.6667V3.66634C23.6667 1.81634 22.1833 0.333008 20.3333 0.333008H13.6667C11.8167 0.333008 10.3333 1.81634 10.3333 3.66634V6.99967H3.66667C1.81667 6.99967 0.350001 8.48301 0.350001 10.333L0.333334 28.6663C0.333334 30.5163 1.81667 31.9997 3.66667 31.9997H30.3333C32.1833 31.9997 33.6667 30.5163 33.6667 28.6663V10.333C33.6667 8.48301 32.1833 6.99967 30.3333 6.99967ZM20.3333 6.99967H13.6667V3.66634H20.3333V6.99967Z" />
+  </svg>
+);
+
+const TLIconComp = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <defs>
+      <linearGradient id="tl-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#f59e0b" />
+        <stop offset="100%" stopColor="#d97706" />
+      </linearGradient>
+    </defs>
+    <path
+      d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z"
+      fill="url(#tl-grad)"
+    />
+  </svg>
+);
+
+const TankerIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <defs>
+      <linearGradient id="tanker-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#f59e0b" />
+        <stop offset="100%" stopColor="#d97706" />
+      </linearGradient>
+    </defs>
+    <path
+      d="M18 11h-2V6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h2c0 1.66 1.34 3 3 3s3-1.34 3-3h4c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm12 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"
+      fill="url(#tanker-grad)"
+    />
+  </svg>
+);
+
+const TickMark = ({ fillColor = "white" }) => (
+  <svg style={{ display: "inline-block", margin: "auto" }} width="14" height="11" viewBox="0 0 14 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M4.75012 8.1275L1.62262 5L0.557617 6.0575L4.75012 10.25L13.7501 1.25L12.6926 0.192505L4.75012 8.1275Z" fill={fillColor} />
+  </svg>
+);
+
+const TimerIcon = ({ className, styles }) => (
+  <svg className={className} style={{ ...styles }} width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M13.0998 17.3701L14.0998 19.1101C13.1398 19.5501 12.0898 19.84 10.9998 19.9501V17.93C11.7398 17.84 12.4398 17.6501 13.0998 17.3701ZM2.0698 11H0.0498047C0.159805 12.1 0.449805 13.14 0.889805 14.1L2.6298 13.1C2.3498 12.44 2.1598 11.74 2.0698 11ZM13.0998 2.63005L14.0998 0.890049C13.1398 0.450049 12.0998 0.160049 10.9998 0.0500488V2.07005C11.7398 2.16005 12.4398 2.35005 13.0998 2.63005ZM17.9298 9.00005H19.9498C19.8398 7.90005 19.5498 6.86005 19.1098 5.90005L17.3698 6.90005C17.6498 7.56005 17.8398 8.26005 17.9298 9.00005ZM6.8998 17.3701L5.89981 19.1101C6.85981 19.5501 7.9098 19.84 8.9998 19.9501V17.93C8.2598 17.84 7.5598 17.6501 6.8998 17.3701ZM8.9998 2.07005V0.0500488C7.8998 0.160049 6.85981 0.450049 5.89981 0.890049L6.8998 2.63005C7.5598 2.35005 8.2598 2.16005 8.9998 2.07005ZM16.3598 5.17005L18.0998 4.16005C17.4698 3.29005 16.6998 2.52005 15.8298 1.89005L14.8198 3.63005C15.4098 4.08005 15.9198 4.59005 16.3598 5.17005ZM2.6298 6.90005L0.889805 5.90005C0.449805 6.86005 0.159805 7.90005 0.0498047 9.00005H2.0698C2.1598 8.26005 2.3498 7.56005 2.6298 6.90005ZM17.9298 11C17.8398 11.74 17.6498 12.44 17.3698 13.1L19.1098 14.1C19.5498 13.14 19.8398 12.09 19.9498 11H17.9298ZM14.8298 16.3601L15.8398 18.1C16.7098 17.4701 17.4798 16.7 18.1098 15.83L16.3698 14.82C15.9198 15.41 15.4098 15.9201 14.8298 16.3601ZM5.1698 3.64005L4.1698 1.89005C3.2898 2.53005 2.5298 3.29005 1.8998 4.17005L3.6398 5.18005C4.0798 4.59005 4.5898 4.08005 5.1698 3.64005ZM3.6398 14.83L1.8998 15.83C2.5298 16.7 3.2998 17.4701 4.1698 18.1L5.1798 16.3601C4.5898 15.9201 4.0798 15.41 3.6398 14.83ZM10.9998 5.00005H8.9998V10.41L13.2898 14.7L14.6998 13.29L10.9998 9.59005V5.00005Z"
+      fill="#F47738"
+    />
+  </svg>
+);
+
+const UploadCloudIcon = ({ size = 24, color = "currentColor", className = "", style = {}, uploading, progress, gradientColor = "#ccdaf4" }) => {
+  const gradientId = useRef(`cloudGradient-${Math.random().toString(36).substr(2, 9)}`);
+  return (
+    <svg
+      stroke={color}
+      fill={color}
+      strokeWidth="0"
+      viewBox="0 0 640 512"
+      height={size}
+      width={size}
+      className={`${className} ${uploading ? "cloud-uploading" : ""}`}
+      style={style}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <defs>
+        <linearGradient id={gradientId.current} x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor={gradientColor} />
+          <stop offset={`${progress}%`} stopColor={gradientColor} />
+          <stop offset={`${progress}%`} stopColor="white" />
+          <stop offset="100%" stopColor="white" />
+        </linearGradient>
+      </defs>
+
+      <path
+        fill={`url(#${gradientId.current})`}
+        d="M537.6 226.6c4.1-10.7 6.4-22.4 6.4-34.6 0-53-43-96-96-96-19.7 0-38.1 6-53.3 16.2C367 64.2 315.3 32 256 32c-88.4 0-160 71.6-160 160 0 2.7.1 5.4.2 8.1C40.2 219.8 0 273.2 0 336c0 79.5 64.5 144 144 144h368c70.7 0 128-57.3 128-128 0-61.9-44-113.6-102.4-125.4zM393.4 288H328v112c0 8.8-7.2 16-16 16h-48c-8.8 0-16-7.2-16-16V288h-65.4c-14.3 0-21.4-17.2-11.3-27.3l105.4-105.4c6.2-6.2 16.4-6.2 22.6 0l105.4 105.4c10.1 10.1 2.9 27.3-11.3 27.3z"
+      />
+    </svg>
+  );
+};
+
+const UploadIcon = ({styles, className, fill = "white",height="64",width="64" }) => (
+  <svg style={{...styles}} className={className} width={width} height={height} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <g clip-path="url(#clip0_431_5084)">
+      <path
+        d="M24.0007 42.6667H40.0007V26.6667H50.6673L32.0007 8L13.334 26.6667H24.0007V42.6667ZM13.334 48H50.6673V53.3333H13.334V48Z"
+        fill="#B1B4B6"
+      />
+    </g>
+    <defs>
+      <clipPath id="clip0_431_5084">
+        <rect width={width} height={height} fill={fill} />
+      </clipPath>
+    </defs>
+  </svg>
+);
+
+const UpwardArrow = ({ color = "#00703C", rotate = 0, marginRight = 0 }) => (
+  <svg
+    style={{ display: "inline-block", verticalAlign: "baseline", transform: `rotate(${rotate}deg)`, marginRight: `${marginRight}px` }}
+    width="11"
+    height="16"
+    viewBox="0 0 11 16"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path d="M0 5.6L1.10786 6.728L4.71429 3.064V16H6.28571V3.064L9.89214 6.736L11 5.6L5.5 0L0 5.6Z" fill={color} />
+  </svg>
+);
+
+const ValidityTimeIcon = ({ className, styles }) => (
+  <svg className={className} style={{ ...styles }} width="21" height="18" viewBox="0 0 21 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M12 0C7.03 0 3 4.03 3 9H0L3.89 12.89L3.96 13.03L8 9H5C5 5.13 8.13 2 12 2C15.87 2 19 5.13 19 9C19 12.87 15.87 16 12 16C10.07 16 8.32 15.21 7.06 13.94L5.64 15.36C7.27 16.99 9.51 18 12 18C16.97 18 21 13.97 21 9C21 4.03 16.97 0 12 0ZM11 5V10L15.28 12.54L16 11.33L12.5 9.25V5H11Z"
+      fill="#F47738"
+    />
+  </svg>
+);
+
+const VendorIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <defs>
+      <linearGradient id="vendor-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#7c3aed" />
+        <stop offset="100%" stopColor="#5b21b6" />
+      </linearGradient>
+    </defs>
+    <path
+      d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+      fill="url(#vendor-grad)"
+    />
+  </svg>
+);
+
+const VendorManagementIcon = ({ size = 24, color = "currentColor", className = "" }) => {
+  return (
+    <svg
+      stroke="currentColor"
+      fill={color}
+      strokeWidth="0"
+      viewBox="0 0 640 512"
+      height={size}
+      width={size}
+      className={className}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path d="M434.7 64h-85.9c-8 0-15.7 3-21.6 8.4l-98.3 90c-.1.1-.2.3-.3.4-16.6 15.6-16.3 40.5-2.1 56 12.7 13.9 39.4 17.6 56.1 2.7.1-.1.3-.1.4-.2l79.9-73.2c6.5-5.9 16.7-5.5 22.6 1 6 6.5 5.5 16.6-1 22.6l-26.1 23.9L504 313.8c2.9 2.4 5.5 5 7.9 7.7V128l-54.6-54.6c-5.9-6-14.1-9.4-22.6-9.4zM544 128.2v223.9c0 17.7 14.3 32 32 32h64V128.2h-96zm48 223.9c-8.8 0-16-7.2-16-16s7.2-16 16-16 16 7.2 16 16-7.2 16-16 16zM0 384h64c17.7 0 32-14.3 32-32V128.2H0V384zm48-63.9c8.8 0 16 7.2 16 16s-7.2 16-16 16-16-7.2-16-16c0-8.9 7.2-16 16-16zm435.9 18.6L334.6 217.5l-30 27.5c-29.7 27.1-75.2 24.5-101.7-4.4-26.9-29.4-24.8-74.9 4.4-101.7L289.1 64h-83.8c-8.5 0-16.6 3.4-22.6 9.4L128 128v223.9h18.3l90.5 81.9c27.4 22.3 67.7 18.1 90-9.3l.2-.2 17.9 15.5c15.9 13 39.4 10.5 52.3-5.4l31.4-38.6 5.4 4.4c13.7 11.1 33.9 9.1 45-4.7l9.5-11.7c11.2-13.8 9.1-33.9-4.6-45.1z" />
+    </svg>
+  );
+};
+
+const ViewReportIcon = () => (
+  <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M26.6667 0H3.33333C1.5 0 0 1.5 0 3.33333V26.6667C0 28.5 1.5 30 3.33333 30H26.6667C28.5 30 30 28.5 30 26.6667V3.33333C30 1.5 28.5 0 26.6667 0ZM18.3333 23.3333H6.66667V20H18.3333V23.3333ZM23.3333 16.6667H6.66667V13.3333H23.3333V16.6667ZM23.3333 10H6.66667V6.66667H23.3333V10Z"
+      fill="#F47738"
+    />
+  </svg>
+);
+
+const ViewsIcon = () => (
+  <svg width="22" height="16" viewBox="0 0 22 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M11 0.5C6 0.5 1.73 3.61 0 8C1.73 12.39 6 15.5 11 15.5C16 15.5 20.27 12.39 22 8C20.27 3.61 16 0.5 11 0.5ZM11 13C8.24 13 6 10.76 6 8C6 5.24 8.24 3 11 3C13.76 3 16 5.24 16 8C16 10.76 13.76 13 11 13ZM11 5C9.34 5 8 6.34 8 8C8 9.66 9.34 11 11 11C12.66 11 14 9.66 14 8C14 6.34 12.66 5 11 5Z"
+      fill="#F47738"
+    />
+  </svg>
+);
+
+const WSICon = ({ className, styles }) => (
+  <svg width="28" height="34" viewBox="0 0 28 34" fill="#ffffff" style={{ ...styles }} className={className} xmlns="http://www.w3.org/2000/svg">
+    <path d="M23.4332 10.3337L13.9998 0.916992L4.5665 10.3337C1.9665 12.9337 0.666504 16.4003 0.666504 19.7337C0.666504 23.067 1.9665 26.5837 4.5665 29.1837C7.1665 31.7837 10.5832 33.1003 13.9998 33.1003C17.4165 33.1003 20.8332 31.7837 23.4332 29.1837C26.0332 26.5837 27.3332 23.067 27.3332 19.7337C27.3332 16.4003 26.0332 12.9337 23.4332 10.3337ZM3.99984 20.3337C4.0165 17.0003 5.03317 14.8837 6.93317 13.0003L13.9998 5.78366L21.0665 13.0837C22.9665 14.9503 23.9832 17.0003 23.9998 20.3337H3.99984Z" />
+  </svg>
+);
+
+const WageseekerIcon = ({ className = "", fill = "none", style = {} }) => (
+  <svg width="32" height="26" className={className} style={style} viewBox="0 0 32 26" fill={fill} xmlns="http://www.w3.org/2000/svg">
+    <path
+      fill-rule="evenodd"
+      clip-rule="evenodd"
+      d="M15.9997 0C18.0699 0 19.7467 1.6356 19.7467 3.65442C19.7467 5.67349 18.0702 7.30883 15.9997 7.30883C13.9298 7.30883 12.2533 5.67373 12.2533 3.65442C12.2533 1.6356 13.9298 0 15.9997 0ZM6.36438 0C8.43458 0 10.1113 1.6356 10.1113 3.65442C10.1113 5.67349 8.43483 7.30883 6.36438 7.30883C4.29444 7.30883 2.61793 5.67373 2.61793 3.65442C2.61793 1.6356 4.29444 0 6.36438 0ZM10.178 17.0607V25.9994H2.55385V15.9281H0.5V12.5096C0.5 10.151 2.47417 8.22564 4.89249 8.22564H7.83697C8.75633 8.22564 9.61452 8.50528 10.3214 8.97954C9.48153 9.92812 8.97393 11.1619 8.97393 12.5096V17.0602H10.178L10.178 17.0607ZM25.6354 0C27.7053 0 29.3818 1.6356 29.3818 3.65442C29.3818 5.67349 27.7053 7.30883 25.6354 7.30883C23.5652 7.30883 21.8884 5.67373 21.8884 3.65442C21.8884 1.6356 23.5649 0 25.6354 0ZM29.4484 15.9288V26H21.825V17.0613H23.0261V12.5107C23.0261 11.163 22.5182 9.92948 21.6786 8.98065C22.3855 8.50637 23.2437 8.22675 24.163 8.22675H27.1075C29.5258 8.22675 31.5 10.1522 31.5 12.5107V15.9293H29.4486L29.4484 15.9288ZM19.8131 15.9288V26H12.1896V15.9288H10.1352V12.5103C10.1352 10.1517 12.1094 8.22626 14.5277 8.22626H17.4722C19.8905 8.22626 21.8647 10.1517 21.8647 12.5103V15.9288H19.8131Z"
+      fill="white"
+    />
+  </svg>
+);
 
 const WarningIcon =({ className = "", fill = "none", style = {} })=>(<svg width="40" height="40" viewBox="0 0 40 40" fill={fill } className={className} style={style}  xmlns="http://www.w3.org/2000/svg">
 <g clip-path="url(#clip0_7513_43945)">
@@ -1797,167 +2454,251 @@ const WarningIcon =({ className = "", fill = "none", style = {} })=>(<svg width=
 </svg>
 )
 
-const AttentionListIcon =({ className = "", fill = "none", style = {} })=>(
-<svg width="36" height="36" viewBox="0 0 24 27" fill={fill } className={className} style={style} xmlns="http://www.w3.org/2000/svg">
-<path d="M21.3333 3.00065H15.76C15.2 1.45398 13.7333 0.333984 12 0.333984C10.2667 0.333984 8.8 1.45398 8.24 3.00065H2.66667C1.2 3.00065 0 4.20065 0 5.66732V24.334C0 25.8007 1.2 27.0007 2.66667 27.0007H21.3333C22.8 27.0007 24 25.8007 24 24.334V5.66732C24 4.20065 22.8 3.00065 21.3333 3.00065ZM12 3.00065C12.7333 3.00065 13.3333 3.60065 13.3333 4.33398C13.3333 5.06732 12.7333 5.66732 12 5.66732C11.2667 5.66732 10.6667 5.06732 10.6667 4.33398C10.6667 3.60065 11.2667 3.00065 12 3.00065ZM12.6667 21.6673H5.33333V19.0007H12.6667V21.6673ZM18.6667 16.334H5.33333V13.6673H18.6667V16.334ZM18.6667 11.0007H5.33333V8.33398H18.6667V11.0007Z" fill="#F47738"/>
-</svg>
-)
+const WaterIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <defs>
+      <linearGradient id="water-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#0ea5e9" />
+        <stop offset="100%" stopColor="#2563eb" />
+      </linearGradient>
+    </defs>
+    <path
+      d="M12 2.69l5.66 5.66c1.55 1.55 2.34 3.61 2.34 5.66s-.79 4.11-2.34 5.66c-1.55 1.55-3.61 2.34-5.66 2.34s-4.11-.79-5.66-2.34c-1.55-1.55-2.34-3.61-2.34-5.66s.79-4.11 2.34-5.66L12 2.69z"
+      fill="url(#water-grad)"
+    />
+  </svg>
+);
 
-const ExpenditureIcon = BillsIcon;
+const WhatsappIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M0.0566406 24L1.74364 17.837C0.702641 16.033 0.155641 13.988 0.156641 11.891C0.159641 5.335 5.49464 0 12.0496 0C15.2306 0.001 18.2166 1.24 20.4626 3.488C22.7076 5.736 23.9436 8.724 23.9426 11.902C23.9396 18.459 18.6046 23.794 12.0496 23.794C10.0596 23.793 8.09864 23.294 6.36164 22.346L0.0566406 24ZM6.65364 20.193C8.32964 21.188 9.92964 21.784 12.0456 21.785C17.4936 21.785 21.9316 17.351 21.9346 11.9C21.9366 6.438 17.5196 2.01 12.0536 2.008C6.60164 2.008 2.16664 6.442 2.16464 11.892C2.16364 14.117 2.81564 15.783 3.91064 17.526L2.91164 21.174L6.65364 20.193ZM18.0406 14.729C17.9666 14.605 17.7686 14.531 17.4706 14.382C17.1736 14.233 15.7126 13.514 15.4396 13.415C15.1676 13.316 14.9696 13.266 14.7706 13.564C14.5726 13.861 14.0026 14.531 13.8296 14.729C13.6566 14.927 13.4826 14.952 13.1856 14.803C12.8886 14.654 11.9306 14.341 10.7956 13.328C9.91264 12.54 9.31564 11.567 9.14264 11.269C8.96964 10.972 9.12464 10.811 9.27264 10.663C9.40664 10.53 9.56964 10.316 9.71864 10.142C9.86964 9.97 9.91864 9.846 10.0186 9.647C10.1176 9.449 10.0686 9.275 9.99364 9.126C9.91864 8.978 9.32464 7.515 9.07764 6.92C8.83564 6.341 8.59064 6.419 8.40864 6.41L7.83864 6.4C7.64064 6.4 7.31864 6.474 7.04664 6.772C6.77464 7.07 6.00664 7.788 6.00664 9.251C6.00664 10.714 7.07164 12.127 7.21964 12.325C7.36864 12.523 9.31464 15.525 12.2956 16.812C13.0046 17.118 13.5586 17.301 13.9896 17.438C14.7016 17.664 15.3496 17.632 15.8616 17.556C16.4326 17.471 17.6196 16.837 17.8676 16.143C18.1156 15.448 18.1156 14.853 18.0406 14.729Z"
+      fill="#F47738"
+    />
+  </svg>
+);
+
+const WhatsappIconGreen = ({ className, styles }) => (
+  <svg className={className} style={{ ...styles }} width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M0.0566406 24L1.74364 17.837C0.702641 16.033 0.155641 13.988 0.156641 11.891C0.159641 5.335 5.49464 0 12.0496 0C15.2306 0.001 18.2166 1.24 20.4626 3.488C22.7076 5.736 23.9436 8.724 23.9426 11.902C23.9396 18.459 18.6046 23.794 12.0496 23.794C10.0596 23.793 8.09864 23.294 6.36164 22.346L0.0566406 24ZM6.65364 20.193C8.32964 21.188 9.92964 21.784 12.0456 21.785C17.4936 21.785 21.9316 17.351 21.9346 11.9C21.9366 6.438 17.5196 2.01 12.0536 2.008C6.60164 2.008 2.16664 6.442 2.16464 11.892C2.16364 14.117 2.81564 15.783 3.91064 17.526L2.91164 21.174L6.65364 20.193ZM18.0406 14.729C17.9666 14.605 17.7686 14.531 17.4706 14.382C17.1736 14.233 15.7126 13.514 15.4396 13.415C15.1676 13.316 14.9696 13.266 14.7706 13.564C14.5726 13.861 14.0026 14.531 13.8296 14.729C13.6566 14.927 13.4826 14.952 13.1856 14.803C12.8886 14.654 11.9306 14.341 10.7956 13.328C9.91264 12.54 9.31564 11.567 9.14264 11.269C8.96964 10.972 9.12464 10.811 9.27264 10.663C9.40664 10.53 9.56964 10.316 9.71864 10.142C9.86964 9.97 9.91864 9.846 10.0186 9.647C10.1176 9.449 10.0686 9.275 9.99364 9.126C9.91864 8.978 9.32464 7.515 9.07764 6.92C8.83564 6.341 8.59064 6.419 8.40864 6.41L7.83864 6.4C7.64064 6.4 7.31864 6.474 7.04664 6.772C6.77464 7.07 6.00664 7.788 6.00664 9.251C6.00664 10.714 7.07164 12.127 7.21964 12.325C7.36864 12.523 9.31464 15.525 12.2956 16.812C13.0046 17.118 13.5586 17.301 13.9896 17.438C14.7016 17.664 15.3496 17.632 15.8616 17.556C16.4326 17.471 17.6196 16.837 17.8676 16.143C18.1156 15.448 18.1156 14.853 18.0406 14.729Z"
+      fill="#25D366"
+    />
+  </svg>
+);
+
+const WorksMgmtIcon = ({ fill = "white" }) => (
+  <svg width="34" height="36" viewBox="0 0 34 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M33.1161 29.2786L24.2827 20.4453H22.6327L18.3994 24.6786V26.3286L27.2327 35.162C27.8827 35.812 28.9327 35.812 29.5827 35.162L33.1161 31.6286C33.7661 30.9953 33.7661 29.9286 33.1161 29.2786Z"
+      fill={fill}
+    />
+    <path
+      d="M25.8997 15.9807L28.2497 13.6307L31.783 17.1641C33.733 15.2141 33.733 12.0474 31.783 10.0974L25.883 4.1974L23.533 6.5474V1.8474L22.3663 0.664062L16.4663 6.56406L17.6497 7.7474H22.3663L20.0163 10.0974L21.783 11.8641L16.9663 16.6807L10.083 9.7974V7.43073L5.04967 2.3974L0.333008 7.11406L5.38301 12.1641H7.73301L14.6163 19.0474L13.1997 20.4641H9.66634L0.833008 29.2974C0.183008 29.9474 0.183008 30.9974 0.833008 31.6474L4.36634 35.1807C5.01634 35.8307 6.06634 35.8307 6.71634 35.1807L15.5497 26.3474V22.8141L24.133 14.2307L25.8997 15.9807Z"
+      fill={fill}
+    />
+  </svg>
+);
 
 export {
-  AnnouncementIcon,
-  ReceiptIcon,
-  CreateEstimateIcon,
-  GotoInboxIcon,
-  ArrowLeft,
-  ArrowDown,
-  CameraSvg,
-  DeleteBtn,
-  DownloadIcon,
-  Ellipsis,
-  SuccessSvg,
-  ErrorSvg,
-  StarFilled,
-  StarEmpty,
-  SearchIconSvg,
-  CheckSvg,
-  RoundedCheck,
-  Calender,
-  Phone,
-  FilterSvg,
-  SortSvg,
-  Close,
-  Feedback,
-  GetApp,
-  HamburgerIcon,
-  ArrowBack,
-  ArrowForward,
-  ArrowRightInbox,
-  SortDown,
-  SortUp,
-  ShippingTruck,
-  CloseSvg,
-  CalendarIcon,
-  UpwardArrow,
-  DownwardArrow,
-  Poll,
-  FilterIcon,
-  RefreshIcon,
-  RefreshSVG,
-  Details,
-  PrintIcon,
-  PropertyHouse,
-  PrimaryDownlaodIcon,
-  InfoBannerIcon,
-  ShareIcon,
-  RupeeIcon,
-  ComplaintIcon,
-  DropIcon,
-  Person,
-  WhatsappIcon,
-  EmailIcon,
-  DocumentIcon,
-  DocumentIconSolid,
-  EventsIconSolid,
-  SurveyIconSolid,
-  PMBIconSolid,
-  DustbinIcon,
-  ExternalLinkIcon,
-  DownloadImgIcon,
-  ViewsIcon,
-  PrevIcon,
-  DocumentSVG,
-  ArrowToFirst,
-  ArrowToLast,
-  DownloadPrefixIcon,
-  CaseIcon,
-  PersonIcon,
-  PTIcon,
-  OBPSIcon,
-  OBPSIconSolidBg,
-  CitizenTruck,
-  FSMIcon,
-  EDCRIcon,
-  BPAIcon,
-  BPAHomeIcon,
-  HelpIcon,
-  NotificationBell,
-  MapMarker,
-  Clock,
-  EventCalendar,
-  ImageIcon,
-  TickMark,
-  PDFSvg,
-  EditIcon,
-  SearchIcon,
-  DeleteIcon,
-  CreateLoiIcon,
-  PMBIcon,
-  GenericFileIcon,
-  ArrowLeftWhite,
-  WSICon,
-  ArrowVectorDown,
-  ArrowDirection,
-  CameraIcon,
-  RemoveIcon,
-  GalleryIcon,
-  EditPencilIcon,
-  AddressBookIcon,
-  LocationIcon,
-  CollectionsBookmarIcons,
-  FinanceChartIcon,
-  CollectionIcon,
-  MCollectIcon,
-  PGRIcon,
-  TLIcon,
-  BillsIcon,
-  ErrorIcon,
-  DownloadBtnCommon,
-  PrintBtnCommon,
-  WhatsappIconGreen,
-  HelpLineIcon,
-  ServiceCenterIcon,
-  TimerIcon,
-  RupeeSymbol,
-  ValidityTimeIcon,
-  AddIcon,
-  SubtractIcon,
-  AddNewIcon,
-  ViewReportIcon,
-  InboxIcon,
-  PrivacyMaskIcon,
-  FirenocIcon,
-  BirthIcon,
-  DeathIcon,
-  ArrowCollapseUp,
-  ArrowCollapseDown,
-  AddFilled,
-  AddFileFilled,
-  LocateIcon,
   /* Works Management  */
   NoResultsFoundIcon,
-  WorksMgmtIcon,
-  BioMetricIcon,
-  MuktaHomeIcon,
-  HRIcon,
-  ProjectIcon,
-  EstimateIcon,
-  ContractIcon,
+  ADSIconComp,
+  AddFileFilled,
+  AddFilled,
+  AddIcon,
+  AddNewIcon,
+  AddressBookIcon,
+  AnnouncementIcon,
+  ArrowBack,
+  ArrowCollapseDown,
+  ArrowCollapseUp,
+  ArrowDirection,
+  ArrowDown,
+  ArrowForward,
+  ArrowLeft,
+  ArrowLeftWhite,
+  ArrowRightInbox,
+  ArrowToFirst,
+  ArrowToLast,
+  ArrowVectorDown,
+  AssetIcon,
   AttendanceIcon,
-  WageseekerIcon,
-  OrganisationIcon,
-  HelperIcon,
-  DashboardIcon,
-  ExpenditureIcon,
-  DoubleTickIcon,
-  InfoIcon,
-  PaymentIcon,
-  HistoryIcon,
-  WarningIcon,
   AttentionListIcon,
-  UploadIcon,
-  FileIcon,
+  BPAHomeIcon,
+  BPAIcon,
+  Backward,
+  BillsIcon,
+  BillsIconComp,
+  BioMetricIcon,
+  BirthIcon,
+  CHBIcon,
+  CHBIconComp,
+  CalendarIcon,
+  Calender,
+  CameraIcon,
+  CameraSvg,
+  CaseIcon,
+  CheckSvg,
+  ChevronDown,
+  ChevronForwardOutline,
+  CitizenTruck,
+  Clock,
+  Close,
+  CloseSvg,
+  CollapseIcon,
+  CollectionIcon,
+  CollectionsBookmarIcons,
+  ComplaintIcon,
+  ContractIcon,
+  CreateEstimateIcon,
+  CreateLoiIcon,
+  DSSIconComp,
+  DashboardIcon,
+  DeathIcon,
+  DeleteBtn,
+  DeleteIcon,
   DeleteIconv2,
-  InfoIconOutline
+  Details,
+  DocumentIcon,
+  DocumentIconSolid,
+  DocumentSVG,
+  DoubleTickIcon,
+  DownloadBtnCommon,
+  DownloadIcon,
+  DownloadImgIcon,
+  DownloadPrefixIcon,
+  DownwardArrow,
+  DropIcon,
+  DustbinIcon,
+  EDCRIcon,
+  EditIcon,
+  EditPencilIcon,
+  Ellipsis,
+  EmailIcon,
+  EngagementIconComp,
+  ErrorIcon,
+  ErrorSvg,
+  EstimateIcon,
+  EventCalendar,
+  EventsIconComp,
+  EventsIconSolid,
+  ExpenditureIcon,
+  ExternalLinkIcon,
+  FSMIcon,
+  FastBackward,
+  FastForward,
+  Feedback,
+  FileIcon,
+  FilterIcon,
+  FilterSvg,
+  FinanceChartIcon,
+  FirenocIcon,
+  ForwardIcon,
+  FsmIconComp,
+  GalleryIcon,
+  GenericFileIcon,
+  GetApp,
+  GotoInboxIcon,
+  GridIcon,
+  HRIcon,
+  HamburgerIcon,
+  HelpIcon,
+  HelpLineIcon,
+  HelperIcon,
+  HistoryIcon,
+  HrmsIcon,
+  IconClose,
+  IconDownload,
+  IconSearch,
+  IconSortAsc,
+  IconSortDesc,
+  IconSortNeutral,
+  ImageIcon,
+  InboxIcon,
+  InfoBannerIcon,
+  InfoIcon,
+  InfoIconOutline,
+  KycIcon,
+  LayoutGrid,
+  LeftArrowIcon,
+  LocateIcon,
+  LocationIcon,
+  LuCalendarIcon,
+  MCollectIcon,
+  MCollectIconComp,
+  MapMarker,
+  MdClose,
+  MdUploadIcon,
+  MuktaHomeIcon,
+  NotificationBell,
+  OBPSIcon,
+  OBPSIconComp,
+  OBPSIconSolidBg,
+  OrganisationIcon,
+  PDFSvg,
+  PGRIcon,
+  PGRIconComp,
+  PMBIcon,
+  PMBIconSolid,
+  PTIcon,
+  PTIconComp,
+  PTRIcon,
+  PTRIconComp,
+  PaymentIcon,
+  Person,
+  PersonIcon,
+  Phone,
+  Poll,
+  PresentationIcon,
+  PrevIcon,
+  PrimaryDownlaodIcon,
+  PrintBtnCommon,
+  PrintIcon,
+  PrivacyMaskIcon,
+  ProjectIcon,
+  PropertyHouse,
+  ReceiptIcon,
+  ReceiptsIconComp,
+  RefreshIcon,
+  RefreshSVG,
+  RemoveIcon,
+  RightArrowIcon,
+  RoundedCheck,
+  RupeeIcon,
+  RupeeSymbol,
+  SearchIcon,
+  SearchIconSvg,
+  ServiceCenterIcon,
+  ShareIcon,
+  ShippingTruck,
+  SortDown,
+  SortSvg,
+  SortUp,
+  StarEmpty,
+  StarFilled,
+  SubtractIcon,
+  SuccessSvg,
+  SurveyIconComp,
+  SurveyIconSolid,
+  TLIcon,
+  TLIconComp,
+  TankerIcon,
+  TickMark,
+  TimerIcon,
+  UploadCloudIcon,
+  UploadIcon,
+  UpwardArrow,
+  ValidityTimeIcon,
+  VendorIcon,
+  VendorManagementIcon,
+  ViewReportIcon,
+  ViewsIcon,
+  WSICon,
+  WageseekerIcon,
+  WarningIcon,
+  WaterIcon,
+  WhatsappIcon,
+  WhatsappIconGreen,
+  WorksMgmtIcon,
 };
