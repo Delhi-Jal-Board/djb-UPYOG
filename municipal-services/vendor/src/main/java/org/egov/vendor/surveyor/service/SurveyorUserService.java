@@ -44,17 +44,38 @@ public class SurveyorUserService {
         User ownerInfo          = surveyor.getOwner();
         HashMap<String, String> errorMap = new HashMap<>();
 
-        if (ownerInfo == null || ownerInfo.getMobileNumber() == null) {
+        // Owner object with mobileNo is mandatory on CREATE only.
+        // On UPDATE (including supervisor remap and soft-delete via status=INACTIVE),
+        // the user already exists — frontend only needs to send ownerId (UUID),
+        // not the full owner block. Requiring full owner on UPDATE would break
+        // supervisor remapping where vendor updates supervisorId without re-fetching
+        // the full owner object.
+        if (isCreate && (ownerInfo == null || ownerInfo.getMobileNumber() == null)) {
             errorMap.put(VendorErrorConstants.INVALID_DRIVER_ERROR,
                     "MobileNo is mandatory for Surveyor " + surveyor.toString());
+            throw new CustomException(errorMap);
+        }
+
+        // On UPDATE: ownerId minimum required to identify the user
+        if (!isCreate && !StringUtils.hasLength(surveyor.getOwnerId())) {
+            errorMap.put(VendorErrorConstants.INVALID_DRIVER_ERROR,
+                    "ownerId is mandatory for Surveyor update. surveyor.id=" + surveyor.getId());
             throw new CustomException(errorMap);
         }
 
         ModuleRoleMapping roleMapping = moduleRoleService.getModuleRoleMapping(
                 surveyorRequest, MappingType.SURVEYOR);
 
-        handleMobileNumber(ownerInfo, requestInfo, errorMap, surveyor,
-                surveyorRequest, isCreate, roleMapping);
+        // On UPDATE with full owner object — sync user details (name/mobile change)
+        // On UPDATE without owner (supervisor remap / status change only) — skip user sync
+        if (ownerInfo != null && StringUtils.hasLength(ownerInfo.getMobileNumber())) {
+            handleMobileNumber(ownerInfo, requestInfo, errorMap, surveyor,
+                    surveyorRequest, isCreate, roleMapping);
+        } else if (isCreate) {
+            handleMobileNumber(ownerInfo, requestInfo, errorMap, surveyor,
+                    surveyorRequest, isCreate, roleMapping);
+        }
+        // else: UPDATE without owner object (supervisor remap / status change) — skip user sync
 
         if (!errorMap.isEmpty()) throw new CustomException(errorMap);
     }
@@ -174,7 +195,6 @@ public class SurveyorUserService {
 
     private User updateUserDetails(User ownerInfo, RequestInfo requestInfo,
                                    HashMap<String, String> errorMap) {
-        // If DOB is being changed on update — validate minimum age
         if (ownerInfo.getDob() != null && ownerInfo.getDob() != 0L) {
             validateMinimumAge(ownerInfo.getDob(), "Surveyor");
         }
@@ -193,13 +213,9 @@ public class SurveyorUserService {
                     "Name, DOB, gender, fatherOrHusbandName and relationship are mandatory for Surveyor");
         }
 
-        // Create the primary role from MDMS (EKYC_SURVEYOR)
         Role role = getRoleObj(roleMapping.getRoleCode(), roleMapping.getRoleName());
-
-        // CREATE the CITIZEN role
         Role citizenRole = getRoleObj("CITIZEN", "Citizen");
 
-        // Add BOTH roles
         List<Role> roles = new ArrayList<>();
         roles.add(role);
         roles.add(citizenRole);
@@ -276,7 +292,6 @@ public class SurveyorUserService {
                 || StringUtils.isEmpty(user.getGender())) {
             return false;
         }
-        // Minimum age validation — surveyor must be at least 18 years old (legal requirement)
         validateMinimumAge(user.getDob(), "Surveyor");
         return true;
     }
