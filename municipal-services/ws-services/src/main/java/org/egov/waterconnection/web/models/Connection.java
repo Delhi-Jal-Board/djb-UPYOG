@@ -166,6 +166,14 @@ public class Connection {
 	}
 
 	/**
+	 * Stores inspection details captured during the field inspection,
+	 * including inspection type, inspection date, and inspector information.
+	 */
+	@JsonProperty("inspectionInformation")
+	@Valid
+	private InspectionInformation inspectionInformation;
+
+	/**
 	 * Unique Identifier of the connection for internal reference.
 	 * 
 	 * @return id
