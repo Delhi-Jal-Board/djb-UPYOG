@@ -95,14 +95,14 @@ export const PaymentService = {
       data: { ...details },
     }),
 
-  updateCitizenReciept: (transactionId) =>
+  updateCitizenReciept: (transactionId, tenantId) =>
     Request({
       url: Urls.payment.update_citizen_reciept,
       useCache: false,
       method: "POST",
       auth: true,
       userService: true,
-      params: { transactionId },
+      params: { transactionId, tenantId },
     }),
 
   demandSearch: (tenantId, consumerCode, businessService) =>

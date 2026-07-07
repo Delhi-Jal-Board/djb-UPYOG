@@ -115,16 +115,16 @@ export const useFetchPayment = ({ tenantId, consumerCode, businessService }, con
   };
 };
 
-export const usePaymentUpdate = ({ egId }, businessService, config) => {
-  const getPaymentData = async (egId) => {
-    const transaction = await Digit.PaymentService.updateCitizenReciept(egId);
+export const usePaymentUpdate = ({ egId, tenantId }, businessService, config) => {
+  const getPaymentData = async (egId, tenantId) => {
+    const transaction = await Digit.PaymentService.updateCitizenReciept(egId, tenantId);
     const payments = await Digit.PaymentService.getReciept(transaction.Transaction[0].tenantId, businessService, {
       consumerCodes: transaction.Transaction[0].consumerCode,
     });
     return { payments, applicationNo: transaction.Transaction[0].consumerCode, txnStatus: transaction.Transaction[0].txnStatus };
   };
 
-  return useQuery(["paymentUpdate", egId], () => getPaymentData(egId), config);
+  return useQuery(["paymentUpdate", egId], () => getPaymentData(egId, tenantId), config);
 };
 
 export const useGetPaymentRulesForBusinessServices = (tenantId) => {
