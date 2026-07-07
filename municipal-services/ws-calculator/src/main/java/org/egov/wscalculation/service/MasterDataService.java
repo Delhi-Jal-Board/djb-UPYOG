@@ -512,5 +512,40 @@ public class MasterDataService {
 		}
 		return master;
 	}
-	
+
+
+	@SuppressWarnings("unchecked")
+	private String searchBoundary(Map<String, Object> node, String localityCode) {
+
+		if (localityCode.equals(node.get("code"))) {
+			return (String) node.get("colonyMcdCategory");
+		}
+		List<Map<String, Object>> children = (List<Map<String, Object>>) node.get("children");
+		if (children == null)
+			return null;
+
+		for (Map<String, Object> child : children) {
+			String result = searchBoundary(child, localityCode);
+			if (result != null)
+				return result;
+		}
+		return null;
+	}
+
+	@SuppressWarnings("unchecked")
+	public String getColonyCategory(String localityCode, RequestInfo requestInfo, String tenantId) {
+
+		MdmsResponse response = mapper.convertValue(repository.fetchResult(calculatorUtils.getMdmsSearchUrl(), calculatorUtils.getBoundaryCriteria(requestInfo, tenantId)), MdmsResponse.class);
+		JSONArray tenantBoundary = response.getMdmsRes().get("egov-location").get("TenantBoundary");
+
+		for (Object obj : tenantBoundary) {
+			Map<String, Object> tenant = mapper.convertValue(obj, Map.class);
+			Map<String, Object> boundary = (Map<String, Object>) tenant.get("boundary");
+			String category = searchBoundary(boundary, localityCode);
+			if (category != null) {
+				return category;
+			}
+		}
+		return null;
+	}
 }

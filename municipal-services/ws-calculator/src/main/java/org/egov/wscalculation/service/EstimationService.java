@@ -3,12 +3,14 @@ package org.egov.wscalculation.service;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.YearMonth;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.tracer.model.CustomException;
 import org.egov.wscalculation.constants.WSCalculationConstant;
@@ -28,6 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 
+
 @Service
 @Slf4j
 public class EstimationService {
@@ -37,7 +40,9 @@ public class EstimationService {
 	
 	@Autowired
 	private CalculatorUtil calculatorUtil;
-	
+
+	@Autowired
+	private MasterDataService masterDataService;
 
 	@Autowired
 	private ObjectMapper mapper;
@@ -368,69 +373,110 @@ public class EstimationService {
 		estimatesAndBillingSlabs.put("billingSlabIds", billingSlabIds);
 		return estimatesAndBillingSlabs;
 	}
-	
-	
+
+
 	/**
-	 * 
+	 *
 	 * @param criteria Calculation Search Criteria
 	 * @param masterData - Master Data
 	 * @param requestInfo - RequestInfo
 	 * @return return all tax heads
 	 */
-	private List<TaxHeadEstimate> getTaxHeadForFeeEstimation(CalculationCriteria criteria,
-			Map<String, Object> masterData, RequestInfo requestInfo) {
+	private List<TaxHeadEstimate> getTaxHeadForFeeEstimation(CalculationCriteria criteria, Map<String, Object> masterData, RequestInfo requestInfo) {
 
 		log.info("MDMS(getMasterMap) loaded keys = {}", masterData.keySet());
-
 		JSONArray feeSlab = (JSONArray) masterData.getOrDefault(WSCalculationConstant.WC_FEESLAB_MASTER, null);
 		if (feeSlab == null)
 			throw new CustomException("FEE_SLAB_NOT_FOUND", "fee slab master data not found!!");
-		
-		Property property = wSCalculationUtil.getProperty(WaterConnectionRequest.builder()
-				.waterConnection(criteria.getWaterConnection()).requestInfo(requestInfo).build());
-		
-		JSONObject feeObj = mapper.convertValue(feeSlab.get(0), JSONObject.class);
-		BigDecimal formFee = BigDecimal.ZERO;
-		if (feeObj.get(WSCalculationConstant.FORM_FEE_CONST) != null) {
-			formFee = new BigDecimal(feeObj.getAsNumber(WSCalculationConstant.FORM_FEE_CONST).toString());
-		}
-		BigDecimal scrutinyFee = BigDecimal.ZERO;
-		if (feeObj.get(WSCalculationConstant.SCRUTINY_FEE_CONST) != null) {
-			scrutinyFee = new BigDecimal(feeObj.getAsNumber(WSCalculationConstant.SCRUTINY_FEE_CONST).toString());
-		}
-		BigDecimal otherCharges = BigDecimal.ZERO;
-		if (feeObj.get(WSCalculationConstant.OTHER_CHARGE_CONST) != null) {
-			otherCharges = new BigDecimal(feeObj.getAsNumber(WSCalculationConstant.OTHER_CHARGE_CONST).toString());
-		}
-		BigDecimal taxAndCessPercentage = BigDecimal.ZERO;
-		if (feeObj.get(WSCalculationConstant.TAX_PERCENTAGE_CONST) != null) {
-			taxAndCessPercentage = new BigDecimal(
-					feeObj.getAsNumber(WSCalculationConstant.TAX_PERCENTAGE_CONST).toString());
-		}
-		BigDecimal meterCost = BigDecimal.ZERO;
-		if (feeObj.get(WSCalculationConstant.METER_COST_CONST) != null
-				&& criteria.getWaterConnection().getConnectionType() != null && criteria.getWaterConnection()
-						.getConnectionType().equalsIgnoreCase(WSCalculationConstant.meteredConnectionType)) {
-			meterCost = new BigDecimal(feeObj.getAsNumber(WSCalculationConstant.METER_COST_CONST).toString());
-		}
-		BigDecimal roadCuttingCharge = BigDecimal.ZERO;
 
+		Property property = wSCalculationUtil.getProperty(WaterConnectionRequest.builder().waterConnection(criteria.getWaterConnection()).requestInfo(requestInfo).build());
+
+		String localityCode = property.getAddress().getLocality().getCode();
+		String colonyCategory = masterDataService.getColonyCategory(localityCode, requestInfo, property.getTenantId());
+
+		BigDecimal taxAndCessPercentage = BigDecimal.ZERO;
+
+		// Use a dynamic map to collect matching matrix charges by their TaxHead code
+		Map<String, BigDecimal> dynamicFeeMap = new HashMap<>();
+
+		for (Object obj : feeSlab) {
+			try {
+				JSONObject fee = mapper.convertValue(obj, JSONObject.class);
+				Boolean isActive = (Boolean) fee.get("isActive");
+				if (isActive != null && !isActive)
+					continue;
+				String feeComponent = fee.getAsString(WSCalculationConstant.FEE_COMPONENT);
+				String taxHeadCode = fee.getAsString(WSCalculationConstant.TAX_HEAD_CODE);
+
+				BigDecimal amount = BigDecimal.ZERO;
+				if (fee.get(WSCalculationConstant.AMOUNT) != null) {
+					amount = new BigDecimal(fee.getAsNumber(WSCalculationConstant.AMOUNT).toString());
+				}
+
+				// Filter rules by matching incoming Connection Category
+				String usageType = fee.getAsString(WSCalculationConstant.CONNECTION_CATEGORY);
+				if (usageType != null && criteria.getWaterConnection().getConnectionCategory() != null && !usageType.equalsIgnoreCase(criteria.getWaterConnection().getConnectionCategory())) {
+					continue;
+				}
+
+				List<String> categories = mapper.convertValue(fee.get(WSCalculationConstant.COLONY_CATEGORIES), new TypeReference<List<String>>() {});
+
+				if (categories != null && !categories.contains(colonyCategory)) {
+					continue;
+				}
+
+				// Evaluate specific matrix behaviors
+				if ("TAX_PERCENTAGE".equalsIgnoreCase(feeComponent)) {
+					taxAndCessPercentage = amount;
+					continue;
+				}
+
+				if ("METER_FEE".equalsIgnoreCase(feeComponent)) {
+					if (criteria.getWaterConnection().getConnectionType() == null || !criteria.getWaterConnection().getConnectionType().equalsIgnoreCase(WSCalculationConstant.meteredConnectionType)) {
+						continue;
+					}
+				}
+
+				// Dynamically register the valid line item charge matching your MDMS matrix
+				if (taxHeadCode != null && amount.compareTo(BigDecimal.ZERO) > 0 && shouldIncludeFee(criteria.getWaterConnection(), feeComponent, taxHeadCode)) {
+					dynamicFeeMap.put(taxHeadCode, amount);
+				}
+
+			} catch (Exception e) {
+				log.error("Error processing fee slab element matching dynamic matrix criteria loops", e);
+			}
+		}
+
+		BigDecimal roadCuttingCharge = BigDecimal.ZERO;
 		BigDecimal roadCuttingChargeBerm = BigDecimal.ZERO;
 		BigDecimal roadCuttingChargeBMPrefixRoad = BigDecimal.ZERO;
 
+		BigDecimal infrastructureCharge = BigDecimal.ZERO;
+
+		if (WSCalculationConstant.NEW_WATER_CONNECTION.equalsIgnoreCase(criteria.getWaterConnection().getApplicationType())) {
+			infrastructureCharge = calculateInfrastructureCharge(criteria, property, masterData, colonyCategory);
+		}
 		BigDecimal usageTypeCharge = BigDecimal.ZERO;
 
-		if(criteria.getWaterConnection().getRoadCuttingInfo() != null){
-			for(RoadCuttingInfo roadCuttingInfo : criteria.getWaterConnection().getRoadCuttingInfo()){
+		log.info("========== IFC DEBUG ==========");
+		log.info("ApplicationType={}", criteria.getWaterConnection().getApplicationType());
+		log.info("ColonyCategory={}", colonyCategory);
+		log.info("InfrastructureCharge={}", infrastructureCharge);
+		log.info("================================");
+
+		if (!WSCalculationConstant.NEW_WATER_CONNECTION.equalsIgnoreCase(
+				criteria.getWaterConnection().getApplicationType())
+				&& criteria.getWaterConnection().getRoadCuttingInfo() != null) {
+			for (RoadCuttingInfo roadCuttingInfo : criteria.getWaterConnection().getRoadCuttingInfo()) {
 				BigDecimal singleRoadCuttingCharge = BigDecimal.ZERO;
 				if (roadCuttingInfo.getRoadType() != null)
 					singleRoadCuttingCharge = getChargeForRoadCutting(masterData, roadCuttingInfo.getRoadType(),
 							roadCuttingInfo.getRoadCuttingArea());
-				if(roadCuttingInfo.getRoadType().equalsIgnoreCase("BERMCUTTINGKATCHA"))
-					roadCuttingChargeBerm=singleRoadCuttingCharge;
-				else if(roadCuttingInfo.getRoadType().equalsIgnoreCase("BMPREMIXROAD"))
-					roadCuttingChargeBMPrefixRoad=singleRoadCuttingCharge;
-				
+				if (roadCuttingInfo.getRoadType().equalsIgnoreCase("BERMCUTTINGKATCHA"))
+					roadCuttingChargeBerm = singleRoadCuttingCharge;
+				else if (roadCuttingInfo.getRoadType().equalsIgnoreCase("BMPREMIXROAD"))
+					roadCuttingChargeBMPrefixRoad = singleRoadCuttingCharge;
+
 				BigDecimal singleUsageTypeCharge = BigDecimal.ZERO;
 				if (roadCuttingInfo.getRoadCuttingArea() != null)
 					singleUsageTypeCharge = getUsageTypeFee(masterData,
@@ -443,48 +489,247 @@ public class EstimationService {
 		}
 
 		BigDecimal roadPlotCharge = BigDecimal.ZERO;
-		if (property.getLandArea() != null)
+		if (!WSCalculationConstant.NEW_WATER_CONNECTION.equalsIgnoreCase(
+				criteria.getWaterConnection().getApplicationType())
+				&& property.getLandArea() != null) {
 			roadPlotCharge = getPlotSizeFee(masterData, property.getLandArea());
+		}
 
-		BigDecimal totalCharge = formFee.add(scrutinyFee).add(otherCharges).add(meterCost).add(roadCuttingCharge)
-				.add(roadPlotCharge).add(usageTypeCharge);
+		// Aggregate base components total for tax application calculations
+		BigDecimal dynamicSlabTotal = dynamicFeeMap.values().stream().reduce(BigDecimal.ZERO, BigDecimal::add);
+		BigDecimal totalCharge = dynamicSlabTotal.add(roadCuttingCharge).add(roadPlotCharge).add(usageTypeCharge).add(infrastructureCharge);
 		BigDecimal tax = totalCharge.multiply(taxAndCessPercentage.divide(WSCalculationConstant.HUNDRED));
-		List<TaxHeadEstimate> estimates = new ArrayList<>();
-		//
-		if (!(formFee.compareTo(BigDecimal.ZERO) == 0))
-			estimates.add(TaxHeadEstimate.builder().taxHeadCode(WSCalculationConstant.WS_FORM_FEE)
-					.estimateAmount(formFee.setScale(2, 2)).build());
-		if (!(scrutinyFee.compareTo(BigDecimal.ZERO) == 0))
-			estimates.add(TaxHeadEstimate.builder().taxHeadCode(WSCalculationConstant.WS_SCRUTINY_FEE)
-					.estimateAmount(scrutinyFee.setScale(2, 2)).build());
-		if (!(meterCost.compareTo(BigDecimal.ZERO) == 0))
-			estimates.add(TaxHeadEstimate.builder().taxHeadCode(WSCalculationConstant.WS_METER_CHARGE)
-					.estimateAmount(meterCost.setScale(2, 2)).build());
-		if (!(otherCharges.compareTo(BigDecimal.ZERO) == 0))
-			estimates.add(TaxHeadEstimate.builder().taxHeadCode(WSCalculationConstant.WS_OTHER_CHARGE)
-					.estimateAmount(otherCharges.setScale(2, 2)).build());
-//		if (!(roadCuttingCharge.compareTo(BigDecimal.ZERO) == 0))
-//			estimates.add(TaxHeadEstimate.builder().taxHeadCode(WSCalculationConstant.WS_ROAD_CUTTING_CHARGE)
-//					.estimateAmount(roadCuttingCharge.setScale(2, 2)).build());
-		if (!(roadCuttingChargeBerm.compareTo(BigDecimal.ZERO) == 0))
-			estimates.add(TaxHeadEstimate.builder().taxHeadCode(WSCalculationConstant.WS_ROAD_CUTTING_CHARGE_BREM)
-					.estimateAmount(roadCuttingChargeBerm.setScale(2, 2)).build());
-		
-		if (!(roadCuttingChargeBMPrefixRoad.compareTo(BigDecimal.ZERO) == 0))
-			estimates.add(TaxHeadEstimate.builder().taxHeadCode(WSCalculationConstant.WS_ROAD_CUTTING_CHARGE_BMPREMIXROAD)
-					.estimateAmount(roadCuttingChargeBMPrefixRoad.setScale(2, 2)).build());
 
-		if (!(usageTypeCharge.compareTo(BigDecimal.ZERO) == 0))
+		List<TaxHeadEstimate> estimates = new ArrayList<>();
+
+		// Build final response list dynamically from calculated entries
+		for (Map.Entry<String, BigDecimal> entry : dynamicFeeMap.entrySet()) {
+			estimates.add(TaxHeadEstimate.builder()
+					.taxHeadCode(entry.getKey())
+					.estimateAmount(entry.getValue().setScale(2, RoundingMode.HALF_UP))
+					.build());
+		}
+
+		// Append legacy transactional charges calculations safely
+		if (roadCuttingChargeBerm.compareTo(BigDecimal.ZERO) != 0)
+			estimates.add(TaxHeadEstimate.builder().taxHeadCode(WSCalculationConstant.WS_ROAD_CUTTING_CHARGE_BREM)
+					.estimateAmount(roadCuttingChargeBerm.setScale(2, RoundingMode.HALF_UP)).build());
+
+		if (roadCuttingChargeBMPrefixRoad.compareTo(BigDecimal.ZERO) != 0)
+			estimates.add(TaxHeadEstimate.builder().taxHeadCode(WSCalculationConstant.WS_ROAD_CUTTING_CHARGE_BMPREMIXROAD)
+					.estimateAmount(roadCuttingChargeBMPrefixRoad.setScale(2, RoundingMode.HALF_UP)).build());
+
+		if (usageTypeCharge.compareTo(BigDecimal.ZERO) != 0)
 			estimates.add(TaxHeadEstimate.builder().taxHeadCode(WSCalculationConstant.WS_ONE_TIME_FEE)
-					.estimateAmount(usageTypeCharge.setScale(2, 2)).build());
-		if (!(roadPlotCharge.compareTo(BigDecimal.ZERO) == 0))
+					.estimateAmount(usageTypeCharge.setScale(2, RoundingMode.HALF_UP)).build());
+
+		if (roadPlotCharge.compareTo(BigDecimal.ZERO) != 0)
 			estimates.add(TaxHeadEstimate.builder().taxHeadCode(WSCalculationConstant.WS_SECURITY_CHARGE)
-					.estimateAmount(roadPlotCharge.setScale(2, 2)).build());
-		if (!(tax.compareTo(BigDecimal.ZERO) == 0))
+					.estimateAmount(roadPlotCharge.setScale(2, RoundingMode.HALF_UP)).build());
+
+		if (infrastructureCharge.compareTo(BigDecimal.ZERO) > 0) {
+			estimates.add(TaxHeadEstimate.builder()
+					.taxHeadCode(WSCalculationConstant.WS_INFRASTRUCTURE_CHARGE)
+					.estimateAmount(infrastructureCharge.setScale(2, RoundingMode.HALF_UP))
+					.build());
+		}
+
+		if (tax.compareTo(BigDecimal.ZERO) != 0)
 			estimates.add(TaxHeadEstimate.builder().taxHeadCode(WSCalculationConstant.WS_TAX_AND_CESS)
-					.estimateAmount(tax.setScale(2, 2)).build());
+					.estimateAmount(tax.setScale(2, RoundingMode.HALF_UP)).build());
+
 		addAdhocPenaltyAndRebate(estimates, criteria.getWaterConnection());
 		return estimates;
+	}
+
+	@SuppressWarnings("unchecked")
+	private BigDecimal calculateInfrastructureCharge(CalculationCriteria criteria, Property property, Map<String, Object> masterData, String colonyCategory) {
+
+		JSONArray infrastructureMaster = (JSONArray) masterData.get(WSCalculationConstant.WC_INFRASTRUCTURE_CHARGE_MASTER);
+
+		if (CollectionUtils.isEmpty(infrastructureMaster)) {
+			log.warn("Infrastructure Charge MDMS not configured.");
+			return BigDecimal.ZERO;
+		}
+
+		JSONObject infra = mapper.convertValue(infrastructureMaster.get(0), JSONObject.class);
+
+		if (!Boolean.TRUE.equals(infra.get("active"))) {
+			log.info("Infrastructure Charge configuration is inactive.");
+			return BigDecimal.ZERO;
+		}
+
+		BigDecimal plotArea = property.getLandArea() == null ? BigDecimal.ZERO : BigDecimal.valueOf(property.getLandArea());
+		BigDecimal minimumPlotArea = infra.get("minimumPlotArea") != null ? new BigDecimal(infra.get("minimumPlotArea").toString()) : BigDecimal.ZERO;
+
+		// IFC applicable only when plot area > minimum area
+		if (plotArea.compareTo(minimumPlotArea) <= 0) {
+			log.info("IFC not applicable. Plot Area : {}, Minimum Required : {}",
+					plotArea, minimumPlotArea);
+			return BigDecimal.ZERO;
+		}
+
+		// Average Water Demand
+		BigDecimal waterDemandLPD = calculateAverageWaterDemand(criteria, property);
+
+		if (waterDemandLPD == null || waterDemandLPD.compareTo(BigDecimal.ZERO) <= 0) {
+			log.warn("Water Demand calculated as ZERO.");
+			return BigDecimal.ZERO;
+		}
+
+		BigDecimal waterRate = infra.get("waterRatePerLPD") != null ? new BigDecimal(infra.get("waterRatePerLPD").toString()) : BigDecimal.ZERO;
+
+		BigDecimal sewerRate = infra.get("sewerRatePerLPD") != null ? new BigDecimal(infra.get("sewerRatePerLPD").toString()) : BigDecimal.ZERO;
+
+		Integer annualIncrement = infra.get("annualIncrementPercentage") != null ? Integer.parseInt(infra.get("annualIncrementPercentage").toString()) : 0;
+
+		LocalDate effectiveDate = LocalDate.of(2026, 4, 1);
+		LocalDate today = LocalDate.now();
+
+		if (today.isAfter(effectiveDate) && annualIncrement > 0) {
+			int financialYearDifference = today.getYear() - 2026;
+			if (today.getMonthValue() < 4) {
+				financialYearDifference--;
+			}
+
+			if (financialYearDifference > 0) {
+				BigDecimal multiplier = BigDecimal.ONE.add(BigDecimal.valueOf(annualIncrement).multiply(BigDecimal.valueOf(financialYearDifference))
+						.divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP));
+
+				waterRate = waterRate.multiply(multiplier);
+				sewerRate = sewerRate.multiply(multiplier);
+			}
+		}
+
+		BigDecimal waterIFC = waterDemandLPD.multiply(waterRate);
+		BigDecimal sewerIFC = waterDemandLPD.multiply(sewerRate);
+		BigDecimal grossIFC = waterIFC.add(sewerIFC);
+		BigDecimal rebatePercentage = BigDecimal.ZERO;
+
+		List<Map<String, Object>> rebates = mapper.convertValue(infra.get("rebates"), new TypeReference<List<Map<String, Object>>>() {});
+
+		if (!CollectionUtils.isEmpty(rebates)) {
+
+			for (Map<String, Object> rebate : rebates) {
+
+				List<String> categories = (List<String>) rebate.get("categories");
+				if (CollectionUtils.isEmpty(categories)) {
+					continue;
+				}
+				if (categories.stream().anyMatch(c -> c.equalsIgnoreCase(colonyCategory))) {
+					rebatePercentage = new BigDecimal(rebate.get("percentage").toString());
+					break;
+				}
+			}
+		}
+
+		BigDecimal rebateAmount = grossIFC.multiply(rebatePercentage).divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP);
+
+		BigDecimal netIFC = grossIFC.subtract(rebateAmount).setScale(2, RoundingMode.HALF_UP);
+
+		log.info("Infrastructure Charge Calculation -> PlotArea={}, WaterDemand={} LPD, WaterRate={}, SewerRate={}, GrossIFC={}, Rebate={}%, RebateAmount={}, NetIFC={}",
+				plotArea, waterDemandLPD, waterRate,sewerRate, grossIFC, rebatePercentage, rebateAmount,netIFC);
+
+		return netIFC;
+	}
+
+	/**
+	 * Calculates the average Water Demand in Liters Per Day (LPD) based on the
+	 * Property's usage category, size, or structural metadata.
+	 *
+	 * @param criteria Calculation Search Criteria
+	 * @param property The associated Property details
+	 * @return BigDecimal average demand in LPD
+	 */
+	private BigDecimal calculateAverageWaterDemand(CalculationCriteria criteria, Property property) {
+
+		if (property == null) {
+			log.warn("Property is null.");
+			return BigDecimal.ZERO;
+		}
+
+		JSONObject details = property.getAdditionalDetails() == null ? new JSONObject() : mapper.convertValue(property.getAdditionalDetails(), JSONObject.class);
+		String usageCategory = property.getUsageCategory() == null ? "" : property.getUsageCategory().toUpperCase();
+		BigDecimal plotArea = property.getLandArea() == null ? BigDecimal.ZERO : BigDecimal.valueOf(property.getLandArea());
+		BigDecimal builtUpArea = BigDecimal.ZERO;
+
+		if (details.get("builtUpArea") != null) {
+			builtUpArea = new BigDecimal(details.get("builtUpArea").toString());
+		}
+
+		long dwellingUnits = 1;
+		if (details.get("numberOfDwellingUnits") != null) {
+			try {
+				dwellingUnits = Long.parseLong(details.get("numberOfDwellingUnits").toString());
+			} catch (Exception ignore) {
+			}
+		}
+
+		BigDecimal demand;
+
+		/*
+		 * DJB Domestic
+		 * 135 LPD/person
+		 * Assume average 5 persons/dwelling
+		 */
+
+		if (usageCategory.contains("RESIDENTIAL")) {
+			BigDecimal demandPerDwelling = BigDecimal.valueOf(675);
+			demand = demandPerDwelling.multiply(BigDecimal.valueOf(dwellingUnits));
+		}
+
+		/* Commercial*/
+		else if (usageCategory.contains("COMMERCIAL")) {
+			if (builtUpArea.compareTo(BigDecimal.ZERO) > 0) {
+				demand = builtUpArea.multiply(BigDecimal.valueOf(45));
+			} else {
+				demand = plotArea.multiply(BigDecimal.valueOf(45));
+			}
+		}
+
+		/* Institutional */
+		else if (usageCategory.contains("INSTITUTIONAL")) {
+			if (builtUpArea.compareTo(BigDecimal.ZERO) > 0) {
+				demand = builtUpArea.multiply(BigDecimal.valueOf(45));
+			} else {
+				demand = plotArea.multiply(BigDecimal.valueOf(45));
+			}
+		}
+
+		/* Industrial */
+		else if (usageCategory.contains("INDUSTRIAL")) {
+			if (builtUpArea.compareTo(BigDecimal.ZERO) > 0) {
+				demand = builtUpArea.multiply(BigDecimal.valueOf(45));
+			} else {
+				demand = plotArea.multiply(BigDecimal.valueOf(45));
+			}
+		}
+
+		/* Fallback */
+		else {
+			demand = plotArea.multiply(BigDecimal.valueOf(20));
+		}
+		log.info("Average Water Demand : Usage={}, PlotArea={}, BuiltUpArea={}, DwellingUnits={}, Demand={} LPD", usageCategory, plotArea, builtUpArea, dwellingUnits, demand);
+		return demand.setScale(2, RoundingMode.HALF_UP);
+	}
+
+	private boolean shouldIncludeFee(WaterConnection wc, String feeComponent, String taxHeadCode) {
+
+		String applicationType = wc.getApplicationType();
+
+		if (WSCalculationConstant.NEW_WATER_CONNECTION.equalsIgnoreCase(applicationType)) {
+			return WSCalculationConstant.NEW_CONNECTION_FEE.equalsIgnoreCase(feeComponent);
+		}
+
+		if (WSCalculationConstant.MODIFY_WATER_CONNECTION.equalsIgnoreCase(applicationType)) {
+
+			return Arrays.asList(
+					WSCalculationConstant.MUTATION_FEE,
+					WSCalculationConstant.WATER_ADVANCE,
+					WSCalculationConstant.REOPENING_FEE
+			).contains(feeComponent);
+		}
+		return true;
 	}
 	
 	/**

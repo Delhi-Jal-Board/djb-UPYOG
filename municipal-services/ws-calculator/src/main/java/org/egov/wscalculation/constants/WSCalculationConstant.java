@@ -361,4 +361,84 @@ public class WSCalculationConstant {
 	
 	public static final String TENANTID_MDC_STRING = "TENANTID";
 
+
+	//mutation
+	public static final int MUTATION_CONNECTION = 5;
+	public static final String MUTATION_WATER_CONNECTION = "MUTATION_WATER_CONNECTION";
+
+	public static final String ACTION_APPLY_MUTATION = "APPLY_MUTATION";
+	public static final String ACTION_ACTIVATE_MUTATION = "ACTIVATE_MUTATION";
+	public static final String MUTATION_FINAL_STATE = "MUTATION_ACTIVATED";
+
+	public static final String ACTION_APPROVE_MUTATION = "APPROVE_MUTATION";
+
+	public static final String MDMS_WC_MUTATIONREASON = "MutationReason";
+
+	public static final String MUTATION_REASON_FOR_TRANSFER = "reasonForTransfer";
+	public static final String MUTATION_DOCUMENT_NUMBER = "documentNumber";
+	public static final String MUTATION_DOCUMENT_DATE = "documentDate";
+	public static final String MUTATION_DOCUMENT_VALUE = "documentValue";
+	public static final String MUTATION_MARKET_VALUE = "marketValue";
+	public static final String MUTATION_RELATION_TYPE = "relationType";
+
+	public static final String RELATION_TYPE_BLOOD = "BLOOD";
+	public static final String RELATION_TYPE_NON_BLOOD = "NON_BLOOD";
+	public static final String WC_MUTATIONFEESLAB_MASTER = "MutationFeeSlab";
+
+	public static final String WS_MUTATION_FEE = "WS_MUTATION_FEE";
+	public static final String WS_WATER_ADVANCE = "WS_WATER_ADVANCE";
+	public static final String WS_REOPENING_FEE = "WS_REOPENING_FEE";
+	public static final String WS_MUTATION_TRADE_SECURITY = "WS_MUTATION_TRADE_SECURITY";
+	public static final String MUTATION_BUSINESS_SERVICE = "WS.MUTATION";
+
+	// -----------------------------------------
+	// Fee Slab JSON Keys :- Added By - UMESH
+	// -----------------------------------------
+
+	public static final String FEE_COMPONENT = "feeComponent";
+	public static final String TAX_HEAD_CODE = "taxHeadCode";
+	public static final String AMOUNT = "amount";
+	public static final String CONNECTION_CATEGORY = "connectionCategory";
+	public static final String COLONY_CATEGORIES = "colonyCategories";
+	public static final String CONNECTION_TYPE = "connectionType";
+	public static final String EFFECTIVE_FROM = "effectiveFrom";
+	public static final String EFFECTIVE_TO = "effectiveTo";
+	public static final String ACTIVE = "active";
+
+	// ------------------------------
+	// Fee Components
+	// ------------------------------
+
+	public static final String FORM_FEE = "FORM_FEE";
+	public static final String SCRUTINY_FEE = "SCRUTINY_FEE";
+	public static final String METER_FEE = "METER_FEE";
+	public static final String OTHER_CHARGE = "OTHER_CHARGE";
+	public static final String NEW_CONNECTION_FEE = "NEW_CONNECTION_FEE";
+	public static final String WATER_ADVANCE = "WATER_ADVANCE";
+	public static final String MUTATION_FEE = "MUTATION_FEE";
+	public static final String REOPENING_FEE = "REOPENING_FEE";
+
+	// ------------------------------
+	// Infrastructure Charge Master
+	// ------------------------------
+
+	public static final String WC_INFRASTRUCTURE_CHARGE_MASTER = "InfrastructureCharge";
+
+	public static final String WATER_RATE_PER_LPD = "waterRatePerLPD";
+	public static final String SEWER_RATE_PER_LPD = "sewerRatePerLPD";
+	public static final String ANNUAL_INCREMENT = "annualIncrementPercentage";
+	public static final String MINIMUM_PLOT_AREA = "minimumPlotArea";
+	public static final String COLONY_REBATES = "colonyRebates";
+	public static final String REBATE_PERCENTAGE = "percentage";
+
+	// ------------------------------
+	// New Tax Heads
+	// ------------------------------
+
+	public static final String WS_NEW_CONNECTION_FEE = "WS_NEW_CONNECTION_FEE";
+	public static final String WS_INFRASTRUCTURE_CHARGE = "WS_INFRASTRUCTURE_CHARGE";
+	public static final String LOCALITY_CATEGORY_MAP = "LOCALITY_CATEGORY_MAP";
+
 }
+
+
