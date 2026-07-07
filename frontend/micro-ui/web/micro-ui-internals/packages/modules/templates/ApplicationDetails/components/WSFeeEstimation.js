@@ -226,7 +226,7 @@ const WSFeeEstimation = ({ wsAdditionalDetails, workflowDetails }) => {
                 className="border-none"
                 key={`WS_COMMON_TOTAL_AMT`}
                 label={`${t(`WS_COMMON_TOTAL_AMT`)}`}
-                text={<span>&#8377;{billDetails?.totalAmount || 0}</span>}
+                text={<span>&#8377;{billDetails?.totalAmount ? Number(billDetails?.totalAmount).toFixed(2) : "0.00"}</span>}
                 textStyle={{ fontSize: "24px", fontWeight: "700" }}
               />
               <Row

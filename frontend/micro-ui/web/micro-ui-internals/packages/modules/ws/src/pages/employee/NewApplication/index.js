@@ -2903,7 +2903,7 @@ const NewApplication = () => {
                 <PreviewItem label="Number of Floors" value={formValues?.useDetails?.noOfFloors} />
                 <PreviewItem label="Number of Dwelling Units" value={formValues?.useDetails?.NumberofDwellingUnits} />
                 {formValues?.useDetails?.propertyType?.code === "HOSPITAL" ||
-                formValues?.useDetails?.propertyType?.code === "HOSPITAL_NURSING_HOME" ? (
+                  formValues?.useDetails?.propertyType?.code === "HOSPITAL_NURSING_HOME" ? (
                   <PreviewItem label="No. of Beds" value={formValues?.useDetails?.hospitalBeds} />
                 ) : null}
                 <PreviewItem label="Year of Construction" value={formValues?.useDetails?.SelectYearofConstruction} />
