@@ -274,6 +274,10 @@ public class CalculatorUtil {
 				.filter("[?(@.isActive== " + true + ")]").build());
 		details.add(MasterDetail.builder().name(WSCalculationConstant.WC_ROADTYPE_MASTER)
 				.filter("[?(@.isActive== " + true + ")]").build());
+
+		details.add(MasterDetail.builder().name(WSCalculationConstant.WC_INFRASTRUCTURE_CHARGE_MASTER)
+				.filter("[?(@.active==true)]").build());
+
 		ModuleDetail mdDtl = ModuleDetail.builder().masterDetails(details)
 				.moduleName(WSCalculationConstant.WS_TAX_MODULE).build();
 		MdmsCriteria mdmsCriteria = MdmsCriteria.builder().moduleDetails(Arrays.asList(mdDtl)).tenantId(tenantId)
@@ -444,5 +448,38 @@ public class CalculatorUtil {
 				.append(consumerCode).append(WSCalculationConstant.SEPARATER)
 				.append(WSCalculationConstant.SERVICE_FIELD_FOR_SEARCH_URL)
 				.append(WSCalculationConstant.ONE_TIME_FEE_SERVICE_FIELD);
+	}
+
+
+	/**
+	 * Prepare MDMS request for Boundary Master
+	 *
+	 * @param requestInfo RequestInfo
+	 * @param tenantId Tenant Id
+	 * @return MDMS Criteria Request
+	 */
+	public MdmsCriteriaReq getBoundaryCriteria(RequestInfo requestInfo, String tenantId) {
+
+		List<MasterDetail> masterDetails = new ArrayList<>();
+
+		masterDetails.add(
+				MasterDetail.builder()
+						.name("TenantBoundary")
+						.build());
+
+		ModuleDetail moduleDetail = ModuleDetail.builder()
+				.moduleName("egov-location")
+				.masterDetails(masterDetails)
+				.build();
+
+		MdmsCriteria mdmsCriteria = MdmsCriteria.builder()
+				.tenantId(tenantId)
+				.moduleDetails(Collections.singletonList(moduleDetail))
+				.build();
+
+		return MdmsCriteriaReq.builder()
+				.requestInfo(requestInfo)
+				.mdmsCriteria(mdmsCriteria)
+				.build();
 	}
 }
