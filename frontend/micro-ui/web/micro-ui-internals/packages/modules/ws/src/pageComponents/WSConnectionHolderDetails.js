@@ -845,7 +845,7 @@ const ConnectionDetails = (_props) => {
                     );
                   }}
                 />
-                <div style={{marginTop:"5px"}}>
+                <div style={{ marginTop: "5px" }}>
                   <Controller
                     control={control}
                     name="isWatsappSameAsMobile"
