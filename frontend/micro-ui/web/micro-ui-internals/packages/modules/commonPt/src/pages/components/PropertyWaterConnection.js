@@ -61,6 +61,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
   const watchCategoryType = watch("useDetails.categoryType");
   const watchPropertyType = watch("useDetails.propertyType");
   const watchPropertyCategory = watch("useDetails.propertyCategory");
+  const watchWaterConnectionUsageType = watch("useDetails.WaterConnectionUsageType");
   const isHospitalProperty = watchPropertyType?.code === "HOSPITAL_NURSING_HOME" || watchPropertyType?.code === "HospitalNursingHome";
   const isHotelRestaurantProperty = watchPropertyType?.code === "HOTEL_OR_RESTAURANT" || watchPropertyType?.code === "HotelOrRestaurant";
 
@@ -116,11 +117,28 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
   }, [watchPropertyCategory, propertyTypeOptions, setValue, watchPropertyType]);
 
   const usageTypeOptions = useMemo(() => {
-    return ptServicesMastersData?.PropertyTax?.PropertyNewUsageType?.filter((item) => item.active).map((item) => ({
+    let options = ptServicesMastersData?.PropertyTax?.PropertyNewUsageType?.filter((item) => item.active) || [];
+    
+    if (watchPropertyCategory?.code) {
+      if (watchPropertyCategory?.code?.toUpperCase() !== "MIXED") {
+        options = options.filter((item) => item.type?.toUpperCase() === watchPropertyCategory.code?.toUpperCase());
+      }
+    }
+    
+    return options.map((item) => ({
       code: item.code,
       name: item.name,
     }));
-  }, [ptServicesMastersData]);
+  }, [ptServicesMastersData, watchPropertyCategory]);
+
+  useEffect(() => {
+    if (watchPropertyType && watchWaterConnectionUsageType) {
+      const isUsageTypeValid = usageTypeOptions.some((opt) => opt.code === watchWaterConnectionUsageType.code);
+      if (!isUsageTypeValid) {
+        setValue("useDetails.WaterConnectionUsageType", null);
+      }
+    }
+  }, [watchPropertyType, usageTypeOptions, setValue, watchWaterConnectionUsageType]);
 
   const floorOptions = useMemo(() => {
     return ptServicesMastersData?.PropertyTax?.NoOfFloors?.filter((item) => item.active).map((item) => ({
