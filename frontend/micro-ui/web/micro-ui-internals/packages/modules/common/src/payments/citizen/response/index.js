@@ -37,7 +37,7 @@ export const convertEpochToDate = (dateEpoch) => {
     "", {}, tenantId, { applicationNo: consumerCode }, {}, {enabled:(window.location.href.includes("bpa") || window.location.href.includes("BPA"))}
   );
   
-  const { isLoading, data, isError } = Digit.Hooks.usePaymentUpdate({ egId }, business_service, {
+  const { isLoading, data, isError } = Digit.Hooks.usePaymentUpdate({ egId, tenantId }, business_service, {
     
     retry: false,
     staleTime: Infinity,
@@ -213,8 +213,11 @@ export const convertEpochToDate = (dateEpoch) => {
           payments.Payments[0].additionalDetails=details;
           paymentArray[0]=payments.Payments[0]
           console.log("generatedpdfkey",generatePdfKey)
-          if(business_service=="WS" || business_service=="SW"){
+          if(business_service?.includes("WS") || business_service?.includes("SW")){
             response = await Digit.PaymentService.generatePdf(state, { Payments: [{...paymentData}] }, generatePdfKeyForWs);
+            if (!response?.filestoreIds?.[0] && !response?.fileStoreIds?.[0]) {
+              response = await Digit.PaymentService.generatePdf(state, { Payments: [{...paymentData}] }, generatePdfKey);
+            }
           }
           else if(businessServ.includes("BPA")){
             let queryObj = { applicationNo: payments.Payments[0].paymentDetails[0]?.bill?.consumerCode };
@@ -243,9 +246,14 @@ export const convertEpochToDate = (dateEpoch) => {
           
         }       
     }
-    const fileStore = await Digit.PaymentService.printReciept(state, { fileStoreIds: response.filestoreIds[0] });
-    if (fileStore && fileStore[response.filestoreIds[0]]) {
-      window.open(fileStore[response.filestoreIds[0]], "_blank");
+    const fileStoreId = response?.filestoreIds?.[0] || response?.fileStoreIds?.[0];
+    if (fileStoreId) {
+      const fileStore = await Digit.PaymentService.printReciept(state, { fileStoreIds: fileStoreId });
+      if (fileStore && fileStore[fileStoreId]) {
+        window.open(fileStore[fileStoreId], "_blank");
+      }
+    } else {
+      console.error("PDF generation failed to return a filestoreId", response);
     }
     setPrinting(false);
   };

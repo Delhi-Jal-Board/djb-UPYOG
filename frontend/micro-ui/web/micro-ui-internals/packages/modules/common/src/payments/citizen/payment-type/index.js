@@ -86,10 +86,8 @@ export const SelectPaymentType = (props) => {
         // success
         callbackUrl:
           window.location.href.includes("mcollect") || wrkflow === "WNS"
-            ? `${window.location.protocol}//${window.location.host}/digit-ui/citizen/payment/success/${businessService}/${wrkflow === "WNS" ? consumerCode : consumerCode
-            }/${tenantId}?workflow=${wrkflow === "WNS" ? wrkflow : "mcollect"}`
-            : `${window.location.protocol}//${window.location.host}/digit-ui/citizen/payment/success/${businessService}/${wrkflow === "WNS" ? encodeURIComponent(consumerCode) : consumerCode
-            }/${tenantId}?propertyId=${consumerCode}`,
+            ? `${window.location.protocol}//${window.location.host}/digit-ui/citizen/payment/success/${businessService}/${encodeURIComponent(consumerCode)}/${tenantId}?workflow=${wrkflow === "WNS" ? wrkflow : "mcollect"}`
+            : `${window.location.protocol}//${window.location.host}/digit-ui/citizen/payment/success/${businessService}/${encodeURIComponent(consumerCode)}/${tenantId}?propertyId=${encodeURIComponent(consumerCode)}`,
         additionalDetails: {
           isWhatsapp: false,
         },
@@ -99,7 +97,7 @@ export const SelectPaymentType = (props) => {
     try {
       const data = await Digit.PaymentService.createCitizenReciept(billDetails?.tenantId, filterData);
       const redirectUrl = data?.Transaction?.redirectUrl;
-      if (d?.paymentType == "AXIS") {
+      if (d?.paymentType == "AXIS" || d?.paymentType == "NPCI") {
         window.location = redirectUrl;
       } else if (d?.paymentType == "NTTDATA") {
         let redirect = redirectUrl.split("returnURL=");

@@ -10,7 +10,7 @@
   },
   "devDependencies": {
     "@djb25/digit-ui-module-bills": "1.0.2",
-    "@djb25/digit-ui-module-common": "1.0.4",
+    "@djb25/digit-ui-module-common": "1.0.5",
     "@djb25/digit-ui-module-engagement": "1.0.9",
     "@djb25/digit-ui-module-fsm": "1.0.21",
     "@djb25/digit-ui-module-mcollect": "1.0.0",
