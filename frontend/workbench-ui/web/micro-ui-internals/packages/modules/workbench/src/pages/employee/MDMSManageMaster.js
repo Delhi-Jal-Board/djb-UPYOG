@@ -161,9 +161,10 @@ const MDMSManageMaster = () => {
   if (isLoading) return <Loader />;
   return (
     <React.Fragment>
-        <Header className="works-header-search">{t(Config?.label)}</Header>
       <div className="jk-header-btn-wrapper">
-        <Card className="manage-master-wrapper">
+        <Header className="works-header-search">{t(Config?.label)}</Header>
+      </div>
+      <Card className="manage-master-wrapper">
         <Dropdown
           option={masterOptions}
           className={"form-field"}
@@ -195,8 +196,7 @@ const MDMSManageMaster = () => {
           
           disable = {modulee ? true : false}
         />
-        </Card>
-      </div>
+      </Card>
     </React.Fragment>
   );
 };
