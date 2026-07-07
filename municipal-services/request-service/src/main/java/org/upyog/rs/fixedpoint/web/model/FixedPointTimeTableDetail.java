@@ -22,6 +22,9 @@ public class FixedPointTimeTableDetail {
     @JsonProperty("fixedPointCode")
     private String fixedPointCode;
 
+    @JsonProperty("fillingPointName")
+    private String fillingPointName;
+
     @JsonProperty("day")
     private String day;
 

@@ -33,13 +33,16 @@ public class FixedPointTimeTableQueryBuilder {
                     "fpt.time_of_arriving_back_fpl_after_delivery, fpt.volume_water_tobe_delivery, " +
                     "fpt.active, fpt.is_enable, fpt.remarks, fpt.vehicle_id, fpt.tenant_id, " +
                     "fpt.createdby, fpt.lastmodifiedby, fpt.createdtime, fpt.lastmodifiedtime, " +
-                    "apd.name AS fixed_point_name, apd.fixed_point_id, fpt.filling_point_id " +
+                    "apd.name AS fixed_point_name, apd.fixed_point_id, fpt.filling_point_id, " +
+                    "fp.filling_point_name " +
                     "FROM eg_fixed_point_time_table fpt " +
                     "LEFT JOIN ( " +
                     "SELECT DISTINCT ON (fixed_point_id) fixed_point_id, name " +
                     "FROM upyog_rs_water_tanker_applicant_details " +
                     "ORDER BY fixed_point_id, createdtime DESC " +
-                    ") apd ON apd.fixed_point_id = fpt.fixed_point_code";
+                    ") apd ON apd.fixed_point_id = fpt.fixed_point_code " +
+                    "LEFT JOIN upyog_rs_water_tanker_filling_point fp " +
+                    "ON fp.filling_point_id = fpt.filling_point_id";
 
     private static final String COUNT_QUERY = "SELECT COUNT(DISTINCT fpt.system_assigned_schedule_id) " +
             "FROM eg_fixed_point_time_table fpt " +
