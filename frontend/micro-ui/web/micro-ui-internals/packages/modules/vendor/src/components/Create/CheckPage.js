@@ -29,8 +29,6 @@ const CheckPage = ({ onSubmit, value = {} }) => {
   const { t } = useTranslation();
 
   const { vendordet, documents } = value;
-  console.log("vendordetailssppsss", vendordet);
-  console.log("documents", documents);
   const [agree, setAgree] = useState(false);
   const setdeclarationhandler = () => {
     setAgree(!agree);
@@ -90,32 +88,68 @@ const CheckPage = ({ onSubmit, value = {} }) => {
                 <Row
                   label={t("VENDOR_ID")}
                   text={`${t(checkForNA(vendordet?.VendorId))}`}
-                  actionButton={<ActionButton jumpTo={`/digit-ui/${window.location.pathname.includes("/citizen") ? "citizen" : "employee"}/vendor/registry/additionaldetails/vendor-details`} />}
+                  actionButton={
+                    <ActionButton
+                      jumpTo={`/digit-ui/${
+                        window.location.pathname.includes("/citizen") ? "citizen" : "employee"
+                      }/vendor/registry/additionaldetails/vendor-details`}
+                    />
+                  }
                 />
                 <Row
                   label={t("VENDOR_BANK_IFSC_CODE")}
                   text={`${t(checkForNA(vendordet?.IFSC))}`}
-                  actionButton={<ActionButton jumpTo={`/digit-ui/${window.location.pathname.includes("/citizen") ? "citizen" : "employee"}/vendor/registry/additionaldetails/vendor-details`} />}
+                  actionButton={
+                    <ActionButton
+                      jumpTo={`/digit-ui/${
+                        window.location.pathname.includes("/citizen") ? "citizen" : "employee"
+                      }/vendor/registry/additionaldetails/vendor-details`}
+                    />
+                  }
                 />
                 <Row
                   label={t("VENDOR_BANK_NAME")}
                   text={`${t(checkForNA(vendordet?.Bank))}`}
-                  actionButton={<ActionButton jumpTo={`/digit-ui/${window.location.pathname.includes("/citizen") ? "citizen" : "employee"}/vendor/registry/additionaldetails/vendor-details`} />}
+                  actionButton={
+                    <ActionButton
+                      jumpTo={`/digit-ui/${
+                        window.location.pathname.includes("/citizen") ? "citizen" : "employee"
+                      }/vendor/registry/additionaldetails/vendor-details`}
+                    />
+                  }
                 />
                 <Row
                   label={t("VENDOR_BANK_BRANCH")}
                   text={`${t(checkForNA(vendordet?.BankbranchName))}`}
-                  actionButton={<ActionButton jumpTo={`/digit-ui/${window.location.pathname.includes("/citizen") ? "citizen" : "employee"}/vendor/registry/additionaldetails/vendor-details`} />}
+                  actionButton={
+                    <ActionButton
+                      jumpTo={`/digit-ui/${
+                        window.location.pathname.includes("/citizen") ? "citizen" : "employee"
+                      }/vendor/registry/additionaldetails/vendor-details`}
+                    />
+                  }
                 />
                 <Row
                   label={t("VENDOR_MICR_NO")}
                   text={`${t(checkForNA(vendordet?.micrNo))}`}
-                  actionButton={<ActionButton jumpTo={`/digit-ui/${window.location.pathname.includes("/citizen") ? "citizen" : "employee"}/vendor/registry/additionaldetails/vendor-details`} />}
+                  actionButton={
+                    <ActionButton
+                      jumpTo={`/digit-ui/${
+                        window.location.pathname.includes("/citizen") ? "citizen" : "employee"
+                      }/vendor/registry/additionaldetails/vendor-details`}
+                    />
+                  }
                 />
                 <Row
                   label={t("BANK_ACCONT_NO")}
                   text={`${t(checkForNA(vendordet?.AccountNo))}`}
-                  actionButton={<ActionButton jumpTo={`/digit-ui/${window.location.pathname.includes("/citizen") ? "citizen" : "employee"}/vendor/registry/additionaldetails/vendor-details`} />}
+                  actionButton={
+                    <ActionButton
+                      jumpTo={`/digit-ui/${
+                        window.location.pathname.includes("/citizen") ? "citizen" : "employee"
+                      }/vendor/registry/additionaldetails/vendor-details`}
+                    />
+                  }
                 />
 
                 {/* <Row
@@ -139,52 +173,106 @@ const CheckPage = ({ onSubmit, value = {} }) => {
                 <Row
                   label={t("PAN_NO")}
                   text={`${t(checkForNA(vendordet?.PanNo))}`}
-                  actionButton={<ActionButton jumpTo={`/digit-ui/${window.location.pathname.includes("/citizen") ? "citizen" : "employee"}/vendor/registry/additionaldetails/vendor-details`} />}
+                  actionButton={
+                    <ActionButton
+                      jumpTo={`/digit-ui/${
+                        window.location.pathname.includes("/citizen") ? "citizen" : "employee"
+                      }/vendor/registry/additionaldetails/vendor-details`}
+                    />
+                  }
                 />
                 <Row
                   label={t("GST_NO")}
                   text={`${t(checkForNA(vendordet?.GstNo))}`}
-                  actionButton={<ActionButton jumpTo={`/digit-ui/${window.location.pathname.includes("/citizen") ? "citizen" : "employee"}/vendor/registry/additionaldetails/vendor-details`} />}
+                  actionButton={
+                    <ActionButton
+                      jumpTo={`/digit-ui/${
+                        window.location.pathname.includes("/citizen") ? "citizen" : "employee"
+                      }/vendor/registry/additionaldetails/vendor-details`}
+                    />
+                  }
                 />
                 <Row
                   label={t("GST_REGISTERED_STATE/UT")}
                   text={`${t(checkForNA(vendordet?.GstState))}`}
-                  actionButton={<ActionButton jumpTo={`/digit-ui/${window.location.pathname.includes("/citizen") ? "citizen" : "employee"}/vendor/registry/additionaldetails/vendor-details`} />}
+                  actionButton={
+                    <ActionButton
+                      jumpTo={`/digit-ui/${
+                        window.location.pathname.includes("/citizen") ? "citizen" : "employee"
+                      }/vendor/registry/additionaldetails/vendor-details`}
+                    />
+                  }
                 />
                 <Row
                   label={t("REGISTRATION_NO")}
                   text={`${t(checkForNA(vendordet?.RegistrationNo))}`}
-                  actionButton={<ActionButton jumpTo={`/digit-ui/${window.location.pathname.includes("/citizen") ? "citizen" : "employee"}/vendor/registry/additionaldetails/vendor-details`} />}
+                  actionButton={
+                    <ActionButton
+                      jumpTo={`/digit-ui/${
+                        window.location.pathname.includes("/citizen") ? "citizen" : "employee"
+                      }/vendor/registry/additionaldetails/vendor-details`}
+                    />
+                  }
                 />
 
                 <Row
                   label={t("EPF_NO")}
                   text={`${t(checkForNA(vendordet?.EpfNo))}`}
-                  actionButton={<ActionButton jumpTo={`/digit-ui/${window.location.pathname.includes("/citizen") ? "citizen" : "employee"}/vendor/registry/additionaldetails/vendor-details`} />}
+                  actionButton={
+                    <ActionButton
+                      jumpTo={`/digit-ui/${
+                        window.location.pathname.includes("/citizen") ? "citizen" : "employee"
+                      }/vendor/registry/additionaldetails/vendor-details`}
+                    />
+                  }
                 />
 
                 <Row
                   label={t("ESI_NO")}
                   text={`${t(checkForNA(vendordet?.EsiNo))}`}
-                  actionButton={<ActionButton jumpTo={`/digit-ui/${window.location.pathname.includes("/citizen") ? "citizen" : "employee"}/vendor/registry/additionaldetails/vendor-details`} />}
+                  actionButton={
+                    <ActionButton
+                      jumpTo={`/digit-ui/${
+                        window.location.pathname.includes("/citizen") ? "citizen" : "employee"
+                      }/vendor/registry/additionaldetails/vendor-details`}
+                    />
+                  }
                 />
 
                 <Row
                   label={t("VENDOR_TYPE")}
                   text={`${t(checkForNA(vendordet?.VendorType?.code))}`}
-                  actionButton={<ActionButton jumpTo={`/digit-ui/${window.location.pathname.includes("/citizen") ? "citizen" : "employee"}/vendor/registry/additionaldetails/vendor-details`} />}
+                  actionButton={
+                    <ActionButton
+                      jumpTo={`/digit-ui/${
+                        window.location.pathname.includes("/citizen") ? "citizen" : "employee"
+                      }/vendor/registry/additionaldetails/vendor-details`}
+                    />
+                  }
                 />
 
                 <Row
                   label={t("VENDOR_CATEGORY")}
                   text={`${t(checkForNA(vendordet?.VendorCategory?.code))}`}
-                  actionButton={<ActionButton jumpTo={`/digit-ui/${window.location.pathname.includes("/citizen") ? "citizen" : "employee"}/vendor/registry/additionaldetails/vendor-details`} />}
+                  actionButton={
+                    <ActionButton
+                      jumpTo={`/digit-ui/${
+                        window.location.pathname.includes("/citizen") ? "citizen" : "employee"
+                      }/vendor/registry/additionaldetails/vendor-details`}
+                    />
+                  }
                 />
 
                 <Row
                   label={t("VENDOR_STATUS")}
                   text={`${t(checkForNA(vendordet?.Status?.code))}`}
-                  actionButton={<ActionButton jumpTo={`/digit-ui/${window.location.pathname.includes("/citizen") ? "citizen" : "employee"}/vendor/registry/additionaldetails/vendor-details`} />}
+                  actionButton={
+                    <ActionButton
+                      jumpTo={`/digit-ui/${
+                        window.location.pathname.includes("/citizen") ? "citizen" : "employee"
+                      }/vendor/registry/additionaldetails/vendor-details`}
+                    />
+                  }
                 />
                 {/* {formJson.map((row, index) => (
                 <Row
