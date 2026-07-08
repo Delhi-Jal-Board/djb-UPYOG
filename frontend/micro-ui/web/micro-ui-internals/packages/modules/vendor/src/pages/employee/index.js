@@ -7,12 +7,13 @@ import SearchVendor from "../../components/SearchVendor/Index";
 import SupervisorDetails from "../../components/RegisterSupervisor/SupervisorDetails";
 import AddSupervisor from "../../components/RegisterSupervisor/AddSupervisor";
 import SurveyorDetails from "../../components/RegisterSurveyor/SurveyorDetails";
-import EditVendorDetails from "../../components/RegisterVendor/EditVendorDetails";
+import VendorDetails from "../../components/RegisterVendor/VendorDetails";
 import AddVendor from "../../components/RegisterVendor/AddVendor";
 import SearchApp from "./SearchApp";
 import EditSupervisor from "../../components/RegisterSupervisor/EditSupervisor";
 import EditSurveyor from "../../components/RegisterSurveyor/EditSurveyor";
 import VENDORCreate from "../../components/Create/index";
+import EditVendor from "../../components/RegisterVendor/EditVendor";
 
 const EmployeeApp = ({ path, url, userType }) => {
   const { t } = useTranslation();
@@ -201,7 +202,16 @@ const EmployeeApp = ({ path, url, userType }) => {
               path={`${path}/registry/vendor-details/:id`}
               component={(props) => (
                 <LayoutWrapper layoutClass="action">
-                  <EditVendorDetails {...props} parentRoute={path} />
+                  <VendorDetails {...props} parentRoute={path} />
+                </LayoutWrapper>
+              )}
+            />
+
+            <PrivateRoute
+              path={`${path}/registry/modify-vendor/:id`}
+              component={(props) => (
+                <LayoutWrapper layoutClass="action">
+                  <EditVendor {...props} parentRoute={path} />
                 </LayoutWrapper>
               )}
             />

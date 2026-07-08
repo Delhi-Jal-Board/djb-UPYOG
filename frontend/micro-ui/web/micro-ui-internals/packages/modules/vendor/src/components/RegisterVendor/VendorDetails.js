@@ -23,30 +23,19 @@ import { useQueryClient } from "react-query";
 import { useHistory, useParams } from "react-router-dom";
 import ConfirmationBox from "../Confirmation";
 
-const Heading = (props) => {
-  return <h1 className="heading-m">{props.label}</h1>;
-};
-
-const CloseBtn = (props) => {
-  return (
-    <div conClick={props.onClick}>
-      <CloseSvg />
-    </div>
-  );
-};
-
 // Helper function to convert camelCase to Title Case for UI labels
 const formatLabel = (key) => {
   const result = key.replace(/([A-Z])/g, " $1");
   return result.charAt(0).toUpperCase() + result.slice(1);
 };
 
-const EditVendorDetails = (props) => {
+const VendorDetails = () => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const { t } = useTranslation();
   const history = useHistory();
   const queryClient = useQueryClient();
-  let { id: dsoId } = useParams();
+  const vendorId = new URLSearchParams(location.search).get("vendorId");
+  const { id: dsoId } = useParams();
   const [displayMenu, setDisplayMenu] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -116,9 +105,9 @@ const EditVendorDetails = (props) => {
       case "ADD_DRIVER":
         return setShowModal(true);
       case "EDIT":
-        return history.push(`/digit-ui/${userType}/fsm/registry/modify-vendor/${dsoId}`);
+        return history.push(`/digit-ui/${userType}/vendor/registry/modify-vendor/${dsoId || vendorId}`);
       case "HOME":
-        return history.push(`/digit-ui/${userType}/fsm/registry?selectedTabs=VENDOR`);
+        return history.push(`/digit-ui/${userType}/vendor/registry?selectedTabs=VENDOR`);
       default:
         break;
     }
@@ -212,10 +201,10 @@ const EditVendorDetails = (props) => {
 
   const onEdit = (details, type, id) => {
     if (type === "ES_FSM_REGISTRY_DETAILS_TYPE_DRIVER") {
-      history.push(`/digit-ui/${userType}/fsm/registry/modify-driver/${id}`);
+      history.push(`/digit-ui/${userType}/vendor/registry/modify-driver/${id}`);
     } else {
       let registrationNumber = details?.values?.find((ele) => ele.title === "ES_FSM_REGISTRY_VEHICLE_NUMBER")?.value;
-      history.push(`/digit-ui/${userType}/fsm/registry/modify-vehicle/${registrationNumber}`);
+      history.push(`/digit-ui/${userType}/vendor/registry/modify-vehicle/${registrationNumber}`);
     }
   };
 
@@ -265,7 +254,6 @@ const EditVendorDetails = (props) => {
     mutate(formData, {
       onError: (error, variables) => {
         setShowToast({ key: "error", action: error });
-        setTimeout(closeToast, 5000);
       },
       onSuccess: (data, variables) => {
         setShowToast({ key: "success", action: type === "ES_FSM_REGISTRY_DETAILS_TYPE_DRIVER" ? "DELETE_DRIVER" : "DELETE_VEHICLE" });
@@ -273,9 +261,6 @@ const EditVendorDetails = (props) => {
         refetchDso();
         refetchVehicle();
         refetchDriver();
-        setTimeout(() => {
-          closeToast();
-        }, 5000);
       },
     });
   };
@@ -458,7 +443,9 @@ const EditVendorDetails = (props) => {
 
                                 <div
                                   className="add-details-link hover-button"
-                                  onClick={() => history.push(`/digit-ui/${userType}/vendor/registry/additionaldetails/info?vendorId=${dsoId}`)}
+                                  onClick={() =>
+                                    history.push(`/digit-ui/${userType}/vendor/registry/additionaldetails/info?vendorId=${dsoId || vendorId}`)
+                                  }
                                 >
                                   {t("Edit Details")}
                                 </div>
@@ -468,7 +455,9 @@ const EditVendorDetails = (props) => {
                               !isEkyc && (
                                 <div
                                   onClick={() =>
-                                    history.push(`/digit-ui/${userType}/vendor/registry/additionaldetails/vendor-details?vendorId=${dsoId}`)
+                                    history.push(
+                                      `/digit-ui/${userType}/vendor/registry/additionaldetails/modify-details?vendorId=${dsoId || vendorId}`
+                                    )
                                   }
                                   className="add-details-link hover-button"
                                 >
@@ -492,35 +481,37 @@ const EditVendorDetails = (props) => {
                         />
                       );
                     })}
-                    {detail?.child?.map((data, index) => {
-                      return (
-                        <Card className="card-with-background" key={data.id || index}>
-                          <div className="card-head">
-                            <h2>
-                              {t(detail.type)} {index + 1}
-                            </h2>
-                            <div style={{ display: "flex" }}>
-                              <span onClick={() => onEdit(data, detail.type, data.id)}>
-                                <EditIcon style={{ cursor: "pointer", marginRight: "20px" }} className="edit" fill="#a82227" />
-                              </span>
-                              <span onClick={() => onDelete(data, detail.type, data.id)}>
-                                <DeleteIcon style={{ cursor: "pointer" }} className="delete" fill="#a82227" />
-                              </span>
+                    <div className="flex-box flex-box-col flex-gap-2">
+                      {detail?.child?.map((data, index) => {
+                        return (
+                          <Card className="card-with-background" key={data.id || index}>
+                            <div className="card-head">
+                              <h2>
+                                {t(detail.type)} {index + 1}
+                              </h2>
+                              <div style={{ display: "flex" }}>
+                                <span onClick={() => onEdit(data, detail.type, data.id)}>
+                                  <EditIcon style={{ cursor: "pointer", marginRight: "20px" }} className="edit" fill="#a82227" />
+                                </span>
+                                <span onClick={() => onDelete(data, detail.type, data.id)}>
+                                  <DeleteIcon style={{ cursor: "pointer" }} className="delete" fill="#a82227" />
+                                </span>
+                              </div>
                             </div>
-                          </div>
-                          <div className="additional-grid" style={{ padding: "8px 16px" }}>
-                            {data?.values?.map((value, index) => (
-                              <React.Fragment key={index}>
-                                <div className="additional-label">{t(String(value.title))}</div>
-                                <div className="additional-value" style={value.value === "ACTIVE" ? { color: "green" } : {}}>
-                                  {value.value ? t(String(value.value)) : "N/A"}
-                                </div>
-                              </React.Fragment>
-                            ))}
-                          </div>
-                        </Card>
-                      );
-                    })}
+                            <div className="additional-grid" style={{ padding: "8px 16px" }}>
+                              {data?.values?.map((value, index) => (
+                                <React.Fragment key={index}>
+                                  <div className="additional-label">{t(String(value.title))}</div>
+                                  <div className="additional-value" style={value.value === "ACTIVE" ? { color: "green" } : {}}>
+                                    {value.value ? t(String(value.value)) : "N/A"}
+                                  </div>
+                                </React.Fragment>
+                              ))}
+                            </div>
+                          </Card>
+                        );
+                      })}
+                    </div>
                     {detail.type && (
                       <div
                         className="add-details-link hover-button"
@@ -550,7 +541,7 @@ const EditVendorDetails = (props) => {
 
                   <div
                     className="add-details-link hover-button"
-                    onClick={() => history.push(`/digit-ui/${userType}/vendor/registry/new-supervisor?vendorId=${dsoId}`)}
+                    onClick={() => history.push(`/digit-ui/${userType}/vendor/registry/new-supervisor?vendorId=${dsoId || vendorId}`)}
                   >
                     {t(`ES_VENDOR_ADD_SUPERVISOR`)}
                   </div>
@@ -569,7 +560,7 @@ const EditVendorDetails = (props) => {
                   />
                   {/* <div
                     className="add-details-link hover-button"
-                    onClick={() => history.push(`/digit-ui/${userType}/vendor/registry/new-surveyor?vendorId=${dsoId}`)}
+                    onClick={() => history.push(`/digit-ui/${userType}/vendor/registry/new-surveyor?vendorId=${dsoId || vendorId}`)}
                   >
                     {t(`ES_VENDOR_ADD_SURVEYOR`)}
                   </div> */}
@@ -581,17 +572,17 @@ const EditVendorDetails = (props) => {
           {showModal && (
             <Modal
               headerBarMain={
-                <Heading
-                  label={t(
+                <h1 className="heading-m">
+                  {t(
                     selectedAction === "DELETE"
                       ? "ES_FSM_REGISTRY_DELETE_POPUP_HEADER"
                       : selectedAction === "ADD_VEHICLE"
                       ? "ES_FSM_REGISTRY_ADD_VEHICLE_POPUP_HEADER"
                       : "ES_FSM_REGISTRY_ADD_DRIVER_POPUP_HEADER"
                   )}
-                />
+                </h1>
               }
-              headerBarEnd={<CloseBtn onClick={closeModal} />}
+              headerBarEnd={<CloseSvg onClick={closeModal} />}
               actionCancelLabel={t("CS_COMMON_CANCEL")}
               actionCancelOnSubmit={closeModal}
               actionSaveLabel={t(selectedAction === "DELETE" ? "ES_EVENT_DELETE" : "CS_COMMON_SUBMIT")}
@@ -621,4 +612,4 @@ const EditVendorDetails = (props) => {
   );
 };
 
-export default EditVendorDetails;
+export default VendorDetails;
