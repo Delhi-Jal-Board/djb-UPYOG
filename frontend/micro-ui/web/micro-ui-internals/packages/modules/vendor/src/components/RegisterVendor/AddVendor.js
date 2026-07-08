@@ -190,9 +190,9 @@ const AddVendor = () => {
         },
         ward: wardCode
           ? {
-              code: wardCode,
-              name: wardName,
-            }
+            code: wardCode,
+            name: wardName,
+          }
           : undefined,
         geoLocation: {
           latitude: mergedData?.address?.latitude || 28.6139,
@@ -220,8 +220,8 @@ const AddVendor = () => {
     if (isEkyc) {
       vendorData = {
         ...vendorData,
-        zoneIds: mergedData?.zoneIds?.map((z) => z?.[1]?.code) || [],
-        clusterIds: mergedData?.clusterIds?.map((c) => c?.[1]?.code) || [],
+        zoneIds: mergedData?.zoneIds?.map((z) => z?.code || z?.[1]?.code || z) || [],
+        clusterIds: mergedData?.clusterIds?.map((c) => c?.code || c?.[1]?.code || c) || [],
         contractStartDate: mergedData.contractStartDate ? new Date(mergedData.contractStartDate).getTime() : null,
         contractEndDate: mergedData.contractEndDate ? new Date(mergedData.contractEndDate).getTime() : null,
       };
@@ -280,7 +280,7 @@ const AddVendor = () => {
           defaultValues={defaultValues}
           noCard={true}
           noBreakLine={true}
-          // isDisabled={!canSubmit}
+        // isDisabled={!canSubmit}
         />
         {showToast && (
           <Toast

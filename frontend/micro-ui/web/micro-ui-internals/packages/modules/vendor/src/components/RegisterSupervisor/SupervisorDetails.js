@@ -49,7 +49,7 @@ const SupervisorDetails = (props) => {
     return supervisorSearchResponse.supervisors.map((data) => {
       // Find the mapped vendor if we have vendorData loaded
       const mappedVendor = vendorData?.find((v) => v.dsoDetails?.id === data.vendorId || v.dsoDetails?.vendorId === data.vendorId);
-      const vendorName = mappedVendor?.dsoDetails?.name || data.vendorId || "ES_FSM_REGISTRY_DETAILS_ADD_VENDOR";
+      const vendorName = data.vendorName || mappedVendor?.dsoDetails?.name || data.vendorId || "ES_FSM_REGISTRY_DETAILS_ADD_VENDOR";
 
       return {
         supervisorData: data,

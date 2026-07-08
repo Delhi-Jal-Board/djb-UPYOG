@@ -8,12 +8,14 @@ import { useParams } from "react-router-dom";
 
 import AssignEkycModal from "./AssignEkycModal";
 import { downloadSurveyorPDF } from "../utils/reportDownloader";
+import { FaUsers, FaCheckCircle, FaClock, FaChartLine } from "react-icons/fa";
 
 const SurveyorDetailsDashboard = () => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
 
   const [showModal, setShowModal] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
+  const [ekycDownloadLoading, setEkycDownloadLoading] = useState(false);
 
   const { id: surveyorId } = useParams();
   const ownerIds = Digit.SessionStorage.get("User")?.info?.uuid;
@@ -267,7 +269,7 @@ const SurveyorDetailsDashboard = () => {
     }
   };
 
-  const StatCard = ({ title, value, type, isLoading }) => (
+  const StatCard = ({ title, value, type, isLoading, icon }) => (
     <div className={`stat-card ${type}`}>
       {isLoading ? (
         <React.Fragment>
@@ -278,6 +280,7 @@ const SurveyorDetailsDashboard = () => {
         <React.Fragment>
           <div className="stat-title">{title}</div>
           <div className="stat-value">{value}</div>
+          {icon && <div className="stat-icon">{icon}</div>}
         </React.Fragment>
       )}
     </div>
@@ -288,6 +291,84 @@ const SurveyorDetailsDashboard = () => {
   const handleMenuSelect = (option) => {
     setShowOptions(false); // close menu
     setShowModal(true);
+  };
+
+  const handleDownloadEkycData = async () => {
+    setEkycDownloadLoading(true);
+    try {
+      const response = await Digit.EkycService.application_list({
+        tenantId: tenantId || "dl.djb",
+        offset: 0,
+        limit: 10000,
+        surveyorId: surveyor?.owner?.uuid,
+        reportDownload: true,
+      });
+
+      const consumerList = response?.consumerList || [];
+      if (consumerList.length === 0) {
+        alert(t("NO_DATA_FOUND") || "No data found for download.");
+        return;
+      }
+
+      const excludedKeys = [
+          "status", "source", "submittedAt", "assignedAt", "connectionType", "approvedAt",
+          "alternateMobileNo", "city", "state", "addressType", "addressProofType", "mrcode",
+          "areacode", "verificationStatus", "surveyorId", "supervisorId", "vendorId",
+          "assignmentType", "assignmentValue", "assignedTime", "isSelfAssigned", "userType",
+          "tenantName", "tenantMobile"
+      ];
+
+      const headerMapping = {
+          kno: t("KNO") || "KNO",
+          firstName: t("FIRST_NAME") || "First Name",
+          middleName: t("MIDDLE_NAME") || "Middle Name",
+          lastName: t("LAST_NAME") || "Last Name",
+          gender: t("GENDER") || "Gender",
+          mobileNumber: t("MOBILE_NUMBER") || "Mobile Number",
+          emailId: t("EMAIL_ID") || "Email ID",
+          fatherOrHusbandName: t("FATHER_HUSBUND_NAME") || "Father/Husband Name",
+          relationship: t("RELATIONSHIP") || "Relationship",
+          dob: t("DOB") || "Date of Birth",
+          ekycStatus: t("EKYC_STATUS") || "eKYC Status",
+          zoneName: t("ZONE") || "Zone",
+          assembly: t("ASSEMBLY") || "Assembly",
+          ward: t("WARD") || "Ward",
+          pincode: t("PINCODE") || "Pincode",
+          mrkey: t("MR_KEY") || "MR Key",
+          createdTime: t("CREATED_TIME") || "Created Time",
+          lastModifiedTime: t("LAST_MODIFIED_TIME") || "Last Modified Time",
+      };
+
+      const excelData = consumerList.map((item) => {
+          const cleanObj = {};
+          
+          const fullName = [item.firstName, item.middleName, item.lastName].filter(Boolean).join(" ");
+          if (fullName) {
+              cleanObj[t("CONSUMER_NAME") || "Consumer Name"] = fullName;
+          }
+
+          Object.keys(item).forEach(key => {
+              if (excludedKeys.includes(key)) return;
+              
+              const val = item[key];
+              if (typeof val === "object" && val !== null) {
+                  return;
+              }
+              
+              const friendlyHeader = headerMapping[key] || t(key.toUpperCase()) || key;
+              cleanObj[friendlyHeader] = val;
+          });
+
+          return cleanObj;
+      });
+
+      const cleanFileName = `eKYC_Data_${fullName.replace(/[^a-zA-Z0-9]/g, "_")}`;
+      Digit.Download.Excel(excelData, cleanFileName);
+    } catch (error) {
+      console.error("Error downloading eKYC Excel:", error);
+    } finally {
+      setEkycDownloadLoading(false);
+    }
   };
 
   const closeModal = async () => {
@@ -375,10 +456,10 @@ const SurveyorDetailsDashboard = () => {
 
       {/* Stats */}
       <div className="stats-wrapper">
-        <StatCard title={t("TOTAL_ASSIGNED")} value={dashboardData?.dashboardInfo?.total || 0} type="today" isLoading={isDashboardLoading} />
-        <StatCard title={t("COMPLETED")} value={dashboardData?.dashboardInfo?.completed || 0} type="week" isLoading={isDashboardLoading} />
-        <StatCard title={t("PENDING")} value={dashboardData?.dashboardInfo?.pending || 0} type="pending" isLoading={isDashboardLoading} />
-        <StatCard title={t("SUBMITTED")} value={dashboardData?.dashboardInfo?.submittedCount || 0} type="month" isLoading={isDashboardLoading} />
+        <StatCard title={t("TOTAL_ASSIGNED")} value={dashboardData?.dashboardInfo?.total || 0} type="today" isLoading={isDashboardLoading} icon={<FaUsers />} />
+        <StatCard title={t("COMPLETED")} value={dashboardData?.dashboardInfo?.completed || 0} type="week" isLoading={isDashboardLoading} icon={<FaCheckCircle />} />
+        <StatCard title={t("PENDING")} value={dashboardData?.dashboardInfo?.pending || 0} type="pending" isLoading={isDashboardLoading} icon={<FaClock />} />
+        <StatCard title={t("SUBMITTED")} value={dashboardData?.dashboardInfo?.submittedCount || 0} type="month" isLoading={isDashboardLoading} icon={<FaChartLine />} />
       </div>
 
       {/* Charts */}
@@ -424,39 +505,68 @@ const SurveyorDetailsDashboard = () => {
 
       {/* Details */}
       <div className="ekyc-dashboard-section">
-        <div className="details-grid">
-          <div className="detail-item">
-            <span className="label">{t("MOBILE")}:</span>
-            <span className="value">{surveyor?.owner?.mobileNumber || surveyor?.mobileNo || "N/A"}</span>
+        <div className="ekyc-details-wrapper">
+          {/* Left side details */}
+          <div className="details-left">
+            <div className="details-grid">
+              <div className="detail-item">
+                <span className="label">{t("MOBILE")}</span>
+                <span className="value">{surveyor?.owner?.mobileNumber || surveyor?.mobileNo || "N/A"}</span>
+              </div>
+
+              <div className="detail-item">
+                <span className="label">{t("EMAIL")}</span>
+                <span className="value">{surveyor?.owner?.emailId || "N/A"}</span>
+              </div>
+
+              <div className="detail-item">
+                <span className="label">{t("GENDER")}</span>
+                <span className="value">{surveyor?.owner?.gender || "N/A"}</span>
+              </div>
+
+              <div className="detail-item">
+                <span className="label">{t("STATUS")}</span>
+                <span className="value">{surveyor?.status || "N/A"}</span>
+              </div>
+
+              <div className="detail-item">
+                <span className="label">{t("SERVICE_TYPE")}</span>
+                <span className="value">{surveyor?.additionalDetails?.serviceType || "N/A"}</span>
+              </div>
+              
+              <div className="detail-item">
+                <span className="label">{t("VENDOR_NAME") || "Vendor Name"}</span>
+                <span className="value">{vendorName}</span>
+              </div>
+
+              <div className="detail-item">
+                <span className="label">{t("SUPERVISOR_NAME") || "Supervisor Name"}</span>
+                <span className="value">{supervisorName}</span>
+              </div>
+            </div>
           </div>
 
-          <div className="detail-item">
-            <span className="label">{t("EMAIL")}:</span>
-            <span className="value">{surveyor?.owner?.emailId || "N/A"}</span>
-          </div>
-
-          <div className="detail-item">
-            <span className="label">{t("GENDER")}:</span>
-            <span className="value">{surveyor?.owner?.gender || "N/A"}</span>
-          </div>
-
-          <div className="detail-item">
-            <span className="label">{t("STATUS")}:</span>
-            <span className="value">{surveyor?.status || "N/A"}</span>
-          </div>
-
-          <div className="detail-item">
-            <span className="label">{t("SERVICE_TYPE")}:</span>
-            <span className="value">{surveyor?.additionalDetails?.serviceType || "N/A"}</span>
-          </div>
-          <div className="detail-item">
-            <span className="label">{t("VENDOR_NAME") || "Vendor Name"}:</span>
-            <span className="value">{vendorName}</span>
-          </div>
-
-          <div className="detail-item">
-            <span className="label">{t("SUPERVISOR_NAME") || "Supervisor Name"}:</span>
-            <span className="value">{supervisorName}</span>
+          {/* Right side download card */}
+          <div className="details-right">
+            <div className="download-card">
+              <h4>{t("DOWNLOAD_EKYC_DATA") || "Download eKYC Data"}</h4>
+              <p>
+                {t("DOWNLOAD_EKYC_DATA_DESC") || 
+                 "Export the complete eKYC verification records for your assigned jurisdiction into Excel format."}
+              </p>
+              <button
+                className="download-excel-btn"
+                disabled={ekycDownloadLoading}
+                onClick={handleDownloadEkycData}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                {ekycDownloadLoading ? t("DOWNLOADING") || "Downloading..." : t("DOWNLOAD_EXCEL") || "Download Excel"}
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -471,6 +581,7 @@ const SurveyorDetailsDashboard = () => {
           totalRecords={dashboardData?.dashboardInfo?.total}
           currentPage={currentPage}
           pageSizeLimit={pageSize}
+          showAutoSerialNo={true}
           isPaginationRequired={true}
           onNextPage={() => {
             if (currentPage < (dashboardData?.dashboardInfo?.totalPages || 1) - 1) {

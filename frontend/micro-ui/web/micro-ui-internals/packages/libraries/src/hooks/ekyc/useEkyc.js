@@ -103,29 +103,29 @@ export const useEkycUpdate = (tenantId, config = {}) => {
 export const useEkycDashboardData = (role, filters = {}, config = {}) => {
   const isMock = true; // Default to mock mode as requested "moke hook"
 
-  const { data: summary, isLoading: isLoadingSummary } = useQuery(
-    ["EKYC_DASHBOARD_SUMMARY", role, filters],
-    () => (isMock ? Promise.resolve(MockDashboardData.getSummary(role, filters)) : Digit.EkycService.fetchSummary({ role, filters })),
-    config
-  );
+  // const { data: summary, isLoading: isLoadingSummary } = useQuery(
+  //   ["EKYC_DASHBOARD_SUMMARY", role, filters],
+  //   () => (isMock ? Promise.resolve(MockDashboardData.getSummary(role, filters)) : Digit.EkycService.fetchSummary({ role, filters })),
+  //   config
+  // );
 
-  const { data: agencies, isLoading: isLoadingAgencies } = useQuery(
-    ["EKYC_AGENCY_ANALYTICS", filters],
-    () => (isMock ? Promise.resolve(MockDashboardData.getAgencies(filters)) : Digit.EkycService.fetchAgencyAnalytics({ filters })),
-    config
-  );
+  // const { data: agencies, isLoading: isLoadingAgencies } = useQuery(
+  //   ["EKYC_AGENCY_ANALYTICS", filters],
+  //   () => (isMock ? Promise.resolve(MockDashboardData.getAgencies(filters)) : Digit.EkycService.fetchAgencyAnalytics({ filters })),
+  //   config
+  // );
 
-  const { data: heatmap, isLoading: isLoadingHeatmap } = useQuery(
-    ["EKYC_CLUSTER_HEATMAP", filters],
-    () => (isMock ? Promise.resolve(MockDashboardData.getClusterHeatmap(filters)) : Digit.EkycService.fetchClusterHeatmap({ filters })),
-    config
-  );
+  // const { data: heatmap, isLoading: isLoadingHeatmap } = useQuery(
+  //   ["EKYC_CLUSTER_HEATMAP", filters],
+  //   () => (isMock ? Promise.resolve(MockDashboardData.getClusterHeatmap(filters)) : Digit.EkycService.fetchClusterHeatmap({ filters })),
+  //   config
+  // );
 
-  const { data: workflow, isLoading: isLoadingWorkflow } = useQuery(
-    ["EKYC_WORKFLOW_TRACKING", filters],
-    () => (isMock ? Promise.resolve(MockDashboardData.getWorkflowTracking(filters)) : Digit.EkycService.fetchWorkflowTracking({ filters })),
-    config
-  );
+  // const { data: workflow, isLoading: isLoadingWorkflow } = useQuery(
+  //   ["EKYC_WORKFLOW_TRACKING", filters],
+  //   () => (isMock ? Promise.resolve(MockDashboardData.getWorkflowTracking(filters)) : Digit.EkycService.fetchWorkflowTracking({ filters })),
+  //   config
+  // );
 
   return {
     summary,
@@ -184,7 +184,7 @@ export const useEkycAssignmentCreate = (config = {}) => {
 };
 
 export const useEkycAssignmentProgress = (config = {}) => {
-  return useQuery(["useEkycAssignmentProgress"], (data) => Digit.EkycService.assignment_progress(data), config);
+  return useQuery(["useEkycAssignmentProgress"], () => Digit.EkycService.assignment_progress({ includeHierarchy: true }), config);
 };
 
 export const useEkycApplicationList = (data, params, config = {}) => {

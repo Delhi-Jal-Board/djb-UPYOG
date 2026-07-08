@@ -207,3 +207,119 @@ export const downloadSupervisorPDF = async ({
     }
 };
 
+export const downloadVendorPDF = async ({
+    rows,
+    vendorName,
+    mobileNumber,
+    email,
+    dashboardInfo,
+    t,
+}) => {
+    const tenantId = Digit.ULBService.getCurrentTenantId();
+
+    const name = "Delhi Jal Board";
+    const emailContact = "contact@delhijalboard.nic.in";
+    const phoneNumber = "+91-11-23538416";
+
+    const currentDate = new Date();
+    const formattedDate = currentDate.toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric"
+    });
+    const formattedTime = currentDate.toLocaleTimeString("en-IN", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false
+    });
+    const downloadDateTime = `${formattedDate} ${formattedTime}`;
+
+    const isValDefined = (val) => val !== undefined && val !== null && val !== "";
+
+    const details = [
+        {
+            title: t("VENDOR_DETAILS") || "Vendor Details",
+            asSectionHeader: true,
+            values: [
+                { title: t("VENDOR_NAME") || "Vendor Name", value: vendorName },
+                { title: t("MOBILE_NUMBER") || "Mobile Number", value: mobileNumber },
+                { title: t("EMAIL") || "Email", value: email }
+            ].filter((item) => isValDefined(item.value)),
+        },
+        {
+            title: t("SUMMARY_STATISTICS") || "Summary Statistics",
+            asSectionHeader: true,
+            values: [
+                { title: t("TOTAL_ASSIGNED") || "Total Assigned", value: dashboardInfo?.total || 0 },
+                { title: t("COMPLETED") || "Completed", value: dashboardInfo?.completed || 0 },
+                { title: t("PENDING") || "Pending", value: dashboardInfo?.pending || 0 },
+                { title: t("SUBMITTED") || "Submitted", value: dashboardInfo?.submittedCount || 0 },
+            ].filter((item) => isValDefined(item.value)),
+        },
+    ];
+
+    // Map rows from supervisors format to the table template format
+    const mappedRows = rows.map((row) => ({
+        kno: row.name || "N/A",
+        firstName: row.mobileNo || "N/A",
+        lastName: "",
+        mobileNo: row.status || "N/A",
+        zoneName: String(row.total || 0),
+        ekycStatus: `${row.completed || 0} / ${row.pending || 0}`,
+        submittedAt: 1717171717171, // dummy date
+        progress: row.progress || "0%",
+    }));
+
+    // Intercept Hindi date formatting to show overall progress
+    const originalToLocaleDateString = Date.prototype.toLocaleDateString;
+    let progressIndex = 0;
+    Date.prototype.toLocaleDateString = function (...args) {
+        if (progressIndex < mappedRows.length) {
+            return mappedRows[progressIndex++].progress || "0%";
+        }
+        return originalToLocaleDateString.apply(this, args);
+    };
+
+    // Custom translator to rewrite headers
+    const customT = (key) => {
+        if (key === "KNO") return t("SUPERVISOR_NAME") || "Supervisor Name";
+        if (key === "CONSUMER") return t("MOBILE_NUMBER") || "Mobile Number";
+        if (key === "MOBILE") return t("STATUS") || "Status";
+        if (key === "ZONE") return t("TOTAL_EKYC_APPLICATIONS") || "Total eKYC Applications";
+        if (key === "EKYC_STATUS") return t("COMPLETED_PENDING") || "Completed / Pending";
+        if (key === "SUBMITTED_DATE") return t("OVERALL_PROGRESS") || "Overall Progress";
+        if (key === "CONSUMER_LIST") return t("CONNECTED_SUPERVISORS") || "Connected Supervisors";
+        return t(key);
+    };
+
+    try {
+        if (
+            window.Digit &&
+            window.Digit.Utils &&
+            window.Digit.Utils.pdf &&
+            window.Digit.Utils.pdf.generateSurveyorReport
+        ) {
+            window.Digit.Utils.pdf.generateSurveyorReport({
+                tenantId,
+                logo: null,
+                name,
+                email: emailContact,
+                phoneNumber,
+                heading: t("EKYC_VENDOR_REPORT") || "eKYC Vendor Report",
+                details,
+                applicationNumber: mobileNumber,
+                rows: mappedRows,
+                t: customT,
+                hideApplicationNumber: true,
+                downloadTime: downloadDateTime,
+            });
+        } else {
+            console.error("Digit.Utils.pdf.generateSurveyorReport is not available");
+        }
+    } finally {
+        Date.prototype.toLocaleDateString = originalToLocaleDateString;
+    }
+};
+
+

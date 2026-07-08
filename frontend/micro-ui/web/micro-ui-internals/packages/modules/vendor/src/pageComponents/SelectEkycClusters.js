@@ -16,7 +16,7 @@ const SelectEkycClusters = ({ config, onSelect, t, formData }) => {
     let allClusters = [];
     if (selectedZones.length > 0 && Array.isArray(boundaries) && boundaries.length > 0) {
       selectedZones.forEach((zone) => {
-        const zoneBoundary = boundaries.find((b) => b.code === zone.code);
+        const zoneBoundary = boundaries.find((b) => b.code === (zone?.code || zone));
         const children = zoneBoundary?.children || zoneBoundary?.boundary || [];
         if (Array.isArray(children)) {
           children.forEach((child) => {
@@ -41,10 +41,12 @@ const SelectEkycClusters = ({ config, onSelect, t, formData }) => {
 
       if (selectedZones.length > 0) {
         selectedZones.forEach((z) => {
-          if (staticClusters[z.code]) {
-            allClusters = [...allClusters, ...staticClusters[z.code]];
+          const zCode = z?.code || z;
+          const zName = z?.name || z;
+          if (staticClusters[zCode]) {
+            allClusters = [...allClusters, ...staticClusters[zCode]];
           } else {
-            allClusters.push({ code: `${z.code}-C1`, name: `${z.name} Cluster 1` });
+            allClusters.push({ code: `${zCode}-C1`, name: `${zName} Cluster 1` });
           }
         });
       } else {

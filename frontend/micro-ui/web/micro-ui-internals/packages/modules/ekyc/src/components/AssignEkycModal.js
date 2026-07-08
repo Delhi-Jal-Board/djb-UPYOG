@@ -128,6 +128,7 @@ const AssignEkycModal = ({ surveyor, closeModal, refetchDashboard }) => {
 
   const { data: applicationData, isFetching: isLoading } = Digit.Hooks.ekyc.useEkycApplicationList(
     {
+      unassignedOnly: true,
       /*
       ...(debouncedFilters.kno && {
         kno: debouncedFilters.kno,

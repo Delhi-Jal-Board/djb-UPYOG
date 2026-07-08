@@ -49,6 +49,13 @@ const Home = () => {
     });
   }
 
+  if (roles.includes("EKYC_VENDOR")) {
+    propsForModuleCard.links.push({
+      label: t("EKYC_VENDOR_DASHBOARD"),
+      link: `/digit-ui/citizen/ekyc/vendor-dashboard`,
+    });
+  }
+
   if (roles.includes("EKYC_SUPERVISOR") || roles.includes("EKYC_VENDOR")) {
     propsForModuleCard.links.push({
       label: t("TITLE_VENDOR_MANAGEMENT"),
