@@ -128,6 +128,7 @@ public class WaterRowMapper implements ResultSetExtractor<List<WaterConnection>>
 		addHoldersDeatilsToWaterConnection(rs, waterConnection);
 		addRoadCuttingInfotToWaterConnection(rs, waterConnection);
 		addDueVerificationToWaterConnection(rs, waterConnection);
+		addInspectionInformationToWaterConnection(rs, waterConnection);
 	}
 
 	private void addDocumentToWaterConnection(ResultSet rs, WaterConnection waterConnection) throws SQLException {
@@ -237,5 +238,31 @@ public class WaterRowMapper implements ResultSetExtractor<List<WaterConnection>>
 		if (waterConnection.getDueVerification() == null)
 			waterConnection.setDueVerification(new ArrayList<>());
 		waterConnection.getDueVerification().add(dv);
+	}
+
+	private void addInspectionInformationToWaterConnection(ResultSet rs, WaterConnection waterConnection) throws SQLException {
+		String inspectionType = rs.getString("insp_inspection_type");
+		if (StringUtils.isEmpty(inspectionType))
+			return;
+
+		if (waterConnection.getInspectionInformation() != null)
+			return;
+
+		InspectionType type = InspectionType.builder()
+				.code(inspectionType)
+				.build();
+
+		Long inspectionDate = rs.getLong("insp_inspection_date");
+		if (rs.wasNull()) {
+			inspectionDate = null;
+		}
+
+		InspectionInformation inspectionInformation = InspectionInformation.builder()
+				.inspectionType(type)
+				.inspectionDate(inspectionDate)
+				.inspectorName(rs.getString("insp_inspector_name"))
+				.build();
+
+		waterConnection.setInspectionInformation(inspectionInformation);
 	}
 }
