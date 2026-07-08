@@ -52,7 +52,7 @@ public class WsQueryBuilder {
 			+ " plumber.name as plumber_name, plumber.licenseno, roadcuttingInfo.id as roadcutting_id, roadcuttingInfo.roadtype as roadcutting_roadtype, roadcuttingInfo.roadcuttingarea as roadcutting_roadcuttingarea, roadcuttingInfo.roadcuttingarea as roadcutting_roadcuttingarea,"
 			+ " roadcuttingInfo.active as roadcutting_active, plumber.mobilenumber as plumber_mobileNumber, plumber.gender as plumber_gender, plumber.fatherorhusbandname, plumber.correspondenceaddress,"
 			+ " plumber.relationship, " + holderSelectValues
-			+ ", dv.kno as dv_kno, dv.fullname as dv_fullname, dv.fulladdress as dv_fulladdress, dv.dueamount as dv_dueamount, dv.totalamount as dv_totalamount"
+			+ ", dv.kno as dv_kno, dv.fullname as dv_fullname, dv.fulladdress as dv_fulladdress, dv.dueamount as dv_dueamount, dv.totalamount as dv_totalamount, dv.remarks as dv_remarks"
 			+ ", insp.inspection_type as insp_inspection_type, insp.inspection_date as insp_inspection_date, insp.inspector_name as insp_inspector_name"
 			+ " FROM {schema}.eg_ws_connection conn "
 			+  INNER_JOIN_STRING 
