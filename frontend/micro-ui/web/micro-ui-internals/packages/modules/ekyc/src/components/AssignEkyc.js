@@ -3,6 +3,7 @@ import { InboxComposer } from "@djb25/digit-ui-react-components";
 import SupervisorInboxTableConfig from "../hook/SupervisorInboxTableConfig";
 import SearchFormFieldsComponents from "./SearchFormFieldsComponent";
 import { formInitValue, formReducer } from "../../../vendor/src/config/tableConfig";
+import { FaUsers, FaCheckCircle, FaClock, FaChartLine, FaMapMarkedAlt } from "react-icons/fa";
 
 // Mock data removed in favor of API integration
 
@@ -185,33 +186,43 @@ const AssignEkyc = () => {
       color: "#0B2559",
       filter: null,
       active: true,
+      type: "today",
+      icon: <FaUsers />,
     },
     {
       label: "TOTAL_ASSIGNMENTS",
       count: data?.totalAssignments || 0,
       color: "#3B82F6",
       filter: ["ASSIGNED"],
+      type: "week",
+      icon: <FaMapMarkedAlt />,
     },
     {
       label: "EKYC_COMPLETED",
       count: data?.completedKnos || 0,
       color: "#10B981",
       filter: ["COMPLETED"],
+      type: "month",
+      icon: <FaCheckCircle />,
     },
     {
       label: "PENDING_APPLICATIONS",
       count: (data?.totalKnos || 0) - (data?.completedKnos || 0),
       color: "#F59E0B",
       filter: ["PENDING"],
+      type: "pending",
+      icon: <FaClock />,
     },
     {
       label: "OVERALL_PROGRESS",
       count: `${data?.overallProgressPercent || 0}%`,
       color: "#A855F7",
       filter: ["IN_PROGRESS"],
+      type: "progress",
+      icon: <FaChartLine />,
     },
   ];
-  
+
 
   return (
     <div className="app-container">
@@ -226,7 +237,7 @@ const AssignEkyc = () => {
           // propsForInboxMobileCards,
           formState,
           countData: dashboardData?.dashboardInfo,
-          cards,
+          // cards,
           isCardLoading: isDataSearchLoading,
         }}
       />

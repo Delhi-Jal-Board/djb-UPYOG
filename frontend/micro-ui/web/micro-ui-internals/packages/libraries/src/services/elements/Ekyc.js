@@ -107,6 +107,8 @@ export const EkycService = {
     pincode = null,
     mrkey = null,
     surveyorId = null,
+    unassignedOnly = null,
+    reportDownload = null,
   } = {}) =>
     Request({
       url: Urls.ekyc.application_list,
@@ -128,6 +130,8 @@ export const EkycService = {
         pincode,
         mrkey,
         surveyorId,
+        unassignedOnly,
+        reportDownload,
       },
     }),
   assignment_create: async ({ tenantId = "dl.djb", surveyorId, assignmentType, assignmentValue, assignmentValues } = {}) => {
@@ -152,7 +156,7 @@ export const EkycService = {
 
     return response;
   },
-  assignment_progress: async ({ tenantId = "dl.djb" }) => {
+  assignment_progress: async ({ tenantId = "dl.djb", includeHierarchy = true } = {}) => {
     const response = await Request({
       url: Urls.ekyc.assignment_progress,
       method: "POST",
@@ -160,6 +164,7 @@ export const EkycService = {
       userService: true,
       useCache: false,
       params: { tenantId },
+      data: { includeHierarchy }
     });
 
     if (response?.error) {

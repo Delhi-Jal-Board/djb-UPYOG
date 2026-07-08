@@ -17,7 +17,7 @@ const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true }
       setSelectedZones(Array.isArray(formData?.zoneIds) ? zones.filter((ele) => formData.zoneIds.includes(ele.code)) : []);
     } else {
       const selected = zones.find((ele) => {
-        return ele.code === formData?.zoneIds;
+        return ele.code === formData?.zoneIds || ele.name === formData?.zoneIds;
       });
 
       setSelectedZones(selected ? [selected] : []);
@@ -52,7 +52,7 @@ const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true }
 
       setSelectedZones(selectedZone ? [selectedZone] : []);
 
-      onSelect(config.key, selectedZone?.code || "");
+      onSelect(config.key, selectedZone?.name || "");
     }
   };
 

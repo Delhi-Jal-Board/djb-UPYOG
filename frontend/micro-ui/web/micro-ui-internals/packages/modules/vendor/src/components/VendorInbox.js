@@ -96,6 +96,12 @@ const getSelectedVendorOption = (row = {}, vendors = []) => {
   return vendors.find((vendor) => vendor?.id === selectedVendorId) || row?.vendor || row?.vendorData || null;
 };
 
+const getSelectedSupervisorOption = (row = {}, supervisorsList = []) => {
+  const supervisorId = row?.supervisorId;
+  if (!supervisorId) return null;
+  return supervisorsList.find((s) => s.id === supervisorId || s.owner?.uuid === supervisorId) || null;
+};
+
 const getVendorFillingPoints = (vendor = {}) => {
   const fillingPointOptions = [
     ...(Array.isArray(vendor?.fillingPoint) ? vendor.fillingPoint : [vendor?.fillingPoint]),
@@ -289,7 +295,7 @@ const VendorInbox = (props) => {
   const { mutate: mutateDriver } = Digit.Hooks.fsm.useDriverUpdate(tenantId);
 
   // const { mutate: mutateSupervisor } = Digit.Hooks.fsm.useSupervisorUpdate(tenantId);
-  // const { mutate: mutateSurveyor } = Digit.Hooks.fsm.useSurveyorUpdate(tenantId);
+  const { mutate: mutateSurveyor } = Digit.Hooks.fsm.useSurveyorUpdate(tenantId);
 
   useEffect(() => {
     setTableData(props?.data?.table || []);
@@ -681,6 +687,37 @@ const VendorInbox = (props) => {
     });
   };
 
+  const onSurveyorSupervisorSelect = (row, selectedSupervisor) => {
+    let formDetails = row.original;
+    const formData = {
+      surveyor: {
+        ...formDetails,
+        supervisorId: selectedSupervisor?.id || selectedSupervisor?.owner?.uuid || null,
+        owner: {
+          ...formDetails?.owner,
+          gender: formDetails?.owner?.gender || "OTHERS",
+          dob: formDetails?.owner?.dob || new Date(`1/1/1970`).getTime(),
+          emailId: formDetails?.owner?.emailId || "abc@egov.com",
+          relationship: formDetails?.owner?.relationship || "OTHER",
+        },
+      },
+    };
+
+    mutateSurveyor(formData, {
+      onError: (error) => {
+        setShowToast({
+          key: "error",
+          label: error?.message || error || t("ES_FSM_REGISTRY_INBOX_FAILED_TO_UPDATE_SUPERVISOR"),
+        });
+      },
+      onSuccess: () => {
+        setShowToast({ key: "success", label: t("ES_FSM_REGISTRY_INBOX_SUPERVISOR_MAPPED_SUCCESSFULLY") });
+        queryClient.invalidateQueries(t("SURVEYOR_SEARCH"));
+        props.refetchData();
+      },
+    });
+  };
+
   //on search if the card is empty then it will
   const onSelectAdd = () => {
     switch (props.selectedTab) {
@@ -722,6 +759,20 @@ const VendorInbox = (props) => {
   );
 
   const allFillingPoints = allFillingPointsData?.fillingPoints || [];
+
+  const { data: supervisorSearchResponse } = Digit.Hooks.fsm.useSupervisorSearch(
+    tenantId,
+    { status: "ACTIVE" },
+    { enabled: props.selectedTab === "SURVEYOR" }
+  );
+
+  const supervisors = React.useMemo(() => {
+    const list = supervisorSearchResponse?.supervisors || supervisorSearchResponse?.supervisor || [];
+    return list.map((s) => ({
+      ...s,
+      displayName: `${s.name || s.owner?.name || "N/A"} (${s.owner?.mobileNumber || s.mobileNo || "N/A"})`,
+    }));
+  }, [supervisorSearchResponse]);
 
   //used for columns in table
   const columns = React.useMemo(() => {
@@ -840,40 +891,40 @@ const VendorInbox = (props) => {
           // },
           ...(!(userType !== "CITIZEN" && isEkycRole)
             ? [
-                {
-                  Header: t("ES_VENDOR_ADDITIONAL_DETAILS"),
-                  disableSortBy: true,
-                  Cell: ({ row }) => {
-                    const vendorId = row.original?.id;
+              {
+                Header: t("ES_VENDOR_ADDITIONAL_DETAILS"),
+                disableSortBy: true,
+                Cell: ({ row }) => {
+                  const vendorId = row.original?.id;
 
-                    // Guard: if data not yet loaded, show a neutral state
-                    if (!additionalVendorData) {
-                      return <span>Loading...</span>;
-                    }
+                  // Guard: if data not yet loaded, show a neutral state
+                  if (!additionalVendorData) {
+                    return <span>Loading...</span>;
+                  }
 
-                    const hasDetails = row.original?.vendorAdditionalDetails !== null;
-                    return (
-                      <Link
-                        to={
-                          hasDetails
-                            ? `/digit-ui/${userType}/vendor/registry/additionaldetails/info?vendorId=` + vendorId
-                            : `/digit-ui/${userType}/vendor/registry/additionaldetails/vendor-details?vendorId=` + vendorId
-                        }
+                  const hasDetails = row.original?.vendorAdditionalDetails !== null;
+                  return (
+                    <Link
+                      to={
+                        hasDetails
+                          ? `/digit-ui/${userType}/vendor/registry/additionaldetails/info?vendorId=` + vendorId
+                          : `/digit-ui/${userType}/vendor/registry/additionaldetails/vendor-details?vendorId=` + vendorId
+                      }
+                    >
+                      <button
+                        className="submit-bar"
+                        style={{
+                          backgroundColor: hasDetails ? "#417505" : "#3A8DCC",
+                          color: "white",
+                        }}
                       >
-                        <button
-                          className="submit-bar"
-                          style={{
-                            backgroundColor: hasDetails ? "#417505" : "#3A8DCC",
-                            color: "white",
-                          }}
-                        >
-                          {hasDetails ? "View Details" : "Add Details"}
-                        </button>
-                      </Link>
-                    );
-                  },
-                }
-              ]
+                        {hasDetails ? "View Details" : "Add Details"}
+                      </button>
+                    </Link>
+                  );
+                },
+              }
+            ]
             : []),
 
           ...(!isEkycRole
@@ -1191,8 +1242,22 @@ const VendorInbox = (props) => {
             ? [
               {
                 Header: t("ES_FSM_REGISTRY_INBOX_SUPERVISOR_NAME"),
+                id: "supervisor",
                 accessor: (row) => row.supervisorName || row.reportingManager?.name || "NA",
-                Cell: ({ row }) => <div>{row.original?.supervisorName || row.original?.reportingManager?.name || "NA"}</div>,
+                Cell: ({ row }) => {
+                  return (
+                    <Dropdown
+                      className="fsm-registry-dropdown"
+                      selected={getSelectedSupervisorOption(row.original, supervisors)}
+                      option={supervisors}
+                      select={(value) => onSurveyorSupervisorSelect(row, value)}
+                      optionKey="displayName"
+                      t={t}
+                      style={{ textAlign: "left", width: "100%", minWidth: "250px" }}
+                      disable={!supervisors.length}
+                    />
+                  );
+                },
               },
             ]
             : []),
@@ -1232,7 +1297,7 @@ const VendorInbox = (props) => {
         return [];
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props.selectedTab, vendors, drivers, tableData, additionalVendorData, allFillingPoints, t]);
+  }, [props.selectedTab, vendors, drivers, tableData, additionalVendorData, allFillingPoints, supervisors, t]);
 
   const csvExportColumns = React.useMemo(() => {
     switch (props.selectedTab) {
@@ -1341,7 +1406,10 @@ const VendorInbox = (props) => {
           },
           {
             Header: t("ES_FSM_REGISTRY_INBOX_SUPERVISOR_NAME"),
-            exportAccessor: (row) => row?.supervisorName || row?.reportingManager?.name || "NA",
+            exportAccessor: (row) => {
+              const selectedSupervisor = getSelectedSupervisorOption(row, supervisors);
+              return selectedSupervisor ? (selectedSupervisor.name || selectedSupervisor.owner?.name) : (row?.supervisorName || row?.reportingManager?.name || "NA");
+            },
           },
           {
             Header: t("ES_FSM_REGISTRY_INBOX_DATE_DRIVER_CREATION"),
@@ -1404,7 +1472,7 @@ const VendorInbox = (props) => {
       default:
         return [];
     }
-  }, [props.selectedTab, t]);
+  }, [props.selectedTab, supervisors, t]);
 
   const getCSVExportData = React.useCallback(async () => tableData, [tableData]);
 

@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Switch, useLocation } from "react-router-dom";
 import Dashboard from "../../components/Dashboard";
 import CeoDashboard from "../../components/CeoDashboard.jsx";
-import VendorDetails from "../../components/VendorDetails.jsx";
+import VendorDetailsCard from "../../components/VendorDetailsCard.js";
 import Inbox from "./Inbox";
 import Mapping from "./Mapping";
 import Create from "./Create";
@@ -12,6 +12,7 @@ import Review from "../../components/Review";
 import EKYCForm from "./EKYCForm";
 import SurveyorDetailsCard from "../../components/SurveyorDetailsCard.js";
 import AssignEkyc from "../../components/AssignEkyc.js";
+import AdminDashboard from "../../components/AdminDashboard.js";
 
 const EmployeeApp = ({ path }) => {
   const { t } = useTranslation();
@@ -49,6 +50,8 @@ const EmployeeApp = ({ path }) => {
       crumbs.push({ label: t("EKYC_ASSIGN") });
     } else if (pathname.includes("/ceo-dashboard")) {
       crumbs.push({ label: t("CEO_M.F_DOR_FINANCE_VIEW") });
+    } else if (pathname.includes("/admin-dashboard")) {
+      crumbs.push({ label: t("EKYC_ADMIN_DASHBOARD") || "Admin Dashboard" });
     } else if (pathname.includes("/vendors/")) {
       crumbs.push({ label: t("EKYC_VENDOR_DETAILS") });
     } else if (pathname.includes("/mapping")) {
@@ -162,10 +165,19 @@ const EmployeeApp = ({ path }) => {
             />
 
             <PrivateRoute
+              path={`${path}/admin-dashboard`}
+              component={() => (
+                <LayoutWrapper layoutClass="normal">
+                  <AdminDashboard />
+                </LayoutWrapper>
+              )}
+            />
+
+            <PrivateRoute
               path={`${path}/vendors/:vendorId`}
               component={() => (
                 <LayoutWrapper layoutClass="normal">
-                  <VendorDetails />
+                  <VendorDetailsCard />
                 </LayoutWrapper>
               )}
             />

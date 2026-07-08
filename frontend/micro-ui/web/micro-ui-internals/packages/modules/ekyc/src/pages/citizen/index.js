@@ -11,7 +11,7 @@ import Inbox from "./Inbox";
 import AssignEkyc from "../../components/AssignEkyc";
 import SurveyorDetailsCard from "../../components/SurveyorDetailsCard";
 import SupervisorDetailsCard from "../../components/SupervisorDetailsCard";
-import VendorDetails from "../../components/VendorDetails";
+import VendorDetailsCard from "../../components/VendorDetailsCard";
 import EkycStatus from "./EkycStatus";
 
 const CitizenApp = () => {
@@ -54,6 +54,8 @@ const CitizenApp = () => {
       crumbs.push({ label: t("EKYC_SUPERVISOR_DASHBOARD") });
     } else if (pathname.includes("/surveyor-dashboard")) {
       crumbs.push({ label: t("EKYC_SURVEYOR_DASHBOARD") });
+    } else if (pathname.includes("/vendor-dashboard")) {
+      crumbs.push({ label: t("EKYC_VENDOR_DASHBOARD") || "Vendor Dashboard" });
     } else if (pathname.includes("/dashboard")) {
       crumbs.push({ label: t("EKYC_DASHBOARD") });
     } else if (pathname.includes("/assign")) {
@@ -139,10 +141,10 @@ const CitizenApp = () => {
             )}
           />
           <PrivateRoute
-            path={`${path}/dashboard`}
+            path={[`${path}/vendor-dashboard/:vendorId`, `${path}/vendor-dashboard`, `${path}/dashboard`]}
             component={() => (
               <LayoutWrapper layoutClass="normal">
-                <VendorDetails />
+                <VendorDetailsCard />
               </LayoutWrapper>
             )}
           />
