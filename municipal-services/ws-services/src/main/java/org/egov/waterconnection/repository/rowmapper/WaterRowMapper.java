@@ -233,6 +233,7 @@ public class WaterRowMapper implements ResultSetExtractor<List<WaterConnection>>
 				.fullAddress(rs.getString("dv_fulladdress"))
 				.dueAmount(rs.getString("dv_dueamount"))
 				.totalAmount(rs.getString("dv_totalamount"))
+				.remarks(rs.getString("dv_remarks"))
 				.build();
 
 		if (waterConnection.getDueVerification() == null)
