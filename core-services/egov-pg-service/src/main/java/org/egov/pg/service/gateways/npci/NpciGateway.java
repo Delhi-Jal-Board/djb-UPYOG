@@ -26,6 +26,8 @@ import java.util.*;
 @Slf4j
 public class NpciGateway implements Gateway {
 
+    public static final Map<String, String> MOCK_STATUSES = new java.util.concurrent.ConcurrentHashMap<>();
+
     private static final String GATEWAY_NAME = "NPCI";
 
     private final boolean ACTIVE;
@@ -68,11 +70,27 @@ public class NpciGateway implements Gateway {
         log.info("NpciGateway: Generating redirect URI for txnId={}", transaction.getTxnId());
 
         if (SANDBOX) {
-            log.info("NpciGateway: Sandbox mode enabled, bypassing gateway redirect");
-            String callbackUrl = transaction.getCallbackUrl();
-            String separator = callbackUrl.contains("?") ? "&" : "?";
-            String redirectUrl = callbackUrl + separator + "eg_pg_txnid=" + transaction.getTxnId();
-            return URI.create(redirectUrl);
+            log.info("NpciGateway: Sandbox mode enabled, redirecting to mock payment page");
+            String basePgServiceUrl = "";
+            try {
+                URI uri = URI.create(REDIRECT_URL);
+                basePgServiceUrl = uri.getScheme() + "://" + uri.getAuthority();
+            } catch (Exception e) {
+                log.error("NpciGateway: Failed to parse REDIRECT_URL for base domain, falling back to localhost", e);
+                basePgServiceUrl = "http://localhost:8080";
+            }
+            try {
+                String redirectUrl = basePgServiceUrl + "/pg-service/transaction/v1/npci/mock-payment" 
+                        + "?txnId=" + transaction.getTxnId()
+                        + "&amount=" + transaction.getTxnAmount()
+                        + "&callbackUrl=" + java.net.URLEncoder.encode(transaction.getCallbackUrl(), "UTF-8");
+                return URI.create(redirectUrl);
+            } catch (Exception e) {
+                log.error("NpciGateway: Failed to encode redirect callback URL", e);
+                String callbackUrl = transaction.getCallbackUrl();
+                String separator = callbackUrl.contains("?") ? "&" : "?";
+                return URI.create(callbackUrl + separator + "eg_pg_txnid=" + transaction.getTxnId());
+            }
         }
 
         String returnUrl = getReturnUrl(transaction.getCallbackUrl(), REDIRECT_URL);
@@ -139,9 +157,14 @@ public class NpciGateway implements Gateway {
         log.info("NpciGateway: Fetching status for txnId={}", currentStatus.getTxnId());
 
         if (SANDBOX) {
-            log.info("NpciGateway: Sandbox mode enabled, returning mock SUCCESS status");
+            log.info("NpciGateway: Sandbox mode enabled, returning mock status");
+            String mockStatus = MOCK_STATUSES.remove(currentStatus.getTxnId());
+            if (mockStatus == null) {
+                mockStatus = "SUCCESS"; // default fallback
+            }
+            log.info("NpciGateway: Retrieved mock status '{}' for txnId={}", mockStatus, currentStatus.getTxnId());
             Map<String, Object> mockResponse = new HashMap<>();
-            mockResponse.put("status", "SUCCESS");
+            mockResponse.put("status", mockStatus);
             mockResponse.put("txnId", "NPCI_MOCK_" + UUID.randomUUID().toString());
             mockResponse.put("amount", currentStatus.getTxnAmount());
             mockResponse.put("paymentMode", "UPI");
