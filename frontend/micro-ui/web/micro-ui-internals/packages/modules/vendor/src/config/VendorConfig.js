@@ -3,8 +3,8 @@ import { convertEpochToDate } from "../utils";
 import { DatePicker } from "@djb25/digit-ui-react-components";
 // const { DatePicker } = require("@djb25/digit-ui-react-components");
 
-const VendorConfig = (t, disabled = false, formData = {}) => {
-  const isEkyc = formData?.serviceType?.code === "EKYC";
+const VendorConfig = (t, module = "", genderMenu, update) => {
+  const isEkyc = module?.toLocaleUpperCase() === "EKYC";
 
   return [
     {
@@ -16,7 +16,7 @@ const VendorConfig = (t, disabled = false, formData = {}) => {
           label: "ES_FSM_REGISTRY_NEW_VENDOR_NAME",
           isMandatory: true,
           type: "text",
-          disable: disabled,
+          disable: false,
           populators: {
             name: "vendorName",
             validation: {
@@ -24,6 +24,24 @@ const VendorConfig = (t, disabled = false, formData = {}) => {
               pattern: /^[A-Za-z\s.,/]+$/,
             },
             error: t("FSM_REGISTRY_INVALID_NAME"),
+            defaultValue: "",
+            className: "payment-form-text-input-correction",
+          },
+        },
+        {
+          label: "ES_FSM_REGISTRY_NEW_VENDOR_PHONE",
+          isMandatory: true,
+          type: "mobileNumber",
+          key: "phone",
+          disable: false,
+          populators: {
+            name: "phone",
+            validation: {
+              required: true,
+              pattern: /^[6-9]\d{9}$/,
+            },
+            labelStyle: { border: "1px solid black", borderRight: "none" },
+            error: t("FSM_REGISTRY_INVALID_PHONE"),
             defaultValue: "",
             className: "payment-form-text-input-correction",
           },
@@ -45,30 +63,12 @@ const VendorConfig = (t, disabled = false, formData = {}) => {
           },
         },
         {
-          label: "ES_FSM_REGISTRY_NEW_VENDOR_PHONE",
-          isMandatory: true,
-          type: "mobileNumber",
-          key: "phone",
-          disable: disabled,
-          populators: {
-            name: "phone",
-            validation: {
-              required: true,
-              pattern: /^[6-9]\d{9}$/,
-            },
-            labelStyle: { border: "1px solid black", borderRight: "none" },
-            error: t("FSM_REGISTRY_INVALID_PHONE"),
-            defaultValue: "",
-            className: "payment-form-text-input-correction",
-          },
-        },
-        {
           label: "ES_VENDOR_REGISTRY_SERVICE_TYPE",
           isMandatory: true,
           type: "component",
           key: "serviceType",
           component: "SelectServiceType",
-          disable: disabled,
+          disable: update,
           populators: {
             name: "serviceType",
             defaultValue: {
@@ -84,97 +84,93 @@ const VendorConfig = (t, disabled = false, formData = {}) => {
         },
         ...(isEkyc
           ? [
-            {
-              label: "ES_VENDOR_CONTRACT_START_DATE",
-              isMandatory: true,
-              type: "custom",
-              key: "contractStartDate",
-              populators: {
-                name: "contractStartDate",
-                validation: {
-                  required: true,
+              {
+                label: "ES_VENDOR_CONTRACT_START_DATE",
+                isMandatory: true,
+                type: "custom",
+                key: "contractStartDate",
+                populators: {
+                  name: "contractStartDate",
+                  validation: {
+                    required: true,
+                  },
+                  component: (props, customProps) => <DatePicker onChange={props.onChange} date={props.value} {...customProps} />,
                 },
-                component: (props, customProps) => <DatePicker onChange={props.onChange} date={props.value} {...customProps} />,
               },
-            },
-            {
-              label: "ES_VENDOR_CONTRACT_END_DATE",
-              isMandatory: true,
-              type: "custom",
-              key: "contractEndDate",
-              populators: {
-                name: "contractEndDate",
-                validation: {
-                  required: true,
+              {
+                label: "ES_VENDOR_CONTRACT_END_DATE",
+                isMandatory: true,
+                type: "custom",
+                key: "contractEndDate",
+                populators: {
+                  name: "contractEndDate",
+                  validation: {
+                    required: true,
+                  },
+                  component: (props, customProps) => <DatePicker onChange={props.onChange} date={props.value} {...customProps} />,
                 },
-                component: (props, customProps) => <DatePicker onChange={props.onChange} date={props.value} {...customProps} />,
               },
-            },
-            {
-              label: "ES_VENDOR_ZONE",
-              isMandatory: true,
-              type: "component",
-              key: "zoneIds",
-              component: "SelectEkycZones",
-            },
-            // {
-            //   label: "ES_VENDOR_CLUSTER",
-            //   isMandatory: true,
-            //   type: "component",
-            //   key: "clusterIds",
-            //   component: "SelectEkycClusters",
-            // },
-            {
-              label: "ES_FSM_REGISTRY_NEW_OWNER_NAME",
-              isMandatory: true,
-              type: "text",
-              populators: {
-                name: "ownerName",
-                validation: {
-                  required: true,
-                  pattern: /^[A-Za-z\s.,/]+$/,
+              {
+                label: "ES_VENDOR_ZONE",
+                isMandatory: true,
+                type: "component",
+                key: "zoneIds",
+                component: "SelectEkycZones",
+              },
+              // {
+              //   label: "ES_VENDOR_CLUSTER",
+              //   isMandatory: true,
+              //   type: "component",
+              //   key: "clusterIds",
+              //   component: "SelectEkycClusters",
+              // },
+              {
+                label: "ES_FSM_REGISTRY_NEW_OWNER_NAME",
+                isMandatory: true,
+                type: "text",
+                populators: {
+                  name: "ownerName",
+                  validation: {
+                    required: true,
+                    pattern: /^[A-Za-z\s.,/]+$/,
+                  },
+                  error: t("FSM_REGISTRY_INVALID_NAME"),
+                  className: "payment-form-text-input-correction",
                 },
-                error: t("FSM_REGISTRY_INVALID_NAME"),
-                className: "payment-form-text-input-correction",
               },
-            },
-            {
-              label: "ES_FSM_REGISTRY_NEW_GENDER",
-              isMandatory: true,
-              type: "component",
-              key: "gender",
-              component: "SelectEkycDropdown",
-              populators: {
-                name: "gender",
-                options: [
-                  { code: "MALE", name: "ES_COMMON_GENDER_MALE" },
-                  { code: "FEMALE", name: "ES_COMMON_GENDER_FEMALE" },
-                  { code: "OTHER", name: "ES_COMMON_GENDER_OTHER" },
-                ],
-                optionsKey: "name",
-              },
-            },
-            {
-              label: "ES_FSM_REGISTRY_NEW_DOB",
-              isMandatory: true,
-              type: "custom",
-              key: "dob",
-              populators: {
-                name: "dob",
-                validation: {
-                  required: true,
+              {
+                label: "ES_FSM_REGISTRY_NEW_GENDER",
+                isMandatory: true,
+                type: "component",
+                key: "gender",
+                component: "SelectEkycDropdown",
+                populators: {
+                  name: "gender",
+                  options: genderMenu,
+                  optionsKey: "i18nKey",
                 },
-                component: (props, customProps) => (
-                  <DatePicker
-                    onChange={props.onChange}
-                    date={props.value}
-                    {...customProps}
-                    max={convertEpochToDate(new Date().setFullYear(new Date().getFullYear()))}
-                  />
-                ),
               },
-            },
-          ]
+              {
+                label: "ES_FSM_REGISTRY_NEW_DOB",
+                isMandatory: true,
+                type: "custom",
+                key: "dob",
+                populators: {
+                  name: "dob",
+                  validation: {
+                    required: true,
+                  },
+                  component: (props, customProps) => (
+                    <DatePicker
+                      onChange={props.onChange}
+                      date={props.value}
+                      {...customProps}
+                      max={convertEpochToDate(new Date().setFullYear(new Date().getFullYear()))}
+                    />
+                  ),
+                },
+              },
+            ]
           : []),
       ],
     },
