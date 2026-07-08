@@ -237,7 +237,12 @@ const ActionModal = ({
       const inspectionInformationData = sessionStorage.getItem("Digit.INSPECTION_INFORMATION_DATA");
       if (inspectionInformationData) {
         try {
-          applicationData.inspectionInformation = JSON.parse(inspectionInformationData);
+          const parsedInspectionData = JSON.parse(inspectionInformationData);
+          if (parsedInspectionData?.inspectionDate) {
+            const dateVal = parsedInspectionData.inspectionDate;
+            parsedInspectionData.inspectionDate = typeof dateVal === 'string' ? new Date(dateVal).getTime() : dateVal;
+          }
+          applicationData.inspectionInformation = parsedInspectionData;
         } catch(e) {
           console.error("Error parsing inspection information data", e);
         }
