@@ -12,8 +12,8 @@ import cors from "cors";
 import morgan from "morgan";
 import bodyParser from "body-parser";
 import asyncHandler from "express-async-handler";
-import * as pdfmake from "pdfmake/build/pdfmake";
-import * as pdfFonts from "pdfmake/build/vfs_fonts";
+var pdfMake = require("pdfmake/build/pdfmake");
+var pdfFonts = require("pdfmake/build/vfs_fonts");
 import get from "lodash/get";
 import set from "lodash/set";
 import {
@@ -55,7 +55,7 @@ import {
   findLocalisation,
   getDateInRequiredFormat
 } from "./utils/commons";
-
+const { runMigrations } = require("./migrate");
 
 let v8 = require("v8");
 let egov_host = envVariables.EGOV_HOST;
@@ -69,7 +69,7 @@ console.log(`*******************************************`);
 
 var jp = require("jsonpath");
 //create binary
-pdfMake.vfs = pdfFonts.pdfMake.vfs;
+pdfMake.vfs = pdfFonts.pdfMake ? pdfFonts.pdfMake.vfs : pdfFonts.vfs;
 var pdfMakePrinter = require("pdfmake/src/printer");
 
 let app = express();
@@ -81,7 +81,7 @@ app.use(bodyParser.json({
 app.use(bodyParser.urlencoded({
   limit: "200mb",
   extended: true,
-  parameterLimit:50000
+  parameterLimit: 50000
 }));
 
 let maxPagesAllowed = envVariables.MAX_NUMBER_PAGES;
@@ -113,11 +113,11 @@ var fontDescriptors = {
     normal: "src/fonts/BalooBhaina2-Regular.ttf",
     bold: "src/fonts/BalooBhaina2-Bold.ttf"
   },
-  BalooPaaji:{
+  BalooPaaji: {
     normal: "src/fonts/BalooPaaji2-Regular.ttf",
     bold: "src/fonts/BalooPaaji2-Bold.ttf",
   },
-  AnmolUni:{
+  AnmolUni: {
     normal: "src/fonts/AnmolUni.ttf"
   }
 };
@@ -190,24 +190,24 @@ const createPdfBinary = async (
       //
       process.nextTick(function () {
         uploadFiles(
-            dbInsertSingleRecords,
-            dbInsertBulkRecords,
-            formatconfig,
-            listDocDefinition,
-            key,
-            false,
-            jobid,
-            noOfDefinitions,
-            entityIds,
-            starttime,
-            successCallback,
-            errorCallback,
-            tenantId,
-            totalobjectcount,
-            userid,
-            documentType,
-            moduleName
-          ),
+          dbInsertSingleRecords,
+          dbInsertBulkRecords,
+          formatconfig,
+          listDocDefinition,
+          key,
+          false,
+          jobid,
+          noOfDefinitions,
+          entityIds,
+          starttime,
+          successCallback,
+          errorCallback,
+          tenantId,
+          totalobjectcount,
+          userid,
+          documentType,
+          moduleName
+        ),
           uploadFiles(
             dbInsertSingleRecords,
             dbInsertBulkRecords,
@@ -232,9 +232,8 @@ const createPdfBinary = async (
   } catch (err) {
     logger.error(err.stack || err);
     errorCallback({
-      message: ` error occured while creating pdf: ${
-        typeof err === "string" ? err : err.message
-      }`,
+      message: ` error occured while creating pdf: ${typeof err === "string" ? err : err.message
+        }`,
     });
   }
 };
@@ -549,9 +548,9 @@ app.post(
       requestInfo = get(req.body, "RequestInfo");
       res.status(200);
       res.json({
-          ResponseInfo: requestInfo,
-          unregisteredLocalisationCodes: unregisteredLocalisationCodes,
-        });
+        ResponseInfo: requestInfo,
+        unregisteredLocalisationCodes: unregisteredLocalisationCodes,
+      });
     } catch (error) {
       logger.error(error.stack || error);
       res.status(400);
@@ -578,16 +577,16 @@ app.post(
       );
 
       resposnseMap.messages.map((item) => {
-        if(unregisteredLocalisationCodes.includes(item.code)){
+        if (unregisteredLocalisationCodes.includes(item.code)) {
           var index = unregisteredLocalisationCodes.indexOf(item.code);
           unregisteredLocalisationCodes.splice(index, 1);
         }
       });
       res.status(200);
       res.json({
-          ResponseInfo: requestInfo,
-          unregisteredLocalisationCodes: unregisteredLocalisationCodes,
-        });
+        ResponseInfo: requestInfo,
+        unregisteredLocalisationCodes: unregisteredLocalisationCodes,
+      });
     } catch (error) {
       logger.error(error.stack || error);
       res.status(400);
@@ -612,22 +611,22 @@ app.post(
       jobId = get(req.query, "jobId");
 
       let data = await getBulkPdfRecordsDetails(uuid, offset, limit, jobId);
-      if(data.length<=0){
+      if (data.length <= 0) {
         res.status(400);
         res.json({
-            ResponseInfo: requestInfo,
-            message: `Group bill pdf records details are not present for the employee ${requestInfo.userInfo.name} .Please trigger a bulk bill creation process`,
-          });
+          ResponseInfo: requestInfo,
+          message: `Group bill pdf records details are not present for the employee ${requestInfo.userInfo.name} .Please trigger a bulk bill creation process`,
+        });
       }
-      else{
+      else {
         res.status(200);
         res.json({
-            ResponseInfo: requestInfo,
-            groupBillrecords: data,
-          });
+          ResponseInfo: requestInfo,
+          groupBillrecords: data,
+        });
       }
 
-      
+
     } catch (error) {
       logger.error(error.stack || error);
       res.status(400);
@@ -648,14 +647,14 @@ app.post(
       let pdfDirectory = envVariables.SAVE_PDF_DIR;
       let folderNames = fs.readdirSync(pdfDirectory);
 
-      for(let folder of folderNames){
-        if(folder == 'lost+found')
+      for (let folder of folderNames) {
+        if (folder == 'lost+found')
           continue;
         let baseFolder = pdfDirectory + folder + '/';
-        if( fs.existsSync(baseFolder) ) {
-          fs.readdirSync(baseFolder).forEach(function(file,index){
+        if (fs.existsSync(baseFolder)) {
+          fs.readdirSync(baseFolder).forEach(function (file, index) {
             var curPath = baseFolder + file;
-            if(fs.lstatSync(curPath).isDirectory()) { // recurse
+            if (fs.lstatSync(curPath).isDirectory()) { // recurse
               deleteFolderRecursive(curPath);
             } else { // delete file
               fs.unlinkSync(curPath);
@@ -664,11 +663,11 @@ app.post(
           fs.rmdirSync(baseFolder);
         }
       }
-      
+
       res.status(200);
       res.json({
-            ResponseInfo: requestInfo,
-            Message: "Bulk PDF records details are clear",
+        ResponseInfo: requestInfo,
+        Message: "Bulk PDF records details are clear",
       });
     } catch (error) {
       logger.error(error.stack || error);
@@ -690,30 +689,30 @@ app.post(
     let uuid = requestInfo.userInfo.uuid;
     try {
 
-      if( !jobId || !uuid){
+      if (!jobId || !uuid) {
         res.status(400);
         res.json({
           ResponseInfo: requestInfo,
           message: "jobid or userid can not be empty",
         });
       }
-      else{
+      else {
         let errorMap = await cancelBulkPdfProcess(requestInfo, jobId, uuid);
-        if(errorMap != undefined && errorMap.length>=1){
+        if (errorMap != undefined && errorMap.length >= 1) {
           res.status(400);
           res.json({
-              ResponseInfo: requestInfo,
-              errorMessage: errorMap,
-        });
-        }
-        else{
-          res.status(200);
-          res.json({
-                ResponseInfo: requestInfo,
-                Message: `Bulk PDF process with job id: ${jobId} is cancel`,
+            ResponseInfo: requestInfo,
+            errorMessage: errorMap,
           });
         }
-        
+        else {
+          res.status(200);
+          res.json({
+            ResponseInfo: requestInfo,
+            Message: `Bulk PDF process with job id: ${jobId} is cancel`,
+          });
+        }
+
       }
     } catch (error) {
       logger.error(error.stack || error);
@@ -739,22 +738,22 @@ app.post(
       jobId = get(req.query, "jobId");
 
       let data = await getDefaulterPdfRecordsDetails(uuid, offset, limit, jobId);
-      if(data.length<=0){
+      if (data.length <= 0) {
         res.status(400);
         res.json({
-            ResponseInfo: requestInfo,
-            message: `Defaulter Notice pdf records details are not present for the employee ${requestInfo.userInfo.name} .Please trigger a bulk bill creation process`,
-          });
+          ResponseInfo: requestInfo,
+          message: `Defaulter Notice pdf records details are not present for the employee ${requestInfo.userInfo.name} .Please trigger a bulk bill creation process`,
+        });
       }
-      else{
+      else {
         res.status(200);
         res.json({
-            ResponseInfo: requestInfo,
-            groupBillrecords: data,
-          });
+          ResponseInfo: requestInfo,
+          groupBillrecords: data,
+        });
       }
 
-      
+
     } catch (error) {
       logger.error(error.stack || error);
       res.status(400);
@@ -848,12 +847,20 @@ formatConfigUrls &&
     }
   });
 
-app.listen(serverport, () => {
-  logger.info(`Server running at http:${serverport}/`);
-});
-
-topic.push(envVariables.KAFKA_RECEIVE_CREATE_JOB_TOPIC)
-listenConsumer(topic);
+// Run DB migrations on startup (like Flyway in Java)
+runMigrations(envVariables)
+  .then(() => {
+    app.listen(serverport, () => {
+      logger.info(`Server running at http:${serverport}/`);
+    });
+    topic.push(envVariables.KAFKA_RECEIVE_CREATE_JOB_TOPIC);
+    listenConsumer(topic);
+  })
+  .catch((err) => {
+    logger.error("[Migration] Fatal error during DB migration, server not started.");
+    logger.error(err.stack || err);
+    process.exit(1);
+  });
 
 /**
  *
@@ -906,14 +913,14 @@ export const createAndSave = async (
     // var util = require('util');
     // fs.writeFileSync('./data.txt', util.inspect(JSON.stringify(formatconfig)) , 'utf-8');
     //function to download pdf automatically
-    
+
     let formatconfigCopy = JSON.parse(JSON.stringify(formatconfig));
 
     let locale = requestInfo.msgId.split('|')[1];
-    if(!locale)
+    if (!locale)
       locale = envVariables.DEFAULT_LOCALISATION_LOCALE;
 
-    if(defaultFontMapping[locale] != 'default')
+    if (defaultFontMapping[locale] != 'default')
       formatconfigCopy.defaultStyle.font = defaultFontMapping[locale];
 
     createPdfBinary(
@@ -972,9 +979,9 @@ export const createNoSave = async (
     var bussinessService = get(req, "service");
     var isConsolidated = get(req, "isConsolidated");
     var consumerCode = get(req, "consumerCode");
-    var propertyId=get(req,"propertyId");
+    var propertyId = get(req, "propertyId");
 
-    logger.info("received createnosave request on key: " + key + " for job id:" + bulkPdfJobId +" totalPdfRecords: "+totalPdfRecords+" currentPdfRecords: "+currentPdfRecords + " size: "+billd.length);
+    logger.info("received createnosave request on key: " + key + " for job id:" + bulkPdfJobId + " totalPdfRecords: " + totalPdfRecords + " currentPdfRecords: " + currentPdfRecords + " size: " + billd.length);
 
     var valid = validateRequest(req, res, key, tenantId, requestInfo);
 
@@ -998,10 +1005,10 @@ export const createNoSave = async (
       let directory = envVariables.SAVE_PDF_DIR + bulkPdfJobId
       //let directory = bulkPdfJobId;
 
-      if(!fs.existsSync(directory))
+      if (!fs.existsSync(directory))
         fs.mkdirSync(directory, { recursive: true });
 
-      let filename = directory + "/"  + key + "" + fileNameAppend + ".pdf";
+      let filename = directory + "/" + key + "" + fileNameAppend + ".pdf";
 
       var chunks = [];
       doc.on("data", function (chunk) {
@@ -1009,26 +1016,25 @@ export const createNoSave = async (
       });
       doc.on("end", function () {
         var data = Buffer.concat(chunks);
-         //fs.createWriteStream(filename).write(data);
-         var tempFile = fs.createWriteStream(filename);
-         tempFile.on('error', function(e) { console.error(e); });
-         tempFile.on('open', function(fd) {
-           tempFile.write(data);
-           tempFile.end();
-         });
+        //fs.createWriteStream(filename).write(data);
+        var tempFile = fs.createWriteStream(filename);
+        tempFile.on('error', function (e) { console.error(e); });
+        tempFile.on('open', function (fd) {
+          tempFile.write(data);
+          tempFile.end();
+        });
         logger.info(
           `createnosave success for pdf creation with job id: ${bulkPdfJobId} with key: ${key}, entityId ${entityIds}`
         );
         (async () => {
-          if(key== "pt-defaulternotice")
-          {
-            await insertRecordsForDN(bulkPdfJobId, totalPdfRecords, currentPdfRecords, userid, tenantId, locality,propertytype, bussinessService, consumerCode, isConsolidated);
+          if (key == "pt-defaulternotice") {
+            await insertRecordsForDN(bulkPdfJobId, totalPdfRecords, currentPdfRecords, userid, tenantId, locality, propertytype, bussinessService, consumerCode, isConsolidated);
             await mergePdfForDN(bulkPdfJobId, tenantId, userid, numberOfFiles, mobileNumber);
-            
+
           }
-          else{
-          await insertRecords(bulkPdfJobId, totalPdfRecords, currentPdfRecords, userid, tenantId, locality, bussinessService, consumerCode, isConsolidated);
-          await mergePdf(bulkPdfJobId, tenantId, userid, numberOfFiles, mobileNumber);
+          else {
+            await insertRecords(bulkPdfJobId, totalPdfRecords, currentPdfRecords, userid, tenantId, locality, bussinessService, consumerCode, isConsolidated);
+            await mergePdf(bulkPdfJobId, tenantId, userid, numberOfFiles, mobileNumber);
           }
         })();
       });
@@ -1067,7 +1073,7 @@ const updateBorderlayout = (formatconfig) => {
  */
 export const fillValues = (variableTovalueMap, formatconfig) => {
   let input = JSON.stringify(formatconfig).replace(/\\/g, "");
-  
+
   //console.log(variableTovalueMap);
   //console.log(mustache.render(input, variableTovalueMap).replace(/""/g,"\"").replace(/"\[/g,"\[").replace(/\]"/g,"\]").replace(/\]\[/g,"\],\[").replace(/"\{/g,"\{").replace(/\}"/g,"\}"));
   let output = JSON.parse(
@@ -1080,7 +1086,7 @@ export const fillValues = (variableTovalueMap, formatconfig) => {
       .replace(/\]\[/g, "],[")
       .replace(/"\{/g, "{")
       .replace(/\n/g, "\\n")
-      .replace(/\t/g, "\\t")      
+      .replace(/\t/g, "\\t")
   );
   return output;
 };
@@ -1129,20 +1135,19 @@ const generateQRCodes = async (
   for (var i = 0, len = qrcodeMappings.length; i < len; i++) {
     let qrmapping = qrcodeMappings[i];
     let varname = qrmapping.variable;
-    let urlQR='',qrtext;
-    if(moduleKey.includes(key))
-    {
-      urlQR=egov_host;
-      urlQR=urlQR.concat(qrmapping.value);
+    let urlQR = '', qrtext;
+    if (moduleKey.includes(key)) {
+      urlQR = egov_host;
+      urlQR = urlQR.concat(qrmapping.value);
 
       //urlQR=qrmapping.value.concat(" ").concat(urlQR);
     }
-    if(urlQR=='')
-    qrtext = mustache.render(qrmapping.value, variableTovalueMap);
+    if (urlQR == '')
+      qrtext = mustache.render(qrmapping.value, variableTovalueMap);
     else
-    qrtext = mustache.render(urlQR, variableTovalueMap);
+      qrtext = mustache.render(urlQR, variableTovalueMap);
 
-    logger.info("URL is " + qrtext) ; 
+    logger.info("URL is " + qrtext);
     let qrCodeImage = await QRCode.toDataURL(qrtext);
     variableTovalueMap[varname] = qrCodeImage;
   }
@@ -1167,12 +1172,12 @@ const handleDerivedMapping = (dataconfig, variableTovalueMap) => {
     let type = mapping.type;
     let format = mapping.format;
     let variableValue = Function(`'use strict'; return (${expression})`)();
-    if(type == "date"){
+    if (type == "date") {
       let myDate = new Date(variableValue);
       if (isNaN(myDate) || variableValue === 0) {
         variableValue = "NA";
       } else {
-        let replaceValue = getDateInRequiredFormat(variableValue,format);
+        let replaceValue = getDateInRequiredFormat(variableValue, format);
         variableValue = replaceValue;
       }
     }
@@ -1266,7 +1271,7 @@ const handlelogic = async (
       unregisteredLocalisationCodes
     ),
   ]);
-  await generateQRCodes(key,moduleObject, dataconfig, variableTovalueMap);
+  await generateQRCodes(key, moduleObject, dataconfig, variableTovalueMap);
   handleDerivedMapping(dataconfig, variableTovalueMap);
   formatObject = fillValues(variableTovalueMap, formatObject);
   if (isCommonTableBorderRequired === true)
@@ -1316,15 +1321,14 @@ const prepareBulk = async (
       let formatObject = JSON.parse(JSON.stringify(formatconfig));
 
       // Multipage pdf, each pdf from new page
-      if(key!= "pt-group-bill")
-      {
-      if (formatObjectArrayObject !=null &&
-        formatObjectArrayObject.length != 0 &&
-        formatObject["content"][0] !== undefined
-      ) {
-        formatObject["content"][0]["pageBreak"] = "before";
+      if (key != "pt-group-bill") {
+        if (formatObjectArrayObject != null &&
+          formatObjectArrayObject.length != 0 &&
+          formatObject["content"][0] !== undefined
+        ) {
+          formatObject["content"][0]["pageBreak"] = "before";
+        }
       }
-    }
       /////////////////////////////
       formatObject = await handlelogic(
         key,
@@ -1343,13 +1347,13 @@ const prepareBulk = async (
         i + 1 == len
       ) {
         let formatconfigCopy = JSON.parse(JSON.stringify(formatconfig));
-        
+
         let locale = requestInfo.msgId.split('|')[1];
-        if(!locale)
+        if (!locale)
           locale = envVariables.DEFAULT_LOCALISATION_LOCALE;
 
-        if(defaultFontMapping[locale] != 'default')
-         formatconfigCopy.defaultStyle.font = defaultFontMapping[locale];
+        if (defaultFontMapping[locale] != 'default')
+          formatconfigCopy.defaultStyle.font = defaultFontMapping[locale];
 
         formatconfigCopy["content"] = formatObjectArrayObject;
         formatConfigByFile.push(formatconfigCopy);
