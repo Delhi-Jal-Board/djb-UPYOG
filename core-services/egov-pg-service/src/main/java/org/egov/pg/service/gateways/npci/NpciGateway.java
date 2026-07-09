@@ -80,7 +80,7 @@ public class NpciGateway implements Gateway {
                 basePgServiceUrl = "http://localhost:8080";
             }
             try {
-                String redirectUrl = basePgServiceUrl + "/pg-service/transaction/v1/npci/mock-payment" 
+                String redirectUrl = basePgServiceUrl + "/pg-service/transaction/v1/_redirect" 
                         + "?txnId=" + transaction.getTxnId()
                         + "&amount=" + transaction.getTxnAmount()
                         + "&callbackUrl=" + java.net.URLEncoder.encode(transaction.getCallbackUrl(), "UTF-8");

@@ -18,49 +18,48 @@ import java.net.URLEncoder;
 @Slf4j
 public class NpciMockPaymentController {
 
-    @GetMapping(value = "/transaction/v1/npci/mock-payment", produces = MediaType.TEXT_HTML_VALUE)
-    @ResponseBody
-    public String showMockPaymentPage(@RequestParam("txnId") String txnId,
-                                      @RequestParam("amount") String amount,
-                                      @RequestParam("callbackUrl") String callbackUrl) {
+    @GetMapping(value = "/transaction/v1/_redirect")
+    public Object handleMockPaymentOrSubmit(@RequestParam("txnId") String txnId,
+                                            @RequestParam(value = "amount", required = false) String amount,
+                                            @RequestParam("callbackUrl") String callbackUrl,
+                                            @RequestParam(value = "status", required = false) String status) {
         
-        log.info("NpciMockPaymentController: Showing mock payment page for txnId={}, amount={}", txnId, amount);
+        if (status != null && !status.isEmpty()) {
+            log.info("NpciMockPaymentController: Submitted mock payment status '{}' for txnId={}", status, txnId);
+            
+            // Store status in NpciGateway MOCK_STATUSES map
+            NpciGateway.MOCK_STATUSES.put(txnId, status);
 
-        String successUrl = "";
-        String failureUrl = "";
-        try {
-            successUrl = "/pg-service/transaction/v1/npci/mock-payment/submit?txnId=" + txnId 
-                    + "&status=SUCCESS&callbackUrl=" + URLEncoder.encode(callbackUrl, "UTF-8");
-            failureUrl = "/pg-service/transaction/v1/npci/mock-payment/submit?txnId=" + txnId 
-                    + "&status=FAILURE&callbackUrl=" + URLEncoder.encode(callbackUrl, "UTF-8");
-        } catch (Exception e) {
-            log.error("NpciMockPaymentController: Failed to encode submit URLs", e);
-            successUrl = "/pg-service/transaction/v1/npci/mock-payment/submit?txnId=" + txnId + "&status=SUCCESS&callbackUrl=" + callbackUrl;
-            failureUrl = "/pg-service/transaction/v1/npci/mock-payment/submit?txnId=" + txnId + "&status=FAILURE&callbackUrl=" + callbackUrl;
+            // Redirect back to callbackUrl
+            String separator = callbackUrl.contains("?") ? "&" : "?";
+            String finalRedirectUrl = callbackUrl + separator + "eg_pg_txnid=" + txnId;
+            
+            log.info("NpciMockPaymentController: Redirecting citizen to: {}", finalRedirectUrl);
+
+            HttpHeaders httpHeaders = new HttpHeaders();
+            httpHeaders.setLocation(URI.create(finalRedirectUrl));
+            return new ResponseEntity<>(httpHeaders, HttpStatus.FOUND);
+        } else {
+            log.info("NpciMockPaymentController: Showing mock payment page for txnId={}, amount={}", txnId, amount);
+
+            String successUrl = "";
+            String failureUrl = "";
+            try {
+                successUrl = "/pg-service/transaction/v1/_redirect?txnId=" + txnId 
+                        + "&status=SUCCESS&callbackUrl=" + URLEncoder.encode(callbackUrl, "UTF-8");
+                failureUrl = "/pg-service/transaction/v1/_redirect?txnId=" + txnId 
+                        + "&status=FAILURE&callbackUrl=" + URLEncoder.encode(callbackUrl, "UTF-8");
+            } catch (Exception e) {
+                log.error("NpciMockPaymentController: Failed to encode submit URLs", e);
+                successUrl = "/pg-service/transaction/v1/_redirect?txnId=" + txnId + "&status=SUCCESS&callbackUrl=" + callbackUrl;
+                failureUrl = "/pg-service/transaction/v1/_redirect?txnId=" + txnId + "&status=FAILURE&callbackUrl=" + callbackUrl;
+            }
+
+            String html = getHtmlTemplate(txnId, amount, successUrl, failureUrl);
+            return ResponseEntity.ok()
+                    .contentType(MediaType.TEXT_HTML)
+                    .body(html);
         }
-
-        return getHtmlTemplate(txnId, amount, successUrl, failureUrl);
-    }
-
-    @GetMapping("/transaction/v1/npci/mock-payment/submit")
-    public ResponseEntity<Object> submitMockPayment(@RequestParam("txnId") String txnId,
-                                                    @RequestParam("status") String status,
-                                                    @RequestParam("callbackUrl") String callbackUrl) {
-        
-        log.info("NpciMockPaymentController: Submitted mock payment status '{}' for txnId={}", status, txnId);
-        
-        // Store status in NpciGateway MOCK_STATUSES map
-        NpciGateway.MOCK_STATUSES.put(txnId, status);
-
-        // Redirect back to callbackUrl
-        String separator = callbackUrl.contains("?") ? "&" : "?";
-        String finalRedirectUrl = callbackUrl + separator + "eg_pg_txnid=" + txnId;
-        
-        log.info("NpciMockPaymentController: Redirecting citizen to: {}", finalRedirectUrl);
-
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.setLocation(URI.create(finalRedirectUrl));
-        return new ResponseEntity<>(httpHeaders, HttpStatus.FOUND);
     }
 
     private String getHtmlTemplate(String txnId, String amount, String successUrl, String failureUrl) {
