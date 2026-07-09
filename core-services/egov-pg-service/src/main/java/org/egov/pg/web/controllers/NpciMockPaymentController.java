@@ -69,383 +69,430 @@ public class NpciMockPaymentController {
                 "<head>\n" +
                 "    <meta charset=\"UTF-8\">\n" +
                 "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n" +
-                "    <title>NPCI Payment Gateway Simulator</title>\n" +
-                "    <link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap\" rel=\"stylesheet\">\n" +
+                "    <title>UPI Payment Portal</title>\n" +
+                "    <link href=\"https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap\" rel=\"stylesheet\">\n" +
                 "    <style>\n" +
                 "        * {\n" +
                 "            box-sizing: border-box;\n" +
                 "            margin: 0;\n" +
                 "            padding: 0;\n" +
-                "            font-family: 'Inter', -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif;\n" +
+                "            font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif;\n" +
                 "        }\n" +
                 "        body {\n" +
-                "            background: radial-gradient(circle at top right, #0e1e35 0%, #060a12 100%);\n" +
-                "            color: #ffffff;\n" +
+                "            background-color: #f4f6fa;\n" +
+                "            color: #333333;\n" +
                 "            min-height: 100vh;\n" +
                 "            display: flex;\n" +
-                "            justify-content: center;\n" +
+                "            flex-direction: column;\n" +
                 "            align-items: center;\n" +
+                "            justify-content: center;\n" +
                 "            padding: 20px;\n" +
                 "        }\n" +
-                "        .container {\n" +
+                "        .tricolor-bar {\n" +
                 "            width: 100%;\n" +
-                "            max-width: 480px;\n" +
-                "            background: rgba(255, 255, 255, 0.03);\n" +
-                "            border: 1px solid rgba(255, 255, 255, 0.08);\n" +
-                "            border-radius: 24px;\n" +
-                "            padding: 28px 24px;\n" +
-                "            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);\n" +
-                "            backdrop-filter: blur(20px);\n" +
+                "            height: 4px;\n" +
+                "            display: flex;\n" +
+                "            position: absolute;\n" +
+                "            top: 0;\n" +
+                "            left: 0;\n" +
+                "        }\n" +
+                "        .bar-saffron { flex: 1; background-color: #FF9933; }\n" +
+                "        .bar-white { flex: 1; background-color: #FFFFFF; }\n" +
+                "        .bar-green { flex: 1; background-color: #138808; }\n" +
+                "\n" +
+                "        .payment-box {\n" +
+                "            width: 100%;\n" +
+                "            max-width: 760px;\n" +
+                "            background-color: #ffffff;\n" +
+                "            border-radius: 12px;\n" +
+                "            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);\n" +
+                "            border: 1px solid #e2e8f0;\n" +
+                "            overflow: hidden;\n" +
+                "            display: flex;\n" +
+                "            flex-direction: column;\n" +
                 "        }\n" +
                 "        .header {\n" +
-                "            text-align: center;\n" +
-                "            margin-bottom: 20px;\n" +
+                "            display: flex;\n" +
+                "            justify-content: space-between;\n" +
+                "            align-items: center;\n" +
+                "            padding: 20px 28px;\n" +
+                "            border-bottom: 1px solid #edf2f7;\n" +
+                "            background-color: #ffffff;\n" +
                 "        }\n" +
-                "        .logo-container {\n" +
+                "        .logo-bhim {\n" +
+                "            display: flex;\n" +
+                "            align-items: center;\n" +
+                "            gap: 10px;\n" +
+                "        }\n" +
+                "        .logo-bhim .upi-text {\n" +
+                "            font-size: 20px;\n" +
+                "            font-weight: 700;\n" +
+                "            color: #0c66c2;\n" +
+                "        }\n" +
+                "        .logo-bhim .bhim-text {\n" +
+                "            font-size: 14px;\n" +
+                "            font-weight: 600;\n" +
+                "            color: #f26f21;\n" +
+                "            border-left: 2px solid #cbd5e1;\n" +
+                "            padding-left: 10px;\n" +
+                "        }\n" +
+                "        .logo-npci {\n" +
+                "            font-size: 12px;\n" +
+                "            font-weight: 700;\n" +
+                "            color: #718096;\n" +
+                "            letter-spacing: 1px;\n" +
+                "            border: 1.5px solid #cbd5e1;\n" +
+                "            padding: 4px 10px;\n" +
+                "            border-radius: 4px;\n" +
+                "            text-transform: uppercase;\n" +
+                "        }\n" +
+                "        .main-content {\n" +
+                "            display: flex;\n" +
+                "            flex-wrap: wrap;\n" +
+                "            padding: 30px 28px;\n" +
+                "            gap: 30px;\n" +
+                "        }\n" +
+                "        .left-col {\n" +
+                "            flex: 1 1 320px;\n" +
+                "            display: flex;\n" +
+                "            flex-direction: column;\n" +
+                "            gap: 20px;\n" +
+                "        }\n" +
+                "        .right-col {\n" +
+                "            flex: 1 1 300px;\n" +
+                "            display: flex;\n" +
+                "            flex-direction: column;\n" +
+                "            align-items: center;\n" +
+                "            justify-content: center;\n" +
+                "            border-left: 1px solid #edf2f7;\n" +
+                "            padding-left: 30px;\n" +
+                "        }\n" +
+                "        @media (max-width: 700px) {\n" +
+                "            .right-col {\n" +
+                "                border-left: none;\n" +
+                "                border-top: 1px solid #edf2f7;\n" +
+                "                padding-left: 0;\n" +
+                "                padding-top: 30px;\n" +
+                "            }\n" +
+                "        }\n" +
+                "        .merchant-info {\n" +
+                "            background-color: #f7fafc;\n" +
+                "            border: 1px solid #edf2f7;\n" +
+                "            border-radius: 8px;\n" +
+                "            padding: 16px;\n" +
+                "        }\n" +
+                "        .info-row {\n" +
+                "            display: flex;\n" +
+                "            justify-content: space-between;\n" +
+                "            margin-bottom: 10px;\n" +
+                "            font-size: 13px;\n" +
+                "        }\n" +
+                "        .info-row:last-child {\n" +
+                "            margin-bottom: 0;\n" +
+                "            padding-top: 10px;\n" +
+                "            border-top: 1px dashed #e2e8f0;\n" +
+                "        }\n" +
+                "        .info-label {\n" +
+                "            color: #718096;\n" +
+                "            font-weight: 500;\n" +
+                "        }\n" +
+                "        .info-val {\n" +
+                "            color: #2d3748;\n" +
+                "            font-weight: 600;\n" +
+                "        }\n" +
+                "        .amount-val {\n" +
+                "            font-size: 18px;\n" +
+                "            color: #0c66c2;\n" +
+                "            font-weight: 700;\n" +
+                "        }\n" +
+                "        .timer-box {\n" +
+                "            display: flex;\n" +
+                "            align-items: center;\n" +
+                "            gap: 12px;\n" +
+                "            background-color: #fffaf0;\n" +
+                "            border: 1px solid #feebc8;\n" +
+                "            border-radius: 8px;\n" +
+                "            padding: 12px 16px;\n" +
+                "            color: #dd6b20;\n" +
+                "            font-size: 13px;\n" +
+                "            font-weight: 600;\n" +
+                "        }\n" +
+                "        .timer-clock {\n" +
+                "            font-size: 16px;\n" +
+                "            font-weight: 700;\n" +
+                "            font-family: monospace;\n" +
+                "        }\n" +
+                "        .upi-input-section {\n" +
+                "            display: flex;\n" +
+                "            flex-direction: column;\n" +
+                "            gap: 10px;\n" +
+                "            margin-top: 10px;\n" +
+                "        }\n" +
+                "        .input-group {\n" +
+                "            display: flex;\n" +
+                "            gap: 8px;\n" +
+                "        }\n" +
+                "        .upi-id-input {\n" +
+                "            flex: 1;\n" +
+                "            padding: 12px 16px;\n" +
+                "            border: 1.5px solid #cbd5e1;\n" +
+                "            border-radius: 6px;\n" +
+                "            font-size: 14px;\n" +
+                "            outline: none;\n" +
+                "            transition: border-color 0.2s;\n" +
+                "        }\n" +
+                "        .upi-id-input:focus {\n" +
+                "            border-color: #0c66c2;\n" +
+                "        }\n" +
+                "        .btn-verify {\n" +
+                "            background-color: #0c66c2;\n" +
+                "            color: #ffffff;\n" +
+                "            border: none;\n" +
+                "            padding: 0 20px;\n" +
+                "            border-radius: 6px;\n" +
+                "            font-weight: 600;\n" +
+                "            font-size: 13px;\n" +
+                "            cursor: pointer;\n" +
+                "            transition: background-color 0.2s;\n" +
+                "        }\n" +
+                "        .btn-verify:hover {\n" +
+                "            background-color: #094e96;\n" +
+                "        }\n" +
+                "        .qr-card {\n" +
+                "            display: flex;\n" +
+                "            flex-direction: column;\n" +
+                "            align-items: center;\n" +
+                "            text-align: center;\n" +
+                "        }\n" +
+                "        .qr-title {\n" +
+                "            font-size: 14px;\n" +
+                "            font-weight: 600;\n" +
+                "            color: #4a5568;\n" +
+                "            margin-bottom: 12px;\n" +
+                "        }\n" +
+                "        .qr-image-wrapper {\n" +
+                "            background-color: #ffffff;\n" +
+                "            padding: 16px;\n" +
+                "            border: 1px solid #e2e8f0;\n" +
+                "            border-radius: 12px;\n" +
+                "            position: relative;\n" +
+                "            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);\n" +
+                "            margin-bottom: 16px;\n" +
+                "        }\n" +
+                "        .qr-svg {\n" +
+                "            width: 160px;\n" +
+                "            height: 160px;\n" +
+                "        }\n" +
+                "        .qr-logo {\n" +
+                "            position: absolute;\n" +
+                "            top: 50%;\n" +
+                "            left: 50%;\n" +
+                "            transform: translate(-50%, -50%);\n" +
+                "            width: 32px;\n" +
+                "            height: 32px;\n" +
+                "            background-color: #ffffff;\n" +
+                "            border-radius: 6px;\n" +
+                "            display: flex;\n" +
+                "            align-items: center;\n" +
+                "            justify-content: center;\n" +
+                "            box-shadow: 0 2px 6px rgba(0,0,0,0.15);\n" +
+                "            font-size: 12px;\n" +
+                "            font-weight: 800;\n" +
+                "            color: #0c66c2;\n" +
+                "        }\n" +
+                "        .secure-footer {\n" +
+                "            background-color: #f7fafc;\n" +
+                "            padding: 16px;\n" +
                 "            display: flex;\n" +
                 "            justify-content: center;\n" +
                 "            align-items: center;\n" +
                 "            gap: 8px;\n" +
-                "            margin-bottom: 8px;\n" +
-                "        }\n" +
-                "        .logo-text {\n" +
-                "            font-size: 22px;\n" +
-                "            font-weight: 700;\n" +
-                "            letter-spacing: 0.5px;\n" +
-                "            background: linear-gradient(135deg, #3b82f6, #60a5fa);\n" +
-                "            -webkit-background-clip: text;\n" +
-                "            -webkit-text-fill-color: transparent;\n" +
-                "        }\n" +
-                "        .badge {\n" +
-                "            background: rgba(59, 130, 246, 0.15);\n" +
-                "            color: #60a5fa;\n" +
-                "            border: 1px solid rgba(59, 130, 246, 0.3);\n" +
-                "            padding: 3px 8px;\n" +
-                "            border-radius: 12px;\n" +
-                "            font-size: 10px;\n" +
+                "            font-size: 11px;\n" +
+                "            color: #718096;\n" +
                 "            font-weight: 600;\n" +
+                "            border-top: 1px solid #edf2f7;\n" +
                 "            text-transform: uppercase;\n" +
+                "            letter-spacing: 0.5px;\n" +
                 "        }\n" +
-                "        .subtitle {\n" +
-                "            font-size: 13px;\n" +
-                "            color: #9ca3af;\n" +
-                "        }\n" +
-                "        .txn-card {\n" +
-                "            background: rgba(255, 255, 255, 0.02);\n" +
-                "            border: 1px solid rgba(255, 255, 255, 0.05);\n" +
-                "            border-radius: 16px;\n" +
-                "            padding: 16px;\n" +
-                "            margin-bottom: 20px;\n" +
-                "        }\n" +
-                "        .txn-row {\n" +
-                "            display: flex;\n" +
-                "            justify-content: space-between;\n" +
-                "            margin-bottom: 8px;\n" +
-                "            font-size: 13px;\n" +
-                "        }\n" +
-                "        .txn-row:last-child {\n" +
-                "            margin-bottom: 0;\n" +
-                "            padding-top: 8px;\n" +
-                "            border-top: 1px dashed rgba(255, 255, 255, 0.1);\n" +
-                "        }\n" +
-                "        .label {\n" +
-                "            color: #9ca3af;\n" +
-                "        }\n" +
-                "        .value {\n" +
-                "            color: #e5e7eb;\n" +
-                "            font-weight: 500;\n" +
-                "        }\n" +
-                "        .amount {\n" +
-                "            font-size: 18px;\n" +
-                "            font-weight: 700;\n" +
-                "            color: #60a5fa;\n" +
-                "        }\n" +
-                "        .tabs {\n" +
-                "            display: flex;\n" +
-                "            background: rgba(255, 255, 255, 0.05);\n" +
-                "            padding: 4px;\n" +
-                "            border-radius: 12px;\n" +
-                "            margin-bottom: 20px;\n" +
-                "            gap: 4px;\n" +
-                "        }\n" +
-                "        .tab-btn {\n" +
-                "            flex: 1;\n" +
-                "            padding: 10px;\n" +
-                "            border: none;\n" +
-                "            background: transparent;\n" +
-                "            color: #9ca3af;\n" +
-                "            font-size: 12px;\n" +
-                "            font-weight: 600;\n" +
-                "            border-radius: 8px;\n" +
-                "            cursor: pointer;\n" +
-                "            transition: all 0.2s ease;\n" +
-                "        }\n" +
-                "        .tab-btn.active {\n" +
-                "            background: rgba(255, 255, 255, 0.1);\n" +
-                "            color: #ffffff;\n" +
-                "            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);\n" +
-                "        }\n" +
-                "        .tab-content {\n" +
-                "            display: none;\n" +
-                "            min-height: 180px;\n" +
-                "            animation: fadeIn 0.3s ease;\n" +
-                "        }\n" +
-                "        .tab-content.active {\n" +
-                "            display: block;\n" +
-                "        }\n" +
-                "        @keyframes fadeIn {\n" +
-                "            from { opacity: 0; transform: translateY(4px); }\n" +
-                "            to { opacity: 1; transform: translateY(0); }\n" +
-                "        }\n" +
-                "        .qr-container {\n" +
-                "            display: flex;\n" +
-                "            flex-direction: column;\n" +
-                "            align-items: center;\n" +
-                "            justify-content: center;\n" +
-                "            padding: 10px;\n" +
-                "        }\n" +
-                "        .qr-box {\n" +
-                "            background: #ffffff;\n" +
-                "            padding: 12px;\n" +
-                "            border-radius: 12px;\n" +
-                "            margin-bottom: 12px;\n" +
-                "            box-shadow: 0 4px 12px rgba(0,0,0,0.15);\n" +
-                "        }\n" +
-                "        .qr-placeholder {\n" +
-                "            width: 140px;\n" +
-                "            height: 140px;\n" +
-                "            background: #f3f4f6;\n" +
-                "            display: flex;\n" +
-                "            flex-direction: column;\n" +
-                "            justify-content: center;\n" +
-                "            align-items: center;\n" +
-                "            border: 2px dashed #cbd5e1;\n" +
-                "            border-radius: 8px;\n" +
-                "            color: #475569;\n" +
-                "        }\n" +
-                "        .input-group {\n" +
-                "            margin-bottom: 16px;\n" +
-                "            text-align: left;\n" +
-                "        }\n" +
-                "        .input-group label {\n" +
-                "            display: block;\n" +
-                "            font-size: 12px;\n" +
-                "            color: #9ca3af;\n" +
-                "            margin-bottom: 6px;\n" +
-                "        }\n" +
-                "        .input-control {\n" +
+                "        .sim-control-panel {\n" +
                 "            width: 100%;\n" +
-                "            padding: 12px 16px;\n" +
-                "            background: rgba(255, 255, 255, 0.05);\n" +
-                "            border: 1px solid rgba(255, 255, 255, 0.1);\n" +
-                "            border-radius: 10px;\n" +
-                "            color: #ffffff;\n" +
-                "            font-size: 14px;\n" +
-                "            transition: all 0.2s ease;\n" +
+                "            max-width: 760px;\n" +
+                "            margin-top: 24px;\n" +
+                "            background-color: #fff5f5;\n" +
+                "            border: 1px dashed #feb2b2;\n" +
+                "            border-radius: 12px;\n" +
+                "            padding: 20px;\n" +
                 "        }\n" +
-                "        .input-control:focus {\n" +
-                "            outline: none;\n" +
-                "            border-color: #3b82f6;\n" +
-                "            background: rgba(255, 255, 255, 0.08);\n" +
+                "        .sim-title {\n" +
+                "            font-size: 13px;\n" +
+                "            font-weight: 700;\n" +
+                "            color: #c53030;\n" +
+                "            text-transform: uppercase;\n" +
+                "            letter-spacing: 0.5px;\n" +
+                "            margin-bottom: 12px;\n" +
+                "            display: flex;\n" +
+                "            align-items: center;\n" +
+                "            gap: 6px;\n" +
                 "        }\n" +
-                "        .row-grid {\n" +
+                "        .sim-actions {\n" +
                 "            display: grid;\n" +
                 "            grid-template-columns: 1fr 1fr;\n" +
                 "            gap: 12px;\n" +
                 "        }\n" +
-                "        .bank-grid {\n" +
-                "            display: grid;\n" +
-                "            grid-template-columns: repeat(3, 1fr);\n" +
-                "            gap: 8px;\n" +
-                "            margin-bottom: 16px;\n" +
+                "        @media (max-width: 500px) {\n" +
+                "            .sim-actions {\n" +
+                "                grid-template-columns: 1fr;\n" +
+                "            }\n" +
                 "        }\n" +
-                "        .bank-option {\n" +
-                "            background: rgba(255, 255, 255, 0.03);\n" +
-                "            border: 1px solid rgba(255, 255, 255, 0.08);\n" +
-                "            border-radius: 10px;\n" +
-                "            padding: 12px 6px;\n" +
-                "            font-size: 11px;\n" +
-                "            cursor: pointer;\n" +
-                "            transition: all 0.2s ease;\n" +
-                "            text-align: center;\n" +
-                "        }\n" +
-                "        .bank-option:hover, .bank-option.selected {\n" +
-                "            background: rgba(59, 130, 246, 0.1);\n" +
-                "            border-color: #3b82f6;\n" +
-                "            color: #60a5fa;\n" +
-                "        }\n" +
-                "        .actions {\n" +
-                "            margin-top: 24px;\n" +
-                "            display: flex;\n" +
-                "            flex-direction: column;\n" +
-                "            gap: 10px;\n" +
-                "        }\n" +
-                "        .btn {\n" +
-                "            width: 100%;\n" +
+                "        .sim-btn {\n" +
                 "            padding: 12px;\n" +
-                "            border-radius: 10px;\n" +
-                "            font-size: 14px;\n" +
+                "            border-radius: 6px;\n" +
                 "            font-weight: 600;\n" +
+                "            font-size: 14px;\n" +
                 "            cursor: pointer;\n" +
-                "            transition: all 0.2s ease;\n" +
-                "            text-decoration: none;\n" +
                 "            display: flex;\n" +
                 "            justify-content: center;\n" +
                 "            align-items: center;\n" +
                 "            border: none;\n" +
+                "            transition: all 0.2s;\n" +
+                "            text-decoration: none;\n" +
                 "        }\n" +
-                "        .btn-success {\n" +
-                "            background: linear-gradient(135deg, #10b981, #059669);\n" +
+                "        .sim-success {\n" +
+                "            background-color: #38a169;\n" +
                 "            color: #ffffff;\n" +
-                "            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);\n" +
+                "            box-shadow: 0 3px 10px rgba(56, 161, 105, 0.2);\n" +
                 "        }\n" +
-                "        .btn-success:hover {\n" +
-                "            transform: translateY(-1px);\n" +
-                "            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.3);\n" +
+                "        .sim-success:hover {\n" +
+                "            background-color: #2f855a;\n" +
                 "        }\n" +
-                "        .btn-danger {\n" +
-                "            background: rgba(239, 68, 68, 0.08);\n" +
-                "            color: #f87171;\n" +
-                "            border: 1px solid rgba(239, 68, 68, 0.15);\n" +
+                "        .sim-failure {\n" +
+                "            background-color: #e53e3e;\n" +
+                "            color: #ffffff;\n" +
+                "            box-shadow: 0 3px 10px rgba(229, 62, 62, 0.2);\n" +
                 "        }\n" +
-                "        .btn-danger:hover {\n" +
-                "            background: rgba(239, 68, 68, 0.15);\n" +
-                "        }\n" +
-                "        .footer {\n" +
-                "            margin-top: 20px;\n" +
-                "            font-size: 10px;\n" +
-                "            color: #6b7280;\n" +
-                "            text-align: center;\n" +
+                "        .sim-failure:hover {\n" +
+                "            background-color: #c53030;\n" +
                 "        }\n" +
                 "    </style>\n" +
                 "</head>\n" +
                 "<body>\n" +
-                "    <div class=\"container\">\n" +
+                "    <div class=\"tricolor-bar\">\n" +
+                "        <div class=\"bar-saffron\"></div>\n" +
+                "        <div class=\"bar-white\"></div>\n" +
+                "        <div class=\"bar-green\"></div>\n" +
+                "    </div>\n" +
+                "\n" +
+                "    <!-- Official Style Payment Gateway Page -->\n" +
+                "    <div class=\"payment-box\">\n" +
                 "        <div class=\"header\">\n" +
-                "            <div class=\"logo-container\">\n" +
-                "                <span class=\"logo-text\">NPCI Gateway</span>\n" +
-                "                <span class=\"badge\">Sandbox</span>\n" +
+                "            <div class=\"logo-bhim\">\n" +
+                "                <span class=\"upi-text\">UPI</span>\n" +
+                "                <span class=\"bhim-text\">BHIM</span>\n" +
                 "            </div>\n" +
-                "            <p class=\"subtitle\">Secure Payment Simulator</p>\n" +
+                "            <div class=\"logo-npci\">NPCI</div>\n" +
                 "        </div>\n" +
                 "\n" +
-                "        <div class=\"txn-card\">\n" +
-                "            <div class=\"txn-row\">\n" +
-                "                <span class=\"label\">Transaction ID</span>\n" +
-                "                <span class=\"value\" style=\"font-family: monospace;\">" + txnId + "</span>\n" +
-                "            </div>\n" +
-                "            <div class=\"txn-row\">\n" +
-                "                <span class=\"label\">Amount Payable</span>\n" +
-                "                <span class=\"value amount\">₹ " + amount + "</span>\n" +
-                "            </div>\n" +
-                "        </div>\n" +
-                "\n" +
-                "        <div class=\"tabs\">\n" +
-                "            <button class=\"tab-btn active\" onclick=\"switchTab('upi')\">UPI</button>\n" +
-                "            <button class=\"tab-btn\" onclick=\"switchTab('card')\">Card</button>\n" +
-                "            <button class=\"tab-btn\" onclick=\"switchTab('nb')\">Net Banking</button>\n" +
-                "            <button class=\"tab-btn\" onclick=\"switchTab('wallet')\">Wallet</button>\n" +
-                "        </div>\n" +
-                "\n" +
-                "        <!-- UPI Tab Content -->\n" +
-                "        <div id=\"content-upi\" class=\"tab-content active\">\n" +
-                "            <div class=\"qr-container\">\n" +
-                "                <div class=\"qr-box\">\n" +
-                "                    <div class=\"qr-placeholder\">\n" +
-                "                        <span style=\"font-size: 28px;\">📱</span>\n" +
-                "                        <span style=\"font-size: 10px; font-weight: 600; margin-top: 4px; color: #475569;\">SCAN MOCK QR</span>\n" +
+                "        <div class=\"main-content\">\n" +
+                "            <div class=\"left-col\">\n" +
+                "                <div class=\"merchant-info\">\n" +
+                "                    <div class=\"info-row\">\n" +
+                "                        <span class=\"info-label\">Merchant Name</span>\n" +
+                "                        <span class=\"info-val\">UPYOG DIGIT Services</span>\n" +
+                "                    </div>\n" +
+                "                    <div class=\"info-row\">\n" +
+                "                        <span class=\"info-label\">Transaction ID</span>\n" +
+                "                        <span class=\"info-val\" style=\"font-family: monospace;\">" + txnId + "</span>\n" +
+                "                    </div>\n" +
+                "                    <div class=\"info-row\">\n" +
+                "                        <span class=\"info-label\">Amount Payable</span>\n" +
+                "                        <span class=\"info-val amount-val\">₹ " + amount + "</span>\n" +
                 "                    </div>\n" +
                 "                </div>\n" +
-                "                <span style=\"font-size: 11px; color: #9ca3af; margin-bottom: 12px;\">Or enter your UPI ID</span>\n" +
-                "            </div>\n" +
-                "            <div class=\"input-group\">\n" +
-                "                <label>UPI ID (VPA)</label>\n" +
-                "                <input type=\"text\" class=\"input-control\" placeholder=\"username@upi\" value=\"upyog@sandboxnpci\">\n" +
-                "            </div>\n" +
-                "        </div>\n" +
                 "\n" +
-                "        <!-- Card Tab Content -->\n" +
-                "        <div id=\"content-card\" class=\"tab-content\">\n" +
-                "            <div class=\"input-group\">\n" +
-                "                <label>Card Number</label>\n" +
-                "                <input type=\"text\" class=\"input-control\" placeholder=\"4111 2222 3333 4444\" value=\"4111 2222 3333 4444\">\n" +
-                "            </div>\n" +
-                "            <div class=\"row-grid\">\n" +
-                "                <div class=\"input-group\">\n" +
-                "                    <label>Expiry Date</label>\n" +
-                "                    <input type=\"text\" class=\"input-control\" placeholder=\"MM/YY\" value=\"12/30\">\n" +
+                "                <div class=\"timer-box\">\n" +
+                "                    <span>⏱️ Request expires in:</span>\n" +
+                "                    <span class=\"timer-clock\" id=\"timer\">05:00</span>\n" +
                 "                </div>\n" +
-                "                <div class=\"input-group\">\n" +
-                "                    <label>CVV</label>\n" +
-                "                    <input type=\"password\" class=\"input-control\" placeholder=\"123\" value=\"123\">\n" +
+                "\n" +
+                "                <div class=\"upi-input-section\">\n" +
+                "                    <span style=\"font-size: 13px; font-weight: 600; color: #4a5568;\">Pay by UPI ID / VPA</span>\n" +
+                "                    <div class=\"input-group\">\n" +
+                "                        <input type=\"text\" class=\"upi-id-input\" placeholder=\"example@upi\" value=\"upyog@npci\">\n" +
+                "                        <button class=\"btn-verify\">Pay</button>\n" +
+                "                    </div>\n" +
                 "                </div>\n" +
                 "            </div>\n" +
-                "            <div class=\"input-group\">\n" +
-                "                <label>Cardholder Name</label>\n" +
-                "                <input type=\"text\" class=\"input-control\" placeholder=\"John Doe\" value=\"Sandbox Citizen\">\n" +
+                "\n" +
+                "            <div class=\"right-col\">\n" +
+                "                <div class=\"qr-card\">\n" +
+                "                    <h2 class=\"qr-title\">Scan QR code to pay</h2>\n" +
+                "                    <div class=\"qr-image-wrapper\">\n" +
+                "                        <!-- Simulated QR Code SVG -->\n" +
+                "                        <svg class=\"qr-svg\" viewBox=\"0 0 100 100\" xmlns=\"http://www.w3.org/2000/svg\">\n" +
+                "                            <rect width=\"100\" height=\"100\" fill=\"#ffffff\"/>\n" +
+                "                            <rect x=\"5\" y=\"5\" width=\"25\" height=\"25\" fill=\"#000000\" stroke=\"#ffffff\" stroke-width=\"2\"/>\n" +
+                "                            <rect x=\"10\" y=\"10\" width=\"15\" height=\"15\" fill=\"#ffffff\"/>\n" +
+                "                            <rect x=\"13\" y=\"13\" width=\"9\" height=\"9\" fill=\"#000000\"/>\n" +
+                "                            \n" +
+                "                            <rect x=\"70\" y=\"5\" width=\"25\" height=\"25\" fill=\"#000000\" stroke=\"#ffffff\" stroke-width=\"2\"/>\n" +
+                "                            <rect x=\"75\" y=\"10\" width=\"15\" height=\"15\" fill=\"#ffffff\"/>\n" +
+                "                            <rect x=\"78\" y=\"13\" width=\"9\" height=\"9\" fill=\"#000000\"/>\n" +
+                "                            \n" +
+                "                            <rect x=\"5\" y=\"70\" width=\"25\" height=\"25\" fill=\"#000000\" stroke=\"#ffffff\" stroke-width=\"2\"/>\n" +
+                "                            <rect x=\"10\" y=\"75\" width=\"15\" height=\"15\" fill=\"#ffffff\"/>\n" +
+                "                            <rect x=\"13\" y=\"78\" width=\"9\" height=\"9\" fill=\"#000000\"/>\n" +
+                "\n" +
+                "                            <rect x=\"40\" y=\"40\" width=\"20\" height=\"20\" fill=\"#000000\"/>\n" +
+                "                            <rect x=\"45\" y=\"45\" width=\"10\" height=\"10\" fill=\"#ffffff\"/>\n" +
+                "\n" +
+                "                            <rect x=\"35\" y=\"10\" width=\"5\" height=\"10\" fill=\"#000000\"/>\n" +
+                "                            <rect x=\"45\" y=\"15\" width=\"10\" height=\"5\" fill=\"#000000\"/>\n" +
+                "                            <rect x=\"60\" y=\"25\" width=\"5\" height=\"15\" fill=\"#000000\"/>\n" +
+                "                            <rect x=\"10\" y=\"40\" width=\"15\" height=\"5\" fill=\"#000000\"/>\n" +
+                "                            <rect x=\"25\" y=\"50\" width=\"5\" height=\"10\" fill=\"#000000\"/>\n" +
+                "                            <rect x=\"40\" y=\"65\" width=\"15\" height=\"5\" fill=\"#000000\"/>\n" +
+                "                            <rect x=\"65\" y=\"50\" width=\"10\" height=\"15\" fill=\"#000000\"/>\n" +
+                "                            <rect x=\"80\" y=\"40\" width=\"5\" height=\"10\" fill=\"#000000\"/>\n" +
+                "                            <rect x=\"50\" y=\"80\" width=\"15\" height=\"5\" fill=\"#000000\"/>\n" +
+                "                            <rect x=\"75\" y=\"70\" width=\"10\" height=\"10\" fill=\"#000000\"/>\n" +
+                "                        </svg>\n" +
+                "                        <div class=\"qr-logo\">UPI</div>\n" +
+                "                    </div>\n" +
+                "                    <span style=\"font-size: 11px; color: #718096;\">Scan using GPay, PhonePe, Paytm or BHIM App</span>\n" +
+                "                </div>\n" +
                 "            </div>\n" +
                 "        </div>\n" +
                 "\n" +
-                "        <!-- Net Banking Tab Content -->\n" +
-                "        <div id=\"content-nb\" class=\"tab-content\">\n" +
-                "            <div class=\"bank-grid\">\n" +
-                "                <div class=\"bank-option selected\" onclick=\"selectBank(this)\">SBI</div>\n" +
-                "                <div class=\"bank-option\" onclick=\"selectBank(this)\">HDFC</div>\n" +
-                "                <div class=\"bank-option\" onclick=\"selectBank(this)\">ICICI</div>\n" +
-                "                <div class=\"bank-option\" onclick=\"selectBank(this)\">AXIS</div>\n" +
-                "                <div class=\"bank-option\" onclick=\"selectBank(this)\">PNB</div>\n" +
-                "                <div class=\"bank-option\" onclick=\"selectBank(this)\">BOB</div>\n" +
-                "            </div>\n" +
-                "            <div class=\"input-group\">\n" +
-                "                <label>Or Select Other Bank</label>\n" +
-                "                <select class=\"input-control\" style=\"background: #1e293b;\">\n" +
-                "                    <option>Select Bank</option>\n" +
-                "                    <option>Kotak Mahindra Bank</option>\n" +
-                "                    <option>Canara Bank</option>\n" +
-                "                    <option>Union Bank of India</option>\n" +
-                "                </select>\n" +
-                "            </div>\n" +
+                "        <div class=\"secure-footer\">\n" +
+                "            🛡️ Secured by NPCI / UPI\n" +
                 "        </div>\n" +
+                "    </div>\n" +
                 "\n" +
-                "        <!-- Wallet Tab Content -->\n" +
-                "        <div id=\"content-wallet\" class=\"tab-content\">\n" +
-                "            <div class=\"bank-grid\" style=\"grid-template-columns: repeat(2, 1fr);\">\n" +
-                "                <div class=\"bank-option selected\" onclick=\"selectBank(this)\">Paytm Wallet</div>\n" +
-                "                <div class=\"bank-option\" onclick=\"selectBank(this)\">PhonePe Wallet</div>\n" +
-                "                <div class=\"bank-option\" onclick=\"selectBank(this)\">Amazon Pay</div>\n" +
-                "                <div class=\"bank-option\" onclick=\"selectBank(this)\">Mobikwik</div>\n" +
-                "            </div>\n" +
-                "        </div>\n" +
-                "\n" +
-                "        <div class=\"actions\">\n" +
-                "            <a href=\"" + successUrl + "\" class=\"btn btn-success\">\n" +
-                "                Simulate Successful Payment\n" +
+                "    <!-- Sandbox Developer Control Panel -->\n" +
+                "    <div class=\"sim-control-panel\">\n" +
+                "        <h3 class=\"sim-title\">⚙️ Sandbox Simulation Panel</h3>\n" +
+                "        <div class=\"sim-actions\">\n" +
+                "            <a href=\"" + successUrl + "\" class=\"sim-btn sim-success\">\n" +
+                "                Simulate Payment Success\n" +
                 "            </a>\n" +
-                "            <a href=\"" + failureUrl + "\" class=\"btn btn-danger\">\n" +
-                "                Cancel / Simulate Failure\n" +
+                "            <a href=\"" + failureUrl + "\" class=\"sim-btn sim-failure\">\n" +
+                "                Simulate Payment Failure\n" +
                 "            </a>\n" +
                 "        </div>\n" +
-                "\n" +
-                "        <p class=\"footer\">This is a secure NPCI sandbox simulator. No real funds are transferred.</p>\n" +
                 "    </div>\n" +
                 "\n" +
                 "    <script>\n" +
-                "        function switchTab(tabId) {\n" +
-                "            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));\n" +
-                "            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));\n" +
-                "            \n" +
-                "            const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(btn => btn.textContent.toLowerCase().includes(tabId === 'nb' ? 'net' : tabId));\n" +
-                "            if (activeBtn) activeBtn.classList.add('active');\n" +
-                "            \n" +
-                "            const activeContent = document.getElementById('content-' + tabId);\n" +
-                "            if (activeContent) activeContent.classList.add('active');\n" +
-                "        }\n" +
-                "\n" +
-                "        function selectBank(element) {\n" +
-                "            const parent = element.parentElement;\n" +
-                "            parent.querySelectorAll('.bank-option').forEach(opt => opt.classList.remove('selected'));\n" +
-                "            element.classList.add('selected');\n" +
-                "        }\n" +
+                "        // Real-time ticking countdown timer\n" +
+                "        let time = 300;\n" +
+                "        const timerElement = document.getElementById('timer');\n" +
+                "        setInterval(() => {\n" +
+                "            if (time > 0) {\n" +
+                "                time--;\n" +
+                "                const minutes = Math.floor(time / 60);\n" +
+                "                const seconds = time % 60;\n" +
+                "                timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;\n" +
+                "            }\n" +
+                "        }, 1000);\n" +
                 "    </script>\n" +
                 "</body>\n" +
                 "</html>";
