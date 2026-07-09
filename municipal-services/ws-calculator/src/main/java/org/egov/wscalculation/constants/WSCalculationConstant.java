@@ -390,6 +390,8 @@ public class WSCalculationConstant {
 	public static final String WS_REOPENING_FEE = "WS_REOPENING_FEE";
 	public static final String WS_MUTATION_TRADE_SECURITY = "WS_MUTATION_TRADE_SECURITY";
 	public static final String MUTATION_BUSINESS_SERVICE = "WS.MUTATION";
+	public static final String WS_MUTATION_PENALTY = "WS_MUTATION_PENALTY";
+	public static final String WS_MUTATION_REBATE = "WS_MUTATION_REBATE";
 
 	// -----------------------------------------
 	// Fee Slab JSON Keys :- Added By - UMESH
@@ -438,6 +440,15 @@ public class WSCalculationConstant {
 	public static final String WS_NEW_CONNECTION_FEE = "WS_NEW_CONNECTION_FEE";
 	public static final String WS_INFRASTRUCTURE_CHARGE = "WS_INFRASTRUCTURE_CHARGE";
 	public static final String LOCALITY_CATEGORY_MAP = "LOCALITY_CATEGORY_MAP";
+
+	public static final String TAX_PERCENTAGE = "TAX_PERCENTAGE";
+
+	public static final String ROAD_TYPE_BERM_CUTTING_KATCHA = "BERMCUTTINGKATCHA";
+	public static final String ROAD_TYPE_BM_PREMIX_ROAD = "BMPREMIXROAD";
+
+	public static final String REBATES = "rebates";
+	public static final String CATEGORIES = "categories";
+	public static final String DESCRIPTION = "description";
 
 }
 
