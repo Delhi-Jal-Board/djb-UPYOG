@@ -55,7 +55,7 @@ import {
   findLocalisation,
   getDateInRequiredFormat
 } from "./utils/commons";
-const { runMigrations } = require("./migrate");
+// const { runMigrations } = require("./migrate");
 
 let v8 = require("v8");
 let egov_host = envVariables.EGOV_HOST;
@@ -95,7 +95,7 @@ let formatConfigMap = {};
 
 let topicKeyMap = {};
 var topic = [];
-var datafileLength = dataConfigUrls.split(",").length;
+// var datafileLength = dataConfigUrls.split(",").length;
 let unregisteredLocalisationCodes = [];
 
 var fontDescriptors = {
@@ -848,19 +848,19 @@ formatConfigUrls &&
   });
 
 // Run DB migrations on startup (like Flyway in Java)
-runMigrations(envVariables)
-  .then(() => {
-    app.listen(serverport, () => {
-      logger.info(`Server running at http:${serverport}/`);
-    });
-    topic.push(envVariables.KAFKA_RECEIVE_CREATE_JOB_TOPIC);
-    listenConsumer(topic);
-  })
-  .catch((err) => {
-    logger.error("[Migration] Fatal error during DB migration, server not started.");
-    logger.error(err.stack || err);
-    process.exit(1);
-  });
+// runMigrations(envVariables)
+//   .then(() => {
+//     app.listen(serverport, () => {
+//       logger.info(`Server running at http:${serverport}/`);
+//     });
+//     topic.push(envVariables.KAFKA_RECEIVE_CREATE_JOB_TOPIC);
+//     listenConsumer(topic);
+//   })
+//   .catch((err) => {
+//     logger.error("[Migration] Fatal error during DB migration, server not started.");
+//     logger.error(err.stack || err);
+//     process.exit(1);
+//   });
 
 /**
  *
