@@ -847,20 +847,11 @@ formatConfigUrls &&
     }
   });
 
-// Run DB migrations on startup (like Flyway in Java)
-// runMigrations(envVariables)
-//   .then(() => {
-//     app.listen(serverport, () => {
-//       logger.info(`Server running at http:${serverport}/`);
-//     });
-//     topic.push(envVariables.KAFKA_RECEIVE_CREATE_JOB_TOPIC);
-//     listenConsumer(topic);
-//   })
-//   .catch((err) => {
-//     logger.error("[Migration] Fatal error during DB migration, server not started.");
-//     logger.error(err.stack || err);
-//     process.exit(1);
-//   });
+app.listen(serverport, () => {
+  logger.info(`Server running at http:${serverport}/`);
+});
+topic.push(envVariables.KAFKA_RECEIVE_CREATE_JOB_TOPIC);
+listenConsumer(topic);
 
 /**
  *
