@@ -4,7 +4,7 @@
   "description": "Starter project for an ES6 RESTful Express API",
   "main": "dist",
   "scripts": {
-    "dev": "nodemon -w src --exec \"babel-node src --presets es2015,stage-0\"",
+    "dev": "nodemon -L -w src --exec \"babel-node src --presets es2015,stage-0\"",
     "build": "babel src -s -D -d dist --presets es2015,stage-0",
     "start": "node --max-old-space-size=8192 dist",
     "prestart": "npm run -s build",
@@ -40,7 +40,7 @@
     "express-async-handler": "^1.1.4",
     "form-data": "^2.5.0",
     "jsonpath": "^1.0.2",
-    "kafka-node": "^5.0.0",
+    "kafkajs": "^2.2.4",
     "lodash.get": "^4.4.2",
     "lodash.set": "^4.3.2",
     "moment-timezone": "^0.5.28",
