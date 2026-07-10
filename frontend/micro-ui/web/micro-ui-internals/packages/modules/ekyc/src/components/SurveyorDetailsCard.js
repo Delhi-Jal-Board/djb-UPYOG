@@ -22,9 +22,26 @@ const SurveyorDetailsDashboard = () => {
 
   const { t } = useTranslation();
 
-  const searchParams = surveyorId ? { ids: surveyorId } : { ownerIds };
+  const { data: surveyorSearchById, isLoading: isLoadingId } = Digit.Hooks.fsm.useSurveyorSearch(
+    tenantId,
+    { ids: surveyorId },
+    { enabled: !!surveyorId, staleTime: Infinity }
+  );
 
-  const { data: surveyorSearchResponse, isLoading } = Digit.Hooks.fsm.useSurveyorSearch(tenantId, searchParams, { staleTime: Infinity });
+  const { data: surveyorSearchByOwner, isLoading: isLoadingOwner } = Digit.Hooks.fsm.useSurveyorSearch(
+    tenantId,
+    surveyorId ? { ownerIds: surveyorId } : { ownerIds },
+    { enabled: true, staleTime: Infinity }
+  );
+
+  const surveyorSearchResponse = useMemo(() => {
+    if (surveyorId) {
+      return surveyorSearchById?.surveyors?.length ? surveyorSearchById : surveyorSearchByOwner;
+    }
+    return surveyorSearchByOwner;
+  }, [surveyorId, surveyorSearchById, surveyorSearchByOwner]);
+
+  const isLoading = surveyorId ? (isLoadingId || isLoadingOwner) : isLoadingOwner;
 
   const roles = Digit.SessionStorage.get("User")?.info?.roles.map((ele) => ele.code);
 
@@ -32,8 +49,8 @@ const SurveyorDetailsDashboard = () => {
     return surveyorSearchResponse?.surveyors?.[0] || null;
   }, [surveyorSearchResponse]);
 
-  const { data: vendorData } = Digit.Hooks.fsm.useDsoSearch(tenantId, { status: "ACTIVE" }, { enabled: !!tenantId });
-  const { data: supervisorSearchResponse } = Digit.Hooks.fsm.useSupervisorSearch(tenantId, { status: "ACTIVE" }, { enabled: !!tenantId });
+  const { data: vendorData, isLoading: isVendorLoading } = Digit.Hooks.fsm.useDsoSearch(tenantId, { status: "ACTIVE" }, { enabled: !!tenantId });
+  const { data: supervisorSearchResponse, isLoading: isSupervisorSearchLoading } = Digit.Hooks.fsm.useSupervisorSearch(tenantId, { status: "ACTIVE" }, { enabled: !!tenantId });
   const vendorName = useMemo(() => {
     if (surveyor?.vendorName) return surveyor.vendorName;
     if (!vendorData || !surveyor?.vendorId) return "N/A";
@@ -125,7 +142,9 @@ const SurveyorDetailsDashboard = () => {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  if (isLoading) {
+  const isPageLoading = isLoading || isVendorLoading || isSupervisorSearchLoading;
+
+  if (isPageLoading && !surveyor) {
     return <Loader />;
   }
 
@@ -311,55 +330,55 @@ const SurveyorDetailsDashboard = () => {
       }
 
       const excludedKeys = [
-          "status", "source", "submittedAt", "assignedAt", "connectionType", "approvedAt",
-          "alternateMobileNo", "city", "state", "addressType", "addressProofType", "mrcode",
-          "areacode", "verificationStatus", "surveyorId", "supervisorId", "vendorId",
-          "assignmentType", "assignmentValue", "assignedTime", "isSelfAssigned", "userType",
-          "tenantName", "tenantMobile"
+        "status", "source", "submittedAt", "assignedAt", "connectionType", "approvedAt",
+        "alternateMobileNo", "city", "state", "addressType", "addressProofType", "mrcode",
+        "areacode", "verificationStatus", "surveyorId", "supervisorId", "vendorId",
+        "assignmentType", "assignmentValue", "assignedTime", "isSelfAssigned", "userType",
+        "tenantName", "tenantMobile"
       ];
 
       const headerMapping = {
-          kno: t("KNO") || "KNO",
-          firstName: t("FIRST_NAME") || "First Name",
-          middleName: t("MIDDLE_NAME") || "Middle Name",
-          lastName: t("LAST_NAME") || "Last Name",
-          gender: t("GENDER") || "Gender",
-          mobileNumber: t("MOBILE_NUMBER") || "Mobile Number",
-          emailId: t("EMAIL_ID") || "Email ID",
-          fatherOrHusbandName: t("FATHER_HUSBUND_NAME") || "Father/Husband Name",
-          relationship: t("RELATIONSHIP") || "Relationship",
-          dob: t("DOB") || "Date of Birth",
-          ekycStatus: t("EKYC_STATUS") || "eKYC Status",
-          zoneName: t("ZONE") || "Zone",
-          assembly: t("ASSEMBLY") || "Assembly",
-          ward: t("WARD") || "Ward",
-          pincode: t("PINCODE") || "Pincode",
-          mrkey: t("MR_KEY") || "MR Key",
-          createdTime: t("CREATED_TIME") || "Created Time",
-          lastModifiedTime: t("LAST_MODIFIED_TIME") || "Last Modified Time",
+        kno: t("KNO") || "KNO",
+        firstName: t("FIRST_NAME") || "First Name",
+        middleName: t("MIDDLE_NAME") || "Middle Name",
+        lastName: t("LAST_NAME") || "Last Name",
+        gender: t("GENDER") || "Gender",
+        mobileNumber: t("MOBILE_NUMBER") || "Mobile Number",
+        emailId: t("EMAIL_ID") || "Email ID",
+        fatherOrHusbandName: t("FATHER_HUSBUND_NAME") || "Father/Husband Name",
+        relationship: t("RELATIONSHIP") || "Relationship",
+        dob: t("DOB") || "Date of Birth",
+        ekycStatus: t("EKYC_STATUS") || "eKYC Status",
+        zoneName: t("ZONE") || "Zone",
+        assembly: t("ASSEMBLY") || "Assembly",
+        ward: t("WARD") || "Ward",
+        pincode: t("PINCODE") || "Pincode",
+        mrkey: t("MR_KEY") || "MR Key",
+        createdTime: t("CREATED_TIME") || "Created Time",
+        lastModifiedTime: t("LAST_MODIFIED_TIME") || "Last Modified Time",
       };
 
       const excelData = consumerList.map((item) => {
-          const cleanObj = {};
-          
-          const fullName = [item.firstName, item.middleName, item.lastName].filter(Boolean).join(" ");
-          if (fullName) {
-              cleanObj[t("CONSUMER_NAME") || "Consumer Name"] = fullName;
+        const cleanObj = {};
+
+        const fullName = [item.firstName, item.middleName, item.lastName].filter(Boolean).join(" ");
+        if (fullName) {
+          cleanObj[t("CONSUMER_NAME") || "Consumer Name"] = fullName;
+        }
+
+        Object.keys(item).forEach(key => {
+          if (excludedKeys.includes(key)) return;
+
+          const val = item[key];
+          if (typeof val === "object" && val !== null) {
+            return;
           }
 
-          Object.keys(item).forEach(key => {
-              if (excludedKeys.includes(key)) return;
-              
-              const val = item[key];
-              if (typeof val === "object" && val !== null) {
-                  return;
-              }
-              
-              const friendlyHeader = headerMapping[key] || t(key.toUpperCase()) || key;
-              cleanObj[friendlyHeader] = val;
-          });
+          const friendlyHeader = headerMapping[key] || t(key.toUpperCase()) || key;
+          cleanObj[friendlyHeader] = val;
+        });
 
-          return cleanObj;
+        return cleanObj;
       });
 
       const cleanFileName = `eKYC_Data_${fullName.replace(/[^a-zA-Z0-9]/g, "_")}`;
@@ -533,7 +552,7 @@ const SurveyorDetailsDashboard = () => {
                 <span className="label">{t("SERVICE_TYPE")}</span>
                 <span className="value">{surveyor?.additionalDetails?.serviceType || "N/A"}</span>
               </div>
-              
+
               <div className="detail-item">
                 <span className="label">{t("VENDOR_NAME") || "Vendor Name"}</span>
                 <span className="value">{vendorName}</span>
@@ -551,8 +570,8 @@ const SurveyorDetailsDashboard = () => {
             <div className="download-card">
               <h4>{t("DOWNLOAD_EKYC_DATA") || "Download eKYC Data"}</h4>
               <p>
-                {t("DOWNLOAD_EKYC_DATA_DESC") || 
-                 "Export the complete eKYC verification records for your assigned jurisdiction into Excel format."}
+                {t("DOWNLOAD_EKYC_DATA_DESC") ||
+                  "Export the complete eKYC verification records for your assigned jurisdiction into Excel format."}
               </p>
               <button
                 className="download-excel-btn"
@@ -606,7 +625,7 @@ const SurveyorDetailsDashboard = () => {
         />
       </Card>
       {/* Actions */}
-      {(!roles.includes("EKYC_SURVEYOR") || roles.includes("EMPLOYEE")) && (
+      {roles.includes("EKYC_SUPERVISOR") && (
         <ActionBar>
           <SubmitBar label={t("EKYC_ASSIGN_KNOS")} onSubmit={() => setShowOptions((prev) => !prev)} />
 

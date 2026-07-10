@@ -141,7 +141,7 @@ const CitizenApp = () => {
             )}
           />
           <PrivateRoute
-            path={[`${path}/vendor-dashboard/:vendorId`, `${path}/vendor-dashboard`, `${path}/dashboard`]}
+            path={[`${path}/vendor-dashboard/:vendorId`, `${path}/vendor-dashboard`]}
             component={() => (
               <LayoutWrapper layoutClass="normal">
                 <VendorDetailsCard />
@@ -244,7 +244,7 @@ const CitizenApp = () => {
             )}
           />
           <PrivateRoute
-            path={`${path}/supervisor-dashboard`}
+            path={[`${path}/supervisor-dashboard/:id`, `${path}/supervisor-dashboard`]}
             component={() => (
               <LayoutWrapper layoutClass="normal">
                 <SupervisorDetailsCard />
