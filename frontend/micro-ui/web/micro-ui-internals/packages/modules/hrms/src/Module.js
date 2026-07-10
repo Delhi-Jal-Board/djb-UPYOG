@@ -7,7 +7,6 @@ import Assignments from "./components/pageComponents/assignment";
 import HRBanner from "./components/pageComponents/Banner";
 import SelectDateofBirthEmployment from "./components/pageComponents/EmployeeDOB";
 import SelectEmployeePhoneNumber from "./components/pageComponents/EmployeePhoneNumber";
-import Jurisdictions from "./components/pageComponents/jurisdiction";
 import SelectDateofEmployment from "./components/pageComponents/SelectDateofEmployment";
 import SelectEmployeeEmailId from "./components/pageComponents/SelectEmailId";
 import SelectEmployeeCorrespondenceAddress from "./components/pageComponents/SelectEmployeeCorrespondenceAddress";
@@ -21,11 +20,12 @@ import EditEmployee from "./pages/EditEmployee/index";
 import Details from "./pages/EmployeeDetails";
 import Inbox from "./pages/Inbox";
 import Response from "./pages/Response";
+import Jurisdictions from "./components/pageComponents/Jurisdictions";
 
 export const HRMSModule = ({ stateCode, userType, tenants }) => {
   const moduleCode = "HR";
   const language = Digit.StoreData.getCurrentLanguage();
-  const { isLoading, data: store } = Digit.Services.useStore({ stateCode, moduleCode, language });
+  const { data } = Digit.Services.useStore({ stateCode, moduleCode, language });
 
   Digit.SessionStorage.set("HRMS_TENANTS", tenants);
   const { path, url } = useRouteMatch();

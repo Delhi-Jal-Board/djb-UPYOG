@@ -390,6 +390,7 @@ import { useUpdateFixedPointSchedule } from "./wt/useUpdateFixedPointSchedule";
 import useVendorFillingMap from "./wt/useVendorFillingMap";
 import useDriverTripReportSearch from "./wt/useDriverTripReportSearch";
 import useUpdateEmergencyBooking from "./wt/useUpdateEmergencyBooking";
+import useToast from "./useToast";
 
 const wt = {
   useTankerCreateAPI,
@@ -863,6 +864,7 @@ const Hooks = {
   ekyc,
   useRouteSubscription,
   useAddress,
+  useToast,
 };
 
 export default Hooks;

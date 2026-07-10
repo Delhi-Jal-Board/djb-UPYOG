@@ -1,4 +1,4 @@
-import { LabelFieldPair, Dropdown, TextInput, CardLabelError, CardLabel, CollapsibleCardPage, CloseSvg } from "@djb25/digit-ui-react-components";
+import { LabelFieldPair, Dropdown, TextInput, CardLabelError, CardLabel, CollapsibleCardPage } from "@djb25/digit-ui-react-components";
 import React, { useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import _ from "lodash";
@@ -10,7 +10,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
   const {
     control,
     register,
-    formState: { errors, touched },
+    formState: { errors },
     watch,
     setValue,
   } = useForm({
@@ -32,7 +32,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
 
-  const { isLoading: isWSServicesMastersLoading, data: ptServicesMastersData } = Digit.Hooks.pt.usePropertyMDMS(tenantId, "PropertyTax", [
+  const { data: ptServicesMastersData } = Digit.Hooks.pt.usePropertyMDMS(tenantId, "PropertyTax", [
     "PropertyCategory",
     "PropertyType",
     "NoOfFloors",
@@ -230,7 +230,12 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
   const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
 
   return (
-    <CollapsibleCardPage title={t("WS_PROPERTY_AND_WATER_CONNECTION_USE_DETAILS") + (config?.isAutomaticFill ? " (Automatic Fill by Property )" : "")} defaultOpen={config?.isAutomaticFill ? false : true} style={props.style}>
+    <CollapsibleCardPage
+      title={t("WS_PROPERTY_AND_WATER_CONNECTION_USE_DETAILS") + (config?.isAutomaticFill ? " " + t("(Automatic Fill by Property)") : "")}
+      defaultOpen={false}
+      // defaultOpen={config?.isAutomaticFill ? false : true}
+      style={props.style}
+    >
       <div className="formcomposer-section-grid">
         <LabelFieldPair>
           <CardLabel>{`${t("WS_CATEGORY_TYPE")}*`}</CardLabel>

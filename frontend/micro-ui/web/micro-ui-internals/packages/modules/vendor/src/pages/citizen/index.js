@@ -19,7 +19,8 @@ import AddSupervisor from "../../components/RegisterSupervisor/AddSupervisor";
 import SupervisorDetails from "../../components/RegisterSupervisor/SupervisorDetails";
 import SearchVendor from "../../components/SearchVendor/Index";
 import VENDORCreate from "../../components/Create";
-import EditVendorDetails from "../../components/RegisterVendor/EditVendorDetails";
+import VendorDetails from "../../components/RegisterVendor/VendorDetails";
+import EditVendor from "../../components/RegisterVendor/EditVendor";
 
 // Main Routing Page used for routing accorss the Water Tanker Module
 const CitizenVendorApp = () => {
@@ -189,7 +190,15 @@ const CitizenVendorApp = () => {
             path={`${path}/registry/vendor-details/:id`}
             component={(props) => (
               <LayoutWrapper layoutClass="action">
-                <EditVendorDetails {...props} parentRoute={path} />
+                <VendorDetails {...props} parentRoute={path} />
+              </LayoutWrapper>
+            )}
+          />
+          <PrivateRoute
+            path={`${path}/registry/modify-vendor/:id`}
+            component={(props) => (
+              <LayoutWrapper layoutClass="action">
+                <EditVendor {...props} parentRoute={path} />
               </LayoutWrapper>
             )}
           />

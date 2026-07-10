@@ -11,7 +11,7 @@ import {
 } from "@djb25/digit-ui-react-components";
 import { Controller, useForm } from "react-hook-form";
 
-const VendorDetails = ({ t, config, onSelect, userType, formData, ownerIndex }) => {
+const AdditionalDetails = ({ t, config, onSelect, userType, formData, ownerIndex }) => {
   let index = 0;
 
   const user = Digit.UserService.getUser().info;
@@ -673,4 +673,4 @@ const VendorDetails = ({ t, config, onSelect, userType, formData, ownerIndex }) 
   );
 };
 
-export default VendorDetails;
+export default AdditionalDetails;

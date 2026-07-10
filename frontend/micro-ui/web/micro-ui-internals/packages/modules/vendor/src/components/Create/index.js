@@ -4,7 +4,6 @@ import { useTranslation } from "react-i18next";
 import { useQueryClient } from "react-query";
 import { Redirect, Route, Switch, useHistory, useLocation, useRouteMatch } from "react-router-dom";
 import { createConfig } from "../../config/Create/createConfig";
-// import { createConfig } from "../../../config/Create/createConfig";
 
 const VENDORCreate = ({ parentRoute }) => {
   const queryClient = useQueryClient();
@@ -57,7 +56,6 @@ const VENDORCreate = ({ parentRoute }) => {
       nextStep = key;
     }
     if (nextStep === null) {
-      console.log("matchhhhh pathhhh", match.path);
       return redirectWithHistory(`${match.path}/check`);
     }
     if (!isNaN(nextStep.split("/").pop())) {
@@ -109,10 +107,8 @@ const VENDORCreate = ({ parentRoute }) => {
     return <Loader />;
   }
 
-  // commonFields=newConfig;
   /* use newConfig instead of commonFields for local development in case needed */
-  let commonFields = createConfig;
-  commonFields.forEach((obj) => {
+  createConfig.forEach((obj) => {
     config = config.concat(obj.body.filter((a) => !a.hideInCitizen));
   });
 

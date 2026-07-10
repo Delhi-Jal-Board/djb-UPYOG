@@ -24,7 +24,6 @@ const EditApplication = () => {
   let tenantId = Digit.ULBService.getCurrentTenantId();
   tenantId ? tenantId : Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code;
 
-  const applicationNumber = filters?.applicationNumber;
   const editApplicationDetails = JSON.parse(sessionStorage.getItem("WS_EDIT_APPLICATION_DETAILS"));
   const serviceType = filters?.service || editApplicationDetails?.applicationData?.serviceType;
 
@@ -34,7 +33,7 @@ const EditApplication = () => {
   const stateId = Digit.ULBService.getStateId();
   let { data: newConfig, isLoading: isConfigLoading } = Digit.Hooks.ws.useWSConfigMDMS.WSCreateConfig(stateId, {});
 
-  let { isLoading, isError, data: applicationDetails, error } = Digit.Hooks.ws.useWSDetailsPage(
+  let { isLoading, data: applicationDetails } = Digit.Hooks.ws.useWSDetailsPage(
     t,
     tenantId,
     details?.applicationNo,
@@ -44,14 +43,14 @@ const EditApplication = () => {
   details = applicationDetails;
   const [propertyId, setPropertyId] = useState(new URLSearchParams(useLocation().search).get("propertyId"));
 
-  const [sessionFormData, setSessionFormData, clearSessionFormData] = Digit.Hooks.useSessionStorage("PT_CREATE_EMP_WS_NEW_FORM", {});
+  const [sessionFormData, setSessionFormData] = Digit.Hooks.useSessionStorage("PT_CREATE_EMP_WS_NEW_FORM", {});
 
   const { data: propertyDetails } = Digit.Hooks.pt.usePropertySearch(
     { filters: { propertyIds: propertyId }, tenantId: tenantId },
     {
       filters: { propertyIds: propertyId },
       tenantId: tenantId,
-      enabled: propertyId && propertyId != "" ? true : false,
+      enabled: propertyId && propertyId !== "" ? true : false,
       privacy: Digit.Utils.getPrivacyObject(),
     }
   );
@@ -110,13 +109,7 @@ const EditApplication = () => {
     return () => clearTimeout(timer);
   }, [isAppDetailsPage]);
 
-  const {
-    isLoading: updatingApplication,
-    isError: updateApplicationError,
-    data: updateResponse,
-    error: updateError,
-    mutate,
-  } = Digit.Hooks.ws.useWSApplicationActions(serviceType);
+  const { mutate } = Digit.Hooks.ws.useWSApplicationActions(serviceType);
 
   const onFormValueChange = (setValue, formData, formState) => {
     if (!_.isEqual(sessionFormData, formData)) {
@@ -124,9 +117,9 @@ const EditApplication = () => {
     }
     if (
       Object.keys(formState.errors).length > 0 &&
-      Object.keys(formState.errors).length == 1 &&
+      Object.keys(formState.errors).length === 1 &&
       formState.errors["owners"] &&
-      Object.values(formState.errors["owners"].type).filter((ob) => ob.type === "required").length == 0 &&
+      Object.values(formState.errors["owners"].type).filter((ob) => ob.type === "required").length === 0 &&
       !formData?.cpt?.details?.propertyId
     )
       setSubmitValve(true);
@@ -143,7 +136,7 @@ const EditApplication = () => {
       const details = sessionStorage.getItem("WS_EDIT_APPLICATION_DETAILS") ? JSON.parse(sessionStorage.getItem("WS_EDIT_APPLICATION_DETAILS")) : {};
       let convertAppData = await convertEditApplicationDetails(data, details, actionData);
       const reqDetails =
-        data?.ConnectionDetails?.[0]?.serviceName == "WATER" ? { WaterConnection: convertAppData } : { SewerageConnection: convertAppData };
+        data?.ConnectionDetails?.[0]?.serviceName === "WATER" ? { WaterConnection: convertAppData } : { SewerageConnection: convertAppData };
       setSubmitValve(false);
 
       if (details?.processInstancesDetails?.[0]?.state?.applicationStatus?.includes("CITIZEN_ACTION")) {
@@ -151,7 +144,6 @@ const EditApplication = () => {
           mutate(reqDetails, {
             onError: (error, variables) => {
               setShowToast({ key: "error", message: error?.message ? error.message : error });
-              setTimeout(closeToastOfError, 5000);
               setSubmitValve(true);
             },
             onSuccess: (data, variables) => {
@@ -176,8 +168,6 @@ const EditApplication = () => {
   if (enabledLoader || isConfigLoading) {
     return <Loader />;
   }
-
-  console.log(config.body);
 
   return (
     <React.Fragment>

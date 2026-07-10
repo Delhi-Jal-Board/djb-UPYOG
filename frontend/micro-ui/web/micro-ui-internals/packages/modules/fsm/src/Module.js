@@ -59,8 +59,6 @@ import SelectTrips from "./pageComponents/SelectTrips";
 import PlusMinusInput from "./pageComponents/PlusMinusInput";
 import ConfirmationBox from "./components/Confirmation";
 import SelectLocalityOrGramPanchayat from "./pageComponents/SelectLocalityOrGramPanchayat";
-import EditVendor from "./components/Vendor/EditVendor";
-import VendorDetails from "../../vendor/src/pageComponents/VendorDetails";
 import AddVendor from "../../vendor/src/components/RegisterVendor/AddVendor";
 
 const FSMModule = ({ stateCode, userType, tenants }) => {
@@ -85,7 +83,7 @@ const FSMLinks = ({ matchPath, userType }) => {
   const { t } = useTranslation();
   const [clearParams] = Digit.Hooks.useSessionStorage("FSM_CITIZEN_FILE_PROPERTY", {});
 
-useEffect(
+  useEffect(
     () =>
       userType === "employee" &&
       Digit.LocalizationService.getLocale({
@@ -210,9 +208,7 @@ const componentsToRegister = {
   FSMSelectRating: SelectRating,
   FSMDsoDashboard: DsoDashboard,
   FSMRegistry,
-  VendorDetails,
   AddVendor,
-  EditVendor,
   VehicleDetails,
   AddVehicle,
   EditVehicle,

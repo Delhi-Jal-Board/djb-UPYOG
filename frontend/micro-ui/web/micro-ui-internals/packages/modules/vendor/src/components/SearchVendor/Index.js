@@ -12,7 +12,6 @@ const SearchVendor = () => {
   const roles = Digit.UserService.getUser()?.info?.roles?.map((r) => r.code) || [];
 
   const location = useLocation();
-
   const initialPage =
     roles.includes("EKYC_VENDOR") || roles.includes("WT_VENDOR")
       ? "VENDOR"
@@ -32,6 +31,15 @@ const SearchVendor = () => {
   const [driverIds, setDriverIds] = useState("");
   const [tableData, setTableData] = useState([]);
   const [showToast, setShowToast] = useState(null);
+  const { consumeToast } = Digit.Hooks.useToast();
+
+  useEffect(() => {
+    const message = consumeToast();
+
+    if (message) {
+      setShowToast(message);
+    }
+  }, []);
 
   const isCitizen = userInfo?.info?.type === "CITIZEN";
   const loggedInVendorId = userInfo?.info?.uuid;

@@ -19,7 +19,6 @@ const CitizenApp = ({ path }) => {
   const Inbox = Digit.ComponentRegistryService.getComponent("FSMEmpInbox");
   const EditVendor = Digit.ComponentRegistryService.getComponent("EditVendor");
 
-  console.log(`${path}/registry/modify-vendor/:id`);
   return (
     <React.Fragment>
       <div className="fsm-citizen-wrapper">

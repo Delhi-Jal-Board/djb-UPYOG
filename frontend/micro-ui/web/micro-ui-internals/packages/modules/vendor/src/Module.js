@@ -2,7 +2,6 @@ import React, { useEffect } from "react";
 import { useRouteMatch } from "react-router-dom";
 import EmployeeApp from "./pages/employee";
 import VENDORCard from "./components/VENDORCard";
-import VendorDetails from "./pageComponents/VendorDetails";
 import VendorDocuments from "./pageComponents/VendorDocuments";
 import ServiceDoc from "./pageComponents/ServiceDoc";
 import VendorSelectAddress from "./pageComponents/VendorSelectAddress";
@@ -20,9 +19,11 @@ import VehicleDetails from "./components/RegisterVehicle/VehicleDetails";
 import SelectEkycZones from "./pageComponents/SelectEkycZones";
 import SelectEkycClusters from "./pageComponents/SelectEkycClusters";
 import SelectEkycDropdown from "./pageComponents/SelectEkycDropdown";
+import VendorDetails from "./components/RegisterVendor/VendorDetails";
+import EditVendor from "./components/RegisterVendor/EditVendor";
+import AdditionalDetails from "./pageComponents/AdditionalDetails";
 
 const componentsToRegister = {
-  VendorDetails,
   //VENDOREMPCreate,
   // VendorAddress,
   // VendorPincode,
@@ -42,6 +43,9 @@ const componentsToRegister = {
   SelectEkycZones,
   SelectEkycClusters,
   SelectEkycDropdown,
+  VendorDetails,
+  EditVendor,
+  AdditionalDetails,
 };
 
 const addComponentsToRegistry = () => {

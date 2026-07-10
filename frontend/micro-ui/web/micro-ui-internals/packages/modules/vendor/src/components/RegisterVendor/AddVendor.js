@@ -16,12 +16,27 @@ const AddVendor = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [showToast, setShowToast] = useState(null);
   // const [canSubmit, setCanSubmit] = useState(false);
+  const [genderMenu, setGenderMenu] = useState([]);
 
   const [, setMutationHappened] = Digit.Hooks.useSessionStorage("FSM_MUTATION_HAPPENED", false);
 
   const [, , clearError] = Digit.Hooks.useSessionStorage("FSM_ERROR_DATA", false);
 
   const [, , clearSuccessData] = Digit.Hooks.useSessionStorage("FSM_MUTATION_SUCCESS_DATA", false);
+
+  const stateId = Digit.ULBService.getStateId();
+  const { data: genderTypeData } = Digit.Hooks.obps.useMDMS(stateId, "common-masters", ["GenderType"]);
+
+  useEffect(() => {
+    if (genderTypeData && genderTypeData["common-masters"]?.GenderType?.length) {
+      const menuItems = genderTypeData["common-masters"]?.GenderType?.filter((data) => data.active).map((genderDetails) => ({
+        i18nKey: `COMMON_GENDER_${genderDetails.code}`,
+        code: `${genderDetails.code}`,
+        value: `${genderDetails.code}`,
+      }));
+      setGenderMenu(menuItems);
+    }
+  }, [genderTypeData]);
 
   const { mutate } = Digit.Hooks.fsm.useVendorCreate(tenantId);
 
@@ -47,7 +62,9 @@ const AddVendor = () => {
 
   const [formData, setFormData] = useState(defaultValues);
 
-  const Config = React.useMemo(() => VendorConfig(t, false, formData), [t, formData.serviceType?.code]);
+  const Config = React.useMemo(() => {
+    return VendorConfig(t, formData.serviceType?.code, genderMenu);
+  }, [t, formData?.serviceType?.i18nKey, genderMenu]);
 
   const onFormValueChange = (setValue, data) => {
     // Only update formData state if keys that affect dynamic config or child components change
@@ -190,9 +207,9 @@ const AddVendor = () => {
         },
         ward: wardCode
           ? {
-            code: wardCode,
-            name: wardName,
-          }
+              code: wardCode,
+              name: wardName,
+            }
           : undefined,
         geoLocation: {
           latitude: mergedData?.address?.latitude || 28.6139,
@@ -220,8 +237,8 @@ const AddVendor = () => {
     if (isEkyc) {
       vendorData = {
         ...vendorData,
-        zoneIds: mergedData?.zoneIds?.map((z) => z?.code || z?.[1]?.code || z) || [],
-        clusterIds: mergedData?.clusterIds?.map((c) => c?.code || c?.[1]?.code || c) || [],
+        zoneIds: mergedData?.zoneIds?.map((z) => z?.name) || [],
+        clusterIds: mergedData?.clusterIds?.map((c) => c?.[1]?.code) || [],
         contractStartDate: mergedData.contractStartDate ? new Date(mergedData.contractStartDate).getTime() : null,
         contractEndDate: mergedData.contractEndDate ? new Date(mergedData.contractEndDate).getTime() : null,
       };
@@ -280,7 +297,7 @@ const AddVendor = () => {
           defaultValues={defaultValues}
           noCard={true}
           noBreakLine={true}
-        // isDisabled={!canSubmit}
+          // isDisabled={!canSubmit}
         />
         {showToast && (
           <Toast
