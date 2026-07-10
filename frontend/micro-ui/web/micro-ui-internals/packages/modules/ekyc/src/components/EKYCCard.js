@@ -57,11 +57,11 @@ const EKYCCard = () => {
       // },
       ...(!roles.includes("EMPLOYEE")
         ? [
-            {
-              label: t("EKYC_ASSIGN"),
-              link: `/digit-ui/employee/ekyc/assign`,
-            },
-          ]
+          {
+            label: t("EKYC_ASSIGN"),
+            link: `/digit-ui/employee/ekyc/assign`,
+          },
+        ]
         : []),
     ],
   };

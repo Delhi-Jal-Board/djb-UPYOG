@@ -181,9 +181,8 @@ const AdminDashboard = () => {
                     className="download-excel-btn"
                     disabled={ekycDownloadLoading}
                     onClick={handleDownloadEkycData}
-                    style={{ margin: 0, padding: "8px 16px", height: "auto", minHeight: "36px", width: "auto" }}
                 >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: "8px" }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                         <polyline points="7 10 12 15 17 10" />
                         <line x1="12" y1="15" x2="12" y2="3" />
@@ -193,99 +192,58 @@ const AdminDashboard = () => {
             </div>
 
             {/* Vendor Cards Section */}
-            <div style={{ marginTop: "32px" }}>
-                <h3 style={{ fontSize: "20px", fontWeight: "700", color: "#101828", marginBottom: "20px" }}>
+            <div className="admin-performance-section">
+                <h3 className="section-title">
                     {t("EKYC_VENDORS_PERFORMANCE") || "eKYC Vendors Performance"}
                 </h3>
 
                 {isVendorSearchLoading || isProgressLoading ? (
                     <Loader />
                 ) : (
-                    <div style={{
-                        display: "grid",
-                        gridTemplateColumns: "repeat(3, 1fr)",
-                        gap: "24px",
-                        width: "100%"
-                    }}>
+                    <div className="vendors-grid">
                         {vendorsList.length === 0 ? (
-                            <div style={{ gridColumn: "span 3", textAlign: "center", padding: "40px", color: "#64748B", fontSize: "16px" }}>
+                            <div className="no-vendors">
                                 {t("NO_VENDORS_FOUND") || "No vendors found."}
                             </div>
                         ) : (
                             vendorsList.map((vendor) => (
                                 <div
                                     key={vendor.id}
+                                    className="vendor-perf-card"
                                     onClick={() => history.push(`/digit-ui/employee/ekyc/vendors/${vendor.id}`)}
-                                    style={{
-                                        background: "#ffffff",
-                                        border: "1px solid #E2E8F0",
-                                        borderRadius: "16px",
-                                        padding: "24px",
-                                        boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)",
-                                        cursor: "pointer",
-                                        transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                                        display: "flex",
-                                        flexDirection: "column",
-                                        justifyContent: "space-between",
-                                        gap: "16px"
-                                    }}
-                                    onMouseEnter={(e) => {
-                                        e.currentTarget.style.transform = "translateY(-4px)";
-                                        e.currentTarget.style.boxShadow = "0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04)";
-                                        e.currentTarget.style.borderColor = "#CBD5E1";
-                                    }}
-                                    onMouseLeave={(e) => {
-                                        e.currentTarget.style.transform = "translateY(0)";
-                                        e.currentTarget.style.boxShadow = "0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)";
-                                        e.currentTarget.style.borderColor = "#E2E8F0";
-                                    }}
                                 >
-                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                                        <div>
-                                            <h4 style={{ fontSize: "18px", fontWeight: "700", color: "#0B2559", margin: 0 }}>
-                                                {vendor.name}
-                                            </h4>
-                                            {/* <p style={{ fontSize: "13px", color: "#64748B", marginTop: "4px", marginBottom: 0 }}>
-                                                {t("OWNER") || "Owner"}: <span style={{ fontWeight: "600", color: "#334155" }}>{vendor.ownerName}</span>
-                                            </p> */}
-                                            <p style={{ fontSize: "12px", color: "#64748B", marginTop: "2px", marginBottom: 0 }}>
-                                                {t("MOBILE") || "Mobile"}: {vendor.mobileNumber}
-                                            </p>
+                                    <div className="card-header">
+                                        <div className="vendor-info">
+                                            <h4>{vendor.name}</h4>
+                                            <p>{t("MOBILE") || "Mobile"}: {vendor.mobileNumber}</p>
                                         </div>
-                                        <span style={{
-                                            background: "#E0F2FE",
-                                            color: "#0369A1",
-                                            padding: "6px 12px",
-                                            borderRadius: "999px",
-                                            fontSize: "13px",
-                                            fontWeight: "700"
-                                        }}>
+                                        <span className="progress-badge">
                                             {vendor.progress}%
                                         </span>
                                     </div>
 
-                                    <div style={{ width: "100%", height: "8px", background: "#F1F5F9", borderRadius: "999px", overflow: "hidden" }}>
-                                        <div style={{ width: `${vendor.progress}%`, height: "100%", background: "linear-gradient(90deg, #3B82F6 0%, #10B981 100%)", borderRadius: "999px" }}></div>
+                                    <div className="progress-bar-container">
+                                        <div className="progress-bar-fill" style={{ width: `${vendor.progress}%` }}></div>
                                     </div>
 
-                                    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "12px" }}>
-                                        <div style={{ background: "#F8FAFC", padding: "12px 8px", borderRadius: "10px", textAlign: "center" }}>
-                                            <div style={{ fontSize: "16px", fontWeight: "700", color: "#1E293B" }}>{vendor.supervisors}</div>
-                                            <div style={{ fontSize: "10px", fontWeight: "600", color: "#64748B", textTransform: "uppercase", marginTop: "4px" }}>{t("SUPERVISORS") || "Supervisors"}</div>
+                                    <div className="stats-grid">
+                                        <div className="stat-item">
+                                            <div className="value">{vendor.supervisors}</div>
+                                            <div className="label">{t("SUPERVISORS") || "Supervisors"}</div>
                                         </div>
-                                        <div style={{ background: "#F8FAFC", padding: "12px 8px", borderRadius: "10px", textAlign: "center" }}>
-                                            <div style={{ fontSize: "16px", fontWeight: "700", color: "#1E293B" }}>{vendor.surveyors}</div>
-                                            <div style={{ fontSize: "10px", fontWeight: "600", color: "#64748B", textTransform: "uppercase", marginTop: "4px" }}>{t("SURVEYORS") || "Surveyors"}</div>
+                                        <div className="stat-item">
+                                            <div className="value">{vendor.surveyors}</div>
+                                            <div className="label">{t("SURVEYORS") || "Surveyors"}</div>
                                         </div>
-                                        <div style={{ background: "#F8FAFC", padding: "12px 8px", borderRadius: "10px", textAlign: "center" }}>
-                                            <div style={{ fontSize: "16px", fontWeight: "700", color: "#10B981" }}>{vendor.completed}</div>
-                                            <div style={{ fontSize: "10px", fontWeight: "600", color: "#64748B", textTransform: "uppercase", marginTop: "4px" }}>{t("COMPLETED") || "Completed"}</div>
+                                        <div className="stat-item">
+                                            <div className="value completed-val">{vendor.completed}</div>
+                                            <div className="label">{t("COMPLETED") || "Completed"}</div>
                                         </div>
                                     </div>
 
-                                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "#64748B", borderTop: "1px solid #F1F5F9", paddingTop: "12px" }}>
-                                        <span>{t("PENDING") || "Pending"}: <span style={{ fontWeight: "700", color: "#F59E0B" }}>{vendor.pending}</span></span>
-                                        <span>{t("REJECTED") || "Rejected"}: <span style={{ fontWeight: "700", color: "#EF4444" }}>{vendor.rejected}</span></span>
+                                    <div className="card-footer">
+                                        <span>{t("PENDING") || "Pending"}: <span className="pending-count">{vendor.pending}</span></span>
+                                        <span>{t("REJECTED") || "Rejected"}: <span className="rejected-count">{vendor.rejected}</span></span>
                                     </div>
                                 </div>
                             ))
