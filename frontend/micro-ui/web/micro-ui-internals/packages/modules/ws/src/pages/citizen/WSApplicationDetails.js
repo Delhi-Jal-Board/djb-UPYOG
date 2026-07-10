@@ -114,13 +114,13 @@ const WSApplicationDetails = () => {
       },
     }) || false;
 
+  const applicationStatus = data?.WaterConnection?.[0]?.applicationStatus || data?.SewerageConnections?.[0]?.applicationStatus;
+  
   const isPaid =
-    data?.WaterConnection?.[0]?.applicationStatus === "CONNECTION_ACTIVATED" ||
-      data?.WaterConnection?.[0]?.applicationStatus === "PENDING_FOR_CONNECTION_ACTIVATION" ||
-      data?.SewerageConnections?.[0]?.applicationStatus === "CONNECTION_ACTIVATED" ||
-      data?.SewerageConnections?.[0]?.applicationStatus === "PENDING_FOR_CONNECTION_ACTIVATION"
+    applicationStatus && applicationStatus !== "INITIATED" && applicationStatus !== "PENDING_FOR_PAYMENT"
       ? true
       : false;
+
   const { isLoading: isAppDetailsLoading, data: appDetailsData } = Digit.Hooks.ws.useWSDetailsPage(
     t,
     tenantId,
