@@ -12,6 +12,8 @@ import org.springframework.core.env.Environment;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
@@ -62,12 +64,36 @@ public class NpciGateway implements Gateway {
     }
 
     /**
+     * Extracts the authentication token from the current HTTP Request context.
+     */
+    private String extractAuthToken() {
+        try {
+            ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+            if (attributes != null) {
+                String authToken = attributes.getRequest().getHeader("auth-token");
+                if (authToken == null || authToken.trim().isEmpty()) {
+                    authToken = attributes.getRequest().getHeader("Authorization");
+                    if (authToken != null && authToken.toLowerCase().startsWith("bearer ")) {
+                        authToken = authToken.substring(7).trim();
+                    }
+                }
+                return authToken != null ? authToken : "";
+            }
+        } catch (Exception e) {
+            log.error("NpciGateway: Failed to extract auth-token from request", e);
+        }
+        return "";
+    }
+
+    /**
      * Generate redirect URI to NPCI payment page
      * Builds the payment request with required params and checksum
      */
     @Override
     public URI generateRedirectURI(Transaction transaction) {
         log.info("NpciGateway: Generating redirect URI for txnId={}", transaction.getTxnId());
+
+        String authToken = extractAuthToken();
 
         if (SANDBOX) {
             log.info("NpciGateway: Sandbox mode enabled, redirecting to mock payment page");
@@ -80,20 +106,28 @@ public class NpciGateway implements Gateway {
                 basePgServiceUrl = "http://localhost:8080";
             }
             try {
-                String redirectUrl = basePgServiceUrl + "/pg-service/transaction/v1/_redirect" 
+                String redirectUrl = basePgServiceUrl + "/pg-service/transaction/v1/_redirect"
                         + "?txnId=" + transaction.getTxnId()
                         + "&amount=" + transaction.getTxnAmount()
                         + "&callbackUrl=" + java.net.URLEncoder.encode(transaction.getCallbackUrl(), "UTF-8");
+
+                if (!authToken.isEmpty()) {
+                    redirectUrl += "&auth-token=" + authToken;
+                }
                 return URI.create(redirectUrl);
             } catch (Exception e) {
                 log.error("NpciGateway: Failed to encode redirect callback URL", e);
                 String callbackUrl = transaction.getCallbackUrl();
                 String separator = callbackUrl.contains("?") ? "&" : "?";
-                return URI.create(callbackUrl + separator + "eg_pg_txnid=" + transaction.getTxnId());
+                String redirectUrl = callbackUrl + separator + "eg_pg_txnid=" + transaction.getTxnId();
+                if (!authToken.isEmpty()) {
+                    redirectUrl += "&auth-token=" + authToken;
+                }
+                return URI.create(redirectUrl);
             }
         }
 
-        String returnUrl = getReturnUrl(transaction.getCallbackUrl(), REDIRECT_URL);
+        String returnUrl = getReturnUrl(transaction.getCallbackUrl(), REDIRECT_URL, authToken);
 
         Map<String, String> params = new LinkedHashMap<>();
         params.put("merchantId",     MERCHANT_ID);
@@ -126,6 +160,8 @@ public class NpciGateway implements Gateway {
     public String generateRedirectFormData(Transaction transaction) {
         log.info("NpciGateway: Generating form data for txnId={}", transaction.getTxnId());
 
+        String authToken = extractAuthToken();
+
         Map<String, String> params = new LinkedHashMap<>();
         params.put("merchantId",   MERCHANT_ID);
         params.put("orderId",      transaction.getTxnId());
@@ -133,7 +169,7 @@ public class NpciGateway implements Gateway {
         params.put("currency",     CURRENCY);
         params.put("customerId",   transaction.getUser() != null ? transaction.getUser().getUuid() : "");
         params.put("mobileNumber", transaction.getUser() != null ? transaction.getUser().getMobileNumber() : "");
-        params.put("returnUrl",    getReturnUrl(transaction.getCallbackUrl(), REDIRECT_URL));
+        params.put("returnUrl",    getReturnUrl(transaction.getCallbackUrl(), REDIRECT_URL, authToken));
         params.put("consumerCode", transaction.getConsumerCode());
         params.put("txnDateTime",  String.valueOf(System.currentTimeMillis()));
         params.put("checksum",     generateChecksum(params, MERCHANT_SECRET_KEY));
@@ -150,7 +186,6 @@ public class NpciGateway implements Gateway {
 
     /**
      * Fetch the current status of a transaction from NPCI gateway
-     * Called during the _update flow after gateway callback
      */
     @Override
     public Transaction fetchStatus(Transaction currentStatus, Map<String, String> params) {
@@ -205,9 +240,6 @@ public class NpciGateway implements Gateway {
         }
     }
 
-    /**
-     * Transform NPCI status API response to Transaction object
-     */
     private Transaction transformStatusResponse(Map<String, Object> response, Transaction currentStatus) {
         String status     = String.valueOf(response.getOrDefault("status", "FAILURE"));
         String npciTxnId  = String.valueOf(response.getOrDefault("txnId", ""));
@@ -275,11 +307,13 @@ public class NpciGateway implements Gateway {
         return "orderId";
     }
 
-    private String getReturnUrl(String callbackUrl, String baseRedirectUrl) {
-        return UriComponentsBuilder.fromHttpUrl(baseRedirectUrl)
-                .queryParam(ORIGINAL_RETURN_URL_KEY, callbackUrl)
-                .build()
-                .toUriString();
+    private String getReturnUrl(String callbackUrl, String baseRedirectUrl, String authToken) {
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(baseRedirectUrl)
+                .queryParam(ORIGINAL_RETURN_URL_KEY, callbackUrl);
+        if (authToken != null && !authToken.isEmpty()) {
+            builder.queryParam("auth-token", authToken);
+        }
+        return builder.build().toUriString();
     }
 
     private String generateChecksum(Map<String, String> params, String secretKey) {

@@ -33,9 +33,14 @@ public class RequestEnrichmentFilter implements GlobalFilter , Ordered {
 //        if (contentType != null && (contentType.contains("multipart/form-data") || contentType.contains("application/x-www-form-urlencoded"))) {
 //            return chain.filter(exchange);
 //        }
-        if (contentType == null ||
+        String path = exchange.getRequest().getURI().getPath();
+
+        if (path != null && path.startsWith("/filestore/v1/files/url") ||
+                contentType == null ||
                 contentType.contains("multipart/form-data") ||
                 contentType.contains("application/x-www-form-urlencoded")) {
+
+            log.info("Skipping body enrichment for Path: {}", path);
 
             return chain.filter(exchange);
         }
