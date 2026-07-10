@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 const EKYCCard = () => {
   const { t } = useTranslation();
   const tenantId = Digit.ULBService.getCurrentTenantId();
+  const roles = Digit.SessionStorage.get("User")?.info?.roles?.map((r) => r.code) || [];
 
   const { data: listData, isLoading } = Digit.Hooks.ekyc.useEkycApplicationList(
     {},
@@ -54,10 +55,14 @@ const EKYCCard = () => {
       //   label: t("EKYC_MAPPING"),
       //   link: `/digit-ui/employee/ekyc/mapping`,
       // },
-      {
-        label: t("EKYC_ASSIGN"),
-        link: `/digit-ui/employee/ekyc/assign`,
-      },
+      ...(!roles.includes("EMPLOYEE")
+        ? [
+            {
+              label: t("EKYC_ASSIGN"),
+              link: `/digit-ui/employee/ekyc/assign`,
+            },
+          ]
+        : []),
     ],
   };
 

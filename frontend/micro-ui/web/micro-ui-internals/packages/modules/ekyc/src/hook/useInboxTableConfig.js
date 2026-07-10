@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { Header } from "@djb25/digit-ui-react-components";
 
 const useInboxTableConfig = ({
   parentRoute,
@@ -61,6 +62,16 @@ const useInboxTableConfig = ({
         const status = row.original?.status || "DEFAULT";
         return <span className={`ekyc-status-tag ${status}`}>{t(`${status}`)}</span>;
       },
+    },
+    {
+      Header: t("SUBMITTED_AT") || "Submitted At",
+      accessor: "submittedAt",
+      Cell: ({ value }) => (value ? Digit.DateUtils.ConvertEpochToDate(value) : "-"),
+    },
+    {
+      Header: t("ASSIGNED_AT") || "Assigned At",
+      accessor: "assignedAt",
+      Cell: ({ value }) => (value ? Digit.DateUtils.ConvertEpochToDate(value) : "-"),
     },
     {
       Header: t("EKYC_EKYC_STATUS"),

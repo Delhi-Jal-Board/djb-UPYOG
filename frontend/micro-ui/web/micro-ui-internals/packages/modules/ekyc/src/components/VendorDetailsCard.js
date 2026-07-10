@@ -133,7 +133,7 @@ const VendorDetailsCard = () => {
     const cards = useMemo(() => {
         const hasRealData = vendorSupervisors.some((s) => s.totalKnos > 0);
 
-        const totalKnos = hasRealData 
+        const totalKnos = hasRealData
             ? vendorSupervisors.reduce((acc, s) => acc + (s.totalKnos || 0), 0)
             : (progressData?.totalKnos || vendor?.assignedConnections || 0);
 
@@ -155,13 +155,13 @@ const VendorDetailsCard = () => {
                 type: "today",
                 icon: <FaUsers />,
             },
-            {
-                label: "TOTAL_ASSIGNMENTS",
-                count: totalKnos,
-                color: "#3B82F6",
-                type: "week",
-                icon: <FaMapMarkedAlt />,
-            },
+            // {
+            //     label: "TOTAL_ASSIGNMENTS",
+            //     count: totalKnos,
+            //     color: "#3B82F6",
+            //     type: "week",
+            //     icon: <FaMapMarkedAlt />,
+            // },
             {
                 label: "EKYC_COMPLETED",
                 count: completedKnos,
@@ -202,7 +202,7 @@ const VendorDetailsCard = () => {
             });
 
             const consumerList = response?.consumerList || [];
-            
+
             if (!consumerList || consumerList.length === 0) {
                 alert(t("NO_EKYC_DATA_FOUND") || "No eKYC data found to download.");
                 return;
@@ -239,7 +239,7 @@ const VendorDetailsCard = () => {
 
             const excelData = consumerList.map((item) => {
                 const cleanObj = {};
-                
+
                 const fullName = [item.firstName, item.middleName, item.lastName].filter(Boolean).join(" ");
                 if (fullName) {
                     cleanObj[t("CONSUMER_NAME") || "Consumer Name"] = fullName;
@@ -247,12 +247,12 @@ const VendorDetailsCard = () => {
 
                 Object.keys(item).forEach(key => {
                     if (excludedKeys.includes(key)) return;
-                    
+
                     const val = item[key];
                     if (typeof val === "object" && val !== null) {
                         return;
                     }
-                    
+
                     const friendlyHeader = headerMapping[key] || t(key.toUpperCase()) || key;
                     cleanObj[friendlyHeader] = val;
                 });
@@ -281,20 +281,22 @@ const VendorDetailsCard = () => {
             {
                 Header: t("SUPERVISOR_NAME") || "Supervisor Name",
                 accessor: (row) => row?.name || "N/A",
-                Cell: ({ row }) => (
-                    <a
-                        href={`/digit-ui/employee/ekyc/assign/surveyor-details/${row.original.id}`}
-                        style={{ color: "#1D70B8", fontWeight: "600", textDecoration: "none" }}
-                        onClick={(e) => {
-                            // If user is employee or citizen, route properly
-                            const userType = Digit.SessionStorage.get("User")?.info?.type?.toLowerCase() || "citizen";
-                            e.preventDefault();
-                            history.push(`/digit-ui/${userType}/ekyc/assign/surveyor-details/${row.original.id}`);
-                        }}
-                    >
-                        {row.original?.name || "N/A"}
-                    </a>
-                ),
+                Cell: ({ row }) => {
+                    const userType = Digit.SessionStorage.get("User")?.info?.type?.toLowerCase() || "citizen";
+                    const targetPath = `/digit-ui/${userType}/ekyc/supervisor-dashboard/${row.original.id}`;
+                    return (
+                        <a
+                            href={targetPath}
+                            style={{ color: "#1D70B8", fontWeight: "600", textDecoration: "none" }}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                history.push(targetPath);
+                            }}
+                        >
+                            {row.original?.name || "N/A"}
+                        </a>
+                    );
+                },
             },
             {
                 Header: t("MOBILE_NUMBER") || "Mobile Number",
@@ -529,16 +531,16 @@ const VendorDetailsCard = () => {
             {/* Stats */}
             <div className="stats-wrapper">
                 {
-                cards.map((card, idx) => (
-                    <StatCard
-                        key={idx}
-                        title={t(card.label)}
-                        value={card.count}
-                        type={card.type}
-                        isLoading={isPageLoading}
-                        icon={card.icon}
-                    />
-                ))}
+                    cards.map((card, idx) => (
+                        <StatCard
+                            key={idx}
+                            title={t(card.label)}
+                            value={card.count}
+                            type={card.type}
+                            isLoading={isPageLoading}
+                            icon={card.icon}
+                        />
+                    ))}
             </div>
 
             {/* Details */}
@@ -574,8 +576,8 @@ const VendorDetailsCard = () => {
                         <div className="download-card">
                             <h4>{t("DOWNLOAD_EKYC_DATA") || "Download eKYC Data"}</h4>
                             <p>
-                                {t("DOWNLOAD_EKYC_DATA_DESC") || 
-                                 "Export the complete eKYC verification records for your assigned jurisdiction into Excel format."}
+                                {t("DOWNLOAD_EKYC_DATA_DESC") ||
+                                    "Export the complete eKYC verification records for your assigned jurisdiction into Excel format."}
                             </p>
                             <button
                                 className="download-excel-btn"

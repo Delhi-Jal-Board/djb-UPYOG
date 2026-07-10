@@ -10,9 +10,11 @@ import Mapping from "./Mapping";
 import Create from "./Create";
 import Review from "../../components/Review";
 import EKYCForm from "./EKYCForm";
-import SurveyorDetailsCard from "../../components/SurveyorDetailsCard.js";
 import AssignEkyc from "../../components/AssignEkyc.js";
 import AdminDashboard from "../../components/AdminDashboard.js";
+import SupervisorDetailsCard from "../../components/SupervisorDetailsCard.js";
+import SurveyorDetailsCard from "../../components/SurveyorDetailsCard.js"
+import { ekycRoutes } from "../../config/Routes";
 
 const EmployeeApp = ({ path }) => {
   const { t } = useTranslation();
@@ -20,52 +22,99 @@ const EmployeeApp = ({ path }) => {
 
   sessionStorage.removeItem("revalidateddone");
 
-  const getDynamicBreadcrumbs = () => {
-    const pathname = location.pathname;
+  // const getDynamicBreadcrumbs = () => {
+  //   const pathname = location.pathname;
 
-    // Parent crumb — always present and clickable → redirects to eKYC inbox
+  //   // Parent crumb — always present and clickable → redirects to eKYC inbox
+  //   const crumbs = [
+  //     { icon: HomeIcon, path: "/digit-ui/employee" },
+  //     { label: t("ACTION_TEST_EKYC"), path: `/digit-ui/employee/module/details` },
+  //   ];
+
+  //   // Child crumb — only appended when on a sub-page (not inbox/dashboard itself)
+  //   if (pathname.includes("/create-kyc")) {
+  //     crumbs.push({ label: t("EKYC_CREATE_KYC") });
+  //   } else if (pathname.includes("/consumer-details")) {
+  //     crumbs.push({ label: t("EKYC_CONSUMER_DETAILS") });
+  //   } else if (pathname.includes("/address-details")) {
+  //     crumbs.push({ label: t("EKYC_ADDRESS_DETAILS") });
+  //   } else if (pathname.includes("/property-info")) {
+  //     crumbs.push({ label: t("EKYC_PROPERTY_INFO") });
+  //   } else if (pathname.includes("/meter-details")) {
+  //     crumbs.push({ label: t("EKYC_METER_DETAILS") });
+  //   } else if (pathname.includes("/review")) {
+  //     crumbs.push({ label: t("EKYC_INBOX"), path: `/digit-ui/employee/ekyc/inbox` });
+  //     crumbs.push({ label: t("EKYC_REVIEW") });
+  //   } else if (pathname.includes("/surveyor-dashboard") || pathname.includes("/assign/surveyor-details")) {
+  //     crumbs.push({ label: t("EKYC_SURVEYOR_DASHBOARD") || "Surveyor Dashboard" });
+  //   } else if (pathname.includes("/assign")) {
+  //     crumbs.push({ label: t("EKYC_ASSIGN") });
+  //   } else if (pathname.includes("/ceo-dashboard")) {
+  //     crumbs.push({ label: t("CEO_M.F_DOR_FINANCE_VIEW") });
+  //   } else if (pathname.includes("/admin-dashboard")) {
+  //     crumbs.push({ label: t("EKYC_ADMIN_DASHBOARD") || "Admin Dashboard" });
+  //   } else if (pathname.includes("/supervisor-dashboard")) {
+  //     crumbs.push({ label: t("EKYC_SUPERVISOR_DASHBOARD") || "Supervisor Dashboard" });
+  //   } else if (pathname.includes("/surveyor-dashboard")) {
+  //     crumbs.push({ label: t("EKYC_SURVEYOR_DASHBOARD") });
+  //   } else if (pathname.includes("/vendors/")) {
+  //     crumbs.push({ label: t("EKYC_VENDOR_DETAILS") });
+  //   } else if (pathname.includes("/mapping")) {
+  //     crumbs.push({ label: t("EKYC_MAPPING") });
+  //   } else if (pathname.includes("/dashboard")) {
+  //     crumbs.push({ label: t("EKYC_DASHBOARD") });
+  //   } else if (pathname.includes("/inbox")) {
+  //     crumbs.push({ label: t("EKYC_INBOX") });
+  //   }
+  //   // dashboard & inbox → no child crumb (only "eKYC Admin" shown)
+
+  //   return crumbs;
+  // };
+
+  const getDynamicBreadcrumbs = () => {
     const crumbs = [
       { icon: HomeIcon, path: "/digit-ui/employee" },
-      { label: t("ACTION_TEST_EKYC"), path: `/digit-ui/employee/module/details` },
+      { label: t("ACTION_TEST_EKYC"), path: "/digit-ui/employee/module/details" },
     ];
+    const pathSegments = location.pathname.split("/").filter(Boolean);
+    const ekycIndex = pathSegments.indexOf("ekyc");
+    const relativeSegments = ekycIndex !== -1 ? pathSegments.slice(ekycIndex + 1) : [];
 
-    // Child crumb — only appended when on a sub-page (not inbox/dashboard itself)
-    if (pathname.includes("/create-kyc")) {
-      crumbs.push({ label: t("EKYC_CREATE_KYC") });
-    } else if (pathname.includes("/consumer-details")) {
-      crumbs.push({ label: t("EKYC_CONSUMER_DETAILS") });
-    } else if (pathname.includes("/address-details")) {
-      crumbs.push({ label: t("EKYC_ADDRESS_DETAILS") });
-    } else if (pathname.includes("/property-info")) {
-      crumbs.push({ label: t("EKYC_PROPERTY_INFO") });
-    } else if (pathname.includes("/meter-details")) {
-      crumbs.push({ label: t("EKYC_METER_DETAILS") });
-    } else if (pathname.includes("/review")) {
-      crumbs.push({ label: t("EKYC_INBOX"), path: `/digit-ui/employee/ekyc/inbox` });
-      crumbs.push({ label: t("EKYC_REVIEW") });
-    } else if (pathname.includes("/assign/surveyor-details")) {
-      crumbs.push({ label: t("EKYC_ASSIGN"), path: `/digit-ui/employee/ekyc/assign` });
-      crumbs.push({ label: t("EKYC_SURVEYOR_DETAILS") });
-    } else if (pathname.includes("/assign")) {
-      crumbs.push({ label: t("EKYC_ASSIGN") });
-    } else if (pathname.includes("/ceo-dashboard")) {
-      crumbs.push({ label: t("CEO_M.F_DOR_FINANCE_VIEW") });
-    } else if (pathname.includes("/admin-dashboard")) {
-      crumbs.push({ label: t("EKYC_ADMIN_DASHBOARD") || "Admin Dashboard" });
-    } else if (pathname.includes("/vendors/")) {
-      crumbs.push({ label: t("EKYC_VENDOR_DETAILS") });
-    } else if (pathname.includes("/mapping")) {
-      crumbs.push({ label: t("EKYC_MAPPING") });
-    } else if (pathname.includes("/dashboard")) {
-      crumbs.push({ label: t("EKYC_DASHBOARD") });
-    } else if (pathname.includes("/inbox")) {
-      crumbs.push({ label: t("EKYC_INBOX") });
+    let matchedPath = "";
+    const currentRoute = ekycRoutes.find((route) => {
+      const paths = Array.isArray(route.path) ? route.path : [route.path];
+      return paths.some((singlePath) => {
+        const routeSegments = singlePath.split("/").filter(Boolean);
+        if (routeSegments.length === relativeSegments.length && routeSegments.every((seg, i) => seg.startsWith(":") || seg === relativeSegments[i])) {
+          matchedPath = singlePath;
+          return true;
+        }
+        return false;
+      });
+    });
+
+    if (currentRoute) {
+      if (Array.isArray(currentRoute.breadcrumb)) {
+        currentRoute.breadcrumb.forEach((crumb) => {
+          let crumbPath = crumb.path;
+          if (crumbPath && matchedPath) {
+            matchedPath.split("/").filter(Boolean).forEach((segment, idx) => {
+              if (segment.startsWith(":")) {
+                const val = relativeSegments[idx];
+                crumbPath = crumbPath.replace(new RegExp(`\\/${segment}`, "g"), `/${val}`)
+                  .replace(new RegExp(`(\\w+)${segment}`, "g"), `$1/${val}`)
+                  .replace(new RegExp(segment, "g"), val);
+              }
+            });
+          }
+          crumbs.push({ label: t(crumb.label), ...(crumbPath ? { path: crumbPath } : {}) });
+        });
+      } else {
+        crumbs.push({ label: t(currentRoute.breadcrumb) });
+      }
     }
-    // dashboard & inbox → no child crumb (only "eKYC Admin" shown)
-
     return crumbs;
   };
-
   const formStepRoutes = ["consumer-details", "address-details", "property-info", "meter-details"];
 
   return (
@@ -118,7 +167,7 @@ const EmployeeApp = ({ path }) => {
                 </LayoutWrapper>
               )}
             />
-            <PrivateRoute
+            {/* <PrivateRoute
               path={`${path}/assign`}
               exact
               component={() => (
@@ -126,7 +175,7 @@ const EmployeeApp = ({ path }) => {
                   <AssignEkyc />
                 </LayoutWrapper>
               )}
-            />
+            /> */}
             <PrivateRoute
               path={`${path}/assign/surveyor-details/:id`}
               exact
@@ -178,6 +227,24 @@ const EmployeeApp = ({ path }) => {
               component={() => (
                 <LayoutWrapper layoutClass="normal">
                   <VendorDetailsCard />
+                </LayoutWrapper>
+              )}
+            />
+
+            <PrivateRoute
+              path={[`${path}/supervisor-dashboard/:id`, `${path}/supervisor-dashboard`]}
+              component={() => (
+                <LayoutWrapper layoutClass="normal">
+                  <SupervisorDetailsCard />
+                </LayoutWrapper>
+              )}
+            />
+
+            <PrivateRoute
+              path={[`${path}/surveyor-dashboard/:id`, `${path}/surveyor-dashboard`]}
+              component={() => (
+                <LayoutWrapper layoutClass="normal">
+                  <SurveyorDetailsCard />
                 </LayoutWrapper>
               )}
             />
