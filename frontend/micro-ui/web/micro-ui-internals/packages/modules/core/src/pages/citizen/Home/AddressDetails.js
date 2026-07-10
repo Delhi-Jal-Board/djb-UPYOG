@@ -18,7 +18,9 @@ const Address = ({ address, actionCancelOnSubmit, isEdit }) => {
   const [formData, setFormData] = useState({
     addressType: address?.addressType || "",
     pincode: address?.pinCode || "",
-    city: address?.city || "",
+    city: typeof address?.city === "string"
+      ? { code: Digit.ULBService.getCurrentTenantId(), name: address.city }
+      : (address?.city || ""),
     locality: address?.locality || "",
     streetName: address?.streetName || "",
     houseNo: address?.houseNumber || "",
@@ -40,19 +42,37 @@ const Address = ({ address, actionCancelOnSubmit, isEdit }) => {
    * - Renders a form inside a modal using `AddressDetails` for input fields and React Hook Form for submission handling.
    */
   // timer for toast
-  useEffect(() => {
-    if (showToast) {
-      const timer = setTimeout(() => {
-        setShowToast(null);
-      }, 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [showToast]);
 
-  const { createAddress, updateAddress: updateAddressMutation } = Digit.Hooks.useAddress(Digit.ULBService.getCurrentTenantId());
+  // Set default city if empty or improperly formatted by backend
+  useEffect(() => {
+    if (allCities && allCities.length > 0) {
+      const tenantId = Digit.ULBService.getCurrentTenantId();
+      const defaultCity = allCities.find(c => c.code === tenantId) || allCities[0];
+
+      const currentCity = formData.city;
+      if (!currentCity || typeof currentCity === "string" || currentCity.code === "Delhi") {
+        setFormData(prev => ({ ...prev, city: defaultCity }));
+      }
+    }
+  }, [allCities, formData.city]);
+
+  const { createAddress, updateAddress: updateAddressMutation } = Digit.Hooks.useAddress(null, Digit.ULBService.getCurrentTenantId());
 
   const updateProfile = async () => {
     try {
+      if (!formData.city) {
+        setShowToast({ error: true, label: t("CORE_COMMON_CITY_REQUIRED") || "City is required" });
+        return;
+      }
+      if (!formData.pincode && !formData.pinCode) {
+        setShowToast({ error: true, label: t("CORE_COMMON_PINCODE_REQUIRED") || "Pincode is required" });
+        return;
+      }
+      if (!formData.addressLine1 && !formData.address) {
+        setShowToast({ error: true, label: t("CORE_COMMON_ADDRESS_REQUIRED") || "Address is required" });
+        return;
+      }
+
       const stateCode = Digit.ULBService.getStateId();
       const tenantId = Digit.ULBService.getCurrentTenantId();
       const user = Digit.UserService.getUser();
@@ -64,9 +84,9 @@ const Address = ({ address, actionCancelOnSubmit, isEdit }) => {
       }
 
       const requestData = {
-        pinCode: formData.pincode,
+        pinCode: formData.pincode || formData.pinCode,
         city: formData.city?.name || formData.city,
-        address: formData.addressLine1,
+        address: formData.addressLine1 || formData.address,
         type: formData.addressType?.code || formData.addressType,
         tenantId: stateCode,
         userId: userInfo?.id,
@@ -86,14 +106,14 @@ const Address = ({ address, actionCancelOnSubmit, isEdit }) => {
         { address: requestData, userUuid },
         {
           onSuccess: (data) => {
-            actionCancelOnSubmit();
+            setShowToast({ key: "success", label: t("ADDRESS_UPDATED_SUCCESSFULLY") || "Address updated successfully" });
           },
           onError: (error) => {
             let message = t("CORE_COMMON_PROFILE_UPDATE_ERROR");
             try {
               const errorObj = typeof error === "string" ? JSON.parse(error) : error;
               message = errorObj?.message || message;
-            } catch (e) {}
+            } catch (e) { }
             setShowToast({
               error: true,
               label: message,
@@ -106,7 +126,7 @@ const Address = ({ address, actionCancelOnSubmit, isEdit }) => {
       try {
         const errorObj = JSON.parse(error);
         message = errorObj?.message || message;
-      } catch (e) {}
+      } catch (e) { }
       setShowToast({
         error: true,
         label: message,
@@ -116,6 +136,19 @@ const Address = ({ address, actionCancelOnSubmit, isEdit }) => {
 
   const updateAddress = async () => {
     try {
+      if (!formData.city) {
+        setShowToast({ error: true, label: t("CORE_COMMON_CITY_REQUIRED") || "City is required" });
+        return;
+      }
+      if (!formData.pincode && !formData.pinCode) {
+        setShowToast({ error: true, label: t("CORE_COMMON_PINCODE_REQUIRED") || "Pincode is required" });
+        return;
+      }
+      if (!formData.addressLine1 && !formData.address) {
+        setShowToast({ error: true, label: t("CORE_COMMON_ADDRESS_REQUIRED") || "Address is required" });
+        return;
+      }
+
       const stateCode = Digit.ULBService.getStateId();
       const tenantId = Digit.ULBService.getCurrentTenantId();
       const user = Digit.UserService.getUser();
@@ -127,9 +160,9 @@ const Address = ({ address, actionCancelOnSubmit, isEdit }) => {
       }
 
       const requestUpdatedData = {
-        pinCode: formData.pincode,
+        pinCode: formData.pincode || formData.pinCode,
         city: formData.city?.name || formData.city,
-        address: formData.addressLine1,
+        address: formData.addressLine1 || formData.address,
         type: formData.addressType?.code || formData.addressType,
         tenantId: stateCode,
         userId: address?.userId || userInfo?.id || userInfo?.userId || null,
@@ -151,14 +184,14 @@ const Address = ({ address, actionCancelOnSubmit, isEdit }) => {
         { address: requestUpdatedData, userUuid },
         {
           onSuccess: (data) => {
-            actionCancelOnSubmit();
+            setShowToast({ key: "success", label: t("ADDRESS_UPDATED_SUCCESSFULLY") || "Address updated successfully" });
           },
           onError: (error) => {
             let message = t("CORE_COMMON_PROFILE_UPDATE_ERROR");
             try {
               const errorObj = typeof error === "string" ? JSON.parse(error) : error;
               message = errorObj?.message || message;
-            } catch (e) {}
+            } catch (e) { }
             setShowToast({
               error: true,
               label: message,
@@ -171,7 +204,7 @@ const Address = ({ address, actionCancelOnSubmit, isEdit }) => {
       try {
         const errorObj = JSON.parse(error);
         message = errorObj?.message || message;
-      } catch (e) {}
+      } catch (e) { }
       setShowToast({
         error: true,
         label: message,
@@ -197,7 +230,24 @@ const Address = ({ address, actionCancelOnSubmit, isEdit }) => {
       error={showToast?.label}
     >
       <div style={{ boxShadow: "none" }}>
-        <AddressDetails t={t} formData={formData} onSelect={setFormData} isEdit={isEdit} config={{ isCollapsible: false }} />
+        <AddressDetails
+          t={t}
+          formData={formData}
+          onSelect={(key, data) => {
+            if (typeof key === "string") {
+              if (typeof data === "object" && data !== null) {
+                setFormData((prev) => ({ ...prev, ...data }));
+              } else {
+                setFormData((prev) => ({ ...prev, [key]: data }));
+              }
+            } else if (typeof key === "object" && key !== null) {
+              setFormData((prev) => ({ ...prev, ...key }));
+            }
+          }}
+          isEdit={isEdit}
+          config={{ isCollapsible: false, key: "address" }}
+          hideNextButton={true}
+        />
       </div>
     </Modal>
   );
