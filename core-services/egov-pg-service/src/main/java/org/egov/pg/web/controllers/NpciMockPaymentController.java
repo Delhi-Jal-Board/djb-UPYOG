@@ -621,10 +621,10 @@ public class NpciMockPaymentController {
                 "        <h3 class=\"sim-title\">⚙️ Sandbox Simulation Panel</h3>\n" +
                 "        <div class=\"sim-actions\">\n" +
                 "            <a href=\"" + successUrl + "\" class=\"sim-btn sim-success\">\n" +
-                "                Simulate Payment Success\n" +
+                "                Payment Success\n" +
                 "            </a>\n" +
                 "            <a href=\"" + failureUrl + "\" class=\"sim-btn sim-failure\">\n" +
-                "                Simulate Payment Failure\n" +
+                "                Payment Failure\n" +
                 "            </a>\n" +
                 "        </div>\n" +
                 "    </div>\n" +
