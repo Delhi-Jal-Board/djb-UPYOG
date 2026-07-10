@@ -161,9 +161,10 @@ export const useApplicationsForBusinessServiceSearch = ({ tenantId, businessServ
 
 
   /* key from application ie being used as consumer code in bill */
-  const { searchFn, key, label } = refObj(tenantId, filters)[_key];
-  const applications = useQuery(["applicationsForBillDetails", { tenantId, businessService, filters, searchFn }], searchFn, {
+  const { searchFn, key, label } = refObj(tenantId, filters)[_key] || {};
+  const applications = useQuery(["applicationsForBillDetails", { tenantId, businessService, filters, searchFn }], searchFn || (() => null), {
     ...config,
+    enabled: !!searchFn && config?.enabled !== false,
   });
 
   return { ...applications, key, label };
