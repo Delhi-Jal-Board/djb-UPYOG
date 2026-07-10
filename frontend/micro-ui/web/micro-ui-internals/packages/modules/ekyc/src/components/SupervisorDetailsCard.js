@@ -44,13 +44,12 @@ const SupervisorDetailsCard = () => {
         // 1. Try to get supervisor from progressData if it succeeded
         if (progressData?.supervisorReport) {
             let found = null;
-            if (supervisorId) {
-                found = progressData.supervisorReport.find((s) => s.supervisorId === supervisorId);
-            } else {
-                const userUuid = loggedInUser?.uuid;
-                if (userUuid) {
-                    found = progressData.supervisorReport.find((s) => s.supervisorId === userUuid);
-                }
+            const targetId = supervisorId || loggedInUser?.uuid;
+            if (targetId) {
+                found = progressData.supervisorReport.find((s) => 
+                    s.supervisorId?.toLowerCase() === targetId?.toLowerCase() ||
+                    s.id?.toLowerCase() === targetId?.toLowerCase()
+                );
             }
             if (found) return found;
         }
@@ -58,17 +57,11 @@ const SupervisorDetailsCard = () => {
         // 2. Fallback to supervisorSearchResponse
         if (supervisorSearchResponse?.supervisors) {
             let matchedSup = null;
-            if (supervisorId) {
+            const targetId = supervisorId || loggedInUser?.uuid;
+            if (targetId) {
                 matchedSup = supervisorSearchResponse.supervisors.find(
-                    (s) => s.id === supervisorId || s.owner?.uuid === supervisorId
+                    (s) => s.id?.toLowerCase() === targetId?.toLowerCase() || s.owner?.uuid?.toLowerCase() === targetId?.toLowerCase()
                 );
-            } else {
-                const userUuid = loggedInUser?.uuid;
-                if (userUuid) {
-                    matchedSup = supervisorSearchResponse.supervisors.find(
-                        (s) => s.id === userUuid || s.owner?.uuid === userUuid
-                    );
-                }
             }
 
             if (matchedSup) {
@@ -76,17 +69,40 @@ const SupervisorDetailsCard = () => {
                 const matchedSurveyors = surveyorSearchResponse?.surveyors
                     ? surveyorSearchResponse.surveyors
                         .filter((surv) => surv.supervisorId === (matchedSup.id || matchedSup.owner?.uuid))
-                        .map((surv) => ({
-                            surveyorId: surv.id || surv.owner?.uuid,
-                            surveyorName: surv.name || surv.owner?.name || "N/A",
-                            mobileNo: surv.owner?.mobileNumber || surv.mobileNo || "N/A",
-                            status: surv.status || "ACTIVE",
-                            totalKnos: 0,
-                            submittedKnos: 0,
-                            pendingKnos: 0,
-                            progressPercent: 0,
-                        }))
+                        .map((surv) => {
+                            // Find surveyor in progressData to get real statistics if available
+                            let realStats = null;
+                            if (progressData?.supervisorReport) {
+                                for (const report of progressData.supervisorReport) {
+                                    const matchedSurv = report.surveyors?.find(
+                                        (s) => 
+                                            (s.surveyorId && (s.surveyorId === surv.id || s.surveyorId === surv.owner?.uuid)) ||
+                                            (s.id && (s.id === surv.id || s.id === surv.owner?.uuid))
+                                    );
+                                    if (matchedSurv) {
+                                        realStats = matchedSurv;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            return {
+                                surveyorId: surv.id || surv.owner?.uuid,
+                                surveyorName: surv.name || surv.owner?.name || "N/A",
+                                mobileNo: surv.owner?.mobileNumber || surv.mobileNo || "N/A",
+                                status: surv.status || "ACTIVE",
+                                totalKnos: realStats?.totalKnos || 0,
+                                submittedKnos: realStats?.submittedKnos || 0,
+                                pendingKnos: realStats?.pendingKnos || 0,
+                                progressPercent: realStats?.progressPercent || 0,
+                            };
+                        })
                     : [];
+
+                const totalKnos = matchedSurveyors.reduce((acc, s) => acc + (s.totalKnos || 0), 0);
+                const submittedKnos = matchedSurveyors.reduce((acc, s) => acc + (s.submittedKnos || 0), 0);
+                const pendingKnos = matchedSurveyors.reduce((acc, s) => acc + (s.pendingKnos || 0), 0);
+                const progressPercent = totalKnos > 0 ? Math.round((submittedKnos / totalKnos) * 100) : 0;
 
                 return {
                     supervisorId: matchedSup.id || matchedSup.owner?.uuid,
@@ -96,6 +112,10 @@ const SupervisorDetailsCard = () => {
                     assignedZoneId: matchedSup.assignedZoneId || "N/A",
                     vendorId: matchedSup.vendorId,
                     surveyors: matchedSurveyors,
+                    totalKnos,
+                    submittedKnos,
+                    pendingKnos,
+                    progressPercent,
                 };
             }
         }
@@ -127,40 +147,33 @@ const SupervisorDetailsCard = () => {
     const cards = useMemo(() => [
         {
             label: "TOTAL_EKYC_APPLICATIONS",
-            count: progressData?.totalKnos || supervisor?.totalKnos || 0,
+            count: supervisor?.totalKnos || 0,
             color: "#0B2559",
             type: "today",
             icon: <FaUsers />,
         },
-        // {
-        //     label: "TOTAL_ASSIGNMENTS",
-        //     count: progressData?.totalAssignments || supervisor?.totalKnos || 0,
-        //     color: "#3B82F6",
-        //     type: "week",
-        //     icon: <FaMapMarkedAlt />,
-        // },
         {
             label: "EKYC_COMPLETED",
-            count: progressData?.completedKnos || supervisor?.submittedKnos || 0,
+            count: supervisor?.submittedKnos || 0,
             color: "#10B981",
             type: "month",
             icon: <FaCheckCircle />,
         },
         {
             label: "PENDING_APPLICATIONS",
-            count: (progressData?.totalKnos || supervisor?.totalKnos || 0) - (progressData?.completedKnos || supervisor?.submittedKnos || 0),
+            count: supervisor?.pendingKnos || 0,
             color: "#F59E0B",
             type: "pending",
             icon: <FaClock />,
         },
         {
             label: "OVERALL_PROGRESS",
-            count: `${progressData?.overallProgressPercent || supervisor?.progressPercent || 0}%`,
+            count: `${supervisor?.progressPercent || 0}%`,
             color: "#A855F7",
             type: "progress",
             icon: <FaChartLine />,
         },
-    ], [progressData, supervisor]);
+    ], [supervisor]);
 
     const [currentPage, setCurrentPage] = useState(0);
     const [pageSize, setPageSize] = useState(20);
@@ -249,41 +262,6 @@ const SupervisorDetailsCard = () => {
         document.addEventListener("mousedown", handler);
         return () => document.removeEventListener("mousedown", handler);
     }, []);
-
-    // const handleDownload = () => {
-    //     setReportLoading(true);
-    //     try {
-    //         const rowsWithStats = surveyors.map((s) => ({
-    //             name: s.surveyorName,
-    //             mobileNo: s.mobileNo,
-    //             status: "ACTIVE",
-    //             total: s.totalKnos,
-    //             completed: s.submittedKnos,
-    //             pending: s.pendingKnos,
-    //             progress: `${s.progressPercent}%`
-    //         }));
-
-    //         downloadSupervisorPDF({
-    //             rows: rowsWithStats,
-    //             supervisorName: fullName,
-    //             mobileNumber,
-    //             vendorName,
-    //             dashboardInfo: {
-    //                 total: supervisor?.totalKnos || 0,
-    //                 completed: supervisor?.submittedKnos || 0,
-    //                 pending: supervisor?.pendingKnos || 0,
-    //                 submittedCount: supervisor?.submittedKnos || 0,
-    //             },
-    //             t,
-    //         });
-    //     } catch (err) {
-    //         console.error("Failed to generate report:", err);
-    //     } finally {
-    //         setReportLoading(false);
-    //         setShowReportMenu(false);
-    //         setShowCustomPicker(false);
-    //     }
-    // };
 
     const handlePresetDownload = (filter) => {
         handleDownload();

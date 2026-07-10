@@ -91,36 +91,46 @@ const SurveyorDetailsDashboard = () => {
   const knoColumns = useMemo(
     () => [
       {
-        Header: "KNO",
+        Header: t("KNO") || "KNO",
         accessor: "kno",
       },
       {
-        Header: "Consumer Name",
+        Header: t("CONSUMER_NAME") || "Consumer Name",
         accessor: (row) => `${row.firstName || ""} ${row.middleName || ""} ${row.lastName || ""}`.trim(),
         id: "consumerName",
       },
       {
-        Header: "Zone",
+        Header: t("ZONE") || "Zone",
         accessor: "zoneName",
       },
       // {
       //   Header: "Pincode",
       //   accessor: "pincode",
       // },
+      // {
+      //   Header: t("STATUS") || "Status",
+      //   accessor: "status",
+      //   Cell: ({ value }) => (
+      //     <span className={`status-badge ${value === "ACTIVE" ? "verified" : value === "PENDING" ? "pending" : "assigned"}`}>{value}</span>
+      //   ),
+      // },
       {
-        Header: "Status",
-        accessor: "status",
-        Cell: ({ value }) => (
-          <span className={`status-badge ${value === "ACTIVE" ? "verified" : value === "PENDING" ? "pending" : "assigned"}`}>{value}</span>
-        ),
-      },
-      {
-        Header: "eKYC Status",
+        Header: t("EKYC_STATUS") || "eKYC Status",
         accessor: "ekycStatus",
         Cell: ({ value }) => value || "-",
       },
+      {
+        Header: t("SUBMITTED_AT") || "Submitted At",
+        accessor: "submittedAt",
+        Cell: ({ value }) => (value ? Digit.DateUtils.ConvertEpochToDate(value) : "-"),
+      },
+      {
+        Header: t("ASSIGNED_AT") || "Assigned At",
+        accessor: "assignedAt",
+        Cell: ({ value }) => (value ? Digit.DateUtils.ConvertEpochToDate(value) : "-"),
+      },
     ],
-    []
+    [t]
   );
 
   // ─── Download Report hooks (must be before any early returns) ───────
@@ -155,34 +165,6 @@ const SurveyorDetailsDashboard = () => {
       </Card>
     );
   }
-
-  // const weeklyData = [
-  //   { day: "Mon", completed: 4 },
-  //   { day: "Tue", completed: 6 },
-  //   { day: "Wed", completed: 3 },
-  //   { day: "Thu", completed: 8 },
-  //   { day: "Fri", completed: 5 },
-  //   { day: "Sat", completed: 7 },
-  //   { day: "Sun", completed: 2 },
-  // ];
-
-  // const statusData = [
-  //   {
-  //     name: "Completed",
-  //     value: surveyor?.completedCases || 0,
-  //     color: "#10B981",
-  //   },
-  //   {
-  //     name: "Pending",
-  //     value: surveyor?.pendingCases || 0,
-  //     color: "#F59E0B",
-  //   },
-  //   {
-  //     name: "Rejected",
-  //     value: surveyor?.rejectedCases || 0,
-  //     color: "#EF4444",
-  //   },
-  // ];
 
   const getDateRange = (filter) => {
     const now = new Date();

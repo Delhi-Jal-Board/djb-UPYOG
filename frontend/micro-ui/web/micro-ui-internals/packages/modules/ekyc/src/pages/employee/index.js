@@ -167,7 +167,7 @@ const EmployeeApp = ({ path }) => {
                 </LayoutWrapper>
               )}
             />
-            <PrivateRoute
+            {/* <PrivateRoute
               path={`${path}/assign`}
               exact
               component={() => (
@@ -175,7 +175,7 @@ const EmployeeApp = ({ path }) => {
                   <AssignEkyc />
                 </LayoutWrapper>
               )}
-            />
+            /> */}
             <PrivateRoute
               path={`${path}/assign/surveyor-details/:id`}
               exact
