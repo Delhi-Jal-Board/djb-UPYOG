@@ -9,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.net.URI;
 import java.net.URLEncoder;
@@ -22,18 +21,19 @@ public class NpciMockPaymentController {
     public Object handleMockPaymentOrSubmit(@RequestParam("txnId") String txnId,
                                             @RequestParam(value = "amount", required = false) String amount,
                                             @RequestParam("callbackUrl") String callbackUrl,
-                                            @RequestParam(value = "status", required = false) String status) {
-        
+                                            @RequestParam(value = "status", required = false) String status,
+                                            @RequestParam(value = "auth-token", required = false) String authToken) {
+
         if (status != null && !status.isEmpty()) {
             log.info("NpciMockPaymentController: Submitted mock payment status '{}' for txnId={}", status, txnId);
-            
+
             // Store status in NpciGateway MOCK_STATUSES map
             NpciGateway.MOCK_STATUSES.put(txnId, status);
 
             // Redirect back to callbackUrl
             String separator = callbackUrl.contains("?") ? "&" : "?";
             String finalRedirectUrl = callbackUrl + separator + "eg_pg_txnid=" + txnId;
-            
+
             log.info("NpciMockPaymentController: Redirecting citizen to: {}", finalRedirectUrl);
 
             HttpHeaders httpHeaders = new HttpHeaders();
@@ -45,14 +45,26 @@ public class NpciMockPaymentController {
             String successUrl = "";
             String failureUrl = "";
             try {
-                successUrl = "/pg-service/transaction/v1/_redirect?txnId=" + txnId 
+                successUrl = "/pg-service/transaction/v1/_redirect?txnId=" + txnId
                         + "&status=SUCCESS&callbackUrl=" + URLEncoder.encode(callbackUrl, "UTF-8");
-                failureUrl = "/pg-service/transaction/v1/_redirect?txnId=" + txnId 
+                failureUrl = "/pg-service/transaction/v1/_redirect?txnId=" + txnId
                         + "&status=FAILURE&callbackUrl=" + URLEncoder.encode(callbackUrl, "UTF-8");
+
+                // Ensure the sandbox API endpoints retain authorization context
+                if (authToken != null && !authToken.isEmpty()) {
+                    successUrl += "&auth-token=" + authToken;
+                    failureUrl += "&auth-token=" + authToken;
+                }
             } catch (Exception e) {
                 log.error("NpciMockPaymentController: Failed to encode submit URLs", e);
                 successUrl = "/pg-service/transaction/v1/_redirect?txnId=" + txnId + "&status=SUCCESS&callbackUrl=" + callbackUrl;
                 failureUrl = "/pg-service/transaction/v1/_redirect?txnId=" + txnId + "&status=FAILURE&callbackUrl=" + callbackUrl;
+
+                // Ensure the sandbox API endpoints retain authorization context
+                if (authToken != null && !authToken.isEmpty()) {
+                    successUrl += "&auth-token=" + authToken;
+                    failureUrl += "&auth-token=" + authToken;
+                }
             }
 
             String html = getHtmlTemplate(txnId, amount, successUrl, failureUrl);
@@ -456,7 +468,7 @@ public class NpciMockPaymentController {
                 "        <div class=\"bar-green\"></div>\n" +
                 "    </div>\n" +
                 "\n" +
-                "    <!-- Official Style Payment Gateway Page -->\n" +
+                "    \n" +
                 "    <div class=\"payment-box\">\n" +
                 "        <div class=\"header\">\n" +
                 "            <div class=\"logo-bhim\">\n" +
@@ -467,7 +479,7 @@ public class NpciMockPaymentController {
                 "        </div>\n" +
                 "\n" +
                 "        <div class=\"main-content\">\n" +
-                "            <!-- Left Sidebar for Payment Methods Tabs -->\n" +
+                "            \n" +
                 "            <div class=\"sidebar-tabs\">\n" +
                 "                <button id=\"tab-upi\" class=\"tab-btn active\" onclick=\"switchTab('upi')\">BHIM UPI / QR</button>\n" +
                 "                <button id=\"tab-card\" class=\"tab-btn\" onclick=\"switchTab('card')\">Credit / Debit Card</button>\n" +
@@ -475,10 +487,10 @@ public class NpciMockPaymentController {
                 "                <button id=\"tab-wallet\" class=\"tab-btn\" onclick=\"switchTab('wallet')\">Digital Wallets</button>\n" +
                 "            </div>\n" +
                 "\n" +
-                "            <!-- Central Form details context -->\n" +
+                "            \n" +
                 "            <div class=\"tab-details-container\">\n" +
                 "                \n" +
-                "                <!-- BHIM UPI Content -->\n" +
+                "                \n" +
                 "                <div id=\"content-upi\" class=\"tab-content active\">\n" +
                 "                    <div class=\"qr-section\">\n" +
                 "                        <div style=\"flex: 1; display: flex; flex-direction: column; gap: 10px;\">\n" +
@@ -520,7 +532,7 @@ public class NpciMockPaymentController {
                 "                    </div>\n" +
                 "                </div>\n" +
                 "\n" +
-                "                <!-- Credit / Debit Card Content -->\n" +
+                "                \n" +
                 "                <div id=\"content-card\" class=\"tab-content\">\n" +
                 "                    <span class=\"form-label\">Card Number</span>\n" +
                 "                    <input type=\"text\" class=\"form-control\" placeholder=\"4111 2222 3333 4444\" value=\"4111 2222 3333 4444\">\n" +
@@ -540,7 +552,7 @@ public class NpciMockPaymentController {
                 "                    <input type=\"text\" class=\"form-control\" placeholder=\"John Doe\" value=\"Sandbox Citizen\">\n" +
                 "                </div>\n" +
                 "\n" +
-                "                <!-- Net Banking Content -->\n" +
+                "                \n" +
                 "                <div id=\"content-nb\" class=\"tab-content\">\n" +
                 "                    <span class=\"form-label\">Popular Banks</span>\n" +
                 "                    <div class=\"bank-grid\">\n" +
@@ -561,7 +573,7 @@ public class NpciMockPaymentController {
                 "                    </select>\n" +
                 "                </div>\n" +
                 "\n" +
-                "                <!-- Digital Wallets Content -->\n" +
+                "                \n" +
                 "                <div id=\"content-wallet\" class=\"tab-content\">\n" +
                 "                    <span class=\"form-label\">Select Wallet</span>\n" +
                 "                    <div class=\"bank-grid\" style=\"grid-template-columns: repeat(2, 1fr);\">\n" +
@@ -573,7 +585,7 @@ public class NpciMockPaymentController {
                 "                </div>\n" +
                 "            </div>\n" +
                 "\n" +
-                "            <!-- Summary Panel right side -->\n" +
+                "            \n" +
                 "            <div class=\"summary-panel\">\n" +
                 "                <h4 class=\"summary-title\">Order Summary</h4>\n" +
                 "                \n" +
@@ -604,7 +616,7 @@ public class NpciMockPaymentController {
                 "        </div>\n" +
                 "    </div>\n" +
                 "\n" +
-                "    <!-- Sandbox Developer Control Panel -->\n" +
+                "    \n" +
                 "    <div class=\"sim-panel\">\n" +
                 "        <h3 class=\"sim-title\">⚙️ Sandbox Simulation Panel</h3>\n" +
                 "        <div class=\"sim-actions\">\n" +
