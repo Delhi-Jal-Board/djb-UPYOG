@@ -449,7 +449,7 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
   };
 
   const ActionButton = ({ onClick }) => {
-    return <LinkButton label={<EditIcon style={{ float: "right" }} />} className="check-page-link-button" onClick={onClick} />;
+    return <LinkButton label={<EditIcon />} className="check-page-link-button" onClick={onClick} />;
   };
 
   const columns = React.useMemo(
@@ -703,7 +703,7 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
                         {showModal && <Address isEdit={isEdit} address={selectedAddress} actionCancelOnSubmit={handleModalClose} />}
                         {userAddresses.length > 0 ? (
                           <div>
-                            <Table t={t} data={userAddresses} columns={columns} disableSort={true} autoWidth={true} className="user-address-table" />
+                            <Table t={t} data={userAddresses} columns={columns} disableSort={true} autoWidth={true} />
                           </div>
                         ) : (
                           <div
@@ -774,7 +774,7 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
         leftContent={
           <React.Fragment>
             <ArrowLeft className="icon" />
-            Back
+            {t("ES_COMMON_BACK")}
           </React.Fragment>
         }
         onLeftClick={() => history.goBack()}

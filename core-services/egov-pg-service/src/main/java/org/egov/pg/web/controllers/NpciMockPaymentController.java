@@ -10,8 +10,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.net.URLEncoder;
+import java.util.Enumeration;
 
 @Controller
 @Slf4j
@@ -22,45 +24,58 @@ public class NpciMockPaymentController {
                                             @RequestParam(value = "amount", required = false) String amount,
                                             @RequestParam("callbackUrl") String callbackUrl,
                                             @RequestParam(value = "status", required = false) String status,
-                                            @RequestParam(value = "auth-token", required = false) String authToken) {
+                                            @RequestParam(value = "auth-token", required = false) String authToken,
+                                            HttpServletRequest request) {
+
+        // --- LOGGING ALL REQUEST DETAILS ---
+        log.info("================ INCOMING _REDIRECT REQUEST ================");
+        log.info("Request URI: {}", request.getRequestURI());
+        log.info("Query String: {}", request.getQueryString());
+
+        log.info("--- Headers ---");
+        Enumeration<String> headerNames = request.getHeaderNames();
+        while (headerNames.hasMoreElements()) {
+            String headerName = headerNames.nextElement();
+            // Masking auth-tokens for security logs, but confirming existence
+            if(headerName.equalsIgnoreCase("authorization") || headerName.equalsIgnoreCase("auth-token")) {
+                log.info("{}: [PRESENT - LENGTH: {}]", headerName, request.getHeader(headerName).length());
+            } else {
+                log.info("{}: {}", headerName, request.getHeader(headerName));
+            }
+        }
+
+        log.info("--- Extracted Params ---");
+        log.info("txnId: {}", txnId);
+        log.info("amount: {}", amount);
+        log.info("status: {}", status);
+        log.info("auth-token param present: {}", (authToken != null && !authToken.isEmpty()));
+        log.info("============================================================");
+
 
         if (status != null && !status.isEmpty()) {
             log.info("NpciMockPaymentController: Submitted mock payment status '{}' for txnId={}", status, txnId);
-
-            // Store status in NpciGateway MOCK_STATUSES map
             NpciGateway.MOCK_STATUSES.put(txnId, status);
 
-            // Redirect back to callbackUrl
             String separator = callbackUrl.contains("?") ? "&" : "?";
             String finalRedirectUrl = callbackUrl + separator + "eg_pg_txnid=" + txnId;
-
-            log.info("NpciMockPaymentController: Redirecting citizen to: {}", finalRedirectUrl);
 
             HttpHeaders httpHeaders = new HttpHeaders();
             httpHeaders.setLocation(URI.create(finalRedirectUrl));
             return new ResponseEntity<>(httpHeaders, HttpStatus.FOUND);
         } else {
-            log.info("NpciMockPaymentController: Showing mock payment page for txnId={}, amount={}", txnId, amount);
-
             String successUrl = "";
             String failureUrl = "";
             try {
-                successUrl = "/pg-service/transaction/v1/_redirect?txnId=" + txnId
-                        + "&status=SUCCESS&callbackUrl=" + URLEncoder.encode(callbackUrl, "UTF-8");
-                failureUrl = "/pg-service/transaction/v1/_redirect?txnId=" + txnId
-                        + "&status=FAILURE&callbackUrl=" + URLEncoder.encode(callbackUrl, "UTF-8");
+                successUrl = "/pg-service/transaction/v1/_redirect?txnId=" + txnId + "&status=SUCCESS&callbackUrl=" + URLEncoder.encode(callbackUrl, "UTF-8");
+                failureUrl = "/pg-service/transaction/v1/_redirect?txnId=" + txnId + "&status=FAILURE&callbackUrl=" + URLEncoder.encode(callbackUrl, "UTF-8");
 
-                // Ensure the sandbox API endpoints retain authorization context
                 if (authToken != null && !authToken.isEmpty()) {
                     successUrl += "&auth-token=" + authToken;
                     failureUrl += "&auth-token=" + authToken;
                 }
             } catch (Exception e) {
-                log.error("NpciMockPaymentController: Failed to encode submit URLs", e);
                 successUrl = "/pg-service/transaction/v1/_redirect?txnId=" + txnId + "&status=SUCCESS&callbackUrl=" + callbackUrl;
                 failureUrl = "/pg-service/transaction/v1/_redirect?txnId=" + txnId + "&status=FAILURE&callbackUrl=" + callbackUrl;
-
-                // Ensure the sandbox API endpoints retain authorization context
                 if (authToken != null && !authToken.isEmpty()) {
                     successUrl += "&auth-token=" + authToken;
                     failureUrl += "&auth-token=" + authToken;
@@ -68,12 +83,12 @@ public class NpciMockPaymentController {
             }
 
             String html = getHtmlTemplate(txnId, amount, successUrl, failureUrl);
+
             return ResponseEntity.ok()
                     .contentType(MediaType.TEXT_HTML)
                     .body(html);
         }
     }
-
     private String getHtmlTemplate(String txnId, String amount, String successUrl, String failureUrl) {
         return "<!DOCTYPE html>\n" +
                 "<html lang=\"en\">\n" +
@@ -621,10 +636,10 @@ public class NpciMockPaymentController {
                 "        <h3 class=\"sim-title\">⚙️ Sandbox Simulation Panel</h3>\n" +
                 "        <div class=\"sim-actions\">\n" +
                 "            <a href=\"" + successUrl + "\" class=\"sim-btn sim-success\">\n" +
-                "                Simulate Payment Success\n" +
+                "                Payment Success\n" +
                 "            </a>\n" +
                 "            <a href=\"" + failureUrl + "\" class=\"sim-btn sim-failure\">\n" +
-                "                Simulate Payment Failure\n" +
+                "                Payment Failure\n" +
                 "            </a>\n" +
                 "        </div>\n" +
                 "    </div>\n" +
