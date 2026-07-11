@@ -43,6 +43,7 @@ public class SurveyorRowMapper implements ResultSetExtractor<List<Surveyor>> {
             String name           = rs.getString("name");
             String mobileNo       = rs.getString("mobile_no");
             String supervisorId   = rs.getString("supervisor_id");
+            String correspondenceAddress = rs.getString("correspondence_address");
             String ownerId        = rs.getString("owner_id");
             String description    = rs.getString("description");
             String status         = rs.getString("status");
@@ -62,6 +63,7 @@ public class SurveyorRowMapper implements ResultSetExtractor<List<Surveyor>> {
                         .name(name)
                         .mobileNo(mobileNo)
                         .supervisorId(supervisorId)
+                        .correspondenceAddress(correspondenceAddress)
                         .ownerId(ownerId)
                         .description(description)
                         .status(StatusEnum.valueOf(status))

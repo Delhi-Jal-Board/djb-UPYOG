@@ -52,6 +52,7 @@ public class SupervisorRowMapper implements ResultSetExtractor<List<Supervisor>>
                         .vendorId(rs.getString("vendor_id"))
                         .mobileNo(rs.getString("mobile_no"))
                         .assignedZoneId(rs.getString("assigned_zone_id"))
+                        .correspondenceAddress(rs.getString("correspondence_address"))
                         .ownerId(rs.getString("owner_id"))
                         .description(rs.getString("description"))
                         .status(StatusEnum.valueOf(status))
