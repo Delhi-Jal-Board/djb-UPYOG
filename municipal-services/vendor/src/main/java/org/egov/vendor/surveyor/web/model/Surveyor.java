@@ -55,6 +55,11 @@ public class Surveyor {
     @Size(max = 256)
     private String supervisorId = null;
 
+    @JsonProperty("correspondenceAddress")
+    @SafeHtml
+    @Size(max = 500)
+    private String correspondenceAddress = null;
+
     @JsonProperty("owner")
     @Valid
     private User owner = null;

@@ -123,7 +123,7 @@ serviceMaps:
       isTransaction: true
       queryMaps:
 
-        - query: INSERT INTO eg_supervisor(id, name, tenantid, vendor_id, mobile_no, assigned_zone_id, additionaldetails, owner_id, description, status, createdby, lastmodifiedby, createdtime, lastmodifiedtime) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+        - query: INSERT INTO eg_supervisor(id, name, tenantid, vendor_id, mobile_no, assigned_zone_id, correspondence_address, additionaldetails, owner_id, description, status, createdby, lastmodifiedby, createdtime, lastmodifiedtime) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
           basePath: supervisor
           jsonMaps:
             - jsonPath: $.supervisor.id
@@ -132,6 +132,7 @@ serviceMaps:
             - jsonPath: $.supervisor.vendorId
             - jsonPath: $.supervisor.mobileNo
             - jsonPath: $.supervisor.assignedZoneId
+            - jsonPath: $.supervisor.correspondenceAddress
             - jsonPath: $.supervisor.additionalDetails
               type: JSON
               dbType: JSONB
@@ -152,13 +153,14 @@ serviceMaps:
       isTransaction: true
       queryMaps:
 
-        - query: UPDATE eg_supervisor SET name=?, vendor_id=?, mobile_no=?, assigned_zone_id=?, additionaldetails=?, owner_id=?, description=?, status=?, lastmodifiedby=?, lastmodifiedtime=? WHERE id=? AND tenantid=?;
+        - query: UPDATE eg_supervisor SET name=?, vendor_id=?, mobile_no=?, assigned_zone_id=?, correspondence_address=?, additionaldetails=?, owner_id=?, description=?, status=?, lastmodifiedby=?, lastmodifiedtime=? WHERE id=? AND tenantid=?;
           basePath: supervisor
           jsonMaps:
             - jsonPath: $.supervisor.name
             - jsonPath: $.supervisor.vendorId
             - jsonPath: $.supervisor.mobileNo
             - jsonPath: $.supervisor.assignedZoneId
+            - jsonPath: $.supervisor.correspondenceAddress
             - jsonPath: $.supervisor.additionalDetails
               type: JSON
               dbType: JSONB
@@ -179,7 +181,7 @@ serviceMaps:
       isTransaction: true
       queryMaps:
 
-        - query: INSERT INTO eg_surveyor(id, name, tenantid, vendor_id, mobile_no, supervisor_id, additionaldetails, owner_id, description, status, createdby, lastmodifiedby, createdtime, lastmodifiedtime) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+        - query: INSERT INTO eg_surveyor(id, name, tenantid, vendor_id, mobile_no, supervisor_id, correspondence_address, additionaldetails, owner_id, description, status, createdby, lastmodifiedby, createdtime, lastmodifiedtime) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
           basePath: surveyor
           jsonMaps:
             - jsonPath: $.surveyor.id
@@ -188,6 +190,7 @@ serviceMaps:
             - jsonPath: $.surveyor.vendorId
             - jsonPath: $.surveyor.mobileNo
             - jsonPath: $.surveyor.supervisorId
+            - jsonPath: $.surveyor.correspondenceAddress
             - jsonPath: $.surveyor.additionalDetails
               type: JSON
               dbType: JSONB
@@ -208,13 +211,14 @@ serviceMaps:
       isTransaction: true
       queryMaps:
 
-        - query: UPDATE eg_surveyor SET name=?, vendor_id=?, mobile_no=?, supervisor_id=?, additionaldetails=?, owner_id=?, description=?, status=?, lastmodifiedby=?, lastmodifiedtime=? WHERE id=? AND tenantid=?;
+        - query: UPDATE eg_surveyor SET name=?, vendor_id=?, mobile_no=?, supervisor_id=?, correspondence_address=?, additionaldetails=?, owner_id=?, description=?, status=?, lastmodifiedby=?, lastmodifiedtime=? WHERE id=? AND tenantid=?;
           basePath: surveyor
           jsonMaps:
             - jsonPath: $.surveyor.name
             - jsonPath: $.surveyor.vendorId
             - jsonPath: $.surveyor.mobileNo
             - jsonPath: $.surveyor.supervisorId
+            - jsonPath: $.surveyor.correspondenceAddress
             - jsonPath: $.surveyor.additionalDetails
               type: JSON
               dbType: JSONB
