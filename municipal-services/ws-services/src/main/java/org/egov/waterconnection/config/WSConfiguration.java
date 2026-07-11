@@ -71,6 +71,10 @@ public class WSConfiguration {
     @Value("${egov.waterservice.updatewaterconnection.workflow.topic}")
     private String workFlowUpdateTopic;
 
+    @Value("${egov.waterservice.updatewaterconnection.due.inspection.topic}")
+    private String dueInspectionUpdateTopic;
+
+
     // Localization
     @Value("${egov.localization.host}")
     private String localizationHost;
