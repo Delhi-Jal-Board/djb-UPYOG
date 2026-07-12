@@ -53,6 +53,9 @@ public class EstimationService {
 	@Autowired
 	private PayService payService;
 
+	@Autowired
+	private WaterDemandCalculator waterDemandCalculator;
+	
 	/**
 	 * Generates a List of Tax head estimates with tax head code, tax head
 	 * category and the amount to be collected for the key.
@@ -372,7 +375,7 @@ public class EstimationService {
 		// //Billing slab id
 		estimatesAndBillingSlabs.put("billingSlabIds", billingSlabIds);
 		return estimatesAndBillingSlabs;
-	}
+	}	
 
 
 	/**
@@ -405,6 +408,10 @@ public class EstimationService {
 		}
 		log.info("Connection Category = {}", requestConnectionCategory);
 
+		requestConnectionCategory = normalizeConnectionCategory(requestConnectionCategory);
+
+		log.info("Normalized Connection Category : {}", requestConnectionCategory);
+		
 		// Use a dynamic map to collect matching matrix charges by their TaxHead code
 		Map<String, BigDecimal> dynamicFeeMap = new HashMap<>();
 
@@ -461,6 +468,9 @@ public class EstimationService {
 			}
 		}
 
+		log.info("Dynamic Fee Map = {}", dynamicFeeMap);
+		log.info("Dynamic Fee Count = {}", dynamicFeeMap.size());
+		
 		BigDecimal roadCuttingCharge = BigDecimal.ZERO;
 		BigDecimal roadCuttingChargeBerm = BigDecimal.ZERO;
 		BigDecimal roadCuttingChargeBMPrefixRoad = BigDecimal.ZERO;
@@ -584,7 +594,7 @@ public class EstimationService {
 		}
 
 		// Average Water Demand
-		BigDecimal waterDemandLPD = calculateAverageWaterDemand(criteria, property);
+		BigDecimal waterDemandLPD = waterDemandCalculator.calculateAverageWaterDemand(property, masterData);
 
 		if (waterDemandLPD == null || waterDemandLPD.compareTo(BigDecimal.ZERO) <= 0) {
 			log.warn("Water Demand calculated as ZERO.");
@@ -592,9 +602,7 @@ public class EstimationService {
 		}
 
 		BigDecimal waterRate = infra.get(WSCalculationConstant.WATER_RATE_PER_LPD) != null ? new BigDecimal(infra.get(WSCalculationConstant.WATER_RATE_PER_LPD).toString()) : BigDecimal.ZERO;
-
 		BigDecimal sewerRate = infra.get(WSCalculationConstant.SEWER_RATE_PER_LPD) != null ? new BigDecimal(infra.get(WSCalculationConstant.SEWER_RATE_PER_LPD).toString()) : BigDecimal.ZERO;
-
 		Integer annualIncrement = infra.get(WSCalculationConstant.ANNUAL_INCREMENT) != null ? Integer.parseInt(infra.get(WSCalculationConstant.ANNUAL_INCREMENT).toString()) : 0;
 
 		LocalDate effectiveDate = LocalDate.of(2026, 4, 1);
@@ -641,92 +649,60 @@ public class EstimationService {
 
 		BigDecimal netIFC = grossIFC.subtract(rebateAmount).setScale(2, RoundingMode.HALF_UP);
 
-		log.info("Infrastructure Charge Calculation -> PlotArea={}, WaterDemand={} LPD, WaterRate={}, SewerRate={}, GrossIFC={}, Rebate={}%, RebateAmount={}, NetIFC={}",
-				plotArea, waterDemandLPD, waterRate,sewerRate, grossIFC, rebatePercentage, rebateAmount,netIFC);
+		// ==================== DETAILED BREAKDOWN LOGGING ====================
+		log.info("======================================================================");
+		log.info("           INFRASTRUCTURE CHARGE BREAKDOWN REPORT                    ");
+		log.info("======================================================================");
+		log.info("Application No       : {}", criteria.getWaterConnection() != null ? criteria.getWaterConnection().getApplicationNo() : "N/A");
+		log.info("Tenant ID            : {}", property.getTenantId());
+		log.info("Colony Category      : {}", colonyCategory);
+		log.info("Plot Area            : {} Sq.Mtr (Min Required: {})", plotArea, minimumPlotArea);
+		log.info("Calculated Water Dem : {} LPD", waterDemandLPD);
+		log.info("----------------------------------------------------------------------");
+		log.info("Water Rate/LPD       : {} (Base + Multiplier adjustments if active)", waterRate.setScale(2, RoundingMode.HALF_UP));
+		log.info("Sewer Rate/LPD       : {}", sewerRate.setScale(2, RoundingMode.HALF_UP));
+		log.info("----------------------------------------------------------------------");
+		log.info("Water Component IFC  : {}  [Formula: {} * {}]", waterIFC.setScale(2, RoundingMode.HALF_UP), waterDemandLPD, waterRate.setScale(2, RoundingMode.HALF_UP));
+		log.info("Sewer Component IFC  : {}  [Formula: {} * {}]", sewerIFC.setScale(2, RoundingMode.HALF_UP), waterDemandLPD, sewerRate.setScale(2, RoundingMode.HALF_UP));
+		log.info("Gross Total IFC      : {}  [Formula: Water Component + Sewer Component]", grossIFC.setScale(2, RoundingMode.HALF_UP));
+		log.info("----------------------------------------------------------------------");
+		log.info("Applicable Rebate    : {}%", rebatePercentage.setScale(2, RoundingMode.HALF_UP));
+		log.info("Rebate Concession Amt: {}", rebateAmount.setScale(2, RoundingMode.HALF_UP));
+		log.info("======================================================================");
+		log.info("FINAL PAYABLE NET IFC: {}  [Formula: Gross Total - Rebate Amount]", netIFC);
+		log.info("======================================================================");
+		// ====================================================================
+
+		try {
+		    Map<String, Object> infraBreakdown = new LinkedHashMap<>();
+		    infraBreakdown.put("resolvedBuildingType", waterDemandCalculator.resolveBuildingType(property, masterData).toString());
+		    infraBreakdown.put("plotArea", plotArea);
+		    infraBreakdown.put("waterDemandLPD", waterDemandLPD);
+		    
+		    // YAHAN WATER DEMAND KA LOG SPECS INJECT KAREIN
+		    Map<String, Object> demandTrace = waterDemandCalculator.traceWaterDemandLogDetails(property, masterData);
+		    infraBreakdown.put("waterDemandCalculationTrace", demandTrace);
+
+		    infraBreakdown.put("waterRatePerLPD", waterRate.setScale(2, RoundingMode.HALF_UP));
+		    infraBreakdown.put("grossInfrastructureCharge", grossIFC.setScale(2, RoundingMode.HALF_UP));
+		    infraBreakdown.put("netInfrastructureCharge", netIFC);
+
+		    if (criteria.getWaterConnection() != null) {
+		        Map<String, Object> existingDetails = criteria.getWaterConnection().getAdditionalDetails() != null 
+		            ? mapper.convertValue(criteria.getWaterConnection().getAdditionalDetails(), new TypeReference<Map<String, Object>>() {})
+		            : new LinkedHashMap<>();
+		            
+		        existingDetails.put("infrastructureChargeDetails", infraBreakdown);
+		        criteria.getWaterConnection().setAdditionalDetails(existingDetails);
+		    }
+		} catch (Exception e) {
+		    log.error("Error setting infrastructure breakdown details in calculation context", e);
+		}
 
 		return netIFC;
 	}
-
-	/**
-	 * Calculates the average Water Demand in Liters Per Day (LPD) based on the
-	 * Property's usage category, size, or structural metadata.
-	 *
-	 * @param criteria Calculation Search Criteria
-	 * @param property The associated Property details
-	 * @return BigDecimal average demand in LPD
-	 */
-	private BigDecimal calculateAverageWaterDemand(CalculationCriteria criteria, Property property) {
-
-		if (property == null) {
-			log.warn("Property is null.");
-			return BigDecimal.ZERO;
-		}
-
-		JSONObject details = property.getAdditionalDetails() == null ? new JSONObject() : mapper.convertValue(property.getAdditionalDetails(), JSONObject.class);
-		String usageCategory = property.getUsageCategory() == null ? "" : property.getUsageCategory().toUpperCase();
-		BigDecimal plotArea = property.getLandArea() == null ? BigDecimal.ZERO : BigDecimal.valueOf(property.getLandArea());
-		BigDecimal builtUpArea = BigDecimal.ZERO;
-
-		if (details.get("builtUpArea") != null) {
-			builtUpArea = new BigDecimal(details.get("builtUpArea").toString());
-		}
-
-		long dwellingUnits = 1;
-		if (details.get("numberOfDwellingUnits") != null) {
-			try {
-				dwellingUnits = Long.parseLong(details.get("numberOfDwellingUnits").toString());
-			} catch (Exception ignore) {
-			}
-		}
-
-		BigDecimal demand;
-
-		/*
-		 * DJB Domestic
-		 * 135 LPD/person
-		 * Assume average 5 persons/dwelling
-		 */
-
-		if (usageCategory.contains("RESIDENTIAL")) {
-			BigDecimal demandPerDwelling = BigDecimal.valueOf(675);
-			demand = demandPerDwelling.multiply(BigDecimal.valueOf(dwellingUnits));
-		}
-
-		/* Commercial*/
-		else if (usageCategory.contains("COMMERCIAL")) {
-			if (builtUpArea.compareTo(BigDecimal.ZERO) > 0) {
-				demand = builtUpArea.multiply(BigDecimal.valueOf(45));
-			} else {
-				demand = plotArea.multiply(BigDecimal.valueOf(45));
-			}
-		}
-
-		/* Institutional */
-		else if (usageCategory.contains("INSTITUTIONAL")) {
-			if (builtUpArea.compareTo(BigDecimal.ZERO) > 0) {
-				demand = builtUpArea.multiply(BigDecimal.valueOf(45));
-			} else {
-				demand = plotArea.multiply(BigDecimal.valueOf(45));
-			}
-		}
-
-		/* Industrial */
-		else if (usageCategory.contains("INDUSTRIAL")) {
-			if (builtUpArea.compareTo(BigDecimal.ZERO) > 0) {
-				demand = builtUpArea.multiply(BigDecimal.valueOf(45));
-			} else {
-				demand = plotArea.multiply(BigDecimal.valueOf(45));
-			}
-		}
-
-		/* Fallback */
-		else {
-			demand = plotArea.multiply(BigDecimal.valueOf(20));
-		}
-		log.info("Average Water Demand : Usage={}, PlotArea={}, BuiltUpArea={}, DwellingUnits={}, Demand={} LPD", usageCategory, plotArea, builtUpArea, dwellingUnits, demand);
-		return demand.setScale(2, RoundingMode.HALF_UP);
-	}
-
+	
+	
 	private boolean shouldIncludeFee(WaterConnection wc, String feeComponent, String taxHeadCode) {
 
 		String applicationType = wc.getApplicationType();
@@ -744,6 +720,24 @@ public class EstimationService {
 			).contains(feeComponent);
 		}
 		return true;
+	}
+	
+	private String normalizeConnectionCategory(String connectionCategory) {
+
+	    if (connectionCategory == null || connectionCategory.trim().isEmpty()) {
+	        return connectionCategory;
+	    }
+
+	    switch (connectionCategory.trim().toUpperCase()) {
+	        case "NON_DOMESTIC":
+	            return "COMMERCIAL";
+
+	        case "DOMESTIC":
+	            return "DOMESTIC";
+
+	        default:
+	            return connectionCategory.trim().toUpperCase();
+	    }
 	}
 	
 	/**
