@@ -450,18 +450,18 @@ public class WSCalculationConstant {
 	public static final String CATEGORIES = "categories";
 	public static final String DESCRIPTION = "description";
 
-	
+
 	// =========================================================================
 	// DELHI JAL BOARD (DJB) WATER REQUIREMENT MATRIX CONSTANTS (UPDATED)
 	// =========================================================================
-	
+
 	public static final int DIVISION_SCALE = 4;
 	public static final int RESULT_SCALE = 2;
 
 	// --- Group A: Residential (Lodging / Rooming / Dwellings) ---
 	public static final String BUILT_UP_AREA = "builtUpArea";
 	public static final String NUMBER_OF_DWELLING_UNITS = "numberOfDwellingUnits";
-	
+
 	// A-1 & A-3 Baseline
 	public static final BigDecimal RESIDENTIAL_AREA_PER_PERSON = BigDecimal.valueOf(25);
 	public static final BigDecimal RESIDENTIAL_LPCD = BigDecimal.valueOf(135);
@@ -469,7 +469,7 @@ public class WSCalculationConstant {
 	public static final BigDecimal RESIDENTIAL_NON_POTABLE = BigDecimal.valueOf(45);
 
 	// A-2 & A-4 Specifics (HIG / MIG vs LIG / EWS)
-	public static final BigDecimal RESIDENTIAL_DU_PERSONS = BigDecimal.valueOf(5); 
+	public static final BigDecimal RESIDENTIAL_DU_PERSONS = BigDecimal.valueOf(5);
 	public static final BigDecimal RESIDENTIAL_HIG_MIG_LPCD = BigDecimal.valueOf(225); // Group A-2 / A-4 (HIG/MIG)
 	public static final BigDecimal RESIDENTIAL_LIG_EWS_LPCD = BigDecimal.valueOf(90);  // Group A-2 / A-4 (LIG/EWS)
 
@@ -481,60 +481,63 @@ public class WSCalculationConstant {
 	public static final BigDecimal HIG_PERSONS_PER_DU = BigDecimal.valueOf(5);
 	public static final BigDecimal GROUP_HOUSING_PERSONS_PER_DU = BigDecimal.valueOf(5);
 	public static final BigDecimal EWS_PERSONS_PER_DU = BigDecimal.valueOf(5);
-	
+
 	// --- Group B: Educational (Colleges / Schools / Institutions) ---
 	public static final String NUMBER_OF_STUDENTS = "numberOfStudents";
-	
+
 	public static final BigDecimal EDUCATIONAL_AREA_PER_PERSON = BigDecimal.valueOf(4); // 1 P / 4 sqm FAR area criteria
 	public static final BigDecimal EDUCATIONAL_LPCD = BigDecimal.valueOf(45);
-	public static final BigDecimal SCHOOL_LPCD = BigDecimal.valueOf(45);  
-	public static final BigDecimal COLLEGE_LPCD = BigDecimal.valueOf(45); 
-	public static final BigDecimal UNIVERSITY_LPCD = BigDecimal.valueOf(45); 
-	
+	public static final BigDecimal SCHOOL_LPCD = BigDecimal.valueOf(45);
+	public static final BigDecimal COLLEGE_LPCD = BigDecimal.valueOf(45);
+	public static final BigDecimal UNIVERSITY_LPCD = BigDecimal.valueOf(45);
+
 	// --- Group C: Institutional (Hospitals / Sanatoria) ---
 	public static final String NUMBER_OF_BEDS = "numberOfBeds";
 	public static final BigDecimal HOSPITAL_LPCD = BigDecimal.valueOf(340); // Base tier: 340 LPCD up to 100 beds
 	public static final BigDecimal HOSPITAL_HIGH_TIER_LPCD = BigDecimal.valueOf(450); // Upper tier: 450 LPCD above 100 beds
-	
+
 	// --- Group E: Business / Offices / Establishments ---
 	// Mapped directly from DJB Group E: 1 P / 10 Sqm of FAR area @ 45 LPCD
 	public static final BigDecimal OFFICE_AREA_PER_PERSON = BigDecimal.valueOf(10); // Updated from 13 to 10
 	public static final BigDecimal OFFICE_LPCD = BigDecimal.valueOf(45);
-	public static final BigDecimal BUSINESS_AREA_PER_PERSON = BigDecimal.valueOf(10); 
-	public static final BigDecimal BUSINESS_LPCD = BigDecimal.valueOf(45); 
+	public static final BigDecimal BUSINESS_AREA_PER_PERSON = BigDecimal.valueOf(10);
+	public static final BigDecimal BUSINESS_LPCD = BigDecimal.valueOf(45);
 	public static final BigDecimal BANK_AREA_PER_PERSON = BigDecimal.valueOf(10);
 	public static final BigDecimal BANK_LPCD = BigDecimal.valueOf(45);
-	
+
 	// --- Group F: Mercantile (Shops, Stores, Departmental Markets, Malls) ---
 	// Mapped directly from DJB Group F: 1 P / 4.5 Sqm of FAR area @ 45 LPCD
 	public static final BigDecimal SHOP_AREA_PER_PERSON = BigDecimal.valueOf(4.5); // Updated from 15 to 4.5
 	public static final BigDecimal SHOP_LPCD = BigDecimal.valueOf(45);
 	public static final BigDecimal MALL_AREA_PER_PERSON = BigDecimal.valueOf(4.5); // Updated from 15 to 4.5
 	public static final BigDecimal MALL_LPCD = BigDecimal.valueOf(45);
-	
+
 	// --- Group D: Assembly / Restaurants / Cinema ---
 	public static final BigDecimal RESTAURANT_AREA_PER_PERSON = BigDecimal.valueOf(1.5); // 1 person per 1.5 sqm of total plot area
 	public static final BigDecimal RESTAURANT_LPCD = BigDecimal.valueOf(70); // Group D-8 Restuarants requirement
 	public static final BigDecimal CINEMA_AREA_PER_PERSON = BigDecimal.valueOf(1.5); // Group D-1 & D-2 Theater requirement
 	public static final BigDecimal CINEMA_LPCD = BigDecimal.valueOf(15);
-	
+
 	// --- Hotels & Accommodation ---
 	public static final String NUMBER_OF_ROOMS = "numberOfRooms";
 	public static final BigDecimal HOTEL_LPCD = BigDecimal.valueOf(180);  // Group A-5 Hotels non-starred
 	public static final BigDecimal HOTEL_STARRED_LPCD = BigDecimal.valueOf(320); // Group A-6 Starred Hotels
-	public static final BigDecimal PERSONS_PER_ROOM = BigDecimal.valueOf(2);   
+	public static final BigDecimal PERSONS_PER_ROOM = BigDecimal.valueOf(2);
 	public static final BigDecimal HOSTEL_LPCD = BigDecimal.valueOf(135);  // Group A-3 Dormitories/Hostels
-	
+
 	// --- Group G & H: Industrial / Storage & Parkings ---
 	public static final BigDecimal INDUSTRIAL_AREA_PER_PERSON = BigDecimal.valueOf(10); // Group G: Assembly plants 1P/10 Sqm
-	public static final BigDecimal INDUSTRIAL_LPCD = BigDecimal.valueOf(45);      
+	public static final BigDecimal INDUSTRIAL_LPCD = BigDecimal.valueOf(45);
 	public static final BigDecimal STORAGE_AREA_PER_PERSON = BigDecimal.valueOf(30); // Group H: Warehouses 1P/30 Sqm
 	public static final BigDecimal STORAGE_LPCD = BigDecimal.valueOf(45);
-	
+
 	public static final String WC_PROPERTY_TYPE_MASTER = "PropertyType";
 	public static final String WC_PROPERTY_NEW_USAGE_TYPE_MASTER = "PropertyNewUsageType";
 	public static final String PROPERTY_TAX_MODULE = "PropertyTax";
-	
+
+
+	public static final BigDecimal DEFAULT_NEW_CONNECTION_FEE = BigDecimal.valueOf(2000);
+
 }
 
 
