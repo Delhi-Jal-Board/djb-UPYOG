@@ -61,8 +61,16 @@ const WTAcknowledgement = ({ data, onSuccess }) => {
     try {
       data.tenantId = tenantId;
       let formdata = waterTankerPayload(data);
-      mutation.mutate(formdata, { onSuccess });
-    } catch (err) {}
+      mutation.mutate(formdata, { 
+        onSuccess: (res) => {
+          if (!res?.error) {
+            onSuccess();
+          }
+        }
+      });
+    } catch (err) {
+      console.error("WT payload construction error:", err);
+    }
   }, []);
 
   /*custom hook to prevent going back in Acknowledgement /success response page
@@ -88,15 +96,23 @@ const WTAcknowledgement = ({ data, onSuccess }) => {
     Digit.Utils.pdf.generate(data);
   };
 
+  const isMutationSuccess = mutation.isSuccess && !mutation.data?.error;
+  const isMutationError = mutation.isError || (mutation.isSuccess && mutation.data?.error);
+
   return mutation.isLoading || mutation.isIdle ? (
     <Loader />
   ) : (
     <Card className="vehicle-details-card">
-      <BannerPicker t={t} data={mutation.data} isSuccess={mutation.isSuccess} isLoading={mutation.isIdle || mutation.isLoading} />
+      <BannerPicker t={t} data={mutation.data} isSuccess={isMutationSuccess} isLoading={mutation.isIdle || mutation.isLoading} />
+      {isMutationError && (
+        <CardText style={{ color: "#d4351c", textAlign: "center", marginTop: "8px" }}>
+          {mutation.data?.data?.Errors?.[0]?.message || mutation.error?.response?.data?.Errors?.[0]?.message || t("WT_SUBMISSION_FAILED_MESSAGE")}
+        </CardText>
+      )}
       <StatusTable>
-        {mutation.isSuccess && <Row rowContainerStyle={rowContainerStyle} last textStyle={{ whiteSpace: "pre", width: "60%" }} />}
+        {isMutationSuccess && <Row rowContainerStyle={rowContainerStyle} last textStyle={{ whiteSpace: "pre", width: "60%" }} />}
       </StatusTable>
-      {mutation.isSuccess && <SubmitBar label={t("WT_DOWNLOAD_ACKNOWLEDGEMENT")} onSubmit={handleDownloadPdf} />}
+      {isMutationSuccess && <SubmitBar label={t("WT_DOWNLOAD_ACKNOWLEDGEMENT")} onSubmit={handleDownloadPdf} />}
       {user?.type === "CITIZEN" ? (
         <Link to={`${APPLICATION_PATH}/citizen`}>
           <LinkButton label={t("CORE_COMMON_GO_TO_HOME")} />
