@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Modal, Card, TextInput, CardLabel, Dropdown, MobileNumber, TextArea, Loader } from "@djb25/digit-ui-react-components";
+import { Modal, Card, TextInput, CardLabel, Dropdown, MobileNumber, TextArea, Loader, Toast } from "@djb25/digit-ui-react-components";
 import { updateEmergencyWaterTankerPayload } from "../utils";
 
 const Close = () => (
@@ -36,6 +36,7 @@ const WTEditApplicationModal = ({ t, applicationData, closeModal }) => {
     requestDetails: {},
     dispatchDetails: {}
   });
+  const [showToast, setShowToast] = useState(null);
  const { data: vendorData } = Digit.Hooks.fsm.useVendorSearch({
     tenantId,
     filters: {
@@ -345,6 +346,11 @@ const WTEditApplicationModal = ({ t, applicationData, closeModal }) => {
       },
       onError: (error) => {
         console.error("Update Error:", error);
+        setShowToast({
+          isError: true,
+          label: error?.response?.data?.Errors?.[0]?.message || t("WT_APPLICATION_UPDATE_FAILED"),
+        });
+        setTimeout(() => setShowToast(null), 5000);
       }
     });
   };
@@ -352,6 +358,7 @@ const WTEditApplicationModal = ({ t, applicationData, closeModal }) => {
   if (mutation.isLoading) return <Loader />;
 
   return (
+    <React.Fragment>
     <Modal
       headerBarMain={<h1 className="heading-m">{t("WT_EDIT_APPLICATION_DETAILS")}</h1>}
       headerBarEnd={<CloseBtn onClick={closeModal} />}
@@ -476,6 +483,8 @@ const WTEditApplicationModal = ({ t, applicationData, closeModal }) => {
         </div>
       </Card>
     </Modal>
+    {showToast && <Toast error={showToast.isError} label={showToast.label} onClose={() => setShowToast(null)} />}
+    </React.Fragment>
   );
 };
 

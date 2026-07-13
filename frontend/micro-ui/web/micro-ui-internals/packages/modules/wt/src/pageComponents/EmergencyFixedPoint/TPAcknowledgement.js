@@ -64,10 +64,16 @@ const EmergencyFixedPointTPAcknowledgement = ({ data, onSuccess }) => {
   useEffect(() => {
     try {
       data.tenantId = tenantId;
-      // if()
       let formdata = treePruningPayload(data);
-      mutation.mutate(formdata, {onSuccess});
+      mutation.mutate(formdata, { 
+        onSuccess: (res) => {
+          if (!res?.error) {
+            onSuccess();
+          }
+        }
+      });
     } catch (err) {
+      console.error("Emergency TP payload construction error:", err);
     }
   }, []);
 
@@ -94,13 +100,21 @@ const EmergencyFixedPointTPAcknowledgement = ({ data, onSuccess }) => {
     Digit.Utils.pdf.generate(data);
   };
 
+  const isMutationSuccess = mutation.isSuccess && !mutation.data?.error;
+  const isMutationError = mutation.isError || (mutation.isSuccess && mutation.data?.error);
+
   return mutation.isLoading || mutation.isIdle ? (
     <Loader />
   ) : (
     <Card>
-      <BannerPicker t={t} data={mutation.data} isSuccess={mutation.isSuccess} isLoading={mutation.isIdle || mutation.isLoading} />
+      <BannerPicker t={t} data={mutation.data} isSuccess={isMutationSuccess} isLoading={mutation.isIdle || mutation.isLoading} />
+      {isMutationError && (
+        <CardText style={{ color: "#d4351c", textAlign: "center", marginTop: "8px" }}>
+          {mutation.data?.data?.Errors?.[0]?.message || mutation.error?.response?.data?.Errors?.[0]?.message || t("TP_SUBMISSION_FAILED_MESSAGE")}
+        </CardText>
+      )}
       <StatusTable>
-        {mutation.isSuccess && (
+        {isMutationSuccess && (
           <Row
             rowContainerStyle={rowContainerStyle}
             last       
@@ -108,7 +122,7 @@ const EmergencyFixedPointTPAcknowledgement = ({ data, onSuccess }) => {
           />
         )}
       </StatusTable>
-      {mutation.isSuccess && <SubmitBar label={t("TP_DOWNLOAD_ACKNOWLEDGEMENT")} onSubmit={handleDownloadPdf} />}
+      {isMutationSuccess && <SubmitBar label={t("TP_DOWNLOAD_ACKNOWLEDGEMENT")} onSubmit={handleDownloadPdf} />}
       {user?.type==="CITIZEN"?
       <Link to={`${APPLICATION_PATH}/citizen`}>
         <LinkButton label={t("CORE_COMMON_GO_TO_HOME")} />
