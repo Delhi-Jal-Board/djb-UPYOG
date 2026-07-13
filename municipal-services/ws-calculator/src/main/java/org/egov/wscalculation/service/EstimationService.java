@@ -893,7 +893,7 @@ public class EstimationService {
 
 	}
 
-	public Map<String, List> getMutationFeeEstimation(CalculationCriteria criteria, RequestInfo requestInfo,
+/*	public Map<String, List> getMutationFeeEstimation(CalculationCriteria criteria, RequestInfo requestInfo,
 	                                                  Map<String, Object> masterData) {
 
 		if (StringUtils.isEmpty(criteria.getWaterConnection()) && !StringUtils.isEmpty(criteria.getApplicationNo())) {
@@ -913,9 +913,9 @@ public class EstimationService {
 		Map<String, List> estimatesAndBillingSlabs = new HashMap<>();
 		estimatesAndBillingSlabs.put("estimates", taxHeadEstimates);
 		return estimatesAndBillingSlabs;
-	}
+	}*/
 
-	@SuppressWarnings("unchecked")
+	/*@SuppressWarnings("unchecked")
 	private List<TaxHeadEstimate> getTaxHeadForMutationFeeEstimation(CalculationCriteria criteria,
 	                                                                 Map<String, Object> masterData, RequestInfo requestInfo) {
 
@@ -984,6 +984,6 @@ public class EstimationService {
 		addAdhocPenaltyAndRebate(estimates, connection);
 
 		return estimates;
-	}
+	}*/
 
 }
