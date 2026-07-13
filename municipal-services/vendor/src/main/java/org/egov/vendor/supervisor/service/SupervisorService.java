@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.egov.common.contract.request.RequestInfo;
+import org.egov.common.contract.request.Role;
 import org.egov.tracer.model.CustomException;
 import org.egov.vendor.config.VendorConfiguration;
 import org.egov.vendor.supervisor.repository.SupervisorRepository;
@@ -139,11 +140,13 @@ public class SupervisorService {
                                            RequestInfo requestInfo) {
         if (requestInfo == null || requestInfo.getUserInfo() == null) return;
 
-        String userType  = requestInfo.getUserInfo().getType();
+//        String userType  = requestInfo.getUserInfo().getType();
         String callerUuid = requestInfo.getUserInfo().getUuid();
 
         // EMPLOYEE / SUPERUSER — unrestricted
-        if (VendorConstants.EMPLOYEE.equalsIgnoreCase(userType)) return;
+//        if (VendorConstants.EMPLOYEE.equalsIgnoreCase(userType)) return;
+        if (isEmployeeUser(requestInfo)) return;
+
 
         if (!StringUtils.hasLength(callerUuid)) {
             throw new CustomException("AUTH_ERROR", "User UUID not found in token");
@@ -179,5 +182,33 @@ public class SupervisorService {
         // Use a dummy non-matching id so QueryBuilder adds a WHERE clause
         log.info("No vendor/supervisor profile for uuid={} — returning empty", callerUuid);
         criteria.setIds(Collections.singletonList("NO_MATCH"));
+    }
+
+    /**
+     * Same defensive EMPLOYEE-detection pattern as VendorService.isEmployeeUser().
+     *
+     * BUG THIS FIXES: userInfo.getType() alone is not reliably "EMPLOYEE" for
+     * genuine DIGIT employee tokens in this deployment (Zuul/Keycloak path) —
+     * exactly the reason VendorService already carries this same fallback.
+     * Supervisor/Surveyor search never had this fallback, so an EMPLOYEE
+     * caller whose type check failed fell all the way through to the
+     * "Unknown CITIZEN" branch and got forced empty (ids=["NO_MATCH"]) results
+     * — i.e. employee-side search silently always returned nothing.
+     */
+    private boolean isEmployeeUser(RequestInfo requestInfo) {
+        if (requestInfo == null || requestInfo.getUserInfo() == null) return false;
+
+        // Check by Type (Standard eGov logic)
+        if (VendorConstants.EMPLOYEE.equalsIgnoreCase(requestInfo.getUserInfo().getType())) {
+            return true;
+        }
+
+        // Check by Role Code (Defensive logic — same fallback as VendorService)
+        return !CollectionUtils.isEmpty(requestInfo.getUserInfo().getRoles()) &&
+                requestInfo.getUserInfo().getRoles().stream()
+                        .map(Role::getCode)
+                        .anyMatch(role -> role.equalsIgnoreCase("EMPLOYEE")
+                                || role.equalsIgnoreCase("SUPERUSER")
+                                || role.equalsIgnoreCase("WT_CEMP"));
     }
 }
