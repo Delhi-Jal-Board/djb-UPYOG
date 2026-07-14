@@ -289,6 +289,64 @@ function ApplyWorkflow() {
 
 
         </div>
+        <div style={{ display: "flex", gap: "20px", justifyContent: "flex-end", marginTop: "24px" }}>
+          <Button label="Apply changes" onButtonClick={handleApplyChanges} />
+          <Button label="Download Json" onButtonClick={handleDownloadJson} />
+          {/* Modal */}
+          {isModalOpen && (
+            <Modal
+              headerBarMain={<Heading t={t} />}
+              headerBarEnd={<CloseBtn onClick={handleCancel} />}
+              actionCancelLabel={null}
+              // actionSaveLabel={"Apply"}
+              actionSaveLabel={isApplying ? "Applying..." : "Apply"}
+              actionSaveOnSubmit={handleApply} // Call handleApply on Apply button click
+              formId="modal-action"
+              popupStyles={{
+                width: "60%", // Increase the modal width (you can adjust this value)
+                minWidth: "400px", // Ensure the modal doesn't become too narrow
+                maxWidth: "800px", // Optional: Set a maximum width
+                height: "auto", // Adjust the height to fit the content
+                maxHeight: "70vh", // Limit the height for scrollable content
+                position: "fixed",
+                transform: "translate(-50%, -50%)", // Centering the modal
+                top: "50%",
+                left: "50%",
+                margin: "0 auto",
+                padding: "20px", // Internal padding for the modal
+                overflow: "auto", // Allow scrolling if content overflows
+              }}
+
+            >
+              <LabelFieldPair>
+                <CardLabel className="card-label-smaller">{t("WBH_SELECT_OPERATION")}</CardLabel>
+                <Controller
+                  control={control}
+                  name="selectoperation"
+                  render={(props) => (
+                    <Dropdown
+                      // className="form-field"
+                      placeholder={t("WBH_SELECT_OPERATION")}
+                      selected={props.value}
+                      select={(value) => {
+                        props.onChange(value)
+                        setSelectedOperation(value); // Update local state for selected operation
+                      }
+                      }
+                      option={workflowOperationData} // Options for dropdown
+                      optionKey="i18nKey" // Use the `i18nKey` for the dropdown options
+                      t={t}
+                    />
+                  )}
+                />
+              </LabelFieldPair>
+              {/* Note below the Apply button */}
+              <div style={{ marginTop: "30px", fontSize: "20px" }}>
+                <span>{t("WBH_NOTE")}</span>
+              </div>
+            </Modal>
+          )}
+        </div>
       </Card>
 
       {jsonData && Object.keys(jsonData).length > 0 && (
@@ -296,67 +354,9 @@ function ApplyWorkflow() {
           <div style={{ border: "1px solid #ccc", padding: "16px", borderRadius: "8px" }}>
             <ReactJson style={{ fontSize: "16px" }} src={jsonData} name={false} collapsed={false} enableClipboard={true} />
           </div>
-          <div style={{ display: "flex", gap: "20px", justifyContent: "flex-end", marginTop: "24px" }}>
-            <Button label="Apply changes" onButtonClick={handleApplyChanges} />
-            <Button label="Download Json" onButtonClick={handleDownloadJson} />
-            {/* Modal */}
-            {isModalOpen && (
-              <Modal
-                headerBarMain={<Heading t={t} />}
-                headerBarEnd={<CloseBtn onClick={handleCancel} />}
-                actionCancelLabel={null}
-                // actionSaveLabel={"Apply"}
-                actionSaveLabel={isApplying ? "Applying..." : "Apply"}
-                actionSaveOnSubmit={handleApply} // Call handleApply on Apply button click
-                formId="modal-action"
-                popupStyles={{
-                  width: "60%", // Increase the modal width (you can adjust this value)
-                  minWidth: "400px", // Ensure the modal doesn't become too narrow
-                  maxWidth: "800px", // Optional: Set a maximum width
-                  height: "auto", // Adjust the height to fit the content
-                  maxHeight: "70vh", // Limit the height for scrollable content
-                  position: "fixed",
-                  transform: "translate(-50%, -50%)", // Centering the modal
-                  top: "50%",
-                  left: "50%",
-                  margin: "0 auto",
-                  padding: "20px", // Internal padding for the modal
-                  overflow: "auto", // Allow scrolling if content overflows
-                }}
-
-              >
-                <LabelFieldPair>
-                  <CardLabel className="card-label-smaller">{t("WBH_SELECT_OPERATION")}</CardLabel>
-                  <Controller
-                    control={control}
-                    name="selectoperation"
-                    render={(props) => (
-                      <Dropdown
-                        // className="form-field"
-                        placeholder={t("WBH_SELECT_OPERATION")}
-                        selected={props.value}
-                        select={(value) => {
-                          props.onChange(value)
-                          setSelectedOperation(value); // Update local state for selected operation
-                        }
-                        }
-                        option={workflowOperationData} // Options for dropdown
-                        optionKey="i18nKey" // Use the `i18nKey` for the dropdown options
-                        t={t}
-                      />
-                    )}
-                  />
-                </LabelFieldPair>
-                {/* Note below the Apply button */}
-                <div style={{ marginTop: "30px", fontSize: "20px" }}>
-                  <span>{t("WBH_NOTE")}</span>
-                </div>
-              </Modal>
-            )}
-          </div>
         </Card>
       )}
-      
+
       <div>
         {/* Show Toast based on the state */}
         {toastProps.label && (

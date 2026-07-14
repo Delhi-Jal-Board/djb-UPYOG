@@ -208,7 +208,15 @@ const InboxComposer = ({
                     {propsForInboxTable.noResultsMessage ? t(propsForInboxTable.noResultsMessage) : t("CS_MYAPPLICATIONS_NO_APPLICATION")}
                   </Card>
                 ) : (
-                  <Table t={t} {...propsForInboxTable} />
+                  <Table 
+                    t={t} 
+                    showCSVExport={true}
+                    csvExportButtonLabel={t("DOWNLOAD_EXCEL")}
+                    csvExportData={propsForInboxTable?.data}
+                    showPDFExport={true}
+                    pdfExportButtonLabel={t("DOWNLOAD_PDF")}
+                    {...propsForInboxTable} 
+                  />
                 )}
               </div>
             )}
@@ -250,7 +258,15 @@ const InboxComposer = ({
                 {propsForInboxTable.noResultsMessage ? t(propsForInboxTable.noResultsMessage) : t("CS_MYAPPLICATIONS_NO_APPLICATION")}
               </Card>
             ) : (
-              <Table t={t} {...propsForInboxTable} />
+              <Table 
+                t={t} 
+                showCSVExport={true}
+                csvExportButtonLabel={t("DOWNLOAD_EXCEL")}
+                csvExportData={propsForInboxTable?.data}
+                showPDFExport={true}
+                pdfExportButtonLabel={t("DOWNLOAD_PDF")}
+                {...propsForInboxTable} 
+              />
             )}
           </div>
         )}
@@ -286,7 +302,15 @@ const InboxComposer = ({
               {propsForInboxTable.noResultsMessage ? t(propsForInboxTable.noResultsMessage) : t("CS_MYAPPLICATIONS_NO_APPLICATION")}
             </Card>
           ) : (
-            <Table t={t} {...propsForInboxTable} />
+            <Table 
+              t={t} 
+              showCSVExport={true}
+              csvExportButtonLabel={t("DOWNLOAD_EXCEL")}
+              csvExportData={propsForInboxTable?.data}
+              showPDFExport={true}
+              pdfExportButtonLabel={t("DOWNLOAD_PDF")}
+              {...propsForInboxTable} 
+            />
           )}
         </div>
       )}
