@@ -54,9 +54,6 @@ public class WaterController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-
-
-
 	@RequestMapping(value = "/_search", method = RequestMethod.POST)
 	public ResponseEntity<WaterConnectionResponse> search(@Valid @RequestBody RequestInfoWrapper requestInfoWrapper,
 			@Valid @ModelAttribute SearchCriteria criteria) {
