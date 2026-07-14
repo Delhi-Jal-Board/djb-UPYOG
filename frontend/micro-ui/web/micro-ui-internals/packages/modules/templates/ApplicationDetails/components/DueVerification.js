@@ -8,18 +8,25 @@ const DueVerification = ({ applicationData }) => {
   const [remarks, setRemarks] = useState("");
   const [tableData, setTableData] = useState([]);
 
-  const handleRemarkChange = React.useCallback((index, value) => {
-    setTableData((prevData) => {
-      const newData = [...prevData];
-      newData[index] = { ...newData[index], remarks: value };
-      if (applicationData) {
-        applicationData.dueVerification = newData;
-      }
-      return newData;
-    });
-  }, [applicationData]);
+  const handleRemarkChange = React.useCallback(
+    (index, value) => {
+      setTableData((prevData) => {
+        const newData = [...prevData];
+        newData[index] = { ...newData[index], remarks: value };
+        if (applicationData) {
+          applicationData.dueVerification = newData;
+        }
+        return newData;
+      });
+    },
+    [applicationData]
+  );
 
-  const isPendingApproval = applicationData?.applicationStatus === "PENDING_APPROVAL_FOR_CONNECTION";
+  const isPendingApproval =
+    applicationData?.applicationStatus === "PENDING_APPROVAL_FOR_CONNECTION" ||
+    applicationData?.applicationStatus === "PENDING_FOR_CONNECTION_ACTIVATION";
+
+  const isActivation = applicationData?.applicationStatus === "PENDING_FOR_CONNECTION_ACTIVATION";
 
   const columns = useMemo(() => {
     const baseColumns = [
@@ -49,13 +56,19 @@ const DueVerification = ({ applicationData }) => {
       baseColumns.push({
         Header: t("Remarks"),
         accessor: "remarks",
-        Cell: ({ row, value }) => (
-          <TextInput
-            style={{ marginBottom: "0px", minWidth: "150px" }}
-            value={value || ""}
-            onChange={(e) => handleRemarkChange(row.index, e.target.value)}
-          />
-        ),
+        Cell: ({ row, value }) =>
+          isActivation ? (
+            value || "-"
+          ) : (
+            <TextInput
+              style={{
+                marginBottom: "0px",
+                minWidth: "150px",
+              }}
+              value={value || ""}
+              onChange={(e) => handleRemarkChange(row.index, e.target.value)}
+            />
+          ),
       });
     }
 
@@ -91,47 +104,43 @@ const DueVerification = ({ applicationData }) => {
   return (
     <div style={{ marginBottom: "20px" }}>
       <h2 style={{ fontSize: "24px", fontWeight: "bold", marginBottom: "16px" }}>{t("Due Verification")}</h2>
-      <div style={{ display: "flex", alignItems: "flex-end", gap: "20px", marginBottom: "20px" }}>
-        <div style={{ flex: 1 }}>
-          <span style={{ fontSize: "16px", color: "#0B0C0C", marginBottom: "8px", display: "inline-block" }}>
-            {t("K No.(Existing KNo of same property)")} <span style={{ color: "red" }}>*</span>
-          </span>
-          <TextInput type="number" value={kno} onChange={(e) => setKno(e.target.value)} style={{ width: "100%", marginBottom: "0" }} />
+      {!isActivation && (
+        <div style={{ display: "flex", alignItems: "flex-end", gap: "20px", marginBottom: "20px" }}>
+          <div style={{ flex: 1 }}>
+            <span style={{ fontSize: "16px", color: "#0B0C0C", marginBottom: "8px", display: "inline-block" }}>
+              {t("K No.(Existing KNo of same property)")} <span style={{ color: "red" }}>*</span>
+            </span>
+            <TextInput type="number" value={kno} onChange={(e) => setKno(e.target.value)} style={{ width: "100%", marginBottom: "0" }} />
+          </div>
+          <div style={{ flex: 1, paddingBottom: "2px" }}>
+            <button
+              type="button"
+              onClick={handleAdd}
+              style={{
+                background: "linear-gradient(135deg, #1f5fa8, #0b2e5b)",
+                padding: "8px 24px",
+                borderRadius: "4px",
+                border: "none",
+                cursor: "pointer",
+              }}
+            >
+              <AddIcon />
+            </button>
+          </div>
         </div>
-        <div style={{ flex: 1, paddingBottom: "2px" }}>
-          <button
-            type="button"
-            onClick={handleAdd}
-            style={{
-              background: "linear-gradient(135deg, #1f5fa8, #0b2e5b)",
-              padding: "8px 24px",
-              borderRadius: "4px",
-              border: "none",
-              cursor: "pointer",
-            }}
-          >
-            <AddIcon />
-          </button>
-        </div>
-      </div>
+      )}
       {tableData.length > 0 && (
-        <div style={{ marginTop: "30px", overflowX: "auto" }}>
+        <div style={{ marginTop: "15px", overflowX: "auto" }}>
           <Table
             className="customTable table-fixed-first-column table-border-style"
             t={t}
+            totalRecords={tableData.length}
             disableSort={false}
             autoSort={true}
-            manualPagination={false}
-            isPaginationRequired={false}
+            manualPagination={true}
+            isPaginationRequired={true}
             data={tableData}
             columns={columns}
-            getCellProps={(cellInfo) => {
-              return {
-                style: {
-                  padding: "12px",
-                },
-              };
-            }}
           />
         </div>
       )}

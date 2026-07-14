@@ -534,9 +534,19 @@ function ApplicationDetailsContent({
             <SubOccupancyTable edcrDetails={detail?.additionalDetails} applicationData={applicationDetails?.applicationData} />
           )}
           {detail?.additionalDetails?.documentsWithUrl && <DocumentsPreview documents={detail?.additionalDetails?.documentsWithUrl} />}
-          {detail?.additionalDetails?.documents && <PropertyDocuments documents={detail?.additionalDetails?.documents} applicationStatus={applicationData?.applicationStatus} />}
-          {detail?.additionalDetails?.documents && (applicationData?.applicationStatus === "PENDING_FOR_FIELD_INSPECTION" || applicationData?.applicationStatus === "PENDING_APPROVAL_FOR_CONNECTION") && <DueVerification applicationData={applicationData} />}
-          {detail?.additionalDetails?.documents && applicationData?.applicationStatus === "PENDING_APPROVAL_FOR_CONNECTION" && <InspectionInformation />}
+          {detail?.additionalDetails?.documents && (
+            <PropertyDocuments documents={detail?.additionalDetails?.documents} applicationStatus={applicationData?.applicationStatus} />
+          )}
+          {detail?.additionalDetails?.documents &&
+            (applicationData?.applicationStatus === "PENDING_FOR_FIELD_INSPECTION" ||
+              applicationData?.applicationStatus === "PENDING_APPROVAL_FOR_CONNECTION" ||
+              applicationData?.applicationStatus === "PENDING_FOR_CONNECTION_ACTIVATION" ||
+              applicationData?.applicationStatus === "PENDING_FOR_RECONNECTION") && <DueVerification applicationData={applicationData} />}{" "}
+          {detail?.additionalDetails?.documents &&
+            (applicationData?.applicationStatus === "PENDING_APPROVAL_FOR_CONNECTION" ||
+              applicationData?.applicationStatus === "PENDING_FOR_CONNECTION_ACTIVATION") && (
+              <InspectionInformation applicationData={applicationData} />
+            )}
           {detail?.additionalDetails?.taxHeadEstimatesCalculation && (
             <PropertyEstimates taxHeadEstimatesCalculation={detail?.additionalDetails?.taxHeadEstimatesCalculation} />
           )}
