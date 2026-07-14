@@ -2,7 +2,6 @@ import { useMutation } from "react-query";
 import { FSMService } from "../../services/elements/FSM";
 
 const useSupervisorCreate = (tenantId) => {
-  console.log("????????????????????????:", tenantId);
   return useMutation((data) => SupervisorCreateActions(data, tenantId));
 };
 
