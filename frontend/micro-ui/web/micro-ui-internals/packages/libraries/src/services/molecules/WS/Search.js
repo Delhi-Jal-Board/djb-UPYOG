@@ -967,7 +967,9 @@ export const WSSearch = {
       details.push(dueVerificationDetails);
     }
 
-    wsDataDetails.serviceType = serviceDataType;
+    if (wsDataDetails) {
+      wsDataDetails.serviceType = serviceDataType;
+    }
 
     if (!isVisible) {
       const allDetails = cloneDeep(details);
