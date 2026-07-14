@@ -488,23 +488,6 @@ public class EstimationService {
 			}
 		}
 
-		/*
-		  -------------------------------------------------------------
-		  If MDMS does not return a New Connection Fee because of incomplete colony/category configuration, use Rs.2000.
-		  Remove this block once MDMS is updated.
-		  -------------------------------------------------------------
-		 */
-		if (WSCalculationConstant.NEW_WATER_CONNECTION.equalsIgnoreCase(
-				criteria.getWaterConnection().getApplicationType())
-				&& !dynamicFeeMap.containsKey(WSCalculationConstant.WS_NEW_CONNECTION_FEE)) {
-
-			log.warn("New Connection Fee not found in MDMS. Using temporary demo amount Rs.2000.");
-
-			dynamicFeeMap.put(
-					WSCalculationConstant.WS_NEW_CONNECTION_FEE,
-					WSCalculationConstant.DEFAULT_NEW_CONNECTION_FEE);
-		}
-
 		log.info("Dynamic Fee Map = {}", dynamicFeeMap);
 		log.info("Dynamic Fee Count = {}", dynamicFeeMap.size());
 
@@ -1004,7 +987,6 @@ public class EstimationService {
 		addAdhocPenaltyAndRebate(estimates, connection);
 
 		return estimates;
-	}
-	*/
+	}*/
 
 }
