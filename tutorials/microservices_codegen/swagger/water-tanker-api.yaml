@@ -1,0 +1,926 @@
+swagger: "2.0"
+
+info:
+  title: Water Tanker Management Service
+  description: |
+    Enterprise Water Tanker Management APIs.
+
+    Provides APIs for:
+    - Creating water tankers
+    - Updating tanker details
+    - Searching tankers
+    - Driver mapping
+    - Vehicle mapping
+    - Status management
+
+  version: "1.0.0"
+
+  contact:
+    name: UPYOG Support
+    email: support@upyog.org
+
+  license:
+    name: Apache 2.0
+
+
+host: localhost:8080
+
+basePath: /water-tanker-service
+
+
+schemes:
+  - http
+  - https
+
+
+consumes:
+  - application/json
+
+
+produces:
+  - application/json
+
+
+
+securityDefinitions:
+
+  bearerAuth:
+
+    type: apiKey
+
+    name: Authorization
+
+    in: header
+
+
+
+security:
+
+  - bearerAuth: []
+
+
+
+tags:
+
+  - name: Tanker
+
+    description: Water Tanker Management APIs
+
+
+
+paths:
+
+
+  /v1/tanker/_create:
+
+
+    post:
+
+      tags:
+
+        - Tanker
+
+
+      summary: Create Water Tanker
+
+
+      description: Creates a new water tanker.
+
+
+      operationId: createTanker
+
+
+
+      parameters:
+
+
+        - name: tenantId
+
+          in: header
+
+          required: true
+
+          type: string
+
+
+
+        - name: X-Request-ID
+
+          in: header
+
+          required: true
+
+          type: string
+
+
+
+        - name: body
+
+          in: body
+
+          required: true
+
+          schema:
+
+            $ref: "#/definitions/TankerRequest"
+
+
+
+
+      responses:
+
+
+        "200":
+
+          description: Tanker created successfully
+
+          schema:
+
+            $ref: "#/definitions/TankerResponse"
+
+
+
+        "400":
+
+          description: Validation error
+
+          schema:
+
+            $ref: "#/definitions/ErrorResponse"
+
+
+
+        "500":
+
+          description: Internal server error
+
+          schema:
+
+            $ref: "#/definitions/ErrorResponse"
+
+
+
+
+
+  /v1/tanker/_update:
+
+
+    post:
+
+
+      tags:
+
+        - Tanker
+
+
+      summary: Update Water Tanker
+
+
+      operationId: updateTanker
+
+
+
+      parameters:
+
+
+        - name: tenantId
+
+          in: header
+
+          required: true
+
+          type: string
+
+
+
+        - name: body
+
+          in: body
+
+          required: true
+
+          schema:
+
+            $ref: "#/definitions/TankerRequest"
+
+
+
+      responses:
+
+
+        "200":
+
+          description: Tanker updated successfully
+
+          schema:
+
+            $ref: "#/definitions/TankerResponse"
+
+
+
+        "404":
+
+          description: Tanker not found
+
+          schema:
+
+            $ref: "#/definitions/ErrorResponse"
+
+
+
+        "500":
+
+          description: Internal server error
+
+          schema:
+
+            $ref: "#/definitions/ErrorResponse"
+
+
+
+
+
+  /v1/tanker/_search:
+
+
+    post:
+
+
+      tags:
+
+        - Tanker
+
+
+      summary: Search Water Tankers
+
+
+      operationId: searchTanker
+
+
+
+      parameters:
+
+
+        - name: tenantId
+
+          in: header
+
+          required: true
+
+          type: string
+
+
+
+        - name: body
+
+          in: body
+
+          required: true
+
+          schema:
+
+            $ref: "#/definitions/TankerSearchRequest"
+
+
+
+      responses:
+
+
+        "200":
+
+          description: Search completed successfully
+
+          schema:
+
+            $ref: "#/definitions/TankerSearchResponse"
+
+
+
+        "400":
+
+          description: Invalid search request
+
+          schema:
+
+            $ref: "#/definitions/ErrorResponse"
+
+
+
+
+
+definitions:
+
+
+
+  RequestInfo:
+
+
+    type: object
+
+
+    properties:
+
+
+      apiId:
+
+        type: string
+
+        example: water-tanker-service
+
+
+
+      ver:
+
+        type: string
+
+        example: "1.0"
+
+
+
+      ts:
+
+        type: integer
+
+        format: int64
+
+
+
+      action:
+
+        type: string
+
+
+
+      msgId:
+
+        type: string
+
+
+
+      authToken:
+
+        type: string
+
+
+
+
+
+  Tanker:
+
+
+
+    type: object
+
+
+
+    required:
+
+      - tankerNumber
+
+      - capacity
+
+
+
+    properties:
+
+
+
+      tankerId:
+
+        type: string
+
+        readOnly: true
+
+        example: WT-10001
+
+
+
+      tankerNumber:
+
+
+        type: string
+
+
+        minLength: 3
+
+
+        maxLength: 20
+
+
+        pattern: "^[A-Z0-9-]+$"
+
+
+        example: DL01AB1234
+
+
+
+
+      capacity:
+
+
+        type: integer
+
+
+        minimum: 500
+
+
+        maximum: 20000
+
+
+        example: 5000
+
+
+
+
+      driver:
+
+
+        $ref: "#/definitions/Driver"
+
+
+
+
+      vehicle:
+
+
+        $ref: "#/definitions/Vehicle"
+
+
+
+
+      status:
+
+
+        type: string
+
+
+        enum:
+
+
+          - ACTIVE
+
+          - INACTIVE
+
+          - UNDER_MAINTENANCE
+
+
+
+
+      auditDetails:
+
+
+        $ref: "#/definitions/AuditDetails"
+
+
+
+
+
+
+  Driver:
+
+
+
+    type: object
+
+
+
+    properties:
+
+
+
+      driverId:
+
+        type: string
+
+
+
+      name:
+
+        type: string
+
+
+
+      mobileNumber:
+
+
+        type: string
+
+
+        pattern: "^[6-9][0-9]{9}$"
+
+        example: "9876543210"
+
+
+
+
+
+
+
+  Vehicle:
+
+
+
+    type: object
+
+
+
+    properties:
+
+
+
+      vehicleId:
+
+        type: string
+
+
+
+      registrationNumber:
+
+        type: string
+
+
+
+      vehicleType:
+
+        type: string
+
+
+
+      capacity:
+
+        type: integer
+
+
+
+
+
+
+
+  AuditDetails:
+
+
+
+    type: object
+
+
+
+    properties:
+
+
+
+      createdBy:
+
+        type: string
+
+
+
+      createdTime:
+
+        type: integer
+
+        format: int64
+
+
+
+      lastModifiedBy:
+
+        type: string
+
+
+
+      lastModifiedTime:
+
+        type: integer
+
+        format: int64
+
+
+
+
+
+
+
+  TankerRequest:
+
+
+
+    type: object
+
+
+
+    required:
+
+
+      - requestInfo
+
+      - tanker
+
+
+
+    properties:
+
+
+
+      requestInfo:
+
+
+        $ref: "#/definitions/RequestInfo"
+
+
+
+
+      tanker:
+
+
+        $ref: "#/definitions/Tanker"
+
+
+
+
+
+
+
+  TankerResponse:
+
+
+
+    type: object
+
+
+
+    properties:
+
+
+
+      responseInfo:
+
+
+        $ref: "#/definitions/RequestInfo"
+
+
+
+
+      tankerId:
+
+
+        type: string
+
+
+
+
+      message:
+
+
+        type: string
+
+
+
+
+      status:
+
+
+        type: string
+
+
+
+
+
+
+
+  TankerSearchRequest:
+
+
+
+    type: object
+
+
+
+    properties:
+
+
+
+      requestInfo:
+
+
+        $ref: "#/definitions/RequestInfo"
+
+
+
+
+      tankerNumber:
+
+
+        type: string
+
+
+
+
+      driverName:
+
+
+        type: string
+
+
+
+
+      status:
+
+
+        type: string
+
+
+
+
+      pagination:
+
+
+        $ref: "#/definitions/Pagination"
+
+
+
+
+
+
+
+
+  Pagination:
+
+
+
+    type: object
+
+
+
+    properties:
+
+
+
+      limit:
+
+
+        type: integer
+
+
+        default: 20
+
+
+        maximum: 100
+
+
+
+
+      offset:
+
+
+        type: integer
+
+
+        default: 0
+
+
+
+
+      sortBy:
+
+
+        type: string
+
+
+        example: createdTime
+
+
+
+
+      sortOrder:
+
+
+        type: string
+
+
+        enum:
+
+
+          - ASC
+
+          - DESC
+
+
+
+
+
+
+
+  TankerSearchResponse:
+
+
+
+    type: object
+
+
+
+    properties:
+
+
+
+      tankers:
+
+
+        type: array
+
+
+        items:
+
+
+          $ref: "#/definitions/Tanker"
+
+
+
+
+      totalCount:
+
+
+        type: integer
+
+
+
+
+      status:
+
+
+        type: string
+
+
+
+
+
+
+
+  ErrorResponse:
+
+
+
+    type: object
+
+
+
+    properties:
+
+
+
+      code:
+
+
+        type: string
+
+
+        example: INVALID_REQUEST
+
+
+
+
+      message:
+
+
+        type: string
+
+
+        example: Tanker number already exists
+
+
+
+
+      details:
+
+
+        type: array
+
+
+        items:
+
+
+          type: string
+
+
+
+
+
+
+x-service-name: water-tanker-service
+
+x-module-name: tanker-management
+
+
+x-events:
+
+  - WATER_TANKER_CREATED
+
+  - WATER_TANKER_UPDATED
+
+
+x-persist-enabled: true
+
+x-search-enabled: true
+
+x-kafka-enabled: true
+
+
