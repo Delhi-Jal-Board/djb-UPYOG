@@ -99,7 +99,7 @@ const getSelectedVendorOption = (row = {}, vendors = []) => {
 const getSelectedSupervisorOption = (row = {}, supervisorsList = []) => {
   const supervisorId = row?.supervisorId;
   if (!supervisorId) return null;
-  return supervisorsList.find((s) => s.id === supervisorId || s.owner?.uuid === supervisorId) || null;
+  return supervisorsList.find((s) => s.id === supervisorId || s.owner?.uuid === supervisorId || s.name === supervisorId || s.owner?.name === supervisorId) || null;
 };
 
 const getVendorFillingPoints = (vendor = {}) => {
@@ -691,7 +691,8 @@ const VendorInbox = (props) => {
     const formData = {
       surveyor: {
         ...formDetails,
-        supervisorId: selectedSupervisor?.id || selectedSupervisor?.owner?.uuid || null,
+        supervisorId: selectedSupervisor?.name || selectedSupervisor?.owner?.name || null,
+        supervisorName: selectedSupervisor?.name || selectedSupervisor?.owner?.name || null,
         owner: {
           ...formDetails?.owner,
           gender: formDetails?.owner?.gender || "OTHERS",

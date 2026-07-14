@@ -134,7 +134,7 @@ const SupervisorDetails = (props) => {
           pathname: `/digit-ui/${userType}/vendor/search-vendor`,
           state: {
             showSuccessToast: true,
-            message: { key: "success", action: `DELETE_SUPERVISOR` },
+            message: { key: "success", action: t("ES_VENDOR_DELETE_SUPERVISOR_SUCCESS") },
           },
         });
       },
@@ -335,7 +335,11 @@ const SupervisorDetails = (props) => {
       {showToast && (
         <Toast
           error={showToast.key === "error"}
-          label={t(showToast.key === "success" ? `ES_VENDOR_${showToast.action}_SUCCESS` : showToast.action)}
+          label={
+            showToast.key === "success"
+              ? t(`ES_VENDOR_${showToast.action}_SUCCESS`, showToast.action === "UPDATE_SUPERVISOR" ? "Supervisor updated successfully" : undefined)
+              : t(showToast.action)
+          }
           onClose={() => setShowToast(null)}
           duration={5000}
         />

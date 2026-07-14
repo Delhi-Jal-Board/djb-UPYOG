@@ -152,7 +152,7 @@ const SurveyorDetails = (props) => {
           pathname: `/digit-ui/${userType}/vendor/search-vendor`,
           state: {
             showSuccessToast: true,
-            message: { key: "success", action: `ES_VENDOR_DELETE_SURVEYOR_SUCCESS` },
+            message: { key: "success", action: t("ES_VENDOR_DELETE_SURVEYOR_SUCCESS") },
           },
         });
       },
@@ -269,7 +269,11 @@ const SurveyorDetails = (props) => {
       {showToast && (
         <Toast
           error={showToast.key === "error"}
-          label={t(showToast.key === "success" ? `ES_VENDOR_${showToast.action}_SUCCESS` : showToast.action)}
+          label={
+            showToast.key === "success"
+              ? t(`ES_VENDOR_${showToast.action}_SUCCESS`, showToast.action === "UPDATE_SURVEYOR" ? "Surveyor updated successfully" : undefined)
+              : t(showToast.action)
+          }
           onClose={closeToast}
         />
       )}

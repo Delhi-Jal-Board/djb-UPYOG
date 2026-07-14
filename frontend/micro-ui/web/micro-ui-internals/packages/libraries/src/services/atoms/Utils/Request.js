@@ -223,13 +223,15 @@ export const Request = async ({
 
     console.error("API Error:", error?.response);
 
+    return error;
+
     //  return meaningful data instead of breaking flow
-    return {
-      error: true, // ❗ tells UI this failed
-      status: error?.response?.status,
-      data: error?.response?.data,
-      message: error?.message,
-    };
+    // return {
+    //   error: true, // ❗ tells UI this failed
+    //   status: error?.response?.status,
+    //   data: error?.response?.data,
+    //   message: error?.message,
+    // };
   }
 
   if (userDownload) return res;

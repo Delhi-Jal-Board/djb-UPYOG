@@ -4,6 +4,7 @@ import SupervisorInboxTableConfig from "../hook/SupervisorInboxTableConfig";
 import SearchFormFieldsComponents from "./SearchFormFieldsComponent";
 import { formInitValue, formReducer } from "../../../vendor/src/config/tableConfig";
 import { FaUsers, FaCheckCircle, FaClock, FaChartLine, FaMapMarkedAlt } from "react-icons/fa";
+import useSupervisorInboxMobileCardsData from "../hook/useSupervisorInboxMobileCardsData";
 
 // Mock data removed in favor of API integration
 
@@ -224,6 +225,19 @@ const AssignEkyc = () => {
   ];
 
 
+  const onMobileSortOrderData = (data) => {
+    const { sortOrder } = data;
+    dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, sortOrder } });
+  };
+
+  const onSortFormReset = (setSortFormValue) => {
+    setSortFormValue("sortOrder", "DESC");
+    dispatch({ action: "mutateTableForm", data: tableOrderFormDefaultValues });
+  };
+
+  const propsForMobileSortForm = { onMobileSortOrderData, sortFormDefaultValues: formState?.tableForm, onSortFormReset };
+  const propsForInboxMobileCards = useSupervisorInboxMobileCardsData({ table: filteredData });
+
   return (
     <div className="app-container">
       <InboxComposer
@@ -232,9 +246,9 @@ const AssignEkyc = () => {
           // PropsForInboxLinks,
           ...propsForSearchForm,
           // ...propsForFilterForm,
-          // ...propsForMobileSortForm,
+          ...propsForMobileSortForm,
           propsForInboxTable,
-          // propsForInboxMobileCards,
+          propsForInboxMobileCards,
           formState,
           countData: dashboardData?.dashboardInfo,
           // cards,
