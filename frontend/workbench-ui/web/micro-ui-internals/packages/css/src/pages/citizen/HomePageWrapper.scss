@@ -119,7 +119,7 @@
     overflow: hidden;
   }
 
-  .citizen-app-container > * {
+  .citizen-app-container>* {
     position: relative;
     z-index: 1;
   }
@@ -304,6 +304,7 @@
 }
 
 @media (max-width: 780px) {
+
   /* On mobile, SideBarStatic shouldn't prevent the drawer from appearing. */
   .SideBarStatic {
     display: block;
@@ -341,44 +342,56 @@
     transition: filter 0.3s ease;
   }
 
-  h1 {
-    position: absolute;
-    top: 100px;
-    /* Base position */
-    left: 21px;
-    @apply text-heading-xl;
-    /* Kept this as it's likely a custom framework class */
-    color: #ffffff;
-    /* text-white equivalent */
-    font-weight: 800;
-    /* font-extrabold equivalent */
-    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-    letter-spacing: 0.5px;
+  .moduleTitle {
+    position: absolute !important;
+    bottom: 35px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    z-index: 2 !important;
+    text-align: center !important;
+    width: max-content !important;
+
+    h1, h4 {
+      margin: 0 !important;
+      color: #fff !important;
+      font-weight: 800 !important;
+      letter-spacing: 0.5px !important;
+      text-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+    }
+
+    h1 {
+      @apply text-heading-xl;
+      font-size: 38px !important;
+    }
+
+    h4 {
+      font-size: 18px !important;
+      font-weight: 700 !important;
+    }
   }
 
   .moduleLinkHomePageBackButton {
     border: none;
     position: absolute;
-    top: 80px;
-    /* Align nicer */
-    left: 16px;
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    top: 35px !important;
+    left: 16px !important;
+    background: #ffffff !important;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15) !important;
     border-radius: 50%;
-    width: 40px;
-    height: 40px;
+    width: 45px;
+    height: 45px;
     display: flex;
     justify-content: center;
     align-items: center;
-    transition: background 0.2s ease;
+    transition: background 0.2s ease, transform 0.2s ease;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.4);
+      background: #f1f5f9 !important;
+      transform: scale(1.05);
     }
 
     svg {
-      fill: #ffffff !important;
+      fill: #f37a20 !important;
     }
 
     /* remove ml-md inside so it centers */
@@ -406,6 +419,7 @@
 @screen dt {
   .HomePageWrapper {
     width: 100%;
+
     .BannerWithSearch {
       margin-bottom: 56px;
       width: 100% !important;
@@ -439,16 +453,13 @@
       /* Smoother curve on desktop */
     }
 
-    h1 {
-      top: calc(10vw + 60px);
-      left: calc(15.8rem + 40px);
-      /* Align slightly right of back button */
-      font-size: 38px;
+    .moduleTitle {
+      bottom: 50px !important;
     }
 
     .moduleLinkHomePageBackButton {
-      top: calc(10vw + 16px);
-      left: 15.8rem;
+      top: 35px !important;
+      left: 16px !important;
     }
   }
 

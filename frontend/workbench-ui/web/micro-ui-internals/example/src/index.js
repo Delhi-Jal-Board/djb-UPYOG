@@ -23,9 +23,9 @@ var Digit = window.Digit || {};
 
 const enabledModules = [
   // "DSS",
-  "HRMS",
+  // "HRMS",
   "Workbench",
-  "PGR",
+  // "PGR",
   //  "Engagement", "NDSS","QuickPayLinks", "Payment",
   //  "Utilities",
   // "FSM"

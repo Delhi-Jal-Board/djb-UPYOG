@@ -6,6 +6,7 @@ import BackButton from "./atoms/BackButton";
 import Banner from "./atoms/Banner";
 import Body from "./atoms/Body";
 import BreadCrumb from "./atoms/BreadCrumb";
+import DynamicBreadCrumb from "./atoms/DynamicBreadCrumb";
 import BreakLine from "./atoms/BreakLine";
 import ButtonSelector from "./atoms/ButtonSelector";
 import Button from "./atoms/Button";
@@ -360,6 +361,7 @@ export {
   RoundedLabel,
   LabelFieldPair,
   BreadCrumb,
+  DynamicBreadCrumb,
   DatePicker,
   WeekPicker,
   InfoBanner,

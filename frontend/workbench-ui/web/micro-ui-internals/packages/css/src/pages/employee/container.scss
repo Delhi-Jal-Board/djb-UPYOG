@@ -62,7 +62,6 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  min-height: calc(100vh - 90px);
 }
 
 .employee-app-container-inner {
@@ -101,8 +100,7 @@
     margin-bottom: 40px;
   }
 
-  .employee-home-footer {
-  }
+  .employee-home-footer {}
 
   .moduleCardWrapper {
     /* @apply flex flex-row flex-wrap !important; */
@@ -111,5 +109,59 @@
   .gridModuleWrapper {
     @apply grid grid-cols-4 gap-1;
     gap: 20px;
+  }
+}
+
+.manage-master-wrapper {
+  margin-top: 24px;
+}
+
+.workbench-space-between-header-card {
+  margin-top: 24px;
+}
+
+.workbench-form-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@screen dt {
+  .workbench-form-grid-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+.workbench-form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@screen dt {
+  .workbench-form-grid-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+}
+
+
+/* Fix popup modal header bleeding out and spacing */
+.popup-module {
+  .header-wrap {
+    padding: 16px 24px;
+    border-bottom: 1px solid #e0e0e0;
+
+    .heading-m {
+      font-size: 1.25rem !important;
+      line-height: 1.5 !important;
+      margin: 0 !important;
+    }
   }
 }
