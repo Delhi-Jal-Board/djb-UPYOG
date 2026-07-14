@@ -188,6 +188,12 @@ const ResultsTable = ({ tableContainerClass, config,data,isLoading,isFetching,fu
                 data={searchResult}
                 totalRecords={data?.count || data?.TotalCount || data?.totalCount}
                 columns={tableColumns}
+                showCSVExport={true}
+                csvExportButtonLabel={t("DOWNLOAD_EXCEL")}
+                csvExportData={searchResult}
+                showPDFExport={true}
+                pdfExportButtonLabel={t("DOWNLOAD_PDF")}
+                onPdfExport={() => additionalConfig?.resultsTable?.onPdfExport?.()}
                 isPaginationRequired={true}
                 onPageSizeChange={onPageSizeChange}
                 currentPage={getValues("offset") / getValues("limit")}
