@@ -172,7 +172,7 @@ const MDMSSearchv2 = () => {
   return (
     <React.Fragment>
         {/* <Header className="works-header-search">{t(Config?.label)}</Header> */}
-      <Header className="digit-form-composer-sub-header">{t(Digit.Utils.workbench.getMDMSLabel(`SCHEMA_` + currentSchema?.code))}</Header>
+      {/* <Header className="digit-form-composer-sub-header">{t(Digit.Utils.workbench.getMDMSLabel(`SCHEMA_` + currentSchema?.code))}</Header> */}
       {/* <div className="jk-header-btn-wrapper">
         <Dropdown
           option={masterOptions}
@@ -228,7 +228,7 @@ const MDMSSearchv2 = () => {
           <SubmitBar disabled={false} onSubmit={handleAddMasterData} label={t("WBH_ADD_MDMS")} />
         </ActionBar>
       }
-      {updatedConfig && <div className="inbox-search-wrapper">
+      {updatedConfig && <div className="inbox-search-wrapper manage-master-wrapper">
         <InboxSearchComposer configs={updatedConfig} additionalConfig = {{
           resultsTable:{
             onClickRow

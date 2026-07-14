@@ -397,10 +397,9 @@ export const FormComposer = (props) => {
               <React.Fragment key={index}>
                 <div style={field.isInsideBox ? getCombinedStyle(field?.placementinbox) : {}}>
                   {!field.withoutLabel && (
-                    <CardLabel
-                      style={{ color: field.isSectionText ? "#505A5F" : "", marginBottom: props.inline ? "8px" : "revert" }}
-                      className={field?.disable ? "disabled" : ""}
-                    >
+                      <CardLabel
+                          style={{ color: field.isSectionText ? "#505A5F" : "", marginBottom: props.inline ? "8px" : "revert" }}
+                        >
                       {t(field.label)}
                       {field.isMandatory ? " * " : null}
                       {field.labelChildren && field.labelChildren}
@@ -586,13 +585,13 @@ export const FormComposer = (props) => {
       {props?.showMultipleCardsWithoutNavs ? (
           props?.config?.map((section, index, array) => {
             return !section.navLink && (
-              <Card style={getCardStyles()} noCardStyle={props.noCardStyle}>
+              <Card className={props?.cardClassName} style={getCardStyles()} noCardStyle={props.noCardStyle}>
                 {renderFormFields(props, section, index, array)}
               </Card>
             )
           })
         ) :  (         
-          <Card style={getCardStyles()} noCardStyle={props.noCardStyle}>
+          <Card className={props?.cardClassName} style={getCardStyles()} noCardStyle={props.noCardStyle}>
             {
               props?.config?.map((section, index, array) => {
                 return !section.navLink && (
@@ -610,14 +609,14 @@ export const FormComposer = (props) => {
            {props?.showMultipleCardsInNavs ? (
              props?.config?.map((section, index, array) => {
                return section.navLink ? (
-                 <Card style={section.navLink !== activeLink ? getCardStyles(false) : getCardStyles()} noCardStyle={props.noCardStyle}>
+                 <Card className={props?.cardClassName} style={section.navLink !== activeLink ? getCardStyles(false) : getCardStyles()} noCardStyle={props.noCardStyle}>
                     {renderFormFields(props, section, index, array, section?.sectionFormCategory)}
                  </Card>
                ) : null
              })
            ) :   
              ( 
-                 <Card style={getCardStyles()} noCardStyle={props.noCardStyle}>
+                 <Card className={props?.cardClassName} style={getCardStyles()} noCardStyle={props.noCardStyle}>
                    {
                      props?.config?.map((section, index, array) => {
                       return section.navLink ?  (

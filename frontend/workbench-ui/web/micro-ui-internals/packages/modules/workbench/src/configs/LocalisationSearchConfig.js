@@ -1,5 +1,5 @@
 export const Config = {
-  label: "WBH_LOCALISATION_SEARCH_HEADER",
+  // label: "WBH_LOCALISATION_SEARCH_HEADER",
   type: "search",
   actionLabel: "WBH_ADD_LOCALISATION",
   actionRole: "LOC_ADMIN",

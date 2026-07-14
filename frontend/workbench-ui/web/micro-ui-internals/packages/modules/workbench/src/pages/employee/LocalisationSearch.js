@@ -1,4 +1,4 @@
-import { AddFilled, Button, Header, InboxSearchComposer, Loader, Dropdown,Toast,WorkflowModal,ActionBar,SubmitBar } from "@djb25/digit-ui-react-components"
+import { AddFilled, Button, Header, InboxSearchComposer, Loader, Dropdown, Toast, WorkflowModal, ActionBar, SubmitBar } from "@djb25/digit-ui-react-components"
 import React, { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory, useParams } from "react-router-dom";
@@ -15,9 +15,9 @@ const LocalisationSearch = () => {
   const [showToast, setShowToast] = useState(false);
   const [modalConfig, setModalConfig] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [editRow,setEditRow] = useState(null)
-  const [formData,setFormData] = useState(null)
-  const [callRefetch,setCallRefetch] = useState(false)
+  const [editRow, setEditRow] = useState(null)
+  const [formData, setFormData] = useState(null)
+  const [callRefetch, setCallRefetch] = useState(false)
   const reqCriteriaAdd = {
     url: `/localization/messages/v1/_upsert`,
     params: {},
@@ -42,10 +42,12 @@ const LocalisationSearch = () => {
   }
 
   const onModalSubmit = async (payload) => {
-    if(!payload?.message){
-      setShowToast({ label: `${t("WBH_LOC_ENTER_VALID_MESSAGE")}`,isError: true,style:{
-        zIndex:"10000"
-      } });
+    if (!payload?.message) {
+      setShowToast({
+        label: `${t("WBH_LOC_ENTER_VALID_MESSAGE")}`, isError: true, style: {
+          zIndex: "10000"
+        }
+      });
       closeToast()
       return
     }
@@ -63,11 +65,11 @@ const LocalisationSearch = () => {
     };
     const onError = (resp) => {
       let label = `${t("WBH_LOC_UPDATE_FAIL")}: `
-      resp?.response?.data?.Errors?.map((err,idx) => {
-        if(idx===resp?.response?.data?.Errors?.length-1){
+      resp?.response?.data?.Errors?.map((err, idx) => {
+        if (idx === resp?.response?.data?.Errors?.length - 1) {
           label = label + t(Digit.Utils.locale.getTransformedLocale(err?.code)) + '.'
-        }else{
-        label = label + t(Digit.Utils.locale.getTransformedLocale(err?.code)) + ', '
+        } else {
+          label = label + t(Digit.Utils.locale.getTransformedLocale(err?.code)) + ', '
         }
       })
       setShowToast({ label, isError: true });
@@ -97,9 +99,9 @@ const LocalisationSearch = () => {
     setEditRow(row.original)
     setShowModal(true)
   }
-  
+
   useEffect(() => {
-    if(editRow) {
+    if (editRow) {
       setModalConfig(
         getEditModalConfig({
           t,
@@ -113,8 +115,8 @@ const LocalisationSearch = () => {
   return (
     <React.Fragment>
       <div className="jk-header-btn-wrapper">
-      <Header className="works-header-search">{t(Config?.label)}</Header>
-      {/* {Config && Digit.Utils.didEmployeeHasRole(Config?.actionRole) && (
+        <Header className="works-header-search">{t(Config?.label)}</Header>
+        {/* {Config && Digit.Utils.didEmployeeHasRole(Config?.actionRole) && (
           <Button
             label={t(Config?.actionLabel)}
             variation="secondary"
@@ -126,28 +128,52 @@ const LocalisationSearch = () => {
             className={'header-btn'}
           />
         )} */}
-      {
-        Config && Digit.Utils.didEmployeeHasRole(Config?.actionRole) &&
-        <ActionBar >
-          <SubmitBar disabled={false} onSubmit={() => {
+        {
+          Config && Digit.Utils.didEmployeeHasRole(Config?.actionRole) &&
+          <ActionBar >
+            <SubmitBar disabled={false} onSubmit={() => {
               history.push(`/${window?.contextPath}/employee/${Config?.actionLink}`);
             }} label={t("WBH_ADD_LOCALISATION")} />
-        </ActionBar>
-      }
+          </ActionBar>
+        }
       </div>
       {Config && <div className="inbox-search-wrapper">
-        <InboxSearchComposer onFormValueChange={formUpdate} configs={Config} additionalConfig = {{
-          resultsTable:{
+        <InboxSearchComposer onFormValueChange={formUpdate} configs={Config} additionalConfig={{
+          resultsTable: {
             onClickSvg
           },
-          search:{
+          search: {
             callRefetch,
             setCallRefetch
           }
         }}></InboxSearchComposer>
       </div>}
-      {showModal && modalConfig && <WorkflowModal closeModal={() => setShowModal(false)} onSubmit={onModalSubmit} config={modalConfig} popupModuleActionBarStyles={{marginTop:"-1rem"}} popupModuleMianStyles={{marginTop:"-2rem"}} />}
-      {showToast && <Toast label={showToast.label} error={showToast?.isError} isDleteBtn={true} onClose={()=>setShowToast(null)} style={showToast?.style}></Toast>}
+      {showModal && modalConfig && (
+        <React.Fragment>
+          <WorkflowModal closeModal={() => setShowModal(false)} onSubmit={onModalSubmit} config={modalConfig} popupModuleActionBarStyles={{ marginTop: "-1rem" }} popupModuleMianStyles={{}} />
+          <style>{`
+            #modal-action > div { 
+              display: grid !important; 
+              grid-template-columns: repeat(2, minmax(0, 1fr)) !important; 
+              column-gap: 32px !important; 
+            }
+            #modal-action > div > div {
+              margin-bottom: 24px !important; /* Forces spacing even if grid gap fails */
+            }
+            #modal-action > div > div:empty { display: none !important; margin: 0 !important; }
+            .popup-module-action-bar {
+              display: flex !important;
+              justify-content: flex-end !important;
+              gap: 16px !important;
+              border-top: 1px solid #e0e0e0 !important;
+            }
+            .popup-module-action-bar > * {
+              margin-left: 16px !important;
+            }
+          `}</style>
+        </React.Fragment>
+      )}
+      {showToast && <Toast label={showToast.label} error={showToast?.isError} isDleteBtn={true} onClose={() => setShowToast(null)} style={showToast?.style}></Toast>}
     </React.Fragment>
   );
 };
