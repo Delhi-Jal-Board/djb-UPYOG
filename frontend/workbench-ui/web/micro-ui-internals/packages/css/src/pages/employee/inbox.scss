@@ -218,9 +218,10 @@
 
 .summary-cards-container {
   display: flex !important;
-  gap: 12px;
+  gap: 10px;
   flex-wrap: wrap;
-  width: "100%";
+  width: 100%;
+  min-width: 0;
 }
 
 .hover-button {

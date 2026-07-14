@@ -23,30 +23,31 @@ const CloseBtn = (props) => {
     );
 };
 
-const WorkflowModal = ({ config, onSubmit, closeModal,popupModuleActionBarStyles,popupModuleMianStyles }) => {
-  const { t } = useTranslation()
+const WorkflowModal = ({ config, onSubmit, closeModal, popupModuleActionBarStyles, popupModuleMianStyles }) => {
+    const { t } = useTranslation()
 
-  return <Modal
-            headerBarMain={<Heading label={t(config.label.heading)} />}
-            headerBarEnd={<CloseBtn onClick={closeModal} />}
-            actionCancelLabel={t(config.label.cancel)}
-            actionCancelOnSubmit={closeModal}
-            actionSaveLabel={t(config.label.submit)}
-            actionSaveOnSubmit={() => { }}
+    return <Modal
+        headerBarMain={<Heading label={t(config.label.heading)} />}
+        headerBarEnd={<CloseBtn onClick={closeModal} />}
+        actionCancelLabel={t(config.label.cancel)}
+        actionCancelOnSubmit={closeModal}
+        actionSaveLabel={t(config.label.submit)}
+        actionSaveOnSubmit={() => { }}
+        formId="modal-action"
+        popupModuleActionBarStyles={popupModuleActionBarStyles}
+        popupModuleMianStyles={popupModuleMianStyles}
+    >
+        <FormComposer
+            config={config.form}
+            noBoxShadow
+            inline
+            childrenAtTheBottom
+            onSubmit={onSubmit}
+            defaultValues={{}}
             formId="modal-action"
-            popupModuleActionBarStyles={popupModuleActionBarStyles}
-            popupModuleMianStyles={popupModuleMianStyles}
-        >
-            <FormComposer
-                config={config.form}
-                noBoxShadow
-                inline
-                childrenAtTheBottom
-                onSubmit={onSubmit}
-                defaultValues={{}}
-                formId="modal-action"
-            />
-        </Modal>
+            className={config.className}
+        />
+    </Modal>
 }
 
 export default WorkflowModal

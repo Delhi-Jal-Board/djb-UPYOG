@@ -535,9 +535,6 @@ public class WSCalculationConstant {
 	public static final String WC_PROPERTY_NEW_USAGE_TYPE_MASTER = "PropertyNewUsageType";
 	public static final String PROPERTY_TAX_MODULE = "PropertyTax";
 
-
-	public static final BigDecimal DEFAULT_NEW_CONNECTION_FEE = BigDecimal.valueOf(2000);
-
 }
 
 

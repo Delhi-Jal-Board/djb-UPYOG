@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { Switch, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { PrivateRoute, AppContainer, BreadCrumb } from "@djb25/digit-ui-react-components"
+import { PrivateRoute, AppContainer, DynamicBreadCrumb, HomeIcon } from "@djb25/digit-ui-react-components"
 import LocalisationSearch from "./LocalisationSearch";
 import ApplyWorkflow from "./ApplyWorkflow";
 import MDMSSearch from "./MDMSSearch";
@@ -20,47 +20,19 @@ const WorkbenchBreadCrumb = ({ location, defaultPath }) => {
   const pathVar = location.pathname.replace(defaultPath + '/', "").split("?")?.[0];
   const { masterName, moduleName, uniqueIdentifier } = Digit.Hooks.useQueryParams()
 
-  const crumbs = [
-    {
-      path: `/${window?.contextPath}/employee`,
-      content: t("WORKBENCH_HOME"),
-      show: true,
-    },
-    {
-      path: `/${window.contextPath}/employee/workbench/manage-master-data`,
-      content: t(`WBH_MANAGE_MASTER_DATA`),
-      show: pathVar.includes("mdms-") ? true : false,
-      // query:`moduleName=${moduleName}&masterName=${masterName}`
-    },
-    {
-      path: `/${window.contextPath}/employee/workbench/localisation-search`,
-      content: t(`LOCALISATION_SEARCH`),
-      show: pathVar.includes("localisation-") ? true : false,
-      isBack: pathVar.includes("localisation-search") ? true : false
-      // query:`moduleName=${moduleName}&masterName=${masterName}`
-    },
+  const customConfig = {
+    // Map workbench-ui to just the Home icon
+    "workbench-ui": { icon: HomeIcon, content: "", show: true, path: `/${window?.contextPath}/employee` },
+    // Map employee to the WORKBENCH_HOME text
+    "employee": { content: "WORKBENCH_HOME", show: true, path: `/${window?.contextPath}/employee` },
+    "workbench": { show: false },
+    "manage-master-data": { content: "WBH_MANAGE_MASTER_DATA", show: true },
+    "localisation-search": { content: "LOCALISATION_SEARCH", show: true, isBack: true },
+    "mdms-search-v2": { content: Digit.Utils.workbench.getMDMSLabel(pathVar, masterName, moduleName), show: true, isBack: true },
+    "mdms-view": { content: "MDMS_VIEW", show: true }
+  };
 
-    {
-      path: `/${window.contextPath}/employee/workbench/mdms-search-v2`,
-      query: `moduleName=${moduleName}&masterName=${masterName}`,
-      content: t(`${Digit.Utils.workbench.getMDMSLabel(pathVar, masterName, moduleName)}`),
-      show: (masterName && moduleName) ? true : false,
-      isBack: pathVar.includes("mdms-search-v2") ? true : false
-    },
-    {
-      path: `/${window.contextPath}/employee/workbench/mdms-view`,
-      content: t(`MDMS_VIEW`),
-      show: pathVar.includes("mdms-edit") ? true : false,
-      query: `moduleName=${moduleName}&masterName=${masterName}&uniqueIdentifier=${uniqueIdentifier}`
-    },
-    {
-      path: `/${window.contextPath}/employee/masters/response`,
-      content: t(`${Digit.Utils.workbench.getMDMSLabel(pathVar, "", "")}`),
-      show: Digit.Utils.workbench.getMDMSLabel(pathVar, "", "", ["mdms-search-v2", "localisation-search"]) ? true : false,
-    },
-
-  ];
-  return <BreadCrumb className="workbench-bredcrumb" crumbs={crumbs} spanStyle={{ maxWidth: "min-content" }} />;
+  return <DynamicBreadCrumb customConfig={customConfig} />;
 };
 
 const App = ({ path }) => {
@@ -109,15 +81,15 @@ const App = ({ path }) => {
           <PrivateRoute path={`${path}/sample`} component={() => <div>Sample Screen loaded</div>} />
           <PrivateRoute path={`${path}/localisation-search`} component={() => <LocalisationSearch />} />
           <PrivateRoute path={`${path}/mdms-search`} component={() => <MDMSSearch />} />
-          <PrivateRoute path={`${path}/mdms-add`} component={() =>  <MDMSAdd FormSession={MDMSCreateSession} parentRoute={path}/>} />
-          <PrivateRoute path={`${path}/mdms-add-v2`} component={() =>  <MDMSAddV2 parentRoute={path}/>} />
-          <PrivateRoute path={`${path}/mdms-view`} component={() =>  <MDMSView parentRoute={path}/>} />
-          <PrivateRoute path={`${path}/mdms-edit`} component={() =>  <MDMSEdit parentRoute={path}/>} />
-          <PrivateRoute path={`${path}/manage-master-data`} component={() => <MDMSManageMaster parentRoute={path}/>} />
-          <PrivateRoute path={`${path}/mdms-search-v2`} component={() => <MDMSSearchv2 parentRoute={path}/>} />
-          <PrivateRoute path={`${path}/localisation-add`} component={() => <LocalisationAdd parentRoute={path}/>} />
-          <PrivateRoute path={`${path}/apply-workflow`} component={()=> <ApplyWorkflow parentRoute={path} /> }/>
-          
+          <PrivateRoute path={`${path}/mdms-add`} component={() => <MDMSAdd FormSession={MDMSCreateSession} parentRoute={path} />} />
+          <PrivateRoute path={`${path}/mdms-add-v2`} component={() => <MDMSAddV2 parentRoute={path} />} />
+          <PrivateRoute path={`${path}/mdms-view`} component={() => <MDMSView parentRoute={path} />} />
+          <PrivateRoute path={`${path}/mdms-edit`} component={() => <MDMSEdit parentRoute={path} />} />
+          <PrivateRoute path={`${path}/manage-master-data`} component={() => <MDMSManageMaster parentRoute={path} />} />
+          <PrivateRoute path={`${path}/mdms-search-v2`} component={() => <MDMSSearchv2 parentRoute={path} />} />
+          <PrivateRoute path={`${path}/localisation-add`} component={() => <LocalisationAdd parentRoute={path} />} />
+          <PrivateRoute path={`${path}/apply-workflow`} component={() => <ApplyWorkflow parentRoute={path} />} />
+
         </AppContainer>
       </Switch>
     </React.Fragment>

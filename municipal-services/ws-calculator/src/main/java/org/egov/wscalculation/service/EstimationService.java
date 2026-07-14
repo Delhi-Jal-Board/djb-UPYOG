@@ -397,6 +397,26 @@ public class EstimationService {
 		String localityCode = property.getAddress().getLocality().getCode();
 		String colonyCategory = masterDataService.getColonyCategory(localityCode, requestInfo, property.getTenantId());
 
+		/*
+		 * ------------------------------------------------------------------
+		 * TEMPORARY DEMO FALLBACK
+		 *
+		 * If colony category cannot be resolved or is not configured,
+		 * use E category.
+		 *
+		 * Remove this fallback once colony mapping is available.
+		 * ------------------------------------------------------------------
+		 */
+		if (colonyCategory == null
+				|| colonyCategory.trim().isEmpty()
+				|| "UNKNOWN".equalsIgnoreCase(colonyCategory)) {
+
+			colonyCategory = "E";
+
+			log.warn("Colony category not found. Using default colony category '{}' for demo.",
+					colonyCategory);
+		}
+
 		BigDecimal taxAndCessPercentage = BigDecimal.ZERO;
 
 		String requestConnectionCategory = criteria.getWaterConnection().getConnectionCategory();
@@ -984,6 +1004,6 @@ public class EstimationService {
 		addAdhocPenaltyAndRebate(estimates, connection);
 
 		return estimates;
-	}*/
+	}
 
 }

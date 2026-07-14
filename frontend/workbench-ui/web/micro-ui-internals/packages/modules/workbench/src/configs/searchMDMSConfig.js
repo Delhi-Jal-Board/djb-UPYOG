@@ -1,5 +1,5 @@
 export const Config = {
-  label: "WBH_SEARCH_MDMS",
+  // label: "WBH_SEARCH_MDMS",
   type: "search",
   actionLabel: "WBH_ADD_MDMS",
   actionRole: "MDMS_ADMIN",

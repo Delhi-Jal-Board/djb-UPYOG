@@ -711,8 +711,7 @@ input[type="number"] {
 }
 
 .employee-app-wrapper {
-  min-height: calc(100vh - 8em);
-  height: calc(100vh - 102px);
+  padding: 16px;
 }
 
 .ws-custom-wrapper {

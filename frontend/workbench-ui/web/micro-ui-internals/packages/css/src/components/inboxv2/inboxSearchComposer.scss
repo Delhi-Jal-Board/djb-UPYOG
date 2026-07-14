@@ -7,6 +7,7 @@
 
     */
   height: 100%;
+
   .inbox-search-component-wrapper {
     /*
     TODO NABEEL/ANIL Removed these since it creates issues in search screen
@@ -15,6 +16,7 @@
     */
     height: 100%;
     width: 100%;
+
     .sections-parent {
       /*
     TODO NABEEL/ANIL Removed these since it creates issues in search screen
@@ -25,45 +27,53 @@
       display: grid;
       grid-template-columns: 20% 1fr;
       gap: 1rem;
+
       &.inbox {
         @extend .light-text-color-primary;
+
         .links {
           @extend .light-primary;
           @extend .light-paper-primary;
+
           .text {
             @extend .light-text-color-primary;
           }
+
           .inbox-links-icon {
             color: #3a8dcc;
             fill: #3a8dcc;
+
             path {
               fill: #3a8dcc;
             }
           }
         }
       }
+
       &.search {
         display: flex;
         flex-direction: column;
+
         .section {
           &.links {
             display: none;
           }
+
           &.filter {
             display: none;
           }
         }
+
         .search-wrapper {
           @extend .light-paper-primary;
+
           .search-field-wrapper.search.custom-both-clear-search {
-            .search-button-wrapper.search {
-              grid-column: initial;
-            }
             .search-button-wrapper {
               .link-label {
                 @extend .light-primary;
                 white-space: initial;
               }
+
               .submit-bar {
                 @extend .light-primary-button;
                 width: 60%;
@@ -72,9 +82,11 @@
           }
         }
       }
+
       &.download {
         grid-template-columns: 100%;
       }
+
       .section {
         @extend .light-paper-primary;
         @extend .light-text-color-primary;
@@ -85,17 +97,21 @@
         justify-content: center;
         border-radius: 4px;
         box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.16);
+
         &.search-results {
           min-height: 0;
         }
+
         &.links {
           height: 100%;
           color: #3a8dcc;
+
           .inbox-search-links-component {
             height: 100% !important;
             width: 100%;
           }
         }
+
         &.filter {
           @extend .light-paper-primary;
           @extend .light-text-color-primary;
@@ -110,18 +126,20 @@
   .employee-main-application-details-for-modal {
     padding: 0 !important;
   }
+
   .inbox-search-wrapper {
     .inbox-search-component-wrapper {
       .sections-parent {
         display: flex;
         flex-direction: column;
+
         .section {
-          &.search-results {
-          }
-          &.links {
-          }
-          &.filter {
-          }
+          &.search-results {}
+
+          &.links {}
+
+          &.filter {}
+
           &.as-modal {
             position: fixed;
             top: 0;
