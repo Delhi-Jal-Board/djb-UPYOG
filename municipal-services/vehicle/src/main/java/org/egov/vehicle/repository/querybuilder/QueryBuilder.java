@@ -105,7 +105,7 @@ public class QueryBuilder {
 	private void addOrderByClause(StringBuilder builder, VehicleSearchCriteria criteria) {
 
 		if (StringUtils.isEmpty(criteria.getSortBy()))
-			builder.append(" ORDER BY lastmodifiedtime ");
+			builder.append(" ORDER BY veh.createdtime ");
 
 		else if (criteria.getSortBy() == VehicleSearchCriteria.SortBy.type)
 			builder.append(" ORDER BY type ");
