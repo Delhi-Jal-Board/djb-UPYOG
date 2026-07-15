@@ -39,7 +39,7 @@ const EditSupervisor = () => {
         employeeId: details?.employeeId,
         gender: details?.owner?.gender ? { code: details.owner.gender, active: true, i18nKey: `COMMON_GENDER_${details.owner.gender}` } : null,
         dob: details?.owner?.dob && Digit.DateUtils.ConvertTimestampToDate(details?.owner?.dob, "yyyy-MM-dd"),
-        correspondenceAddress: details?.owner?.correspondenceAddress,
+        correspondenceAddress: details?.correspondenceAddress || details?.owner?.correspondenceAddress,
         description: details?.description,
         zoneIds: details?.assignedZoneId,
       };
@@ -106,6 +106,7 @@ const EditSupervisor = () => {
         ...supervisorDetails,
         description: data?.description || supervisorDetails?.description || "",
         assignedZoneId: data?.zoneIds || supervisorDetails?.assignedZoneId || null,
+        correspondenceAddress: data?.correspondenceAddress || supervisorDetails?.correspondenceAddress,
         owner: {
           ...supervisorDetails.owner,
           name: data?.fullName || supervisorDetails.owner?.name,
@@ -115,7 +116,6 @@ const EditSupervisor = () => {
           dob: data?.dob ? new Date(data.dob).getTime() : supervisorDetails.owner?.dob,
           emailId: data?.emailId || supervisorDetails.owner?.emailId,
           mobileNumber: data?.mobileNumber || supervisorDetails.owner?.mobileNumber,
-          correspondenceAddress: data?.correspondenceAddress || supervisorDetails.owner?.correspondenceAddress,
         },
       },
     };

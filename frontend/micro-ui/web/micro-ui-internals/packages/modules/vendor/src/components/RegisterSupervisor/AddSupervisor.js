@@ -91,6 +91,7 @@ const AddSupervisor = ({ parentUrl, heading }) => {
         // vendorId: vendorId,
         assignedZoneId: assignedZone,
         description: data?.description || "",
+        correspondenceAddress: data?.correspondenceAddress,
         owner: {
           tenantId: tenantId,
           name: data?.fullName,
@@ -100,7 +101,6 @@ const AddSupervisor = ({ parentUrl, heading }) => {
           gender: data?.gender?.code || "OTHERS",
           mobileNumber: data?.mobileNumber,
           emailId: data?.emailId,
-          correspondenceAddress: data?.correspondenceAddress,
         },
       },
     };
