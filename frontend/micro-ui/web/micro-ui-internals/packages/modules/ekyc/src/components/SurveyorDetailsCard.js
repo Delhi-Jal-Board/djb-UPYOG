@@ -117,7 +117,10 @@ const SurveyorDetailsDashboard = () => {
       {
         Header: t("EKYC_STATUS") || "eKYC Status",
         accessor: "ekycStatus",
-        Cell: ({ value }) => value || "-",
+        Cell: ({ value }) => {
+          const status = (value || "NA").toUpperCase();
+          return value ? <span className={`ekyc-status-tag ${status}`}>{t(status)}</span> : "-";
+        },
       },
       {
         Header: t("SUBMITTED_AT") || "Submitted At",

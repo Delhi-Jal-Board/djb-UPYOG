@@ -20,7 +20,7 @@ const AddSupervisor = ({ parentUrl, heading }) => {
   const queryClient = useQueryClient();
   const [canSubmit, setCanSubmit] = useState(false);
 
-  const { mutate: mutateAsync } = Digit.Hooks.fsm.useSupervisorCreate(tenantId);
+  const { mutateAsync } = Digit.Hooks.fsm.useSupervisorCreate(tenantId);
   const history = useHistory();
 
   const Config = SupervisorConfig(t);
@@ -113,7 +113,7 @@ const AddSupervisor = ({ parentUrl, heading }) => {
         pathname: `/digit-ui/${userType}/vendor/search-vendor`,
         state: {
           showSuccessToast: true,
-          message: { key: "success", action: `ES_VENDOR_ADD_SURVEYOR_SUCCESS` },
+          message: { key: "success", action: t("ES_VENDOR_ADD_SUPERVISOR_SUCCESS") },
         },
       });
     } catch (error) {

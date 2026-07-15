@@ -341,7 +341,10 @@ const AssignEkycModal = ({ surveyor, closeModal, refetchDashboard }) => {
       {
         Header: "eKYC Status",
         accessor: "ekycStatus",
-        Cell: ({ value }) => value || "-",
+        Cell: ({ value }) => {
+          const status = (value || "NA").toUpperCase();
+          return value ? <span className={`ekyc-status-tag ${status}`}>{t(status)}</span> : "-";
+        },
       },
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps

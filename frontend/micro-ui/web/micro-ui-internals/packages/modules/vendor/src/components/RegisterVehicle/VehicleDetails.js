@@ -42,6 +42,8 @@ const VehicleDetails = (props) => {
   const history = useHistory();
   const queryClient = useQueryClient();
   let { id: vehicleNumber } = useParams();
+  const userInfo = Digit.UserService.getUser()?.info;
+  const userType = userInfo?.type?.toLowerCase();
   const [displayMenu, setDisplayMenu] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
   // const [config, setCurrentConfig] = useState({});
@@ -94,9 +96,12 @@ const VehicleDetails = (props) => {
       case "DELETE_VENDOR":
         return setShowModal(true);
       case "EDIT":
-        return history.push("/digit-ui/employee/fsm/registry/modify-vehicle/" + vehicleNumber);
+        return history.push(`/digit-ui/${userType}/vendor/registry/modify-vehicle/${vehicleNumber}`);
       case "HOME":
-        return history.push("/digit-ui/employee/fsm/registry?selectedTabs=VEHICLE");
+        if (userType === "citizen") {
+          return history.push(`/digit-ui/citizen/vendor`);
+        }
+        return history.push(`/digit-ui/${userType}/vendor/search-vendor?selectedTabs=VEHICLE`);
       default:
         break;
     }

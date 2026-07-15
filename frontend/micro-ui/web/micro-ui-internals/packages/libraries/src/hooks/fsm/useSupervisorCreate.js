@@ -7,9 +7,9 @@ const useSupervisorCreate = (tenantId) => {
 
 const SupervisorCreateActions = async (data, tenantId) => {
   const response = await FSMService.createSupervisor(data, tenantId);
-  // Request utility returns { error: true } on failure instead of throwing
-  if (response?.error || response?.Errors) {
-    const message = response?.data?.Errors?.[0]?.message || response?.Errors?.[0]?.message || response?.message || "Something went wrong";
+  if (response instanceof Error || response?.error || response?.Errors || response?.response?.data?.Errors) {
+    const apiError = response?.response?.data || response?.data || response;
+    const message = apiError?.Errors?.[0]?.message || apiError?.error?.message || response?.message || "Something went wrong";
     throw new Error(message);
   }
   return response;
