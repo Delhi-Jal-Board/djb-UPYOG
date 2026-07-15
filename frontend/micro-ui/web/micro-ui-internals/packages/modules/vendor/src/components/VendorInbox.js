@@ -1351,8 +1351,7 @@ const VendorInbox = (props) => {
           {
             Header: t("ES_VENDOR_INBOX_VENDOR_NAME"),
             exportAccessor: (row) =>
-              `${row?.name || row?.dsoDetails?.name || "NA"} (${
-                row?.mobileNumber || row?.owner?.mobileNumber || row?.dsoDetails?.mobileNumber || row?.dsoDetails?.owner?.mobileNumber || "NA"
+              `${row?.name || row?.dsoDetails?.name || "NA"} (${row?.mobileNumber || row?.owner?.mobileNumber || row?.dsoDetails?.mobileNumber || row?.dsoDetails?.owner?.mobileNumber || "NA"
               })`,
           },
           {
@@ -1385,12 +1384,11 @@ const VendorInbox = (props) => {
           {
             Header: "Map Vendor",
             exportAccessor: (row) =>
-              `${row?.vendor?.name || row?.vendorData?.name || "NA"} (${
-                row?.vendor?.mobileNumber ||
-                row?.vendor?.owner?.mobileNumber ||
-                row?.vendorData?.mobileNumber ||
-                row?.vendorData?.owner?.mobileNumber ||
-                "NA"
+              `${row?.vendor?.name || row?.vendorData?.name || "NA"} (${row?.vendor?.mobileNumber ||
+              row?.vendor?.owner?.mobileNumber ||
+              row?.vendorData?.mobileNumber ||
+              row?.vendorData?.owner?.mobileNumber ||
+              "NA"
               })`,
           },
           {
@@ -1404,8 +1402,7 @@ const VendorInbox = (props) => {
           {
             Header: t("ES_FSM_REGISTRY_SELECT_DRIVER"),
             exportAccessor: (row) =>
-              `${row?.driverData?.name || row?.driver?.name || "NA"} (${
-                row?.driverData?.owner?.mobileNumber || row?.driver?.owner?.mobileNumber || "NA"
+              `${row?.driverData?.name || row?.driver?.name || "NA"} (${row?.driverData?.owner?.mobileNumber || row?.driver?.owner?.mobileNumber || "NA"
               })`,
           },
           {
@@ -1430,12 +1427,11 @@ const VendorInbox = (props) => {
           {
             Header: t("ES_FSM_REGISTRY_INBOX_VENDOR_NAME"),
             exportAccessor: (row) =>
-              `${row?.vendorData?.name || row?.vendor?.name || "NA"} (${
-                row?.vendorData?.mobileNumber ||
-                row?.vendorData?.owner?.mobileNumber ||
-                row?.vendor?.mobileNumber ||
-                row?.vendor?.owner?.mobileNumber ||
-                "NA"
+              `${row?.vendorData?.name || row?.vendor?.name || "NA"} (${row?.vendorData?.mobileNumber ||
+              row?.vendorData?.owner?.mobileNumber ||
+              row?.vendor?.mobileNumber ||
+              row?.vendor?.owner?.mobileNumber ||
+              "NA"
               })`,
           },
           {
@@ -1469,12 +1465,11 @@ const VendorInbox = (props) => {
           {
             Header: t("ES_FSM_REGISTRY_INBOX_VENDOR_NAME"),
             exportAccessor: (row) =>
-              `${row?.vendorData?.name || row?.vendor?.name || "NA"} ${
-                row?.vendorData?.mobileNumber ||
-                row?.vendorData?.owner?.mobileNumber ||
-                row?.vendor?.mobileNumber ||
-                row?.vendor?.owner?.mobileNumber ||
-                "NA"
+              `${row?.vendorData?.name || row?.vendor?.name || "NA"} ${row?.vendorData?.mobileNumber ||
+              row?.vendorData?.owner?.mobileNumber ||
+              row?.vendor?.mobileNumber ||
+              row?.vendor?.owner?.mobileNumber ||
+              "NA"
               }`,
           },
           {
@@ -1499,23 +1494,21 @@ const VendorInbox = (props) => {
           {
             Header: t("ES_FSM_REGISTRY_INBOX_VENDOR_NAME"),
             exportAccessor: (row) =>
-              `${row?.vendorData?.name || row?.vendor?.name || "NA"} ${
-                row?.vendorData?.mobileNumber ||
-                row?.vendorData?.owner?.mobileNumber ||
-                row?.vendor?.mobileNumber ||
-                row?.vendor?.owner?.mobileNumber ||
-                "NA"
+              `${row?.vendorData?.name || row?.vendor?.name || "NA"} ${row?.vendorData?.mobileNumber ||
+              row?.vendorData?.owner?.mobileNumber ||
+              row?.vendor?.mobileNumber ||
+              row?.vendor?.owner?.mobileNumber ||
+              "NA"
               }`,
           },
           {
             Header: t("ES_VENDOR_SUPERVISOR_AGENCY_NAME"),
             exportAccessor: (row) =>
-              `${row?.vendorData?.name || row?.vendor?.name || "NA"} ${
-                row?.vendorData?.mobileNumber ||
-                row?.vendorData?.owner?.mobileNumber ||
-                row?.vendor?.mobileNumber ||
-                row?.vendor?.owner?.mobileNumber ||
-                "NA"
+              `${row?.vendorData?.name || row?.vendor?.name || "NA"} ${row?.vendorData?.mobileNumber ||
+              row?.vendorData?.owner?.mobileNumber ||
+              row?.vendor?.mobileNumber ||
+              row?.vendor?.owner?.mobileNumber ||
+              "NA"
               }`,
           },
           {
@@ -1528,7 +1521,37 @@ const VendorInbox = (props) => {
     }
   }, [props.selectedTab, supervisors, t]);
 
-  const getCSVExportData = React.useCallback(async () => tableData, [tableData]);
+  const getCSVExportData = React.useCallback(async () => {
+    if (props.selectedTab === "SUPERVISOR") {
+      try {
+        const response = await Digit.FSMService.supervisorSearch(tenantId, {
+          status: "ACTIVE,DISABLED",
+          name: props.searchParams?.name,
+          limit: 100000,
+          offset: 0,
+        });
+        return response?.supervisors || response?.supervisor || [];
+      } catch (e) {
+        console.error(e);
+        return [];
+      }
+    }
+    if (props.selectedTab === "SURVEYOR") {
+      try {
+        const response = await Digit.FSMService.surveyorSearch(tenantId, {
+          status: "ACTIVE,DISABLED",
+          name: props.searchParams?.name,
+          limit: 100000,
+          offset: 0,
+        });
+        return response?.surveyors || response?.surveyor || [];
+      } catch (e) {
+        console.error(e);
+        return [];
+      }
+    }
+    return tableData;
+  }, [props.selectedTab, props.searchParams, tenantId, tableData]);
 
   // if it validate the user role then it starts working
   let result;

@@ -353,6 +353,7 @@ const SearchVendor = () => {
       <div className="employee-form-content">
         <VendorInbox
           data={{ table: tableData }}
+          searchParams={searchParams}
           isLoading={isLoading || isVendorLoading}
           onSort={handleSort}
           disableSort={false}
