@@ -11,41 +11,49 @@ import java.util.List;
 @Component
 public class TripHistoryQueryBuilder {
 
-    private static final String QUERY = "SELECT th.*, rp.* FROM eg_trip_history th " +
-            "LEFT JOIN eg_trip_route_points rp ON th.tripId = rp.tripId ";
+
+    private static final String QUERY =
+            "SELECT th.*, rp.* FROM (SELECT * FROM eg_trip_history ";
 
     public String getTripHistorySearchQuery(TripHistorySearchCriteria criteria, List<Object> preparedStmtList) {
         StringBuilder builder = new StringBuilder(QUERY);
 
-        builder.append(" WHERE th.tenantId = ? ");
+        builder.append(" WHERE tenantId = ? ");
         preparedStmtList.add(criteria.getTenantId());
 
         if (StringUtils.isNotBlank(criteria.getTripId())) {
-            builder.append(" AND th.tripId = ? ");
+            builder.append(" AND tripId = ? ");
             preparedStmtList.add(criteria.getTripId());
         }
 
         if (StringUtils.isNotBlank(criteria.getDriverId())) {
-            builder.append(" AND th.driverId = ? ");
+            builder.append(" AND driverId = ? ");
             preparedStmtList.add(criteria.getDriverId());
         }
         if (StringUtils.isNotBlank(criteria.getBookingNo())) {
-            builder.append(" AND th.bookingno = ? ");
+            builder.append(" AND bookingno = ? ");
             preparedStmtList.add(criteria.getBookingNo());
         }
 
         if (criteria.getFromTime() != null) {
-            builder.append(" AND th.startTime >= ? ");
+            builder.append(" AND startTime >= ? ");
             preparedStmtList.add(criteria.getFromTime());
         }
 
         if (criteria.getToTime() != null) {
-            builder.append(" AND th.startTime <= ? ");
+            builder.append(" AND startTime <= ? ");
             preparedStmtList.add(criteria.getToTime());
         }
 
-        builder.append(" ORDER BY th.startTime DESC ");
+
+        builder.append(" ORDER BY startTime DESC ");
         addPagination(builder, criteria, preparedStmtList);
+
+        builder.append(") th ");
+        builder.append("LEFT JOIN eg_trip_route_points rp ");
+        builder.append("ON th.tripId = rp.tripId ");
+        builder.append("ORDER BY th.startTime DESC, rp.epochMillis");
+
 
         return builder.toString();
     }
