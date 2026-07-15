@@ -395,19 +395,44 @@ public class VendorQueryBuilder {
 	private String addPaginationWrapper(String query, List<Object> preparedStmtList, VendorSearchCriteria criteria) {
 		int limit = config.getDefaultLimit();
 		int offset = config.getDefaultOffset();
-		String sortBy = (criteria.getSortBy() != null) ? criteria.getSortBy().toString() : "vendor_createdtime";
-		String sortOrder = (criteria.getSortOrder() != null) ? criteria.getSortOrder().toString() : "DESC";
+
+		// 1. Establish the default sorting behavior (Latest created first)
+		String sortBy = "vendor_createdtime";
+		String sortOrder = "DESC";
+
+		// 2. Override defaults if the client explicitly passes sorting criteria
+		if (criteria.getSortBy() != null) {
+			String requestedSort = criteria.getSortBy().toString();
+
+			// Map ambiguous column names to their specific query aliases
+			if ("createdTime".equalsIgnoreCase(requestedSort)) {
+				sortBy = "vendor_createdtime";
+			} else if ("lastModifiedTime".equalsIgnoreCase(requestedSort)) {
+				sortBy = "vendor_lastmodifiedtime";
+			} else {
+				sortBy = requestedSort;
+			}
+		}
+
+		if (criteria.getSortOrder() != null) {
+			sortOrder = criteria.getSortOrder().toString();
+		}
+
+		// 3. Replace placeholders in the wrapper query
 		String finalQuery = PAGINATION_WRAPPER.replace("{}", query)
 				.replace("SORT_BY", sortBy)
 				.replace("SORT_ORDER", sortOrder);
-		if (criteria.getLimit() != null && criteria.getLimit() <= config.getMaxSearchLimit())
+
+		// 4. Handle limits and offsets
+		if (criteria.getLimit() != null && criteria.getLimit() <= config.getMaxSearchLimit()) {
 			limit = criteria.getLimit();
-
-		if (criteria.getLimit() != null && criteria.getLimit() > config.getMaxSearchLimit())
+		} else if (criteria.getLimit() != null && criteria.getLimit() > config.getMaxSearchLimit()) {
 			limit = config.getMaxSearchLimit();
+		}
 
-		if (criteria.getOffset() != null)
+		if (criteria.getOffset() != null) {
 			offset = criteria.getOffset();
+		}
 
 		if (limit == -1) {
 			finalQuery = finalQuery.replace("WHERE offset_ > ? AND offset_ <= ?", "");
