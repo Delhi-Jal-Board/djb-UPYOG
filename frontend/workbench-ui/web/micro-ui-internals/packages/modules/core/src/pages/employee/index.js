@@ -119,7 +119,7 @@ const EmployeeApp = ({
             modules={modules}
             showSidebar={false}
           />
-          <div className={`main ${DSO ? "m-auto" : ""}`}>
+          <div className={`main ${DSO ? "" : ""}`}>
             <div className="employee-app-wrapper">
               <ErrorBoundary initData={initData}>
                 <AppModules stateCode={stateCode} userType="employee" modules={modules} appTenants={appTenants} />
