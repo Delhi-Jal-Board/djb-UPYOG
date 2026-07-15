@@ -19,6 +19,8 @@ const SearchVendor = () => {
       ? "SURVEYOR"
       : roles.includes("EKYC_SURVEYOR")
       ? "SURVEYOR"
+      : roles.includes("EMPLOYEE")
+      ? "SUPERVISOR"
       : "";
 
   const { selectedTabs } = Digit.Hooks.useQueryParams();

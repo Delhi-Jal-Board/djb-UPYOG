@@ -211,7 +211,7 @@ const RegisteredVendorSearch = ({
                   {t("ES_FSM_REGISTRY_INBOX_TAB_DRIVER")}
                 </button>
               )}
-              {matchedRoles?.ekyc?.includes("EKYC_VENDOR") && (
+              {(matchedRoles?.ekyc?.includes("EKYC_VENDOR") || matchedRoles?.ekyc?.includes("EMPLOYEE")) && (
                 <button
                   className={selectedTab === "SUPERVISOR" ? "search-tab-head-selected" : "search-tab-head"}
                   onClick={() => {
@@ -223,7 +223,7 @@ const RegisteredVendorSearch = ({
                 </button>
               )}
               {/* {(matchedRoles?.ekyc?.includes("EKYC_SUPERVISOR") || matchedRoles?.ekyc?.includes("EKYC_VENDOR")) && ( */}
-              {(matchedRoles?.ekyc?.includes("EKYC_SUPERVISOR") || matchedRoles?.ekyc?.includes("EKYC_VENDOR")) && (
+              {(matchedRoles?.ekyc?.includes("EKYC_SUPERVISOR") || matchedRoles?.ekyc?.includes("EKYC_VENDOR") || matchedRoles?.ekyc?.includes("EMPLOYEE")) && (
                 <button
                   className={selectedTab === "SURVEYOR" ? "search-tab-head-selected" : "search-tab-head"}
                   onClick={() => {

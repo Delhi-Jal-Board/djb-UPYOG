@@ -4,7 +4,7 @@ import SupervisorInboxTableConfig from "../hook/SupervisorInboxTableConfig";
 import SearchFormFieldsComponents from "./SearchFormFieldsComponent";
 import { formInitValue, formReducer } from "../../../vendor/src/config/tableConfig";
 import { FaUsers, FaCheckCircle, FaClock, FaChartLine, FaMapMarkedAlt } from "react-icons/fa";
-import useSupervisorInboxMobileCardsData from "../hook/useSupervisorInboxMobileCardsData";
+import useInboxMobileCardsData from "../hook/useInboxMobileCardsData";
 
 // Mock data removed in favor of API integration
 
@@ -236,7 +236,7 @@ const AssignEkyc = () => {
   };
 
   const propsForMobileSortForm = { onMobileSortOrderData, sortFormDefaultValues: formState?.tableForm, onSortFormReset };
-  const propsForInboxMobileCards = useSupervisorInboxMobileCardsData({ table: filteredData });
+  const propsForInboxMobileCards = useInboxMobileCardsData({ table: filteredData, isSupervisor: true });
 
   return (
     <div className="app-container">

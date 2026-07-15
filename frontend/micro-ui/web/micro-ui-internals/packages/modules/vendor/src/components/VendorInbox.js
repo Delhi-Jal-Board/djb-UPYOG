@@ -1606,6 +1606,7 @@ const VendorInbox = (props) => {
   const ekycRoles = {
     ekycVendor: "EKYC_VENDOR",
     supervisor: "EKYC_SUPERVISOR",
+    employee: "EMPLOYEE",
   };
 
   const wtRoles = {
