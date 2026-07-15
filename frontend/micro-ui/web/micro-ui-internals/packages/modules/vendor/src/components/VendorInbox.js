@@ -371,10 +371,11 @@ const VendorInbox = (props) => {
 
   const onVendorUpdate = (row) => {
     let formDetails = row.original.dsoDetails;
+    const isDisable = formDetails?.status === "ACTIVE";
     const formData = {
       vendor: {
         ...formDetails,
-        status: formDetails?.status === "ACTIVE" ? "DISABLED" : "ACTIVE",
+        status: isDisable ? "DISABLED" : "ACTIVE",
         owner: {
           ...formDetails.owner,
           gender: formDetails?.owner?.gender || "OTHER",
@@ -387,40 +388,52 @@ const VendorInbox = (props) => {
 
     mutateVendor(formData, {
       onError: (error, variables) => {
-        setShowToast({ key: "error", action: error });
+        setShowToast({ key: "error", action: error?.message || "UPDATE_FAILED" });
       },
       onSuccess: (data, variables) => {
-        setShowToast({ key: "success", action: "VENDOR" });
-        queryClient.invalidateQueries("DSO_SEARCH");
-        props.refetchData();
+        const isError = data?.error === true || data?.Errors?.length > 0 || data?.data?.Errors?.length > 0;
+        if (isError) {
+          setShowToast({ key: "error", action: data?.data?.Errors?.[0]?.message || data?.Errors?.[0]?.message || data?.message || "UPDATE_FAILED" });
+        } else {
+          setShowToast({ key: "success", action: "VENDOR", isDisable });
+          queryClient.invalidateQueries("DSO_SEARCH");
+          props.refetchData();
+        }
       },
     });
   };
 
   const onVehicleUpdate = (row) => {
+    const isDisable = row.original?.status === "ACTIVE";
     const formData = getVehicleUpdatePayload(row.original, {
-      status: row.original?.status === "ACTIVE" ? "DISABLED" : "ACTIVE",
+      status: isDisable ? "DISABLED" : "ACTIVE",
     });
 
     mutateVehicle(formData, {
       onError: (error, variables) => {
-        setShowToast({ key: "error", action: error });
+        setShowToast({ key: "error", action: error?.message || "UPDATE_FAILED" });
       },
       onSuccess: (data, variables) => {
-        setShowToast({ key: "success", action: "VEHICLE" });
-        queryClient.invalidateQueries("FSM_VEICLES_SEARCH");
-        props.refetchVendor();
-        props.refetchData();
+        const isError = data?.error === true || data?.Errors?.length > 0 || data?.data?.Errors?.length > 0;
+        if (isError) {
+          setShowToast({ key: "error", action: data?.data?.Errors?.[0]?.message || data?.Errors?.[0]?.message || data?.message || "UPDATE_FAILED" });
+        } else {
+          setShowToast({ key: "success", action: "VEHICLE", isDisable });
+          queryClient.invalidateQueries("FSM_VEICLES_SEARCH");
+          props.refetchVendor();
+          props.refetchData();
+        }
       },
     });
   };
 
   const onDriverUpdate = (row) => {
     let formDetails = row.original;
+    const isDisable = formDetails?.status === "ACTIVE";
     const formData = {
       driver: {
         ...formDetails,
-        status: formDetails?.status === "ACTIVE" ? "DISABLED" : "ACTIVE",
+        status: isDisable ? "DISABLED" : "ACTIVE",
         owner: {
           ...formDetails.owner,
           gender: formDetails?.owner?.gender || "OTHER",
@@ -433,13 +446,18 @@ const VendorInbox = (props) => {
 
     mutateDriver(formData, {
       onError: (error, variables) => {
-        setShowToast({ key: "error", action: error });
+        setShowToast({ key: "error", action: error?.message || "UPDATE_FAILED" });
       },
       onSuccess: (data, variables) => {
-        setShowToast({ key: "success", action: "DRIVER" });
-        queryClient.invalidateQueries("FSM_DRIVER_SEARCH");
-        props.refetchVendor();
-        props.refetchData();
+        const isError = data?.error === true || data?.Errors?.length > 0 || data?.data?.Errors?.length > 0;
+        if (isError) {
+          setShowToast({ key: "error", action: data?.data?.Errors?.[0]?.message || data?.Errors?.[0]?.message || data?.message || "UPDATE_FAILED" });
+        } else {
+          setShowToast({ key: "success", action: "DRIVER", isDisable });
+          queryClient.invalidateQueries("FSM_DRIVER_SEARCH");
+          props.refetchVendor();
+          props.refetchData();
+        }
       },
     });
   };
@@ -590,16 +608,21 @@ const VendorInbox = (props) => {
 
       mutateVendor(getVendorPayloadForVehicle(selectedVendor, selectedVendorVehicles), {
         onError: (error) => {
-          setShowToast({ key: "error", action: error });
+          setShowToast({ key: "error", action: error?.message || "UPDATE_FAILED" });
         },
-        onSuccess: () => {
+        onSuccess: (data) => {
+          const isError = data?.error === true || data?.Errors?.length > 0 || data?.data?.Errors?.length > 0;
+          if (isError) {
+            setShowToast({ key: "error", action: data?.data?.Errors?.[0]?.message || data?.Errors?.[0]?.message || data?.message || "UPDATE_FAILED" });
+            return;
+          }
           updateVehicleRowState(currentVehicle?.id, {
             vendor: updatedSelectedVendor,
             fillingPoint: null,
             driverData: null,
             driver: null,
           });
-          setShowToast({ key: "success", action: "VEHICLE" });
+          setShowToast({ key: "success", action: "VEHICLE", isDisable: false });
           queryClient.invalidateQueries("DSO_SEARCH");
           queryClient.invalidateQueries("FSM_VEICLES_SEARCH");
           props.refetchData();
@@ -615,9 +638,16 @@ const VendorInbox = (props) => {
 
       mutateVendor(getVendorPayloadForVehicle(existingVendor, existingVendorVehicles), {
         onError: (error) => {
-          setShowToast({ key: "error", action: error });
+          setShowToast({ key: "error", action: error?.message || "UPDATE_FAILED" });
         },
-        onSuccess: addVehicleToSelectedVendor,
+        onSuccess: (data) => {
+          const isError = data?.error === true || data?.Errors?.length > 0 || data?.data?.Errors?.length > 0;
+          if (isError) {
+            setShowToast({ key: "error", action: data?.data?.Errors?.[0]?.message || data?.Errors?.[0]?.message || data?.message || "UPDATE_FAILED" });
+            return;
+          }
+          addVehicleToSelectedVendor();
+        },
       });
       return;
     }
@@ -632,13 +662,18 @@ const VendorInbox = (props) => {
 
     mutateVehicle(formData, {
       onError: (error, variables) => {
-        setShowToast({ key: "error", action: error });
+        setShowToast({ key: "error", action: error?.message || "UPDATE_FAILED" });
       },
       onSuccess: (data, variables) => {
+        const isError = data?.error === true || data?.Errors?.length > 0 || data?.data?.Errors?.length > 0;
+        if (isError) {
+          setShowToast({ key: "error", action: data?.data?.Errors?.[0]?.message || data?.Errors?.[0]?.message || data?.message || "UPDATE_FAILED" });
+          return;
+        }
         updateVehicleRowState(row.original?.id, {
           driverData: selectedOption,
         });
-        setShowToast({ key: "success", action: "VEHICLE" });
+        setShowToast({ key: "success", action: "VEHICLE", isDisable: false });
         queryClient.invalidateQueries("FSM_VEICLES_SEARCH");
         /* Mandatory: Invalidate DSO_SEARCH to ensure vendorData in the parent component is refetched with the new driver assignment */
         queryClient.invalidateQueries("DSO_SEARCH");
@@ -660,7 +695,12 @@ const VendorInbox = (props) => {
           label: error?.message || error?.response?.data?.Errors?.[0]?.message || "Failed to map filling point",
         });
       },
-      onSuccess: () => {
+      onSuccess: (data) => {
+        const isError = data?.error === true || data?.Errors?.length > 0 || data?.data?.Errors?.length > 0;
+        if (isError) {
+          setShowToast({ key: "error", label: data?.data?.Errors?.[0]?.message || data?.Errors?.[0]?.message || data?.message || "Failed to map filling point" });
+          return;
+        }
         const mappedVendor = getSelectedVendorOption(row.original, vendors);
         const vendorDrivers = getVendorDriversForFillingPoint(mappedVendor, selectedOption);
         const selectedDriver = getSelectedDriverOption(row.original, vendorDrivers);
@@ -710,7 +750,12 @@ const VendorInbox = (props) => {
           label: error?.message || error || t("ES_FSM_REGISTRY_INBOX_FAILED_TO_UPDATE_SUPERVISOR"),
         });
       },
-      onSuccess: () => {
+      onSuccess: (data) => {
+        const isError = data?.error === true || data?.Errors?.length > 0 || data?.data?.Errors?.length > 0;
+        if (isError) {
+          setShowToast({ key: "error", label: data?.data?.Errors?.[0]?.message || data?.Errors?.[0]?.message || data?.message || t("ES_FSM_REGISTRY_INBOX_FAILED_TO_UPDATE_SUPERVISOR") });
+          return;
+        }
         setShowToast({ key: "success", label: t("ES_FSM_REGISTRY_INBOX_SUPERVISOR_MAPPED_SUCCESSFULLY") });
         queryClient.invalidateQueries(t("SURVEYOR_SEARCH"));
         props.refetchData();
@@ -1626,7 +1671,9 @@ const VendorInbox = (props) => {
           label={
             showToast.label
               ? t(showToast.label)
-              : t(showToast.key === "success" ? `ES_FSM_REGISTRY_${showToast.action}_DISABLE_SUCCESS` : showToast.action)
+              : showToast.key === "success"
+              ? t(`ES_FSM_REGISTRY_${showToast.action}_${showToast.isDisable ? "DISABLE" : "ENABLE"}_SUCCESS`)
+              : t(showToast.action)
           }
           onClose={closeToast}
         />
