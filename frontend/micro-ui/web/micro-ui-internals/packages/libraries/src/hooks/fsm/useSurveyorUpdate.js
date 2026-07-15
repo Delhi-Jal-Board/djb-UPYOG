@@ -6,12 +6,13 @@ const useSurveyorUpdate = (tenantId) => {
 };
 
 const SurveyorUpdateActions = async (surveyorData, tenantId) => {
-  try {
-    const response = await FSMService.updateSurveyor(surveyorData, tenantId);
-    return response;
-  } catch (error) {
-    throw new Error(error?.response?.data?.Errors[0].message);
+  const response = await FSMService.updateSurveyor(surveyorData, tenantId);
+  if (response instanceof Error || response?.error || response?.Errors || response?.response?.data?.Errors) {
+    const apiError = response?.response?.data || response?.data || response;
+    const message = apiError?.Errors?.[0]?.message || apiError?.error?.message || response?.message || "Something went wrong";
+    throw new Error(message);
   }
+  return response;
 };
 
 export default useSurveyorUpdate;

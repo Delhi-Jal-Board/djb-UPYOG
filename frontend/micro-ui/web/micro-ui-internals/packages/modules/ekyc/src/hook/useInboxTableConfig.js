@@ -59,7 +59,7 @@ const useInboxTableConfig = ({
       Header: t("EKYC_STATUS"),
       accessor: "actionStatus",
       Cell: ({ row }) => {
-        const status = row.original?.status || "DEFAULT";
+        const status = (row.original?.status || "DEFAULT").toUpperCase();
         return <span className={`ekyc-status-tag ${status}`}>{t(`${status}`)}</span>;
       },
     },

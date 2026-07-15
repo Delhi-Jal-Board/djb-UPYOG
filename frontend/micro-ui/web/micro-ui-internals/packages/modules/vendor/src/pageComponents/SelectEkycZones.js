@@ -152,25 +152,45 @@ const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true }
    * Sync selected values
    */
   useEffect(() => {
-    if (!zones.length || !Array.isArray(formData?.zoneIds)) return;
+    if (!zones.length || !formData?.zoneIds) return;
 
-    // Already objects
-    if (formData.zoneIds.length && typeof formData.zoneIds[0] === "object") {
-      setSelectedZones(formData.zoneIds);
-      return;
+    if (isMultiSelect) {
+      if (!Array.isArray(formData.zoneIds)) return;
+      // Already objects
+      if (formData.zoneIds.length && typeof formData.zoneIds[0] === "object") {
+        setSelectedZones(formData.zoneIds);
+        return;
+      }
+
+      // Initial API values (array of names/codes)
+      const selected = zones.filter((zone) => formData.zoneIds.includes(zone.name) || formData.zoneIds.includes(zone.code));
+
+      setSelectedZones(selected);
+
+      // Convert only once
+      if (!initialized.current) {
+        initialized.current = true;
+        onSelect(config.key, selected);
+      }
+    } else {
+      // Single select
+      let selectedVal = formData.zoneIds;
+      if (Array.isArray(selectedVal)) {
+        selectedVal = selectedVal[0]?.name || selectedVal[0]?.code || selectedVal[0] || "";
+      }
+      if (typeof selectedVal === "object") {
+        selectedVal = selectedVal.name || selectedVal.code || "";
+      }
+
+      const selected = zones.find((zone) => zone.name === selectedVal || zone.code === selectedVal);
+      setSelectedZones(selected ? [selected] : []);
+
+      if (!initialized.current && selected) {
+        initialized.current = true;
+        onSelect(config.key, selected.name || "");
+      }
     }
-
-    // Initial API values (array of names)
-    const selected = zones.filter((zone) => formData.zoneIds.includes(zone.name));
-
-    setSelectedZones(selected);
-
-    // Convert only once
-    if (!initialized.current) {
-      initialized.current = true;
-      onSelect(config.key, selected);
-    }
-  }, [zones, formData?.zoneIds, config.key, onSelect]);
+  }, [zones, formData?.zoneIds, config.key, onSelect, isMultiSelect]);
 
   const handleSelect = (value) => {
     if (isMultiSelect) {
@@ -182,7 +202,7 @@ const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true }
       const selectedZone = Array.isArray(value) ? (Array.isArray(value[0]) ? value[0][1] : value[0]) : value;
 
       setSelectedZones(selectedZone ? [selectedZone] : []);
-      onSelect(config.key, selectedZone?.code || "");
+      onSelect(config.key, selectedZone?.name || "");
     }
   };
 

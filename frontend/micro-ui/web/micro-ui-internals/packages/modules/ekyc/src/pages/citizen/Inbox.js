@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import { InboxComposer } from "@djb25/digit-ui-react-components";
 import useInboxTableConfig from "../../hook/useInboxTableConfig";
 import SearchFormFieldsComponents from "../../components/SearchFormFieldsComponent";
+import useInboxMobileCardsData from "../../hook/useInboxMobileCardsData";
 
 // Mock data removed in favor of API integration
 
@@ -251,6 +252,19 @@ const Inbox = ({ parentRoute }) => {
     },
   });
 
+  const onMobileSortOrderData = (data) => {
+    const { sortOrder } = data;
+    dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, sortOrder } });
+  };
+
+  const onSortFormReset = (setSortFormValue) => {
+    setSortFormValue("sortOrder", "DESC");
+    dispatch({ action: "mutateTableForm", data: tableOrderFormDefaultValues });
+  };
+
+  const propsForMobileSortForm = { onMobileSortOrderData, sortFormDefaultValues: formState?.tableForm, onSortFormReset };
+  const propsForInboxMobileCards = useInboxMobileCardsData({ table: filteredData, tenantId });
+
   const isInboxLoading = isLoading || isSearchLoading;
 
   return (
@@ -261,9 +275,9 @@ const Inbox = ({ parentRoute }) => {
           // PropsForInboxLinks,
           ...propsForSearchForm,
           // ...propsForFilterForm,
-          // ...propsForMobileSortForm,
+          ...propsForMobileSortForm,
           propsForInboxTable,
-          // propsForInboxMobileCards,
+          propsForInboxMobileCards,
           formState,
         }}
       />
