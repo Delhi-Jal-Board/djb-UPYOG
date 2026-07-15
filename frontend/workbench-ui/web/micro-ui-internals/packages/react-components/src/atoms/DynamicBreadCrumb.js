@@ -41,7 +41,7 @@ const DynamicBreadCrumb = ({ customConfig = {}, defaultPath = "" }) => {
   const leftContent = (
     <React.Fragment>
       <ArrowLeftWhite width="16" height="16" />
-      <span style={{ marginLeft: "8px", fontWeight: "bold" }}>{t("cs_common_back")}</span>
+      <span style={{ marginLeft: "8px", fontWeight: "bold" }}>{t("CS_COMMON_BACK")}</span>
     </React.Fragment>
   );
 
