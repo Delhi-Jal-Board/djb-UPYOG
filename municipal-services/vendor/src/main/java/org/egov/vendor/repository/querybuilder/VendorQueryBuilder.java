@@ -117,10 +117,10 @@ public class VendorQueryBuilder {
 			+ " LEFT JOIN upyog_rs_water_tanker_filling_point fp ON fp.id = fvm.filling_point_id::varchar "
 			+ VAD_JOIN;
 
-	private static final String PAGINATION_WRAPPER = "SELECT * FROM "
-			+ "(SELECT *, DENSE_RANK() OVER (ORDER BY vendor_pk_id) offset_ FROM ({})"
-			+ " result) result_offset "
-			+ "WHERE offset_ > ? AND offset_ <= ?";
+	private static final String PAGINATION_WRAPPER = "SELECT * FROM " +
+			"(SELECT *, DENSE_RANK() OVER (ORDER BY SORT_BY SORT_ORDER) offset_ FROM ({})" +
+			" result) result_offset " +
+			"WHERE offset_ > ? AND offset_ <= ?";
 	private static final String COUNT_QUERY =
 			"SELECT COUNT(DISTINCT vendor.id) FROM eg_vendor vendor ";
 
@@ -395,16 +395,44 @@ public class VendorQueryBuilder {
 	private String addPaginationWrapper(String query, List<Object> preparedStmtList, VendorSearchCriteria criteria) {
 		int limit = config.getDefaultLimit();
 		int offset = config.getDefaultOffset();
-		String finalQuery = PAGINATION_WRAPPER.replace("{}", query);
 
-		if (criteria.getLimit() != null && criteria.getLimit() <= config.getMaxSearchLimit())
+		// 1. Establish the default sorting behavior (Latest created first)
+		String sortBy = "vendor_createdtime";
+		String sortOrder = "DESC";
+
+		// 2. Override defaults if the client explicitly passes sorting criteria
+		if (criteria.getSortBy() != null) {
+			String requestedSort = criteria.getSortBy().toString();
+
+			// Map ambiguous column names to their specific query aliases
+			if ("createdTime".equalsIgnoreCase(requestedSort)) {
+				sortBy = "vendor_createdtime";
+			} else if ("lastModifiedTime".equalsIgnoreCase(requestedSort)) {
+				sortBy = "vendor_lastmodifiedtime";
+			} else {
+				sortBy = requestedSort;
+			}
+		}
+
+		if (criteria.getSortOrder() != null) {
+			sortOrder = criteria.getSortOrder().toString();
+		}
+
+		// 3. Replace placeholders in the wrapper query
+		String finalQuery = PAGINATION_WRAPPER.replace("{}", query)
+				.replace("SORT_BY", sortBy)
+				.replace("SORT_ORDER", sortOrder);
+
+		// 4. Handle limits and offsets
+		if (criteria.getLimit() != null && criteria.getLimit() <= config.getMaxSearchLimit()) {
 			limit = criteria.getLimit();
-
-		if (criteria.getLimit() != null && criteria.getLimit() > config.getMaxSearchLimit())
+		} else if (criteria.getLimit() != null && criteria.getLimit() > config.getMaxSearchLimit()) {
 			limit = config.getMaxSearchLimit();
+		}
 
-		if (criteria.getOffset() != null)
+		if (criteria.getOffset() != null) {
 			offset = criteria.getOffset();
+		}
 
 		if (limit == -1) {
 			finalQuery = finalQuery.replace("WHERE offset_ > ? AND offset_ <= ?", "");
@@ -485,7 +513,7 @@ public class VendorQueryBuilder {
 	}
 
 	private void addOrderByClause(StringBuilder builder) {
-		builder.append(" ORDER BY vendor.id DESC ").toString();
+		builder.append(" ORDER BY vendor.createdtime DESC ").toString();
 	}
 
 }

@@ -3,6 +3,7 @@ package org.egov.infra.mdms.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.infra.mdms.model.*;
+import org.egov.infra.mdms.repository.MdmsDataRepository;
 import org.egov.infra.mdms.service.MDMSServiceV2;
 import org.egov.infra.mdms.utils.ResponseUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,9 @@ import java.util.List;
 public class MDMSControllerV2 {
 
     private MDMSServiceV2 mdmsServiceV2;
+
+    @Autowired
+    private MdmsDataRepository mdmsDataRepository;
 
     @Autowired
     public MDMSControllerV2(MDMSServiceV2 mdmsServiceV2) {
@@ -44,7 +48,11 @@ public class MDMSControllerV2 {
     @RequestMapping(value="_search", method = RequestMethod.POST)
     public ResponseEntity<MdmsResponseV2> search(@Valid @RequestBody MdmsCriteriaReqV2 masterDataSearchCriteria) {
         List<Mdms> masterDataList = mdmsServiceV2.search(masterDataSearchCriteria);
-        return new ResponseEntity<>(ResponseUtil.getMasterDataV2Response(RequestInfo.builder().build(), masterDataList), HttpStatus.OK);
+        Integer totalCount = mdmsDataRepository.countV2(masterDataSearchCriteria.getMdmsCriteria());
+        MdmsResponseV2 response = ResponseUtil.getMasterDataV2Response(RequestInfo.builder().build(), masterDataList);
+        response.setTotalCount(totalCount); // Set the count in the response
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     /**

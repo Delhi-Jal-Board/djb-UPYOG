@@ -22,4 +22,6 @@ public class MdmsResponseV2 {
 
     @JsonProperty("mdms")
     private List<Mdms> mdms = null;
+    @JsonProperty("totalCount")
+    private Integer totalCount = null;
 }

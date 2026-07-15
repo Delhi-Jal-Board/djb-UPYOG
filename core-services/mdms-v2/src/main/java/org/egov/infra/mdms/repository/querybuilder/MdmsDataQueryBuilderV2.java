@@ -101,4 +101,9 @@ public class MdmsDataQueryBuilderV2 {
         return paginatedQuery.toString();
     }
 
+    public String getMdmsDataCountQuery(MdmsCriteriaV2 mdmsCriteriaV2, List<Object> preparedStmtList) {
+        String query = buildQuery(mdmsCriteriaV2, preparedStmtList);
+        return query.replace("SELECT data.id, data.tenantid, data.uniqueidentifier, data.schemacode, data.data, data.isactive, data.createdby, data.lastmodifiedby, data.createdtime, data.lastmodifiedtime", "SELECT COUNT(*)");
+    }
+
 }
