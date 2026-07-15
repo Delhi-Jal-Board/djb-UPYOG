@@ -22,7 +22,7 @@ const EKYCCard = () => {
       {
         count: totalCount,
         label: t("TOTAL_EKYC"),
-        link: `/digit-ui/employee/ekyc/dashboard`,
+        link: `/digit-ui/employee/ekyc/admin-dashboard`,
       },
     ],
     links: [

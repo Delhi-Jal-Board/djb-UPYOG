@@ -3,6 +3,7 @@ import { Card, Loader, Table } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
 import { ekycMockData } from "./mockData";
+import Dashboard from "./Dashboard";
 
 const AdminDashboard = () => {
     const { t } = useTranslation();
@@ -190,7 +191,8 @@ const AdminDashboard = () => {
                     {ekycDownloadLoading ? t("DOWNLOADING") || "Downloading..." : t("DOWNLOAD_EXCEL") || "Download Excel"}
                 </button>
             </div>
-
+            {/*  Dashboard Card */}
+            <Dashboard />
             {/* Vendor Cards Section */}
             <div className="admin-performance-section">
                 <h3 className="section-title">
