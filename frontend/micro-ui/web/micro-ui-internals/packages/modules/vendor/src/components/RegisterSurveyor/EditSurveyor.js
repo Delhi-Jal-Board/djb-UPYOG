@@ -43,7 +43,7 @@ const EditSurveyor = () => {
           ? { code: details.owner.relationship, name: `ES_COMMON_RELATION_${details.owner.relationship}` }
           : null,
         dob: details?.owner?.dob && Digit.DateUtils.ConvertTimestampToDate(details?.owner?.dob, "yyyy-MM-dd"),
-        correspondenceAddress: details?.owner?.correspondenceAddress,
+        correspondenceAddress: details?.correspondenceAddress || details?.owner?.correspondenceAddress,
         description: details?.description,
       };
       setDefaultValues(values);
@@ -105,6 +105,7 @@ const EditSurveyor = () => {
         name: data?.fullName || surveyorDetails?.name,
         mobileNo: data?.mobileNumber || surveyorDetails?.mobileNo,
         employeeId: data?.employeeId || surveyorDetails?.employeeId,
+        correspondenceAddress: data?.correspondenceAddress || surveyorDetails?.correspondenceAddress,
         owner: {
           ...surveyorDetails.owner,
           name: data?.fullName || surveyorDetails.owner?.name,
@@ -114,7 +115,6 @@ const EditSurveyor = () => {
           dob: data?.dob ? new Date(data.dob).getTime() : surveyorDetails.owner?.dob,
           emailId: data?.emailId || surveyorDetails.owner?.emailId,
           mobileNumber: data?.mobileNumber || surveyorDetails.owner?.mobileNumber,
-          correspondenceAddress: data?.correspondenceAddress || surveyorDetails.owner?.correspondenceAddress,
         },
       },
     };
