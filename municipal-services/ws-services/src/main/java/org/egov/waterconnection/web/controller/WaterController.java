@@ -53,7 +53,6 @@ public class WaterController {
 				.build();
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
-
 	@RequestMapping(value = "/_search", method = RequestMethod.POST)
 	public ResponseEntity<WaterConnectionResponse> search(@Valid @RequestBody RequestInfoWrapper requestInfoWrapper,
 			@Valid @ModelAttribute SearchCriteria criteria) {
@@ -66,7 +65,6 @@ public class WaterController {
 				.build();
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
-
 	@RequestMapping(value = "/_update", method = RequestMethod.POST, produces = "application/json")
 	public ResponseEntity<WaterConnectionResponse> updateWaterConnection(
 			@Valid @RequestBody WaterConnectionRequest waterConnectionRequest) {

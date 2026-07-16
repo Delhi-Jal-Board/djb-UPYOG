@@ -506,10 +506,25 @@ public class MasterDataService {
 				repository.fetchResult(calculatorUtils.getMdmsSearchUrl(),
 						calculatorUtils.getEstimationMasterCriteria(requestInfo, tenantId)),
 				MdmsResponse.class);
-		Map<String, JSONArray> res = response.getMdmsRes().get(WSCalculationConstant.WS_TAX_MODULE);
-		for (Map.Entry<String, JSONArray> resp : res.entrySet()) {
-			master.put(resp.getKey(), resp.getValue());
+		log.info("MDMS Response : {}", response.getMdmsRes());
+		Map<String, Map<String, JSONArray>> mdmsRes = response.getMdmsRes();
+
+		/* WS Calculation Module */
+		Map<String, JSONArray> wsMasters =
+		        mdmsRes.get(WSCalculationConstant.WS_TAX_MODULE);
+
+		if (wsMasters != null) {
+		    master.putAll(wsMasters);
 		}
+
+		/* Property Tax Module */
+		Map<String, JSONArray> propertyMasters =
+		        mdmsRes.get(WSCalculationConstant.PROPERTY_TAX_MODULE);
+
+		if (propertyMasters != null) {
+		    master.putAll(propertyMasters);
+		}
+
 		return master;
 	}
 

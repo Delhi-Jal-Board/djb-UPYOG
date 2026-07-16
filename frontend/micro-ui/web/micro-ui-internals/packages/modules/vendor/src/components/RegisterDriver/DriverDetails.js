@@ -42,6 +42,8 @@ const DriverDetails = () => {
   const history = useHistory();
   const queryClient = useQueryClient();
   const { id: dsoId } = useParams();
+  const userInfo = Digit.UserService.getUser()?.info;
+  const userType = userInfo?.type?.toLowerCase();
 
   const [displayMenu, setDisplayMenu] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
@@ -84,9 +86,12 @@ const DriverDetails = () => {
       case "DELETE_VENDOR":
         return setShowModal(true);
       case "EDIT":
-        return history.push("/digit-ui/employee/fsm/registry/modify-driver/" + dsoId);
+        return history.push(`/digit-ui/${userType}/vendor/registry/modify-driver/${dsoId}`);
       case "HOME":
-        return history.push("/digit-ui/employee/fsm/registry?selectedTabs=DRIVER");
+        if (userType === "citizen") {
+          return history.push(`/digit-ui/citizen/vendor`);
+        }
+        return history.push(`/digit-ui/${userType}/vendor/search-vendor?selectedTabs=DRIVER`);
       default:
         break;
     }

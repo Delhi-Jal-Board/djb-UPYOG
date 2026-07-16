@@ -86,6 +86,7 @@ const AddSurveyor = ({ parentUrl, heading }) => {
         // vendorId: vendorIdParam || data?.agencyName?.code || data?.agencyName?.id || userInfo?.uuid,
         // supervisorId: data?.reportingManager?.code || data?.reportingManager?.id || null,
         description: data?.description || "",
+        correspondenceAddress: data?.correspondenceAddress,
         additionalDetails: {
           serviceType: "ekyc",
         },
@@ -98,7 +99,6 @@ const AddSurveyor = ({ parentUrl, heading }) => {
           dob: data?.dob ? new Date(data.dob).getTime() : null,
           emailId: data?.emailId,
           mobileNumber: data?.mobileNumber,
-          correspondenceAddress: data?.correspondenceAddress,
         },
       },
     };
@@ -110,7 +110,7 @@ const AddSurveyor = ({ parentUrl, heading }) => {
         pathname: `/digit-ui/${userType}/vendor/search-vendor`,
         state: {
           showSuccessToast: true,
-          message: { key: "success", action: `ES_VENDOR_ADD_SURVEYOR_SUCCESS` },
+          message: { key: "success", action: t("ES_VENDOR_ADD_SURVEYOR_SUCCESS") },
         },
       });
     } catch (error) {

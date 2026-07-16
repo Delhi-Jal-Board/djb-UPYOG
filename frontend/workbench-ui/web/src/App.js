@@ -18,10 +18,10 @@ const enabledModules = [
   "DSS",
   "NDSS",
   "Utilities",
-  "HRMS",
+  // "HRMS",
   "Engagement",
   "Workbench",
-  "PGR"
+  // "PGR"
 ];
 
 const moduleReducers = (initData) => ({

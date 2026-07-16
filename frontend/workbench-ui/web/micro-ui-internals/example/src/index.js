@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import "@djb25/digit-ui-css";
+import "@djb25/workbench-ui-css";
 
 
 import { initLibraries } from "@egovernments/digit-ui-libraries";
@@ -13,7 +13,7 @@ import { initHRMSComponents } from "@egovernments/digit-ui-module-hrms";
 // import { initUtilitiesComponents } from  "@egovernments/digit-ui-module-utilities";
 import { initWorkbenchComponents } from "@nudmcdgnpm/digit-ui-module-workbench";
 import { PGRReducers, initPGRComponents } from "@egovernments/digit-ui-module-pgr";
-import "@djb25/digit-ui-css/dist/index.css";
+import "@djb25/workbench-ui-css/dist/index.css";
 // import "@egovernments/digit-ui-css/example/index.css";
 
 import { pgrCustomizations } from "./pgr";
@@ -23,9 +23,9 @@ var Digit = window.Digit || {};
 
 const enabledModules = [
   // "DSS",
-  "HRMS",
+  // "HRMS",
   "Workbench",
-  "PGR",
+  // "PGR",
   //  "Engagement", "NDSS","QuickPayLinks", "Payment",
   //  "Utilities",
   // "FSM"

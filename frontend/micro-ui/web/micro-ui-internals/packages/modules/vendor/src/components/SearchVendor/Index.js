@@ -19,6 +19,8 @@ const SearchVendor = () => {
       ? "SURVEYOR"
       : roles.includes("EKYC_SURVEYOR")
       ? "SURVEYOR"
+      : roles.includes("EMPLOYEE")
+      ? "SUPERVISOR"
       : "";
 
   const { selectedTabs } = Digit.Hooks.useQueryParams();
@@ -351,6 +353,7 @@ const SearchVendor = () => {
       <div className="employee-form-content">
         <VendorInbox
           data={{ table: tableData }}
+          searchParams={searchParams}
           isLoading={isLoading || isVendorLoading}
           onSort={handleSort}
           disableSort={false}

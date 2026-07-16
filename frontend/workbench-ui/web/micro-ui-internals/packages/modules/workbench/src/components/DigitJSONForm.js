@@ -11,6 +11,7 @@ import {
   SVG,
   Menu,
   CollapseAndExpandGroups,
+  TextInput,
 } from "@djb25/digit-ui-react-components"
 import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -222,7 +223,7 @@ function CustomFieldTemplate(props) {
           {required ? "*" : null}
         </label>
         {description}
-        <span class="all-input-field-wrapper">
+        <span className="all-input-field-wrapper">
           {children}
           {errors}
           {help}
@@ -235,6 +236,22 @@ function CustomFieldTemplate(props) {
 const FieldErrorTemplate = (props) => {
   const { errors } = props;
   return errors && errors.length > 0 && errors?.[0] ? <CardLabelError>{errors?.[0]}</CardLabelError> : null;
+};
+
+const BaseInputTemplate = (props) => {
+  const { id, value, readonly, disabled, autofocus, onBlur, onFocus, options, schema, type, onChange } = props;
+  return (
+    <TextInput
+      id={id}
+      type={type || "text"}
+      value={value || ""}
+      disable={disabled || readonly}
+      autoFocus={autofocus}
+      onChange={(e) => onChange(e.target.value)}
+      onBlur={onBlur && ((e) => onBlur(id, e.target.value))}
+      onFocus={onFocus && ((e) => onFocus(id, e.target.value))}
+    />
+  );
 };
 
 const DigitJSONForm = ({
@@ -296,6 +313,7 @@ const DigitJSONForm = ({
             TitleFieldTemplate,
             ArrayFieldTitleTemplate,
             ArrayFieldItemTemplate,
+            BaseInputTemplate,
           }}
           experimental_defaultFormStateBehavior={{
             arrayMinItems: { populate: "requiredOnly" },

@@ -67,22 +67,30 @@ public class DriverUserService {
 		User driverInfo = driver.getOwner();
 		HashMap<String, String> errorMap = new HashMap<>();
 
-		UserDetailResponse userDetailResponse = null;
-
-		if (driverInfo != null && driverInfo.getMobileNumber() != null) {
-			ModuleRoleMapping roleMapping = moduleRoleService.getModuleRoleMapping(driverRequest, ModuleRoleMapping.MappingType.DRIVER);
-			driverInfoMobileNumber(driverInfo, requestInfo, errorMap, driver, driverRequest, isCreateOrUpdate, roleMapping);
-
-		} else {
-			log.debug("MobileNo is not provided in Application.");
-			errorMap.put(VendorErrorConstants.INVALID_DRIVER_ERROR,
-					"MobileNo is mandatory for Driver " + driver.toString());
+		if (driverInfo == null || driverInfo.getMobileNumber() == null) {
+			throw new CustomException(VendorErrorConstants.INVALID_DRIVER_ERROR, "Mobile No is mandatory for Driver.");
 		}
+
+		UserDetailResponse userDetailResponse = userExists(driverInfo);
+		if (userDetailResponse != null && !CollectionUtils.isEmpty(userDetailResponse.getUser())) {
+			boolean mobileMatchFound = userDetailResponse.getUser().stream()
+					.anyMatch(u -> u.getMobileNumber().equals(driverInfo.getMobileNumber())
+							&& !u.getUuid().equals(driver.getOwner().getUuid()));
+
+			if (mobileMatchFound) {
+				throw new CustomException(VendorErrorConstants.MOBILE_NUMBER_ALREADY_EXIST,
+						"Driver with this mobile number is already registered.");
+			}
+		}
+
+		licenseExistCheck(driverRequest);
+
+		ModuleRoleMapping roleMapping = moduleRoleService.getModuleRoleMapping(driverRequest, ModuleRoleMapping.MappingType.DRIVER);
+		driverInfoMobileNumber(driverInfo, requestInfo, errorMap, driver, driverRequest, isCreateOrUpdate, roleMapping);
 
 		if (!errorMap.isEmpty()) {
 			throw new CustomException(errorMap);
 		}
-		licenseExistCheck(driverRequest);
 	}
 
 	private void licenseExistCheck(DriverRequest driverRequest) {

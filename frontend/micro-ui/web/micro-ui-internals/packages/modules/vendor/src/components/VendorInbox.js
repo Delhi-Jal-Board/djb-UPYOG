@@ -99,7 +99,7 @@ const getSelectedVendorOption = (row = {}, vendors = []) => {
 const getSelectedSupervisorOption = (row = {}, supervisorsList = []) => {
   const supervisorId = row?.supervisorId;
   if (!supervisorId) return null;
-  return supervisorsList.find((s) => s.id === supervisorId || s.owner?.uuid === supervisorId) || null;
+  return supervisorsList.find((s) => s.id === supervisorId || s.owner?.uuid === supervisorId || s.name === supervisorId || s.owner?.name === supervisorId) || null;
 };
 
 const getVendorFillingPoints = (vendor = {}) => {
@@ -143,9 +143,9 @@ const getDriverFillingPointIdentifiers = (driver = {}) => {
 const getVendorDriversForFillingPoint = (vendor, fillingPoint) => {
   const vendorDrivers = Array.isArray(vendor?.drivers)
     ? vendor.drivers.filter(Boolean).map((d) => ({
-        ...d,
-        displayName: `${d.name} (${d.owner?.mobileNumber || "N/A"})`,
-      }))
+      ...d,
+      displayName: `${d.name} (${d.owner?.mobileNumber || "N/A"})`,
+    }))
     : [];
   if (!fillingPoint) return [];
 
@@ -371,10 +371,11 @@ const VendorInbox = (props) => {
 
   const onVendorUpdate = (row) => {
     let formDetails = row.original.dsoDetails;
+    const isDisable = formDetails?.status === "ACTIVE";
     const formData = {
       vendor: {
         ...formDetails,
-        status: formDetails?.status === "ACTIVE" ? "DISABLED" : "ACTIVE",
+        status: isDisable ? "DISABLED" : "ACTIVE",
         owner: {
           ...formDetails.owner,
           gender: formDetails?.owner?.gender || "OTHER",
@@ -387,40 +388,52 @@ const VendorInbox = (props) => {
 
     mutateVendor(formData, {
       onError: (error, variables) => {
-        setShowToast({ key: "error", action: error });
+        setShowToast({ key: "error", action: error?.message || "UPDATE_FAILED" });
       },
       onSuccess: (data, variables) => {
-        setShowToast({ key: "success", action: "VENDOR" });
-        queryClient.invalidateQueries("DSO_SEARCH");
-        props.refetchData();
+        const isError = data?.error === true || data?.Errors?.length > 0 || data?.data?.Errors?.length > 0;
+        if (isError) {
+          setShowToast({ key: "error", action: data?.data?.Errors?.[0]?.message || data?.Errors?.[0]?.message || data?.message || "UPDATE_FAILED" });
+        } else {
+          setShowToast({ key: "success", action: "VENDOR", isDisable });
+          queryClient.invalidateQueries("DSO_SEARCH");
+          props.refetchData();
+        }
       },
     });
   };
 
   const onVehicleUpdate = (row) => {
+    const isDisable = row.original?.status === "ACTIVE";
     const formData = getVehicleUpdatePayload(row.original, {
-      status: row.original?.status === "ACTIVE" ? "DISABLED" : "ACTIVE",
+      status: isDisable ? "DISABLED" : "ACTIVE",
     });
 
     mutateVehicle(formData, {
       onError: (error, variables) => {
-        setShowToast({ key: "error", action: error });
+        setShowToast({ key: "error", action: error?.message || "UPDATE_FAILED" });
       },
       onSuccess: (data, variables) => {
-        setShowToast({ key: "success", action: "VEHICLE" });
-        queryClient.invalidateQueries("FSM_VEICLES_SEARCH");
-        props.refetchVendor();
-        props.refetchData();
+        const isError = data?.error === true || data?.Errors?.length > 0 || data?.data?.Errors?.length > 0;
+        if (isError) {
+          setShowToast({ key: "error", action: data?.data?.Errors?.[0]?.message || data?.Errors?.[0]?.message || data?.message || "UPDATE_FAILED" });
+        } else {
+          setShowToast({ key: "success", action: "VEHICLE", isDisable });
+          queryClient.invalidateQueries("FSM_VEICLES_SEARCH");
+          props.refetchVendor();
+          props.refetchData();
+        }
       },
     });
   };
 
   const onDriverUpdate = (row) => {
     let formDetails = row.original;
+    const isDisable = formDetails?.status === "ACTIVE";
     const formData = {
       driver: {
         ...formDetails,
-        status: formDetails?.status === "ACTIVE" ? "DISABLED" : "ACTIVE",
+        status: isDisable ? "DISABLED" : "ACTIVE",
         owner: {
           ...formDetails.owner,
           gender: formDetails?.owner?.gender || "OTHER",
@@ -433,13 +446,18 @@ const VendorInbox = (props) => {
 
     mutateDriver(formData, {
       onError: (error, variables) => {
-        setShowToast({ key: "error", action: error });
+        setShowToast({ key: "error", action: error?.message || "UPDATE_FAILED" });
       },
       onSuccess: (data, variables) => {
-        setShowToast({ key: "success", action: "DRIVER" });
-        queryClient.invalidateQueries("FSM_DRIVER_SEARCH");
-        props.refetchVendor();
-        props.refetchData();
+        const isError = data?.error === true || data?.Errors?.length > 0 || data?.data?.Errors?.length > 0;
+        if (isError) {
+          setShowToast({ key: "error", action: data?.data?.Errors?.[0]?.message || data?.Errors?.[0]?.message || data?.message || "UPDATE_FAILED" });
+        } else {
+          setShowToast({ key: "success", action: "DRIVER", isDisable });
+          queryClient.invalidateQueries("FSM_DRIVER_SEARCH");
+          props.refetchVendor();
+          props.refetchData();
+        }
       },
     });
   };
@@ -590,16 +608,21 @@ const VendorInbox = (props) => {
 
       mutateVendor(getVendorPayloadForVehicle(selectedVendor, selectedVendorVehicles), {
         onError: (error) => {
-          setShowToast({ key: "error", action: error });
+          setShowToast({ key: "error", action: error?.message || "UPDATE_FAILED" });
         },
-        onSuccess: () => {
+        onSuccess: (data) => {
+          const isError = data?.error === true || data?.Errors?.length > 0 || data?.data?.Errors?.length > 0;
+          if (isError) {
+            setShowToast({ key: "error", action: data?.data?.Errors?.[0]?.message || data?.Errors?.[0]?.message || data?.message || "UPDATE_FAILED" });
+            return;
+          }
           updateVehicleRowState(currentVehicle?.id, {
             vendor: updatedSelectedVendor,
             fillingPoint: null,
             driverData: null,
             driver: null,
           });
-          setShowToast({ key: "success", action: "VEHICLE" });
+          setShowToast({ key: "success", action: "VEHICLE", isDisable: false });
           queryClient.invalidateQueries("DSO_SEARCH");
           queryClient.invalidateQueries("FSM_VEICLES_SEARCH");
           props.refetchData();
@@ -615,9 +638,16 @@ const VendorInbox = (props) => {
 
       mutateVendor(getVendorPayloadForVehicle(existingVendor, existingVendorVehicles), {
         onError: (error) => {
-          setShowToast({ key: "error", action: error });
+          setShowToast({ key: "error", action: error?.message || "UPDATE_FAILED" });
         },
-        onSuccess: addVehicleToSelectedVendor,
+        onSuccess: (data) => {
+          const isError = data?.error === true || data?.Errors?.length > 0 || data?.data?.Errors?.length > 0;
+          if (isError) {
+            setShowToast({ key: "error", action: data?.data?.Errors?.[0]?.message || data?.Errors?.[0]?.message || data?.message || "UPDATE_FAILED" });
+            return;
+          }
+          addVehicleToSelectedVendor();
+        },
       });
       return;
     }
@@ -632,13 +662,18 @@ const VendorInbox = (props) => {
 
     mutateVehicle(formData, {
       onError: (error, variables) => {
-        setShowToast({ key: "error", action: error });
+        setShowToast({ key: "error", action: error?.message || "UPDATE_FAILED" });
       },
       onSuccess: (data, variables) => {
+        const isError = data?.error === true || data?.Errors?.length > 0 || data?.data?.Errors?.length > 0;
+        if (isError) {
+          setShowToast({ key: "error", action: data?.data?.Errors?.[0]?.message || data?.Errors?.[0]?.message || data?.message || "UPDATE_FAILED" });
+          return;
+        }
         updateVehicleRowState(row.original?.id, {
           driverData: selectedOption,
         });
-        setShowToast({ key: "success", action: "VEHICLE" });
+        setShowToast({ key: "success", action: "VEHICLE", isDisable: false });
         queryClient.invalidateQueries("FSM_VEICLES_SEARCH");
         /* Mandatory: Invalidate DSO_SEARCH to ensure vendorData in the parent component is refetched with the new driver assignment */
         queryClient.invalidateQueries("DSO_SEARCH");
@@ -660,7 +695,12 @@ const VendorInbox = (props) => {
           label: error?.message || error?.response?.data?.Errors?.[0]?.message || "Failed to map filling point",
         });
       },
-      onSuccess: () => {
+      onSuccess: (data) => {
+        const isError = data?.error === true || data?.Errors?.length > 0 || data?.data?.Errors?.length > 0;
+        if (isError) {
+          setShowToast({ key: "error", label: data?.data?.Errors?.[0]?.message || data?.Errors?.[0]?.message || data?.message || "Failed to map filling point" });
+          return;
+        }
         const mappedVendor = getSelectedVendorOption(row.original, vendors);
         const vendorDrivers = getVendorDriversForFillingPoint(mappedVendor, selectedOption);
         const selectedDriver = getSelectedDriverOption(row.original, vendorDrivers);
@@ -691,7 +731,8 @@ const VendorInbox = (props) => {
     const formData = {
       surveyor: {
         ...formDetails,
-        supervisorId: selectedSupervisor?.id || selectedSupervisor?.owner?.uuid || null,
+        supervisorId: selectedSupervisor?.name || selectedSupervisor?.owner?.name || null,
+        supervisorName: selectedSupervisor?.name || selectedSupervisor?.owner?.name || null,
         owner: {
           ...formDetails?.owner,
           gender: formDetails?.owner?.gender || "OTHERS",
@@ -709,7 +750,12 @@ const VendorInbox = (props) => {
           label: error?.message || error || t("ES_FSM_REGISTRY_INBOX_FAILED_TO_UPDATE_SUPERVISOR"),
         });
       },
-      onSuccess: () => {
+      onSuccess: (data) => {
+        const isError = data?.error === true || data?.Errors?.length > 0 || data?.data?.Errors?.length > 0;
+        if (isError) {
+          setShowToast({ key: "error", label: data?.data?.Errors?.[0]?.message || data?.Errors?.[0]?.message || data?.message || t("ES_FSM_REGISTRY_INBOX_FAILED_TO_UPDATE_SUPERVISOR") });
+          return;
+        }
         setShowToast({ key: "success", label: t("ES_FSM_REGISTRY_INBOX_SUPERVISOR_MAPPED_SUCCESSFULLY") });
         queryClient.invalidateQueries(t("SURVEYOR_SEARCH"));
         props.refetchData();
@@ -890,63 +936,63 @@ const VendorInbox = (props) => {
           // },
           ...(!(userType !== "CITIZEN" && isEkycRole)
             ? [
-                {
-                  Header: t("ES_VENDOR_ADDITIONAL_DETAILS"),
-                  disableSortBy: true,
-                  Cell: ({ row }) => {
-                    const vendorId = row.original?.id;
+              {
+                Header: t("ES_VENDOR_ADDITIONAL_DETAILS"),
+                disableSortBy: true,
+                Cell: ({ row }) => {
+                  const vendorId = row.original?.id;
 
-                    // Guard: if data not yet loaded, show a neutral state
-                    if (!additionalVendorData) {
-                      return <span>Loading...</span>;
-                    }
+                  // Guard: if data not yet loaded, show a neutral state
+                  if (!additionalVendorData) {
+                    return <span>Loading...</span>;
+                  }
 
-                    const hasDetails = row.original?.vendorAdditionalDetails !== null;
-                    return (
-                      <Link
-                        to={
-                          hasDetails
-                            ? `/digit-ui/${userType}/vendor/registry/additionaldetails/info?vendorId=` + vendorId
-                            : `/digit-ui/${userType}/vendor/registry/additionaldetails/vendor-details?vendorId=` + vendorId
-                        }
+                  const hasDetails = row.original?.vendorAdditionalDetails !== null;
+                  return (
+                    <Link
+                      to={
+                        hasDetails
+                          ? `/digit-ui/${userType}/vendor/registry/additionaldetails/info?vendorId=` + vendorId
+                          : `/digit-ui/${userType}/vendor/registry/additionaldetails/vendor-details?vendorId=` + vendorId
+                      }
+                    >
+                      <button
+                        className="submit-bar"
+                        style={{
+                          backgroundColor: hasDetails ? "#417505" : "#3A8DCC",
+                          color: "white",
+                        }}
                       >
-                        <button
-                          className="submit-bar"
-                          style={{
-                            backgroundColor: hasDetails ? "#417505" : "#3A8DCC",
-                            color: "white",
-                          }}
-                        >
-                          {hasDetails ? "View Details" : "Add Details"}
-                        </button>
-                      </Link>
-                    );
-                  },
+                        {hasDetails ? "View Details" : "Add Details"}
+                      </button>
+                    </Link>
+                  );
                 },
-              ]
+              },
+            ]
             : []),
 
           ...(!isEkycRole
             ? [
-                {
-                  Header: t("VIEW_WORKORDER_DETAILS"),
-                  disableSortBy: true,
-                  Cell: ({ row }) => {
-                    return (
-                      <button
-                        className="submit-bar"
-                        style={{
-                          backgroundColor: "#417505",
-                          color: "white",
-                        }}
-                        onClick={() => openWorkOrderModal(row.original)}
-                      >
-                        {t("VIEW_WORKORDER_DETAILS")}
-                      </button>
-                    );
-                  },
+              {
+                Header: t("VIEW_WORKORDER_DETAILS"),
+                disableSortBy: true,
+                Cell: ({ row }) => {
+                  return (
+                    <button
+                      className="submit-bar"
+                      style={{
+                        backgroundColor: "#417505",
+                        color: "white",
+                      }}
+                      onClick={() => openWorkOrderModal(row.original)}
+                    >
+                      {t("VIEW_WORKORDER_DETAILS")}
+                    </button>
+                  );
                 },
-              ]
+              },
+            ]
             : []),
         ];
 
@@ -1227,38 +1273,38 @@ const VendorInbox = (props) => {
           },
           ...(props.selectedTab === "SUPERVISOR"
             ? [
-                {
-                  Header: t("ES_VENDOR_SUPERVISOR_AGENCY_NAME") || "Agency Name",
-                  id: "agencyName",
-                  accessor: (row) => row.vendorName || row.vendorData?.name || row.vendor?.name || "NA",
-                  Cell: ({ row }) => {
-                    return <div>{row.original?.vendorName || row.original?.vendorData?.name || row.original?.vendor?.name || "NA"}</div>;
-                  },
+              {
+                Header: t("ES_VENDOR_SUPERVISOR_AGENCY_NAME") || "Agency Name",
+                id: "agencyName",
+                accessor: (row) => row.vendorName || row.vendorData?.name || row.vendor?.name || "NA",
+                Cell: ({ row }) => {
+                  return <div>{row.original?.vendorName || row.original?.vendorData?.name || row.original?.vendor?.name || "NA"}</div>;
                 },
-              ]
+              },
+            ]
             : []),
           ...(props.selectedTab === "SURVEYOR"
             ? [
-                {
-                  Header: t("ES_FSM_REGISTRY_INBOX_SUPERVISOR_NAME"),
-                  id: "supervisor",
-                  accessor: (row) => row.supervisorName || row.reportingManager?.name || "NA",
-                  Cell: ({ row }) => {
-                    return (
-                      <Dropdown
-                        className="fsm-registry-dropdown"
-                        selected={getSelectedSupervisorOption(row.original, supervisors)}
-                        option={supervisors}
-                        select={(value) => onSurveyorSupervisorSelect(row, value)}
-                        optionKey="displayName"
-                        t={t}
-                        style={{ textAlign: "left", width: "100%", minWidth: "250px" }}
-                        disable={!supervisors.length}
-                      />
-                    );
-                  },
+              {
+                Header: t("ES_FSM_REGISTRY_INBOX_SUPERVISOR_NAME"),
+                id: "supervisor",
+                accessor: (row) => row.supervisorName || row.reportingManager?.name || "NA",
+                Cell: ({ row }) => {
+                  return (
+                    <Dropdown
+                      className="fsm-registry-dropdown"
+                      selected={getSelectedSupervisorOption(row.original, supervisors)}
+                      option={supervisors}
+                      select={(value) => onSurveyorSupervisorSelect(row, value)}
+                      optionKey="displayName"
+                      t={t}
+                      style={{ textAlign: "left", width: "100%", minWidth: "250px" }}
+                      disable={!supervisors.length}
+                    />
+                  );
                 },
-              ]
+              },
+            ]
             : []),
           {
             Header: t("ES_FSM_REGISTRY_INBOX_DATE_CREATION"),
@@ -1305,8 +1351,7 @@ const VendorInbox = (props) => {
           {
             Header: t("ES_VENDOR_INBOX_VENDOR_NAME"),
             exportAccessor: (row) =>
-              `${row?.name || row?.dsoDetails?.name || "NA"} (${
-                row?.mobileNumber || row?.owner?.mobileNumber || row?.dsoDetails?.mobileNumber || row?.dsoDetails?.owner?.mobileNumber || "NA"
+              `${row?.name || row?.dsoDetails?.name || "NA"} (${row?.mobileNumber || row?.owner?.mobileNumber || row?.dsoDetails?.mobileNumber || row?.dsoDetails?.owner?.mobileNumber || "NA"
               })`,
           },
           {
@@ -1339,12 +1384,11 @@ const VendorInbox = (props) => {
           {
             Header: "Map Vendor",
             exportAccessor: (row) =>
-              `${row?.vendor?.name || row?.vendorData?.name || "NA"} (${
-                row?.vendor?.mobileNumber ||
-                row?.vendor?.owner?.mobileNumber ||
-                row?.vendorData?.mobileNumber ||
-                row?.vendorData?.owner?.mobileNumber ||
-                "NA"
+              `${row?.vendor?.name || row?.vendorData?.name || "NA"} (${row?.vendor?.mobileNumber ||
+              row?.vendor?.owner?.mobileNumber ||
+              row?.vendorData?.mobileNumber ||
+              row?.vendorData?.owner?.mobileNumber ||
+              "NA"
               })`,
           },
           {
@@ -1358,8 +1402,7 @@ const VendorInbox = (props) => {
           {
             Header: t("ES_FSM_REGISTRY_SELECT_DRIVER"),
             exportAccessor: (row) =>
-              `${row?.driverData?.name || row?.driver?.name || "NA"} (${
-                row?.driverData?.owner?.mobileNumber || row?.driver?.owner?.mobileNumber || "NA"
+              `${row?.driverData?.name || row?.driver?.name || "NA"} (${row?.driverData?.owner?.mobileNumber || row?.driver?.owner?.mobileNumber || "NA"
               })`,
           },
           {
@@ -1384,12 +1427,11 @@ const VendorInbox = (props) => {
           {
             Header: t("ES_FSM_REGISTRY_INBOX_VENDOR_NAME"),
             exportAccessor: (row) =>
-              `${row?.vendorData?.name || row?.vendor?.name || "NA"} (${
-                row?.vendorData?.mobileNumber ||
-                row?.vendorData?.owner?.mobileNumber ||
-                row?.vendor?.mobileNumber ||
-                row?.vendor?.owner?.mobileNumber ||
-                "NA"
+              `${row?.vendorData?.name || row?.vendor?.name || "NA"} (${row?.vendorData?.mobileNumber ||
+              row?.vendorData?.owner?.mobileNumber ||
+              row?.vendor?.mobileNumber ||
+              row?.vendor?.owner?.mobileNumber ||
+              "NA"
               })`,
           },
           {
@@ -1400,36 +1442,29 @@ const VendorInbox = (props) => {
       case "SURVEYOR":
         return [
           {
-            Header: t("ES_FSM_REGISTRY_INBOX_USERNAME"),
+            Header: t("USER_ID"),
             exportAccessor: (row) => row?.owner?.userName || "NA",
           },
           {
-            Header: t("ES_FSM_REGISTRY_INBOX_DRIVER_NAME"),
-            exportAccessor: (row) => `${row?.name || "NA"} (${row?.owner?.mobileNumber || "NA"})`,
+            Header: t("USER_NAME"),
+            exportAccessor: (row) => row?.name || "NA",
           },
           {
-            Header: t("ES_FSM_REGISTRY_INBOX_SUPERVISOR_NAME"),
+            Header: t("VENDOR_NAME"),
+            exportAccessor: (row) => row?.vendorName || row?.vendorData?.name || row?.vendor?.name || "NA",
+          },
+          {
+            Header: t("SUPERVISOR_NAME"),
             exportAccessor: (row) => {
               const selectedSupervisor = getSelectedSupervisorOption(row, supervisors);
               return selectedSupervisor
-                ? selectedSupervisor.name || selectedSupervisor.owner?.name
+                ? selectedSupervisor.name || selectedSupervisor.owner?.name || "NA"
                 : row?.supervisorName || row?.reportingManager?.name || "NA";
             },
           },
           {
-            Header: t("ES_FSM_REGISTRY_INBOX_DATE_DRIVER_CREATION"),
+            Header: t("CREATION_DATE"),
             exportAccessor: (row) => (row?.auditDetails?.createdTime ? Digit.DateUtils.ConvertEpochToDate(row?.auditDetails?.createdTime) : ""),
-          },
-          {
-            Header: t("ES_FSM_REGISTRY_INBOX_VENDOR_NAME"),
-            exportAccessor: (row) =>
-              `${row?.vendorData?.name || row?.vendor?.name || "NA"} ${
-                row?.vendorData?.mobileNumber ||
-                row?.vendorData?.owner?.mobileNumber ||
-                row?.vendor?.mobileNumber ||
-                row?.vendor?.owner?.mobileNumber ||
-                "NA"
-              }`,
           },
           {
             Header: t("ES_FSM_REGISTRY_INBOX_ENABLED"),
@@ -1439,38 +1474,24 @@ const VendorInbox = (props) => {
       case "SUPERVISOR":
         return [
           {
-            Header: t("ES_FSM_REGISTRY_INBOX_USERNAME"),
+            Header: t("USER_ID"),
             exportAccessor: (row) => row?.owner?.userName || "NA",
           },
           {
-            Header: t("ES_FSM_REGISTRY_INBOX_DRIVER_NAME"),
-            exportAccessor: (row) => `${row?.name || "NA"} (${row?.owner?.mobileNumber || "NA"})`,
+            Header: t("USER_NAME"),
+            exportAccessor: (row) => row?.name || "NA",
           },
           {
-            Header: t("ES_FSM_REGISTRY_INBOX_DATE_DRIVER_CREATION"),
+            Header: t("ZONE"),
+            exportAccessor: (row) => row?.assignedZoneId || "NA",
+          },
+          {
+            Header: t("VENDOR_NAME"),
+            exportAccessor: (row) => row?.vendorName || row?.vendorData?.name || row?.vendor?.name || "NA",
+          },
+          {
+            Header: t("CREATION_DATE"),
             exportAccessor: (row) => (row?.auditDetails?.createdTime ? Digit.DateUtils.ConvertEpochToDate(row?.auditDetails?.createdTime) : ""),
-          },
-          {
-            Header: t("ES_FSM_REGISTRY_INBOX_VENDOR_NAME"),
-            exportAccessor: (row) =>
-              `${row?.vendorData?.name || row?.vendor?.name || "NA"} ${
-                row?.vendorData?.mobileNumber ||
-                row?.vendorData?.owner?.mobileNumber ||
-                row?.vendor?.mobileNumber ||
-                row?.vendor?.owner?.mobileNumber ||
-                "NA"
-              }`,
-          },
-          {
-            Header: t("ES_VENDOR_SUPERVISOR_AGENCY_NAME"),
-            exportAccessor: (row) =>
-              `${row?.vendorData?.name || row?.vendor?.name || "NA"} ${
-                row?.vendorData?.mobileNumber ||
-                row?.vendorData?.owner?.mobileNumber ||
-                row?.vendor?.mobileNumber ||
-                row?.vendor?.owner?.mobileNumber ||
-                "NA"
-              }`,
           },
           {
             Header: t("ES_FSM_REGISTRY_INBOX_ENABLED"),
@@ -1482,7 +1503,37 @@ const VendorInbox = (props) => {
     }
   }, [props.selectedTab, supervisors, t]);
 
-  const getCSVExportData = React.useCallback(async () => tableData, [tableData]);
+  const getCSVExportData = React.useCallback(async () => {
+    if (props.selectedTab === "SUPERVISOR") {
+      try {
+        const response = await Digit.FSMService.supervisorSearch(tenantId, {
+          status: "ACTIVE,DISABLED",
+          name: props.searchParams?.name,
+          limit: 100000,
+          offset: 0,
+        });
+        return response?.supervisors || response?.supervisor || [];
+      } catch (e) {
+        console.error(e);
+        return [];
+      }
+    }
+    if (props.selectedTab === "SURVEYOR") {
+      try {
+        const response = await Digit.FSMService.surveyorSearch(tenantId, {
+          status: "ACTIVE,DISABLED",
+          name: props.searchParams?.name,
+          limit: 100000,
+          offset: 0,
+        });
+        return response?.surveyors || response?.surveyor || [];
+      } catch (e) {
+        console.error(e);
+        return [];
+      }
+    }
+    return tableData;
+  }, [props.selectedTab, props.searchParams, tenantId, tableData]);
 
   // if it validate the user role then it starts working
   let result;
@@ -1560,6 +1611,7 @@ const VendorInbox = (props) => {
   const ekycRoles = {
     ekycVendor: "EKYC_VENDOR",
     supervisor: "EKYC_SUPERVISOR",
+    employee: "EMPLOYEE",
   };
 
   const wtRoles = {
@@ -1625,7 +1677,9 @@ const VendorInbox = (props) => {
           label={
             showToast.label
               ? t(showToast.label)
-              : t(showToast.key === "success" ? `ES_FSM_REGISTRY_${showToast.action}_DISABLE_SUCCESS` : showToast.action)
+              : showToast.key === "success"
+                ? t(`ES_FSM_REGISTRY_${showToast.action}_${showToast.isDisable ? "DISABLE" : "ENABLE"}_SUCCESS`)
+                : t(showToast.action)
           }
           onClose={closeToast}
         />

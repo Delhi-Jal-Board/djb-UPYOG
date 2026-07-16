@@ -342,6 +342,10 @@ import useTankerCreateAPI from "./wt/useTankerCreateAPI";
 import useTankerSearchAPI from "./wt/useTankerSearchAPI";
 import useMobileToiletCreateAPI from "./wt/useMobileToiletCreateAPI";
 import useMobileToiletSearchAPI from "./wt/useMobileToiletSearchAPI";
+import useTreePruningCreateAPI from "./wt/useTreePruningCreateAPI";
+import useTreePruningSearchAPI from "./wt/useTreePruningSearchAPI";
+import useTPApplicationAction from "./wt/useTPApplicationAction";
+import useTPApplicationDetail from "./wt/useTPApplicationDetail";
 import useWTApplicationAction from "./wt/useWTApplicationAction";
 import useWTApplicationDetail from "./wt/useWTApplicationDetail";
 import useMTApplicationDetail from "./wt/useMTApplicationDetail";
@@ -393,6 +397,10 @@ import useUpdateEmergencyBooking from "./wt/useUpdateEmergencyBooking";
 import useToast from "./useToast";
 
 const wt = {
+  useTreePruningCreateAPI,
+  useTreePruningSearchAPI,
+  useTPApplicationAction,
+  useTPApplicationDetail,
   useTankerCreateAPI,
   useTankerSearchAPI,
   useWTApplicationAction,

@@ -55,6 +55,11 @@ public class Supervisor {
     @Size(max = 64)
     private String assignedZoneId = null;
 
+    @JsonProperty("correspondenceAddress")
+    @SafeHtml
+    @Size(max = 500)
+    private String correspondenceAddress = null;
+
     @JsonProperty("owner")
     @Valid
     private User owner = null;

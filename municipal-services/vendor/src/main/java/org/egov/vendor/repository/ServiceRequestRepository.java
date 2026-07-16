@@ -34,6 +34,7 @@ public class ServiceRequestRepository {
 	 * @return
 	 */
 	public Object fetchResult(StringBuilder uri, Object request) {
+		log.info("Sending request to {}: {}", uri, request);
 		Object response = null;
 		try {
 			response = restTemplate.postForObject(uri.toString(), request, Map.class);

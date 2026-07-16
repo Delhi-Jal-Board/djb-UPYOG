@@ -1,6 +1,13 @@
 package org.egov.wscalculation.util;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.egov.common.contract.request.RequestInfo;
@@ -28,7 +35,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Component
 @Getter
 public class CalculatorUtil {
@@ -265,26 +274,39 @@ public class CalculatorUtil {
 	 * @return mdms request for master data
 	 */
 	public MdmsCriteriaReq getEstimationMasterCriteria(RequestInfo requestInfo, String tenantId) {
-		List<MasterDetail> details = new ArrayList<>();
-		details.add(MasterDetail.builder().name(WSCalculationConstant.WC_PLOTSLAB_MASTER)
-				.filter("[?(@.isActive== " + true + ")]").build());
-		details.add(MasterDetail.builder().name(WSCalculationConstant.WC_PROPERTYUSAGETYPE_MASTER)
-				.filter("[?(@.isActive== " + true + ")]").build());
-		details.add(MasterDetail.builder().name(WSCalculationConstant.WC_FEESLAB_MASTER)
-				.filter("[?(@.isActive== " + true + ")]").build());
-		details.add(MasterDetail.builder().name(WSCalculationConstant.WC_ROADTYPE_MASTER)
-				.filter("[?(@.isActive== " + true + ")]").build());
 
-		details.add(MasterDetail.builder().name(WSCalculationConstant.WC_INFRASTRUCTURE_CHARGE_MASTER)
-				.filter("[?(@.active==true)]").build());
+	    List<ModuleDetail> moduleDetails = new ArrayList<>();
 
-		ModuleDetail mdDtl = ModuleDetail.builder().masterDetails(details)
-				.moduleName(WSCalculationConstant.WS_TAX_MODULE).build();
-		MdmsCriteria mdmsCriteria = MdmsCriteria.builder().moduleDetails(Arrays.asList(mdDtl)).tenantId(tenantId)
-				.build();
-		return MdmsCriteriaReq.builder().requestInfo(requestInfo).mdmsCriteria(mdmsCriteria).build();
+	    /* ------------------------------------------------------------------
+	     * WS Calculation Module Masters
+	     * ------------------------------------------------------------------ */
+	    List<MasterDetail> wsMasters = new ArrayList<>();
+	    wsMasters.add(MasterDetail.builder().name(WSCalculationConstant.WC_PLOTSLAB_MASTER).filter("[?(@.isActive==true)]").build());
+	    wsMasters.add(MasterDetail.builder().name(WSCalculationConstant.WC_PROPERTYUSAGETYPE_MASTER).filter("[?(@.isActive==true)]").build());
+	    wsMasters.add(MasterDetail.builder().name(WSCalculationConstant.WC_FEESLAB_MASTER).filter("[?(@.isActive==true)]").build());
+	    wsMasters.add(MasterDetail.builder().name(WSCalculationConstant.WC_ROADTYPE_MASTER).filter("[?(@.isActive==true)]").build());
+	    wsMasters.add(MasterDetail.builder().name(WSCalculationConstant.WC_INFRASTRUCTURE_CHARGE_MASTER).filter("[?(@.active==true)]").build());
+	    
+	    moduleDetails.add(ModuleDetail.builder().moduleName(WSCalculationConstant.WS_TAX_MODULE).masterDetails(wsMasters).build());
+
+	    /* ------------------------------------------------------------------
+	     * Property Tax Module Masters
+	     * ------------------------------------------------------------------ */
+	    List<MasterDetail> propertyMasters = new ArrayList<>();
+	    propertyMasters.add(MasterDetail.builder().name(WSCalculationConstant.WC_PROPERTY_TYPE_MASTER).filter("[?(@.active==true)]").build());
+	    propertyMasters.add(MasterDetail.builder().name(WSCalculationConstant.WC_PROPERTY_NEW_USAGE_TYPE_MASTER).filter("[?(@.active==true)]").build());
+	    
+	    moduleDetails.add(ModuleDetail.builder().moduleName(WSCalculationConstant.PROPERTY_TAX_MODULE).masterDetails(propertyMasters).build());
+
+
+	    /* ------------------------------------------------------------------
+	     * Build MDMS Request
+	     * ------------------------------------------------------------------ */
+	    MdmsCriteria mdmsCriteria = MdmsCriteria.builder().tenantId(tenantId).moduleDetails(moduleDetails).build();
+
+	    return MdmsCriteriaReq.builder().requestInfo(requestInfo).mdmsCriteria(mdmsCriteria).build();
 	}
-
+	
 	/**
 	 * 
 	 * @param requestInfo

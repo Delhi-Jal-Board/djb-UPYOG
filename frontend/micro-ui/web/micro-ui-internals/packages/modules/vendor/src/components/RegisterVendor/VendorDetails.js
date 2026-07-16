@@ -107,7 +107,10 @@ const VendorDetails = () => {
       case "EDIT":
         return history.push(`/digit-ui/${userType}/vendor/registry/modify-vendor/${dsoId || vendorId}`);
       case "HOME":
-        return history.push(`/digit-ui/${userType}/vendor/registry?selectedTabs=VENDOR`);
+        if (userType === "citizen") {
+          return history.push(`/digit-ui/citizen/vendor`);
+        }
+        return history.push(`/digit-ui/${userType}/vendor/search-vendor?selectedTabs=VENDOR`);
       default:
         break;
     }

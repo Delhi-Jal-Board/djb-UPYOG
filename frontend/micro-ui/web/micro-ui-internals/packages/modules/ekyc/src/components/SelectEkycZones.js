@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { CardLabel, LabelFieldPair, MultiSelectDropdown, Loader } from "@djb25/digit-ui-react-components";
 
 const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true, placeHolder }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
 
   const [zones, setZones] = useState([]);
+  const [selectedZones, setSelectedZones] = useState([]);
 
-  const [selectedZones, setSelectedZones] = useState(Array.isArray(formData?.zoneIds) ? formData.zoneIds : []);
+  // Prevent converting initial values multiple times
+  const initialized = useRef(false);
 
   const { data: boundaryData, isLoading } = Digit.Hooks.useCommonMDMS(tenantId, "egov-location", ["TenantBoundary"]);
 
@@ -15,32 +17,75 @@ const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true, 
 
     const boundaries = tenantBoundary?.boundary || tenantBoundary?.children || [];
 
-    if (Array.isArray(boundaries?.children) && boundaries?.children.length > 0) {
+    if (Array.isArray(boundaries?.children)) {
       const allZones = boundaries.children.flatMap((assembly) =>
-        (assembly?.children || []).map((zone) => ({
+        (assembly.children || []).map((zone) => ({
           code: zone.code,
           name: zone.name,
         }))
       );
 
-      const zonesList = [...new Map(allZones.map((zone) => [zone.code, zone])).values()];
+      const zonesList = [...new Map(allZones.map((z) => [z.code, z])).values()];
 
       setZones(zonesList);
     }
   }, [boundaryData]);
 
+  /**
+   * Sync selected values
+   */
+  useEffect(() => {
+    if (!zones.length || !formData?.zoneIds) return;
+
+    if (isMultiSelect) {
+      if (!Array.isArray(formData.zoneIds)) return;
+      // Already objects
+      if (formData.zoneIds.length && typeof formData.zoneIds[0] === "object") {
+        setSelectedZones(formData.zoneIds);
+        return;
+      }
+
+      // Initial API values (array of names/codes)
+      const selected = zones.filter((zone) => formData.zoneIds.includes(zone.name) || formData.zoneIds.includes(zone.code));
+
+      setSelectedZones(selected);
+
+      // Convert only once
+      if (!initialized.current) {
+        initialized.current = true;
+        onSelect(config.key, selected);
+      }
+    } else {
+      // Single select
+      let selectedVal = formData.zoneIds;
+      if (Array.isArray(selectedVal)) {
+        selectedVal = selectedVal[0]?.name || selectedVal[0]?.code || selectedVal[0] || "";
+      }
+      if (typeof selectedVal === "object") {
+        selectedVal = selectedVal.name || selectedVal.code || "";
+      }
+
+      const selected = zones.find((zone) => zone.name === selectedVal || zone.code === selectedVal);
+      setSelectedZones(selected ? [selected] : []);
+
+      if (!initialized.current && selected) {
+        initialized.current = true;
+        onSelect(config.key, selected.name || "");
+      }
+    }
+  }, [zones, formData?.zoneIds, config.key, onSelect, isMultiSelect]);
+
   const handleSelect = (value) => {
     if (isMultiSelect) {
-      const extractedValue = Array.isArray(value) ? value.map((v) => (Array.isArray(v) ? v[1] : v)).filter(Boolean) : [];
+      const selected = Array.isArray(value) ? value.map((v) => (Array.isArray(v) ? v[1] : v)).filter(Boolean) : [];
 
-      setSelectedZones(extractedValue);
-      onSelect(config.key, extractedValue);
+      setSelectedZones(selected);
+      onSelect(config.key, selected);
     } else {
       const selectedZone = Array.isArray(value) ? (Array.isArray(value[0]) ? value[0][1] : value[0]) : value;
 
       setSelectedZones(selectedZone ? [selectedZone] : []);
-
-      onSelect(config.key, selectedZone?.code || "");
+      onSelect(config.key, selectedZone?.name || "");
     }
   };
 
@@ -48,7 +93,10 @@ const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true, 
 
   return (
     <LabelFieldPair>
-      <CardLabel>{t(config.label) + (config.isMandatory ? " *" : "")}</CardLabel>
+      <CardLabel>
+        {t(config.label)}
+        {config.isMandatory ? " *" : ""}
+      </CardLabel>
 
       <div className="field" style={{ position: "relative", zIndex: 10 }}>
         <MultiSelectDropdown
@@ -58,12 +106,23 @@ const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true, 
           optionsKey="name"
           t={t}
           multiple={isMultiSelect}
-          ServerStyle={{ backgroundColor: "#fff" }}
           isMultiSelect={isMultiSelect}
+          showSelectedLabels={!isMultiSelect}
+          ServerStyle={{ backgroundColor: "#fff" }}
+          defaultLabel={isMultiSelect ? `${selectedZones.length} Selected` : ""}
           placeHolder={placeHolder}
-          showSelectedLabels={true}
         />
       </div>
+
+      {isMultiSelect && selectedZones.length > 0 && (
+        <div className="selected-zones">
+          {selectedZones.map((zone) => (
+            <span key={zone.code} className="selected-zone-chip">
+              {zone.name}
+            </span>
+          ))}
+        </div>
+      )}
     </LabelFieldPair>
   );
 };

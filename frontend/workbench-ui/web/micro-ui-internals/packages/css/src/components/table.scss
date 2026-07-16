@@ -176,20 +176,24 @@
       font-size: 13.5px;
       color: #0f172a;
 
-      .thead {
+      thead {
         .tr {
           background: #f8fafc;
           .th-s-no {
+            background: #f8fafc;
+            position: relative;
             width: 48px;
-            padding: 12px 8px;
+            padding: 12px 14px;
             text-align: center;
             border-bottom: 2px solid #cbd5e1;
-            font-size: 11px;
+            font-size: 14px;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.07em;
             color: #475569;
             white-space: nowrap;
+            user-select: none;
+            transition: 0.15s;
             vertical-align: middle;
             height: 52px;
           }

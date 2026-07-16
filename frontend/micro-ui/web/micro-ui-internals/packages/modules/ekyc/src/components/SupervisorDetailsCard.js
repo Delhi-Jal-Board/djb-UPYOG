@@ -1,12 +1,13 @@
 import React, { useMemo, useState, useRef, useEffect } from "react";
 import { Card, Loader, Table } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
-import { useParams } from "react-router-dom";
+import { useParams, useHistory } from "react-router-dom";
 import { downloadSupervisorPDF } from "../utils/reportDownloader";
 import { FaUsers, FaCheckCircle, FaClock, FaChartLine, FaMapMarkedAlt } from "react-icons/fa";
 
 const SupervisorDetailsCard = () => {
     const { t } = useTranslation();
+    const history = useHistory();
     const tenantId = Digit.ULBService.getCurrentTenantId() || "dl.djb";
     const { id: supervisorId } = useParams();
     const loggedInUser = Digit.SessionStorage.get("User")?.info;
@@ -18,67 +19,161 @@ const SupervisorDetailsCard = () => {
         keepPreviousData: true,
     });
 
-    const supervisor = useMemo(() => {
-        if (!progressData?.supervisorReport) return null;
-        if (supervisorId) {
-            return progressData.supervisorReport.find((s) => s.supervisorId === supervisorId) || progressData.supervisorReport[0];
-        }
-        const userUuid = loggedInUser?.uuid;
-        if (userUuid) {
-            return progressData.supervisorReport.find((s) => s.supervisorId === userUuid) || progressData.supervisorReport[0];
-        }
-        return progressData.supervisorReport[0];
-    }, [progressData, supervisorId, loggedInUser?.uuid]);
+    // Fetch all supervisors to get details if assignment progress fails
+    const { data: supervisorSearchResponse, isLoading: isSupervisorSearchLoading } = Digit.Hooks.fsm.useSupervisorSearch(
+        tenantId,
+        { status: "ACTIVE" },
+        { enabled: !!tenantId }
+    );
 
-    const fullName = supervisor?.supervisorName || loggedInUser?.name || "N/A";
-    const mobileNumber = supervisor?.mobileNo || loggedInUser?.mobileNumber || "N/A";
+    // Fetch all surveyors to get details of connected surveyors if assignment progress fails
+    const { data: surveyorSearchResponse, isLoading: isSurveyorSearchLoading } = Digit.Hooks.fsm.useSurveyorSearch(
+        tenantId,
+        { status: "ACTIVE" },
+        { enabled: !!tenantId }
+    );
+
+    // Fetch all vendors from DSO search
+    const { data: vendorSearchResponse, isLoading: isVendorSearchLoading } = Digit.Hooks.fsm.useDsoSearch(
+        tenantId,
+        { status: "ACTIVE" },
+        { enabled: !!tenantId }
+    );
+
+    const supervisor = useMemo(() => {
+        // 1. Try to get supervisor from progressData if it succeeded
+        if (progressData?.supervisorReport) {
+            let found = null;
+            const targetId = supervisorId || loggedInUser?.uuid;
+            if (targetId) {
+                found = progressData.supervisorReport.find((s) => 
+                    s.supervisorId?.toLowerCase() === targetId?.toLowerCase() ||
+                    s.id?.toLowerCase() === targetId?.toLowerCase()
+                );
+            }
+            if (found) return found;
+        }
+
+        // 2. Fallback to supervisorSearchResponse
+        if (supervisorSearchResponse?.supervisors) {
+            let matchedSup = null;
+            const targetId = supervisorId || loggedInUser?.uuid;
+            if (targetId) {
+                matchedSup = supervisorSearchResponse.supervisors.find(
+                    (s) => s.id?.toLowerCase() === targetId?.toLowerCase() || s.owner?.uuid?.toLowerCase() === targetId?.toLowerCase()
+                );
+            }
+
+            if (matchedSup) {
+                // Find surveyors belonging to this supervisor from surveyorSearchResponse
+                const matchedSurveyors = surveyorSearchResponse?.surveyors
+                    ? surveyorSearchResponse.surveyors
+                        .filter((surv) => surv.supervisorId === (matchedSup.id || matchedSup.owner?.uuid))
+                        .map((surv) => {
+                            // Find surveyor in progressData to get real statistics if available
+                            let realStats = null;
+                            if (progressData?.supervisorReport) {
+                                for (const report of progressData.supervisorReport) {
+                                    const matchedSurv = report.surveyors?.find(
+                                        (s) => 
+                                            (s.surveyorId && (s.surveyorId === surv.id || s.surveyorId === surv.owner?.uuid)) ||
+                                            (s.id && (s.id === surv.id || s.id === surv.owner?.uuid))
+                                    );
+                                    if (matchedSurv) {
+                                        realStats = matchedSurv;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            return {
+                                surveyorId: surv.id || surv.owner?.uuid,
+                                surveyorName: surv.name || surv.owner?.name || "N/A",
+                                mobileNo: surv.owner?.mobileNumber || surv.mobileNo || "N/A",
+                                status: surv.status || "ACTIVE",
+                                totalKnos: realStats?.totalKnos || 0,
+                                submittedKnos: realStats?.submittedKnos || 0,
+                                pendingKnos: realStats?.pendingKnos || 0,
+                                progressPercent: realStats?.progressPercent || 0,
+                            };
+                        })
+                    : [];
+
+                const totalKnos = matchedSurveyors.reduce((acc, s) => acc + (s.totalKnos || 0), 0);
+                const submittedKnos = matchedSurveyors.reduce((acc, s) => acc + (s.submittedKnos || 0), 0);
+                const pendingKnos = matchedSurveyors.reduce((acc, s) => acc + (s.pendingKnos || 0), 0);
+                const progressPercent = totalKnos > 0 ? Math.round((submittedKnos / totalKnos) * 100) : 0;
+
+                return {
+                    supervisorId: matchedSup.id || matchedSup.owner?.uuid,
+                    supervisorName: matchedSup.name || matchedSup.owner?.name || "N/A",
+                    mobileNo: matchedSup.owner?.mobileNumber || matchedSup.mobileNo || "N/A",
+                    status: matchedSup.status || "ACTIVE",
+                    assignedZoneId: matchedSup.assignedZoneId || "N/A",
+                    vendorId: matchedSup.vendorId,
+                    surveyors: matchedSurveyors,
+                    totalKnos,
+                    submittedKnos,
+                    pendingKnos,
+                    progressPercent,
+                };
+            }
+        }
+
+        return null;
+    }, [progressData, supervisorSearchResponse, surveyorSearchResponse, supervisorId, loggedInUser?.uuid]);
+
+    const fullName = supervisor?.supervisorName || "N/A";
+    const mobileNumber = supervisor?.mobileNo || "N/A";
     const email = loggedInUser?.emailId || "N/A";
     const gender = loggedInUser?.gender || "N/A";
-    const status = supervisor ? "ACTIVE" : "N/A";
+    const status = supervisor?.status || "N/A";
     const assignedZone = supervisor?.assignedZoneId || "N/A";
-    const vendorName = "N/A";
+
+    const vendorName = useMemo(() => {
+        if (!vendorSearchResponse || !supervisor) return "N/A";
+        const targetVendorId = supervisor.vendorId;
+        if (!targetVendorId) return "N/A";
+        const matchedVendor = vendorSearchResponse.find(
+            (v) => v.dsoDetails?.id === targetVendorId || v.dsoDetails?.vendorId === targetVendorId || v.id === targetVendorId || v.vendorId === targetVendorId
+        );
+        return matchedVendor?.dsoDetails?.name || matchedVendor?.name || "N/A";
+    }, [vendorSearchResponse, supervisor]);
 
     const surveyors = useMemo(() => {
         return supervisor?.surveyors || [];
     }, [supervisor]);
 
-    // const cards = useMemo(() => [
-    //     {
-    //         label: "TOTAL_EKYC_APPLICATIONS",
-    //         count: progressData?.totalKnos || supervisor?.totalKnos || 0,
-    //         color: "#0B2559",
-    //         type: "today",
-    //         icon: <FaUsers />,
-    //     },
-    //     {
-    //         label: "TOTAL_ASSIGNMENTS",
-    //         count: progressData?.totalAssignments || supervisor?.totalKnos || 0,
-    //         color: "#3B82F6",
-    //         type: "week",
-    //         icon: <FaMapMarkedAlt />,
-    //     },
-    //     {
-    //         label: "EKYC_COMPLETED",
-    //         count: progressData?.completedKnos || supervisor?.submittedKnos || 0,
-    //         color: "#10B981",
-    //         type: "month",
-    //         icon: <FaCheckCircle />,
-    //     },
-    //     {
-    //         label: "PENDING_APPLICATIONS",
-    //         count: (progressData?.totalKnos || supervisor?.totalKnos || 0) - (progressData?.completedKnos || supervisor?.submittedKnos || 0),
-    //         color: "#F59E0B",
-    //         type: "pending",
-    //         icon: <FaClock />,
-    //     },
-    //     {
-    //         label: "OVERALL_PROGRESS",
-    //         count: `${progressData?.overallProgressPercent || supervisor?.progressPercent || 0}%`,
-    //         color: "#A855F7",
-    //         type: "progress",
-    //         icon: <FaChartLine />,
-    //     },
-    // ], [progressData, supervisor]);
+    const cards = useMemo(() => [
+        {
+            label: "TOTAL_EKYC_APPLICATIONS",
+            count: supervisor?.totalKnos || 0,
+            color: "#0B2559",
+            type: "today",
+            icon: <FaUsers />,
+        },
+        {
+            label: "EKYC_COMPLETED",
+            count: supervisor?.submittedKnos || 0,
+            color: "#10B981",
+            type: "month",
+            icon: <FaCheckCircle />,
+        },
+        {
+            label: "PENDING_APPLICATIONS",
+            count: supervisor?.pendingKnos || 0,
+            color: "#F59E0B",
+            type: "pending",
+            icon: <FaClock />,
+        },
+        {
+            label: "OVERALL_PROGRESS",
+            count: `${supervisor?.progressPercent || 0}%`,
+            color: "#A855F7",
+            type: "progress",
+            icon: <FaChartLine />,
+        },
+    ], [supervisor]);
 
     const [currentPage, setCurrentPage] = useState(0);
     const [pageSize, setPageSize] = useState(20);
@@ -94,14 +189,22 @@ const SupervisorDetailsCard = () => {
             {
                 Header: t("SURVEYOR_NAME") || "Surveyor Name",
                 accessor: (row) => row?.surveyorName || "N/A",
-                Cell: ({ row }) => (
-                    <a
-                        href={`/digit-ui/citizen/ekyc/surveyor-dashboard/${row.original.surveyorId}`}
-                        style={{ color: "#1D70B8", fontWeight: "600", textDecoration: "none" }}
-                    >
-                        {row.original?.surveyorName || "N/A"}
-                    </a>
-                ),
+                Cell: ({ row }) => {
+                    const userType = Digit.SessionStorage.get("User")?.info?.type?.toLowerCase() || "citizen";
+                    const targetPath = `/digit-ui/${userType}/ekyc/surveyor-dashboard/${row.original.surveyorId}`
+                    return (
+                        <a
+                            href={targetPath}
+                            style={{ color: "#1D70B8", fontWeight: "600", textDecoration: "none" }}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                history.push(targetPath);
+                            }}
+                        >
+                            {row.original?.surveyorName || "N/A"}
+                        </a>
+                    );
+                },
             },
             {
                 Header: t("MOBILE_NUMBER") || "Mobile Number",
@@ -139,7 +242,7 @@ const SupervisorDetailsCard = () => {
                 id: "overallProgress",
             }
         ],
-        [t]
+        [t, history]
     );
 
     // Report Download logic
@@ -159,41 +262,6 @@ const SupervisorDetailsCard = () => {
         document.addEventListener("mousedown", handler);
         return () => document.removeEventListener("mousedown", handler);
     }, []);
-
-    // const handleDownload = () => {
-    //     setReportLoading(true);
-    //     try {
-    //         const rowsWithStats = surveyors.map((s) => ({
-    //             name: s.surveyorName,
-    //             mobileNo: s.mobileNo,
-    //             status: "ACTIVE",
-    //             total: s.totalKnos,
-    //             completed: s.submittedKnos,
-    //             pending: s.pendingKnos,
-    //             progress: `${s.progressPercent}%`
-    //         }));
-
-    //         downloadSupervisorPDF({
-    //             rows: rowsWithStats,
-    //             supervisorName: fullName,
-    //             mobileNumber,
-    //             vendorName,
-    //             dashboardInfo: {
-    //                 total: supervisor?.totalKnos || 0,
-    //                 completed: supervisor?.submittedKnos || 0,
-    //                 pending: supervisor?.pendingKnos || 0,
-    //                 submittedCount: supervisor?.submittedKnos || 0,
-    //             },
-    //             t,
-    //         });
-    //     } catch (err) {
-    //         console.error("Failed to generate report:", err);
-    //     } finally {
-    //         setReportLoading(false);
-    //         setShowReportMenu(false);
-    //         setShowCustomPicker(false);
-    //     }
-    // };
 
     const handlePresetDownload = (filter) => {
         handleDownload();
@@ -298,24 +366,26 @@ const SupervisorDetailsCard = () => {
         }
     };
 
-    // const StatCard = ({ title, value, type, isLoading, icon }) => (
-    //     <div className={`stat-card ${type}`}>
-    //         {isLoading ? (
-    //             <React.Fragment>
-    //                 <div className="stat-title skeleton skeleton-text"></div>
-    //                 <div className="stat-value skeleton skeleton-number"></div>
-    //             </React.Fragment>
-    //         ) : (
-    //             <React.Fragment>
-    //                 <div className="stat-title">{title}</div>
-    //                 <div className="stat-value">{value}</div>
-    //                 {icon && <div className="stat-icon">{icon}</div>}
-    //             </React.Fragment>
-    //         )}
-    //     </div>
-    // );
+    const StatCard = ({ title, value, type, isLoading, icon }) => (
+        <div className={`stat-card ${type}`}>
+            {isLoading ? (
+                <React.Fragment>
+                    <div className="stat-title skeleton skeleton-text"></div>
+                    <div className="stat-value skeleton skeleton-number"></div>
+                </React.Fragment>
+            ) : (
+                <React.Fragment>
+                    <div className="stat-title">{title}</div>
+                    <div className="stat-value">{value}</div>
+                    {icon && <div className="stat-icon">{icon}</div>}
+                </React.Fragment>
+            )}
+        </div>
+    );
 
-    if (isProgressLoading) {
+    const isPageLoading = isProgressLoading || isSupervisorSearchLoading || isSurveyorSearchLoading || isVendorSearchLoading;
+
+    if (isPageLoading && !supervisor) {
         return <Loader />;
     }
 
@@ -420,7 +490,7 @@ const SupervisorDetailsCard = () => {
             </div>
 
             {/* Stats */}
-            {/* <div className="stats-wrapper">
+            <div className="stats-wrapper">
                 {cards.map((card, idx) => (
                     <StatCard
                         key={idx}
@@ -431,7 +501,7 @@ const SupervisorDetailsCard = () => {
                         icon={card.icon}
                     />
                 ))}
-            </div> */}
+            </div>
 
             {/* Details */}
             <div className="ekyc-dashboard-section">

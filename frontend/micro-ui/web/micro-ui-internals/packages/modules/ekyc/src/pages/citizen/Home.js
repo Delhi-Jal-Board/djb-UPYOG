@@ -27,13 +27,23 @@ const Home = () => {
 
   if (roles.includes("EKYC_SUPERVISOR") || roles.includes("EKYC_VENDOR")) {
     propsForModuleCard.links.push(
-      {
-        label: t("EKYC_DASHBOARD"),
-        link: `/digit-ui/citizen/ekyc/dashboard`,
-      },
+      // {
+      //   label: t("EKYC_DASHBOARD"),
+      //   link: `/digit-ui/citizen/ekyc/dashboard`,
+      // },
       {
         label: t("EKYC_INBOX"),
         link: `/digit-ui/citizen/ekyc/inbox`,
+      },
+
+    );
+  }
+
+  if (roles.includes("EKYC_SUPERVISOR")) {
+    propsForModuleCard.links.push(
+      {
+        label: t("EKYC_SUPERVISOR_DASHBOARD"),
+        link: `/digit-ui/citizen/ekyc/supervisor-dashboard`,
       },
       {
         label: t("EKYC_ASSIGN"),
@@ -42,17 +52,12 @@ const Home = () => {
     );
   }
 
-  if (roles.includes("EKYC_SUPERVISOR")) {
-    propsForModuleCard.links.push({
-      label: t("EKYC_SUPERVISOR_DASHBOARD"),
-      link: `/digit-ui/citizen/ekyc/supervisor-dashboard`,
-    });
-  }
-
   if (roles.includes("EKYC_VENDOR")) {
     propsForModuleCard.links.push({
       label: t("EKYC_VENDOR_DASHBOARD"),
       link: `/digit-ui/citizen/ekyc/vendor-dashboard`,
+      // label: t("EKYC_DASHBOARD"),
+      // link: `/digit-ui/citizen/ekyc/dashboard`,
     });
   }
 

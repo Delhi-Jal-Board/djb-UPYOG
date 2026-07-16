@@ -25,6 +25,8 @@ import { stringReplaceAll, convertEpochToDate } from "../../utils";
 import WSInfoLabel from "../../pageComponents/WSInfoLabel";
 import { getAddress } from "../../utils";
 import _ from "lodash";
+import WSFeeEstimation from "../../../../templates/ApplicationDetails/components/WSFeeEstimation";
+import ViewBreakup from "../../../../templates/ApplicationDetails/components/ViewBreakup";
 
 const checkForNA = (value) => {
   return value ? value : "CS_NA";
@@ -112,14 +114,28 @@ const WSApplicationDetails = () => {
       },
     }) || false;
 
+  const applicationStatus = data?.WaterConnection?.[0]?.applicationStatus || data?.SewerageConnections?.[0]?.applicationStatus;
+  
   const isPaid =
-    data?.WaterConnection?.[0]?.applicationStatus === "CONNECTION_ACTIVATED" ||
-      data?.WaterConnection?.[0]?.applicationStatus === "PENDING_FOR_CONNECTION_ACTIVATION" ||
-      data?.SewerageConnections?.[0]?.applicationStatus === "CONNECTION_ACTIVATED" ||
-      data?.SewerageConnections?.[0]?.applicationStatus === "PENDING_FOR_CONNECTION_ACTIVATION"
+    applicationStatus && applicationStatus !== "INITIATED" && applicationStatus !== "PENDING_FOR_PAYMENT"
       ? true
       : false;
-  if (isLoading) {
+
+  const { isLoading: isAppDetailsLoading, data: appDetailsData } = Digit.Hooks.ws.useWSDetailsPage(
+    t,
+    tenantId,
+    applicationNobyData,
+    applicationNobyData?.includes("SW") ? "SEWERAGE" : "WATER",
+    user
+  );
+
+  const feeEstimationSection = appDetailsData?.applicationDetails?.find(section => section?.title === "WS_TASK_DETAILS_FEE_ESTIMATE");
+
+  if (feeEstimationSection && feeEstimationSection.additionalDetails) {
+    feeEstimationSection.additionalDetails.isPaid = isPaid;
+  }
+
+  if (isLoading || isAppDetailsLoading) {
     return <Loader />;
   }
 
@@ -397,41 +413,13 @@ const WSApplicationDetails = () => {
                     />
                   )}
               </StatusTable>
-              {paymentDetails?.data?.Bill?.[0]?.billDetails?.[0]?.billAccountDetails.length > 0 && (
+              {feeEstimationSection && (
                 <React.Fragment>
-                  <CardHeader styles={{ fontSize: "28px" }}>{t("WS_FEE_DEATAILS_HEADER")}</CardHeader>
-                  <StatusTable>
-                    {paymentDetails?.data?.Bill?.[0]?.billDetails?.[0]?.billAccountDetails.map((bill) => (
-                      <Row
-                        label={t(bill?.taxHeadCode)}
-                        text={`₹${Number(bill?.amount).toFixed(2)}`}
-
-                      />
-                    ))}
-                    <Row
-                      label={t("WS_TOTAL_AMOUNT_DUE")}
-                      text={`₹${Number(isPaid ? 0 : paymentDetails?.data?.Bill?.[0]?.billDetails?.[0]?.amount).toFixed(2)}`}
-                    />
-                    <Row
-                      label={t("WS_COMMON_TABLE_COL_APPLICATION_STATUS")}
-                      text={
-                        isPaid || Number(paymentDetails?.data?.Bill?.[0]?.billDetails?.[0]?.amount).toFixed(2) == 0
-                          ? t("WS_COMMON_PAID_LABEL")
-                          : t("WS_COMMON_NOT_PAID")
-                      }
-                      textStyle={
-                        isPaid || Number(paymentDetails?.data?.Bill?.[0]?.billDetails?.[0]?.amount).toFixed(2) == 0
-                          ? { color: "darkgreen" }
-                          : { color: "red" }
-                      }
-                    />
-                    {/* <Row label={t("One time Fee")} text={"₹ 16500.00"} textStyle={{textAlign: "right" }} />
-            <Row label={t("Security Charge")} text={"₹ 500.00"} textStyle={{textAlign: "right" }} />
-            <Row label={t("Meter Charge")} text={"₹ 2000.00"} textStyle={{textAlign: "right" }} />
-            <Row label={t("Tax")} text={" ₹ 200.00"} textStyle={{textAlign: "right" }} />
-            <Row label={t("WS_COMMON_TOTAL_AMT")} text={"₹ 15000.00"} textStyle={{textAlign: "right" }} />
-            <Row label={t("Status")} text={"Unpaid"} textStyle={{textAlign: "right" }} /> */}
-                  </StatusTable>
+                  <CardSectionHeader style={{ marginBottom: "16px", marginTop: "16px", fontSize: "24px" }}>
+                    {t(feeEstimationSection.title)}
+                  </CardSectionHeader>
+                  <WSFeeEstimation wsAdditionalDetails={feeEstimationSection} workflowDetails={null} />
+                  <ViewBreakup wsAdditionalDetails={feeEstimationSection} workflowDetails={null} />
                 </React.Fragment>
               )}
 

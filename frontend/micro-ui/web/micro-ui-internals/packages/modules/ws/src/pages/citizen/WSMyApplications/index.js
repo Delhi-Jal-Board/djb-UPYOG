@@ -1,4 +1,5 @@
-import { Loader, Table } from "@djb25/digit-ui-react-components";
+import { Loader, SearchForm, Table, SearchField, Dropdown, TextInput, DatePicker, SubmitBar } from "@djb25/digit-ui-react-components";
+import { useForm, Controller } from "react-hook-form";
 import React, { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -50,6 +51,7 @@ export const WSMyApplications = () => {
 
   const [pageOffset, setPageOffset] = useState(0);
   const [pageSize, setPageSize] = useState(10);
+  const [searchParams, setSearchParams] = useState(null);
   const isMobile = window.Digit.Utils.browser.isMobile();
 
   const GetCell = (value) => <span className="cell-text">{value}</span>;
@@ -140,6 +142,20 @@ export const WSMyApplications = () => {
     ];
   }, [t]);
 
+  const { register, control, handleSubmit, reset } = useForm({
+    defaultValues: {
+      applicationNo: "",
+      fromDate: "",
+      toDate: "",
+      status: "",
+    },
+  });
+
+  const onSubmitForm = (data) => {
+    setSearchParams(data);
+    setPageOffset(0);
+  };
+
   if (isLoading || isSWLoading || PTisLoading) {
     return <Loader />;
   }
@@ -160,13 +176,167 @@ export const WSMyApplications = () => {
     ? applicationsList.sort((a, b) => b.auditDetails?.lastModifiedTime - a.auditDetails?.lastModifiedTime)
     : [];
 
+  let filteredApplications = sortedApplications;
+  if (searchParams) {
+    if (searchParams.applicationNo) {
+      filteredApplications = filteredApplications.filter((app) =>
+        app.applicationNo?.toLowerCase().includes(searchParams.applicationNo.toLowerCase())
+      );
+    }
+    if (searchParams.status && searchParams.status.code) {
+      filteredApplications = filteredApplications.filter((app) =>
+        app.applicationStatus === searchParams.status.code
+      );
+    }
+  }
+
+  const statusCounts = sortedApplications.reduce((acc, app) => {
+    const status = app.applicationStatus || "UNKNOWN";
+    acc[status] = (acc[status] || 0) + 1;
+    return acc;
+  }, {});
+
+  const action = Object.keys(statusCounts).map(status => ({
+    i18nKey: status === "UNKNOWN" ? "UNKNOWN" : `CS_${status}`,
+    code: status
+  }));
+
+  const today = new Date();
+  const fromDateFormatted = "";
+  const setShowToast = () => { };
+  const previousPage = () => setPageOffset(0);
+
+
+
   return (
     <React.Fragment>
       <WSInfoLabel t={t} />
+      <div
+        className="summary-cards-container"
+        style={{
+          display: "flex",
+          gap: "10px",
+          flexWrap: "wrap",
+          width: "100%",
+        }}
+      >
+        {(() => {
+          const statusCounts = sortedApplications.reduce((acc, app) => {
+            const status = app.applicationStatus || "UNKNOWN";
+            acc[status] = (acc[status] || 0) + 1;
+            return acc;
+          }, {});
+
+          const waterCount = sortedApplications.filter((app) => app?.applicationNo?.includes("WS")).length;
+          const sewerageCount = sortedApplications.filter((app) => app?.applicationNo?.includes("SW")).length;
+
+          const cards = [
+            { label: "TOTAL_APPLICATIONS", count: sortedApplications?.length || 0, color: "#0B2559" },
+            { label: "WATER", count: waterCount, color: "#3B82F6" },
+            { label: "SEWERAGE", count: sewerageCount, color: "#F59E0B" },
+            ...Object.entries(statusCounts).map(([status, count], idx) => {
+              const colors = ["#10B981", "#A855F7", "#EF4444", "#64748B", "#F97316", "#06B6D4"];
+              return {
+                label: status === "UNKNOWN" ? "UNKNOWN" : `CS_${status}`,
+                count: count,
+                color: colors[idx % colors.length],
+              };
+            }),
+          ];
+
+          return cards.map((card, idx) => (
+            <div
+              key={idx}
+              className="summary-card"
+              style={{
+                backgroundColor: "#fff",
+                borderRadius: "6px",
+                padding: "12px 14px",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+                flex: "1 1 110px",
+                maxWidth: "200px",
+                minWidth: "100px",
+                border: "1px solid #E2E8F0",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: "10px",
+                  color: "#64748B",
+                  fontWeight: "600",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.5px",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
+                title={t(card.label)}
+              >
+                {t(card.label)}
+              </div>
+              <div style={{ fontSize: "24px", fontWeight: "700", color: card.color, marginTop: "8px" }}>
+                {String(card.count).padStart(2, "0")}
+              </div>
+            </div>
+          ));
+        })()}
+      </div>
+
+      <SearchForm t={t} onSubmit={onSubmitForm} handleSubmit={handleSubmit} className="formcomposer-section-grid">
+        <SearchField>
+          <label>{t("WS_STATUS")}</label>
+          <Controller
+            control={control}
+            name="status"
+            render={(props) => (
+              <Dropdown
+                selected={props.value}
+                select={props.onChange}
+                onBlur={props.onBlur}
+                option={action}
+                optionKey="i18nKey"
+                t={t}
+                disable={false}
+              />
+            )}
+          />
+        </SearchField>
+        <SearchField>
+          <label>{t("WS_MYCONNECTIONS_APPLICATION_NO")}</label>
+          <TextInput name="applicationNo" inputRef={register({})} />
+        </SearchField>
+        <div style={{ gridColumn: "1 / -1", display: "flex", justifyContent: "flex-end", alignItems: "center", gap: "24px" }}>
+          <p
+            style={{ cursor: "pointer", color: "#0B4B66", fontWeight: "600", margin: 0 }}
+            onClick={() => {
+              reset({
+                applicationNo: "",
+                status: "",
+                fromDate: fromDateFormatted,
+                toDate: today,
+                offset: 0,
+                limit: 10,
+                sortBy: "commencementDate",
+                sortOrder: "DESC",
+              });
+              setSearchParams(null);
+              setShowToast(null);
+              previousPage();
+            }}
+          >
+            {t(`ES_COMMON_CLEAR_ALL`)}
+          </p>
+          <SubmitBar label={t("ES_COMMON_SEARCH")} submit style={{ margin: 0 }} />
+        </div>
+      </SearchForm>
+
       <div>
-        {sortedApplications?.length > 0 ? (
+        {filteredApplications?.length > 0 ? (
           isMobile ? (
-            sortedApplications.map((application, index) => (
+            filteredApplications.map((application, index) => (
               <div key={index}>
                 <WSApplication application={application} />
               </div>
@@ -174,8 +344,8 @@ export const WSMyApplications = () => {
           ) : (
             <Table
               t={t}
-              data={sortedApplications.slice(pageOffset, pageOffset + pageSize)}
-              totalRecords={sortedApplications.length}
+              data={filteredApplications.slice(pageOffset, pageOffset + pageSize)}
+              totalRecords={filteredApplications.length}
               columns={columns}
               onPageSizeChange={(e) => setPageSize(Number(e.target.value))}
               currentPage={Math.floor(pageOffset / pageSize)}
