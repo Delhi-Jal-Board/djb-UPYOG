@@ -22,7 +22,7 @@ const GetConnectionDetails = () => {
   const connectionType = filters?.connectionType;
   const [showOptions, setShowOptions] = useState(false);
   const stateCode = Digit.ULBService.getStateId();
-  const actionConfig = ["MODIFY_CONNECTION_BUTTON", "BILL_AMENDMENT_BUTTON", "DISCONNECTION_BUTTON"];
+  const actionConfig = ["MODIFY_CONNECTION_BUTTON", "MUTATION_BUTTON", "BILL_AMENDMENT_BUTTON", "DISCONNECTION_BUTTON"];
   const { isLoading, isError, data: applicationDetails, error } = Digit.Hooks.ws.useConnectionDetail(t, tenantId, applicationNumber, serviceType, {
     privacy: Digit.Utils.getPrivacyObject(),
   });
@@ -128,6 +128,27 @@ const GetConnectionDetails = () => {
     history.push(`${pathname}`, JSON.stringify({ data: applicationDetails }));
   };
 
+  const getMutationButton = () => {
+    if (!checkApplicationStatus) {
+      setshowActionToast({
+        key: "error",
+        label: "CONN_NOT_ACTIVE",
+      });
+      return;
+    }
+    if (applicationDetails?.fetchBillsData[0]?.totalAmount > 0) {
+      setshowActionToast({
+        key: "error",
+        label: "WS_DUE_AMOUNT_SHOULD_BE_ZERO",
+      });
+      return;
+    }
+
+    let pathname = `/digit-ui/employee/ws/mutation-application?applicationNumber=${applicationDetails?.applicationData?.connectionNo}&service=${serviceType}&propertyId=${applicationDetails?.propertyDetails?.propertyId}&from=WS_COMMON_CONNECTION_DETAIL`;
+
+    history.push(`${pathname}`, JSON.stringify({ data: applicationDetails }));
+  };
+
   const getBillAmendmentButton = () => {
     //redirect to documents required screen here instead of this screen
 
@@ -207,6 +228,8 @@ const GetConnectionDetails = () => {
   function onActionSelect(action) {
     if (action === "MODIFY_CONNECTION_BUTTON") {
       getModifyConnectionButton();
+    } else if (action === "MUTATION_BUTTON") {
+      getMutationButton();
     } else if (action === "BILL_AMENDMENT_BUTTON") {
       getBillAmendmentButton();
     } else if (action === "DISCONNECTION_BUTTON") {
