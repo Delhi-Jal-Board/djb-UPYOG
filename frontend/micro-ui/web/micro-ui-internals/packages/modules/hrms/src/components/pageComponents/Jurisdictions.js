@@ -219,6 +219,7 @@ function Jurisdiction({
     });
     setjurisdictions((pre) => pre.map((item) => (item.key === jurisdiction.key ? { ...item, roles: afterRemove } : item)));
   };
+
   return (
     <div key={jurisdiction?.keys} style={{ border: "1px solid #E3E3E3", borderRadius: "6px" }}>
       <div className="" style={{ display: "flex", justifyContent: "space-between", padding: "16px" }}>
@@ -290,7 +291,14 @@ function Jurisdiction({
             <div className="tag-container">
               {jurisdiction?.roles.length > 0 &&
                 jurisdiction?.roles.map((value, index) => {
-                  return <RemoveableTag key={index} text={`${t(value["labelKey"]).slice(0, 22)} ...`} onClick={() => onRemove(index, value)} />;
+                  const translatedCode = t("ACCESSCONTROL_ROLES_ROLES_" + value.code);
+                  return (
+                    <RemoveableTag
+                      key={index}
+                      text={translatedCode.length > 22 ? `${translatedCode.slice(0, 22)}...` : translatedCode}
+                      onClick={() => onRemove(index, value)}
+                    />
+                  );
                 })}
             </div>
           </div>
