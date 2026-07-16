@@ -291,9 +291,9 @@ const DigitJSONForm = ({
 
   return (
     <React.Fragment>
-      <Header className="digit-form-composer-header">
+      {/* <Header className="digit-form-composer-header">
         {screenType === "add" ? t("WBH_ADD_MDMS") : screenType === "view" ? t("WBH_VIEW_MDMS") : t("WBH_EDIT_MDMS")}
-      </Header>
+      </Header> */}
       <Card className="workbench-create-form">
         <Header className="digit-form-composer-sub-header">{t(Digit.Utils.workbench.getMDMSLabel(`SCHEMA_` + schema?.code))}</Header>
         <Form

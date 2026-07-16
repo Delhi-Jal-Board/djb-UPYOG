@@ -488,7 +488,7 @@ export const UICustomizations = {
             t("ES_COMMON_NA")
           );
         case "WBH_ISACTIVE":
-          return value ? <span style={{ color: "green" }}>{t("WBH_COMMON_YES")}</span> : <span style={{ color: "red" }}>{t("WBH_COMMON_NO")}</span>;
+          return value ? <span style={{ color: "green", cursor: "pointer" }}>{t("WBH_COMMON_YES")}</span> : <span style={{ color: "red", cursor: "pointer" }}>{t("WBH_COMMON_NO")}</span>;
         default:
           return t("ES_COMMON_NA");
       }

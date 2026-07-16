@@ -444,7 +444,7 @@ const Table = ({
   };
 
   return (
-    <div className="basetable no-scrollbar">
+    <div className="basetable no-scrollbar pdf-print-area">
       {/* ── Top Bar ──────────────────────────────────────────────────────── */}
       <div className="table-topbar">
         {/* Left: title + total badge */}
@@ -457,11 +457,11 @@ const Table = ({
         </div>
 
         {/* Right: internal search box + tableTopComponent */}
-        <div className="search-box-wrapper" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+        <div className="search-box-wrapper no-print" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           {showPDFExport && (
             <ExportButton
               type="pdf"
-              onClick={onPdfExport}
+              onClick={onPdfExport || (() => window.print())}
               label={pdfExportButtonLabel || "Download PDF"}
               title="Download PDF"
             />
@@ -614,7 +614,7 @@ const Table = ({
 
       {/* ── Pagination — original logic, modernised UI ───────────────────── */}
       {isPaginationRequired && (
-        <div className="table-pagination">
+        <div className="table-pagination no-print">
           <span className="page-size-label">{t ? t("CS_COMMON_ROWS_PER_PAGE") : "Rows per page"}:</span>
 
           <div className="page-size-wrapper">

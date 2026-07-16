@@ -193,7 +193,13 @@ const ResultsTable = ({ tableContainerClass, config,data,isLoading,isFetching,fu
                 csvExportData={searchResult}
                 showPDFExport={true}
                 pdfExportButtonLabel={t("DOWNLOAD_PDF")}
-                onPdfExport={() => additionalConfig?.resultsTable?.onPdfExport?.()}
+                onPdfExport={() => {
+                    if (additionalConfig?.resultsTable?.onPdfExport) {
+                        additionalConfig.resultsTable.onPdfExport();
+                    } else {
+                        window.print();
+                    }
+                }}
                 isPaginationRequired={true}
                 onPageSizeChange={onPageSizeChange}
                 currentPage={getValues("offset") / getValues("limit")}

@@ -172,15 +172,13 @@ const InboxSearchComposer = ({ configs, headerLabel, additionalConfig, onFormVal
                     }
                     {
                         configs?.type === 'search' && configs?.sections?.search?.show &&
-                        <div className="section search">
-                            <SearchComponent
-                                uiConfig={configs?.sections?.search?.uiConfig}
-                                header={configs?.sections?.search?.label}
-                                screenType={configs.type}
-                                fullConfig={configs}
-                                data={data}
-                            />
-                        </div>
+                        <SearchComponent
+                            uiConfig={configs?.sections?.search?.uiConfig}
+                            header={configs?.sections?.search?.label}
+                            screenType={configs.type}
+                            fullConfig={configs}
+                            data={data}
+                        />
 
                     }
                     {
@@ -199,15 +197,13 @@ const InboxSearchComposer = ({ configs, headerLabel, additionalConfig, onFormVal
                     {
                         configs?.type === 'inbox' && configs?.sections?.search?.show &&
                         <MediaQuery minWidth={426}>
-                            <div className="section search">
-                                <SearchComponent
-                                    uiConfig={configs?.sections?.search?.uiConfig}
-                                    header={configs?.sections?.search?.label}
-                                    screenType={configs.type}
-                                    fullConfig={configs}
-                                    data={data}
-                                />
-                            </div>
+                            <SearchComponent
+                                uiConfig={configs?.sections?.search?.uiConfig}
+                                header={configs?.sections?.search?.label}
+                                screenType={configs.type}
+                                fullConfig={configs}
+                                data={data}
+                            />
                         </MediaQuery>
                     }
                     {
