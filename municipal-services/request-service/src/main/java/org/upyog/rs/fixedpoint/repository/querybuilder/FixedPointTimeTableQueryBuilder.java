@@ -178,6 +178,14 @@ public class FixedPointTimeTableQueryBuilder {
      * - Same fixed point may have multiple rows on same day with different delivery_time.
      * - Therefore, do not group by fixed_point_id.
      */
+    /**
+     * Scheduler query.
+     *
+     * Important:
+     * - One row from timetable = one booking.
+     * - Same fixed point may have multiple rows on same day with different delivery_time.
+     * - Therefore, do not group by fixed_point_id.
+     */
     public String getSchedulerSearchQuery(
             String tenantId,
             String dayOfWeek,
@@ -187,24 +195,26 @@ public class FixedPointTimeTableQueryBuilder {
         StringBuilder query = new StringBuilder();
 
         query.append("""
-        SELECT
-            *
-            FROM eg_fixed_point_time_table
-            WHERE tenant_id = ?
-                AND day = ?
-                AND active = true
+          SELECT
+               tt.*,
+               fp.filling_point_name
+               FROM eg_fixed_point_time_table tt
+               LEFT JOIN upyog_rs_water_tanker_filling_point fp
+              ON fp.filling_point_id = tt.filling_point_id
+              WHERE tt.tenant_id = ?
+              AND tt.day = ? AND tt.active = true
         """);
 
         preparedStmtList.add(tenantId);
         preparedStmtList.add(dayOfWeek);
 
         if (fillingPointId != null && !fillingPointId.isBlank()) {
-            query.append(" AND filling_point_id = ? ");
+            // FIX: Added 'tt.' to resolve ambiguity
+            query.append(" AND tt.filling_point_id = ? ");
             preparedStmtList.add(fillingPointId);
         }
 
-        query.append(" ORDER BY filling_point_id, fixed_point_code, departure_time_delivery_point ");
-
+        query.append(" ORDER BY tt.filling_point_id, tt.fixed_point_code, tt.departure_time_delivery_point ");
         return query.toString();
     }
 
