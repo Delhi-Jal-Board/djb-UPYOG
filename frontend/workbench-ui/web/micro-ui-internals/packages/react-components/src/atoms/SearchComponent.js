@@ -8,6 +8,7 @@ import LinkLabel from '../atoms/LinkLabel';
 import SubmitBar from "../atoms/SubmitBar";
 import Toast from "../atoms/Toast";
 import { FilterIcon, RefreshIcon } from "./svgindex";
+import Card from "../atoms/Card";
 
 const SearchComponent = ({ uiConfig, header = "", screenType = "search", fullConfig, data}) => {
   const { t } = useTranslation();
@@ -118,7 +119,7 @@ const SearchComponent = ({ uiConfig, header = "", screenType = "search", fullCon
 
   return (
     <React.Fragment>
-      <div className={'search-wrapper'}>
+      <Card className={'search-wrapper'}>
         {header && renderHeader()}
         <form onSubmit={handleSubmit(onSubmit)} onKeyDown={(e) => checkKeyDown(e)}>
           <div>
@@ -152,7 +153,7 @@ const SearchComponent = ({ uiConfig, header = "", screenType = "search", fullCon
           isDleteBtn={true}
           onClose={closeToast} />
         }
-      </div>
+      </Card>
     </React.Fragment>
   )
 }

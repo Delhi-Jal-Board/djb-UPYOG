@@ -638,3 +638,27 @@
     }
   }
 }
+
+@media print {
+  .basetable, .table-content-wrapper {
+    overflow: visible !important;
+    width: 100% !important;
+    box-shadow: none !important;
+  }
+  .table, .table-content {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  .table-content-wrapper .table-content thead .tr .th,
+  .table-content-wrapper .table-content thead .tr .th-s-no,
+  .table tbody td,
+  .basetable td {
+    white-space: normal !important;
+    word-break: break-word !important;
+    padding: 6px 8px !important;
+    font-size: 12px !important;
+  }
+  .col-head {
+    font-size: 12px !important;
+  }
+}
