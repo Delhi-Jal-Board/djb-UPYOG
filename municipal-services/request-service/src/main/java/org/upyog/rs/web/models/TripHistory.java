@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.Valid;
+import java.math.BigDecimal;
 import java.util.List;
 
 @Data
@@ -34,6 +35,11 @@ public class TripHistory {
 
     @JsonProperty("endTime")
     private Long endTime;
+
+    @JsonProperty("startFileStoreId")
+    private String startFileStoreId;
+    @JsonProperty("endFileStoreId")
+    private String endFileStoreId;
 
     @JsonProperty("totalDistanceMeters")
     private Double totalDistanceMeters;
