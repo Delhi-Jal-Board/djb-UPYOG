@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.upyog.rs.repository.DriverTripRepository;
 import org.upyog.rs.service.impl.TripHistoryServiceImpl;
 import org.upyog.rs.util.ResponseInfoFactory;
 import org.upyog.rs.web.models.*;
@@ -20,6 +21,9 @@ public class TripHistoryController {
 
     @Autowired
     private ResponseInfoFactory responseInfoFactory;
+
+    @Autowired
+    private DriverTripRepository driverTripRepository;
 
     @PostMapping("/_create")
     public ResponseEntity<TripHistoryResponse> create(@Valid @RequestBody TripHistoryRequest request) {
@@ -37,6 +41,17 @@ public class TripHistoryController {
             @ModelAttribute TripHistorySearchCriteria criteria) {
 
         TripHistorySearchResult result = tripHistoryService.searchTrips(criteria);
+
+        // Enrich the trips with file store IDs
+        if (result.getTrips() != null) {
+            for (TripHistory trip : result.getTrips()) {
+                DriverTrip driverTrip = driverTripRepository.findByBookingNo(trip.getBookingNo());
+                if (driverTrip != null) {
+                    trip.setStartFileStoreId(driverTrip.getStartFileStoreId());
+                    trip.setEndFileStoreId(driverTrip.getEndFileStoreId());
+                }
+            }
+        }
 
         TripHistoryResponse response = TripHistoryResponse.builder()
                 .tripHistory(result.getTrips())
