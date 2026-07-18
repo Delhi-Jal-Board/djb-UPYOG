@@ -108,16 +108,48 @@ public class SurveyorRepository {
      * @param newSupervisorId new supervisor entity ID to set
      * @return number of assignment rows updated
      */
-    public int syncEkycAssignmentSupervisor(String surveyorOwnerId, String newSupervisorId) {
+    /**
+     * Look up supervisor profile by their supervisor entity ID (not owner UUID).
+     * Used by SurveyorService.update() to resolve the NEW supervisor's
+     * vendorId when a surveyor is remapped to a different supervisor —
+     * so the surveyor's vendorId can be auto-corrected if the new
+     * supervisor belongs to a different vendor.
+     * Returns map with key "vendorId". Returns null if not found/inactive.
+     */
+    public Map<String, String> findSupervisorById(String supervisorId) {
+        String query = "SELECT vendor_id " +
+                "FROM eg_supervisor " +
+                "WHERE id = ? AND status = 'ACTIVE' " +
+                "LIMIT 1";
+
+        List<Map<String, String>> results = jdbcTemplate.query(
+                query,
+                new Object[]{supervisorId},
+                (rs, rowNum) -> {
+                    Map<String, String> map = new HashMap<>();
+                    map.put("vendorId", rs.getString("vendor_id"));
+                    return map;
+                }
+        );
+
+        if (results.isEmpty()) {
+            log.warn("No ACTIVE supervisor found for supervisorId={}", supervisorId);
+            return null;
+        }
+        return results.get(0);
+    }
+
+    public int syncEkycAssignmentSupervisor(String surveyorOwnerId, String newSupervisorId, String newVendorId) {
         String sql = "UPDATE ekyc_assignment " +
                 "SET supervisor_id = ?, " +
+                "    vendor_id = COALESCE(?, vendor_id), " +
                 "    last_modified_time = EXTRACT(EPOCH FROM NOW())::BIGINT " +
                 "WHERE surveyor_id = ? " +
                 "  AND status = 'ACTIVE'";
-        int updatedRows = jdbcTemplate.update(sql, newSupervisorId, surveyorOwnerId);
+        int updatedRows = jdbcTemplate.update(sql, newSupervisorId, newVendorId, surveyorOwnerId);
         log.info("syncEkycAssignment: updated {} ACTIVE assignment(s) " +
-                        "for surveyorOwnerId={} to supervisorId={}",
-                updatedRows, surveyorOwnerId, newSupervisorId);
+                        "for surveyorOwnerId={} to supervisorId={}, vendorId={}",
+                updatedRows, surveyorOwnerId, newSupervisorId, newVendorId);
         return updatedRows;
     }
 

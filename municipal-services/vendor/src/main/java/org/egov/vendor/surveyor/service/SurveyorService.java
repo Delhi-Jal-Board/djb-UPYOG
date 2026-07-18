@@ -132,12 +132,32 @@ public class SurveyorService {
                             && !oldSupervisorId.equals(newSupervisorId)
                             && StringUtils.hasLength(current.getOwnerId())) {
 
+                        // Resolve new supervisor's vendor — auto-correct surveyor's
+                        // vendorId if it belongs to a different vendor.
+                        String newVendorId = null;
+                        Map<String, String> newSupervisorProfile =
+                                surveyorRepository.findSupervisorById(newSupervisorId);
+                        if (newSupervisorProfile != null
+                                && StringUtils.hasLength(newSupervisorProfile.get("vendorId"))) {
+                            newVendorId = newSupervisorProfile.get("vendorId");
+                            if (!newVendorId.equals(current.getVendorId())) {
+                                surveyor.setVendorId(newVendorId);
+                                log.info("Surveyor {} vendorId auto-corrected: {} → {} " +
+                                                "(new supervisor {} belongs to a different vendor)",
+                                        surveyor.getId(), current.getVendorId(), newVendorId, newSupervisorId);
+                            }
+                        } else {
+                            log.warn("Could not resolve vendorId for newSupervisorId={} — " +
+                                    "surveyor.vendorId left unchanged, ekyc_assignment.vendor_id " +
+                                    "will not be updated either", newSupervisorId);
+                        }
+
                         log.info("Surveyor {} supervisorId changed: {} → {}. " +
                                         "Syncing ekyc_assignment...",
                                 surveyor.getId(), oldSupervisorId, newSupervisorId);
 
                         int synced = surveyorRepository.syncEkycAssignmentSupervisor(
-                                current.getOwnerId(), newSupervisorId);
+                                current.getOwnerId(), newSupervisorId, newVendorId);
 
                         log.info("ekyc_assignment sync complete: {} rows updated " +
                                 "for surveyorOwnerId={}", synced, current.getOwnerId());
