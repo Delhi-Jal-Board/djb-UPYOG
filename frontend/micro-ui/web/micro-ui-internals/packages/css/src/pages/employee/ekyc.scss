@@ -838,6 +838,40 @@
           font-weight: 700;
           color: #7dd3b2;
         }
+
+        .download-excel-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          padding: 8px 16px;
+          background-color: #10B981;
+          color: #ffffff;
+          border: none;
+          border-radius: 8px;
+          font-weight: 700;
+          font-size: 13px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          width: 100%;
+          margin-top: 14px;
+          box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+
+          &:hover {
+            background-color: #059669;
+            box-shadow: 0 4px 8px rgba(5, 150, 105, 0.3);
+          }
+
+          &:disabled {
+            background-color: #A7F3D0;
+            cursor: not-allowed;
+            box-shadow: none;
+          }
+
+          svg {
+            font-size: 14px;
+          }
+        }
       }
     }
 
@@ -1006,6 +1040,62 @@
               font-size: 18px;
               font-weight: 700;
               color: #0c2a52;
+            }
+          }
+        }
+      }
+    }
+
+    @media (max-width: 768px) {
+      padding: 16px;
+      border-radius: 12px;
+
+      .status-cards-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+
+        .status-cards-subtitle {
+          max-width: 100%;
+        }
+
+        .total-applications-card {
+          margin-top: 0;
+          width: 100%;
+          min-width: unset;
+        }
+      }
+
+      .status-panels-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        justify-items: center;
+
+        .status-panel {
+          max-width: 360px;
+          width: 100%;
+        }
+      }
+    }
+
+    @media (max-width: 480px) {
+      .status-cards-header {
+        .status-cards-h1 {
+          font-size: 20px;
+        }
+      }
+
+      .status-panels-grid {
+        .status-panel {
+          padding: 16px;
+
+          .breakdown-body {
+            flex-direction: column-reverse;
+            align-items: center;
+            gap: 16px;
+
+            .status-legend {
+              width: 100%;
             }
           }
         }

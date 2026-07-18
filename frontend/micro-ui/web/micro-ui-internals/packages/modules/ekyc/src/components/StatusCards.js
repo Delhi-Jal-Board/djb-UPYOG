@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import * as Chartjs from "chart.js/auto";
 
@@ -6,18 +6,146 @@ const getChartConstructor = () => {
   const C = Chartjs.Chart || Chartjs.default || Chartjs;
   return C;
 };
-
 const StatusCards = ({ countData }) => {
   const { t } = useTranslation();
+  const [ekycDownloadLoading, setEkycDownloadLoading] = useState(false);
+
+  let tenantId = Digit.ULBService.getCurrentTenantId();
+  if (!tenantId || tenantId === "dl") {
+    tenantId = "dl.djb";
+  }
+  const loggedInUser = Digit.SessionStorage.get("User")?.info;
+  const fullName = loggedInUser?.name || "Admin";
+
+  const { data: dashboardData } = Digit.Hooks.ekyc.useEkycSurveyorDashboard(
+    {},
+    {
+      tenantId,
+      offset: 0,
+      limit: 10,
+      ekycStatus: "submitted"
+    },
+    {
+      enabled: !!tenantId,
+    }
+  );
+
+  const apiCountData = React.useMemo(() => {
+    const info = dashboardData?.dashboardInfo || {};
+    return {
+      total: info.total || 0,
+      completed: info.completed || 0,
+      pending: info.pending || 0,
+      rejected: info.rejected || 0,
+      active: info.active || 0,
+    };
+  }, [dashboardData]);
+
+  const handleDownloadEkycData = async () => {
+    setEkycDownloadLoading(true);
+    try {
+      const response = await Digit.EkycService.application_list({
+        tenantId: tenantId,
+        offset: 0,
+        limit: 10000,
+        reportDownload: true,
+      });
+
+      const consumerList = response?.consumerList || [];
+      if (consumerList.length === 0) {
+        alert(t("NO_DATA_FOUND") || "No data found for download.");
+        return;
+      }
+
+      const excludedKeys = [
+        "status", "source", "submittedAt", "assignedAt", "connectionType", "approvedAt",
+        "alternateMobileNo", "city", "state", "addressType", "addressProofType", "mrcode",
+        "areacode", "verificationStatus", "surveyorId", "supervisorId", "vendorId",
+        "assignmentType", "assignmentValue", "assignedTime", "isSelfAssigned", "userType",
+        "tenantName", "tenantMobile"
+      ];
+
+      const headerMapping = {
+        kno: t("KNO") || "KNO",
+        firstName: t("FIRST_NAME") || "First Name",
+        middleName: t("MIDDLE_NAME") || "Middle Name",
+        lastName: t("LAST_NAME") || "Last Name",
+        gender: t("GENDER") || "Gender",
+        mobileNumber: t("MOBILE_NUMBER") || "Mobile Number",
+        emailId: t("EMAIL_ID") || "Email ID",
+        fatherOrHusbandName: t("FATHER_HUSBUND_NAME") || "Father/Husband Name",
+        relationship: t("RELATIONSHIP") || "Relationship",
+        dob: t("DOB") || "Date of Birth",
+        ekycStatus: t("EKYC_STATUS") || "eKYC Status",
+        zoneName: t("ZONE") || "Zone",
+        assembly: t("ASSEMBLY") || "Assembly",
+        ward: t("WARD") || "Ward",
+        pincode: t("PINCODE") || "Pincode",
+        mrkey: t("MR_KEY") || "MR Key",
+        consumerType: t("CONSUMER_TYPE") || "Consumer Type",
+        createdTime: t("CREATED_TIME") || "Created Time",
+        lastModifiedTime: t("LAST_MODIFIED_TIME") || "Last Modified Time",
+      };
+
+      const toTitleCase = (str) => {
+        if (!str) return "";
+        // Handle dot-notation values like "CONSUMERTYPE.INDIVIDUAL" → "Individual"
+        const cleanStr = String(str).includes(".") ? String(str).split(".").pop() : String(str);
+        return cleanStr
+          .toLowerCase()
+          .replace(/_/g, " ")
+          .replace(/\b\w/g, (c) => c.toUpperCase());
+      };
+
+      // Fields where original value must be preserved (identifiers, numbers, emails, dates)
+      const skipTitleCase = ["kno", "mobileNumber", "emailId", "pincode", "mrkey", "dob", "createdTime", "lastModifiedTime"];
+
+      const excelData = consumerList.map((item) => {
+        const cleanObj = {};
+
+        const name = [item.firstName, item.middleName, item.lastName].filter(Boolean).join(" ");
+        if (name) {
+          cleanObj[t("CONSUMER_NAME") || "Consumer Name"] = toTitleCase(name);
+        }
+
+        Object.keys(item).forEach(key => {
+          if (excludedKeys.includes(key)) return;
+
+          const val = item[key];
+          if (typeof val === "object" && val !== null) {
+            return;
+          }
+
+          const friendlyHeader = headerMapping[key] || t(key.toUpperCase()) || key;
+
+          // Apply Title Case to ALL string fields except identifiers/numbers/dates
+          if (typeof val === "string" && !skipTitleCase.includes(key)) {
+            cleanObj[friendlyHeader] = toTitleCase(val);
+          } else {
+            cleanObj[friendlyHeader] = val;
+          }
+        });
+
+        return cleanObj;
+      });
+
+      const cleanFileName = `eKYC_All_Data_Admin_${fullName.replace(/[^a-zA-Z0-9]/g, "_")}`;
+      Digit.Download.Excel(excelData, cleanFileName);
+    } catch (error) {
+      console.error("Error downloading eKYC Excel:", error);
+    } finally {
+      setEkycDownloadLoading(false);
+    }
+  };
+
   const chartRef1 = useRef(null);
   const chartInstance1 = useRef(null);
+  const total = apiCountData?.total || countData?.total || countData?.totalCount || 0;
+  const pending = apiCountData?.pending || countData?.pending || 0;
+  const active = apiCountData?.active || countData?.active || 0;
+  const completed = apiCountData?.completed || countData?.completed || 0;
 
-  const total = countData?.total || 0;
-  const pending = countData?.pending || 0;
-  const active = countData?.completed || 0;
-  const completed = 0;
-
-  const actualCompleted = countData?.completed || 0;
+  const actualCompleted = completed;
   const approved = actualCompleted;
 
   const efficiency = total > 0 ? Math.round((actualCompleted / total) * 100) : 0;
@@ -83,6 +211,18 @@ const StatusCards = ({ countData }) => {
             <div className="total-label">{t("EKYC_TOTAL_APPLICATIONS") || "Total Applications Processed"}</div>
             <div className="total-number">{formatNumber(total)}</div>
             <div className="total-badge">↗ +12.4% {t("EKYC_FROM_LAST_QUARTER") || "from last quarter"}</div>
+            <button
+              className="download-excel-btn"
+              disabled={ekycDownloadLoading}
+              onClick={handleDownloadEkycData}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+              {ekycDownloadLoading ? t("DOWNLOADING") || "Downloading..." : t("DOWNLOAD_EXCEL") || "Download Excel"}
+            </button>
           </div>
         </div>
 

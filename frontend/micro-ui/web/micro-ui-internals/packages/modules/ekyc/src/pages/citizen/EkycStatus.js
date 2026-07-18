@@ -239,6 +239,7 @@ const EkycStatus = () => {
                     propsForInboxTable,
                     propsForInboxMobileCards,
                     formState,
+                    showSearchOnMobile: true,
                   }}
                 />
               </div>

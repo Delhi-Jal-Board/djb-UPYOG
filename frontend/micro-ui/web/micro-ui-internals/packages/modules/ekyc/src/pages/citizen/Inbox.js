@@ -279,6 +279,8 @@ const Inbox = ({ parentRoute }) => {
           propsForInboxTable,
           propsForInboxMobileCards,
           formState,
+          forceTable: true,
+          showSearchOnMobile: true,
         }}
       />
     </div>

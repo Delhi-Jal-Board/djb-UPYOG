@@ -259,6 +259,8 @@ const Inbox = ({ parentRoute }) => {
           propsForInboxMobileCards,
           formState,
           countData: listData,
+          forceTable: true,
+          showSearchOnMobile: true,
         }}
       />
     </div>

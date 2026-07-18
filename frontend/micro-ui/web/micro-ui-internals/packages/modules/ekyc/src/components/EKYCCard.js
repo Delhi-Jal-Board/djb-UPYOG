@@ -5,7 +5,8 @@ import { useTranslation } from "react-i18next";
 const EKYCCard = () => {
   const { t } = useTranslation();
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  const roles = Digit.SessionStorage.get("User")?.info?.roles?.map((r) => r.code) || [];
+  const citizenInfo = Digit.SessionStorage.get("User")?.info?.roles;
+  const roles = Array.isArray(citizenInfo) ? citizenInfo.map((ele) => ele.code || ele) : [];
 
   const { data: listData, isLoading } = Digit.Hooks.ekyc.useEkycApplicationList(
     {},
@@ -15,55 +16,94 @@ const EKYCCard = () => {
 
   const totalCount = isLoading ? "-" : listData?.totalCount || 0;
 
-  const propsForModuleCard = {
-    Icon: <PersonIcon />,
-    moduleName: t("ACTION_TEST_EKYC"),
-    kpis: [
-      {
+  const isCitizen = window.location.pathname.includes("/citizen");
+  const prefix = isCitizen ? "/digit-ui/citizen/ekyc" : "/digit-ui/employee/ekyc";
+
+  let links = [];
+  if (isCitizen) {
+    if (roles.includes("EKYC_SURVEYOR")) {
+      links.push({
+        label: t("SURVEYOR_DASHBOARD"),
+        link: `${prefix}/surveyor-dashboard`,
+      });
+    }
+    if (roles.includes("EKYC_SUPERVISOR") || roles.includes("EKYC_VENDOR")) {
+      links.push({
         count: totalCount,
-        label: t("TOTAL_EKYC"),
-        link: `/digit-ui/employee/ekyc/admin-dashboard`,
-      },
-    ],
-    links: [
+        label: t("EKYC_INBOX"),
+        link: `${prefix}/inbox`,
+      });
+    }
+    if (roles.includes("EKYC_SUPERVISOR")) {
+      links.push(
+        {
+          label: t("EKYC_SUPERVISOR_DASHBOARD"),
+          link: `${prefix}/supervisor-dashboard`,
+        },
+        {
+          label: t("EKYC_ASSIGN"),
+          link: `${prefix}/assign`,
+        }
+      );
+    }
+    if (roles.includes("EKYC_VENDOR")) {
+      links.push({
+        label: t("EKYC_VENDOR_DASHBOARD"),
+        link: `${prefix}/vendor-dashboard`,
+      });
+    }
+    if (roles.includes("EKYC_SUPERVISOR") || roles.includes("EKYC_VENDOR")) {
+      links.push({
+        label: t("TITLE_VENDOR_MANAGEMENT"),
+        link: `/digit-ui/citizen/vendor/search-vendor`,
+      });
+    }
+    if (links.length === 0 || (roles.length === 1 && roles.includes("CITIZEN"))) {
+      links.push({
+        label: t("EKYC_STATUS"),
+        link: `${prefix}/:id`,
+      });
+    }
+  } else {
+    // Employee links
+    links = [
       {
         label: t("CEO_M.F_DOR_FINANCE_VIEW"),
-        link: `/digit-ui/employee/ekyc/ceo-dashboard`,
+        link: `${prefix}/ceo-dashboard`,
       },
       {
         label: t("EKYC_ADMIN_DASHBOARD") || "Admin Dashboard",
-        link: `/digit-ui/employee/ekyc/admin-dashboard`,
+        link: `${prefix}/admin-dashboard`,
       },
-      // {
-      //   label: t("EKYC_DASHBOARD"),
-      //   link: `/digit-ui/employee/ekyc/dashboard`,
-      // },
       {
         count: totalCount,
         label: t("EKYC_INBOX"),
-        link: `/digit-ui/employee/ekyc/inbox`,
+        link: `${prefix}/inbox`,
       },
-      // {
-      //     label: t("EKYC_CREATE_KYC"),
-      //     link: `/digit-ui/employee/ekyc/create-kyc`
-      // },
-      // {
-      //     label: t("EKYC_UPDATE_KYC"),
-      //     link: `/digit-ui/employee/ekyc/update-kyc`
-      // },
-      // {
-      //   label: t("EKYC_MAPPING"),
-      //   link: `/digit-ui/employee/ekyc/mapping`,
-      // },
       ...(!roles.includes("EMPLOYEE")
         ? [
           {
             label: t("EKYC_ASSIGN"),
-            link: `/digit-ui/employee/ekyc/assign`,
+            link: `${prefix}/assign`,
           },
         ]
         : []),
-    ],
+    ];
+  }
+
+  const propsForModuleCard = {
+    Icon: <PersonIcon />,
+    moduleName: t("ACTION_TEST_EKYC"),
+    kpis: isCitizen
+      ? []
+      : [
+          {
+            count: totalCount,
+            label: t("TOTAL_EKYC"),
+            link: `${prefix}/admin-dashboard`,
+          },
+        ],
+    links: links,
   };
 
   return <EmployeeModuleCard {...propsForModuleCard} />;
