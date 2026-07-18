@@ -731,7 +731,7 @@ const VendorInbox = (props) => {
     const formData = {
       surveyor: {
         ...formDetails,
-        supervisorId: selectedSupervisor?.name || selectedSupervisor?.owner?.name || null,
+        supervisorId: selectedSupervisor?.id || null,
         supervisorName: selectedSupervisor?.name || selectedSupervisor?.owner?.name || null,
         owner: {
           ...formDetails?.owner,
