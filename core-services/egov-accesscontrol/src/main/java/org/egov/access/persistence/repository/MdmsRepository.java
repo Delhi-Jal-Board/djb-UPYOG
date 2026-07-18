@@ -39,20 +39,20 @@ public class MdmsRepository {
     @Value("${mdms.roleactionmodule.name}")
     private String roleActionModule;
 
-    @Value("${mdms.actionsmodule.name}")
-    private String actionModule;
-
-//    @Value("${mdms.actionstestmodule.name}")
+//    @Value("${mdms.actionsmodule.name}")
 //    private String actionModule;
+
+    @Value("${mdms.actionstestmodule.name}")
+    private String actionModule;
 
     @Value("${mdms.roleactionmaster.names}")
     private String roleActionMaster;
 
-    @Value("${mdms.actionmaster.names}")
-    private String actionMaster;
-
-//    @Value("${mdms.actiontestmaster.names}")
+//    @Value("${mdms.actionmaster.names}")
 //    private String actionMaster;
+
+    @Value("${mdms.actiontestmaster.names}")
+    private String actionMaster;
 
     @Value("${action.master.mdms.filter}")
     private String actionFilter;
