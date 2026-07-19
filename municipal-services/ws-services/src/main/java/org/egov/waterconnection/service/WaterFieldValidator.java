@@ -22,12 +22,27 @@ public class WaterFieldValidator implements WaterActionValidator {
 		if(reqType == WCConstants.MODIFY_CONNECTION){
 			handleModifyConnectionRequest(waterConnectionRequest, errorMap);
 		}
+		if(reqType == WCConstants.MUTATION_CONNECTION){
+			handleMutationConnectionRequest(waterConnectionRequest, errorMap);
+		}
 		if(reqType == WCConstants.DISCONNECT_CONNECTION){
 			handleDisconnectionRequest(waterConnectionRequest, errorMap);
 		}
 		if (!errorMap.isEmpty())
 			return new ValidatorResult(false, errorMap);
 		return new ValidatorResult(true, errorMap);
+	}
+
+	private void handleMutationConnectionRequest(WaterConnectionRequest waterConnectionRequest, Map<String, String> errorMap) {
+		if (waterConnectionRequest.getWaterConnection().getProcessInstance() != null && 
+				(WCConstants.APPROVE_CONNECTION.equalsIgnoreCase(waterConnectionRequest.getWaterConnection().getProcessInstance().getAction())
+				|| WCConstants.ACTION_INITIATE.equals(waterConnectionRequest.getWaterConnection().getProcessInstance().getAction())
+				|| WCConstants.SUBMIT_APPLICATION_CONST.equals(waterConnectionRequest.getWaterConnection().getProcessInstance().getAction()))) {
+			if (waterConnectionRequest.getWaterConnection().getDateEffectiveFrom() == null
+					|| waterConnectionRequest.getWaterConnection().getDateEffectiveFrom() <= 0) {
+				errorMap.put("INVALID_DATE_EFFECTIVE_FROM", "Date effective from cannot be null or negative");
+			}
+		}
 	}
 
 	private void handleDisconnectionRequest(WaterConnectionRequest waterConnectionRequest, Map<String, String> errorMap) {

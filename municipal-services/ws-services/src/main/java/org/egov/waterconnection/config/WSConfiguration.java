@@ -222,6 +222,9 @@ public class WSConfiguration {
 	@Value("${reconnection.ws.workflow.name}")
 	private String wsWorkflowReconnectionName;
 
+    @Value("${mutation.ws.workflow.name}")
+    private String mutationWSBusinessServiceName;
+
     @Value("${state.level.tenant.id}")
     private String stateLevelTenantId;
 

@@ -27,6 +27,8 @@ public class MeterInfoValidator implements WaterActionValidator {
 		case WCConstants.MODIFY_CONNECTION:
 			handleModifyConnectionRequest(waterConnectionRequest, errorMap);
 			break;
+		case WCConstants.MUTATION_CONNECTION:
+			break;
 		case WCConstants.UPDATE_APPLICATION:
 			handleUpdateApplicationRequest(waterConnectionRequest, errorMap);
 			break;

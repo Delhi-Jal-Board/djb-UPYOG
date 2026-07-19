@@ -107,6 +107,7 @@ public class WaterServiceImpl implements WaterService {
 
 		int reqType = WCConstants.CREATE_APPLICATION;
 
+
 		if (waterConnectionRequest.isDisconnectRequest() || (waterConnectionRequest.getWaterConnection().getApplicationType() !=null && waterConnectionRequest.getWaterConnection().getApplicationType().equalsIgnoreCase(WCConstants.DISCONNECT_WATER_CONNECTION))) {
 			reqType = WCConstants.DISCONNECT_CONNECTION;
 			validateDisconnectionRequest(waterConnectionRequest);
@@ -116,6 +117,27 @@ public class WaterServiceImpl implements WaterService {
 			validateReconnectionRequest(waterConnectionRequest);
 		}
 
+		else if (wsUtil.isMutationConnectionRequest(waterConnectionRequest)) {
+			reqType = WCConstants.MUTATION_CONNECTION;
+			List<WaterConnection> previousConnectionsList = getAllWaterApplications(waterConnectionRequest);
+			// Validate any process Instance exists with WF
+			if (!CollectionUtils.isEmpty(previousConnectionsList)) {
+				workflowService.validateInProgressWF(previousConnectionsList, waterConnectionRequest.getRequestInfo(),
+						waterConnectionRequest.getWaterConnection().getTenantId());
+				waterConnectionValidator.validateConnectionStatus(previousConnectionsList, waterConnectionRequest, reqType);
+			}
+			swapConnHolders(waterConnectionRequest,previousConnectionsList);
+
+			//Swap masked Plumber info with unmasked plumberInfo from previous applications
+			if(!ObjectUtils.isEmpty(previousConnectionsList.get(0).getPlumberInfo()))
+				unmaskingUtil.getUnmaskedPlumberInfo(waterConnectionRequest.getWaterConnection().getPlumberInfo(), previousConnectionsList.get(0).getPlumberInfo());
+
+			// Validate any process Instance exists with WF
+			if (!CollectionUtils.isEmpty(previousConnectionsList)) {
+				workflowService.validateInProgressWF(previousConnectionsList, waterConnectionRequest.getRequestInfo(),
+						waterConnectionRequest.getWaterConnection().getTenantId());
+			}
+		}
 		else if (wsUtil.isModifyConnectionRequest(waterConnectionRequest)) {
 			List<WaterConnection> previousConnectionsList = getAllWaterApplications(waterConnectionRequest);
 			// Validate any process Instance exists with WF
@@ -343,6 +365,9 @@ public class WaterServiceImpl implements WaterService {
 		}
 		else if (waterConnectionRequest.isReconnectRequest() || waterConnectionRequest.getWaterConnection().getApplicationType().equalsIgnoreCase(WCConstants.WATER_RECONNECTION)) {
 			return updateWaterConnectionForReconnectFlow(waterConnectionRequest);
+		}
+		else if (wsUtil.isMutationConnectionRequest(waterConnectionRequest)) {
+			return updateWaterConnectionForMutationFlow(waterConnectionRequest);
 		}
 		SearchCriteria criteria = new SearchCriteria();
 		log.info("con" + wsUtil.isModifyConnectionRequest(waterConnectionRequest));
@@ -743,6 +768,51 @@ public class WaterServiceImpl implements WaterService {
 			waterConnection.setConnectionHolders(encryptionDecryptionUtil.decryptObject(connectionHolders, WNS_OWNER_ENCRYPTION_MODEL, OwnerInfo.class, requestInfo));
 
 		return waterConnection;
+	}
+
+	private List<WaterConnection> updateWaterConnectionForMutationFlow(WaterConnectionRequest waterConnectionRequest) {
+		waterConnectionValidator.validateWaterConnection(waterConnectionRequest, WCConstants.MUTATION_CONNECTION);
+		mDMSValidator.validateMasterData(waterConnectionRequest, WCConstants.MUTATION_CONNECTION);
+		BusinessService businessService = workflowService.getBusinessService(
+				waterConnectionRequest.getWaterConnection().getTenantId(), waterConnectionRequest.getRequestInfo(),
+				config.getMutationWSBusinessServiceName());
+		WaterConnection searchResult = getConnectionForUpdateRequest(waterConnectionRequest.getWaterConnection().getTenantId(),
+				waterConnectionRequest.getWaterConnection().getId(), waterConnectionRequest.getRequestInfo());
+
+		boolean isPlumberSwapped = unmaskingUtil.getUnmaskedPlumberInfo(waterConnectionRequest.getWaterConnection().getPlumberInfo(), searchResult.getPlumberInfo());
+		if (isPlumberSwapped)
+			waterConnectionRequest.setWaterConnection(encryptionDecryptionUtil.decryptObject(waterConnectionRequest.getWaterConnection(), "WnSConnectionPlumberDecrypDisabled", WaterConnection.class, waterConnectionRequest.getRequestInfo()));
+
+		Property property = validateProperty.getOrValidateProperty(waterConnectionRequest);
+		validateProperty.validatePropertyFields(property,waterConnectionRequest.getRequestInfo());
+		String previousApplicationStatus = workflowService.getApplicationStatus(waterConnectionRequest.getRequestInfo(),
+				waterConnectionRequest.getWaterConnection().getApplicationNo(),
+				waterConnectionRequest.getWaterConnection().getTenantId(), config.getMutationWSBusinessServiceName());
+		enrichmentService.enrichUpdateWaterConnection(waterConnectionRequest);
+		actionValidator.validateUpdateRequest(waterConnectionRequest, businessService, previousApplicationStatus);
+		userService.updateUser(waterConnectionRequest, searchResult);
+		waterConnectionValidator.validateUpdate(waterConnectionRequest, searchResult, WCConstants.MUTATION_CONNECTION);
+		wfIntegrator.callWorkFlow(waterConnectionRequest, property);
+		boolean isStateUpdatable = waterServiceUtil.getStatusForUpdate(businessService, previousApplicationStatus);
+
+		//check for edit and send edit notification
+		waterDaoImpl.pushForEditNotification(waterConnectionRequest, isStateUpdatable);
+
+		/* encrypt here */
+		waterConnectionRequest.setWaterConnection(encryptConnectionDetails(waterConnectionRequest.getWaterConnection()));
+		/* encrypt here for connection holder details */
+		waterConnectionRequest.setWaterConnection(encryptConnectionHolderDetails(waterConnectionRequest.getWaterConnection()));
+
+		waterDao.updateWaterConnection(waterConnectionRequest, isStateUpdatable);
+
+		// setting oldApplication Flag
+		markOldApplication(waterConnectionRequest);
+		enrichmentService.postForMeterReading(waterConnectionRequest, WCConstants.MUTATION_CONNECTION);
+
+		/* decrypt here */
+		waterConnectionRequest.setWaterConnection(decryptConnectionDetails(waterConnectionRequest.getWaterConnection(), waterConnectionRequest.getRequestInfo()));
+
+		return Arrays.asList(waterConnectionRequest.getWaterConnection());
 	}
 
 }

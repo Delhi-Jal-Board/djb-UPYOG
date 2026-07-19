@@ -54,6 +54,7 @@ public class MDMSValidator {
 			case WCConstants.UPDATE_APPLICATION:
 				validateMasterDataForUpdateConnection(request);
 				break;
+			case WCConstants.MUTATION_CONNECTION:
 			case WCConstants.MODIFY_CONNECTION:
 				validateMasterDataForModifyConnection(request);
 				break;
