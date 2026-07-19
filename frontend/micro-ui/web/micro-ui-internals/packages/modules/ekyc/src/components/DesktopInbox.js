@@ -21,6 +21,14 @@ const DesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
     countData,
   } = props;
   const { t } = useTranslation();
+
+  const toTitleCase = (str) => {
+    if (!str) return "";
+    return String(str)
+      .toLowerCase()
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (c) => c.toUpperCase());
+  };
   const history = useHistory();
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const FilterComponent = Digit.ComponentRegistryService?.getComponent(filterComponent);
@@ -57,7 +65,7 @@ const DesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
       {
         Header: t("EKYC_CITIZEN_NAME"),
         accessor: "citizenName",
-        Cell: ({ row }) => <span>{row.original?.citizenName || "NA"}</span>,
+        Cell: ({ row }) => <span>{toTitleCase(row.original?.citizenName) || "NA"}</span>,
       },
       // {
       //   Header: t("EKYC_MOBILE_NO"),
@@ -69,15 +77,16 @@ const DesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
         accessor: "actionStatus",
         Cell: ({ row }) => {
           const status = (row.original?.status || "DEFAULT").toUpperCase();
-          return <span className={`ekyc-status-tag ${status}`}>{t(`${status}`)}</span>;
+          return <span className={`ekyc-status-tag ${status}`}>{toTitleCase(row.original?.status || "DEFAULT")}</span>;
         },
       },
       {
         Header: t("EKYC_EKYC_STATUS"),
         accessor: "ekycStatus",
         Cell: ({ row }) => {
-          const ekycStatus = (row.original?.ekycStatus || row.original?.ekycstatus || "NA").toUpperCase();
-          return <span className={`ekyc-status-tag ${ekycStatus}`}>{t(`${ekycStatus}`)}</span>;
+          const raw = row.original?.ekycStatus || row.original?.ekycstatus || "NA";
+          const ekycStatus = raw.toUpperCase();
+          return <span className={`ekyc-status-tag ${ekycStatus}`}>{toTitleCase(raw)}</span>;
         },
       },
       {

@@ -95,7 +95,7 @@ const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true, 
     <LabelFieldPair>
       <CardLabel>
         {t(config.label)}
-        {config.isMandatory ? " *" : ""}
+        {config.isMandatory ? <span className="check-page-link-button"> * </span> : ""}
       </CardLabel>
 
       <div className="field" style={{ position: "relative", zIndex: 10 }}>

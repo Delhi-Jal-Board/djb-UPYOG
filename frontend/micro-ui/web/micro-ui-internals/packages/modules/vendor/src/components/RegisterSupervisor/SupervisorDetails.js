@@ -61,6 +61,7 @@ const SupervisorDetails = (props) => {
               { title: "ES_VENDOR_SUPERVISOR_FULL_NAME", value: data?.name },
               { title: "ES_VENDOR_SUPERVISOR_MOBILE_NUMBER", value: data?.owner?.mobileNumber || data?.mobileNo },
               { title: "ES_VENDOR_SUPERVISOR_EMAIL_ID", value: data?.owner?.emailId },
+              { title: "ES_VENDOR_SUPERVISOR_ZONE", value: data?.assignedZoneId },
               // { title: "ES_VENDOR_SUPERVISOR_STAFF_CODE", value: data?.employeeId || "N/A" },
               { title: "ES_VENDOR_SUPERVISOR_GENDER", value: data?.owner?.gender },
               {

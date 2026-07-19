@@ -128,6 +128,9 @@ const VendorDetailsCard = () => {
         }
         return "N/A";
     }, [vendor]);
+    const zoneIds = useMemo(() => {
+        return vendor?.zoneIds?.length ? vendor.zoneIds.map(zone => zone.toUpperCase().replace("", " ")).join(", ") : "N/A";
+    }, [vendor]);
 
     // KPI stats calculation
     const cards = useMemo(() => {
@@ -212,7 +215,7 @@ const VendorDetailsCard = () => {
                 "status", "source", "submittedAt", "assignedAt", "connectionType", "approvedAt",
                 "alternateMobileNo", "city", "state", "addressType", "addressProofType", "mrcode",
                 "areacode", "verificationStatus", "surveyorId", "supervisorId", "vendorId",
-                "assignmentType", "assignmentValue", "assignedTime", "isSelfAssigned", "userType",
+                "assignmentType", "assignmentValue", "isSelfAssigned", "userType",
                 "tenantName", "tenantMobile"
             ];
 
@@ -564,9 +567,13 @@ const VendorDetailsCard = () => {
                                 <span className="value">{status}</span>
                             </div>
 
-                            <div className="detail-item">
+                            {/* <div className="detail-item">
                                 <span className="label">{t("JURISDICTIONS") || "Jurisdictions"}</span>
                                 <span className="value">{jurisdictions}</span>
+                            </div> */}
+                            <div className="detail-item">
+                                <span className="label">{t("ASSIGNED_ZONES") || "Assigned Zones"}</span>
+                                <span className="value">{zoneIds}</span>
                             </div>
                         </div>
                     </div>

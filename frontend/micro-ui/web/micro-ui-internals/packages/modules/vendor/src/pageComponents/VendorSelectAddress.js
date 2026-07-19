@@ -130,7 +130,7 @@ const VendorSelectAddress = ({ t, config, onSelect, userType, formData }) => {
         <LabelFieldPair>
           <CardLabel>
             {t("MYCITY_CODE_LABEL")}
-            {config.isMandatory ? " * " : null}
+            {config.isMandatory ? <span className="check-page-link-button"> * </span> : null}
           </CardLabel>
           <Dropdown
             className=""
@@ -146,14 +146,14 @@ const VendorSelectAddress = ({ t, config, onSelect, userType, formData }) => {
         <LabelFieldPair>
           <CardLabel>
             {t("ES_NEW_APPLICATION_LOCATION_WARD")}
-            {config.isMandatory ? " * " : null}
+            {config.isMandatory ? <span className="check-page-link-button"> * </span> : null}
           </CardLabel>
           <Dropdown className="" isMandatory selected={selectedWard} option={wards} select={selectWard} optionKey="name" t={t} />
         </LabelFieldPair>
         <LabelFieldPair>
           <CardLabel>
             {t("ES_NEW_APPLICATION_LOCATION_MOHALLA")}
-            {config.isMandatory ? " * " : null}
+            {config.isMandatory ? <span className="check-page-link-button"> * </span> : null}
           </CardLabel>
           <Dropdown className="" isMandatory selected={selectedLocality} option={localities} select={selectLocality} optionKey="name" t={t} />
         </LabelFieldPair>
