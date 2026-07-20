@@ -245,6 +245,8 @@ export const convertToPropertyLightWeight = (data = {}) => {
         numberOfFloors: data.waterConnection?.useDetails?.noOfFloors?.code || data.useDetails?.noOfFloors?.code || 1,
         plotArea: data.waterConnection?.useDetails?.plotArea || data.useDetails?.plotArea,
         builtUpArea: data.waterConnection?.useDetails?.builtUpArea || data.useDetails?.builtUpArea,
+        farArea: data.waterConnection?.useDetails?.farArea || data.useDetails?.farArea,
+        numberOfStudents: data.waterConnection?.useDetails?.numnberOfStudents || data.useDetails?.numnberOfStudents,
         numberOfBeds: data.waterConnection?.useDetails?.hospitalBeds || data.useDetails?.hospitalBeds,
         owners: [
           ...(data.owners || []).map((owner, index) => ({
@@ -326,6 +328,8 @@ export const convertToUpdatePropertyLightWeight = (data = {}) => {
         numberOfFloors: data.waterConnection?.useDetails?.noOfFloors?.code || data.useDetails?.noOfFloors?.code || 1,
         plotArea: data.waterConnection?.useDetails?.plotArea || data.useDetails?.plotArea,
         builtUpArea: data.waterConnection?.useDetails?.builtUpArea || data.useDetails?.builtUpArea,
+        farArea: data.waterConnection?.useDetails?.farArea || data.useDetails?.farArea,
+        numnberOfStudents: data.waterConnection?.useDetails?.numnberOfStudents || data.useDetails?.numnberOfStudents,
         hospitalBeds: data.waterConnection?.useDetails?.hospitalBeds || data.useDetails?.hospitalBeds,
         owners: [
           ...data.owners.map((owner, index) => ({

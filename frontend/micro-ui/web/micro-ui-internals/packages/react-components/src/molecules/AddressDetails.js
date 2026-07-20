@@ -750,66 +750,70 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
             />
           </LabelFieldPair>
         )}
-        <LabelFieldPair style={{ position: "relative" }}>
+        <LabelFieldPair>
           <CardLabel>
             {`${t("PINCODE")}`} <span className="check-page-link-button">*</span>
           </CardLabel>
-          <TextInput
-            value={pincode}
-            onChange={(e) => {
-              const newPin = e.target.value.replace(/\D/g, "").slice(0, 6);
-              if (newPin !== pincode) {
-                setLocality(null);
-                setAssembly("");
-                setZone("");
-                setBlock("");
-                setLatitude("");
-                setLongitude("");
-                setAddressLine1("");
-                // setAddressLine2("");
-              }
-              setPincode(newPin);
-              setShowPincodeSuggestions(true);
-            }}
-            onFocus={() => setShowPincodeSuggestions(true)}
-            onBlur={() => {
-              // Small delay to allow click on suggestion list items
-              setTimeout(() => setShowPincodeSuggestions(false), 200);
-            }}
-            style={{ width: "100%" }}
-            maxlength={6}
-            disabled={disable}
-          />
-          {showPincodeSuggestions && fetchedPincodes?.length > 0 && (
-            <div
-              className="options-card"
-              style={{
-                position: "absolute",
-                zIndex: 100,
-                width: "100%",
-                maxHeight: "200px",
-                overflowY: "auto",
-                backgroundColor: "white",
-                boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
+          <div className="form-field" style={{ position: "relative", width: "100%" }}>
+            <TextInput
+              value={pincode}
+              onChange={(e) => {
+                const newPin = e.target.value.replace(/\D/g, "").slice(0, 6);
+                if (newPin !== pincode) {
+                  setLocality(null);
+                  setAssembly("");
+                  setZone("");
+                  setBlock("");
+                  setLatitude("");
+                  setLongitude("");
+                  setAddressLine1("");
+                  // setAddressLine2("");
+                }
+                setPincode(newPin);
+                setShowPincodeSuggestions(true);
               }}
-            >
-              {fetchedPincodes
-                .filter((p) => !pincode || p.code.toLowerCase().includes(pincode.toLowerCase()))
-                .map((p, index) => (
-                  <div
-                    key={index}
-                    className="cp profile-dropdown--item"
-                    style={{ padding: "10px", borderBottom: "1px solid #eee", cursor: "pointer" }}
-                    onClick={() => {
-                      setPincode(p.code);
-                      setShowPincodeSuggestions(false);
-                    }}
-                  >
-                    {p.code}
-                  </div>
-                ))}
-            </div>
-          )}
+              onFocus={() => setShowPincodeSuggestions(true)}
+              onBlur={() => {
+                // Small delay to allow click on suggestion list items
+                setTimeout(() => setShowPincodeSuggestions(false), 200);
+              }}
+              style={{ width: "100%" }}
+              placeholder="Enter Pincode"
+              maxlength={6}
+              disabled={disable}
+            />
+            {showPincodeSuggestions && fetchedPincodes?.length > 0 && (
+              <div
+                className="options-card"
+                style={{
+                  position: "absolute",
+                  zIndex: 100,
+                  width: "100%",
+                  top: "100%",
+                  maxHeight: "200px",
+                  overflowY: "auto",
+                  backgroundColor: "white",
+                  boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
+                }}
+              >
+                {fetchedPincodes
+                  .filter((p) => !pincode || p.code.toLowerCase().includes(pincode.toLowerCase()))
+                  .map((p, index) => (
+                    <div
+                      key={index}
+                      className="cp profile-dropdown--item"
+                      style={{ padding: "10px", borderBottom: "1px solid #eee", cursor: "pointer" }}
+                      onClick={() => {
+                        setPincode(p.code);
+                        setShowPincodeSuggestions(false);
+                      }}
+                    >
+                      {p.code}
+                    </div>
+                  ))}
+              </div>
+            )}
+          </div>
         </LabelFieldPair>
         <LabelFieldPair>
           <CardLabel>
