@@ -22,10 +22,12 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
         noOfFloors: null,
         plotArea: "",
         builtUpArea: "",
+        farArea: "",
         SelectYearofConstruction: null,
         NumberofDwellingUnits: "",
         NumberofRooms: "",
         hospitalBeds: "",
+        numnberOfStudents: "",
       },
     },
   });
@@ -64,6 +66,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
   const watchWaterConnectionUsageType = watch("useDetails.WaterConnectionUsageType");
   const isHospitalProperty = watchPropertyType?.code === "HOSPITAL_NURSING_HOME" || watchPropertyType?.code === "HospitalNursingHome";
   const isHotelRestaurantProperty = watchPropertyType?.code === "HOTEL_OR_RESTAURANT" || watchPropertyType?.code === "HotelOrRestaurant";
+  const isSchoolCollegeProperty = watchPropertyType?.code === "School" || watchPropertyType?.code === "College";
 
   const yearOptions = useMemo(() => {
     const currentYear = new Date().getFullYear();
@@ -118,13 +121,13 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
 
   const usageTypeOptions = useMemo(() => {
     let options = ptServicesMastersData?.PropertyTax?.PropertyNewUsageType?.filter((item) => item.active) || [];
-    
+
     if (watchPropertyCategory?.code) {
       if (watchPropertyCategory?.code?.toUpperCase() !== "MIXED") {
         options = options.filter((item) => item.type?.toUpperCase() === watchPropertyCategory.code?.toUpperCase());
       }
     }
-    
+
     return options.map((item) => ({
       code: item.code,
       name: item.name,
@@ -197,10 +200,12 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
       setValue("useDetails.noOfFloors", null);
       setValue("useDetails.plotArea", "");
       setValue("useDetails.builtUpArea", "");
+      setValue("useDetails.farArea", "");
       setValue("useDetails.SelectYearofConstruction", null);
       setValue("useDetails.NumberofDwellingUnits", "");
       setValue("useDetails.NumberofRooms", "");
       setValue("useDetails.hospitalBeds", "");
+      setValue("useDetails.numnberOfStudents", "");
     }
   }, [
     formData?.cpt?.details,
@@ -232,8 +237,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
   return (
     <CollapsibleCardPage
       title={t("WS_PROPERTY_AND_WATER_CONNECTION_USE_DETAILS") + (config?.isAutomaticFill ? " " + t("(Automatic Fill by Property)") : "")}
-      defaultOpen={false}
-      // defaultOpen={config?.isAutomaticFill ? false : true}
+      defaultOpen={config?.isAutomaticFill ? false : true}
       style={props.style}
     >
       <div className="formcomposer-section-grid">
@@ -382,6 +386,21 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
           </div>
         </LabelFieldPair>
         {errors?.useDetails?.builtUpArea && <CardLabelError style={errorStyle}>{errors.useDetails.builtUpArea.message}</CardLabelError>}
+        <LabelFieldPair>
+          <CardLabel>{`${t("WS_FAR_AREA")}`}</CardLabel>
+          <div className="form-field">
+            <TextInput
+              t={t}
+              inputRef={register({
+                pattern: { value: DECIMAL_PATTERN, message: t("ERR_INVALID_DECIMAL") },
+              })}
+              name="useDetails.farArea"
+              disabled={isPropertyFound}
+            />
+          </div>
+        </LabelFieldPair>
+        {errors?.useDetails?.farArea && <CardLabelError style={errorStyle}>{errors.useDetails.farArea.message}</CardLabelError>}
+
 
         <LabelFieldPair>
           <CardLabel>{`${t("WS_SELECT_YEAR_OF_CONSTRUCTION")}*`}</CardLabel>
@@ -463,6 +482,25 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
         ) : null}
         {isHospitalProperty && errors?.useDetails?.hospitalBeds && (
           <CardLabelError style={errorStyle}>{errors.useDetails.hospitalBeds.message}</CardLabelError>
+        )}
+
+        {isSchoolCollegeProperty ? (
+          <LabelFieldPair>
+            <CardLabel>{`${t("WS_NUMBER_OF_STUDENTS")}`}</CardLabel>
+            <div className="form-field">
+              <TextInput
+                t={t}
+                inputRef={register({
+                  pattern: { value: NUMBER_PATTERN, message: t("ERR_INVALID_NUMBER") },
+                })}
+                name="useDetails.numnberOfStudents"
+                disabled={isPropertyFound}
+              />
+            </div>
+          </LabelFieldPair>
+        ) : null}
+        {isSchoolCollegeProperty && errors?.useDetails?.numnberOfStudents && (
+          <CardLabelError style={errorStyle}>{errors.useDetails.numnberOfStudents.message}</CardLabelError>
         )}
       </div>
     </CollapsibleCardPage>

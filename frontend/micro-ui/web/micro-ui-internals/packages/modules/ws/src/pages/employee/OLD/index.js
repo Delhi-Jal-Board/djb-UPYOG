@@ -107,7 +107,7 @@ const OLDApplication = () => {
                   withoutLabel: true,
                   isAutomaticFill: true,
                   texts: {
-                    header: `PT_LOCATION_DETAILS ${t("(Automatic Fill by Property)")}`,
+                    header: `${t("PT_LOCATION_DETAILS_AUTOMATIC_FILL_BY_PROPERTY")}`,
                   },
                   defaultOpen: false,
                 },
