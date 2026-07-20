@@ -42,6 +42,9 @@ public class MdmsRepository {
 //    @Value("${mdms.actionsmodule.name}")
 //    private String actionModule;
 
+    @Value("${egov.mdms.host}")
+    private String mdmsHost;
+
     @Value("${mdms.actionstestmodule.name}")
     private String actionModule;
 
@@ -72,48 +75,130 @@ public class MdmsRepository {
      * @return Map of roles to URIs authorized
      */
     @Cacheable(value = "roleActions", sync = true)
-    public  Map<String, ActionContainer> fetchRoleActionData(String tenantId){
-        List<ModuleDetail> moduleDetail = new ArrayList<ModuleDetail>();
-        RequestInfo requestInfo = new RequestInfo();
+    public Map<String, ActionContainer> fetchRoleActionData(String tenantId) {
+        Map<String, ActionContainer> finalMap = new HashMap<>();
+        try {
+            List<ModuleDetail> moduleDetail = new ArrayList<ModuleDetail>();
+            RequestInfo requestInfo = new RequestInfo();
 
-        MasterDetail actionsMasterDetail =
-                MasterDetail.builder().name(actionMaster).filter(actionFilter).build();
-        moduleDetail.add(ModuleDetail.builder().moduleName(actionModule).masterDetails(Collections.singletonList(
-                actionsMasterDetail)).build());
+            MasterDetail actionsMasterDetail =
+                    MasterDetail.builder().name(actionMaster).filter(actionFilter).build();
+            moduleDetail.add(ModuleDetail.builder().moduleName(actionModule).masterDetails(Collections.singletonList(
+                    actionsMasterDetail)).build());
 
-        MasterDetail roleActionsMasterDetail = MasterDetail.builder().name(roleActionMaster).build();
-        moduleDetail.add(ModuleDetail.builder().moduleName(roleActionModule).masterDetails(Collections.singletonList(
-                roleActionsMasterDetail)).build());
+            MasterDetail roleActionsMasterDetail = MasterDetail.builder().name(roleActionMaster).build();
+            moduleDetail.add(ModuleDetail.builder().moduleName(roleActionModule).masterDetails(Collections.singletonList(
+                    roleActionsMasterDetail)).build());
 
+            MdmsCriteria mc = new MdmsCriteria();
+            mc.setTenantId(tenantId);
+            mc.setModuleDetails(moduleDetail);
 
-        MdmsCriteria mc = new MdmsCriteria();
-        mc.setTenantId(tenantId);
-        mc.setModuleDetails(moduleDetail);
+            MdmsCriteriaReq mcq = new MdmsCriteriaReq();
+            mcq.setRequestInfo(requestInfo);
+            mcq.setMdmsCriteria(mc);
 
-        MdmsCriteriaReq mcq = new MdmsCriteriaReq();
-        mcq.setRequestInfo(requestInfo);
-        mcq.setMdmsCriteria(mc);
+            @SuppressWarnings("unchecked")
+            Map<String, Map<String, List>> response = (Map<String, Map<String, List>>) restTemplate.postForObject(url, mcq, Map.class).get("MdmsRes");
 
-        @SuppressWarnings("unchecked")
-        Map<String, Map<String, List>> response = (Map<String, Map<String, List>>) restTemplate.postForObject(url, mcq,
-                Map.class).get("MdmsRes");
+            if (!isNull(response) && !isNull(response.get(roleActionModule)) && !isNull(response.get(roleActionModule).get(roleActionMaster))
+                    && !isNull(response.get(actionModule)) && !isNull(response.get(actionModule).get(actionMaster))) {
 
-        if(isNull(response.get(roleActionModule)) || isNull(response.get(roleActionModule).get(roleActionMaster))
-                || isNull(response.get(actionModule)) || isNull(response.get(actionModule).get(actionMaster)))
-            throw new CustomException("DATA_NOT_AVAILABLE", "Data not available for this tenant");
+                // Transform V1 response and merge into final map
+                Map<String, ActionContainer> v1Map = transformMdmsResponse(response);
+                mergeActionContainers(finalMap, v1Map);
+                log.info("Successfully loaded Role-Action mappings from MDMS V1");
+            }
+        } catch (Exception e) {
+            log.error("Failed to fetch or parse role action data from mdms v1", e);
+        }
 
+        try {
+            String v2Url = "http://mdms-v2:8080/mdms-v2/v2/_search";
 
-        return transformMdmsResponse(response);
+            // A. Fetch Actions from mdms-v2
+            Map<String, Object> actionRequest = new HashMap<>();
+            actionRequest.put("RequestInfo", new RequestInfo());
+            Map<String, Object> actionCriteria = new HashMap<>();
+            actionCriteria.put("tenantId", tenantId);
+            actionCriteria.put("schemaCode", "ACCESSCONTROL-ACTIONS-TEST.actions-test");
+            actionCriteria.put("isActive", true);
+            actionRequest.put("MdmsCriteria", actionCriteria);
 
-//        Map<String, List<String>> map = Arrays.stream(roleActions)
-//                .filter( roleAction -> actionMap.containsKey(roleAction.getActionId()) )
-//                .collect(Collectors.groupingBy(
-//                        RoleAction::getRoleCode,
-//                        Collectors.mapping(roleAction -> actionMap.get(roleAction.getActionId()).get(0).getUrl(),
-//                                Collectors.toList())));
-//
-//        return map;
+            Map<String, Object> actionResponse = restTemplate.postForObject(v2Url, actionRequest, Map.class);
+            List<Map<String, Object>> mdmsActions = (List<Map<String, Object>>) actionResponse.get("mdms");
 
+            Map<Long, String> actionIdToUrlMap = new HashMap<>();
+            if (mdmsActions != null) {
+                for (Map<String, Object> mdmsAction : mdmsActions) {
+                    Map<String, Object> data = (Map<String, Object>) mdmsAction.get("data");
+                    if (data != null && data.get("id") != null && data.get("url") != null) {
+                        actionIdToUrlMap.put(((Number) data.get("id")).longValue(), (String) data.get("url"));
+                    }
+                }
+            }
+
+            Map<String, Object> roleActionRequest = new HashMap<>();
+            roleActionRequest.put("RequestInfo", new RequestInfo());
+            Map<String, Object> roleActionCriteria = new HashMap<>();
+            roleActionCriteria.put("tenantId", tenantId);
+            roleActionCriteria.put("schemaCode", "ACCESSCONTROL-ROLEACTIONS.roleactions");
+            roleActionCriteria.put("isActive", true);
+            roleActionRequest.put("MdmsCriteria", roleActionCriteria);
+
+            Map<String, Object> roleActionResponse = restTemplate.postForObject(v2Url, roleActionRequest, Map.class);
+            List<Map<String, Object>> mdmsRoleActions = (List<Map<String, Object>>) roleActionResponse.get("mdms");
+
+            // C. Map URLs to Roles and merge into final map
+            if (mdmsRoleActions != null) {
+                for (Map<String, Object> mdmsRoleAction : mdmsRoleActions) {
+                    Map<String, Object> data = (Map<String, Object>) mdmsRoleAction.get("data");
+                    if (data != null && data.get("rolecode") != null && data.get("actionid") != null) {
+                        String roleCode = (String) data.get("rolecode");
+                        Long actionId = ((Number) data.get("actionid")).longValue();
+
+                        if (actionIdToUrlMap.containsKey(actionId)) {
+                            String actionUrl = actionIdToUrlMap.get(actionId);
+                            ActionContainer container = finalMap.getOrDefault(roleCode, new ActionContainer());
+
+                            if (Utils.isRegexUri(actionUrl)) {
+                                container.getRegexUris().add(actionUrl);
+                            } else {
+                                container.getUris().add(actionUrl);
+                            }
+
+                            finalMap.put(roleCode, container);
+                        }
+                    }
+                }
+                log.info("Successfully loaded Role-Action mappings from MDMS V2");
+            }
+        } catch (Exception e) {
+            log.error("Failed to fetch or parse role action data from mdms v2", e);
+        }
+
+        // 3. Check if we have any data at all
+        if (finalMap.isEmpty()) {
+            throw new CustomException("DATA_NOT_AVAILABLE", "Data not available for this tenant in both V1 and V2");
+        }
+
+        return finalMap;
+    }
+
+    /**
+     * Utility method to merge the results from v1 and v2 into a single Map
+     */
+    private void mergeActionContainers(Map<String, ActionContainer> target, Map<String, ActionContainer> source) {
+        for (Map.Entry<String, ActionContainer> entry : source.entrySet()) {
+            String roleCode = entry.getKey();
+            ActionContainer srcContainer = entry.getValue();
+            ActionContainer targetContainer = target.getOrDefault(roleCode, new ActionContainer());
+
+            targetContainer.getUris().addAll(srcContainer.getUris());
+            targetContainer.getRegexUris().addAll(srcContainer.getRegexUris());
+
+            target.put(roleCode, targetContainer);
+        }
     }
 
     private Map<String, ActionContainer> transformMdmsResponse(Map<String, Map<String, List>> rawResponse){

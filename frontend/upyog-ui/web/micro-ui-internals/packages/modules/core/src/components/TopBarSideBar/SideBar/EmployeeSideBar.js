@@ -47,7 +47,7 @@ const EmployeeSideBar = () => {
   })
 
   data?.actions
-    .filter((e) => e.url === "url")
+    ?.filter((e) => e.url === "url")
     .forEach((item) => {
       let index = item.path.split(".")[0];
       if (search == "" && item.path !== "") {

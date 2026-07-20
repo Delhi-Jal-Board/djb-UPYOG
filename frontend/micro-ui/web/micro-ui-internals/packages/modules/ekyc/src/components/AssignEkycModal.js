@@ -402,11 +402,19 @@ const AssignEkycModal = ({ surveyor, closeModal, refetchDashboard }) => {
 
           <select className="form-control" value={filters.ward} onChange={(e) => handleFilterChange("ward", e.target.value)}>
             <option value="">Select Ward</option>
-            {wardOptions.map((ward) => (
-              <option key={ward.code} value={ward.name}>
-                {ward.name}
-              </option>
-            ))}
+            {wardOptions
+              .filter((ward) => {
+                const stripped = ward.name.replace(/[0-9]/g, "").replace(/^[-\s]+|[-\s]+$/g, "");
+                return stripped.trim().length > 0;
+              })
+              .map((ward) => {
+                const displayName = ward.name.replace(/[0-9]/g, "").replace(/^[-\s]+|[-\s]+$/g, "");
+                return (
+                  <option key={ward.code} value={ward.name}>
+                    {displayName}
+                  </option>
+                );
+              })}
           </select>
 
           <select className="form-control" value={filters.assembly} onChange={(e) => handleFilterChange("assembly", e.target.value)}>

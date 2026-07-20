@@ -86,10 +86,15 @@ const SupervisorConfig = (t, agencies = [], reportingManagers = [], disabled = f
           },
         },
         {
-          label: "ES_VENDOR_ZONE",
+          label: t("ES_VENDOR_ZONE"),
           isMandatory: true,
           type: "component",
           key: "zoneIds",
+          populators: {
+            name: "zoneIds",
+            validation: { required: true },
+            className: "mb-16",
+          },
           props: { isMultiSelect: false },
           component: "SelectEkycZones",
         },

@@ -253,6 +253,8 @@ const AssignEkyc = () => {
           countData: dashboardData?.dashboardInfo,
           // cards,
           isCardLoading: isDataSearchLoading,
+          showSearchOnMobile: true,
+          forceTable: true,
         }}
       />
     </div>

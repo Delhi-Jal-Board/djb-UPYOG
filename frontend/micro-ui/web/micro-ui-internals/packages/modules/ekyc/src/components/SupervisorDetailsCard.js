@@ -46,7 +46,7 @@ const SupervisorDetailsCard = () => {
             let found = null;
             const targetId = supervisorId || loggedInUser?.uuid;
             if (targetId) {
-                found = progressData.supervisorReport.find((s) => 
+                found = progressData.supervisorReport.find((s) =>
                     s.supervisorId?.toLowerCase() === targetId?.toLowerCase() ||
                     s.id?.toLowerCase() === targetId?.toLowerCase()
                 );
@@ -75,7 +75,7 @@ const SupervisorDetailsCard = () => {
                             if (progressData?.supervisorReport) {
                                 for (const report of progressData.supervisorReport) {
                                     const matchedSurv = report.surveyors?.find(
-                                        (s) => 
+                                        (s) =>
                                             (s.surveyorId && (s.surveyorId === surv.id || s.surveyorId === surv.owner?.uuid)) ||
                                             (s.id && (s.id === surv.id || s.id === surv.owner?.uuid))
                                     );
@@ -263,6 +263,45 @@ const SupervisorDetailsCard = () => {
         return () => document.removeEventListener("mousedown", handler);
     }, []);
 
+    const handleDownload = () => {
+        setReportLoading(true);
+        try {
+            const rowsWithStats = surveyors.map((s) => ({
+                name: s.surveyorName,
+                mobileNo: s.mobileNo,
+                status: s.status,
+                total: s.totalKnos,
+                completed: s.submittedKnos,
+                pending: s.pendingKnos,
+                progress: `${s.progressPercent}%`
+            }));
+
+            const totalKnos = supervisor?.totalKnos || 0;
+            const completedKnos = supervisor?.submittedKnos || 0;
+
+            downloadSupervisorPDF({
+                rows: rowsWithStats,
+                supervisorName: fullName,
+                vendorName,
+                mobileNumber,
+                email,
+                dashboardInfo: {
+                    total: totalKnos,
+                    completed: completedKnos,
+                    pending: totalKnos - completedKnos,
+                    submittedCount: completedKnos,
+                },
+                t,
+            });
+        } catch (err) {
+            console.error("Failed to generate supervisor report:", err);
+        } finally {
+            setReportLoading(false);
+            setShowReportMenu(false);
+            setShowCustomPicker(false);
+        }
+    };
+
     const handlePresetDownload = (filter) => {
         handleDownload();
     };
@@ -330,16 +369,30 @@ const SupervisorDetailsCard = () => {
                 ward: t("WARD") || "Ward",
                 pincode: t("PINCODE") || "Pincode",
                 mrkey: t("MR_KEY") || "MR Key",
+                consumerType: t("CONSUMER_TYPE") || "Consumer Type",
                 createdTime: t("CREATED_TIME") || "Created Time",
                 lastModifiedTime: t("LAST_MODIFIED_TIME") || "Last Modified Time",
             };
+
+            const toTitleCase = (str) => {
+                if (!str) return "";
+                // Handle dot-notation values like "CONSUMERTYPE.INDIVIDUAL" → "Individual"
+                const cleanStr = String(str).includes(".") ? String(str).split(".").pop() : String(str);
+                return cleanStr
+                    .toLowerCase()
+                    .replace(/_/g, " ")
+                    .replace(/\b\w/g, (c) => c.toUpperCase());
+            };
+
+            // Text fields that should be Title Cased (incl. dot-notation like CONSUMERTYPE.INDIVIDUAL)
+            const titleCaseFields = ["ekycStatus", "zoneName", "gender", "relationship", "assembly", "ward", "consumerType"];
 
             const excelData = consumerList.map((item) => {
                 const cleanObj = {};
 
                 const fullName = [item.firstName, item.middleName, item.lastName].filter(Boolean).join(" ");
                 if (fullName) {
-                    cleanObj[t("CONSUMER_NAME") || "Consumer Name"] = fullName;
+                    cleanObj[t("CONSUMER_NAME") || "Consumer Name"] = toTitleCase(fullName);
                 }
 
                 Object.keys(item).forEach(key => {
@@ -351,7 +404,12 @@ const SupervisorDetailsCard = () => {
                     }
 
                     const friendlyHeader = headerMapping[key] || t(key.toUpperCase()) || key;
-                    cleanObj[friendlyHeader] = val;
+
+                    if (typeof val === "string" && titleCaseFields.includes(key)) {
+                        cleanObj[friendlyHeader] = toTitleCase(val);
+                    } else {
+                        cleanObj[friendlyHeader] = val;
+                    }
                 });
 
                 return cleanObj;

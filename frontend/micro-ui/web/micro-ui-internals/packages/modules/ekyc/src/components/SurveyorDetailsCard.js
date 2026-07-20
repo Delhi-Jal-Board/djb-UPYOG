@@ -88,6 +88,16 @@ const SurveyorDetailsDashboard = () => {
     }
   );
 
+  const toTitleCase = (str) => {
+    if (!str) return "";
+    // Handle dot-notation values like "CONSUMERTYPE.INDIVIDUAL" → "Individual"
+    const cleanStr = String(str).includes(".") ? String(str).split(".").pop() : String(str);
+    return cleanStr
+      .toLowerCase()
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (c) => c.toUpperCase());
+  };
+
   const knoColumns = useMemo(
     () => [
       {
@@ -96,30 +106,20 @@ const SurveyorDetailsDashboard = () => {
       },
       {
         Header: t("CONSUMER_NAME") || "Consumer Name",
-        accessor: (row) => `${row.firstName || ""} ${row.middleName || ""} ${row.lastName || ""}`.trim(),
+        accessor: (row) => toTitleCase(`${row.firstName || ""} ${row.middleName || ""} ${row.lastName || ""}`.trim()),
         id: "consumerName",
       },
       {
         Header: t("ZONE") || "Zone",
-        accessor: "zoneName",
+        accessor: (row) => toTitleCase(row.zoneName),
+        id: "zoneName",
       },
-      // {
-      //   Header: "Pincode",
-      //   accessor: "pincode",
-      // },
-      // {
-      //   Header: t("STATUS") || "Status",
-      //   accessor: "status",
-      //   Cell: ({ value }) => (
-      //     <span className={`status-badge ${value === "ACTIVE" ? "verified" : value === "PENDING" ? "pending" : "assigned"}`}>{value}</span>
-      //   ),
-      // },
       {
         Header: t("EKYC_STATUS") || "eKYC Status",
         accessor: "ekycStatus",
         Cell: ({ value }) => {
           const status = (value || "NA").toUpperCase();
-          return value ? <span className={`ekyc-status-tag ${status}`}>{t(status)}</span> : "-";
+          return value ? <span className={`ekyc-status-tag ${status}`}>{toTitleCase(value)}</span> : "-";
         },
       },
       {
@@ -339,6 +339,7 @@ const SurveyorDetailsDashboard = () => {
         ward: t("WARD") || "Ward",
         pincode: t("PINCODE") || "Pincode",
         mrkey: t("MR_KEY") || "MR Key",
+        consumerType: t("CONSUMER_TYPE") || "Consumer Type",
         createdTime: t("CREATED_TIME") || "Created Time",
         lastModifiedTime: t("LAST_MODIFIED_TIME") || "Last Modified Time",
       };
@@ -348,8 +349,11 @@ const SurveyorDetailsDashboard = () => {
 
         const fullName = [item.firstName, item.middleName, item.lastName].filter(Boolean).join(" ");
         if (fullName) {
-          cleanObj[t("CONSUMER_NAME") || "Consumer Name"] = fullName;
+          cleanObj[t("CONSUMER_NAME") || "Consumer Name"] = toTitleCase(fullName);
         }
+
+        // Text fields that should be Title Cased (incl. dot-notation like CONSUMERTYPE.INDIVIDUAL)
+        const titleCaseFields = ["ekycStatus", "zoneName", "gender", "relationship", "assembly", "ward", "consumerType"];
 
         Object.keys(item).forEach(key => {
           if (excludedKeys.includes(key)) return;
@@ -360,7 +364,13 @@ const SurveyorDetailsDashboard = () => {
           }
 
           const friendlyHeader = headerMapping[key] || t(key.toUpperCase()) || key;
-          cleanObj[friendlyHeader] = val;
+
+          // Apply Title Case to known text fields; leave numbers, KNO, mobile, pincode as-is
+          if (typeof val === "string" && titleCaseFields.includes(key)) {
+            cleanObj[friendlyHeader] = toTitleCase(val);
+          } else {
+            cleanObj[friendlyHeader] = val;
+          }
         });
 
         return cleanObj;
@@ -533,10 +543,10 @@ const SurveyorDetailsDashboard = () => {
                 <span className="value">{surveyor?.status || "N/A"}</span>
               </div>
 
-              <div className="detail-item">
+              {/* <div className="detail-item">
                 <span className="label">{t("SERVICE_TYPE")}</span>
                 <span className="value">{surveyor?.additionalDetails?.serviceType || "N/A"}</span>
-              </div>
+              </div> */}
 
               <div className="detail-item">
                 <span className="label">{t("VENDOR_NAME") || "Vendor Name"}</span>

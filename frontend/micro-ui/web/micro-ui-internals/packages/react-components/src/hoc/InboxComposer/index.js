@@ -38,6 +38,8 @@ const InboxComposer = ({
   cards,
   searchParams,
   isCardLoading,
+  forceTable = false,
+  showSearchOnMobile = false,
 }) => {
   const { t } = useTranslation();
 
@@ -113,6 +115,7 @@ const InboxComposer = ({
       SearchFormFields,
       FilterFormFields,
       registerSearchFormField,
+      controlSearchForm,
       searchFormState,
       handleSearchFormSubmit,
       onResetSearchForm,
@@ -144,19 +147,35 @@ const InboxComposer = ({
       <div className="InboxComposerWrapper">
         {/* TODO fix design for card */}
         {/* <InboxLinks {...PropsForInboxLinks} /> */}
-        <div className="searchBox">
-          <SearchAction
-            text={getSearchActionText()}
-            handleActionClick={() => setActiveMobileModal({ type: "set", payload: "SearchFormComponent" })}
-          />
-          {FilterFormFields ? (
-            <FilterAction
-              text={t("ES_COMMON_FILTER")}
-              handleActionClick={() => setActiveMobileModal({ type: "set", payload: "FilterFormComponent" })}
+        {showSearchOnMobile && SearchFormFields ? (
+          <SearchForm onSubmit={onSearchFormSubmit} handleSubmit={handleSearchFormSubmit} id="search-form" className="search-form-wrapper search-complaint-container">
+            <div className="formcomposer-section-grid">
+              <SearchFormFields registerRef={registerSearchFormField} searchFormState={searchFormState} {...{ controlSearchForm }} />
+            </div>
+            <div className="formcomposer-section-button">
+              <div className="generic-button clear-search">
+                <p onClick={onResetSearchForm}>{t(`ES_COMMON_CLEAR_SEARCH`)}</p>
+              </div>
+              <button className="submit-bar generic-button" type="submit" form="search-form">
+                <header>{t("ES_COMMON_SEARCH")}</header>
+              </button>
+            </div>
+          </SearchForm>
+        ) : (
+          <div className="searchBox">
+            <SearchAction
+              text={getSearchActionText()}
+              handleActionClick={() => setActiveMobileModal({ type: "set", payload: "SearchFormComponent" })}
             />
-          ) : null}
-          <SortAction text={t("COMMON_TABLE_SORT")} handleActionClick={() => setActiveMobileModal({ type: "set", payload: "SortFormComponent" })} />
-        </div>
+            {FilterFormFields ? (
+              <FilterAction
+                text={t("ES_COMMON_FILTER")}
+                handleActionClick={() => setActiveMobileModal({ type: "set", payload: "FilterFormComponent" })}
+              />
+            ) : null}
+            <SortAction text={t("COMMON_TABLE_SORT")} handleActionClick={() => setActiveMobileModal({ type: "set", payload: "SortFormComponent" })} />
+          </div>
+        )}
         {currentlyActiveMobileModal ? (
           <PopUp>
             <CurrentMobileModalComponent {...propsForCurrentMobileModalComponent} />
@@ -167,7 +186,17 @@ const InboxComposer = ({
           <Loader />
         ) : (
           <div>
-            {propsForInboxMobileCards?.data?.length < 1 ? (
+            {forceTable ? (
+              propsForInboxTable?.data?.length < 1 ? (
+                <Card className="margin-unset text-align-center">
+                  {propsForInboxTable?.noResultsMessage ? t(propsForInboxTable?.noResultsMessage) : t("CS_MYAPPLICATIONS_NO_APPLICATION")}
+                </Card>
+              ) : (
+                <div style={{ overflowX: "auto", width: "100%" }}>
+                  <Table t={t} {...propsForInboxTable} />
+                </div>
+              )
+            ) : propsForInboxMobileCards?.data?.length < 1 ? (
               <Card className="margin-unset text-align-center">
                 {propsForInboxTable?.noResultsMessage ? t(propsForInboxTable?.noResultsMessage) : t("CS_MYAPPLICATIONS_NO_APPLICATION")}
               </Card>

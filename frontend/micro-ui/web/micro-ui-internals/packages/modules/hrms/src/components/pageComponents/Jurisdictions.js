@@ -303,6 +303,35 @@ function Jurisdiction({
             </div>
           </div>
         </LabelFieldPair>
+
+        {/* <LabelFieldPair>
+          <CardLabel className="card-label-smaller">{t("HR_COMMON_TABLE_COL_ZONE")} *</CardLabel>
+          <div className="form-field">
+            <MultiSelectDropdown
+              className="form-field"
+              isMandatory={true}
+              defaultUnit="Selected"
+              selected={jurisdiction?.zones}
+              options={getzones(zones)}
+              onSelect={selectzones}
+              optionsKey="i18text"
+              t={t}
+            />
+            <div className="tag-container">
+              {jurisdiction?.zones.length > 0 &&
+                jurisdiction?.zones.map((value, index) => {
+                  const translatedCode = t(value.i18text);
+                  return (
+                    <RemoveableTag
+                      key={index}
+                      text={translatedCode.length > 22 ? `${translatedCode.slice(0, 22)}...` : translatedCode}
+                      onClick={() => onRemove(index, value)}
+                    />
+                  );
+                })}
+            </div>
+          </div>
+        </LabelFieldPair> */}
       </div>
     </div>
   );

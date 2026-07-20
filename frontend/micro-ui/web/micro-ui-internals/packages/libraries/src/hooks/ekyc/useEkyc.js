@@ -43,10 +43,10 @@ export const useGetFloorCount = (tenantId, config = {}) => {
 };
 
 export const useEkycSurveyorDashboard = (data, params, config = {}) => {
-  const { tenantId, offset, limit, status, surveyorId } = params;
+  const { tenantId, offset, limit, status, surveyorId, ekycStatus } = params;
 
   return useQuery(
-    ["useEkycSurveyorDashboard", tenantId, offset, limit, status, surveyorId],
+    ["useEkycSurveyorDashboard", tenantId, offset, limit, status, surveyorId, ekycStatus],
     () =>
       Digit.EkycService.dashboard(data, {
         tenantId,
@@ -54,6 +54,7 @@ export const useEkycSurveyorDashboard = (data, params, config = {}) => {
         limit,
         status,
         surveyorId,
+        ekycStatus,
       }),
     config
   );
