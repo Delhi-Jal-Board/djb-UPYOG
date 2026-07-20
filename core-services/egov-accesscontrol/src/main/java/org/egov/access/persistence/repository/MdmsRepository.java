@@ -114,7 +114,7 @@ public class MdmsRepository {
         }
 
         try {
-            String v2Url = mdmsHost + "/mdms-v2/v2/_search";
+            String v2Url = "http://mdms-v2:8080/mdms-v2/v2/_search";
 
             // A. Fetch Actions from mdms-v2
             Map<String, Object> actionRequest = new HashMap<>();
