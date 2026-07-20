@@ -121,7 +121,7 @@ public class MdmsRepository {
             actionRequest.put("RequestInfo", new RequestInfo());
             Map<String, Object> actionCriteria = new HashMap<>();
             actionCriteria.put("tenantId", tenantId);
-            actionCriteria.put("schemaCode", "ACCESSCONTROL-ACTIONS.actions");
+            actionCriteria.put("schemaCode", "ACCESSCONTROL-ACTIONS-TEST.actions-test");
             actionCriteria.put("isActive", true);
             actionRequest.put("MdmsCriteria", actionCriteria);
 
