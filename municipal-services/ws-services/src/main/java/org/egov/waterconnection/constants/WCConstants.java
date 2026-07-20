@@ -263,11 +263,13 @@ public class WCConstants {
 	public static final int MODIFY_CONNECTION =  2;
 	public static final int DISCONNECT_CONNECTION =  3;
 	public static final int RECONNECTION =  4;
+	public static final int MUTATION_CONNECTION = 5;
 	
 	public static final String NEW_WATER_CONNECTION = "NEW_WATER_CONNECTION";
 	public static final String MODIFY_WATER_CONNECTION = "MODIFY_WATER_CONNECTION";
 	public static final String DISCONNECT_WATER_CONNECTION = "DISCONNECT_WATER_CONNECTION";
 	public static final String WATER_RECONNECTION = "WATER_RECONNECTION";
+	public static final String MUTATION_WATER_CONNECTION = "MUTATION_WATER_CONNECTION";
 	
 	public static final String WATER_SERVICE_BUSINESS_ID = "WS";
 

@@ -166,6 +166,10 @@ public class WorkflowNotificationService {
                 && waterServiceUtil.isModifyConnectionRequestForNotification(request)) {
             reqType = WCConstants.MODIFY_CONNECTION;
         }
+        if ((!workflow.getAction().equalsIgnoreCase(WCConstants.ACTIVATE_CONNECTION))
+                && waterServiceUtil.isMutationConnectionRequest(request)) {
+            reqType = WCConstants.MUTATION_CONNECTION;
+        }
         if((!workflow.getAction().equalsIgnoreCase(WCConstants.ACTIVATE_CONNECTION)) &&
             (!workflow.getAction().equalsIgnoreCase(APPROVE_CONNECTION)) &&
                 waterServiceUtil.isDisconnectConnectionRequest(request))
@@ -336,6 +340,10 @@ public class WorkflowNotificationService {
                 && waterServiceUtil.isModifyConnectionRequestForNotification(waterConnectionRequest)) {
             reqType = WCConstants.MODIFY_CONNECTION;
         }
+        if ((!workflow.getAction().equalsIgnoreCase(WCConstants.ACTIVATE_CONNECTION))
+                && waterServiceUtil.isMutationConnectionRequest(waterConnectionRequest)) {
+            reqType = WCConstants.MUTATION_CONNECTION;
+        }
         if((!workflow.getAction().equalsIgnoreCase(WCConstants.ACTIVATE_CONNECTION)) &&
                 (!workflow.getAction().equalsIgnoreCase(APPROVE_CONNECTION)) &&
                 waterServiceUtil.isDisconnectConnectionRequest(waterConnectionRequest))
@@ -427,6 +435,10 @@ public class WorkflowNotificationService {
         if ((!workflow.getAction().equalsIgnoreCase(WCConstants.ACTIVATE_CONNECTION))
                 && waterServiceUtil.isModifyConnectionRequestForNotification(waterConnectionRequest)) {
             reqType = WCConstants.MODIFY_CONNECTION;
+        }
+        if ((!workflow.getAction().equalsIgnoreCase(WCConstants.ACTIVATE_CONNECTION))
+                && waterServiceUtil.isMutationConnectionRequest(waterConnectionRequest)) {
+            reqType = WCConstants.MUTATION_CONNECTION;
         }
         if((!workflow.getAction().equalsIgnoreCase(WCConstants.ACTIVATE_CONNECTION)) &&
                 (!workflow.getAction().equalsIgnoreCase(APPROVE_CONNECTION)) &&

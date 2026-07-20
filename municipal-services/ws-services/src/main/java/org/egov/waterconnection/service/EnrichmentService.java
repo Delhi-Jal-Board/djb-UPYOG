@@ -127,6 +127,8 @@ public class EnrichmentService {
 			applicationType = WCConstants.DISCONNECT_WATER_CONNECTION;
 		} else if (reqType == WCConstants.RECONNECTION) {
 			applicationType = WCConstants.WATER_RECONNECTION;
+		} else if (reqType == WCConstants.MUTATION_CONNECTION) {
+			applicationType = WCConstants.MUTATION_WATER_CONNECTION;
 		} else {
 			applicationType = WCConstants.MODIFY_WATER_CONNECTION;
 		}
@@ -147,7 +149,8 @@ public class EnrichmentService {
 		}
 
 		if (applicationType.equalsIgnoreCase(MODIFY_WATER_CONNECTION)
-				|| applicationType.equalsIgnoreCase(DISCONNECT_WATER_CONNECTION)) {
+				|| applicationType.equalsIgnoreCase(DISCONNECT_WATER_CONNECTION)
+				|| applicationType.equalsIgnoreCase(WCConstants.MUTATION_WATER_CONNECTION)) {
 			if (!CollectionUtils.isEmpty(connection.getPlumberInfo())) {
 				connection.getPlumberInfo().forEach(plumberInfo -> {
 					plumberInfo.setId(null);

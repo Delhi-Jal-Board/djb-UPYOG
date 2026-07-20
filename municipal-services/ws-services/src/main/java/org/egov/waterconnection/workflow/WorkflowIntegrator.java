@@ -69,6 +69,9 @@ public class WorkflowIntegrator {
 				|| (waterConnectionRequest.getWaterConnection().getApplicationStatus().equalsIgnoreCase(WCConstants.DISCONNECTION_FINAL_STATE))) {
 			wfBusinessServiceName = config.getWsWorkflowReconnectionName();
 		}
+		else if(wsUtil.isMutationConnectionRequest(waterConnectionRequest)) {
+			wfBusinessServiceName = config.getMutationWSBusinessServiceName();
+		}
 		else if(wsUtil.isModifyConnectionRequest(waterConnectionRequest)) {
 			wfBusinessServiceName = config.getModifyWSBusinessServiceName();
 		}

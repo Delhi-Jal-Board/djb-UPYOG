@@ -315,6 +315,14 @@ public class WaterServicesUtil {
 		return response.toString();
 	}
 	
+	public boolean isMutationConnectionRequest(WaterConnectionRequest waterConnectionRequest) {
+		if (waterConnectionRequest.getWaterConnection().getApplicationType() != null
+				&& waterConnectionRequest.getWaterConnection().getApplicationType().equalsIgnoreCase(WCConstants.MUTATION_WATER_CONNECTION)) {
+			return !StringUtils.isEmpty(waterConnectionRequest.getWaterConnection().getConnectionNo());
+		}
+		return false;
+	}
+
 	public boolean isModifyConnectionRequest(WaterConnectionRequest waterConnectionRequest) {
 		return !StringUtils.isEmpty(waterConnectionRequest.getWaterConnection().getConnectionNo());
 	}

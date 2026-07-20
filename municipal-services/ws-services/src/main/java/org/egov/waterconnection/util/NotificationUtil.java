@@ -156,6 +156,9 @@ public class NotificationUtil {
 		if(reqType == WCConstants.MODIFY_CONNECTION){
 			builder.append("WS_MODIFY_").append(action.toUpperCase()).append("_").append(applicationStatus.toUpperCase()).append("_SMS_MESSAGE");
 		}
+		if(reqType == WCConstants.MUTATION_CONNECTION){
+			builder.append("WS_MUTATION_").append(action.toUpperCase()).append("_").append(applicationStatus.toUpperCase()).append("_SMS_MESSAGE");
+		}
 		if (reqType == DISCONNECT_CONNECTION)
 		{
 			builder.append("WS_DISCONNECT_").append(action.toUpperCase()).append("_").append(applicationStatus.toUpperCase()).append("_SMS_MESSAGE");
@@ -183,6 +186,9 @@ public class NotificationUtil {
 		if (reqType == WCConstants.MODIFY_CONNECTION) {
 			builder.append("WS_MODIFY_").append(action.toUpperCase()).append("_").append(applicationStatus.toUpperCase()).append("_APP_MESSAGE");
 		}
+		if (reqType == WCConstants.MUTATION_CONNECTION) {
+			builder.append("WS_MUTATION_").append(action.toUpperCase()).append("_").append(applicationStatus.toUpperCase()).append("_APP_MESSAGE");
+		}
 		if (reqType == DISCONNECT_CONNECTION)
 		{
 			builder.append("WS_DISCONNECT_").append(action.toUpperCase()).append("_").append(applicationStatus.toUpperCase()).append("_APP_MESSAGE");
@@ -209,6 +215,9 @@ public class NotificationUtil {
 		}
 		if (reqType == WCConstants.MODIFY_CONNECTION) {
 			builder.append("WS_MODIFY_").append(action.toUpperCase()).append("_").append(applicationStatus.toUpperCase()).append("_EMAIL_MESSAGE");
+		}
+		if (reqType == WCConstants.MUTATION_CONNECTION) {
+			builder.append("WS_MUTATION_").append(action.toUpperCase()).append("_").append(applicationStatus.toUpperCase()).append("_EMAIL_MESSAGE");
 		}
 		if (reqType == DISCONNECT_CONNECTION)
 		{
@@ -391,6 +400,9 @@ public class NotificationUtil {
 		if (reqType == WCConstants.MODIFY_CONNECTION) {
 			builder.append("WS_MODIFY_").append(action.toUpperCase()).append("_").append(applicationStatus.toUpperCase()).append(APP_MESSAGE);
 		}
+		if (reqType == WCConstants.MUTATION_CONNECTION) {
+			builder.append("WS_MUTATION_").append(action.toUpperCase()).append("_").append(applicationStatus.toUpperCase()).append(APP_MESSAGE);
+		}
 		if (reqType == DISCONNECT_CONNECTION) {
 			builder.append("WS_DISCONNECT_").append(action.toUpperCase()).append("_").append(applicationStatus.toUpperCase()).append(APP_MESSAGE);
 		}
@@ -409,6 +421,9 @@ public class NotificationUtil {
 		if (reqType == WCConstants.MODIFY_CONNECTION) {
 			builder.append("WS_MODIFY_").append(action.toUpperCase()).append("_").append(applicationStatus.toUpperCase()).append(SMS_MESSAGE);
 		}
+		if (reqType == WCConstants.MUTATION_CONNECTION) {
+			builder.append("WS_MUTATION_").append(action.toUpperCase()).append("_").append(applicationStatus.toUpperCase()).append(SMS_MESSAGE);
+		}
 		if (reqType == DISCONNECT_CONNECTION) {
 			builder.append("WS_DISCONNECT_").append(action.toUpperCase()).append("_").append(applicationStatus.toUpperCase()).append(SMS_MESSAGE);
 		}
@@ -426,6 +441,9 @@ public class NotificationUtil {
 		}
 		if (reqType == WCConstants.MODIFY_CONNECTION) {
 			builder.append("WS_MODIFY_").append(action.toUpperCase()).append("_").append(applicationStatus.toUpperCase()).append(EMAIL_MESSAGE);
+		}
+		if (reqType == WCConstants.MUTATION_CONNECTION) {
+			builder.append("WS_MUTATION_").append(action.toUpperCase()).append("_").append(applicationStatus.toUpperCase()).append(EMAIL_MESSAGE);
 		}
 		if (reqType == DISCONNECT_CONNECTION) {
 			builder.append("WS_DISCONNECT_").append(action.toUpperCase()).append("_").append(applicationStatus.toUpperCase()).append(EMAIL_MESSAGE);
