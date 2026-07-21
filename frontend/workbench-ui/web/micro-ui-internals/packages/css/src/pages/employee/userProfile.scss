@@ -106,9 +106,6 @@
   gap: 16px;
   width: 100%;
   height: 100%;
-  @media (min-width: 768px) {
-    padding-inline: 20px;
-  }
   .generic-button {
     color: #fff;
     cursor: pointer;
@@ -121,7 +118,6 @@
 @media (min-width: 768px) {
   .login {
     height: 100%;
-    padding-inline: 58px;
   }
 }
 

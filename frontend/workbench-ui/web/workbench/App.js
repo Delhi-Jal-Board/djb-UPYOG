@@ -18,10 +18,10 @@ const enabledModules = [
   "DSS",
   "NDSS",
   "Utilities",
-  "HRMS",
+  // "HRMS",
   "Engagement",
   "Workbench",
-  "PGR"
+  // "PGR"
 ];
 
 const moduleReducers = (initData) => ({
@@ -34,9 +34,9 @@ const initDigitUI = () => {
     PGR: {},
     commonUiConfig: UICustomizations,
   };
-  initPGRComponents();
+  // initPGRComponents();
   initEngagementComponents();
-  initHRMSComponents();
+  // initHRMSComponents();
   initUtilitiesComponents();
   initWorkbenchComponents();
 };
