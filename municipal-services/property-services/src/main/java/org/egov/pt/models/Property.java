@@ -73,6 +73,18 @@ public class Property extends PropertyInfo {
 	@JsonProperty("superBuiltUpArea")
 	private BigDecimal superBuiltUpArea;
 
+	@JsonProperty("farArea")
+	private String farArea;
+
+	@JsonProperty("numberOfRooms")
+	private String numberOfRooms;
+
+	@JsonProperty("numberOfBeds")
+	private String numberOfBeds;
+
+	@JsonProperty("numberOfStudents")
+	private String numberOfStudents;
+
 	@JsonProperty("source")
 	private Source source;
 
@@ -117,7 +129,8 @@ public class Property extends PropertyInfo {
 			String propertyType, String ownershipCategory, List<OwnerInfo> owners, Institution institution,
 			CreationReason creationReason, String usageCategory, Long noOfFloors, Double landArea,
 			BigDecimal superBuiltUpArea, Source source, Channel channel, List<Document> documents, List<Unit> units,
-			JsonNode additionalDetails, AuditDetails auditDetails, ProcessInstance workflow, Plot plot) {
+			JsonNode additionalDetails, AuditDetails auditDetails, ProcessInstance workflow, Plot plot,
+			String farArea, String numberOfRooms, String numberOfBeds, String numberOfStudents) {
 		super(id, propertyId, plotId, surveyId, linkedProperties, tenantId, accountId, oldPropertyId, status, address);
 		this.acknowldgementNumber = acknowldgementNumber;
 		this.propertyType = propertyType;
@@ -137,6 +150,10 @@ public class Property extends PropertyInfo {
 		this.auditDetails = auditDetails;
 		this.workflow = workflow;
 		this.plot = plot;
+		this.farArea = farArea;
+		this.numberOfRooms = numberOfRooms;
+		this.numberOfBeds = numberOfBeds;
+		this.numberOfStudents = numberOfStudents;
 	}
 
 	public Property addOwnersItem(OwnerInfo ownersItem) {
