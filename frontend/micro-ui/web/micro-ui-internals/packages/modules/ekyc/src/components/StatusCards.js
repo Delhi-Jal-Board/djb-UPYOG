@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import * as Chartjs from "chart.js/auto";
-import { color } from "three/tsl";
 
 const getChartConstructor = () => {
   const C = Chartjs.Chart || Chartjs.default || Chartjs;
