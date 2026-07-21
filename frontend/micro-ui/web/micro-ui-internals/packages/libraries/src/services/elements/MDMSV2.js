@@ -1268,7 +1268,7 @@ const PTGenderType = (MdmsRes) => {
 };
 
 const HRGenderType = (MdmsRes) => {
-  MdmsRes["common-masters"].GenderType.filter((GenderType) => GenderType.active).map((comGender) => {
+  return MdmsRes["common-masters"].GenderType.filter((GenderType) => GenderType.active).map((comGender) => {
     return {
       ...comGender,
       i18nKey: `COMMON_GENDER_${comGender.code}`,
@@ -1293,7 +1293,7 @@ const GetMCollectApplicationStatus = (MdmsRes) =>
   });
 
 const getFSMGenderType = (MdmsRes) => {
-  return MdmsRes["common-masters"].GenderType.map((genderDetails) => {
+  return MdmsRes["common-masters"].GenderType.filter((genderDetails) => genderDetails.active).map((genderDetails) => {
     return {
       ...genderDetails,
       i18nKey: `COMMON_GENDER_${genderDetails.code}`,
@@ -1550,7 +1550,7 @@ export const MdmsServiceV2 = {
     const moduleName = moduleCode; // moduleName is used here to pass unchanged modulecode
     const key = `MDMS.${tenantId}.${moduleCode}.${mdmsDetails.type}.${JSON.stringify(mdmsDetails.details)}`;
     const inStoreValue = PersistantStorage.get(key);
-    if (inStoreValue) {
+    if (inStoreValue && mdmsDetails.type !== "FSMGenderType" && mdmsDetails.type !== "GenderType" && mdmsDetails.type !== "HRGenderType") {
       return inStoreValue;
     }
     const { MdmsRes } = await MdmsServiceV2.call(tenantId, mdmsDetails.details);

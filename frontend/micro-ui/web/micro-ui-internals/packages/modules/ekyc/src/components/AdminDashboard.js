@@ -5,6 +5,17 @@ import { useHistory } from "react-router-dom";
 import { ekycMockData } from "./mockData";
 import Dashboard from "./Dashboard";
 
+const parseAdditionalDetails = (additionalDetails) => {
+    if (!additionalDetails) return {};
+    if (typeof additionalDetails === "object") return additionalDetails;
+    if (typeof additionalDetails !== "string") return {};
+    try {
+        return JSON.parse(additionalDetails);
+    } catch (error) {
+        return {};
+    }
+};
+
 const AdminDashboard = () => {
     const { t } = useTranslation();
     const history = useHistory();
@@ -29,7 +40,13 @@ const AdminDashboard = () => {
 
     const vendorsList = useMemo(() => {
         if (vendorSearchResponse && vendorSearchResponse.length > 0) {
-            return vendorSearchResponse.map((v) => {
+            const filteredVendors = vendorSearchResponse.filter((v) => {
+                const dso = v.dsoDetails || v;
+                const additionalDetails = parseAdditionalDetails(dso.additionalDetails || v.additionalDetails);
+                return additionalDetails?.serviceType?.toLowerCase() === "ekyc";
+            });
+
+            return filteredVendors.map((v) => {
                 const dso = v.dsoDetails || v;
                 const supervisorsList = dso.supervisors || [];
                 const surveyorsList = dso.surveyors || [];

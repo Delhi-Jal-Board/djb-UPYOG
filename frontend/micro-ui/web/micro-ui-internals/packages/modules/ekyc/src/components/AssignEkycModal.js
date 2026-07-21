@@ -1,8 +1,9 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { Modal, Close, Table, Toast } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
-const AssignEkycModal = ({ surveyor, closeModal, refetchDashboard }) => {
+const AssignEkycModal = ({ surveyor, closeModal, refetchDashboard, tenantId: propsTenantId }) => {
   const { t } = useTranslation();
+  const tenantId = propsTenantId || Digit.ULBService.getCurrentTenantId();
   const [selectedKnos, setSelectedKnos] = useState([]);
   const [isBulkSelection, setIsBulkSelection] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
@@ -25,7 +26,7 @@ const AssignEkycModal = ({ surveyor, closeModal, refetchDashboard }) => {
 
   const [debouncedFilters, setDebouncedFilters] = useState(filters);
 
-  const { data: zroLocationsData, isLoading: isZroLoading } = Digit.Hooks.ws.useWSConfigMDMS.ZROLocation("dl.djb");
+  const { data: zroLocationsData, isLoading: isZroLoading } = Digit.Hooks.ws.useWSConfigMDMS.ZROLocation(tenantId);
   const mappedZROLocation = useMemo(() => {
     return (zroLocationsData || []).map((item) => ({
       code: item.code,
@@ -33,7 +34,7 @@ const AssignEkycModal = ({ surveyor, closeModal, refetchDashboard }) => {
     }));
   }, [zroLocationsData]);
 
-  const { data: egovLocationData } = Digit.Hooks.useCommonMDMS("dl.djb", "egov-location", ["TenantBoundary"]);
+  const { data: egovLocationData } = Digit.Hooks.useCommonMDMS(tenantId, "egov-location", ["TenantBoundary"]);
 
   const boundaryData = useMemo(() => {
     const tenantBoundary = egovLocationData?.["egov-location"]?.TenantBoundary || [];
@@ -114,6 +115,33 @@ const AssignEkycModal = ({ surveyor, closeModal, refetchDashboard }) => {
     return Array.from(pinSet).sort();
   }, [structuredLocalityData]);
 
+  const { data: filterOptionsData } = Digit.Hooks.ekyc.useEkycApplicationList(
+    {
+      unassignedOnly: true,
+      fetchFilterOptions: true,
+    },
+    {
+      tenantId: tenantId,
+      offset: 0,
+      limit: 1000,
+    },
+    {
+      staleTime: Infinity,
+    }
+  );
+
+  const pincodeOptions = useMemo(() => {
+    if (!filterOptionsData) return fetchedPincodes || [];
+    const pins = filterOptionsData.pincodeOptions || [];
+    return Array.isArray(pins) ? pins.filter(Boolean).map(String).sort() : [];
+  }, [filterOptionsData, fetchedPincodes]);
+
+  const mrkeyOptions = useMemo(() => {
+    if (!filterOptionsData) return [];
+    const keys = filterOptionsData.mrkeyOptions || [];
+    return Array.isArray(keys) ? keys.filter(Boolean).map(String).sort() : [];
+  }, [filterOptionsData]);
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedFilters(filters);
@@ -126,7 +154,7 @@ const AssignEkycModal = ({ surveyor, closeModal, refetchDashboard }) => {
     setCurrentPage(0);
   }, [debouncedFilters, filters.kno]);
 
-  const { data: applicationData, isFetching: isLoading } = Digit.Hooks.ekyc.useEkycApplicationList(
+  const { data: applicationData, isFetching: isLoading, refetch: refetchApplicationList } = Digit.Hooks.ekyc.useEkycApplicationList(
     {
       unassignedOnly: true,
       /*
@@ -163,7 +191,7 @@ const AssignEkycModal = ({ surveyor, closeModal, refetchDashboard }) => {
       }),
     },
     {
-      tenantId: "dl.djb",
+      tenantId: tenantId,
       offset: currentPage * pageSize,
       limit: pageSize,
     },
@@ -229,7 +257,12 @@ const AssignEkycModal = ({ surveyor, closeModal, refetchDashboard }) => {
 
       // optional delay so user can see the success toast
       setTimeout(async () => {
-        await refetchDashboard();
+        if (refetchDashboard) {
+          await refetchDashboard();
+        }
+        if (refetchApplicationList) {
+          await refetchApplicationList();
+        }
         closeModal();
       }, 1000);
     },
@@ -273,7 +306,7 @@ const AssignEkycModal = ({ surveyor, closeModal, refetchDashboard }) => {
     const { assignmentType, assignmentValue } = getAssignmentPayload();
 
     assignmentMutation.mutate({
-      tenantId: "dl.djb",
+      tenantId: tenantId,
       surveyorId: surveyor?.owner?.uuid,
       assignmentType,
       assignmentValue,
@@ -361,7 +394,7 @@ const AssignEkycModal = ({ surveyor, closeModal, refetchDashboard }) => {
       headerBarEnd={<Close onClick={closeModal} />}
       actionCancelLabel="Cancel"
       actionCancelOnSubmit={closeModal}
-      actionSaveLabel={`Assign ${selectedKnos.length} KNOs`}
+      actionSaveLabel={t("EKYC_ASSIGN_KNOS") || "Assign KNOs"}
       actionSaveOnSubmit={handleAssign}
       isDisabled={!selectedKnos?.length}
     >
@@ -372,14 +405,14 @@ const AssignEkycModal = ({ surveyor, closeModal, refetchDashboard }) => {
 
           <select className="form-control" value={filters.pincode} onChange={(e) => handleFilterChange("pincode", e.target.value)}>
             <option value="">Select Pincode</option>
-            {fetchedPincodes.map((pin) => (
+            {pincodeOptions.map((pin) => (
               <option key={pin} value={pin}>
                 {pin}
               </option>
             ))}
           </select>
 
-          <select
+          {/* <select
             className="form-control"
             value={filters.zoneName}
             onChange={(e) => {
@@ -398,7 +431,7 @@ const AssignEkycModal = ({ surveyor, closeModal, refetchDashboard }) => {
                 {loc.name}
               </option>
             ))}
-          </select>
+          </select> */}
 
           <select className="form-control" value={filters.ward} onChange={(e) => handleFilterChange("ward", e.target.value)}>
             <option value="">Select Ward</option>
@@ -426,11 +459,18 @@ const AssignEkycModal = ({ surveyor, closeModal, refetchDashboard }) => {
             ))}
           </select>
 
-          <input className="form-control" placeholder="MR Key" value={filters.mrkey} onChange={(e) => handleFilterChange("mrkey", e.target.value)} />
+          <select className="form-control" value={filters.mrkey} onChange={(e) => handleFilterChange("mrkey", e.target.value)}>
+            <option value="">Select MR Key</option>
+            {mrkeyOptions.map((key) => (
+              <option key={key} value={key}>
+                {key}
+              </option>
+            ))}
+          </select>
 
           {selectedKnos.length > 0 && (
             <button className="clear-selected-btn" type="button" onClick={() => setSelectedKnos([])}>
-              {t("EKYC_CLEAR_SELECTION") || `Clear Selected (${selectedKnos.length})`}
+              {t("EKYC_CLEAR_SELECTION") || "Clear Selected"}
             </button>
           )}
 

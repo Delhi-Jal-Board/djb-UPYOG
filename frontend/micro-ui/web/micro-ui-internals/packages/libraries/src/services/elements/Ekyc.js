@@ -109,6 +109,7 @@ export const EkycService = {
     surveyorId = null,
     unassignedOnly = null,
     reportDownload = null,
+    fetchFilterOptions = null,
   } = {}) =>
     Request({
       url: Urls.ekyc.application_list,
@@ -132,6 +133,7 @@ export const EkycService = {
         surveyorId,
         unassignedOnly,
         reportDownload,
+        fetchFilterOptions,
       },
     }),
   assignment_create: async ({ tenantId = "dl.djb", surveyorId, assignmentType, assignmentValue, assignmentValues } = {}) => {
