@@ -26,8 +26,8 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
         SelectYearofConstruction: null,
         NumberofDwellingUnits: "",
         NumberofRooms: "",
-        hospitalBeds: "",
-        numnberOfStudents: "",
+        numberOfBeds: "",
+        numberOfStudents: "",
       },
     },
   });
@@ -204,8 +204,8 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
       setValue("useDetails.SelectYearofConstruction", null);
       setValue("useDetails.NumberofDwellingUnits", "");
       setValue("useDetails.NumberofRooms", "");
-      setValue("useDetails.hospitalBeds", "");
-      setValue("useDetails.numnberOfStudents", "");
+      setValue("useDetails.numberOfBeds", "");
+      setValue("useDetails.numberOfStudents", "");
     }
   }, [
     formData?.cpt?.details,
@@ -474,14 +474,14 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
                   pattern: { value: NUMBER_PATTERN, message: t("ERR_INVALID_NUMBER") },
                   required: isHospitalProperty ? t("REQUIRED_FIELD") : false,
                 })}
-                name="useDetails.hospitalBeds"
+                name="useDetails.numberOfBeds"
                 disabled={isPropertyFound}
               />
             </div>
           </LabelFieldPair>
         ) : null}
-        {isHospitalProperty && errors?.useDetails?.hospitalBeds && (
-          <CardLabelError style={errorStyle}>{errors.useDetails.hospitalBeds.message}</CardLabelError>
+        {isHospitalProperty && errors?.useDetails?.numberOfBeds && (
+          <CardLabelError style={errorStyle}>{errors.useDetails.numberOfBeds.message}</CardLabelError>
         )}
 
         {isSchoolCollegeProperty ? (
@@ -493,14 +493,14 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
                 inputRef={register({
                   pattern: { value: NUMBER_PATTERN, message: t("ERR_INVALID_NUMBER") },
                 })}
-                name="useDetails.numnberOfStudents"
+                name="useDetails.numberOfStudents"
                 disabled={isPropertyFound}
               />
             </div>
           </LabelFieldPair>
         ) : null}
-        {isSchoolCollegeProperty && errors?.useDetails?.numnberOfStudents && (
-          <CardLabelError style={errorStyle}>{errors.useDetails.numnberOfStudents.message}</CardLabelError>
+        {isSchoolCollegeProperty && errors?.useDetails?.numberOfStudents && (
+          <CardLabelError style={errorStyle}>{errors.useDetails.numberOfStudents.message}</CardLabelError>
         )}
       </div>
     </CollapsibleCardPage>
