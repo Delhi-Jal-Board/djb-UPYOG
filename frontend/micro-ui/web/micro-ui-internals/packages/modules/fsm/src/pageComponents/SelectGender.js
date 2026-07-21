@@ -36,6 +36,36 @@ const SelectGender = ({ config, onSelect, t, userType, formData }) => {
     return <Loader />;
   }
 
+  const isRegistry = window.location.pathname.includes("/registry/");
+
+  if (isRegistry) {
+    const selectedValue = GenderData?.find(
+      (option) => option.code === (formData?.[config.key]?.code || formData?.[config.key] || genderType?.code || genderType)
+    ) || null;
+
+    return (
+      <LabelFieldPair>
+        <CardLabel>
+          {t(config.label)}
+          {config.isMandatory ? <span className="check-page-link-button"> * </span> : ""}
+        </CardLabel>
+        <Dropdown
+          className="payment-form-text-input-correction"
+          isMandatory={config.isMandatory}
+          selected={selectedValue}
+          option={GenderData?.sort((a, b) => a.code.localeCompare(b.code))}
+          select={(value) => {
+            setGenderType(value);
+            onSelect(config.key, value);
+          }}
+          optionKey="i18nKey"
+          disable={config.disable}
+          t={t}
+        />
+      </LabelFieldPair>
+    );
+  }
+
   if (userType === "employee") {
     return (
       <LabelFieldPair>
