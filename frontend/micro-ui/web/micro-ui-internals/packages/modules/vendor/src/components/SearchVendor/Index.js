@@ -13,8 +13,10 @@ const SearchVendor = () => {
 
   const location = useLocation();
   const initialPage =
-    roles.includes("EKYC_VENDOR") || roles.includes("WT_VENDOR")
+    roles.includes("WT_VENDOR")
       ? "VENDOR"
+      : roles.includes("EKYC_VENDOR")
+      ? "SUPERVISOR"
       : roles.includes("EKYC_SUPERVISOR")
       ? "SURVEYOR"
       : roles.includes("EKYC_SURVEYOR")
