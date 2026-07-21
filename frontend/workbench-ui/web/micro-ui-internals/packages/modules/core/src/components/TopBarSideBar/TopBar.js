@@ -383,11 +383,11 @@ const TopBar = ({
           </div>
         </div>
 
-        {!loggedIn && (
+        {/* {!loggedIn && (
           <p className="ulb" style={mobileView ? { fontSize: "14px", display: "inline-block" } : {}}>
             {t(`MYCITY_${stateInfo?.code?.toUpperCase()}_LABEL`)} {t(`MYCITY_STATECODE_LABEL`)}
           </p>
-        )}
+        )} */}
         {!mobileView && (
           <div className={mobileView ? "right" : "topbar-right-section"} style={!loggedIn ? { width: "80%" } : {}}>
             <div className="left hide-on-mobile">

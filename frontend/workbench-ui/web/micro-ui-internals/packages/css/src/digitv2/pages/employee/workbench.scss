@@ -9,12 +9,10 @@
 .workbench {
   .workbench-create-form {
     display: inherit;
-    padding-top: 1.5rem;
+    margin-top: 1rem;
 
     .digit-form-composer-sub-header {
       @extend .typography.text-heading-m;
-      padding-left: 1rem;
-
       @media (max-width: theme(digitv2.screens.mobile)) {
         padding-left: 0;
       }

@@ -274,8 +274,8 @@ const DigitJSONForm = ({
   useEffect(() => {
     onFormChange({ formData: Digit.Utils.workbench.postProcessData(formData, inputUiSchema) });
   }, []);
-  const onSubmitV2 = async({ formData }) => {
-    const updatedData=await Digit.Utils.workbench.preProcessData(formData, inputUiSchema);
+  const onSubmitV2 = async ({ formData }) => {
+    const updatedData = await Digit.Utils.workbench.preProcessData(formData, inputUiSchema);
     onSubmit(updatedData);
   };
 
@@ -294,8 +294,10 @@ const DigitJSONForm = ({
       {/* <Header className="digit-form-composer-header">
         {screenType === "add" ? t("WBH_ADD_MDMS") : screenType === "view" ? t("WBH_VIEW_MDMS") : t("WBH_EDIT_MDMS")}
       </Header> */}
-      <Card className="workbench-create-form">
-        <Header className="digit-form-composer-sub-header">{t(Digit.Utils.workbench.getMDMSLabel(`SCHEMA_` + schema?.code))}</Header>
+      <Card className="workbench-create-form" >
+        <Header className="digit-form-composer-sub-header" >
+          {t(Digit.Utils.workbench.getMDMSLabel(`SCHEMA_` + schema?.code))}
+        </Header>
         <Form
           schema={schema?.definition}
           validator={validator}
@@ -327,7 +329,7 @@ const DigitJSONForm = ({
           // focusOnFirstError={true}
           /* added logic to show live validations after form submit is clicked */
           liveValidate={liveValidate}
-          // liveValidate={formData && Object.keys(formData) && Object.keys(formData)?.length > 0}
+        // liveValidate={formData && Object.keys(formData) && Object.keys(formData)?.length > 0}
         >
           {(screenType === "add" || screenType === "edit") && (
             <ActionBar style={{ zIndex: "0" }}>

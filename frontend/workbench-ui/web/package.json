@@ -12,8 +12,6 @@
   "micro-ui-internals/packages/react-components",
   "micro-ui-internals/packages/modules/core",
   "micro-ui-internals/packages/modules/workbench",
-  "micro-ui-internals/packages/modules/hrms",
-  "micro-ui-internals/packages/modules/pgr",
   "micro-ui-internals/packages/modules/utilities",
   "micro-ui-internals/packages/modules/engagement",
   "micro-ui-internals/packages/modules/common",
