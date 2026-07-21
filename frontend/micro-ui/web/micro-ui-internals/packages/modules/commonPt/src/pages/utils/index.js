@@ -189,6 +189,10 @@ export const setPropertyDetailsLW = (data) => {
       useDetails?.noOfFloors?.code === "BASEMENT"
         ? 0
         : parseInt(useDetails?.noOfFloors?.code?.split("_")?.[0] || useDetails?.noOfFloors?.split?.("_")?.[0]) || 1,
+    farArea: useDetails?.farArea,
+    numberOfRooms: useDetails?.NumberofRooms,
+    numberOfBeds: useDetails?.numberOfBeds,
+    numberOfStudents: useDetails?.numberOfStudents,
   };
 
   data.propertyDetails = propertyDetails;
@@ -220,9 +224,9 @@ export const convertToPropertyLightWeight = (data = {}) => {
             ? Array.isArray(owner.documents)
               ? owner.documents
               : Object.keys(owner.documents).map((key) => {
-                  const doc = owner.documents[key];
-                  return { documentType: doc?.documentType?.code || doc?.documentType || "", fileStoreId: doc?.fileStoreId || "" };
-                })
+                const doc = owner.documents[key];
+                return { documentType: doc?.documentType?.code || doc?.documentType || "", fileStoreId: doc?.fileStoreId || "" };
+              })
             : [],
           gender: typeof owner.gender === "string" ? owner.gender : owner.gender?.code || owner.gender?.value,
           ownerType: owner.ownerType?.code || owner.ownerType || "NONE",
@@ -246,8 +250,8 @@ export const convertToPropertyLightWeight = (data = {}) => {
         plotArea: data.waterConnection?.useDetails?.plotArea || data.useDetails?.plotArea,
         builtUpArea: data.waterConnection?.useDetails?.builtUpArea || data.useDetails?.builtUpArea,
         farArea: data.waterConnection?.useDetails?.farArea || data.useDetails?.farArea,
-        numberOfStudents: data.waterConnection?.useDetails?.numnberOfStudents || data.useDetails?.numnberOfStudents,
-        numberOfBeds: data.waterConnection?.useDetails?.hospitalBeds || data.useDetails?.hospitalBeds,
+        numberOfStudents: data.waterConnection?.useDetails?.numberOfStudents || data.useDetails?.numberOfStudents,
+        numberOfBeds: data.waterConnection?.useDetails?.numberOfBeds || data.useDetails?.numberOfBeds,
         owners: [
           ...(data.owners || []).map((owner, index) => ({
             ...owner,
@@ -256,9 +260,9 @@ export const convertToPropertyLightWeight = (data = {}) => {
               ? Array.isArray(owner.documents)
                 ? owner.documents
                 : Object.keys(owner.documents).map((key) => {
-                    const doc = owner.documents[key];
-                    return { documentType: doc?.documentType?.code || doc?.documentType || "", fileStoreId: doc?.fileStoreId || "" };
-                  })
+                  const doc = owner.documents[key];
+                  return { documentType: doc?.documentType?.code || doc?.documentType || "", fileStoreId: doc?.fileStoreId || "" };
+                })
               : [],
             gender: typeof owner.gender === "string" ? owner.gender : owner.gender?.code || owner.gender?.value,
             ownerType: owner.ownerType?.code || owner.ownerType || "NONE",
@@ -329,8 +333,8 @@ export const convertToUpdatePropertyLightWeight = (data = {}) => {
         plotArea: data.waterConnection?.useDetails?.plotArea || data.useDetails?.plotArea,
         builtUpArea: data.waterConnection?.useDetails?.builtUpArea || data.useDetails?.builtUpArea,
         farArea: data.waterConnection?.useDetails?.farArea || data.useDetails?.farArea,
-        numnberOfStudents: data.waterConnection?.useDetails?.numnberOfStudents || data.useDetails?.numnberOfStudents,
-        hospitalBeds: data.waterConnection?.useDetails?.hospitalBeds || data.useDetails?.hospitalBeds,
+        numberOfStudents: data.waterConnection?.useDetails?.numberOfStudents || data.useDetails?.numberOfStudents,
+        numberOfBeds: data.waterConnection?.useDetails?.numberOfBeds || data.useDetails?.numberOfBeds,
         owners: [
           ...data.owners.map((owner, index) => ({
             ...owner,
