@@ -398,23 +398,14 @@ public class EstimationService {
 		String colonyCategory = masterDataService.getColonyCategory(localityCode, requestInfo, property.getTenantId());
 
 		/*
-		 * ------------------------------------------------------------------
-		 * TEMPORARY DEMO FALLBACK
-		 *
-		 * If colony category cannot be resolved or is not configured,
-		 * use E category.
-		 *
+		 * ------------------------------------------------------------------		 *
+		 * If colony category cannot be resolved or is not configured, use E category.
 		 * Remove this fallback once colony mapping is available.
 		 * ------------------------------------------------------------------
 		 */
-		if (colonyCategory == null
-				|| colonyCategory.trim().isEmpty()
-				|| "UNKNOWN".equalsIgnoreCase(colonyCategory)) {
-
+		if (colonyCategory == null || colonyCategory.trim().isEmpty() || "UNKNOWN".equalsIgnoreCase(colonyCategory)) {
 			colonyCategory = "E";
-
-			log.warn("Colony category not found. Using default colony category '{}' for demo.",
-					colonyCategory);
+			log.warn("Colony category not found. Using default colony category '{}' for demo.",colonyCategory);
 		}
 
 		BigDecimal taxAndCessPercentage = BigDecimal.ZERO;
@@ -614,8 +605,10 @@ public class EstimationService {
 		}
 
 		// Average Water Demand
-		BigDecimal waterDemandLPD = waterDemandCalculator.calculateAverageWaterDemand(property, masterData);
+		WaterDemandResult waterDemand = waterDemandCalculator.calculateAverageWaterDemand(property, masterData);
 
+		BigDecimal waterDemandLPD = waterDemand.getTotalWaterDemand();
+		
 		if (waterDemandLPD == null || waterDemandLPD.compareTo(BigDecimal.ZERO) <= 0) {
 			log.warn("Water Demand calculated as ZERO.");
 			return BigDecimal.ZERO;
@@ -697,7 +690,7 @@ public class EstimationService {
 
 		try {
 		    Map<String, Object> infraBreakdown = new LinkedHashMap<>();
-		    infraBreakdown.put("resolvedBuildingType", waterDemandCalculator.resolveBuildingType(property, masterData).toString());
+		    infraBreakdown.put("resolvedBuildingType", waterDemandCalculator.resolveUsageCategoryCode(property, masterData));
 		    infraBreakdown.put("plotArea", plotArea);
 		    infraBreakdown.put("waterDemandLPD", waterDemandLPD);
 
@@ -720,7 +713,40 @@ public class EstimationService {
 		} catch (Exception e) {
 		    log.error("Error setting infrastructure breakdown details in calculation context", e);
 		}
+		
+		WaterDemandDetail demandDetail = WaterDemandDetail.builder()
+		        .matchedNormCode(waterDemand.getMatchedNormCode())
+		        .formulaUsed(waterDemand.getFormulaUsed())
+		        .calculatedOccupancy(waterDemand.getCalculatedOccupancy())
+		        .chosenLpcd(waterDemand.getChosenLpcd())
+		        .baseDemand(waterDemand.getBaseDemand())
+		        .contingencyPercentage(waterDemand.getContingencyPercentage())
+		        .totalWaterDemandLPD(waterDemandLPD)
+		        .contextVariables(waterDemand.getContextVariables())
+		        .build();
 
+		InfrastructureChargeDetail infraDetail = InfrastructureChargeDetail.builder()
+		        .colonyCategory(colonyCategory)
+		        .plotArea(plotArea)
+		        .minimumPlotArea(minimumPlotArea)
+		        .waterRatePerLPD(waterRate.setScale(2, RoundingMode.HALF_UP))
+		        .sewerRatePerLPD(sewerRate.setScale(2, RoundingMode.HALF_UP))
+		        .waterComponentIFC(waterIFC.setScale(2, RoundingMode.HALF_UP))
+		        .sewerComponentIFC(sewerIFC.setScale(2, RoundingMode.HALF_UP))
+		        .grossIFC(grossIFC.setScale(2, RoundingMode.HALF_UP))
+		        .rebatePercentage(rebatePercentage)
+		        .rebateAmount(rebateAmount.setScale(2, RoundingMode.HALF_UP))
+		        .netIFC(netIFC)
+		        .build();
+
+		CalculationDetail calcDetail = CalculationDetail.builder()
+		        .waterDemandDetail(demandDetail)
+		        .infrastructureChargeDetail(infraDetail)
+		        .build();
+
+
+		criteria.setCalculationDetail(calcDetail);
+		
 		return netIFC;
 	}
 

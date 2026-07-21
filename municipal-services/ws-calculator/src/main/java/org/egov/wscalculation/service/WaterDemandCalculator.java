@@ -2,15 +2,19 @@ package org.egov.wscalculation.service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.egov.wscalculation.constants.WSCalculationConstant;
 import org.egov.wscalculation.web.models.Property;
-import org.egov.wscalculation.web.models.enums.BuildingType;
+import org.egov.wscalculation.web.models.WaterDemandResult;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
@@ -19,991 +23,649 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
 import net.minidev.json.JSONArray;
-import net.minidev.json.JSONObject;
 
-@Component
 @Slf4j
+@Component
 public class WaterDemandCalculator {
 
-	private final ObjectMapper mapper = new ObjectMapper();
-
-	private BuildingType resolveFromUsageTypeMdms(Map<String, Object> masterData, String usageType) {
-
-		if (masterData == null || StringUtils.isBlank(usageType)) {
-			return BuildingType.UNKNOWN;
-		}
-
-		JSONArray usageTypes = (JSONArray) masterData.get(WSCalculationConstant.WC_PROPERTY_NEW_USAGE_TYPE_MASTER);
-
-		if (CollectionUtils.isEmpty((Collection<?>) usageTypes)) {
-			log.warn("PropertyNewUsageType MDMS not found.");
-			return BuildingType.UNKNOWN;
-		}
-
-		for (Object obj : usageTypes) {
-
-			JSONObject usage = mapper.convertValue(obj, JSONObject.class);
-			String code = usage.toJSONString().trim().toUpperCase();
-			
-			if (!code.equalsIgnoreCase(usageType)) {
-				continue;
-			}
-
-			log.info("PropertyNewUsageType matched from MDMS : {}", code);
-			return mapUsageTypeToBuildingType(code);
-		}
-
-		log.info("No PropertyNewUsageType match found in MDMS for {}", usageType);
-		return BuildingType.UNKNOWN;
-	}
-
-	private BuildingType resolveFromPropertyTypeMdms(Map<String, Object> masterData, String propertyType) {
-
-		if (masterData == null || StringUtils.isBlank(propertyType)) {
-			return BuildingType.UNKNOWN;
-		}
-
-		JSONArray propertyTypes = (JSONArray) masterData.get(WSCalculationConstant.WC_PROPERTY_TYPE_MASTER);
-
-		if (CollectionUtils.isEmpty((Collection<?>) propertyTypes)) {
-			log.warn("PropertyType MDMS not found.");
-			return BuildingType.UNKNOWN;
-		}
-
-		for (Object obj : propertyTypes) {
-
-			Map<String, Object> type = mapper.convertValue(obj, new TypeReference<Map<String, Object>>() {
-			});
-
-			String code = String.valueOf(type.get("code")).trim().toUpperCase();
-
-			if (!code.equalsIgnoreCase(propertyType)) {
-				continue;
-			}
-
-			log.info("PropertyType matched from MDMS : {}", code);
-
-			return mapPropertyTypeToBuildingType(code);
-		}
-
-		log.info("No PropertyType match found in MDMS for {}", propertyType);
-
-		return BuildingType.UNKNOWN;
-	}
-
-	/**
-	 * Maps PropertyNewUsageType MDMS code to internal BuildingType.
-	 */
-	private BuildingType mapUsageTypeToBuildingType(String code) {
-
-		if (StringUtils.isBlank(code)) {
-			return BuildingType.UNKNOWN;
-		}
-
-		switch (code.trim().toUpperCase()) {
-
-		/* ---------------- Residential ---------------- */
-		case "EWS":
-		case "EWS_FLAT":
-			return BuildingType.EWS_FLAT;
-
-		case "JANTA_FLATS":
-			return BuildingType.JANTA_FLAT;
-
-		case "LIG":
-		case "LIG_FLATS":
-			return BuildingType.LIG_FLAT;
-
-		case "MIG":
-		case "MIG_FLATS":
-			return BuildingType.MIG_FLAT;
-
-		case "HIG":
-		case "HIG_FLATS":
-			return BuildingType.HIG_FLAT;
-
-		case "COOP_GROUP_HOUSING":
-		case "GROUP_HOUSING":
-			return BuildingType.GROUP_HOUSING;
-
-		case "DHARAMSHALAS_HOSTELS":
-			return BuildingType.HOSTEL;
-
-		case "RESIDENTIAL":
-			return BuildingType.INDIVIDUAL_HOUSE;
-
-		/* ---------------- Institutional ---------------- */
-
-		case "PVT_HOSPITALS":
-		case "GOVT_HOSPITALS":
-			return BuildingType.HOSPITAL;
-
-		case "PVT_SCHOOLS":
-		case "GOVT_SCHOOLS_GNCTD":
-		case "GOVT_SCHOOLS_GOI":
-		case "NDMC_SCHOOLS":
-		case "SDMC_SCHOOLS":
-		case "EDMC_SCHOOLS":
-		case "BLIND_SCHOOLS":
-			return BuildingType.SCHOOL;
-
-		case "PVT_INSTITUTE":
-		case "GOVT_INSTITUTE":
-			return BuildingType.COLLEGE;
-
-		/* ---------------- Commercial ---------------- */
-
-		case "PROFESSIONAL_OFFICE":
-		case "GOVT_OFFICES_PSU_BANK":
-			return BuildingType.OFFICE;
-
-		case "SHOPS":
-		case "DDA_SHOP":
-		case "COMBINED_SHOPS_MILK_FRUIT_VEG":
-			return BuildingType.SHOP;
-
-		case "MALLS":
-			return BuildingType.SHOPPING_MALL;
-
-		case "RESTAURANT":
-		case "DHABA":
-		case "HOTEL_GUEST_HOUSES":
-			return BuildingType.HOTEL;
-
-		case "CINEPLEX":
-			return BuildingType.CINEMA;
-
-		/* ---------------- Industrial ---------------- */
-
-		case "FACTORY":
-		case "WAREHOUSE":
-		case "COLD_STORAGE":
-		case "BOTTLING_PLANT":
-		case "ICE_FACTORY":
-		case "SOFT_DRINK_FACTORY":
-		case "SODA_FACTORY":
-		case "COLOUR_DYE_SHOP_FACTORY":
-		case "MOULDING_FACTORY":
-		case "JEWELLERY_FACTORY":
-		case "COOLING_PLANT":
-			return BuildingType.INDUSTRIAL;
-
-		default:
-			return BuildingType.UNKNOWN;
-		}
-	}
-
-	/**
-	 * Maps PropertyType MDMS code to internal BuildingType.
-	 */
-	private BuildingType mapPropertyTypeToBuildingType(String code) {
-
-		if (StringUtils.isBlank(code)) {
-			return BuildingType.UNKNOWN;
-		}
-
-		switch (code.trim().toUpperCase()) {
-
-		/* ---------------- Residential ---------------- */
-
-		case "INDIVIDUALHOUSE":
-			return BuildingType.INDIVIDUAL_HOUSE;
-
-		case "GROUPHOUSINGSOCIETY":
-			return BuildingType.GROUP_HOUSING;
-
-		case "DHARAMSHALASORHOSTELS":
-			return BuildingType.HOSTEL;
-
-		case "DDAFLATS":
-		case "GOVTFLATS":
-			return BuildingType.APARTMENT;
-
-		case "BUNGALOWS":
-			return BuildingType.INDIVIDUAL_HOUSE;
-
-		/* ---------------- Institutional ---------------- */
-
-		case "SCHOOL":
-			return BuildingType.SCHOOL;
-
-		case "COLLEGE":
-			return BuildingType.COLLEGE;
-
-		case "HOSPITALNURSINGHOME":
-			return BuildingType.HOSPITAL;
-
-		case "GOVERNMENTBUILDINGS":
-			return BuildingType.OFFICE;
-
-		/* ---------------- Commercial ---------------- */
-
-		case "OFFICE":
-			return BuildingType.OFFICE;
-
-		case "SHOP":
-			return BuildingType.SHOP;
-
-		case "MALL":
-			return BuildingType.SHOPPING_MALL;
-
-		case "HOTELORRESTAURANT":
-			return BuildingType.HOTEL;
-
-		case "BANQUETHALL":
-			return BuildingType.BUSINESS_BUILDING;
-
-		case "DDACOMMERCIALCOMPLEX":
-			return BuildingType.BUSINESS_BUILDING;
-
-		case "PUBLICTOILET":
-			return BuildingType.BUSINESS_BUILDING;
-
-		case "MOTHERDAIRYBOOTH":
-			return BuildingType.SHOP;
-
-		/* ---------------- Industrial ---------------- */
-
-		case "FACTORY":
-			return BuildingType.INDUSTRIAL;
-
-		case "WAREHOUSE":
-			return BuildingType.STORAGE;
-
-		default:
-			return BuildingType.UNKNOWN;
-		}
-	}
-
-	/**
-	 * Resolves DJB Building Type from Property details.
-	 */
-	public BuildingType resolveBuildingType(Property property, Map<String, Object> masterData) {
-
-		if (property == null) {
-			log.warn("Property is null. Returning UNKNOWN.");
-			return BuildingType.UNKNOWN;
-		}
-
-		Map<String, Object> details = property.getAdditionalDetails() == null ? new HashMap<>()
-				: mapper.convertValue(property.getAdditionalDetails(), new TypeReference<Map<String, Object>>() {
-				});
-
-		String propertyType = property.getPropertyType() == null ? "" : property.getPropertyType().trim().toUpperCase();
-		String usageCategory = property.getUsageCategory() == null ? "" : property.getUsageCategory().trim().toUpperCase();
-		String waterUsageType = "";
-
-		if (details.get("waterConnectionUsageType") != null) {
-			waterUsageType = details.get("waterConnectionUsageType").toString().trim().toUpperCase();
-		}
-
-		log.info("Resolving BuildingType : PropertyType={}, UsageCategory={}, WaterConnectionUsageType={}", propertyType, usageCategory, waterUsageType);
-		
-		BuildingType buildingType = resolveFromUsageTypeMdms(masterData, waterUsageType);
-
-		if (buildingType != BuildingType.UNKNOWN) {
-			return buildingType;
-		}
-
-		buildingType = resolveFromPropertyTypeMdms(masterData, propertyType);
-
-		if (buildingType != BuildingType.UNKNOWN) {
-			return buildingType;
-		}
-
-		switch (waterUsageType) {
-
-		case "EWS":
-		case "EWS_FLAT":
-			return BuildingType.EWS_FLAT;
-
-		case "JANTA_FLATS":
-			return BuildingType.JANTA_FLAT;
-
-		case "LIG":
-		case "LIG_FLATS":
-			return BuildingType.LIG_FLAT;
-
-		case "MIG":
-		case "MIG_FLATS":
-			return BuildingType.MIG_FLAT;
-
-		case "HIG":
-		case "HIG_FLATS":
-			return BuildingType.HIG_FLAT;
-
-		case "GROUP_HOUSING":
-			return BuildingType.GROUP_HOUSING;
-		}
-
-		switch (propertyType) {
-
-		case "INDIVIDUALHOUSE":
-			return BuildingType.INDIVIDUAL_HOUSE;
-
-		case "GROUPHOUSINGSOCIETY":
-			return BuildingType.GROUP_HOUSING;
-
-		case "DHARAMSHALASORHOSTELS":
-			return BuildingType.HOSTEL;
-
-		case "HOSPITALNURSINGHOME":
-			return BuildingType.HOSPITAL;
-
-		case "SCHOOL":
-			return BuildingType.SCHOOL;
-
-		case "COLLEGE":
-			return BuildingType.COLLEGE;
-
-		case "HOTELORRESTAURANT":
-			return BuildingType.HOTEL;
-
-		case "WAREHOUSE":
-			return BuildingType.INDUSTRIAL;
-
-		case "FACTORY":
-			return BuildingType.INDUSTRIAL;
-		}
-
-		switch (usageCategory) {
-
-		case "RESIDENTIAL":
-			return BuildingType.INDIVIDUAL_HOUSE;
-
-		case "COMMERCIAL":
-			return BuildingType.BUSINESS_BUILDING;
-
-		case "INDUSTRIAL":
-			return BuildingType.INDUSTRIAL;
-
-		case "INSTITUTIONAL":
-
-			if ("HOSPITALNURSINGHOME".equals(propertyType)) {
-				return BuildingType.HOSPITAL;
-			}
-
-			if ("SCHOOL".equals(propertyType)) {
-				return BuildingType.SCHOOL;
-			}
-
-			if ("COLLEGE".equals(propertyType)) {
-				return BuildingType.COLLEGE;
-			}
-
-			return BuildingType.UNKNOWN;
-
-		default:
-			log.warn("Unable to resolve BuildingType.");
-			return BuildingType.UNKNOWN;
-		}
-	}
-
-	private BigDecimal calculateIndividualHouseDemand(Property property) {
-
-		if (property == null) {
-			log.warn("Cannot calculate residential demand. Property is null.");
-			return BigDecimal.ZERO;
-		}
-
-		Map<String, Object> additionalDetails = (Map<String, Object>) property.getAdditionalDetails();
-
-		if (additionalDetails == null || additionalDetails.isEmpty()) {
-			log.warn("AdditionalDetails not available.");
-			return BigDecimal.ZERO;
-		}
-
-		Object builtUpAreaObject = additionalDetails.get(WSCalculationConstant.BUILT_UP_AREA);
-
-		if (builtUpAreaObject == null) {
-			log.warn("Built Up Area not found in Property Additional Details.");
-			return BigDecimal.ZERO;
-		}
-
-		BigDecimal coveredArea;
-
-		try {
-			coveredArea = new BigDecimal(builtUpAreaObject.toString());
-		} catch (NumberFormatException ex) {
-			log.error("Invalid Built Up Area : {}", builtUpAreaObject);
-			return BigDecimal.ZERO;
-		}
-
-		if (coveredArea.compareTo(BigDecimal.ZERO) <= 0) {
-			log.warn("Covered Area must be greater than zero.");
-			return BigDecimal.ZERO;
-		}
-
-		BigDecimal occupancy = coveredArea.divide(WSCalculationConstant.RESIDENTIAL_AREA_PER_PERSON,WSCalculationConstant.DIVISION_SCALE, RoundingMode.HALF_UP);
-		BigDecimal waterDemand = occupancy.multiply(WSCalculationConstant.RESIDENTIAL_LPCD);
-
-		log.info("Residential Water Demand Calculated :: CoveredArea={} sqm, Occupancy={}, LPCD={}, Demand={} LPD",coveredArea, occupancy, WSCalculationConstant.RESIDENTIAL_LPCD, waterDemand);
-
-		return waterDemand.setScale(WSCalculationConstant.RESULT_SCALE, RoundingMode.HALF_UP);
-	}
-
-	private BigDecimal getDwellingUnits(Property property) {
-		return getNumericAdditionalDetail(property, WSCalculationConstant.NUMBER_OF_DWELLING_UNITS);
-	}
-
-	private BigDecimal calculateApartmentDemand(Property property, Map<String, Object> masterData) {
-
-		if (property == null) {
-			log.warn("Property is null.");
-			return BigDecimal.ZERO;
-		}
-
-		BuildingType buildingType = resolveBuildingType(property, masterData);
-
-		switch (buildingType) {
-
-		case EWS_FLAT:
-			return calculateEWSFlatDemand(property);
-
-		case JANTA_FLAT:
-			return calculateJantaFlatDemand(property);
-
-		case LIG_FLAT:
-			return calculateLIGFlatDemand(property);
-
-		case MIG_FLAT:
-			return calculateMIGFlatDemand(property);
-
-		case HIG_FLAT:
-			return calculateHIGFlatDemand(property);
-
-		case GROUP_HOUSING:
-			return calculateGroupHousingDemand(property);
-
-		case APARTMENT:
-			return calculateGroupHousingDemand(property);
-
-		default:
-			log.warn("Unsupported Apartment Type : {}", buildingType);
-			return BigDecimal.ZERO;
-		}
-	}
-
-	private BigDecimal calculateApartmentDemand(BigDecimal dwellingUnits, BigDecimal personsPerDU, BigDecimal lpcd,String apartmentType) {
-
-		if (dwellingUnits.compareTo(BigDecimal.ZERO) <= 0) {
-			return BigDecimal.ZERO;
-		}
-
-		BigDecimal occupancy = dwellingUnits.multiply(personsPerDU);
-		BigDecimal demand = occupancy.multiply(lpcd);
-
-		log.info("{} Demand :: DU={}, Occupancy={}, LPCD={}, Demand={}", apartmentType, dwellingUnits, occupancy, lpcd,demand);
-
-		return demand.setScale(WSCalculationConstant.RESULT_SCALE, RoundingMode.HALF_UP);
-	}
-
-	private BigDecimal calculateJantaFlatDemand(Property property) {
-		BigDecimal du = getDwellingUnits(property);
-		return calculateApartmentDemand(du, WSCalculationConstant.JANTA_PERSONS_PER_DU,WSCalculationConstant.RESIDENTIAL_LPCD, "JANTA_FLAT");
-	}
-
-	private BigDecimal calculateLIGFlatDemand(Property property) {
-		BigDecimal du = getDwellingUnits(property);
-		return calculateApartmentDemand(du, WSCalculationConstant.LIG_PERSONS_PER_DU,WSCalculationConstant.RESIDENTIAL_LPCD, "LIG_FLAT");
-	}
-
-	private BigDecimal calculateMIGFlatDemand(Property property) {
-		BigDecimal du = getDwellingUnits(property);
-		return calculateApartmentDemand(du, WSCalculationConstant.MIG_PERSONS_PER_DU,WSCalculationConstant.RESIDENTIAL_LPCD, "MIG_FLAT");
-	}
-
-	private BigDecimal calculateHIGFlatDemand(Property property) {
-		BigDecimal du = getDwellingUnits(property);
-		return calculateApartmentDemand(du, WSCalculationConstant.HIG_PERSONS_PER_DU,WSCalculationConstant.RESIDENTIAL_LPCD, "HIG_FLAT");
-	}
-
-	private BigDecimal calculateGroupHousingDemand(Property property) {
-		BigDecimal du = getDwellingUnits(property);
-		return calculateApartmentDemand(du, WSCalculationConstant.GROUP_HOUSING_PERSONS_PER_DU,WSCalculationConstant.RESIDENTIAL_LPCD, "GROUP_HOUSING");
-	}
-
-	private BigDecimal calculateEWSFlatDemand(Property property) {
-		BigDecimal dwellingUnits = getDwellingUnits(property);
-		return calculateApartmentDemand(dwellingUnits, WSCalculationConstant.EWS_PERSONS_PER_DU,WSCalculationConstant.RESIDENTIAL_LPCD, "EWS_FLAT");
-	}
-
-	private BigDecimal getCoveredArea(Property property) {
-		return getNumericAdditionalDetail(property, WSCalculationConstant.BUILT_UP_AREA);
-	}
-
-	private BigDecimal calculateAreaBasedDemand(BigDecimal coveredArea, BigDecimal areaPerPerson, BigDecimal lpcd,String buildingName) {
-
-		if (coveredArea.compareTo(BigDecimal.ZERO) <= 0) {
-			return BigDecimal.ZERO;
-		}
-
-		BigDecimal occupancy = coveredArea.divide(areaPerPerson, WSCalculationConstant.DIVISION_SCALE,RoundingMode.HALF_UP);
-		BigDecimal demand = occupancy.multiply(lpcd);
-
-		log.info("{} Demand :: CoveredArea={}, Occupancy={}, LPCD={}, Demand={}", buildingName, coveredArea, occupancy,lpcd, demand);
-
-		return demand.setScale(WSCalculationConstant.RESULT_SCALE, RoundingMode.HALF_UP);
-	}
-
-	public BigDecimal calculateOfficeDemand(Property property) {
-		BigDecimal coveredArea = getCoveredArea(property);
-		return calculateAreaBasedDemand(coveredArea, WSCalculationConstant.OFFICE_AREA_PER_PERSON,WSCalculationConstant.OFFICE_LPCD, "OFFICE");
-	}
-
-	private BigDecimal getNumericAdditionalDetail(Property property, String key) {
-		if (property == null || property.getAdditionalDetails() == null) {
-			return BigDecimal.ZERO;
-		}
-
-		Map<String, Object> details = mapper.convertValue(property.getAdditionalDetails(),new TypeReference<Map<String, Object>>() {
-		});
-
-		Object value = details.get(key);
-
-		if (value == null) {
-			log.warn("AdditionalDetails key '{}' not found.", key);
-			return BigDecimal.ZERO;
-		}
-
-		try {
-			return new BigDecimal(value.toString());
-		} catch (NumberFormatException ex) {
-			log.warn("Invalid numeric value for {} : {}", key, value);
-			return BigDecimal.ZERO;
-		}
-	}
-
-	private BigDecimal getNumberOfBeds(Property property) {
-		return getNumericAdditionalDetail(property, WSCalculationConstant.NUMBER_OF_BEDS);
-	}
-
-	private BigDecimal calculateHospitalDemand(Property property) {
-		BigDecimal beds = getNumberOfBeds(property);
-
-		if (beds.compareTo(BigDecimal.ZERO) <= 0) {
-			log.warn("Invalid Number Of Beds.");
-			return BigDecimal.ZERO;
-		}
-
-		BigDecimal demand = beds.multiply(WSCalculationConstant.HOSPITAL_LPCD);
-		log.info("Hospital Demand :: Beds={}, LPCD={}, Demand={}", beds, WSCalculationConstant.HOSPITAL_LPCD, demand);
-
-		return demand.setScale(WSCalculationConstant.RESULT_SCALE, RoundingMode.HALF_UP);
-	}
-
-	private BigDecimal calculateBusinessDemand(Property property) {
-		return calculateAreaBasedDemand(getCoveredArea(property), WSCalculationConstant.BUSINESS_AREA_PER_PERSON,
-				WSCalculationConstant.BUSINESS_LPCD, "BUSINESS_BUILDING");
-	}
-
-	private BigDecimal calculateBankDemand(Property property) {
-		return calculateAreaBasedDemand(getCoveredArea(property), WSCalculationConstant.BANK_AREA_PER_PERSON,
-				WSCalculationConstant.BANK_LPCD, "BANK");
-	}
-
-	private BigDecimal calculateRestaurantDemand(Property property) {
-		return calculateAreaBasedDemand(getCoveredArea(property), WSCalculationConstant.RESTAURANT_AREA_PER_PERSON,
-				WSCalculationConstant.RESTAURANT_LPCD, "RESTAURANT");
-	}
-
-	private BigDecimal calculateShoppingMallDemand(Property property) {
-		return calculateAreaBasedDemand(getCoveredArea(property), WSCalculationConstant.MALL_AREA_PER_PERSON,
-				WSCalculationConstant.MALL_LPCD, "SHOPPING_MALL");
-	}
-
-	private BigDecimal calculateShopDemand(Property property) {
-		return calculateAreaBasedDemand(getCoveredArea(property), WSCalculationConstant.SHOP_AREA_PER_PERSON,
-				WSCalculationConstant.SHOP_LPCD, "SHOP");
-	}
-
-	private BigDecimal calculateCinemaDemand(Property property) {
-		return calculateAreaBasedDemand(getCoveredArea(property), WSCalculationConstant.CINEMA_AREA_PER_PERSON,
-				WSCalculationConstant.CINEMA_LPCD, "CINEMA");
-	}
-
-	private BigDecimal getNumberOfStudents(Property property) {
-		return getNumericAdditionalDetail(property, WSCalculationConstant.NUMBER_OF_STUDENTS);
-	}
-
-	private BigDecimal calculateSchoolDemand(Property property) {
-		BigDecimal students = getNumberOfStudents(property);
-
-		if (students.compareTo(BigDecimal.ZERO) <= 0) {
-			log.warn("Invalid Number Of Students.");
-			return BigDecimal.ZERO;
-		}
-
-		BigDecimal demand = students.multiply(WSCalculationConstant.SCHOOL_LPCD);
-		log.info("School Demand :: Students={}, LPCD={}, Demand={}", students, WSCalculationConstant.SCHOOL_LPCD,demand);
-		
-		return demand.setScale(WSCalculationConstant.RESULT_SCALE, RoundingMode.HALF_UP);
-	}
-
-	private BigDecimal calculateCollegeDemand(Property property) {
-		BigDecimal students = getNumberOfStudents(property);
-
-		if (students.compareTo(BigDecimal.ZERO) <= 0) {
-			return BigDecimal.ZERO;
-		}
-
-		BigDecimal demand = students.multiply(WSCalculationConstant.COLLEGE_LPCD);
-		return demand.setScale(WSCalculationConstant.RESULT_SCALE, RoundingMode.HALF_UP);
-	}
-
-	private BigDecimal calculateUniversityDemand(Property property) {
-		BigDecimal students = getNumberOfStudents(property);
-
-		if (students.compareTo(BigDecimal.ZERO) <= 0) {
-			return BigDecimal.ZERO;
-		}
-
-		BigDecimal demand = students.multiply(WSCalculationConstant.UNIVERSITY_LPCD);
-		return demand.setScale(WSCalculationConstant.RESULT_SCALE, RoundingMode.HALF_UP);
-	}
-
-	private BigDecimal getNumberOfRooms(Property property) {
-		return getNumericAdditionalDetail(property, WSCalculationConstant.NUMBER_OF_ROOMS);
-	}
-
-	private BigDecimal calculateHotelDemand(Property property) {
-		BigDecimal rooms = getNumberOfRooms(property);
-
-		if (rooms.compareTo(BigDecimal.ZERO) <= 0) {
-			log.warn("Invalid Number Of Rooms.");
-			return BigDecimal.ZERO;
-		}
-
-		BigDecimal occupancy = rooms.multiply(WSCalculationConstant.PERSONS_PER_ROOM);
-		BigDecimal demand = occupancy.multiply(WSCalculationConstant.HOTEL_LPCD);
-
-		log.info("Hotel Demand :: Rooms={}, Occupancy={}, Demand={}", rooms, occupancy, demand);
-
-		return demand.setScale(WSCalculationConstant.RESULT_SCALE, RoundingMode.HALF_UP);
-	}
-
-	private BigDecimal calculateHostelDemand(Property property) {
-		BigDecimal beds = getNumberOfBeds(property);
-
-		if (beds.compareTo(BigDecimal.ZERO) <= 0) {
-			log.warn("Invalid Number Of Beds.");
-			return BigDecimal.ZERO;
-		}
-
-		BigDecimal demand = beds.multiply(WSCalculationConstant.HOSTEL_LPCD);
-		log.info("Hostel Demand :: Beds={}, LPCD={}, Demand={}", beds, WSCalculationConstant.HOSTEL_LPCD, demand);
-
-		return demand.setScale(WSCalculationConstant.RESULT_SCALE, RoundingMode.HALF_UP);
-	}
-
-	private BigDecimal calculateIndustrialDemand(Property property) {
-		return calculateAreaBasedDemand(getCoveredArea(property), WSCalculationConstant.INDUSTRIAL_AREA_PER_PERSON,
-				WSCalculationConstant.INDUSTRIAL_LPCD, "INDUSTRIAL");
-	}
-
-	public BigDecimal calculateAverageWaterDemand(Property property, Map<String, Object> masterData) {
-
-		if (property == null) {
-			log.warn("Cannot calculate water demand. Property is null.");
-			return BigDecimal.ZERO;
-		}
-		BuildingType buildingType = resolveBuildingType(property, masterData);
-		log.info("Resolved Building Type : {}", buildingType);
-
-		BigDecimal calculatedDemand = BigDecimal.ZERO;
-
-		switch (buildingType) {
-
-		/* ---------------- Residential ---------------- */
-
-		case INDIVIDUAL_HOUSE:
-			log.info("Invoking calculateIndividualHouseDemand()");
-			calculatedDemand = calculateIndividualHouseDemand(property);
-			break;
-
-		case EWS_FLAT:
-		case JANTA_FLAT:
-		case LIG_FLAT:
-		case MIG_FLAT:
-		case HIG_FLAT:
-		case GROUP_HOUSING:
-		case APARTMENT:
-			log.info("Invoking calculateApartmentDemand() for {}", buildingType);
-			calculatedDemand = calculateApartmentDemand(property, masterData);
-			break;
-
-		/* ---------------- Business / Commercial ---------------- */
-
-		case OFFICE:
-			log.info("Invoking calculateOfficeDemand()");
-			calculatedDemand = calculateOfficeDemand(property);
-			break;
-
-		case BUSINESS_BUILDING:
-			log.info("Invoking calculateBusinessDemand()");
-			calculatedDemand = calculateBusinessDemand(property);
-			break;
-
-		case BANK:
-			log.info("Invoking calculateBankDemand()");
-			calculatedDemand = calculateBankDemand(property);
-			break;
-
-		case SHOP:
-			log.info("Invoking calculateShopDemand()");
-			calculatedDemand = calculateShopDemand(property);
-			break;
-
-		case SHOPPING_MALL:
-			log.info("Invoking calculateShoppingMallDemand()");
-			calculatedDemand = calculateShoppingMallDemand(property);
-			break;
-
-		case RESTAURANT:
-			log.info("Invoking calculateRestaurantDemand()");
-			calculatedDemand = calculateRestaurantDemand(property);
-			break;
-
-		case CINEMA:
-			log.info("Invoking calculateCinemaDemand()");
-			calculatedDemand = calculateCinemaDemand(property);
-			break;
-
-		/* ---------------- Institutional ---------------- */
-
-		case HOSPITAL:
-			log.info("Invoking calculateHospitalDemand()");
-			calculatedDemand = calculateHospitalDemand(property);
-			break;
-
-		case SCHOOL:
-			log.info("Invoking calculateSchoolDemand()");
-			calculatedDemand = calculateSchoolDemand(property);
-			break;
-
-		case COLLEGE:
-			log.info("Invoking calculateCollegeDemand()");
-			calculatedDemand = calculateCollegeDemand(property);
-			break;
-
-		case UNIVERSITY:
-			log.info("Invoking calculateUniversityDemand()");
-			calculatedDemand = calculateUniversityDemand(property);
-			break;
-
-		case HOTEL:
-			log.info("Invoking calculateHotelDemand()");
-			calculatedDemand = calculateHotelDemand(property);
-			break;
-
-		case INDUSTRIAL:
-			log.info("Invoking calculateIndustrialDemand()");
-			calculatedDemand = calculateIndustrialDemand(property);
-			break;
-
-		case HOSTEL:
-			log.info("Invoking calculateHostelDemand()");
-			calculatedDemand = calculateHostelDemand(property);
-			break;
-
-		default:
-			log.warn("Unsupported Building Type : {}", buildingType);
-			return BigDecimal.ZERO;
-		}
-
-		try {
-			Map<String, Object> traceDetails = traceWaterDemandLogDetails(property, masterData);
-			
-			log.info("======================================================================");
-			log.info("               WATER DEMAND CALCULATION REPORT                        ");
-			log.info("======================================================================");
-			log.info("Property ID          : {}", property.getPropertyId() != null ? property.getPropertyId() : "N/A");
-			log.info("Resolved BuildingType: {}", traceDetails.getOrDefault("buildingType", buildingType));
-			log.info("Formula Applied      : {}", traceDetails.getOrDefault("formulaUsed", "Standard Base Calculation"));
-			
-			// --- Inputs Section ---
-			if (traceDetails.containsKey("inputCoveredAreaSqMtr")) {
-				log.info("Covered Area (SqMtr) : {}", traceDetails.get("inputCoveredAreaSqMtr"));
-			}
-			if (traceDetails.containsKey("inputDwellingUnits")) {
-				log.info("Dwelling Units (DU)  : {}", traceDetails.get("inputDwellingUnits"));
-			}
-			if (traceDetails.containsKey("inputBedsCount")) {
-				log.info("Total Beds Count     : {}", traceDetails.get("inputBedsCount"));
-			}
-			if (traceDetails.containsKey("inputStudentsCount")) {
-				log.info("Total Students Count : {}", traceDetails.get("inputStudentsCount"));
-			}
-			if (traceDetails.containsKey("inputRoomsCount")) {
-				log.info("Total Rooms Count    : {}", traceDetails.get("inputRoomsCount"));
-			}
-			
-			// --- Occupancy Breakdown ---
-			if (traceDetails.containsKey("occupancyDivisorOrFactor")) {
-				log.info("Density/DU Factor    : {}", traceDetails.get("occupancyDivisorOrFactor")); 
-			}
-			if (traceDetails.containsKey("calculatedPersons")) {
-				log.info("Calculated Occupancy : {} Persons", traceDetails.get("calculatedPersons"));
-			}
-			
-			// --- Final Output Section ---
-			if (traceDetails.containsKey("appliedLpcd")) {
-				log.info("Applied LPCD Rate    : {} Liters", traceDetails.get("appliedLpcd"));
-			}
-			log.info("----------------------------------------------------------------------");
-			log.info("TOTAL CALCULATED DEMAND : {} LPD", calculatedDemand);
-			log.info("======================================================================");
-			
-		} catch (Exception e) {
-			log.error("Error printing water demand breakdown report logs", e);
-		}
-		
-		return calculatedDemand;
-	}
-	
-	/**
-	 * Resolves properties factors dynamically to inject inside the demand log trace.
-	 */
-	public Map<String, Object> traceWaterDemandLogDetails(Property property, Map<String, Object> masterData) {
-		Map<String, Object> trace = new LinkedHashMap<>();
-		try {
-			BuildingType type = resolveBuildingType(property, masterData);
-			trace.put("buildingType", type.toString());
-
-			BigDecimal coveredArea = getCoveredArea(property);
-			BigDecimal calculatedPersons = BigDecimal.ZERO;
-
-			switch (type) {
-			case INDIVIDUAL_HOUSE:
-				if (coveredArea.compareTo(BigDecimal.ZERO) > 0) {
-					calculatedPersons = coveredArea.divide(WSCalculationConstant.RESIDENTIAL_AREA_PER_PERSON, 
-							WSCalculationConstant.DIVISION_SCALE, RoundingMode.HALF_UP);
-				}
-				trace.put("formulaUsed", "Occupancy = (Covered Area / 25) -> Demand = Occupancy * 135 LPCD");
-				trace.put("inputCoveredAreaSqMtr", coveredArea);
-				trace.put("occupancyDivisorOrFactor", WSCalculationConstant.RESIDENTIAL_AREA_PER_PERSON + " SqMtr per Person");
-				trace.put("calculatedPersons", calculatedPersons);
-				trace.put("appliedLpcd", WSCalculationConstant.RESIDENTIAL_LPCD);
-				break;
-
-			case EWS_FLAT:
-			case JANTA_FLAT:
-			case LIG_FLAT:
-			case MIG_FLAT:
-			case HIG_FLAT:
-			case GROUP_HOUSING:
-			case APARTMENT:
-				BigDecimal du = getDwellingUnits(property);
-				BigDecimal factor = WSCalculationConstant.GROUP_HOUSING_PERSONS_PER_DU; // default fallback
-				
-				if (type == BuildingType.EWS_FLAT) factor = WSCalculationConstant.EWS_PERSONS_PER_DU;
-				else if (type == BuildingType.JANTA_FLAT) factor = WSCalculationConstant.JANTA_PERSONS_PER_DU;
-				else if (type == BuildingType.LIG_FLAT) factor = WSCalculationConstant.LIG_PERSONS_PER_DU;
-				else if (type == BuildingType.MIG_FLAT) factor = WSCalculationConstant.MIG_PERSONS_PER_DU;
-				else if (type == BuildingType.HIG_FLAT) factor = WSCalculationConstant.HIG_PERSONS_PER_DU;
-
-				calculatedPersons = du.multiply(factor);
-				
-				trace.put("formulaUsed", "Occupancy = Dwelling Units * PersonsPerDU -> Demand = Occupancy * 135 LPCD");
-				trace.put("inputDwellingUnits", du);
-				trace.put("occupancyDivisorOrFactor", factor + " Persons per DU");
-				trace.put("calculatedPersons", calculatedPersons);
-				trace.put("appliedLpcd", WSCalculationConstant.RESIDENTIAL_LPCD);
-				break;
-
-			case HOSPITAL:
-				BigDecimal beds = getNumberOfBeds(property);
-				trace.put("formulaUsed", "Demand = Total Beds * 340 LPCD");
-				trace.put("inputBedsCount", beds);
-				trace.put("occupancyDivisorOrFactor", "1 Person per Bed");
-				trace.put("calculatedPersons", beds);
-				trace.put("appliedLpcd", WSCalculationConstant.HOSPITAL_LPCD);
-				break;
-
-			case SCHOOL:
-			case COLLEGE:
-			case UNIVERSITY:
-				BigDecimal students = getNumberOfStudents(property);
-				BigDecimal eduLpcd = WSCalculationConstant.SCHOOL_LPCD;
-				if (type == BuildingType.COLLEGE) eduLpcd = WSCalculationConstant.COLLEGE_LPCD;
-				else if (type == BuildingType.UNIVERSITY) eduLpcd = WSCalculationConstant.UNIVERSITY_LPCD;
-
-				trace.put("formulaUsed", "Demand = Total Students * LPCD Value");
-				trace.put("inputStudentsCount", students);
-				trace.put("occupancyDivisorOrFactor", "1 Person per Student");
-				trace.put("calculatedPersons", students);
-				trace.put("appliedLpcd", eduLpcd);
-				break;
-
-			case HOTEL:
-				BigDecimal rooms = getNumberOfRooms(property);
-				calculatedPersons = rooms.multiply(WSCalculationConstant.PERSONS_PER_ROOM);
-				trace.put("formulaUsed", "Occupancy = Rooms * 2 -> Demand = Occupancy * 180 LPCD");
-				trace.put("inputRoomsCount", rooms);
-				trace.put("occupancyDivisorOrFactor", WSCalculationConstant.PERSONS_PER_ROOM + " Persons per Room");
-				trace.put("calculatedPersons", calculatedPersons);
-				trace.put("appliedLpcd", WSCalculationConstant.HOTEL_LPCD);
-				break;
-
-			case HOSTEL:
-				BigDecimal hostelBeds = getNumberOfBeds(property);
-				trace.put("formulaUsed", "Demand = Total Beds * 135 LPCD");
-				trace.put("inputBedsCount", hostelBeds);
-				trace.put("occupancyDivisorOrFactor", "1 Person per Bed");
-				trace.put("calculatedPersons", hostelBeds);
-				trace.put("appliedLpcd", WSCalculationConstant.HOSTEL_LPCD);
-				break;
-
-			case OFFICE:
-			case BUSINESS_BUILDING:
-			case BANK:
-			case SHOP:
-			case SHOPPING_MALL:
-			case RESTAURANT:
-			case CINEMA:
-			case INDUSTRIAL:
-			default:
-				BigDecimal areaFactor = WSCalculationConstant.SHOP_AREA_PER_PERSON; // default fallback
-				BigDecimal commLpcd = WSCalculationConstant.SHOP_LPCD;
-
-				if (type == BuildingType.OFFICE) {
-					areaFactor = WSCalculationConstant.OFFICE_AREA_PER_PERSON;
-					commLpcd = WSCalculationConstant.OFFICE_LPCD;
-				} else if (type == BuildingType.BUSINESS_BUILDING) {
-					areaFactor = WSCalculationConstant.BUSINESS_AREA_PER_PERSON;
-					commLpcd = WSCalculationConstant.BUSINESS_LPCD;
-				} else if (type == BuildingType.BANK) {
-					areaFactor = WSCalculationConstant.BANK_AREA_PER_PERSON;
-					commLpcd = WSCalculationConstant.BANK_LPCD;
-				} else if (type == BuildingType.SHOPPING_MALL) {
-					areaFactor = WSCalculationConstant.MALL_AREA_PER_PERSON;
-					commLpcd = WSCalculationConstant.MALL_LPCD;
-				} else if (type == BuildingType.RESTAURANT) {
-					areaFactor = WSCalculationConstant.RESTAURANT_AREA_PER_PERSON;
-					commLpcd = WSCalculationConstant.RESTAURANT_LPCD;
-				} else if (type == BuildingType.CINEMA) {
-					areaFactor = WSCalculationConstant.CINEMA_AREA_PER_PERSON;
-					commLpcd = WSCalculationConstant.CINEMA_LPCD;
-				} else if (type == BuildingType.INDUSTRIAL) {
-					areaFactor = WSCalculationConstant.INDUSTRIAL_AREA_PER_PERSON;
-					commLpcd = WSCalculationConstant.INDUSTRIAL_LPCD;
-				}
-
-				if (coveredArea.compareTo(BigDecimal.ZERO) > 0) {
-					calculatedPersons = coveredArea.divide(areaFactor, WSCalculationConstant.DIVISION_SCALE, RoundingMode.HALF_UP);
-				}
-
-				trace.put("formulaUsed", "Area Based Standard Demand :: (Covered Area / AreaPerPerson) * LPCD");
-				trace.put("inputCoveredAreaSqMtr", coveredArea);
-				trace.put("occupancyDivisorOrFactor", areaFactor + " SqMtr per Person");
-				trace.put("calculatedPersons", calculatedPersons);
-				trace.put("appliedLpcd", commLpcd);
-				break;
-			}
-		} catch (Exception e) {
-			trace.put("errorTracingLogs", e.getMessage());
-		}
-		return trace;
-	}
-
+    @Autowired
+    private ObjectMapper mapper;
+
+    /**
+     * Primary calculation entry point returning exact WaterDemandResult model.
+     *
+     * @param property   Property entity containing physical & usage attributes.
+     * @param masterData MDMS payload containing WaterDemandNorms.
+     * @return WaterDemandResult containing final calculated demand and metadata.
+     */
+    public WaterDemandResult calculateAverageWaterDemand(Property property, Map<String, Object> masterData) {
+
+        WaterDemandResult result = new WaterDemandResult();
+
+        if (property == null || masterData == null || masterData.isEmpty()) {
+            log.warn("Water demand calculation aborted: Property or MasterData is null/empty.");
+            result.setTotalWaterDemand(BigDecimal.ZERO);
+            return result;
+        }
+
+        // Fetch WaterDemandNorms array from Master Data
+        List<Map<String, Object>> waterDemandNorms = extractWaterDemandNorms(masterData);
+
+        if (CollectionUtils.isEmpty(waterDemandNorms)) {
+            log.warn("WaterDemandNorms MDMS configuration is missing or empty.");
+            result.setTotalWaterDemand(BigDecimal.ZERO);
+            return result;
+        }
+
+        // Resolve target demandNormCode (e.g., "A-1", "D-6", "E-1") dynamically
+        String usageCode = resolveUsageCategoryCode(property, masterData);
+        log.info("Resolved target demandNormCode / subCategoryCode: '{}'", usageCode);
+
+        // Find matching rule from WaterDemandNorms array by subCategoryCode/Code
+        Map<String, Object> matchedNorm = findMatchingNormConfig(waterDemandNorms, usageCode);
+
+        if (matchedNorm == null) {
+            log.warn("No matching WaterDemandNorms found for code: '{}'", usageCode);
+            result.setTotalWaterDemand(BigDecimal.ZERO);
+            return result;
+        }
+
+        Boolean isActive = matchedNorm.get("isActive") == null || Boolean.parseBoolean(matchedNorm.get("isActive").toString());
+        if (!isActive) {
+            log.warn("WaterDemandNorms entry for Code '{}' is marked inactive in MDMS.", usageCode);
+            result.setTotalWaterDemand(BigDecimal.ZERO);
+            return result;
+        }
+
+        // Extract property context variables for expression evaluation
+        Map<String, BigDecimal> contextVariables = extractContextVariables(property);
+
+        // Evaluate formula and denominator
+        String formula = String.valueOf(matchedNorm.getOrDefault("minOccupancyFormula", "0"));
+        BigDecimal rawOccupancy = evaluateExpression(formula, contextVariables);
+
+        BigDecimal denominator = getBigDecimalFromMap(matchedNorm, "occupancyDenominator");
+        if (denominator.compareTo(BigDecimal.ZERO) == 0) {
+            denominator = BigDecimal.ONE;
+        }
+
+        BigDecimal calculatedOccupancy = rawOccupancy;
+//        BigDecimal calculatedOccupancy = rawOccupancy.divide(denominator, WSCalculationConstant.DIVISION_SCALE, RoundingMode.HALF_UP);
+
+        // Resolve LPCD rates and contingency multiplier
+        BigDecimal totalLpcd = getBigDecimalFromMap(matchedNorm, "totalLpcd");
+        BigDecimal potableLpcd = getBigDecimalFromMap(matchedNorm, "potableLpcd");
+        String ifcBasis = String.valueOf(matchedNorm.getOrDefault("ifcCalculationBasis", "TOTAL"));
+
+        BigDecimal contingencyPct = getBigDecimalFromMap(matchedNorm, "contingencyPercentage");
+        BigDecimal contingencyMultiplier = BigDecimal.ONE;
+        if (contingencyPct.compareTo(BigDecimal.ZERO) > 0) {
+            contingencyMultiplier = BigDecimal.ONE.add(contingencyPct.divide(new BigDecimal("100"), 4, RoundingMode.HALF_UP));
+        }
+
+        BigDecimal initialBaseDemand = calculatedOccupancy.multiply(totalLpcd);
+        BigDecimal initialTotalDemand = initialBaseDemand.multiply(contingencyMultiplier);
+
+        BigDecimal chosenLpcd = totalLpcd;
+
+        if ("POTABLE_ONLY_IF_OVER_12500".equalsIgnoreCase(ifcBasis)) {
+            BigDecimal waterDemandThreshold = new BigDecimal("12500");
+            
+            // Compare calculated initial water demand (LPD) against 12,500 LPD threshold
+            if (initialTotalDemand.compareTo(waterDemandThreshold) > 0) {
+                chosenLpcd = potableLpcd;
+                log.info("Total water demand ({} LPD) exceeds 12,500 LPD threshold. Applied Potable LPCD Rate: {}", 
+                        initialTotalDemand, chosenLpcd);
+            }
+        }
+
+        BigDecimal baseDemand = calculatedOccupancy.multiply(chosenLpcd);
+        BigDecimal finalDemand = baseDemand.multiply(contingencyMultiplier).setScale(WSCalculationConstant.RESULT_SCALE, RoundingMode.HALF_UP);
+
+        // Populate WaterDemandResult fields directly matching your model
+        result.setCalculatedOccupancy(calculatedOccupancy);
+        result.setChosenLpcd(chosenLpcd);
+        result.setBaseDemand(baseDemand);
+        result.setContingencyPercentage(contingencyPct);
+        result.setTotalWaterDemand(finalDemand);
+        result.setMatchedNormCode(usageCode);
+        result.setFormulaUsed(formula);
+        result.setCalculationBasisApplied(ifcBasis);
+        result.setContextVariables(contextVariables);
+
+        // Generate execution audit trace
+        printCalculationReport(property, matchedNorm, usageCode, formula, contextVariables, calculatedOccupancy, chosenLpcd, contingencyPct, finalDemand);
+
+        return result;
+    }
+
+    /**
+     * Resolves the target subCategoryCode / demandNormCode ("A-1", "D-6", "E-1")
+     * dynamically using Property details cross-referenced with MDMS master data.
+     */
+    public String resolveUsageCategoryCode(Property property, Map<String, Object> masterData) {
+        if (property == null) {
+            return "UNKNOWN";
+        }
+
+        Map<String, Object> details = getPropertyAdditionalDetailsMap(property);
+
+        // Extract raw usage keys from Property & Additional Details
+        String rawUsageCode = "";
+        if (details.get("waterConnectionUsageType") != null && StringUtils.isNotBlank(details.get("waterConnectionUsageType").toString())) {
+            rawUsageCode = details.get("waterConnectionUsageType").toString().trim();
+        } else if (details.get("subCategoryCode") != null && StringUtils.isNotBlank(details.get("subCategoryCode").toString())) {
+            rawUsageCode = details.get("subCategoryCode").toString().trim();
+        } else if (details.get("subUsageCategory") != null && StringUtils.isNotBlank(details.get("subUsageCategory").toString())) {
+            rawUsageCode = details.get("subUsageCategory").toString().trim();
+        } else if (details.get("usageCategoryDetail") != null && StringUtils.isNotBlank(details.get("usageCategoryDetail").toString())) {
+            rawUsageCode = details.get("usageCategoryDetail").toString().trim();
+        } else if (StringUtils.isNotBlank(property.getUsageCategory())) {
+            rawUsageCode = property.getUsageCategory().trim();
+        } else if (StringUtils.isNotBlank(property.getPropertyType())) {
+            rawUsageCode = property.getPropertyType().trim();
+        }
+
+        if (StringUtils.isBlank(rawUsageCode)) {
+            return "UNKNOWN";
+        }
+
+        // Direct demand norm code check (e.g., A-1, D-6, E-1)
+        if (rawUsageCode.matches("^[A-Z](-[0-9a-zA-Z_]+)?$")) {
+            return rawUsageCode;
+        }
+
+        // 1. Lookup demandNormCode from PropertyNewUsageType MDMS
+        String mappedNormCode = lookupDemandNormCodeFromMdms(masterData, rawUsageCode, WSCalculationConstant.WC_PROPERTY_NEW_USAGE_TYPE_MASTER);
+        if (StringUtils.isNotBlank(mappedNormCode)) {
+            return mappedNormCode;
+        }
+
+        // 2. Lookup demandNormCode from PropertyType MDMS
+        mappedNormCode = lookupDemandNormCodeFromMdms(masterData, rawUsageCode, WSCalculationConstant.WC_PROPERTY_TYPE_MASTER);
+        if (StringUtils.isNotBlank(mappedNormCode)) {
+            return mappedNormCode;
+        }
+
+        return rawUsageCode;
+    }
+
+    /**
+     * Searches MDMS master data to resolve 'demandNormCode' dynamically.
+     */
+    @SuppressWarnings("unchecked")
+    private String lookupDemandNormCodeFromMdms(Map<String, Object> masterData, String rawCode, String masterKey) {
+        if (masterData == null || StringUtils.isBlank(rawCode)) {
+            return null;
+        }
+
+        Object masterObj = masterData.get(masterKey);
+        if (masterObj == null && WSCalculationConstant.WC_PROPERTY_NEW_USAGE_TYPE_MASTER.equalsIgnoreCase(masterKey)) {
+            masterObj = masterData.get("PropertyNewUsageType");
+        }
+
+        if (masterObj == null) {
+            return null;
+        }
+
+        List<Map<String, Object>> masterList = new ArrayList<>();
+        if (masterObj instanceof JSONArray) {
+            masterList = mapper.convertValue(masterObj, new TypeReference<List<Map<String, Object>>>() {});
+        } else if (masterObj instanceof List) {
+            masterList = (List<Map<String, Object>>) masterObj;
+        }
+
+        if (CollectionUtils.isEmpty(masterList)) {
+            return null;
+        }
+
+        // Pass 1: Try matching 'code' directly
+        for (Map<String, Object> entry : masterList) {
+            String code = String.valueOf(entry.getOrDefault("code", "")).trim();
+            Boolean active = entry.get("active") == null || Boolean.parseBoolean(entry.get("active").toString());
+
+            if (active && code.equalsIgnoreCase(rawCode)) {
+                Object normCode = entry.get("demandNormCode");
+                if (normCode != null && StringUtils.isNotBlank(normCode.toString())) {
+                    log.info("Successfully mapped code '{}' -> demandNormCode '{}' using MDMS master '{}'", rawCode, normCode, masterKey);
+                    return normCode.toString().trim();
+                }
+            }
+        }
+
+        // Pass 2: Fallback to matching 'type' (e.g. COMMERCIAL, INSTITUTIONAL, ASSEMBLY)
+        for (Map<String, Object> entry : masterList) {
+            String type = String.valueOf(entry.getOrDefault("type", "")).trim();
+            Boolean active = entry.get("active") == null || Boolean.parseBoolean(entry.get("active").toString());
+
+            if (active && type.equalsIgnoreCase(rawCode)) {
+                Object normCode = entry.get("demandNormCode");
+                if (normCode != null && StringUtils.isNotBlank(normCode.toString())) {
+                    log.info("Successfully mapped type '{}' -> demandNormCode '{}' using MDMS master '{}'", rawCode, normCode, masterKey);
+                    return normCode.toString().trim();
+                }
+            }
+        }
+
+        return null;
+    }
+
+    
+    private Map<String, BigDecimal> extractContextVariables(Property property) {
+        Map<String, BigDecimal> vars = new HashMap<>();
+        Map<String, Object> details = getPropertyAdditionalDetailsMap(property);
+
+        // 1. Extract FAR Area explicitly (Checking farArea / far_area)
+        BigDecimal farArea = getBigDecimalFromMap(details, "farArea");
+        if (farArea.compareTo(BigDecimal.ZERO) == 0) {
+            farArea = getBigDecimalFromMap(details, "far_area");
+        }
+
+        // 2. Extract Built-up Area with fallbacks
+        BigDecimal builtUpArea = getBigDecimalFromMap(details, "builtUpArea");
+        if (builtUpArea.compareTo(BigDecimal.ZERO) == 0 && details.get("coveredArea") != null) {
+            builtUpArea = parseBigDecimal(details.get("coveredArea"));
+        }
+        if (builtUpArea.compareTo(BigDecimal.ZERO) == 0 && property.getSuperBuiltUpArea() != null) {
+            builtUpArea = BigDecimal.valueOf(property.getSuperBuiltUpArea().doubleValue());
+        }
+
+        // Fallback: If FAR Area is not explicitly passed, fallback to builtUpArea
+        if (farArea.compareTo(BigDecimal.ZERO) == 0) {
+            farArea = builtUpArea;
+        }
+
+        // 3. Extract Plot Area
+        BigDecimal plotArea = property.getLandArea() != null 
+                ? BigDecimal.valueOf(property.getLandArea()) 
+                : getBigDecimalFromMap(details, "plotArea");
+
+        // 4. Extract Dwelling Units
+        BigDecimal duCount = getBigDecimalFromMap(details, WSCalculationConstant.NUMBER_OF_DWELLING_UNITS);
+        if (duCount.compareTo(BigDecimal.ZERO) == 0) {
+            duCount = getBigDecimalFromMap(details, "numberOfDwellingUnits");
+        }
+
+        // 5. Extract Special Occupancy Counters (with dual camelCase/snake_case checks)
+        BigDecimal bedsCount = getBigDecimalFromMap(details, "noOfBeds");
+        if (bedsCount.compareTo(BigDecimal.ZERO) == 0) {
+            bedsCount = getBigDecimalFromMap(details, "numberOfBeds");
+        }
+
+        BigDecimal roomsCount = getBigDecimalFromMap(details, "noOfRooms");
+        if (roomsCount.compareTo(BigDecimal.ZERO) == 0) {
+            roomsCount = getBigDecimalFromMap(details, "numberOfRooms");
+        }
+
+        // FIX: JSON payload contains "numberOfStudents"
+        BigDecimal studentsCount = getBigDecimalFromMap(details, "numberOfStudents");
+        if (studentsCount.compareTo(BigDecimal.ZERO) == 0) {
+            studentsCount = getBigDecimalFromMap(details, "noOfStudents");
+        }
+
+        BigDecimal seatsCount = getBigDecimalFromMap(details, "noOfSeats");
+        if (seatsCount.compareTo(BigDecimal.ZERO) == 0) {
+            seatsCount = getBigDecimalFromMap(details, "numberOfSeats");
+        }
+
+        BigDecimal staffCount = getBigDecimalFromMap(details, "noOfStaff");
+        if (staffCount.compareTo(BigDecimal.ZERO) == 0) {
+            staffCount = getBigDecimalFromMap(details, "numberOfStaff");
+        }
+
+        // 6. Map to Formula Variables
+        vars.put("far_area", farArea);
+        vars.put("built_up_area", builtUpArea);
+        vars.put("covered_area", builtUpArea);
+        vars.put("plot_area", plotArea);
+        vars.put("total_du", duCount);
+        vars.put("dwelling_units", duCount);
+        vars.put("sanctioned_beds", bedsCount);
+        vars.put("total_beds", bedsCount);
+        vars.put("total_rooms", roomsCount);
+        vars.put("highest_shift_strength", studentsCount);
+        vars.put("total_students", studentsCount);
+        vars.put("total_seats", seatsCount);
+        vars.put("total_staff", staffCount);
+
+        return vars;
+    }
+    
+    public BigDecimal evaluateExpression(String expression, Map<String, BigDecimal> context) {
+        if (StringUtils.isBlank(expression)) {
+            return BigDecimal.ZERO;
+        }
+
+        String expr = expression.trim();
+
+        if (expr.startsWith("(") && expr.endsWith(")") && isMatchingParenthesis(expr)) {
+            return evaluateExpression(expr.substring(1, expr.length() - 1), context);
+        }
+
+        if (expr.toUpperCase(Locale.ROOT).startsWith("MAX(") && expr.endsWith(")")) {
+            String inner = expr.substring(4, expr.length() - 1);
+            List<String> args = splitArguments(inner);
+            BigDecimal maxVal = null;
+            for (String arg : args) {
+                BigDecimal val = evaluateExpression(arg, context);
+                if (maxVal == null || val.compareTo(maxVal) > 0) {
+                    maxVal = val;
+                }
+            }
+            return maxVal != null ? maxVal : BigDecimal.ZERO;
+        }
+
+        if (expr.toUpperCase(Locale.ROOT).startsWith("MIN(") && expr.endsWith(")")) {
+            String inner = expr.substring(4, expr.length() - 1);
+            List<String> args = splitArguments(inner);
+            BigDecimal minVal = null;
+            for (String arg : args) {
+                BigDecimal val = evaluateExpression(arg, context);
+                if (minVal == null || val.compareTo(minVal) < 0) {
+                    minVal = val;
+                }
+            }
+            return minVal != null ? minVal : BigDecimal.ZERO;
+        }
+
+        if (expr.toUpperCase(Locale.ROOT).startsWith("IF(") && expr.endsWith(")")) {
+            String inner = expr.substring(3, expr.length() - 1);
+            List<String> args = splitArguments(inner);
+            if (args.size() == 3) {
+                boolean conditionResult = evaluateCondition(args.get(0), context);
+                return conditionResult ? evaluateExpression(args.get(1), context) : evaluateExpression(args.get(2), context);
+            }
+        }
+
+        int addSubIdx = findTopLevelOperator(expr, Arrays.asList("+", "-"));
+        if (addSubIdx > 0) {
+            String op = String.valueOf(expr.charAt(addSubIdx));
+            BigDecimal left = evaluateExpression(expr.substring(0, addSubIdx), context);
+            BigDecimal right = evaluateExpression(expr.substring(addSubIdx + 1), context);
+            return "+".equals(op) ? left.add(right) : left.subtract(right);
+        }
+
+        int mulDivIdx = findTopLevelOperator(expr, Arrays.asList("*", "/"));
+        if (mulDivIdx > 0) {
+            String op = String.valueOf(expr.charAt(mulDivIdx));
+            BigDecimal left = evaluateExpression(expr.substring(0, mulDivIdx), context);
+            BigDecimal right = evaluateExpression(expr.substring(mulDivIdx + 1), context);
+            if ("/".equals(op)) {
+                if (right.compareTo(BigDecimal.ZERO) == 0) {
+                    log.warn("Division by zero in expression: {}. Returning ZERO.", expr);
+                    return BigDecimal.ZERO;
+                }
+                return left.divide(right, WSCalculationConstant.DIVISION_SCALE, RoundingMode.HALF_UP);
+            } else {
+                return left.multiply(right);
+            }
+        }
+
+        return resolveToken(expr, context);
+    }
+
+    private boolean evaluateCondition(String condition, Map<String, BigDecimal> context) {
+        if (condition.contains(">=")) {
+            String[] parts = condition.split(">=");
+            return evaluateExpression(parts[0], context).compareTo(evaluateExpression(parts[1], context)) >= 0;
+        } else if (condition.contains("<=")) {
+            String[] parts = condition.split("<=");
+            return evaluateExpression(parts[0], context).compareTo(evaluateExpression(parts[1], context)) <= 0;
+        } else if (condition.contains(">")) {
+            String[] parts = condition.split(">");
+            return evaluateExpression(parts[0], context).compareTo(evaluateExpression(parts[1], context)) > 0;
+        } else if (condition.contains("<")) {
+            String[] parts = condition.split("<");
+            return evaluateExpression(parts[0], context).compareTo(evaluateExpression(parts[1], context)) < 0;
+        } else if (condition.contains("==")) {
+            String[] parts = condition.split("==");
+            return evaluateExpression(parts[0], context).compareTo(evaluateExpression(parts[1], context)) == 0;
+        }
+        return false;
+    }
+
+    private int findTopLevelOperator(String expr, List<String> operators) {
+        int depth = 0;
+        for (int i = expr.length() - 1; i >= 0; i--) {
+            char c = expr.charAt(i);
+            if (c == ')') depth++;
+            else if (c == '(') depth--;
+            else if (depth == 0) {
+                String s = String.valueOf(c);
+                if (operators.contains(s) && i > 0 && i < expr.length() - 1) {
+                    return i;
+                }
+            }
+        }
+        return -1;
+    }
+
+    private List<String> splitArguments(String innerText) {
+        List<String> args = new ArrayList<>();
+        int depth = 0;
+        StringBuilder current = new StringBuilder();
+
+        for (int i = 0; i < innerText.length(); i++) {
+            char c = innerText.charAt(i);
+            if (c == '(') depth++;
+            else if (c == ')') depth--;
+
+            if (c == ',' && depth == 0) {
+                args.add(current.toString().trim());
+                current.setLength(0);
+            } else {
+                current.append(c);
+            }
+        }
+        if (current.length() > 0) {
+            args.add(current.toString().trim());
+        }
+        return args;
+    }
+
+    private boolean isMatchingParenthesis(String expr) {
+        int depth = 0;
+        for (int i = 0; i < expr.length(); i++) {
+            char c = expr.charAt(i);
+            if (c == '(') depth++;
+            else if (c == ')') depth--;
+            if (depth == 0 && i < expr.length() - 1) {
+                return false;
+            }
+        }
+        return depth == 0;
+    }
+
+    private BigDecimal resolveToken(String token, Map<String, BigDecimal> context) {
+        String key = token.trim().toLowerCase(Locale.ROOT);
+        if (context.containsKey(key)) {
+            return context.get(key);
+        }
+        try {
+            return new BigDecimal(token.trim());
+        } catch (Exception e) {
+            return BigDecimal.ZERO;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<Map<String, Object>> extractWaterDemandNorms(Map<String, Object> masterData) {
+        Object normsObj = masterData.get("WaterDemandNorms");
+        if (normsObj == null) {
+            normsObj = masterData.get("WATER_DEMAND_NORMS");
+        }
+        if (normsObj == null) {
+            normsObj = masterData.get(WSCalculationConstant.WATER_DEMAND_NORMS);
+        }
+
+        if (normsObj instanceof JSONArray) {
+            return mapper.convertValue(normsObj, new TypeReference<List<Map<String, Object>>>() {});
+        } else if (normsObj instanceof List) {
+            return (List<Map<String, Object>>) normsObj;
+        }
+
+        return new ArrayList<>();
+    }
+
+    private Map<String, Object> findMatchingNormConfig(List<Map<String, Object>> norms, String code) {
+        if (StringUtils.isBlank(code)) {
+            return null;
+        }
+
+        String searchCode = code.toUpperCase(Locale.ROOT);
+
+        for (Map<String, Object> norm : norms) {
+            String subCategoryCode = String.valueOf(norm.getOrDefault("subCategoryCode", "")).toUpperCase(Locale.ROOT);
+            String normCode = String.valueOf(norm.getOrDefault("code", "")).toUpperCase(Locale.ROOT);
+
+            if (searchCode.equals(subCategoryCode) || searchCode.equals(normCode)) {
+                return norm;
+            }
+        }
+
+        for (Map<String, Object> norm : norms) {
+            String parentUsageCode = String.valueOf(norm.getOrDefault("parentUsageCode", "")).toUpperCase(Locale.ROOT);
+            if (searchCode.equals(parentUsageCode)) {
+                return norm;
+            }
+        }
+
+        for (Map<String, Object> norm : norms) {
+            String subCategoryCode = String.valueOf(norm.getOrDefault("subCategoryCode", "")).toUpperCase(Locale.ROOT);
+            if (StringUtils.isNotBlank(subCategoryCode) && (searchCode.startsWith(subCategoryCode) || subCategoryCode.startsWith(searchCode))) {
+                return norm;
+            }
+        }
+
+        return null;
+    }
+
+    private Map<String, Object> getPropertyAdditionalDetailsMap(Property property) {
+        if (property == null || property.getAdditionalDetails() == null) {
+            return new HashMap<>();
+        }
+        return mapper.convertValue(property.getAdditionalDetails(), new TypeReference<Map<String, Object>>() {});
+    }
+
+    private BigDecimal getBigDecimalFromMap(Map<String, Object> map, String key) {
+        if (map == null || !map.containsKey(key) || map.get(key) == null) {
+            return BigDecimal.ZERO;
+        }
+        return parseBigDecimal(map.get(key));
+    }
+
+    private BigDecimal parseBigDecimal(Object val) {
+        if (val == null) return BigDecimal.ZERO;
+        try {
+            return new BigDecimal(val.toString().trim());
+        } catch (Exception e) {
+            return BigDecimal.ZERO;
+        }
+    }
+
+    private void printCalculationReport(Property property, Map<String, Object> norm, String usageCode,
+                                        String formula, Map<String, BigDecimal> contextVars, BigDecimal occupancy,
+                                        BigDecimal lpcd, BigDecimal contingencyPct, BigDecimal totalDemand) {
+        try {
+            log.info("======================================================================");
+            log.info("               WATER DEMAND CALCULATION REPORT                        ");
+            log.info("======================================================================");
+            log.info("Property ID          : {}", property.getPropertyId() != null ? property.getPropertyId() : "N/A");
+            log.info("Resolved Usage Code  : {}", usageCode);
+            log.info("Norm Category        : {}", norm.getOrDefault("name", "N/A"));
+            log.info("Applied Formula      : {}", formula);
+
+            contextVars.forEach((k, v) -> {
+                if (v != null && v.compareTo(BigDecimal.ZERO) > 0) {
+                    log.info("Input Parameter [{}] : {}", k, v);
+                }
+            });
+
+            log.info("Calculated Occupancy : {} Persons/Units", occupancy);
+            log.info("Applied LPCD Rate    : {} Liters", lpcd);
+            if (contingencyPct.compareTo(BigDecimal.ZERO) > 0) {
+                log.info("Contingency Factor   : {}%", contingencyPct);
+            }
+            log.info("----------------------------------------------------------------------");
+            log.info("TOTAL CALCULATED DEMAND : {} LPD", totalDemand);
+            log.info("======================================================================");
+        } catch (Exception e) {
+            log.error("Error generating calculation trace report", e);
+        }
+    }
+
+    public Map<String, Object> traceWaterDemandLogDetails(Property property, Map<String, Object> masterData) {
+        Map<String, Object> trace = new LinkedHashMap<>();
+        try {
+            if (property == null || masterData == null || masterData.isEmpty()) {
+                trace.put("status", "SKIPPED");
+                trace.put("reason", "Property or MasterData is null/empty");
+                return trace;
+            }
+
+            List<Map<String, Object>> norms = extractWaterDemandNorms(masterData);
+            String usageCode = resolveUsageCategoryCode(property, masterData);
+            Map<String, Object> norm = findMatchingNormConfig(norms, usageCode);
+
+            trace.put("resolvedDemandNormCode", usageCode);
+
+            if (norm != null) {
+                Map<String, BigDecimal> vars = extractContextVariables(property);
+                String formula = String.valueOf(norm.getOrDefault("minOccupancyFormula", "0"));
+
+                // Evaluate formula directly for calculated occupancy
+                BigDecimal calculatedOccupancy = evaluateExpression(formula, vars);
+
+                BigDecimal totalLpcd = getBigDecimalFromMap(norm, "totalLpcd");
+                BigDecimal potableLpcd = getBigDecimalFromMap(norm, "potableLpcd");
+                String ifcBasis = String.valueOf(norm.getOrDefault("ifcCalculationBasis", "TOTAL"));
+
+                BigDecimal contingencyPct = getBigDecimalFromMap(norm, "contingencyPercentage");
+                BigDecimal contingencyMultiplier = BigDecimal.ONE;
+                if (contingencyPct.compareTo(BigDecimal.ZERO) > 0) {
+                    contingencyMultiplier = BigDecimal.ONE.add(contingencyPct.divide(new BigDecimal("100"), 4, RoundingMode.HALF_UP));
+                }
+
+                // Evaluate initial demand & threshold for LPCD selection
+                BigDecimal initialBaseDemand = calculatedOccupancy.multiply(totalLpcd);
+                BigDecimal initialTotalDemand = initialBaseDemand.multiply(contingencyMultiplier);
+
+                BigDecimal chosenLpcd = totalLpcd;
+                boolean thresholdTriggered = false;
+
+                if ("POTABLE_ONLY_IF_OVER_12500".equalsIgnoreCase(ifcBasis)) {
+                    BigDecimal waterDemandThreshold = new BigDecimal("12500");
+                    if (initialTotalDemand.compareTo(waterDemandThreshold) > 0) {
+                        chosenLpcd = potableLpcd;
+                        thresholdTriggered = true;
+                    }
+                }
+
+                BigDecimal baseDemand = calculatedOccupancy.multiply(chosenLpcd);
+                BigDecimal finalDemand = baseDemand.multiply(contingencyMultiplier).setScale(WSCalculationConstant.RESULT_SCALE, RoundingMode.HALF_UP);
+
+                // Populate trace map
+                trace.put("subCategoryCode", norm.getOrDefault("subCategoryCode", usageCode));
+                trace.put("parentUsageCode", norm.get("parentUsageCode"));
+                trace.put("categoryName", norm.get("name"));
+                trace.put("formula", formula);
+                trace.put("contextVariables", vars);
+                trace.put("calculatedOccupancy", calculatedOccupancy);
+                trace.put("totalLpcd", totalLpcd);
+                trace.put("potableLpcd", potableLpcd);
+                trace.put("chosenLpcd", chosenLpcd);
+                trace.put("threshold12500Triggered", thresholdTriggered);
+                trace.put("contingencyPercentage", contingencyPct);
+                trace.put("ifcCalculationBasis", ifcBasis);
+                trace.put("baseDemand", baseDemand);
+                trace.put("totalWaterDemand", finalDemand);
+            } else {
+                trace.put("warning", "No matching WaterDemandNorms configuration found in MDMS for code: " + usageCode);
+            }
+        } catch (Exception e) {
+            log.error("Error generating water demand log trace", e);
+            trace.put("error", e.getMessage());
+        }
+        return trace;
+    }
 }
