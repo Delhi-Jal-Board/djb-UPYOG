@@ -286,6 +286,8 @@ public class CalculatorUtil {
 	    wsMasters.add(MasterDetail.builder().name(WSCalculationConstant.WC_FEESLAB_MASTER).filter("[?(@.isActive==true)]").build());
 	    wsMasters.add(MasterDetail.builder().name(WSCalculationConstant.WC_ROADTYPE_MASTER).filter("[?(@.isActive==true)]").build());
 	    wsMasters.add(MasterDetail.builder().name(WSCalculationConstant.WC_INFRASTRUCTURE_CHARGE_MASTER).filter("[?(@.active==true)]").build());
+	    wsMasters.add(MasterDetail.builder().name(WSCalculationConstant.WATER_DEMAND_NORMS).filter("[?(@.isActive==true)]").build());
+
 	    
 	    moduleDetails.add(ModuleDetail.builder().moduleName(WSCalculationConstant.WS_TAX_MODULE).masterDetails(wsMasters).build());
 

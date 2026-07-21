@@ -55,5 +55,7 @@ public class CalculationCriteria {
 	//Fee Estimation
 	@JsonProperty("applicationNo")
 	private String applicationNo;
+	
+	private CalculationDetail calculationDetail;
 
 }
