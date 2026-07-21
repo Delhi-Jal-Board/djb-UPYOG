@@ -79,6 +79,11 @@ public class PropertyRowMapper implements ResultSetExtractor<List<Property>> {
 					landArea = null;
 				}
 
+				String farArea = rs.getString("fararea");
+				String numberOfRooms = rs.getString("numberofrooms");
+				String numberOfBeds = rs.getString("numberofbeds");
+				String numberOfStudents = rs.getString("numberofstudents");
+
 				List<String> linkedProperties = null;
 				String linkIdString = rs.getString("linkedProperties");
 				if (!StringUtils.isEmpty(linkIdString))
@@ -93,6 +98,10 @@ public class PropertyRowMapper implements ResultSetExtractor<List<Property>> {
 						.ownershipCategory(rs.getString("ownershipcategory"))
 						.channel(Channel.fromValue(rs.getString("channel")))
 						.superBuiltUpArea(rs.getBigDecimal("propertysbpa"))
+						.farArea(farArea)
+						.numberOfRooms(numberOfRooms)
+						.numberOfBeds(numberOfBeds)
+						.numberOfStudents(numberOfStudents)
 						.usageCategory(rs.getString("pusagecategory"))
 						.oldPropertyId(rs.getString("oldPropertyId"))
 						.propertyType(rs.getString("propertytype"))
