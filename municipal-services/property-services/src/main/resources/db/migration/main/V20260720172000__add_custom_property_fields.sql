@@ -1,0 +1,4 @@
+ALTER TABLE eg_pt_property ADD COLUMN fararea CHARACTER VARYING(256);
+ALTER TABLE eg_pt_property ADD COLUMN numberofrooms CHARACTER VARYING(256);
+ALTER TABLE eg_pt_property ADD COLUMN numberofbeds CHARACTER VARYING(256);
+ALTER TABLE eg_pt_property ADD COLUMN numberofstudents CHARACTER VARYING(256);
