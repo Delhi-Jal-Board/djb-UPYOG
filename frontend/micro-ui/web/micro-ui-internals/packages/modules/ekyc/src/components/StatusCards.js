@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import * as Chartjs from "chart.js/auto";
+import { color } from "three/tsl";
 
 const getChartConstructor = () => {
   const C = Chartjs.Chart || Chartjs.default || Chartjs;
@@ -36,6 +37,8 @@ const StatusCards = ({ countData }) => {
       total: info.total || 0,
       completed: info.completed || 0,
       pending: info.pending || 0,
+      submittedCount: info.submittedCount || 0,
+      inProgressCount: info.inProgressCount || 0,
       rejected: info.rejected || 0,
       active: info.active || 0,
     };
@@ -144,15 +147,17 @@ const StatusCards = ({ countData }) => {
   const pending = apiCountData?.pending || countData?.pending || 0;
   const active = apiCountData?.active || countData?.active || 0;
   const completed = apiCountData?.completed || countData?.completed || 0;
-
+  const inprocess = apiCountData?.inProgressCount || countData?.inProgressCount || 0;
+  const submitted = apiCountData?.submittedCount || countData?.submittedCount || 0;
   const actualCompleted = completed;
   const approved = actualCompleted;
 
-  const efficiency = total > 0 ? Math.round((actualCompleted / total) * 100) : 0;
-  const healthPct = total > 0 ? Math.round((approved / total) * 100) : 0;
-
+  const efficiency = total > 0 ? Math.round(((submitted+completed)/ total) * 100) : 0;
+  // const healthPct = total > 0 ? Math.round((approved / total) * 100) : 0;
+  const healthPct = submitted > 0 ? Math.round((approved / submitted) * 100) : 0;
   const formatNumber = (num) => new Intl.NumberFormat("en-IN").format(num || 0);
-
+  
+  
   useEffect(() => {
     if (chartRef1.current) {
       if (chartInstance1.current) chartInstance1.current.destroy();
@@ -161,12 +166,12 @@ const StatusCards = ({ countData }) => {
       chartInstance1.current = new ChartConstructor(ctx1, {
         type: "doughnut",
         data: {
-          labels: [t("EKYC_ACTIVE"), t("EKYC_PENDING"), t("EKYC_COMPLETED")],
+          labels: [t("EKYC_PENDING"), t("EKYC_COMPLETED"), t("EKYC_SUBMITTED"), t("EKYC_INPROCESS")],
           datasets: [
             {
-              data: [active, pending, completed],
-              backgroundColor: ["#0c2a52", "#77B6EA", "#c8ddf5"],
-              borderColor: ["#ffffff", "#ffffff", "#ffffff"],
+              data: [pending, completed, submitted, inprocess],
+              backgroundColor: ["#0c2a52", "#77B6EA", "#c8ddf5", "#49a3fb"],
+              borderColor: ["#ffffff", "#ffffff", "#ffffff", "#ffffff"],
               borderWidth: 2,
               hoverOffset: 4,
             },
@@ -187,9 +192,11 @@ const StatusCards = ({ countData }) => {
   }, [pending, completed, active, t]);
 
   const legendItems = [
-    { color: "#0c2a52", label: t("EKYC_ACTIVE"), value: active },
-    { color: "#77B6EA", label: t("EKYC_PENDING"), value: pending },
-    { color: "#c8ddf5", label: t("EKYC_COMPLETED"), value: completed },
+    { color: "#77B6EA", label: t("EKYC_COMPLETED"), value: completed },
+    { color: "#0c2a52", label: t("EKYC_PENDING"), value: pending },
+    { color: "#c8ddf5", label: t("EKYC_SUBMITTED"), value: submitted },
+    { color: "#49a3fb", label: t("EKYC_INPROCESS"), value: inprocess }
+
   ];
 
   return (
@@ -210,7 +217,7 @@ const StatusCards = ({ countData }) => {
           <div className="total-applications-card">
             <div className="total-label">{t("EKYC_TOTAL_APPLICATIONS") || "Total Applications Processed"}</div>
             <div className="total-number">{formatNumber(total)}</div>
-            <div className="total-badge">↗ +12.4% {t("EKYC_FROM_LAST_QUARTER") || "from last quarter"}</div>
+            {/* <div className="total-badge">↗ +12.4% {t("EKYC_FROM_LAST_QUARTER") || "from last quarter"}</div> */}
             <button
               className="download-excel-btn"
               disabled={ekycDownloadLoading}
@@ -258,12 +265,12 @@ const StatusCards = ({ countData }) => {
           <div className="status-panel">
             <div className="panel-title">
               {t("EKYC_SUBMISSION_HEALTH") || "Submission Health"}
-              <span className="optimal-badge">{t("EKYC_OPTIMAL") || "Optimal"}</span>
+              {/* <span className="optimal-badge">{t("EKYC_OPTIMAL") || "Optimal"}</span> */}
             </div>
             <div className="panel-subtitle">{t("EKYC_PLATFORM_EFFICIENCY") || "Platform operational efficiency"}</div>
             <div className="health-metrics-row">
               <div className="health-percentage">{healthPct}%</div>
-              <div className="health-trend">↗ +2.1%</div>
+              {/* <div className="health-trend">↗ +2.1%</div> */}
             </div>
             <div className="status-progress-bar">
               <div className="progress-fill" style={{ width: `${healthPct}%` }} />
@@ -271,11 +278,11 @@ const StatusCards = ({ countData }) => {
             <div className="mini-metrics-grid">
               <div className="metric-box">
                 <div className="metric-label">{t("EKYC_AVG_LATENCY") || "Avg Latency"}</div>
-                <div className="metric-value">1.2s</div>
+                <div className="metric-value">0s</div>
               </div>
               <div className="metric-box">
                 <div className="metric-label">{t("EKYC_ERROR_RATE") || "Error Rate"}</div>
-                <div className="metric-value">0.04%</div>
+                <div className="metric-value">0.0%</div>
               </div>
             </div>
           </div>

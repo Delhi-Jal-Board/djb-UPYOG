@@ -322,22 +322,14 @@ const SupervisorDetailsCard = () => {
 
         setEkycDownloadLoading(true);
         try {
-            // Fetch for each surveyor under this supervisor in parallel
-            const fetchPromises = surveyors.map(s =>
-                Digit.EkycService.application_list({
-                    tenantId: tenantId || "dl.djb",
-                    offset: 0,
-                    limit: 5000,
-                    surveyorId: s.surveyorId || s.id,
-                    reportDownload: true
-                }).catch(err => {
-                    console.error(`Error fetching applications for surveyor ${s.surveyorName}:`, err);
-                    return { consumerList: [] };
-                })
-            );
+            const response = await Digit.EkycService.application_list({
+                tenantId: tenantId || "dl.djb",
+                offset: 0,
+                limit: 10000,
+                reportDownload: true
+            });
 
-            const results = await Promise.all(fetchPromises);
-            const consumerList = results.flatMap(res => res?.consumerList || []);
+            const consumerList = response?.consumerList || [];
 
             if (consumerList.length === 0) {
                 alert(t("NO_DATA_FOUND") || "No data found for download.");

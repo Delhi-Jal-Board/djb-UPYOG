@@ -293,7 +293,7 @@ const VendorInbox = (props) => {
 
   const { mutate: mutateDriver } = Digit.Hooks.fsm.useDriverUpdate(tenantId);
 
-  // const { mutate: mutateSupervisor } = Digit.Hooks.fsm.useSupervisorUpdate(tenantId);
+  const { mutate: mutateSupervisor } = Digit.Hooks.fsm.useSupervisorUpdate(tenantId);
   const { mutate: mutateSurveyor } = Digit.Hooks.fsm.useSurveyorUpdate(tenantId);
 
   useEffect(() => {
@@ -462,68 +462,68 @@ const VendorInbox = (props) => {
     });
   };
 
-  // const onSupervisorUpdate = (row) => {
-  //   let formDetails = row.original;
-  //   const newStatus = formDetails?.status === "ACTIVE" ? "DISABLED" : "ACTIVE";
-  //   const newActive = newStatus === "ACTIVE";
-  //   const formData = {
-  //     supervisor: {
-  //       ...formDetails,
-  //       status: newStatus,
-  //       active: newActive,
-  //       owner: {
-  //         ...formDetails?.owner,
-  //         active: newActive,
-  //         gender: formDetails?.owner?.gender || "OTHERS",
-  //         dob: formDetails?.owner?.dob || new Date(`1/1/1970`).getTime(),
-  //         emailId: formDetails?.owner?.emailId || "abc@egov.com",
-  //         relationship: formDetails?.owner?.relationship || "OTHER",
-  //       },
-  //     },
-  //   };
-  //   mutateSupervisor(formData, {
-  //     onError: (error, variables) => {
-  //       setShowToast({ key: "error", action: error?.message || error });
-  //     },
-  //     onSuccess: (data, variables) => {
-  //       setShowToast({ key: "success", action: "SUPERVISOR" });
-  //       queryClient.invalidateQueries("FSM_SUPERVISOR_SEARCH");
-  //       queryClient.invalidateQueries("SUPERVISOR_SEARCH");
-  //       props.refetchData();
-  //     },
-  //   });
-  // };
-  // const onSurveyorUpdate = (row) => {
-  //   let formDetails = row.original;
-  //   const newStatus = formDetails?.status === "ACTIVE" ? "DISABLED" : "ACTIVE";
-  //   const newActive = newStatus === "ACTIVE";
-  //   const formData = {
-  //     surveyor: {
-  //       ...formDetails,
-  //       status: newStatus,
-  //       active: newActive,
-  //       owner: {
-  //         ...formDetails?.owner,
-  //         active: newActive,
-  //         gender: formDetails?.owner?.gender || "OTHERS",
-  //         dob: formDetails?.owner?.dob || new Date(`1/1/1970`).getTime(),
-  //         emailId: formDetails?.owner?.emailId || "abc@egov.com",
-  //         relationship: formDetails?.owner?.relationship || "OTHER",
-  //       },
-  //     },
-  //   };
-  //   mutateSurveyor(formData, {
-  //     onError: (error, variables) => {
-  //       setShowToast({ key: "error", action: error?.message || error });
-  //     },
-  //     onSuccess: (data, variables) => {
-  //       setShowToast({ key: "success", action: "SURVEYOR" });
-  //       queryClient.invalidateQueries("FSM_SURVEYOR_SEARCH");
-  //       queryClient.invalidateQueries("SURVEYOR_SEARCH");
-  //       props.refetchData();
-  //     },
-  //   });
-  // };
+  const onSupervisorUpdate = (row) => {
+    let formDetails = row.original;
+    const newStatus = formDetails?.status === "ACTIVE" ? "DISABLED" : "ACTIVE";
+    const newActive = newStatus === "ACTIVE";
+    const formData = {
+      supervisor: {
+        ...formDetails,
+        status: newStatus,
+        active: newActive,
+        owner: {
+          ...formDetails?.owner,
+          active: newActive,
+          gender: formDetails?.owner?.gender || "OTHERS",
+          dob: formDetails?.owner?.dob || new Date(`1/1/1970`).getTime(),
+          emailId: formDetails?.owner?.emailId || "abc@egov.com",
+          relationship: formDetails?.owner?.relationship || "OTHER",
+        },
+      },
+    };
+    mutateSupervisor(formData, {
+      onError: (error, variables) => {
+        setShowToast({ key: "error", action: error?.message || error });
+      },
+      onSuccess: (data, variables) => {
+        setShowToast({ key: "success", action: "SUPERVISOR" });
+        queryClient.invalidateQueries("FSM_SUPERVISOR_SEARCH");
+        queryClient.invalidateQueries("SUPERVISOR_SEARCH");
+        props.refetchData();
+      },
+    });
+  };
+  const onSurveyorUpdate = (row) => {
+    let formDetails = row.original;
+    const newStatus = formDetails?.status === "ACTIVE" ? "DISABLED" : "ACTIVE";
+    const newActive = newStatus === "ACTIVE";
+    const formData = {
+      surveyor: {
+        ...formDetails,
+        status: newStatus,
+        active: newActive,
+        owner: {
+          ...formDetails?.owner,
+          active: newActive,
+          gender: formDetails?.owner?.gender || "OTHERS",
+          dob: formDetails?.owner?.dob || new Date(`1/1/1970`).getTime(),
+          emailId: formDetails?.owner?.emailId || "abc@egov.com",
+          relationship: formDetails?.owner?.relationship || "OTHER",
+        },
+      },
+    };
+    mutateSurveyor(formData, {
+      onError: (error, variables) => {
+        setShowToast({ key: "error", action: error?.message || error });
+      },
+      onSuccess: (data, variables) => {
+        setShowToast({ key: "success", action: "SURVEYOR" });
+        queryClient.invalidateQueries("FSM_SURVEYOR_SEARCH");
+        queryClient.invalidateQueries("SURVEYOR_SEARCH");
+        props.refetchData();
+      },
+    });
+  };
 
   //vendor dropdown in driver
   const onVendorSelect = (row, selectedOption) => {
@@ -1320,23 +1320,27 @@ const VendorInbox = (props) => {
           //     return <div>{row.original.vendorData?.name || row.original.vendor?.name || "NA"}</div>;
           //   },
           // },
-          // {
-          //   Header: t("ES_FSM_REGISTRY_INBOX_ENABLED"),
-          //   id: "status",
-          //   accessor: (row) => row.status || "",
-          //   Cell: ({ row }) => {
-          //     return (
-          //       <ToggleSwitch
-          //         style={{ display: "flex", justifyContent: "left" }}
-          //         value={row.original?.status === "DISABLED" ? false : true}
-          //         onChange={() => {
-          //           console.log("Updating status for", props.selectedTab, row.original.id);
-          //         }}
-          //         name={`switch-${row.id}`}
-          //       />
-          //     );
-          //   },
-          // },
+          {
+            Header: t("ES_FSM_REGISTRY_INBOX_ENABLED"),
+            id: "status",
+            accessor: (row) => row.status || "",
+            Cell: ({ row }) => {
+              return (
+                <ToggleSwitch
+                  style={{ display: "flex", justifyContent: "left" }}
+                  value={row.original?.status === "DISABLED" ? false : true}
+                  onChange={() => {
+                    if (props.selectedTab === "SUPERVISOR") {
+                      onSupervisorUpdate(row);
+                    } else if (props.selectedTab === "SURVEYOR") {
+                      onSurveyorUpdate(row);
+                    }
+                  }}
+                  name={`switch-${row.id}`}
+                />
+              );
+            },
+          },
         ];
       default:
         return [];
