@@ -56,16 +56,18 @@ const EditApplication = () => {
   );
 
   useEffect(() => {
-    if (!isConfigLoading) {
+    if (!isConfigLoading && newConfig && Array.isArray(newConfig)) {
       // const config = newConfigLocal.find((conf) => conf.hideInCitizen && conf.isEdit);
       const config = newConfig.find((conf) => conf.hideInCitizen && conf.isEdit);
-      config.head = "WS_APP_FOR_WATER_AND_SEWERAGE_EDIT_LABEL";
-      let bodyDetails = [];
-      config?.body?.forEach((data) => {
-        if (data?.isEditConnection) bodyDetails.push(data);
-      });
-      config.body = bodyDetails;
-      setConfig(config);
+      if (config) {
+        config.head = "WS_APP_FOR_WATER_AND_SEWERAGE_EDIT_LABEL";
+        let bodyDetails = [];
+        config?.body?.forEach((data) => {
+          if (data?.isEditConnection) bodyDetails.push(data);
+        });
+        config.body = bodyDetails;
+        setConfig(config);
+      }
     }
   }, [newConfig]);
 

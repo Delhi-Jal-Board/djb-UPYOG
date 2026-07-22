@@ -95,10 +95,12 @@ const ActivateConnection = () => {
     }, []);
 
     useEffect(() => {
-        if (!isLoading) {
+        if (!isLoading && newConfig && Array.isArray(newConfig)) {
             // const config = newConfigLocal.find((conf) => conf.hideInCitizen);
             const config = newConfig.find((conf) => conf.hideInCitizen);
-            setConfig(config);
+            if (config) {
+                setConfig(config);
+            }
         }
     }, [newConfig]);
 

@@ -26,7 +26,7 @@ const useWSConfigMDMS = {
           },
           "WS"
         ),
-      { select: (d) => d["ws-services-masters"].WSCreateConfig, ...config }
+      { select: (d) => d?.["ws-services-masters"]?.WSCreateConfig || [], ...config }
     ),
 
   ZROLocation: (tenantId, config) =>
@@ -53,7 +53,7 @@ const useWSConfigMDMS = {
           "WS"
         ),
       {
-        select: (d) => d["ws-services-masters"].ZROLocation,
+        select: (d) => d?.["ws-services-masters"]?.ZROLocation || [],
         ...config,
       }
     ),
@@ -81,7 +81,7 @@ const useWSConfigMDMS = {
           },
           "WS"
         ),
-      { select: (d) => d["ws-services-masters"].WSActivationConfig, ...config }
+      { select: (d) => d?.["ws-services-masters"]?.WSActivationConfig || [], ...config }
     ),
 
   WSDisconnectionConfig: (tenantId, config) =>
@@ -107,7 +107,7 @@ const useWSConfigMDMS = {
           },
           "WS"
         ),
-      { select: (d) => d["ws-services-masters"].WSDisconnectionConfig, ...config }
+      { select: (d) => d?.["ws-services-masters"]?.WSDisconnectionConfig || [], ...config }
     ),
 
   ConnectionCategory: (tenantId, config) =>
@@ -134,7 +134,7 @@ const useWSConfigMDMS = {
           "WS"
         ),
       {
-        select: (d) => d["ws-services-masters"].connectionCategory,
+        select: (d) => d?.["ws-services-masters"]?.connectionCategory || [],
         ...config,
       }
     ),
