@@ -37,15 +37,17 @@ const EditModifyApplication = () => {
   );
 
   useEffect(() => {
-    if (!isConfigLoading) {
+    if (!isConfigLoading && newConfig && Array.isArray(newConfig)) {
       // const config = newConfigLocal.find((conf) => conf.hideInCitizen && conf.isModify);
-    const config = newConfig.find((conf) => conf.hideInCitizen && conf.isModify);
-    config.head = "WS_WATER_AND_SEWERAGE_MODIFY_CONNECTION_LABEL";
-    let bodyDetails = [];
-    config?.body?.forEach(data => { if (data?.isModifyConnection) bodyDetails.push(data); });
-    bodyDetails.forEach(bdyData => { if (bdyData?.head == "WS_COMMON_PROPERTY_DETAILS") bdyData.head = ""; })
-    config.body = bodyDetails;
-    setConfig(config);
+      const config = newConfig.find((conf) => conf.hideInCitizen && conf.isModify);
+      if (config) {
+        config.head = "WS_WATER_AND_SEWERAGE_MODIFY_CONNECTION_LABEL";
+        let bodyDetails = [];
+        config?.body?.forEach(data => { if (data?.isModifyConnection) bodyDetails.push(data); });
+        bodyDetails.forEach(bdyData => { if (bdyData?.head == "WS_COMMON_PROPERTY_DETAILS") bdyData.head = ""; })
+        config.body = bodyDetails;
+        setConfig(config);
+      }
     }
   }, [newConfig]);
 

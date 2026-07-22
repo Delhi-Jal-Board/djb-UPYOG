@@ -84,6 +84,7 @@ import WSEditApplication from "./pages/employee/EditApplication";
 import ConsumptionDetails from "./pages/employee/connectionDetails/ConsumptionDetails";
 import ModifyApplication from "./pages/employee/ModifyApplication";
 import EditModifyApplication from "./pages/employee/EditModifyApplication";
+import MutationApplication from "./pages/employee/MutationApplication";
 import DisconnectionApplication from "./pages/employee/DisconnectionApplication";
 import RestorationApplication from "./pages/employee/RestorationApplication";
 import WSEditApplicationByConfig from "./pages/employee/EditApplication/WSEditApplicationByConfig";
@@ -252,6 +253,7 @@ const componentsToRegister = {
   WSConsumptionDetails: ConsumptionDetails,
   WSModifyApplication: ModifyApplication,
   WSEditModifyApplication: EditModifyApplication,
+  WSMutationApplication: MutationApplication,
   WSDisconnectionApplication: DisconnectionApplication,
   WSRestorationApplication: RestorationApplication,
   WSEditApplicationByConfig: WSEditApplicationByConfig,

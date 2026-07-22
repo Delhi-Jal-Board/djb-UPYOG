@@ -46,28 +46,30 @@ const EmployeeSideBar = () => {
     _.set(configEmployeeSideBar1,item.path,{...item}) 
   })
 
-  data?.actions
-    ?.filter((e) => e.url === "url")
-    .forEach((item) => {
-      let index = item.path.split(".")[0];
-      if (search == "" && item.path !== "") {
-         index = item.path.split(".")[0];
-        if (index === "TradeLicense") index = "Trade License";
-        if (!configEmployeeSideBar[index]) {
-          configEmployeeSideBar[index] = [item];
-        } else {
-          configEmployeeSideBar[index].push(item);
+  if (data && data.actions) {
+    data.actions
+      .filter((e) => e.url === "url")
+      .forEach((item) => {
+        let index = item.path.split(".")[0];
+        if (search == "" && item.path !== "") {
+           index = item.path.split(".")[0];
+          if (index === "TradeLicense") index = "Trade License";
+          if (!configEmployeeSideBar[index]) {
+            configEmployeeSideBar[index] = [item];
+          } else {
+            configEmployeeSideBar[index].push(item);
+          }
+        } else if (item.path !== "" && t(`ACTION_TEST_${index?.toUpperCase()?.replace(/[ -]/g, "_")}`)?.toLowerCase().includes(search.toLowerCase())) {
+           index = item.path.split(".")[0];
+          if (index === "TradeLicense") index = "Trade License";
+          if (!configEmployeeSideBar[index]) {
+            configEmployeeSideBar[index] = [item];
+          } else {
+            configEmployeeSideBar[index].push(item);
+          }
         }
-      } else if (item.path !== "" && t(`ACTION_TEST_${index?.toUpperCase()?.replace(/[ -]/g, "_")}`)?.toLowerCase().includes(search.toLowerCase())) {
-         index = item.path.split(".")[0];
-        if (index === "TradeLicense") index = "Trade License";
-        if (!configEmployeeSideBar[index]) {
-          configEmployeeSideBar[index] = [item];
-        } else {
-          configEmployeeSideBar[index].push(item);
-        }
-      }
-    });
+      });
+  }
   let res = [];
 
   //method is used for restructing of configEmployeeSideBar1 nested object into nested array object

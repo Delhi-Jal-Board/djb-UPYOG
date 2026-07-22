@@ -512,6 +512,7 @@ const App = ({ path }) => {
   const WSConsumptionDetails = Digit?.ComponentRegistryService?.getComponent("WSConsumptionDetails");
   const WSModifyApplication = Digit?.ComponentRegistryService?.getComponent("WSModifyApplication");
   const WSEditModifyApplication = Digit?.ComponentRegistryService?.getComponent("WSEditModifyApplication");
+  const WSMutationApplication = Digit?.ComponentRegistryService?.getComponent("WSMutationApplication");
   const WSDisconnectionApplication = Digit?.ComponentRegistryService?.getComponent("WSDisconnectionApplication");
   const WSRestorationApplication = Digit?.ComponentRegistryService?.getComponent("WSRestorationApplication");
   const WSEditApplicationByConfig = Digit?.ComponentRegistryService?.getComponent("WSEditApplicationByConfig");
@@ -530,6 +531,7 @@ const App = ({ path }) => {
   const locationCheck =
     window.location.href.includes("/employee/ws/new-application") ||
     window.location.href.includes("/employee/ws/modify-application") ||
+    window.location.href.includes("/employee/ws/mutation-application") ||
     window.location.href.includes("/employee/ws/edit-application") ||
     window.location.href.includes("/employee/ws/activate-connection") ||
     window.location.href.includes("/employee/ws/application-details") ||
@@ -607,6 +609,7 @@ const App = ({ path }) => {
               <PrivateRoute path={`${path}/consumption-details`} component={WSConsumptionDetails} />
               <PrivateRoute path={`${path}/modify-application`} component={WSModifyApplication} />
               <PrivateRoute path={`${path}/modify-application-edit`} component={WSEditModifyApplication} />
+              <PrivateRoute path={`${path}/mutation-application`} component={WSMutationApplication} />
               <PrivateRoute path={`${path}/disconnection-application`} component={WSDisconnectionDocsRequired} />
               <PrivateRoute path={`${path}/new-disconnection`} component={WSDisconnectionApplication} />
               <PrivateRoute path={`${path}/new-restoration`} component={WSRestorationApplication} />

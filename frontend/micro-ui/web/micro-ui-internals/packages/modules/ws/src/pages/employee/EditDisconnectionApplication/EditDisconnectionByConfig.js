@@ -36,14 +36,16 @@ const EditDisconnectionByConfig = () => {
   const [sessionFormData, setSessionFormData, clearSessionFormData] = Digit.Hooks.useSessionStorage("PT_CREATE_EMP_WS_NEW_FORM", {});
 
   useEffect(() => {
-    if (!isLoading && !isConfigLoading) {
+    if (!isLoading && !isConfigLoading && newConfig && Array.isArray(newConfig)) {
       // const config = newConfigLocal.find((conf) => conf.isDisonnectionEdit);
       const config = newConfig.find((conf) => conf.isDisonnectionEdit);
-      config.head = "WS_WATER_SEWERAGE_DISCONNECTION_EDIT_LABEL";
-      let bodyDetails = [];
-      config?.body?.forEach(data => { if (data?.isDisonnectionEditByConfig) bodyDetails.push(data); })
-      config.body = bodyDetails;
-      setConfig(config);
+      if (config) {
+        config.head = "WS_WATER_SEWERAGE_DISCONNECTION_EDIT_LABEL";
+        let bodyDetails = [];
+        config?.body?.forEach(data => { if (data?.isDisonnectionEditByConfig) bodyDetails.push(data); })
+        config.body = bodyDetails;
+        setConfig(config);
+      }
     }
   }, [applicationDetails, isLoading, newConfig]);
 

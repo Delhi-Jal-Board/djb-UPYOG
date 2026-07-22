@@ -17,7 +17,7 @@ const createActivationDetails = () => ({
 const WSActivationPageDetails = ({ config, onSelect, userType, formData, setError, formState, clearErrors }) => {
     const { t } = useTranslation();
     const filters = func.getQueryStringParams(location.search);
-    const [activationDetails, setActivationDetails] = window.location.href.includes("modify") ? useState(
+    const [activationDetails, setActivationDetails] = (window.location.href.includes("modify") || window.location.href.includes("mutation")) ? useState(
          formData?.activationDetails ? [formData?.activationDetails?.[0]] : [createActivationDetails()]
     ) : useState(formData?.activationDetails || [createActivationDetails()]);
     const [focusIndex, setFocusIndex] = useState({ index: -1, type: "" });
@@ -121,7 +121,7 @@ const ConnectionDetails = (_props) => {
     }, [formData?.connectionDetails?.[0]?.connectionType]);
 
     useEffect(() => {
-        if (window.location.href.includes("modify")) trigger(); 
+        if (window.location.href.includes("modify") || window.location.href.includes("mutation")) trigger(); 
      }, [activationDetails, formData?.ConnectionDetails, formData?.ConnectionHolderDetails, formData?.DocumentsRequired, formData?.connectionDetails, formData?.cpt]);
 
 
@@ -238,7 +238,7 @@ const ConnectionDetails = (_props) => {
                     </div>
                 </LabelFieldPair>
                 <CardLabelError style={errorStyle}>{localFormState.touched.connectionExecutionDate ? errors?.connectionExecutionDate?.message : ""}</CardLabelError>
-                {window.location.href.includes("modify") ? <div>
+                {(window.location.href.includes("modify") || window.location.href.includes("mutation")) ? <div>
                 <LabelFieldPair>
                     <CardLabel style={isMobile && isEmployee ? {fontWeight: "700", width:"100%"} : { marginTop: "-5px", fontWeight: "700" }} className="card-label-smaller">{`${t("WS_MODIFICATIONS_EFFECTIVE_FROM")}*`}</CardLabel>
                     <div className="field">

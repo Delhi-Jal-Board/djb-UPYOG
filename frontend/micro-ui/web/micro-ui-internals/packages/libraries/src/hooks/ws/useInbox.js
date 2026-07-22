@@ -67,19 +67,19 @@ const useWSInbox = ({ tenantId, filters, config = {} }) => {
     filters: _filters,
     config: {
       select: (data) => ({
-        statuses: data.statusMap,
-        table: data?.items.map((application) => {
+        statuses: data?.statusMap || [],
+        table: (data?.items || []).map((application) => {
           return {
             applicationNo: application?.businessObject?.Data?.applicationNo,
             applicationType: application?.businessObject?.Data?.history?.[0]?.businessService || "NA",
             status: application?.businessObject?.Data?.history?.[0]?.state?.state,
             owner: application?.businessObject?.Data?.connectionHolders?.[0]?.name || application?.businessObject?.Data?.additionalDetails?.ownerName || "NA",
-            sla: application.businessObject.serviceSLA, //Math.round(application?.businessObject?.Data?.history?.[0]?.businesssServiceSla / (24 * 60 * 60 * 1000)),
-            connectionNo: application.businessObject.Data.connectionNo || "NA",
+            sla: application?.businessObject?.serviceSLA, //Math.round(application?.businessObject?.Data?.history?.[0]?.businesssServiceSla / (24 * 60 * 60 * 1000)),
+            connectionNo: application?.businessObject?.Data?.connectionNo || "NA",
           }
         }),
-        slaCount: data.nearingSlaCount,
-        totalCount: data.totalCount,
+        slaCount: data?.nearingSlaCount || 0,
+        totalCount: data?.totalCount || 0,
       }),
       ...config,
     },
