@@ -28,6 +28,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
         NumberofRooms: "",
         numberOfBeds: "",
         numberOfStudents: "",
+        ServantQuartersRoom: "",
       },
     },
   });
@@ -67,6 +68,8 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
   const isHospitalProperty = watchPropertyType?.code === "HOSPITAL_NURSING_HOME" || watchPropertyType?.code === "HospitalNursingHome";
   const isHotelRestaurantProperty = watchPropertyType?.code === "HOTEL_OR_RESTAURANT" || watchPropertyType?.code === "HotelOrRestaurant";
   const isSchoolCollegeProperty = watchPropertyType?.code === "School" || watchPropertyType?.code === "College";
+  const isDwellingUnit = watchPropertyCategory?.code === "RESIDENTIAL" || watchPropertyCategory?.code === "RESIDENTIAL";
+  const isServentHouse = watchPropertyType?.code === "Apartment" || watchPropertyType?.code === "FlatOrApartment" || watchPropertyType?.code === "IndividualHouse";
 
   const yearOptions = useMemo(() => {
     const currentYear = new Date().getFullYear();
@@ -206,6 +209,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
       setValue("useDetails.NumberofRooms", "");
       setValue("useDetails.numberOfBeds", "");
       setValue("useDetails.numberOfStudents", "");
+      setValue("useDetails.ServantQuartersRoom", "");
     }
   }, [
     formData?.cpt?.details,
@@ -426,21 +430,24 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
         {errors?.useDetails?.SelectYearofConstruction && (
           <CardLabelError style={errorStyle}>{errors.useDetails.SelectYearofConstruction.message}</CardLabelError>
         )}
+        {isDwellingUnit ? (
+          <LabelFieldPair>
+            <CardLabel>{`${t("WS_NUMBER_OF_DWELLING_UNITS")}`}</CardLabel>
+            <div className="form-field">
+              <TextInput
+                t={t}
+                inputRef={register({
+                  pattern: { value: NUMBER_PATTERN, message: t("ERR_INVALID_NUMBER") },
+                })}
+                name="useDetails.NumberofDwellingUnits"
+                disabled={isPropertyFound}
+              />
+            </div>
+          </LabelFieldPair>
 
-        <LabelFieldPair>
-          <CardLabel>{`${t("WS_NUMBER_OF_DWELLING_UNITS")}`}</CardLabel>
-          <div className="form-field">
-            <TextInput
-              t={t}
-              inputRef={register({
-                pattern: { value: NUMBER_PATTERN, message: t("ERR_INVALID_NUMBER") },
-              })}
-              name="useDetails.NumberofDwellingUnits"
-              disabled={isPropertyFound}
-            />
-          </div>
-        </LabelFieldPair>
-        {errors?.useDetails?.NumberofDwellingUnits && (
+        ) : null}
+
+        {isDwellingUnit && errors?.useDetails?.NumberofDwellingUnits && (
           <CardLabelError style={errorStyle}>{errors.useDetails.NumberofDwellingUnits.message}</CardLabelError>
         )}
 
@@ -501,6 +508,25 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
         ) : null}
         {isSchoolCollegeProperty && errors?.useDetails?.numberOfStudents && (
           <CardLabelError style={errorStyle}>{errors.useDetails.numberOfStudents.message}</CardLabelError>
+        )}
+
+        {isServentHouse ? (
+          <LabelFieldPair>
+            <CardLabel>{`${t("WS_SERVENT_HOUSE")}`}</CardLabel>
+            <div className="form-field">
+              <TextInput
+                t={t}
+                inputRef={register({
+                  pattern: { value: NUMBER_PATTERN, message: t("ERR_INVALID_NUMBER") },
+                })}
+                name="useDetails.ServantQuartersRoom"
+                disabled={isPropertyFound}
+              />
+            </div>
+          </LabelFieldPair>
+        ) : null}
+        {isServentHouse && errors?.useDetails?.ServantQuartersRoom && (
+          <CardLabelError style={errorStyle}>{errors.useDetails.ServantQuartersRoom.message}</CardLabelError>
         )}
       </div>
     </CollapsibleCardPage>

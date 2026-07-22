@@ -6,6 +6,7 @@ import ButtonSelector from "../atoms/ButtonSelector";
 import Toast from "../atoms/Toast";
 import ActionBar from "../atoms/ActionBar";
 import SubmitBar from "../atoms/SubmitBar";
+import { DownloadIcon, PrintIcon } from "../atoms/svgindex";
 
 const Modal = ({
   headerBarMain,
@@ -23,6 +24,9 @@ const Modal = ({
   isDisabled,
   hideSubmit,
   style = {},
+  width = "960px",
+  print,
+  download,
   headerBarMainStyle,
   actionClearLabel,
   actionClearOnSubmit,
@@ -32,6 +36,36 @@ const Modal = ({
    * TODO: It needs to be done from the desgin changes
    */
   const mobileView = Digit.Utils.browser.isMobile() ? true : false;
+  const hasPdfActions = typeof print === "function" || typeof download === "function";
+  const headerEnd = hasPdfActions ? (
+    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+      {typeof print === "function" && (
+        <button
+          type="button"
+          aria-label="Print PDF"
+          title="Print PDF"
+          onClick={print}
+          style={{ background: "none", border: "none", cursor: "pointer", display: "flex", padding: "4px" }}
+        >
+          <PrintIcon />
+        </button>
+      )}
+      {typeof download === "function" && (
+        <button
+          type="button"
+          aria-label="Download PDF"
+          title="Download PDF"
+          onClick={download}
+          style={{ background: "none", border: "none", cursor: "pointer", display: "flex", padding: "4px" }}
+        >
+          <DownloadIcon />
+        </button>
+      )}
+      {headerBarEnd}
+    </div>
+  ) : (
+    headerBarEnd
+  );
 
   useEffect(() => {
     document.body.style.overflowY = "hidden";
@@ -53,10 +87,16 @@ const Modal = ({
           }
         }
       `}</style>
-      <div className="popup-module">
+      <div
+        className="popup-module"
+        style={{
+          width: mobileView ? "calc(100vw - 32px)" : width,
+          maxWidth: "calc(100vw - 32px)",
+        }}
+      >
         <HeaderBar
           main={headerBarMain}
-          end={headerBarEnd}
+          end={headerEnd}
           style={{
             borderBottom: "1px solid rgba(15, 23, 42, 0.08)",
             background: "linear-gradient(180deg, #ffffff 0%, #f5faff 100%)",
@@ -65,7 +105,9 @@ const Modal = ({
           }}
         />
         <div className="popup-module-main">
-          {children}
+          <div className="popup-module-content">
+            {children}
+          </div>
           <div className="popup-module-action-bar" style={{ ...popupModuleActionBarStyles }}>
             {actionCancelLabel ? (
               <ButtonSelector className="generic-button" theme="border" label={actionCancelLabel} onSubmit={actionCancelOnSubmit} style={style} />

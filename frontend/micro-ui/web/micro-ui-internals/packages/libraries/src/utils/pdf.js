@@ -626,6 +626,61 @@ const generateSurveyorReport = async ({
   downloadPDFFileUsingBase64(generatedPDF, `EKYC_SURVEYOR_REPORT_${Date.now()}.pdf`);
 };
 
+const generateCalculationBreakupReport = async ({
+  tenantId,
+  heading,
+  details,
+  t = (text) => text,
+  mode = "download",
+}) => {
+  const dd = {
+    background: [{
+      image: AcknowledgmentPage,
+      width: 595,
+      height: 842,
+    }],
+    margin: [10, 10, 10, 10],
+    content: [
+      ...createHeaderDetails(
+        details,
+        "Delhi Jal Board",
+        "+91-11-23538416",
+        "contact@delhijalboard.nic.in",
+        null,
+        tenantId,
+        heading
+      ),
+      ...createContent(details, null, tenantId, "+91-11-23538416"),
+      {
+        text: t("PDF_SYSTEM_GENERATED_ACKNOWLEDGEMENT"),
+        font: "Hind",
+        fontSize: 9,
+        color: "#6f777c",
+        margin: [10, 5, 10, 5],
+      },
+    ],
+    defaultStyle: {
+      font: "Hind",
+      margin: [20, 10, 20, 10],
+    },
+  };
+
+  pdfMake.vfs = Fonts;
+  const locale = Digit.SessionStorage.get("locale") || "en_IN";
+  const Hind = pdfFonts[locale] || pdfFonts.Hind;
+  pdfMake.fonts = { Hind: { ...Hind } };
+
+  const generatedPDF = pdfMake.createPdf(dd);
+  const fileName = `${heading || "CALCULATION_BREAKUP"}_${Date.now()}.pdf`;
+
+  if (mode === "print" && typeof generatedPDF.print === "function") {
+    generatedPDF.print();
+    return;
+  }
+
+  downloadPDFFileUsingBase64(generatedPDF, fileName);
+};
+
 const generateSupervisorReport = async ({
   breakPageLimit = null,
   tenantId,
@@ -749,7 +804,16 @@ const generateSupervisorReport = async ({
   downloadPDFFileUsingBase64(generatedPDF, `EKYC_SUPERVISOR_REPORT_${Date.now()}.pdf`);
 };
 
-export default { generate: jsPdfGenerator, generateTable: jsPdfGeneratorForTable, generatev1: jsPdfGeneratorv1, generateModifyPdf: jsPdfGeneratorForModifyPDF, generateBillAmendPDF, generateSurveyorReport, generateSupervisorReport };
+export default {
+  generate: jsPdfGenerator,
+  generateTable: jsPdfGeneratorForTable,
+  generatev1: jsPdfGeneratorv1,
+  generateModifyPdf: jsPdfGeneratorForModifyPDF,
+  generateBillAmendPDF,
+  generateSurveyorReport,
+  generateCalculationBreakupReport,
+  generateSupervisorReport,
+};
 
 const createBodyContentBillAmend = (table, t) => {
   let bodyData = []
@@ -1166,13 +1230,13 @@ function createContentDetails(details) {
   });
   return detailsHeaders;
 }
-function createHeaderDetails(details, name, phoneNumber, email, logo, tenantId, heading, applicationNumber, hideApplicationNumber = false) {
+function createHeaderDetails(details, name, phoneNumber, email, logo, tenantId, heading, hideApplicationNumber = false) {
   let headerData = [];
   headerData.push({
     style: 'tableExample',
     layout: "noBorders",
     //fillColor: "#f7e0d4",
-    margin: [0, 10, 0, 0],
+    margin: [0, 3, 0, 0],
     table: {
       widths: ['100%'],
       body: [
@@ -1180,7 +1244,7 @@ function createHeaderDetails(details, name, phoneNumber, email, logo, tenantId, 
           {
             text: heading, //"New Sewerage Connection",
             bold: true,
-            fontSize: 19,
+            fontSize: 16,
             alignment: "center",
             decoration: "underline"
 
@@ -1192,7 +1256,7 @@ function createHeaderDetails(details, name, phoneNumber, email, logo, tenantId, 
   headerData.push({
     style: 'tableExample',
     layout: "noBorders",
-    margin: [0, 0, 0, 0],
+    margin: [0, 0, 0, -3],
     table: {
       widths: ['100%'],
       body: [
@@ -1200,7 +1264,7 @@ function createHeaderDetails(details, name, phoneNumber, email, logo, tenantId, 
 
           text: `Issued by the ${name}`,
           alignment: "center",
-          fontSize: 11,
+          fontSize: 10,
           //bold: true
 
         }]
@@ -1210,7 +1274,7 @@ function createHeaderDetails(details, name, phoneNumber, email, logo, tenantId, 
   headerData.push({
     style: 'tableExample',
     layout: "noBorders",
-    margin: [0, -6, 0, 0],
+    margin: [0, -3, 0, 0],
     table: {
       widths: ['100%'],
       body: [
@@ -1218,7 +1282,7 @@ function createHeaderDetails(details, name, phoneNumber, email, logo, tenantId, 
 
           text: `${email}   ${phoneNumber}`, //"Amritsar Municipal Corporation",
           alignment: "center",
-          fontSize: 11,
+          fontSize: 9,
           //bold: true 
         }]
       ]
@@ -1227,44 +1291,23 @@ function createHeaderDetails(details, name, phoneNumber, email, logo, tenantId, 
   headerData.push({
     style: 'tableExample',
     layout: "noBorders",
-    margin: [0, -45, 0, 20],
+    margin: [0, -25, 0, 8],
     table: {
       widths: ['20%', '*', '10%'],
       body: [
         [
           {
             image: logo || getBase64Image(tenantId) || defaultLogo,
-            width: 70,
+            width: 50,
             margin: [10, 10],
-            fit: [50, 50]
+            fit: [40, 40]
           },
 
         ]
       ]
     }
   })
-  if (!hideApplicationNumber && applicationNumber) {
-    headerData.push({
-      style: 'tableExample',
-      layout: "noBorders",
-      margin: [0, -45, 7, 0],
 
-      table: {
-        widths: ['100%'],
-        body: [
-          [
-            {
-
-              text: `Application Number: ${applicationNumber}`,
-              alignment: "right",
-              fontSize: 9,
-              //bold: true      
-            },
-          ]
-        ]
-      }
-    })
-  }
 
   return headerData;
   console.log("details", details)
@@ -1384,7 +1427,7 @@ function createContent(details, logo, tenantId, phoneNumber, breakPageLimit = nu
       console.log("lennn", detail?.title.length)
       detailsHeaders.push({
         style: 'tableExample',
-        margin: [10, 20, 10, 0],
+        margin: [10, 5, 10, 0],
         layout: "noBorders",
         table: {
           widths: ['101.8%', '*'],
@@ -1395,9 +1438,9 @@ function createContent(details, logo, tenantId, phoneNumber, breakPageLimit = nu
                 border: [true, true, true, false],
                 color: "#454545",
                 style: "header",
-                fontSize: 14,
+                fontSize: 12,
                 bold: true,
-                margin: [0, 5, 0, 5]
+                margin: [0, 3, 0, 3]
               }
             ]
           ]
