@@ -18,6 +18,9 @@ public class WaterDemandDetail {
 
     @JsonProperty("matchedNormCode")
     private String matchedNormCode;
+    
+    @JsonProperty("matchedNormName")
+    private String matchedNormName;
 
     @JsonProperty("formulaUsed")
     private String formulaUsed;

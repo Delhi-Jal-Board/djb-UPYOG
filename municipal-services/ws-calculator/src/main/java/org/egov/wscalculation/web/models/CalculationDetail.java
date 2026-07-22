@@ -13,6 +13,9 @@ import lombok.Setter;
 @NoArgsConstructor
 @Builder
 public class CalculationDetail {
+	
+	@JsonProperty("propertyDetail")
+    private PropertyDetail propertyDetail;
 
     @JsonProperty("waterDemandDetail")
     private WaterDemandDetail waterDemandDetail;

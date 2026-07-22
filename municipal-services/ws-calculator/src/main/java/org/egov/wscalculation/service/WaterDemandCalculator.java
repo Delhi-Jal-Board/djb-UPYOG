@@ -121,7 +121,7 @@ public class WaterDemandCalculator {
 
         BigDecimal baseDemand = calculatedOccupancy.multiply(chosenLpcd);
         BigDecimal finalDemand = baseDemand.multiply(contingencyMultiplier).setScale(WSCalculationConstant.RESULT_SCALE, RoundingMode.HALF_UP);
-
+        String normName = (String) matchedNorm.get("name");
         // Populate WaterDemandResult fields directly matching your model
         result.setCalculatedOccupancy(calculatedOccupancy);
         result.setChosenLpcd(chosenLpcd);
@@ -132,6 +132,7 @@ public class WaterDemandCalculator {
         result.setFormulaUsed(formula);
         result.setCalculationBasisApplied(ifcBasis);
         result.setContextVariables(contextVariables);
+        result.setMatchedNormName(normName);
 
         // Generate execution audit trace
         printCalculationReport(property, matchedNorm, usageCode, formula, contextVariables, calculatedOccupancy, chosenLpcd, contingencyPct, finalDemand);

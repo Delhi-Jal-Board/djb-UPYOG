@@ -714,15 +714,19 @@ public class EstimationService {
 		    log.error("Error setting infrastructure breakdown details in calculation context", e);
 		}
 		
+		Map<String, BigDecimal> contextVars = waterDemand.getContextVariables() != null ? waterDemand.getContextVariables() : new HashMap<>();
+		PropertyDetail propertyDetail = buildPropertyDetail(property, colonyCategory, contextVars);
+
 		WaterDemandDetail demandDetail = WaterDemandDetail.builder()
 		        .matchedNormCode(waterDemand.getMatchedNormCode())
+		        .matchedNormName(waterDemand.getMatchedNormName())
 		        .formulaUsed(waterDemand.getFormulaUsed())
 		        .calculatedOccupancy(waterDemand.getCalculatedOccupancy())
 		        .chosenLpcd(waterDemand.getChosenLpcd())
 		        .baseDemand(waterDemand.getBaseDemand())
 		        .contingencyPercentage(waterDemand.getContingencyPercentage())
 		        .totalWaterDemandLPD(waterDemandLPD)
-		        .contextVariables(waterDemand.getContextVariables())
+		        .contextVariables(contextVars)
 		        .build();
 
 		InfrastructureChargeDetail infraDetail = InfrastructureChargeDetail.builder()
@@ -740,10 +744,10 @@ public class EstimationService {
 		        .build();
 
 		CalculationDetail calcDetail = CalculationDetail.builder()
+		        .propertyDetail(propertyDetail)
 		        .waterDemandDetail(demandDetail)
 		        .infrastructureChargeDetail(infraDetail)
 		        .build();
-
 
 		criteria.setCalculationDetail(calcDetail);
 		
@@ -751,6 +755,36 @@ public class EstimationService {
 	}
 
 
+	private PropertyDetail buildPropertyDetail(Property property, String colonyCategory, Map<String, BigDecimal> contextVars) {
+	    if (property == null) {
+	        return null;
+	    }
+
+	    String localityCode = (property.getAddress() != null && property.getAddress().getLocality() != null)
+	            ? property.getAddress().getLocality().getCode()
+	            : null;
+
+	    return PropertyDetail.builder()
+	            .propertyId(property.getPropertyId())
+	            .tenantId(property.getTenantId())
+	            .propertyType(property.getPropertyType())
+	            .usageCategory(property.getUsageCategory())
+	            .colonyCategory(colonyCategory)
+	            .localityCode(localityCode)
+	            // Physical & Dimension attributes
+	            .landArea(property.getLandArea() != null ? BigDecimal.valueOf(property.getLandArea()) : BigDecimal.ZERO)
+	            .superBuiltUpArea(property.getSuperBuiltUpArea() != null ? property.getSuperBuiltUpArea() : BigDecimal.ZERO)
+	            .farArea(contextVars.getOrDefault("far_area", BigDecimal.ZERO))
+	            .coveredArea(contextVars.getOrDefault("covered_area", BigDecimal.ZERO))
+	            // Occupancy context variables used in calculations
+	            .numberOfDwellingUnits(contextVars.getOrDefault("total_du", BigDecimal.ZERO))
+	            .numberOfBeds(contextVars.getOrDefault("total_beds", BigDecimal.ZERO))
+	            .numberOfRooms(contextVars.getOrDefault("total_rooms", BigDecimal.ZERO))
+	            .numberOfStudents(contextVars.getOrDefault("total_students", BigDecimal.ZERO))
+	            .numberOfStaff(contextVars.getOrDefault("total_staff", BigDecimal.ZERO))
+	            .build();
+	}
+	
 	private boolean shouldIncludeFee(WaterConnection wc, String feeComponent, String taxHeadCode) {
 
 		String applicationType = wc.getApplicationType();
