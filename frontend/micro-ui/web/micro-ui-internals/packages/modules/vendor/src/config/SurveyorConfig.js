@@ -13,10 +13,20 @@ const SurveyorConfig = (t, agencies = [], reportingManagers = [], disabled = fal
           populators: {
             name: "fullName",
             validation: {
-              required: true,
-              pattern: /^[A-Za-z\s]+$/,
+              required: {
+                value: true,
+                message: t("ES_VENDOR_INVALID_NAME"),
+              },
+              maxLength: {
+                value: 49,
+                message: t("ES_VENDOR_NAME_MAX_50_CHARACTERS"),
+              },
+              pattern: {
+                value: /^[A-Za-z\s]+$/,
+                message: t("ES_VENDOR_INVALID_NAME"),
+              },
             },
-            error: t("ES_VENDOR_INVALID_NAME"),
+            maxlength: 50,
           },
         },
         {

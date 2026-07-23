@@ -17,6 +17,8 @@ const StatusCards = ({ countData }) => {
   const loggedInUser = Digit.SessionStorage.get("User")?.info;
   const fullName = loggedInUser?.name || "Admin";
 
+  const hasExternalData = countData && typeof countData.total === "number" && typeof countData.submittedCount === "number";
+
   const { data: dashboardData } = Digit.Hooks.ekyc.useEkycSurveyorDashboard(
     {},
     {
@@ -26,7 +28,7 @@ const StatusCards = ({ countData }) => {
       ekycStatus: "submitted"
     },
     {
-      enabled: !!tenantId,
+      enabled: !!tenantId && !hasExternalData,
     }
   );
 
@@ -142,12 +144,12 @@ const StatusCards = ({ countData }) => {
 
   const chartRef1 = useRef(null);
   const chartInstance1 = useRef(null);
-  const total = apiCountData?.total || countData?.total || countData?.totalCount || 0;
-  const pending = apiCountData?.pending || countData?.pending || 0;
-  const active = apiCountData?.active || countData?.active || 0;
-  const completed = apiCountData?.completed || countData?.completed || 0;
-  const inprocess = apiCountData?.inProgressCount || countData?.inProgressCount || 0;
-  const submitted = apiCountData?.submittedCount || countData?.submittedCount || 0;
+  const total = hasExternalData ? countData.total : (apiCountData?.total || countData?.total || countData?.totalCount || 0);
+  const pending = hasExternalData ? countData.pending : (apiCountData?.pending || countData?.pending || 0);
+  const active = hasExternalData ? countData.active : (apiCountData?.active || countData?.active || 0);
+  const completed = hasExternalData ? countData.completed : (apiCountData?.completed || countData?.completed || 0);
+  const inprocess = hasExternalData ? countData.inProgressCount : (apiCountData?.inProgressCount || countData?.inProgressCount || 0);
+  const submitted = hasExternalData ? countData.submittedCount : (apiCountData?.submittedCount || countData?.submittedCount || 0);
   const actualCompleted = completed;
   const approved = actualCompleted;
 

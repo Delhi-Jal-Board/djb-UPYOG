@@ -22,14 +22,14 @@ const VendorDetailsCard = () => {
     const { data: vendorSearchResponse, isLoading: isVendorSearchLoading } = Digit.Hooks.fsm.useDsoSearch(
         tenantId,
         { status: "ACTIVE" },
-        { enabled: !!tenantId }
+        { enabled: !!tenantId, staleTime: 300000 }
     );
 
     // Fetch all supervisors to filter by vendor
     const { data: supervisorSearchResponse, isLoading: isSupervisorSearchLoading } = Digit.Hooks.fsm.useSupervisorSearch(
         tenantId,
         { status: "ACTIVE" },
-        { enabled: !!tenantId }
+        { enabled: !!tenantId, staleTime: 300000 }
     );
 
     const loggedInUser = Digit.SessionStorage.get("User")?.info;
@@ -129,7 +129,7 @@ const VendorDetailsCard = () => {
         return "N/A";
     }, [vendor]);
     const zoneIds = useMemo(() => {
-        return vendor?.zoneIds?.length ? vendor.zoneIds.map(zone => zone.toUpperCase().replace("", " ")).join(", ") : "N/A";
+        return vendor?.zoneIds?.length ? vendor.zoneIds.filter(Boolean).map(zone => String(zone).toUpperCase().replace("", " ")).join(", ") : "N/A";
     }, [vendor]);
 
     // KPI stats calculation

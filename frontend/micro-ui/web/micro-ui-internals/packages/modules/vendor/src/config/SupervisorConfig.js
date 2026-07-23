@@ -14,15 +14,22 @@ const SupervisorConfig = (t, agencies = [], reportingManagers = [], disabled = f
           populators: {
             name: "fullName",
             validation: {
-              required: true,
+              required: {
+                value: true,
+                message: t("ES_VENDOR_INVALID_NAME"),
+              },
+              maxLength: {
+                value: 49,
+                message: t("ES_VENDOR_NAME_MAX_50_CHARACTERS"),
+              },
               pattern: {
                 value: /^[A-Za-z\s]+$/,
                 message: t("ES_VENDOR_INVALID_NAME"),
               },
             },
-            error: t("ES_VENDOR_INVALID_NAME"),
             defaultValue: "",
             className: "payment-form-text-input-correction",
+            maxlength: 50,
           },
         },
         {

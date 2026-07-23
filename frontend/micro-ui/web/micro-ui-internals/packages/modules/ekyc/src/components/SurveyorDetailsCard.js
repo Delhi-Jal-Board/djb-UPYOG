@@ -28,20 +28,22 @@ const SurveyorDetailsDashboard = () => {
     { enabled: !!surveyorId, staleTime: Infinity }
   );
 
+  const hasFoundById = !!(surveyorSearchById?.surveyors?.length);
+
   const { data: surveyorSearchByOwner, isLoading: isLoadingOwner } = Digit.Hooks.fsm.useSurveyorSearch(
     tenantId,
     surveyorId ? { ownerIds: surveyorId } : { ownerIds },
-    { enabled: true, staleTime: Infinity }
+    { enabled: !surveyorId || (!isLoadingId && !hasFoundById), staleTime: Infinity }
   );
 
   const surveyorSearchResponse = useMemo(() => {
-    if (surveyorId) {
-      return surveyorSearchById?.surveyors?.length ? surveyorSearchById : surveyorSearchByOwner;
+    if (surveyorId && hasFoundById) {
+      return surveyorSearchById;
     }
     return surveyorSearchByOwner;
-  }, [surveyorId, surveyorSearchById, surveyorSearchByOwner]);
+  }, [surveyorId, hasFoundById, surveyorSearchById, surveyorSearchByOwner]);
 
-  const isLoading = surveyorId ? (isLoadingId || isLoadingOwner) : isLoadingOwner;
+  const isLoading = surveyorId ? (isLoadingId || (isLoadingOwner && !hasFoundById)) : isLoadingOwner;
 
   const roles = Digit.SessionStorage.get("User")?.info?.roles.map((ele) => ele.code);
 
@@ -49,8 +51,16 @@ const SurveyorDetailsDashboard = () => {
     return surveyorSearchResponse?.surveyors?.[0] || null;
   }, [surveyorSearchResponse]);
 
-  const { data: vendorData, isLoading: isVendorLoading } = Digit.Hooks.fsm.useDsoSearch(tenantId, { status: "ACTIVE" }, { enabled: !!tenantId });
-  const { data: supervisorSearchResponse, isLoading: isSupervisorSearchLoading } = Digit.Hooks.fsm.useSupervisorSearch(tenantId, { status: "ACTIVE" }, { enabled: !!tenantId });
+  const { data: vendorData, isLoading: isVendorLoading } = Digit.Hooks.fsm.useDsoSearch(
+    tenantId,
+    { status: "ACTIVE" },
+    { enabled: !!tenantId, staleTime: 300000 }
+  );
+  const { data: supervisorSearchResponse, isLoading: isSupervisorSearchLoading } = Digit.Hooks.fsm.useSupervisorSearch(
+    tenantId,
+    { status: "ACTIVE" },
+    { enabled: !!tenantId, staleTime: 300000 }
+  );
   const vendorName = useMemo(() => {
     if (surveyor?.vendorName) return surveyor.vendorName;
     if (!vendorData || !surveyor?.vendorId) return "N/A";

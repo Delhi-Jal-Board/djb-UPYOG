@@ -23,21 +23,21 @@ const SupervisorDetailsCard = () => {
     const { data: supervisorSearchResponse, isLoading: isSupervisorSearchLoading } = Digit.Hooks.fsm.useSupervisorSearch(
         tenantId,
         { status: "ACTIVE" },
-        { enabled: !!tenantId }
+        { enabled: !!tenantId, staleTime: 300000 }
     );
 
     // Fetch all surveyors to get details of connected surveyors if assignment progress fails
     const { data: surveyorSearchResponse, isLoading: isSurveyorSearchLoading } = Digit.Hooks.fsm.useSurveyorSearch(
         tenantId,
         { status: "ACTIVE" },
-        { enabled: !!tenantId }
+        { enabled: !!tenantId, staleTime: 300000 }
     );
 
     // Fetch all vendors from DSO search
     const { data: vendorSearchResponse, isLoading: isVendorSearchLoading } = Digit.Hooks.fsm.useDsoSearch(
         tenantId,
         { status: "ACTIVE" },
-        { enabled: !!tenantId }
+        { enabled: !!tenantId, staleTime: 300000 }
     );
 
     const supervisor = useMemo(() => {

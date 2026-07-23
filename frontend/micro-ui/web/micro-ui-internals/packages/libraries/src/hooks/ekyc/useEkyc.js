@@ -56,7 +56,10 @@ export const useEkycSurveyorDashboard = (data, params, config = {}) => {
         surveyorId,
         ekycStatus,
       }),
-    config
+    {
+      staleTime: 15000, // Cache for 15 seconds by default
+      ...config,
+    }
   );
 };
 
@@ -185,7 +188,14 @@ export const useEkycAssignmentCreate = (config = {}) => {
 };
 
 export const useEkycAssignmentProgress = (config = {}) => {
-  return useQuery(["useEkycAssignmentProgress"], () => Digit.EkycService.assignment_progress({ includeHierarchy: true }), config);
+  return useQuery(
+    ["useEkycAssignmentProgress"],
+    () => Digit.EkycService.assignment_progress({ includeHierarchy: true }),
+    {
+      staleTime: 20000, // Cache for 20 seconds by default
+      ...config,
+    }
+  );
 };
 
 export const useEkycApplicationList = (data, params, config = {}) => {
@@ -211,6 +221,9 @@ export const useEkycApplicationList = (data, params, config = {}) => {
           limit,
         }
       ),
-    config
+    {
+      staleTime: 10000, // Cache for 10 seconds by default
+      ...config,
+    }
   );
 };
