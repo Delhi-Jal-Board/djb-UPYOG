@@ -79,6 +79,13 @@ const ViewBreakup = ({ wsAdditionalDetails, workflowDetails, print, download }) 
         title: t("WS_APPLICATION_FEE_HEADER"),
         values: amountRows([...(breakUpData?.billSlabData?.FEE || []), ...(breakUpData?.billSlabData?.CHARGES || [])]),
       },
+      {
+        title: "Property details",
+        values: propertyRows.map(({ label, value, currency, unit, isText }) => ({
+          title: label,
+          value: currency ? `₹${formatNumber(value)}` : isText ? value || "-" : `${formatNumber(value)}${unit}`,
+        })),
+      },
       { title: "Taxes", values: amountRows(breakUpData?.billSlabData?.TAX) },
       {
         title: "Water demand details",
@@ -140,8 +147,26 @@ const ViewBreakup = ({ wsAdditionalDetails, workflowDetails, print, download }) 
     printWindow.print();
   };
 
+  const propertyDetail = breakUpData?.calculationDetail?.propertyDetail;
   const waterDemandDetail = breakUpData?.calculationDetail?.waterDemandDetail;
   const infrastructureChargeDetail = breakUpData?.calculationDetail?.infrastructureChargeDetail;
+
+  const propertyRows = propertyDetail
+    ? [
+        { label: "Property ID", value: propertyDetail.propertyId, isText: true },
+        { label: "Property type", value: propertyDetail.propertyType, isText: true },
+        { label: "Plot area", value: propertyDetail.landArea, unit: " (sq. meter.)" },
+        { label: "Built-up area", value: propertyDetail.superBuiltUpArea, unit: " (sq. meter.)" },
+        { label: "farArea", value: propertyDetail.farArea, isText: true },
+        { label: "coveredArea", value: propertyDetail.coveredArea, isText: true },
+        { label: "numberOfDwellingUnits", value: propertyDetail.numberOfDwellingUnits, isText: true },
+        { label: "numberOfBeds", value: propertyDetail.numberOfBeds, isText: true },
+        { label: "numberOfRooms", value: propertyDetail.numberOfRooms, isText: true },
+        { label: "numberOfStudents", value: propertyDetail.numberOfStudents, isText: true },
+        { label: "numberOfStaff", value: propertyDetail.numberOfStaff, isText: true },
+        { label: "Usage category", value: propertyDetail.usageCategory, isText: true },
+      ]
+    : [];
 
   const waterDemandRows = waterDemandDetail
     ? [
@@ -231,6 +256,13 @@ const ViewBreakup = ({ wsAdditionalDetails, workflowDetails, print, download }) 
                       textStyle={{ textAlign: "right" }}
                     />
                   ))}
+
+                  {propertyRows.length > 0 && (
+                    <>
+                      <CardSectionHeader style={{ margin: "10px 0px" }}>Property details</CardSectionHeader>
+                      <DetailRows rows={propertyRows} />
+                    </>
+                  )}
 
                   {waterDemandRows.length > 0 && (
                     <>

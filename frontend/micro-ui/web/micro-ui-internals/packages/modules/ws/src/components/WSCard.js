@@ -102,6 +102,11 @@ const WSCard = () => {
         link: `/digit-ui/employee/ws/water/search-application`,
         roles: ["WS_CEMP", "WS_APPROVER", "WS_FIELD_INSPECTOR", "WS_DOC_VERIFIER", "WS_CLERK"],
       },
+      {
+        label: t("WS_CALCULATION"),
+        link: `/digit-ui/employee/ws/water/calculation`,
+        roles: ["WS_CEMP", "WS_APPROVER", "WS_FIELD_INSPECTOR", "WS_DOC_VERIFIER", "WS_CLERK"], 
+      }
     ],
   };
   return <EmployeeModuleCard {...propsForModuleCard} />;
