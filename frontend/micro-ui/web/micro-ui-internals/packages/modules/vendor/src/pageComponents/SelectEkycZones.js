@@ -127,6 +127,28 @@ const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true }
   // Prevent converting initial values multiple times
   const initialized = useRef(false);
 
+  const loggedInUser = Digit.SessionStorage.get("User")?.info;
+  const roles = loggedInUser?.roles?.map((r) => r.code) || [];
+  const isEkycVendor = roles.includes("EKYC_VENDOR");
+
+  const { data: vendorSearchResponse, isLoading: isVendorSearchLoading } = Digit.Hooks.fsm.useDsoSearch(
+    tenantId,
+    { status: "ACTIVE" },
+    { enabled: isEkycVendor }
+  );
+
+  const matchedVendor = React.useMemo(() => {
+    if (!vendorSearchResponse) return null;
+    const userUuid = loggedInUser?.uuid;
+    const userMobile = loggedInUser?.mobileNumber;
+    return vendorSearchResponse.find((v) => {
+      const actualVendor = v.dsoDetails || v;
+      const ownerUuid = actualVendor.owner?.uuid || actualVendor.owner?.id;
+      const ownerMobile = actualVendor.owner?.mobileNumber || actualVendor.mobileNumber;
+      return (userUuid && ownerUuid === userUuid) || (userMobile && ownerMobile === userMobile);
+    })?.dsoDetails || vendorSearchResponse[0]?.dsoDetails || vendorSearchResponse[0];
+  }, [vendorSearchResponse, loggedInUser]);
+
   const { data: boundaryData, isLoading } = Digit.Hooks.useCommonMDMS(tenantId, "egov-location", ["TenantBoundary"]);
 
   useEffect(() => {
@@ -142,11 +164,16 @@ const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true }
         }))
       );
 
-      const zonesList = [...new Map(allZones.map((z) => [z.code, z])).values()];
+      let zonesList = [...new Map(allZones.map((z) => [z.code, z])).values()];
+
+      if (isEkycVendor && matchedVendor?.zoneIds) {
+        const assignedZoneCodes = matchedVendor.zoneIds.map(z => String(z).toUpperCase());
+        zonesList = zonesList.filter(z => assignedZoneCodes.includes(String(z.code).toUpperCase()) || assignedZoneCodes.includes(String(z.name).toUpperCase()));
+      }
 
       setZones(zonesList);
     }
-  }, [boundaryData]);
+  }, [boundaryData, isEkycVendor, matchedVendor]);
 
   /**
    * Sync selected values
@@ -206,7 +233,7 @@ const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true }
     }
   };
 
-  if (isLoading) return <Loader />;
+  if (isLoading || (isEkycVendor && isVendorSearchLoading)) return <Loader />;
 
   return (
     <LabelFieldPair>

@@ -178,7 +178,7 @@ const RegisteredVendorSearch = ({
           )}
           <div className="search-tabs-container">
             <div>
-              {matchedRoles?.wt?.includes("WT_VENDOR") && (
+              {(matchedRoles?.wt?.includes("WT_VENDOR") || matchedRoles?.ekyc?.includes("EKYC_VENDOR")) && (
                 <button
                   className={selectedTab === "VENDOR" ? "search-tab-head-selected" : "search-tab-head"}
                   onClick={() => {

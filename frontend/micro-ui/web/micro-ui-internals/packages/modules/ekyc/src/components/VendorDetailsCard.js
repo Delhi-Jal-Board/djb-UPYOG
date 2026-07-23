@@ -22,14 +22,14 @@ const VendorDetailsCard = () => {
     const { data: vendorSearchResponse, isLoading: isVendorSearchLoading } = Digit.Hooks.fsm.useDsoSearch(
         tenantId,
         { status: "ACTIVE" },
-        { enabled: !!tenantId }
+        { enabled: !!tenantId, staleTime: 300000 }
     );
 
     // Fetch all supervisors to filter by vendor
     const { data: supervisorSearchResponse, isLoading: isSupervisorSearchLoading } = Digit.Hooks.fsm.useSupervisorSearch(
         tenantId,
         { status: "ACTIVE" },
-        { enabled: !!tenantId }
+        { enabled: !!tenantId, staleTime: 300000 }
     );
 
     const loggedInUser = Digit.SessionStorage.get("User")?.info;

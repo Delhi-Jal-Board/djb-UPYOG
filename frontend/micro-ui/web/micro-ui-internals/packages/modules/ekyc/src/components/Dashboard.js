@@ -28,6 +28,8 @@ const Dashboard = () => {
       pending: info.pending || 0,
       rejected: info.rejected || 0,
       active: info.active || 0,
+      submittedCount: info.submittedCount || 0,
+      inProgressCount: info.inProgressCount || 0,
     };
   }, [dashboardData]);
 

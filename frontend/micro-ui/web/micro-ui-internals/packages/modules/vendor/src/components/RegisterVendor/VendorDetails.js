@@ -97,6 +97,8 @@ const VendorDetails = () => {
 
   const userInfo = Digit.SessionStorage.get("User");
   const userType = userInfo.info.type?.toLowerCase();
+  const userRoles = userInfo?.info?.roles?.map((r) => r.code) || [];
+  const isEkycVendor = userRoles.includes("EKYC_VENDOR");
 
   useEffect(() => {
     switch (selectedAction) {
@@ -531,7 +533,7 @@ const VendorDetails = () => {
             {isEkyc && (
               <React.Fragment>
                 <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t("ES_VENDOR_SUPERVISOR_DETAILS")}</CardSectionHeader>
-                <div>
+                <div >
                   <Table
                     data={supervisorData?.supervisors || []}
                     columns={supervisorColumns}
@@ -542,12 +544,14 @@ const VendorDetails = () => {
                     t={t}
                   />
 
-                  <div
-                    className="add-details-link hover-button"
-                    onClick={() => history.push(`/digit-ui/${userType}/vendor/registry/new-supervisor?vendorId=${dsoId || vendorId}`)}
-                  >
-                    {t(`ES_VENDOR_ADD_SUPERVISOR`)}
-                  </div>
+                  {isEkycVendor && (
+                    <div
+                      className="add-details-link hover-button"
+                      onClick={() => history.push(`/digit-ui/${userType}/vendor/registry/new-supervisor?vendorId=${dsoId || vendorId}`)}
+                    >
+                      {t(`ES_VENDOR_ADD_SUPERVISOR`)}
+                    </div>
+                  )}
                 </div>
 
                 <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t("ES_VENDOR_SURVEYOR_DETAILS")}</CardSectionHeader>
@@ -561,12 +565,14 @@ const VendorDetails = () => {
                     pageSizeLimit={10}
                     t={t}
                   />
-                  {/* <div
-                    className="add-details-link hover-button"
-                    onClick={() => history.push(`/digit-ui/${userType}/vendor/registry/new-surveyor?vendorId=${dsoId || vendorId}`)}
-                  >
-                    {t(`ES_VENDOR_ADD_SURVEYOR`)}
-                  </div> */}
+                  {isEkycVendor && (
+                    <div
+                      className="add-details-link hover-button"
+                      onClick={() => history.push(`/digit-ui/${userType}/vendor/registry/new-surveyor?vendorId=${dsoId || vendorId}`)}
+                    >
+                      {t(`ES_VENDOR_ADD_SURVEYOR`)}
+                    </div>
+                  )}
                 </div>
               </React.Fragment>
             )}
@@ -580,8 +586,8 @@ const VendorDetails = () => {
                     selectedAction === "DELETE"
                       ? "ES_FSM_REGISTRY_DELETE_POPUP_HEADER"
                       : selectedAction === "ADD_VEHICLE"
-                      ? "ES_FSM_REGISTRY_ADD_VEHICLE_POPUP_HEADER"
-                      : "ES_FSM_REGISTRY_ADD_DRIVER_POPUP_HEADER"
+                        ? "ES_FSM_REGISTRY_ADD_VEHICLE_POPUP_HEADER"
+                        : "ES_FSM_REGISTRY_ADD_DRIVER_POPUP_HEADER"
                   )}
                 </h1>
               }
