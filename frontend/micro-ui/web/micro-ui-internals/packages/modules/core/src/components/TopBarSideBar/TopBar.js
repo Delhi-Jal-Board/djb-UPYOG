@@ -4,6 +4,7 @@ import { Hamburger, Calender } from "@djb25/digit-ui-react-components";
 import ChangeCity from "../ChangeCity";
 import ChangeLanguage from "../ChangeLanguage";
 import CustomUserDropdown from "./CustomUserDropdown";
+import AccessibilityWidget from "./AccessibilityWidget";
 
 const TopBar = ({
   t,
@@ -158,6 +159,10 @@ const TopBar = ({
           {!mobileView && (
             <div className="topbar-right-section">
               <div className="topbar-item-wrapper hide-on-mobile">
+                <AccessibilityWidget />
+              </div>
+              <div className="vertical-divider hide-on-mobile"></div>
+              <div className="topbar-item-wrapper hide-on-mobile">
                 <Calender width="20" height="20" />
                 <span>{getFinancialYear()}</span>
               </div>
@@ -178,7 +183,6 @@ const TopBar = ({
                   />
                 </div>
               )}
-
               <img
                 className="state"
                 src="https://objectstorage.ap-mumbai-1.oraclecloud.com/n/bmycsh2g2wu7/b/DJB-EDP-LZ-UPYOG-DEV-ASSET-BUCKET-BOM/o/SBM_IMG.png"
@@ -232,6 +236,10 @@ const TopBar = ({
         )}
         {!mobileView && (
           <div className={mobileView ? "right" : "topbar-right-section"} style={!loggedIn ? { width: "80%" } : {}}>
+            <div className="topbar-item-wrapper hide-on-mobile">
+              <AccessibilityWidget />
+            </div>
+            <div className="vertical-divider hide-on-mobile"></div>
             <div className="left hide-on-mobile">
               {!window.location.href.includes("employee/user/login") && !window.location.href.includes("employee/user/language-selection") && (
                 <ChangeCity dropdown={true} t={t} />

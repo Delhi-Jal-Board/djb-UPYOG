@@ -1,5 +1,5 @@
-import { Card, Loader } from "@djb25/digit-ui-react-components";
-import React, { useState } from "react";
+import { Card, Loader, Modal } from "@djb25/digit-ui-react-components";
+import React, { useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import ApplicationTable from "./inbox/ApplicationTable";
 import InboxLinks from "./inbox/InboxLink";
@@ -36,7 +36,79 @@ const WTDesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
   const [clearSearchCalled, setClearSearchCalled] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
-  const columns = React.useMemo(() => (props.isSearch ? tableConfig.searchColumns(props) : tableConfig.inboxColumns(props) || []), []);
+  // Image modal state
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [imageModalData, setImageModalData] = useState({ startUrl: null, endUrl: null, bookingNo: "", isLoading: false });
+
+  const tenantId = Digit.ULBService.getCurrentTenantId();
+
+  // Fetch image URL from fileStoreId
+  const fetchImageUrl = useCallback(async (fileStoreId) => {
+    if (!fileStoreId) return null;
+    try {
+      const res = await Digit.UploadServices.Filefetch([fileStoreId], tenantId);
+      if (res?.data?.[fileStoreId]) {
+        return res.data[fileStoreId].split(",")[0];
+      }
+      // Fallback: try fileStoreIds array format
+      if (res?.data?.fileStoreIds?.[0]?.url) {
+        return res.data.fileStoreIds[0].url.split(",")[0];
+      }
+    } catch (err) {
+      console.error("Error fetching image URL:", err);
+    }
+    return null;
+  }, [tenantId]);
+
+  // View image handler - opens modal with start/end trip images
+  const handleViewImage = useCallback(async ({ startFileStoreId, endFileStoreId, bookingNo }) => {
+    setShowImageModal(true);
+    setImageModalData({ startUrl: null, endUrl: null, bookingNo: bookingNo || "", isLoading: true });
+    try {
+      const [startUrl, endUrl] = await Promise.all([
+        fetchImageUrl(startFileStoreId),
+        fetchImageUrl(endFileStoreId),
+      ]);
+      setImageModalData({ startUrl, endUrl, bookingNo: bookingNo || "", isLoading: false });
+    } catch (err) {
+      console.error("Error loading images:", err);
+      setImageModalData((prev) => ({ ...prev, isLoading: false }));
+    }
+  }, [fetchImageUrl]);
+
+  // Download image helper
+  const downloadImage = useCallback(async (url, filename) => {
+    if (!url) return;
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      console.error("Error downloading image:", err);
+      // Fallback: open in new tab
+      window.open(url, "_blank");
+    }
+  }, []);
+
+  // Download image handler - downloads both start/end trip images
+  const handleDownloadImage = useCallback(async ({ startFileStoreId, endFileStoreId, bookingNo }) => {
+    const [startUrl, endUrl] = await Promise.all([
+      fetchImageUrl(startFileStoreId),
+      fetchImageUrl(endFileStoreId),
+    ]);
+    const prefix = bookingNo || "trip";
+    if (startUrl) downloadImage(startUrl, `${prefix}_start_trip.jpg`);
+    if (endUrl) downloadImage(endUrl, `${prefix}_end_trip.jpg`);
+  }, [fetchImageUrl, downloadImage]);
+
+  const columns = React.useMemo(() => (props.isSearch ? tableConfig.searchColumns(props) : tableConfig.inboxColumns({ ...props, onViewImage: handleViewImage, onDownloadImage: handleDownloadImage }) || []), [handleViewImage, handleDownloadImage]);
 
   const inboxCsvColumns = React.useMemo(() => {
     const csvColumns = [
@@ -384,6 +456,165 @@ const WTDesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
           {result}
         </div>
       </div>
+      {/* Image View Modal */}
+      {showImageModal && (
+        <Modal
+          headerBarMain={
+            <h1 className="heading-m" style={{ margin: 0, color: "#0B2559" }}>
+              {t("WT_DELIVERY_IMAGES")} {imageModalData.bookingNo ? `— ${imageModalData.bookingNo}` : ""}
+            </h1>
+          }
+          headerBarEnd={
+            <div
+              onClick={() => { setShowImageModal(false); setImageModalData({ startUrl: null, endUrl: null, bookingNo: "", isLoading: false }); }}
+              style={{
+                cursor: "pointer",
+                width: "32px",
+                height: "32px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: "50%",
+                background: "rgba(0,0,0,0.08)",
+                transition: "background 0.2s ease",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(0,0,0,0.15)")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(0,0,0,0.08)")}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" fill="#333" />
+              </svg>
+            </div>
+          }
+          hideSubmit={true}
+          actionCancelLabel={t("CS_COMMON_CLOSE")}
+          actionCancelOnSubmit={() => { setShowImageModal(false); setImageModalData({ startUrl: null, endUrl: null, bookingNo: "", isLoading: false }); }}
+          popmoduleClassName="wt-delivery-image-modal"
+        >
+          <div style={{ minHeight: "200px", padding: "16px" }}>
+            {imageModalData.isLoading ? (
+              <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "200px" }}>
+                <Loader />
+              </div>
+            ) : (
+              <div style={{ display: "flex", gap: "32px", justifyContent: "center", flexWrap: "wrap" }}>
+                {/* Start Trip Image */}
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "12px" }}>
+                  <h3 style={{ margin: 0, fontSize: "15px", fontWeight: "700", color: "#0B2559", letterSpacing: "0.3px" }}>
+                    {t("WT_START_TRIP_IMAGE")}
+                  </h3>
+                  {imageModalData.startUrl ? (
+                    <div style={{ position: "relative", borderRadius: "10px", overflow: "hidden", boxShadow: "0 4px 16px rgba(0,0,0,0.12)" }}>
+                      <img
+                        src={imageModalData.startUrl}
+                        alt="Start Trip"
+                        style={{ maxWidth: "360px", maxHeight: "400px", objectFit: "contain", display: "block" }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => downloadImage(imageModalData.startUrl, `${imageModalData.bookingNo || "trip"}_start.jpg`)}
+                        style={{
+                          position: "absolute",
+                          bottom: "10px",
+                          right: "10px",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "4px",
+                          padding: "6px 12px",
+                          fontSize: "12px",
+                          fontWeight: "600",
+                          color: "#fff",
+                          background: "rgba(0,0,0,0.6)",
+                          border: "none",
+                          borderRadius: "6px",
+                          cursor: "pointer",
+                          backdropFilter: "blur(4px)",
+                        }}
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                          <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" fill="#fff" />
+                        </svg>
+                        {t("CS_COMMON_DOWNLOAD")}
+                      </button>
+                    </div>
+                  ) : (
+                    <div style={{
+                      width: "200px",
+                      height: "200px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      background: "#f8fafc",
+                      borderRadius: "10px",
+                      border: "2px dashed #e2e8f0",
+                      color: "#94a3b8",
+                      fontSize: "13px",
+                    }}>
+                      {t("CS_NO_IMAGE_AVAILABLE")}
+                    </div>
+                  )}
+                </div>
+                {/* End Trip Image */}
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "12px" }}>
+                  <h3 style={{ margin: 0, fontSize: "15px", fontWeight: "700", color: "#0B2559", letterSpacing: "0.3px" }}>
+                    {t("WT_END_TRIP_IMAGE")}
+                  </h3>
+                  {imageModalData.endUrl ? (
+                    <div style={{ position: "relative", borderRadius: "10px", overflow: "hidden", boxShadow: "0 4px 16px rgba(0,0,0,0.12)" }}>
+                      <img
+                        src={imageModalData.endUrl}
+                        alt="End Trip"
+                        style={{ maxWidth: "360px", maxHeight: "400px", objectFit: "contain", display: "block" }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => downloadImage(imageModalData.endUrl, `${imageModalData.bookingNo || "trip"}_end.jpg`)}
+                        style={{
+                          position: "absolute",
+                          bottom: "10px",
+                          right: "10px",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "4px",
+                          padding: "6px 12px",
+                          fontSize: "12px",
+                          fontWeight: "600",
+                          color: "#fff",
+                          background: "rgba(0,0,0,0.6)",
+                          border: "none",
+                          borderRadius: "6px",
+                          cursor: "pointer",
+                          backdropFilter: "blur(4px)",
+                        }}
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                          <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" fill="#fff" />
+                        </svg>
+                        {t("CS_COMMON_DOWNLOAD")}
+                      </button>
+                    </div>
+                  ) : (
+                    <div style={{
+                      width: "200px",
+                      height: "200px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      background: "#f8fafc",
+                      borderRadius: "10px",
+                      border: "2px dashed #e2e8f0",
+                      color: "#94a3b8",
+                      fontSize: "13px",
+                    }}>
+                      {t("CS_NO_IMAGE_AVAILABLE")}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </Modal>
+      )}
     </div>
   );
 };

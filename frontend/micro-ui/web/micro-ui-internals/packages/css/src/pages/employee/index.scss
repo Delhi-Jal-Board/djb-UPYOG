@@ -215,7 +215,7 @@
       justify-content: space-between;
       align-items: center;
       padding: 20px;
-      font-size: 14px;
+      font-size: 0.875rem;
 
       &.level-0 {
         margin: 0 0.3rem 0 0.3rem;
@@ -290,7 +290,7 @@
       align-items: center;
       text-decoration: none;
       color: theme(colors.white);
-      font-size: 14px;
+      font-size: 0.875rem;
 
       .actions {
         .tooltiptext {
@@ -404,7 +404,7 @@
 
   .historyTableDateLabel {
     color: rgba(0, 0, 0, 0.87);
-    font-size: 16px;
+    font-size: 1rem;
     font-weight: 700;
     line-height: 17px;
     text-align: left;
@@ -418,7 +418,7 @@
 
   .historyTableDate {
     color: rgba(0, 0, 0, 0.87);
-    font-size: 19px;
+    font-size: 1.1875rem;
     font-weight: 400;
     line-height: 17px;
     text-align: left;
@@ -435,7 +435,7 @@
 
   .smallText {
     font-weight: 500;
-    font-size: 14px;
+    font-size: 0.875rem;
   }
 }
 
@@ -526,7 +526,7 @@
 
     .greeting-title {
       margin: 0;
-      font-size: 28px;
+      font-size: 1.75rem;
       font-weight: 800;
       color: #ffffff;
       letter-spacing: -0.5px;
@@ -536,14 +536,14 @@
       gap: 10px;
 
       .greeting-emoji {
-        font-size: 24px;
+        font-size: 1.5rem;
         filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
       }
     }
 
     .greeting-date {
       margin-left: 40px;
-      font-size: 15px;
+      font-size: 0.9375rem;
       font-weight: 500;
       color: rgba(255, 255, 255, 0.9);
       letter-spacing: 0.5px;
@@ -589,7 +589,7 @@
       background: transparent;
       border: none;
       color: #ffffff;
-      font-size: 15px;
+      font-size: 0.9375rem;
       font-weight: 500;
       padding: 10px 0;
       outline: none;
@@ -603,7 +603,7 @@
     .omni-search-shortcut {
       background: rgba(255, 255, 255, 0.2);
       color: #ffffff;
-      font-size: 12px;
+      font-size: 0.75rem;
       font-weight: 700;
       padding: 4px 10px;
       border-radius: 8px;
@@ -624,7 +624,7 @@
     justify-content: flex-start;
     color: #fff;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-    font-size: 14px;
+    font-size: 0.875rem;
     font-weight: 500;
 
     .icon {
@@ -641,7 +641,7 @@
 
     .iconn {
       font-feature-settings: "kern";
-      font-size: 16px;
+      font-size: 1rem;
       margin: 0 8px;
       color: #fff;
     }
@@ -925,7 +925,7 @@
 
   .title-icon {
     color: #6177ec;
-    font-size: 24px;
+    font-size: 1.5rem;
     margin-right: 10px;
     background: rgba(97, 119, 236, 0.1);
     padding: 6px;
@@ -934,7 +934,7 @@
 
   h3 {
     margin: 0;
-    font-size: 18px;
+    font-size: 1.125rem;
     font-weight: 700;
     color: #2c3e50;
     flex: 1;
@@ -945,7 +945,7 @@
     border: none;
     color: #6177ec;
     font-weight: 600;
-    font-size: 14px;
+    font-size: 0.875rem;
     cursor: pointer;
     transition: all 0.2s ease;
 
@@ -998,7 +998,7 @@
   background: none;
   border: none;
   color: #94a3b8;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
   border-bottom: 2px solid transparent;
@@ -1036,7 +1036,7 @@
 }
 
 .compact-title {
-  font-size: 14px;
+  font-size: 0.875rem;
   color: #1e293b;
   font-weight: 500;
   flex: 1;
@@ -1045,7 +1045,7 @@
 .compact-badge {
   background-color: #e0f2fe;
   color: #0369a1;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
   padding: 2px 8px;
   border-radius: 12px;
@@ -1053,7 +1053,7 @@
 }
 
 .compact-right-text {
-  font-size: 13px;
+  font-size: 0.8125rem;
   color: #64748b;
   white-space: nowrap;
 }
@@ -1154,7 +1154,7 @@
 
 .ra-modal-header h3 {
   margin: 0;
-  font-size: 20px;
+  font-size: 1.25rem;
   font-weight: 700;
   color: #1a67a3;
 }
@@ -1208,14 +1208,14 @@
 
 .ra-header h3 {
   margin: 0 0 4px 0;
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: 700;
   color: #1a67a3;
 }
 
 .ra-subtitle {
   margin: 0;
-  font-size: 12px;
+  font-size: 0.75rem;
   color: #64748b;
 }
 
@@ -1226,7 +1226,7 @@
   background: transparent;
   border: none;
   color: rgb(0, 51, 102);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 600;
   cursor: pointer;
   padding: 8px 12px;
@@ -1304,7 +1304,7 @@
 
 .ra-text {
   margin: 0 0 8px 0;
-  font-size: 14px;
+  font-size: 0.875rem;
   color: #334155;
   line-height: 1.4;
 }
@@ -1322,7 +1322,7 @@
 
 .ra-module {
   font-family: "SFMono-Regular", Consolas, monospace;
-  font-size: 11px;
+  font-size: 0.6875rem;
   background: rgba(255, 255, 255, 0.4);
   color: #1e293b;
   padding: 4px 8px;
@@ -1333,7 +1333,7 @@
 }
 
 .ra-time {
-  font-size: 12px;
+  font-size: 0.75rem;
   color: #94a3b8;
   font-weight: 500;
 }
@@ -1473,7 +1473,7 @@
   background: transparent;
   border: none;
   color: #3b82f6;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
   padding: 8px 16px;
@@ -1535,7 +1535,7 @@
 
 .custom-modal-header h3 {
   margin: 0;
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: 700;
   color: #1a67a3;
 }
@@ -1616,7 +1616,7 @@
       margin-top: auto;
 
       .employeeCard-link {
-        font-size: 13px;
+        font-size: 0.8125rem;
         padding: 4px 0;
         font-weight: 500;
         color: #1a67a3;
@@ -1624,7 +1624,7 @@
     }
 
     .employeeCard-title {
-      font-size: 15px !important;
+      font-size: 0.9375rem !important;
       font-weight: 700;
       color: #1a67a3 !important;
       margin-bottom: 8px;
@@ -1639,12 +1639,12 @@
       flex-direction: column;
       margin-top: 8px;
       margin-bottom: 8px;
-      font-size: 12px;
+      font-size: 0.75rem;
       color: #64748b;
     }
 
     .employeeCard-kpi-count {
-      font-size: 16px !important;
+      font-size: 1rem !important;
       font-weight: 700;
       color: #f97316 !important;
     }

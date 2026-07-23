@@ -495,7 +495,7 @@
     white-space: normal;
 
     .tooltiptextvalue {
-      font-size: 14px;
+      font-size: 0.875rem;
       font-weight: 400px;
       color: white;
     }
@@ -742,7 +742,7 @@ button:hover {
       cursor: pointer;
       margin-right: 1em;
       font-weight: bolder;
-      font-size: 23px;
+      font-size: 1.4375rem;
     }
   }
 }
@@ -786,7 +786,7 @@ button:hover {
   .view-all-link {
     background-color: #bdc5d1;
     color: #3a8dcc;
-    font-size: 16px;
+    font-size: 1rem;
     text-decoration: underline;
     cursor: pointer;
   }
@@ -834,7 +834,7 @@ button:hover {
 
   .progressHeading {
     margin: 8px 0;
-    font-size: 16px;
+    font-size: 1rem;
 
     .success-container {
       display: flex;

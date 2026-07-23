@@ -18,7 +18,7 @@
     background: transparent;
     border: none;
     color: #1f5fa8;
-    font-size: 14px;
+    font-size: 0.875rem;
     font-weight: 600;
     cursor: pointer;
     text-decoration: underline;
@@ -39,7 +39,7 @@
     border: 1px solid #d1d5db;
     border-radius: 10px;
     background: #fff;
-    font-size: 14px;
+    font-size: 0.875rem;
     outline: none;
 
     &:focus {
@@ -63,7 +63,7 @@
     padding: 16px;
     background: #eef2f7;
     font-weight: 700;
-    font-size: 14px;
+    font-size: 0.875rem;
     color: #0b2559;
   }
 
@@ -78,7 +78,7 @@
     padding: 16px;
     align-items: center;
     border-top: 1px solid #edf0f4;
-    font-size: 14px;
+    font-size: 0.875rem;
 
     &.even {
       background: #fff;
@@ -97,7 +97,7 @@
   .status-badge {
     padding: 4px 10px;
     border-radius: 999px;
-    font-size: 12px;
+    font-size: 0.75rem;
     font-weight: 600;
     display: inline-block;
 

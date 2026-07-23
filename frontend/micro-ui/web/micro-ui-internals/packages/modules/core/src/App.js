@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import { AccessibilityProvider } from "./context/AccessibilityContext";
 import { Redirect, Route, Switch, useHistory, useLocation } from "react-router-dom";
 import EmployeeApp from "./pages/employee";
 import CitizenApp from "./pages/citizen";
@@ -93,6 +94,7 @@ export const DigitApp = ({ stateCode, modules, appTenants, logoUrl, initData }) 
   };
 
   return (
+    <AccessibilityProvider>
     <Switch>
       <Route path="/digit-ui/employee">
         <EmployeeApp {...commonProps} />
@@ -146,6 +148,7 @@ export const DigitApp = ({ stateCode, modules, appTenants, logoUrl, initData }) 
         <Redirect to={getDefaultRedirect()} />
       </Route>
     </Switch>
+    </AccessibilityProvider>
   );
 };
 

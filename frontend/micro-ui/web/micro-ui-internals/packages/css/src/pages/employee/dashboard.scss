@@ -20,7 +20,7 @@
 }
 
 .dashboard-label {
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.18em;
@@ -30,7 +30,7 @@
 
 .dashboard-header h1 {
   margin: 0;
-  font-size: 46px;
+  font-size: 2.875rem;
   font-weight: 800;
   color: #0f172a;
   line-height: 1;
@@ -41,7 +41,7 @@
   color: #64748b;
   max-width: 720px;
   line-height: 1.7;
-  font-size: 15px;
+  font-size: 0.9375rem;
 }
 
 /* ================= BUTTONS ================= */
@@ -149,7 +149,7 @@
   border-radius: 20px;
   display: grid;
   place-items: center;
-  font-size: 24px;
+  font-size: 1.5rem;
   flex-shrink: 0;
 }
 
@@ -183,14 +183,14 @@
 .kpi-title {
   margin: 0 0 8px;
   color: #64748b;
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 600;
   letter-spacing: 0.03em;
 }
 
 .kpi-card h2 {
   margin: 0;
-  font-size: 34px;
+  font-size: 2.125rem;
   font-weight: 800;
   color: #0f172a;
 }
@@ -237,7 +237,7 @@ section p {
   background: transparent;
   width: 100%;
   color: #0f172a;
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 
 /* ================= FILTER PILLS ================= */
@@ -292,20 +292,20 @@ section p {
   border-radius: 999px;
   background: #eff6ff;
   color: #2563eb;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 700;
 }
 
 .vendor-card h3 {
   margin: 14px 0 4px;
-  font-size: 38px;
+  font-size: 2.375rem;
   font-weight: 800;
   color: #0f172a;
 }
 
 .vendor-subtitle {
   color: #64748b;
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 
 .progress-bar {
@@ -338,13 +338,13 @@ section p {
 
 .vendor-stats-grid strong {
   display: block;
-  font-size: 22px;
+  font-size: 1.375rem;
   color: #0f172a;
 }
 
 .vendor-stats-grid span {
   color: #64748b;
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 
 /* ================= ANALYTICS ================= */
@@ -389,7 +389,7 @@ section p {
 .table-wrapper th {
   padding: 18px;
   text-align: left;
-  font-size: 12px;
+  font-size: 0.75rem;
   color: #64748b;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -411,7 +411,7 @@ section p {
 .status-badge {
   padding: 8px 14px;
   border-radius: 999px;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 700;
 }
 
@@ -462,12 +462,12 @@ section p {
   }
 
   .dashboard-header h1 {
-    font-size: 38px;
+    font-size: 2.375rem;
   }
 }
 
 @media (max-width: 640px) {
   .dashboard-header h1 {
-    font-size: 30px;
+    font-size: 1.875rem;
   }
 }

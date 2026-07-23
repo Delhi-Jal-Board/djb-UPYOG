@@ -58,14 +58,14 @@
 }
 .notice_and_circular_heading_mb header {
   font-weight: bold;
-  font-size: 16px !important;
+  font-size: 1rem !important;
   line-height: 24px;
   margin-right: 50px;
 }
 .notice_and_circular_heading_mb .card-caption {
   padding-left: 30px;
   font-weight: normal;
-  font-size: 12px;
+  font-size: 0.75rem;
   line-height: 24px;
   color: theme(colors.text.secondary);
   padding-right: 5px;
@@ -79,7 +79,7 @@
 }
 .notice_and_circular_text p {
   font-weight: normal;
-  font-size: 12px;
+  font-size: 0.75rem;
   line-height: 14px;
   color: theme(colors.text.secondary);
 }
@@ -89,7 +89,7 @@
 }
 .notice_and_circular_caption .card-caption {
   font-weight: normal;
-  font-size: 10px;
+  font-size: 0.625rem;
   line-height: 18px;
   color: #a3a3a3;
 }
@@ -107,7 +107,7 @@
       p {
         padding-left: 10px;
         font-weight: normal;
-        font-size: 16px;
+        font-size: 1rem;
         line-height: 19px;
         color: theme(colors.primary.main);
       }
@@ -127,7 +127,7 @@
         p {
           padding-left: 10px;
           font-weight: normal;
-          font-size: 16px;
+          font-size: 1rem;
           line-height: 19px;
           color: theme(colors.primary.main);
         }
@@ -136,7 +136,7 @@
   }
 
   .notice_and_circular_heading_mb .card-caption {
-    font-size: 16px;
+    font-size: 1rem;
     line-height: 24px;
     min-width: 150px;
     padding-left: 50px;
@@ -147,10 +147,10 @@
   }
   .view_download_main span .views p {
     padding-left: 8px;
-    font-size: 16px;
+    font-size: 1rem;
   }
   .notice_and_circular_text p {
-    font-size: 16px !important;
+    font-size: 1rem !important;
     line-height: 24px;
   }
   .documentDetails_row {
@@ -158,12 +158,12 @@
     gap: 0 !important;
   }
   .notice_and_circular_heading_mb header {
-    font-size: 24px !important;
+    font-size: 1.5rem !important;
     line-height: 28px;
     margin-right: 100px;
   }
   .notice_and_circular_caption .card-caption {
-    font-size: 14px;
+    font-size: 0.875rem;
     line-height: 21px;
   }
 }

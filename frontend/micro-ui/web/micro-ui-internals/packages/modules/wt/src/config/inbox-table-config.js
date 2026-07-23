@@ -1,6 +1,20 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
+const isDeliveredStatus = (row) => {
+  const bookingStatus = row?.searchData?.bookingStatus || row?.workflowData?.state?.applicationStatus || "";
+  return ["TANKER_DELIVERED", "DELIVERED"].includes(bookingStatus.toUpperCase());
+};
+
+const getTripReportFileIds = (row) => {
+  const tripReport = row?.searchData?.driverTripReport?.[0];
+  return {
+    startFileStoreId: tripReport?.startFileStoreId || null,
+    endFileStoreId: tripReport?.endFileStoreId || null,
+    hasImages: !!(tripReport?.startFileStoreId || tripReport?.endFileStoreId),
+  };
+};
+
 const GetCell = (value) => <span className="cell-text">{value}</span>;
 const getCreatedTime = (row) => row?.searchData?.auditDetails?.createdTime || row?.workflowData?.auditDetails?.createdTime;
 const getFormattedCreatedAt = (row) => {
@@ -160,6 +174,87 @@ export const TableConfig = (t) => ({
             accessor: (row) => getDriverNameFromSearchData(row?.searchData),
             Cell: ({ row }) => GetCell(getDriverNameFromSearchData(row?.original?.searchData)),
             mobileCell: (original) => GetMobCell(getDriverNameFromSearchData(original?.searchData)),
+          },
+          {
+            Header: t("WT_DELIVERY_IMAGES"),
+            id: "deliveryImages",
+            disableSortBy: true,
+            accessor: () => "",
+            Cell: ({ row }) => {
+              const original = row?.original;
+              const delivered = isDeliveredStatus(original);
+              const { startFileStoreId, endFileStoreId, hasImages } = getTripReportFileIds(original);
+
+              if (!delivered || !hasImages) {
+                return <span className="cell-text" style={{ color: "#94a3b8" }}>{t("CS_NA")}</span>;
+              }
+
+              return (
+                <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
+                  {/* View Button */}
+                  <button
+                    type="button"
+                    title={t("WT_VIEW_IMAGES")}
+                    onClick={() => props.onViewImage?.({ startFileStoreId, endFileStoreId, bookingNo: original?.searchData?.bookingNo })}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "4px",
+                      padding: "4px 10px",
+                      fontSize: "12px",
+                      fontWeight: "600",
+                      color: "#0B2559",
+                      background: "#EFF6FF",
+                      border: "1px solid #BFDBFE",
+                      borderRadius: "6px",
+                      cursor: "pointer",
+                      transition: "all 0.15s ease",
+                      whiteSpace: "nowrap",
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = "#DBEAFE"; e.currentTarget.style.borderColor = "#93C5FD"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = "#EFF6FF"; e.currentTarget.style.borderColor = "#BFDBFE"; }}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" fill="currentColor" />
+                    </svg>
+                    {t("ES_COMMON_VIEW")}
+                  </button>
+                  {/* Download Button */}
+                  <button
+                    type="button"
+                    title={t("WT_DOWNLOAD_IMAGES")}
+                    onClick={() => props.onDownloadImage?.({ startFileStoreId, endFileStoreId, bookingNo: original?.searchData?.bookingNo })}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "4px",
+                      padding: "4px 10px",
+                      fontSize: "12px",
+                      fontWeight: "600",
+                      color: "#065F46",
+                      background: "#ECFDF5",
+                      border: "1px solid #A7F3D0",
+                      borderRadius: "6px",
+                      cursor: "pointer",
+                      transition: "all 0.15s ease",
+                      whiteSpace: "nowrap",
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = "#D1FAE5"; e.currentTarget.style.borderColor = "#6EE7B7"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = "#ECFDF5"; e.currentTarget.style.borderColor = "#A7F3D0"; }}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" fill="currentColor" />
+                    </svg>
+                    {t("CS_COMMON_DOWNLOAD")}
+                  </button>
+                </div>
+              );
+            },
+            mobileCell: (original) => {
+              const delivered = isDeliveredStatus(original);
+              const { hasImages } = getTripReportFileIds(original);
+              return GetMobCell(delivered && hasImages ? "📷" : "-");
+            },
           },
         ]
         : []),
