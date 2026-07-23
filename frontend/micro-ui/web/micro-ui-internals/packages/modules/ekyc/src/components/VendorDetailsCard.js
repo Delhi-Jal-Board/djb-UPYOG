@@ -129,7 +129,7 @@ const VendorDetailsCard = () => {
         return "N/A";
     }, [vendor]);
     const zoneIds = useMemo(() => {
-        return vendor?.zoneIds?.length ? vendor.zoneIds.map(zone => zone.toUpperCase().replace("", " ")).join(", ") : "N/A";
+        return vendor?.zoneIds?.length ? vendor.zoneIds.filter(Boolean).map(zone => String(zone).toUpperCase().replace("", " ")).join(", ") : "N/A";
     }, [vendor]);
 
     // KPI stats calculation
