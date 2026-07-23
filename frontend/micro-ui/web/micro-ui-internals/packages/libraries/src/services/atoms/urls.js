@@ -206,6 +206,7 @@ const Urls = {
     getSearchDetails: "/inbox/v1/dss/_search",
     disconnection_notice: "/pdf-service/v1/_createnosave",
     meter_search: "/ws-calculator/meterConnection/_search",
+    calculatercharges: "/ws-calculator/waterCalculator/_calculator",
   },
 
   asset: {

@@ -1833,3 +1833,30 @@ export const checkForNotNull = (value = "") => {
 export const checkForNA = (value = "") => {
   return (value && value != null && value !== undefined && value !== "" && value !== "Image") ? value : " NA";
 };
+
+export const WSCalculationPayload = (data, tenantId) => {
+  const useDetails = data?.useDetails || data || {};
+
+  const payload = {
+    connectionType: data?.connectionType || "METERED",
+    colonyCategory: useDetails?.colonyName?.code || useDetails?.colonyCategory || "",
+    categoryType: useDetails?.categoryType?.code || "",
+    propertyCategory: useDetails?.propertyCategory?.code || "",
+    propertyType: useDetails?.propertyType?.code || "",
+    usageCategory: useDetails?.propertyCategory?.code || "",
+    waterConnectionUsageType: useDetails?.WaterConnectionUsageType?.code || "",
+    landArea: useDetails?.plotArea ? Number(useDetails.plotArea) : 0,
+    builtUpArea: useDetails?.builtUpArea ? Number(useDetails.builtUpArea) : 0,
+    farArea: useDetails?.farArea ? Number(useDetails.farArea) : 0,
+    numberOfFloors: useDetails?.noOfFloors?.code ? Number(useDetails.noOfFloors.code) : 0,
+    numberOfStudents: useDetails?.numberOfStudents ? Number(useDetails.numberOfStudents) : 0,
+    numberOfBeds: useDetails?.numberOfBeds ? Number(useDetails.numberOfBeds) : 0
+  };
+
+  // Optional fields based on form data that might be present
+  if (useDetails?.NumberofRooms) payload.numberOfRooms = Number(useDetails.NumberofRooms);
+  if (useDetails?.NumberofDwellingUnits) payload.numberOfDwellingUnits = Number(useDetails.NumberofDwellingUnits);
+  if (useDetails?.ServantQuartersRoom) payload.servantQuartersRoom = Number(useDetails.ServantQuartersRoom);
+
+  return payload;
+};

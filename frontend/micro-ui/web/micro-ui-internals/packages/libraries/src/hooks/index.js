@@ -244,6 +244,7 @@ import useCancelBill from "./bills/useCancelBill";
 import useWaterCreateAPI from "./ws/useWaterCreateAPI";
 import useSewerageCreateAPI from "./ws/useSewerageCreateAPI";
 import useWSUpdateAPI from "./ws/useWSUpdateAPI";
+import useWSCalculater from "./ws/useWSCalculater";
 import useCreateBillAmendment from "./ws/useCreateBillAmendment";
 import useWSApplicationDetailsBillAmendment from "./ws/useWSApplicationDetailsBillAmendment";
 import useWSInbox from "./ws/useInbox";
@@ -700,6 +701,7 @@ const ws = {
   useWaterCreateAPI,
   useSewerageCreateAPI,
   useWSUpdateAPI,
+  useWSCalculater,
   useMypaymentWS,
   useCreateBillAmendment,
   useWSApplicationDetailsBillAmendment,

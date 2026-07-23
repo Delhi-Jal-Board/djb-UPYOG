@@ -13,6 +13,7 @@ import { HomeIcon } from "@djb25/digit-ui-react-components";
 import { getFiles, getPDFData, getQueryStringParams } from "../../utils";
 
 import getModifyPDFData from "../../utils/getWsAckDataForModifyPdfs";
+import WSCalculation from "../../pageComponents/WSCalculation";
 
 const BILLSBreadCrumbs = ({ location, showPrint }) => {
   const { t } = useTranslation();
@@ -457,6 +458,12 @@ const BILLSBreadCrumbs = ({ location, showPrint }) => {
       show: location.pathname.includes("/ws/water/bulk-bill") ? true : false,
       //isclickable : false,
     },
+    {
+      path: "/digit-ui/employee/ws/water/calculation",
+      label: t("WS_CALCULATION"),
+      show: location.pathname.includes("/ws/water/calculation") ? true : false,
+      //isclickable : false,
+    }
   ];
 
   let lastCrumbIndex = findLastIndex(crumbs, "show", true);
@@ -629,6 +636,8 @@ const App = ({ path }) => {
               />
               <PrivateRoute path={`${path}/water/wns-search`} component={(props) => <WSSearchIntegrated {...props} parentRoute={path} />} />
               <PrivateRoute path={`${path}/water/bulk-bill`} component={(props) => <WSBulkBillGeneration {...props} parentRoute={path} />} />
+
+              <PrivateRoute path={`${path}/water/calculation`} component={(props) => <WSCalculation {...props} parentRoute={path} />} />
 
               {/* <Route path={`${path}/search`} component={SearchConnectionComponent} />
             <Route path={`${path}/search-results`} component={SearchResultsComponent} /> */}

@@ -49,10 +49,10 @@ export const WSService = {
       userService: false,
       params: { tenantId, ...filters },
     }),
-    
-    WSSewsearchDemand: (details, businessService) =>
+
+  WSSewsearchDemand: (details, businessService) =>
     Request({
-      url: businessService === "ws" ?Urls.ws.wsDemandSearch:Urls.ws.swDemandSearch,
+      url: businessService === "ws" ? Urls.ws.wsDemandSearch : Urls.ws.swDemandSearch,
       data: details,
       useCache: false,
       setTimeParam: false,
@@ -61,9 +61,9 @@ export const WSService = {
       params: {},
       auth: true,
     }),
-    WSSewsearchDemandGen: (details,businessService) =>
+  WSSewsearchDemandGen: (details, businessService) =>
     Request({
-      url:businessService === "ws"? Urls.ws.wsDemandSearchGen: Urls.ws.swDemandSearchGen, 
+      url: businessService === "ws" ? Urls.ws.wsDemandSearchGen : Urls.ws.swDemandSearchGen,
       data: details,
       useCache: false,
       setTimeParam: false,
@@ -135,7 +135,7 @@ export const WSService = {
       params: {},
       auth: true,
     }),
-    bulkMeterConnectioncreate: (details, businessService) =>
+  bulkMeterConnectioncreate: (details, businessService) =>
     Request({
       url: Urls.ws.ws_meter_conncetion_bulk_create,
       data: details,
@@ -156,7 +156,7 @@ export const WSService = {
       params: { ...filters },
       userDownload: true,
     }),
-    wnsSearch: (filters) =>
+  wnsSearch: (filters) =>
     Request({
       url: Urls.ws.water_search,
       useCache: false,
@@ -166,7 +166,7 @@ export const WSService = {
       params: { ...filters },
       userDownload: false,
     }),
-    wnSewrageSearch: (filters) =>
+  wnSewrageSearch: (filters) =>
     Request({
       url: Urls.ws.sewarage_search,
       useCache: false,
@@ -185,7 +185,7 @@ export const WSService = {
       userService: true,
       params: { ...filters },
     }),
-  generateBillPdf: ({tenantId, filters}) =>
+  generateBillPdf: ({ tenantId, filters }) =>
     Request({
       url: Urls.ws.wns_generate_pdf,
       useCache: true,
@@ -197,14 +197,14 @@ export const WSService = {
     }),
   WSOpensearch: (data) =>
     Request({
-     url: Urls.ws.getSearchDetails,
-     useCache: false,
-     method: "POST",
-     auth: false ,
-     userService: false,
-     noRequestInfo: true,
-     data: data
-   }),
+      url: Urls.ws.getSearchDetails,
+      useCache: false,
+      method: "POST",
+      auth: false,
+      userService: false,
+      noRequestInfo: true,
+      data: data,
+    }),
   wsCalculationApplyAdhoc: (details, businessService) =>
     Request({
       url: businessService === "WS" ? Urls.ws.water_applyAdhocTax : Urls.ws.sewerage_applyAdhocTax,
@@ -227,7 +227,7 @@ export const WSService = {
       params: { tenantId, key },
       data: data,
     }),
-    WSMeterSearch: ({ tenantId, filters }) =>
+  WSMeterSearch: ({ tenantId, filters }) =>
     Request({
       url: Urls.ws.meter_search,
       useCache: false,
@@ -235,5 +235,16 @@ export const WSService = {
       auth: true,
       userService: false,
       params: { tenantId, ...filters },
+    }),
+  WSCalculateCharges: ({ details, tenantId, filters }) =>
+    Request({
+      url: Urls.ws.calculatercharges,
+      data: details,
+      useCache: false,
+      setTimeParam: false,
+      userService: true,
+      method: "POST",
+      params: { tenantId, ...filters },
+      auth: true,
     }),
 };
