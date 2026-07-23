@@ -54,6 +54,9 @@ public class CalculatorController {
 	@Autowired
 	private DemandNotificationService demandNotificationService;
 	
+	@Autowired
+	private EstimationService wsEstimationService;
+	
 	@PostMapping("/_estimate")
 	public ResponseEntity<CalculationRes> getTaxEstimation(@RequestBody @Valid CalculationReq calculationReq) {
 		List<Calculation> calculations = wSCalculationServiceImpl.getEstimation(calculationReq);
@@ -115,4 +118,10 @@ public class CalculatorController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@PostMapping("/_calculator")
+	public ResponseEntity<CalculationRes> estimateCharges(@RequestBody @Valid EstimationRequest request) {
+		CalculationRes response = wsEstimationService.estimateCharges(request);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+	
 }

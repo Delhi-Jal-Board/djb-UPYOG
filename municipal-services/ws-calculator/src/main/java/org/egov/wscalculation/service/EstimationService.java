@@ -16,6 +16,7 @@ import org.egov.tracer.model.CustomException;
 import org.egov.wscalculation.constants.WSCalculationConstant;
 import org.egov.wscalculation.web.models.*;
 import org.egov.wscalculation.util.CalculatorUtil;
+import org.egov.wscalculation.util.ResponseInfoFactory;
 import org.egov.wscalculation.util.WSCalculationUtil;
 import org.egov.wscalculation.util.WaterCessUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +56,9 @@ public class EstimationService {
 
 	@Autowired
 	private WaterDemandCalculator waterDemandCalculator;
+	
+	@Autowired
+    private ResponseInfoFactory responseInfoFactory;
 
 	/**
 	 * Generates a List of Tax head estimates with tax head code, tax head
@@ -1048,5 +1052,276 @@ public class EstimationService {
 
 		return estimates;
 	}*/
+	
+	
+	
+	
+	/**
+	 * ============================================= CALCULATOR START ==================================
+	 * @param request
+	 * @return CalculationRes
+	 */
+	public CalculationRes estimateCharges(EstimationRequest request) {
 
+	    String tenantId = StringUtils.hasText(request.getTenantId()) ? request.getTenantId() : "dl.djb";
+	    
+	    Map<String, Object> masterData = masterDataService.loadExemptionMaster(request.getRequestInfo(), tenantId);
+
+	    String usageTypeToValidate = StringUtils.hasText(request.getWaterConnectionUsageType()) 
+	            ? request.getWaterConnectionUsageType() 
+	            : request.getUsageCategory();
+
+	    String extractedDemandNormCode = validateAndExtractDemandNormCode(masterData, usageTypeToValidate);
+	    validateColonyCategory(masterData, request.getColonyCategory());
+
+	    Map<String, Object> additionalDetails = new LinkedHashMap<>();
+
+	    // Core Usage & Norm Mappings
+	    additionalDetails.put("waterConnectionUsageType", extractedDemandNormCode); 
+	    additionalDetails.put("rawUsageType", request.getUsageCategory());         
+
+	    // Categorization Metadata (Required for DTO & downstream services)
+	    if (StringUtils.hasText(request.getCategoryType())) {
+	        additionalDetails.put("categoryType", request.getCategoryType());    
+	    }
+	    if (StringUtils.hasText(request.getPropertyCategory())) {
+	        additionalDetails.put("propertyCategory", request.getPropertyCategory());
+	    }
+	    if (request.getNumberOfFloors() != null) {
+	        additionalDetails.put("numberOfFloors", request.getNumberOfFloors());
+	    }
+
+	    // Physical Attributes & Context Variables
+	    if (request.getFarArea() != null) {
+	        additionalDetails.put("farArea", request.getFarArea());
+	    }
+	    if (request.getBuiltUpArea() != null) {
+	        additionalDetails.put("builtUpArea", request.getBuiltUpArea());
+	    }
+	    if (request.getNumberOfDwellingUnits() != null) {
+	        additionalDetails.put(WSCalculationConstant.NUMBER_OF_DWELLING_UNITS, request.getNumberOfDwellingUnits());
+	    }
+	    if (request.getNumberOfStudents() != null) {
+	        additionalDetails.put("numberOfStudents", request.getNumberOfStudents());
+	    }
+
+	    // Standardized Capacity Keys (Fixed naming conventions: numberOfBeds, numberOfRooms, numberOfStaff)
+	    if (request.getNumberOfBeds() != null) {
+	        additionalDetails.put("numberOfBeds", request.getNumberOfBeds());
+	    }
+	    if (request.getNumberOfRooms() != null) {
+	        additionalDetails.put("numberOfRooms", request.getNumberOfRooms());
+	    }
+	    if (request.getNumberOfStaff() != null) {
+	        additionalDetails.put("numberOfStaff", request.getNumberOfStaff());
+	    }
+
+	    Property mockProperty = Property.builder().usageCategory(request.getUsageCategory()) 
+	            .propertyType(request.getPropertyType())   
+	            .landArea(request.getLandArea())
+	            .additionalDetails(additionalDetails)
+	            .build();
+
+	    mockProperty.setTenantId(tenantId);
+
+	    WaterConnection mockConnection = new WaterConnection();
+	    mockConnection.setTenantId(tenantId);
+	    mockConnection.setApplicationType(WSCalculationConstant.NEW_WATER_CONNECTION);
+	    mockConnection.setConnectionCategory(request.getCategoryType());
+	    
+	    String connectionType = StringUtils.hasText(request.getConnectionType()) ? request.getConnectionType() : "METERED";
+	    mockConnection.setConnectionType(connectionType);
+
+	    CalculationCriteria criteria = CalculationCriteria.builder()
+	            .tenantId(tenantId)
+	            .waterConnection(mockConnection)
+	            .build();
+
+	    String colonyCategory = StringUtils.hasText(request.getColonyCategory()) ? request.getColonyCategory() : "E";
+	    
+	    BigDecimal infrastructureCharge = calculateInfrastructureCharge(criteria, mockProperty, masterData, colonyCategory);
+
+	    // =========================================================================
+	    // Calculate Connection Fee from MDMS ConnectionCharge Master
+	    // =========================================================================
+	    BigDecimal connectionFee = calculateConnectionFee(masterData, colonyCategory, request.getCategoryType());
+
+	    List<TaxHeadEstimate> estimates = new ArrayList<>();
+	    
+	    if (infrastructureCharge != null && infrastructureCharge.compareTo(BigDecimal.ZERO) > 0) {
+	        estimates.add(TaxHeadEstimate.builder()
+	                .taxHeadCode(WSCalculationConstant.WS_INFRASTRUCTURE_CHARGE)
+	                .estimateAmount(infrastructureCharge.setScale(2, RoundingMode.HALF_UP))
+	                .build());
+	    }
+
+	    if (connectionFee != null && connectionFee.compareTo(BigDecimal.ZERO) > 0) {
+	        estimates.add(TaxHeadEstimate.builder()
+	                .taxHeadCode("WS_CONNECTCHARGE") // WSCalculationConstant.WS_CONNECTCHARGE
+	                .estimateAmount(connectionFee.setScale(2, RoundingMode.HALF_UP))
+	                .build());
+	    }
+
+	    // Total Amount = Infrastructure Charge + Connection Fee
+	    BigDecimal totalAmount = infrastructureCharge.add(connectionFee).setScale(2, RoundingMode.HALF_UP);
+
+	    CalculationDetail calcDetail = criteria.getCalculationDetail();
+	    if (calcDetail != null) {
+	        Map<String, Object> connChargeDetail = new LinkedHashMap<>();
+	        connChargeDetail.put("colonyCategory", colonyCategory);
+	        connChargeDetail.put("usageType", request.getCategoryType());
+	        connChargeDetail.put("connectionCharge", connectionFee);
+	    }
+
+	    Calculation calculation = Calculation.builder().tenantId(tenantId).totalAmount(totalAmount).taxHeadEstimates(estimates).calculationDetail(calcDetail).build();
+
+	    return CalculationRes.builder().responseInfo(responseInfoFactory.createResponseInfoFromRequestInfo(request.getRequestInfo(), true))
+	            .calculation(Collections.singletonList(calculation))
+	            .build();
+	}
+
+	/**
+	 * Calculates Connection Fee from MDMS FeeSlab master using NEW_CONNECTION_FEE component.
+	 */
+	private BigDecimal calculateConnectionFee(Map<String, Object> masterData, String colonyCategory, String categoryType) {
+	    if (masterData == null || !masterData.containsKey(WSCalculationConstant.WC_FEESLAB_MASTER)) {
+	        log.warn("FeeSlab master data missing in MDMS!");
+	        return BigDecimal.ZERO;
+	    }
+
+	    List<Map<String, Object>> feeSlabs = null;
+	    Object feeSlabData = masterData.get(WSCalculationConstant.WC_FEESLAB_MASTER);
+
+	    if (feeSlabData instanceof List) {
+	        feeSlabs = (List<Map<String, Object>>) feeSlabData;
+	    } else {
+	        feeSlabs = mapper.convertValue(feeSlabData, new TypeReference<List<Map<String, Object>>>() {});
+	    }
+
+	    if (CollectionUtils.isEmpty(feeSlabs)) {
+	        return BigDecimal.ZERO;
+	    }
+
+	    String targetConnectionCategory = normalizeUsageTypeForConnectionFee(categoryType);
+	    String targetColonyCategory = colonyCategory != null ? colonyCategory.trim().toUpperCase() : "E";
+
+	    for (Map<String, Object> slab : feeSlabs) {
+	        if (slab == null) continue;
+
+	        Boolean isActive = slab.get("isActive") != null ? Boolean.parseBoolean(slab.get("isActive").toString()) : true;
+	        if (Boolean.FALSE.equals(isActive)) continue;
+
+	        String feeComponent = slab.get("feeComponent") != null ? slab.get("feeComponent").toString() : "";
+	        if (!"NEW_CONNECTION_FEE".equalsIgnoreCase(feeComponent)) {
+	            continue;
+	        }
+
+	        String connectionCategory = slab.get("connectionCategory") != null ? slab.get("connectionCategory").toString() : "";
+	        if (!connectionCategory.equalsIgnoreCase(targetConnectionCategory)) {
+	            continue;
+	        }
+
+	        List<String> colonyCategories = slab.get("colonyCategories") != null 
+	                ? mapper.convertValue(slab.get("colonyCategories"), new TypeReference<List<String>>() {}) 
+	                : Collections.emptyList();
+
+	        boolean matchesColony = colonyCategories.stream()
+	                .anyMatch(cat -> cat.equalsIgnoreCase(targetColonyCategory));
+
+	        if (matchesColony) {
+	            if (slab.get("amount") != null) {
+	                BigDecimal amount = new BigDecimal(slab.get("amount").toString());
+	                log.info("Matched FeeSlab NEW_CONNECTION_FEE: ConnectionCategory={}, Colony={}, Amount={}", connectionCategory, targetColonyCategory, amount);
+	                return amount;
+	            }
+	        }
+	    }
+
+	    log.warn("No matching NEW_CONNECTION_FEE found in FeeSlab for ColonyCategory={}, ConnectionCategory={}", targetColonyCategory, targetConnectionCategory);
+	    return BigDecimal.ZERO;
+	}
+
+	/**
+	 * Normalizes NON_DOMESTIC to COMMERCIAL for FeeSlab mapping.
+	 */
+	private String normalizeUsageTypeForConnectionFee(String categoryType) {
+	    if (!StringUtils.hasText(categoryType)) {
+	        return "COMMERCIAL"; // Default fallback
+	    }
+	    String upper = categoryType.trim().toUpperCase();
+	    if ("NON_DOMESTIC".equals(upper) || "NON-DOMESTIC".equals(upper) || "COMMERCIAL".equals(upper)) {
+	        return "COMMERCIAL";
+	    }
+	    if ("DOMESTIC".equals(upper)) {
+	        return "DOMESTIC";
+	    }
+	    return upper;
+	}
+
+	/**
+	 * Validates usage category against MDMS PropertyNewUsageType
+	 * and extracts corresponding demandNormCode with fallback.
+	 */
+	private String validateAndExtractDemandNormCode(Map<String, Object> masterData, String rawUsageType) {
+	    if (!StringUtils.hasText(rawUsageType)) {
+	        throw new CustomException("INVALID_USAGE_CATEGORY", "Usage Category cannot be empty for charge estimation.");
+	    }
+
+	    if (masterData == null || masterData.isEmpty()) {
+	        throw new CustomException("MDMS_DATA_ERROR", "Master Data is null or empty.");
+	    }
+
+	    // Direct Extraction
+	    List<Map<String, Object>> usageTypes = (List<Map<String, Object>>) masterData.get("PropertyNewUsageType");
+
+	    if (CollectionUtils.isEmpty(usageTypes)) {
+	        throw new CustomException("MDMS_DATA_EMPTY", "PropertyNewUsageType master data is missing or empty in MDMS.");
+	    }
+
+	    try {
+	        String fallbackNormCode = null;
+
+	        for (Map<String, Object> usage : usageTypes) {
+	            if (usage == null) continue;
+
+	            Boolean isActive = usage.get("active") != null ? Boolean.parseBoolean(usage.get("active").toString()) : true;
+	            if (Boolean.FALSE.equals(isActive)) continue;
+	            String code = usage.get("code") != null ? usage.get("code").toString() : "";
+	            String normCode = usage.get("demandNormCode") != null ? usage.get("demandNormCode").toString() : "";
+
+	            if (rawUsageType.equalsIgnoreCase(code)) {
+	                return StringUtils.hasText(normCode) ? normCode : code;
+	            }
+
+	            if (rawUsageType.equalsIgnoreCase(normCode)) {
+	                fallbackNormCode = normCode;
+	            }
+	        }
+
+	        if (StringUtils.hasText(fallbackNormCode)) {
+	            return fallbackNormCode;
+	        }
+
+	    } catch (CustomException ce) {
+	        throw ce;
+	    } catch (Exception e) {
+	        log.error("Error while validating usage category against MDMS masterData", e);
+	        throw new CustomException("MDMS_VALIDATION_ERROR", "An error occurred while validating usage category against MDMS: " + e.getMessage());
+	    }
+
+	    throw new CustomException("INVALID_USAGE_TYPE", "The provided usageCategory/waterConnectionUsageType [" + rawUsageType + "] is invalid or inactive in MDMS master data.");
+	}
+	
+	/**
+	 * Validates Colony Category input format
+	 */
+	private void validateColonyCategory(Map<String, Object> masterData, String colonyCategory) {
+	    if (StringUtils.hasText(colonyCategory)) {
+	        List<String> validCategories = Arrays.asList("A", "B", "C", "D", "E", "F", "G", "H");
+	        if (!validCategories.contains(colonyCategory.toUpperCase())) {
+	            throw new CustomException("INVALID_COLONY_CATEGORY", "Colony Category must be one of A, B, C, D, E, F, G, H.");
+	        }
+	    }
+	}
+	
 }
