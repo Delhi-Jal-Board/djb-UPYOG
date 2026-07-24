@@ -38,7 +38,7 @@ public class CalculationService {
 
 	@Autowired
 	private ServiceRequestRepository serviceRequestRepository;
-    
+
 	@Autowired
 	private WaterServicesUtil waterServiceUtil;
 
@@ -67,13 +67,20 @@ public class CalculationService {
 	 * 
 	 */
 	public void calculateFeeAndGenerateDemand(WaterConnectionRequest request, Property property) {
-		if(WCConstants.SUBMIT_APPLICATION_CONST.equalsIgnoreCase(request.getWaterConnection().getProcessInstance().getAction()) && !(request.isReconnectRequest() || request.getWaterConnection().getApplicationType().equalsIgnoreCase(WCConstants.WATER_RECONNECTION))) {
+		String action = request.getWaterConnection().getProcessInstance().getAction();
+
+		if((WCConstants.SUBMIT_APPLICATION_CONST.equalsIgnoreCase(action) || "APPROVE_FOR_CONNECTION".equalsIgnoreCase(action))
+				&& !(request.isReconnectRequest() || request.getWaterConnection().getApplicationType().equalsIgnoreCase(WCConstants.WATER_RECONNECTION))) {
+
 			CalculationCriteria criteria = CalculationCriteria.builder()
 					.applicationNo(request.getWaterConnection().getApplicationNo())
 					.waterConnection(request.getWaterConnection())
 					.tenantId(property.getTenantId()).build();
+
 			CalculationReq calRequest = CalculationReq.builder().calculationCriteria(Arrays.asList(criteria))
-					.requestInfo(request.getRequestInfo()).isconnectionCalculation(false).isDisconnectionRequest(false).isReconnectionRequest(false).build();
+					.requestInfo(request.getRequestInfo()).isconnectionCalculation(false)
+					.isDisconnectionRequest(false).isReconnectionRequest(false).build();
+
 			try {
 				Object response = serviceRequestRepository.fetchResult(waterServiceUtil.getCalculatorURL(), calRequest);
 				CalculationRes calResponse = mapper.convertValue(response, CalculationRes.class);
@@ -81,14 +88,15 @@ public class CalculationService {
 				log.error("Calculation response error!!", ex);
 				throw new CustomException("WATER_CALCULATION_EXCEPTION", "Calculation response can not parsed!!!");
 			}
+
 		} else if (WCConstants.APPROVE_DISCONNECTION_CONST.equalsIgnoreCase(request.getWaterConnection().getProcessInstance().getAction())) {
 			CalculationCriteria criteria = CalculationCriteria.builder()
 					.applicationNo(request.getWaterConnection().getApplicationNo())
 					.waterConnection(request.getWaterConnection())
 					.tenantId(property.getTenantId()).connectionNo(request.getWaterConnection().getConnectionNo()).build();
 			CalculationReq calRequest = CalculationReq.builder().calculationCriteria(Arrays.asList(criteria))
-          .requestInfo(request.getRequestInfo()).isconnectionCalculation(false).isDisconnectionRequest(true).isReconnectionRequest(false).build();
-		      
+					.requestInfo(request.getRequestInfo()).isconnectionCalculation(false).isDisconnectionRequest(true).isReconnectionRequest(false).build();
+
 			try {
 				Object response = serviceRequestRepository.fetchResult(waterServiceUtil.getCalculatorURL(), calRequest);
 				CalculationRes calResponse = mapper.convertValue(response, CalculationRes.class);
@@ -118,6 +126,30 @@ public class CalculationService {
 		}
 	}
 
+	public boolean fetchBillForApplication(String tenantId, String applicationNo, RequestInfo requestInfo) {
+		boolean isNoPayment = false;
+		try {
+			StringBuilder url = new StringBuilder().append(config.getBillingServiceHost())
+					.append(config.getFetchBillEndPoint()).append(WCConstants.URL_PARAMS_SEPARATER)
+					.append(WCConstants.TENANT_ID_FIELD_FOR_SEARCH_URL).append(tenantId)
+					.append(WCConstants.SEPARATER).append(WCConstants.CONSUMER_CODE_SEARCH_FIELD_NAME)
+					.append(applicationNo).append(WCConstants.SEPARATER)
+					.append(WCConstants.BUSINESSSERVICE_FIELD_FOR_SEARCH_URL).append("WS.ONE_TIME_FEE");
+
+			Object result = serviceRequestRepository.fetchResult(url, RequestInfoWrapper.builder().requestInfo(requestInfo).build());
+			BillResponse billResponse = mapper.convertValue(result, BillResponse.class);
+
+			for (Bill bill : billResponse.getBill()) {
+				if (bill.getTotalAmount().compareTo(BigDecimal.ZERO) <= 0) {
+					isNoPayment = true;
+				}
+			}
+		} catch (Exception ex) {
+			throw new CustomException("WATER_FETCH_BILL_ERRORCODE", "Error while fetching the bill " + ex.getMessage());
+		}
+		return isNoPayment;
+	}
+
 	public boolean fetchBill(String tenantId, String connectionNo, RequestInfo requestInfo) {
 		boolean isNoPayment = false;
 		try {
@@ -134,7 +166,7 @@ public class CalculationService {
 		}
 		return isNoPayment;
 	}
-	
+
 	public boolean fetchBillForReconnect(String tenantId, String connectionNo, RequestInfo requestInfo) {
 		boolean isNoPayment = false;
 		try {
@@ -151,7 +183,7 @@ public class CalculationService {
 		}
 		return isNoPayment;
 	}
-	
+
 	private StringBuilder getFetchBillURLForReconnect(String tenantId, String connectionNo) {
 
 		return new StringBuilder().append(config.getBillingServiceHost())
