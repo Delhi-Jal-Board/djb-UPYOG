@@ -768,11 +768,15 @@ public class EstimationService {
 	            ? property.getAddress().getLocality().getCode()
 	            : null;
 
+	    // Safely extract waterConnectionUsageType from property.additionalDetails map
+	    String waterConnectionUsageType = extractWaterConnectionUsageType(property);
+
 	    return PropertyDetail.builder()
 	            .propertyId(property.getPropertyId())
 	            .tenantId(property.getTenantId())
 	            .propertyType(property.getPropertyType())
 	            .usageCategory(property.getUsageCategory())
+	            .waterConnectionUsageType(waterConnectionUsageType)
 	            .colonyCategory(colonyCategory)
 	            .localityCode(localityCode)
 	            // Physical & Dimension attributes
@@ -787,6 +791,23 @@ public class EstimationService {
 	            .numberOfStudents(contextVars.getOrDefault("total_students", BigDecimal.ZERO))
 	            .numberOfStaff(contextVars.getOrDefault("total_staff", BigDecimal.ZERO))
 	            .build();
+	}
+	
+	/**
+	 * Helper to extract waterConnectionUsageType safely from Property additionalDetails map
+	 */
+	private String extractWaterConnectionUsageType(Property property) {
+	    if (property.getAdditionalDetails() instanceof Map) {
+	        Map<String, Object> additionalDetails = (Map<String, Object>) property.getAdditionalDetails();
+	        if (additionalDetails != null && additionalDetails.containsKey("waterConnectionUsageType")) {
+	            Object val = additionalDetails.get("waterConnectionUsageType");
+	            if (val != null && StringUtils.hasText(val.toString())) {
+	                return val.toString();
+	            }
+	        }
+	    }
+	    // Fallback to primary usage category if missing in additionalDetails
+	    return property.getUsageCategory();
 	}
 	
 	private boolean shouldIncludeFee(WaterConnection wc, String feeComponent, String taxHeadCode) {
@@ -1076,9 +1097,11 @@ public class EstimationService {
 
 	    Map<String, Object> additionalDetails = new LinkedHashMap<>();
 
-	    // Core Usage & Norm Mappings
-	    additionalDetails.put("waterConnectionUsageType", extractedDemandNormCode); 
-	    additionalDetails.put("rawUsageType", request.getUsageCategory());         
+	    String originalWaterUsageType = StringUtils.hasText(request.getWaterConnectionUsageType()) ? request.getWaterConnectionUsageType() : request.getUsageCategory();
+
+	    additionalDetails.put("waterConnectionUsageType", originalWaterUsageType); 
+	    additionalDetails.put("demandNormCode", extractedDemandNormCode); 
+	    additionalDetails.put("rawUsageType", request.getUsageCategory());
 
 	    // Categorization Metadata (Required for DTO & downstream services)
 	    if (StringUtils.hasText(request.getCategoryType())) {
