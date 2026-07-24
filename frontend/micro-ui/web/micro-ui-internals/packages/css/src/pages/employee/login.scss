@@ -60,15 +60,15 @@
 .loginFormStyleEmployee .bannerHeader p,
 .employeeForgotPassword .bannerHeader p,
 .employeeChangePassword .bannerHeader p {
-  font-size: 19px;
+  font-size: 1.1875rem;
 }
 .employeeCard .card-sub-header {
-  font-size: 24px;
+  font-size: 1.5rem;
 }
 .loginFormStyleEmployee .employeeCard .card-label,
 .employeeForgotPassword .employeeCard .card-label {
   font-weight: normal;
-  font-size: 16px;
+  font-size: 1rem;
   line-height: 19px;
   color: theme(colors.text.primary);
   margin-top: 20px;
@@ -78,21 +78,21 @@
 }
 .employeeCard .card-label {
   font-weight: normal;
-  font-size: 16px;
+  font-size: 1rem;
   line-height: 19px;
   color: theme(colors.text.primary);
 }
 
 .employeeForgotPassword .employeeCard .card-label-desc {
   font-weight: normal;
-  font-size: 16px;
+  font-size: 1rem;
   line-height: 24px;
   color: theme(colors.text.secondary);
   margin-top: 15px;
 }
 .employeeChangePassword .employeeCard .card-text {
   margin-bottom: 15px;
-  font-size: 16px;
+  font-size: 1rem;
   color: theme(colors.text.secondary);
 }
 @media screen and (max-width: 768px) {
@@ -100,7 +100,7 @@
     margin-top: 7px;
   }
   .employeeCard .card-sub-header {
-    font-size: 18px;
+    font-size: 1.125rem;
   }
 }
 .employeeChangePassword .employeeCard .card-text-button {
@@ -124,7 +124,7 @@
 .employeeForgotPassword .employeeCard .employee-card-sub-header,
 .employeeChangePassword .employeeCard .employee-card-sub-header,
 .loginFormStyleEmployee .employeeCard .employee-card-sub-header {
-  font-size: 24px !important;
+  font-size: 1.5rem !important;
   line-height: 28px !important;
   margin-bottom: 0px !important;
 }
@@ -132,7 +132,7 @@
   .employeeForgotPassword .employeeCard .employee-card-sub-header,
   .employeeChangePassword .employeeCard .employee-card-sub-header,
   .loginFormStyleEmployee .employeeCard .employee-card-sub-header {
-    font-size: 18px !important;
+    font-size: 1.125rem !important;
     line-height: 21px !important;
     margin-bottom: 0px !important;
   }

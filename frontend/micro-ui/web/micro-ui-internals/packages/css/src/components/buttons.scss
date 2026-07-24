@@ -64,7 +64,7 @@
   color: theme(colors.primary.main);
   display: flex;
   align-items: center;
-  font-size: 19px;
+  font-size: 1.1875rem;
   cursor: pointer;
   border-radius: 6px;
 
@@ -83,7 +83,7 @@
   display: flex;
   align-items: center;
   cursor: pointer;
-  font-size: 19px;
+  font-size: 1.1875rem;
   border-radius: 6px;
 
   svg {
@@ -93,7 +93,7 @@
 
 .jk-digit-disabled-btn {
   opacity: 0.5;
-  font-size: 19px;
+  font-size: 1.1875rem;
   cursor: not-allowed;
 }
 

@@ -14,7 +14,7 @@
 
 .dss-header-label {
   font-weight: 600 !important;
-  font-size: 22px !important;
+  font-size: 1.375rem !important;
   white-space: pre-line;
 }
 .dss-switch-tab-wrapper {
@@ -31,7 +31,7 @@
   font-family: Roboto;
   font-style: normal;
   font-weight: 500;
-  font-size: 22px;
+  font-size: 1.375rem;
   color: theme(colors.primary.main);
   padding: 7px 24px;
 }
@@ -39,7 +39,7 @@
   font-family: Roboto;
   font-style: normal;
   font-weight: 500;
-  font-size: 22px;
+  font-size: 1.375rem;
   color: theme(colors.text.secondary);
   padding: 8px 24px;
 }
@@ -47,7 +47,7 @@
 .dss-table-subheader {
   position: relative;
   top: -7px;
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 400;
   color: rgba(80, 90, 95, 1);
 }
@@ -55,7 +55,7 @@
 .dss-pie-subheader {
   position: relative;
   top: -7px;
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 400;
   color: rgba(80, 90, 95, 1);
 }
@@ -133,7 +133,7 @@
   align-items: center;
 
   p {
-    font-size: 24px;
+    font-size: 1.5rem;
     font-family: "Roboto", sans-serif;
     font-weight: 500;
     color: theme(colors.black);
@@ -153,17 +153,17 @@
   }
 
   .p1 {
-    font-size: 16px;
+    font-size: 1rem;
     color: #585858;
   }
 
   .p3 {
-    font-size: 16px;
+    font-size: 1rem;
     font-weight: 400;
   }
 
   .p2 {
-    font-size: 24px;
+    font-size: 1.5rem;
     font-weight: 500;
     color: theme(colors.black);
   }
@@ -203,7 +203,7 @@
 }
 .tab-header {
   font-weight: 700;
-  font-size: 16px;
+  font-size: 1rem;
   line-height: 19px;
   border-bottom: 1px solid #b1b4b6;
   color: #2a3340;
@@ -227,7 +227,7 @@
 .map-text {
   margin-left: 5px;
   color: #636363;
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 
 @media screen and (max-width: 768px) {

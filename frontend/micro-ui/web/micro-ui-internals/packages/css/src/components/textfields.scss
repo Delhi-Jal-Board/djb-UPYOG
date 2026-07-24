@@ -7,10 +7,11 @@
 }
 
 .employee-card-input {
-  border: 2px solid #e5e5e7;
-  @apply pl-sm outline-none block w-full h-10 bg-white leading-10 text-form-field text-text-primary rounded-md;
+  border: 1px solid #007bff;
+  background-color: transparent;
+  @apply pl-sm outline-none block w-full h-10 leading-10 text-form-field text-text-primary rounded-md;
   &:hover {
-    border: 2px solid #a1a1aa;
+    border: 1px solid #0056b3;
   }
 }
 
@@ -26,11 +27,11 @@
   width: fit-content !important;
   display: flex;
   align-items: center;
-  background: theme(colors.grey.mid);
-  border-right: 0;
+  background: transparent;
+  border-right: 1px solid #007bff;
   padding-right: 5px;
   border-radius: 6px 0 0 6px;
-  color: #e5e5e7;
+  color: inherit;
 }
 .employee-card-input-error {
   @apply mb-lg pl-sm block w-full h-10 outline-none border-2 border-error border-solid bg-white leading-10 text-form-field text-text-primary;

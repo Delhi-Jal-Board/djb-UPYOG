@@ -114,7 +114,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 30px;
+  font-size: 1.875rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 2px;
@@ -461,7 +461,7 @@
   border: none;
   cursor: pointer;
   color: #333;
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 
 .custom-sidebar-header .toggle-btn:hover {
@@ -490,12 +490,12 @@
 }
 
 .menu-list li .menu-item .icon {
-  font-size: 18px;
+  font-size: 1.125rem;
   margin-right: 12px;
 }
 
 .menu-list li .menu-item .label {
-  font-size: 15px;
+  font-size: 0.9375rem;
   line-height: 1.4;
   word-break: break-word;
   white-space: normal;
@@ -508,7 +508,7 @@
   color: white;
   border-radius: 10px;
   padding: 2px 6px;
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 
 .menu-list li .menu-item:hover:not(.active) {
@@ -523,7 +523,7 @@
 
 .menu-list li .submenu .submenu-item {
   padding: 8px 0;
-  font-size: 14px;
+  font-size: 0.875rem;
   color: #666;
   cursor: pointer;
 }
@@ -559,13 +559,13 @@
 
 .collapsible-card-title {
   margin: 0;
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 600;
   padding-left: 8px;
 }
 
 .collapsible-card-arrow {
-  font-size: 14px;
+  font-size: 0.875rem;
   display: inline-block;
   transition: transform 0.3s ease;
 }
@@ -575,7 +575,7 @@
 }
 
 .collapsible-card-body {
-  font-size: 14px;
+  font-size: 0.875rem;
   color: #444;
   background: #fff;
   padding: 15px;
@@ -598,7 +598,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 
 .finance-breadcrumb .back-button {
@@ -630,7 +630,7 @@
   align-items: center;
   color: rgba(255, 255, 255, 0.8);
   font-weight: 400;
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 
 .finance-header {
@@ -707,12 +707,12 @@
   }
 
   .menu-list li .menu-item .icon {
-    font-size: 16px;
+    font-size: 1rem;
     margin-right: 10px;
   }
 
   .menu-list li .menu-item .label {
-    font-size: 14px;
+    font-size: 0.875rem;
   }
 
   .finance-header {
@@ -722,7 +722,7 @@
   }
 
   .finance-heading {
-    font-size: 24px;
+    font-size: 1.5rem;
     margin-left: 20px;
     margin-right: 20px;
     padding: 15px 0;
@@ -735,12 +735,12 @@
   }
 
   .custom-sidebar .menu-list li .menu-item .icon {
-    font-size: 14px;
+    font-size: 0.875rem;
     margin-right: 8px;
   }
 
   .custom-sidebar .menu-list li .menu-item .label {
-    font-size: 13px;
+    font-size: 0.8125rem;
   }
 
   .custom-sidebar:not(.open) {
@@ -752,12 +752,12 @@
   }
 
   .menu-list .menu-item .icon {
-    font-size: 14px;
+    font-size: 0.875rem;
     margin-right: 8px;
   }
 
   .menu-list .menu-item .label {
-    font-size: 13px;
+    font-size: 0.8125rem;
   }
 
   .custom-sidebar .menu-item {
@@ -765,21 +765,21 @@
   }
 
   .custom-sidebar .menu-item .icon {
-    font-size: 14px;
+    font-size: 0.875rem;
     margin-right: 8px;
   }
 
   .custom-sidebar .menu-item .label {
-    font-size: 13px;
+    font-size: 0.8125rem;
   }
 
   .custom-sidebar-header .toggle-btn {
-    font-size: 13px;
+    font-size: 0.8125rem;
     padding: 4px 8px;
   }
 
   .custom-sidebar-header .toggle-btn {
-    font-size: 13px;
+    font-size: 0.8125rem;
     padding: 4px 8px;
   }
 
@@ -789,7 +789,7 @@
   }
 
   .finance-heading {
-    font-size: 20px;
+    font-size: 1.25rem;
     margin-left: 15px;
     margin-right: 15px;
     padding: 12px 0;
@@ -797,7 +797,7 @@
   }
 
   .finance-breadcrumb {
-    font-size: 12px;
+    font-size: 0.75rem;
     gap: 8px;
   }
 
@@ -916,7 +916,7 @@
   /* Breadcrumb row */
   .finance-breadcrumb {
     padding: 10px 16px !important;
-    font-size: 13px !important;
+    font-size: 0.8125rem !important;
   }
 
   .custom-sidebar.open {

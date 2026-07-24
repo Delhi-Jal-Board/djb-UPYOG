@@ -1,3 +1,5 @@
+
+
 .topbar {
   position: fixed;
   top: 0;
@@ -141,10 +143,10 @@
 
     .btx {
       h1 {
-        font-size: 22px !important;
+        font-size: 1.375rem !important;
       }
       p {
-        font-size: 9px !important;
+        font-size: 0.5625rem !important;
       }
     }
   }
@@ -162,10 +164,10 @@
 
     .btx {
       h1 {
-        font-size: 15px !important;
+        font-size: 0.9375rem !important;
       }
       p {
-        font-size: 9px !important;
+        font-size: 0.5625rem !important;
       }
     }
   }
@@ -250,7 +252,7 @@ video::-webkit-media-controls-panel {
     align-items: center;
     justify-content: center;
     font-weight: 700;
-    font-size: 18px;
+    font-size: 1.125rem;
     flex-shrink: 0;
   }
 
@@ -270,13 +272,13 @@ video::-webkit-media-controls-panel {
 
     .user-profile-name {
       font-weight: 700;
-      font-size: 15px;
+      font-size: 0.9375rem;
       color: #0b111d;
       white-space: nowrap;
     }
 
     .user-profile-details {
-      font-size: 13px;
+      font-size: 0.8125rem;
       color: #6b778c;
       font-weight: 400;
       white-space: nowrap;
@@ -318,7 +320,7 @@ video::-webkit-media-controls-panel {
   border: 1px solid #e5e7eb !important;
   background-color: #ffffff !important;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
-  font-size: 14px !important;
+  font-size: 0.875rem !important;
   font-weight: 500 !important;
   color: #1f2937 !important;
   white-space: nowrap !important;
@@ -349,12 +351,12 @@ video::-webkit-media-controls-panel {
   @media (max-width: 1024px) {
     padding: 6px 10px !important;
     gap: 6px !important;
-    font-size: 12px !important;
+    font-size: 0.75rem !important;
   }
 
   @media (max-width: 780px) {
     padding: 4px 6px !important;
-    font-size: 11px !important;
+    font-size: 0.6875rem !important;
     svg {
       width: 14px !important;
       height: 14px !important;
@@ -363,7 +365,7 @@ video::-webkit-media-controls-panel {
 
   @media (max-width: 450px) {
     padding: 3px 5px !important;
-    font-size: 10px !important;
+    font-size: 0.625rem !important;
     gap: 4px !important;
     svg {
       width: 12px !important;
@@ -400,15 +402,15 @@ video::-webkit-media-controls-panel {
     .user-profile-img {
       width: 36px !important;
       height: 36px !important;
-      font-size: 15px !important;
+      font-size: 0.9375rem !important;
     }
 
     .user-profile-info {
       .user-profile-name {
-        font-size: 13px !important;
+        font-size: 0.8125rem !important;
       }
       .user-profile-details {
-        font-size: 11px !important;
+        font-size: 0.6875rem !important;
       }
     }
   }
@@ -443,7 +445,7 @@ video::-webkit-media-controls-panel {
     .user-profile-img {
       width: 32px !important;
       height: 32px !important;
-      font-size: 14px !important;
+      font-size: 0.875rem !important;
     }
   }
 }
@@ -476,7 +478,7 @@ video::-webkit-media-controls-panel {
     display: none !important;
   }
   .topbar .btx h1 {
-    font-size: 14px !important;
+    font-size: 0.875rem !important;
     line-height: 1 !important;
     white-space: nowrap !important;
   }
@@ -488,7 +490,7 @@ video::-webkit-media-controls-panel {
     .user-profile-img {
       width: 28px !important;
       height: 28px !important;
-      font-size: 13px !important;
+      font-size: 0.8125rem !important;
     }
   }
   .topbar-item-wrapper {

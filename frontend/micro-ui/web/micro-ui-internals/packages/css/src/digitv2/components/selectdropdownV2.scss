@@ -3,7 +3,8 @@
 
   .digit-select {
     @extend .light-input-border;
-    @apply relative block w-full h-10 border border-solid border-input-border;
+    border: 1px solid #007bff;
+    @apply relative block w-full h-10;
     &:hover {
       @extend .light-input-border;
       @apply border-2 border-solid border-primary-main;
@@ -94,7 +95,8 @@
   max-width: 540px;
 
   .digit-select {
-    @apply relative block w-full h-10 border border-solid border-input-border;
+    border: 1px solid #007bff;
+    @apply relative block w-full h-10;
     @extend .light-input-border;
 
     input[type="text"] {

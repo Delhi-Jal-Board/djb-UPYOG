@@ -47,6 +47,7 @@
 @import "./components/searchAction.scss";
 @import "./components/tag.scss";
 @import "./components/topbar.scss";
+@import "./components/accessibility.scss";
 @import "./components/languageSelector.scss";
 @import "./components/custombtn.scss";
 @import "./components/citizenInfoLabel.scss";
@@ -354,7 +355,7 @@ input[type="number"] {
 
     .value {
       @apply w-1/2 font-bold text-right;
-      font-size: 18px;
+      font-size: 1.125rem;
     }
   }
 }
@@ -381,7 +382,7 @@ input[type="number"] {
   padding-bottom: 25px;
 
   .value {
-    font-size: 20px;
+    font-size: 1.25rem;
   }
 }
 
@@ -569,7 +570,7 @@ input[type="number"] {
 .error-boundary {
   width: 100vw;
   height: 100vh;
-  font-size: 16px;
+  font-size: 1rem;
   font-family: sans-serif;
   display: flex;
   justify-content: center;
@@ -584,7 +585,7 @@ input[type="number"] {
     flex-direction: column;
 
     h1 {
-      font-size: 32px;
+      font-size: 2rem;
       font-weight: bold;
     }
 
@@ -777,7 +778,7 @@ input[type="number"] {
   .row {
     color: #b1b4b6;
     font-weight: 700;
-    font-size: 16px;
+    font-size: 1rem;
   }
 }
 
@@ -802,7 +803,7 @@ input[type="number"] {
   .row {
     color: #b1b4b6;
     font-weight: 700;
-    font-size: 16px;
+    font-size: 1rem;
   }
 }
 
@@ -815,7 +816,7 @@ input[type="number"] {
   padding: 1rem;
   font-weight: 700;
   color: theme(colors.text.primary);
-  font-size: 24px;
+  font-size: 1.5rem;
   margin-bottom: 1rem;
 }
 

@@ -51,7 +51,7 @@
   .links-wrapper {
     @apply py-sm;
     line-height: 24px;
-    font-size: 20px;
+    font-size: 1.25rem;
     align-self: center;
 
     .link {
@@ -127,7 +127,7 @@
 
     .sub-filter-label {
       font-weight: 400;
-      font-size: 16px;
+      font-size: 1rem;
     }
   }
 
@@ -183,7 +183,7 @@
 
         .sub-filter-label {
           font-weight: 400;
-          font-size: 16px;
+          font-size: 1rem;
         }
       }
     }
@@ -626,7 +626,7 @@
         }
 
         .h1 {
-          font-size: 24px;
+          font-size: 1.5rem;
           line-height: 28px;
           font-weight: 400;
           color: theme(colors.primary.main);
@@ -744,7 +744,7 @@
 
 .employeeTotalLink {
   color: theme(colors.text.secondary);
-  font-size: 16px;
+  font-size: 1rem;
   text-decoration: none;
 }
 
@@ -772,7 +772,7 @@
   .row {
     color: #b1b4b6;
     font-weight: 700;
-    font-size: 16px;
+    font-size: 1rem;
   }
 }
 
@@ -818,7 +818,7 @@
   }
 
   h2 {
-    font-size: 16px;
+    font-size: 1rem;
     font-weight: 700;
   }
 }
@@ -828,7 +828,7 @@
   gap: 4px;
   align-items: center;
   .col-head {
-    font-size: 14px;
+    font-size: 0.875rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.07em;

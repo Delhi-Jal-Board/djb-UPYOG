@@ -160,14 +160,14 @@
 
 .timeline-title2 {
   font-weight: 600;
-  font-size: 13.5px;
+  font-size: 0.84375rem;
   color: var(--tl-text-main);
   margin-right: 8px;
   line-height: 1.3;
 }
 
 .timeline-date2 {
-  font-size: 11px;
+  font-size: 0.6875rem;
   color: var(--tl-text-muted);
   white-space: nowrap;
   background: #f9fafb;
@@ -182,7 +182,7 @@
 
 .timeline-status-tag2 {
   display: inline-block;
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -202,7 +202,7 @@
 }
 
 .timeline-comment2 {
-  font-size: 12.5px;
+  font-size: 0.78125rem;
   color: #4b5563;
   line-height: 1.4;
   background-color: #f9fafb;
@@ -228,7 +228,7 @@
   margin-top: 8px;
   padding-top: 8px;
   border-top: 1px solid #f3f4f6;
-  font-size: 11px;
+  font-size: 0.6875rem;
   color: var(--tl-text-muted);
 }
 

@@ -11,7 +11,9 @@
   max-width: 540px;
 }
 .digit-card-input {
-  @apply mb-lg pl-sm outline-none mt-sm block border w-full h-10 border-input-border border-solid bg-white leading-10 text-form-field text-text-primary;
+  border: 1px solid #007bff;
+  background-color: transparent;
+  @apply mb-lg pl-sm outline-none mt-sm block w-full h-10 leading-10 text-form-field text-text-primary;
 }
 
 .digit-card-input-error {
@@ -19,7 +21,9 @@
 }
 
 .digit-employee-card-input {
-  @apply mb-lg pl-sm outline-none block border w-full h-10 border-input-border border-solid bg-white leading-10 text-form-field text-text-primary;
+  border: 1px solid #007bff;
+  background-color: transparent;
+  @apply mb-lg pl-sm outline-none block w-full h-10 leading-10 text-form-field text-text-primary;
 }
 .digit-employee-card-input:disabled {
   @apply border-grey-dark text-grey-dark !important;
@@ -29,8 +33,8 @@
   width: fit-content !important;
   display: flex;
   align-items: center;
-  background: theme(colors.grey.mid);
-  border-right: 0;
+  background: transparent;
+  border-right: 1px solid #007bff;
   padding-right: 5px;
 }
 .digit-employee-card-input-error {
