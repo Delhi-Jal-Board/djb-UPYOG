@@ -1,5 +1,25 @@
 .card-input {
-  @apply mb-lg pl-sm outline-none mt-sm block border w-full h-10 border-input-border border-solid bg-white leading-10 text-form-field text-text-primary;
+  @apply mb-lg pl-sm outline-none mt-sm block w-full h-10 border-solid bg-white leading-10 text-form-field text-text-primary;
+  border-width: 1px;
+  border-color: #D1D5DB;
+  
+  @media (prefers-color-scheme: dark) {
+    border-color: #4B5563;
+  }
+  
+  &:hover {
+    border-color: #94A3B8;
+    @media (prefers-color-scheme: dark) {
+      border-color: #6B7280;
+    }
+  }
+
+  &:focus, &:focus-within {
+    border-color: #2563EB;
+    @media (prefers-color-scheme: dark) {
+      border-color: #60A5FA;
+    }
+  }
 }
 
 .card-input-error {
@@ -7,11 +27,29 @@
 }
 
 .employee-card-input {
-  border: 1px solid #007bff;
   background-color: transparent;
   @apply pl-sm outline-none block w-full h-10 leading-10 text-form-field text-text-primary rounded-md;
+  
+  border-style: solid;
+  border-width: 1px;
+  border-color: #D1D5DB;
+  
+  @media (prefers-color-scheme: dark) {
+    border-color: #4B5563;
+  }
+  
   &:hover {
-    border: 1px solid #0056b3;
+    border-color: #94A3B8;
+    @media (prefers-color-scheme: dark) {
+      border-color: #6B7280;
+    }
+  }
+
+  &:focus, &:focus-within {
+    border-color: #2563EB;
+    @media (prefers-color-scheme: dark) {
+      border-color: #60A5FA;
+    }
   }
 }
 

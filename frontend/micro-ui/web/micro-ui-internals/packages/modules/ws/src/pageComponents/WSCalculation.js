@@ -92,6 +92,15 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
   const watchPropertyType = watch("useDetails.propertyType");
   const watchPropertyCategory = watch("useDetails.propertyCategory");
   const watchWaterConnectionUsageType = watch("useDetails.WaterConnectionUsageType");
+  const watchColonyName = watch("useDetails.colonyName");
+
+  const isCalculateButtonEnabled =
+    watchCategoryType &&
+    watchPropertyCategory &&
+    watchPropertyType &&
+    watchWaterConnectionUsageType &&
+    watchColonyName;
+
   const isHospitalProperty = watchPropertyType?.code === "HOSPITAL_NURSING_HOME" || watchPropertyType?.code === "HospitalNursingHome";
   const isHotelRestaurantProperty = watchPropertyType?.code === "HOTEL_OR_RESTAURANT" || watchPropertyType?.code === "HotelOrRestaurant";
   const isSchoolCollegeProperty = watchPropertyType?.code === "School" || watchPropertyType?.code === "College";
@@ -744,7 +753,7 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
           >
             {t("CS_COMMON_CLEAR_SEARCH")}
           </button>
-          <SubmitBar label={t("ES_COMMON_CALCULATE")} onSubmit={handleSubmit} />
+          <SubmitBar label={t("ES_COMMON_CALCULATE")} onSubmit={handleSubmit} disabled={!isCalculateButtonEnabled} />
         </div>
 
         {calculationData && <RenderCalculationDetails data={calculationData} />}
