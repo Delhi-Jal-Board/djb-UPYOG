@@ -22,10 +22,20 @@
   @apply relative rounded-md;
 
   .select {
-    border: 1px solid #007bff;
+    border-style: solid;
+    border-width: 1px;
+    border-color: #D1D5DB;
     @apply relative block w-full h-10 rounded-md;
+    
+    @media (prefers-color-scheme: dark) {
+      border-color: #4B5563;
+    }
+
     &:hover {
-      border: 1px solid #0056b3;
+      border-color: #94A3B8;
+      @media (prefers-color-scheme: dark) {
+        border-color: #6B7280;
+      }
       @apply rounded-md;
     }
     input[type="text"] {
@@ -57,8 +67,15 @@
 
   .select-active {
     outline: none;
-    border: 2px solid #007bff;
-    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+    border-style: solid;
+    border-width: 1px;
+    border-color: #2563EB;
+    
+    @media (prefers-color-scheme: dark) {
+      border-color: #60A5FA;
+    }
+    
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25);
     @apply relative block w-full h-10 rounded-md;
 
     input[type="text"] {
@@ -123,8 +140,22 @@
   @apply relative;
 
   .select {
-    border: 1px solid #007bff;
+    border-style: solid;
+    border-width: 1px;
+    border-color: #D1D5DB;
     @apply relative block w-full h-10 rounded-md;
+    
+    @media (prefers-color-scheme: dark) {
+      border-color: #4B5563;
+    }
+
+    &:hover {
+      border-color: #94A3B8;
+      @media (prefers-color-scheme: dark) {
+        border-color: #6B7280;
+      }
+      @apply rounded-md;
+    }
 
     input[type="text"] {
       width: calc(100% - 32px);
@@ -149,8 +180,15 @@
 
   .select-active {
     outline: none;
-    border: 2px solid #007bff;
-    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+    border-style: solid;
+    border-width: 1px;
+    border-color: #2563EB;
+    
+    @media (prefers-color-scheme: dark) {
+      border-color: #60A5FA;
+    }
+    
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25);
     @apply relative block w-full h-10 rounded-md;
 
     input[type="text"] {
