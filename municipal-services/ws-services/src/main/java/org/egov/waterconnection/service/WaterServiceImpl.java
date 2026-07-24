@@ -192,7 +192,7 @@ public class WaterServiceImpl implements WaterService {
 		//PlumberInfo masked during Create call of New Application
 		if (reqType == 0)
 			waterConnectionRequest.setWaterConnection(encryptionDecryptionUtil.decryptObject(waterConnectionRequest.getWaterConnection(), WNS_PLUMBER_ENCRYPTION_MODEL, WaterConnection.class, waterConnectionRequest.getRequestInfo()));
-		//PlumberInfo unmasked during create call of Disconnect/Modify Applications
+			//PlumberInfo unmasked during create call of Disconnect/Modify Applications
 		else
 			waterConnectionRequest.setWaterConnection(encryptionDecryptionUtil.decryptObject(waterConnectionRequest.getWaterConnection(), "WnSConnectionPlumberDecrypDisabled", WaterConnection.class, waterConnectionRequest.getRequestInfo()));
 
@@ -380,7 +380,7 @@ public class WaterServiceImpl implements WaterService {
 		mDMSValidator.validateMasterData(waterConnectionRequest,WCConstants.UPDATE_APPLICATION );
 		Property property = validateProperty.getOrValidateProperty(waterConnectionRequest);
 		validateProperty.validatePropertyFields(property,waterConnectionRequest.getRequestInfo());
-		BusinessService businessService = workflowService.getBusinessService(waterConnectionRequest.getWaterConnection().getTenantId(), 
+		BusinessService businessService = workflowService.getBusinessService(waterConnectionRequest.getWaterConnection().getTenantId(),
 				waterConnectionRequest.getRequestInfo(), config.getBusinessServiceValue());
 
 		WaterConnection searchResult = getConnectionForUpdateRequest(waterConnectionRequest.getWaterConnection().getTenantId(), waterConnectionRequest.getWaterConnection().getId(), waterConnectionRequest.getRequestInfo());
@@ -406,10 +406,24 @@ public class WaterServiceImpl implements WaterService {
 		criteria.setTenantId(waterConnectionRequest.getWaterConnection().getTenantId());
 		waterConnectionRequest.setWaterConnection(enrichmentService.enrichPropertyDetails(waterConnectionList, criteria, waterConnectionRequest.getRequestInfo()).get(0));
 
-		//Call workflow
-		wfIntegrator.callWorkFlow(waterConnectionRequest, property);
 		//call calculator service to generate the demand for one time fee
 		calculationService.calculateFeeAndGenerateDemand(waterConnectionRequest, property);
+		//Call workflow
+		boolean isNoPayment = false;
+		ProcessInstance processInstance = waterConnectionRequest.getWaterConnection().getProcessInstance();
+
+		if ("APPROVE_FOR_CONNECTION".equalsIgnoreCase(processInstance.getAction())) {
+			isNoPayment = calculationService.fetchBillForApplication(
+					waterConnectionRequest.getWaterConnection().getTenantId(),
+					waterConnectionRequest.getWaterConnection().getApplicationNo(),
+					waterConnectionRequest.getRequestInfo()
+			);
+
+			if (isNoPayment) {
+				processInstance.setComment(WORKFLOW_NO_PAYMENT_CODE);
+			}
+		}
+		wfIntegrator.callWorkFlow(waterConnectionRequest, property);
 		//check for edit and send edit notification
 		waterDaoImpl.pushForEditNotification(waterConnectionRequest, isStateUpdatable);
 		//Enrich file store Id After payment
@@ -429,6 +443,10 @@ public class WaterServiceImpl implements WaterService {
 			criteria.setTenantId(waterConnectionRequest.getWaterConnection().getTenantId());
 		enrichmentService.enrichProcessInstance(Arrays.asList(waterConnectionRequest.getWaterConnection()), criteria, waterConnectionRequest.getRequestInfo());
 
+		if("APPROVE_FOR_CONNECTION".equalsIgnoreCase(processInstance.getAction()) && isNoPayment){
+			paymentUpdateService.noPaymentWorkflow(waterConnectionRequest, property, waterConnectionRequest.getRequestInfo());
+		}
+
 		/* decrypt here */
 		waterConnectionRequest.setWaterConnection(decryptConnectionDetails(waterConnectionRequest.getWaterConnection(), waterConnectionRequest.getRequestInfo()));
 
@@ -443,7 +461,7 @@ public class WaterServiceImpl implements WaterService {
 		
 		Property property = validateProperty.getOrValidateProperty(waterConnectionRequest);
 		validateProperty.validatePropertyFields(property,waterConnectionRequest.getRequestInfo());
-		BusinessService businessService = workflowService.getBusinessService(waterConnectionRequest.getWaterConnection().getTenantId(), 
+		BusinessService businessService = workflowService.getBusinessService(waterConnectionRequest.getWaterConnection().getTenantId(),
 		waterConnectionRequest.getRequestInfo(), config.getDisconnectBusinessServiceName());
 		WaterConnection searchResult = getConnectionForUpdateRequest(waterConnectionRequest.getWaterConnection().getTenantId(),waterConnectionRequest.getWaterConnection().getId(), waterConnectionRequest.getRequestInfo());
 
@@ -518,7 +536,7 @@ public class WaterServiceImpl implements WaterService {
 		
 		Property property = validateProperty.getOrValidateProperty(waterConnectionRequest);
 		validateProperty.validatePropertyFields(property,waterConnectionRequest.getRequestInfo());
-		BusinessService businessService = workflowService.getBusinessService(waterConnectionRequest.getWaterConnection().getTenantId(), 
+		BusinessService businessService = workflowService.getBusinessService(waterConnectionRequest.getWaterConnection().getTenantId(),
 		waterConnectionRequest.getRequestInfo(), config.getReconnectBusinessServiceName());
 		WaterConnection searchResult = getConnectionForUpdateRequest(waterConnectionRequest.getWaterConnection().getTenantId(),waterConnectionRequest.getWaterConnection().getId(), waterConnectionRequest.getRequestInfo());
 

@@ -55,7 +55,7 @@ public class WaterController {
 	}
 	@RequestMapping(value = "/_search", method = RequestMethod.POST)
 	public ResponseEntity<WaterConnectionResponse> search(@Valid @RequestBody RequestInfoWrapper requestInfoWrapper,
-			@Valid @ModelAttribute SearchCriteria criteria) {
+														  @Valid @ModelAttribute SearchCriteria criteria) {
 		List<WaterConnection> waterConnectionList = waterService.search(criteria, requestInfoWrapper.getRequestInfo());
 		Integer count = waterService.countAllWaterApplications(criteria, requestInfoWrapper.getRequestInfo());
 		WaterConnectionResponse response = WaterConnectionResponse.builder().waterConnection(waterConnectionList)
@@ -98,13 +98,67 @@ public class WaterController {
 	/* To be executed only once */
 	@RequestMapping(value = "/_encryptOldData", method = RequestMethod.POST)
 	public ResponseEntity<WaterConnectionResponse> encryptOldData(@Valid @RequestBody RequestInfoWrapper requestInfoWrapper,
-			@Valid @ModelAttribute SearchCriteria criteria){
+																  @Valid @ModelAttribute SearchCriteria criteria){
 		throw new CustomException("EG_WS_ENC_OLD_DATA_ERROR", "Privacy disabled: The encryption of old data is disabled");
 		/* Un-comment the below code to enable Privacy */
 /*		WaterConnectionResponse waterConnectionResponse = waterEncryptionService.updateOldData(criteria, requestInfoWrapper.getRequestInfo());
 		waterConnectionResponse.setResponseInfo(
 				responseInfoFactory.createResponseInfoFromRequestInfo(requestInfoWrapper.getRequestInfo(), true));
 		return new ResponseEntity<>(waterConnectionResponse, HttpStatus.OK);*/
+	}
+
+	@Autowired
+	private org.egov.waterconnection.workflow.WorkflowIntegrator wfIntegrator;
+
+	@Autowired
+	private org.egov.waterconnection.repository.WaterDao repo;
+
+	@Autowired
+	private org.egov.waterconnection.validator.ValidateProperty validateProperty;
+
+	@Autowired
+	private org.egov.waterconnection.service.EnrichmentService enrichmentService;
+
+	@RequestMapping(value = "/_test-pay", method = RequestMethod.POST)
+	public ResponseEntity<WaterConnectionResponse> testPay(@Valid @RequestBody WaterConnectionRequest waterConnectionRequest) {
+		WaterConnection waterConnection = waterConnectionRequest.getWaterConnection();
+		SearchCriteria criteria = SearchCriteria.builder()
+				.tenantId(waterConnection.getTenantId())
+				.applicationNumber(java.util.Collections.singleton(waterConnection.getApplicationNo()))
+				.build();
+		List<WaterConnection> connections = waterService.search(criteria, waterConnectionRequest.getRequestInfo());
+		if (org.springframework.util.CollectionUtils.isEmpty(connections)) {
+			throw new CustomException("INVALID_APPLICATION", "No application found for applicationNo: " + waterConnection.getApplicationNo());
+		}
+		WaterConnection connectionToUpdate = connections.get(0);
+		if (connectionToUpdate.getProcessInstance() == null) {
+			connectionToUpdate.setProcessInstance(new org.egov.waterconnection.web.models.workflow.ProcessInstance());
+		}
+		connectionToUpdate.getProcessInstance().setAction("PAY");
+
+		WaterConnectionRequest updateRequest = WaterConnectionRequest.builder()
+				.waterConnection(connectionToUpdate)
+				.requestInfo(waterConnectionRequest.getRequestInfo())
+				.build();
+
+		org.egov.waterconnection.web.models.Property property = validateProperty.getOrValidateProperty(updateRequest);
+
+		// Enrich roles for workflow call
+		org.egov.common.contract.request.Role role = org.egov.common.contract.request.Role.builder()
+				.code("SYSTEM_PAYMENT")
+				.tenantId(property.getTenantId())
+				.build();
+		updateRequest.getRequestInfo().getUserInfo().getRoles().add(role);
+
+		wfIntegrator.callWorkFlow(updateRequest, property);
+		enrichmentService.enrichFileStoreIds(updateRequest);
+		repo.updateWaterConnection(updateRequest, false);
+
+		WaterConnectionResponse response = WaterConnectionResponse.builder()
+				.waterConnection(java.util.Arrays.asList(connectionToUpdate))
+				.responseInfo(responseInfoFactory.createResponseInfoFromRequestInfo(waterConnectionRequest.getRequestInfo(), true))
+				.build();
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 }
