@@ -39,6 +39,7 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
     formState: { errors },
     watch,
     setValue,
+    reset,
   } = useForm({
     defaultValues: formData?.[config?.key] || {
       useDetails: {
@@ -265,7 +266,7 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
               <h3 className="ws-calc-detail-card-title">{t("WS_PROPERTY_DETAILS")}</h3>
             </div>
             <div className="ws-calc-property-box">
-              <div className="ws-calc-grid-3">
+              <div className="ws-calc-grid-4">
                 <div>
                   <div className="ws-calc-label">{t("WS_PROPERTY_TYPE")}</div>
                   <div className="ws-calc-value">{propertyDetail.propertyType || "-"}</div>
@@ -276,7 +277,7 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
                 </div>
                 <div>
                   <div className="ws-calc-label">{t("WS_WATER_CONNECTION_USAGE_TYPE")}</div>
-                  <div className="ws-calc-value">{propertyDetail.usageCategory || "-"}</div>
+                  <div className="ws-calc-value">{propertyDetail.waterConnectionUsageType || "-"}</div>
                 </div>
                 <div>
                   <div className="ws-calc-label">{t("WS_COLONY_CATEGORY")}</div>
@@ -299,10 +300,68 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
                   <div className="ws-calc-value">{waterDemandDetail.contextVariables?.built_up_area || 0} sq. m.</div>
                 </div>
 
-                {/* <div>
-                  <div className="ws-calc-label">{t("WS_COVERED_AREA")}</div>
-                  <div className="ws-calc-value">{propertyDetail.coveredArea || 0} sq. m.</div>
-                </div> */}
+                {(propertyDetail.coveredArea > 0 || waterDemandDetail.contextVariables?.covered_area > 0) && (
+                  <div>
+                    <div className="ws-calc-label">{t("WS_COVERED_AREA")}</div>
+                    <div className="ws-calc-value">{propertyDetail.coveredArea || waterDemandDetail.contextVariables?.covered_area} sq. m.</div>
+                  </div>
+                )}
+
+                {(propertyDetail.numberOfDwellingUnits > 0 || waterDemandDetail.contextVariables?.dwelling_units > 0 || waterDemandDetail.contextVariables?.total_du > 0) && (
+                  <div>
+                    <div className="ws-calc-label">{t("WS_NUMBER_OF_DWELLING_UNITS")}</div>
+                    <div className="ws-calc-value">{propertyDetail.numberOfDwellingUnits || waterDemandDetail.contextVariables?.dwelling_units || waterDemandDetail.contextVariables?.total_du}</div>
+                  </div>
+                )}
+
+                {(propertyDetail.numberOfBeds > 0 || waterDemandDetail.contextVariables?.total_beds > 0) && (
+                  <div>
+                    <div className="ws-calc-label">{t("WS_NUMBER_OF_BEDS")}</div>
+                    <div className="ws-calc-value">{propertyDetail.numberOfBeds || waterDemandDetail.contextVariables?.total_beds}</div>
+                  </div>
+                )}
+
+                {(propertyDetail.numberOfRooms > 0 || waterDemandDetail.contextVariables?.total_rooms > 0) && (
+                  <div>
+                    <div className="ws-calc-label">{t("WS_NUMBER_OF_ROOMS")}</div>
+                    <div className="ws-calc-value">{propertyDetail.numberOfRooms || waterDemandDetail.contextVariables?.total_rooms}</div>
+                  </div>
+                )}
+
+                {(propertyDetail.numberOfStudents > 0 || waterDemandDetail.contextVariables?.total_students > 0) && (
+                  <div>
+                    <div className="ws-calc-label">{t("WS_NUMBER_OF_STUDENTS")}</div>
+                    <div className="ws-calc-value">{propertyDetail.numberOfStudents || waterDemandDetail.contextVariables?.total_students}</div>
+                  </div>
+                )}
+
+                {(propertyDetail.numberOfStaff > 0 || waterDemandDetail.contextVariables?.total_staff > 0) && (
+                  <div>
+                    <div className="ws-calc-label">{t("WS_NUMBER_OF_STAFF")}</div>
+                    <div className="ws-calc-value">{propertyDetail.numberOfStaff || waterDemandDetail.contextVariables?.total_staff}</div>
+                  </div>
+                )}
+
+                {waterDemandDetail.contextVariables?.total_seats > 0 && (
+                  <div>
+                    <div className="ws-calc-label">{t("WS_NUMBER_OF_SEATS")}</div>
+                    <div className="ws-calc-value">{waterDemandDetail.contextVariables.total_seats}</div>
+                  </div>
+                )}
+
+                {waterDemandDetail.contextVariables?.highest_shift_strength > 0 && (
+                  <div>
+                    <div className="ws-calc-label">{t("WS_HIGHEST_SHIFT_STRENGTH")}</div>
+                    <div className="ws-calc-value">{waterDemandDetail.contextVariables.highest_shift_strength}</div>
+                  </div>
+                )}
+
+                {waterDemandDetail.contextVariables?.sanctioned_beds > 0 && (
+                  <div>
+                    <div className="ws-calc-label">{t("WS_SANCTIONED_BEDS")}</div>
+                    <div className="ws-calc-value">{waterDemandDetail.contextVariables.sanctioned_beds}</div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -673,7 +732,18 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
             )}
           </div>
         </CollapsibleCardPage>
-        <div style={{ display: "flex", marginTop: "24px", marginBottom: "32px", justifyContent: isMobile ? "center" : "flex-end" }}>
+        <div style={{ display: "flex", marginTop: "24px", marginBottom: "32px", justifyContent: isMobile ? "center" : "flex-end", alignItems: "center" }}>
+          <button
+            type="button"
+            className="clear-search generic-button"
+            style={{ marginRight: "24px" }}
+            onClick={() => {
+              reset()
+              setCalculationData(null);
+            }}
+          >
+            {t("CS_COMMON_CLEAR_SEARCH")}
+          </button>
           <SubmitBar label={t("ES_COMMON_CALCULATE")} onSubmit={handleSubmit} />
         </div>
 
