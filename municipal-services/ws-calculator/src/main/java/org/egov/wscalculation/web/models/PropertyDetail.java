@@ -28,6 +28,9 @@ public class PropertyDetail {
 
     @JsonProperty("usageCategory")
     private String usageCategory;
+    
+    @JsonProperty("waterConnectionUsageType")
+    private String waterConnectionUsageType;
 
     @JsonProperty("colonyCategory")
     private String colonyCategory;

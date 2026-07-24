@@ -1,6 +1,6 @@
 {
   "name": "@djb25/digit-ui-module-wt",
-  "version": "1.0.78",
+  "version": "1.0.79",
   "license": "MIT",
   "main": "dist/index.js",
   "module": "dist/index.modern.js",
