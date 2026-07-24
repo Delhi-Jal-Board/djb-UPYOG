@@ -10,6 +10,7 @@ import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.egov.common.contract.request.PlainAccessRequest;
 import org.egov.common.contract.request.RequestInfo;
+import org.egov.common.contract.request.Role;
 import org.egov.tracer.model.CustomException;
 import org.egov.waterconnection.config.WSConfiguration;
 import org.egov.waterconnection.constants.WCConstants;
@@ -408,11 +409,10 @@ public class WaterServiceImpl implements WaterService {
 
 		//call calculator service to generate the demand for one time fee
 		calculationService.calculateFeeAndGenerateDemand(waterConnectionRequest, property);
+		String currentAction = waterConnectionRequest.getWaterConnection().getProcessInstance().getAction();
 		//Call workflow
 		boolean isNoPayment = false;
-		ProcessInstance processInstance = waterConnectionRequest.getWaterConnection().getProcessInstance();
-
-		if ("APPROVE_FOR_CONNECTION".equalsIgnoreCase(processInstance.getAction())) {
+		if ("APPROVE_FOR_CONNECTION".equalsIgnoreCase(currentAction)) {
 			isNoPayment = calculationService.fetchBillForApplication(
 					waterConnectionRequest.getWaterConnection().getTenantId(),
 					waterConnectionRequest.getWaterConnection().getApplicationNo(),
@@ -420,7 +420,7 @@ public class WaterServiceImpl implements WaterService {
 			);
 
 			if (isNoPayment) {
-				processInstance.setComment(WORKFLOW_NO_PAYMENT_CODE);
+				waterConnectionRequest.getWaterConnection().getProcessInstance().setComment(WORKFLOW_NO_PAYMENT_CODE);
 			}
 		}
 		wfIntegrator.callWorkFlow(waterConnectionRequest, property);
@@ -443,8 +443,30 @@ public class WaterServiceImpl implements WaterService {
 			criteria.setTenantId(waterConnectionRequest.getWaterConnection().getTenantId());
 		enrichmentService.enrichProcessInstance(Arrays.asList(waterConnectionRequest.getWaterConnection()), criteria, waterConnectionRequest.getRequestInfo());
 
-		if("APPROVE_FOR_CONNECTION".equalsIgnoreCase(processInstance.getAction()) && isNoPayment){
-			paymentUpdateService.noPaymentWorkflow(waterConnectionRequest, property, waterConnectionRequest.getRequestInfo());
+		if("APPROVE_FOR_CONNECTION".equalsIgnoreCase(currentAction) && isNoPayment){
+			log.info("Zero balance detected. Auto-advancing workflow to CONNECTION_ACTIVATED...");
+
+			// Temporarily add required roles to prevent 400 Bad Request from workflow
+			Role cempRole = Role.builder().code("WS_CEMP").tenantId(property.getTenantId()).build();
+			Role clerkRole = Role.builder().code("WS_CLERK").tenantId(property.getTenantId()).build();
+			waterConnectionRequest.getRequestInfo().getUserInfo().getRoles().add(cempRole);
+			waterConnectionRequest.getRequestInfo().getUserInfo().getRoles().add(clerkRole);
+
+			// A. Execute PAY
+			waterConnectionRequest.getWaterConnection().getProcessInstance().setAction(WCConstants.ACTION_PAY);
+			waterConnectionRequest.getWaterConnection().getProcessInstance().setComment("Auto Payment for Zero Balance");
+			wfIntegrator.callWorkFlow(waterConnectionRequest, property);
+			waterConnectionRequest.getWaterConnection().setApplicationStatus("PENDING_FOR_CONNECTION_ACTIVATION");
+			waterDao.updateWaterConnection(waterConnectionRequest, true); // true because state is still updatable
+
+			// B. Execute ACTIVATE_CONNECTION (This generates the K-Number)
+			waterConnectionRequest.getWaterConnection().getProcessInstance().setAction(WCConstants.ACTIVATE_CONNECTION_CONST);
+			waterConnectionRequest.getWaterConnection().getProcessInstance().setComment("Auto Activation for Zero Balance");
+			enrichmentService.postStatusEnrichment(waterConnectionRequest); // Generates K-Number!
+			wfIntegrator.callWorkFlow(waterConnectionRequest, property);
+			waterConnectionRequest.getWaterConnection().setApplicationStatus("CONNECTION_ACTIVATED");
+			waterConnectionRequest.getWaterConnection().setStatus(Connection.StatusEnum.ACTIVE);
+			waterDao.updateWaterConnection(waterConnectionRequest, false); // false because it is terminal state
 		}
 
 		/* decrypt here */

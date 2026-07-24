@@ -149,7 +149,22 @@ public class PaymentUpdateService {
 				if(paymentDetail.getBusinessService().equalsIgnoreCase(config.getReconnectBusinessServiceName()))
 					waterConnectionRequest.setReconnectRequest(true);
 				wfIntegrator.callWorkFlow(waterConnectionRequest, property);
+				waterConnectionRequest.getWaterConnection().setApplicationStatus("PENDING_FOR_CONNECTION_ACTIVATION");
 				enrichmentService.enrichFileStoreIds(waterConnectionRequest);
+				repo.updateWaterConnection(waterConnectionRequest, true);
+
+				Role clerkRole = Role.builder().code("WS_CLERK").tenantId(property.getTenantId()).build();
+				requestInfo.getUserInfo().getRoles().add(clerkRole);
+
+				waterConnectionRequest.getWaterConnection().getProcessInstance().setAction(WCConstants.ACTIVATE_CONNECTION_CONST);
+				waterConnectionRequest.getWaterConnection().getProcessInstance().setComment("Auto Activation after Payment");
+
+				enrichmentService.postStatusEnrichment(waterConnectionRequest); // Generates K-Number!
+				wfIntegrator.callWorkFlow(waterConnectionRequest, property);
+
+				waterConnectionRequest.getWaterConnection().setApplicationStatus("CONNECTION_ACTIVATED");
+				waterConnectionRequest.getWaterConnection().setStatus(Connection.StatusEnum.ACTIVE);
+
 				repo.updateWaterConnection(waterConnectionRequest, false);
 			}
 			sendNotificationForPayment(paymentRequest);
