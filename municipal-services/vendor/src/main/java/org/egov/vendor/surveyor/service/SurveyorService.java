@@ -132,42 +132,63 @@ public class SurveyorService {
                             && !oldSupervisorId.equals(newSupervisorId)
                             && StringUtils.hasLength(current.getOwnerId())) {
 
-                        // Resolve new supervisor's vendor — auto-correct surveyor's
-                        // vendorId if it belongs to a different vendor.
-                        String newVendorId = null;
+                        // Resolve new supervisor's vendor — cross-vendor remap is NOT
+                        // allowed. A surveyor can only be remapped to a supervisor
+                        // within their OWN vendor. This check is deliberately OUTSIDE
+                        // the try/catch below — it is a hard business-rule block, not
+                        // a soft/self-healing sync, so it must never be swallowed.
                         Map<String, String> newSupervisorProfile =
                                 surveyorRepository.findSupervisorById(newSupervisorId);
-                        if (newSupervisorProfile != null
-                                && StringUtils.hasLength(newSupervisorProfile.get("vendorId"))) {
-                            newVendorId = newSupervisorProfile.get("vendorId");
-                            if (!newVendorId.equals(current.getVendorId())) {
-                                surveyor.setVendorId(newVendorId);
-                                log.info("Surveyor {} vendorId auto-corrected: {} → {} " +
-                                                "(new supervisor {} belongs to a different vendor)",
-                                        surveyor.getId(), current.getVendorId(), newVendorId, newSupervisorId);
-                            }
-                        } else {
-                            log.warn("Could not resolve vendorId for newSupervisorId={} — " +
-                                    "surveyor.vendorId left unchanged, ekyc_assignment.vendor_id " +
-                                    "will not be updated either", newSupervisorId);
+
+                        if (newSupervisorProfile == null
+                                || !StringUtils.hasLength(newSupervisorProfile.get("vendorId"))) {
+                            throw new CustomException("SUPERVISOR_NOT_FOUND",
+                                    "Could not resolve vendor for newSupervisorId=" + newSupervisorId
+                                            + " — supervisor remap blocked.");
                         }
 
-                        log.info("Surveyor {} supervisorId changed: {} → {}. " +
+                        String newVendorId = newSupervisorProfile.get("vendorId");
+
+                        if (!newVendorId.equals(current.getVendorId())) {
+                            throw new CustomException("CROSS_VENDOR_SUPERVISOR_REMAP_NOT_ALLOWED",
+                                    "Surveyor " + surveyor.getId() + " belongs to vendor "
+                                            + current.getVendorId() + "; supervisor " + newSupervisorId
+                                            + " belongs to a different vendor " + newVendorId
+                                            + ". A surveyor can only be remapped to a supervisor "
+                                            + "within the same vendor.");
+                        }
+
+                        log.info("Surveyor {} supervisorId changed: {} → {} (same vendor {}). " +
                                         "Syncing ekyc_assignment...",
-                                surveyor.getId(), oldSupervisorId, newSupervisorId);
+                                surveyor.getId(), oldSupervisorId, newSupervisorId, newVendorId);
 
-                        int synced = surveyorRepository.syncEkycAssignmentSupervisor(
-                                current.getOwnerId(), newSupervisorId, newVendorId);
+                        try {
+                            int synced = surveyorRepository.syncEkycAssignmentSupervisor(
+                                    current.getOwnerId(), newSupervisorId, newVendorId);
 
-                        log.info("ekyc_assignment sync complete: {} rows updated " +
-                                "for surveyorOwnerId={}", synced, current.getOwnerId());
+                            log.info("ekyc_assignment sync complete: {} rows updated " +
+                                    "for surveyorOwnerId={}", synced, current.getOwnerId());
+                        } catch (Exception syncEx) {
+                            // Soft failure — ONLY the derived ekyc_assignment sync is
+                            // allowed to fail silently (self-heals on next assignment
+                            // activity). The vendor-match validation above already ran
+                            // and passed, so the surveyor update itself may proceed.
+                            log.warn("ekyc_assignment supervisor sync failed for surveyorId={}. " +
+                                    "Surveyor update will proceed. Manual DB fix may be needed. " +
+                                    "Error: {}", surveyor.getId(), syncEx.getMessage());
+                        }
                     }
                 }
+            } catch (CustomException ce) {
+                // Hard validation failures (e.g. cross-vendor remap) must propagate
+                // and block the update — never swallow these.
+                throw ce;
             } catch (Exception e) {
-                // Soft failure — surveyor update must not be blocked
-                log.warn("ekyc_assignment supervisor sync failed for surveyorId={}. " +
-                        "Surveyor update will proceed. Manual DB fix may be needed. " +
-                        "Error: {}", surveyor.getId(), e.getMessage());
+                // Any other unexpected error while reading current surveyor state —
+                // soft failure, surveyor update must not be blocked for this.
+                log.warn("Supervisor-change detection failed for surveyorId={}. " +
+                                "Surveyor update will proceed without sync. Error: {}",
+                        surveyor.getId(), e.getMessage());
             }
         }
 
