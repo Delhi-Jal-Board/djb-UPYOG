@@ -123,49 +123,58 @@ public class PaymentUpdateService {
 						paymentRequest.getRequestInfo());
 				if (CollectionUtils.isEmpty(waterConnections)) {
 					throw new CustomException("INVALID_RECEIPT",
-							"No waterConnection found for the consumerCode " + criteria.getApplicationNumber());
+							"No waterConnection found for consumerCode " + criteria.getApplicationNumber());
 				}
-				Optional<WaterConnection> connections = waterConnections.stream().findFirst();
-				WaterConnection connection = connections.get();
-				if (waterConnections.size() > 1) {
-					throw new CustomException("INVALID_RECEIPT",
-							"More than one application found on consumerCode " + criteria.getApplicationNumber());
-				}
-				waterConnections.forEach(waterConnection -> waterConnection.getProcessInstance().setAction((WCConstants.ACTION_PAY)));
+
+				WaterConnection connection = waterConnections.get(0);
+
 				WaterConnectionRequest waterConnectionRequest = WaterConnectionRequest.builder()
 						.waterConnection(connection).requestInfo(paymentRequest.getRequestInfo()).build();
-				try {
-					log.info("WaterConnection Request " + mapper.writeValueAsString(waterConnectionRequest));
-				} catch (Exception ex) {
-					log.error("Temp Catch Excption:", ex);
-				}
 
 				Property property = validateProperty.getOrValidateProperty(waterConnectionRequest);
-
-				// Enrich tenantId in userInfo for workflow call
 				RequestInfo requestInfo = waterConnectionRequest.getRequestInfo();
 				Role role = Role.builder().code("SYSTEM_PAYMENT").tenantId(property.getTenantId()).build();
 				requestInfo.getUserInfo().getRoles().add(role);
+
 				if(paymentDetail.getBusinessService().equalsIgnoreCase(config.getReconnectBusinessServiceName()))
 					waterConnectionRequest.setReconnectRequest(true);
+
+				String statusBeforePayment = connection.getApplicationStatus();
+
+				waterConnectionRequest.getWaterConnection().getProcessInstance().setAction(WCConstants.ACTION_PAY);
 				wfIntegrator.callWorkFlow(waterConnectionRequest, property);
-				waterConnectionRequest.getWaterConnection().setApplicationStatus("PENDING_FOR_CONNECTION_ACTIVATION");
 				enrichmentService.enrichFileStoreIds(waterConnectionRequest);
-				repo.updateWaterConnection(waterConnectionRequest, true);
 
-				Role clerkRole = Role.builder().code("WS_CLERK").tenantId(property.getTenantId()).build();
-				requestInfo.getUserInfo().getRoles().add(clerkRole);
+				if ("PENDING_FOR_PAYMENT".equalsIgnoreCase(statusBeforePayment)) {
 
-				waterConnectionRequest.getWaterConnection().getProcessInstance().setAction(WCConstants.ACTIVATE_CONNECTION_CONST);
-				waterConnectionRequest.getWaterConnection().getProcessInstance().setComment("Auto Activation after Payment");
+					waterConnectionRequest.getWaterConnection().setApplicationStatus("PENDING_FOR_DOCUMENT_VERIFICATION");
+					repo.updateWaterConnection(waterConnectionRequest, true);
+					log.info("First payment successful. Moving to PENDING_FOR_DOCUMENT_VERIFICATION");
 
-				enrichmentService.postStatusEnrichment(waterConnectionRequest); // Generates K-Number!
-				wfIntegrator.callWorkFlow(waterConnectionRequest, property);
+				} else if ("PENDING_FOR_FINAL_PAYMENT".equalsIgnoreCase(statusBeforePayment)) {
 
-				waterConnectionRequest.getWaterConnection().setApplicationStatus("CONNECTION_ACTIVATED");
-				waterConnectionRequest.getWaterConnection().setStatus(Connection.StatusEnum.ACTIVE);
+					waterConnectionRequest.getWaterConnection().setApplicationStatus("PENDING_FOR_CONNECTION_ACTIVATION");
 
-				repo.updateWaterConnection(waterConnectionRequest, false);
+					if ("NEW_WATER_CONNECTION".equalsIgnoreCase(connection.getApplicationType())) {
+						repo.updateWaterConnection(waterConnectionRequest, true); // Still updatable
+
+						Role clerkRole = Role.builder().code("WS_CLERK").tenantId(property.getTenantId()).build();
+						requestInfo.getUserInfo().getRoles().add(clerkRole);
+
+						waterConnectionRequest.getWaterConnection().getProcessInstance().setAction(WCConstants.ACTIVATE_CONNECTION_CONST);
+						waterConnectionRequest.getWaterConnection().getProcessInstance().setComment("Auto Activation after Manual Payment");
+
+						enrichmentService.postStatusEnrichment(waterConnectionRequest); // Generates K-Number
+						wfIntegrator.callWorkFlow(waterConnectionRequest, property);
+
+						waterConnectionRequest.getWaterConnection().setApplicationStatus("CONNECTION_ACTIVATED");
+						waterConnectionRequest.getWaterConnection().setStatus(Connection.StatusEnum.ACTIVE);
+						repo.updateWaterConnection(waterConnectionRequest, false); // Terminal state
+						log.info("Final payment successful. Auto-Activated and K-Number generated.");
+					} else {
+						repo.updateWaterConnection(waterConnectionRequest, false);
+					}
+				}
 			}
 			sendNotificationForPayment(paymentRequest);
 		} catch (Exception ex) {
@@ -606,32 +615,36 @@ public class PaymentUpdateService {
 	}
 
 	public void noPaymentWorkflow(WaterConnectionRequest request, Property property, RequestInfo requestInfo) {
-		WaterConnection waterRequest = request.getWaterConnection();
-		SearchCriteria criteria = SearchCriteria.builder()
-				.tenantId(waterRequest.getTenantId())
-				.applicationNumber(Stream.of(waterRequest.getApplicationNo()).collect(Collectors.toSet()))
-				.applicationStatus(new HashSet<>(Arrays.asList("PENDING_FOR_FINAL_PAYMENT", PENDING_FOR_PAYMENT_STATUS_CODE)))
-				.build();
-
-		List<WaterConnection> waterConnections = waterService.search(criteria,
-				requestInfo);
-		if (!CollectionUtils.isEmpty(waterConnections)) {
-			waterConnections.forEach(waterConnection -> waterConnection.getProcessInstance().setAction(WCConstants.ACTION_PAY));
-			WaterConnection connection = waterConnections.get(0);
-			WaterConnectionRequest waterConnectionRequest = WaterConnectionRequest.builder()
-					.waterConnection(connection).requestInfo(requestInfo)
-					.build();
-			ProcessInstance processInstanceReq = waterConnectionRequest.getWaterConnection().getProcessInstance();
-			processInstanceReq.setComment(WORKFLOW_NO_PAYMENT_CODE + " : " + WORKFLOW_NODUE_COMMENT);
-			// Enrich tenantId in userInfo for workflow call
-			Role role = Role.builder().code("SYSTEM_PAYMENT").tenantId(property.getTenantId()).build();
-			Role counterEmployeeRole = Role.builder().name(COUNTER_EMPLOYEE_ROLE_NAME).code(COUNTER_EMPLOYEE_ROLE_CODE).tenantId(property.getTenantId()).build();
-			requestInfo.getUserInfo().getRoles().add(role);
-			requestInfo.getUserInfo().getRoles().add(counterEmployeeRole);
-			//move the workflow
-			wfIntegrator.callWorkFlow(waterConnectionRequest, property);
-			enrichmentService.enrichFileStoreIds(waterConnectionRequest);
-			repo.updateWaterConnection(waterConnectionRequest, false);
+		if (!"NEW_WATER_CONNECTION".equalsIgnoreCase(request.getWaterConnection().getApplicationType())) {
+			return;
 		}
+
+		WaterConnection waterRequest = request.getWaterConnection();
+
+		waterRequest.getProcessInstance().setAction(WCConstants.ACTION_PAY);
+		waterRequest.getProcessInstance().setComment("Auto Payment for Zero Balance");
+
+		Role role = Role.builder().code("SYSTEM_PAYMENT").tenantId(property.getTenantId()).build();
+		Role cempRole = Role.builder().code("WS_CEMP").tenantId(property.getTenantId()).build();
+		requestInfo.getUserInfo().getRoles().add(role);
+		requestInfo.getUserInfo().getRoles().add(cempRole);
+
+		wfIntegrator.callWorkFlow(request, property);
+		waterRequest.setApplicationStatus("PENDING_FOR_CONNECTION_ACTIVATION");
+		enrichmentService.enrichFileStoreIds(request);
+		repo.updateWaterConnection(request, true);
+
+		waterRequest.getProcessInstance().setAction(WCConstants.ACTIVATE_CONNECTION_CONST);
+		waterRequest.getProcessInstance().setComment("Auto Activation for Zero Balance");
+
+		Role clerkRole = Role.builder().code("WS_CLERK").tenantId(property.getTenantId()).build();
+		requestInfo.getUserInfo().getRoles().add(clerkRole);
+
+		enrichmentService.postStatusEnrichment(request);
+		wfIntegrator.callWorkFlow(request, property);
+
+		waterRequest.setApplicationStatus("CONNECTION_ACTIVATED");
+		waterRequest.setStatus(Connection.StatusEnum.ACTIVE);
+		repo.updateWaterConnection(request, false);
 	}
 }

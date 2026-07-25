@@ -424,16 +424,11 @@ public class WaterServiceImpl implements WaterService {
 			}
 		}
 		wfIntegrator.callWorkFlow(waterConnectionRequest, property);
-		//check for edit and send edit notification
 		waterDaoImpl.pushForEditNotification(waterConnectionRequest, isStateUpdatable);
-		//Enrich file store Id After payment
 		enrichmentService.enrichFileStoreIds(waterConnectionRequest);
-//		userService.createUser(waterConnectionRequest);
 		enrichmentService.postStatusEnrichment(waterConnectionRequest);
 
-		/* encrypt here */
 		waterConnectionRequest.setWaterConnection(encryptConnectionDetails(waterConnectionRequest.getWaterConnection()));
-		/* encrypt here for connection holder details */
 		waterConnectionRequest.setWaterConnection(encryptConnectionHolderDetails(waterConnectionRequest.getWaterConnection()));
 
 		waterDao.updateWaterConnection(waterConnectionRequest, isStateUpdatable);
@@ -444,36 +439,14 @@ public class WaterServiceImpl implements WaterService {
 		enrichmentService.enrichProcessInstance(Arrays.asList(waterConnectionRequest.getWaterConnection()), criteria, waterConnectionRequest.getRequestInfo());
 
 		if("APPROVE_FOR_CONNECTION".equalsIgnoreCase(currentAction) && isNoPayment){
-			log.info("Zero balance detected. Auto-advancing workflow to CONNECTION_ACTIVATED...");
-
-			// Temporarily add required roles to prevent 400 Bad Request from workflow
-			Role cempRole = Role.builder().code("WS_CEMP").tenantId(property.getTenantId()).build();
-			Role clerkRole = Role.builder().code("WS_CLERK").tenantId(property.getTenantId()).build();
-			waterConnectionRequest.getRequestInfo().getUserInfo().getRoles().add(cempRole);
-			waterConnectionRequest.getRequestInfo().getUserInfo().getRoles().add(clerkRole);
-
-			// A. Execute PAY
-			waterConnectionRequest.getWaterConnection().getProcessInstance().setAction(WCConstants.ACTION_PAY);
-			waterConnectionRequest.getWaterConnection().getProcessInstance().setComment("Auto Payment for Zero Balance");
-			wfIntegrator.callWorkFlow(waterConnectionRequest, property);
-			waterConnectionRequest.getWaterConnection().setApplicationStatus("PENDING_FOR_CONNECTION_ACTIVATION");
-			waterDao.updateWaterConnection(waterConnectionRequest, true); // true because state is still updatable
-
-			// B. Execute ACTIVATE_CONNECTION (This generates the K-Number)
-			waterConnectionRequest.getWaterConnection().getProcessInstance().setAction(WCConstants.ACTIVATE_CONNECTION_CONST);
-			waterConnectionRequest.getWaterConnection().getProcessInstance().setComment("Auto Activation for Zero Balance");
-			enrichmentService.postStatusEnrichment(waterConnectionRequest); // Generates K-Number!
-			wfIntegrator.callWorkFlow(waterConnectionRequest, property);
-			waterConnectionRequest.getWaterConnection().setApplicationStatus("CONNECTION_ACTIVATED");
-			waterConnectionRequest.getWaterConnection().setStatus(Connection.StatusEnum.ACTIVE);
-			waterDao.updateWaterConnection(waterConnectionRequest, false); // false because it is terminal state
+			paymentUpdateService.noPaymentWorkflow(waterConnectionRequest, property, waterConnectionRequest.getRequestInfo());
 		}
 
-		/* decrypt here */
 		waterConnectionRequest.setWaterConnection(decryptConnectionDetails(waterConnectionRequest.getWaterConnection(), waterConnectionRequest.getRequestInfo()));
 
 		return Arrays.asList(waterConnectionRequest.getWaterConnection());
-    }
+	}
+
 
 	public List<WaterConnection> updateWaterConnectionForDisconnectFlow(WaterConnectionRequest waterConnectionRequest) {
 
