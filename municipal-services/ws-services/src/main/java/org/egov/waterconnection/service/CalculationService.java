@@ -88,15 +88,14 @@ public class CalculationService {
 				log.error("Calculation response error!!", ex);
 				throw new CustomException("WATER_CALCULATION_EXCEPTION", "Calculation response can not parsed!!!");
 			}
-
-		} else if (WCConstants.APPROVE_DISCONNECTION_CONST.equalsIgnoreCase(request.getWaterConnection().getProcessInstance().getAction())) {
+		}
+		else if (WCConstants.APPROVE_DISCONNECTION_CONST.equalsIgnoreCase(action)) {
 			CalculationCriteria criteria = CalculationCriteria.builder()
 					.applicationNo(request.getWaterConnection().getApplicationNo())
 					.waterConnection(request.getWaterConnection())
 					.tenantId(property.getTenantId()).connectionNo(request.getWaterConnection().getConnectionNo()).build();
 			CalculationReq calRequest = CalculationReq.builder().calculationCriteria(Arrays.asList(criteria))
 					.requestInfo(request.getRequestInfo()).isconnectionCalculation(false).isDisconnectionRequest(true).isReconnectionRequest(false).build();
-
 			try {
 				Object response = serviceRequestRepository.fetchResult(waterServiceUtil.getCalculatorURL(), calRequest);
 				CalculationRes calResponse = mapper.convertValue(response, CalculationRes.class);
@@ -107,7 +106,7 @@ public class CalculationService {
 				throw new CustomException("WATER_CALCULATION_EXCEPTION", "Calculation response can not parsed!!!");
 			}
 		}
-		else if (WCConstants.RECONNECT_DISCONNECTION_CONST.equalsIgnoreCase(request.getWaterConnection().getProcessInstance().getAction()) && (request.isReconnectRequest() || request.getWaterConnection().getApplicationType().equalsIgnoreCase(WCConstants.WATER_RECONNECTION))) {
+		else if (WCConstants.RECONNECT_DISCONNECTION_CONST.equalsIgnoreCase(action) && (request.isReconnectRequest() || request.getWaterConnection().getApplicationType().equalsIgnoreCase(WCConstants.WATER_RECONNECTION))) {
 			CalculationCriteria criteria = CalculationCriteria.builder()
 					.applicationNo(request.getWaterConnection().getApplicationNo())
 					.waterConnection(request.getWaterConnection())
@@ -145,7 +144,7 @@ public class CalculationService {
 				}
 			}
 		} catch (Exception ex) {
-			throw new CustomException("WATER_FETCH_BILL_ERRORCODE", "Error while fetching the bill " + ex.getMessage());
+			throw new CustomException("WATER_FETCH_BILL_ERROR", "Error fetching bill: " + ex.getMessage());
 		}
 		return isNoPayment;
 	}
