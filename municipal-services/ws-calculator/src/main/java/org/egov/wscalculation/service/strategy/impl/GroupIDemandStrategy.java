@@ -18,7 +18,7 @@ public class GroupIDemandStrategy implements GroupDemandStrategy {
     @Override
     public boolean supports(String subCategoryCode, String parentUsageCode) {
         if (subCategoryCode == null) return false;
-        return subCategoryCode.startsWith("I-") || "HAZARDOUS".equalsIgnoreCase(parentUsageCode);
+        return subCategoryCode.startsWith("J-") || "HAZARDOUS".equalsIgnoreCase(parentUsageCode);
     }
 
     @Override

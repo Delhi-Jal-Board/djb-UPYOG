@@ -54,8 +54,7 @@ public class WaterDemandCalculator {
             return result;
         }
 
-        Boolean isActive = matchedNorm.get("isActive") == null
-                || Boolean.parseBoolean(matchedNorm.get("isActive").toString());
+        Boolean isActive = matchedNorm.get("isActive") == null || Boolean.parseBoolean(matchedNorm.get("isActive").toString());
         if (!isActive) {
             log.warn("WaterDemandNorms entry for Code '{}' is marked inactive in MDMS.", usageCode);
             result.setTotalWaterDemand(BigDecimal.ZERO);
