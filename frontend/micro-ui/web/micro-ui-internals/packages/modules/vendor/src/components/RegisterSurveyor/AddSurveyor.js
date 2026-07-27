@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { FormComposer, Toast, VerticalTimeline } from "@djb25/digit-ui-react-components";
+import { FormComposer, Loader, Toast, VerticalTimeline } from "@djb25/digit-ui-react-components";
 import { useQueryClient } from "react-query";
 import SurveyorConfig from "../../config/SurveyorConfig";
 import { useHistory } from "react-router-dom";
@@ -20,12 +20,63 @@ const AddSurveyor = ({ parentUrl, heading }) => {
 
   const { mutateAsync } = Digit.Hooks.fsm.useSurveyorCreate(tenantId);
 
-  const Config = SurveyorConfig(t);
+  const isSupervisor = userInfo?.roles?.some((role) => role.code === "EKYC_SUPERVISOR");
 
-  const defaultValues = {
-    role: { code: "SURVEYOR", name: "Surveyor" },
-    mobileNumber: "",
-  };
+  const { data: supervisorSearchResponse, isLoading: isSupervisorSearchLoading } = Digit.Hooks.fsm.useSupervisorSearch(
+    tenantId,
+    { status: "ACTIVE" },
+    { enabled: isSupervisor, staleTime: Infinity }
+  );
+
+  const matchedSupervisor = useMemo(() => {
+    if (!supervisorSearchResponse?.supervisors) return null;
+    return supervisorSearchResponse.supervisors.find(
+      (s) =>
+        s.id?.toLowerCase() === userInfo?.uuid?.toLowerCase() ||
+        s.owner?.uuid?.toLowerCase() === userInfo?.uuid?.toLowerCase() ||
+        s.owner?.mobileNumber === userInfo?.mobileNumber ||
+        s.mobileNo === userInfo?.mobileNumber
+    );
+  }, [supervisorSearchResponse, userInfo]);
+
+  const [defaultValues, setDefaultValues] = useState(null);
+
+  useEffect(() => {
+    if (!isSupervisor) {
+      setDefaultValues({
+        role: { code: "SURVEYOR", name: "Surveyor" },
+        mobileNumber: "",
+      });
+    } else if (supervisorSearchResponse && !isSupervisorSearchLoading) {
+      setDefaultValues({
+        role: { code: "SURVEYOR", name: "Surveyor" },
+        mobileNumber: "",
+        zoneIds: matchedSupervisor?.assignedZoneId || "",
+      });
+    }
+  }, [isSupervisor, supervisorSearchResponse, isSupervisorSearchLoading, matchedSupervisor]);
+
+  const Config = useMemo(() => {
+    const baseConfig = SurveyorConfig(t);
+    if (isSupervisor) {
+      return baseConfig.map((section) => ({
+        ...section,
+        body: section.body.map((field) => {
+          if (field.key === "zoneIds") {
+            return {
+              ...field,
+              props: {
+                ...field.props,
+                disable: true,
+              },
+            };
+          }
+          return field;
+        }),
+      }));
+    }
+    return baseConfig;
+  }, [t, isSupervisor]);
 
   const isValidAge = (dateStr) => {
     if (!dateStr) return false;
@@ -43,7 +94,6 @@ const AddSurveyor = ({ parentUrl, heading }) => {
   };
 
   const onFormValueChange = (setValue, formData) => {
-    // Basic validation logic
     const isBasicDetailsFilled =
       formData?.fullName && formData?.mobileNumber && formData?.emailId && formData?.dob && formData?.correspondenceAddress;
 
@@ -59,7 +109,7 @@ const AddSurveyor = ({ parentUrl, heading }) => {
   };
 
   const onSubmit = async (data) => {
-    const isSupervisor = userInfo?.roles?.some((role) => role.code === "EKYC_SUPERVISOR");
+    const assignedZone = Array.isArray(data?.zoneIds) ? data?.zoneIds?.map((ele) => ele.code).join(",") || "" : (data?.zoneIds || "");
 
     const formData = {
       RequestInfo: {
@@ -83,8 +133,9 @@ const AddSurveyor = ({ parentUrl, heading }) => {
       },
       surveyor: {
         tenantId: tenantId,
-        // vendorId: vendorIdParam || data?.agencyName?.code || data?.agencyName?.id || userInfo?.uuid,
-        // supervisorId: data?.reportingManager?.code || data?.reportingManager?.id || null,
+        vendorId: isSupervisor ? matchedSupervisor?.vendorId : undefined,
+        supervisorId: isSupervisor ? matchedSupervisor?.id : undefined,
+        assignedZoneId: assignedZone,
         description: data?.description || "",
         correspondenceAddress: data?.correspondenceAddress,
         additionalDetails: {
@@ -117,6 +168,10 @@ const AddSurveyor = ({ parentUrl, heading }) => {
       setShowToast({ key: "error", action: error?.message || error });
     }
   };
+
+  if (isSupervisor && (isSupervisorSearchLoading || !defaultValues)) {
+    return <Loader />;
+  }
 
   return (
     <React.Fragment>

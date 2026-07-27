@@ -1,7 +1,7 @@
 import Dashboard from "../components/Dashboard";
 import Inbox from "../pages/employee/Inbox";
-import Create from "../pages/employee/Create";
-import Mapping from "../pages/employee/Mapping";
+// import Create from "../pages/employee/Create";
+// import Mapping from "../pages/employee/Mapping";
 import EKYCForm from "../pages/employee/EKYCForm";
 import Review from "../components/Review";
 import AssignEkyc from "../components/AssignEkyc";
@@ -25,10 +25,10 @@ export const getEkycRoutes = (userType) => [
     { path: "/dashboard", component: Dashboard, layout: "normal", breadcrumb: "EKYC_DASHBOARD" },
     { path: "/inbox", component: Inbox, layout: "normal", breadcrumb: "EKYC_INBOX" },
     { path: "/review/:kno", component: Review, layout: "normal", breadcrumb: "EKYC_REVIEW" },
-    { path: "/create-kyc", component: Create, layout: "normal", breadcrumb: "EKYC_CREATE_KYC" },
-    { path: "/mapping", component: Mapping, layout: "normal", breadcrumb: "EKYC_MAPPING" },
+    // { path: "/create-kyc", component: Create, layout: "normal", breadcrumb: "EKYC_CREATE_KYC" },
+    // { path: "/mapping", component: Mapping, layout: "normal", breadcrumb: "EKYC_MAPPING" },
     { path: "/admin-dashboard", component: AdminDashboard, layout: "normal", breadcrumb: "EKYC_ADMIN_DASHBOARD" },
-    { path: "/ceo-dashboard", component: CeoDashboard, layout: "normal", breadcrumb: "CEO_M.F_DOR_FINANCE_VIEW" },
+    // { path: "/ceo-dashboard", component: CeoDashboard, layout: "normal", breadcrumb: "CEO_M.F_DOR_FINANCE_VIEW" },
 
     // ---- EKYC form ke 4 steps ----
     { path: "/consumer-details", component: EKYCForm, layout: "normal", breadcrumb: "EKYC_CONSUMER_DETAILS" },

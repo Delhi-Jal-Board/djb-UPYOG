@@ -16,12 +16,12 @@ const SearchVendor = () => {
     roles.includes("EKYC_VENDOR") || roles.includes("WT_VENDOR")
       ? "VENDOR"
       : roles.includes("EKYC_SUPERVISOR")
-      ? "SURVEYOR"
-      : roles.includes("EKYC_SURVEYOR")
-      ? "SURVEYOR"
-      : roles.includes("EMPLOYEE")
-      ? "SUPERVISOR"
-      : "";
+        ? "SURVEYOR"
+        : roles.includes("EKYC_SURVEYOR")
+          ? "SURVEYOR"
+          : roles.includes("EMPLOYEE")
+            ? "SUPERVISOR"
+            : "";
 
   const { selectedTabs } = Digit.Hooks.useQueryParams();
   const [tab, setTab] = useState(selectedTabs || initialPage);
@@ -54,19 +54,19 @@ const SearchVendor = () => {
   const { data: dsoData, isLoading, refetch } =
     tab === "VEHICLE"
       ? Digit.Hooks.fsm.useVehiclesSearch({
-          //
-          tenantId,
-          filters: {
-            ...paginationParms,
-            registrationNumber: searchParams?.registrationNumber,
-            status: "ACTIVE,DISABLED",
-            vendorId: isCitizen ? loggedInVendorId : searchParams?.vendor?.id,
-            fillingPointId: searchParams?.fillingPoint?.id,
-          },
-          config: { enabled: false },
-        })
+        //
+        tenantId,
+        filters: {
+          ...paginationParms,
+          registrationNumber: searchParams?.registrationNumber,
+          status: "ACTIVE,DISABLED",
+          vendorId: isCitizen ? loggedInVendorId : searchParams?.vendor?.id,
+          fillingPointId: searchParams?.fillingPoint?.id,
+        },
+        config: { enabled: false },
+      })
       : tab === "DRIVER"
-      ? Digit.Hooks.fsm.useDriverSearch({
+        ? Digit.Hooks.fsm.useDriverSearch({
           tenantId,
           filters: {
             ...paginationParms,
@@ -76,36 +76,36 @@ const SearchVendor = () => {
           },
           config: { enabled: false },
         })
-      : tab === "SUPERVISOR"
-      ? Digit.Hooks.fsm.useSupervisorSearch(
-          tenantId,
-          {
-            ...paginationParms,
-            status: "ACTIVE,DISABLED",
-            name: searchParams?.name,
-          },
-          { enabled: false }
-        )
-      : tab === "SURVEYOR"
-      ? Digit.Hooks.fsm.useSurveyorSearch(
-          tenantId,
-          {
-            ...paginationParms,
-            status: "ACTIVE,DISABLED",
-            // vendorId: isCitizen ? loggedInVendorId : searchParams?.vendor?.id,
-            name: searchParams?.name,
-          },
-          { enabled: false }
-        )
-      : Digit.Hooks.fsm.useVendorSearch({
-          tenantId,
-          filters: {
-            ...paginationParms,
-            name: searchParams?.name,
-            status: "ACTIVE,DISABLED",
-          },
-          config: { enabled: false },
-        });
+        : tab === "SUPERVISOR"
+          ? Digit.Hooks.fsm.useSupervisorSearch(
+            tenantId,
+            {
+              ...paginationParms,
+              status: "ACTIVE,DISABLED",
+              name: searchParams?.name,
+            },
+            { enabled: false }
+          )
+          : tab === "SURVEYOR"
+            ? Digit.Hooks.fsm.useSurveyorSearch(
+              tenantId,
+              {
+                ...paginationParms,
+                status: "ACTIVE,DISABLED",
+                // vendorId: isCitizen ? loggedInVendorId : searchParams?.vendor?.id,
+                name: searchParams?.name,
+              },
+              { enabled: false }
+            )
+            : Digit.Hooks.fsm.useVendorSearch({
+              tenantId,
+              filters: {
+                ...paginationParms,
+                name: searchParams?.name,
+                status: "ACTIVE,DISABLED",
+              },
+              config: { enabled: false },
+            });
 
   Digit.Hooks.fsm.useVendorSearch({
     tenantId,
@@ -249,37 +249,37 @@ const SearchVendor = () => {
     setPageSize(Number(e.target.value));
   };
 
-  const handleFilterChange = () => {};
+  const handleFilterChange = () => { };
 
   const searchFields =
     tab === "VEHICLE"
       ? [
-          {
-            label: t("ES_VENDOR_SEARCH_VENDOR_NAME"),
-            name: "vendor",
-            type: "dropdown",
-            options: allVendors?.map((data) => ({
-              ...data.dsoDetails,
-              displayName: `${data.dsoDetails.name} (${data.dsoDetails.mobileNumber || data.dsoDetails.owner?.mobileNumber || "N/A"})`,
-            })),
-            optionsKey: "displayName",
-          },
-          {
-            label: t("ES_FSM_REGISTRY_SEARCH_FILLING_POINT"),
-            name: "fillingPoint",
-            type: "dropdown",
-            options: allFillingPoints?.fillingPoints?.map((fp) => ({ ...fp, name: fp?.name || fp?.fillingPointName || fp?.fillingStationId })),
-            optionsKey: "name",
-          },
-          {
-            label: t("ES_VEHICLE_SEARCH_VEHICLE_NUMBER"),
-            name: "registrationNumber",
-            pattern: "[A-Z]{2}[- ]?[0-9]{2}[- ]?[A-Z]{1,2}[- ]?[0-9]{4}",
-            title: t("ES_FSM_VEHICLE_FORMAT_TIP"),
-          },
-        ]
+        {
+          label: t("ES_VENDOR_SEARCH_VENDOR_NAME"),
+          name: "vendor",
+          type: "dropdown",
+          options: allVendors?.map((data) => ({
+            ...data.dsoDetails,
+            displayName: `${data.dsoDetails.name} (${data.dsoDetails.mobileNumber || data.dsoDetails.owner?.mobileNumber || "N/A"})`,
+          })),
+          optionsKey: "displayName",
+        },
+        {
+          label: t("ES_FSM_REGISTRY_SEARCH_FILLING_POINT"),
+          name: "fillingPoint",
+          type: "dropdown",
+          options: allFillingPoints?.fillingPoints?.map((fp) => ({ ...fp, name: fp?.name || fp?.fillingPointName || fp?.fillingStationId })),
+          optionsKey: "name",
+        },
+        {
+          label: t("ES_VEHICLE_SEARCH_VEHICLE_NUMBER"),
+          name: "registrationNumber",
+          pattern: "[A-Z]{2}[- ]?[0-9]{2}[- ]?[A-Z]{1,2}[- ]?[0-9]{4}",
+          title: t("ES_FSM_VEHICLE_FORMAT_TIP"),
+        },
+      ]
       : tab === "DRIVER"
-      ? [
+        ? [
           {
             label: t("ES_VENDOR_SEARCH_VENDOR_NAME"),
             name: "vendor",
@@ -295,29 +295,29 @@ const SearchVendor = () => {
             name: "name",
           },
         ]
-      : tab === "SUPERVISOR" || tab === "SURVEYOR"
-      ? [
-          {
-            label: t("ES_VENDOR_SEARCH_VENDOR_NAME"),
-            name: "vendor",
-            type: "dropdown",
-            options: allVendors?.map((data) => ({
-              ...data.dsoDetails,
-              displayName: `${data.dsoDetails.name} (${data.dsoDetails.mobileNumber || data.dsoDetails.owner?.mobileNumber || "N/A"})`,
-            })),
-            optionsKey: "displayName",
-          },
-          {
-            label: tab === "SUPERVISOR" ? t("ES_SUPERVISOR_SEARCH_NAME") : t("ES_SURVEYOR_SEARCH_NAME"),
-            name: "name",
-          },
-        ]
-      : [
-          {
-            label: t("ES_VENDOR_SEARCH_VENDOR_NAME"),
-            name: "name",
-          },
-        ];
+        : tab === "SUPERVISOR" || tab === "SURVEYOR"
+          ? [
+            {
+              label: t("ES_VENDOR_SEARCH_VENDOR_NAME"),
+              name: "vendor",
+              type: "dropdown",
+              options: allVendors?.map((data) => ({
+                ...data.dsoDetails,
+                displayName: `${data.dsoDetails.name} (${data.dsoDetails.mobileNumber || data.dsoDetails.owner?.mobileNumber || "N/A"})`,
+              })),
+              optionsKey: "displayName",
+            },
+            {
+              label: tab === "SUPERVISOR" ? t("ES_SUPERVISOR_SEARCH_NAME") : t("ES_SURVEYOR_SEARCH_NAME"),
+              name: "name",
+            },
+          ]
+          : [
+            {
+              label: t("ES_VENDOR_SEARCH_VENDOR_NAME"),
+              name: "name",
+            },
+          ];
 
   // const searchFields = [
   //   {

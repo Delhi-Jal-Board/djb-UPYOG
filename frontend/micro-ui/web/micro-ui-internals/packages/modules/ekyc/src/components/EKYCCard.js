@@ -67,10 +67,10 @@ const EKYCCard = () => {
   } else {
     // Employee links
     links = [
-      {
-        label: t("CEO_M.F_DOR_FINANCE_VIEW"),
-        link: `${prefix}/ceo-dashboard`,
-      },
+      // {
+      //   label: t("CEO_M.F_DOR_FINANCE_VIEW"),
+      //   link: `${prefix}/ceo-dashboard`,
+      // },
       {
         label: t("EKYC_ADMIN_DASHBOARD") || "Admin Dashboard",
         link: `${prefix}/admin-dashboard`,

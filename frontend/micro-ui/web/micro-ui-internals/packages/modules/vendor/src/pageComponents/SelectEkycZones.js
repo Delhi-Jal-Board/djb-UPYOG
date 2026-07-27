@@ -118,7 +118,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { CardLabel, LabelFieldPair, MultiSelectDropdown, Loader } from "@djb25/digit-ui-react-components";
 
-const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true }) => {
+const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true, disable = false }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
 
   const [zones, setZones] = useState([]);
@@ -127,14 +127,23 @@ const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true }
   // Prevent converting initial values multiple times
   const initialized = useRef(false);
 
+  const isVendorPage = window.location.pathname.includes("/new-vendor") || window.location.pathname.includes("/modify-vendor") || window.location.href.includes("/new-vendor") || window.location.href.includes("/modify-vendor");
+
   const loggedInUser = Digit.SessionStorage.get("User")?.info;
   const roles = loggedInUser?.roles?.map((r) => r.code) || [];
   const isEkycVendor = roles.includes("EKYC_VENDOR");
+  const isEkycSupervisor = roles.includes("EKYC_SUPERVISOR");
 
   const { data: vendorSearchResponse, isLoading: isVendorSearchLoading } = Digit.Hooks.fsm.useDsoSearch(
     tenantId,
     { status: "ACTIVE" },
-    { enabled: isEkycVendor }
+    { enabled: isEkycVendor && !isVendorPage }
+  );
+
+  const { data: supervisorSearchResponse, isLoading: isSupervisorSearchLoading } = Digit.Hooks.fsm.useSupervisorSearch(
+    tenantId,
+    { status: "ACTIVE" },
+    { enabled: isEkycSupervisor }
   );
 
   const matchedVendor = React.useMemo(() => {
@@ -148,6 +157,17 @@ const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true }
       return (userUuid && ownerUuid === userUuid) || (userMobile && ownerMobile === userMobile);
     })?.dsoDetails || vendorSearchResponse[0]?.dsoDetails || vendorSearchResponse[0];
   }, [vendorSearchResponse, loggedInUser]);
+
+  const matchedSupervisor = React.useMemo(() => {
+    if (!supervisorSearchResponse?.supervisors) return null;
+    return supervisorSearchResponse.supervisors.find(
+      (s) =>
+        s.id?.toLowerCase() === loggedInUser?.uuid?.toLowerCase() ||
+        s.owner?.uuid?.toLowerCase() === loggedInUser?.uuid?.toLowerCase() ||
+        s.owner?.mobileNumber === loggedInUser?.mobileNumber ||
+        s.mobileNo === loggedInUser?.mobileNumber
+    );
+  }, [supervisorSearchResponse, loggedInUser]);
 
   const { data: boundaryData, isLoading } = Digit.Hooks.useCommonMDMS(tenantId, "egov-location", ["TenantBoundary"]);
 
@@ -166,14 +186,9 @@ const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true }
 
       let zonesList = [...new Map(allZones.map((z) => [z.code, z])).values()];
 
-      if (isEkycVendor && matchedVendor?.zoneIds) {
-        const assignedZoneCodes = matchedVendor.zoneIds.map(z => String(z).toUpperCase());
-        zonesList = zonesList.filter(z => assignedZoneCodes.includes(String(z.code).toUpperCase()) || assignedZoneCodes.includes(String(z.name).toUpperCase()));
-      }
-
       setZones(zonesList);
     }
-  }, [boundaryData, isEkycVendor, matchedVendor]);
+  }, [boundaryData, isEkycVendor, matchedVendor, isEkycSupervisor, matchedSupervisor, isVendorPage]);
 
   /**
    * Sync selected values
@@ -184,13 +199,13 @@ const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true }
     if (isMultiSelect) {
       if (!Array.isArray(formData.zoneIds)) return;
       // Already objects
-      if (formData.zoneIds.length && typeof formData.zoneIds[0] === "object") {
-        setSelectedZones(formData.zoneIds);
+      if (formData.zoneIds.length && typeof formData.zoneIds[0] === "object" && formData.zoneIds[0] !== null) {
+        setSelectedZones(formData.zoneIds.filter(Boolean));
         return;
       }
 
       // Initial API values (array of names/codes)
-      const selected = zones.filter((zone) => formData.zoneIds.includes(zone.name) || formData.zoneIds.includes(zone.code));
+      const selected = zones.filter((zone) => zone && (formData.zoneIds.includes(zone.name) || formData.zoneIds.includes(zone.code)));
 
       setSelectedZones(selected);
 
@@ -205,11 +220,11 @@ const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true }
       if (Array.isArray(selectedVal)) {
         selectedVal = selectedVal[0]?.name || selectedVal[0]?.code || selectedVal[0] || "";
       }
-      if (typeof selectedVal === "object") {
+      if (selectedVal && typeof selectedVal === "object") {
         selectedVal = selectedVal.name || selectedVal.code || "";
       }
 
-      const selected = zones.find((zone) => zone.name === selectedVal || zone.code === selectedVal);
+      const selected = zones.find((zone) => zone && (zone.name === selectedVal || zone.code === selectedVal));
       setSelectedZones(selected ? [selected] : []);
 
       if (!initialized.current && selected) {
@@ -218,6 +233,14 @@ const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true }
       }
     }
   }, [zones, formData?.zoneIds, config.key, onSelect, isMultiSelect]);
+
+  useEffect(() => {
+    if (isEkycSupervisor && zones.length > 0 && !formData?.zoneIds && !initialized.current) {
+      initialized.current = true;
+      setSelectedZones([zones[0]]);
+      onSelect(config.key, zones[0].name || "");
+    }
+  }, [isEkycSupervisor, zones, formData?.zoneIds, config.key, onSelect]);
 
   const handleSelect = (value) => {
     if (isMultiSelect) {
@@ -233,7 +256,7 @@ const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true }
     }
   };
 
-  if (isLoading || (isEkycVendor && isVendorSearchLoading)) return <Loader />;
+  if (isLoading || (isEkycVendor && !isVendorPage && isVendorSearchLoading) || (isEkycSupervisor && isSupervisorSearchLoading)) return <Loader />;
 
   return (
     <LabelFieldPair>
@@ -254,12 +277,13 @@ const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true }
           showSelectedLabels={!isMultiSelect}
           ServerStyle={{ backgroundColor: "#fff" }}
           defaultLabel={isMultiSelect ? `${selectedZones.length} Selected` : ""}
+          disable={disable || isEkycSupervisor || config.props?.disable || config.disable}
         />
       </div>
 
       {isMultiSelect && selectedZones.length > 0 && (
         <div className="selected-zones">
-          {selectedZones.map((zone) => (
+          {selectedZones.filter(zone => zone && zone.code).map((zone) => (
             <span key={zone.code} className="selected-zone-chip">
               {zone.name}
             </span>
