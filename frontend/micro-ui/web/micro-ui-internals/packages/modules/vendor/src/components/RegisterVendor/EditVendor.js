@@ -96,7 +96,8 @@ const EditVendor = () => {
         cpt: {
           details: {
             address: {
-              pincode: dsoDetails.address.pincode,
+              pincode
+              : dsoDetails.address.pincode,
               city: {
                 code: tenantId,
                 name: dsoDetails.address.city,

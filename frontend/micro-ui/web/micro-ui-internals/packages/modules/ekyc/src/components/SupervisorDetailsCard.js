@@ -41,87 +41,141 @@ const SupervisorDetailsCard = () => {
     );
 
     const supervisor = useMemo(() => {
-        // 1. Try to get supervisor from progressData if it succeeded
-        if (progressData?.supervisorReport) {
-            let found = null;
-            const targetId = supervisorId || loggedInUser?.uuid;
-            if (targetId) {
-                found = progressData.supervisorReport.find((s) =>
-                    s.supervisorId?.toLowerCase() === targetId?.toLowerCase() ||
-                    s.id?.toLowerCase() === targetId?.toLowerCase()
-                );
-            }
-            if (found) return found;
+        const targetOwnerOrId = supervisorId || loggedInUser?.uuid;
+        if (!targetOwnerOrId) return null;
+
+        // Step 0: resolve real supervisor entity id (handles self-login case
+        // where we only have the owner/auth uuid, not the supervisor record id)
+        let resolvedSupervisorId = supervisorId; // if URL already has entity id, trust it
+        if (!resolvedSupervisorId && supervisorSearchResponse?.supervisors && targetOwnerOrId) {
+            const selfSup = supervisorSearchResponse.supervisors.find(
+                (s) =>
+                    s.owner?.uuid?.toLowerCase() === targetOwnerOrId?.toLowerCase() ||
+                    s.id?.toLowerCase() === targetOwnerOrId?.toLowerCase()
+            );
+            resolvedSupervisorId = selfSup?.id;
         }
 
-        // 2. Fallback to supervisorSearchResponse
-        if (supervisorSearchResponse?.supervisors) {
-            let matchedSup = null;
-            const targetId = supervisorId || loggedInUser?.uuid;
-            if (targetId) {
-                matchedSup = supervisorSearchResponse.supervisors.find(
-                    (s) => s.id?.toLowerCase() === targetId?.toLowerCase() || s.owner?.uuid?.toLowerCase() === targetId?.toLowerCase()
-                );
-            }
+        const targetId = resolvedSupervisorId || targetOwnerOrId;
 
-            if (matchedSup) {
-                // Find surveyors belonging to this supervisor from surveyorSearchResponse
-                const matchedSurveyors = surveyorSearchResponse?.surveyors
-                    ? surveyorSearchResponse.surveyors
-                        .filter((surv) => surv.supervisorId === (matchedSup.id || matchedSup.owner?.uuid))
-                        .map((surv) => {
-                            // Find surveyor in progressData to get real statistics if available
-                            let realStats = null;
-                            if (progressData?.supervisorReport) {
-                                for (const report of progressData.supervisorReport) {
-                                    const matchedSurv = report.surveyors?.find(
-                                        (s) =>
-                                            (s.surveyorId && (s.surveyorId === surv.id || s.surveyorId === surv.owner?.uuid)) ||
-                                            (s.id && (s.id === surv.id || s.id === surv.owner?.uuid))
-                                    );
-                                    if (matchedSurv) {
-                                        realStats = matchedSurv;
-                                        break;
-                                    }
+        // 1. Find the supervisor profile from search response
+        let matchedSup = null;
+        if (supervisorSearchResponse?.supervisors) {
+            matchedSup = supervisorSearchResponse.supervisors.find(
+                (s) => s.id?.toLowerCase() === targetId?.toLowerCase() || s.owner?.uuid?.toLowerCase() === targetId?.toLowerCase()
+            );
+        }
+
+        // 2. Find progress report for this supervisor from progressData
+        let progressReport = null;
+        if (progressData?.supervisorReport && targetId) {
+            progressReport = progressData.supervisorReport.find(
+                (s) =>
+                    s.supervisorId?.toLowerCase() === targetId?.toLowerCase() ||
+                    s.id?.toLowerCase() === targetId?.toLowerCase()
+            );
+        }
+
+        // 3. If we found the supervisor in search response, enrich and return
+        if (matchedSup) {
+            const matchedSurveyors = surveyorSearchResponse?.surveyors
+                ? surveyorSearchResponse.surveyors
+                    .filter((surv) => surv.supervisorId === (matchedSup.id || matchedSup.owner?.uuid))
+                    .map((surv) => {
+                        let realStats = null;
+                        if (progressData?.supervisorReport) {
+                            for (const report of progressData.supervisorReport) {
+                                if (
+                                    report.supervisorId?.toLowerCase() !== matchedSup.id?.toLowerCase() &&
+                                    report.id?.toLowerCase() !== matchedSup.id?.toLowerCase()
+                                ) continue;
+                                const matchedSurv = report.surveyors?.find(
+                                    (s) =>
+                                        (s.surveyorId && (s.surveyorId?.toLowerCase() === surv.id?.toLowerCase() || s.surveyorId?.toLowerCase() === surv.owner?.uuid?.toLowerCase())) ||
+                                        (s.id && (s.id?.toLowerCase() === surv.id?.toLowerCase() || s.id?.toLowerCase() === surv.owner?.uuid?.toLowerCase()))
+                                );
+                                if (matchedSurv) {
+                                    realStats = matchedSurv;
+                                    break;
                                 }
                             }
+                        }
 
-                            return {
-                                surveyorId: surv.id || surv.owner?.uuid,
-                                surveyorName: surv.name || surv.owner?.name || "N/A",
-                                mobileNo: surv.owner?.mobileNumber || surv.mobileNo || "N/A",
-                                status: surv.status || "ACTIVE",
-                                totalKnos: realStats?.totalKnos || 0,
-                                submittedKnos: realStats?.submittedKnos || 0,
-                                pendingKnos: realStats?.pendingKnos || 0,
-                                progressPercent: realStats?.progressPercent || 0,
-                            };
-                        })
-                    : [];
+                        return {
+                            surveyorId: surv.id || surv.owner?.uuid,
+                            surveyorName: surv.name || surv.owner?.name || "N/A",
+                            mobileNo: surv.owner?.mobileNumber || surv.mobileNo || "N/A",
+                            status: surv.status || "ACTIVE",
+                            totalKnos: realStats?.totalKnos || 0,
+                            submittedKnos: realStats?.submittedKnos || 0,
+                            pendingKnos: realStats?.pendingKnos || 0,
+                            progressPercent: realStats?.progressPercent || 0,
+                        };
+                    })
+                : [];
 
-                const totalKnos = matchedSurveyors.reduce((acc, s) => acc + (s.totalKnos || 0), 0);
-                const submittedKnos = matchedSurveyors.reduce((acc, s) => acc + (s.submittedKnos || 0), 0);
-                const pendingKnos = matchedSurveyors.reduce((acc, s) => acc + (s.pendingKnos || 0), 0);
-                const progressPercent = totalKnos > 0 ? Math.round((submittedKnos / totalKnos) * 100) : 0;
+            const totalKnos = progressReport?.totalKnos || matchedSurveyors.reduce((acc, s) => acc + (s.totalKnos || 0), 0);
+            const submittedKnos = progressReport?.submittedKnos || matchedSurveyors.reduce((acc, s) => acc + (s.submittedKnos || 0), 0);
+            const pendingKnos = progressReport?.pendingKnos || matchedSurveyors.reduce((acc, s) => acc + (s.pendingKnos || 0), 0);
+            const progressPercent = progressReport ? progressReport.progressPercent : (totalKnos > 0 ? Math.round((submittedKnos / totalKnos) * 100) : 0);
 
-                return {
-                    supervisorId: matchedSup.id || matchedSup.owner?.uuid,
-                    supervisorName: matchedSup.name || matchedSup.owner?.name || "N/A",
-                    mobileNo: matchedSup.owner?.mobileNumber || matchedSup.mobileNo || "N/A",
-                    status: matchedSup.status || "ACTIVE",
-                    assignedZoneId: matchedSup.assignedZoneId || "N/A",
-                    vendorId: matchedSup.vendorId,
-                    surveyors: matchedSurveyors,
-                    totalKnos,
-                    submittedKnos,
-                    pendingKnos,
-                    progressPercent,
-                };
-            }
+            return {
+                supervisorId: matchedSup.id || matchedSup.owner?.uuid,
+                supervisorName: matchedSup.name || matchedSup.owner?.name || "N/A",
+                mobileNo: matchedSup.owner?.mobileNumber || matchedSup.mobileNo || "N/A",
+                status: matchedSup.status || "ACTIVE",
+                assignedZoneId: matchedSup.assignedZoneId || "N/A",
+                vendorId: matchedSup.vendorId,
+                surveyors: matchedSurveyors,
+                totalKnos,
+                submittedKnos,
+                pendingKnos,
+                progressPercent,
+            };
+        }
+
+        // 4. Fallback: If not found in search response, but we have progressData report, return it and enrich with loggedInUser details
+        if (progressReport) {
+            const isSelf = targetId?.toLowerCase() === loggedInUser?.uuid?.toLowerCase();
+            const supervisorName = isSelf ? (loggedInUser?.name || progressReport.supervisorName || "N/A") : (progressReport.supervisorName || "N/A");
+            const mobileNo = isSelf ? (loggedInUser?.mobileNumber || progressReport.mobileNo || "N/A") : (progressReport.mobileNo || "N/A");
+
+            const surveyorsMapped = progressReport.surveyors
+                ? progressReport.surveyors.map((surv) => {
+                    const matchedSurv = surveyorSearchResponse?.surveyors?.find(
+                        (s) => s.id?.toLowerCase() === surv.surveyorId?.toLowerCase() || s.owner?.uuid?.toLowerCase() === surv.surveyorId?.toLowerCase()
+                    );
+
+                    return {
+                        surveyorId: surv.surveyorId || surv.id,
+                        surveyorName: matchedSurv?.name || matchedSurv?.owner?.name || surv.surveyorName || "N/A",
+                        mobileNo: matchedSurv?.owner?.mobileNumber || matchedSurv?.mobileNo || surv.mobileNo || "N/A",
+                        status: matchedSurv?.status || surv.status || "ACTIVE",
+                        totalKnos: surv.totalKnos || 0,
+                        submittedKnos: surv.submittedKnos || 0,
+                        pendingKnos: surv.pendingKnos || 0,
+                        progressPercent: surv.progressPercent || 0,
+                    };
+                })
+                : [];
+
+            return {
+                supervisorId: progressReport.supervisorId || progressReport.id,
+                supervisorName,
+                mobileNo,
+                status: progressReport.status || "ACTIVE",
+                assignedZoneId: progressReport.assignedZoneId || "N/A",
+                vendorId: progressReport.vendorId,
+                surveyors: surveyorsMapped,
+                totalKnos: progressReport.totalKnos || 0,
+                submittedKnos: progressReport.submittedKnos || 0,
+                pendingKnos: progressReport.pendingKnos || 0,
+                progressPercent: progressReport.progressPercent || 0,
+            };
         }
 
         return null;
-    }, [progressData, supervisorSearchResponse, surveyorSearchResponse, supervisorId, loggedInUser?.uuid]);
+    }, [progressData, supervisorSearchResponse, surveyorSearchResponse, supervisorId, loggedInUser]);
 
     const fullName = supervisor?.supervisorName || "N/A";
     const mobileNumber = supervisor?.mobileNo || "N/A";
@@ -172,6 +226,7 @@ const SupervisorDetailsCard = () => {
             color: "#A855F7",
             type: "progress",
             icon: <FaChartLine />,
+       
         },
     ], [supervisor]);
 

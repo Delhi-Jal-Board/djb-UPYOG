@@ -18,10 +18,17 @@ const VENDORCreate = ({ parentRoute }) => {
   React.useEffect(() => {
     const searchParams = new URLSearchParams(search || window.location.search);
     const vendorId = searchParams.get("vendorId");
-    if (vendorId && params.vendor_id !== vendorId) {
-      setParams({ ...params, vendor_id: vendorId });
+    if (vendorId) {
+      if (params.vendor_id !== vendorId) {
+        setParams({ ...params, vendor_id: vendorId });
+      }
+    } else {
+      if (params && Object.keys(params).length > 0 && window.location.href.includes("/info") && sessionStorage.getItem("docReqScreenByBack") !== "true") {
+        clearParams();
+        queryClient.invalidateQueries("VENDOR_CREATE");
+      }
     }
-  }, [search, window.location.search, params, setParams]);
+  }, [search, pathname, params, setParams, clearParams, queryClient]);
 
   const goNext = (skipStep, index, isAddMultiple, key) => {
     let currentPath = pathname.split("/").pop(),
@@ -67,11 +74,6 @@ const VENDORCreate = ({ parentRoute }) => {
     redirectWithHistory(nextPage);
   };
 
-  if (params && Object.keys(params).length > 0 && window.location.href.includes("/info") && sessionStorage.getItem("docReqScreenByBack") !== "true") {
-    clearParams();
-    queryClient.invalidateQueries("VENDOR_CREATE");
-  }
-
   const vendorcreate = async () => {
     history.push(`${match.path}/acknowledgement`);
   };
@@ -93,8 +95,8 @@ const VENDORCreate = ({ parentRoute }) => {
     goNext(skipStep, index, isAddMultiple, key);
   }
 
-  const handleSkip = () => {};
-  const handleMultiple = () => {};
+  const handleSkip = () => { };
+  const handleMultiple = () => { };
 
   const onSuccess = () => {
     clearParams();

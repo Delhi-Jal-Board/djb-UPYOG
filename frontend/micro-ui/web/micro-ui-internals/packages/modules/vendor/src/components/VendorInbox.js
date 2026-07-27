@@ -196,7 +196,7 @@ const VendorInbox = (props) => {
   const userRoles = userInfo.info.roles;
   const userType = userInfo.info.type?.toLowerCase();
 
-  const EKYC_ROLES = ["EKYC_VENDOR", "EKYC_SUPERVISOR", "EKYC_SURVEYOR"];
+  const EKYC_ROLES = ["EKYC_SUPERVISOR", "EKYC_SURVEYOR"];
   const isEkycRole = userRoles?.some((role) => EKYC_ROLES.includes(role?.code || role));
 
   const openWorkOrderModal = (vendorDetails) => {
@@ -486,7 +486,8 @@ const VendorInbox = (props) => {
         setShowToast({ key: "error", action: error?.message || error });
       },
       onSuccess: (data, variables) => {
-        setShowToast({ key: "success", action: "SUPERVISOR" });
+        console.log("newStatus:", newStatus, "isDisable:", newStatus === "DISABLED");
+        setShowToast({ key: "success", action: "SUPERVISOR", isDisable: newStatus === "DISABLED" });
         queryClient.invalidateQueries("FSM_SUPERVISOR_SEARCH");
         queryClient.invalidateQueries("SUPERVISOR_SEARCH");
         props.refetchData();
@@ -517,7 +518,8 @@ const VendorInbox = (props) => {
         setShowToast({ key: "error", action: error?.message || error });
       },
       onSuccess: (data, variables) => {
-        setShowToast({ key: "success", action: "SURVEYOR" });
+        console.log("newStatus:", newStatus, "isDisable:", newStatus === "DISABLED");
+        setShowToast({ key: "success", action: "SURVEYOR", isDisable: newStatus === "DISABLED" });
         queryClient.invalidateQueries("FSM_SURVEYOR_SEARCH");
         queryClient.invalidateQueries("SURVEYOR_SEARCH");
         props.refetchData();

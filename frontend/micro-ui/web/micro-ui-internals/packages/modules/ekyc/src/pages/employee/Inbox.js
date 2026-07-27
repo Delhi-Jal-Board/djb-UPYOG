@@ -1,11 +1,29 @@
 import React, { useMemo, useCallback, useReducer } from "react";
 import { useLocation } from "react-router-dom";
 import { InboxComposer } from "@djb25/digit-ui-react-components";
+import { useTranslation } from "react-i18next";
+import { FaUsers, FaCheckCircle, FaClock, FaChartLine } from "react-icons/fa";
 import useInboxTableConfig from "../../hook/useInboxTableConfig";
 import SearchFormFieldsComponents from "../../components/SearchFormFieldsComponent";
 import useInboxMobileCardsData from "../../hook/useInboxMobileCardsData";
 
-// Mock data removed in favor of API integration
+const StatCard = ({ title, value, type, isLoading, icon }) => (
+  <div className={`stat-card ${type}`}>
+    {isLoading ? (
+      <React.Fragment>
+        <div className="stat-title skeleton skeleton-text"></div>
+        <div className="stat-value skeleton skeleton-number"></div>
+      </React.Fragment>
+    ) : (
+      <React.Fragment>
+        <div className="stat-title">{title}</div>
+        <div className="stat-value">{value}</div>
+        {icon && <div className="stat-icon">{icon}</div>}
+      </React.Fragment>
+    )}
+  </div>
+);
+
 
 const Inbox = ({ parentRoute }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -41,6 +59,11 @@ const Inbox = ({ parentRoute }) => {
   }, [tenantId, formState?.tableForm?.offset, formState?.tableForm?.limit]);
 
   const { isLoading: isListLoading, data: listData = {} } = Digit.Hooks.ekyc.useEkycApplicationList(filters, queryParams, {
+    enabled: !!tenantId,
+    keepPreviousData: true,
+  });
+
+  const { isLoading: isProgressLoading, data: progressData } = Digit.Hooks.ekyc.useEkycAssignmentProgress({
     enabled: !!tenantId,
     keepPreviousData: true,
   });
@@ -115,6 +138,70 @@ const Inbox = ({ parentRoute }) => {
     });
   }, [sourceData]);
 
+
+  const { t } = useTranslation();
+
+  const supervisor = useMemo(() => {
+    const loggedInUser = Digit.SessionStorage.get("User")?.info;
+    const roles = loggedInUser?.roles?.map((ele) => ele.code) || [];
+
+    if (roles.includes("EKYC_SUPERVISOR")) {
+      const targetId = loggedInUser?.uuid;
+      if (progressData?.supervisorReport && targetId) {
+        const report = progressData.supervisorReport.find(
+          (s) =>
+            s.supervisorId?.toLowerCase() === targetId?.toLowerCase() ||
+            s.id?.toLowerCase() === targetId?.toLowerCase()
+        );
+        if (report) return report;
+      }
+    }
+
+    if (progressData?.supervisorReport) {
+      const totalKnos = progressData.supervisorReport.reduce((acc, r) => acc + (r.totalKnos || 0), 0);
+      const submittedKnos = progressData.supervisorReport.reduce((acc, r) => acc + (r.submittedKnos || 0), 0);
+      const pendingKnos = progressData.supervisorReport.reduce((acc, r) => acc + (r.pendingKnos || 0), 0);
+      const progressPercent = totalKnos > 0 ? Math.round((submittedKnos / totalKnos) * 100) : 0;
+      return {
+        totalKnos,
+        submittedKnos,
+        pendingKnos,
+        progressPercent,
+      };
+    }
+    return null;
+  }, [progressData]);
+
+  const cards = useMemo(() => [
+    {
+      label: t("TOTAL_EKYC_APPLICATIONS"),
+      count: supervisor?.totalKnos || 0,
+      color: "#0B2559",
+      type: "today",
+      icon: <FaUsers />,
+    },
+    {
+      label: t("EKYC_COMPLETED"),
+      count: supervisor?.submittedKnos || 0,
+      color: "#10B981",
+      type: "month",
+      icon: <FaCheckCircle />,
+    },
+    {
+      label: t("PENDING_APPLICATIONS"),
+      count: supervisor?.pendingKnos || 0,
+      color: "#F59E0B",
+      type: "pending",
+      icon: <FaClock />,
+    },
+    {
+      label: t("OVERALL_PROGRESS"),
+      count: `${supervisor?.progressPercent || 0}%`,
+      color: "#A855F7",
+      type: "progress",
+      icon: <FaChartLine />,
+    },
+  ], [supervisor]);
   const totalRecords = listData?.totalCount || 0;
 
   const checkPathName = location.pathname.includes("ekyc/inbox");
@@ -248,6 +335,22 @@ const Inbox = ({ parentRoute }) => {
 
   return (
     <div className="app-container">
+      {/* Stats */}
+      <div className="surveyor-dashboard" style={{ overflowY: "visible", marginBottom: "24px" }}>
+        <div className="stats-wrapper" style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
+          {cards.map((card, idx) => (
+            <StatCard
+              key={idx}
+              title={t(card.label)}
+              value={card.count}
+              type={card.type}
+              isLoading={isProgressLoading}
+              icon={card.icon}
+            />
+          ))}
+        </div>
+      </div>
+
       <InboxComposer
         {...{
           isInboxLoading,
