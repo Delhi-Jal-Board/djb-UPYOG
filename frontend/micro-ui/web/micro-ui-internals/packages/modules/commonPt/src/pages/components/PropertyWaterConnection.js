@@ -28,7 +28,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
         NumberofRooms: "",
         numberOfBeds: "",
         numberOfStudents: "",
-        ServantQuartersRoom: "",
+        servantQuarterArea: "",
       },
     },
   });
@@ -40,6 +40,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
     "PropertyType",
     "NoOfFloors",
     "PropertyNewUsageType",
+    "PropertyToUsageMapping",
   ]);
 
   const { data: wsServicesMastersData } = Digit.Hooks.ws.useMDMS(tenantId, "ws-services-masters", ["WsCategoryType"]);
@@ -65,7 +66,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
   const watchPropertyType = watch("useDetails.propertyType");
   const watchPropertyCategory = watch("useDetails.propertyCategory");
   const watchWaterConnectionUsageType = watch("useDetails.WaterConnectionUsageType");
-  const isHospitalProperty = watchPropertyType?.code === "HOSPITAL_NURSING_HOME" || watchPropertyType?.code === "HospitalNursingHome";
+  const isHospitalProperty = watchPropertyType?.code === "HOSPITAL_NURSING_HOME" || watchPropertyType?.code === "DharamshalasOrHostels" || watchPropertyType?.code === "HospitalNursingHome";
   const isHotelRestaurantProperty = watchPropertyType?.code === "HOTEL_OR_RESTAURANT" || watchPropertyType?.code === "HotelOrRestaurant";
   const isSchoolCollegeProperty = watchPropertyType?.code === "School" || watchPropertyType?.code === "College";
   const isDwellingUnit = watchPropertyCategory?.code === "RESIDENTIAL" || watchPropertyCategory?.code === "RESIDENTIAL";
@@ -81,10 +82,9 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
   }, []);
 
   const categoryOptions = useMemo(() => {
+    if (!watchCategoryType?.code) return [];
     let options = ptServicesMastersData?.PropertyTax?.PropertyCategory?.filter((item) => item.active) || [];
-    if (watchCategoryType?.code) {
-      options = options.filter((item) => item.type === watchCategoryType.code);
-    }
+    options = options.filter((item) => item.type === watchCategoryType.code);
     return options.map((item) => ({
       code: item.code,
       name: item.name,
@@ -101,11 +101,16 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
   }, [watchCategoryType, categoryOptions, setValue, watchPropertyCategory]);
 
   const propertyTypeOptions = useMemo(() => {
+    if (!watchPropertyCategory?.code) return [];
     let options = ptServicesMastersData?.PropertyTax?.PropertyType?.filter((item) => item.active) || [];
-    if (watchPropertyCategory?.code) {
-      if (watchPropertyCategory?.code?.toUpperCase() !== "MIXED") {
-        options = options.filter((item) => item.type?.toUpperCase() === watchPropertyCategory.code?.toUpperCase());
-      }
+    let mapping = ptServicesMastersData?.PropertyTax?.PropertyToUsageMapping || [];
+
+    if (mapping.length > 0) {
+      options = options.filter((item) => mapping.some((m) => m.propertyTypeCode === item.code));
+    }
+
+    if (watchPropertyCategory?.code?.toUpperCase() !== "MIXED") {
+      options = options.filter((item) => item.type?.toUpperCase() === watchPropertyCategory.code?.toUpperCase());
     }
     return options.map((item) => ({
       code: item.code,
@@ -123,19 +128,22 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
   }, [watchPropertyCategory, propertyTypeOptions, setValue, watchPropertyType]);
 
   const usageTypeOptions = useMemo(() => {
+    if (!watchPropertyType?.code) return [];
     let options = ptServicesMastersData?.PropertyTax?.PropertyNewUsageType?.filter((item) => item.active) || [];
+    let mapping = ptServicesMastersData?.PropertyTax?.PropertyToUsageMapping || [];
 
-    if (watchPropertyCategory?.code) {
-      if (watchPropertyCategory?.code?.toUpperCase() !== "MIXED") {
-        options = options.filter((item) => item.type?.toUpperCase() === watchPropertyCategory.code?.toUpperCase());
-      }
+    const selectedMapping = mapping.find((m) => m.propertyTypeCode === watchPropertyType.code);
+    if (selectedMapping && selectedMapping.allowedUsages) {
+      options = options.filter((item) => selectedMapping.allowedUsages.includes(item.code));
+    } else {
+      options = [];
     }
 
     return options.map((item) => ({
       code: item.code,
       name: item.name,
     }));
-  }, [ptServicesMastersData, watchPropertyCategory]);
+  }, [ptServicesMastersData, watchPropertyCategory, watchPropertyType]);
 
   useEffect(() => {
     if (watchPropertyType && watchWaterConnectionUsageType) {
@@ -209,7 +217,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
       setValue("useDetails.NumberofRooms", "");
       setValue("useDetails.numberOfBeds", "");
       setValue("useDetails.numberOfStudents", "");
-      setValue("useDetails.ServantQuartersRoom", "");
+      setValue("useDetails.servantQuarterArea", "");
     }
   }, [
     formData?.cpt?.details,
@@ -519,14 +527,14 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
                 inputRef={register({
                   pattern: { value: NUMBER_PATTERN, message: t("ERR_INVALID_NUMBER") },
                 })}
-                name="useDetails.ServantQuartersRoom"
+                name="useDetails.servantQuarterArea"
                 disabled={isPropertyFound}
               />
             </div>
           </LabelFieldPair>
         ) : null}
-        {isServentHouse && errors?.useDetails?.ServantQuartersRoom && (
-          <CardLabelError style={errorStyle}>{errors.useDetails.ServantQuartersRoom.message}</CardLabelError>
+        {isServentHouse && errors?.useDetails?.servantQuarterArea && (
+          <CardLabelError style={errorStyle}>{errors.useDetails.servantQuarterArea.message}</CardLabelError>
         )}
       </div>
     </CollapsibleCardPage>

@@ -69,25 +69,10 @@ public class CalculationService {
 	public void calculateFeeAndGenerateDemand(WaterConnectionRequest request, Property property) {
 		String action = request.getWaterConnection().getProcessInstance().getAction();
 
-		if((WCConstants.SUBMIT_APPLICATION_CONST.equalsIgnoreCase(action) || "APPROVE_FOR_CONNECTION".equalsIgnoreCase(action))
+		if(WCConstants.SUBMIT_APPLICATION_CONST.equalsIgnoreCase(action)
 				&& !(request.isReconnectRequest() || request.getWaterConnection().getApplicationType().equalsIgnoreCase(WCConstants.WATER_RECONNECTION))) {
 
-			CalculationCriteria criteria = CalculationCriteria.builder()
-					.applicationNo(request.getWaterConnection().getApplicationNo())
-					.waterConnection(request.getWaterConnection())
-					.tenantId(property.getTenantId()).build();
-
-			CalculationReq calRequest = CalculationReq.builder().calculationCriteria(Arrays.asList(criteria))
-					.requestInfo(request.getRequestInfo()).isconnectionCalculation(false)
-					.isDisconnectionRequest(false).isReconnectionRequest(false).build();
-
-			try {
-				Object response = serviceRequestRepository.fetchResult(waterServiceUtil.getCalculatorURL(), calRequest);
-				CalculationRes calResponse = mapper.convertValue(response, CalculationRes.class);
-			} catch (Exception ex) {
-				log.error("Calculation response error!!", ex);
-				throw new CustomException("WATER_CALCULATION_EXCEPTION", "Calculation response can not parsed!!!");
-			}
+			triggerCalculation(request, property, action);
 		}
 		else if (WCConstants.APPROVE_DISCONNECTION_CONST.equalsIgnoreCase(action)) {
 			CalculationCriteria criteria = CalculationCriteria.builder()
@@ -138,12 +123,23 @@ public class CalculationService {
 			Object result = serviceRequestRepository.fetchResult(url, RequestInfoWrapper.builder().requestInfo(requestInfo).build());
 			BillResponse billResponse = mapper.convertValue(result, BillResponse.class);
 
-			for (Bill bill : billResponse.getBill()) {
-				if (bill.getTotalAmount().compareTo(BigDecimal.ZERO) <= 0) {
-					isNoPayment = true;
+			log.info("[WS-AUTO-ACTIVATE] fetchBillForApplication: applicationNo={}, billCount={}",
+					applicationNo, billResponse.getBill() != null ? billResponse.getBill().size() : 0);
+
+			if (billResponse.getBill() == null || billResponse.getBill().isEmpty()) {
+				log.info("[WS-AUTO-ACTIVATE] No bills found for WS.ONE_TIME_FEE — treating as no extra payment due");
+				isNoPayment = true;
+			} else {
+				for (Bill bill : billResponse.getBill()) {
+					log.info("[WS-AUTO-ACTIVATE] Bill id={}, totalAmount={}, status={}",
+							bill.getId(), bill.getTotalAmount(), bill.getStatus());
+					if (bill.getTotalAmount().compareTo(BigDecimal.ZERO) <= 0) {
+						isNoPayment = true;
+					}
 				}
 			}
 		} catch (Exception ex) {
+			log.error("[WS-AUTO-ACTIVATE] Error fetching bill for applicationNo={}: {}", applicationNo, ex.getMessage());
 			throw new CustomException("WATER_FETCH_BILL_ERROR", "Error fetching bill: " + ex.getMessage());
 		}
 		return isNoPayment;
@@ -203,5 +199,40 @@ public class CalculationService {
 				.append(connectionNo).append(WCConstants.SEPARATER)
 				.append(WCConstants.BUSINESSSERVICE_FIELD_FOR_SEARCH_URL)
 				.append(WCConstants.WATER_TAX_SERVICE_CODE);
+	}
+
+	/**
+	 * Shared helper to trigger the ws-calculator for fee estimation and demand generation.
+	 */
+	private void triggerCalculation(WaterConnectionRequest request, Property property, String action) {
+		CalculationCriteria criteria = CalculationCriteria.builder()
+				.applicationNo(request.getWaterConnection().getApplicationNo())
+				.waterConnection(request.getWaterConnection())
+				.tenantId(property.getTenantId()).build();
+
+		CalculationReq calRequest = CalculationReq.builder().calculationCriteria(Arrays.asList(criteria))
+				.requestInfo(request.getRequestInfo()).isconnectionCalculation(false)
+				.isDisconnectionRequest(false).isReconnectionRequest(false).build();
+
+		try {
+			Object response = serviceRequestRepository.fetchResult(waterServiceUtil.getCalculatorURL(), calRequest);
+			CalculationRes calResponse = mapper.convertValue(response, CalculationRes.class);
+			log.info("[WS-DEMAND] triggerCalculation completed for action={}, applicationNo={}",
+					action, request.getWaterConnection().getApplicationNo());
+		} catch (Exception ex) {
+			log.error("Calculation response error!!", ex);
+			throw new CustomException("WATER_CALCULATION_EXCEPTION", "Calculation response can not parsed!!!");
+		}
+	}
+
+	/**
+	 * Called from WaterServiceImpl at APPROVE_FOR_CONNECTION ONLY when K-number dues exist.
+	 * This re-triggers the ws-calculator to update/create the demand with the new fee amounts,
+	 * generating a payable demand for the citizen.
+	 */
+	public void generateDemandForApproval(WaterConnectionRequest request, Property property) {
+		log.info("[WS-DEMAND] generateDemandForApproval: Generating demand at APPROVE_FOR_CONNECTION for applicationNo={}",
+				request.getWaterConnection().getApplicationNo());
+		triggerCalculation(request, property, "APPROVE_FOR_CONNECTION");
 	}
 }

@@ -577,6 +577,26 @@ public class EstimationService {
 			estimates.add(TaxHeadEstimate.builder().taxHeadCode(WSCalculationConstant.WS_TAX_AND_CESS)
 					.estimateAmount(tax.setScale(2, RoundingMode.HALF_UP)).build());
 
+		if (criteria.getWaterConnection().getAdditionalDetails() != null) {
+			try {
+				java.util.Map<String, Object> addDetails = mapper.convertValue(
+					criteria.getWaterConnection().getAdditionalDetails(), 
+					new com.fasterxml.jackson.core.type.TypeReference<java.util.Map<String, Object>>(){}
+				);
+				if (addDetails.containsKey("knoDues")) {
+					BigDecimal knoDues = new BigDecimal(addDetails.get("knoDues").toString());
+					if (knoDues.compareTo(BigDecimal.ZERO) > 0) {
+						estimates.add(TaxHeadEstimate.builder()
+								.taxHeadCode(WSCalculationConstant.WS_OTHER_CHARGE)
+								.estimateAmount(knoDues.setScale(2, RoundingMode.HALF_UP))
+								.build());
+					}
+				}
+			} catch (Exception e) {
+				log.error("Failed to parse knoDues from additional details", e);
+			}
+		}
+
 		addAdhocPenaltyAndRebate(estimates, criteria.getWaterConnection());
 		return estimates;
 	}
@@ -1137,6 +1157,9 @@ public class EstimationService {
 	    }
 	    if (request.getNumberOfStaff() != null) {
 	        additionalDetails.put("numberOfStaff", request.getNumberOfStaff());
+	    }
+	    if (request.getServantQuarterArea() != null) {
+	        additionalDetails.put("servantQuarterArea", request.getServantQuarterArea());
 	    }
 
 	    Property mockProperty = Property.builder().usageCategory(request.getUsageCategory()) 
