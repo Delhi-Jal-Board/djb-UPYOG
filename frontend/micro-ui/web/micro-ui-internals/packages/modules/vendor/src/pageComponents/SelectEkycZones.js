@@ -186,22 +186,6 @@ const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true, 
 
       let zonesList = [...new Map(allZones.map((z) => [z.code, z])).values()];
 
-      if (isEkycVendor && !isVendorPage && matchedVendor?.zoneIds) {
-        const assignedZoneCodes = matchedVendor.zoneIds.map(z => String(z).toUpperCase());
-        zonesList = zonesList.filter(z => assignedZoneCodes.includes(String(z.code).toUpperCase()) || assignedZoneCodes.includes(String(z.name).toUpperCase()));
-      }
-
-      if (isEkycSupervisor && matchedSupervisor?.assignedZoneId) {
-        const supervisorZones = matchedSupervisor.assignedZoneId
-          .split(",")
-          .map((z) => String(z).trim().toUpperCase());
-        zonesList = zonesList.filter(
-          (z) =>
-            supervisorZones.includes(String(z.code).toUpperCase()) ||
-            supervisorZones.includes(String(z.name).toUpperCase())
-        );
-      }
-
       setZones(zonesList);
     }
   }, [boundaryData, isEkycVendor, matchedVendor, isEkycSupervisor, matchedSupervisor, isVendorPage]);
@@ -215,13 +199,13 @@ const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true, 
     if (isMultiSelect) {
       if (!Array.isArray(formData.zoneIds)) return;
       // Already objects
-      if (formData.zoneIds.length && typeof formData.zoneIds[0] === "object") {
-        setSelectedZones(formData.zoneIds);
+      if (formData.zoneIds.length && typeof formData.zoneIds[0] === "object" && formData.zoneIds[0] !== null) {
+        setSelectedZones(formData.zoneIds.filter(Boolean));
         return;
       }
 
       // Initial API values (array of names/codes)
-      const selected = zones.filter((zone) => formData.zoneIds.includes(zone.name) || formData.zoneIds.includes(zone.code));
+      const selected = zones.filter((zone) => zone && (formData.zoneIds.includes(zone.name) || formData.zoneIds.includes(zone.code)));
 
       setSelectedZones(selected);
 
@@ -236,11 +220,11 @@ const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true, 
       if (Array.isArray(selectedVal)) {
         selectedVal = selectedVal[0]?.name || selectedVal[0]?.code || selectedVal[0] || "";
       }
-      if (typeof selectedVal === "object") {
+      if (selectedVal && typeof selectedVal === "object") {
         selectedVal = selectedVal.name || selectedVal.code || "";
       }
 
-      const selected = zones.find((zone) => zone.name === selectedVal || zone.code === selectedVal);
+      const selected = zones.find((zone) => zone && (zone.name === selectedVal || zone.code === selectedVal));
       setSelectedZones(selected ? [selected] : []);
 
       if (!initialized.current && selected) {
@@ -299,7 +283,7 @@ const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true, 
 
       {isMultiSelect && selectedZones.length > 0 && (
         <div className="selected-zones">
-          {selectedZones.map((zone) => (
+          {selectedZones.filter(zone => zone && zone.code).map((zone) => (
             <span key={zone.code} className="selected-zone-chip">
               {zone.name}
             </span>
