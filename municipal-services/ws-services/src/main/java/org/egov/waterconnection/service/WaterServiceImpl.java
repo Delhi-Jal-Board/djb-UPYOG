@@ -410,20 +410,79 @@ public class WaterServiceImpl implements WaterService {
 		//call calculator service to generate the demand for one time fee
 		calculationService.calculateFeeAndGenerateDemand(waterConnectionRequest, property);
 		String currentAction = waterConnectionRequest.getWaterConnection().getProcessInstance().getAction();
+		log.info("[WS-AUTO-ACTIVATE] ===== UPDATE WATER CONNECTION START =====");
+		log.info("[WS-AUTO-ACTIVATE] ApplicationNo: {}, ApplicationType: {}, CurrentAction: {}",
+				waterConnectionRequest.getWaterConnection().getApplicationNo(),
+				waterConnectionRequest.getWaterConnection().getApplicationType(),
+				currentAction);
 		//Call workflow
 		boolean isNoPayment = false;
 		if ("APPROVE_FOR_CONNECTION".equalsIgnoreCase(currentAction)) {
-			isNoPayment = calculationService.fetchBillForApplication(
-					waterConnectionRequest.getWaterConnection().getTenantId(),
-					waterConnectionRequest.getWaterConnection().getApplicationNo(),
-					waterConnectionRequest.getRequestInfo()
-			);
+			log.info("[WS-AUTO-ACTIVATE] Action is APPROVE_FOR_CONNECTION — checking if extra payment is due...");
+
+			// Step 1: Check if there are K-number dues from Due Verification
+			java.math.BigDecimal totalKnoDues = java.math.BigDecimal.ZERO;
+			List<DueVerification> dueVerifications = searchResult.getDueVerification();
+			if (!CollectionUtils.isEmpty(dueVerifications)) {
+				for (DueVerification dv : dueVerifications) {
+					if (dv.getDueAmount() != null && !dv.getDueAmount().trim().isEmpty()) {
+						try {
+							java.math.BigDecimal dueAmt = new java.math.BigDecimal(dv.getDueAmount().trim());
+							totalKnoDues = totalKnoDues.add(dueAmt);
+							log.info("[WS-AUTO-ACTIVATE] K-Number={}, DueAmount={}", dv.getKno(), dv.getDueAmount());
+						} catch (NumberFormatException e) {
+							log.warn("[WS-AUTO-ACTIVATE] Invalid dueAmount '{}' for K-Number={}", dv.getDueAmount(), dv.getKno());
+						}
+					}
+				}
+			}
+			log.info("[WS-AUTO-ACTIVATE] Total K-Number dues = {}", totalKnoDues);
+
+			if (totalKnoDues.compareTo(java.math.BigDecimal.ZERO) > 0) {
+				// K-number dues exist — generate demand and require payment
+				log.info("[WS-AUTO-ACTIVATE] K-Number dues detected ({}). Triggering demand generation...", totalKnoDues);
+				
+				// Inject dues into additional details so calculator can pick it up
+				Object additionalDetailObj = waterConnectionRequest.getWaterConnection().getAdditionalDetails();
+				java.util.Map<String, Object> additionalDetails = null;
+				if (additionalDetailObj instanceof java.util.Map) {
+					additionalDetails = (java.util.Map<String, Object>) additionalDetailObj;
+				} else if (additionalDetailObj != null) {
+					try {
+						com.fasterxml.jackson.databind.ObjectMapper objMapper = new com.fasterxml.jackson.databind.ObjectMapper();
+						additionalDetails = objMapper.convertValue(additionalDetailObj, new com.fasterxml.jackson.core.type.TypeReference<java.util.Map<String, Object>>(){});
+					} catch (Exception e) {}
+				}
+				if (additionalDetails == null) {
+					additionalDetails = new java.util.HashMap<>();
+				}
+				additionalDetails.put("knoDues", totalKnoDues);
+				waterConnectionRequest.getWaterConnection().setAdditionalDetails(additionalDetails);
+
+				calculationService.generateDemandForApproval(waterConnectionRequest, property);
+				isNoPayment = false;
+			} else {
+				// No K-number dues — check if the WS.ONE_TIME_FEE bill has any remaining amount
+				isNoPayment = calculationService.fetchBillForApplication(
+						waterConnectionRequest.getWaterConnection().getTenantId(),
+						waterConnectionRequest.getWaterConnection().getApplicationNo(),
+						waterConnectionRequest.getRequestInfo()
+				);
+				log.info("[WS-AUTO-ACTIVATE] fetchBillForApplication result: isNoPayment = {} (true = no extra payment, false = extra payment due)",
+						isNoPayment);
+			}
 
 			if (isNoPayment) {
+				log.info("[WS-AUTO-ACTIVATE] NO extra payment due — setting comment to WS_NO_PAYMENT, will auto-activate after workflow transition");
 				waterConnectionRequest.getWaterConnection().getProcessInstance().setComment(WORKFLOW_NO_PAYMENT_CODE);
+			} else {
+				log.info("[WS-AUTO-ACTIVATE] EXTRA payment is due — citizen must pay. Application will move to PENDING_FOR_FINAL_PAYMENT");
 			}
 		}
+		log.info("[WS-AUTO-ACTIVATE] Calling workflow transition with action: {}", currentAction);
 		wfIntegrator.callWorkFlow(waterConnectionRequest, property);
+		log.info("[WS-AUTO-ACTIVATE] After workflow transition, applicationStatus = {}",
+				waterConnectionRequest.getWaterConnection().getApplicationStatus());
 		waterDaoImpl.pushForEditNotification(waterConnectionRequest, isStateUpdatable);
 		enrichmentService.enrichFileStoreIds(waterConnectionRequest);
 		enrichmentService.postStatusEnrichment(waterConnectionRequest);
@@ -439,8 +498,13 @@ public class WaterServiceImpl implements WaterService {
 		enrichmentService.enrichProcessInstance(Arrays.asList(waterConnectionRequest.getWaterConnection()), criteria, waterConnectionRequest.getRequestInfo());
 
 		if("APPROVE_FOR_CONNECTION".equalsIgnoreCase(currentAction) && isNoPayment){
+			log.info("[WS-AUTO-ACTIVATE] Triggering noPaymentWorkflow() for auto K-number generation and auto-activation...");
 			paymentUpdateService.noPaymentWorkflow(waterConnectionRequest, property, waterConnectionRequest.getRequestInfo());
+			log.info("[WS-AUTO-ACTIVATE] noPaymentWorkflow() completed. ConnectionNo (K-Number): {}, Status: {}",
+					waterConnectionRequest.getWaterConnection().getConnectionNo(),
+					waterConnectionRequest.getWaterConnection().getApplicationStatus());
 		}
+		log.info("[WS-AUTO-ACTIVATE] ===== UPDATE WATER CONNECTION END =====");
 
 		waterConnectionRequest.setWaterConnection(decryptConnectionDetails(waterConnectionRequest.getWaterConnection(), waterConnectionRequest.getRequestInfo()));
 
@@ -560,6 +624,8 @@ public class WaterServiceImpl implements WaterService {
 		if (WCConstants.APPROVE_CONNECTION_CONST.equalsIgnoreCase(processInstance.getAction()) ) {
 			isNoPayment = calculationService.fetchBillForReconnect(waterConnection.getTenantId(), waterConnection.getApplicationNo(), waterConnectionRequest.getRequestInfo());
 			if (isNoPayment) {
+
+				log.info(processInstance.getAction()+"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
 				processInstance.setComment(WORKFLOW_NO_PAYMENT_CODE);
 			}
 		}
@@ -584,6 +650,7 @@ public class WaterServiceImpl implements WaterService {
 
 		//Updating the workflow from approve for disconnection to pending for disconnection execution when there are no dues
 		if(WCConstants.APPROVE_CONNECTION_CONST.equalsIgnoreCase(processInstance.getAction()) && isNoPayment){
+			log.info(processInstance.getAction() + isNoPayment + "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
 			paymentUpdateService.noPaymentWorkflow(waterConnectionRequest, property, waterConnectionRequest.getRequestInfo());
 		}
 
