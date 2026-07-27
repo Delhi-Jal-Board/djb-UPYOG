@@ -1138,6 +1138,9 @@ public class EstimationService {
 	    if (request.getNumberOfStaff() != null) {
 	        additionalDetails.put("numberOfStaff", request.getNumberOfStaff());
 	    }
+	    if (request.getServantQuarterArea() != null) {
+	        additionalDetails.put("servantQuarterArea", request.getServantQuarterArea());
+	    }
 
 	    Property mockProperty = Property.builder().usageCategory(request.getUsageCategory()) 
 	            .propertyType(request.getPropertyType())   

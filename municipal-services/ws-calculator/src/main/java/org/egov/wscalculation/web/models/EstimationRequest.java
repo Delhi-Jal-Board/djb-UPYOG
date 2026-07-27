@@ -74,4 +74,7 @@ public class EstimationRequest {
 
     @JsonProperty("numberOfStaff")
     private BigDecimal numberOfStaff; // Offices
+    
+    @JsonProperty("servantQuarterArea")
+    private Double servantQuarterArea; // Servant
 }
