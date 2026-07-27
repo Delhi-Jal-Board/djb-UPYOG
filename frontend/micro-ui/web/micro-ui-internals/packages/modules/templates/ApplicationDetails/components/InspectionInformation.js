@@ -5,12 +5,23 @@ import { useTranslation } from "react-i18next";
 const InspectionInformation = ({ applicationData }) => {
   const { t } = useTranslation();
 
-  const [inspectionType, setInspectionType] = useState(null);
+  const defaultInspectionType = {
+    i18nKey: "New Connection Visit",
+    code: "new_connection_visit",
+  };
+  const [inspectionType, setInspectionType] = useState(defaultInspectionType);
   const [inspectionDate, setInspectionDate] = useState("");
   const [inspectorName, setInspectorName] = useState("");
 
   useEffect(() => {
-    if (applicationData?.inspectionInformation) {
+    if (applicationData) {
+      if (!applicationData.inspectionInformation) {
+        applicationData.inspectionInformation = {};
+      }
+      if (!applicationData.inspectionInformation.inspectionType) {
+        applicationData.inspectionInformation.inspectionType = defaultInspectionType;
+      }
+
       const apiInspectionType = applicationData.inspectionInformation.inspectionType;
       let matchedType = null;
       
@@ -20,12 +31,11 @@ const InspectionInformation = ({ applicationData }) => {
 
       if (inspectionCode) {
         matchedType = [
-          { i18nKey: "ES_COMMON_SELECT", code: "" },
           { i18nKey: "New Connection Visit", code: "new_connection_visit" }
         ].find(opt => opt.code === inspectionCode || opt.i18nKey === inspectionCode);
       }
       
-      setInspectionType(matchedType || null);
+      setInspectionType(matchedType || defaultInspectionType);
       
       let dateValue = applicationData.inspectionInformation.inspectionDate || "";
       if (dateValue && typeof dateValue === 'number') {
@@ -48,10 +58,6 @@ const InspectionInformation = ({ applicationData }) => {
   }, [applicationData]);
 
   const inspectionTypeOptions = [
-    {
-      i18nKey: "ES_COMMON_SELECT",
-      code: "",
-    },
     {
       i18nKey: "New Connection Visit",
       code: "new_connection_visit",
@@ -77,9 +83,13 @@ const InspectionInformation = ({ applicationData }) => {
     applicationData.inspectionInformation.inspectorName = val;
   };
 
-  const readOnly =
-    applicationData?.applicationStatus ===
-    "PENDING_FOR_CONNECTION_ACTIVATION";
+  const readOnly = [
+    "PENDING_FOR_BILLING_CLERK_REVIEW",
+    "PENDING_FOR_ASO_APPROVAL",
+    "PENDING_FOR_ZRO_APPROVAL",
+    "PENDING_FOR_AE_APPROVAL",
+    "PENDING_FOR_FINAL_PAYMENT"
+  ].includes(applicationData?.applicationStatus);
 
   return (
     <div style={{ marginBottom: "20px" }}>

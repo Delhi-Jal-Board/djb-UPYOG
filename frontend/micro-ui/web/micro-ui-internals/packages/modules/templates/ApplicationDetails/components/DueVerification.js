@@ -22,11 +22,15 @@ const DueVerification = ({ applicationData }) => {
     [applicationData]
   );
 
-  const isPendingApproval =
-    applicationData?.applicationStatus === "PENDING_APPROVAL_FOR_CONNECTION" ||
-    applicationData?.applicationStatus === "PENDING_FOR_CONNECTION_ACTIVATION";
+  const isPendingApproval = applicationData?.applicationStatus === "PENDING_FOR_FIELD_INSPECTION";
 
-  const isActivation = applicationData?.applicationStatus === "PENDING_FOR_CONNECTION_ACTIVATION";
+  const isActivation = [
+    "PENDING_FOR_BILLING_CLERK_REVIEW",
+    "PENDING_FOR_ASO_APPROVAL",
+    "PENDING_FOR_ZRO_APPROVAL",
+    "PENDING_FOR_AE_APPROVAL",
+    "PENDING_FOR_FINAL_PAYMENT"
+  ].includes(applicationData?.applicationStatus);
 
   const columns = useMemo(() => {
     const baseColumns = [
@@ -52,7 +56,7 @@ const DueVerification = ({ applicationData }) => {
       },
     ];
 
-    if (isPendingApproval) {
+    if (isPendingApproval || isActivation) {
       baseColumns.push({
         Header: t("Remarks"),
         accessor: "remarks",
@@ -73,7 +77,7 @@ const DueVerification = ({ applicationData }) => {
     }
 
     return baseColumns;
-  }, [t, handleRemarkChange, isPendingApproval]);
+  }, [t, handleRemarkChange, isPendingApproval, isActivation]);
 
   useEffect(() => {
     if (applicationData?.dueVerification && Array.isArray(applicationData.dueVerification)) {

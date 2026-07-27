@@ -538,15 +538,29 @@ function ApplicationDetailsContent({
             <PropertyDocuments documents={detail?.additionalDetails?.documents} applicationStatus={applicationData?.applicationStatus} />
           )}
           {detail?.additionalDetails?.documents &&
-            (applicationData?.applicationStatus === "PENDING_FOR_FIELD_INSPECTION" ||
-              applicationData?.applicationStatus === "PENDING_APPROVAL_FOR_CONNECTION" ||
-              applicationData?.applicationStatus === "PENDING_FOR_CONNECTION_ACTIVATION" ||
-              applicationData?.applicationStatus === "PENDING_FOR_RECONNECTION") && <DueVerification applicationData={applicationData} />}{" "}
+            [
+              "PENDING_FOR_FIELD_INSPECTION",
+              "PENDING_APPROVAL_FOR_CONNECTION",
+              "PENDING_FOR_CONNECTION_ACTIVATION",
+              "PENDING_FOR_RECONNECTION",
+              "PENDING_FOR_DUE_VERIFICATION",
+              "PENDING_FOR_BILLING_CLERK_REVIEW",
+              "PENDING_FOR_ASO_APPROVAL",
+              "PENDING_FOR_ZRO_APPROVAL",
+              "PENDING_FOR_AE_APPROVAL",
+              "PENDING_FOR_FINAL_PAYMENT"
+            ].includes(applicationData?.applicationStatus) && <DueVerification applicationData={applicationData} />}{" "}
           {detail?.additionalDetails?.documents &&
-            (applicationData?.applicationStatus === "PENDING_APPROVAL_FOR_CONNECTION" ||
-              applicationData?.applicationStatus === "PENDING_FOR_CONNECTION_ACTIVATION") && (
-              <InspectionInformation applicationData={applicationData} />
-            )}
+            [
+              "PENDING_FOR_FIELD_INSPECTION",
+              "PENDING_FOR_BILLING_CLERK_REVIEW",
+              "PENDING_FOR_ASO_APPROVAL",
+              "PENDING_FOR_ZRO_APPROVAL",
+              "PENDING_FOR_AE_APPROVAL",
+              "PENDING_FOR_FINAL_PAYMENT"
+            ].includes(applicationData?.applicationStatus) && (
+            <InspectionInformation applicationData={applicationData} />
+          )}
           {detail?.additionalDetails?.taxHeadEstimatesCalculation && (
             <PropertyEstimates taxHeadEstimatesCalculation={detail?.additionalDetails?.taxHeadEstimatesCalculation} />
           )}

@@ -98,8 +98,7 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
     watchPropertyCategory &&
     watchPropertyType &&
     watchWaterConnectionUsageType &&
-    watchColonyName &&
-    !calculationData;
+    watchColonyName
 
   const isHospitalProperty = watchPropertyType?.code === "HOSPITAL_NURSING_HOME" || watchPropertyType?.code === "DharamshalasOrHostels" || watchPropertyType?.code === "HospitalNursingHome";
   const isHotelRestaurantProperty = watchPropertyType?.code === "HOTEL_OR_RESTAURANT" || watchPropertyType?.code === "HotelOrRestaurant";
