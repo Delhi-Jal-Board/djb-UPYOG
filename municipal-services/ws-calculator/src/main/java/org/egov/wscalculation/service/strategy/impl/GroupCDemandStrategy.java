@@ -80,11 +80,8 @@ public class GroupCDemandStrategy implements GroupDemandStrategy {
         if (code == null) return rawOccupancy;
 
         BigDecimal farArea = contextVars.getOrDefault("far_area", BigDecimal.ZERO);
-        BigDecimal sanctionedBeds = contextVars.getOrDefault("sanctioned_beds", 
-                                    contextVars.getOrDefault("total_beds", 
-                                    contextVars.getOrDefault("specified_beds", BigDecimal.ZERO)));
+        BigDecimal sanctionedBeds = contextVars.getOrDefault("sanctioned_beds", contextVars.getOrDefault("total_beds", contextVars.getOrDefault("specified_beds", BigDecimal.ZERO)));
 
-        // C-1 Hospitals (>= 2500 sqm Plot Area)
         if (code.equalsIgnoreCase("C-1_HOSPITAL")) {
             BigDecimal bedsFromFar = (farArea.compareTo(BigDecimal.ZERO) > 0) ? farArea.divide(new BigDecimal("80.0"), 0, RoundingMode.CEILING) : BigDecimal.ZERO;
             BigDecimal resolved = sanctionedBeds.max(bedsFromFar);
@@ -92,7 +89,6 @@ public class GroupCDemandStrategy implements GroupDemandStrategy {
             return resolved.compareTo(BigDecimal.ZERO) > 0 ? resolved : rawOccupancy;
         }
 
-        // C-1 Nursing Homes (< 2500 sqm Plot Area)
         if (code.equalsIgnoreCase("C-1_NURSING") || code.equalsIgnoreCase("C-1_NURSING_HOME")) {
             BigDecimal bedsFromFar = (farArea.compareTo(BigDecimal.ZERO) > 0) ? farArea.divide(new BigDecimal("60.0"), 0, RoundingMode.CEILING) : BigDecimal.ZERO;
             BigDecimal resolved = sanctionedBeds.max(bedsFromFar);
@@ -100,7 +96,6 @@ public class GroupCDemandStrategy implements GroupDemandStrategy {
             return resolved.compareTo(BigDecimal.ZERO) > 0 ? resolved : rawOccupancy;
         }
 
-        // C-2 (Custodial) & C-3 (Penal/Mental Institutions) -> far_area / 7.5
         if (code.startsWith("C-2") || code.startsWith("C-3")) {
             if (farArea.compareTo(BigDecimal.ZERO) > 0) {
                 BigDecimal resolved = farArea.divide(new BigDecimal("7.5"), 0, RoundingMode.CEILING);

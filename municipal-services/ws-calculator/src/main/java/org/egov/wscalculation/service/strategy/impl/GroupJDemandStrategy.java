@@ -13,7 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
-public class GroupGDemandStrategy implements GroupDemandStrategy {
+public class GroupJDemandStrategy implements GroupDemandStrategy {
 
     private static final BigDecimal THRESHOLD_12500 = new BigDecimal("12500");
     private static final BigDecimal OCCUPANCY_DENOMINATOR_10 = new BigDecimal("10.0");
@@ -21,17 +21,17 @@ public class GroupGDemandStrategy implements GroupDemandStrategy {
     @Override
     public boolean supports(String subCategoryCode, String parentUsageCode) {
         if (subCategoryCode == null) return false;
-        return subCategoryCode.startsWith("G") || "INDUSTRIAL".equalsIgnoreCase(parentUsageCode) || "FACTORY".equalsIgnoreCase(parentUsageCode);
+        return subCategoryCode.startsWith("J") || "HAZARDOUS".equalsIgnoreCase(parentUsageCode) || "NONRESIDENTIAL.HAZARDOUS".equalsIgnoreCase(parentUsageCode);
     }
 
     @Override
     public void processGroupDemand(WaterDemandResult result, Map<String, Object> matchedNorm, Map<String, BigDecimal> contextVariables) {
-        log.info("Executing Group G (Industrial Buildings & Manufacturing Units) Demand Calculation Logic");
+        log.info("Executing Group J (Hazardous Buildings) Demand Calculation Logic");
 
-        String code = result.getMatchedNormCode();
+        String subCategoryCode = result.getMatchedNormCode();
         BigDecimal rawOccupancy = result.getCalculatedOccupancy();
 
-        BigDecimal resolvedOccupancy = resolveIndustrialOccupancy(rawOccupancy, contextVariables);
+        BigDecimal resolvedOccupancy = resolveHazardousOccupancy(matchedNorm, rawOccupancy, contextVariables);
 
         BigDecimal totalLpcd = getBigDecimal(matchedNorm, "totalLpcd");
         BigDecimal potableLpcd = getBigDecimal(matchedNorm, "potableLpcd");
@@ -48,7 +48,7 @@ public class GroupGDemandStrategy implements GroupDemandStrategy {
         BigDecimal chosenLpcd = totalLpcd;
         if ("POTABLE_ONLY_IF_OVER_12500".equalsIgnoreCase(ifcBasis) && initialTotalDemand.compareTo(THRESHOLD_12500) > 0) {
             chosenLpcd = potableLpcd;
-            log.info("Group G ({}) 12,500 LPD Threshold Triggered: Total LPD {} > 12500. Applied Potable LPCD Rate {}", code, initialTotalDemand, chosenLpcd);
+            log.info("Group J ({}) 12,500 LPD Threshold Triggered: Total LPD {} > 12500. Applied Potable LPCD Rate {}", subCategoryCode, initialTotalDemand, chosenLpcd);
         }
 
         BigDecimal baseDemand = resolvedOccupancy.multiply(chosenLpcd);
@@ -62,14 +62,23 @@ public class GroupGDemandStrategy implements GroupDemandStrategy {
     }
 
     /**
-     * Resolves Occupancy for Group G (Industrial):
+     * Dynamically resolves occupancy based on MDMS occupancyBasis property.
      */
-    private BigDecimal resolveIndustrialOccupancy(BigDecimal rawOccupancy, Map<String, BigDecimal> contextVars) {
+    private BigDecimal resolveHazardousOccupancy(Map<String, Object> matchedNorm, BigDecimal rawOccupancy, Map<String, BigDecimal> contextVars) {
+        String occupancyBasis = String.valueOf(matchedNorm.getOrDefault("occupancyBasis", "FAR_AREA"));
         BigDecimal farArea = contextVars.getOrDefault("far_area", BigDecimal.ZERO);
+        BigDecimal plotArea = contextVars.getOrDefault("plot_area", BigDecimal.ZERO);
 
-        if (farArea.compareTo(BigDecimal.ZERO) > 0) {
-            BigDecimal resolved = farArea.divide(OCCUPANCY_DENOMINATOR_10, 0, RoundingMode.CEILING);
-            log.info("Group G Occupancy resolved from FAR Area ({}/10.0): {}", farArea, resolved);
+        BigDecimal areaToUse = "PLOT_AREA".equalsIgnoreCase(occupancyBasis) ? (plotArea.compareTo(BigDecimal.ZERO) > 0 ? plotArea : farArea): (farArea.compareTo(BigDecimal.ZERO) > 0 ? farArea : plotArea);
+
+        if (areaToUse.compareTo(BigDecimal.ZERO) > 0) {
+            BigDecimal denominator = getBigDecimal(matchedNorm, "occupancyDenominator");
+            if (denominator.compareTo(BigDecimal.ZERO) == 0) {
+                denominator = OCCUPANCY_DENOMINATOR_10;
+            }
+
+            BigDecimal resolved = areaToUse.divide(denominator, 0, RoundingMode.CEILING);
+            log.info("Group J Occupancy resolved using Area ({}/{}): {}", areaToUse, denominator, resolved);
             return resolved;
         }
 
