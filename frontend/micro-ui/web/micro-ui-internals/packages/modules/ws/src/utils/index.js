@@ -1850,13 +1850,14 @@ export const WSCalculationPayload = (data, tenantId) => {
     farArea: useDetails?.farArea ? Number(useDetails.farArea) : 0,
     numberOfFloors: useDetails?.noOfFloors?.code ? Number(useDetails.noOfFloors.code) : 0,
     numberOfStudents: useDetails?.numberOfStudents ? Number(useDetails.numberOfStudents) : 0,
-    numberOfBeds: useDetails?.numberOfBeds ? Number(useDetails.numberOfBeds) : 0
+    numberOfBeds: useDetails?.numberOfBeds ? Number(useDetails.numberOfBeds) : 0,
+    servantQuarterArea: useDetails?.servantQuarterArea ? Number(useDetails.servantQuarterArea) : 0,
   };
 
   // Optional fields based on form data that might be present
   if (useDetails?.NumberofRooms) payload.numberOfRooms = Number(useDetails.NumberofRooms);
   if (useDetails?.NumberofDwellingUnits) payload.numberOfDwellingUnits = Number(useDetails.NumberofDwellingUnits);
-  if (useDetails?.ServantQuartersRoom) payload.servantQuartersRoom = Number(useDetails.ServantQuartersRoom);
+  if (useDetails?.servantQuarterArea) payload.servantQuarterArea = Number(useDetails.servantQuarterArea);
 
   return payload;
 };

@@ -193,7 +193,7 @@ export const setPropertyDetailsLW = (data) => {
     numberOfRooms: useDetails?.NumberofRooms,
     numberOfBeds: useDetails?.numberOfBeds,
     numberOfStudents: useDetails?.numberOfStudents,
-    ServantQuartersRoom: useDetails?.ServantQuartersRoom,
+    servantQuarterArea: useDetails?.servantQuarterArea,
   };
 
   data.propertyDetails = propertyDetails;
@@ -251,7 +251,7 @@ export const convertToPropertyLightWeight = (data = {}) => {
         plotArea: data.waterConnection?.useDetails?.plotArea || data.useDetails?.plotArea,
         builtUpArea: data.waterConnection?.useDetails?.builtUpArea || data.useDetails?.builtUpArea,
         farArea: data.waterConnection?.useDetails?.farArea || data.useDetails?.farArea,
-        ServantQuartersRoom: data.waterConnection?.useDetails?.ServantQuartersRoom || data.useDetails?.ServantQuartersRoom,
+        servantQuarterArea: data.waterConnection?.useDetails?.servantQuarterArea || data.useDetails?.servantQuarterArea,
         numberOfStudents: data.waterConnection?.useDetails?.numberOfStudents || data.useDetails?.numberOfStudents,
         numberOfBeds: data.waterConnection?.useDetails?.numberOfBeds || data.useDetails?.numberOfBeds,
         owners: [
@@ -335,7 +335,7 @@ export const convertToUpdatePropertyLightWeight = (data = {}) => {
         plotArea: data.waterConnection?.useDetails?.plotArea || data.useDetails?.plotArea,
         builtUpArea: data.waterConnection?.useDetails?.builtUpArea || data.useDetails?.builtUpArea,
         farArea: data.waterConnection?.useDetails?.farArea || data.useDetails?.farArea,
-        numberOfServantQuarters: data.waterConnection?.useDetails?.ServantQuartersRoom || data.useDetails?.ServantQuartersRoom,
+        numberOfServantQuarters: data.waterConnection?.useDetails?.servantQuarterArea || data.useDetails?.servantQuarterArea,
         numberOfStudents: data.waterConnection?.useDetails?.numberOfStudents || data.useDetails?.numberOfStudents,
         numberOfBeds: data.waterConnection?.useDetails?.numberOfBeds || data.useDetails?.numberOfBeds,
         owners: [

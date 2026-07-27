@@ -8,9 +8,7 @@ import {
   VerticalTimeline,
   SubmitBar,
   Card,
-  CardHeader,
-  StatusTable,
-  Row,
+  Loader,
 } from "@djb25/digit-ui-react-components";
 import React, { useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -53,7 +51,7 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
         NumberofRooms: "",
         numberOfBeds: "",
         numberOfStudents: "",
-        ServantQuartersRoom: "",
+        servantQuarterArea: "",
         colonyName: "",
       },
     },
@@ -62,12 +60,13 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const { t } = useTranslation();
 
-  const { mutate: calculateCharges } = Digit.Hooks.ws.useWSCalculater({ tenantId });
+  const { mutate: calculateCharges, isLoading } = Digit.Hooks.ws.useWSCalculater({ tenantId });
 
   const { data: ptServicesMastersData } = Digit.Hooks.pt.usePropertyMDMS(tenantId, "PropertyTax", [
     "PropertyCategory",
     "PropertyType",
     "PropertyNewUsageType",
+    "PropertyToUsageMapping",
   ]);
 
   const { data: wsServicesMastersData } = Digit.Hooks.ws.useMDMS(tenantId, "ws-services-masters", ["WsCategoryType"]);
@@ -99,9 +98,10 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
     watchPropertyCategory &&
     watchPropertyType &&
     watchWaterConnectionUsageType &&
-    watchColonyName;
+    watchColonyName &&
+    !calculationData;
 
-  const isHospitalProperty = watchPropertyType?.code === "HOSPITAL_NURSING_HOME" || watchPropertyType?.code === "HospitalNursingHome";
+  const isHospitalProperty = watchPropertyType?.code === "HOSPITAL_NURSING_HOME" || watchPropertyType?.code === "DharamshalasOrHostels" || watchPropertyType?.code === "HospitalNursingHome";
   const isHotelRestaurantProperty = watchPropertyType?.code === "HOTEL_OR_RESTAURANT" || watchPropertyType?.code === "HotelOrRestaurant";
   const isSchoolCollegeProperty = watchPropertyType?.code === "School" || watchPropertyType?.code === "College";
   const isDwellingUnit = watchPropertyCategory?.code === "RESIDENTIAL" || watchPropertyCategory?.code === "RESIDENTIAL";
@@ -109,10 +109,9 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
     watchPropertyType?.code === "Apartment" || watchPropertyType?.code === "FlatOrApartment" || watchPropertyType?.code === "IndividualHouse";
 
   const categoryOptions = useMemo(() => {
+    if (!watchCategoryType?.code) return [];
     let options = ptServicesMastersData?.PropertyTax?.PropertyCategory?.filter((item) => item.active) || [];
-    if (watchCategoryType?.code) {
-      options = options.filter((item) => item.type === watchCategoryType.code);
-    }
+    options = options.filter((item) => item.type === watchCategoryType.code);
     return options.map((item) => ({
       code: item.code,
       name: item.name,
@@ -129,11 +128,16 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
   }, [watchCategoryType, categoryOptions, setValue, watchPropertyCategory]);
 
   const propertyTypeOptions = useMemo(() => {
+    if (!watchPropertyCategory?.code) return [];
     let options = ptServicesMastersData?.PropertyTax?.PropertyType?.filter((item) => item.active) || [];
-    if (watchPropertyCategory?.code) {
-      if (watchPropertyCategory?.code?.toUpperCase() !== "MIXED") {
-        options = options.filter((item) => item.type?.toUpperCase() === watchPropertyCategory.code?.toUpperCase());
-      }
+    let mapping = ptServicesMastersData?.PropertyTax?.PropertyToUsageMapping || [];
+
+    if (mapping.length > 0) {
+      options = options.filter((item) => mapping.some((m) => m.propertyTypeCode === item.code));
+    }
+
+    if (watchPropertyCategory?.code?.toUpperCase() !== "MIXED") {
+      options = options.filter((item) => item.type?.toUpperCase() === watchPropertyCategory.code?.toUpperCase());
     }
     return options.map((item) => ({
       code: item.code,
@@ -151,19 +155,22 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
   }, [watchPropertyCategory, propertyTypeOptions, setValue, watchPropertyType]);
 
   const usageTypeOptions = useMemo(() => {
+    if (!watchPropertyType?.code) return [];
     let options = ptServicesMastersData?.PropertyTax?.PropertyNewUsageType?.filter((item) => item.active) || [];
+    let mapping = ptServicesMastersData?.PropertyTax?.PropertyToUsageMapping || [];
 
-    if (watchPropertyCategory?.code) {
-      if (watchPropertyCategory?.code?.toUpperCase() !== "MIXED") {
-        options = options.filter((item) => item.type?.toUpperCase() === watchPropertyCategory.code?.toUpperCase());
-      }
+    const selectedMapping = mapping.find((m) => m.propertyTypeCode === watchPropertyType.code);
+    if (selectedMapping && selectedMapping.allowedUsages) {
+      options = options.filter((item) => selectedMapping.allowedUsages.includes(item.code));
+    } else {
+      options = [];
     }
 
     return options.map((item) => ({
       code: item.code,
       name: item.name,
     }));
-  }, [ptServicesMastersData, watchPropertyCategory]);
+  }, [ptServicesMastersData, watchPropertyCategory, watchPropertyType]);
 
   useEffect(() => {
     if (watchPropertyType && watchWaterConnectionUsageType) {
@@ -219,7 +226,7 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
       setValue("useDetails.NumberofRooms", "");
       setValue("useDetails.numberOfBeds", "");
       setValue("useDetails.numberOfStudents", "");
-      setValue("useDetails.ServantQuartersRoom", "");
+      setValue("useDetails.servantQuarterArea", "");
       setValue("useDetails.colonyName", "");
     }
   }, [formData?.cpt?.details, formData?.cpt, categoryOptions, propertyTypeOptions, usageTypeOptions, categoryTypeList, setValue]);
@@ -731,13 +738,13 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
                     inputRef={register({
                       pattern: { value: NUMBER_PATTERN, message: t("ERR_INVALID_NUMBER") },
                     })}
-                    name="useDetails.ServantQuartersRoom"
+                    name="useDetails.servantQuarterArea"
                   />
                 </div>
               </LabelFieldPair>
             ) : null}
-            {isServentHouse && errors?.useDetails?.ServantQuartersRoom && (
-              <CardLabelError style={errorStyle}>{errors.useDetails.ServantQuartersRoom.message}</CardLabelError>
+            {isServentHouse && errors?.useDetails?.servantQuarterArea && (
+              <CardLabelError style={errorStyle}>{errors.useDetails.servantQuarterArea.message}</CardLabelError>
             )}
           </div>
         </CollapsibleCardPage>
@@ -747,13 +754,17 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
             className="clear-search generic-button"
             style={{ marginRight: "24px" }}
             onClick={() => {
-              reset()
+              reset();
               setCalculationData(null);
             }}
           >
             {t("CS_COMMON_CLEAR_SEARCH")}
           </button>
-          <SubmitBar label={t("ES_COMMON_CALCULATE")} onSubmit={handleSubmit} disabled={!isCalculateButtonEnabled} />
+          {isLoading ? (
+            <Loader />
+          ) : (
+            <SubmitBar label={t("ES_COMMON_CALCULATE")} onSubmit={handleSubmit} disabled={!isCalculateButtonEnabled} />
+          )}
         </div>
 
         {calculationData && <RenderCalculationDetails data={calculationData} />}
