@@ -151,7 +151,7 @@ public class PaymentUpdateService {
 					repo.updateWaterConnection(waterConnectionRequest, true);
 					log.info("First payment successful. Moving to PENDING_FOR_DOCUMENT_VERIFICATION");
 
-				} else if ("PENDING_FOR_FINAL_PAYMENT".equalsIgnoreCase(statusBeforePayment)) {
+				} else if ("PENDING_FOR_FINAL_PAYMENT".equalsIgnoreCase(statusBeforePayment) || "PENDING_FOR_ADDITIONAL_PAYMENT".equalsIgnoreCase(statusBeforePayment)) {
 
 					waterConnectionRequest.getWaterConnection().setApplicationStatus("PENDING_FOR_CONNECTION_ACTIVATION");
 
