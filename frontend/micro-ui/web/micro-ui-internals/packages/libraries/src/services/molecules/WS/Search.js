@@ -1156,7 +1156,7 @@ export const WSSearch = {
       additionalDetails: {
         redirectUrl: {
           title: t("WS_VIEW_PROPERTY_DETAILS"),
-          url: `/digit-ui/employee/pt/property-details/${propertyDataDetails?.propertyId}?from=WS_APPLICATION_DETAILS_HEADER`,
+          url: `/digit-ui/employee/commonpt/view-property?propertyId=${propertyDataDetails?.propertyId}&tenantId=${propertyDataDetails?.tenantId || tenantId}&from=WS_APPLICATION_DETAILS_HEADER`,
         },
       },
     };
@@ -2352,7 +2352,7 @@ export const WSSearch = {
         },
         {
           title: "WS_VIEW_PROPERTY_DETAIL",
-          to: `/digit-ui/employee/pt/property-details/${propertyDataDetails?.propertyId}?from=${window.location.href.includes("bill-details") ? "ABG_BILL_DETAILS_HEADER" : "WS_COMMON_CONNECTION_DETAIL"
+          to: `/digit-ui/employee/commonpt/view-property?propertyId=${propertyDataDetails?.propertyId}&tenantId=${propertyDataDetails?.tenantId || tenantId}&from=${window.location.href.includes("bill-details") ? "ABG_BILL_DETAILS_HEADER" : "WS_COMMON_CONNECTION_DETAIL"
             }`,
           value: "",
           isLink: true,
@@ -2685,7 +2685,7 @@ export const WSSearch = {
       additionalDetails: {
         redirectUrl: {
           title: t("WS_VIEW_PROPERTY_DETAILS"),
-          url: `/digit-ui/employee/pt/property-details/${propertyDataDetails?.propertyId}?from=WS_APPLICATION_DETAILS_HEADER`,
+          url: `/digit-ui/employee/commonpt/view-property?propertyId=${propertyDataDetails?.propertyId}&tenantId=${propertyDataDetails?.tenantId || tenantId}&from=WS_APPLICATION_DETAILS_HEADER`,
         },
       },
     };
