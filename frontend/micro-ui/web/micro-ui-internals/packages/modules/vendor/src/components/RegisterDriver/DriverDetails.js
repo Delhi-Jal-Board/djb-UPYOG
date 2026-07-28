@@ -36,7 +36,8 @@ const CloseBtn = (props) => {
 };
 
 const DriverDetails = () => {
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const rawTenantId = Digit.ULBService.getCurrentTenantId();
+  const tenantId = rawTenantId?.includes(".") ? rawTenantId : `${rawTenantId}.djb`;
   // const state = Digit.ULBService.getStateId();
   const { t } = useTranslation();
   const history = useHistory();

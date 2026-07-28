@@ -6,7 +6,8 @@ import { useQueryClient } from "react-query";
 import VendorConfig from "../../config/VendorConfig";
 
 const EditVendor = () => {
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const rawTenantId = Digit.ULBService.getCurrentTenantId();
+  const tenantId = rawTenantId?.includes(".") ? rawTenantId : `${rawTenantId}.djb`;
   const { t } = useTranslation();
   const history = useHistory();
   let { id: dsoId } = useParams();
@@ -97,7 +98,7 @@ const EditVendor = () => {
           details: {
             address: {
               pincode
-              : dsoDetails.address.pincode,
+                : dsoDetails.address.pincode,
               city: {
                 code: tenantId,
                 name: dsoDetails.address.city,
@@ -152,6 +153,7 @@ const EditVendor = () => {
       zoneIds: zones.filter((z) => prev?.zoneIds?.includes(z.name)),
     }));
   }, [dsoDetails?.zoneIds, zones]);
+
 
   const onFormValueChange = (setValue, data) => {
     const isAddressFilled = data?.propertyAddress?.city && data?.propertyAddress?.locality;
@@ -320,9 +322,9 @@ const EditVendor = () => {
         },
         ward: wardCode
           ? {
-              code: wardCode,
-              name: wardName,
-            }
+            code: wardCode,
+            name: wardName,
+          }
           : undefined,
         geoLocation: {
           ...dsoDetails.address.geoLocation,

@@ -29,6 +29,15 @@ const VENDORCard = () => {
     },
   ];
 
+  // if (!isCitizen) {
+  //   links.push({
+  //     label: t("ES_TITLE_ROLE_MANAGEMENT", "Role Management"),
+  //     link: `/digit-ui/employee/vendor/role-management`,
+  //   });
+  // }
+
+
+
   const VENDORRole = Digit.UserService.hasAccess(["WT_VENDOR"]);
 
   const propsForModuleCard = {

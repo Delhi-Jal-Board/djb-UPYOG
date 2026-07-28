@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { CardLabel, LabelFieldPair, MultiSelectDropdown } from "@djb25/digit-ui-react-components";
 
 const SelectEkycClusters = ({ config, onSelect, t, formData }) => {
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const rawTenantId = Digit.ULBService.getCurrentTenantId();
+  const tenantId = rawTenantId?.includes(".") ? rawTenantId : `${rawTenantId}.djb`;
   const [clusters, setClusters] = useState([]);
   const [selectedClusters, setSelectedClusters] = useState(Array.isArray(formData?.clusterIds) ? formData.clusterIds : []);
   const selectedZones = React.useMemo(() => (Array.isArray(formData?.zoneIds) ? formData.zoneIds : []), [formData?.zoneIds]);

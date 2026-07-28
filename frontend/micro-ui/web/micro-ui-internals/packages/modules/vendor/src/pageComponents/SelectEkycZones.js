@@ -119,7 +119,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { CardLabel, LabelFieldPair, MultiSelectDropdown, Loader } from "@djb25/digit-ui-react-components";
 
 const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true, disable = false }) => {
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const rawTenantId = Digit.ULBService.getCurrentTenantId();
+  const tenantId = rawTenantId?.includes(".") ? rawTenantId : `${rawTenantId}.djb`;
 
   const [zones, setZones] = useState([]);
   const [selectedZones, setSelectedZones] = useState([]);

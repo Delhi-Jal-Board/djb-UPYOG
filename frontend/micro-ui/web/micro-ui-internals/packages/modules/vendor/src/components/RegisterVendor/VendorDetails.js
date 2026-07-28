@@ -30,7 +30,8 @@ const formatLabel = (key) => {
 };
 
 const VendorDetails = () => {
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const rawTenantId = Digit.ULBService.getCurrentTenantId();
+  const tenantId = rawTenantId?.includes(".") ? rawTenantId : `${rawTenantId}.djb`;
   const { t } = useTranslation();
   const history = useHistory();
   const queryClient = useQueryClient();

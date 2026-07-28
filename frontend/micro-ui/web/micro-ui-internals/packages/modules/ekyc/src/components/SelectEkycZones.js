@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { CardLabel, LabelFieldPair, MultiSelectDropdown, Loader } from "@djb25/digit-ui-react-components";
 
 const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true, placeHolder }) => {
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const rawTenantId = Digit.ULBService.getCurrentTenantId();
+  const tenantId = rawTenantId?.includes(".") ? rawTenantId : `${rawTenantId}.djb`;
 
   const [zones, setZones] = useState([]);
   const [selectedZones, setSelectedZones] = useState([]);
@@ -40,13 +41,13 @@ const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true, 
     if (isMultiSelect) {
       if (!Array.isArray(formData.zoneIds)) return;
       // Already objects
-      if (formData.zoneIds.length && typeof formData.zoneIds[0] === "object") {
-        setSelectedZones(formData.zoneIds);
+      if (formData.zoneIds.length && typeof formData.zoneIds[0] === "object" && formData.zoneIds[0] !== null) {
+        setSelectedZones(formData.zoneIds.filter(Boolean));
         return;
       }
 
       // Initial API values (array of names/codes)
-      const selected = zones.filter((zone) => formData.zoneIds.includes(zone.name) || formData.zoneIds.includes(zone.code));
+      const selected = zones.filter((zone) => zone && (formData.zoneIds.includes(zone.name) || formData.zoneIds.includes(zone.code)));
 
       setSelectedZones(selected);
 
@@ -61,11 +62,11 @@ const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true, 
       if (Array.isArray(selectedVal)) {
         selectedVal = selectedVal[0]?.name || selectedVal[0]?.code || selectedVal[0] || "";
       }
-      if (typeof selectedVal === "object") {
+      if (selectedVal && typeof selectedVal === "object") {
         selectedVal = selectedVal.name || selectedVal.code || "";
       }
 
-      const selected = zones.find((zone) => zone.name === selectedVal || zone.code === selectedVal);
+      const selected = zones.find((zone) => zone && (zone.name === selectedVal || zone.code === selectedVal));
       setSelectedZones(selected ? [selected] : []);
 
       if (!initialized.current && selected) {
@@ -116,7 +117,7 @@ const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true, 
 
       {isMultiSelect && selectedZones.length > 0 && (
         <div className="selected-zones">
-          {selectedZones.map((zone) => (
+          {selectedZones.filter(zone => zone && zone.code).map((zone) => (
             <span key={zone.code} className="selected-zone-chip">
               {zone.name}
             </span>

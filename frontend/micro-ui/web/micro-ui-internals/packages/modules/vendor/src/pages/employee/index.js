@@ -14,6 +14,7 @@ import EditSupervisor from "../../components/RegisterSupervisor/EditSupervisor";
 import EditSurveyor from "../../components/RegisterSurveyor/EditSurveyor";
 import VENDORCreate from "../../components/Create/index";
 import EditVendor from "../../components/RegisterVendor/EditVendor";
+// import RoleManagement from "../../components/RoleManagement";
 
 const EmployeeApp = ({ path, url, userType }) => {
   const { t } = useTranslation();
@@ -91,6 +92,8 @@ const EmployeeApp = ({ path, url, userType }) => {
       crumbs.push({ label: t("ES_FSM_REGISTRY_TITLE_NEW_SURVEYOR") });
     } else if (pathname.includes("/registry/surveyor-details") || pathname.includes("/registry/modify-surveyor/")) {
       crumbs.push({ label: t("VENDOR_SURVEYOR_DETAILS") });
+    // } else if (pathname.includes("/role-management")) {
+    //   crumbs.push({ label: t("ES_TITLE_ROLE_MANAGEMENT", "Role Management") });
     }
 
     return crumbs;
@@ -286,6 +289,15 @@ const EmployeeApp = ({ path, url, userType }) => {
                 </LayoutWrapper>
               )}
             />
+
+            {/* <PrivateRoute
+              path={`${path}/role-management`}
+              component={(props) => (
+                <LayoutWrapper layoutClass="normal">
+                  <RoleManagement {...props} parentRoute={path} />
+                </LayoutWrapper>
+              )}
+            /> */}
           </div>
         </React.Fragment>
       </AppContainer>
