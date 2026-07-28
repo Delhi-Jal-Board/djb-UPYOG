@@ -66,6 +66,8 @@ public class WCConstants {
 
 	public static final String STATUS_PAID = "PAID";
 
+	public static final String PENDING_FOR_BILLING_CLERK_REVIEW = "PENDING_FOR_BILLING_CLERK_REVIEW";
+
 	public static final String NOTIFICATION_LOCALE = "en_IN";
 
 	public static final String MODULE = "rainmaker-ws";
