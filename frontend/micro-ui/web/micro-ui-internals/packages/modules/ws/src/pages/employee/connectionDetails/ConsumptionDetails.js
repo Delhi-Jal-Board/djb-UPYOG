@@ -77,7 +77,7 @@ const ConsumptionDetails = ({ view }) => {
       return dateString;
     }
   };
-  const getBillingPeriodFromMdms = mdmsBillingPeriod?.MdmsRes?.["ws-services-masters"]?.billingPeriod.filter((e) => e.connectionType === "Metered");
+  const getBillingPeriodFromMdms = mdmsBillingPeriod?.MdmsRes?.["ws-services-masters"]?.billingPeriod?.filter((e) => e.connectionType === "Metered");
 
   const popUp = () => {
     setOpenModal(true);
@@ -157,7 +157,7 @@ const ConsumptionDetails = ({ view }) => {
       });
     }
   };
-  let optionsList = mdmsMeterStatus?.MdmsRes?.["ws-services-calculation"]?.MeterStatus.map((status) => ({
+  let optionsList = mdmsMeterStatus?.MdmsRes?.["ws-services-calculation"]?.MeterStatus?.map((status) => ({
     code: status,
     i18nKey: `WS_SERVICES_CALCULATION_METERSTATUS_${Digit.Utils.locale.getTransformedLocale(status)}`,
   }));

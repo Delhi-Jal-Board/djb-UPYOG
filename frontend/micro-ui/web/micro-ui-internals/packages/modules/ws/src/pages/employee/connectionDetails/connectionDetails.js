@@ -309,9 +309,9 @@ const GetConnectionDetails = () => {
         <div className={"employee-application-details"} style={{ marginBottom: "15px" }}>
           <style>{`.multilinkWrapper employee-mulitlink-main-divNew { max-width:100%; maegin-top:-20px}`}</style>
           <div style={{ display: "flex" }}>
-            <div style={{ width: "80%" }}>
+            {/* <div style={{ width: "80%" }}>
               <Header styles={{ marginLeft: "0px", paddingTop: "10px", fontSize: "32px" }}>{t("WS_CONNECTION_DETAILS")}</Header>
-            </div>
+            </div> */}
             {dowloadOptions && dowloadOptions.length > 0 && (
               <div style={{ maxWidth: "100% !imnportant", zIndex: "10" }}>
                 <MultiLink
