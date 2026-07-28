@@ -117,7 +117,7 @@ const WSApplicationDetails = () => {
   const applicationStatus = data?.WaterConnection?.[0]?.applicationStatus || data?.SewerageConnections?.[0]?.applicationStatus;
   
   const isPaid =
-    applicationStatus && applicationStatus !== "INITIATED" && applicationStatus !== "PENDING_FOR_PAYMENT"
+    applicationStatus && applicationStatus !== "INITIATED" && applicationStatus !== "PENDING_FOR_PAYMENT" && applicationStatus !== "PENDING_FOR_FINAL_PAYMENT" && applicationStatus !== "PENDING_FOR_ADDITIONAL_PAYMENT"
       ? true
       : false;
 
@@ -927,7 +927,11 @@ const WSApplicationDetails = () => {
                 ))}
 
               {data?.WaterConnection?.[0]?.applicationStatus === "PENDING_FOR_PAYMENT" ||
-                data?.SewerageConnections?.[0]?.applicationStatus === "PENDING_FOR_PAYMENT" ? (
+                data?.WaterConnection?.[0]?.applicationStatus === "PENDING_FOR_FINAL_PAYMENT" ||
+                data?.WaterConnection?.[0]?.applicationStatus === "PENDING_FOR_ADDITIONAL_PAYMENT" ||
+                data?.SewerageConnections?.[0]?.applicationStatus === "PENDING_FOR_PAYMENT" ||
+                data?.SewerageConnections?.[0]?.applicationStatus === "PENDING_FOR_FINAL_PAYMENT" ||
+                data?.SewerageConnections?.[0]?.applicationStatus === "PENDING_FOR_ADDITIONAL_PAYMENT" ? (
                 <Link
                   to={{
                     pathname: `/digit-ui/citizen/payment/my-bills/${paymentDetails?.data?.Bill?.[0]?.businessService}/${applicationNobyData?.includes("DC")
