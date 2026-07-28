@@ -548,7 +548,8 @@ function ApplicationDetailsContent({
               "PENDING_FOR_ASO_APPROVAL",
               "PENDING_FOR_ZRO_APPROVAL",
               "PENDING_FOR_AE_APPROVAL",
-              "PENDING_FOR_FINAL_PAYMENT"
+              "PENDING_FOR_FINAL_PAYMENT",
+              "CONNECTION_ACTIVATED",
             ].includes(applicationData?.applicationStatus) && <DueVerification applicationData={applicationData} />}{" "}
           {detail?.additionalDetails?.documents &&
             [
@@ -557,10 +558,9 @@ function ApplicationDetailsContent({
               "PENDING_FOR_ASO_APPROVAL",
               "PENDING_FOR_ZRO_APPROVAL",
               "PENDING_FOR_AE_APPROVAL",
-              "PENDING_FOR_FINAL_PAYMENT"
-            ].includes(applicationData?.applicationStatus) && (
-            <InspectionInformation applicationData={applicationData} />
-          )}
+              "PENDING_FOR_FINAL_PAYMENT",
+              "CONNECTION_ACTIVATED",
+            ].includes(applicationData?.applicationStatus) && <InspectionInformation applicationData={applicationData} />}
           {detail?.additionalDetails?.taxHeadEstimatesCalculation && (
             <PropertyEstimates taxHeadEstimatesCalculation={detail?.additionalDetails?.taxHeadEstimatesCalculation} />
           )}

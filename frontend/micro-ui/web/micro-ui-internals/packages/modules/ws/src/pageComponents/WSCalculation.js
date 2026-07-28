@@ -9,6 +9,7 @@ import {
   SubmitBar,
   Card,
   Loader,
+  CheckBox,
 } from "@djb25/digit-ui-react-components";
 import React, { useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -53,6 +54,7 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
         numberOfStudents: "",
         servantQuarterArea: "",
         colonyName: "",
+        is12ABCertificate: false,
       },
     },
   });
@@ -227,6 +229,7 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
       setValue("useDetails.numberOfStudents", "");
       setValue("useDetails.servantQuarterArea", "");
       setValue("useDetails.colonyName", "");
+      setValue("useDetails.is12ABCertificate", false);
     }
   }, [formData?.cpt?.details, formData?.cpt, categoryOptions, propertyTypeOptions, usageTypeOptions, categoryTypeList, setValue]);
 
@@ -745,6 +748,22 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
             {isServentHouse && errors?.useDetails?.servantQuarterArea && (
               <CardLabelError style={errorStyle}>{errors.useDetails.servantQuarterArea.message}</CardLabelError>
             )}
+
+            <LabelFieldPair>
+              <div className="form-field">
+                <Controller
+                  control={control}
+                  name="useDetails.is12ABCertificate"
+                  render={({ value, onChange }) => (
+                    <CheckBox
+                      checked={value}
+                      onChange={(e) => onChange(e.target.checked)}
+                      label={t("WS_12_AB_CERTIFICATE_LABEL")}
+                    />
+                  )}
+                />
+              </div>
+            </LabelFieldPair>
           </div>
         </CollapsibleCardPage>
         <div style={{ display: "flex", marginTop: "24px", marginBottom: "32px", justifyContent: isMobile ? "center" : "flex-end", alignItems: "center" }}>

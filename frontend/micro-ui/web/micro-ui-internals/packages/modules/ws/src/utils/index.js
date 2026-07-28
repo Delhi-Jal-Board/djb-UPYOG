@@ -1852,6 +1852,7 @@ export const WSCalculationPayload = (data, tenantId) => {
     numberOfStudents: useDetails?.numberOfStudents ? Number(useDetails.numberOfStudents) : 0,
     numberOfBeds: useDetails?.numberOfBeds ? Number(useDetails.numberOfBeds) : 0,
     servantQuarterArea: useDetails?.servantQuarterArea ? Number(useDetails.servantQuarterArea) : 0,
+    is12ABCertificate: useDetails?.is12ABCertificate ? true : false,
   };
 
   // Optional fields based on form data that might be present

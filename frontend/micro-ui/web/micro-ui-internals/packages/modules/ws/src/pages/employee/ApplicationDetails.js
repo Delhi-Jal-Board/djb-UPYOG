@@ -150,6 +150,39 @@ const ApplicationDetails = () => {
   let dowloadOptions = [],
     appStatus = applicationDetails?.applicationData?.applicationStatus || "";
 
+  if (
+    workflowDetails?.data &&
+    applicationDetails?.processInstancesDetails?.[0]?.businessService === "NewWS1" &&
+    appStatus === "PENDING_FOR_BILLING_CLERK_REVIEW"
+  ) {
+    const landArea = applicationDetails?.propertyDetails?.landArea;
+    if (workflowDetails.data.actionState?.nextActions) {
+      workflowDetails.data.actionState.nextActions = workflowDetails.data.actionState.nextActions.filter((action) => {
+        if (action.action === "VERIFY_AND_FORWARD") {
+          if (landArea && landArea >= 200) {
+            return action.state === "PENDING_FOR_AE_APPROVAL" || action.applicationStatus === "PENDING_FOR_AE_APPROVAL";
+          } else {
+            return action.state === "PENDING_FOR_ASO_APPROVAL" || action.applicationStatus === "PENDING_FOR_ASO_APPROVAL";
+          }
+        }
+        return true;
+      });
+    }
+    if (workflowDetails.data.nextActions) {
+      workflowDetails.data.nextActions = workflowDetails.data.nextActions.filter((action) => {
+        if (action.action === "VERIFY_AND_FORWARD") {
+          const targetStateCode = action.state?.state;
+          if (landArea && landArea >= 200) {
+            return targetStateCode === "PENDING_FOR_AE_APPROVAL";
+          } else {
+            return targetStateCode === "PENDING_FOR_ASO_APPROVAL";
+          }
+        }
+        return true;
+      });
+    }
+  }
+
   workflowDetails?.data?.actionState?.nextActions?.forEach((action) => {
     if (action?.action === "ACTIVATE_CONNECTION") {
       action.redirectionUrll = {
