@@ -393,11 +393,11 @@ export const WSSearch = {
       };
     }
 
-    const billAccountDetails = fetchBillData?.Bill?.[0]?.billDetails?.[0]?.billAccountDetails || [];
+    const billAccountDetails = fetchBillData?.Bill?.[0]?.billDetails?.[0]?.billAccountDetails || fetchBillData?.Bill?.[0]?.taxHeadEstimates || [];
     const feeValues = billAccountDetails.length > 0
       ? billAccountDetails.map((bill) => ({
         title: bill?.taxHeadCode,
-        value: <span>&#8377;{Number(bill?.amount).toFixed(2)}</span>
+        value: <span>&#8377;{Number(bill?.amount).toFixed(2)}{bill?.status ? <span style={{ color: bill?.status?.toUpperCase() === "PAID" ? "green" : "red" }}>{` (${bill?.status})`}</span> : ""}</span>
       }))
       : [
         { title: "WS_APPLICATION_FEE_HEADER", value: <span>&#8377;{fetchBillData?.Bill?.[0]?.fee || 0}</span> },

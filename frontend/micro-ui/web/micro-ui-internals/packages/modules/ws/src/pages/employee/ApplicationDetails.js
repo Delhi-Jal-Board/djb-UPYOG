@@ -159,7 +159,7 @@ const ApplicationDetails = () => {
     if (workflowDetails.data.actionState?.nextActions) {
       workflowDetails.data.actionState.nextActions = workflowDetails.data.actionState.nextActions.filter((action) => {
         if (action.action === "VERIFY_AND_FORWARD") {
-          if (landArea && landArea >= 200) {
+          if (landArea && landArea > 200) {
             return action.state === "PENDING_FOR_AE_APPROVAL" || action.applicationStatus === "PENDING_FOR_AE_APPROVAL";
           } else {
             return action.state === "PENDING_FOR_ASO_APPROVAL" || action.applicationStatus === "PENDING_FOR_ASO_APPROVAL";
@@ -172,7 +172,7 @@ const ApplicationDetails = () => {
       workflowDetails.data.nextActions = workflowDetails.data.nextActions.filter((action) => {
         if (action.action === "VERIFY_AND_FORWARD") {
           const targetStateCode = action.state?.state;
-          if (landArea && landArea >= 200) {
+          if (landArea && landArea > 200) {
             return targetStateCode === "PENDING_FOR_AE_APPROVAL";
           } else {
             return targetStateCode === "PENDING_FOR_ASO_APPROVAL";
@@ -297,9 +297,8 @@ const ApplicationDetails = () => {
         };
       } else {
         action.redirectionUrll = {
-          pathname: `${getBusinessService(filters)}/${applicationDetails?.applicationNo}/${applicationDetails?.tenantId}?tenantId=${
-            applicationDetails?.tenantId
-          }&ISWSAPP&applicationNumber=${applicationDetails?.applicationNo}`,
+          pathname: `${getBusinessService(filters)}/${applicationDetails?.applicationNo}/${applicationDetails?.tenantId}?tenantId=${applicationDetails?.tenantId
+            }&ISWSAPP&applicationNumber=${applicationDetails?.applicationNo}`,
           state: applicationDetails?.tenantId,
         };
       }
@@ -320,9 +319,8 @@ const ApplicationDetails = () => {
         };
       } else {
         action.redirectionUrll = {
-          pathname: `${getBusinessService(filters)}/${applicationDetails?.applicationNo}/${applicationDetails?.tenantId}?tenantId=${
-            applicationDetails?.tenantId
-          }&ISWSAPP&applicationNumber=${applicationDetails?.applicationNo}`,
+          pathname: `${getBusinessService(filters)}/${applicationDetails?.applicationNo}/${applicationDetails?.tenantId}?tenantId=${applicationDetails?.tenantId
+            }&ISWSAPP&applicationNumber=${applicationDetails?.applicationNo}`,
           state: applicationDetails?.tenantId,
         };
       }
