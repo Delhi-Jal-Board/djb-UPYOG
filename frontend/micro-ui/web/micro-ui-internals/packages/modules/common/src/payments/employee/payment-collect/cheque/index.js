@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { TextInput, SearchIconSvg, DatePicker, CardLabelError } from "@djb25/digit-ui-react-components";
+import { TextInput, SearchIconSvg, DatePicker, CardLabelError , LabelFieldPair, CardLabel} from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 export const useChequeDetails = (props, t) => {
   const config = [
@@ -10,6 +10,7 @@ export const useChequeDetails = (props, t) => {
         {
           withoutLabel: true,
           type: "custom",
+          colSpan: "span 2",
           populators: {
             name: "paymentModeDetails",
             customProps: {},
@@ -64,80 +65,46 @@ export const ChequeDetailsComponent = (props) => {
 
   return (
     <React.Fragment>
-      <div className="label-field-pair">
-        <h2 className="card-label">{t("PAYMENT_CHQ_NO_LABEL")} *</h2>
-        <div className="field">
-          <div className="field-container">
-            <input
-              className="employee-card-input"
-              value={instrumentNumber}
-              type="text"
-              name="instrumentNumber"
-              onChange={(e) => setChequeNo(e.target.value)}
-              required
-              // minlength="6"
-              // maxLength="6"
-            />
+      <div className="formcomposer-section-grid">
+        <LabelFieldPair>
+          <CardLabel>{`${t("PAYMENT_CHQ_NO_LABEL")} *`}</CardLabel>
+          <TextInput value={instrumentNumber} onChange={(e) => setChequeNo(e.target.value)} name="instrumentNumber" required/>
+        </LabelFieldPair>
+
+        <LabelFieldPair>
+          <CardLabel>{`${t("PAYMENT_CHEQUE_DATE_LABEL")} *`}</CardLabel>
+          <DatePicker
+            isRequired={true}
+            date={instrumentDate}
+            onChange={(d) => {
+              setChequeDate(d);
+            }}
+          />
+        </LabelFieldPair>
+
+        <LabelFieldPair>
+          <CardLabel>{`${t("PAYMENT_IFSC_CODE_LABEL")} *`}</CardLabel>
+          <div className="field">
+            <div className="cheque-date">
+              <input value={ifscCode} type="text" onChange={handleIFSCChange} minLength="11" maxLength="11" required />
+              <button type="button" onClick={setBankDetailsFromIFSC}>
+                <SearchIconSvg />
+              </button>
+            </div>
+            {ifscCodeError && <CardLabelError style={{ fontSize: "12px", marginTop: "-21px" }}>{ifscCodeError}</CardLabelError>}
           </div>
-        </div>
+        </LabelFieldPair>
+
+        <LabelFieldPair>
+          <CardLabel>{t("PAYMENT_BANK_NAME_LABEL")}</CardLabel>
+          <TextInput value={bankName} readOnly disabled />
+        </LabelFieldPair>
+
+        <LabelFieldPair>
+          <CardLabel>{t("PAYMENT_BANK_BRANCH_LABEL")}</CardLabel>
+          <TextInput value={bankBranch} readOnly disabled />
+        </LabelFieldPair>
       </div>
-      <div className="label-field-pair">
-        <h2 className="card-label">{t("PAYMENT_CHEQUE_DATE_LABEL")} *</h2>
-        <div className="field">
-          <div className="field-container">
-            <DatePicker
-              isRequired={true}
-              date={instrumentDate}
-              onChange={(d) => {
-                setChequeDate(d);
-              }}
-            />
-          </div>
-        </div>
-      </div>
-      {
-        // chequeDate && chequeNo &&
-        <React.Fragment>
-          <div className="label-field-pair">
-            <h2 className="card-label">{t("PAYMENT_IFSC_CODE_LABEL")} *</h2>
-            <div className="field">
-              <div>
-                <div className="cheque-date">
-                  <input value={ifscCode} type="text" onChange={handleIFSCChange} minlength="11" maxlength="11" required />
-                  <button type="button" onClick={setBankDetailsFromIFSC}>
-                    <SearchIconSvg />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-          {ifscCodeError && <CardLabelError style={{ width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" }}>{ifscCodeError}</CardLabelError>}
-          <div className="label-field-pair">
-            <h2 className="card-label">{t("PAYMENT_BANK_NAME_LABEL")}</h2>
-            <div className="field">
-              <div className="field-container">
-                <input
-                  // style={{ border: "2px solid #0b0c0c", borderRadius: "2px" }}
-                  className="employee-card-input"
-                  value={bankName}
-                  type="text"
-                  className="employee-card-input"
-                  readOnly
-                  disabled
-                />
-              </div>
-            </div>
-          </div>
-          <div className="label-field-pair">
-            <h2 className="card-label">{t("PAYMENT_BANK_BRANCH_LABEL")}</h2>
-            <div className="field">
-              <div className="field-container">
-                <input className="employee-card-input" value={bankBranch} type="text" className="employee-card-input" readOnly disabled />
-              </div>
-            </div>
-          </div>
-        </React.Fragment>
-      }
     </React.Fragment>
   );
 };

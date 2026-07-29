@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { TextInput, CardLabel, CardLabelError, SearchIconSvg, Dropdown, LabelFieldPair } from "@djb25/digit-ui-react-components";
 
 export const useCardPaymentDetails = (props, t) => {
   const config = [
@@ -10,6 +11,7 @@ export const useCardPaymentDetails = (props, t) => {
         {
           withoutLabel: true,
           type: "custom",
+          colSpan: "span 2",
           populators: {
             name: "paymentModeDetails",
             customProps: {},
@@ -43,54 +45,28 @@ const CardDetailsComponent = ({ ...props }) => {
   }, [last4Digits, transactionNumber, reTransanctionNumber]);
 
   return (
-    <React.Fragment>
-      <div className="label-field-pair">
-        <h2 className="card-label">{`${t("NOC_PAYMENT_CARD_LAST_DIGITS_LABEL")} *`}</h2>
-        <div className="field">
-          <div className="field-container">
-            <input
-              className="employee-card-input"
-              value={last4Digits}
-              type="text"
-              name="instrumentNumber"
-              maxLength="4"
-              minLength="4"
-              required
-              onChange={(e) => setLast4Digits(e.target.value)}
-            />
-          </div>
-        </div>
-      </div>
-      <div className="label-field-pair">
-        <h2 className="card-label">{`${t("NOC_PAYMENT_TRANS_NO_LABEL")} *`}</h2>
-        <div className="field">
-          <div className="field-container">
-            <input
-              className="employee-card-input"
-              value={transactionNumber}
-              type="text"
-              name="instrumentNumber"
-              required
-              onChange={(e) => setTransactionNumber(e.target.value)}
-            />
-          </div>
-        </div>
-      </div>
-      <div className="label-field-pair">
-        <h2 className="card-label">{`${t("NOC_PAYMENT_RENTR_TRANS_LABEL")} *`}</h2>
-        <div className="field">
-          <div className="field-container">
-            <input
-              className="employee-card-input"
-              value={reTransanctionNumber}
-              type="text"
-              name="instrumentNumber"
-              required
-              onChange={(e) => setReTransanctionNumber(e.target.value)}
-            />
-          </div>
-        </div>
-      </div>
-    </React.Fragment>
+    <div className="formcomposer-section-grid">
+      <LabelFieldPair>
+        <CardLabel>{`${t("NOC_PAYMENT_CARD_LAST_DIGITS_LABEL")} *`}</CardLabel>
+        <TextInput
+          value={last4Digits}
+          name="instrumentNumber"
+          maxLength="4"
+          minLength="4"
+          required
+          onChange={(e) => setLast4Digits(e.target.value)}
+        />
+      </LabelFieldPair>
+      
+      <LabelFieldPair>
+        <CardLabel>{`${t("NOC_PAYMENT_TRANS_NO_LABEL")} *`}</CardLabel>
+        <TextInput value={transactionNumber} name="instrumentNumber" required onChange={(e) => setTransactionNumber(e.target.value)} />
+      </LabelFieldPair>
+      
+      <LabelFieldPair>
+        <CardLabel>{`${t("NOC_PAYMENT_RENTR_TRANS_LABEL")} *`}</CardLabel>
+        <TextInput value={reTransanctionNumber} name="instrumentNumber" required onChange={(e) => setReTransanctionNumber(e.target.value)} />
+      </LabelFieldPair>
+    </div>
   );
 };
