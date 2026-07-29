@@ -577,27 +577,43 @@ public class EstimationService {
 			estimates.add(TaxHeadEstimate.builder().taxHeadCode(WSCalculationConstant.WS_TAX_AND_CESS)
 					.estimateAmount(tax.setScale(2, RoundingMode.HALF_UP)).build());
 
-		if (criteria.getWaterConnection().getAdditionalDetails() != null) {
-			try {
-				java.util.Map<String, Object> addDetails = mapper.convertValue(
-					criteria.getWaterConnection().getAdditionalDetails(), 
-					new com.fasterxml.jackson.core.type.TypeReference<java.util.Map<String, Object>>(){}
-				);
-				if (addDetails.containsKey("knoDues")) {
-					BigDecimal knoDues = new BigDecimal(addDetails.get("knoDues").toString());
-					if (knoDues.compareTo(BigDecimal.ZERO) > 0) {
-						estimates.add(TaxHeadEstimate.builder()
-								.taxHeadCode(WSCalculationConstant.WS_OTHER_CHARGE)
-								.estimateAmount(knoDues.setScale(2, RoundingMode.HALF_UP))
-								.build());
-					}
+		// Calculate K-Number dues from dueVerification if present
+		BigDecimal totalDues = BigDecimal.ZERO;
+		if (criteria.getWaterConnection().getDueVerification() != null) {
+			for (DueVerification due : criteria.getWaterConnection().getDueVerification()) {
+				if (due.getDueAmount() != null && !due.getDueAmount().trim().isEmpty()) {
+					totalDues = totalDues.add(new BigDecimal(due.getDueAmount()));
 				}
-			} catch (Exception e) {
-				log.error("Failed to parse knoDues from additional details", e);
 			}
+		}
+		if (totalDues.compareTo(BigDecimal.ZERO) > 0) {
+			estimates.add(TaxHeadEstimate.builder()
+					.taxHeadCode(WSCalculationConstant.WS_OTHER_CHARGE)
+					.estimateAmount(totalDues.setScale(2, RoundingMode.HALF_UP))
+					.build());
+			log.info("Added K-Number dues to estimates: {}", totalDues);
 		}
 
 		addAdhocPenaltyAndRebate(estimates, criteria.getWaterConnection());
+
+		// Determine payment status based on workflow state
+		String appStatus = criteria.getWaterConnection().getApplicationStatus();
+		List<String> unpaidInitialStates = Arrays.asList("INITIATED", "PENDING_FOR_PAYMENT", "PENDING_FOR_CITIZEN_ACTION");
+		boolean isInitialFeePaid = appStatus != null && !unpaidInitialStates.contains(appStatus.toUpperCase());
+				
+		boolean isFinalFeePaid = "PENDING_FOR_CONNECTION_ACTIVATION".equalsIgnoreCase(appStatus)
+				|| "CONNECTION_ACTIVATED".equalsIgnoreCase(appStatus);
+
+		for (TaxHeadEstimate estimate : estimates) {
+			if (WSCalculationConstant.WS_OTHER_CHARGE.equals(estimate.getTaxHeadCode())) {
+				// K-Number dues are final fees
+				estimate.setStatus(isFinalFeePaid ? "PAID" : "UNPAID");
+			} else {
+				// All standard upfront charges (Application fee, Infrastructure, etc.) are initial fees
+				estimate.setStatus(isInitialFeePaid ? "PAID" : "UNPAID");
+			}
+		}
+
 		return estimates;
 	}
 
