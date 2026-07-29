@@ -656,11 +656,13 @@ export const WSSearch = {
     );
     const otherDoc = allDocs.find(
       (d) =>
-        d?.documentType?.includes("OTHER") ||
+        d?.id !== identityDoc?.id &&
+        d?.id !== ownershipDoc?.id &&
+        (d?.documentType?.includes("OTHER") ||
         d?.documentType?.includes("ELECTRICITY") ||
         d?.documentType?.includes("PLUMBER") ||
         d?.documentType?.includes("BUILDING") ||
-        d?.documentType?.includes("TAX")
+        d?.documentType?.includes("TAX"))
     );
     const applicantPhoto = allDocs.find((d) => d?.documentType?.includes("APPLICANTPHOTO") || d?.documentType?.includes("PHOTO"));
 
@@ -677,7 +679,7 @@ export const WSSearch = {
                   title: "WS_IDENTITY_PROOF",
                   categoryLabel: "Proof of Identity",
                   documentType: identityDoc?.documentType,
-                  documentUid: wsDataDetails?.additionalDetails?.identityProofNumber || identityDoc?.documentUid || "",
+                  documentUid: wsDataDetails?.additionalDetails?.identityProofNumber || identityDoc?.documentNumber || "NA",
                   fileStoreId: identityDoc?.fileStoreId,
                   numberLabel: "Identity Proof Document Number",
                   originalDoc: identityDoc,
@@ -688,7 +690,7 @@ export const WSSearch = {
                   title: "WS_OWNERSHIP_PROOF",
                   categoryLabel: "Proof of Ownership",
                   documentType: ownershipDoc?.documentType,
-                  documentUid: wsDataDetails?.additionalDetails?.ownershipDocumentNumber || ownershipDoc?.documentUid || "",
+                  documentUid: wsDataDetails?.additionalDetails?.ownershipDocumentNumber || ownershipDoc?.documentNumber || "NA",
                   fileStoreId: ownershipDoc?.fileStoreId,
                   numberLabel: "Ownership Proof Document Number",
                   originalDoc: ownershipDoc,
@@ -699,7 +701,7 @@ export const WSSearch = {
                   title: "WS_OTHER_DOCUMENTS",
                   categoryLabel: "Other Documents",
                   documentType: otherDoc?.documentType,
-                  documentUid: wsDataDetails?.additionalDetails?.otherDocumentNumber || otherDoc?.documentUid || "",
+                  documentUid: wsDataDetails?.additionalDetails?.otherDocumentNumber || otherDoc?.documentNumber || "NA",
                   fileStoreId: otherDoc?.fileStoreId,
                   numberLabel: "Other Document Number",
                   originalDoc: otherDoc,
