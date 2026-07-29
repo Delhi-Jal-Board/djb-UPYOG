@@ -617,17 +617,11 @@ public class EstimationService {
 		return estimates;
 	}
 
-	private boolean isSection12ABFlagSet(CalculationCriteria criteria, Property property) {
-		Object connFlag = criteria.getWaterConnection() != null && criteria.getWaterConnection().getAdditionalDetails() != null ? ((Map) criteria.getWaterConnection().getAdditionalDetails()).get(WSCalculationConstant.IS_SECTION_12AB) : null;
-		Object propFlag = property != null && property.getAdditionalDetails() != null ? ((Map) property.getAdditionalDetails()).get(WSCalculationConstant.IS_SECTION_12AB) : null;
-		return Boolean.TRUE.equals(connFlag) || Boolean.TRUE.equals(propFlag);
-	}
-
 	private boolean hasActive12ABCertificate(CalculationCriteria criteria) {
 		if (criteria.getWaterConnection() == null || CollectionUtils.isEmpty(criteria.getWaterConnection().getDocuments())) {
 			return false;
 		}
-		return criteria.getWaterConnection().getDocuments().stream().anyMatch(doc -> "OWNER.OTHERDOCUMENTS.12_AB_CERTIFICATE".equalsIgnoreCase(doc.getDocumentType()) && (doc.getStatus() == null || doc.getStatus() == Status.ACTIVE));
+		return criteria.getWaterConnection().getDocuments().stream().anyMatch(doc -> WSCalculationConstant.SECTION_12AB_CERTIFICATE.equalsIgnoreCase(doc.getDocumentType()) && (doc.getStatus() == null || doc.getStatus() == Status.ACTIVE));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -724,7 +718,7 @@ public class EstimationService {
 
 		Map<String, Object> instRebateConfig = infra.get(WSCalculationConstant.INSTITUTIONAL_REBATE) != null ? mapper.convertValue(infra.get(WSCalculationConstant.INSTITUTIONAL_REBATE), new TypeReference<Map<String, Object>>() {}) : null;
 
-		if (instRebateConfig != null && (isSection12ABFlagSet(criteria, property) || hasActive12ABCertificate(criteria))) {
+		if (instRebateConfig != null && hasActive12ABCertificate(criteria)) {
 			List<String> eligibleCodes = instRebateConfig.get(WSCalculationConstant.ELIGIBLE_USAGE_CODES) != null ? mapper.convertValue(instRebateConfig.get(WSCalculationConstant.ELIGIBLE_USAGE_CODES), new TypeReference<List<String>>() {}) : Collections.emptyList();
 
 			boolean isPlaceOfWorship = eligibleCodes.stream().anyMatch(c ->

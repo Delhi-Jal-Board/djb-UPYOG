@@ -542,6 +542,7 @@ public class WSCalculationConstant {
 	public static final String ELIGIBLE_USAGE_CODES = "eligibleUsageCodes";
 	public static final String ELIGIBLE_FLAGS = "eligibleFlags";
 	public static final String IS_SECTION_12AB = "isSection12ABRegistered";
+	public static final String SECTION_12AB_CERTIFICATE = "OWNER.OTHERDOCUMENTS.12_AB_CERTIFICATE";
 
 }
 
