@@ -536,6 +536,13 @@ public class WSCalculationConstant {
 	public static final String WC_PROPERTY_NEW_USAGE_TYPE_MASTER = "PropertyNewUsageType";
 	public static final String PROPERTY_TAX_MODULE = "PropertyTax";
 
+	// Institutional / Section 12AB Rebate Constants
+	public static final String INSTITUTIONAL_REBATE = "institutionalRebate";
+	public static final String INSTITUTIONAL_REBATE_PERCENTAGE = "percentage";
+	public static final String ELIGIBLE_USAGE_CODES = "eligibleUsageCodes";
+	public static final String ELIGIBLE_FLAGS = "eligibleFlags";
+	public static final String IS_SECTION_12AB = "isSection12ABRegistered";
+
 }
 
 
