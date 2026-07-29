@@ -25,18 +25,22 @@ const EmployeePayment = ({ stateCode, cityCode, moduleCode }) => {
 
   const getDynamicBreadcrumbs = () => {
     const pathname = location.pathname;
-    let crumbs = [
-      { icon: HomeIcon, path: "/digit-ui/employee" },
-      { label: t("ES_COMMON_HOME"), path: "/digit-ui/employee" },
-    ];
-    if (pathname.includes("/fsm/home")) {
-      crumbs.push({ label: t("ES_TITLE_FSM"), path: "/digit-ui/employee/fsm/home" });
-    } else if (pathname.includes("/fsm/inbox")) {
-      crumbs.push({ label: t("ES_TITLE_INBOX"), path: "/digit-ui/employee/fsm/inbox" });
+    let crumbs = [{ icon: HomeIcon, path: "/digit-ui/employee" }];
+    if (pathname.includes("/payment/collect")) {
+      crumbs.push({ label: t("PAYMENT_COLLECT_LABEL"), path: "" });
+    } else if (pathname.includes("/payment/success")) {
+      crumbs.push({ label: t("CS_PAYMENT_SUCCESSFUL"), path: "" });
+    } else if (pathname.includes("/payment/failure")) {
+      crumbs.push({ label: t("CS_PAYMENT_FAILED"), path: "" });
+    } else {
+      if (pathname.includes("/fsm/home")) {
+        crumbs.push({ label: t("ES_TITLE_FSM"), path: "/digit-ui/employee/fsm/home" });
+      } else if (pathname.includes("/fsm/inbox")) {
+        crumbs.push({ label: t("ES_TITLE_INBOX"), path: "/digit-ui/employee/fsm/inbox" });
+      }
     }
     return crumbs;
   };
-
 
   return (
     <React.Fragment>
@@ -45,40 +49,39 @@ const EmployeePayment = ({ stateCode, cityCode, moduleCode }) => {
         {isFsm ? <Link to={`/digit-ui/employee/fsm/home`}>/ {t("ES_TITLE_FSM")} </Link> : null}
         {isFsm ? <Link to={`/digit-ui/employee/fsm/inbox`}>/ {t("ES_TITLE_INBOX")}</Link> : null}/ {link}
       </p> */}
-      <Switch>
-        <AppContainer>
-          <div className="ground-container employee-app-container form-container">
-            <ModuleHeader
-              leftContent={
-                <React.Fragment>
-                  <ArrowLeft className="icon" />
-                  {t("CS_COMMON_BACK")}
-                </React.Fragment>
-              }
-              onLeftClick={() => window.history.back()}
-              breadcrumbs={getDynamicBreadcrumbs()}
-            />
-            {/* ----------------------------- ROUTES ----------------------------- */}
-            <div className="employee-form">
-              <div className="employee-form-content">
-                <PrivateRoute path={`${currentPath}/collect/:businessService/:consumerCode`}>
+      <div className="ground-container employee-app-container form-container">
+        <ModuleHeader
+          leftContent={
+            <React.Fragment>
+              <ArrowLeft className="icon" />
+              {t("CS_COMMON_BACK")}
+            </React.Fragment>
+          }
+          onLeftClick={() => window.history.back()}
+          breadcrumbs={getDynamicBreadcrumbs()}
+        />
+        {/* ----------------------------- ROUTES ----------------------------- */}
+        <div className="employee-form">
+          <div className="employee-form-content">
+            <Switch>
+              <PrivateRoute path={`${currentPath}/collect/:businessService/:consumerCode`}>
+                <LayoutWrapper layoutClass="action">
                   <CollectPayment {...commonProps} basePath={currentPath} />
-                </PrivateRoute>
-                <PrivateRoute path={`${currentPath}/success/:businessService/:receiptNumber/:consumerCode`}>
-                  <SuccessfulPayment {...commonProps} />
-                </PrivateRoute>
-                <PrivateRoute path={`${currentPath}/integration/:moduleName/:pageName`}>
-                  <IFrameInterface {...commonProps} />
-                </PrivateRoute>
-                <PrivateRoute path={`${currentPath}/failure`}>
-                  <FailedPayment {...commonProps} />
-                </PrivateRoute>
-              </div>
-            </div>
+                </LayoutWrapper>
+              </PrivateRoute>
+              <PrivateRoute path={`${currentPath}/success/:businessService/:receiptNumber/:consumerCode`}>
+                <SuccessfulPayment {...commonProps} />
+              </PrivateRoute>
+              <PrivateRoute path={`${currentPath}/integration/:moduleName/:pageName`}>
+                <IFrameInterface {...commonProps} />
+              </PrivateRoute>
+              <PrivateRoute path={`${currentPath}/failure`}>
+                <FailedPayment {...commonProps} />
+              </PrivateRoute>
+            </Switch>
           </div>
-        </AppContainer>
-
-      </Switch>
+        </div>
+      </div>
     </React.Fragment>
   );
 };

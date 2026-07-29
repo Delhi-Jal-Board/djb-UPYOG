@@ -1,5 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { RadioButtons, FormComposer, Dropdown, CardSectionHeader, Loader, Toast, Card, Header } from "@djb25/digit-ui-react-components";
+import {
+  RadioButtons,
+  FormComposer,
+  Dropdown,
+  CardSectionHeader,
+  Loader,
+  Toast,
+  Card,
+  Header,
+  VerticalTimeline,
+} from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useHistory, useParams, useRouteMatch, useLocation } from "react-router-dom";
 import { useQueryClient } from "react-query";
@@ -128,7 +138,12 @@ export const CollectPayment = (props) => {
         paidBy: data.paidBy,
       },
     };
-    if (advanceBill !== null && (applicationData?.applicationStatus === "PENDING_APPL_FEE_PAYMENT" || applicationData?.applicationStatus === "PENDING_APPL_FEE_PAYMENT_CITIZEN") && !applicationData.paymentPreference) {
+    if (
+      advanceBill !== null &&
+      (applicationData?.applicationStatus === "PENDING_APPL_FEE_PAYMENT" ||
+        applicationData?.applicationStatus === "PENDING_APPL_FEE_PAYMENT_CITIZEN") &&
+      !applicationData.paymentPreference
+    ) {
       (recieptRequest.Payment.paymentDetails[0].totalAmountPaid = advanceBill),
         (recieptRequest.Payment.totalAmountPaid = advanceBill),
         (recieptRequest.Payment.totalDue = bill.totalAmount);
@@ -186,9 +201,10 @@ export const CollectPayment = (props) => {
       const resposne = await Digit.PaymentService.createReciept(tenantId, recieptRequest);
       queryClient.invalidateQueries();
       history.push(
-        IsDisconnectionFlow ? `${props.basePath}/success/${businessService}/${resposne?.Payments[0]?.paymentDetails[0]?.receiptNumber.replace(/\//g, "%2F")}/${resposne?.Payments[0]?.paymentDetails[0]?.bill?.consumerCode
-          }?IsDisconnectionFlow=${IsDisconnectionFlow}` :
-          `${props.basePath}/success/${businessService}/${resposne?.Payments[0]?.paymentDetails[0]?.receiptNumber.replace(/\//g, "%2F")}/${resposne?.Payments[0]?.paymentDetails[0]?.bill?.consumerCode
+        IsDisconnectionFlow
+          ? `${props.basePath}/success/${businessService}/${resposne?.Payments[0]?.paymentDetails[0]?.receiptNumber.replace(/\//g, "%2F")}/${resposne?.Payments[0]?.paymentDetails[0]?.bill?.consumerCode
+          }?IsDisconnectionFlow=${IsDisconnectionFlow}`
+          : `${props.basePath}/success/${businessService}/${resposne?.Payments[0]?.paymentDetails[0]?.receiptNumber.replace(/\//g, "%2F")}/${resposne?.Payments[0]?.paymentDetails[0]?.bill?.consumerCode
           }?IsDisconnectionFlow=${IsDisconnectionFlow}`
       );
     } catch (error) {
@@ -350,34 +366,51 @@ export const CollectPayment = (props) => {
         {/* <Header styles={{ marginLeft: "15px" }}>{checkFSM ? t("PAYMENT_COLLECT_LABEL") : t("PAYMENT_COLLECT")}</Header> */}
         {timerEnabledForBusinessService(businessService) && (
           <Header styles={{ marginRight: "15px" }}>
-            <TimerServices businessService={businessService} setTime={setTime} timerValues={state?.timerValue} t={t} SlotSearchData={state?.SlotSearchData} />
+            <TimerServices
+              businessService={businessService}
+              setTime={setTime}
+              timerValues={state?.timerValue}
+              t={t}
+              SlotSearchData={state?.SlotSearchData}
+            />
           </Header>
         )}
       </div>
-      <FormComposer
-        cardStyle={{ paddingBottom: "100px" }}
-        label={t("PAYMENT_COLLECT_LABEL")}
-        config={getFormConfig()}
-        onSubmit={onSubmit}
-        formState={formState}
-        defaultValues={getDefaultValues()}
-        isDisabled={(IsDisconnectionFlow ? false : businessService === "SW" || businessService === "WS" ? false : bill?.totalAmount ? !bill.totalAmount > 0 : true) || (timerEnabledForBusinessService(businessService) && Time === 0)}
-        // isDisabled={BillDetailsFormConfig({ consumerCode }, t)[businessService] ? !}
-        onFormValueChange={(setValue, formValue) => {
-          if (!isEqual(formValue.paymentMode, selectedPaymentMode)) {
-            setFormState(formValue);
-            setPaymentMode(formState.paymentMode);
+      <div className="employee-form-section-wrapper">
+        <VerticalTimeline config={[{ timeLine: [{ actions: t("PAYMENT_COLLECT_LABEL"), currentStep: 1 }] }]} showFinalStep={false} />
+        <FormComposer
+          label={t("PAYMENT_COLLECT_LABEL")}
+          config={getFormConfig()}
+          onSubmit={onSubmit}
+          formState={formState}
+          defaultValues={getDefaultValues()}
+          isDisabled={
+            (IsDisconnectionFlow
+              ? false
+              : businessService === "SW" || businessService === "WS"
+                ? false
+                : bill?.totalAmount
+                  ? !bill.totalAmount > 0
+                  : true) ||
+            (timerEnabledForBusinessService(businessService) && Time === 0)
           }
-        }}
-      ></FormComposer>
-      {toast && (
-        <Toast
-          error={toast.key === "error"}
-          label={t(toast.key === "success" ? `ES_${businessService.split(".")[0].toLowerCase()}_${toast.action}_UPDATE_SUCCESS` : toast.action)}
-          onClose={() => setToast(null)}
-          style={{ maxWidth: "670px" }}
+          // isDisabled={BillDetailsFormConfig({ consumerCode }, t)[businessService] ? !}
+          onFormValueChange={(setValue, formValue) => {
+            if (!isEqual(formValue.paymentMode, selectedPaymentMode)) {
+              setFormState(formValue);
+              setPaymentMode(formState.paymentMode);
+            }
+          }}
         />
-      )}
+        {toast && (
+          <Toast
+            error={toast.key === "error"}
+            label={t(toast.key === "success" ? `ES_${businessService.split(".")[0].toLowerCase()}_${toast.action}_UPDATE_SUCCESS` : toast.action)}
+            onClose={() => setToast(null)}
+            style={{ maxWidth: "670px" }}
+          />
+        )}
+      </div>
     </React.Fragment>
   );
 };

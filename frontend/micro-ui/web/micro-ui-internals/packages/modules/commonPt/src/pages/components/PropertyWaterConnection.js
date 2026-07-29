@@ -72,7 +72,8 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
     watchPropertyType?.code === "HospitalNursingHome";
   const isHotelRestaurantProperty = watchPropertyType?.code === "HOTEL_OR_RESTAURANT" || watchPropertyType?.code === "HotelOrRestaurant";
   const isSchoolCollegeProperty = watchPropertyType?.code === "School" || watchPropertyType?.code === "College";
-  const isDwellingUnit = watchPropertyCategory?.code === "RESIDENTIAL" || watchPropertyCategory?.code === "RESIDENTIAL";
+  const isDwellingUnit =
+    watchPropertyType?.code === "Apartment" || watchPropertyType?.code === "FlatOrApartment" || watchPropertyType?.code === "IndividualHouse";
   const isServentHouse =
     watchPropertyType?.code === "Apartment" || watchPropertyType?.code === "FlatOrApartment" || watchPropertyType?.code === "IndividualHouse";
 
