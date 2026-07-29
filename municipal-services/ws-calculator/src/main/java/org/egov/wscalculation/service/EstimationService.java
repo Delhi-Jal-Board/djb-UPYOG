@@ -617,6 +617,13 @@ public class EstimationService {
 		return estimates;
 	}
 
+	private boolean hasActive12ABCertificate(CalculationCriteria criteria) {
+		if (criteria.getWaterConnection() == null || CollectionUtils.isEmpty(criteria.getWaterConnection().getDocuments())) {
+			return false;
+		}
+		return criteria.getWaterConnection().getDocuments().stream().anyMatch(doc -> WSCalculationConstant.SECTION_12AB_CERTIFICATE.equalsIgnoreCase(doc.getDocumentType()) && (doc.getStatus() == null || doc.getStatus() == Status.ACTIVE));
+	}
+
 	@SuppressWarnings("unchecked")
 	private BigDecimal calculateInfrastructureCharge(CalculationCriteria criteria, Property property, Map<String, Object> masterData, String colonyCategory) {
 
@@ -704,6 +711,28 @@ public class EstimationService {
 
 		BigDecimal netIFC = grossIFC.subtract(rebateAmount).setScale(2, RoundingMode.HALF_UP);
 
+		// ==================== SECTION 12AB / WORSHIP REBATE ====================
+		BigDecimal institutionalRebatePercentage = BigDecimal.ZERO;
+		BigDecimal institutionalRebateAmount = BigDecimal.ZERO;
+		String institutionalRebateReason = null;
+
+		Map<String, Object> instRebateConfig = infra.get(WSCalculationConstant.INSTITUTIONAL_REBATE) != null ? mapper.convertValue(infra.get(WSCalculationConstant.INSTITUTIONAL_REBATE), new TypeReference<Map<String, Object>>() {}) : null;
+
+		if (instRebateConfig != null && hasActive12ABCertificate(criteria)) {
+			List<String> eligibleCodes = instRebateConfig.get(WSCalculationConstant.ELIGIBLE_USAGE_CODES) != null ? mapper.convertValue(instRebateConfig.get(WSCalculationConstant.ELIGIBLE_USAGE_CODES), new TypeReference<List<String>>() {}) : Collections.emptyList();
+
+			boolean isPlaceOfWorship = eligibleCodes.stream().anyMatch(c ->
+					c.equalsIgnoreCase(extractWaterConnectionUsageType(property)) || (property != null && c.equalsIgnoreCase(property.getUsageCategory())));
+
+			institutionalRebateReason = isPlaceOfWorship ? "Section 12AB Registered Place of Worship" : "Section 12AB Registered Institution";
+
+			institutionalRebatePercentage = new BigDecimal(instRebateConfig.get(WSCalculationConstant.INSTITUTIONAL_REBATE_PERCENTAGE).toString());
+			institutionalRebateAmount = netIFC.multiply(institutionalRebatePercentage).divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP);
+			netIFC = netIFC.subtract(institutionalRebateAmount).setScale(2, RoundingMode.HALF_UP);
+		}
+
+		boolean isInstitutionalRebateEligible = institutionalRebateReason != null;
+
 		// ==================== DETAILED BREAKDOWN LOGGING ====================
 		log.info("======================================================================");
 		log.info("           INFRASTRUCTURE CHARGE BREAKDOWN REPORT                    ");
@@ -723,8 +752,13 @@ public class EstimationService {
 		log.info("----------------------------------------------------------------------");
 		log.info("Applicable Rebate    : {}%", rebatePercentage.setScale(2, RoundingMode.HALF_UP));
 		log.info("Rebate Concession Amt: {}", rebateAmount.setScale(2, RoundingMode.HALF_UP));
+		if (isInstitutionalRebateEligible) {
+			log.info("----------------------------------------------------------------------");
+			log.info("Institutional Rebate : {}% (Reason: {})", institutionalRebatePercentage.setScale(2, RoundingMode.HALF_UP), institutionalRebateReason);
+			log.info("Inst. Rebate Amount  : {}", institutionalRebateAmount.setScale(2, RoundingMode.HALF_UP));
+		}
 		log.info("======================================================================");
-		log.info("FINAL PAYABLE NET IFC: {}  [Formula: Gross Total - Rebate Amount]", netIFC);
+		log.info("FINAL PAYABLE NET IFC: {}  [Formula: Gross Total - Rebates - Institutional Rebate]", netIFC);
 		log.info("======================================================================");
 		// ====================================================================
 
@@ -740,6 +774,10 @@ public class EstimationService {
 
 		    infraBreakdown.put("waterRatePerLPD", waterRate.setScale(2, RoundingMode.HALF_UP));
 		    infraBreakdown.put("grossInfrastructureCharge", grossIFC.setScale(2, RoundingMode.HALF_UP));
+		    infraBreakdown.put("institutionalRebateApplied", isInstitutionalRebateEligible);
+		    infraBreakdown.put("institutionalRebateReason", institutionalRebateReason);
+		    infraBreakdown.put("institutionalRebatePercentage", institutionalRebatePercentage.setScale(2, RoundingMode.HALF_UP));
+		    infraBreakdown.put("institutionalRebateAmount", institutionalRebateAmount.setScale(2, RoundingMode.HALF_UP));
 		    infraBreakdown.put("netInfrastructureCharge", netIFC);
 
 		    if (criteria.getWaterConnection() != null) {
@@ -780,6 +818,10 @@ public class EstimationService {
 		        .grossIFC(grossIFC.setScale(2, RoundingMode.HALF_UP))
 		        .rebatePercentage(rebatePercentage)
 		        .rebateAmount(rebateAmount.setScale(2, RoundingMode.HALF_UP))
+		        .institutionalRebateApplied(isInstitutionalRebateEligible)
+		        .institutionalRebateReason(institutionalRebateReason)
+		        .institutionalRebatePercentage(institutionalRebatePercentage.setScale(2, RoundingMode.HALF_UP))
+		        .institutionalRebateAmount(institutionalRebateAmount.setScale(2, RoundingMode.HALF_UP))
 		        .netIFC(netIFC)
 		        .build();
 
@@ -790,7 +832,6 @@ public class EstimationService {
 		        .build();
 
 		criteria.setCalculationDetail(calcDetail);
-		
 		return netIFC;
 	}
 
@@ -1176,6 +1217,9 @@ public class EstimationService {
 	    }
 	    if (request.getServantQuarterArea() != null) {
 	        additionalDetails.put("servantQuarterArea", request.getServantQuarterArea());
+	    }
+	    if (request.getIsSection12ABRegistered() != null) {
+	        additionalDetails.put(WSCalculationConstant.IS_SECTION_12AB, request.getIsSection12ABRegistered());
 	    }
 
 	    Property mockProperty = Property.builder().usageCategory(request.getUsageCategory()) 

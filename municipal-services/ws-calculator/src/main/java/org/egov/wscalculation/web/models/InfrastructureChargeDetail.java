@@ -47,4 +47,16 @@ public class InfrastructureChargeDetail {
 
     @JsonProperty("netIFC")
     private BigDecimal netIFC;
+
+    @JsonProperty("institutionalRebateApplied")
+    private Boolean institutionalRebateApplied;
+
+    @JsonProperty("institutionalRebateReason")
+    private String institutionalRebateReason;
+
+    @JsonProperty("institutionalRebatePercentage")
+    private BigDecimal institutionalRebatePercentage;
+
+    @JsonProperty("institutionalRebateAmount")
+    private BigDecimal institutionalRebateAmount;
 }
