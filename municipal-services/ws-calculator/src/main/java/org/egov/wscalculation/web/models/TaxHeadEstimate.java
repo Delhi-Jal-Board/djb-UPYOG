@@ -18,4 +18,6 @@ public class TaxHeadEstimate {
 	private BigDecimal estimateAmount;
 	
 	private TaxHeadCategory category;
+
+	private String status;
 }
