@@ -1057,52 +1057,6 @@ public class EstimationService {
 		return estimates;
 
 	}
-
-/*	public Map<String, List> getMutationFeeEstimation(CalculationCriteria criteria, RequestInfo requestInfo,
-	                                                  Map<String, Object> masterData) {
-
-		if (StringUtils.isEmpty(criteria.getWaterConnection()) && !StringUtils.isEmpty(criteria.getApplicationNo())) {
-			SearchCriteria searchCriteria = new SearchCriteria();
-			searchCriteria.setApplicationNumber(criteria.getApplicationNo());
-			searchCriteria.setTenantId(criteria.getTenantId());
-			WaterConnection waterConnection = calculatorUtil.getWaterConnectionOnApplicationNO(
-					requestInfo, searchCriteria, requestInfo.getUserInfo().getTenantId());
-			criteria.setWaterConnection(waterConnection);
-		}
-		if (StringUtils.isEmpty(criteria.getWaterConnection())) {
-			throw new CustomException("WATER_CONNECTION_NOT_FOUND",
-					"Water Connection not found for " + criteria.getApplicationNo());
-		}
-
-		List<TaxHeadEstimate> taxHeadEstimates = getTaxHeadForMutationFeeEstimation(criteria, masterData, requestInfo);
-		Map<String, List> estimatesAndBillingSlabs = new HashMap<>();
-		estimatesAndBillingSlabs.put("estimates", taxHeadEstimates);
-		return estimatesAndBillingSlabs;
-	}*/
-
-	/*@SuppressWarnings("unchecked")
-	private List<TaxHeadEstimate> getTaxHeadForMutationFeeEstimation(CalculationCriteria criteria,
-	                                                                 Map<String, Object> masterData, RequestInfo requestInfo) {
-
-		WaterConnection connection = criteria.getWaterConnection();
-
-		if (connection.getAdditionalDetails() == null)
-			throw new CustomException("EG_WS_MUTATION_FEE_ERROR", "additionalDetails missing for mutation fee calculation");
-
-		Map<String, Object> additionalDetails = mapper.convertValue(connection.getAdditionalDetails(), Map.class);
-		String relationType = ((String) additionalDetails.get("relationType")).toUpperCase();
-		if (StringUtils.isEmpty(relationType))
-			throw new CustomException("EG_WS_MUTATION_FEE_ERROR", "relationType missing in additionalDetails");
-
-		String connectionCategory = connection.getConnectionCategory().toUpperCase();
-		if (StringUtils.isEmpty(connectionCategory))
-			throw new CustomException("EG_WS_MUTATION_FEE_ERROR", "connectionCategory missing on water connection");
-
-	/**
-	 * ============================================= CALCULATOR START ==================================
-	 * @param request
-	 * @return CalculationRes
-	 */
 	public CalculationRes estimateCharges(EstimationRequest request) {
 
 	    String tenantId = StringUtils.hasText(request.getTenantId()) ? request.getTenantId() : "dl.djb";
