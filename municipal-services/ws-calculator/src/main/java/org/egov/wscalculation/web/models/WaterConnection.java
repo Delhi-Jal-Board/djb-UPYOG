@@ -13,6 +13,9 @@ import io.swagger.annotations.ApiModelProperty;
 /**
  * WaterConnection
  */
+import java.util.List;
+import javax.validation.Valid;
+
 @Validated
 @javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2019-12-02T14:30:33.286+05:30[Asia/Kolkata]")
  public class WaterConnection extends Connection {
@@ -40,6 +43,17 @@ import io.swagger.annotations.ApiModelProperty;
 	@JsonProperty("noOfTaps")
 	private Integer noOfTaps = null;
 
+	@JsonProperty("dueVerification")
+	@Valid
+	private List<DueVerification> dueVerification = null;
+
+	public List<DueVerification> getDueVerification() {
+		return dueVerification;
+	}
+
+	public void setDueVerification(List<DueVerification> dueVerification) {
+		this.dueVerification = dueVerification;
+	}
 
 	public WaterConnection waterSource(String waterSource) {
 		this.waterSource = waterSource;
@@ -209,6 +223,7 @@ import io.swagger.annotations.ApiModelProperty;
 		sb.append("    waterSource: ").append(toIndentedString(waterSource)).append("\n");
 		sb.append("    meterId: ").append(toIndentedString(meterId)).append("\n");
 		sb.append("    meterInstallationDate: ").append(toIndentedString(meterInstallationDate)).append("\n");
+		sb.append("    dueVerification: ").append(toIndentedString(dueVerification)).append("\n");
 		sb.append("}");
 		return sb.toString();
 	}

@@ -66,11 +66,15 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
   const watchPropertyType = watch("useDetails.propertyType");
   const watchPropertyCategory = watch("useDetails.propertyCategory");
   const watchWaterConnectionUsageType = watch("useDetails.WaterConnectionUsageType");
-  const isHospitalProperty = watchPropertyType?.code === "HOSPITAL_NURSING_HOME" || watchPropertyType?.code === "DharamshalasOrHostels" || watchPropertyType?.code === "HospitalNursingHome";
+  const isHospitalProperty =
+    watchPropertyType?.code === "HOSPITAL_NURSING_HOME" ||
+    watchPropertyType?.code === "DharamshalasOrHostels" ||
+    watchPropertyType?.code === "HospitalNursingHome";
   const isHotelRestaurantProperty = watchPropertyType?.code === "HOTEL_OR_RESTAURANT" || watchPropertyType?.code === "HotelOrRestaurant";
   const isSchoolCollegeProperty = watchPropertyType?.code === "School" || watchPropertyType?.code === "College";
   const isDwellingUnit = watchPropertyCategory?.code === "RESIDENTIAL" || watchPropertyCategory?.code === "RESIDENTIAL";
-  const isServentHouse = watchPropertyType?.code === "Apartment" || watchPropertyType?.code === "FlatOrApartment" || watchPropertyType?.code === "IndividualHouse";
+  const isServentHouse =
+    watchPropertyType?.code === "Apartment" || watchPropertyType?.code === "FlatOrApartment" || watchPropertyType?.code === "IndividualHouse";
 
   const yearOptions = useMemo(() => {
     const currentYear = new Date().getFullYear();
@@ -383,36 +387,50 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
           </div>
         </LabelFieldPair>
         {errors?.useDetails?.plotArea && <CardLabelError style={errorStyle}>{errors.useDetails.plotArea.message}</CardLabelError>}
-
-        <LabelFieldPair>
-          <CardLabel>{`${t("WS_BUILT_UP_AREA")}`}</CardLabel>
-          <div className="form-field">
-            <TextInput
-              t={t}
-              inputRef={register({
-                pattern: { value: DECIMAL_PATTERN, message: t("ERR_INVALID_DECIMAL") },
-              })}
-              name="useDetails.builtUpArea"
-              disabled={isPropertyFound}
-            />
-          </div>
-        </LabelFieldPair>
-        {errors?.useDetails?.builtUpArea && <CardLabelError style={errorStyle}>{errors.useDetails.builtUpArea.message}</CardLabelError>}
-        <LabelFieldPair>
-          <CardLabel>{`${t("WS_FAR_AREA")}`}</CardLabel>
-          <div className="form-field">
-            <TextInput
-              t={t}
-              inputRef={register({
-                pattern: { value: DECIMAL_PATTERN, message: t("ERR_INVALID_DECIMAL") },
-              })}
-              name="useDetails.farArea"
-              disabled={isPropertyFound}
-            />
-          </div>
-        </LabelFieldPair>
-        {errors?.useDetails?.farArea && <CardLabelError style={errorStyle}>{errors.useDetails.farArea.message}</CardLabelError>}
-
+        <div>
+          <LabelFieldPair>
+            <CardLabel>{`${t("WS_BUILT_UP_AREA")}`}</CardLabel>
+            <div className="form-field">
+              <TextInput
+                t={t}
+                inputRef={register({
+                  pattern: { value: DECIMAL_PATTERN, message: t("ERR_INVALID_DECIMAL") },
+                })}
+                name="useDetails.builtUpArea"
+                disabled={isPropertyFound}
+              />
+            </div>
+          </LabelFieldPair>
+          {errors?.useDetails?.builtUpArea && <CardLabelError style={errorStyle}>{errors.useDetails.builtUpArea.message}</CardLabelError>}
+        </div>
+        <div>
+          <LabelFieldPair>
+            <CardLabel>{`${t("WS_FAR_AREA")}`}</CardLabel>
+            <div className="form-field">
+              <TextInput
+                t={t}
+                inputRef={register({
+                  pattern: { value: DECIMAL_PATTERN, message: t("ERR_INVALID_DECIMAL") },
+                  validate: (value) => {
+                    if (formValue?.useDetails?.builtUpArea && parseFloat(value) > parseFloat(formValue?.useDetails?.builtUpArea)) {
+                      return t("WS_FAR_AREA_IS_SMALLER_THAN_BUILT_UP_AREA");
+                    }
+                  },
+                })}
+                name="useDetails.farArea"
+                disabled={isPropertyFound}
+              />
+            </div>
+          </LabelFieldPair>
+          {errors?.useDetails?.farArea && <CardLabelError style={errorStyle}>{errors.useDetails.farArea.message}</CardLabelError>}
+          {formValue?.useDetails?.farArea &&
+            formValue?.useDetails?.builtUpArea &&
+            parseFloat(formValue?.useDetails?.farArea) > parseFloat(formValue?.useDetails?.builtUpArea) && (
+              <CardLabelError style={{ width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "5px" }}>
+                {t("WS_FAR_AREA_IS_SMALLER_THAN_BUILT_UP_AREA")}
+              </CardLabelError>
+            )}
+        </div>
 
         <LabelFieldPair>
           <CardLabel>{`${t("WS_SELECT_YEAR_OF_CONSTRUCTION")}*`}</CardLabel>
@@ -452,7 +470,6 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
               />
             </div>
           </LabelFieldPair>
-
         ) : null}
 
         {isDwellingUnit && errors?.useDetails?.NumberofDwellingUnits && (
