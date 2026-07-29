@@ -550,6 +550,7 @@ function ApplicationDetailsContent({
               "PENDING_FOR_AE_APPROVAL",
               "PENDING_FOR_FINAL_PAYMENT",
               "CONNECTION_ACTIVATED",
+              "PENDING_FOR_CONNECTION_ACTIVATION",
             ].includes(applicationData?.applicationStatus) && <DueVerification applicationData={applicationData} />}{" "}
           {detail?.additionalDetails?.documents &&
             [
@@ -560,6 +561,7 @@ function ApplicationDetailsContent({
               "PENDING_FOR_AE_APPROVAL",
               "PENDING_FOR_FINAL_PAYMENT",
               "CONNECTION_ACTIVATED",
+              "PENDING_FOR_CONNECTION_ACTIVATION",
             ].includes(applicationData?.applicationStatus) && <InspectionInformation applicationData={applicationData} />}
           {detail?.additionalDetails?.taxHeadEstimatesCalculation && (
             <PropertyEstimates taxHeadEstimatesCalculation={detail?.additionalDetails?.taxHeadEstimatesCalculation} />

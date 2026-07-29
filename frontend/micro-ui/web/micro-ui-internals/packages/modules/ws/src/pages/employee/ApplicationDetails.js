@@ -155,34 +155,39 @@ const ApplicationDetails = () => {
     applicationDetails?.processInstancesDetails?.[0]?.businessService === "NewWS1" &&
     appStatus === "PENDING_FOR_BILLING_CLERK_REVIEW"
   ) {
-    const landArea = applicationDetails?.propertyDetails?.landArea;
-    if (workflowDetails.data.actionState?.nextActions) {
+    const plotArea = Number(applicationDetails?.propertyDetails?.additionalDetails?.plotArea ?? 0);
+    // Filter actionState.nextActions
+    if (workflowDetails?.data?.actionState?.nextActions) {
       workflowDetails.data.actionState.nextActions = workflowDetails.data.actionState.nextActions.filter((action) => {
-        if (action.action === "VERIFY_AND_FORWARD") {
-          if (landArea && landArea > 200) {
-            return action.state === "PENDING_FOR_AE_APPROVAL" || action.applicationStatus === "PENDING_FOR_AE_APPROVAL";
-          } else {
-            return action.state === "PENDING_FOR_ASO_APPROVAL" || action.applicationStatus === "PENDING_FOR_ASO_APPROVAL";
-          }
+        if (action.action !== "VERIFY_AND_FORWARD") {
+          return true;
         }
-        return true;
+
+        if (plotArea > 200) {
+          return action.state === "PENDING_FOR_AE_APPROVAL" || action.applicationStatus === "PENDING_FOR_AE_APPROVAL";
+        }
+
+        return action.state === "PENDING_FOR_ASO_APPROVAL" || action.applicationStatus === "PENDING_FOR_ASO_APPROVAL";
       });
     }
-    if (workflowDetails.data.nextActions) {
+
+    // Filter nextActions
+    if (workflowDetails?.data?.nextActions) {
       workflowDetails.data.nextActions = workflowDetails.data.nextActions.filter((action) => {
-        if (action.action === "VERIFY_AND_FORWARD") {
-          const targetStateCode = action.state?.state;
-          if (landArea && landArea > 200) {
-            return targetStateCode === "PENDING_FOR_AE_APPROVAL";
-          } else {
-            return targetStateCode === "PENDING_FOR_ASO_APPROVAL";
-          }
+        if (action.action !== "VERIFY_AND_FORWARD") {
+          return true;
         }
-        return true;
+
+        const targetStateCode = action.state?.state;
+
+        if (plotArea > 200) {
+          return targetStateCode === "PENDING_FOR_AE_APPROVAL";
+        }
+
+        return targetStateCode === "PENDING_FOR_ASO_APPROVAL";
       });
     }
   }
-
   workflowDetails?.data?.actionState?.nextActions?.forEach((action) => {
     if (action?.action === "ACTIVATE_CONNECTION") {
       action.redirectionUrll = {
@@ -227,18 +232,18 @@ const ApplicationDetails = () => {
     }
   });
 
-  if (
-    workflowDetails?.data?.nextActions?.length > 0 &&
-    workflowDetails?.data?.actionState?.nextActions?.length > 0 &&
-    !workflowDetails?.data?.actionState?.nextActions?.find((e) => e.action === "EDIT") &&
-    !workflowDetails?.data?.actionState?.nextActions?.find((e) => e.action === "RESUBMIT_APPLICATION") &&
-    !workflowDetails?.data?.actionState?.nextActions?.find((e) => e.action === "ACTIVATE_CONNECTION") &&
-    !workflowDetails?.data?.actionState?.nextActions?.find((e) => e.action === "SUBMIT_APPLICATION")
-  ) {
-    workflowDetails?.data?.nextActions?.forEach((data) => {
-      if (data.action === "EDIT") workflowDetails.data.actionState.nextActions.push(data);
-    });
-  }
+  // if (
+  //   workflowDetails?.data?.nextActions?.length > 0 &&
+  //   workflowDetails?.data?.actionState?.nextActions?.length > 0 &&
+  //   // !workflowDetails?.data?.actionState?.nextActions?.find((e) => e.action === "EDIT") &&
+  //   !workflowDetails?.data?.actionState?.nextActions?.find((e) => e.action === "RESUBMIT_APPLICATION") &&
+  //   !workflowDetails?.data?.actionState?.nextActions?.find((e) => e.action === "ACTIVATE_CONNECTION") &&
+  //   !workflowDetails?.data?.actionState?.nextActions?.find((e) => e.action === "SUBMIT_APPLICATION")
+  // ) {
+  //   workflowDetails?.data?.nextActions?.forEach((data) => {
+  //     if (data.action === "EDIT") workflowDetails.data.actionState.nextActions.push(data);
+  //   });
+  // }
 
   workflowDetails?.data?.actionState?.nextActions?.forEach((action) => {
     if (action?.action === "EDIT") {
@@ -475,7 +480,10 @@ const ApplicationDetails = () => {
     <React.Fragment>
       <div className={"employee-main-application-details"} style={{ display: "flex", gap: "20px" }}>
         {/* Left Column: Workflow Timeline */}
-        <div className={`workflow-timeline-wrapper no-scrollbar ${hideTimeline ? "hide-workflow" : ""}`} style={{ flex: "1 1 300px", maxWidth: hideTimeline ? "fit-content" : "400px", transition: "max-width 0.3s" }}>
+        <div
+          className={`workflow-timeline-wrapper no-scrollbar ${hideTimeline ? "hide-workflow" : ""}`}
+          style={{ flex: "1 1 300px", maxWidth: hideTimeline ? "fit-content" : "400px", transition: "max-width 0.3s" }}
+        >
           <WorkflowTimeline workflowDetails={workflowDetails} hideTimeline={hideTimeline} setHideTimeline={setHideTimeline} />
         </div>
 
