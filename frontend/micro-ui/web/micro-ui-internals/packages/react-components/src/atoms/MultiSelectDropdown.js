@@ -204,8 +204,13 @@ const MultiSelectDropdown = ({
       if (isChecked) {
         const allOptions = filteredOptions.map((option) => ({ [optionsKey]: option[optionsKey], propsData: [null, option] }));
         dispatch({ type: "REPLACE_COMPLETE_STATE", payload: allOptions });
+        onSelect(
+          allOptions.map((e) => e.propsData),
+          props
+        );
       } else {
         dispatch({ type: "REPLACE_COMPLETE_STATE", payload: [] });
+        onSelect([], props);
       }
     };
 
