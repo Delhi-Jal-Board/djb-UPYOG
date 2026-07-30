@@ -1,4 +1,4 @@
-import { Header, Dropdown, LabelFieldPair, CardLabel, Card, Button, Toast, TextInput, Modal } from "@djb25/digit-ui-react-components"
+import { Header, Dropdown, LabelFieldPair, CardLabel, Card, Button, Toast, TextInput, Modal, CloseSvg } from "@djb25/digit-ui-react-components";
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Controller, useForm } from "react-hook-form";
@@ -9,17 +9,10 @@ const Heading = (props) => {
   return <h1 className="heading-m">{props.t("WBH_SELECT_OPERATION")}</h1>;
 };
 
-const Close = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FFFFFF">
-    <path d="M0 0h24v24H0V0z" fill="none" />
-    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
-  </svg>
-);
-
 const CloseBtn = (props) => {
   return (
-    <div className="icon-bg-secondary" onClick={props.onClick}>
-      <Close />
+    <div style={{ cursor: "pointer" }} onClick={props.onClick}>
+      <CloseSvg />
     </div>
   );
 };
@@ -57,8 +50,6 @@ function ApplyWorkflow() {
     setShouldCallApi(false);
   };
 
-
-
   const MdmsCriteria = {
     tenantId: tenantId,
     moduleDetails: [
@@ -77,7 +68,6 @@ function ApplyWorkflow() {
     schemaCode: schemaCodePayload,
     limit: 200,
   };
-
 
   const { isLoading, data } = Digit.Hooks.useCustomAPIHook({
     url: `/${Digit.Hooks.workbench.getMDMSContextPath()}/v2/_search`,
@@ -123,13 +113,15 @@ function ApplyWorkflow() {
 
   const { isLoading: isApplying } = Digit.Hooks.useCustomAPIHook({
     url: "/apply-workflow/api/v1/_process",
-    body: shouldCallApi ? {
-      BusinessService: {
-        tenantId: tenantId,
-        uniqueIdentifier: selectedUniqueIdentifier?.code,
-        applyType: selectedOperation?.code === "CREATE_WORKFLOW" ? "create" : "update",
+    body: shouldCallApi
+      ? {
+        BusinessService: {
+          tenantId: tenantId,
+          uniqueIdentifier: selectedUniqueIdentifier?.code,
+          applyType: selectedOperation?.code === "CREATE_WORKFLOW" ? "create" : "update",
+        },
       }
-    } : null,
+      : null,
     config: {
       enabled: shouldCallApi,
       onSuccess: (data) => {
@@ -143,7 +135,6 @@ function ApplyWorkflow() {
         setShouldCallApi(false);
       },
       onError: (error) => {
-
         setToastProps({
           label: t("Error occurred while applying workflow"),
           error: true,
@@ -286,8 +277,6 @@ function ApplyWorkflow() {
               />
             </div>
           </LabelFieldPair>
-
-
         </div>
         <div style={{ display: "flex", gap: "20px", justifyContent: "flex-end", marginTop: "24px" }}>
           <Button label="Apply changes" onButtonClick={handleApplyChanges} />
@@ -297,52 +286,46 @@ function ApplyWorkflow() {
             <Modal
               headerBarMain={<Heading t={t} />}
               headerBarEnd={<CloseBtn onClick={handleCancel} />}
-              actionCancelLabel={null}
-              // actionSaveLabel={"Apply"}
+              actionCancelLabel={t("CS_COMMON_CANCEL")}
+              actionCancelOnSubmit={handleCancel}
               actionSaveLabel={isApplying ? "Applying..." : "Apply"}
               actionSaveOnSubmit={handleApply} // Call handleApply on Apply button click
               formId="modal-action"
-              popupStyles={{
-                width: "60%", // Increase the modal width (you can adjust this value)
-                minWidth: "400px", // Ensure the modal doesn't become too narrow
-                maxWidth: "800px", // Optional: Set a maximum width
-                height: "auto", // Adjust the height to fit the content
-                maxHeight: "70vh", // Limit the height for scrollable content
-                position: "fixed",
-                transform: "translate(-50%, -50%)", // Centering the modal
-                top: "50%",
-                left: "50%",
-                margin: "0 auto",
-                padding: "20px", // Internal padding for the modal
-                overflow: "auto", // Allow scrolling if content overflows
-              }}
-
+              popupStyles={{}}
             >
-              <LabelFieldPair>
-                <CardLabel className="card-label-smaller">{t("WBH_SELECT_OPERATION")}</CardLabel>
-                <Controller
-                  control={control}
-                  name="selectoperation"
-                  render={(props) => (
-                    <Dropdown
-                      // className="form-field"
-                      placeholder={t("WBH_SELECT_OPERATION")}
-                      selected={props.value}
-                      select={(value) => {
-                        props.onChange(value)
-                        setSelectedOperation(value); // Update local state for selected operation
-                      }
-                      }
-                      option={workflowOperationData} // Options for dropdown
-                      optionKey="i18nKey" // Use the `i18nKey` for the dropdown options
-                      t={t}
-                    />
-                  )}
-                />
-              </LabelFieldPair>
-              {/* Note below the Apply button */}
-              <div style={{ marginTop: "30px", fontSize: "20px" }}>
-                <span>{t("WBH_NOTE")}</span>
+              <div className="workbench-form-grid-2" style={{ padding: "14px" }}>
+                <LabelFieldPair>
+                  <CardLabel>{t("WBH_SELECT_OPERATION")}</CardLabel>
+                  <Controller
+                    control={control}
+                    name="selectoperation"
+                    render={(props) => (
+                      <Dropdown
+                        // className="form-field"
+                        placeholder={t("WBH_SELECT_OPERATION")}
+                        selected={props.value}
+                        select={(value) => {
+                          props.onChange(value);
+                          setSelectedOperation(value); // Update local state for selected operation
+                        }}
+                        option={workflowOperationData} // Options for dropdown
+                        optionKey="i18nKey" // Use the `i18nKey` for the dropdown options
+                        t={t}
+                      />
+                    )}
+                  />
+                </LabelFieldPair>
+                {/* Note below the Apply button */}
+                <LabelFieldPair>
+                  <CardLabel>{t("WBH_NOTE")}</CardLabel>
+                  <Controller
+                    control={control}
+                    name="note"
+                    render={(props) => (
+                      <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} placeholder={t("WBH_NOTE_PLACEHOLDER")} t={t} />
+                    )}
+                  />
+                </LabelFieldPair>
               </div>
             </Modal>
           )}
