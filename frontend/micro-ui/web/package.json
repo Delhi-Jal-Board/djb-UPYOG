@@ -15,7 +15,7 @@
   "dependencies": {
     "@djb25/digit-ui-css": "1.0.88",
     "@djb25/digit-ui-libraries": "1.0.0",
-    "@djb25/digit-ui-module-bills": "1.0.2",
+    "@djb25/digit-ui-module-bills": "1.0.3",
     "@djb25/digit-ui-module-common": "1.0.6",
     "@djb25/digit-ui-module-core": "1.0.0",
     "@djb25/digit-ui-module-engagement": "1.0.9",
@@ -31,7 +31,7 @@
     "@djb25/digit-ui-module-vendor": "1.0.65",
     "@djb25/digit-ui-module-wt": "1.0.80",
     "@djb25/digit-ui-module-asset": "1.0.6",
-    "@djb25/digit-ui-module-ws": "1.0.57",
+    "@djb25/digit-ui-module-ws": "1.0.58",
     "@djb25/digit-ui-module-rwh": "1.0.2",
     "@djb25/digit-ui-module-pt": "1.0.1",
     "babel-loader": "9.1.2",
