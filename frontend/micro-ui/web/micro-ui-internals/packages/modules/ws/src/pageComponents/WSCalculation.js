@@ -480,10 +480,41 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
                 </div>
                 <div className="ws-calc-row">
                   <span className="ws-calc-row-label">
-                    {t("WS_REBATE")} ({infraDetail.rebatePercentage || 0}%)
+                    {t("WS_COLONY_REBATE")} ({infraDetail.rebatePercentage || 0}%)
                   </span>
                   <span className="ws-calc-row-value-red">- ₹ {infraDetail.rebateAmount?.toLocaleString("en-IN") || 0}</span>
                 </div>
+
+                {infraDetail.institutionalRebateApplied && (
+                  <React.Fragment>
+                    <div className="ws-calc-row">
+                      <span className="ws-calc-row-label">
+                        {t("WS_INSTITUTIONAL_REBATE")} ({infraDetail.institutionalRebatePercentage || 0}%)
+                      </span>
+                      <span className="ws-calc-row-value-red">- ₹ {infraDetail.institutionalRebateAmount?.toLocaleString("en-IN") || 0}</span>
+                    </div>
+                    <div className="ws-calc-row">
+                      <span className="ws-calc-row-label">{t("WS_INSTITUTIONAL_REBATE_REASON")}</span>
+                      <span className="ws-calc-row-value">{t(infraDetail.institutionalRebateReason) || "-"}</span>
+                    </div>
+                  </React.Fragment>
+                )}
+
+                {infraDetail.dwellingRebateApplied && (
+                  <React.Fragment>
+                    <div className="ws-calc-row">
+                      <span className="ws-calc-row-label">
+                        {t("WS_DWELLING_REBATE")} ({infraDetail.dwellingRebatePercentage || 0}%)
+                      </span>
+                      <span className="ws-calc-row-value-red">- ₹ {infraDetail.dwellingRebateAmount?.toLocaleString("en-IN") || 0}</span>
+                    </div>
+                    <div className="ws-calc-row">
+                      <span className="ws-calc-row-label">{t("WS_DWELLING_REBATE_REASON")}</span>
+                      <span className="ws-calc-row-value">{t(infraDetail.dwellingRebateReason) || "-"}</span>
+                    </div>
+                  </React.Fragment>
+                )}
+
                 <div className="ws-calc-highlight-green">
                   <span className="ws-calc-highlight-green-label">{t("WS_NET_INFRASTRUCTURE_CHARGE")}</span>
                   <span className="ws-calc-highlight-green-value">₹ {infraDetail.netIFC?.toLocaleString("en-IN") || 0}</span>
