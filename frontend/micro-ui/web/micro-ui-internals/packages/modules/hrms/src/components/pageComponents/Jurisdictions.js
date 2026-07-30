@@ -7,8 +7,8 @@ const Jurisdictions = ({ t, config, onSelect, userType, formData, style }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [inactiveJurisdictions, setInactiveJurisdictions] = useState([]);
   const { data = {}, isLoading } = Digit.Hooks.hrms.useHrmsMDMS(tenantId, "egov-hrms", "HRMSRolesandDesignation") || {};
-  const [jurisdictions, setjurisdictions] = useState(
-    formData?.Jurisdictions || [
+  const [jurisdictions, setjurisdictions] = useState(() => {
+    let initialData = formData?.Jurisdictions || [
       {
         id: undefined,
         key: 1,
@@ -17,8 +17,17 @@ const Jurisdictions = ({ t, config, onSelect, userType, formData, style }) => {
         boundary: null,
         roles: [],
       },
-    ]
-  );
+    ];
+    return initialData.map((j) => {
+      if (j.roles && Array.isArray(j.roles)) {
+        j.roles = j.roles.map(r => ({
+          ...r,
+          labelKey: r.labelKey || "ACCESSCONTROL_ROLES_ROLES_" + r.code
+        }));
+      }
+      return j;
+    });
+  });
 
   useEffect(() => {
     const jurisdictionsData = jurisdictions?.map((jurisdiction) => {
