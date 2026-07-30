@@ -180,7 +180,7 @@ public class VendorValidator {
         }
         
         // Validate service type
-        List<String> validServiceTypes = Arrays.asList("WT", "ST", "ET", "MT");
+        List<String> validServiceTypes = Arrays.asList("WT", "ST", "ET", "MT","EKYC");
         if (!validServiceTypes.contains(workOrder.getServiceType())) {
             throw new CustomException("EG_VWO_INVALID_SERVICE_TYPE", 
                 "Invalid service type. Allowed values: WT, ST, ET, MT");
