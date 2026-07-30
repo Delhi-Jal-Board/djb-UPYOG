@@ -9,7 +9,7 @@
     "start": "react-scripts start"
   },
   "devDependencies": {
-    "@djb25/digit-ui-module-bills": "1.0.2",
+    "@djb25/digit-ui-module-bills": "1.0.3",
     "@djb25/digit-ui-module-common": "1.0.6",
     "@djb25/digit-ui-module-engagement": "1.0.9",
     "@djb25/digit-ui-module-fsm": "1.0.23",
@@ -25,7 +25,7 @@
     "http-proxy-middleware": "1.0.5",
     "@djb25/digit-ui-module-wt": "1.0.80",
     "@djb25/digit-ui-module-asset": "1.0.6",
-    "@djb25/digit-ui-module-ws": "1.0.57",
+    "@djb25/digit-ui-module-ws": "1.0.58",
     "@djb25/digit-ui-module-ads": "1.0.0",
     "@djb25/digit-ui-module-chb": "1.0.0",
     "@djb25/digit-ui-module-ptr": "1.0.0",
