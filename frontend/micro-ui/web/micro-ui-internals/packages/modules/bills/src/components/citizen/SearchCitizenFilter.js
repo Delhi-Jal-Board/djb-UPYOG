@@ -11,7 +11,7 @@ const SearchCitizenFilter = ({ searchParams, onFilterChange, defaultSearchParams
   const [ulbLists, setulbLists] = useState([]);
   const allCities = Digit.Hooks.useTenantsBills()?.sort((a, b) => a?.i18nKey?.localeCompare?.(b?.i18nKey));
   let cityList = [];
-  let tenantId = Digit.SessionStorage.get("User")?.info?.tenantId;
+  let tenantId = Digit.SessionStorage.get("User")?.info?.tenantId || Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code;
 
   const clearAll = () => {
     setService([]);
@@ -43,6 +43,8 @@ const SearchCitizenFilter = ({ searchParams, onFilterChange, defaultSearchParams
     cityList = allCities.map((element) => {
       return {
         tenantId: element.code,
+        i18nKey: `TENANT_TENANTS_${element.code.replace(".", "_").toUpperCase()}`,
+        name: element.name
       };
     });
   }
@@ -89,7 +91,7 @@ const SearchCitizenFilter = ({ searchParams, onFilterChange, defaultSearchParams
           <div>
             <div>
               <div className="filter-label">{t("LABEL_FOR_ULB")}</div>
-              <Dropdown option={cityList} optionKey="tenantId" value={ulbLists} select={setulbLists} t={t} />
+              <Dropdown option={cityList} optionKey="i18nKey" value={ulbLists} select={setulbLists} t={t} />
             </div>
             <div>
               <div className="filter-label">{t("ABG_SERVICE_CATEGORY_LABEL")}</div>
