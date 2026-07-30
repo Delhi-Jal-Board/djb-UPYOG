@@ -710,6 +710,7 @@ public class EstimationService {
 		BigDecimal rebateAmount = grossIFC.multiply(rebatePercentage).divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP);
 
 		BigDecimal netIFC = grossIFC.subtract(rebateAmount).setScale(2, RoundingMode.HALF_UP);
+		BigDecimal netIFCAfterColonyRebate = netIFC;
 
 		// ==================== SECTION 12AB / WORSHIP REBATE ====================
 		BigDecimal institutionalRebatePercentage = BigDecimal.ZERO;
@@ -730,6 +731,7 @@ public class EstimationService {
 			institutionalRebateAmount = netIFC.multiply(institutionalRebatePercentage).divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP);
 			netIFC = netIFC.subtract(institutionalRebateAmount).setScale(2, RoundingMode.HALF_UP);
 		}
+		BigDecimal netIFCAfterInstitutionalRebate = netIFC;
 
 		// ==================== DWELLING UNIT REBATE (Clause 8) ====================
 		BigDecimal dwellingRebatePercentage = BigDecimal.ZERO;
@@ -747,7 +749,7 @@ public class EstimationService {
 			netIFC = netIFC.subtract(dwellingRebateAmount).setScale(2, RoundingMode.HALF_UP);
 		}
 		boolean isDwellingRebateEligible = dwellingRebateReason != null;
-
+		BigDecimal netIFCAfterDwellingRebate = netIFC;
         // ================================================================================
 
 		boolean isInstitutionalRebateEligible = institutionalRebateReason != null;
@@ -771,15 +773,21 @@ public class EstimationService {
 		log.info("----------------------------------------------------------------------");
 		log.info("Applicable Rebate    : {}%", rebatePercentage.setScale(2, RoundingMode.HALF_UP));
 		log.info("Rebate Concession Amt: {}", rebateAmount.setScale(2, RoundingMode.HALF_UP));
+		log.info("Net IFC after Colony Rebate      : {}", netIFCAfterColonyRebate);
+
 		if (isInstitutionalRebateEligible) {
 			log.info("----------------------------------------------------------------------");
 			log.info("Institutional Rebate : {}% (Reason: {})", institutionalRebatePercentage.setScale(2, RoundingMode.HALF_UP), institutionalRebateReason);
 			log.info("Inst. Rebate Amount  : {}", institutionalRebateAmount.setScale(2, RoundingMode.HALF_UP));
 		}
+		log.info("Net IFC after Institutional Rebate: {}", netIFCAfterInstitutionalRebate);
+
 		if (isDwellingRebateEligible) {
 			log.info("Dwelling Rebate     : {}% (Reason: {})", dwellingRebatePercentage.setScale(2, RoundingMode.HALF_UP), dwellingRebateReason);
 			log.info("Dwelling Rebate Amt : {}", dwellingRebateAmount.setScale(2, RoundingMode.HALF_UP));
 		}
+		log.info("Net IFC after Dwelling Rebate     : {}", netIFCAfterDwellingRebate);
+
 		log.info("======================================================================");
 		log.info("FINAL PAYABLE NET IFC: {}  [Formula: Gross Total - Rebates - Institutional Rebate]", netIFC);
 		log.info("======================================================================");
@@ -841,14 +849,17 @@ public class EstimationService {
 		        .grossIFC(grossIFC.setScale(2, RoundingMode.HALF_UP))
 		        .rebatePercentage(rebatePercentage)
 		        .rebateAmount(rebateAmount.setScale(2, RoundingMode.HALF_UP))
+				.netIFCAfterColonyRebate(netIFCAfterColonyRebate)
 		        .institutionalRebateApplied(isInstitutionalRebateEligible)
 		        .institutionalRebateReason(institutionalRebateReason)
 		        .institutionalRebatePercentage(institutionalRebatePercentage.setScale(2, RoundingMode.HALF_UP))
 		        .institutionalRebateAmount(institutionalRebateAmount.setScale(2, RoundingMode.HALF_UP))
+				.netIFCAfterInstitutionalRebate(netIFCAfterInstitutionalRebate)
 				.dwellingRebateApplied(isDwellingRebateEligible)
 				.dwellingRebateReason(dwellingRebateReason)
 				.dwellingRebatePercentage(dwellingRebatePercentage.setScale(2, RoundingMode.HALF_UP))
 				.dwellingRebateAmount(dwellingRebateAmount.setScale(2, RoundingMode.HALF_UP))
+				.netIFCAfterDwellingRebate(netIFCAfterDwellingRebate)
 		        .netIFC(netIFC)
 		        .build();
 

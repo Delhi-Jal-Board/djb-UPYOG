@@ -71,4 +71,13 @@ public class InfrastructureChargeDetail {
 
     @JsonProperty("dwellingRebateAmount")
     private BigDecimal dwellingRebateAmount;
+
+    @JsonProperty("netIFCAfterColonyRebate")
+    private BigDecimal netIFCAfterColonyRebate;
+
+    @JsonProperty("netIFCAfterInstitutionalRebate")
+    private BigDecimal netIFCAfterInstitutionalRebate;
+
+    @JsonProperty("netIFCAfterDwellingRebate")
+    private BigDecimal netIFCAfterDwellingRebate;
 }
