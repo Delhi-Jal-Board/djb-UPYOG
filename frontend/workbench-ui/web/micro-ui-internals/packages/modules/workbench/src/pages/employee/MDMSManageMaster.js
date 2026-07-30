@@ -1,4 +1,4 @@
-import { AddFilled, Button, Header, InboxSearchComposer, Loader, Dropdown, Card, CardLabel, LabelFieldPair } from "@djb25/digit-ui-react-components";
+import { AddFilled, Button, Header, InboxSearchComposer, Loader, Dropdown, Card, CardLabel, LabelFieldPair, ActionBar, SubmitBar } from "@djb25/digit-ui-react-components";
 import React, { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory, useParams } from "react-router-dom";
@@ -40,7 +40,7 @@ const MDMSManageMaster = () => {
   tenantId = tenantId || Digit.ULBService.getCurrentTenantId();
   const SchemaDefCriteria = {
     tenantId: tenantId,
-    limit: 200
+    limit: 10000
   }
   if (master && modulee) {
     SchemaDefCriteria.codes = [`${master}.${modulee}`]
@@ -183,26 +183,29 @@ const MDMSManageMaster = () => {
               />
             </div>
           </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{t("WBH_MASTER_NAME")}</CardLabel>
-            <div className="field">
-              <Dropdown
-                option={moduleOptions}
-                // className={"form-field"}
-                optionKey="code"
-                selected={master && modulee ? toDropdownObj(master, modulee) : moduleName}
-                select={(e) => {
-                  setModuleName(e);
-                }}
-                t={t}
-                // placeholder={t("WBH_MODULE_NAME")}
-                placeholder={t("WBH_MASTER_NAME")}
-                disable={modulee ? true : false}
-              />
-            </div>
-          </LabelFieldPair>
+            <LabelFieldPair>
+              <CardLabel className="card-label-smaller">{t("WBH_MASTER_NAME")}</CardLabel>
+              <div className="field">
+                <Dropdown
+                  option={moduleOptions}
+                  // className={"form-field"}
+                  optionKey="code"
+                  selected={master && modulee ? toDropdownObj(master, modulee) : moduleName}
+                  select={(e) => {
+                    setModuleName(e);
+                  }}
+                  t={t}
+                  // placeholder={t("WBH_MODULE_NAME")}
+                  placeholder={t("WBH_MASTER_NAME")}
+                  disable={modulee ? true : false}
+                />
+              </div>
+            </LabelFieldPair>
         </div>
       </Card>
+      <ActionBar>
+        <SubmitBar label={t("WBH_ADD_SCHEMA")} onSubmit={() => history.push(`/${window?.contextPath}/employee/workbench/schema-add`)} />
+      </ActionBar>
     </React.Fragment>
   );
 };

@@ -155,7 +155,7 @@ const LocalisationSearch = () => {
             #modal-action > div { 
               display: grid !important; 
               grid-template-columns: repeat(2, minmax(0, 1fr)) !important; 
-              column-gap: 32px !important; 
+              column-gap: 16px !important; 
             }
             #modal-action > div > div {
               margin-bottom: 24px !important; /* Forces spacing even if grid gap fails */
@@ -168,7 +168,7 @@ const LocalisationSearch = () => {
               border-top: 1px solid #e0e0e0 !important;
             }
             .popup-module-action-bar > * {
-              margin-left: 16px !important;
+              margin-right: 16px !important;
             }
           `}</style>
         </React.Fragment>
