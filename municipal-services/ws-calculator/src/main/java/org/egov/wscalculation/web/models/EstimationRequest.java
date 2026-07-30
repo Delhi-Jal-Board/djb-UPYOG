@@ -78,6 +78,7 @@ public class EstimationRequest {
     @JsonProperty("servantQuarterArea")
     private Double servantQuarterArea; // Servant
 
-    @JsonProperty("isSection12ABRegistered")
-    private Boolean isSection12ABRegistered;
+    @JsonProperty("is12ABCertificate")
+    private Boolean is12ABCertificate;
+
 }
