@@ -544,6 +544,11 @@ public class WSCalculationConstant {
 	public static final String IS_SECTION_12AB = "isSection12ABRegistered";
 	public static final String SECTION_12AB_CERTIFICATE = "OWNER.OTHERDOCUMENTS.12_AB_CERTIFICATE";
 
+	public static final String DWELLING_UNIT_REBATE = "dwellingUnitRebate";
+	public static final String DWELLING_UNIT_REBATE_PERCENTAGE = "percentage";
+	public static final String DWELLING_MAX_BUILTUP_AREA = "maxBuiltUpAreaSqm";
+	public static final String DWELLING_ELIGIBLE_USAGE_CODES = "eligibleUsageCodes";
+
 }
 
 

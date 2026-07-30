@@ -59,4 +59,16 @@ public class InfrastructureChargeDetail {
 
     @JsonProperty("institutionalRebateAmount")
     private BigDecimal institutionalRebateAmount;
+
+    @JsonProperty("dwellingRebateApplied")
+    private Boolean dwellingRebateApplied;
+
+    @JsonProperty("dwellingRebateReason")
+    private String dwellingRebateReason;
+
+    @JsonProperty("dwellingRebatePercentage")
+    private BigDecimal dwellingRebatePercentage;
+
+    @JsonProperty("dwellingRebateAmount")
+    private BigDecimal dwellingRebateAmount;
 }
