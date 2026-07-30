@@ -1,5 +1,6 @@
 var config = require("./config");
-var kafka = require("kafka-node");
+var kafka = require("./kafka-node-wrapper");
+
 const logger = require("./logger").logger;
 
 
