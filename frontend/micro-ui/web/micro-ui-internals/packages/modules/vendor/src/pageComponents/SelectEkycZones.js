@@ -170,22 +170,50 @@ const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true, 
     );
   }, [supervisorSearchResponse, loggedInUser]);
 
-  const { data: zroData, isLoading } = Digit.Hooks.useCommonMDMS("dl", "common-masters", ["ZroOfficeList"]);
+  // OLD: ZroOfficeList approach (commented out)
+  // const { data: zroData, isLoading } = Digit.Hooks.useCommonMDMS("dl", "common-masters", ["ZroOfficeList"]);
 
+  // OLD: ZroOfficeList useEffect (commented out)
+  // useEffect(() => {
+  //   const zroOfficeList = zroData?.["common-masters"]?.ZroOfficeList || zroData?.MdmsRes?.["common-masters"]?.ZroOfficeList || [];
+  //   if (Array.isArray(zroOfficeList)) {
+  //     const activeZros = zroOfficeList
+  //       .filter((zro) => zro && zro.active)
+  //       .map((zro) => ({
+  //         code: zro.code,
+  //         name: zro.code,
+  //       }));
+  //     setZones(activeZros);
+  //   }
+  // }, [zroData]);
+
+  // NEW: Fetch TenantBoundary from egov-location at state-level tenant "dl"
+  const { data: boundaryData, isLoading } = Digit.Hooks.useCommonMDMS("dl", "egov-location", ["TenantBoundary"]);
+
+  // NEW: TenantBoundary useEffect — walks tree and collects unique Zone-label nodes
   useEffect(() => {
-    const zroOfficeList = zroData?.["common-masters"]?.ZroOfficeList || zroData?.MdmsRes?.["common-masters"]?.ZroOfficeList || [];
+    const tenantBoundaryList =
+      boundaryData?.["egov-location"]?.TenantBoundary ||
+      boundaryData?.MdmsRes?.["egov-location"]?.TenantBoundary ||
+      [];
 
-    if (Array.isArray(zroOfficeList)) {
-      const activeZros = zroOfficeList
-        .filter((zro) => zro && zro.active)
-        .map((zro) => ({
-          code: zro.code,
-          name: zro.code,
-        }));
+    const zoneMap = {};
+    tenantBoundaryList.forEach((tb) => {
+      const walkBoundary = (node) => {
+        if (!node) return;
+        if (node.label === "Zone" && node.code && node.code !== "UNKNOWN") {
+          if (!zoneMap[node.code]) {
+            zoneMap[node.code] = { code: node.code, name: node.name || node.code };
+          }
+        }
+        (node.children || []).forEach(walkBoundary);
+      };
+      walkBoundary(tb.boundary);
+    });
 
-      setZones(activeZros);
-    }
-  }, [zroData]);
+    const uniqueZones = Object.values(zoneMap).sort((a, b) => a.name.localeCompare(b.name));
+    setZones(uniqueZones);
+  }, [boundaryData]);
 
   /**
    * Sync selected values
@@ -201,8 +229,17 @@ const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true, 
         return;
       }
 
-      // Initial API values (array of names/codes)
-      const selected = zones.filter((zone) => zone && (formData.zoneIds.includes(zone.name) || formData.zoneIds.includes(zone.code)));
+      // Initial API values (array of names/codes) — case-insensitive match
+      const selected = zones.filter(
+        (zone) =>
+          zone &&
+          formData.zoneIds.some(
+            (id) =>
+              id &&
+              (id.toString().toUpperCase() === zone.code?.toUpperCase() ||
+                id.toString().toUpperCase() === zone.name?.toUpperCase())
+          )
+      );
 
       setSelectedZones(selected);
 
@@ -221,7 +258,13 @@ const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true, 
         selectedVal = selectedVal.name || selectedVal.code || "";
       }
 
-      const selected = zones.find((zone) => zone && (zone.name === selectedVal || zone.code === selectedVal));
+      // Case-insensitive match
+      const selected = zones.find(
+        (zone) =>
+          zone &&
+          (zone.name?.toUpperCase() === selectedVal?.toString().toUpperCase() ||
+            zone.code?.toUpperCase() === selectedVal?.toString().toUpperCase())
+      );
       setSelectedZones(selected ? [selected] : []);
 
       if (!initialized.current && selected) {
@@ -243,7 +286,8 @@ const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true, 
     if (isMultiSelect) {
       const selected = Array.isArray(value) ? value.map((v) => (Array.isArray(v) ? v[1] : v)).filter(Boolean) : [];
       setSelectedZones(selected);
-      onSelect(config.key, selected);
+      // Send array of names in payload
+      onSelect(config.key, selected.map((z) => z.name));
     } else {
       const selectedZone = Array.isArray(value) ? (Array.isArray(value[0]) ? value[0][1] : value[0]) : value;
       setSelectedZones(selectedZone ? [selectedZone] : []);
@@ -278,9 +322,9 @@ const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true, 
 
       {isMultiSelect && selectedZones.length > 0 && (
         <div className="selected-zones">
-          {selectedZones.filter(zone => zone && zone.code).map((zone) => (
+          {selectedZones.filter(zone => zone && zone.name).map((zone) => (
             <span key={zone.code} className="selected-zone-chip">
-              {t(zone.code)}
+              {zone.name}
             </span>
           ))}
         </div>
