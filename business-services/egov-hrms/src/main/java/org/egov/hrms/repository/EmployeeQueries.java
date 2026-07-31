@@ -24,7 +24,7 @@ public class EmployeeQueries {
 			+ "docs.documentid as docs_documentid, docs.documentname as docs_documentname, docs.referencetype as docs_referencetype, "
 			+ "docs.referenceid as docs_referenceid, docs.tenantid as docs_tenantid, docs.createdby as docs_createdby, docs.createddate as docs_createddate, "
 			+ "docs.lastmodifiedby as docs_lastmodifiedby, docs.lastmodifieddate as docs_lastmodifieddate, jurisdiction.uuid as jurisdiction_uuid, "
-			+ "jurisdiction.hierarchy as jurisdiction_hierarchy, jurisdiction.boundarytype as jurisdiction_boundarytype, jurisdiction.boundary as jurisdiction_boundary, "
+			+ "jurisdiction.hierarchy as jurisdiction_hierarchy, jurisdiction.boundarytype as jurisdiction_boundarytype, jurisdiction.boundary as jurisdiction_boundary, jurisdiction.zone as jurisdiction_zone, "
 			+ "jurisdiction.isactive as jurisdiction_isactive, jurisdiction.tenantid as jurisdiction_tenantid, jurisdiction.createdby as jurisdiction_createdby, jurisdiction.createddate as jurisdiction_createddate, "
 			+ "jurisdiction.lastmodifiedby as jurisdiction_lastmodifiedby, jurisdiction.lastmodifieddate as jurisdiction_lastmodifieddate, history.uuid as history_uuid, "
 			+ "history.servicestatus as history_servicestatus, history.servicefrom as history_servicefrom, history.serviceto as history_serviceto, "
