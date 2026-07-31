@@ -47,4 +47,37 @@ public class InfrastructureChargeDetail {
 
     @JsonProperty("netIFC")
     private BigDecimal netIFC;
+
+    @JsonProperty("institutionalRebateApplied")
+    private Boolean institutionalRebateApplied;
+
+    @JsonProperty("institutionalRebateReason")
+    private String institutionalRebateReason;
+
+    @JsonProperty("institutionalRebatePercentage")
+    private BigDecimal institutionalRebatePercentage;
+
+    @JsonProperty("institutionalRebateAmount")
+    private BigDecimal institutionalRebateAmount;
+
+    @JsonProperty("dwellingRebateApplied")
+    private Boolean dwellingRebateApplied;
+
+    @JsonProperty("dwellingRebateReason")
+    private String dwellingRebateReason;
+
+    @JsonProperty("dwellingRebatePercentage")
+    private BigDecimal dwellingRebatePercentage;
+
+    @JsonProperty("dwellingRebateAmount")
+    private BigDecimal dwellingRebateAmount;
+
+    @JsonProperty("netIFCAfterColonyRebate")
+    private BigDecimal netIFCAfterColonyRebate;
+
+    @JsonProperty("netIFCAfterInstitutionalRebate")
+    private BigDecimal netIFCAfterInstitutionalRebate;
+
+    @JsonProperty("netIFCAfterDwellingRebate")
+    private BigDecimal netIFCAfterDwellingRebate;
 }

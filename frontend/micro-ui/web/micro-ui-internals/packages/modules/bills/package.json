@@ -1,6 +1,6 @@
 {
   "name": "@djb25/digit-ui-module-bills",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "BILLS",
   "license": "MIT",
   "main": "dist/index.js",

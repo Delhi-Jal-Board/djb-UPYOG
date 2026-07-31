@@ -151,11 +151,11 @@
   }
 }
 
-
 /* Fix popup modal header bleeding out and spacing */
 .popup-module {
   .header-wrap {
-    padding: 16px 24px;
+    padding-top: 24px;
+    padding-left: 16px;
     border-bottom: 1px solid #e0e0e0;
 
     .heading-m {

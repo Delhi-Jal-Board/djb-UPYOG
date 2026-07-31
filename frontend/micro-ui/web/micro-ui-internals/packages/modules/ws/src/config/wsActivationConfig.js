@@ -1,10 +1,10 @@
 export const newConfig = [
   {
-    head: "WF_EMPLOYEE_NEWSW1_ACTIVATE_CONNECTION",
+    // head: "WF_EMPLOYEE_NEWSW1_ACTIVATE_CONNECTION",
     hideInCitizen: true,
     body: [
       {
-        head: "WS_COMMON_CONNECTION_DETAIL",
+        // head: "WS_COMMON_CONNECTION_DETAIL",
         body: [{
           type: "component",
           key: "connectionDetails",
@@ -13,7 +13,7 @@ export const newConfig = [
         }]
       },
       {
-        head: "WS_COMMON_PLUMBER_DETAILS",
+        // head: "WS_COMMON_PLUMBER_DETAILS",
         body: [{
           type: "component",
           key: "plumberDetails",
@@ -22,7 +22,7 @@ export const newConfig = [
         }]
       },
       {
-        head: "WS_ACTIVATION_DETAILS",
+        // head: "WS_ACTIVATION_DETAILS",
         body: [{
           type: "component",
           key: "activationDetails",
@@ -31,7 +31,7 @@ export const newConfig = [
         }]
       },
       {
-        head: "WF_COMMON_COMMENTS",
+        // head: "WF_COMMON_COMMENTS",
         body: [{
           type: "component",
           key: "comments",
@@ -40,7 +40,7 @@ export const newConfig = [
         }]
       },
       {
-        head: "WF_APPROVAL_UPLOAD_HEAD",
+        // head: "WF_APPROVAL_UPLOAD_HEAD",
         body: [{
           type: "component",
           key: "supportingDocuments",

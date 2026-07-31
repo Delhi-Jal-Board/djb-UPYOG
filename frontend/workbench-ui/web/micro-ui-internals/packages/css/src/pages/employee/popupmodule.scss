@@ -18,6 +18,8 @@
   .popup-module-action-bar {
     border-top: 1px solid rgba(15, 23, 42, 0.08);
     padding-top: 12px;
+    padding-bottom: 12px;
+    padding-right: 12px;
     @apply flex flex-wrap items-center flex-row justify-end gap-3;
   }
 
@@ -28,12 +30,12 @@
 
 @screen dt {
   .popup-module {
-    width: auto;
+    width: 960px;
     margin: auto;
     @apply bg-white;
 
     .popup-module-main {
-      @apply w-full p-md h-full;
+      @apply w-full h-full;
     }
   }
 }

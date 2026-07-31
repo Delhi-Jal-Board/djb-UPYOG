@@ -280,9 +280,8 @@ export const FormComposer = (props) => {
             {section?.isCollapsible ? (
               <CollapsibleCardPage title={t(section.head)} defaultOpen={section.isDefaultOpen}>
                 <div
-                  className={`formcomposer-section-grid ${section.className ? section.className : ""} ${
-                    props.cardFormWrapperClassName ? props.cardFormWrapperClassName : ""
-                  }`}
+                  className={`formcomposer-section-grid ${section.className ? section.className : ""} ${props.cardFormWrapperClassName ? props.cardFormWrapperClassName : ""
+                    }`}
                 >
                   {section.body.map((field, index) => {
                     const Component =
@@ -378,9 +377,9 @@ export const FormComposer = (props) => {
                               </div>
                             </LabelFieldPair>
                             {field?.populators?.name &&
-                            errors &&
-                            errors[field?.populators?.name] &&
-                            Object.keys(errors[field?.populators?.name]).length ? (
+                              errors &&
+                              errors[field?.populators?.name] &&
+                              Object.keys(errors[field?.populators?.name]).length ? (
                               <CardLabelError style={{ gridColumn: field?.colSpan ? field.colSpan : "span 1", fontSize: "12px", marginTop: "8px" }}>
                                 {t(field?.populators?.error || errors[field?.populators?.name]?.message)}
                               </CardLabelError>
@@ -399,9 +398,8 @@ export const FormComposer = (props) => {
               </CollapsibleCardPage>
             ) : (
               <div
-                className={`formcomposer-section-grid ${section.className ? section.className : ""} ${
-                  props.cardFormWrapperClassName ? props.cardFormWrapperClassName : ""
-                }`}
+                className={`formcomposer-section-grid ${section.className ? section.className : ""} ${props.cardFormWrapperClassName ? props.cardFormWrapperClassName : ""
+                  }`}
               >
                 {/* {section && getCombinedComponent(section)} */}
 
@@ -475,9 +473,10 @@ export const FormComposer = (props) => {
                           }}
                         />
                       ) : (
-                        <div>
+                        <div style={{
+                          gridColumn: field?.colSpan ? field.colSpan : "span 1",
+                        }}>
                           <LabelFieldPair
-                            key={index}
                             style={{
                               gridColumn: field?.colSpan ? field.colSpan : "span 1",
                             }}
@@ -499,9 +498,9 @@ export const FormComposer = (props) => {
                             </div>
                           </LabelFieldPair>
                           {field?.populators?.name &&
-                          errors &&
-                          errors[field?.populators?.name] &&
-                          Object.keys(errors[field?.populators?.name]).length ? (
+                            errors &&
+                            errors[field?.populators?.name] &&
+                            Object.keys(errors[field?.populators?.name]).length ? (
                             <CardLabelError style={{ gridColumn: field?.colSpan ? field.colSpan : "span 1", fontSize: "12px", marginTop: "8px" }}>
                               {t(field?.populators?.error || errors[field?.populators?.name]?.message)}
                             </CardLabelError>

@@ -17,12 +17,12 @@ import CitizenInbox from "./components/citizen/inbox";
 import CitizenMobileInbox from "./components/citizen/CitizenMobileInbox";
 import CitizenApp from "./pages/citizen";
 import { CitizenHomeCard, CollectionIcon } from "@djb25/digit-ui-react-components";
-import CancelBills from "./components/CancelBill"; 
-import GroupBills from "./components/GroupBill"; 
+import CancelBills from "./components/CancelBill";
+import GroupBills from "./components/GroupBill";
 
 export const BillsModule = ({ stateCode, userType, tenants }) => {
-  const tenantId =  Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code || Digit.ULBService.getCurrentTenantId();
-  const moduleCode = ["abg","ws", "pt", "common", tenantId, "bill-amend"];
+  const tenantId = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code || Digit.ULBService.getCurrentTenantId();
+  const moduleCode = ["abg", "ws", "pt", "common", tenantId, "bill-amend"];
 
   const language = Digit.StoreData.getCurrentLanguage();
   const { isLoading, data: store } = Digit.Services.useStore({ stateCode, moduleCode, language });
@@ -43,12 +43,14 @@ export const BillsLinks = ({ matchPath }) => {
       link: `${matchPath}/billSearch`,
       i18nKey: t("ABG_SEARCH_BILL_COMMON_HEADER") || "Search Bill",
     },
-    {
-      link: `${matchPath}/billSearch`,
-      i18nKey: "Bills Accounting Links Test",
-    }
   ];
-  return <CitizenHomeCard header={t("ACTION_TEST_BILLGENIE") || "Bills Accounting"} links={links} Icon={() => <CollectionIcon className="fill-path-primary-main" />} />;
+  return (
+    <CitizenHomeCard
+      header={t("ACTION_TEST_BILLGENIE") || "Bills Accounting"}
+      links={links}
+      Icon={() => <CollectionIcon className="fill-path-primary-main" />}
+    />
+  );
 };
 
 const componentsToRegister = {

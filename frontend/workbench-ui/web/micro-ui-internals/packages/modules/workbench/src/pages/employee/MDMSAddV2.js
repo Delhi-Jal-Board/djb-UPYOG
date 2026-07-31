@@ -64,11 +64,32 @@ const MDMSAdd = ({ defaultFormData, updatesToUISchema, screenType = "add", onVie
   };
 
   const { isLoading, data: schema, isFetching } = Digit.Hooks.useCustomAPIHook(reqCriteria);
+
+  const reqCriteriaData = {
+    url: `/${Digit.Hooks.workbench.getMDMSContextPath()}/v2/_search`,
+    params: {},
+    body: {
+      MdmsCriteria: {
+        tenantId: tenantId,
+        schemaCode: `${moduleName}.${masterName}`,
+        limit: 1,
+      },
+    },
+    config: {
+      enabled: moduleName && masterName && true,
+      select: (data) => {
+        return data?.mdms?.[0]?.tenantId;
+      },
+    },
+    changeQueryName: "dataTenantId",
+  };
+  const { data: dataTenantId } = Digit.Hooks.useCustomAPIHook(reqCriteriaData);
+
   const body = api?.requestBody
     ? { ...api?.requestBody }
     : {
         Mdms: {
-          tenantId: tenantId,
+          tenantId: dataTenantId || schema?.tenantId || tenantId,
           schemaCode: `${moduleName}.${masterName}`,
           uniqueIdentifier: null,
           data: {},

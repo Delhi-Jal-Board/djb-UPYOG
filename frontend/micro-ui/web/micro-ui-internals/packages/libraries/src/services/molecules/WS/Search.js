@@ -393,11 +393,11 @@ export const WSSearch = {
       };
     }
 
-    const billAccountDetails = fetchBillData?.Bill?.[0]?.billDetails?.[0]?.billAccountDetails || [];
+    const billAccountDetails = fetchBillData?.Bill?.[0]?.billDetails?.[0]?.billAccountDetails || fetchBillData?.Bill?.[0]?.taxHeadEstimates || [];
     const feeValues = billAccountDetails.length > 0
       ? billAccountDetails.map((bill) => ({
         title: bill?.taxHeadCode,
-        value: <span>&#8377;{Number(bill?.amount).toFixed(2)}</span>
+        value: <span>&#8377;{Number(bill?.amount).toFixed(2)}{bill?.status ? <span style={{ color: bill?.status?.toUpperCase() === "PAID" ? "green" : "red" }}>{` (${bill?.status})`}</span> : ""}</span>
       }))
       : [
         { title: "WS_APPLICATION_FEE_HEADER", value: <span>&#8377;{fetchBillData?.Bill?.[0]?.fee || 0}</span> },
@@ -656,11 +656,13 @@ export const WSSearch = {
     );
     const otherDoc = allDocs.find(
       (d) =>
-        d?.documentType?.includes("OTHER") ||
+        d?.id !== identityDoc?.id &&
+        d?.id !== ownershipDoc?.id &&
+        (d?.documentType?.includes("OTHER") ||
         d?.documentType?.includes("ELECTRICITY") ||
         d?.documentType?.includes("PLUMBER") ||
         d?.documentType?.includes("BUILDING") ||
-        d?.documentType?.includes("TAX")
+        d?.documentType?.includes("TAX"))
     );
     const applicantPhoto = allDocs.find((d) => d?.documentType?.includes("APPLICANTPHOTO") || d?.documentType?.includes("PHOTO"));
 
@@ -677,7 +679,7 @@ export const WSSearch = {
                   title: "WS_IDENTITY_PROOF",
                   categoryLabel: "Proof of Identity",
                   documentType: identityDoc?.documentType,
-                  documentUid: wsDataDetails?.additionalDetails?.identityProofNumber || identityDoc?.documentUid || "",
+                  documentUid: wsDataDetails?.additionalDetails?.identityProofNumber || identityDoc?.documentNumber || "NA",
                   fileStoreId: identityDoc?.fileStoreId,
                   numberLabel: "Identity Proof Document Number",
                   originalDoc: identityDoc,
@@ -688,7 +690,7 @@ export const WSSearch = {
                   title: "WS_OWNERSHIP_PROOF",
                   categoryLabel: "Proof of Ownership",
                   documentType: ownershipDoc?.documentType,
-                  documentUid: wsDataDetails?.additionalDetails?.ownershipDocumentNumber || ownershipDoc?.documentUid || "",
+                  documentUid: wsDataDetails?.additionalDetails?.ownershipDocumentNumber || ownershipDoc?.documentNumber || "NA",
                   fileStoreId: ownershipDoc?.fileStoreId,
                   numberLabel: "Ownership Proof Document Number",
                   originalDoc: ownershipDoc,
@@ -699,7 +701,7 @@ export const WSSearch = {
                   title: "WS_OTHER_DOCUMENTS",
                   categoryLabel: "Other Documents",
                   documentType: otherDoc?.documentType,
-                  documentUid: wsDataDetails?.additionalDetails?.otherDocumentNumber || otherDoc?.documentUid || "",
+                  documentUid: wsDataDetails?.additionalDetails?.otherDocumentNumber || otherDoc?.documentNumber || "NA",
                   fileStoreId: otherDoc?.fileStoreId,
                   numberLabel: "Other Document Number",
                   originalDoc: otherDoc,
@@ -1156,7 +1158,7 @@ export const WSSearch = {
       additionalDetails: {
         redirectUrl: {
           title: t("WS_VIEW_PROPERTY_DETAILS"),
-          url: `/digit-ui/employee/pt/property-details/${propertyDataDetails?.propertyId}?from=WS_APPLICATION_DETAILS_HEADER`,
+          url: `/digit-ui/employee/commonpt/view-property?propertyId=${propertyDataDetails?.propertyId}&tenantId=${propertyDataDetails?.tenantId || tenantId}&from=WS_APPLICATION_DETAILS_HEADER`,
         },
       },
     };
@@ -2352,7 +2354,7 @@ export const WSSearch = {
         },
         {
           title: "WS_VIEW_PROPERTY_DETAIL",
-          to: `/digit-ui/employee/pt/property-details/${propertyDataDetails?.propertyId}?from=${window.location.href.includes("bill-details") ? "ABG_BILL_DETAILS_HEADER" : "WS_COMMON_CONNECTION_DETAIL"
+          to: `/digit-ui/employee/commonpt/view-property?propertyId=${propertyDataDetails?.propertyId}&tenantId=${propertyDataDetails?.tenantId || tenantId}&from=${window.location.href.includes("bill-details") ? "ABG_BILL_DETAILS_HEADER" : "WS_COMMON_CONNECTION_DETAIL"
             }`,
           value: "",
           isLink: true,
@@ -2685,7 +2687,7 @@ export const WSSearch = {
       additionalDetails: {
         redirectUrl: {
           title: t("WS_VIEW_PROPERTY_DETAILS"),
-          url: `/digit-ui/employee/pt/property-details/${propertyDataDetails?.propertyId}?from=WS_APPLICATION_DETAILS_HEADER`,
+          url: `/digit-ui/employee/commonpt/view-property?propertyId=${propertyDataDetails?.propertyId}&tenantId=${propertyDataDetails?.tenantId || tenantId}&from=WS_APPLICATION_DETAILS_HEADER`,
         },
       },
     };

@@ -577,28 +577,51 @@ public class EstimationService {
 			estimates.add(TaxHeadEstimate.builder().taxHeadCode(WSCalculationConstant.WS_TAX_AND_CESS)
 					.estimateAmount(tax.setScale(2, RoundingMode.HALF_UP)).build());
 
-		if (criteria.getWaterConnection().getAdditionalDetails() != null) {
-			try {
-				java.util.Map<String, Object> addDetails = mapper.convertValue(
-					criteria.getWaterConnection().getAdditionalDetails(), 
-					new com.fasterxml.jackson.core.type.TypeReference<java.util.Map<String, Object>>(){}
-				);
-				if (addDetails.containsKey("knoDues")) {
-					BigDecimal knoDues = new BigDecimal(addDetails.get("knoDues").toString());
-					if (knoDues.compareTo(BigDecimal.ZERO) > 0) {
-						estimates.add(TaxHeadEstimate.builder()
-								.taxHeadCode(WSCalculationConstant.WS_OTHER_CHARGE)
-								.estimateAmount(knoDues.setScale(2, RoundingMode.HALF_UP))
-								.build());
-					}
+		// Calculate K-Number dues from dueVerification if present
+		BigDecimal totalDues = BigDecimal.ZERO;
+		if (criteria.getWaterConnection().getDueVerification() != null) {
+			for (DueVerification due : criteria.getWaterConnection().getDueVerification()) {
+				if (due.getDueAmount() != null && !due.getDueAmount().trim().isEmpty()) {
+					totalDues = totalDues.add(new BigDecimal(due.getDueAmount()));
 				}
-			} catch (Exception e) {
-				log.error("Failed to parse knoDues from additional details", e);
 			}
+		}
+		if (totalDues.compareTo(BigDecimal.ZERO) > 0) {
+			estimates.add(TaxHeadEstimate.builder()
+					.taxHeadCode(WSCalculationConstant.WS_OTHER_CHARGE)
+					.estimateAmount(totalDues.setScale(2, RoundingMode.HALF_UP))
+					.build());
+			log.info("Added K-Number dues to estimates: {}", totalDues);
 		}
 
 		addAdhocPenaltyAndRebate(estimates, criteria.getWaterConnection());
+
+		// Determine payment status based on workflow state
+		String appStatus = criteria.getWaterConnection().getApplicationStatus();
+		List<String> unpaidInitialStates = Arrays.asList("INITIATED", "PENDING_FOR_PAYMENT", "PENDING_FOR_CITIZEN_ACTION");
+		boolean isInitialFeePaid = appStatus != null && !unpaidInitialStates.contains(appStatus.toUpperCase());
+				
+		boolean isFinalFeePaid = "PENDING_FOR_CONNECTION_ACTIVATION".equalsIgnoreCase(appStatus)
+				|| "CONNECTION_ACTIVATED".equalsIgnoreCase(appStatus);
+
+		for (TaxHeadEstimate estimate : estimates) {
+			if (WSCalculationConstant.WS_OTHER_CHARGE.equals(estimate.getTaxHeadCode())) {
+				// K-Number dues are final fees
+				estimate.setStatus(isFinalFeePaid ? "PAID" : "UNPAID");
+			} else {
+				// All standard upfront charges (Application fee, Infrastructure, etc.) are initial fees
+				estimate.setStatus(isInitialFeePaid ? "PAID" : "UNPAID");
+			}
+		}
+
 		return estimates;
+	}
+
+	private boolean hasActive12ABCertificate(CalculationCriteria criteria) {
+		if (criteria.getWaterConnection() == null || CollectionUtils.isEmpty(criteria.getWaterConnection().getDocuments())) {
+			return false;
+		}
+		return criteria.getWaterConnection().getDocuments().stream().anyMatch(doc -> WSCalculationConstant.SECTION_12AB_CERTIFICATE.equalsIgnoreCase(doc.getDocumentType()) && (doc.getStatus() == null || doc.getStatus() == Status.ACTIVE));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -687,6 +710,49 @@ public class EstimationService {
 		BigDecimal rebateAmount = grossIFC.multiply(rebatePercentage).divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP);
 
 		BigDecimal netIFC = grossIFC.subtract(rebateAmount).setScale(2, RoundingMode.HALF_UP);
+		BigDecimal netIFCAfterColonyRebate = netIFC;
+
+		// ==================== SECTION 12AB / WORSHIP REBATE ====================
+		BigDecimal institutionalRebatePercentage = BigDecimal.ZERO;
+		BigDecimal institutionalRebateAmount = BigDecimal.ZERO;
+		String institutionalRebateReason = null;
+
+		Map<String, Object> instRebateConfig = infra.get(WSCalculationConstant.INSTITUTIONAL_REBATE) != null ? mapper.convertValue(infra.get(WSCalculationConstant.INSTITUTIONAL_REBATE), new TypeReference<Map<String, Object>>() {}) : null;
+
+		if (instRebateConfig != null && hasActive12ABCertificate(criteria)) {
+			List<String> eligibleCodes = instRebateConfig.get(WSCalculationConstant.ELIGIBLE_USAGE_CODES) != null ? mapper.convertValue(instRebateConfig.get(WSCalculationConstant.ELIGIBLE_USAGE_CODES), new TypeReference<List<String>>() {}) : Collections.emptyList();
+
+			boolean isPlaceOfWorship = eligibleCodes.stream().anyMatch(c ->
+					c.equalsIgnoreCase(extractWaterConnectionUsageType(property)) || (property != null && c.equalsIgnoreCase(property.getUsageCategory())));
+
+			institutionalRebateReason = isPlaceOfWorship ? "Section 12AB Registered Place of Worship" : "Section 12AB Registered Institution";
+
+			institutionalRebatePercentage = new BigDecimal(instRebateConfig.get(WSCalculationConstant.INSTITUTIONAL_REBATE_PERCENTAGE).toString());
+			institutionalRebateAmount = netIFC.multiply(institutionalRebatePercentage).divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP);
+			netIFC = netIFC.subtract(institutionalRebateAmount).setScale(2, RoundingMode.HALF_UP);
+		}
+		BigDecimal netIFCAfterInstitutionalRebate = netIFC;
+
+		// ==================== DWELLING UNIT REBATE (Clause 8) ====================
+		BigDecimal dwellingRebatePercentage = BigDecimal.ZERO;
+		BigDecimal dwellingRebateAmount = BigDecimal.ZERO;
+		String dwellingRebateReason = null;
+
+		BigDecimal builtUpArea = waterDemand.getContextVariables() != null
+				? waterDemand.getContextVariables().getOrDefault("built_up_area", BigDecimal.ZERO)
+				: BigDecimal.ZERO;
+
+		if (builtUpArea.compareTo(BigDecimal.ZERO) > 0 && builtUpArea.compareTo(new BigDecimal("50")) <= 0) {
+			dwellingRebateReason = "Dwelling Unit ≤50 sqm Built-up Area";
+			dwellingRebatePercentage = new BigDecimal("50");
+			dwellingRebateAmount = netIFC.multiply(dwellingRebatePercentage).divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP);
+			netIFC = netIFC.subtract(dwellingRebateAmount).setScale(2, RoundingMode.HALF_UP);
+		}
+		boolean isDwellingRebateEligible = dwellingRebateReason != null;
+		BigDecimal netIFCAfterDwellingRebate = netIFC;
+        // ================================================================================
+
+		boolean isInstitutionalRebateEligible = institutionalRebateReason != null;
 
 		// ==================== DETAILED BREAKDOWN LOGGING ====================
 		log.info("======================================================================");
@@ -707,8 +773,23 @@ public class EstimationService {
 		log.info("----------------------------------------------------------------------");
 		log.info("Applicable Rebate    : {}%", rebatePercentage.setScale(2, RoundingMode.HALF_UP));
 		log.info("Rebate Concession Amt: {}", rebateAmount.setScale(2, RoundingMode.HALF_UP));
+		log.info("Net IFC after Colony Rebate      : {}", netIFCAfterColonyRebate);
+
+		if (isInstitutionalRebateEligible) {
+			log.info("----------------------------------------------------------------------");
+			log.info("Institutional Rebate : {}% (Reason: {})", institutionalRebatePercentage.setScale(2, RoundingMode.HALF_UP), institutionalRebateReason);
+			log.info("Inst. Rebate Amount  : {}", institutionalRebateAmount.setScale(2, RoundingMode.HALF_UP));
+		}
+		log.info("Net IFC after Institutional Rebate: {}", netIFCAfterInstitutionalRebate);
+
+		if (isDwellingRebateEligible) {
+			log.info("Dwelling Rebate     : {}% (Reason: {})", dwellingRebatePercentage.setScale(2, RoundingMode.HALF_UP), dwellingRebateReason);
+			log.info("Dwelling Rebate Amt : {}", dwellingRebateAmount.setScale(2, RoundingMode.HALF_UP));
+		}
+		log.info("Net IFC after Dwelling Rebate     : {}", netIFCAfterDwellingRebate);
+
 		log.info("======================================================================");
-		log.info("FINAL PAYABLE NET IFC: {}  [Formula: Gross Total - Rebate Amount]", netIFC);
+		log.info("FINAL PAYABLE NET IFC: {}  [Formula: Gross Total - Rebates - Institutional Rebate]", netIFC);
 		log.info("======================================================================");
 		// ====================================================================
 
@@ -724,6 +805,10 @@ public class EstimationService {
 
 		    infraBreakdown.put("waterRatePerLPD", waterRate.setScale(2, RoundingMode.HALF_UP));
 		    infraBreakdown.put("grossInfrastructureCharge", grossIFC.setScale(2, RoundingMode.HALF_UP));
+		    infraBreakdown.put("institutionalRebateApplied", isInstitutionalRebateEligible);
+		    infraBreakdown.put("institutionalRebateReason", institutionalRebateReason);
+		    infraBreakdown.put("institutionalRebatePercentage", institutionalRebatePercentage.setScale(2, RoundingMode.HALF_UP));
+		    infraBreakdown.put("institutionalRebateAmount", institutionalRebateAmount.setScale(2, RoundingMode.HALF_UP));
 		    infraBreakdown.put("netInfrastructureCharge", netIFC);
 
 		    if (criteria.getWaterConnection() != null) {
@@ -764,6 +849,17 @@ public class EstimationService {
 		        .grossIFC(grossIFC.setScale(2, RoundingMode.HALF_UP))
 		        .rebatePercentage(rebatePercentage)
 		        .rebateAmount(rebateAmount.setScale(2, RoundingMode.HALF_UP))
+				.netIFCAfterColonyRebate(netIFCAfterColonyRebate)
+		        .institutionalRebateApplied(isInstitutionalRebateEligible)
+		        .institutionalRebateReason(institutionalRebateReason)
+		        .institutionalRebatePercentage(institutionalRebatePercentage.setScale(2, RoundingMode.HALF_UP))
+		        .institutionalRebateAmount(institutionalRebateAmount.setScale(2, RoundingMode.HALF_UP))
+				.netIFCAfterInstitutionalRebate(netIFCAfterInstitutionalRebate)
+				.dwellingRebateApplied(isDwellingRebateEligible)
+				.dwellingRebateReason(dwellingRebateReason)
+				.dwellingRebatePercentage(dwellingRebatePercentage.setScale(2, RoundingMode.HALF_UP))
+				.dwellingRebateAmount(dwellingRebateAmount.setScale(2, RoundingMode.HALF_UP))
+				.netIFCAfterDwellingRebate(netIFCAfterDwellingRebate)
 		        .netIFC(netIFC)
 		        .build();
 
@@ -774,7 +870,6 @@ public class EstimationService {
 		        .build();
 
 		criteria.setCalculationDetail(calcDetail);
-		
 		return netIFC;
 	}
 
@@ -1000,108 +1095,6 @@ public class EstimationService {
 		return estimates;
 
 	}
-
-/*	public Map<String, List> getMutationFeeEstimation(CalculationCriteria criteria, RequestInfo requestInfo,
-	                                                  Map<String, Object> masterData) {
-
-		if (StringUtils.isEmpty(criteria.getWaterConnection()) && !StringUtils.isEmpty(criteria.getApplicationNo())) {
-			SearchCriteria searchCriteria = new SearchCriteria();
-			searchCriteria.setApplicationNumber(criteria.getApplicationNo());
-			searchCriteria.setTenantId(criteria.getTenantId());
-			WaterConnection waterConnection = calculatorUtil.getWaterConnectionOnApplicationNO(
-					requestInfo, searchCriteria, requestInfo.getUserInfo().getTenantId());
-			criteria.setWaterConnection(waterConnection);
-		}
-		if (StringUtils.isEmpty(criteria.getWaterConnection())) {
-			throw new CustomException("WATER_CONNECTION_NOT_FOUND",
-					"Water Connection not found for " + criteria.getApplicationNo());
-		}
-
-		List<TaxHeadEstimate> taxHeadEstimates = getTaxHeadForMutationFeeEstimation(criteria, masterData, requestInfo);
-		Map<String, List> estimatesAndBillingSlabs = new HashMap<>();
-		estimatesAndBillingSlabs.put("estimates", taxHeadEstimates);
-		return estimatesAndBillingSlabs;
-	}*/
-
-	/*@SuppressWarnings("unchecked")
-	private List<TaxHeadEstimate> getTaxHeadForMutationFeeEstimation(CalculationCriteria criteria,
-	                                                                 Map<String, Object> masterData, RequestInfo requestInfo) {
-
-		WaterConnection connection = criteria.getWaterConnection();
-
-		if (connection.getAdditionalDetails() == null)
-			throw new CustomException("EG_WS_MUTATION_FEE_ERROR", "additionalDetails missing for mutation fee calculation");
-
-		Map<String, Object> additionalDetails = mapper.convertValue(connection.getAdditionalDetails(), Map.class);
-		String relationType = ((String) additionalDetails.get("relationType")).toUpperCase();
-		if (StringUtils.isEmpty(relationType))
-			throw new CustomException("EG_WS_MUTATION_FEE_ERROR", "relationType missing in additionalDetails");
-
-		String connectionCategory = connection.getConnectionCategory().toUpperCase();
-		if (StringUtils.isEmpty(connectionCategory))
-			throw new CustomException("EG_WS_MUTATION_FEE_ERROR", "connectionCategory missing on water connection");
-
-		JSONArray feeSlab = (JSONArray) masterData.getOrDefault(WSCalculationConstant.WC_FEESLAB_MASTER, null);
-		if (feeSlab == null)
-			throw new CustomException("FEE_SLAB_NOT_FOUND", "fee slab master data not found!!");
-
-		JSONObject masterSlabWrapper = new JSONObject();
-		masterSlabWrapper.put(WSCalculationConstant.WC_FEESLAB_MASTER, feeSlab);
-
-		// Pull every fee component row matching this connectionCategory + relationType
-		// e.g. MUTATION_FEE, WATER_ADVANCE, REOPENING_FEE — and convert each to a tax head.
-		// Skip TRADE_SECURITY here; for commercial mutations it is ZRO-assessed manually (see below).
-		JSONArray filteredRows = JsonPath.read(masterSlabWrapper,
-				"$." + WSCalculationConstant.WC_FEESLAB_MASTER
-						+ "[?(@.connectionCategory=='" + connectionCategory + "' && @.relationType=='" + relationType + "')]");
-
-		if (CollectionUtils.isEmpty(filteredRows))
-			throw new CustomException("EG_WS_MUTATION_FEE_SLAB_NOT_FOUND",
-					"No mutation fee slab found for connectionCategory: " + connectionCategory
-							+ ", relationType: " + relationType);
-
-		List<TaxHeadEstimate> estimates = new ArrayList<>();
-		for (Object rowObj : filteredRows) {
-			JSONObject row = mapper.convertValue(rowObj, JSONObject.class);
-			String feeComponent = row.getAsString("feeComponent");
-			String taxHeadCode = row.getAsString("taxHeadCode");
-			BigDecimal amount = new BigDecimal(row.getAsNumber("amount").toString());
-
-			if ("TRADE_SECURITY".equalsIgnoreCase(feeComponent))
-				continue; // handled separately — manual ZRO assessment, not slab-driven
-
-			if (amount.compareTo(BigDecimal.ZERO) != 0) {
-				estimates.add(TaxHeadEstimate.builder().taxHeadCode(taxHeadCode)
-						.estimateAmount(amount.setScale(2, RoundingMode.HALF_UP)).build());
-			}
-		}
-
-		// Commercial + non-blood: trade security is ZRO-assessed (3-month average bill), not from slab.
-		// Expect the assessed amount to come through additionalDetails, entered by the approving employee.
-		if ("COMMERCIAL".equalsIgnoreCase(connectionCategory)
-				&& WSCalculationConstant.RELATION_TYPE_NON_BLOOD.equalsIgnoreCase(relationType)) {
-			Object tradeSecurityObj = additionalDetails.get("tradeSecurityAssessedAmount");
-			if (tradeSecurityObj == null)
-				throw new CustomException("EG_WS_MUTATION_TRADE_SECURITY_MISSING",
-						"Trade security amount (ZRO-assessed) is mandatory for commercial mutation in non-blood relation");
-			BigDecimal tradeSecurity = new BigDecimal(tradeSecurityObj.toString());
-			estimates.add(TaxHeadEstimate.builder().taxHeadCode(WSCalculationConstant.WS_MUTATION_TRADE_SECURITY)
-					.estimateAmount(tradeSecurity.setScale(2, RoundingMode.HALF_UP)).build());
-		}
-
-		addAdhocPenaltyAndRebate(estimates, connection);
-
-		return estimates;
-	}*/
-	
-	
-	
-	
-	/**
-	 * ============================================= CALCULATOR START ==================================
-	 * @param request
-	 * @return CalculationRes
-	 */
 	public CalculationRes estimateCharges(EstimationRequest request) {
 
 	    String tenantId = StringUtils.hasText(request.getTenantId()) ? request.getTenantId() : "dl.djb";
@@ -1161,6 +1154,9 @@ public class EstimationService {
 	    if (request.getServantQuarterArea() != null) {
 	        additionalDetails.put("servantQuarterArea", request.getServantQuarterArea());
 	    }
+	    if (request.getIs12ABCertificate() != null) {
+	        additionalDetails.put(WSCalculationConstant.IS_SECTION_12AB, request.getIs12ABCertificate());
+	    }
 
 	    Property mockProperty = Property.builder().usageCategory(request.getUsageCategory()) 
 	            .propertyType(request.getPropertyType())   
@@ -1174,6 +1170,13 @@ public class EstimationService {
 	    mockConnection.setTenantId(tenantId);
 	    mockConnection.setApplicationType(WSCalculationConstant.NEW_WATER_CONNECTION);
 	    mockConnection.setConnectionCategory(request.getCategoryType());
+		// Add 12AB certificate document
+		if (request.getIs12ABCertificate() != null && request.getIs12ABCertificate()) {
+			Document certificate12AB = new Document();
+			certificate12AB.setDocumentType(WSCalculationConstant.SECTION_12AB_CERTIFICATE);
+			certificate12AB.setStatus(Status.ACTIVE);
+			mockConnection.setDocuments(Collections.singletonList(certificate12AB));
+		}
 	    
 	    String connectionType = StringUtils.hasText(request.getConnectionType()) ? request.getConnectionType() : "METERED";
 	    mockConnection.setConnectionType(connectionType);

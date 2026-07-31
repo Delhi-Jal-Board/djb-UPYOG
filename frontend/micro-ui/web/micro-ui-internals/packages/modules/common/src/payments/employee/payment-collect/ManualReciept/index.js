@@ -11,6 +11,7 @@ export const useCashPaymentDetails = (props, t) => {
         {
           withoutLabel: true,
           type: "custom",
+          colSpan: "span 2",
           populators: {
             name: "ManualRecieptDetails",
             customProps: {},

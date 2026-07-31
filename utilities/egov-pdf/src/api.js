@@ -429,7 +429,7 @@ async function getPropertyDeatils(requestinfo,tenantId,propertyIds,connectionnoT
 async function create_pdf(tenantId, key, data, requestinfo) {
   let headers = {
     // Add your desired headers here
-    "content-type": "application/json;charset=UTF-8",
+    "Content-Type": "application/json",
     accept: "application/json, text/plain, */*",
     "TENANTID":tenantId
   };
@@ -438,7 +438,7 @@ async function create_pdf(tenantId, key, data, requestinfo) {
     responseType: "stream",
     method: "post",
     url: url.resolve(config.host.pdf, config.paths.pdf_create),
-    data: Object.assign(requestinfo, data),
+    data: JSON.stringify(Object.assign(requestinfo, data)),
     params: {
       tenantId: tenantId,
       key: key,
@@ -448,41 +448,21 @@ async function create_pdf(tenantId, key, data, requestinfo) {
 }
 
 async function create_pdf_and_upload(tenantId, key, data, requestinfo) {
-  return await axios({
-    //responseType: "stream",
-    method: "post",
-    url: url.resolve(config.host.pdf, config.paths.pdf_create_upload),
-    data: Object.assign(requestinfo, data),
-    params: {
-      tenantId: tenantId,
-      key: key,
-    },
-  });
-}
+  let headers = {
+    "Content-Type": "application/json",
+    accept: "application/json, text/plain, */*",
+    "TENANTID":tenantId
+  };
 
-async function create_pdf_and_upload(tenantId, key, data, requestinfo) {
   return await axios({
-    //responseType: "stream",
     method: "post",
-    url: url.resolve(config.host.pdf, config.paths.pdf_create_upload),
-    data: Object.assign(requestinfo, data),
+    url: url.resolve(config.host.pdf, config.paths.pdf_create_upload || "/pdf-service/v1/_create"),
+    data: JSON.stringify(Object.assign(requestinfo, data)),
     params: {
       tenantId: tenantId,
       key: key,
     },
-  });
-}
-
-async function create_pdf_and_upload(tenantId, key, data, requestinfo) {
-  return await axios({
-    //responseType: "stream",
-    method: "post",
-    url: url.resolve(config.host.pdf, config.paths.pdf_create_upload),
-    data: Object.assign(requestinfo, data),
-    params: {
-      tenantId: tenantId,
-      key: key,
-    },
+    headers: headers,
   });
 }
 

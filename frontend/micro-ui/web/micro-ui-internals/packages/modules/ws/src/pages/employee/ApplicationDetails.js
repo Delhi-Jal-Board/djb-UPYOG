@@ -150,6 +150,38 @@ const ApplicationDetails = () => {
   let dowloadOptions = [],
     appStatus = applicationDetails?.applicationData?.applicationStatus || "";
 
+  if (
+    workflowDetails?.data &&
+    applicationDetails?.processInstancesDetails?.[0]?.businessService === "NewWS1" &&
+    appStatus === "PENDING_FOR_BILLING_CLERK_REVIEW"
+  ) {
+    const plotArea = Number(applicationDetails?.propertyDetails?.additionalDetails?.plotArea ?? 0);
+    // Filter actionState.nextActions
+    if (workflowDetails?.data?.actionState?.nextActions) {
+      workflowDetails.data.actionState.nextActions = workflowDetails.data.actionState.nextActions.filter((action) => {
+        if (action.action === "VERIFY_AND_FORWARD_TO_AE") {
+          return plotArea > 200;
+        }
+        if (action.action === "VERIFY_AND_FORWARD_TO_ASO") {
+          return plotArea <= 200;
+        }
+        return true;
+      });
+    }
+
+    // Filter nextActions
+    if (workflowDetails?.data?.nextActions) {
+      workflowDetails.data.nextActions = workflowDetails.data.nextActions.filter((action) => {
+        if (action.action === "VERIFY_AND_FORWARD_TO_AE") {
+          return plotArea > 200;
+        }
+        if (action.action === "VERIFY_AND_FORWARD_TO_ASO") {
+          return plotArea <= 200;
+        }
+        return true;
+      });
+    }
+  }
   workflowDetails?.data?.actionState?.nextActions?.forEach((action) => {
     if (action?.action === "ACTIVATE_CONNECTION") {
       action.redirectionUrll = {
@@ -194,18 +226,18 @@ const ApplicationDetails = () => {
     }
   });
 
-  if (
-    workflowDetails?.data?.nextActions?.length > 0 &&
-    workflowDetails?.data?.actionState?.nextActions?.length > 0 &&
-    !workflowDetails?.data?.actionState?.nextActions?.find((e) => e.action === "EDIT") &&
-    !workflowDetails?.data?.actionState?.nextActions?.find((e) => e.action === "RESUBMIT_APPLICATION") &&
-    !workflowDetails?.data?.actionState?.nextActions?.find((e) => e.action === "ACTIVATE_CONNECTION") &&
-    !workflowDetails?.data?.actionState?.nextActions?.find((e) => e.action === "SUBMIT_APPLICATION")
-  ) {
-    workflowDetails?.data?.nextActions?.forEach((data) => {
-      if (data.action === "EDIT") workflowDetails.data.actionState.nextActions.push(data);
-    });
-  }
+  // if (
+  //   workflowDetails?.data?.nextActions?.length > 0 &&
+  //   workflowDetails?.data?.actionState?.nextActions?.length > 0 &&
+  //   // !workflowDetails?.data?.actionState?.nextActions?.find((e) => e.action === "EDIT") &&
+  //   !workflowDetails?.data?.actionState?.nextActions?.find((e) => e.action === "RESUBMIT_APPLICATION") &&
+  //   !workflowDetails?.data?.actionState?.nextActions?.find((e) => e.action === "ACTIVATE_CONNECTION") &&
+  //   !workflowDetails?.data?.actionState?.nextActions?.find((e) => e.action === "SUBMIT_APPLICATION")
+  // ) {
+  //   workflowDetails?.data?.nextActions?.forEach((data) => {
+  //     if (data.action === "EDIT") workflowDetails.data.actionState.nextActions.push(data);
+  //   });
+  // }
 
   workflowDetails?.data?.actionState?.nextActions?.forEach((action) => {
     if (action?.action === "EDIT") {
@@ -264,9 +296,8 @@ const ApplicationDetails = () => {
         };
       } else {
         action.redirectionUrll = {
-          pathname: `${getBusinessService(filters)}/${applicationDetails?.applicationNo}/${applicationDetails?.tenantId}?tenantId=${
-            applicationDetails?.tenantId
-          }&ISWSAPP&applicationNumber=${applicationDetails?.applicationNo}`,
+          pathname: `${getBusinessService(filters)}/${applicationDetails?.applicationNo}/${applicationDetails?.tenantId}?tenantId=${applicationDetails?.tenantId
+            }&ISWSAPP&applicationNumber=${applicationDetails?.applicationNo}`,
           state: applicationDetails?.tenantId,
         };
       }
@@ -287,9 +318,8 @@ const ApplicationDetails = () => {
         };
       } else {
         action.redirectionUrll = {
-          pathname: `${getBusinessService(filters)}/${applicationDetails?.applicationNo}/${applicationDetails?.tenantId}?tenantId=${
-            applicationDetails?.tenantId
-          }&ISWSAPP&applicationNumber=${applicationDetails?.applicationNo}`,
+          pathname: `${getBusinessService(filters)}/${applicationDetails?.applicationNo}/${applicationDetails?.tenantId}?tenantId=${applicationDetails?.tenantId
+            }&ISWSAPP&applicationNumber=${applicationDetails?.applicationNo}`,
           state: applicationDetails?.tenantId,
         };
       }
@@ -444,7 +474,10 @@ const ApplicationDetails = () => {
     <React.Fragment>
       <div className={"employee-main-application-details"} style={{ display: "flex", gap: "20px" }}>
         {/* Left Column: Workflow Timeline */}
-        <div className={`workflow-timeline-wrapper no-scrollbar ${hideTimeline ? "hide-workflow" : ""}`} style={{ flex: "1 1 300px", maxWidth: hideTimeline ? "fit-content" : "400px", transition: "max-width 0.3s" }}>
+        <div
+          className={`workflow-timeline-wrapper no-scrollbar ${hideTimeline ? "hide-workflow" : ""}`}
+          style={{ flex: "1 1 300px", maxWidth: hideTimeline ? "fit-content" : "400px", transition: "max-width 0.3s" }}
+        >
           <WorkflowTimeline workflowDetails={workflowDetails} hideTimeline={hideTimeline} setHideTimeline={setHideTimeline} />
         </div>
 

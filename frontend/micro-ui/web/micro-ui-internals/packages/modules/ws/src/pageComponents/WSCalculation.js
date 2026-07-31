@@ -9,6 +9,7 @@ import {
   SubmitBar,
   Card,
   Loader,
+  CheckBox,
 } from "@djb25/digit-ui-react-components";
 import React, { useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -53,6 +54,7 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
         numberOfStudents: "",
         servantQuarterArea: "",
         colonyName: "",
+        is12ABCertificate: false,
       },
     },
   });
@@ -94,18 +96,28 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
   const watchColonyName = watch("useDetails.colonyName");
 
   const isCalculateButtonEnabled =
-    watchCategoryType &&
-    watchPropertyCategory &&
-    watchPropertyType &&
-    watchWaterConnectionUsageType &&
-    watchColonyName
+    watchCategoryType && watchPropertyCategory && watchPropertyType && watchWaterConnectionUsageType && watchColonyName;
 
-  const isHospitalProperty = watchPropertyType?.code === "HOSPITAL_NURSING_HOME" || watchPropertyType?.code === "DharamshalasOrHostels" || watchPropertyType?.code === "HospitalNursingHome";
+  const isHospitalProperty =
+    watchPropertyType?.code === "HOSPITAL_NURSING_HOME" ||
+    watchPropertyType?.code === "DharamshalasOrHostels" ||
+    watchPropertyType?.code === "HospitalNursingHome";
   const isHotelRestaurantProperty = watchPropertyType?.code === "HOTEL_OR_RESTAURANT" || watchPropertyType?.code === "HotelOrRestaurant";
   const isSchoolCollegeProperty = watchPropertyType?.code === "School" || watchPropertyType?.code === "College";
-  const isDwellingUnit = watchPropertyCategory?.code === "RESIDENTIAL" || watchPropertyCategory?.code === "RESIDENTIAL";
-  const isServentHouse =
-    watchPropertyType?.code === "Apartment" || watchPropertyType?.code === "FlatOrApartment" || watchPropertyType?.code === "IndividualHouse";
+  const dwellingPropertyTypes = [
+    "Apartment",
+    "DDAFlats",
+    "GovtFlats",
+    "Bungalows",
+    "FlatOrApartment",
+    "GroupHousingSociety",
+    "JJSLUMS",
+    "IndividualHouse",
+  ];
+
+  const isDwellingUnit = dwellingPropertyTypes.includes(watchPropertyType?.code);
+
+  const isServentHouse = dwellingPropertyTypes.includes(watchPropertyType?.code);
 
   const categoryOptions = useMemo(() => {
     if (!watchCategoryType?.code) return [];
@@ -227,6 +239,7 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
       setValue("useDetails.numberOfStudents", "");
       setValue("useDetails.servantQuarterArea", "");
       setValue("useDetails.colonyName", "");
+      setValue("useDetails.is12ABCertificate", false);
     }
   }, [formData?.cpt?.details, formData?.cpt, categoryOptions, propertyTypeOptions, usageTypeOptions, categoryTypeList, setValue]);
 
@@ -322,10 +335,16 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
                   </div>
                 )}
 
-                {(propertyDetail.numberOfDwellingUnits > 0 || waterDemandDetail.contextVariables?.dwelling_units > 0 || waterDemandDetail.contextVariables?.total_du > 0) && (
+                {(propertyDetail.numberOfDwellingUnits > 0 ||
+                  waterDemandDetail.contextVariables?.dwelling_units > 0 ||
+                  waterDemandDetail.contextVariables?.total_du > 0) && (
                   <div>
                     <div className="ws-calc-label">{t("WS_NUMBER_OF_DWELLING_UNITS")}</div>
-                    <div className="ws-calc-value">{propertyDetail.numberOfDwellingUnits || waterDemandDetail.contextVariables?.dwelling_units || waterDemandDetail.contextVariables?.total_du}</div>
+                    <div className="ws-calc-value">
+                      {propertyDetail.numberOfDwellingUnits ||
+                        waterDemandDetail.contextVariables?.dwelling_units ||
+                        waterDemandDetail.contextVariables?.total_du}
+                    </div>
                   </div>
                 )}
 
@@ -471,10 +490,41 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
                 </div>
                 <div className="ws-calc-row">
                   <span className="ws-calc-row-label">
-                    {t("WS_REBATE")} ({infraDetail.rebatePercentage || 0}%)
+                    {t("WS_COLONY_REBATE")} ({infraDetail.rebatePercentage || 0}%)
                   </span>
-                  <span className="ws-calc-row-value-red">- ₹ {infraDetail.rebateAmount?.toLocaleString("en-IN") || 0}</span>
+                  <span className="ws-calc-row-value-red">₹ {infraDetail.rebateAmount?.toLocaleString("en-IN") || 0}</span>
                 </div>
+
+                {infraDetail.institutionalRebateApplied && (
+                  <React.Fragment>
+                    <div className="ws-calc-row">
+                      <span className="ws-calc-row-label">
+                        {t("WS_INSTITUTIONAL_REBATE")} ({infraDetail.institutionalRebatePercentage || 0}%)
+                      </span>
+                      <span className="ws-calc-row-value-red">₹ {infraDetail.institutionalRebateAmount?.toLocaleString("en-IN") || 0}</span>
+                    </div>
+                    <div className="ws-calc-row">
+                      <span className="ws-calc-row-label">{t("WS_INSTITUTIONAL_REBATE_REASON")}</span>
+                      <span className="ws-calc-row-value">{t(infraDetail.institutionalRebateReason) || "-"}</span>
+                    </div>
+                  </React.Fragment>
+                )}
+
+                {infraDetail.dwellingRebateApplied && (
+                  <React.Fragment>
+                    <div className="ws-calc-row">
+                      <span className="ws-calc-row-label">
+                        {t("WS_DWELLING_REBATE")} ({infraDetail.dwellingRebatePercentage || 0}%)
+                      </span>
+                      <span className="ws-calc-row-value-red">₹ {infraDetail.dwellingRebateAmount?.toLocaleString("en-IN") || 0}</span>
+                    </div>
+                    <div className="ws-calc-row">
+                      <span className="ws-calc-row-label">{t("WS_DWELLING_REBATE_REASON")}</span>
+                      <span className="ws-calc-row-value">{t(infraDetail.dwellingRebateReason) || "-"}</span>
+                    </div>
+                  </React.Fragment>
+                )}
+
                 <div className="ws-calc-highlight-green">
                   <span className="ws-calc-highlight-green-label">{t("WS_NET_INFRASTRUCTURE_CHARGE")}</span>
                   <span className="ws-calc-highlight-green-value">₹ {infraDetail.netIFC?.toLocaleString("en-IN") || 0}</span>
@@ -626,32 +676,49 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
             </LabelFieldPair>
             {errors?.useDetails?.plotArea && <CardLabelError style={errorStyle}>{errors.useDetails.plotArea.message}</CardLabelError>}
 
-            <LabelFieldPair>
-              <CardLabel>{`${t("WS_BUILT_UP_AREA")}`}</CardLabel>
-              <div className="form-field">
-                <TextInput
-                  t={t}
-                  inputRef={register({
-                    pattern: { value: DECIMAL_PATTERN, message: t("ERR_INVALID_DECIMAL") },
-                  })}
-                  name="useDetails.builtUpArea"
-                />
-              </div>
-            </LabelFieldPair>
-            {errors?.useDetails?.builtUpArea && <CardLabelError style={errorStyle}>{errors.useDetails.builtUpArea.message}</CardLabelError>}
-            <LabelFieldPair>
-              <CardLabel>{`${t("WS_FAR_AREA")}`}</CardLabel>
-              <div className="form-field">
-                <TextInput
-                  t={t}
-                  inputRef={register({
-                    pattern: { value: DECIMAL_PATTERN, message: t("ERR_INVALID_DECIMAL") },
-                  })}
-                  name="useDetails.farArea"
-                />
-              </div>
-            </LabelFieldPair>
-            {errors?.useDetails?.farArea && <CardLabelError style={errorStyle}>{errors.useDetails.farArea.message}</CardLabelError>}
+            <div>
+              <LabelFieldPair>
+                <CardLabel>{`${t("WS_BUILT_UP_AREA")}`}</CardLabel>
+                <div className="form-field">
+                  <TextInput
+                    t={t}
+                    inputRef={register({
+                      pattern: { value: DECIMAL_PATTERN, message: t("ERR_INVALID_DECIMAL") },
+                    })}
+                    name="useDetails.builtUpArea"
+                  />
+                </div>
+              </LabelFieldPair>
+              {errors?.useDetails?.builtUpArea && <CardLabelError style={errorStyle}>{errors.useDetails.builtUpArea.message}</CardLabelError>}
+            </div>
+
+            <div>
+              <LabelFieldPair>
+                <CardLabel>{`${t("WS_FAR_AREA")}`}</CardLabel>
+                <div className="form-field">
+                  <TextInput
+                    t={t}
+                    inputRef={register({
+                      pattern: { value: DECIMAL_PATTERN, message: t("ERR_INVALID_DECIMAL") },
+                      validate: (value) => {
+                        if (formValue?.useDetails?.builtUpArea && parseFloat(value) > parseFloat(formValue?.useDetails?.builtUpArea)) {
+                          return t("WS_FAR_AREA_IS_SMALLER_THAN_BUILT_UP_AREA");
+                        }
+                      },
+                    })}
+                    name="useDetails.farArea"
+                  />
+                </div>
+              </LabelFieldPair>
+              {errors?.useDetails?.farArea && <CardLabelError style={errorStyle}>{errors.useDetails.farArea.message}</CardLabelError>}
+              {formValue?.useDetails?.farArea &&
+                formValue?.useDetails?.builtUpArea &&
+                parseFloat(formValue?.useDetails?.farArea) > parseFloat(formValue?.useDetails?.builtUpArea) && (
+                  <CardLabelError style={{ width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "5px" }}>
+                    {t("WS_FAR_AREA_IS_SMALLER_THAN_BUILT_UP_AREA")}
+                  </CardLabelError>
+                )}
+            </div>
 
             {isDwellingUnit ? (
               <LabelFieldPair>
@@ -745,9 +812,23 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
             {isServentHouse && errors?.useDetails?.servantQuarterArea && (
               <CardLabelError style={errorStyle}>{errors.useDetails.servantQuarterArea.message}</CardLabelError>
             )}
+
+            <LabelFieldPair>
+              <div className="form-field">
+                <Controller
+                  control={control}
+                  name="useDetails.is12ABCertificate"
+                  render={({ value, onChange }) => (
+                    <CheckBox checked={value} onChange={(e) => onChange(e.target.checked)} label={t("WS_12_AB_CERTIFICATE_LABEL")} />
+                  )}
+                />
+              </div>
+            </LabelFieldPair>
           </div>
         </CollapsibleCardPage>
-        <div style={{ display: "flex", marginTop: "24px", marginBottom: "32px", justifyContent: isMobile ? "center" : "flex-end", alignItems: "center" }}>
+        <div
+          style={{ display: "flex", marginTop: "24px", marginBottom: "32px", justifyContent: isMobile ? "center" : "flex-end", alignItems: "center" }}
+        >
           <button
             type="button"
             className="clear-search generic-button"
@@ -759,11 +840,7 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
           >
             {t("CS_COMMON_CLEAR_SEARCH")}
           </button>
-          {isLoading ? (
-            <Loader />
-          ) : (
-            <SubmitBar label={t("ES_COMMON_CALCULATE")} onSubmit={handleSubmit} disabled={!isCalculateButtonEnabled} />
-          )}
+          {isLoading ? <Loader /> : <SubmitBar label={t("ES_COMMON_CALCULATE")} onSubmit={handleSubmit} disabled={!isCalculateButtonEnabled} />}
         </div>
 
         {calculationData && <RenderCalculationDetails data={calculationData} />}
