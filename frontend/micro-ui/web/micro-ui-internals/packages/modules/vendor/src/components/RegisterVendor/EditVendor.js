@@ -6,8 +6,9 @@ import { useQueryClient } from "react-query";
 import VendorConfig from "../../config/VendorConfig";
 
 const EditVendor = () => {
-  const rawTenantId = Digit.ULBService.getCurrentTenantId();
-  const tenantId = rawTenantId?.includes(".") ? rawTenantId : `${rawTenantId}.djb`;
+  const tenantId = Digit.ULBService.getCurrentTenantId();
+  // const rawTenantId = Digit.ULBService.getCurrentTenantId();
+  // const tenantId = rawTenantId?.includes(".") ? rawTenantId : `${rawTenantId}.djb`;
   const { t } = useTranslation();
   const history = useHistory();
   let { id: dsoId } = useParams();
