@@ -72,10 +72,20 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
     watchPropertyType?.code === "HospitalNursingHome";
   const isHotelRestaurantProperty = watchPropertyType?.code === "HOTEL_OR_RESTAURANT" || watchPropertyType?.code === "HotelOrRestaurant";
   const isSchoolCollegeProperty = watchPropertyType?.code === "School" || watchPropertyType?.code === "College";
-  const isDwellingUnit =
-    watchPropertyType?.code === "Apartment" || watchPropertyType?.code === "FlatOrApartment" || watchPropertyType?.code === "IndividualHouse";
-  const isServentHouse =
-    watchPropertyType?.code === "Apartment" || watchPropertyType?.code === "FlatOrApartment" || watchPropertyType?.code === "IndividualHouse";
+  const dwellingPropertyTypes = [
+    "Apartment",
+    "DDAFlats",
+    "GovtFlats",
+    "Bungalows",
+    "FlatOrApartment",
+    "GroupHousingSociety",
+    "JJSLUMS",
+    "IndividualHouse",
+  ];
+
+  const isDwellingUnit = dwellingPropertyTypes.includes(watchPropertyType?.code);
+
+  const isServentHouse = dwellingPropertyTypes.includes(watchPropertyType?.code);
 
   const yearOptions = useMemo(() => {
     const currentYear = new Date().getFullYear();
