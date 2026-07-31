@@ -128,6 +128,7 @@ public class EmployeeRowMapper implements ResultSetExtractor<List<Employee>> {
 						.boundary(rs.getString("jurisdiction_boundary")).boundaryType(rs.getString("jurisdiction_boundarytype"))
 						.tenantId(rs.getString("jurisdiction_tenantid"))
 						.isActive(null == rs.getObject("jurisdiction_isactive")?true:rs.getBoolean("jurisdiction_isactive"))
+						.zone(rs.getString("jurisdiction_zone"))
 						.auditDetails(auditDetails).build();
 				
 				jurisdictions.add(jurisdiction);

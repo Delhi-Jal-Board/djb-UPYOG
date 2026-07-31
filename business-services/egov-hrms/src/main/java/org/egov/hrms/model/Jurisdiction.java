@@ -83,4 +83,7 @@ public class Jurisdiction {
 
     private Boolean isActive;
 
+    @SafeHtml
+    private String zone;
+
 }
