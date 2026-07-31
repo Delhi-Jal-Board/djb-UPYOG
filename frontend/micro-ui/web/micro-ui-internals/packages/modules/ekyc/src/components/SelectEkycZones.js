@@ -11,26 +11,22 @@ const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true, 
   // Prevent converting initial values multiple times
   const initialized = useRef(false);
 
-  const { data: boundaryData, isLoading } = Digit.Hooks.useCommonMDMS(tenantId, "egov-location", ["TenantBoundary"]);
+  const { data: zroData, isLoading } = Digit.Hooks.useCommonMDMS(tenantId, "common-masters", ["ZroOfficeList"]);
 
   useEffect(() => {
-    const tenantBoundary = boundaryData?.["egov-location"]?.TenantBoundary?.[0] || boundaryData?.MdmsRes?.["egov-location"]?.TenantBoundary?.[0];
+    const zroOfficeList = zroData?.["common-masters"]?.ZroOfficeList || zroData?.MdmsRes?.["common-masters"]?.ZroOfficeList || [];
 
-    const boundaries = tenantBoundary?.boundary || tenantBoundary?.children || [];
+    if (Array.isArray(zroOfficeList)) {
+      const activeZros = zroOfficeList
+        .filter((zro) => zro && zro.active)
+        .map((zro) => ({
+          code: zro.code,
+          name: zro.code,
+        }));
 
-    if (Array.isArray(boundaries?.children)) {
-      const allZones = boundaries.children.flatMap((assembly) =>
-        (assembly.children || []).map((zone) => ({
-          code: zone.code,
-          name: zone.name,
-        }))
-      );
-
-      const zonesList = [...new Map(allZones.map((z) => [z.code, z])).values()];
-
-      setZones(zonesList);
+      setZones(activeZros);
     }
-  }, [boundaryData]);
+  }, [zroData]);
 
   /**
    * Sync selected values
@@ -119,7 +115,7 @@ const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true, 
         <div className="selected-zones">
           {selectedZones.filter(zone => zone && zone.code).map((zone) => (
             <span key={zone.code} className="selected-zone-chip">
-              {zone.name}
+              {t(zone.code)}
             </span>
           ))}
         </div>

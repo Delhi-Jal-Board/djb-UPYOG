@@ -116,7 +116,7 @@ const VendorConfig = (t, module = "", genderMenu, update) => {
               type: "component",
               key: "zoneIds",
               component: "SelectEkycZones",
-              disable: update,
+              // disable: update,
             },
             // {
             //   label: "ES_VENDOR_CLUSTER",

@@ -258,7 +258,7 @@ const AddVendor = () => {
 
     mutate(payload, {
       onError: (error) => {
-        setShowToast({ key: "error", action: error });
+        setShowToast({ key: "error", action: error?.message || error });
       },
       onSuccess: () => {
         history.push({

@@ -14,6 +14,7 @@ import EKYCForm from "./EKYCForm";
 import AdminDashboard from "../../components/AdminDashboard.js";
 import SupervisorDetailsCard from "../../components/SupervisorDetailsCard.js";
 import SurveyorDetailsCard from "../../components/SurveyorDetailsCard.js"
+import WorkOrder from "./WorkOrder";
 import { ekycRoutes } from "../../config/Routes";
 
 const EmployeeApp = ({ path }) => {
@@ -245,6 +246,15 @@ const EmployeeApp = ({ path }) => {
               component={() => (
                 <LayoutWrapper layoutClass="normal">
                   <SurveyorDetailsCard />
+                </LayoutWrapper>
+              )}
+            />
+
+            <PrivateRoute
+              path={`${path}/work-order`}
+              component={() => (
+                <LayoutWrapper layoutClass="normal">
+                  <WorkOrder />
                 </LayoutWrapper>
               )}
             />

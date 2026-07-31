@@ -1,6 +1,7 @@
 import { PersonIcon, EmployeeModuleCard } from "@djb25/digit-ui-react-components";
 import React from "react";
 import { useTranslation } from "react-i18next";
+import { label } from "three/tsl";
 
 const EKYCCard = () => {
   const { t } = useTranslation();
@@ -80,6 +81,10 @@ const EKYCCard = () => {
         label: t("EKYC_INBOX"),
         link: `${prefix}/inbox`,
       },
+      {
+        label: t("EKYC_WORK_ORDER"),
+        link: `${prefix}/work-order`,
+      },
       ...(!roles.includes("EMPLOYEE")
         ? [
           {
@@ -97,12 +102,12 @@ const EKYCCard = () => {
     kpis: isCitizen
       ? []
       : [
-          {
-            count: totalCount,
-            label: t("TOTAL_EKYC"),
-            link: `${prefix}/admin-dashboard`,
-          },
-        ],
+        {
+          count: totalCount,
+          label: t("TOTAL_EKYC"),
+          link: `${prefix}/admin-dashboard`,
+        },
+      ],
     links: links,
   };
 

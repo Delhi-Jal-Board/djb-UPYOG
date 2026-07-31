@@ -81,6 +81,10 @@ const ServiceDoc = ({ t, config, onSelect }) => {
 
   let docs = Documentsob?.ASSET?.Documents;
 
+  const onSubmit = () => {
+    onSelect(config.key, {});
+  };
+
   return (
     <div className="employee-form-content">
       {isLoading && <Loader />}
@@ -111,7 +115,7 @@ const ServiceDoc = ({ t, config, onSelect }) => {
           </Card>
         ))}
       <ActionBar>
-        <SubmitBar label={t("COMMON_NEXT")} onSubmit={onSelect} />
+        <SubmitBar label={t("COMMON_NEXT")} onSubmit={onSubmit} />
       </ActionBar>
     </div>
   );

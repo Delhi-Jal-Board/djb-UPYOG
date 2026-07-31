@@ -170,26 +170,22 @@ const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true, 
     );
   }, [supervisorSearchResponse, loggedInUser]);
 
-  const { data: boundaryData, isLoading } = Digit.Hooks.useCommonMDMS(tenantId, "egov-location", ["TenantBoundary"]);
+  const { data: zroData, isLoading } = Digit.Hooks.useCommonMDMS("dl", "common-masters", ["ZroOfficeList"]);
 
   useEffect(() => {
-    const tenantBoundary = boundaryData?.["egov-location"]?.TenantBoundary?.[0] || boundaryData?.MdmsRes?.["egov-location"]?.TenantBoundary?.[0];
+    const zroOfficeList = zroData?.["common-masters"]?.ZroOfficeList || zroData?.MdmsRes?.["common-masters"]?.ZroOfficeList || [];
 
-    const boundaries = tenantBoundary?.boundary || tenantBoundary?.children || [];
+    if (Array.isArray(zroOfficeList)) {
+      const activeZros = zroOfficeList
+        .filter((zro) => zro && zro.active)
+        .map((zro) => ({
+          code: zro.code,
+          name: zro.code,
+        }));
 
-    if (Array.isArray(boundaries?.children)) {
-      const allZones = boundaries.children.flatMap((assembly) =>
-        (assembly.children || []).map((zone) => ({
-          code: zone.code,
-          name: zone.name,
-        }))
-      );
-
-      let zonesList = [...new Map(allZones.map((z) => [z.code, z])).values()];
-
-      setZones(zonesList);
+      setZones(activeZros);
     }
-  }, [boundaryData, isEkycVendor, matchedVendor, isEkycSupervisor, matchedSupervisor, isVendorPage]);
+  }, [zroData]);
 
   /**
    * Sync selected values
@@ -246,12 +242,10 @@ const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true, 
   const handleSelect = (value) => {
     if (isMultiSelect) {
       const selected = Array.isArray(value) ? value.map((v) => (Array.isArray(v) ? v[1] : v)).filter(Boolean) : [];
-
       setSelectedZones(selected);
       onSelect(config.key, selected);
     } else {
       const selectedZone = Array.isArray(value) ? (Array.isArray(value[0]) ? value[0][1] : value[0]) : value;
-
       setSelectedZones(selectedZone ? [selectedZone] : []);
       onSelect(config.key, selectedZone?.name || "");
     }
@@ -286,7 +280,7 @@ const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true, 
         <div className="selected-zones">
           {selectedZones.filter(zone => zone && zone.code).map((zone) => (
             <span key={zone.code} className="selected-zone-chip">
-              {zone.name}
+              {t(zone.code)}
             </span>
           ))}
         </div>
