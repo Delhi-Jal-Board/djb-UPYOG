@@ -10,6 +10,7 @@ import CeoDashboard from "../components/CeoDashboard";
 import VendorDetailsCard from "../components/VendorDetailsCard";
 import SupervisorDetailsCard from "../components/SupervisorDetailsCard";
 import SurveyorDetailsCard from "../components/SurveyorDetailsCard";
+import WorkOrder from "../pages/employee/WorkOrder";
 
 
 // yeh function role (employee/citizen) leta hai aur uske hisaab se
@@ -28,6 +29,8 @@ export const getEkycRoutes = (userType) => [
     // { path: "/create-kyc", component: Create, layout: "normal", breadcrumb: "EKYC_CREATE_KYC" },
     // { path: "/mapping", component: Mapping, layout: "normal", breadcrumb: "EKYC_MAPPING" },
     { path: "/admin-dashboard", component: AdminDashboard, layout: "normal", breadcrumb: "EKYC_ADMIN_DASHBOARD" },
+    // { path: "/work-order", component: WorkOrder, layout: "normal", breadcrumb: "EKYC_WORK_ORDER" },
+    { path: "/work-order", component: WorkOrder, layout: "normal", breadcrumb: "EKYC_WORK_ORDER" },
     // { path: "/ceo-dashboard", component: CeoDashboard, layout: "normal", breadcrumb: "CEO_M.F_DOR_FINANCE_VIEW" },
 
     // ---- EKYC form ke 4 steps ----

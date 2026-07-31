@@ -7,11 +7,13 @@ import VendorConfig from "../../config/VendorConfig";
 
 const EditVendor = () => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
+  // const rawTenantId = Digit.ULBService.getCurrentTenantId();
+  // const tenantId = rawTenantId?.includes(".") ? rawTenantId : `${rawTenantId}.djb`;
   const { t } = useTranslation();
   const history = useHistory();
   let { id: dsoId } = useParams();
   const [showToast, setShowToast] = useState(null);
-  const [canSubmit, setCanSubmit] = useState(false);
+  const [canSubmit, setCanSubmit] = useState(true);
   const [defaultValues, setDefaultValues] = useState({});
   const [dsoDetails, setDsoDetails] = useState({});
   const queryClient = useQueryClient();
@@ -27,23 +29,20 @@ const EditVendor = () => {
   const { data: genderTypeData } = Digit.Hooks.obps.useMDMS(stateId, "common-masters", ["GenderType"]);
   const [zones, setZones] = useState([]);
 
-  const { data: boundaryData, isLoading } = Digit.Hooks.useCommonMDMS(tenantId, "egov-location", ["TenantBoundary"]);
+  const { data: zroData, isLoading } = Digit.Hooks.useCommonMDMS(tenantId, "common-masters", ["ZroOfficeList"]);
   useEffect(() => {
-    const tenantBoundary = boundaryData?.["egov-location"]?.TenantBoundary?.[0] || boundaryData?.MdmsRes?.["egov-location"]?.TenantBoundary?.[0];
+    const zroOfficeList = zroData?.["common-masters"]?.ZroOfficeList || zroData?.MdmsRes?.["common-masters"]?.ZroOfficeList || [];
 
-    const boundaries = tenantBoundary?.boundary || tenantBoundary?.children || [];
-
-    if (Array.isArray(boundaries?.children) && boundaries?.children.length > 0) {
-      const allZones = boundaries.children.flatMap((assembly) =>
-        (assembly?.children || []).map((zone) => ({
-          code: zone.code,
-          name: zone.name,
-        }))
-      );
-      const zonesList = [...new Map(allZones.map((zone) => [zone.code, zone])).values()];
-      setZones(zonesList);
+    if (Array.isArray(zroOfficeList)) {
+      const activeZros = zroOfficeList
+        .filter((zro) => zro && zro.active)
+        .map((zro) => ({
+          code: zro.code,
+          name: zro.code,
+        }));
+      setZones(activeZros);
     }
-  }, [boundaryData]);
+  }, [zroData]);
 
   useEffect(() => {
     if (genderTypeData && genderTypeData["common-masters"]?.GenderType?.length) {
@@ -97,7 +96,7 @@ const EditVendor = () => {
           details: {
             address: {
               pincode
-              : dsoDetails.address.pincode,
+                : dsoDetails.address.pincode,
               city: {
                 code: tenantId,
                 name: dsoDetails.address.city,
@@ -149,14 +148,17 @@ const EditVendor = () => {
 
     setDefaultValues((prev) => ({
       ...prev,
-      zoneIds: zones.filter((z) => prev?.zoneIds?.includes(z.name)),
+      zoneIds: zones.filter((z) => {
+        const prevZones = prev?.zoneIds || [];
+        return prevZones.some((prevZ) => (typeof prevZ === "object" ? prevZ?.code === z.code : prevZ === z.code || prevZ === z.name));
+      }),
     }));
   }, [dsoDetails?.zoneIds, zones]);
 
+
   const onFormValueChange = (setValue, data) => {
-    const isAddressFilled = data?.propertyAddress?.city && data?.propertyAddress?.locality;
     const isVendorDetailsFilled = data?.vendorName && data?.phone && data?.serviceType?.code;
-    const isEkyc = data?.serviceType?.code === "EKYC";
+    const isEkyc = data?.serviceType?.code?.toUpperCase() === "EKYC" || data?.serviceType?.i18nKey?.toUpperCase() === "EKYC";
     let isEkycFieldsFilled = true;
     if (isEkyc) {
       isEkycFieldsFilled =
@@ -164,12 +166,11 @@ const EditVendor = () => {
         data?.contractStartDate &&
         data?.contractEndDate &&
         data?.zoneIds?.length > 0 &&
-        data?.clusterIds?.length > 0 &&
         data?.gender &&
         data?.dob;
     }
 
-    if (isVendorDetailsFilled && isAddressFilled && isEkycFieldsFilled) {
+    if (isVendorDetailsFilled && isEkycFieldsFilled) {
       setCanSubmit(true);
     } else {
       setCanSubmit(false);
@@ -289,7 +290,7 @@ const EditVendor = () => {
     const emailId = mergedData?.emailId;
     const phone = mergedData?.phone;
 
-    const isEkyc = mergedData?.serviceType?.i18nKey === "EKYC";
+    const isEkyc = mergedData?.serviceType?.code?.toUpperCase() === "EKYC" || mergedData?.serviceType?.i18nKey?.toUpperCase() === "EKYC";
 
     let vendorData = {
       ...dsoDetails,
@@ -320,9 +321,9 @@ const EditVendor = () => {
         },
         ward: wardCode
           ? {
-              code: wardCode,
-              name: wardName,
-            }
+            code: wardCode,
+            name: wardName,
+          }
           : undefined,
         geoLocation: {
           ...dsoDetails.address.geoLocation,
@@ -372,7 +373,7 @@ const EditVendor = () => {
 
     mutate(payload, {
       onError: (error) => {
-        setShowToast({ key: "error", action: error });
+        setShowToast({ key: "error", action: error?.message || error });
       },
       onSuccess: () => {
         queryClient.invalidateQueries("DSO_SEARCH");

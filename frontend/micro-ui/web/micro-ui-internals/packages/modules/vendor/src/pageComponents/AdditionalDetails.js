@@ -14,6 +14,15 @@ import { Controller, useForm } from "react-hook-form";
 const AdditionalDetails = ({ t, config, onSelect, userType, formData, ownerIndex }) => {
   let index = 0;
 
+  const rawTenantId = Digit.ULBService.getCurrentTenantId();
+  const tenantId = rawTenantId?.includes(".") ? rawTenantId : `${rawTenantId}.djb`;
+  const vendorId = formData?.vendor_id || new URLSearchParams(window.location.search).get("vendorId");
+
+  const { data: vendorAdditionalData } = Digit.Hooks.vendor.useEmpvendorCommonSearch(
+    { tenantId, filters: { vendorId: vendorId } },
+    { enabled: !!vendorId }
+  );
+
   const user = Digit.UserService.getUser().info;
   const applicantName =
     (formData.ownerKey && formData.ownerKey[index] && formData.ownerKey[index].applicantName) || formData?.ownerKey?.applicantName || "";
@@ -30,24 +39,24 @@ const AdditionalDetails = ({ t, config, onSelect, userType, formData, ownerIndex
 
   // States for vendor Additionals details
 
-  const [VendorCategory, setVendorCategory] = useState("");
-  const [VendorId, setVendorId] = useState(""); // Added VendorId state
-  const [userName, setUserName] = useState("");
-  const [Bank, setBank] = useState("");
-  const [BankbranchName, setBankbranchName] = useState();
-  const [IFSC, setIFSC] = useState("");
-  const [AccountNo, setAccountNo] = useState("");
-  const [PanNo, setPanNo] = useState("");
-  const [GstNo, setGstNo] = useState("");
-  const [GstState, setGstState] = useState("");
-  const [RegistrationNo, setRegistrationNo] = useState("");
-  const [EpfNo, setEpfNo] = useState("");
-  const [EsiNo, setEsiNo] = useState("");
-  const [VendorType, setVendorType] = useState("");
-  const [Status, setStatus] = useState("");
-  const [micrNo, setmicrNo] = useState("");
-  const [PhoneNo, setPhoneNo] = useState("");
-  const [ContactPerson, setContactPerson] = useState("");
+  const [VendorCategory, setVendorCategory] = useState(formData?.[config.key]?.VendorCategory || "");
+  const [VendorId, setVendorId] = useState(formData?.[config.key]?.VendorId || ""); // Added VendorId state
+  const [userName, setUserName] = useState(formData?.[config.key]?.name || "");
+  const [Bank, setBank] = useState(formData?.[config.key]?.Bank || "");
+  const [BankbranchName, setBankbranchName] = useState(formData?.[config.key]?.BankbranchName || undefined);
+  const [IFSC, setIFSC] = useState(formData?.[config.key]?.IFSC || "");
+  const [AccountNo, setAccountNo] = useState(formData?.[config.key]?.AccountNo || "");
+  const [PanNo, setPanNo] = useState(formData?.[config.key]?.PanNo || "");
+  const [GstNo, setGstNo] = useState(formData?.[config.key]?.GstNo || "");
+  const [GstState, setGstState] = useState(formData?.[config.key]?.GstState || "");
+  const [RegistrationNo, setRegistrationNo] = useState(formData?.[config.key]?.RegistrationNo || "");
+  const [EpfNo, setEpfNo] = useState(formData?.[config.key]?.EpfNo || "");
+  const [EsiNo, setEsiNo] = useState(formData?.[config.key]?.EsiNo || "");
+  const [VendorType, setVendorType] = useState(formData?.[config.key]?.VendorType || "");
+  const [Status, setStatus] = useState(formData?.[config.key]?.Status || "");
+  const [micrNo, setmicrNo] = useState(formData?.[config.key]?.micrNo || "");
+  const [PhoneNo, setPhoneNo] = useState(formData?.[config.key]?.PhoneNo || "");
+  const [ContactPerson, setContactPerson] = useState(formData?.[config.key]?.ContactPerson || "");
 
   // const [showToast, setShowToast] = useState(null);
 
@@ -136,23 +145,62 @@ const AdditionalDetails = ({ t, config, onSelect, userType, formData, ownerIndex
   }
 
   // mdms call
-  const tenantId = Digit.ULBService.getCurrentTenantId();
   const { control } = useForm();
 
-  const { data: dsoData } = Digit.Hooks.fsm.useDsoSearch(tenantId, {
-    staleTime: Infinity,
-  });
+  const { data: dsoData } = Digit.Hooks.fsm.useDsoSearch(
+    tenantId,
+    { ids: vendorId },
+    { enabled: !!vendorId, staleTime: Infinity }
+  );
 
   useEffect(() => {
-    if (dsoData) {
-      const vendor = dsoData.find((item) => item.id);
-
-      if (vendor) {
-        setUserName(vendor.name);
-        setVendorId(vendor.id);
-      }
+    if (dsoData && dsoData.length > 0) {
+      const vendor = dsoData[0];
+      setUserName(vendor.name);
+      setVendorId(vendor.id);
     }
   }, [dsoData]);
+
+  // Load prefilled details from search API response
+  useEffect(() => {
+    if (vendorAdditionalData?.VendorDetails?.[0]?.vendorAdditionalDetails) {
+      const details = vendorAdditionalData.VendorDetails[0].vendorAdditionalDetails;
+      if (details.ifscCode) setIFSC(details.ifscCode);
+      if (details.bank) setBank(details.bank);
+      if (details.bankBranchName) setBankbranchName(details.bankBranchName);
+      if (details.micrNo) setmicrNo(details.micrNo);
+      if (details.bankAccountNumber) setAccountNo(details.bankAccountNumber);
+      if (details.vendorPhone) setPhoneNo(details.vendorPhone);
+      if (details.contactPerson) setContactPerson(details.contactPerson);
+      if (details.panNo) setPanNo(details.panNo);
+      if (details.gstTinNo) setGstNo(details.gstTinNo);
+      if (details.gstRegisteredState) setGstState(details.gstRegisteredState);
+      if (details.registrationNo) setRegistrationNo(details.registrationNo);
+      if (details.epfNo) setEpfNo(details.epfNo);
+      if (details.esiNo) setEsiNo(details.esiNo);
+
+      if (details.serviceType) {
+        setVendorType({
+          code: details.serviceType,
+          i18nKey: details.serviceType === "SUPPLIER" ? "Supplier" : details.serviceType === "CONTRACTOR" ? "Contractor" : details.serviceType,
+        });
+      }
+
+      if (details.vendorCategory) {
+        setVendorCategory({
+          code: details.vendorCategory,
+          i18nKey: details.vendorCategory === "FIRM" ? "Firm" : details.vendorCategory === "Individual" ? "Individual" : details.vendorCategory,
+        });
+      }
+
+      if (details.status) {
+        setStatus({
+          code: details.status,
+          i18nKey: details.status === "ACTIVE" ? "Active" : details.status === "INACTIVE" ? "Inactive" : details.status,
+        });
+      }
+    }
+  }, [vendorAdditionalData]);
 
   // This is responsible for the going into the next step
   const goNext = () => {

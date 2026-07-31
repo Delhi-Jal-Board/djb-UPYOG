@@ -164,7 +164,16 @@ export const UserService = {
       },
       params: { tenantId: stateCode },
     }),
-
+  updateUserById: async (details) =>
+    Request({
+      url: "/user/users/_update",
+      method: "POST",
+      auth: true,
+      userService: true,
+      data: {
+        user: details,
+      },
+    }),
   //create address for user
 
   hasAccess: (accessTo) => {

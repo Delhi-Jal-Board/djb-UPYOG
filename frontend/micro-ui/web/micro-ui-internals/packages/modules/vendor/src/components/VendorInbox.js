@@ -920,7 +920,7 @@ const VendorInbox = (props) => {
           //         to={
           //           hasDetails
           //             ? `/digit-ui/${userType}/vendor/registry/additionaldetails/info?vendorId=` + vendorId
-          //             : `/digit-ui/${userType}/vendor/registry/additionaldetails/vendor-details?vendorId=` + vendorId
+          //             : `/digit-ui/${userType}/vendor/registry/additionaldetails/modify-details?vendorId=` + vendorId
           //         }
           //       >
           //         <button
@@ -953,9 +953,9 @@ const VendorInbox = (props) => {
                   return (
                     <Link
                       to={
-                        hasDetails
+                        !hasDetails
                           ? `/digit-ui/${userType}/vendor/registry/additionaldetails/info?vendorId=` + vendorId
-                          : `/digit-ui/${userType}/vendor/registry/additionaldetails/vendor-details?vendorId=` + vendorId
+                          : `/digit-ui/${userType}/vendor/registry/vendor-details/` + vendorId
                       }
                     >
                       <button

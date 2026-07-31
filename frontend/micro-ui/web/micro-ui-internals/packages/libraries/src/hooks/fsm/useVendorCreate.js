@@ -8,8 +8,10 @@ const useVendorCreate = (tenantId) => {
 const VendorCreateActions = async (vendorData, tenantId) => {
   const response = await FSMService.createVendor(vendorData, tenantId);
 
-  if (response?.error) {
-    throw new Error(response?.data?.Errors?.[0]?.message || response?.message || "Vendor creation failed");
+  if (response instanceof Error || response?.error || response?.Errors || response?.response?.data?.Errors) {
+    const apiError = response?.response?.data || response?.data || response;
+    const message = apiError?.Errors?.[0]?.message || apiError?.error?.message || response?.message || "Vendor creation failed";
+    throw new Error(message);
   }
 
   return response;

@@ -28,6 +28,21 @@ const VENDORCard = () => {
       link: isCitizen ? `/digit-ui/citizen/vendor/search-vendor` : `/digit-ui/employee/vendor/search-vendor`,
     },
   ];
+  // if (!isCitizen) {
+  //   links.push({
+  //     label: t("ES_TITLE_ROLE_MANAGEMENT", "Role Management"),
+  //     link: `/digit-ui/employee/vendor/role-management`,
+  //   });
+  // }
+
+  // if (!isCitizen) {
+  //   links.push({
+  //     label: t("ES_TITLE_ROLE_MANAGEMENT", "Role Management"),
+  //     link: `/digit-ui/employee/vendor/role-management`,
+  //   });
+  // }
+
+
 
   const VENDORRole = Digit.UserService.hasAccess(["WT_VENDOR"]);
 

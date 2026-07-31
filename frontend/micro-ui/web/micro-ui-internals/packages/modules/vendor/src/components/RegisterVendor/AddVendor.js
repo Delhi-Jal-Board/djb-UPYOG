@@ -5,7 +5,8 @@ import { useHistory } from "react-router-dom";
 import VendorConfig from "../../config/VendorConfig";
 
 const AddVendor = () => {
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const rawTenantId = Digit.ULBService.getCurrentTenantId();
+  const tenantId = rawTenantId?.includes(".") ? rawTenantId : `${rawTenantId}.djb`;
 
   const { t } = useTranslation();
   const history = useHistory();
@@ -257,7 +258,7 @@ const AddVendor = () => {
 
     mutate(payload, {
       onError: (error) => {
-        setShowToast({ key: "error", action: error });
+        setShowToast({ key: "error", action: error?.message || error });
       },
       onSuccess: () => {
         history.push({

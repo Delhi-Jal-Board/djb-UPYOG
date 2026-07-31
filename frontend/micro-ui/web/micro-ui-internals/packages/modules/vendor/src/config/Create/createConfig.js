@@ -5,7 +5,7 @@ export const createConfig = [
       {
         route: "info",
         component: "ServiceDoc",
-        nextStep: "vendor-details",
+        nextStep: "modify-details",
         key: "Documents",
       },
       {

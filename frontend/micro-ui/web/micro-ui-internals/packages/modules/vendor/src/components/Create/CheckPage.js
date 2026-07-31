@@ -92,7 +92,7 @@ const CheckPage = ({ onSubmit, value = {} }) => {
                     <ActionButton
                       jumpTo={`/digit-ui/${
                         window.location.pathname.includes("/citizen") ? "citizen" : "employee"
-                      }/vendor/registry/additionaldetails/vendor-details`}
+                      }/vendor/registry/additionaldetails/modify-details`}
                     />
                   }
                 />
@@ -103,7 +103,7 @@ const CheckPage = ({ onSubmit, value = {} }) => {
                     <ActionButton
                       jumpTo={`/digit-ui/${
                         window.location.pathname.includes("/citizen") ? "citizen" : "employee"
-                      }/vendor/registry/additionaldetails/vendor-details`}
+                      }/vendor/registry/additionaldetails/modify-details`}
                     />
                   }
                 />
@@ -114,7 +114,7 @@ const CheckPage = ({ onSubmit, value = {} }) => {
                     <ActionButton
                       jumpTo={`/digit-ui/${
                         window.location.pathname.includes("/citizen") ? "citizen" : "employee"
-                      }/vendor/registry/additionaldetails/vendor-details`}
+                      }/vendor/registry/additionaldetails/modify-details`}
                     />
                   }
                 />
@@ -125,7 +125,7 @@ const CheckPage = ({ onSubmit, value = {} }) => {
                     <ActionButton
                       jumpTo={`/digit-ui/${
                         window.location.pathname.includes("/citizen") ? "citizen" : "employee"
-                      }/vendor/registry/additionaldetails/vendor-details`}
+                      }/vendor/registry/additionaldetails/modify-details`}
                     />
                   }
                 />
@@ -136,7 +136,7 @@ const CheckPage = ({ onSubmit, value = {} }) => {
                     <ActionButton
                       jumpTo={`/digit-ui/${
                         window.location.pathname.includes("/citizen") ? "citizen" : "employee"
-                      }/vendor/registry/additionaldetails/vendor-details`}
+                      }/vendor/registry/additionaldetails/modify-details`}
                     />
                   }
                 />
@@ -147,7 +147,7 @@ const CheckPage = ({ onSubmit, value = {} }) => {
                     <ActionButton
                       jumpTo={`/digit-ui/${
                         window.location.pathname.includes("/citizen") ? "citizen" : "employee"
-                      }/vendor/registry/additionaldetails/vendor-details`}
+                      }/vendor/registry/additionaldetails/modify-details`}
                     />
                   }
                 />
@@ -155,19 +155,19 @@ const CheckPage = ({ onSubmit, value = {} }) => {
                 {/* <Row
                 label={t("PHONE_NO")}
                 text={`${t(checkForNA(vendordet?.AccountNo))}`}
-                actionButton={<ActionButton jumpTo={`/digit-ui/employee/vendor/registry/additionaldetails/vendor-details`} />}
+                actionButton={<ActionButton jumpTo={`/digit-ui/employee/vendor/registry/additionaldetails/modify-details`} />}
               />
 
               <Row
                 label={t("CONTACT_PERSON")}
                 text={`${t(checkForNA(vendordet?.AccountNo))}`}
-                actionButton={<ActionButton jumpTo={`/digit-ui/employee/vendor/registry/additionaldetails/vendor-details`} />}
+                actionButton={<ActionButton jumpTo={`/digit-ui/employee/vendor/registry/additionaldetails/modify-details`} />}
               />
 
               <Row
                 label={t("COMPANY_NAME")}
                 text={`${t(checkForNA(vendordet?.AccountNo))}`}
-                actionButton={<ActionButton jumpTo={`/digit-ui/employee/vendor/registry/additionaldetails/vendor-details`} />}
+                actionButton={<ActionButton jumpTo={`/digit-ui/employee/vendor/registry/additionaldetails/modify-details`} />}
               /> */}
 
                 <Row
@@ -177,7 +177,7 @@ const CheckPage = ({ onSubmit, value = {} }) => {
                     <ActionButton
                       jumpTo={`/digit-ui/${
                         window.location.pathname.includes("/citizen") ? "citizen" : "employee"
-                      }/vendor/registry/additionaldetails/vendor-details`}
+                      }/vendor/registry/additionaldetails/modify-details`}
                     />
                   }
                 />
@@ -188,7 +188,7 @@ const CheckPage = ({ onSubmit, value = {} }) => {
                     <ActionButton
                       jumpTo={`/digit-ui/${
                         window.location.pathname.includes("/citizen") ? "citizen" : "employee"
-                      }/vendor/registry/additionaldetails/vendor-details`}
+                      }/vendor/registry/additionaldetails/modify-details`}
                     />
                   }
                 />
@@ -199,7 +199,7 @@ const CheckPage = ({ onSubmit, value = {} }) => {
                     <ActionButton
                       jumpTo={`/digit-ui/${
                         window.location.pathname.includes("/citizen") ? "citizen" : "employee"
-                      }/vendor/registry/additionaldetails/vendor-details`}
+                      }/vendor/registry/additionaldetails/modify-details`}
                     />
                   }
                 />
@@ -210,7 +210,7 @@ const CheckPage = ({ onSubmit, value = {} }) => {
                     <ActionButton
                       jumpTo={`/digit-ui/${
                         window.location.pathname.includes("/citizen") ? "citizen" : "employee"
-                      }/vendor/registry/additionaldetails/vendor-details`}
+                      }/vendor/registry/additionaldetails/modify-details`}
                     />
                   }
                 />
@@ -222,7 +222,7 @@ const CheckPage = ({ onSubmit, value = {} }) => {
                     <ActionButton
                       jumpTo={`/digit-ui/${
                         window.location.pathname.includes("/citizen") ? "citizen" : "employee"
-                      }/vendor/registry/additionaldetails/vendor-details`}
+                      }/vendor/registry/additionaldetails/modify-details`}
                     />
                   }
                 />
@@ -234,7 +234,7 @@ const CheckPage = ({ onSubmit, value = {} }) => {
                     <ActionButton
                       jumpTo={`/digit-ui/${
                         window.location.pathname.includes("/citizen") ? "citizen" : "employee"
-                      }/vendor/registry/additionaldetails/vendor-details`}
+                      }/vendor/registry/additionaldetails/modify-details`}
                     />
                   }
                 />
@@ -246,7 +246,7 @@ const CheckPage = ({ onSubmit, value = {} }) => {
                     <ActionButton
                       jumpTo={`/digit-ui/${
                         window.location.pathname.includes("/citizen") ? "citizen" : "employee"
-                      }/vendor/registry/additionaldetails/vendor-details`}
+                      }/vendor/registry/additionaldetails/modify-details`}
                     />
                   }
                 />
@@ -258,7 +258,7 @@ const CheckPage = ({ onSubmit, value = {} }) => {
                     <ActionButton
                       jumpTo={`/digit-ui/${
                         window.location.pathname.includes("/citizen") ? "citizen" : "employee"
-                      }/vendor/registry/additionaldetails/vendor-details`}
+                      }/vendor/registry/additionaldetails/modify-details`}
                     />
                   }
                 />
@@ -270,7 +270,7 @@ const CheckPage = ({ onSubmit, value = {} }) => {
                     <ActionButton
                       jumpTo={`/digit-ui/${
                         window.location.pathname.includes("/citizen") ? "citizen" : "employee"
-                      }/vendor/registry/additionaldetails/vendor-details`}
+                      }/vendor/registry/additionaldetails/modify-details`}
                     />
                   }
                 />
@@ -279,7 +279,7 @@ const CheckPage = ({ onSubmit, value = {} }) => {
                   key={index}
                   label={t(row.code)}
                   text={`${extractValue(row.name)}`}
-                  actionButton={<ActionButton jumpTo={`/digit-ui/${window.location.pathname.includes("/citizen") ? "citizen" : "employee"}/vendor/registry/additionaldetails/vendor-details`} />}
+                  actionButton={<ActionButton jumpTo={`/digit-ui/${window.location.pathname.includes("/citizen") ? "citizen" : "employee"}/vendor/registry/additionaldetails/modify-details`} />}
                 />
               ))} */}
               </React.Fragment>
