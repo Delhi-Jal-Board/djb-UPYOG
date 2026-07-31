@@ -104,10 +104,20 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
     watchPropertyType?.code === "HospitalNursingHome";
   const isHotelRestaurantProperty = watchPropertyType?.code === "HOTEL_OR_RESTAURANT" || watchPropertyType?.code === "HotelOrRestaurant";
   const isSchoolCollegeProperty = watchPropertyType?.code === "School" || watchPropertyType?.code === "College";
-  const isDwellingUnit =
-    watchPropertyType?.code === "Apartment" || watchPropertyType?.code === "FlatOrApartment" || watchPropertyType?.code === "IndividualHouse";
-  const isServentHouse =
-    watchPropertyType?.code === "Apartment" || watchPropertyType?.code === "FlatOrApartment" || watchPropertyType?.code === "IndividualHouse";
+  const dwellingPropertyTypes = [
+    "Apartment",
+    "DDAFlats",
+    "GovtFlats",
+    "Bungalows",
+    "FlatOrApartment",
+    "GroupHousingSociety",
+    "JJSLUMS",
+    "IndividualHouse",
+  ];
+
+  const isDwellingUnit = dwellingPropertyTypes.includes(watchPropertyType?.code);
+
+  const isServentHouse = dwellingPropertyTypes.includes(watchPropertyType?.code);
 
   const categoryOptions = useMemo(() => {
     if (!watchCategoryType?.code) return [];
@@ -482,7 +492,7 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
                   <span className="ws-calc-row-label">
                     {t("WS_COLONY_REBATE")} ({infraDetail.rebatePercentage || 0}%)
                   </span>
-                  <span className="ws-calc-row-value-red">- ₹ {infraDetail.rebateAmount?.toLocaleString("en-IN") || 0}</span>
+                  <span className="ws-calc-row-value-red">₹ {infraDetail.rebateAmount?.toLocaleString("en-IN") || 0}</span>
                 </div>
 
                 {infraDetail.institutionalRebateApplied && (
@@ -491,7 +501,7 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
                       <span className="ws-calc-row-label">
                         {t("WS_INSTITUTIONAL_REBATE")} ({infraDetail.institutionalRebatePercentage || 0}%)
                       </span>
-                      <span className="ws-calc-row-value-red">- ₹ {infraDetail.institutionalRebateAmount?.toLocaleString("en-IN") || 0}</span>
+                      <span className="ws-calc-row-value-red">₹ {infraDetail.institutionalRebateAmount?.toLocaleString("en-IN") || 0}</span>
                     </div>
                     <div className="ws-calc-row">
                       <span className="ws-calc-row-label">{t("WS_INSTITUTIONAL_REBATE_REASON")}</span>
@@ -506,7 +516,7 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
                       <span className="ws-calc-row-label">
                         {t("WS_DWELLING_REBATE")} ({infraDetail.dwellingRebatePercentage || 0}%)
                       </span>
-                      <span className="ws-calc-row-value-red">- ₹ {infraDetail.dwellingRebateAmount?.toLocaleString("en-IN") || 0}</span>
+                      <span className="ws-calc-row-value-red">₹ {infraDetail.dwellingRebateAmount?.toLocaleString("en-IN") || 0}</span>
                     </div>
                     <div className="ws-calc-row">
                       <span className="ws-calc-row-label">{t("WS_DWELLING_REBATE_REASON")}</span>
