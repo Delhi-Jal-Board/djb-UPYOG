@@ -17,6 +17,16 @@ import lombok.Setter;
 @Component
 public class VendorConfiguration {
 
+	@org.springframework.context.annotation.Bean
+	@org.springframework.context.annotation.Primary
+	public org.springframework.web.client.RestTemplate vendorRestTemplate() {
+		org.springframework.http.client.SimpleClientHttpRequestFactory factory =
+				new org.springframework.http.client.SimpleClientHttpRequestFactory();
+		factory.setConnectTimeout(5000);
+		factory.setReadTimeout(10000);
+		return new org.springframework.web.client.RestTemplate(factory);
+	}
+
 	// ── Persister topics — Vendor ─────────────────────────────────────────────
 	@Value("${persister.save.vendor.topic}")
 	private String saveTopic;
