@@ -74,6 +74,11 @@ public class CalculationService {
 
 			triggerCalculation(request, property, action);
 		}
+
+		
+		else if (WCConstants.APPROVE_MUTATION_CONST.equalsIgnoreCase(action) && waterServiceUtil.isMutationConnectionRequest(request)) {
+			triggerCalculation(request, property, action);
+		}
 		else if (WCConstants.APPROVE_DISCONNECTION_CONST.equalsIgnoreCase(action)) {
 			CalculationCriteria criteria = CalculationCriteria.builder()
 					.applicationNo(request.getWaterConnection().getApplicationNo())

@@ -872,6 +872,9 @@ public class WaterServiceImpl implements WaterService {
 		actionValidator.validateUpdateRequest(waterConnectionRequest, businessService, previousApplicationStatus);
 		userService.updateUser(waterConnectionRequest, searchResult);
 		waterConnectionValidator.validateUpdate(waterConnectionRequest, searchResult, WCConstants.MUTATION_CONNECTION);
+		// Call calculator service to generate demand for mutation fee
+		calculationService.calculateFeeAndGenerateDemand(waterConnectionRequest, property);
+
 		wfIntegrator.callWorkFlow(waterConnectionRequest, property);
 		boolean isStateUpdatable = waterServiceUtil.getStatusForUpdate(businessService, previousApplicationStatus);
 

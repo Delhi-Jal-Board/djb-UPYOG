@@ -419,6 +419,7 @@ public class WSCalculationConstant {
 	public static final String WATER_ADVANCE = "WATER_ADVANCE";
 	public static final String MUTATION_FEE = "MUTATION_FEE";
 	public static final String REOPENING_FEE = "REOPENING_FEE";
+	public static final String MUTATION_TRADE_SECURITY = "MUTATION_TRADE_SECURITY";
 
 	// ------------------------------
 	// Infrastructure Charge Master

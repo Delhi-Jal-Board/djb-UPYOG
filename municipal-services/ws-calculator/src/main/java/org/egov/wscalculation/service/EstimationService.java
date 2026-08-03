@@ -438,6 +438,34 @@ public class EstimationService {
 					continue;
 				}
 
+				/* Filter by relationType for Mutation connection */
+				if (criteria.getWaterConnection() != null && WSCalculationConstant.MUTATION_WATER_CONNECTION.equalsIgnoreCase(criteria.getWaterConnection().getApplicationType())) {
+					String mdmsRelationType = fee.getAsString("relationType");
+					if (mdmsRelationType != null) {
+						boolean isBloodRelation = false;
+						if (criteria.getWaterConnection().getAdditionalDetails() != null) {
+							try {
+								Map<String, Object> additionalDetails = mapper.convertValue(criteria.getWaterConnection().getAdditionalDetails(), Map.class);
+								if (additionalDetails != null && additionalDetails.get("isBloodRelation") != null) {
+									String isBlood = String.valueOf(additionalDetails.get("isBloodRelation"));
+									if ("true".equalsIgnoreCase(isBlood)) {
+										isBloodRelation = true;
+									}
+								}
+							} catch (Exception e) {
+								log.error("[WS-MUTATION-ESTIMATE] Error reading isBloodRelation from additionalDetails", e);
+							}
+						}
+						
+						if (isBloodRelation && !"BLOOD".equalsIgnoreCase(mdmsRelationType)) {
+							continue;
+						}
+						if (!isBloodRelation && !"NON_BLOOD".equalsIgnoreCase(mdmsRelationType)) {
+							continue;
+						}
+					}
+				}
+
 				String feeComponent = fee.getAsString(WSCalculationConstant.FEE_COMPONENT);
 				String taxHeadCode = fee.getAsString(WSCalculationConstant.TAX_HEAD_CODE);
 
@@ -529,6 +557,8 @@ public class EstimationService {
 
 		BigDecimal roadPlotCharge = BigDecimal.ZERO;
 		if (!WSCalculationConstant.NEW_WATER_CONNECTION.equalsIgnoreCase(
+				criteria.getWaterConnection().getApplicationType())
+				&& !WSCalculationConstant.MUTATION_WATER_CONNECTION.equalsIgnoreCase(
 				criteria.getWaterConnection().getApplicationType())
 				&& property.getLandArea() != null) {
 			roadPlotCharge = getPlotSizeFee(masterData, property.getLandArea());
@@ -939,6 +969,15 @@ public class EstimationService {
 					WSCalculationConstant.MUTATION_FEE,
 					WSCalculationConstant.WATER_ADVANCE,
 					WSCalculationConstant.REOPENING_FEE
+			).contains(feeComponent);
+		}
+
+		if (WSCalculationConstant.MUTATION_WATER_CONNECTION.equalsIgnoreCase(applicationType)) {
+
+			return Arrays.asList(
+					WSCalculationConstant.MUTATION_FEE,
+					WSCalculationConstant.WATER_ADVANCE,
+					WSCalculationConstant.MUTATION_TRADE_SECURITY
 			).contains(feeComponent);
 		}
 		return true;
