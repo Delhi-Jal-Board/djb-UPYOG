@@ -233,6 +233,12 @@ public class DemandService {
 			String businessService = isForConnectionNO ? configs.getBusinessService()
 					: ONE_TIME_FEE_SERVICE_FIELD;
 
+			if (calculationReq.getCalculationCriteria() != null && !calculationReq.getCalculationCriteria().isEmpty()
+					&& calculationReq.getCalculationCriteria().get(0).getWaterConnection() != null
+					&& WSCalculationConstant.MUTATION_WATER_CONNECTION.equalsIgnoreCase(
+							calculationReq.getCalculationCriteria().get(0).getWaterConnection().getApplicationType())) {
+				businessService = WSCalculationConstant.MUTATION_BUSINESS_SERVICE;
+			}
 			
 			log.info("in create Demand  Business Service is" +businessService );
 			
@@ -450,7 +456,7 @@ public class DemandService {
 	public List<Demand> searchDemand(String tenantId, Set<String> consumerCodes, Long taxPeriodFrom, Long taxPeriodTo,
 									 RequestInfo requestInfo, Boolean isDemandPaid, Boolean isDisconnectionRequest,Boolean isReconnectionRequest) {
 		Object result = serviceRequestRepository.fetchResult(
-				getDemandSearchURL(tenantId, consumerCodes, taxPeriodFrom, taxPeriodTo, isDemandPaid, isDisconnectionRequest,isReconnectionRequest),
+				getDemandSearchURL(tenantId, consumerCodes, taxPeriodFrom, taxPeriodTo, isDemandPaid, isDisconnectionRequest,isReconnectionRequest, requestInfo),
 				RequestInfoWrapper.builder().requestInfo(requestInfo).build());
 		log.info("Search demand for reconnection is " +result);
 		try {
@@ -510,11 +516,29 @@ public class DemandService {
 	 * @return demand search url
 	 */
 	public StringBuilder getDemandSearchURL(String tenantId, Set<String> consumerCodes, Long taxPeriodFrom, Long taxPeriodTo, Boolean isDemandPaid,
-											Boolean isDisconnectionRequest,Boolean isReconnectionRequest) {
+											Boolean isDisconnectionRequest,Boolean isReconnectionRequest, RequestInfo requestInfo) {
 		StringBuilder url = new StringBuilder(configs.getBillingServiceHost());
 		String businessService = taxPeriodFrom == null && !isDisconnectionRequest ? ONE_TIME_FEE_SERVICE_FIELD : configs.getBusinessService();
 		if(isReconnectionRequest)
 			businessService="WSReconnection";
+
+		if (consumerCodes != null && !consumerCodes.isEmpty() && requestInfo != null) {
+			String firstCode = consumerCodes.iterator().next();
+			if (firstCode != null && (firstCode.contains("WS") || firstCode.contains("SW"))) {
+				try {
+					SearchCriteria searchCriteria = new SearchCriteria();
+					searchCriteria.setApplicationNumber(firstCode);
+					searchCriteria.setTenantId(tenantId);
+					WaterConnection waterConnection = calculatorUtils.getWaterConnectionOnApplicationNO(requestInfo, searchCriteria, tenantId);
+					if (waterConnection != null && WSCalculationConstant.MUTATION_WATER_CONNECTION.equalsIgnoreCase(waterConnection.getApplicationType())) {
+						businessService = WSCalculationConstant.MUTATION_BUSINESS_SERVICE;
+					}
+				} catch (Exception e) {
+					log.debug("Error checking mutation connection or connection not found for consumerCode: " + firstCode, e);
+				}
+			}
+		}
+
 		url.append(configs.getDemandSearchEndPoint());
 		url.append("?");
 		url.append("tenantId=");

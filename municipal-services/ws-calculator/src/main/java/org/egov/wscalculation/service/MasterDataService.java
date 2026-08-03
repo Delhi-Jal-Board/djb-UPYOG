@@ -502,6 +502,10 @@ public class MasterDataService {
 	 */
 	public Map<String, Object> loadExemptionMaster(RequestInfo requestInfo, String tenantId) {
 		Map<String, Object> master = getMasterMap(requestInfo, tenantId, WSCalculationConstant.ONE_TIME_FEE_SERVICE_FIELD);
+		
+		// Add WS.MUTATION tax heads and periods
+		addServiceTaxHeadsAndPeriods(requestInfo, tenantId, WSCalculationConstant.MUTATION_BUSINESS_SERVICE, master);
+		
 		MdmsResponse response = mapper.convertValue(
 				repository.fetchResult(calculatorUtils.getMdmsSearchUrl(),
 						calculatorUtils.getEstimationMasterCriteria(requestInfo, tenantId)),
@@ -527,6 +531,34 @@ public class MasterDataService {
 
 		return master;
 	}
+
+	@SuppressWarnings("unchecked")
+	private void addServiceTaxHeadsAndPeriods(RequestInfo requestInfo, String tenantId, String serviceFieldValue, Map<String, Object> master) {
+		try {
+			List<TaxPeriod> taxPeriods = getTaxPeriodList(requestInfo, tenantId, serviceFieldValue);
+			List<TaxHeadMaster> taxHeadMasters = getTaxHeadMasterMap(requestInfo, tenantId, serviceFieldValue);
+			
+			if (taxPeriods != null && !taxPeriods.isEmpty()) {
+				List<TaxPeriod> existingTaxPeriods = (List<TaxPeriod>) master.get(WSCalculationConstant.TAXPERIOD_MASTER_KEY);
+				if (existingTaxPeriods == null) {
+					existingTaxPeriods = new ArrayList<>();
+					master.put(WSCalculationConstant.TAXPERIOD_MASTER_KEY, existingTaxPeriods);
+				}
+				existingTaxPeriods.addAll(taxPeriods);
+			}
+			if (taxHeadMasters != null && !taxHeadMasters.isEmpty()) {
+				List<TaxHeadMaster> existingTaxHeadMasters = (List<TaxHeadMaster>) master.get(WSCalculationConstant.TAXHEADMASTER_MASTER_KEY);
+				if (existingTaxHeadMasters == null) {
+					existingTaxHeadMasters = new ArrayList<>();
+					master.put(WSCalculationConstant.TAXHEADMASTER_MASTER_KEY, existingTaxHeadMasters);
+				}
+				existingTaxHeadMasters.addAll(taxHeadMasters);
+			}
+		} catch (Exception e) {
+			log.error("Failed to load tax heads/periods for service: " + serviceFieldValue, e);
+		}
+	}
+
 
 
 	@SuppressWarnings("unchecked")

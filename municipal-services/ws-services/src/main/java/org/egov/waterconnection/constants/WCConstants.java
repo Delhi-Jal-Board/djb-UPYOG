@@ -273,6 +273,10 @@ public class WCConstants {
 	public static final String WATER_RECONNECTION = "WATER_RECONNECTION";
 	public static final String MUTATION_WATER_CONNECTION = "MUTATION_WATER_CONNECTION";
 	
+	public static final String APPROVE_MUTATION_CONST = "APPROVE_MUTATION";
+	
+	public static final String PENDING_FOR_MUTATION_ACTIVATION_STATUS_CODE = "PENDING_FOR_MUTATION_ACTIVATION";
+	
 	public static final String WATER_SERVICE_BUSINESS_ID = "WS";
 
 	public static final String WATER_SERVICE_ONE_TIME_FEE_BUSINESS_ID = "WS.ONE_TIME_FEE";

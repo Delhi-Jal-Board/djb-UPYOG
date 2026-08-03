@@ -145,7 +145,15 @@ public class PaymentUpdateService {
 				wfIntegrator.callWorkFlow(waterConnectionRequest, property);
 				enrichmentService.enrichFileStoreIds(waterConnectionRequest);
 
-				if ("PENDING_FOR_PAYMENT".equalsIgnoreCase(statusBeforePayment)) {
+				if (waterServiceUtil.isMutationConnectionRequest(waterConnectionRequest)) {
+
+					waterConnectionRequest.getWaterConnection().setApplicationStatus(WCConstants.PENDING_FOR_MUTATION_ACTIVATION_STATUS_CODE);
+					repo.updateWaterConnection(waterConnectionRequest, true);
+					log.info("Mutation payment successful. Moving to " + WCConstants.PENDING_FOR_MUTATION_ACTIVATION_STATUS_CODE);
+
+				} 
+				
+				else if ("PENDING_FOR_PAYMENT".equalsIgnoreCase(statusBeforePayment)) {
 
 					waterConnectionRequest.getWaterConnection().setApplicationStatus("PENDING_FOR_DOCUMENT_VERIFICATION");
 					repo.updateWaterConnection(waterConnectionRequest, true);
