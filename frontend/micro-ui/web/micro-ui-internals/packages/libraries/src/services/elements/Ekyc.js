@@ -158,7 +158,9 @@ export const EkycService = {
 
     return response;
   },
-  assignment_progress: async ({ tenantId = "dl.djb", includeHierarchy = true } = {}) => {
+  assignment_progress: async ({ tenantId = "dl.djb", includeHierarchy = true, vendorId, vendorIds, ...extraData } = {}) => {
+    const effectiveVendorId = vendorId || (vendorIds && vendorIds.length > 0 ? vendorIds[0] : undefined);
+
     const response = await Request({
       url: Urls.ekyc.assignment_progress,
       method: "POST",
@@ -166,7 +168,12 @@ export const EkycService = {
       userService: true,
       useCache: false,
       params: { tenantId },
-      data: { includeHierarchy }
+      data: {
+        includeHierarchy,
+        ...(effectiveVendorId ? { vendorId: effectiveVendorId } : {}),
+        ...(vendorIds && vendorIds.length > 0 ? { vendorIds } : {}),
+        ...extraData,
+      },
     });
 
     if (response?.error) {

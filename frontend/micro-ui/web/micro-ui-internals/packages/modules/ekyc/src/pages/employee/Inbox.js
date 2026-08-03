@@ -63,10 +63,60 @@ const Inbox = ({ parentRoute }) => {
     keepPreviousData: true,
   });
 
-  const { isLoading: isProgressLoading, data: progressData } = Digit.Hooks.ekyc.useEkycAssignmentProgress({
-    enabled: !!tenantId,
-    keepPreviousData: true,
-  });
+  // Fetch vendors from DSO search to get vendor ID for progress API
+  const { data: vendorSearchResponse } = Digit.Hooks.fsm.useDsoSearch(
+    tenantId,
+    { status: "ACTIVE" },
+    { enabled: !!tenantId, staleTime: 300000 }
+  );
+
+  const { targetVendorId, allVendorIds } = useMemo(() => {
+    if (!vendorSearchResponse || vendorSearchResponse.length === 0) {
+      return { targetVendorId: null, allVendorIds: [] };
+    }
+    const loggedInUser = Digit.SessionStorage.get("User")?.info;
+    const userUuid = loggedInUser?.uuid;
+    const userMobile = loggedInUser?.mobileNumber;
+    const matchesUser = (v) => {
+      const ownerUuid = v.owner?.uuid || v.owner?.id;
+      const ownerMobile = v.owner?.mobileNumber || v.mobileNumber;
+      return (userUuid && ownerUuid === userUuid) || (userMobile && ownerMobile === userMobile);
+    };
+
+    const allIds = vendorSearchResponse
+      .map((v) => {
+        const dso = v.dsoDetails || v;
+        return dso.id || dso.vendorId || v.id || v.vendorId;
+      })
+      .filter(Boolean);
+
+    const matched = vendorSearchResponse.find((v) => matchesUser(v.dsoDetails || v));
+    let matchedId = null;
+    if (matched) {
+      const dso = matched.dsoDetails || matched;
+      matchedId = dso.id || dso.vendorId || matched.id || matched.vendorId;
+    }
+
+    return { targetVendorId: matchedId, allVendorIds: allIds };
+  }, [vendorSearchResponse]);
+
+  const progressParams = useMemo(() => {
+    if (targetVendorId) {
+      return { vendorId: targetVendorId, vendorIds: [targetVendorId] };
+    }
+    if (allVendorIds && allVendorIds.length > 0) {
+      return { vendorId: allVendorIds[0], vendorIds: allVendorIds };
+    }
+    return {};
+  }, [targetVendorId, allVendorIds]);
+
+  const { isLoading: isProgressLoading, data: progressData } = Digit.Hooks.ekyc.useEkycAssignmentProgress(
+    progressParams,
+    {
+      enabled: !!tenantId,
+      keepPreviousData: true,
+    }
+  );
 
   const searchDetails = useMemo(
     () => ({
