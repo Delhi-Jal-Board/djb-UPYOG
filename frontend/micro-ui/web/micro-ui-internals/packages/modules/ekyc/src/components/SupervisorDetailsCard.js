@@ -13,17 +13,30 @@ const SupervisorDetailsCard = () => {
     const loggedInUser = Digit.SessionStorage.get("User")?.info;
     const [ekycDownloadLoading, setEkycDownloadLoading] = useState(false);
 
-    // Fetch assignment progress with hierarchy (supervisor and surveyor details)
-    const { isLoading: isProgressLoading, data: progressData } = Digit.Hooks.ekyc.useEkycAssignmentProgress({
-        enabled: !!tenantId,
-        keepPreviousData: true,
-    });
-
     // Fetch all supervisors to get details if assignment progress fails
     const { data: supervisorSearchResponse, isLoading: isSupervisorSearchLoading } = Digit.Hooks.fsm.useSupervisorSearch(
         tenantId,
         { status: "ACTIVE" },
         { enabled: !!tenantId, staleTime: 300000 }
+    );
+
+    // Resolve vendorId of this supervisor if available
+    const targetVendorId = useMemo(() => {
+        const targetId = supervisorId || loggedInUser?.uuid;
+        if (!targetId || !supervisorSearchResponse?.supervisors) return null;
+        const matchedSup = supervisorSearchResponse.supervisors.find(
+            (s) => s.id?.toLowerCase() === targetId?.toLowerCase() || s.owner?.uuid?.toLowerCase() === targetId?.toLowerCase()
+        );
+        return matchedSup?.vendorId || null;
+    }, [supervisorId, loggedInUser, supervisorSearchResponse]);
+
+    // Fetch assignment progress with hierarchy (supervisor and surveyor details)
+    const { isLoading: isProgressLoading, data: progressData } = Digit.Hooks.ekyc.useEkycAssignmentProgress(
+        targetVendorId ? { vendorId: targetVendorId, vendorIds: [targetVendorId] } : {},
+        {
+            enabled: !!tenantId,
+            keepPreviousData: true,
+        }
     );
 
     // Fetch all surveyors to get details of connected surveyors if assignment progress fails

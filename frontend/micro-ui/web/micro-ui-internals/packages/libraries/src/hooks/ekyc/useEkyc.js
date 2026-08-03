@@ -187,13 +187,35 @@ export const useEkycAssignmentCreate = (config = {}) => {
   return useMutation((data) => Digit.EkycService.assignment_create(data), config);
 };
 
-export const useEkycAssignmentProgress = (config = {}) => {
+export const useEkycAssignmentProgress = (params = {}, config = {}) => {
+  const { enabled, keepPreviousData, staleTime, select, onSuccess, onError, ...apiParams } = params || {};
+
+  const effectiveVendorId = apiParams.vendorId || (apiParams.vendorIds && apiParams.vendorIds.length > 0 ? apiParams.vendorIds[0] : undefined);
+
+  const user = Digit.SessionStorage.get("User")?.info;
+  const userRoles = user?.roles?.map((r) => r.code) || [];
+  const isRestrictedRole = userRoles.some((role) => ["EMPLOYEE", "SUPERUSER", "EKYC_ZRO", "EE", "AE", "JE"].includes(role));
+
+  const shouldEnable = enabled !== false && (!isRestrictedRole || !!effectiveVendorId);
+
+  const queryConfig = {
+    enabled: shouldEnable,
+    keepPreviousData,
+    staleTime,
+    select,
+    onSuccess,
+    onError,
+    ...config,
+  };
+
+  Object.keys(queryConfig).forEach((key) => queryConfig[key] === undefined && delete queryConfig[key]);
+
   return useQuery(
-    ["useEkycAssignmentProgress"],
-    () => Digit.EkycService.assignment_progress({ includeHierarchy: true }),
+    ["useEkycAssignmentProgress", apiParams],
+    () => Digit.EkycService.assignment_progress({ includeHierarchy: true, ...apiParams }),
     {
       staleTime: 20000, // Cache for 20 seconds by default
-      ...config,
+      ...queryConfig,
     }
   );
 };

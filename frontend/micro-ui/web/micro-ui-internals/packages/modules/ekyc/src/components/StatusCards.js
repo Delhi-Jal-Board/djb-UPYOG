@@ -153,12 +153,12 @@ const StatusCards = ({ countData }) => {
   const actualCompleted = completed;
   const approved = actualCompleted;
 
-  const efficiency = total > 0 ? Math.round(((submitted+completed)/ total) * 100) : 0;
+  const efficiency = total > 0 ? Math.round(((submitted + completed) / total) * 100) : 0;
   // const healthPct = total > 0 ? Math.round((approved / total) * 100) : 0;
   const healthPct = submitted > 0 ? Math.round((approved / submitted) * 100) : 0;
   const formatNumber = (num) => new Intl.NumberFormat("en-IN").format(num || 0);
-  
-  
+
+
   useEffect(() => {
     if (chartRef1.current) {
       if (chartInstance1.current) chartInstance1.current.destroy();

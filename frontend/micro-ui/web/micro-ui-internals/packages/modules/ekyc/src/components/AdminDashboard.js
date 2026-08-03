@@ -32,11 +32,24 @@ const AdminDashboard = () => {
         { enabled: !!tenantId }
     );
 
+    const allVendorIds = useMemo(() => {
+        if (!vendorSearchResponse) return [];
+        return vendorSearchResponse
+            .map((v) => {
+                const dso = v.dsoDetails || v;
+                return dso.id || dso.vendorId || v.id || v.vendorId;
+            })
+            .filter(Boolean);
+    }, [vendorSearchResponse]);
+
     // Fetch assignment progress with hierarchy (supervisor and surveyor details)
-    const { data: progressData, isLoading: isProgressLoading } = Digit.Hooks.ekyc.useEkycAssignmentProgress({
-        enabled: !!tenantId,
-        keepPreviousData: true,
-    });
+    const { data: progressData, isLoading: isProgressLoading } = Digit.Hooks.ekyc.useEkycAssignmentProgress(
+        allVendorIds.length > 0 ? { vendorId: allVendorIds[0], vendorIds: allVendorIds } : {},
+        {
+            enabled: !!tenantId && allVendorIds.length > 0,
+            keepPreviousData: true,
+        }
+    );
 
     const vendorsList = useMemo(() => {
         if (vendorSearchResponse && vendorSearchResponse.length > 0) {

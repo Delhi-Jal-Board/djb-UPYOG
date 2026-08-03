@@ -12,12 +12,6 @@ const VendorDetailsCard = () => {
     const tenantId = Digit.ULBService.getCurrentTenantId() || "dl.djb";
     const { vendorId } = useParams();
 
-    // Fetch assignment progress with hierarchy (supervisor and surveyor details)
-    const { isLoading: isProgressLoading, data: progressData } = Digit.Hooks.ekyc.useEkycAssignmentProgress({
-        enabled: !!tenantId,
-        keepPreviousData: true,
-    });
-
     // Fetch all vendors from DSO search
     const { data: vendorSearchResponse, isLoading: isVendorSearchLoading } = Digit.Hooks.fsm.useDsoSearch(
         tenantId,
@@ -71,6 +65,17 @@ const VendorDetailsCard = () => {
             return matchedMock || ekycMockData.vendors[0];
         }
     }, [vendorSearchResponse, vendorId, loggedInUser]);
+
+    const targetVendorId = vendorId || vendor?.id || vendor?.vendorId;
+
+    // Fetch assignment progress with hierarchy (supervisor and surveyor details) for target vendor
+    const { isLoading: isProgressLoading, data: progressData } = Digit.Hooks.ekyc.useEkycAssignmentProgress(
+        targetVendorId ? { vendorId: targetVendorId, vendorIds: [targetVendorId] } : {},
+        {
+            enabled: !!tenantId,
+            keepPreviousData: true,
+        }
+    );
 
     // Supervisors belonging to this vendor
     const vendorSupervisors = useMemo(() => {
