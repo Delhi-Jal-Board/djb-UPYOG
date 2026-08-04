@@ -81,7 +81,7 @@ public class WorkflowIntegrator {
 				.tenantId(property.getTenantId())
 				.businessService(wfBusinessServiceName).moduleName(MODULENAMEVALUE)
 				.action(waterConnectionRequest.getWaterConnection().getProcessInstance().getAction())
-				.entity(property).build();
+				.build();
 		if (!StringUtils.isEmpty(waterConnectionRequest.getWaterConnection().getProcessInstance())) {
 			if (!CollectionUtils
 					.isEmpty(waterConnectionRequest.getWaterConnection().getProcessInstance().getAssignes())) {

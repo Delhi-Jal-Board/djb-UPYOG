@@ -14,7 +14,6 @@ import org.springframework.util.CollectionUtils;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Slf4j
 @Service
@@ -85,36 +84,10 @@ public class TransitionService {
             if(!CollectionUtils.isEmpty(processStateAndAction.getCurrentState().getActions())){
                 for (Action action : processStateAndAction.getCurrentState().getActions()){
                     if(action.getAction().equalsIgnoreCase(processInstance.getAction())){
-                        if ("NewWS1".equals(businessService.getBusinessService()) 
-                                && currentState != null
-                                && "PENDING_FOR_BILLING_CLERK_REVIEW".equals(currentState.getState())
-                                && "VERIFY_AND_FORWARD".equalsIgnoreCase(processInstance.getAction())) {
-                            
-                            Double landArea = extractLandArea(processInstance.getEntity());
-                            String targetState = (landArea != null && landArea >= 200.0) 
-                                    ? "PENDING_FOR_AE_APPROVAL" 
-                                    : "PENDING_FOR_ASO_APPROVAL";
-                            
-                            String nextStateName = null;
-                            for (State s : businessService.getStates()) {
-                                if (s.getUuid().equalsIgnoreCase(action.getNextState())) {
-                                    nextStateName = s.getState();
-                                    break;
-                                }
-                            }
-                            
-                            if (targetState.equals(nextStateName)) {
-                                if(action.getRoles().contains("*"))
-                                    action.setRoles(allowedRoles);
-                                processStateAndAction.setAction(action);
-                                break;
-                            }
-                        } else {
-                            if(action.getRoles().contains("*"))
-                                action.setRoles(allowedRoles);
-                            processStateAndAction.setAction(action);
-                            break;
-                        }
+                        if(action.getRoles().contains("*"))
+                            action.setRoles(allowedRoles);
+                        processStateAndAction.setAction(action);
+                        break;
                     }
                 }
             }
@@ -198,21 +171,4 @@ public class TransitionService {
         return businessServices.get(0);
     }
 
-    private Double extractLandArea(Object entity) {
-        if (entity == null) return null;
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            java.util.Map<String, Object> map = mapper.convertValue(entity, java.util.Map.class);
-            Object landAreaObj = map.get("landArea");
-            if (landAreaObj == null) {
-                landAreaObj = map.get("landarea");
-            }
-            if (landAreaObj != null) {
-                return Double.valueOf(landAreaObj.toString());
-            }
-        } catch (Exception e) {
-            log.error("Error extracting landArea from processInstance entity", e);
-        }
-        return null;
-    }
 }
