@@ -954,7 +954,7 @@ const VendorInbox = (props) => {
                     <Link
                       to={
                         !hasDetails
-                          ? `/digit-ui/${userType}/vendor/registry/additionaldetails/info?vendorId=` + vendorId
+                          ? `/digit-ui/${userType}/vendor/registry/additionaldetails/modify-details?vendorId=` + vendorId
                           : `/digit-ui/${userType}/vendor/registry/vendor-details/` + vendorId
                       }
                     >
@@ -1515,6 +1515,7 @@ const VendorInbox = (props) => {
         const response = await Digit.FSMService.supervisorSearch(tenantId, {
           status: "ACTIVE,DISABLED",
           name: props.searchParams?.name,
+          mobileNumber: props.searchParams?.mobileNumber || undefined,
           limit: 100000,
           offset: 0,
         });
@@ -1529,6 +1530,7 @@ const VendorInbox = (props) => {
         const response = await Digit.FSMService.surveyorSearch(tenantId, {
           status: "ACTIVE,DISABLED",
           name: props.searchParams?.name,
+          mobileNumber: props.searchParams?.mobileNumber || undefined,
           limit: 100000,
           offset: 0,
         });

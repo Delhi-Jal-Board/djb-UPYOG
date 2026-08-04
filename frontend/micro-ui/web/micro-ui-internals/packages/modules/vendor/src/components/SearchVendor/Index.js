@@ -83,6 +83,7 @@ const SearchVendor = () => {
               ...paginationParms,
               status: "ACTIVE,DISABLED",
               name: searchParams?.name,
+              mobileNumber: searchParams?.mobileNumber || undefined,
             },
             { enabled: false }
           )
@@ -94,6 +95,7 @@ const SearchVendor = () => {
                 status: "ACTIVE,DISABLED",
                 // vendorId: isCitizen ? loggedInVendorId : searchParams?.vendor?.id,
                 name: searchParams?.name,
+                mobileNumber: searchParams?.mobileNumber || undefined,
               },
               { enabled: false }
             )
@@ -298,18 +300,16 @@ const SearchVendor = () => {
         : tab === "SUPERVISOR" || tab === "SURVEYOR"
           ? [
             {
-              label: t("ES_VENDOR_SEARCH_VENDOR_NAME"),
-              name: "vendor",
-              type: "dropdown",
-              options: allVendors?.map((data) => ({
-                ...data.dsoDetails,
-                displayName: `${data.dsoDetails.name} (${data.dsoDetails.mobileNumber || data.dsoDetails.owner?.mobileNumber || "N/A"})`,
-              })),
-              optionsKey: "displayName",
-            },
-            {
               label: tab === "SUPERVISOR" ? t("ES_SUPERVISOR_SEARCH_NAME") : t("ES_SURVEYOR_SEARCH_NAME"),
               name: "name",
+            },
+            {
+              label: t("WT_MOBILE_NUMBER"),
+              name: "mobileNumber",
+              type: "text",
+              pattern: "[0-9]{10}",
+              maxLength: 10,
+              title: t("ES_FSM_MOBILE_NUMBER_FORMAT_TIP") || "Enter 10-digit mobile number",
             },
           ]
           : [

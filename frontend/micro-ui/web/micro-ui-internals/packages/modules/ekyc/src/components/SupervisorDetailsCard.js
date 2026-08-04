@@ -649,7 +649,17 @@ const SupervisorDetailsCard = () => {
 
                             <div className="detail-item">
                                 <span className="label">{t("ASSIGNED_ZONE") || "Assigned Zone"}</span>
-                                <span className="value">{assignedZone}</span>
+                                <span className="value">
+                                    {assignedZone && assignedZone !== "N/A"
+                                        ? (
+                                            <div className="selected-zones" style={{ marginTop: "4px" }}>
+                                                <span className="selected-zone-chip">
+                                                    {t(assignedZone.trim().toUpperCase()) || assignedZone}
+                                                </span>
+                                            </div>
+                                        )
+                                        : assignedZone}
+                                </span>
                             </div>
 
                             <div className="detail-item">
