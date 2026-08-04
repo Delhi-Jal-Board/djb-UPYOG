@@ -17,7 +17,7 @@ RUN cd web/ \
     && cd core/ \
     &&  ./install-deps.sh \
     && cd ../ \
-    && yarn install \ 
+    && yarn install --ignore-engines \ 
     && yarn build:webpack 
 
 FROM nginx:mainline-alpine
