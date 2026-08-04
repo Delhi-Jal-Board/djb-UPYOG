@@ -185,24 +185,53 @@ const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true, 
       // When logged-in user is an EKYC_VENDOR creating/editing a supervisor,
       // restrict the zone list to only the zones assigned to that vendor.
       if (isEkycVendor && !isVendorPage) {
-        // API returns zoneIds as an array; fall back to splitting assignedZoneId string
-        let vendorZoneCodes = [];
-        if (Array.isArray(matchedVendor?.zoneIds) && matchedVendor.zoneIds.length > 0) {
-          vendorZoneCodes = matchedVendor.zoneIds.map((z) => z.trim().toUpperCase()).filter(Boolean);
-        } else if (matchedVendor?.assignedZoneId) {
-          vendorZoneCodes = matchedVendor.assignedZoneId
-            .split(",")
-            .map((z) => z.trim().toUpperCase())
-            .filter(Boolean);
+        if (!matchedVendor) {
+          activeZros = []; // Wait until vendor data is loaded
+        } else {
+          // API returns zoneIds as an array; fall back to splitting assignedZoneId string
+          let vendorZoneCodes = [];
+          if (Array.isArray(matchedVendor?.zoneIds) && matchedVendor.zoneIds.length > 0) {
+            vendorZoneCodes = matchedVendor.zoneIds.map((z) => z.trim().toUpperCase()).filter(Boolean);
+          } else if (matchedVendor?.assignedZoneId) {
+            vendorZoneCodes = matchedVendor.assignedZoneId
+              .split(",")
+              .map((z) => z.trim().toUpperCase())
+              .filter(Boolean);
+          }
+          if (vendorZoneCodes.length > 0) {
+            activeZros = activeZros.filter((zro) => vendorZoneCodes.includes(zro.code.trim().toUpperCase()));
+          } else {
+            activeZros = []; // Vendor has no zones assigned
+          }
         }
-        if (vendorZoneCodes.length > 0) {
-          activeZros = activeZros.filter((zro) => vendorZoneCodes.includes(zro.code.trim().toUpperCase()));
+      }
+
+      // When logged-in user is an EKYC_SUPERVISOR creating/editing a surveyor,
+      // restrict the zone list to only the zones assigned to that supervisor.
+      if (isEkycSupervisor) {
+        if (!matchedSupervisor) {
+          activeZros = []; // Wait until supervisor data is loaded
+        } else {
+          let supervisorZoneCodes = [];
+          if (Array.isArray(matchedSupervisor?.zoneIds) && matchedSupervisor.zoneIds.length > 0) {
+            supervisorZoneCodes = matchedSupervisor.zoneIds.map((z) => z.trim().toUpperCase()).filter(Boolean);
+          } else if (matchedSupervisor?.assignedZoneId) {
+            supervisorZoneCodes = matchedSupervisor.assignedZoneId
+              .split(",")
+              .map((z) => z.trim().toUpperCase())
+              .filter(Boolean);
+          }
+          if (supervisorZoneCodes.length > 0) {
+            activeZros = activeZros.filter((zro) => supervisorZoneCodes.includes(zro.code.trim().toUpperCase()));
+          } else {
+            activeZros = []; // Supervisor has no zones assigned
+          }
         }
       }
 
       setZones(activeZros);
     }
-  }, [zroData, matchedVendor, isEkycVendor, isVendorPage]);
+  }, [zroData, matchedVendor, matchedSupervisor, isEkycVendor, isEkycSupervisor, isVendorPage, t]);
 
   /**
    * Sync selected values
