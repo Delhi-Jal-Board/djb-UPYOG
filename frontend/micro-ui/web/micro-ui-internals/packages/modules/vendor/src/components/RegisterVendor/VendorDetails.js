@@ -451,7 +451,7 @@ const VendorDetails = () => {
                                 <div
                                   className="add-details-link hover-button"
                                   onClick={() =>
-                                    history.push(`/digit-ui/${userType}/vendor/registry/additionaldetails/info?vendorId=${dsoId || vendorId}`)
+                                    history.push(`/digit-ui/${userType}/vendor/registry/additionaldetails/modify-details?vendorId=${dsoId || vendorId}`)
                                   }
                                 >
                                   {t("Edit Details")}

@@ -175,16 +175,34 @@ const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true, 
     const zroOfficeList = zroData?.["common-masters"]?.ZroOfficeList || zroData?.MdmsRes?.["common-masters"]?.ZroOfficeList || [];
 
     if (Array.isArray(zroOfficeList)) {
-      const activeZros = zroOfficeList
+      let activeZros = zroOfficeList
         .filter((zro) => zro && zro.active)
         .map((zro) => ({
           code: zro.code,
-          name: zro.code,
+          name: t(zro.code),
         }));
+
+      // When logged-in user is an EKYC_VENDOR creating/editing a supervisor,
+      // restrict the zone list to only the zones assigned to that vendor.
+      if (isEkycVendor && !isVendorPage) {
+        // API returns zoneIds as an array; fall back to splitting assignedZoneId string
+        let vendorZoneCodes = [];
+        if (Array.isArray(matchedVendor?.zoneIds) && matchedVendor.zoneIds.length > 0) {
+          vendorZoneCodes = matchedVendor.zoneIds.map((z) => z.trim().toUpperCase()).filter(Boolean);
+        } else if (matchedVendor?.assignedZoneId) {
+          vendorZoneCodes = matchedVendor.assignedZoneId
+            .split(",")
+            .map((z) => z.trim().toUpperCase())
+            .filter(Boolean);
+        }
+        if (vendorZoneCodes.length > 0) {
+          activeZros = activeZros.filter((zro) => vendorZoneCodes.includes(zro.code.trim().toUpperCase()));
+        }
+      }
 
       setZones(activeZros);
     }
-  }, [zroData]);
+  }, [zroData, matchedVendor, isEkycVendor, isVendorPage]);
 
   /**
    * Sync selected values

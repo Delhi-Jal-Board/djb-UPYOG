@@ -134,7 +134,9 @@ const VendorDetailsCard = () => {
         return "N/A";
     }, [vendor]);
     const zoneIds = useMemo(() => {
-        return vendor?.zoneIds?.length ? vendor.zoneIds.filter(Boolean).map(zone => String(zone).toUpperCase().replace("", " ")).join(", ") : "N/A";
+        return vendor?.zoneIds?.length
+            ? vendor.zoneIds.filter(Boolean).map(zone => String(zone).trim().toUpperCase())
+            : [];
     }, [vendor]);
 
     // KPI stats calculation
@@ -567,18 +569,31 @@ const VendorDetailsCard = () => {
                                 <span className="value">{email}</span>
                             </div>
 
-                            <div className="detail-item">
+                            {/* <div className="detail-item">
                                 <span className="label">{t("STATUS")}</span>
                                 <span className="value">{status}</span>
-                            </div>
+                            </div> */}
 
                             {/* <div className="detail-item">
                                 <span className="label">{t("JURISDICTIONS") || "Jurisdictions"}</span>
                                 <span className="value">{jurisdictions}</span>
                             </div> */}
-                            <div className="detail-item">
+
+                            <div className="detail-item" style={{ gridColumn: "1 / -1" }}>
                                 <span className="label">{t("ASSIGNED_ZONES") || "Assigned Zones"}</span>
-                                <span className="value">{zoneIds}</span>
+                                <span className="value">
+                                    {zoneIds.length > 0
+                                        ? (
+                                            <div className="selected-zones" style={{ marginTop: "4px", width: "100%" }}>
+                                                {zoneIds.map(zone => (
+                                                    <span key={zone} className="selected-zone-chip">
+                                                        {t(zone) || zone}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        )
+                                        : "N/A"}
+                                </span>
                             </div>
                         </div>
                     </div>
