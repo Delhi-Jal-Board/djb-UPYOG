@@ -176,9 +176,8 @@ const ModifyApplicationDetails = () => {
   workflowDetails?.data?.nextActions?.forEach((action) => {
     if (action?.action === "PAY") {
       action.redirectionUrll = {
-        pathname: `${getBusinessService(filters)}/${applicationDetails?.applicationNo}/${applicationDetails?.tenantId}?tenantId=${
-          applicationDetails?.tenantId
-        }&ISWSAPP&applicationNumber=${applicationDetails?.applicationNo}`,
+        pathname: `${getBusinessService(filters)}/${applicationDetails?.applicationNo}/${applicationDetails?.tenantId}?tenantId=${applicationDetails?.tenantId
+          }&ISWSAPP&applicationNumber=${applicationDetails?.applicationNo}`,
         state: applicationDetails?.tenantId,
       };
     }
@@ -187,9 +186,8 @@ const ModifyApplicationDetails = () => {
   workflowDetails?.data?.actionState?.nextActions?.forEach((action) => {
     if (action?.action === "PAY") {
       action.redirectionUrll = {
-        pathname: `${getBusinessService(filters)}/${applicationDetails?.applicationNo}/${applicationDetails?.tenantId}?tenantId=${
-          applicationDetails?.tenantId
-        }&ISWSAPP&applicationNumber=${applicationDetails?.applicationNo}`,
+        pathname: `${getBusinessService(filters)}/${applicationDetails?.applicationNo}/${applicationDetails?.tenantId}?tenantId=${applicationDetails?.tenantId
+          }&ISWSAPP&applicationNumber=${applicationDetails?.applicationNo}`,
         state: applicationDetails?.tenantId,
       };
     }

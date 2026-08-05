@@ -60,7 +60,7 @@ const checkExistStatus = async (processInstances) => {
 };
 
 const checkFeeEstimateVisible = async (wsDatas) => {
-  const dataDetails = wsDatas?.[0]?.applicationType?.includes("NEW");
+  const dataDetails = wsDatas?.[0]?.applicationType?.includes("NEW") || wsDatas?.[0]?.applicationType?.includes("MUTATION");
   return dataDetails;
 };
 
@@ -223,10 +223,14 @@ export const WSSearch = {
       serviceType == "WATER"
         ? workflowDetails?.ProcessInstances[0]?.businessService === "WSReconnection"
           ? "WSReconnection"
-          : "WS.ONE_TIME_FEE"
+          : wsData?.[0]?.applicationType?.includes("MUTATION")
+            ? "WS.MUTATION"
+            : "WS.ONE_TIME_FEE"
         : workflowDetails?.ProcessInstances[0]?.businessService == "SWReconnection"
           ? "SWReconnection"
-          : "SW.ONE_TIME_FEE";
+          : wsData?.[0]?.applicationType?.includes("MUTATION")
+            ? "SW.MUTATION"
+            : "SW.ONE_TIME_FEE";
     const collectionNumber = filters?.applicationNumber;
 
     let fetchBillData = {},
@@ -659,10 +663,10 @@ export const WSSearch = {
         d?.id !== identityDoc?.id &&
         d?.id !== ownershipDoc?.id &&
         (d?.documentType?.includes("OTHER") ||
-        d?.documentType?.includes("ELECTRICITY") ||
-        d?.documentType?.includes("PLUMBER") ||
-        d?.documentType?.includes("BUILDING") ||
-        d?.documentType?.includes("TAX"))
+          d?.documentType?.includes("ELECTRICITY") ||
+          d?.documentType?.includes("PLUMBER") ||
+          d?.documentType?.includes("BUILDING") ||
+          d?.documentType?.includes("TAX"))
     );
     const applicantPhoto = allDocs.find((d) => d?.documentType?.includes("APPLICANTPHOTO") || d?.documentType?.includes("PHOTO"));
 

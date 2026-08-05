@@ -94,7 +94,12 @@ const CitizenInbox = ({ tableConfig, filterComponent, ...props }) => {
             <span className="link">
               <Link
                 to={{
-                  pathname: `/digit-ui/citizen/payment/my-bills/${row.original?.["businessService"]}/${row.original?.["consumerCode"]}/tenantId=${row.original?.["tenantId"]}?workflow=mcollect`,
+                  pathname: `/digit-ui/citizen/payment/my-bills/${row.original?.["businessService"]}/${row.original?.["businessService"] === "WS" || row.original?.["businessService"] === "SW"
+                    ? row.original?.["consumerCode"].replace(/\//g, "+")
+                    : encodeURIComponent(row.original?.["consumerCode"])
+                    }`,
+                  search: `?workflow=${row.original?.["businessService"] === "WS" || row.original?.["businessService"] === "SW" ? "WNS" : "mcollect"
+                    }&tenantId=${row.original?.["tenantId"]}`,
                 }}
               >
                 {t(`${"ABG_PAY"}`)}
@@ -109,7 +114,12 @@ const CitizenInbox = ({ tableConfig, filterComponent, ...props }) => {
             <span className="link">
               <Link
                 to={{
-                  pathname: `/digit-ui/citizen/payment/my-bills/${row.original?.["businessService"]}/${row.original?.["consumerCode"]}/tenantId=${row.original?.["tenantId"]}?workflow=mcollect`,
+                  pathname: `/digit-ui/citizen/payment/my-bills/${row.original?.["businessService"]}/${row.original?.["businessService"] === "WS" || row.original?.["businessService"] === "SW"
+                    ? row.original?.["consumerCode"].replace(/\//g, "+")
+                    : encodeURIComponent(row.original?.["consumerCode"])
+                    }`,
+                  search: `?workflow=${row.original?.["businessService"] === "WS" || row.original?.["businessService"] === "SW" ? "WNS" : "mcollect"
+                    }&tenantId=${row.original?.["tenantId"]}`,
                 }}
               >
                 {t(`${"ABG_GENERATE_NEW_BILL"}`)}

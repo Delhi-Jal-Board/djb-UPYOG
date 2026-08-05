@@ -57,7 +57,7 @@ const WSActivationPageDetails = ({ config, onSelect, userType, formData, setErro
   return (
     <React.Fragment>
       {activationDetails.map((activationDetail, index) => (
-        <ConnectionDetails key={activationDetail.key} index={index} activationDetail={activationDetail} {...commonProps} />
+        <ConnectionDetails key={activationDetail?.key || index} index={index} activationDetail={activationDetail} {...commonProps} />
       ))}
     </React.Fragment>
   );
