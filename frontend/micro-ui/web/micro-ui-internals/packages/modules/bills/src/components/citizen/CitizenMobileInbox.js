@@ -46,7 +46,12 @@ const CitizenMobileInbox = ({
             <span className="link">
               <Link
                 to={{
-                  pathname: `/digit-ui/citizen/payment/collect/${original?.["businessService"]}/${original?.["consumerCode"]}/tenantId=${original?.["tenantId"]}`,
+                  pathname: `/digit-ui/citizen/payment/my-bills/${original?.["businessService"]}/${original?.["businessService"] === "WS" || original?.["businessService"] === "SW"
+                    ? original?.["consumerCode"].replace(/\//g, "+")
+                    : encodeURIComponent(original?.["consumerCode"])
+                    }`,
+                  search: `?workflow=${original?.["businessService"] === "WS" || original?.["businessService"] === "SW" ? "WNS" : "mcollect"
+                    }&tenantId=${original?.["tenantId"]}`,
                 }}
               >
                 {t(`${"ABG_PAY"}`)}
@@ -60,7 +65,12 @@ const CitizenMobileInbox = ({
             <span className="link">
               <Link
                 to={{
-                  pathname: `/digit-ui/citizen/payment/collect/${original?.["businessService"]}/${original?.["consumerCode"]}/tenantId=${original?.["tenantId"]}`,
+                  pathname: `/digit-ui/citizen/payment/my-bills/${original?.["businessService"]}/${original?.["businessService"] === "WS" || original?.["businessService"] === "SW"
+                    ? original?.["consumerCode"].replace(/\//g, "+")
+                    : encodeURIComponent(original?.["consumerCode"])
+                    }`,
+                  search: `?workflow=${original?.["businessService"] === "WS" || original?.["businessService"] === "SW" ? "WNS" : "mcollect"
+                    }&tenantId=${original?.["tenantId"]}`,
                 }}
               >
                 {t(`${"ABG_GENERATE_NEW_BILL"}`)}

@@ -1,5 +1,6 @@
-import { FormComposer, Header, Loader, Toast } from "@djb25/digit-ui-react-components";
+import { FormComposer, Header, Loader, Toast, Card, StatusTable, Row, CardSubHeader } from "@djb25/digit-ui-react-components";
 import React, { useState, useEffect } from "react";
+import WSMutationApplicantDetails from "./WSMutationApplicantDetails";
 import { useTranslation } from "react-i18next";
 import { useLocation, useHistory } from "react-router-dom";
 import * as func from "../../../utils";
@@ -29,7 +30,7 @@ const MutationApplication = () => {
   let { data: newConfig, isLoading: isConfigLoading } = Digit.Hooks.ws.useWSConfigMDMS.WSCreateConfig(stateId, {});
 
   let details = cloneDeep(state?.data);
-  let { isLoading, isError, data: applicationDetails, error } = Digit.Hooks.ws.useWSDetailsPage(t, tenantId, details?.applicationNo, details?.applicationData?.serviceType, { privacy: Digit.Utils.getPrivacyObject() });
+  let { isLoading, isError, data: applicationDetails, error } = Digit.Hooks.ws.useWSDetailsPage(t, tenantId, details?.applicationNo || applicationNumber, (serviceType?.toUpperCase() || details?.applicationData?.serviceType));
   details = applicationDetails;
   const [propertyId, setPropertyId] = useState(new URLSearchParams(useLocation().search).get("propertyId"));
 
@@ -37,17 +38,35 @@ const MutationApplication = () => {
 
   const { data: propertyDetails } = Digit.Hooks.pt.usePropertySearch(
     { filters: { propertyIds: propertyId }, tenantId: tenantId },
-    { filters: { propertyIds: propertyId }, tenantId: tenantId, enabled: propertyId && propertyId != "" ? true : false, privacy: Digit.Utils.getPrivacyObject() }
+    { filters: { propertyIds: propertyId }, tenantId: tenantId, enabled: propertyId && propertyId != "" ? true : false }
   );
 
   useEffect(() => {
     if (!isConfigLoading && newConfig && Array.isArray(newConfig)) {
-      const config = newConfig.find((conf) => conf.hideInCitizen && conf.isModify);
+      const config = cloneDeep(newConfig.find((conf) => conf.hideInCitizen && conf.isModify));
       if (config) {
         config.head = "WS_WATER_AND_SEWERAGE_MUTATION_CONNECTION_LABEL";
         let bodyDetails = [];
         config?.body?.forEach(data => { if (data?.isModifyConnection) bodyDetails.push(data); });
-        bodyDetails.forEach(bdyData => { if (bdyData?.head == "WS_COMMON_PROPERTY_DETAILS") bdyData.head = ""; })
+        bodyDetails.forEach(bdyData => {
+          if (bdyData?.head === "WS_COMMON_PROPERTY_DETAILS") {
+            bdyData.head = "";
+            bdyData.className = "mutation-disabled-section";
+          } else if (bdyData?.head === "WS_COMMON_CONNECTION_HOLDER_DETAILS_HEADER") {
+            bdyData.head = "Specify ownership updates and transfer reason:";
+            bdyData.body = [
+              {
+                type: "component",
+                key: "MutationApplicantDetails",
+                component: WSMutationApplicantDetails,
+                withoutLabel: true,
+              }
+            ];
+          } else {
+            bdyData.head = "";
+            bdyData.className = "mutation-hidden-section";
+          }
+        });
         config.body = bodyDetails;
         setConfig(config);
       }
@@ -61,15 +80,17 @@ const MutationApplication = () => {
   useEffect(async () => {
     const IsDetailsExists = sessionStorage.getItem("IsDetailsExists") ? JSON.parse(sessionStorage.getItem("IsDetailsExists")) : false
     if (details?.applicationData?.id) {
-      const convertAppData = await convertApplicationData(details, serviceType, true, undefined, t);
-      setSessionFormData({ ...sessionFormData, ...convertAppData });
-      setAppData({ ...convertAppData })
+      const convertAppData = await convertApplicationData(details, (serviceType?.toUpperCase() || details?.applicationData?.serviceType), true, undefined, t);
+      setSessionFormData((prev) => ({ ...prev, ...convertAppData }));
+      setAppData((prev) => ({ ...prev, ...convertAppData }));
       sessionStorage.setItem("IsDetailsExists", JSON.stringify(true));
     }
   }, [details, applicationDetails]);
 
   useEffect(() => {
-    setSessionFormData({ ...sessionFormData, cpt: { details: propertyDetails?.Properties?.[0] } });
+    if (propertyDetails?.Properties?.[0]) {
+      setSessionFormData((prev) => ({ ...prev, cpt: { details: propertyDetails?.Properties?.[0] } }));
+    }
   }, [propertyDetails]);
 
   useEffect(() => {
@@ -118,16 +139,19 @@ const MutationApplication = () => {
   } = Digit.Hooks.ws.useWSApplicationActions("SEWERAGE");
 
   const onFormValueChange = (setValue, formData, formState) => {
-    if (!_.isEqual(sessionFormData, formData)) {
-      setSessionFormData({ ...sessionFormData, ...formData });
+    const updatedData = { ...sessionFormData, ...formData };
+    if (!_.isEqual(sessionFormData, updatedData)) {
+      setSessionFormData(updatedData);
     }
     if (Object.keys(formState.errors).length > 0 && Object.keys(formState.errors).length == 1 && formState.errors["owners"] && Object.values(formState.errors["owners"].type).filter((ob) => ob.type === "required").length == 0 && !formData?.cpt?.details?.propertyId) setSubmitValve(true);
     else setSubmitValve(!(Object.keys(formState.errors).length));
   };
 
   const onSubmit = async (data) => {
-    if (!data?.cpt?.id && !propertyDetails?.Properties?.[0]) {
-      if (!data?.cpt?.details || !propertyDetails) {
+    let finalData = { ...sessionFormData, ...data };
+
+    if (!finalData?.cpt?.id && !propertyDetails?.Properties?.[0]) {
+      if (!finalData?.cpt?.details || !propertyDetails) {
         setShowToast({ key: "error", message: "ERR_INVALID_PROPERTY_ID" });
         return;
       }
@@ -140,14 +164,47 @@ const MutationApplication = () => {
     }
     else {
 
-      if (!data?.cpt?.details) {
-        data.cpt = {
+      if (!finalData?.cpt?.details) {
+        finalData.cpt = {
           details: propertyDetails?.Properties?.[0]
         };
       }
 
+      if (finalData?.MutationApplicantDetails) {
+        const mutDetails = finalData.MutationApplicantDetails;
+        const existingHolder = finalData?.ConnectionHolderDetails?.[0] || {};
+        finalData.ConnectionHolderDetails = [{
+          ...existingHolder,
+          name: mutDetails.proposedNewConsumerName || existingHolder.name,
+          mobileNumber: mutDetails.newOwnerMobileNumber || existingHolder.mobileNumber,
+          emailId: mutDetails.newOwnerEmailAddress || existingHolder.emailId,
+          sameAsOwnerDetails: false
+        }];
+      }
+
       const details = sessionStorage.getItem("WS_EDIT_APPLICATION_DETAILS") ? JSON.parse(sessionStorage.getItem("WS_EDIT_APPLICATION_DETAILS")) : {};
-      let convertAppData = await convertModifyApplicationDetails(data, details, "APPLY_MUTATION");
+      let convertAppData = await convertModifyApplicationDetails(finalData, details, "APPLY_MUTATION");
+
+      if (finalData?.MutationApplicantDetails) {
+        const mutDetails = finalData.MutationApplicantDetails;
+        if (!convertAppData.additionalDetails) convertAppData.additionalDetails = {};
+        if (mutDetails.reasonForNameChange) convertAppData.additionalDetails.reasonForNameChange = mutDetails.reasonForNameChange?.code || mutDetails.reasonForNameChange;
+        if (mutDetails.relationshipWithExistingConsumer) {
+          const relationCode = mutDetails.relationshipWithExistingConsumer?.code || mutDetails.relationshipWithExistingConsumer;
+          convertAppData.additionalDetails.relationshipWithExistingConsumer = relationCode;
+          convertAppData.additionalDetails.isBloodRelation = relationCode !== "OTHER";
+        }
+
+        if (mutDetails.saleDeedDocumentId) {
+          convertAppData.additionalDetails.saleDeedDocumentId = mutDetails.saleDeedDocumentId;
+          if (!convertAppData.documents) convertAppData.documents = [];
+          convertAppData.documents.push({
+            documentType: "REGISTERED_SALE_DEED",
+            fileStoreId: mutDetails.saleDeedDocumentId,
+            documentUid: mutDetails.saleDeedDocumentId
+          });
+        }
+      }
 
       // Set mutation application type explicitly
       convertAppData.applicationType = serviceType == "WATER" ? "MUTATION_WATER_CONNECTION" : "MUTATION_SEWERAGE_CONNECTION";
@@ -206,9 +263,23 @@ const MutationApplication = () => {
 
   return (
     <React.Fragment>
-      <div style={{ marginLeft: "15px" }}>
-        <Header>{t(config.head)}</Header>
-      </div>
+      <style>{`
+        .mutation-disabled-section { pointer-events: none; opacity: 0.8; margin-top: -24px !important; }
+        .mutation-hidden-section { display: none !important; margin: 0 !important; padding: 0 !important; height: 0 !important; overflow: hidden !important; border: 0 !important; }
+        .mutation-hidden-section + hr { display: none !important; margin: 0 !important; }
+        .mutation-hidden-section + .break-line { display: none !important; margin: 0 !important; }
+      `}</style>
+      <Header>{t(config.head)}</Header>
+      <Card>
+        <CardSubHeader>{t("WS_MUTATION_DETAILS")}</CardSubHeader>
+        <StatusTable>
+          <Row label={t("WS_MYCONNECTIONS_APPLICATION_NO")} text={applicationDetails?.applicationData?.applicationNo || "NA"} />
+          <Row label={t("WS_CONNECTION_CATEGORY")} text={applicationDetails?.applicationData?.connectionCategory || "NA"} />
+          <Row label={t("WS_PROPERTY_ID_LABEL")} text={applicationDetails?.applicationData?.propertyId || propertyId || "NA"} />
+          <Row label={t("WS_APPLICATION_ID")} text={applicationDetails?.applicationData?.id || applicationDetails?.applicationData?.connectionNo || "NA"} />
+          <Row label={t("WS_CONNECTION_DATE")} text={applicationDetails?.applicationData?.connectionExecutionDate ? Digit.DateUtils.ConvertEpochToDate(applicationDetails?.applicationData?.connectionExecutionDate) : "NA"} />
+        </StatusTable>
+      </Card>
       <FormComposer
         config={config.body}
         userType={"employee"}
