@@ -215,6 +215,11 @@ const WSWFApplicationTimeline = (props) => {
     }
   };
 
+  const isMutation = props.application?.applicationType?.includes("MUTATION");
+  const payBusinessService = isMutation
+    ? (props.application?.serviceType === "SEWERAGE" || props.application?.service === "SEWERAGE" ? "SW.MUTATION" : "WS.MUTATION")
+    : businessService;
+
   const showNextActions = (nextActions) => {
     if (!nextActions?.length) return null;
     let nextAction = nextActions[0];
@@ -230,7 +235,7 @@ const WSWFApplicationTimeline = (props) => {
           return (
             <ActionButton
               label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")}
-              to={`/digit-ui/citizen/payment/collect/${businessService}/${props.id}?consumerCode=${props.id}&&workflow=WNS`}
+              to={`/digit-ui/citizen/payment/collect/${payBusinessService}/${props.id}?consumerCode=${props.id}&&workflow=WNS`}
               state={{ tenantId: props.application.tenantId }}
             />
           );
