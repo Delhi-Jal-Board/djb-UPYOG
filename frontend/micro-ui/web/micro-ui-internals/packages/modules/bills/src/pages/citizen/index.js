@@ -1,4 +1,4 @@
-import { AppContainer, BackButton, PrivateRoute } from "@djb25/digit-ui-react-components";
+import { AppContainer, PrivateRoute, ModuleHeader, ArrowLeft } from "@djb25/digit-ui-react-components";
 import React from "react";
 import { Route, Switch, useRouteMatch } from "react-router-dom";
 import Inbox from "../../pages/citizen/SearchBill/Inbox";
@@ -12,15 +12,24 @@ const App = () => {
   };
   return (
     <span className={"bill-citizen"}>
-      <Switch>
-        <AppContainer>
-          <BackButton>Back</BackButton>
+      <AppContainer>
+        <ModuleHeader
+          leftContent={
+            <React.Fragment>
+              <ArrowLeft className="icon" />
+              {t("CS_COMMON_BACK")}
+            </React.Fragment>
+          }
+          onLeftClick={() => window.history.back()}
+          breadcrumbs={[]}
+        />
+        <Switch>
           <PrivateRoute
             path={`${path}/billSearch`}
             component={(props) => <Inbox filterComponent="CITIZEN_SEARCH_FILTER" initialStates={inboxInitialState} isInbox={true} />}
           />
-        </AppContainer>
-      </Switch>
+        </Switch>
+      </AppContainer>
     </span>
   );
 };

@@ -36,7 +36,9 @@ const ConnectionDetails = () => {
   const history = useHistory();
   const tenantId = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code || user?.info?.permanentCity || Digit.ULBService.getCurrentTenantId();
   const [showOptions, setShowOptions] = useState(false);
-  const applicationNobyData = window.location.href.includes("SW_") ? window.location.href.substring(window.location.href.indexOf("SW_")) : window.location.href.substring(window.location.href.indexOf("WS_"));
+  const applicationNobyData = window.location.href.includes("SW_")
+    ? window.location.href.substring(window.location.href.indexOf("SW_"))
+    : window.location.href.substring(window.location.href.indexOf("WS_"));
   // window.location.href.substring(window.location.href.indexOf("WS_"));
   let { state = {} } = useLocation();
   const [showModal, setshowModal] = useState(false);
@@ -45,22 +47,38 @@ const ConnectionDetails = () => {
   const getAddress = (address) => {
     return `${address?.doorNo ? `${address?.doorNo}, ` : ""}${address?.street ? `${address?.street}, ` : ""}${
       address?.landmark ? `${address?.landmark}, ` : ""
-    }${address?.locality?.code ? t(`TENANTS_MOHALLA_${address?.locality?.code}`) : ""}${address?.city?.code || address?.city  ? `, ${t(address?.city.code || address?.city)}` : ""}${
-      address?.pincode ? `, ${address.pincode}` : " "
-    }`;
+    }${address?.locality?.code ? t(`TENANTS_MOHALLA_${address?.locality?.code}`) : ""}${
+      address?.city?.code || address?.city ? `, ${t(address?.city.code || address?.city)}` : ""
+    }${address?.pincode ? `, ${address.pincode}` : " "}`;
   };
 
   let filter1 = { tenantId: tenantId, applicationNumber: applicationNobyData };
-  var isSewerageConnections= false;
-  var { isLoading, isError, error, data } = Digit.Hooks.ws.useMyApplicationSearch({ filters: filter1, BusinessService: applicationNobyData?.includes("SW") ? "SW" : "WS" }, { filters: filter1, privacy: Digit.Utils.getPrivacyObject()  }, true);
-  let filter2 = { tenantId: tenantId, connectionNumber: applicationNobyData?.includes("SW") ? data?.SewerageConnections?.[0]?.connectionNo : data?.WaterConnection?.[0]?.connectionNo }
-  var { isLoading : isconnectionLoading, data : connectionData } = Digit.Hooks.ws.useMyApplicationSearch({ filters: filter2, BusinessService: applicationNobyData?.includes("SW") ? "SW" : "WS" }, { filters: filter2, privacy: Digit.Utils.getPrivacyObject(), enabled : filter2?.connectionNumber ? true : false  }, true);
-  state = Object.keys(state)?.length>0 ? state : (applicationNobyData?.includes("WS") ? connectionData?.WaterConnection?.[0] : connectionData?.SewerageConnections?.[0])
+  var isSewerageConnections = false;
+  var { isLoading, isError, error, data } = Digit.Hooks.ws.useMyApplicationSearch(
+    { filters: filter1, BusinessService: applicationNobyData?.includes("SW") ? "SW" : "WS" },
+    { filters: filter1, privacy: Digit.Utils.getPrivacyObject() },
+    true
+  );
+  let filter2 = {
+    tenantId: tenantId,
+    connectionNumber: applicationNobyData?.includes("SW") ? data?.SewerageConnections?.[0]?.connectionNo : data?.WaterConnection?.[0]?.connectionNo,
+  };
+  var { isLoading: isconnectionLoading, data: connectionData } = Digit.Hooks.ws.useMyApplicationSearch(
+    { filters: filter2, BusinessService: applicationNobyData?.includes("SW") ? "SW" : "WS" },
+    { filters: filter2, privacy: Digit.Utils.getPrivacyObject(), enabled: filter2?.connectionNumber ? true : false },
+    true
+  );
+  state =
+    Object.keys(state)?.length > 0
+      ? state
+      : applicationNobyData?.includes("WS")
+      ? connectionData?.WaterConnection?.[0]
+      : connectionData?.SewerageConnections?.[0];
   //this code hampering all Sewerage functionality thatswhy removed
   // if(data && data["SewerageConnections"]){
   //   isSewerageConnections = true;
   //   var str = JSON.stringify(data);
-  //   str = str.replace(/SewerageConnections/g, 'WaterConnection');    
+  //   str = str.replace(/SewerageConnections/g, 'WaterConnection');
   //   data = JSON.parse(str);
   // }
 
@@ -71,18 +89,29 @@ const ConnectionDetails = () => {
 
   const { isLoading: isPTLoading, isError: isPTError, error: PTerror, data: PTData } = Digit.Hooks.pt.usePropertySearch(
     { filters: { propertyIds: data?.WaterConnection?.[0]?.propertyId } },
-    { filters: { propertyIds: data?.WaterConnection?.[0]?.propertyId } , privacy: Digit.Utils.getPrivacyObject() }
+    { filters: { propertyIds: data?.WaterConnection?.[0]?.propertyId }, privacy: Digit.Utils.getPrivacyObject() }
   );
 
-  const checkifPrivacyenabled = Digit.Hooks.ws.useToCheckPrivacyEnablement({privacy : { uuid:(applicationNobyData?.includes("WS") ? data?.WaterConnection?.[0]?.connectionHolders?.[0]?.uuid : data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.uuid), fieldName: "connectionHoldersMobileNumber", model: "WnSConnectionOwner" }}) || false;
+  const checkifPrivacyenabled =
+    Digit.Hooks.ws.useToCheckPrivacyEnablement({
+      privacy: {
+        uuid: applicationNobyData?.includes("WS")
+          ? data?.WaterConnection?.[0]?.connectionHolders?.[0]?.uuid
+          : data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.uuid,
+        fieldName: "connectionHoldersMobileNumber",
+        model: "WnSConnectionOwner",
+      },
+    }) || false;
   const closeBillToast = () => {
     setshowActionToast(null);
   };
 
-  let noOfConnections = applicationNobyData?.includes("WS") ? connectionData?.WaterConnection : connectionData?.SewerageConnections
+  let noOfConnections = applicationNobyData?.includes("WS") ? connectionData?.WaterConnection : connectionData?.SewerageConnections;
   let isDisconnectionDone = false;
   if (noOfConnections?.length > 0) {
-    const datalength = noOfConnections?.filter(data => data?.applicationStatus == "DISCONNECTION_EXECUTED" && data?.applicationType.includes("DISCONNECT"));
+    const datalength = noOfConnections?.filter(
+      (data) => data?.applicationStatus == "DISCONNECTION_EXECUTED" && data?.applicationType.includes("DISCONNECT")
+    );
     if (datalength?.length) isDisconnectionDone = true;
   }
   const { data: generatePdfKey } = Digit.Hooks.useCommonMDMS(tenantId, "common-masters", "ReceiptKey", {
@@ -176,7 +205,7 @@ const ConnectionDetails = () => {
   );
 
   const getDisconnectionButton = () => {
-    if (!data?.checkWorkFlow){
+    if (!data?.checkWorkFlow) {
       setshowActionToast({
         key: "error",
         label: "CONNECTION_INPROGRESS_LABEL",
@@ -184,30 +213,24 @@ const ConnectionDetails = () => {
       setTimeout(() => {
         closeBillToast();
       }, 5000);
+    } else {
+      if (paymentDetails?.data?.Bill?.length === 0) {
+        let pathname = `/digit-ui/citizen/ws/disconnect-application`;
+        Digit.SessionStorage.set("WS_DISCONNECTION", { ...state, serviceType: isSW ? "SEWERAGE" : "WATER" });
+        history.push(`${pathname}`);
+      } else if (paymentDetails?.data?.Bill?.[0]?.totalAmount < 0) {
+        let pathname = `/digit-ui/citizen/ws/disconnect-application`;
+        Digit.SessionStorage.set("WS_DISCONNECTION", { ...state, serviceType: isSW ? "SEWERAGE" : "WATER" });
+        history.push(`${pathname}`);
+      } else if (paymentDetails?.data?.Bill?.[0]?.totalAmount !== 0) {
+        setshowModal(true);
+      }
     }
-    else {
-        if (paymentDetails?.data?.Bill?.length === 0 ) {
-          let pathname = `/digit-ui/citizen/ws/disconnect-application`;
-          Digit.SessionStorage.set("WS_DISCONNECTION", {...state, serviceType: isSW ? "SEWERAGE" : "WATER"});
-          history.push(`${pathname}`);
-        } 
-        else if(paymentDetails?.data?.Bill?.[0]?.totalAmount < 0)
-        {
-          let pathname = `/digit-ui/citizen/ws/disconnect-application`;
-          Digit.SessionStorage.set("WS_DISCONNECTION", {...state, serviceType: isSW ? "SEWERAGE" : "WATER"});
-          history.push(`${pathname}`);
-        }
-        else if (paymentDetails?.data?.Bill?.[0]?.totalAmount !== 0) {
-          setshowModal(true);
-        }
-      
-    }
-    
   };
   const getRestorationButton = () => {
-    console.log("getRestorationButton",data,!data?.checkWorkFlow)
-    console.log("Payment",paymentDetails)
-    if (!data?.checkWorkFlow){
+    console.log("getRestorationButton", data, !data?.checkWorkFlow);
+    console.log("Payment", paymentDetails);
+    if (!data?.checkWorkFlow) {
       setshowActionToast({
         key: "error",
         label: "CONNECTION_INPROGRESS_LABEL",
@@ -215,33 +238,26 @@ const ConnectionDetails = () => {
       setTimeout(() => {
         closeBillToast();
       }, 5000);
-    }
-    else {
-        if (paymentDetails?.data?.Bill?.length === 0 ) {
-          console.log("Payment",paymentDetails)
-          let pathname = `/digit-ui/citizen/ws/restoration-application`;
-          Digit.SessionStorage.set("WS_DISCONNECTION", {...state, serviceType: isSW ? "SEWERAGE" : "WATER"});
-          history.push(`${pathname}`);
-        } else if(paymentDetails?.data?.Bill?.[0]?.totalAmount < 0)
-        {
-          let pathname = `/digit-ui/citizen/ws/restore-application/restoration-application`;
-        Digit.SessionStorage.set("WS_DISCONNECTION", {...state, serviceType: isSW ? "SEWERAGE" : "WATER"});
+    } else {
+      if (paymentDetails?.data?.Bill?.length === 0) {
+        console.log("Payment", paymentDetails);
+        let pathname = `/digit-ui/citizen/ws/restoration-application`;
+        Digit.SessionStorage.set("WS_DISCONNECTION", { ...state, serviceType: isSW ? "SEWERAGE" : "WATER" });
         history.push(`${pathname}`);
-        }
-        else if (paymentDetails?.data?.Bill?.[0]?.totalAmount !== 0) {
-          setshowModal(true);
-        }
-        else if(paymentDetails?.data?.Bill?.[0]?.totalAmount == 0)
-        {let pathname = `/digit-ui/citizen/ws/restore-application/restoration-application`;
-        Digit.SessionStorage.set("WS_DISCONNECTION", {...state, serviceType: isSW ? "SEWERAGE" : "WATER"});
+      } else if (paymentDetails?.data?.Bill?.[0]?.totalAmount < 0) {
+        let pathname = `/digit-ui/citizen/ws/restore-application/restoration-application`;
+        Digit.SessionStorage.set("WS_DISCONNECTION", { ...state, serviceType: isSW ? "SEWERAGE" : "WATER" });
         history.push(`${pathname}`);
-
-        }
-      
+      } else if (paymentDetails?.data?.Bill?.[0]?.totalAmount !== 0) {
+        setshowModal(true);
+      } else if (paymentDetails?.data?.Bill?.[0]?.totalAmount == 0) {
+        let pathname = `/digit-ui/citizen/ws/restore-application/restoration-application`;
+        Digit.SessionStorage.set("WS_DISCONNECTION", { ...state, serviceType: isSW ? "SEWERAGE" : "WATER" });
+        history.push(`${pathname}`);
+      }
     }
-    
   };
-  
+
   function onActionSelect() {
     getDisconnectionButton();
   }
@@ -276,25 +292,24 @@ const ConnectionDetails = () => {
   }
   sessionStorage.setItem("ApplicationNoState", state?.applicationNo);
 
-
-let serviceType = state?.applicationType?.includes("WATER") ? "WATER":"SEWERAGE";
+  let serviceType = state?.applicationType?.includes("WATER") ? "WATER" : "SEWERAGE";
   return (
     <React.Fragment>
       <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
-        <Header>{t("WS_COMMON_CONNECTION_DETAIL")}</Header>
+        {/* <Header>{t("WS_COMMON_CONNECTION_DETAIL")}</Header> */}
         {downloadOptions && downloadOptions.length > 0 && (
           <div ref={menuRef}>
-          <MultiLink
-            className="multilinkWrapper"
-            onHeadClick={() => setShowOptions(!showOptions)}
-            displayOptions={showOptions}
-            options={downloadOptions}
-            optionsStyle={{margin: '0px'}}
-          />
+            <MultiLink
+              className="multilinkWrapper"
+              onHeadClick={() => setShowOptions(!showOptions)}
+              displayOptions={showOptions}
+              options={downloadOptions}
+              optionsStyle={{ margin: "0px" }}
+            />
           </div>
         )}
       </div>
-      {checkifPrivacyenabled && <WSInfoLabel t={t} /> }
+      {checkifPrivacyenabled && <WSInfoLabel t={t} />}
       <div className="hide-seperator">
         <Card>
           <StatusTable>
@@ -303,45 +318,61 @@ let serviceType = state?.applicationType?.includes("WATER") ? "WATER":"SEWERAGE"
               className="border-none"
               label={t("WS_SERVICE_NAME_LABEL")}
               text={t(`WS_APPLICATION_TYPE_${state?.applicationType}`)}
-              textStyle={{ wordBreak : "break-word" }}
+              textStyle={{ wordBreak: "break-word" }}
             />
             <Row className="border-none" label={t("WS_STATUS")} text={state?.status || "NA"} textStyle={{ whiteSpace: "pre" }} />
           </StatusTable>
           <CardHeader styles={{ fontSize: "28px" }}>{t("WS_COMMON_CONNECTION_DETAIL")}</CardHeader>
           <StatusTable>
-            {state?.applicationType?.includes("WATER") && <div>
-            <Row
-              className="border-none"
-              label={t("WS_COMMON_TABLE_COL_CONNECTIONTYPE_LABEL")}
-              text={state?.connectionType || t("NA")}
-              textStyle={{ whiteSpace: "pre" }}
-            />
-            <Row className="border-none" label={t("WS_SERV_DETAIL_NO_OF_TAPS")} text={state?.noOfTaps} textStyle={{ whiteSpace: "pre" }} />
-            <Row className="border-none" label={t("WS_PIPE_SIZE_IN_INCHES_LABEL")} text={state?.pipeSize || "NA"} textStyle={{ whiteSpace: "pre" }} />
-            </div>}
-            {state?.applicationType?.includes("SEWERAGE") && <div>
-            <Row
-                className="border-none"
-                label={t("WS_CONN_DETAIL_WATER_CLOSETS")}
-                text={state?.proposedWaterClosets}
-                textStyle={{ whiteSpace: "pre" }}
-              />
-              <Row
-                className="border-none"
-                label={t("WS_SERV_DETAIL_NO_OF_TOILETS")}
-                text={state?.proposedToilets || t("CS_NA")}
-                textStyle={{ whiteSpace: "pre" }}
-              />
-              <Row className="border-none" label={t("WS_SERV_DETAIL_CONN_EXECUTION_DATE")} text={state?.connectionExecutionDate ? Digit.DateUtils.ConvertEpochToDate(state?.connectionExecutionDate) : t("CS_NA")} textStyle={{ whiteSpace: "pre" }} />
-            </div>}
+            {state?.applicationType?.includes("WATER") && (
+              <div>
+                <Row
+                  className="border-none"
+                  label={t("WS_COMMON_TABLE_COL_CONNECTIONTYPE_LABEL")}
+                  text={state?.connectionType || t("NA")}
+                  textStyle={{ whiteSpace: "pre" }}
+                />
+                <Row className="border-none" label={t("WS_SERV_DETAIL_NO_OF_TAPS")} text={state?.noOfTaps} textStyle={{ whiteSpace: "pre" }} />
+                <Row
+                  className="border-none"
+                  label={t("WS_PIPE_SIZE_IN_INCHES_LABEL")}
+                  text={state?.pipeSize || "NA"}
+                  textStyle={{ whiteSpace: "pre" }}
+                />
+              </div>
+            )}
+            {state?.applicationType?.includes("SEWERAGE") && (
+              <div>
+                <Row
+                  className="border-none"
+                  label={t("WS_CONN_DETAIL_WATER_CLOSETS")}
+                  text={state?.proposedWaterClosets}
+                  textStyle={{ whiteSpace: "pre" }}
+                />
+                <Row
+                  className="border-none"
+                  label={t("WS_SERV_DETAIL_NO_OF_TOILETS")}
+                  text={state?.proposedToilets || t("CS_NA")}
+                  textStyle={{ whiteSpace: "pre" }}
+                />
+                <Row
+                  className="border-none"
+                  label={t("WS_SERV_DETAIL_CONN_EXECUTION_DATE")}
+                  text={state?.connectionExecutionDate ? Digit.DateUtils.ConvertEpochToDate(state?.connectionExecutionDate) : t("CS_NA")}
+                  textStyle={{ whiteSpace: "pre" }}
+                />
+              </div>
+            )}
             {state?.applicationType?.includes("WATER") && (
               <div>
                 <Row
                   className="border-none"
                   label={t("WS_SERV_DETAIL_WATER_SOURCE")}
-                  text={t(`WS_SERVICES_MASTERS_WATERSOURCE_${stringReplaceAll(state?.waterSource?.split(".")?.[0], ".", "_")}`) ||
-                  t(`WS_SERVICES_MASTERS_WATERSOURCE_${stringReplaceAll(state?.waterSource, ".", "_")}`) ||
-                  t("CS_NA")}
+                  text={
+                    t(`WS_SERVICES_MASTERS_WATERSOURCE_${stringReplaceAll(state?.waterSource?.split(".")?.[0], ".", "_")}`) ||
+                    t(`WS_SERVICES_MASTERS_WATERSOURCE_${stringReplaceAll(state?.waterSource, ".", "_")}`) ||
+                    t("CS_NA")
+                  }
                   textStyle={{ whiteSpace: "pre" }}
                 />
                 <Row
@@ -371,6 +402,41 @@ let serviceType = state?.applicationType?.includes("WATER") ? "WATER":"SEWERAGE"
                 />
               </div>
             )}
+            {state?.applicationType?.includes("WATER") && (
+              <div>
+                <Row
+                  className="border-none"
+                  label={t("WS_WATER_DEMAND_TYPE")}
+                  text={state?.additionalDetails?.waterDemandType?.i18nKey ? t(state?.additionalDetails?.waterDemandType?.i18nKey) : "NA"}
+                  textStyle={{ whiteSpace: "pre" }}
+                />
+                <Row
+                  className="border-none"
+                  label={t("WS_CATEGORY_TYPE")}
+                  text={state?.additionalDetails?.categoryType || "NA"}
+                  textStyle={{ whiteSpace: "pre" }}
+                />
+                <Row
+                  className="border-none"
+                  label={t("WS_ZRO_NAME")}
+                  text={state?.additionalDetails?.zro || "NA"}
+                  textStyle={{ whiteSpace: "pre" }}
+                />
+                <Row
+                  className="border-none"
+                  label={t("WS_CONNECTION_USAGE_TYPE")}
+                  text={state?.additionalDetails?.WaterConnectionUsageType?.name || "NA"}
+                  textStyle={{ whiteSpace: "pre" }}
+                />
+                <Row
+                  className="border-none"
+                  label={t("WS_TEMPORARY_CONNECTION")}
+                  text={state?.additionalDetails?.temporaryConnection || "NA"}
+                  textStyle={{ whiteSpace: "pre" }}
+                />
+              </div>
+            )}
+
             {state?.connectionType === "Metered" && (
               <Link to={`/digit-ui/citizen/ws/consumption/details?applicationNo=${state?.connectionNo}`}>
                 <LinkButton
@@ -382,7 +448,7 @@ let serviceType = state?.applicationType?.includes("WATER") ? "WATER":"SEWERAGE"
           </StatusTable>
           <CardHeader styles={{ fontSize: "28px" }}>{t("WS_COMMON_PROPERTY_DETAILS")}</CardHeader>
           <StatusTable>
-            <Row className="border-none" label={t("WS_PROPERTY_ID_LABEL")} text={state?.propertyId}  />
+            <Row className="border-none" label={t("WS_PROPERTY_ID_LABEL")} text={state?.propertyId} />
             <Row
               className="border-none"
               label={t("WS_OWN_DETAIL_OWN_NAME_LABEL")}
@@ -393,26 +459,40 @@ let serviceType = state?.applicationType?.includes("WATER") ? "WATER":"SEWERAGE"
               className="border-none"
               label={t("WS_OWN_DETAIL_PROPADD")}
               text={getAddress(PTData?.Properties?.[0]?.address) || t("CS_NA")}
-              textStyle={{ wordBreak : "break-word" }}
-              privacy={ {
+              textStyle={{ wordBreak: "break-word" }}
+              privacy={{
                 uuid: PTData?.Properties?.[0]?.owners?.[0]?.uuid,
                 fieldName: ["doorNo", "street", "landmark"],
                 model: "Property",
-                hide: !(PTData?.Properties?.[0]?.address),
+                hide: !PTData?.Properties?.[0]?.address,
                 showValue: true,
                 loadData: {
                   serviceName: "/property-services/property/_search",
                   requestBody: {},
-                  requestParam: { tenantId : tenantId, mobileNumber: user?.info?.userName?.match(/^[0-9]{10}$/) ? user?.info?.userName : user?.info?.mobileNumber },
+                  requestParam: {
+                    tenantId: tenantId,
+                    mobileNumber: user?.info?.userName?.match(/^[0-9]{10}$/) ? user?.info?.userName : user?.info?.mobileNumber,
+                  },
                   jsonPath: "Properties[0].address.street",
                   isArray: false,
                   d: (res) => {
-                    let resultString = (_.get(res,"Properties[0].address.doorNo") ?  `${_.get(res,"Properties[0].address.doorNo")}, ` : "") + (_.get(res,"Properties[0].address.street")? `${_.get(res,"Properties[0].address.street")}, ` : "") + (_.get(res,"Properties[0].address.landmark") ? `${_.get(res,"Properties[0].address.landmark")}`:"")
+                    let resultString =
+                      (_.get(res, "Properties[0].address.doorNo") ? `${_.get(res, "Properties[0].address.doorNo")}, ` : "") +
+                      (_.get(res, "Properties[0].address.street") ? `${_.get(res, "Properties[0].address.street")}, ` : "") +
+                      (_.get(res, "Properties[0].address.landmark") ? `${_.get(res, "Properties[0].address.landmark")}` : "");
                     return resultString;
-                  }
+                  },
                 },
               }}
             />
+            <Row className="border-none" label={t("WS_PROPERTY_TYPE")} text={state?.additionalDetails?.propertyType?.name || "NA"} />
+            <Row className="border-none" label={t("WS_PROPERTY_CATEGORY")} text={state?.additionalDetails?.propertyCategory?.name || "NA"} />
+            <Row className="border-none" label={t("WS_PLOT_AREA")} text={state?.additionalDetails?.plotArea || "NA"} />
+            <Row className="border-none" label={t("WS_BUILT_UP_AREA")} text={state?.additionalDetails?.builtUpArea || "NA"} />
+            <Row className="border-none" label={t("WS_NO_OF_FLOORS")} text={state?.additionalDetails?.noOfFloors || "NA"} />
+            <Row className="border-none" label={t("WS_NO_OF_DWELLING_UNITS")} text={state?.additionalDetails?.NumberofDwellingUnits || "NA"} />
+            <Row className="border-none" label={t("WS_LOCALITY")} text={state?.additionalDetails?.locality || "NA"} />
+
             <Link to={`/digit-ui/citizen/commonpt/view-property?propertyId=${state?.propertyId}&tenantId=${state?.tenantId}`}>
               <LinkButton style={{ textAlign: "left", marginBottom: "10px", marginTop: "5px" }} label={t("WS_VIEW_PROPERTY")} />
             </Link>
@@ -421,7 +501,7 @@ let serviceType = state?.applicationType?.includes("WATER") ? "WATER":"SEWERAGE"
           {state?.connectionHolders ? (
             <div>
               <StatusTable>
-              <Row
+                <Row
                   className="border-none"
                   label={t("WS_OWN_DETAIL_OWN_NAME_LABEL")}
                   text={state?.connectionHolders?.[0]?.name}
@@ -430,18 +510,27 @@ let serviceType = state?.applicationType?.includes("WATER") ? "WATER":"SEWERAGE"
                 <Row
                   className="border-none"
                   label={t("WS_OWN_DETAIL_GENDER_LABEL")}
-                  text={applicationNobyData?.includes("WS") ? data?.WaterConnection?.[0]?.connectionHolders?.[0]?.gender : data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.gender}
+                  text={
+                    applicationNobyData?.includes("WS")
+                      ? data?.WaterConnection?.[0]?.connectionHolders?.[0]?.gender
+                      : data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.gender
+                  }
                   textStyle={{ whiteSpace: "pre" }}
-                  privacy={ {
-                    uuid: applicationNobyData?.includes("WS") ? data?.WaterConnection?.[0]?.connectionHolders?.[0]?.uuid : data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.uuid,
+                  privacy={{
+                    uuid: applicationNobyData?.includes("WS")
+                      ? data?.WaterConnection?.[0]?.connectionHolders?.[0]?.uuid
+                      : data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.uuid,
                     fieldName: "gender",
                     model: "WnSConnectionOwner",
                     showValue: false,
                     loadData: {
                       serviceName: serviceType === "WATER" ? "/ws-services/wc/_search" : "/sw-services/swc/_search",
                       requestBody: {},
-                      requestParam: { tenantId, applicationNumber:applicationNobyData },
-                      jsonPath: serviceType === "WATER" ? "WaterConnection[0].connectionHolders[0].gender" : "SewerageConnections[0].connectionHolders[0].gender",
+                      requestParam: { tenantId, applicationNumber: applicationNobyData },
+                      jsonPath:
+                        serviceType === "WATER"
+                          ? "WaterConnection[0].connectionHolders[0].gender"
+                          : "SewerageConnections[0].connectionHolders[0].gender",
                       isArray: false,
                     },
                   }}
@@ -449,18 +538,27 @@ let serviceType = state?.applicationType?.includes("WATER") ? "WATER":"SEWERAGE"
                 <Row
                   className="border-none"
                   label={t("WS_OWN_DETAIL_MOBILE_NO_LABEL")}
-                  text={applicationNobyData?.includes("WS") ? data?.WaterConnection?.[0]?.connectionHolders?.[0]?.mobileNumber : data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.mobileNumber}
+                  text={
+                    applicationNobyData?.includes("WS")
+                      ? data?.WaterConnection?.[0]?.connectionHolders?.[0]?.mobileNumber
+                      : data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.mobileNumber
+                  }
                   textStyle={{ whiteSpace: "pre" }}
-                  privacy={ {
-                    uuid: applicationNobyData?.includes("WS") ? data?.WaterConnection?.[0]?.connectionHolders?.[0]?.uuid : data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.uuid,
+                  privacy={{
+                    uuid: applicationNobyData?.includes("WS")
+                      ? data?.WaterConnection?.[0]?.connectionHolders?.[0]?.uuid
+                      : data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.uuid,
                     fieldName: "connectionHoldersMobileNumber",
                     model: "WnSConnectionOwner",
                     showValue: false,
                     loadData: {
                       serviceName: serviceType === "WATER" ? "/ws-services/wc/_search" : "/sw-services/swc/_search",
                       requestBody: {},
-                      requestParam: { tenantId, applicationNumber:applicationNobyData },
-                      jsonPath: serviceType === "WATER" ? "WaterConnection[0].connectionHolders[0].mobileNumber" : "SewerageConnections[0].connectionHolders[0].mobileNumber",
+                      requestParam: { tenantId, applicationNumber: applicationNobyData },
+                      jsonPath:
+                        serviceType === "WATER"
+                          ? "WaterConnection[0].connectionHolders[0].mobileNumber"
+                          : "SewerageConnections[0].connectionHolders[0].mobileNumber",
                       isArray: false,
                     },
                   }}
@@ -468,18 +566,27 @@ let serviceType = state?.applicationType?.includes("WATER") ? "WATER":"SEWERAGE"
                 <Row
                   className="border-none"
                   label={t("WS_OWN_DETAIL_FATHER_OR_HUSBAND_NAME")}
-                  text={applicationNobyData?.includes("WS") ? data?.WaterConnection?.[0]?.connectionHolders?.[0]?.fatherOrHusbandName : data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.fatherOrHusbandName}
+                  text={
+                    applicationNobyData?.includes("WS")
+                      ? data?.WaterConnection?.[0]?.connectionHolders?.[0]?.fatherOrHusbandName
+                      : data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.fatherOrHusbandName
+                  }
                   textStyle={{ whiteSpace: "pre" }}
-                  privacy={ {
-                    uuid: applicationNobyData?.includes("WS") ? data?.WaterConnection?.[0]?.connectionHolders?.[0]?.uuid : data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.uuid,
+                  privacy={{
+                    uuid: applicationNobyData?.includes("WS")
+                      ? data?.WaterConnection?.[0]?.connectionHolders?.[0]?.uuid
+                      : data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.uuid,
                     fieldName: "fatherOrHusbandName",
                     model: "WnSConnectionOwner", //applicationNobyData?.includes("WS") ? "WaterConnectionOwner" : "User"
                     showValue: false,
                     loadData: {
                       serviceName: serviceType === "WATER" ? "/ws-services/wc/_search" : "/sw-services/swc/_search",
                       requestBody: {},
-                      requestParam: { tenantId, applicationNumber:applicationNobyData },
-                      jsonPath: serviceType === "WATER" ? "WaterConnection[0].connectionHolders[0].fatherOrHusbandName" : "SewerageConnections[0].connectionHolders[0].fatherOrHusbandName",
+                      requestParam: { tenantId, applicationNumber: applicationNobyData },
+                      jsonPath:
+                        serviceType === "WATER"
+                          ? "WaterConnection[0].connectionHolders[0].fatherOrHusbandName"
+                          : "SewerageConnections[0].connectionHolders[0].fatherOrHusbandName",
                       isArray: false,
                     },
                   }}
@@ -487,23 +594,32 @@ let serviceType = state?.applicationType?.includes("WATER") ? "WATER":"SEWERAGE"
                 <Row
                   className="border-none"
                   label={t("WS_OWN_DETAIL_RELATION_LABEL")}
-                  text={applicationNobyData?.includes("WS") ? data?.WaterConnection?.[0]?.connectionHolders?.[0]?.relationship : data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.relationship}
+                  text={
+                    applicationNobyData?.includes("WS")
+                      ? data?.WaterConnection?.[0]?.connectionHolders?.[0]?.relationship
+                      : data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.relationship
+                  }
                   textStyle={{ whiteSpace: "pre" }}
-                  privacy={ {
-                    uuid: applicationNobyData?.includes("WS") ? data?.WaterConnection?.[0]?.connectionHolders?.[0]?.uuid : data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.uuid,
+                  privacy={{
+                    uuid: applicationNobyData?.includes("WS")
+                      ? data?.WaterConnection?.[0]?.connectionHolders?.[0]?.uuid
+                      : data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.uuid,
                     fieldName: "relationship",
                     model: "WnSConnection", //applicationNobyData?.includes("WS") ? "WaterConnectionOwner" : "User"
                     showValue: false,
                     loadData: {
                       serviceName: serviceType === "WATER" ? "/ws-services/wc/_search" : "/sw-services/swc/_search",
                       requestBody: {},
-                      requestParam: { tenantId, applicationNumber:applicationNobyData },
-                      jsonPath: serviceType === "WATER" ? "WaterConnection[0].connectionHolders[0].relationship" : "SewerageConnections[0].connectionHolders[0].relationship",
+                      requestParam: { tenantId, applicationNumber: applicationNobyData },
+                      jsonPath:
+                        serviceType === "WATER"
+                          ? "WaterConnection[0].connectionHolders[0].relationship"
+                          : "SewerageConnections[0].connectionHolders[0].relationship",
                       isArray: false,
                     },
                   }}
                 />
-                <Row
+                {/* <Row
                   className="border-none"
                   label={t("WS_OWN_DETAIL_CROSADD")}
                   text={applicationNobyData?.includes("WS") ? data?.WaterConnection?.[0]?.connectionHolders?.[0]?.correspondenceAddress : data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.correspondenceAddress}
@@ -546,22 +662,31 @@ let serviceType = state?.applicationType?.includes("WATER") ? "WATER":"SEWERAGE"
                       }
                   },
                   }}
-                  />
-                  <Row
+                  /> */}
+                <Row
                   className="border-none"
                   label={t("WS_OWN_EMAIL_IDNO_LABEL")}
-                  text={applicationNobyData?.includes("WS") ? data?.WaterConnection?.[0]?.connectionHolders?.[0]?.emailId: data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.emailId}
+                  text={
+                    applicationNobyData?.includes("WS")
+                      ? data?.WaterConnection?.[0]?.connectionHolders?.[0]?.emailId
+                      : data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.emailId
+                  }
                   textStyle={{ whiteSpace: "pre" }}
-                  privacy={ {
-                    uuid: applicationNobyData?.includes("WS") ? data?.WaterConnection?.[0]?.connectionHolders?.[0]?.uuid : data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.uuid,
+                  privacy={{
+                    uuid: applicationNobyData?.includes("WS")
+                      ? data?.WaterConnection?.[0]?.connectionHolders?.[0]?.uuid
+                      : data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.uuid,
                     fieldName: "connectionHoldersEmailId",
                     model: "WnSConnectionOwner",
                     showValue: false,
                     loadData: {
                       serviceName: serviceType === "WATER" ? "/ws-services/wc/_search" : "/sw-services/swc/_search",
                       requestBody: {},
-                      requestParam: { tenantId, applicationNumber:applicationNobyData },
-                      jsonPath: serviceType === "WATER" ? "WaterConnection[0].connectionHolders[0].emailId" : "SewerageConnections[0].connectionHolders[0].emailId",
+                      requestParam: { tenantId, applicationNumber: applicationNobyData },
+                      jsonPath:
+                        serviceType === "WATER"
+                          ? "WaterConnection[0].connectionHolders[0].emailId"
+                          : "SewerageConnections[0].connectionHolders[0].emailId",
                       isArray: false,
                     },
                   }}
@@ -571,7 +696,22 @@ let serviceType = state?.applicationType?.includes("WATER") ? "WATER":"SEWERAGE"
           ) : (
             <CardText>{t("WS_PROPERTY_OWNER_SAME_AS_CONN_HOLDERS")}</CardText>
           )}
-          {/* {state?.documents &&
+
+          <CardHeader styles={{ fontSize: "28px" }}>{t("WS_COMMON_BANK_DETAILS")}</CardHeader>
+          <StatusTable>
+            <Row className="border-none" label={t("WS_BANK_NAME")} text={state?.additionalDetails?.bankName || "NA"} />
+            <Row className="border-none" label={t("WS_BANK_BRANCH_NAME")} text={state?.additionalDetails?.bankBranchName || "NA"} />
+            <Row
+              className="border-none"
+              label={t("WS_BANK_ACCOUNT_NUMBER")}
+              text={state?.additionalDetails?.accountNumber || state?.additionalDetails?.bankAccountNumber || "NA"}
+            />
+            <Row className="border-none" label={t("WS_BANK_IFSC_CODE")} text={state?.additionalDetails?.ifscCode || "NA"} />
+          </StatusTable>
+
+          <CardHeader styles={{ fontSize: "28px" }}>{t("WS_COMMON_BANK_DETAILS")}</CardHeader>
+
+          {state?.documents &&
             state?.documents.map((doc, index) => (
               <div key={`doc-${index}`}>
                 {
@@ -586,22 +726,28 @@ let serviceType = state?.applicationType?.includes("WATER") ? "WATER":"SEWERAGE"
                   </div>
                 }
               </div>
-            ))} */}
-          {(state?.status !== "inactive" || state?.applicationStatus !== "Inactive" || state?.applicationStatus !== "INACTIVE") && !isDisconnectionDone ? (
+            ))}
+          {(state?.status !== "inactive" || state?.applicationStatus !== "Inactive" || state?.applicationStatus !== "INACTIVE") &&
+          !isDisconnectionDone ? (
             <ActionBar style={{ position: "relative", boxShadow: "none", minWidth: "240px", maxWidth: "310px", padding: "0px", marginTop: "15px" }}>
               <div style={{ width: "100%" }}>
                 <SubmitBar style={{ width: "100%" }} label={t("WS_DISCONNECTION_BUTTON")} onSubmit={onActionSelect} />
               </div>
             </ActionBar>
-          ) : state?.applicationStatus =="DISCONNECTION_EXECUTED" && state?.status == "Inactive" && state?.isDisconnectionTemporary && <ActionBar style={{ position: "relative", boxShadow: "none", minWidth: "240px", maxWidth: "310px", padding: "0px", marginTop: "15px" }}>
-          <div style={{ width: "100%" }}>
-            <SubmitBar style={{ width: "100%" }} label={t("WS_RECONNECTION_BUTTON")} onSubmit={onActionSelectRestoration} />
-          </div>
-        </ActionBar>}
+          ) : (
+            state?.applicationStatus == "DISCONNECTION_EXECUTED" &&
+            state?.status == "Inactive" &&
+            state?.isDisconnectionTemporary && (
+              <ActionBar style={{ position: "relative", boxShadow: "none", minWidth: "240px", maxWidth: "310px", padding: "0px", marginTop: "15px" }}>
+                <div style={{ width: "100%" }}>
+                  <SubmitBar style={{ width: "100%" }} label={t("WS_RECONNECTION_BUTTON")} onSubmit={onActionSelectRestoration} />
+                </div>
+              </ActionBar>
+            )
+          )}
 
           {showModal ? (
             <Modal
-
               open={showModal}
               headerBarMain={<Heading label={t("WS_PENDING_DUES_LABEL")} />}
               headerBarEnd={<CloseBtn onClick={() => setshowModal(false)} />}
@@ -611,9 +757,9 @@ let serviceType = state?.applicationType?.includes("WATER") ? "WATER":"SEWERAGE"
               hideSubmit={true}
               actionSingleSubmit={() => {
                 history.push(
-                  `/digit-ui/citizen/payment/collect/${isSW ? "SW" : "WS"}/${encodeURIComponent(
+                  `/digit-ui/citizen/payment/collect/${isSW ? "SW" : "WS"}/${encodeURIComponent(state?.connectionNo)}/${tenantId}?consumerCode=${
                     state?.connectionNo
-                  )}/${tenantId}?consumerCode=${state?.connectionNo}&&tenantId=${tenantId}&&workflow=WNS`
+                  }&&tenantId=${tenantId}&&workflow=WNS`
                 );
                 setshowModal(false);
               }}
@@ -634,8 +780,9 @@ let serviceType = state?.applicationType?.includes("WATER") ? "WATER":"SEWERAGE"
             </Modal>
           ) : null}
         </Card>
-        {showActionToast && 
-          <Toast style={{bottom: "150px"}} error={showActionToast.key} label={t(`${showActionToast.label}`)} onClose={closeBillToast} />}
+        {showActionToast && (
+          <Toast style={{ bottom: "150px" }} error={showActionToast.key} label={t(`${showActionToast.label}`)} onClose={closeBillToast} />
+        )}
       </div>
     </React.Fragment>
   );

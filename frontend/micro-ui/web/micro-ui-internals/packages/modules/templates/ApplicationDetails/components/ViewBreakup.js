@@ -191,8 +191,26 @@ const ViewBreakup = ({ wsAdditionalDetails, workflowDetails, print, download }) 
         { label: "Sewer rate", value: infrastructureChargeDetail.sewerRatePerLPD, currency: true },
         { label: "Water Infra Charges", value: infrastructureChargeDetail.waterComponentIFC, currency: true },
         { label: "Sewer Infra Charges", value: infrastructureChargeDetail.sewerComponentIFC, currency: true },
-        { label: "Rebate", value: infrastructureChargeDetail.rebatePercentage, unit: "%" },
-        { label: "Rebate amount", value: infrastructureChargeDetail.rebateAmount, currency: true },
+        ...(infrastructureChargeDetail.rebateAmount > 0
+          ? [
+              { label: "Rebate", value: infrastructureChargeDetail.rebatePercentage, unit: "%" },
+              { label: "Rebate amount", value: infrastructureChargeDetail.rebateAmount, currency: true },
+            ]
+          : []),
+        ...(infrastructureChargeDetail.institutionalRebateApplied
+          ? [
+              { label: "Institutional rebate", value: infrastructureChargeDetail.institutionalRebatePercentage, unit: "%" },
+              { label: "Institutional rebate amount", value: infrastructureChargeDetail.institutionalRebateAmount, currency: true },
+              { label: "Institutional rebate reason", value: t(infrastructureChargeDetail.institutionalRebateReason), isText: true },
+            ]
+          : []),
+        ...(infrastructureChargeDetail.dwellingRebateApplied
+          ? [
+              { label: "Dwelling rebate", value: infrastructureChargeDetail.dwellingRebatePercentage, unit: "%" },
+              { label: "Dwelling rebate amount", value: infrastructureChargeDetail.dwellingRebateAmount, currency: true },
+              { label: "Dwelling rebate reason", value: t(infrastructureChargeDetail.dwellingRebateReason), isText: true },
+            ]
+          : []),
         { label: "Net IFC", value: infrastructureChargeDetail.netIFC, currency: true },
       ]
     : [];
