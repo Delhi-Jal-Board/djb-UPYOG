@@ -420,57 +420,13 @@ public class WaterServiceImpl implements WaterService {
 		if ("APPROVE_FOR_CONNECTION".equalsIgnoreCase(currentAction)) {
 			log.info("[WS-AUTO-ACTIVATE] Action is APPROVE_FOR_CONNECTION — checking if extra payment is due...");
 
-			// Step 1: Check if there are K-number dues from Due Verification
-			java.math.BigDecimal totalKnoDues = java.math.BigDecimal.ZERO;
-			List<DueVerification> dueVerifications = searchResult.getDueVerification();
-			if (!CollectionUtils.isEmpty(dueVerifications)) {
-				for (DueVerification dv : dueVerifications) {
-					if (dv.getDueAmount() != null && !dv.getDueAmount().trim().isEmpty()) {
-						try {
-							java.math.BigDecimal dueAmt = new java.math.BigDecimal(dv.getDueAmount().trim());
-							totalKnoDues = totalKnoDues.add(dueAmt);
-							log.info("[WS-AUTO-ACTIVATE] K-Number={}, DueAmount={}", dv.getKno(), dv.getDueAmount());
-						} catch (NumberFormatException e) {
-							log.warn("[WS-AUTO-ACTIVATE] Invalid dueAmount '{}' for K-Number={}", dv.getDueAmount(), dv.getKno());
-						}
-					}
-				}
-			}
-			log.info("[WS-AUTO-ACTIVATE] Total K-Number dues = {}", totalKnoDues);
-
-			if (totalKnoDues.compareTo(java.math.BigDecimal.ZERO) > 0) {
-				// K-number dues exist — generate demand and require payment
-				log.info("[WS-AUTO-ACTIVATE] K-Number dues detected ({}). Triggering demand generation...", totalKnoDues);
-				
-				// Inject dues into additional details so calculator can pick it up
-				Object additionalDetailObj = waterConnectionRequest.getWaterConnection().getAdditionalDetails();
-				java.util.Map<String, Object> additionalDetails = null;
-				if (additionalDetailObj instanceof java.util.Map) {
-					additionalDetails = (java.util.Map<String, Object>) additionalDetailObj;
-				} else if (additionalDetailObj != null) {
-					try {
-						com.fasterxml.jackson.databind.ObjectMapper objMapper = new com.fasterxml.jackson.databind.ObjectMapper();
-						additionalDetails = objMapper.convertValue(additionalDetailObj, new com.fasterxml.jackson.core.type.TypeReference<java.util.Map<String, Object>>(){});
-					} catch (Exception e) {}
-				}
-				if (additionalDetails == null) {
-					additionalDetails = new java.util.HashMap<>();
-				}
-				additionalDetails.put("knoDues", totalKnoDues);
-				waterConnectionRequest.getWaterConnection().setAdditionalDetails(additionalDetails);
-
-				calculationService.generateDemandForApproval(waterConnectionRequest, property);
-				isNoPayment = false;
-			} else {
-				// No K-number dues — check if the WS.ONE_TIME_FEE bill has any remaining amount
-				isNoPayment = calculationService.fetchBillForApplication(
-						waterConnectionRequest.getWaterConnection().getTenantId(),
-						waterConnectionRequest.getWaterConnection().getApplicationNo(),
-						waterConnectionRequest.getRequestInfo()
-				);
-				log.info("[WS-AUTO-ACTIVATE] fetchBillForApplication result: isNoPayment = {} (true = no extra payment, false = extra payment due)",
-						isNoPayment);
-			}
+			isNoPayment = calculationService.fetchBillForApplication(
+					waterConnectionRequest.getWaterConnection().getTenantId(),
+					waterConnectionRequest.getWaterConnection().getApplicationNo(),
+					waterConnectionRequest.getRequestInfo()
+			);
+			log.info("[WS-AUTO-ACTIVATE] fetchBillForApplication result: isNoPayment = {} (true = no extra payment, false = extra payment due)",
+					isNoPayment);
 
 			if (isNoPayment) {
 				log.info("[WS-AUTO-ACTIVATE] NO extra payment due — setting comment to WS_NO_PAYMENT, will auto-activate after workflow transition");
