@@ -608,6 +608,8 @@ public class EstimationService {
 					.estimateAmount(tax.setScale(2, RoundingMode.HALF_UP)).build());
 
 		// Calculate K-Number dues from dueVerification if present
+		// Feature removed as per user requirement: do not generate demand for K-Number dues during approval.
+		/*
 		BigDecimal totalDues = BigDecimal.ZERO;
 		if (criteria.getWaterConnection().getDueVerification() != null) {
 			for (DueVerification due : criteria.getWaterConnection().getDueVerification()) {
@@ -623,6 +625,7 @@ public class EstimationService {
 					.build());
 			log.info("Added K-Number dues to estimates: {}", totalDues);
 		}
+		*/
 
 		addAdhocPenaltyAndRebate(estimates, criteria.getWaterConnection());
 
