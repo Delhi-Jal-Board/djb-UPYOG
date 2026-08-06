@@ -210,23 +210,36 @@ public class CalculationService {
 	 * Shared helper to trigger the ws-calculator for fee estimation and demand generation.
 	 */
 	private void triggerCalculation(WaterConnectionRequest request, Property property, String action) {
-		CalculationCriteria criteria = CalculationCriteria.builder()
-				.applicationNo(request.getWaterConnection().getApplicationNo())
-				.waterConnection(request.getWaterConnection())
-				.tenantId(property.getTenantId()).build();
+		WaterConnection waterConnection = request.getWaterConnection();
 
-		CalculationReq calRequest = CalculationReq.builder().calculationCriteria(Arrays.asList(criteria))
-				.requestInfo(request.getRequestInfo()).isconnectionCalculation(false)
-				.isDisconnectionRequest(false).isReconnectionRequest(false).build();
+		boolean isDisconnection = WCConstants.DISCONNECT_WATER_CONNECTION.equalsIgnoreCase(waterConnection.getApplicationType()) || request.isDisconnectRequest();
+		boolean isReconnection = WCConstants.WATER_RECONNECTION.equalsIgnoreCase(waterConnection.getApplicationType()) || request.isReconnectRequest();
+
+		CalculationCriteria criteria = CalculationCriteria.builder()
+				.applicationNo(waterConnection.getApplicationNo())
+				.connectionNo(waterConnection.getConnectionNo())
+				.waterConnection(waterConnection)
+				.tenantId(property.getTenantId())
+				.build();
+
+		CalculationReq calRequest = CalculationReq.builder()
+				.calculationCriteria(Arrays.asList(criteria))
+				.requestInfo(request.getRequestInfo())
+				.isconnectionCalculation(false)
+				.isDisconnectionRequest(isDisconnection)
+				.isReconnectionRequest(isReconnection)
+				.build();
 
 		try {
+			log.info("[WS-DEMAND] Triggering calculation with flags -> isDisconnection: {}, isReconnection: {}, applicationNo: {}",isDisconnection, isReconnection, waterConnection.getApplicationNo());
+
 			Object response = serviceRequestRepository.fetchResult(waterServiceUtil.getCalculatorURL(), calRequest);
 			CalculationRes calResponse = mapper.convertValue(response, CalculationRes.class);
-			log.info("[WS-DEMAND] triggerCalculation completed for action={}, applicationNo={}",
-					action, request.getWaterConnection().getApplicationNo());
+
+			log.info("[WS-DEMAND] triggerCalculation completed successfully for action={}, applicationNo={}",action, waterConnection.getApplicationNo());
 		} catch (Exception ex) {
-			log.error("Calculation response error!!", ex);
-			throw new CustomException("WATER_CALCULATION_EXCEPTION", "Calculation response can not parsed!!!");
+			log.error("Calculation response error for applicationNo: {}", waterConnection.getApplicationNo(), ex);
+			throw new CustomException("WATER_CALCULATION_EXCEPTION", "Calculation response could not be parsed!");
 		}
 	}
 
