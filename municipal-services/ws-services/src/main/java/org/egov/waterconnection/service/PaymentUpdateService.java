@@ -98,7 +98,8 @@ public class PaymentUpdateService {
 				if (WCConstants.WATER_SERVICE_BUSINESS_ID.equals(paymentDetail.getBusinessService()) ||
 						paymentDetail.getBusinessService().equalsIgnoreCase(config.getReceiptBusinessservice()) || 
 						paymentDetail.getBusinessService().equalsIgnoreCase(config.getReconnectBusinessServiceName()) ||
-						paymentDetail.getBusinessService().equalsIgnoreCase(config.getMutationWSBusinessServiceName())) {
+						paymentDetail.getBusinessService().equalsIgnoreCase(config.getMutationWSBusinessServiceName()) ||
+						paymentDetail.getBusinessService().equalsIgnoreCase(config.getMutationFeeBusinessServiceName())) {
 					isServiceMatched = true;
 				}
 			}
@@ -117,7 +118,8 @@ public class PaymentUpdateService {
 				}
 				if (paymentDetail.getBusinessService().equalsIgnoreCase(config.getReceiptReconnectionBusinessservice()) || 
 						paymentDetail.getBusinessService().equalsIgnoreCase(config.getReceiptBusinessservice()) ||
-						paymentDetail.getBusinessService().equalsIgnoreCase(config.getMutationWSBusinessServiceName())) {
+						paymentDetail.getBusinessService().equalsIgnoreCase(config.getMutationWSBusinessServiceName()) ||
+						paymentDetail.getBusinessService().equalsIgnoreCase(config.getMutationFeeBusinessServiceName())) {
 					criteria = SearchCriteria.builder()
 							.tenantId(paymentRequest.getPayment().getTenantId())
 							.applicationNumber(Stream.of(paymentDetail.getBill().getConsumerCode().toString()).collect(Collectors.toSet())).build();
@@ -149,7 +151,9 @@ public class PaymentUpdateService {
 				wfIntegrator.callWorkFlow(waterConnectionRequest, property);
 				enrichmentService.enrichFileStoreIds(waterConnectionRequest);
 
-				if (paymentDetail.getBusinessService().equalsIgnoreCase(config.getMutationWSBusinessServiceName()) || waterServiceUtil.isMutationConnectionRequest(waterConnectionRequest)) {
+				if (paymentDetail.getBusinessService().equalsIgnoreCase(config.getMutationWSBusinessServiceName()) || 
+						paymentDetail.getBusinessService().equalsIgnoreCase(config.getMutationFeeBusinessServiceName()) || 
+						waterServiceUtil.isMutationConnectionRequest(waterConnectionRequest)) {
 
 					waterConnectionRequest.getWaterConnection().setApplicationStatus(WCConstants.PENDING_FOR_MUTATION_ACTIVATION_STATUS_CODE);
 					repo.updateWaterConnection(waterConnectionRequest, true);
@@ -234,7 +238,8 @@ public class PaymentUpdateService {
 				String businessservice = paymentDetail.getBusinessService();
 				if (WCConstants.WATER_SERVICE_BUSINESS_ID.equals(businessservice) 
 						|| WATER_SERVICE_ONE_TIME_FEE_BUSINESS_ID.equals(businessservice)
-						|| businessservice.equalsIgnoreCase(config.getMutationWSBusinessServiceName())) {
+						|| businessservice.equalsIgnoreCase(config.getMutationWSBusinessServiceName())
+						|| businessservice.equalsIgnoreCase(config.getMutationFeeBusinessServiceName())) {
 					isServiceMatched = true;
 				}
 			}
@@ -244,7 +249,8 @@ public class PaymentUpdateService {
 				log.info("Consuming Business Service : {}", paymentDetail.getBusinessService());
 				if (WCConstants.WATER_SERVICE_BUSINESS_ID.equals(paymentDetail.getBusinessService())
 						|| config.getReceiptBusinessservice().equals(paymentDetail.getBusinessService())
-						|| paymentDetail.getBusinessService().equalsIgnoreCase(config.getMutationWSBusinessServiceName())) {
+						|| paymentDetail.getBusinessService().equalsIgnoreCase(config.getMutationWSBusinessServiceName())
+						|| paymentDetail.getBusinessService().equalsIgnoreCase(config.getMutationFeeBusinessServiceName())) {
 					SearchCriteria criteria = new SearchCriteria();
 					if (WCConstants.WATER_SERVICE_BUSINESS_ID.equals(paymentDetail.getBusinessService())) {
 						criteria = SearchCriteria.builder()
