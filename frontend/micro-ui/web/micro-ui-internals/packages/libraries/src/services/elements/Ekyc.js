@@ -110,6 +110,8 @@ export const EkycService = {
     unassignedOnly = null,
     reportDownload = null,
     fetchFilterOptions = null,
+    fromDate = null,
+    toDate = null,
   } = {}) =>
     Request({
       url: Urls.ekyc.application_list,
@@ -121,6 +123,8 @@ export const EkycService = {
         tenantId,
         offset,
         limit,
+        ...(fromDate && { fromDate }),
+        ...(toDate && { toDate }),
       },
       data: {
         kno,
@@ -173,6 +177,28 @@ export const EkycService = {
         ...(effectiveVendorId ? { vendorId: effectiveVendorId } : {}),
         ...(vendorIds && vendorIds.length > 0 ? { vendorIds } : {}),
         ...extraData,
+      },
+    });
+
+    if (response?.error) {
+      throw response;
+    }
+
+    return response;
+  },
+  assignment_reassign: async ({ tenantId = "dl.djb", newSurveyorId, assignmentType, assignmentValue, assignmentValues } = {}) => {
+    const response = await Request({
+      url: Urls.ekyc.assignment_reassign,
+      method: "POST",
+      auth: true,
+      userService: true,
+      useCache: false,
+      params: { tenantId },
+      data: {
+        newSurveyorId,
+        assignmentType,
+        assignmentValue,
+        assignmentValues,
       },
     });
 

@@ -348,6 +348,7 @@ const Urls = {
     // workflow_tracking: "/analytics-service/v1/workflow/_tracking",
     assignment_create: "/ekyc-service/assignment/_assign",
     assignment_progress: "/ekyc-service/assignment/_progress",
+    assignment_reassign: "/ekyc-service/assignment/_reassign",
   },
   audit: "/inbox/v1/elastic/_search",
 };
