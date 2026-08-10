@@ -299,8 +299,9 @@ const Review = () => {
     email: editedAddress?.email || newDataRaw?.address?.email,
     noOfPerson: editedAddress?.noOfPerson || aadhaarData?.noOfPersons || newDataRaw?.address?.noOfPerson,
     knumber: editedAddress?.knumber || newDataRaw?.address?.knumber || activeKno,
-    doorPhotoFilestoreId: editedAddress?.doorPhotoFileStoreId || newDataRaw?.address?.doorPhotoFilestoreId,
+    doorPhotoFilestoreId: editedAddress?.doorPhotoFilestoreId || newDataRaw?.address?.doorPhotoFilestoreId,
   };
+
 
   const propertyData = {
     ...newDataRaw?.property,
@@ -468,11 +469,18 @@ const Review = () => {
     }
   };
 
-  const handleViewDocument = (fileStoreId) => {
+  const handleViewDocument = async (fileStoreId) => {
     if (!fileStoreId) return;
-    const documentUrl = `https://dev-djberp.nitcon.in/filestore/v1/files/id?tenantId=dl.djb&fileStoreId=${fileStoreId}`;
-    setPreviewUrl(documentUrl);
-    setShowPreview(true);
+    try {
+      const response = await Digit.UploadServices.FileFetchbyid(fileStoreId, tenantId);
+      if (response?.data) {
+        const blobUrl = URL.createObjectURL(response.data);
+        setPreviewUrl(blobUrl);
+        setShowPreview(true);
+      }
+    } catch (error) {
+      console.error("Error fetching document:", error);
+    }
   };
 
   const handleMenuSelect = (option) => {

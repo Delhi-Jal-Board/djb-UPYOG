@@ -187,6 +187,10 @@ export const useEkycAssignmentCreate = (config = {}) => {
   return useMutation((data) => Digit.EkycService.assignment_create(data), config);
 };
 
+export const useEkycAssignmentReassign = (config = {}) => {
+  return useMutation((data) => Digit.EkycService.assignment_reassign(data), config);
+};
+
 export const useEkycAssignmentProgress = (params = {}, config = {}) => {
   const { enabled, keepPreviousData, staleTime, select, onSuccess, onError, ...apiParams } = params || {};
 

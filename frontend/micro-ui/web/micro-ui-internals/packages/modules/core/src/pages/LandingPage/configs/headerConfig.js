@@ -95,6 +95,11 @@ const headerConfig = {
         },
       ],
     },
+    {
+      label: "REGISTER",
+      link: `/${contextPath}/citizen/register/mobile-number`,
+      type: "button",
+    },
   ],
 };
 

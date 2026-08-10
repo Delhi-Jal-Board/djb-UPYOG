@@ -1540,6 +1540,22 @@ const VendorInbox = (props) => {
         return [];
       }
     }
+
+    if (props.selectedTab === "VENDOR") {
+      try{
+        const response=await Digit.FSMService.vendorSearch(tenantId, {
+          status: "ACTIVE,DISABLED",
+          name: props.searchParams?.name,
+          mobileNumber: props.searchParams?.mobileNumber || undefined,
+          limit: 100000,
+          offset: 0,
+        });
+        return response?.vendors || response?.vendor || [];
+      }catch(e){
+        console.error(e);
+        return [];
+      }
+    }
     return tableData;
   }, [props.selectedTab, props.searchParams, tenantId, tableData]);
 

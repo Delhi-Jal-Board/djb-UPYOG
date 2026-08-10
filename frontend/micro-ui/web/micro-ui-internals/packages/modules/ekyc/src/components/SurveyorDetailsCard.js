@@ -13,7 +13,7 @@ import { FaUsers, FaCheckCircle, FaClock, FaChartLine } from "react-icons/fa";
 const SurveyorDetailsDashboard = () => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
 
-  const [showModal, setShowModal] = useState(false);
+  const [showModal, setShowModal] = useState(null);
   const [showOptions, setShowOptions] = useState(false);
   const [ekycDownloadLoading, setEkycDownloadLoading] = useState(false);
 
@@ -300,11 +300,11 @@ const SurveyorDetailsDashboard = () => {
     </div>
   );
 
-  const options = [{ action: "Assign" }];
+  const options = [{ action: "Assign" }, { action: "EKYC_REASSIGN"}];
 
   const handleMenuSelect = (option) => {
     setShowOptions(false); // close menu
-    setShowModal(true);
+    setShowModal(option.action);
   };
 
   const handleDownloadEkycData = async () => {
@@ -396,7 +396,7 @@ const SurveyorDetailsDashboard = () => {
   };
 
   const closeModal = async () => {
-    setShowModal(false);
+    setShowModal(null);
   };
 
   return (
@@ -649,7 +649,7 @@ const SurveyorDetailsDashboard = () => {
         </ActionBar>
       )}
 
-      {showModal && <AssignEkycModal surveyor={surveyor} closeModal={closeModal} refetchDashboard={refetchDashboard} />}
+      {showModal && <AssignEkycModal surveyor={surveyor} isReassign={showModal === "EKYC_REASSIGN"} closeModal={closeModal} refetchDashboard={refetchDashboard} />}
     </Card>
   );
 };

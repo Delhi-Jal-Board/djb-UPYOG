@@ -400,6 +400,28 @@ const HeaderBar = ({ logoUrl, stateInfo }) => {
             }
 
             /* =========================
+               🔹 REGISTER BUTTON
+            ========================= */
+            if (item.type === "button") {
+              return (
+                <a
+                  key={index}
+                  href={item.link || "#"}
+                  className="header-login-btn"
+                  onClick={(e) => {
+                    setMobileMenuOpen(false);
+                    if (item.link) {
+                      e.preventDefault();
+                      history.push(item.link);
+                    }
+                  }}
+                >
+                  {t(item.label)}
+                </a>
+              );
+            }
+
+            /* =========================
                🔹 NORMAL NAV ITEMS
             ========================= */
             return (

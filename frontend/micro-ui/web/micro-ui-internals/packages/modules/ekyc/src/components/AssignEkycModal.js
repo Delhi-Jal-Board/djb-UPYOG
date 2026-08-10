@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { Modal, Close, Table, Toast } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
-const AssignEkycModal = ({ surveyor, closeModal, refetchDashboard, tenantId: propsTenantId }) => {
+const AssignEkycModal = ({ surveyor, isReassign, closeModal, refetchDashboard, tenantId: propsTenantId }) => {
   const { t } = useTranslation();
   const tenantId = propsTenantId || Digit.ULBService.getCurrentTenantId();
   const [selectedKnos, setSelectedKnos] = useState([]);
@@ -117,7 +117,7 @@ const AssignEkycModal = ({ surveyor, closeModal, refetchDashboard, tenantId: pro
 
   const { data: filterOptionsData } = Digit.Hooks.ekyc.useEkycApplicationList(
     {
-      unassignedOnly: true,
+      unassignedOnly: !isReassign,
       fetchFilterOptions: true,
     },
     {
@@ -156,7 +156,7 @@ const AssignEkycModal = ({ surveyor, closeModal, refetchDashboard, tenantId: pro
 
   const { data: applicationData, isFetching: isLoading, refetch: refetchApplicationList } = Digit.Hooks.ekyc.useEkycApplicationList(
     {
-      unassignedOnly: true,
+      unassignedOnly: !isReassign,
       /*
       ...(debouncedFilters.kno && {
         kno: debouncedFilters.kno,
@@ -273,6 +273,45 @@ const AssignEkycModal = ({ surveyor, closeModal, refetchDashboard, tenantId: pro
     },
   });
 
+  const reassignMutation = Digit.Hooks.ekyc.useEkycAssignmentReassign({
+    onSuccess: (response, variables) => {
+      if (response?.error) {
+        const errMsg = response?.data?.message || "";
+        handleAssignmentError(errMsg, variables);
+        return;
+      }
+
+      if (response?.skipped && response.skipped.length > 0) {
+        const reason = response.skipped[0]?.reason || "";
+        handleAssignmentError(reason, variables);
+        return;
+      }
+
+      setToastData({
+        error: false,
+        label: t("EKYC_REASSIGNMENT_SUCCESSFUL") || "Reassignment successful",
+      });
+
+      setShowToast(true);
+
+      setTimeout(async () => {
+        if (refetchDashboard) {
+          await refetchDashboard();
+        }
+        if (refetchApplicationList) {
+          await refetchApplicationList();
+        }
+        closeModal();
+      }, 1000);
+    },
+    onError: (error, variables) => {
+      const errMsg = error?.data?.message || error?.response?.data?.message || "";
+      handleAssignmentError(errMsg, variables);
+    },
+  });
+
+  const activeMutation = isReassign ? reassignMutation : assignmentMutation;
+
   const tableData = applicationData?.consumerList || [];
 
   const getAssignmentPayload = () => {
@@ -305,12 +344,19 @@ const AssignEkycModal = ({ surveyor, closeModal, refetchDashboard, tenantId: pro
   const handleAssign = () => {
     const { assignmentType, assignmentValue } = getAssignmentPayload();
 
-    assignmentMutation.mutate({
+    const payload = {
       tenantId: tenantId,
-      surveyorId: surveyor?.owner?.uuid,
       assignmentType,
       assignmentValue,
-    });
+    };
+
+    if (isReassign) {
+      payload.newSurveyorId = surveyor?.owner?.uuid;
+    } else {
+      payload.surveyorId = surveyor?.owner?.uuid;
+    }
+
+    activeMutation.mutate(payload);
   };
 
   const handleSelectAll = () => {
@@ -390,11 +436,11 @@ const AssignEkycModal = ({ surveyor, closeModal, refetchDashboard, tenantId: pro
 
   return (
     <Modal
-      headerBarMain={`Assign KNOs to ${surveyor?.name}`}
+      headerBarMain={isReassign ? `Reassign KNOs to ${surveyor?.name}` : `Assign KNOs to ${surveyor?.name}`}
       headerBarEnd={<Close onClick={closeModal} />}
       actionCancelLabel="Cancel"
       actionCancelOnSubmit={closeModal}
-      actionSaveLabel={t("EKYC_ASSIGN_KNOS") || "Assign KNOs"}
+      actionSaveLabel={isReassign ? (t("EKYC_REASSIGN_KNOS") || "Reassign KNOs") : (t("EKYC_ASSIGN_KNOS") || "Assign KNOs")}
       actionSaveOnSubmit={handleAssign}
       isDisabled={!selectedKnos?.length}
     >
@@ -433,7 +479,7 @@ const AssignEkycModal = ({ surveyor, closeModal, refetchDashboard, tenantId: pro
             ))}
           </select> */}
 
-          <select className="form-control" value={filters.ward} onChange={(e) => handleFilterChange("ward", e.target.value)}>
+          {/* <select className="form-control" value={filters.ward} onChange={(e) => handleFilterChange("ward", e.target.value)}>
             <option value="">Select Ward</option>
             {wardOptions
               .filter((ward) => {
@@ -448,8 +494,8 @@ const AssignEkycModal = ({ surveyor, closeModal, refetchDashboard, tenantId: pro
                   </option>
                 );
               })}
-          </select>
-
+          </select> */}
+{/* 
           <select className="form-control" value={filters.assembly} onChange={(e) => handleFilterChange("assembly", e.target.value)}>
             <option value="">Select Assembly</option>
             {assemblyOptions.map((assembly) => (
@@ -457,7 +503,7 @@ const AssignEkycModal = ({ surveyor, closeModal, refetchDashboard, tenantId: pro
                 {assembly.name}
               </option>
             ))}
-          </select>
+          </select> */}
 
           <select className="form-control" value={filters.mrkey} onChange={(e) => handleFilterChange("mrkey", e.target.value)}>
             <option value="">Select MR Key</option>
