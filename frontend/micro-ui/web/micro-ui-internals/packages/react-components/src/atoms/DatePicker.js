@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import { LuCalendarIcon } from "./svgindex";
 import Toast from "./Toast";
 
-const DatePicker = ({ date, onChange, disabled, style, isDOB, minAge = 18 }) => {
+const DatePicker = ({ date, onChange, disabled, style, isDOB, minAge = 18, min }) => {
   const [toast, setToast] = useState(null);
   const [inputValue, setInputValue] = useState("");
   const hiddenDateRef = useRef();
@@ -83,7 +83,7 @@ const DatePicker = ({ date, onChange, disabled, style, isDOB, minAge = 18 }) => 
       const year = Number(y);
 
       // basic validation
-      if (day < 1 || day > 31 || month < 1 || month > 12 || year < 1900 || year > new Date().getFullYear()) {
+      if (day < 1 || day > 31 || month < 1 || month > 12 || year < 1900) {
         setInputValue(date ? formatDisplay(date) : "");
         return;
       }
@@ -98,6 +98,12 @@ const DatePicker = ({ date, onChange, disabled, style, isDOB, minAge = 18 }) => 
             message: `User must be at least ${minAge} years old`,
           });
 
+          setInputValue(date ? formatDisplay(date) : "");
+          return;
+        }
+
+        // Enforce min date if provided
+        if (min && isoDate < min) {
           setInputValue(date ? formatDisplay(date) : "");
           return;
         }
@@ -158,6 +164,7 @@ const DatePicker = ({ date, onChange, disabled, style, isDOB, minAge = 18 }) => 
           type="date"
           ref={hiddenDateRef}
           value={toInputFormat(date)}
+          min={min || ""}
           onChange={handleDateChange}
           style={{
             position: "absolute",
@@ -196,6 +203,7 @@ DatePicker.propTypes = {
   style: PropTypes.object,
   isDOB: PropTypes.bool,
   minAge: PropTypes.number,
+  min: PropTypes.string,
 };
 
 export default DatePicker;

@@ -18,7 +18,7 @@ function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false, 
       document?.values?.forEach(value => {
         if (!value.isPhoto) {
           requiredDocsCount++;
-          const isChecked = checkedMap[value?.originalDoc?.id] ?? value?.originalDoc?.isVerified ?? false;
+          const isChecked = checkedMap[value?.fileStoreId] ?? value?.originalDoc?.isVerified ?? false;
           if (isChecked) {
              checkedCount++;
           }
@@ -228,7 +228,7 @@ function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false, 
                       {applicationStatus !== "PENDING_FOR_PAYMENT" && applicationStatus !== "WF_PENDING_FOR_PAYMENT" && (
                         <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "14px", color: "#0B0C0C", margin: 0 }}>
                           <input 
-                            key={`chk-${value?.originalDoc?.id}-${value?.originalDoc?.isVerified}`}
+                            key={`chk-${value?.fileStoreId}-${value?.originalDoc?.isVerified}`}
                             type="checkbox" 
                             className="verify-doc-checkbox"
                             style={{ width: "18px", height: "18px", accentColor: "#F47738", cursor: (applicationStatus && applicationStatus !== "PENDING_FOR_DOCUMENT_VERIFICATION") ? "not-allowed" : "pointer" }} 
@@ -239,8 +239,8 @@ function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false, 
                               if (value?.originalDoc) {
                                 value.originalDoc.isVerified = checked;
                               }
-                              if (value?.originalDoc?.id) {
-                                setCheckedMap(prev => ({ ...prev, [value.originalDoc.id]: checked }));
+                              if (value?.fileStoreId) {
+                                setCheckedMap(prev => ({ ...prev, [value.fileStoreId]: checked }));
                               }
                             }}
                           />

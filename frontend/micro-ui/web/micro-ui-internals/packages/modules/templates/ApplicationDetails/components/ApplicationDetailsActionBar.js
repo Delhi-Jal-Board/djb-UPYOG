@@ -21,10 +21,12 @@ function ApplicationDetailsActionBar({
     if (typeof window !== "undefined" && typeof window.isDocumentsVerified !== "undefined") {
       return !window.isDocumentsVerified;
     }
-    return false;
+    // Default to disabled until the DOCUMENTS_VERIFIED event fires
+    return true;
   });
 
   React.useEffect(() => {
+    // Sync immediately in case the event already fired before this component mounted
     if (typeof window !== "undefined" && typeof window.isDocumentsVerified !== "undefined") {
       setIsSubmitDisabled(!window.isDocumentsVerified);
     }
@@ -33,7 +35,11 @@ function ApplicationDetailsActionBar({
     };
     if (typeof window !== "undefined") {
       window.addEventListener("DOCUMENTS_VERIFIED", handleDocVerification);
-      return () => window.removeEventListener("DOCUMENTS_VERIFIED", handleDocVerification);
+      return () => {
+        window.removeEventListener("DOCUMENTS_VERIFIED", handleDocVerification);
+        // Reset so stale state doesn't carry over to other pages
+        delete window.isDocumentsVerified;
+      };
     }
   }, []);
   if (window.location.href.includes("/obps") || window.location.href.includes("/noc")) {

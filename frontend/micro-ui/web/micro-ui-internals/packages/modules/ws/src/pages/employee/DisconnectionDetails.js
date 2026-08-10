@@ -6,6 +6,7 @@ import * as func from "../../utils";
 import cloneDeep from "lodash/cloneDeep";
 import getPDFData from "../../utils/getWSDisconnectionApplicationForm";
 import { ifUserRoleExists } from "../../utils";
+import WorkflowTimeline from "../../components/WorkflowTimeline";
 
 const GetDisconnectionDetails = () => {
   const { t } = useTranslation();
@@ -13,6 +14,7 @@ const GetDisconnectionDetails = () => {
   let filters = func.getQueryStringParams(location.search);
   const [showOptions, setShowOptions] = useState(false);
   const [showToast, setShowToast] = useState(null);
+  const [hideTimeline, setHideTimeline] = React.useState(typeof window !== "undefined" ? window.innerWidth < 768 : false);
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const applicationNumber = filters?.applicationNumber;
@@ -21,9 +23,9 @@ const GetDisconnectionDetails = () => {
 
   sessionStorage.removeItem("Digit.PT_CREATE_EMP_WS_NEW_FORM");
   sessionStorage.removeItem("IsDetailsExists");
-  sessionStorage.setItem("disconnectionURL", JSON.stringify({url : `${location?.pathname}${location.search}`}));
+  sessionStorage.setItem("disconnectionURL", JSON.stringify({ url: `${location?.pathname}${location.search}` }));
 
-  let { isLoading, isError, data: applicationDetails, error } = Digit.Hooks.ws.useDisConnectionDetails(t, tenantId, applicationNumber, serviceType,{ privacy: Digit.Utils.getPrivacyObject() } );
+  let { isLoading, isError, data: applicationDetails, error } = Digit.Hooks.ws.useDisConnectionDetails(t, tenantId, applicationNumber, serviceType, { privacy: Digit.Utils.getPrivacyObject() });
   const { isServicesMasterLoading, data: servicesMasterData } = Digit.Hooks.ws.useMDMS(stateCode, "ws-services-masters", ["WSEditApplicationByConfigUser"]);
   const appStatus = applicationDetails?.applicationData?.applicationStatus || "";
 
@@ -62,7 +64,7 @@ const GetDisconnectionDetails = () => {
     workflowDetails?.data?.actionState?.nextActions?.length > 0 &&
     !workflowDetails?.data?.actionState?.nextActions?.find((e) => e.action === "EDIT") &&
     !workflowDetails?.data?.actionState?.nextActions?.find((e) => e.action === "RESUBMIT_APPLICATION") &&
-    !workflowDetails?.data?.actionState?.nextActions?.find((e) => e.action === "EXECUTE_DISCONNECTION") && 
+    !workflowDetails?.data?.actionState?.nextActions?.find((e) => e.action === "EXECUTE_DISCONNECTION") &&
     !workflowDetails?.data?.actionState?.nextActions?.find((e) => e.action === "SUBMIT_APPLICATION") &&
     !workflowDetails?.data?.actionState?.nextActions?.find((e) => e.action === "DISCONNECTION_EXECUTED")
   ) {
@@ -73,16 +75,15 @@ const GetDisconnectionDetails = () => {
 
 
   if (applicationDetails?.applicationData?.applicationStatus == "DISCONNECTION_EXECUTED") {
-    if (workflowDetails?.data?.actionState?.nextActions) workflowDetails.data.actionState.nextActions = []; 
+    if (workflowDetails?.data?.actionState?.nextActions) workflowDetails.data.actionState.nextActions = [];
     if (workflowDetails?.data?.nextActions) workflowDetails.data.nextActions = [];
   }
 
   workflowDetails?.data?.nextActions?.forEach((action) => {
     if (action?.action === "PAY") {
       action.redirectionUrll = {
-        pathname: `${serviceType == "WATER" ? "WS" : "SW"}/${applicationDetails?.applicationData?.connectionNo}/${applicationDetails?.tenantId}?tenantId=${
-          applicationDetails?.tenantId
-        }&ISWSAPP&applicationNumber=${applicationDetails?.applicationData?.connectionNo}&IsDisconnectionFlow=${true}`,
+        pathname: `${serviceType == "WATER" ? "WS" : "SW"}/${applicationDetails?.applicationData?.connectionNo}/${applicationDetails?.tenantId}?tenantId=${applicationDetails?.tenantId
+          }&ISWSAPP&applicationNumber=${applicationDetails?.applicationData?.connectionNo}&IsDisconnectionFlow=${true}`,
         state: applicationDetails?.tenantId,
       };
     }
@@ -91,9 +92,8 @@ const GetDisconnectionDetails = () => {
   workflowDetails?.data?.actionState?.nextActions?.forEach((action) => {
     if (action?.action === "PAY") {
       action.redirectionUrll = {
-        pathname: `${serviceType == "WATER" ? "WS" : "SW"}/${applicationDetails?.applicationData?.connectionNo}/${applicationDetails?.tenantId}?tenantId=${
-          applicationDetails?.tenantId
-        }&ISWSAPP&applicationNumber=${applicationDetails?.applicationData?.connectionNo}&IsDisconnectionFlow=${true}`,
+        pathname: `${serviceType == "WATER" ? "WS" : "SW"}/${applicationDetails?.applicationData?.connectionNo}/${applicationDetails?.tenantId}?tenantId=${applicationDetails?.tenantId
+          }&ISWSAPP&applicationNumber=${applicationDetails?.applicationData?.connectionNo}&IsDisconnectionFlow=${true}`,
         state: applicationDetails?.tenantId,
       };
     }
@@ -185,40 +185,45 @@ const GetDisconnectionDetails = () => {
 
   return (
     <Fragment>
-      <div>
-        <div className={"employee-application-details"} style={{ marginBottom: "15px" }}>
-          <div style={{display:"flex"}}>
-            <div style={{width:"70%"}}>
-          <Header>{t("WS_APPLICATION_DETAILS")} </Header>
+      <div className={"employee-main-application-details"} style={{ display: "flex", gap: "20px" }}>
+        {/* Left Column: Workflow Timeline */}
+        <div
+          className={`workflow-timeline-wrapper no-scrollbar ${hideTimeline ? "hide-workflow" : ""}`}
+          style={{ flex: "1 1 300px", maxWidth: hideTimeline ? "fit-content" : "400px", transition: "max-width 0.3s" }}
+        >
+          <WorkflowTimeline workflowDetails={workflowDetails} hideTimeline={hideTimeline} setHideTimeline={setHideTimeline} />
+        </div>
+
+        {/* Right Column: Application Details */}
+        <div style={{ flex: "2 1 500px", minWidth: "300px", position: "relative" }}>
+          <div style={{ position: "absolute", right: "24px", zIndex: 11 }}>
+            <MultiLink
+              className="multilinkWrapper employee-mulitlink-main-divNew"
+              onHeadClick={() => setShowOptions(!showOptions)}
+              displayOptions={showOptions}
+              options={dowloadOptions}
+              downloadBtnClassName={"employee-download-btn-className"}
+              optionsClassName={"employee-options-btn-className"}
+              ref={menuRef}
+            />
           </div>
-          <div style={{width:"30%", zIndex:"10"}}> 
-          <MultiLink
-            className="multilinkWrapper employee-mulitlink-main-divNew"
-            onHeadClick={() => setShowOptions(!showOptions)}
-            displayOptions={showOptions}
-            options={dowloadOptions}
-            downloadBtnClassName={"employee-download-btn-className"}
-            optionsClassName={"employee-options-btn-className"}
-            ref={menuRef}
+          <ApplicationDetailsTemplate
+            applicationDetails={applicationDetails}
+            isLoading={isLoading || isServicesMasterLoading}
+            isDataLoading={isLoading || isServicesMasterLoading}
+            applicationData={applicationDetails?.applicationData}
+            mutate={mutate}
+            workflowDetails={workflowDetails}
+            businessService={applicationDetails?.processInstancesDetails?.[0]?.businessService?.toUpperCase()}
+            moduleCode="WS"
+            showToast={showToast}
+            setShowToast={setShowToast}
+            closeToast={closeToast}
+            timelineStatusPrefix={`WF_${applicationDetails?.processInstancesDetails?.[0]?.businessService?.toUpperCase()}_`}
+            isInfoLabel={sessionStorage.getItem("isPrivacyEnabled") === "true" ? true : false}
+            showTimeLine={false}
           />
-          </div>
         </div>
-        </div>
-        <ApplicationDetailsTemplate
-          applicationDetails={applicationDetails}
-          isLoading={isLoading || isServicesMasterLoading}
-          isDataLoading={isLoading || isServicesMasterLoading}
-          applicationData={applicationDetails?.applicationData}
-          mutate={mutate}
-          workflowDetails={workflowDetails}
-          businessService={applicationDetails?.processInstancesDetails?.[0]?.businessService?.toUpperCase()}
-          moduleCode="WS"
-          showToast={showToast}
-          setShowToast={setShowToast}
-          closeToast={closeToast}
-          timelineStatusPrefix={`WF_${applicationDetails?.processInstancesDetails?.[0]?.businessService?.toUpperCase()}_`}
-          isInfoLabel={sessionStorage.getItem("isPrivacyEnabled") === "true" ? true : false}
-        />
       </div>
     </Fragment>
   );
