@@ -14,16 +14,16 @@ const safeDate = (ts) => {
 };
 
 const TOKEN = {
-  surface:   "#f8faff",
-  surfaceHov:"#eef4ff",
-  border:    "#dde4f0",
+  surface: "#f8faff",
+  surfaceHov: "#eef4ff",
+  border: "#dde4f0",
   borderAct: "#0284c7",
-  active:    "#0284c7",  
-  done:      "#16a34a",  
-  textPri:   "#1e293b",  
-  textSec:   "#475569",  
-  textMut:   "#94a3b8",  
-  accent:    "linear-gradient(135deg,#7c3aed,#0284c7)",
+  active: "#0284c7",
+  done: "#16a34a",
+  textPri: "#1e293b",
+  textSec: "#475569",
+  textMut: "#94a3b8",
+  accent: "linear-gradient(135deg,#7c3aed,#0284c7)",
 };
 
 const StatusPill = ({ label, isActive }) => (
@@ -48,9 +48,9 @@ const StepCard = ({ checkpoint, index, isActive, t, getTimelineCaptions }) => {
   const [expanded, setExpanded] = useState(isActive); /* active=open, done=collapsed */
   const stateLabel = checkpoint.state ? t(`CS_${checkpoint.state}`) : "NA";
 
-  const dotColor   = isActive   ? TOKEN.active : TOKEN.done;
-  const glowColor  = isActive   ? "0 0 14px rgba(0,195,255,0.5)" : "0 0 10px rgba(0,230,118,0.35)";
-  const borderClr  = isActive   ? TOKEN.active : TOKEN.done;
+  const dotColor = isActive ? TOKEN.active : TOKEN.done;
+  const glowColor = isActive ? "0 0 14px rgba(0,195,255,0.5)" : "0 0 10px rgba(0,230,118,0.35)";
+  const borderClr = isActive ? TOKEN.active : TOKEN.done;
 
   return (
     <div style={{ display: "flex", gap: "0", alignItems: "flex-start", position: "relative" }}>

@@ -2,9 +2,9 @@ import React, { useEffect, useState, Fragment, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import ApplicationDetailsTemplate from "../../../../../templates/ApplicationDetails";
 import { useHistory } from "react-router-dom";
-import { Header, ActionBar, MultiLink, SubmitBar, Menu, Modal,  Toast } from "@djb25/digit-ui-react-components";
+import { Header, ActionBar, MultiLink, SubmitBar, Menu, Modal, Toast, LayoutWrapper } from "@djb25/digit-ui-react-components";
 import * as func from "../../../utils";
-import { ifUserRoleExists,  downloadAndOpenPdf } from "../../../utils";
+import { ifUserRoleExists, downloadAndOpenPdf } from "../../../utils";
 import WSInfoLabel from "../../../pageComponents/WSInfoLabel";
 import getConnectionDetailsPDF from "../../../utils/getConnectionDetails";
 
@@ -305,43 +305,35 @@ const GetConnectionDetails = () => {
   };
   return (
     <Fragment>
-      <div>
-        <div className={"employee-application-details"} style={{ marginBottom: "15px" }}>
-          <style>{`.multilinkWrapper employee-mulitlink-main-divNew { max-width:100%; maegin-top:-20px}`}</style>
-          <div style={{ display: "flex" }}>
-            {/* <div style={{ width: "80%" }}>
-              <Header styles={{ marginLeft: "0px", paddingTop: "10px", fontSize: "32px" }}>{t("WS_CONNECTION_DETAILS")}</Header>
-            </div> */}
-            {dowloadOptions && dowloadOptions.length > 0 && (
-              <div style={{ maxWidth: "100% !imnportant", zIndex: "10" }}>
-                <MultiLink
-                  className="multilinkWrapper employee-mulitlink-main-divNew"
-                  onHeadClick={() => setShowOptions(!showOptions)}
-                  displayOptions={showOptions}
-                  options={dowloadOptions}
-                  downloadBtnClassName={"employee-download-btn-className"}
-                  optionsClassName={"employee-options-btn-className"}
-                  ref={menuRef}
-                  style={{ maxWidth: "100%" }}
-                />
-              </div>
-            )}
-          </div>
+        <div style={{ position: "relative" }}>
+          {dowloadOptions && dowloadOptions.length > 0 && (
+            <div style={{ position: "absolute", right: "24px", zIndex: 11 }}>
+              <MultiLink
+                className="multilinkWrapper employee-mulitlink-main-divNew"
+                onHeadClick={() => setShowOptions(!showOptions)}
+                displayOptions={showOptions}
+                options={dowloadOptions}
+                downloadBtnClassName={"employee-download-btn-className"}
+                optionsClassName={"employee-options-btn-className"}
+                ref={menuRef}
+              />
+            </div>
+          )}
+          <ApplicationDetailsTemplate
+            applicationDetails={applicationDetails}
+            isLoading={isLoading}
+            isDataLoading={isLoading}
+            applicationData={applicationDetails?.applicationData}
+            mutate={mutate}
+            businessService={applicationDetails?.processInstancesDetails?.[0]?.businessService}
+            moduleCode="WS"
+            showToast={showToast}
+            setShowToast={setShowToast}
+            closeToast={closeToast}
+            isInfoLabel={checkifPrivacyenabled}
+            labelComponent={<WSInfoLabel t={t} />}
+          />
         </div>
-        <ApplicationDetailsTemplate
-          applicationDetails={applicationDetails}
-          isLoading={isLoading}
-          isDataLoading={isLoading}
-          applicationData={applicationDetails?.applicationData}
-          mutate={mutate}
-          businessService={applicationDetails?.processInstancesDetails?.[0]?.businessService}
-          moduleCode="WS"
-          showToast={showToast}
-          setShowToast={setShowToast}
-          closeToast={closeToast}
-          isInfoLabel={checkifPrivacyenabled}
-          labelComponent={<WSInfoLabel t={t} />}
-        />
         {ifUserRoleExists("WS_CEMP") && checkApplicationStatus && !applicationDetails?.isDisconnectionDone ? (
           <ActionBar>
             {displayMenu ? <Menu options={showAction} localeKeyPrefix={"WS"} t={t} onSelect={onActionSelect} /> : null}
@@ -399,7 +391,6 @@ const GetConnectionDetails = () => {
           </Modal>
         ) : null}
         {showActionToast && <Toast error={showActionToast.key} label={t(`${showActionToast.label}`)} onClose={closeBillToast} />}
-      </div>
     </Fragment>
   );
 };
