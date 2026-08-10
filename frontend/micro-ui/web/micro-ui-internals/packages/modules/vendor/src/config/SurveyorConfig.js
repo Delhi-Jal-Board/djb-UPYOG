@@ -60,7 +60,7 @@ const SurveyorConfig = (t, agencies = [], reportingManagers = [], disabled = fal
           isMandatory: true,
           type: "component",
           key: "gender",
-          component: "SelectGender",
+          component: "SelectEkycDropdown",
         },
 
         {

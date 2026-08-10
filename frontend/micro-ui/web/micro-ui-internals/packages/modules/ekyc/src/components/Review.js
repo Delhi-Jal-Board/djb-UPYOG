@@ -123,11 +123,12 @@ const ReviewSection = ({ title, fields, newData, oldData, t, jumpTo, state, hide
             {fields.map((field, idx) => {
               const valNew = newData?.[field.key];
               const valOld = oldData?.[field.key];
-              const isChanged = oldData && String(valNew) !== String(valOld) && valOld !== undefined && valOld !== null;
+              const normalizeVal = (v) => (v === null || v === undefined || v === "" ? "" : String(v));
+              const isChanged = oldData && valOld !== undefined && normalizeVal(valNew) !== normalizeVal(valOld);
 
               return (
                 <tr key={idx} style={{ borderTop: "1px solid #F2F4F7" }}>
-                  <td style={{ padding: "16px 0", fontSize: "14px", color: "#344054", fontWeight: "500" }}>{t(field.label)}</td>
+                  <td style={{ padding: "16px 0", fontSize: "14px", color: "#344054", fontWeight: "500" }}>{field.preTranslated ? field.label : t(field.label)}</td>
                   <td style={{ padding: "16px 0", fontSize: "14px", color: "#667085" }}>
                     {field.isBool ? boolToYesNo(valOld, t) : checkForNA(valOld)}
                   </td>
@@ -201,8 +202,24 @@ const Review = () => {
   const isStatusView = location.pathname.includes("/status/");
   const hideEditButton = (isSupervisorOrSurveyorOrVendor && !isZRO) || isStatusView;
 
-  // ── Data Consolidation ──────────────────────────────────────────────────
+  // ── Data Consolidation (kept for approve/reject submit payloads) ──────────
   const { newData: apiNewData, oldData: apiOldData } = extractReviewData(searchData, flowState);
+
+  // Flatten all sub-objects so headerMapping flat keys (kno, mobileNo, meterNumber etc.) are accessible
+  const flatNewData = apiNewData ? {
+    ...(apiNewData || {}),
+    ...(apiNewData?.connectionDetails || {}),
+    ...(apiNewData?.addressDetails || {}),
+    ...(apiNewData?.propertyInfo || {}),
+    ...(apiNewData?.meterDetails || {}),
+  } : null;
+  const flatOldData = apiOldData ? {
+    ...(apiOldData || {}),
+    ...(apiOldData?.connectionDetails || {}),
+    ...(apiOldData?.addressDetails || {}),
+    ...(apiOldData?.propertyInfo || {}),
+    ...(apiOldData?.meterDetails || {}),
+  } : null;
 
   const prepareConsolidatedData = (data) => {
     if (!data) return null;
@@ -240,7 +257,7 @@ const Review = () => {
         email: apiAddr?.email,
         noOfPerson: apiAddr?.noOfPerson || apiAddr?.noOfPersons,
         knumber: apiAddr?.knumber || apiAddr?.kno,
-        doorPhotoFilestoreId: apiAddr?.doorPhotoFilestoreId,
+        doorPhotoFilestoreId: apiAddr?.doorPhotoFileStoreId || apiAddr?.doorPhotoFilestoreId,
       },
       property: {
         kno: apiProp?.kno,
@@ -253,7 +270,7 @@ const Review = () => {
         tenantMobile: apiProp?.tenantMobile,
         ekycStatus: apiProp?.ekycStatus,
         propertyDocumentFileStoreId: apiProp?.propertyDocumentFileStoreId,
-        buildingImageFileStoreId: apiProp?.buildingImageFileStoreId,
+        buildingImageFileStoreId: apiProp?.buildingImageFileStoreId || apiProp?.buildingImageFilestoreId,
       },
       meter: {
         kno: apiMeter?.kno,
@@ -266,13 +283,14 @@ const Review = () => {
         workingStatus: apiMeter?.workingStatus,
         lastBillRaised: apiMeter?.lastBillRaised,
         systemMeterId: apiMeter?.systemMeterId,
-        meterPhotoFileStoreId: apiMeter?.meterPhotoFileStoreId,
+        meterPhotoFileStoreId: apiMeter?.meterPhotoFileStoreId || apiMeter?.meterPhotoFilestoreId,
       },
     };
   };
 
   const newDataRaw = prepareConsolidatedData(apiNewData);
   const oldDataRaw = prepareConsolidatedData(apiOldData);
+
 
   // Apply edits to newData if present
   const connectionData = {
@@ -326,58 +344,111 @@ const Review = () => {
     meterPhotoFileStoreId: editedMeter?.meterPhotoFileStoreId || newDataRaw?.meter?.meterPhotoFileStoreId,
   };
 
-  // ── Section Fields Configuration ─────────────────────────────────────
-  const connectionFields = [
-    { label: "EKYC_K_NUMBER", key: "knumber" },
-    { label: "EKYC_CONSUMER_NAME", key: "consumerName" },
-    { label: "EKYC_ADDRESS", key: "address" },
-    { label: "EKYC_CONNECTION_TYPE", key: "connectionType" },
-    { label: "EKYC_METER_NO", key: "meterNumber" },
-    { label: "EKYC_MOBILE_NO", key: "phoneNumber" },
-    { label: "EKYC_EMAIL", key: "email" },
-    { label: "EKYC_STATUS_FLAG", key: "statusflag" },
-    { label: "EKYC_STATUS", key: "ekycStatus" },
-  ];
-
-  const addressFields = [
-    { label: "EKYC_FULL_ADDRESS", key: "fullAddress" },
-    { label: "EKYC_FLAT_HOUSE_NO", key: "flatHouseNumber" },
-    { label: "EKYC_BUILDING_TOWER", key: "buildingTower" },
-    { label: "EKYC_LANDMARK", key: "landmark" },
-    { label: "EKYC_PINCODE", key: "pinCode" },
-    { label: "EKYC_LOCALITY", key: "ward" },
-    { label: "EKYC_ASSEMBLY", key: "assembly" },
-    { label: "EKYC_GPS_VALID", key: "gpsValid", isBool: true },
-    { label: "EKYC_LATITUDE", key: "latitude" },
-    { label: "EKYC_LONGITUDE", key: "longitude" },
-    { label: "EKYC_MOBILE_NO", key: "mobileNo" },
-    { label: "EKYC_WHATSAPP_NO", key: "whatsappNo" },
-    { label: "EKYC_EMAIL", key: "email" },
-    { label: "EKYC_NO_OF_PERSONS", key: "noOfPerson" },
-    { label: "EKYC_K_NUMBER", key: "knumber" },
-  ];
-
-  const propertyFields = [
-    { label: "EKYC_CONNECTION_CATEGORY", key: "connectionCategory" },
-    { label: "EKYC_PID_NUMBER", key: "pidNumber" },
-    { label: "EKYC_TYPE_OF_CONNECTION", key: "typeOfConnection" },
-    { label: "EKYC_USER_TYPE", key: "userType" },
-    { label: "EKYC_FLOOR_COUNT", key: "numberOfFloors" },
-    { label: "EKYC_TENANT_NAME", key: "tenantName" },
-    { label: "EKYC_TENANT_MOBILE", key: "tenantMobile" },
-    { label: "EKYC_STATUS", key: "ekycStatus" },
-  ];
-
-  const meterFields = [
-    { label: "EKYC_METERED", key: "metered", isBool: true },
-    { label: "EKYC_METER_NO", key: "meterNumber" },
-    { label: "EKYC_METER_MAKE", key: "meterMake" },
-    { label: "EKYC_METER_LOCATION_ADDRESS", key: "meterLocationAddress" },
-    { label: "EKYC_METER_LATITUDE", key: "meterLatitude" },
-    { label: "EKYC_METER_LONGITUDE", key: "meterLongitude" },
-    { label: "EKYC_WORKING_STATUS", key: "workingStatus", isBool: true },
-    { label: "EKYC_LAST_BILL_RAISED", key: "lastBillRaised", isBool: true },
-    { label: "EKYC_SYSTEM_METER_ID", key: "systemMeterId" },
+  // ── All-fields mapping (headerMapping keys match flat API response keys) ──
+  const headerMapping = [
+    { key: "kno", label: "KNO" },
+    { key: "firstName", label: "FIRST_NAME" },
+    { key: "middleName", label: "MIDDLE_NAME" },
+    { key: "lastName", label: "LAST_NAME" },
+    { key: "status", label: "STATUS" },
+    { key: "ekycStatus", label: "EKYC_STATUS" },
+    { key: "zoneName", label: "ZONE" },
+    { key: "zoneCode", label: "ZONE_CODE" },
+    { key: "assembly", label: "EKYC_ASSEMBLY" },
+    { key: "ward", label: "WARD" },
+    { key: "pincode", label: "EKYC_PINCODE" },
+    { key: "addressRaw", label: "ADDRESS_RAW" },
+    { key: "locality", label: "EKYC_LOCALITY" },
+    { key: "subLocality", label: "SUB_LOCALITY" },
+    { key: "flatHouseNumber", label: "FLAT_HOUSE_NUMBER" },
+    { key: "streetName", label: "STREET_NAME" },
+    { key: "landmark", label: "EKYC_LANDMARK" },
+    { key: "city", label: "CITY" },
+    { key: "state", label: "STATE" },
+    { key: "addressType", label: "ADDRESS_TYPE" },
+    { key: "addressProofType", label: "ADDRESS_PROOF_TYPE" },
+    { key: "mobileNo", label: "MOBILE_NUMBER" },
+    { key: "alternateMobileNo", label: "ALTERNATE_MOBILE_NUMBER" },
+    { key: "whatsappNo", label: "WHATSAPP_NO" },
+    { key: "email", label: "EMAIL" },
+    { key: "landlineNo", label: "LANDLINE_NO" },
+    { key: "mrkey", label: "MR_KEY" },
+    { key: "mrcode", label: "MR_CODE" },
+    { key: "areacode", label: "AREA_CODE" },
+    { key: "source", label: "SOURCE" },
+    { key: "submittedAt", label: "SUBMITTED_AT" },
+    { key: "assignedAt", label: "ASSIGNED_AT" },
+    { key: "connectionType", label: "CONNECTION_TYPE" },
+    { key: "Type", label: "CONSUMER_TYPE" },
+    { key: "occupantType", label: "OCCUPANT_TYPE" },
+    { key: "knoCategory", label: "KNO_CATEGORY" },
+    { key: "approvedAt", label: "APPROVED_AT" },
+    { key: "gender", label: "GENDER" },
+    { key: "parentSpouse", label: "PARENT_SPOUSE" },
+    { key: "fatherOrHusbandName", label: "FATHER_HUSBUND_NAME" },
+    { key: "relationship", label: "RELATIONSHIP" },
+    { key: "informantName", label: "INFORMANT_NAME" },
+    { key: "informantRelation", label: "INFORMANT_RELATION" },
+    { key: "informantIs", label: "INFORMANT_IS" },
+    { key: "contactPerson", label: "CONTACT_PERSON" },
+    { key: "relation", label: "RELATION" },
+    { key: "entityName", label: "ENTITY_NAME" },
+    { key: "designation", label: "DESIGNATION" },
+    { key: "department", label: "DEPARTMENT" },
+    { key: "employeeId", label: "EMPLOYEE_ID" },
+    { key: "ownerMobile", label: "OWNER_MOBILE" },
+    { key: "ownerVerificationDone", label: "OWNER_VERIFICATION_DONE", isBool: true },
+    { key: "consentGiven", label: "CONSENT_GIVEN", isBool: true },
+    { key: "proofOfIdentityType", label: "PROOF_OF_IDENTITY_TYPE" },
+    { key: "documentNumber", label: "DOCUMENT_NUMBER" },
+    { key: "noOfPerson", label: "NUMBER_OF_PERSON" },
+    { key: "latitude", label: "LATITUDE" },
+    { key: "longitude", label: "LONGITUDE" },
+    { key: "gpsValid", label: "GPS_VALID", isBool: true },
+    { key: "meterNumber", label: "METER_NUMBER" },
+    { key: "meterMake", label: "METER_MAKE" },
+    { key: "meterStatus", label: "METER_STATUS" },
+    { key: "meterCondition", label: "METER_CONDITION" },
+    { key: "meterLocation", label: "METER_LOCATION" },
+    { key: "meterLocationAddress", label: "METER_LOCATION_ADDRESS" },
+    { key: "workingStatus", label: "WORKING_STATUS" },
+    { key: "sewerConnection", label: "SEWER_CONNECTION", isBool: true },
+    { key: "septicTank", label: "SEPTIC_TANK", isBool: true },
+    { key: "lastBillRaised", label: "LAST_BILL_RAISED", isBool: true },
+    { key: "lastBillReceivedDate", label: "LAST_BILL_RECEIVED_DATE" },
+    { key: "accessToMeter", label: "ACCESS_TO_METER", isBool: true },
+    { key: "systemMeterId", label: "SYSTEM_METER_ID" },
+    { key: "lastBillNotRaisedReason", label: "LAST_BILL_NOT_RAISED_REASON" },
+    { key: "waterConnectionYears", label: "WATER_CONNECTION_YEARS" },
+    { key: "sewerConnectionYears", label: "SEWER_CONNECTION_YEARS" },
+    { key: "pidNumber", label: "PID_NUMBER" },
+    { key: "propertyType", label: "PROPERTY_TYPE" },
+    { key: "subPropertyCategory", label: "SUB_PROPERTY_CATEGORY" },
+    { key: "noOfFloor", label: "NO_OF_FLOOR" },
+    { key: "noOfRooms", label: "NO_OF_ROOMS" },
+    { key: "noOfBeds", label: "NO_OF_BEDS" },
+    { key: "numberOfDwellingUnits", label: "NUMBER_OF_DWELLING_UNITS" },
+    { key: "floorNo", label: "FLOOR_NO" },
+    { key: "userType", label: "USER_TYPE" },
+    { key: "tenantName", label: "TENANT_NAME" },
+    { key: "tenantMobile", label: "TENANT_MOBILE" },
+    { key: "verificationStatus", label: "VERIFICATION_STATUS" },
+    { key: "houseBuiltDuration", label: "HOUSE_BUILT_DURATION" },
+    { key: "surveyorId", label: "SURVEYOR_ID" },
+    { key: "supervisorId", label: "SUPERVISOR_ID" },
+    { key: "vendorId", label: "VENDOR_ID" },
+    { key: "assignmentType", label: "ASSIGNMENT_TYPE" },
+    { key: "assignmentValue", label: "ASSIGNMENT_VALUE" },
+    { key: "assignedTime", label: "ASSIGNED_TIME" },
+    { key: "isSelfAssigned", label: "IS_SELF_ASSIGNED", isBool: true },
+    { key: "modifiedBy", label: "MODIFIED_BY" },
+    { key: "emailId", label: "EMAIL_ID" },
+    { key: "dob", label: "DOB" },
+    { key: "consumerType", label: "CONSUMER_TYPE" },
+    { key: "createdTime", label: "CREATED_TIME" },
+    { key: "lastModifiedTime", label: "LAST_MODIFIED_TIME" },
+    { key: "meterLatitude", label: "EKYC_METER_LATITUDE1" },
+    { key: "meterLongitude", label: "EKYC_METER_LONGITUDE1" },
   ];
 
   const handleDeclaration = () => setAgree(!agree);
@@ -499,52 +570,14 @@ const Review = () => {
   return (
     <Fragment>
       <Card className="overflow-y-scroll">
-        {/* ── 1. Connection Details ────────────────────────────────────── */}
+        {/* ── All Details (from headerMapping) ──────────────────────── */}
         <ReviewSection
-          title={t("EKYC_CONNECTION_DETAILS")}
-          fields={connectionFields}
-          newData={connectionData}
-          oldData={oldDataRaw?.connection}
+          title={t("EKYC_ALL_DETAILS") || "All Details"}
+          fields={headerMapping}
+          newData={flatNewData}
+          oldData={flatOldData}
           t={t}
-          jumpTo={`${baseUrl}/consumer-details?kno=${activeKno}`}
-          state={{ ...flowState, kNumber: activeKno, kno: activeKno, reviewData: searchData, edits }}
-          hideEditButton={hideEditButton}
-        />
-
-        {/* ── 2. Address Details ──────────────────────────────────────── */}
-        <ReviewSection
-          title={t("EKYC_ADDRESS_DETAILS")}
-          fields={addressFields}
-          newData={addressData}
-          oldData={oldDataRaw?.address}
-          t={t}
-          jumpTo={`${baseUrl}/address-details?kno=${activeKno}`}
-          state={{ ...flowState, kNumber: activeKno, kno: activeKno, reviewData: searchData, edits }}
-          hideEditButton={hideEditButton}
-        />
-
-        {/* ── 3. Property Info ────────────────────────────────────────── */}
-        <ReviewSection
-          title={t("EKYC_PROPERTY_INFO")}
-          fields={propertyFields}
-          newData={propertyData}
-          oldData={oldDataRaw?.property}
-          t={t}
-          jumpTo={`${baseUrl}/property-info?kno=${activeKno}`}
-          state={{ ...flowState, kNumber: activeKno, kno: activeKno, reviewData: searchData, edits }}
-          hideEditButton={hideEditButton}
-        />
-
-        {/* ── 4. Meter Details ────────────────────────────────────────── */}
-        <ReviewSection
-          title={t("EKYC_METER_DETAILS")}
-          fields={meterFields}
-          newData={meterData}
-          oldData={oldDataRaw?.meter}
-          t={t}
-          jumpTo={`${baseUrl}/meter-details?kno=${activeKno}`}
-          state={{ ...flowState, kNumber: activeKno, kno: activeKno, reviewData: searchData, edits }}
-          hideEditButton={hideEditButton}
+          hideEditButton={true}
         />
 
         {/* ── 5. Documents ────────────────────────────────────────────── */}
@@ -716,3 +749,5 @@ const Review = () => {
 };
 
 export default Review;
+
+

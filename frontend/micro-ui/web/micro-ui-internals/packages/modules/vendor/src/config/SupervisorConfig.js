@@ -69,7 +69,7 @@ const SupervisorConfig = (t, agencies = [], reportingManagers = [], disabled = f
           isMandatory: true,
           type: "component",
           key: "gender",
-          component: "SelectGender",
+          component: "SelectEkycDropdown",
         },
         {
           label: t("ES_FSM_REGISTRY_NEW_DOB"),
