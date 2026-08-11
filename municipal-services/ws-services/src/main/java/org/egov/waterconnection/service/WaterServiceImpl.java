@@ -830,15 +830,6 @@ public class WaterServiceImpl implements WaterService {
 		userService.updateUser(waterConnectionRequest, searchResult);
 		waterConnectionValidator.validateUpdate(waterConnectionRequest, searchResult, WCConstants.MUTATION_CONNECTION);
 		
-		String action = waterConnectionRequest.getWaterConnection().getProcessInstance().getAction();
-		if (WCConstants.APPROVE_MUTATION_CONST.equalsIgnoreCase(action)) {
-			boolean isNoDues = calculationService.fetchBill(waterConnectionRequest.getWaterConnection().getTenantId(),
-					waterConnectionRequest.getWaterConnection().getConnectionNo(), waterConnectionRequest.getRequestInfo());
-			if (!isNoDues) {
-				throw new CustomException("PENDING_WATER_DUES", "Mutation cannot be approved because there are pending water bills for connection number: "
-						+ waterConnectionRequest.getWaterConnection().getConnectionNo());
-			}
-		}
 
 		// Call calculator service to generate demand for mutation fee
 		calculationService.calculateFeeAndGenerateDemand(waterConnectionRequest, property);
