@@ -206,8 +206,17 @@ public class WSCalculationServiceImpl implements WSCalculationService {
 							}
 							Integer taxPeriod = Math.round((toDate - fromDate) / 86400000);
 							Long daysOfUsage = Math.round(Math.abs(Double.parseDouble(toDate.toString()) - waterConnection.getDateEffectiveFrom()) / 86400000);
-							BigDecimal finalWaterCharge = waterCharge.add(BigDecimal.valueOf(
-									(Double.parseDouble(totalTaxAmount.toString()) * daysOfUsage) / taxPeriod));
+							BigDecimal finalWaterCharge;
+							if (taxPeriod <= 0) {
+								// taxPeriodFrom == taxPeriodTo on the existing demand; pro-rata division is
+								// impossible (would produce Infinity). Fall back to the full monthly amount.
+								log.warn("[Disconnection] taxPeriod is {} for connectionNo={}; cannot do pro-rata division. Using full demand amount as disconnection charge.",
+										taxPeriod, connection.getConnectionNo());
+								finalWaterCharge = waterCharge.add(totalTaxAmount);
+							} else {
+								finalWaterCharge = waterCharge.add(BigDecimal.valueOf(
+										(Double.parseDouble(totalTaxAmount.toString()) * daysOfUsage) / taxPeriod));
+							}
 							criteria.setTo(waterConnection.getDateEffectiveFrom());
 							criteria.setFrom(toDate);
 
