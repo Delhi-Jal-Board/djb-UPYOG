@@ -207,7 +207,7 @@ function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false, 
                   </div>
                 )}
                 {!isPhoto && (() => {
-                  const isChecked = checkedMap[value?.originalDoc?.id] ?? value?.originalDoc?.isVerified ?? false;
+                  const isChecked = checkedMap[value?.fileStoreId] ?? value?.originalDoc?.isVerified ?? false;
                   return (
                     <React.Fragment>
                       <div 
