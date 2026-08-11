@@ -458,7 +458,7 @@ public class DemandService {
 		Object result = serviceRequestRepository.fetchResult(
 				getDemandSearchURL(tenantId, consumerCodes, taxPeriodFrom, taxPeriodTo, isDemandPaid, isDisconnectionRequest,isReconnectionRequest, requestInfo),
 				RequestInfoWrapper.builder().requestInfo(requestInfo).build());
-		log.info("Search demand for reconnection is " +result);
+		log.info("Search demand result (consumerCodes={}, isDisconnection={}, isReconnection={}) : {}", consumerCodes, isDisconnectionRequest, isReconnectionRequest, result);
 		try {
 			return mapper.convertValue(result, DemandResponse.class).getDemands();
 		} catch (IllegalArgumentException e) {
