@@ -71,7 +71,7 @@ const VENDORCard = () => {
     kpis: [
       {
         count: vendorCountData?.totalCount ?? 0,
-        label: t("TOTAL_VENDOR"),
+        label: t("Inbox"),
         link: isCitizen ? `/digit-ui/citizen/vendor/search-vendor` : `/digit-ui/employee/vendor/search-vendor`,
       },
       // {
