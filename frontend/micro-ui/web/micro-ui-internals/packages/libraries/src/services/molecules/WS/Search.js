@@ -2912,6 +2912,7 @@ export const WSSearch = {
                 documentType: document?.documentType,
                 documentUid: document?.documentUid,
                 fileStoreId: document?.fileStoreId,
+                originalDoc: document,
               };
             }),
           },
