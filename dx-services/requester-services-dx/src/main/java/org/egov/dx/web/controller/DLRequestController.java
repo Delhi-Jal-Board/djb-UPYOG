@@ -120,12 +120,12 @@ public class DLRequestController {
 	public ResponseEntity<Object>  getTokenCitizen(@Valid @RequestBody TokenRequest tokenRequest)    {
 
 	TokenRes tokenRes=dlRequestService.getToken(tokenRequest.getTokenReq());
-	Object user = dlRequestService.getOauthToken(tokenRequest.getRequestInfo() , tokenRes);
+//	Object user = dlRequestService.getOauthToken(tokenRequest.getRequestInfo() , tokenRes);
 	
 //	ResponseInfo responseInfo=ResponseInfoFactory.createResponseInfoFromRequestInfo(tokenRequest.getRequestInfo(), null);
 //	TokenResponse tokenResponse=TokenResponse.builder().responseInfo(responseInfo).tokenRes(tokenRes).build();
 
-	return new ResponseEntity<>(user,HttpStatus.OK);
+	return new ResponseEntity<>(tokenRes,HttpStatus.OK);
 }
 	
 	
