@@ -129,7 +129,7 @@ public class DLRequestService {
     
     public TokenRes getToken(TokenReq tokenReq)
     {
-    	
+    	String defaultCodeVerifier = "asbdjhabsdfjhuqweyr748213748hdfihf";
     	 HttpHeaders headers = new HttpHeaders();
          headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
          //headers.set("Authorization", "Basic ZWdvdi11c2VyLWNsaWVudDo=");
@@ -154,10 +154,12 @@ public class DLRequestService {
         
          String responseBody = restTemplate.postForEntity(configurations.getEncHost() + configurations.getEncDecryptURL(), requestEntity, String.class).getBody();
          try {
-        	    String value = new ObjectMapper().readValue(responseBody, String[].class)[0];
-        	    map.add("code_verifier", value);
+        	 String[] values = new ObjectMapper().readValue(responseBody, String[].class);
+        	    String codeVerifier = values != null && values.length > 0 && values[0] != null && !values[0].isBlank() ? values[0].trim() : defaultCodeVerifier;
+        	    map.add("code_verifier", codeVerifier);
         	} catch (Exception e) {
-        	    e.printStackTrace();
+        		log.warn("Failed to extract code_verifier, using default verifier", e);
+        	    map.add("code_verifier", defaultCodeVerifier);
         	}
          HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<MultiValueMap<String, String>>(map,
                  headers);
