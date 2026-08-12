@@ -191,15 +191,28 @@ const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true, 
           // API returns zoneIds as an array; fall back to splitting assignedZoneId string
           let vendorZoneCodes = [];
           if (Array.isArray(matchedVendor?.zoneIds) && matchedVendor.zoneIds.length > 0) {
-            vendorZoneCodes = matchedVendor.zoneIds.map((z) => z.trim().toUpperCase()).filter(Boolean);
+            vendorZoneCodes = matchedVendor.zoneIds.map((z) => (typeof z === "object" ? z?.code || z?.name : z)).filter(Boolean);
           } else if (matchedVendor?.assignedZoneId) {
             vendorZoneCodes = matchedVendor.assignedZoneId
               .split(",")
-              .map((z) => z.trim().toUpperCase())
+              .map((z) => z.trim())
               .filter(Boolean);
           }
+
           if (vendorZoneCodes.length > 0) {
-            activeZros = activeZros.filter((zro) => vendorZoneCodes.includes(zro.code.trim().toUpperCase()));
+            // Normalize for matching against MDMS ZRO list
+            const upperVendorCodes = vendorZoneCodes.map((z) => z.toString().trim().toUpperCase());
+            const matchedMdmsZros = activeZros.filter((zro) => upperVendorCodes.includes(zro.code.trim().toUpperCase()));
+
+            // If MDMS matches are found, use them; otherwise, build dropdown options directly from vendor's zoneIds
+            if (matchedMdmsZros.length > 0) {
+              activeZros = matchedMdmsZros;
+            } else {
+              activeZros = vendorZoneCodes.map((z) => ({
+                code: String(z).trim(),
+                name: t(String(z).trim()) || String(z).trim(),
+              }));
+            }
           } else {
             activeZros = []; // Vendor has no zones assigned
           }
@@ -214,15 +227,25 @@ const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true, 
         } else {
           let supervisorZoneCodes = [];
           if (Array.isArray(matchedSupervisor?.zoneIds) && matchedSupervisor.zoneIds.length > 0) {
-            supervisorZoneCodes = matchedSupervisor.zoneIds.map((z) => z.trim().toUpperCase()).filter(Boolean);
+            supervisorZoneCodes = matchedSupervisor.zoneIds.map((z) => (typeof z === "object" ? z?.code || z?.name : z)).filter(Boolean);
           } else if (matchedSupervisor?.assignedZoneId) {
             supervisorZoneCodes = matchedSupervisor.assignedZoneId
               .split(",")
-              .map((z) => z.trim().toUpperCase())
+              .map((z) => z.trim())
               .filter(Boolean);
           }
           if (supervisorZoneCodes.length > 0) {
-            activeZros = activeZros.filter((zro) => supervisorZoneCodes.includes(zro.code.trim().toUpperCase()));
+            const upperSupCodes = supervisorZoneCodes.map((z) => z.toString().trim().toUpperCase());
+            const matchedMdmsZros = activeZros.filter((zro) => upperSupCodes.includes(zro.code.trim().toUpperCase()));
+
+            if (matchedMdmsZros.length > 0) {
+              activeZros = matchedMdmsZros;
+            } else {
+              activeZros = supervisorZoneCodes.map((z) => ({
+                code: String(z).trim(),
+                name: t(String(z).trim()) || String(z).trim(),
+              }));
+            }
           } else {
             activeZros = []; // Supervisor has no zones assigned
           }
