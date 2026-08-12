@@ -3,6 +3,35 @@ import { useTranslation } from "react-i18next";
 import { ApplicationCard } from "./ApplicationCard";
 // import { ApplicationLinks } from "@djb25/digit-ui-react-components";
 
+const getEmployeeZone = (employee) => {
+  const jurisdictions = employee?.jurisdictions;
+  if (!jurisdictions || !Array.isArray(jurisdictions) || jurisdictions.length === 0) return "N/A";
+
+  for (const j of jurisdictions) {
+    if (j?.zone && j.zone !== "null") return j.zone;
+    if (Array.isArray(j?.zones) && j.zones.length > 0) {
+      const z = j.zones[0];
+      const zCode = typeof z === "object" ? z?.code || z?.name : z;
+      if (zCode && zCode !== "null") return zCode;
+    }
+    if (j?.zones && typeof j.zones === "string" && j.zones !== "null") return j.zones;
+  }
+
+  for (const j of jurisdictions) {
+    if (
+      j?.boundary &&
+      j.boundary !== "null" &&
+      j.boundary !== employee?.tenantId &&
+      j.boundary !== "dl.djb" &&
+      j?.boundaryType !== "City"
+    ) {
+      return j.boundary;
+    }
+  }
+
+  return "N/A";
+};
+
 const MobileInbox = ({
   data,
   isLoading,
@@ -36,14 +65,18 @@ const GetSlaCell = (value) => {
   return value == "INACTIVE" ? <span className="sla-cell-error">{ t(value )|| ""}</span> : <span className="sla-cell-success">{ t(value) || ""}</span>;
 };
   const getData = () => {
-    return data?.Employees?.map((original) => ({
-      [t("HR_EMP_ID_LABEL")]: original?.code,
-      [t("HR_EMP_NAME_LABEL")]: GetCell(original?.user?.name || ""),
-      [t("HR_ROLE_NO_LABEL")]: GetCell(original?.user?.roles.length || ""),
-      [t("HR_DESG_LABEL")]: GetCell(t("COMMON_MASTERS_DESIGNATION_" +original?.assignments?.sort((a, b) => new Date(a.fromDate) - new Date(b.fromDate))[0]?.designation)),
-      [t("HR_DEPT_LABEL")]: GetCell(t(`COMMON_MASTERS_DEPARTMENT_${original?.assignments?.sort((a, b) => new Date(a.fromDate) - new Date(b.fromDate))[0]?.department}`)),
-      [t("HR_STATUS_LABEL")]: GetSlaCell(original?.isActive ? "ACTIVE" : "INACTIVE"),
-    }));
+    return data?.Employees?.map((original) => {
+      const zoneVal = getEmployeeZone(original);
+      return {
+        [t("HR_EMP_ID_LABEL")]: original?.code,
+        [t("HR_EMP_NAME_LABEL")]: GetCell(original?.user?.name || ""),
+        [t("HR_ROLE_NO_LABEL")]: GetCell(original?.user?.roles?.length || ""),
+        [t("HR_DESG_LABEL")]: GetCell(t("COMMON_MASTERS_DESIGNATION_" + original?.assignments?.sort((a, b) => new Date(a.fromDate) - new Date(b.fromDate))[0]?.designation)),
+        [t("HR_DEPT_LABEL")]: GetCell(t(`COMMON_MASTERS_DEPARTMENT_${original?.assignments?.sort((a, b) => new Date(a.fromDate) - new Date(b.fromDate))[0]?.department}`)),
+        [t("HR_ZONE_LABEL") || "Zone"]: GetCell(zoneVal !== "N/A" ? zoneVal : "N/A"),
+        [t("HR_STATUS_LABEL")]: GetSlaCell(original?.isActive ? "ACTIVE" : "INACTIVE"),
+      };
+    });
   };
   const serviceRequestIdKey = (original) => {return `${searchParams?.tenantId}/${original?.[t("HR_EMP_ID_LABEL")]}`};
 
