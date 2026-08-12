@@ -9,6 +9,35 @@ import { Link } from "react-router-dom";
 const getPrimaryAssignment = (assignments = []) =>
   [...(Array.isArray(assignments) ? assignments : [])].sort((a, b) => new Date(a?.fromDate || 0) - new Date(b?.fromDate || 0))[0];
 
+const getEmployeeZone = (employee) => {
+  const jurisdictions = employee?.jurisdictions;
+  if (!jurisdictions || !Array.isArray(jurisdictions) || jurisdictions.length === 0) return "N/A";
+
+  for (const j of jurisdictions) {
+    if (j?.zone && j.zone !== "null") return j.zone;
+    if (Array.isArray(j?.zones) && j.zones.length > 0) {
+      const z = j.zones[0];
+      const zCode = typeof z === "object" ? z?.code || z?.name : z;
+      if (zCode && zCode !== "null") return zCode;
+    }
+    if (j?.zones && typeof j.zones === "string" && j.zones !== "null") return j.zones;
+  }
+
+  for (const j of jurisdictions) {
+    if (
+      j?.boundary &&
+      j.boundary !== "null" &&
+      j.boundary !== employee?.tenantId &&
+      j.boundary !== "dl.djb" &&
+      j?.boundaryType !== "City"
+    ) {
+      return j.boundary;
+    }
+  }
+
+  return "N/A";
+};
+
 const DesktopInbox = ({ tableConfig, filterComponent, getCSVExportData: getCSVExportDataProp, ...props }) => {
   const { t } = useTranslation();
   const tenantIds = Digit.SessionStorage.get("HRMS_TENANTS");
@@ -101,6 +130,18 @@ const DesktopInbox = ({ tableConfig, filterComponent, getCSVExportData: getCSVEx
         },
       },
       {
+        Header: t("HR_ZONE_LABEL"),
+        id: "zone",
+        accessor: (row) => {
+          const zoneVal = getEmployeeZone(row);
+          return zoneVal !== "N/A" ? t(zoneVal) || zoneVal : "N/A";
+        },
+        Cell: ({ row }) => {
+          const zoneVal = getEmployeeZone(row?.original);
+          return GetCell(zoneVal !== "N/A" ? zoneVal : "N/A");
+        },
+      },
+      {
         Header: t("HR_STATUS_LABEL"),
         id: "status",
         accessor: (row) => (row?.isActive ? "ACTIVE" : "INACTIVE"),
@@ -138,6 +179,13 @@ const DesktopInbox = ({ tableConfig, filterComponent, getCSVExportData: getCSVEx
         exportAccessor: (row) => {
           const assignment = getPrimaryAssignment(row?.assignments);
           return assignment?.department ? t(`COMMON_MASTERS_DEPARTMENT_${assignment?.department}`) : "";
+        },
+      },
+      {
+        Header: t("HR_ZONE_LABEL") || t("HR_DEPT_ZONE_LABEL") || "Zone",
+        exportAccessor: (row) => {
+          const zoneVal = getEmployeeZone(row);
+          return zoneVal !== "N/A" ? t(zoneVal) || zoneVal : "N/A";
         },
       },
       {
