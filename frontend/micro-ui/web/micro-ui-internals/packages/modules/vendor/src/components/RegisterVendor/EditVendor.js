@@ -155,6 +155,14 @@ const EditVendor = () => {
     }));
   }, [dsoDetails?.zoneIds, zones]);
 
+  // Fix: genderMenu loads after dsoData — re-sync gender once menu is ready
+  useEffect(() => {
+    if (!genderMenu.length || !dsoDetails?.owner?.gender) return;
+    const matchedGender = genderMenu.find((ele) => ele.code === dsoDetails.owner.gender);
+    if (matchedGender) {
+      setDefaultValues((prev) => ({ ...prev, gender: matchedGender }));
+    }
+  }, [genderMenu, dsoDetails?.owner?.gender]);
 
   const onFormValueChange = (setValue, data) => {
     const isVendorDetailsFilled = data?.vendorName && data?.phone && data?.serviceType?.code;
