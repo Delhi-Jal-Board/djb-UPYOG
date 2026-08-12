@@ -25,6 +25,9 @@ const Jurisdictions = ({ t, config, onSelect, userType, formData, style }) => {
           labelKey: r.labelKey || "ACCESSCONTROL_ROLES_ROLES_" + r.code
         }));
       }
+      if (!j.zones && j.zone) {
+        j.zones = Array.isArray(j.zone) ? j.zone : [j.zone];
+      }
       return j;
     });
   });
@@ -45,6 +48,15 @@ const Jurisdictions = ({ t, config, onSelect, userType, formData, style }) => {
           delete ele.description;
           return ele;
         });
+      }
+      if (jurisdiction?.zones) {
+        const extracted = (Array.isArray(jurisdiction.zones) ? jurisdiction.zones : [jurisdiction.zones])
+          .map((z) => (typeof z === "object" ? z?.code || z?.name : z))
+          .filter(Boolean);
+        if (extracted.length > 0) {
+          res["zone"] = extracted[0];
+          res["zones"] = extracted;
+        }
       }
       return res;
     });
@@ -163,6 +175,21 @@ function Jurisdiction({
 }) {
   const [BoundaryType, selectBoundaryType] = useState([]);
   const [Boundary, selectboundary] = useState([]);
+
+  const { data: zroData } = Digit.Hooks.useCommonMDMS("dl", "common-masters", ["ZroOfficeList"]);
+  const zoneOptions = React.useMemo(() => {
+    const zroOfficeList = zroData?.["common-masters"]?.ZroOfficeList || zroData?.MdmsRes?.["common-masters"]?.ZroOfficeList || [];
+    if (Array.isArray(zroOfficeList)) {
+      return zroOfficeList
+        .filter((zro) => zro && zro.active)
+        .map((zro) => ({
+          ...zro,
+          i18text: t(zro.code) || zro.code,
+        }));
+    }
+    return [];
+  }, [zroData, t]);
+
   useEffect(() => {
     selectBoundaryType(
       data?.MdmsRes?.["egov-location"]["TenantBoundary"]
@@ -222,12 +249,27 @@ function Jurisdiction({
     setjurisdictions((pre) => pre.map((item) => (item.key === jurisdiction.key ? { ...item, roles: res } : item)));
   };
 
+  const selectzone = (e, data) => {
+    let res = [];
+    e && e?.map((ob) => res.push(ob?.[1]));
+    setjurisdictions((pre) => pre.map((item) => (item.key === jurisdiction.key ? { ...item, zones: res } : item)));
+  };
+
   const onRemove = (index, key) => {
     let afterRemove = jurisdiction?.roles.filter((value, i) => {
       return i !== index;
     });
     setjurisdictions((pre) => pre.map((item) => (item.key === jurisdiction.key ? { ...item, roles: afterRemove } : item)));
   };
+
+  const onRemoveZone = (index) => {
+    let afterRemove = (jurisdiction?.zones || []).filter((value, i) => {
+      return i !== index;
+    });
+    setjurisdictions((pre) => pre.map((item) => (item.key === jurisdiction.key ? { ...item, zones: afterRemove } : item)));
+  };
+
+  const SelectEkycZonesComponent = Digit.ComponentRegistryService.getComponent("SelectEkycZones");
 
   return (
     <div key={jurisdiction?.keys} style={{ border: "1px solid #E3E3E3", borderRadius: "6px" }}>
@@ -284,6 +326,46 @@ function Jurisdiction({
           />
         </LabelFieldPair>
 
+        {SelectEkycZonesComponent ? (
+          <SelectEkycZonesComponent
+            config={{ key: "zones", label: "HR_COMMON_ZONE", isMandatory: true }}
+            onSelect={(key, selected) => {
+              setjurisdictions((pre) => pre.map((item) => (item.key === jurisdiction.key ? { ...item, zones: selected } : item)));
+            }}
+            formData={{ zoneIds: jurisdiction?.zones }}
+            t={t}
+            isMultiSelect={true}
+          />
+        ) : (
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{t("HR_COMMON_ZONE")}</CardLabel>
+            <div className="form-field">
+              <MultiSelectDropdown
+                className="form-field"
+                defaultUnit="Selected"
+                selected={jurisdiction?.zones || []}
+                options={zoneOptions}
+                onSelect={selectzone}
+                optionsKey="i18text"
+                t={t}
+              />
+              <div className="tag-container">
+                {jurisdiction?.zones?.length > 0 &&
+                  jurisdiction?.zones.map((value, idx) => {
+                    const label = value?.i18text || value?.name || value?.code || "";
+                    return (
+                      <RemoveableTag
+                        key={idx}
+                        text={label.length > 22 ? `${label.slice(0, 22)}...` : label}
+                        onClick={() => onRemoveZone(idx)}
+                      />
+                    );
+                  })}
+              </div>
+            </div>
+          </LabelFieldPair>
+        )}
+
         <LabelFieldPair>
           <CardLabel className="card-label-smaller">{t("HR_COMMON_TABLE_COL_ROLE")} *</CardLabel>
           <div className="form-field">
@@ -312,35 +394,6 @@ function Jurisdiction({
             </div>
           </div>
         </LabelFieldPair>
-
-        {/* <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{t("HR_COMMON_TABLE_COL_ZONE")} *</CardLabel>
-          <div className="form-field">
-            <MultiSelectDropdown
-              className="form-field"
-              isMandatory={true}
-              defaultUnit="Selected"
-              selected={jurisdiction?.zones}
-              options={getzones(zones)}
-              onSelect={selectzones}
-              optionsKey="i18text"
-              t={t}
-            />
-            <div className="tag-container">
-              {jurisdiction?.zones.length > 0 &&
-                jurisdiction?.zones.map((value, index) => {
-                  const translatedCode = t(value.i18text);
-                  return (
-                    <RemoveableTag
-                      key={index}
-                      text={translatedCode.length > 22 ? `${translatedCode.slice(0, 22)}...` : translatedCode}
-                      onClick={() => onRemove(index, value)}
-                    />
-                  );
-                })}
-            </div>
-          </div>
-        </LabelFieldPair> */}
       </div>
     </div>
   );

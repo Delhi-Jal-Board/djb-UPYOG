@@ -99,6 +99,7 @@ export const VENDORComponents = {
   VENDORCard,
   VENDORModule,
   VENDORLinks,
+  SelectEkycZones
   // AST_INBOX_FILTER: (props) => <InboxFilter {...props} />,
   // ASTInboxTableConfig: TableConfig,
 };

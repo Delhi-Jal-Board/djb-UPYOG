@@ -100,18 +100,8 @@ const Inbox = ({ parentRoute }) => {
     return { targetVendorId: matchedId, allVendorIds: allIds };
   }, [vendorSearchResponse]);
 
-  const progressParams = useMemo(() => {
-    if (targetVendorId) {
-      return { vendorId: targetVendorId, vendorIds: [targetVendorId] };
-    }
-    if (allVendorIds && allVendorIds.length > 0) {
-      return { vendorId: allVendorIds[0], vendorIds: allVendorIds };
-    }
-    return {};
-  }, [targetVendorId, allVendorIds]);
-
   const { isLoading: isProgressLoading, data: progressData } = Digit.Hooks.ekyc.useEkycAssignmentProgress(
-    progressParams,
+    { tenantId },
     {
       enabled: !!tenantId,
       keepPreviousData: true,
@@ -191,67 +181,52 @@ const Inbox = ({ parentRoute }) => {
 
   const { t } = useTranslation();
 
-  const supervisor = useMemo(() => {
-    const loggedInUser = Digit.SessionStorage.get("User")?.info;
-    const roles = loggedInUser?.roles?.map((ele) => ele.code) || [];
+  const progressMetrics = useMemo(() => {
+    if (!progressData) return { totalKnos: 0, submittedKnos: 0, pendingKnos: 0, progressPercent: 0 };
 
-    if (roles.includes("EKYC_SUPERVISOR")) {
-      const targetId = loggedInUser?.uuid;
-      if (progressData?.supervisorReport && targetId) {
-        const report = progressData.supervisorReport.find(
-          (s) =>
-            s.supervisorId?.toLowerCase() === targetId?.toLowerCase() ||
-            s.id?.toLowerCase() === targetId?.toLowerCase()
-        );
-        if (report) return report;
-      }
-    }
+    const totalKnos = progressData?.totalKnos ?? progressData?.totalAssignments ?? 0;
+    const submittedKnos = progressData?.completedKnos ?? progressData?.submittedKnos ?? 0;
+    const pendingKnos = progressData?.pendingKnos ?? (totalKnos >= submittedKnos ? totalKnos - submittedKnos : 0);
+    const progressPercent = progressData?.overallProgressPercent ?? progressData?.progressPercent ?? (totalKnos > 0 ? ((submittedKnos / totalKnos) * 100).toFixed(1) : 0);
 
-    if (progressData?.supervisorReport) {
-      const totalKnos = progressData.supervisorReport.reduce((acc, r) => acc + (r.totalKnos || 0), 0);
-      const submittedKnos = progressData.supervisorReport.reduce((acc, r) => acc + (r.submittedKnos || 0), 0);
-      const pendingKnos = progressData.supervisorReport.reduce((acc, r) => acc + (r.pendingKnos || 0), 0);
-      const progressPercent = totalKnos > 0 ? Math.round((submittedKnos / totalKnos) * 100) : 0;
-      return {
-        totalKnos,
-        submittedKnos,
-        pendingKnos,
-        progressPercent,
-      };
-    }
-    return null;
+    return {
+      totalKnos,
+      submittedKnos,
+      pendingKnos,
+      progressPercent,
+    };
   }, [progressData]);
 
   const cards = useMemo(() => [
     {
       label: t("TOTAL_EKYC_APPLICATIONS"),
-      count: supervisor?.totalKnos || 0,
+      count: progressMetrics?.totalKnos || 0,
       color: "#0B2559",
       type: "today",
       icon: <FaUsers />,
     },
     {
       label: t("EKYC_COMPLETED"),
-      count: supervisor?.submittedKnos || 0,
+      count: progressMetrics?.submittedKnos || 0,
       color: "#10B981",
       type: "month",
       icon: <FaCheckCircle />,
     },
     {
       label: t("PENDING_APPLICATIONS"),
-      count: supervisor?.pendingKnos || 0,
+      count: progressMetrics?.pendingKnos || 0,
       color: "#F59E0B",
       type: "pending",
       icon: <FaClock />,
     },
     {
       label: t("OVERALL_PROGRESS"),
-      count: `${supervisor?.progressPercent || 0}%`,
+      count: `${progressMetrics?.progressPercent || 0}%`,
       color: "#A855F7",
       type: "progress",
       icon: <FaChartLine />,
     },
-  ], [supervisor]);
+  ], [progressMetrics, t]);
   const totalRecords = listData?.totalCount || 0;
 
   const checkPathName = location.pathname.includes("ekyc/inbox");
