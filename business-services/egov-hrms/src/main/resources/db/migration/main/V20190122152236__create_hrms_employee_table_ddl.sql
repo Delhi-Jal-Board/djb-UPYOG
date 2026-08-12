@@ -1,4 +1,4 @@
-CREATE TABLE if not exists eg_hrms_employee (
+CREATE TABLE eg_hrms_employee (
 	id BIGINT NOT NULL,
 	uuid CHARACTER VARYING(1024) NOT NULL,
 	code CHARACTER VARYING(250),
@@ -20,7 +20,7 @@ CREATE TABLE if not exists eg_hrms_employee (
 
 
 
-CREATE TABLE if not exists eg_hrms_assignment (
+CREATE TABLE eg_hrms_assignment (
 	uuid CHARACTER VARYING(1024) NOT NULL,
 	employeeid CHARACTER VARYING(1024) NOT NULL,
 	position BIGINT,
@@ -44,7 +44,7 @@ CREATE TABLE if not exists eg_hrms_assignment (
 );
 
 
-CREATE TABLE if not exists eg_hrms_educationaldetails (
+CREATE TABLE eg_hrms_educationaldetails (
 	uuid CHARACTER VARYING(1024) NOT NULL,
 	employeeid CHARACTER VARYING(1024) NOT NULL,
 	qualification CHARACTER VARYING(250),
@@ -64,7 +64,7 @@ CREATE TABLE if not exists eg_hrms_educationaldetails (
 );
 
 
-CREATE TABLE if not exists eg_hrms_departmentaltests (
+CREATE TABLE eg_hrms_departmentaltests (
 	uuid CHARACTER VARYING(1024) NOT NULL,
 	employeeid CHARACTER VARYING(1024) NOT NULL,
 	test CHARACTER VARYING(250),
@@ -82,7 +82,7 @@ CREATE TABLE if not exists eg_hrms_departmentaltests (
 );
 
 
-CREATE TABLE if not exists eg_hrms_empdocuments (
+CREATE TABLE eg_hrms_empdocuments (
 	uuid CHARACTER VARYING(1024) NOT NULL,
 	employeeid CHARACTER VARYING(1024) NOT NULL,
 	documentid CHARACTER VARYING(250) NOT NULL,
@@ -101,7 +101,7 @@ CREATE TABLE if not exists eg_hrms_empdocuments (
 );
 
 
-CREATE TABLE if not exists eg_hrms_servicehistory (
+CREATE TABLE eg_hrms_servicehistory (
 	uuid CHARACTER VARYING(1024) NOT NULL,
 	employeeid CHARACTER VARYING(1024) NOT NULL,
 	servicestatus CHARACTER VARYING(250),
@@ -121,7 +121,7 @@ CREATE TABLE if not exists eg_hrms_servicehistory (
 
 );
 
-CREATE TABLE if not exists eg_hrms_jurisdiction (
+CREATE TABLE eg_hrms_jurisdiction (
 	uuid CHARACTER VARYING(1024) NOT NULL,
 	employeeid CHARACTER VARYING(1024) NOT NULL,
 	hierarchy CHARACTER VARYING(250) NOT NULL,
@@ -138,7 +138,7 @@ CREATE TABLE if not exists eg_hrms_jurisdiction (
 
 );
 
-CREATE TABLE if not exists eg_hrms_deactivationdetails (
+CREATE TABLE eg_hrms_deactivationdetails (
 	uuid CHARACTER VARYING(1024) NOT NULL,
 	employeeid CHARACTER VARYING(1024) NOT NULL,
 	reasonfordeactivation CHARACTER VARYING(250),

@@ -121,20 +121,5 @@ public class TransactionsApiController {
         log.debug("Available gateways : " + gateways);
         return new ResponseEntity<>(gateways, HttpStatus.OK);
     }
-    
-    /**
-     * Initiates a refund for a successful payment transaction.
-     *
-     * @param refundTransactionRequest Request containing information necessary for refund
-     * @return The updated transaction with REFUNDED status
-     */
-    @RequestMapping(value = "/transaction/v1/_refund", method = RequestMethod.POST)
-    public ResponseEntity<TransactionResponse> transactionsV1RefundPost(@Valid @RequestBody org.egov.pg.web.models.RefundTransactionRequest refundTransactionRequest) {
-
-        List<Transaction> transactions = transactionService.refundTransaction(refundTransactionRequest.getRequestInfo(), refundTransactionRequest.getRefundRequest());
-        ResponseInfo responseInfo = ResponseInfoFactory.createResponseInfoFromRequestInfo(refundTransactionRequest.getRequestInfo(), true);
-        TransactionResponse response = new TransactionResponse(responseInfo, transactions);
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
-
+   
 }

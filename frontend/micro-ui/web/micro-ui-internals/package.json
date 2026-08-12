@@ -14,8 +14,7 @@
     "packages/modules/dss",
     "packages/modules/engagement",
     "packages/modules/asset",
-    "packages/modules/vendor",
-    "packages/modules/ws"
+    "packages/modules/vendor"
   ],
   "license": "MIT",
   "private": true,

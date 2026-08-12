@@ -119,31 +119,9 @@ export const Request = async ({
     };
     if (auth || token) {
       data.RequestInfo = { ...data.RequestInfo, ...requestInfo(token) };
-      const user = Digit.UserService.getUser();
-      if (user && user.info) {
-        const parsedId = Number(user.info.id);
-        const userInfo = {
-          id: (user.info.id && !isNaN(parsedId)) ? parsedId : null,
-          uuid: user.info.uuid || null,
-          userName: user.info.userName || null,
-          name: user.info.name || null,
-          type: user.info.type || null,
-          mobileNumber: user.info.mobileNumber || null,
-          emailId: user.info.emailId || null,
-          roles: user.info.roles ? user.info.roles.map(role => {
-            const parsedRoleId = Number(role.id);
-            return {
-              id: (role.id && !isNaN(parsedRoleId)) ? parsedRoleId : null,
-              name: role.name || null,
-              code: role.code || null,
-              tenantId: role.tenantId || null
-            };
-          }) : [],
-          tenantId: user.info.tenantId || null,
-          active: user.info.active !== undefined ? user.info.active : true
-        };
-        data.RequestInfo = { ...data.RequestInfo, userInfo };
-      }
+    }
+    if (userService) {
+      data.RequestInfo = { ...data.RequestInfo, ...userServiceData() };
     }
     if (locale) {
       data.RequestInfo = { ...data.RequestInfo, msgId: `${ts}|${Digit.StoreData.getCurrentLanguage()}` };
