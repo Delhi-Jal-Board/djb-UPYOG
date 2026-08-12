@@ -2,52 +2,49 @@ import Urls from "../atoms/urls";
 import { Request } from "../atoms/Utils/Request";
 
 export const DigiLockerService = {
-  authorization: ({ filters }) =>
+  authorization: ({ module, filters, tenantId } = {}) =>
     Request({
       url: Urls.digiLocker.authorization,
       useCache: false,
       method: "POST",
       auth: true,
       userService: true,
-      params: {module:"PT" },
+      params: { module: module || "WS", tenantId: tenantId, ...filters },
     }),
-    register: ({ filters }) =>
+  register: ({ module, filters, tenantId } = {}) =>
     Request({
       url: Urls.digiLocker.register,
       useCache: false,
       method: "POST",
       auth: true,
       userService: true,
-      params: {module:"REGISTER" },
+      params: { module: module || "REGISTER", tenantId: tenantId, ...filters },
     }),
-    token: ( data ) =>
+  token: (data) =>
     Request({
       url: Urls.digiLocker.token,
       useCache: false,
       method: "POST",
       auth: true,
       userService: true,
-      data:data,
+      data: data,
     }),
-    issueDoc: ( data ) =>
+  issueDoc: (data) =>
     Request({
       url: Urls.digiLocker.issueDoc,
       useCache: false,
       method: "POST",
       auth: true,
       userService: true,
-      data:data,
+      data: data,
     }),
-    uri:( data) =>
+  uri: (data) =>
     Request({
       url: Urls.digiLocker.uri,
       useCache: false,
       method: "POST",
       auth: true,
       userService: true,
-      data:data
-      
-    })
+      data: data,
+    }),
 };
-
-

@@ -31,7 +31,7 @@
 .summary-card {
   background-color: #fff;
   border-radius: 6px;
-  padding: 16px 14px;
+  padding: 10px 10px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 
   flex: 1 1 0%;
@@ -47,6 +47,9 @@
 
   transition: all 0.2s ease-in-out;
 
+  /* Tooltip anchor */
+  position: relative;
+
   .summary-card-label {
     font-size: 0.6875rem;
     color: #64748b;
@@ -58,9 +61,46 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
+
   .summary-card-count {
     font-size: 1.75rem;
     font-weight: 700;
     margin-top: 12px;
+  }
+
+  /* ── Tooltip ── */
+  &[data-tooltip]::after {
+    content: attr(data-tooltip);
+
+    /* Positioning */
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+
+    /* Look */
+    background-color: #1e293b;
+    color: #f1f5f9;
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 5px 10px;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+    letter-spacing: 0.2px;
+    pointer-events: none;
+    z-index: 9999;
+
+    /* Hidden by default */
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease;
+    transform: translateX(-50%) translateY(4px);
+  }
+
+  &[data-tooltip]:hover::after {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
   }
 }

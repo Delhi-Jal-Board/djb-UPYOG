@@ -127,6 +127,8 @@ module.exports = function (app) {
     "/vendor-management/api/v1/vendorPlusAdditional/_search",
     "/user/_updateAddress",
     "/ekyc-service",
+    "/requester-services-dx",
+    "/digit-ui/requester-services-dx"
   ].forEach((location) => app.use(location, createProxy));
   ["/pb-egov-assets"].forEach((location) => app.use(location, assetsProxy));
 };
