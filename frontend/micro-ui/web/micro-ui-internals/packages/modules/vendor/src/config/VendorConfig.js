@@ -48,7 +48,7 @@ const VendorConfig = (t, module = "", genderMenu, update) => {
         },
         {
           label: "ES_FSM_REGISTRY_NEW_EMAIL",
-          isMandatory: false,
+          isMandatory: true,
           type: "text",
           key: "emailId",
           populators: {
