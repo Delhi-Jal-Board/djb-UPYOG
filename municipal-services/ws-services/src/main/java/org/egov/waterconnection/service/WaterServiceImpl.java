@@ -97,6 +97,9 @@ public class WaterServiceImpl implements WaterService {
 	@Autowired
 	private UnmaskingUtil unmaskingUtil;
 
+	@Autowired
+	private RefundService refundService;
+
 	/**
 	 *
 	 * @param waterConnectionRequest
@@ -439,6 +442,12 @@ public class WaterServiceImpl implements WaterService {
 		wfIntegrator.callWorkFlow(waterConnectionRequest, property);
 		log.info("[WS-AUTO-ACTIVATE] After workflow transition, applicationStatus = {}",
 				waterConnectionRequest.getWaterConnection().getApplicationStatus());
+
+		if ("REJECTED".equalsIgnoreCase(waterConnectionRequest.getWaterConnection().getApplicationStatus()) && "REJECT".equalsIgnoreCase(currentAction)) {
+			log.info("Application rejected, initiating refund process...");
+			refundService.initiateRefund(waterConnectionRequest);
+		}
+
 		waterDaoImpl.pushForEditNotification(waterConnectionRequest, isStateUpdatable);
 		enrichmentService.enrichFileStoreIds(waterConnectionRequest);
 		enrichmentService.postStatusEnrichment(waterConnectionRequest);

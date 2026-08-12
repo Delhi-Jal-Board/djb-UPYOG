@@ -56,5 +56,16 @@ public interface Gateway {
      */
     String transactionIdKeyInResponse();
 
-    String generateRedirectFormData(Transaction transaction );
+    String generateRedirectFormData(Transaction transaction);
+
+    /**
+     * Initiates a refund for a previously successful transaction.
+     * By default, throws an UnsupportedOperationException if the gateway does not implement this.
+     *
+     * @param transaction The original successful transaction
+     * @return Updated transaction with refund status
+     */
+    default Transaction refund(Transaction transaction) {
+        throw new UnsupportedOperationException("Refund is not supported for this gateway.");
+    }
 }

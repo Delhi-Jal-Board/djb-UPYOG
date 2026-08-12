@@ -218,6 +218,9 @@ public class WSConfiguration {
 
     @Value("${egov.collection.host}")
     private String collectionHost;
+
+    @Value("${egov.collection.payment.workflow.path}")
+    private String collectionPaymentWorkflowPath;
     
 	@Value("${reconnection.ws.workflow.name}")
 	private String wsWorkflowReconnectionName;
@@ -284,5 +287,11 @@ public class WSConfiguration {
 
     @Value("${egov.url.shortner.host}")
     private String urlShortnerHost;
+
+    @Value("${egov.pg-service.host}")
+    private String pgServiceHost;
+
+    @Value("${egov.pg-service.refund.endpoint}")
+    private String pgServiceRefundEndpoint;
 
 }

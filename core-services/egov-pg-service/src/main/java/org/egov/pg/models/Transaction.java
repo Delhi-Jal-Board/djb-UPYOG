@@ -193,7 +193,9 @@ public class Transaction {
 
         FAILURE("FAILURE"),
 
-        PENDING("PENDING");
+        PENDING("PENDING"),
+        
+        REFUNDED("REFUNDED");
 
         private String value;
 

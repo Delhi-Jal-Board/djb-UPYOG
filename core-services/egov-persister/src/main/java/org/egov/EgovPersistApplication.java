@@ -116,15 +116,18 @@ public class EgovPersistApplication {
                     inputStream = resource.getInputStream();
                     Service service = mapper.readValue(inputStream, Service.class);
 
-                    for (Mapping mapping : service.getServiceMaps().getMappings()) {
-                        if (mappingsMap.containsKey(mapping.getFromTopic())) {
-                            mappingsMap.get(mapping.getFromTopic()).add(mapping);
-                        } else {
-                            List<Mapping> mappings = new ArrayList<>();
-                            mappings.add(mapping);
-                            mappingsMap.put(mapping.getFromTopic(), mappings);
+                    if (service != null && service.getServiceMaps() != null && service.getServiceMaps().getMappings() != null) {
+                        for (Mapping mapping : service.getServiceMaps().getMappings()) {
+                            if (mappingsMap.containsKey(mapping.getFromTopic())) {
+                                mappingsMap.get(mapping.getFromTopic()).add(mapping);
+                            } else {
+                                List<Mapping> mappings = new ArrayList<>();
+                                mappings.add(mapping);
+                                mappingsMap.put(mapping.getFromTopic(), mappings);
+                            }
                         }
-
+                    } else {
+                        log.warn("Skipping file as it does not contain valid serviceMaps: " + configPath);
                     }
                 } catch (JsonParseException e) {
                     log.error("Failed to parse yaml file: " + configPath, e);

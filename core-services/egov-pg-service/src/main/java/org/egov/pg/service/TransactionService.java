@@ -169,4 +169,57 @@ public class TransactionService {
         return Collections.singletonList(newTxn);
     }
 
+    /**
+     * Initiates a refund for a previously successful transaction
+     *
+     * @param requestInfo Request Information
+     * @param refundRequest Refund details including tenantId and either txnId or consumerCode
+     * @return Updated transaction
+     */
+    public List<Transaction> refundTransaction(RequestInfo requestInfo, org.egov.pg.web.models.RefundTransactionRequest.RefundRequest refundRequest) {
+        if (org.springframework.util.StringUtils.isEmpty(refundRequest.getTxnId()) && org.springframework.util.StringUtils.isEmpty(refundRequest.getConsumerCode())) {
+            throw new CustomException("INVALID_REFUND_REQUEST", "Either txnId or consumerCode must be provided for refund");
+        }
+
+        TransactionCriteria criteria = TransactionCriteria.builder()
+                .tenantId(refundRequest.getTenantId())
+                .txnId(refundRequest.getTxnId())
+                .consumerCode(refundRequest.getConsumerCode())
+                .build();
+
+        // Limit to 1, as we just want the latest successful transaction if consumerCode is provided
+        criteria.setLimit(1);
+        criteria.setOffset(0);
+
+        List<Transaction> transactions = getTransactions(criteria);
+
+        if (transactions.isEmpty()) {
+            throw new CustomException("TXN_NOT_FOUND", "No transaction found for the given criteria");
+        }
+
+        Transaction currentTxnStatus = transactions.get(0);
+
+        if (!Transaction.TxnStatusEnum.SUCCESS.equals(currentTxnStatus.getTxnStatus())) {
+            throw new CustomException("INVALID_TXN_STATUS_FOR_REFUND", "Only SUCCESS transactions can be refunded");
+        }
+
+        Transaction newTxn = gatewayService.refundTxn(currentTxnStatus);
+
+        // Enrich the new transaction status before persisting (reuse update enrichment)
+        enrichmentService.enrichUpdateTransaction(new TransactionRequest(requestInfo, currentTxnStatus), newTxn);
+        
+        newTxn.setTxnStatus(Transaction.TxnStatusEnum.REFUNDED);
+
+        TransactionDump dump = TransactionDump.builder()
+                .txnId(currentTxnStatus.getTxnId())
+                .txnResponse(newTxn.getResponseJson())
+                .auditDetails(newTxn.getAuditDetails())
+                .build();
+
+        producer.push(appProperties.getUpdateTxnTopic(), new org.egov.pg.models.TransactionRequest(requestInfo, newTxn));
+        producer.push(appProperties.getUpdateTxnDumpTopic(), new TransactionDumpRequest(requestInfo, dump));
+
+        return Collections.singletonList(newTxn);
+    }
 }
+

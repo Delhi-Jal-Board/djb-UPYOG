@@ -1,1 +1,1 @@
-ALTER TABLE eg_hrms_assignment ADD COLUMN iscurrentassignment BOOLEAN;
+ALTER TABLE eg_hrms_assignment ADD COLUMN IF NOT EXISTS  iscurrentassignment BOOLEAN;

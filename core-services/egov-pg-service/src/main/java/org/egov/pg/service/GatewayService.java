@@ -85,6 +85,21 @@ public class GatewayService {
         return gateway.fetchStatus(currentStatus, params);
     }
 
+    /**
+     * Initiates a refund for the given transaction via the active gateway.
+     *
+     * @param transaction Transaction to refund
+     * @return Updated transaction status
+     */
+    Transaction refundTxn(Transaction transaction) {
+        if (!isGatewayActive(transaction.getGateway()))
+            throw new CustomException("INVALID_PAYMENT_GATEWAY", "Invalid or inactive payment gateway provided");
+
+        Gateway gateway = getGateway(transaction.getGateway());
+        return gateway.refund(transaction);
+    }
+
+
 
     public boolean isGatewayActive(String gateway) {
         return GATEWAY_MAP.containsKey(gateway) && GATEWAY_MAP.get(gateway).isActive();
