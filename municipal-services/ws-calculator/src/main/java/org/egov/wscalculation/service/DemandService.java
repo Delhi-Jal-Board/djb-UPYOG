@@ -350,11 +350,9 @@ public class DemandService {
 				if (taxHeadEstimate.getTaxHeadCode().equalsIgnoreCase(WSCalculationConstant.WS_Round_Off))
 					continue;
 				total = taxHeadEstimate.getEstimateAmount();
-				if (total.compareTo(BigDecimal.ZERO) != 0) {
-					newDemandDetails.add(DemandDetail.builder().taxAmount(total)
-							.taxHeadMasterCode(taxHeadEstimate.getTaxHeadCode()).tenantId(calculation.getTenantId())
-							.collectionAmount(BigDecimal.ZERO).build());
-				}
+				newDemandDetails.add(DemandDetail.builder().taxAmount(total)
+						.taxHeadMasterCode(taxHeadEstimate.getTaxHeadCode()).tenantId(calculation.getTenantId())
+						.collectionAmount(BigDecimal.ZERO).build());
 			} else {
 				demandDetailList = taxHeadToDemandDetail.get(taxHeadEstimate.getTaxHeadCode());
 				total = demandDetailList.stream().map(DemandDetail::getTaxAmount).reduce(BigDecimal.ZERO,
@@ -371,8 +369,14 @@ public class DemandService {
 		if (!CollectionUtils.isEmpty(combinedBillDetails) && isDisconnectionRequest) {
 			combinedBillDetails.clear();
 			combinedBillDetails.addAll(newDemandDetails);
-		} else
+			if (CollectionUtils.isEmpty(combinedBillDetails)) {
+				combinedBillDetails.add(DemandDetail.builder().taxAmount(BigDecimal.ZERO)
+						.taxHeadMasterCode(WSCalculationConstant.WS_CHARGE).tenantId(calculation.getTenantId())
+						.collectionAmount(BigDecimal.ZERO).build());
+			}
+		} else {
 			combinedBillDetails.addAll(newDemandDetails);
+		}
 		addRoundOffTaxHead(calculation.getTenantId(), combinedBillDetails);
 		return combinedBillDetails;
 	}
