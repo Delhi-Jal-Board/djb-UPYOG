@@ -41,8 +41,15 @@ const SummaryCards = ({ cards = [], t = (k) => k, onCardClick, isLoading = false
   return (
     <div className="summary-cards-container">
       {cards.map((card, idx) => (
-        <div key={idx} className="summary-card" onClick={() => onCardClick?.(card)}>
-          <div className="summary-card-label">{t(card.label)}</div>
+        <div
+          key={idx}
+          className="summary-card"
+          onClick={() => onCardClick?.(card)}
+          title={`${t(card.label)}: ${String(card.count).padStart(2, "0")}`}
+        >
+          <div className="summary-card-label" style={{ whiteSpace: "normal", wordWrap: "break-word", lineHeight: "1.2", paddingRight: "4px" }}>
+            {t(card.label)}
+          </div>
 
           <div className="summary-card-count" style={{ color: card.color }}>
             {String(card.count).padStart(2, "0")}

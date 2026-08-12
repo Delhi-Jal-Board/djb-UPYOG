@@ -128,6 +128,7 @@ const Proof = ({ t, config, onSelect, userType, formData }) => {
           }}
           message={uploadedFile ? `1 ${t(`PT_ACTION_FILEUPLOADED`)}` : t(`PT_ACTION_NO_FILEUPLOADED`)}
           error={error}
+          documentType={dropdownValue?.code}
         /> :<UploadFile
         id={"pt-doc"}
         extraStyleName={"propertyCreate"}

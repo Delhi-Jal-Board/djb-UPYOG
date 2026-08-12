@@ -45,7 +45,8 @@ const SelectMobileNumber = ({ t, handleMobileNumberSelect, mobileNumber, setMobi
 
   const register = async (e) => {
     e.preventDefault();
-    const data = await Digit.DigiLockerService.register({ module: "REGISTER" });
+    const tenantId = Digit.ULBService.getStateId();
+    const data = await Digit.DigiLockerService.register({ module: "REGISTER", tenantId });
     const redirectUrl = data.redirectURL;
     sessionStorage.setItem("code_verfier_register", data?.codeverifier);
     window.location.href = redirectUrl;
