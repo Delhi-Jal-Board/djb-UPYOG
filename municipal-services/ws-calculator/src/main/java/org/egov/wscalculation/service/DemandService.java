@@ -233,14 +233,14 @@ public class DemandService {
 			String businessService = isForConnectionNO ? configs.getBusinessService()
 					: ONE_TIME_FEE_SERVICE_FIELD;
 
-			if (calculationReq.getCalculationCriteria() != null && !calculationReq.getCalculationCriteria().isEmpty()
+			if (!isForConnectionNO && calculationReq.getCalculationCriteria() != null && !calculationReq.getCalculationCriteria().isEmpty()
 					&& calculationReq.getCalculationCriteria().get(0).getWaterConnection() != null
 					&& WSCalculationConstant.MUTATION_WATER_CONNECTION.equalsIgnoreCase(
 							calculationReq.getCalculationCriteria().get(0).getWaterConnection().getApplicationType())) {
 				businessService = WSCalculationConstant.MUTATION_BUSINESS_SERVICE;
 			}
 			
-			log.info("in create Demand  Business Service is" +businessService );
+			log.info("in create Demand | isForConnectionNO: " + isForConnectionNO + " | consumerCode: " + consumerCode + " | Business Service is: " + businessService);
 			
 			if(calculationReq.getIsReconnectionRequest())
 				businessService="WSReconnection";
