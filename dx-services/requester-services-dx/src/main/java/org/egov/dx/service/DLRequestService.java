@@ -99,7 +99,7 @@ public class DLRequestService {
     	encoded = encoded.replace("+", "-"); //Replace ’+’ with ’-’     
     	encoded= encoded.replace("/", "_");     
     	log.info("challenge is: " +encoded );        
-    	EncReqObject encReqObject = EncReqObject.builder().tenantId("pg").type("Normal").value(codeVerifier).build();        
+    	EncReqObject encReqObject = EncReqObject.builder().tenantId("dl").type("Normal").value(codeVerifier).build();        
     	EncryptionRequest encryptionRequest = EncryptionRequest.builder().encryptionRequests(Collections.singletonList(encReqObject)).build();        
     	String responseBody= restTemplate.postForEntity(configurations.getEncHost() + configurations.getEncEncryptURL(), encryptionRequest, String.class).getBody();     
         try {
