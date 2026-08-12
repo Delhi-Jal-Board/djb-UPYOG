@@ -390,6 +390,7 @@ public class WSCalculationConstant {
 	public static final String WS_REOPENING_FEE = "WS_REOPENING_FEE";
 	public static final String WS_MUTATION_TRADE_SECURITY = "WS_MUTATION_TRADE_SECURITY";
 	public static final String MUTATION_BUSINESS_SERVICE = "WS.MUTATION";
+	public static final String MUTATION_WS_BUSINESS_SERVICE = "mutationWSConnection";
 	public static final String WS_MUTATION_PENALTY = "WS_MUTATION_PENALTY";
 	public static final String WS_MUTATION_REBATE = "WS_MUTATION_REBATE";
 
