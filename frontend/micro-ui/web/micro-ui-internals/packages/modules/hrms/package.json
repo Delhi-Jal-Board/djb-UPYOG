@@ -1,6 +1,6 @@
 {
   "name": "@djb25/digit-ui-module-hrms",
-  "version": "1.0.19",
+  "version": "1.0.20",
   "description": "Digit HRMS Module",
   "license": "MIT",
   "main": "dist/index.js",

@@ -4,7 +4,7 @@ import { stringReplaceAll } from "../utils";
 //import { map } from "lodash-es";
 
 const PropertyTax = ({ t, config, onSelect, userType, formData }) => {
-  // const tenantId = Digit.ULBService.getCurrentTenantId();
+  const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
   sessionStorage.removeItem("docReqScreenByBack");
 
@@ -51,7 +51,7 @@ const PropertyTax = ({ t, config, onSelect, userType, formData }) => {
   }, []);
 
   const onConcent = async (e) => {
-    const data = await Digit.DigiLockerService.authorization({ module: "PT" });
+    const data = await Digit.DigiLockerService.authorization({ module: "PT", tenantId });
     e.preventDefault();
     sessionStorage.setItem("code_verfier", data?.codeverifier);
     //let redirectURL=data?.redirectURL.replace("https://upyog-test.niua.org","http://localhost:3000")
