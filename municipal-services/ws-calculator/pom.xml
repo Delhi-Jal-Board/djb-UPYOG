@@ -1,6 +1,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>org.egov</groupId>
@@ -14,8 +14,9 @@
 		<java.version>1.8</java.version>
 		<maven.compiler.source>${java.version}</maven.compiler.source>
 		<maven.compiler.target>${java.version}</maven.compiler.target>
-		<lombok.version>1.18.8</lombok.version>
+		<lombok.version>1.18.32</lombok.version>
 		<springfox-version>2.7.0</springfox-version>
+		<maven.deploy.skip>true</maven.deploy.skip>
 	</properties>
 	<parent>
 		<groupId>org.springframework.boot</groupId>
@@ -142,6 +143,37 @@
 	<build>
 		<sourceDirectory>src/main/java</sourceDirectory>
 		<plugins>
+			<!-- ADDED MAVEN COMPILER PLUGIN TO FIX LOMBOK JDK 17 COMPATIBILITY -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.8.1</version>
+				<configuration>
+					<source>${java.version}</source>
+					<target>${java.version}</target>
+					<fork>true</fork>
+					<compilerArgs>
+						<arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg>
+						<arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED</arg>
+						<arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED</arg>
+						<arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED</arg>
+						<arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED</arg>
+						<arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED</arg>
+						<arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED</arg>
+						<arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</arg>
+						<arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.jvm=ALL-UNNAMED</arg>
+					</compilerArgs>
+					<annotationProcessorPaths>
+						<path>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+							<version>${lombok.version}</version>
+						</path>
+					</annotationProcessorPaths>
+				</configuration>
+			</plugin>
+			<!-- END OF ADDED COMPILER PLUGIN -->
+
 			<plugin>
 				<groupId>cz.habarta.typescript-generator</groupId>
 				<artifactId>typescript-generator-maven-plugin</artifactId>
@@ -170,7 +202,7 @@
 						<class>org.egov.wscalculation.web.models.AdhocTaxReq</class>
 						<class>org.egov.wscalculation.web.models.RequestInfoWrapper</class>
 						<class>org.egov.wscalculation.web.models.users.User</class>
-					        <class>org.egov.common.contract.request.User</class>
+						<class>org.egov.common.contract.request.User</class>
 					</classes>
 					<customTypeNaming>
 						<typeNaming>org.egov.wscalculation.web.models.Demand$StatusEnum:DemandStatus</typeNaming>
@@ -178,8 +210,6 @@
 						<typeNaming>org.egov.wscalculation.web.models.users.User:WaterUserStatus</typeNaming>
 						<typeNaming>org.egov.common.contract.request.User:User</typeNaming>
 					</customTypeNaming>
-					<customTypeMapping>org.egov.common.contract.request.RequestInfo:RequestInfo</customTypeMapping>
-					<customTypeMapping>org.egov.common.contract.response.ResponseInfo:ResponseInfo</customTypeMapping>
 					<namespace>Digit</namespace>
 					<debug>true</debug>
 					<outputKind>module</outputKind>
