@@ -196,8 +196,7 @@ const UploadFileDigiLocker = (props) => {
       let TokenReq = {
         authToken: digiLockerToken,
       };
-      const tenantId = Digit.ULBService.getCurrentTenantId() || "dl.djb";
-      const res1 = await Digit.DigiLockerService.issueDoc({ TokenReq }, tenantId);
+      const res1 = await Digit.DigiLockerService.issueDoc({ TokenReq });
       if (!res1 || !res1.IssuedDoc) {
         setShowToast({ error: true, label: "Failed to fetch documents from DigiLocker. Please login again." });
         return;
@@ -212,18 +211,49 @@ const UploadFileDigiLocker = (props) => {
         else if (code.includes("VOTER")) doctype = "VOTER";
       }
 
-      let uri = res1.IssuedDoc.filter((item) => item.doctype === doctype);
+      // Also try alternate doctype codes from API response
+      const DOCTYPE_ALIASES = {
+        ADHAR: ["ADHAR", "AADHAAR", "AADHAR"],
+        DRVLC: ["DRVLC", "DRIVING"],
+        PANCR: ["PANCR", "PANCH", "PAN"],
+        VOTER: ["VOTER", "VOTERID"],
+      };
+      const aliases = DOCTYPE_ALIASES[doctype] || [doctype];
+      let uri = res1.IssuedDoc.filter((item) => aliases.some((alias) => item.doctype === alias));
 
       if (uri?.length > 0) {
+        // Extract document number from URI (last segment after the last '-')
+        // e.g., "in.gov.pan-PANVR-DLSPG4304N" → "DLSPG4304N"
+        const uriStr = uri[0].uri || "";
+        const parts = uriStr.split("-");
+        const documentNumber = parts.length > 1 ? parts[parts.length - 1] : "";
+        if (documentNumber && props?.onDocumentNumber) {
+          props.onDocumentNumber(documentNumber);
+        }
+
         let TokenReqNew = {
           authToken: digiLockerToken,
-          id: uri[0].uri,
+          id: uriStr,
         };
-        const tenantId = Digit.ULBService.getCurrentTenantId() || "dl.djb";
-        const res2 = await Digit.DigiLockerService.uri({ TokenReq: TokenReqNew }, tenantId);
-        let c = new Blob([res2]);
+        const res2 = await Digit.DigiLockerService.uri({ TokenReq: TokenReqNew });
+        // res2 may be base64 string or binary data depending on backend
+        let blobData;
+        if (typeof res2 === "string" && res2.includes("base64")) {
+          blobData = dataURItoBlob(res2);
+        } else if (res2 instanceof Blob) {
+          blobData = res2;
+        } else if (res2 && typeof res2 === "object" && res2.fileStoreId) {
+          // Backend returned a fileStoreId directly — fetch the file
+          const fileRes = await Digit.UploadServices.FileFetchbyid(res2.fileStoreId, Digit.ULBService.getStateId());
+          if (fileRes?.data) {
+            blobData = fileRes.data instanceof Blob ? fileRes.data : new Blob([fileRes.data], { type: fileRes.headers?.["content-type"] || "application/pdf" });
+          }
+        } else {
+          blobData = new Blob([JSON.stringify(res2)], { type: "application/pdf" });
+        }
         let filename = `${doctype}_${uri[0].name || "document"}.pdf`;
-        convertToFile(e, c, filename);
+        if (blobData) convertToFile(e, blobData, filename);
+        else setShowToast({ error: true, label: "Failed to read document from DigiLocker." });
       } else {
         setShowToast({ error: true, label: `Selected document (${props?.documentType || doctype}) is not available in your DigiLocker.` });
       }
