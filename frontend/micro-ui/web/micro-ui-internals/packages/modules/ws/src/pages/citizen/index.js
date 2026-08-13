@@ -36,6 +36,39 @@ const App = ({ path }) => {
   let swCount = swData?.SewerageConnections?.filter((ob) => ob?.applicationType !== "MODIFY_SEWERAGE_CONNECTION")?.length || 0;
   let totalAppsCount = wsCount + swCount;
 
+  useEffect(() => {
+    const fetchToken = async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const code = urlParams.get("code");
+
+      if (code) {
+        try {
+          const TokenReq = {
+            module: "WS",
+            code: code,
+          };
+          const tenantId = Digit.ULBService.getCurrentTenantId() || "dl.djb";
+          const res = await Digit.DigiLockerService.token({ TokenReq }, tenantId);
+          const accessToken = res?.TokenRes?.access_token || res?.access_token;
+          if (accessToken) {
+            sessionStorage.setItem("DigiLocker.token1", accessToken);
+          }
+
+          // Clean up the URL by removing code and state
+          urlParams.delete("code");
+          urlParams.delete("state");
+          const search = urlParams.toString();
+          const newUrl = window.location.pathname + (search ? "?" + search : "");
+          window.history.replaceState({}, document.title, newUrl);
+        } catch (error) {
+          console.error("Error fetching DigiLocker token", error);
+        }
+      }
+    };
+
+    fetchToken();
+  }, []);
+
 
   const crumbs = [
     // {
