@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FormComposer, Toast, VerticalTimeline } from "@djb25/digit-ui-react-components";
 import { useQueryClient } from "react-query";
@@ -23,7 +23,24 @@ const AddSupervisor = ({ parentUrl, heading }) => {
   const { mutateAsync } = Digit.Hooks.fsm.useSupervisorCreate(tenantId);
   const history = useHistory();
 
-  const Config = SupervisorConfig(t);
+  const [genderMenu, setGenderMenu] = useState([]);
+  const stateId = Digit.ULBService.getStateId();
+  const { data: genderTypeData } = Digit.Hooks.obps.useMDMS(stateId, "common-masters", ["GenderType"]);
+
+  useEffect(() => {
+    if (genderTypeData && genderTypeData["common-masters"]?.GenderType?.length) {
+      const menuItems = genderTypeData["common-masters"]?.GenderType?.filter((data) => data.active).map((genderDetails) => ({
+        i18nKey: `COMMON_GENDER_${genderDetails.code}`,
+        code: `${genderDetails.code}`,
+        value: `${genderDetails.code}`,
+      }));
+      setGenderMenu(menuItems);
+    }
+  }, [genderTypeData]);
+
+  const Config = React.useMemo(() => {
+    return SupervisorConfig(t, genderMenu);
+  }, [t, genderMenu]);
 
   const defaultValues = {
     role: { code: "SUPERVISOR", name: "Supervisor" },

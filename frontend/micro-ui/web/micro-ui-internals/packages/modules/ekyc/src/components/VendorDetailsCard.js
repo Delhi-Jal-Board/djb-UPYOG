@@ -19,6 +19,7 @@ const VendorDetailsCard = () => {
         { enabled: !!tenantId, staleTime: 300000 }
     );
 
+
     // Fetch all supervisors to filter by vendor
     const { data: supervisorSearchResponse, isLoading: isSupervisorSearchLoading } = Digit.Hooks.fsm.useSupervisorSearch(
         tenantId,
@@ -201,14 +202,16 @@ const VendorDetailsCard = () => {
 
     const [ekycDownloadLoading, setEkycDownloadLoading] = useState(false);
 
-    const handleDownloadEkycData = async () => {
+    const handleDownloadEkycData = async (fromDate, toDate) => {
         setEkycDownloadLoading(true);
         try {
             const response = await Digit.EkycService.application_list({
                 tenantId: tenantId,
                 offset: 0,
                 limit: 10000,
-                reportDownload: true
+                reportDownload: true,
+                ...(fromDate && { fromDate }),
+                ...(toDate && { toDate }),
             });
 
             const consumerList = response?.consumerList || [];
@@ -222,49 +225,172 @@ const VendorDetailsCard = () => {
                 "status", "source", "submittedAt", "assignedAt", "connectionType", "approvedAt",
                 "alternateMobileNo", "city", "state", "addressType", "addressProofType", "mrcode",
                 "areacode", "verificationStatus", "surveyorId", "supervisorId", "vendorId",
-                "assignmentType", "assignmentValue", "isSelfAssigned", "userType",
-                "tenantName", "tenantMobile"
+                "assignmentType", "assignmentValue", "assignedTime", "isSelfAssigned", "userType",
+                "tenantName", "tenantMobile", "doorPhotoFilestoreId", "panFilestoreId",
+                "documentProofFilestoreId", "buildingImageFileStoreId", "propertyDocumentFileStoreId",
+                "meterPhotoFileStoreId", "modifiedBy", "zoneCode", "propertyType", "subPropertyCategory"
             ];
 
             const headerMapping = {
-                kno: t("KNO") || "KNO",
-                firstName: t("FIRST_NAME") || "First Name",
-                middleName: t("MIDDLE_NAME") || "Middle Name",
-                lastName: t("LAST_NAME") || "Last Name",
-                gender: t("GENDER") || "Gender",
-                mobileNumber: t("MOBILE_NUMBER") || "Mobile Number",
-                emailId: t("EMAIL_ID") || "Email ID",
-                fatherOrHusbandName: t("FATHER_HUSBUND_NAME") || "Father/Husband Name",
-                relationship: t("RELATIONSHIP") || "Relationship",
-                dob: t("DOB") || "Date of Birth",
-                ekycStatus: t("EKYC_STATUS") || "eKYC Status",
-                zoneName: t("ZONE") || "Zone",
-                assembly: t("ASSEMBLY") || "Assembly",
-                ward: t("WARD") || "Ward",
-                pincode: t("PINCODE") || "Pincode",
-                mrkey: t("MR_KEY") || "MR Key",
-                createdTime: t("CREATED_TIME") || "Created Time",
-                lastModifiedTime: t("LAST_MODIFIED_TIME") || "Last Modified Time",
+                kno: t("KNO"),
+                firstName: t("FIRST_NAME"),
+                middleName: t("MIDDLE_NAME"),
+                lastName: t("LAST_NAME"),
+                status: t("STATUS"),
+                ekycStatus: t("EKYC_STATUS"),
+                zoneName: t("ZONE"),
+                zoneCode: t("ZONE_CODE"),
+                assembly: t("EKYC_ASSEMBLY"),
+                ward: t("WARD"),
+                pincode: t("EKYC_PINCODE"),
+                addressRaw: t("ADDRESS_RAW"),
+                locality: t("EKYC_LOCALITY"),
+                subLocality: t("SUB_LOCALITY"),
+                flatHouseNumber: t("FLAT_HOUSE_NUMBER"),
+                streetName: t("STREET_NAME"),
+                landmark: t("EKYC_LANDMARK"),
+                city: t("CITY"),
+                state: t("STATE"),
+                addressType: t("ADDRESS_TYPE"),
+                addressProofType: t("ADDRESS_PROOF_TYPE"),
+                mobileNo: t("MOBILE_NUMBER"),
+                alternateMobileNo: t("ALTERNATE_MOBILE_NUMBER"),
+                whatsappNo: t("WHATSAPP_NO"),
+                email: t("EMAIL"),
+                landlineNo: t("LANDLINE_NO"),
+                mrkey: t("MR_KEY"),
+                mrcode: t("MR_CODE"),
+                areacode: t("AREA_CODE"),
+                source: t("SOURCE"),
+                submittedAt: t("SUBMITTED_AT"),
+                assignedAt: t("ASSIGNED_AT"),
+                connectionType: t("CONNECTION_TYPE"),
+                Type: t("CONSUMER_TYPE"),
+                occupantType: t("OCCUPANT_TYPE"),
+                knoCategory: t("KNO_CATEGORY"),
+                approvedAt: t("APPROVED_AT"),
+                gender: t("GENDER"),
+                parentSpouse: t("PARENT_SPOUSE"),
+                fatherOrHusbandName: t("FATHER_HUSBUND_NAME"),
+                relationship: t("RELATIONSHIP"),
+                informantName: t("INFORMANT_NAME"),
+                informantRelation: t("INFORMANT_RELATION"),
+                informantIs: t("INFORMANT_IS"),
+                contactPerson: t("CONTACT_PERSON"),
+                relation: t("RELATION"),
+                entityName: t("ENTITY_NAME"),
+                designation: t("DESIGNATION"),
+                department: t("DEPARTMENT"),
+                employeeId: t("EMPLOYEE_ID"),
+                ownerMobile: t("OWNER_MOBILE"),
+                ownerVerificationDone: t("OWNER_VERIFICATION_DONE"),
+                consentGiven: t("CONSENT_GIVEN"),
+                proofOfIdentityType: t("PROOF_OF_IDENTITY_TYPE"),
+                documentNumber: t("DOCUMENT_NUMBER"),
+                noOfPerson: t("NUMBER_OF_PERSON"),
+                latitude: t("LATITUDE"),
+                longitude: t("LONGITUDE"),
+                gpsValid: t("GPS_VALID"),
+                meterNumber: t("METER_NUMBER"),
+                meterMake: t("METER_MAKE"),
+                meterStatus: t("METER_STATUS"),
+                meterCondition: t("METER_CONDITION"),
+                meterLocation: t("METER_LOCATION"),
+                meterLocationAddress: t("METER_LOCATION_ADDRESS"),
+                workingStatus: t("WORKING_STATUS"),
+                sewerConnection: t("SEWER_CONNECTION"),
+                septicTank: t("SEPTIC_TANK"),
+                lastBillRaised: t("LAST_BILL_RAISED"),
+                lastBillReceivedDate: t("LAST_BILL_RECEIVED_DATE"),
+                accessToMeter: t("ACCESS_TO_METER"),
+                systemMeterId: t("SYSTEM_METER_ID"),
+                lastBillNotRaisedReason: t("LAST_BILL_NOT_RAISED_REASON"),
+                waterConnectionYears: t("WATER_CONNECTION_YEARS"),
+                sewerConnectionYears: t("SEWER_CONNECTION_YEARS"),
+                pidNumber: t("PID_NUMBER"),
+                propertyType: t("PROPERTY_TYPE"),
+                subPropertyCategory: t("SUB_PROPERTY_CATEGORY"),
+                noOfFloor: t("NO_OF_FLOOR"),
+                noOfRooms: t("NO_OF_ROOMS"),
+                noOfBeds: t("NO_OF_BEDS"),
+                numberOfDwellingUnits: t("NUMBER_OF_DWELLING_UNITS"),
+                floorNo: t("FLOOR_NO"),
+                userType: t("USER_TYPE"),
+                tenantName: t("TENANT_NAME"),
+                tenantMobile: t("TENANT_MOBILE"),
+                verificationStatus: t("VERIFICATION_STATUS"),
+                houseBuiltDuration: t("HOUSE_BUILT_DURATION"),
+                surveyorId: t("SURVEYOR_ID"),
+                supervisorId: t("SUPERVISOR_ID"),
+                vendorId: t("VENDOR_ID"),
+                assignmentType: t("ASSIGNMENT_TYPE"),
+                assignmentValue: t("ASSIGNMENT_VALUE"),
+                assignedTime: t("ASSIGNED_TIME"),
+                isSelfAssigned: t("IS_SELF_ASSIGNED"),
+                doorPhotoFilestoreId: t("DOOR_PHOTO_FILESTORE_ID"),
+                panFilestoreId: t("PAN_FILESTORE_ID"),
+                documentProofFilestoreId: t("DOCUMENT_PROOF_FILESTORE_ID"),
+                buildingImageFileStoreId: t("BUILDING_IMAGE_FILESTORE_ID"),
+                propertyDocumentFileStoreId: t("PROPERTY_DOCUMENT_FILESTORE_ID"),
+                meterPhotoFileStoreId: t("METER_PHOTO_FILESTORE_ID"),
+                modifiedBy: t("MODIFIED_BY"),
+                emailId: t("EMAIL_ID"),
+                fatherOrHusbandName: t("FATHER_HUSBUND_NAME"),
+                dob: t("DOB"),
+                consumerType: t("CONSUMER_TYPE"),
+                createdTime: t("CREATED_TIME"),
+                lastModifiedTime: t("LAST_MODIFIED_TIME"),
+                meterLatitude: t("EKYC_METER_LATITUDE1"),
+                meterLongitude: t("EKYC_METER_LONGITUDE1"),
             };
+
+            const toTitleCase = (str) => {
+                if (!str) return "";
+                // Handle dot-notation values like "CONSUMERTYPE.INDIVIDUAL" → "Individual"
+                let cleanStr = String(str);
+                if (cleanStr.includes(".") && !cleanStr.includes("@") && isNaN(Number(cleanStr))) {
+                    cleanStr = cleanStr.split(".").pop();
+                }
+                return cleanStr
+                    .toLowerCase()
+                    .replace(/_/g, " ")
+                    .replace(/\b\w/g, (c) => c.toUpperCase());
+            };
+
+            const skipTitleCase = ["kno", "mobileNumber", "emailId", "email", "pincode", "mrkey", "dob", "createdTime", "lastModifiedTime", "meterLatitude", "meterLongitude"];
+            const translatedFields = ["meterMake", "meterLocation"];
 
             const excelData = consumerList.map((item) => {
                 const cleanObj = {};
 
                 const fullName = [item.firstName, item.middleName, item.lastName].filter(Boolean).join(" ");
                 if (fullName) {
-                    cleanObj[t("CONSUMER_NAME") || "Consumer Name"] = fullName;
+                    cleanObj[t("CONSUMER_NAME") || "Consumer Name"] = toTitleCase(fullName);
                 }
 
                 Object.keys(item).forEach(key => {
                     if (excludedKeys.includes(key)) return;
 
-                    const val = item[key];
+                    let val = item[key];
                     if (typeof val === "object" && val !== null) {
                         return;
                     }
 
+                    if (String(val).toLowerCase() === "true") {
+                        val = t("CS_YES");
+                    } else if (String(val).toLowerCase() === "false") {
+                        val = t("CS_NO");
+                    }
+
                     const friendlyHeader = headerMapping[key] || t(key.toUpperCase()) || key;
-                    cleanObj[friendlyHeader] = val;
+
+                    if (typeof val === "string" && translatedFields.includes(key)) {
+                        cleanObj[friendlyHeader] = t(val);
+                    } else if (typeof val === "string" && !skipTitleCase.includes(key)) {
+                        cleanObj[friendlyHeader] = toTitleCase(val);
+                    } else {
+                        cleanObj[friendlyHeader] = val;
+                    }
                 });
 
                 return cleanObj;
@@ -280,6 +406,26 @@ const VendorDetailsCard = () => {
         }
     };
 
+    const getDateRange = (filter) => {
+        const now = new Date();
+        const start = new Date(now);
+        if (filter === "today") {
+            start.setHours(0, 0, 0, 0);
+            return { from: start, to: now };
+        }
+        if (filter === "week") {
+            start.setDate(now.getDate() - now.getDay());
+            start.setHours(0, 0, 0, 0);
+            return { from: start, to: now };
+        }
+        if (filter === "month") {
+            start.setDate(1);
+            start.setHours(0, 0, 0, 0);
+            return { from: start, to: now };
+        }
+        return null;
+    };
+    
     const paginatedSupervisors = useMemo(() => {
         const start = currentPage * pageSize;
         const end = start + pageSize;
@@ -398,21 +544,29 @@ const VendorDetailsCard = () => {
             console.error("Failed to generate report:", err);
         } finally {
             setReportLoading(false);
-            setShowReportMenu(false);
-            setShowCustomPicker(false);
         }
     };
 
-    const handlePresetDownload = (filter) => {
-        handleDownload();
+    const handlePresetDownload = async (filter) => {
+        const range = getDateRange(filter);
+        if (!range) return;
+        setShowReportMenu(false);
+        setShowCustomPicker(false);
+        await handleDownloadEkycData(range.from.getTime(), range.to.getTime());
     };
 
-    const handleCustomDownload = () => {
+    const handleCustomDownload = async () => {
         if (!customDate.from || !customDate.to) {
             alert(t("SELECT_DATE_RANGE") || "Please select both From and To dates.");
             return;
         }
-        handleDownload();
+        const from = new Date(customDate.from);
+        from.setHours(0, 0, 0, 0);
+        const to = new Date(customDate.to);
+        to.setHours(23, 59, 59, 999);
+        setShowReportMenu(false);
+        setShowCustomPicker(false);
+        await handleDownloadEkycData(from.getTime(), to.getTime());
     };
 
     const StatCard = ({ title, value, type, isLoading, icon }) => (
@@ -460,82 +614,15 @@ const VendorDetailsCard = () => {
                 </div>
 
                 {/* Download Report — far right */}
-                <div className="report-download" ref={reportMenuRef}>
-                    <button
-                        className="download-btn"
-                        disabled={reportLoading}
-                        onClick={() => {
-                            setShowReportMenu((p) => !p);
-                            setShowCustomPicker(false);
-                        }}
-                    >
-                        {reportLoading ? t("DOWNLOADING") || "Downloading..." : t("DOWNLOAD_REPORT") || "Download Report"}
-                    </button>
-
-                    {showReportMenu && (
-                        <div className="report-menu">
-                            {[
-                                { label: t("TODAY") || "Today", key: "today" },
-                                { label: t("THIS_WEEK") || "This Week", key: "week" },
-                                { label: t("THIS_MONTH") || "This Month", key: "month" },
-                            ].map(({ label, key }) => (
-                                <div
-                                    key={key}
-                                    className="menu-item"
-                                    onClick={() => handlePresetDownload(key)}
-                                >
-                                    {label}
-                                </div>
-                            ))}
-
-                            <div
-                                className="custom-date-trigger"
-                                onClick={() => setShowCustomPicker((p) => !p)}
-                            >
-                                {t("CUSTOM_DATE") || "Custom Date"}
-                            </div>
-
-                            {showCustomPicker && (
-                                <div className="custom-picker">
-                                    <div className="date-field">
-                                        <label className="date-label">
-                                            {t("FROM_DATE") || "From"}
-                                        </label>
-                                        <input
-                                            type="date"
-                                            className="date-input"
-                                            value={customDate.from}
-                                            onChange={(e) =>
-                                                setCustomDate((d) => ({ ...d, from: e.target.value }))
-                                            }
-                                        />
-                                    </div>
-
-                                    <div className="date-field">
-                                        <label className="date-label">
-                                            {t("TO_DATE") || "To"}
-                                        </label>
-                                        <input
-                                            type="date"
-                                            className="date-input"
-                                            value={customDate.to}
-                                            onChange={(e) =>
-                                                setCustomDate((d) => ({ ...d, to: e.target.value }))
-                                            }
-                                        />
-                                    </div>
-
-                                    <button
-                                        className="download-action-btn"
-                                        onClick={handleCustomDownload}
-                                    >
-                                        {t("DOWNLOAD") || "Download"}
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-                    )}
-                </div>
+                <div className="report-download">
+                <button
+                    className="download-btn"
+                    disabled={reportLoading}
+                    onClick={handleDownload}
+                >
+                    {reportLoading ? t("DOWNLOADING") || "Downloading..." : t("DOWNLOAD_REPORT") || "Download Report"}
+                </button>
+            </div>
             </div>
 
             {/* Stats */}
@@ -606,18 +693,85 @@ const VendorDetailsCard = () => {
                                 {t("DOWNLOAD_EKYC_DATA_DESC") ||
                                     "Export the complete eKYC verification records for your assigned jurisdiction into Excel format."}
                             </p>
-                            <button
-                                className="download-excel-btn"
-                                disabled={ekycDownloadLoading}
-                                onClick={handleDownloadEkycData}
-                            >
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                                    <polyline points="7 10 12 15 17 10" />
-                                    <line x1="12" y1="15" x2="12" y2="3" />
-                                </svg>
-                                {ekycDownloadLoading ? t("DOWNLOADING") || "Downloading..." : t("DOWNLOAD_EXCEL") || "Download Excel"}
-                            </button>
+                            <div className="report-download" ref={reportMenuRef}>
+                                <button
+                                    className="download-excel-btn"
+                                    disabled={ekycDownloadLoading}
+                                    onClick={() => {
+                                        setShowReportMenu((p) => !p);
+                                        setShowCustomPicker(false);
+                                    }}
+                                >
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                        <polyline points="7 10 12 15 17 10" />
+                                        <line x1="12" y1="15" x2="12" y2="3" />
+                                    </svg>
+                                    {ekycDownloadLoading ? t("DOWNLOADING") || "Downloading..." : t("DOWNLOAD_EXCEL") || "Download Excel"}
+                                </button>
+
+                                {showReportMenu && (
+                                    <div className="report-menu">
+                                        {[
+                                            { label: t("TODAY") || "Today", key: "today" },
+                                            { label: t("THIS_WEEK") || "This Week", key: "week" },
+                                            { label: t("THIS_MONTH") || "This Month", key: "month" },
+                                        ].map(({ label, key }) => (
+                                            <div
+                                                key={key}
+                                                className="menu-item"
+                                                onClick={() => handlePresetDownload(key)}
+                                            >
+                                                {label}
+                                            </div>
+                                        ))}
+
+                                        <div
+                                            className="custom-date-trigger"
+                                            onClick={() => setShowCustomPicker((p) => !p)}
+                                        >
+                                            {t("CUSTOM_DATE") || "Custom Date"}
+                                        </div>
+
+                                        {showCustomPicker && (
+                                            <div className="custom-picker">
+                                                <div className="date-inputs">
+                                                    <label>
+                                                        <span>From</span>
+                                                        <input
+                                                            type="date"
+                                                            value={customDate.from}
+                                                            onChange={(e) => setCustomDate({ ...customDate, from: e.target.value })}
+                                                        />
+                                                    </label>
+                                                    <label>
+                                                        <span>To</span>
+                                                        <input
+                                                            type="date"
+                                                            value={customDate.to}
+                                                            onChange={(e) => setCustomDate({ ...customDate, to: e.target.value })}
+                                                        />
+                                                    </label>
+                                                </div>
+                                                <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
+                                                    <button
+                                                        className="picker-cancel-btn"
+                                                        onClick={() => {
+                                                            setShowCustomPicker(false);
+                                                            setCustomDate({ from: "", to: "" });
+                                                        }}
+                                                    >
+                                                        {t("CANCEL") || "Cancel"}
+                                                    </button>
+                                                    <button className="picker-apply-btn" onClick={handleCustomDownload}>
+                                                        {t("APPLY") || "Apply"}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>

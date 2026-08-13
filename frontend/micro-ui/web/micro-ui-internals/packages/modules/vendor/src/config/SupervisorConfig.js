@@ -1,7 +1,7 @@
 import React from "react";
 const { DatePicker } = require("@djb25/digit-ui-react-components");
 
-const SupervisorConfig = (t, agencies = [], reportingManagers = [], disabled = false) => {
+const SupervisorConfig = (t, genderMenu = [], disabled = false) => {
   return [
     {
       head: t("ES_VENDOR_SUPERVISOR_BASIC_DETAILS"),
@@ -65,11 +65,16 @@ const SupervisorConfig = (t, agencies = [], reportingManagers = [], disabled = f
         },
 
         {
-          label: t("ES_VENDOR_SUPERVISOR_GENDER"),
+          label: "ES_FSM_REGISTRY_NEW_GENDER",
           isMandatory: true,
           type: "component",
           key: "gender",
           component: "SelectEkycDropdown",
+          populators: {
+            name: "gender",
+            options: genderMenu,
+            optionsKey: "i18nKey",
+          },
         },
         {
           label: t("ES_FSM_REGISTRY_NEW_DOB"),

@@ -25,7 +25,24 @@ const EditSurveyor = () => {
 
   const { mutate } = Digit.Hooks.fsm.useSurveyorUpdate(tenantId);
 
-  const Config = SurveyorConfig(t);
+  const [genderMenu, setGenderMenu] = useState([]);
+  const stateId = Digit.ULBService.getStateId();
+  const { data: genderTypeData } = Digit.Hooks.obps.useMDMS(stateId, "common-masters", ["GenderType"]);
+
+  useEffect(() => {
+    if (genderTypeData && genderTypeData["common-masters"]?.GenderType?.length) {
+      const menuItems = genderTypeData["common-masters"]?.GenderType?.filter((data) => data.active).map((genderDetails) => ({
+        i18nKey: `COMMON_GENDER_${genderDetails.code}`,
+        code: `${genderDetails.code}`,
+        value: `${genderDetails.code}`,
+      }));
+      setGenderMenu(menuItems);
+    }
+  }, [genderTypeData]);
+
+  const Config = React.useMemo(() => {
+    return SurveyorConfig(t, genderMenu);
+  }, [t, genderMenu]);
 
   useEffect(() => {
     if (surveyorSearchResponse && surveyorSearchResponse.surveyors && surveyorSearchResponse.surveyors.length > 0) {
