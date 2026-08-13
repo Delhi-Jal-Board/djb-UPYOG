@@ -203,26 +203,64 @@ public class DLRequestService {
          IssuedDocumentList issuedDocumentList= restTemplate.postForEntity(configurations.getApiHost() + configurations.getIssuedFilesURI(), request, IssuedDocumentList.class).getBody();
          return issuedDocumentList.getItems();
     }
-    public byte[] getDoc(TokenReq tokenReq,String uri)
-    {
-    	
-    	 HttpHeaders headers = new HttpHeaders();
-         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-         headers.set("Authorization", "Bearer "+tokenReq.getAuthToken());
-         headers.set("Authorization", "Bearer "+tokenReq.getAuthToken());
-         MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+//    public byte[] getDoc(TokenReq tokenReq,String uri)
+//    {
+//    	
+//    	 HttpHeaders headers = new HttpHeaders();
+//         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+//         headers.set("Authorization", "Bearer "+tokenReq.getAuthToken());
+//         headers.set("Authorization", "Bearer "+tokenReq.getAuthToken());
+//         MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+//
+//         map.add("uri",uri);
+//      
+//
+//         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<MultiValueMap<String, String>>(null,
+//                 headers);
+//         //MultipartFile doc= restTemplate.getForEntity(configurations.getApiHost() + configurations.getGetFileURI()+"/"+uri, request);
+//         ResponseEntity<String> entity = restTemplate.exchange(configurations.getApiHost() + configurations.getGetFileURI()+"/"+uri, HttpMethod.GET, 
+//                 request, String.class);
+//               
+//         
+//         return entity.getBody().getBytes();
+//    }
+    
+    public byte[] getDoc(TokenReq tokenReq, String uri) {
 
-         map.add("uri",uri);
-      
+        HttpHeaders headers = new HttpHeaders();
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_PDF));
+        headers.setBearerAuth(tokenReq.getAuthToken());
+        HttpEntity<Void> request = new HttpEntity<>(headers);
 
-         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<MultiValueMap<String, String>>(null,
-                 headers);
-         //MultipartFile doc= restTemplate.getForEntity(configurations.getApiHost() + configurations.getGetFileURI()+"/"+uri, request);
-         ResponseEntity<String> entity = restTemplate.exchange(configurations.getApiHost() + configurations.getGetFileURI()+"/"+uri, HttpMethod.GET, 
-                 request, String.class);
-               
-         
-         return entity.getBody().getBytes();
+        String url = configurations.getApiHost() + configurations.getGetFileURI() + "/" + uri;
+        log.info("Requesting DigiLocker file from URL: {}", url);
+
+        try {
+            ResponseEntity<byte[]> entity = restTemplate.exchange(url,HttpMethod.GET,request,byte[].class);
+
+            byte[] document = entity.getBody();
+
+            if (document == null || document.length == 0) {
+                log.error("DigiLocker returned empty document. HTTP status: {}",entity.getStatusCode());
+                throw new RuntimeException("DigiLocker returned an empty document");
+            }
+
+            log.info("DigiLocker response status: {}",entity.getStatusCode());
+            log.info("DigiLocker document size: {} bytes",document.length);
+            if (document.length >= 5) {
+                String header = new String(document,0,5,StandardCharsets.US_ASCII);
+                log.info("DigiLocker document header: {}",header);
+
+                if (!header.startsWith("%PDF-")) {
+                    log.warn("DigiLocker response does not start with %PDF-. Header: {}",header);
+                }
+            }
+            return document;
+
+        } catch (Exception e) {
+            log.error("Error while fetching DigiLocker document from URL: {}",url,e);
+            throw e;
+        }
     }
 
     public Object getOauthToken(RequestInfo requestinfo , TokenRes tokenRes)
