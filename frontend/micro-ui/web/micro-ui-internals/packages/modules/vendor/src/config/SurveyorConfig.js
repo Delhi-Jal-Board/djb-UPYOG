@@ -1,7 +1,7 @@
 import React from "react";
 const { DatePicker } = require("@djb25/digit-ui-react-components");
 
-const SurveyorConfig = (t, agencies = [], reportingManagers = [], disabled = false) => {
+const SurveyorConfig = (t, genderMenu = [], disabled = false) => {
   return [
     {
       head: "ES_VENDOR_SURVEYOR_BASIC_DETAILS",
@@ -56,11 +56,16 @@ const SurveyorConfig = (t, agencies = [], reportingManagers = [], disabled = fal
           },
         },
         {
-          label: t("ES_VENDOR_SURVEYOR_GENDER"),
+          label: t("ES_FSM_REGISTRY_NEW_GENDER"),
           isMandatory: true,
           type: "component",
           key: "gender",
           component: "SelectEkycDropdown",
+          populators: {
+            name: "gender",
+            options: genderMenu,
+            optionsKey: "i18nKey",
+          },
         },
 
         {

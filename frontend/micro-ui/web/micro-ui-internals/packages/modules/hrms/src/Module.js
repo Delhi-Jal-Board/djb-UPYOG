@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useRouteMatch } from "react-router-dom";
 import HRMSCard from "./components/hrmscard";
 import InboxFilter from "./components/InboxFilter";
@@ -26,6 +26,16 @@ export const HRMSModule = ({ stateCode, userType, tenants }) => {
   const moduleCode = "HR";
   const language = Digit.StoreData.getCurrentLanguage();
   const { data } = Digit.Services.useStore({ stateCode, moduleCode, language });
+
+  useEffect(
+    () =>
+      Digit.LocalizationService.getLocale({
+        modules: [`rainmaker-hrms`, `rainmaker-${Digit.ULBService.getCurrentTenantId()}`],
+        locale: Digit.StoreData.getCurrentLanguage(),
+        tenantId: Digit.ULBService.getCurrentTenantId(),
+      }),
+    []
+  );
 
   Digit.SessionStorage.set("HRMS_TENANTS", tenants);
   const { path, url } = useRouteMatch();
