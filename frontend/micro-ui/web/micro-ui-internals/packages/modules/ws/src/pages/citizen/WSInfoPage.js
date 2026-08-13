@@ -285,8 +285,9 @@ const WSInfoPage = () => {
               try {
                 const data = await Digit.DigiLockerService.authorization({ module: "WS", tenantId });
                 const redirectUrl = data?.redirectURL || data?.redirectUrl;
-                if (data?.codeverifier) {
-                  sessionStorage.setItem("code_verfier_register", data?.codeverifier);
+                const verifier = data?.dlReqRef || data?.codeverifier || data?.codeVerifier || data?.code_verifier;
+                if (verifier) {
+                  sessionStorage.setItem("code_verfier_register", verifier);
                 }
                 if (redirectUrl) {
                   window.location.href = redirectUrl;
