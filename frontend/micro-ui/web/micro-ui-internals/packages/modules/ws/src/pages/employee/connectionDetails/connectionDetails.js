@@ -114,7 +114,7 @@ const GetConnectionDetails = () => {
       });
       return;
     }
-    if (applicationDetails?.fetchBillsData[0]?.totalAmount > 0) {
+    if (applicationDetails?.fetchBillsData?.[0]?.totalAmount > 0) {
       setshowActionToast({
         key: "error",
         label: "WS_DUE_AMOUNT_SHOULD_BE_ZERO",
@@ -136,7 +136,7 @@ const GetConnectionDetails = () => {
       });
       return;
     }
-    if (applicationDetails?.fetchBillsData[0]?.totalAmount > 0) {
+    if (applicationDetails?.fetchBillsData?.[0]?.totalAmount > 0) {
       setshowActionToast({
         key: "error",
         label: "WS_DUE_AMOUNT_SHOULD_BE_ZERO",

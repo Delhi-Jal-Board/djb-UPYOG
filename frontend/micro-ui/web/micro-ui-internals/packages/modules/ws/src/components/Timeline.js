@@ -6,12 +6,19 @@ let actions = [];
 
 const getAction = (flow) => {
  switch(flow){
+    case "MUTATION": actions = [
+      'WS_MUTATION_DETAILS',
+      'WS_MUTATION_NEW_CONSUMER',
+      'WS_MUTATION_DOCUMENTS',
+      'WS_MUTATION_PREVIEW',
+    ];
+    break;
     default: actions = [
       'WS_COMMON_PROPERTY_DETAILS',
       'WS_COMMON_CONNECTION_DETAIL',
       'WS_COMMON_DOCUMENT_DETAILS',
       'WS_COMMON_SUMMARY',
-    ]
+    ];
  }
 }
 const Timeline = ({ currentStep = 1, flow="" }) => {

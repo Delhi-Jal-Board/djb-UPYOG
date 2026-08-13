@@ -1,12 +1,17 @@
-import { FormComposer, Header, Loader, Toast, Card, StatusTable, Row, CardSubHeader } from "@djb25/digit-ui-react-components";
-import React, { useState, useEffect } from "react";
-import WSMutationApplicantDetails from "./WSMutationApplicantDetails";
+import React, { useState, useEffect, Fragment } from "react";
+import { Header, Loader, Toast } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useLocation, useHistory } from "react-router-dom";
-import * as func from "../../../utils";
-import _ from "lodash";
-import { convertApplicationData, convertModifyApplicationDetails, updatePayloadOfWS } from "../../../utils";
 import cloneDeep from "lodash/cloneDeep";
+import * as func from "../../../utils";
+import { convertApplicationData, convertModifyApplicationDetails } from "../../../utils";
+
+import Step1_ExistingConnection from "./components/Step1_ExistingConnection";
+import Step2_NewConsumerDetails from "./components/Step2_NewConsumerDetails";
+import Step3_UploadDocuments from "./components/Step3_UploadDocuments";
+import Step4_Preview from "./components/Step4_Preview";
+import Step5_Submission from "./components/Step5_Submission";
+import { VerticalTimeline } from "@djb25/digit-ui-react-components";
 
 const MutationApplication = () => {
   const { t } = useTranslation();
@@ -14,78 +19,49 @@ const MutationApplication = () => {
   state = state ? (typeof (state) === "string" ? JSON.parse(state) : state) : {};
   const history = useHistory();
   let filters = func.getQueryStringParams(location.search);
-  const [canSubmit, setSubmitValve] = useState(false);
+  
+  const [currentStep, setCurrentStep] = useState(1);
+  const [formData, setFormData] = useState({});
   const [showToast, setShowToast] = useState(null);
-  const [appData, setAppData] = useState({});
-  const [config, setConfig] = useState({ head: "", body: [] });
-  const [enabledLoader, setEnabledLoader] = useState(true);
-  const [isAppDetailsPage, setIsAppDetailsPage] = useState(false);
-  const [isEnableLoader, setIsEnableLoader] = useState(false);
+  const [generatedAppNo, setGeneratedAppNo] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [completedSteps, setCompletedSteps] = useState(new Set());
 
   let tenantId = Digit.ULBService.getCurrentTenantId();
   const applicationNumber = filters?.applicationNumber;
   const serviceType = filters?.service;
 
-  const stateId = Digit.ULBService.getStateId();
-  let { data: newConfig, isLoading: isConfigLoading } = Digit.Hooks.ws.useWSConfigMDMS.WSCreateConfig(stateId, {});
-
   let details = cloneDeep(state?.data);
-  let { isLoading, isError, data: applicationDetails, error } = Digit.Hooks.ws.useWSDetailsPage(t, tenantId, details?.applicationNo || applicationNumber, (serviceType?.toUpperCase() || details?.applicationData?.serviceType));
-  details = applicationDetails;
-  const [propertyId, setPropertyId] = useState(new URLSearchParams(useLocation().search).get("propertyId"));
+  let { isLoading: isDetailsLoading, data: applicationDetails } = Digit.Hooks.ws.useWSDetailsPage(
+    t, 
+    tenantId, 
+    details?.applicationNo || applicationNumber, 
+    (serviceType?.toUpperCase() || details?.applicationData?.serviceType)
+  );
+
+  const [propertyId, setPropertyId] = useState(new URLSearchParams(useLocation().search).get("propertyId") || applicationDetails?.applicationData?.propertyId);
+
+  const { data: propertyDetails, isLoading: isPropertyLoading } = Digit.Hooks.pt.usePropertySearch(
+    { filters: { propertyIds: propertyId }, tenantId: tenantId },
+    { filters: { propertyIds: propertyId }, tenantId: tenantId, enabled: !!propertyId }
+  );
 
   const [sessionFormData, setSessionFormData, clearSessionFormData] = Digit.Hooks.useSessionStorage("PT_CREATE_EMP_WS_NEW_FORM", {});
 
-  const { data: propertyDetails } = Digit.Hooks.pt.usePropertySearch(
-    { filters: { propertyIds: propertyId }, tenantId: tenantId },
-    { filters: { propertyIds: propertyId }, tenantId: tenantId, enabled: propertyId && propertyId != "" ? true : false }
-  );
-
   useEffect(() => {
-    if (!isConfigLoading && newConfig && Array.isArray(newConfig)) {
-      const config = cloneDeep(newConfig.find((conf) => conf.hideInCitizen && conf.isModify));
-      if (config) {
-        config.head = "WS_WATER_AND_SEWERAGE_MUTATION_CONNECTION_LABEL";
-        let bodyDetails = [];
-        config?.body?.forEach(data => { if (data?.isModifyConnection) bodyDetails.push(data); });
-        bodyDetails.forEach(bdyData => {
-          if (bdyData?.head === "WS_COMMON_PROPERTY_DETAILS") {
-            bdyData.head = "";
-            bdyData.className = "mutation-disabled-section";
-          } else if (bdyData?.head === "WS_COMMON_CONNECTION_HOLDER_DETAILS_HEADER") {
-            bdyData.head = "Specify ownership updates and transfer reason:";
-            bdyData.body = [
-              {
-                type: "component",
-                key: "MutationApplicantDetails",
-                component: WSMutationApplicantDetails,
-                withoutLabel: true,
-              }
-            ];
-          } else {
-            bdyData.head = "";
-            bdyData.className = "mutation-hidden-section";
-          }
-        });
-        config.body = bodyDetails;
-        setConfig(config);
+    const fetchAppData = async () => {
+      const dataToConvert = applicationDetails || details;
+      if (dataToConvert?.applicationData?.id) {
+        const convertAppData = await convertApplicationData(dataToConvert, (serviceType?.toUpperCase() || dataToConvert?.applicationData?.serviceType), true, undefined, t);
+        setSessionFormData((prev) => ({ ...prev, ...convertAppData }));
+        sessionStorage.setItem("IsDetailsExists", JSON.stringify(true));
       }
+    };
+    
+    if (applicationDetails?.applicationData?.id && !sessionFormData?.applicationData) {
+      fetchAppData();
     }
-  }, [newConfig]);
-
-  useEffect(() => {
-    !propertyId && sessionFormData?.cpt?.details?.propertyId && setPropertyId(sessionFormData?.cpt?.details?.propertyId);
-  }, [sessionFormData?.cpt]);
-
-  useEffect(async () => {
-    const IsDetailsExists = sessionStorage.getItem("IsDetailsExists") ? JSON.parse(sessionStorage.getItem("IsDetailsExists")) : false
-    if (details?.applicationData?.id) {
-      const convertAppData = await convertApplicationData(details, (serviceType?.toUpperCase() || details?.applicationData?.serviceType), true, undefined, t);
-      setSessionFormData((prev) => ({ ...prev, ...convertAppData }));
-      setAppData((prev) => ({ ...prev, ...convertAppData }));
-      sessionStorage.setItem("IsDetailsExists", JSON.stringify(true));
-    }
-  }, [details, applicationDetails]);
+  }, [applicationDetails?.applicationData?.id]);
 
   useEffect(() => {
     if (propertyDetails?.Properties?.[0]) {
@@ -93,82 +69,43 @@ const MutationApplication = () => {
     }
   }, [propertyDetails]);
 
-  useEffect(() => {
-    if (sessionFormData?.ConnectionDetails?.[0]?.applicationNo) {
-      setEnabledLoader(false);
-    }
-  }, [propertyDetails, sessionFormData, sessionFormData?.cpt]);
+  const { mutate: waterMutation } = Digit.Hooks.ws.useWaterCreateAPI("WATER");
+  const { mutate: sewerageMutation } = Digit.Hooks.ws.useWaterCreateAPI("SEWERAGE");
+  const { mutate: waterUpdateMutation } = Digit.Hooks.ws.useWSApplicationActions("WATER");
+  const { mutate: sewerageUpdateMutation } = Digit.Hooks.ws.useWSApplicationActions("SEWERAGE");
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (isAppDetailsPage) window.location.href = `${window.location.origin}/digit-ui/employee/ws/application-details?applicationNumber=${sessionFormData?.ConnectionDetails?.[0]?.applicationNo}&service=${sessionFormData?.ConnectionDetails?.[0]?.serviceName?.toUpperCase()}`
-    }, 3000);
-    return () => clearTimeout(timer);
-  }, [isAppDetailsPage]);
-
-  const {
-    isLoading: creatingWaterApplicationLoading,
-    isError: createWaterApplicationError,
-    data: createWaterResponse,
-    error: createWaterError,
-    mutate: waterMutation,
-  } = Digit.Hooks.ws.useWaterCreateAPI("WATER");
-
-  const {
-    isLoading: updatingWaterApplicationLoading,
-    isError: updateWaterApplicationError,
-    data: updateWaterResponse,
-    error: updateWaterError,
-    mutate: waterUpdateMutation,
-  } = Digit.Hooks.ws.useWSApplicationActions("WATER");
-
-  const {
-    isLoading: creatingSewerageApplicationLoading,
-    isError: createSewerageApplicationError,
-    data: createSewerageResponse,
-    error: createSewerageError,
-    mutate: sewerageMutation,
-  } = Digit.Hooks.ws.useWaterCreateAPI("SEWERAGE");
-
-  const {
-    isLoading: updatingSewerageApplicationLoading,
-    isError: updateSewerageApplicationError,
-    data: updateSewerageResponse,
-    error: updateSewerageError,
-    mutate: sewerageUpdateMutation,
-  } = Digit.Hooks.ws.useWSApplicationActions("SEWERAGE");
-
-  const onFormValueChange = (setValue, formData, formState) => {
-    const updatedData = { ...sessionFormData, ...formData };
-    if (!_.isEqual(sessionFormData, updatedData)) {
-      setSessionFormData(updatedData);
-    }
-    if (Object.keys(formState.errors).length > 0 && Object.keys(formState.errors).length == 1 && formState.errors["owners"] && Object.values(formState.errors["owners"].type).filter((ob) => ob.type === "required").length == 0 && !formData?.cpt?.details?.propertyId) setSubmitValve(true);
-    else setSubmitValve(!(Object.keys(formState.errors).length));
+  const handleNextStep2 = (data) => {
+    setFormData(prev => ({ ...prev, ...data }));
+    setCompletedSteps(prev => new Set([...prev, 2]));
+    setCurrentStep(3);
   };
 
-  const onSubmit = async (data) => {
-    let finalData = { ...sessionFormData, ...data };
+  const handleNextStep3 = (data) => {
+    setFormData(prev => ({ ...prev, ...data }));
+    setCompletedSteps(prev => new Set([...prev, 3]));
+    setCurrentStep(4);
+  };
 
-    if (!finalData?.cpt?.id && !propertyDetails?.Properties?.[0]) {
-      if (!finalData?.cpt?.details || !propertyDetails) {
-        setShowToast({ key: "error", message: "ERR_INVALID_PROPERTY_ID" });
-        return;
-      }
-    }
-    if (!canSubmit) {
-      setShowToast({ warning: true, message: "PLEASE_FILL_MANDATORY_DETAILS" });
-      setTimeout(() => {
-        setShowToast(false);
-      }, 3000);
-    }
-    else {
+  const submitApplication = async () => {
+    setIsSubmitting(true);
+    try {
+      let finalData = { ...sessionFormData };
 
       if (!finalData?.cpt?.details) {
-        finalData.cpt = {
-          details: propertyDetails?.Properties?.[0]
-        };
+        finalData.cpt = { details: propertyDetails?.Properties?.[0] };
       }
+
+      finalData.MutationApplicantDetails = {
+        proposedNewConsumerName: formData.proposedNewConsumerName,
+        newOwnerMobileNumber: formData.newOwnerMobileNumber,
+        newOwnerEmailAddress: formData.newOwnerEmailAddress,
+        reasonForNameChange: formData.reasonForNameChange,
+        relationshipWithExistingConsumer: formData.relationshipWithExistingConsumer,
+        saleDeedDocumentId: formData.saleDeedDocumentId,
+        identityProofType: formData.identityProofType,
+        identityProofDocumentId: formData.identityProofDocumentId,
+        documentNumber: formData.documentNumber
+      };
 
       if (finalData?.MutationApplicantDetails) {
         const mutDetails = finalData.MutationApplicantDetails;
@@ -182,8 +119,14 @@ const MutationApplication = () => {
         }];
       }
 
-      const details = sessionStorage.getItem("WS_EDIT_APPLICATION_DETAILS") ? JSON.parse(sessionStorage.getItem("WS_EDIT_APPLICATION_DETAILS")) : {};
-      let convertAppData = await convertModifyApplicationDetails(finalData, details, "APPLY_MUTATION");
+      const sessionDetails = sessionStorage.getItem("WS_EDIT_APPLICATION_DETAILS") ? JSON.parse(sessionStorage.getItem("WS_EDIT_APPLICATION_DETAILS")) : {};
+      
+      let convertAppData = await convertModifyApplicationDetails(finalData, sessionDetails, "INITIATE");
+      
+      // Ensure dateEffectiveFrom is present for mutation creation validation
+      if (!convertAppData.dateEffectiveFrom) {
+        convertAppData.dateEffectiveFrom = Date.now();
+      }
 
       if (finalData?.MutationApplicantDetails) {
         const mutDetails = finalData.MutationApplicantDetails;
@@ -201,98 +144,201 @@ const MutationApplication = () => {
           convertAppData.documents.push({
             documentType: "REGISTERED_SALE_DEED",
             fileStoreId: mutDetails.saleDeedDocumentId,
-            documentUid: mutDetails.saleDeedDocumentId
+            documentUid: mutDetails.saleDeedDocumentId,
+            status: "ACTIVE"
+          });
+        }
+
+        if (mutDetails.identityProofDocumentId) {
+          if (!convertAppData.documents) convertAppData.documents = [];
+          convertAppData.documents.push({
+            documentType: mutDetails.identityProofType?.code || "IDENTITY_PROOF",
+            fileStoreId: mutDetails.identityProofDocumentId,
+            documentUid: mutDetails.documentNumber || mutDetails.identityProofDocumentId,
+            documentNumber: mutDetails.documentNumber,
+            status: "ACTIVE"
           });
         }
       }
 
-      // Set mutation application type explicitly
       convertAppData.applicationType = serviceType == "WATER" ? "MUTATION_WATER_CONNECTION" : "MUTATION_SEWERAGE_CONNECTION";
 
       const reqDetails = serviceType == "WATER"
         ? { WaterConnection: convertAppData, reconnectRequest: false, disconnectRequest: false }
         : { SewerageConnection: convertAppData, reconnectRequest: false, disconnectRequest: false };
 
-      if (serviceType == "WATER") {
-        if (waterMutation) {
-          setIsEnableLoader(true);
-          await waterMutation(reqDetails, {
-            onError: (error, variables) => {
-              setIsEnableLoader(false);
-              setShowToast({ key: "error", message: error?.response?.data?.Errors?.[0].message ? error?.response?.data?.Errors?.[0].message : error });
-              setTimeout(closeToastOfError, 5000);
-            },
-            onSuccess: async (data, variables) => {
-              clearSessionFormData();
-              history.push(`/digit-ui/employee/ws/ws-response?applicationNumber=${data?.WaterConnection?.[0]?.applicationNo}`);
-            },
-          });
-        }
-      }
+      const mutation = serviceType == "WATER" ? waterMutation : sewerageMutation;
 
-      if (serviceType !== "WATER") {
-        if (sewerageMutation) {
-          setIsEnableLoader(true);
-          await sewerageMutation(reqDetails, {
-            onError: (error, variables) => {
-              setIsEnableLoader(false);
-              setShowToast({ key: "error", message: error?.response?.data?.Errors?.[0]?.message ? error?.response?.data?.Errors?.[0]?.message : error });
-              setTimeout(closeToastOfError, 5000);
-            },
-            onSuccess: async (data, variables) => {
-              clearSessionFormData();
-              history.push(`/digit-ui/employee/ws/ws-response?applicationNumber1=${data?.SewerageConnections?.[0]?.applicationNo}`);
-            },
-          });
+      await mutation(reqDetails, {
+        onError: (error) => {
+          setIsSubmitting(false);
+          setShowToast({ key: "error", message: error?.response?.data?.Errors?.[0]?.message || "Failed to submit application" });
+        },
+        onSuccess: (data) => {
+          // Check if the Request utility returned an Axios error object
+          if (data instanceof Error || data?.isAxiosError || data?.response?.data?.Errors) {
+            setIsSubmitting(false);
+            const apiErrors = data?.response?.data?.Errors;
+            const errorMessage = apiErrors?.[0]?.message || data?.message || "Failed to submit application";
+            setShowToast({ key: "error", message: errorMessage });
+            return;
+          }
+          
+          // Check if the API returned 200 OK but with an Errors array
+          if (data?.Errors && data.Errors.length > 0) {
+            setIsSubmitting(false);
+            setShowToast({ key: "error", message: data.Errors[0].message || "Failed to submit application" });
+          } else {
+            // Create succeeded, now call update API to trigger workflow submission
+            const updateMutation = serviceType == "WATER" ? waterUpdateMutation : sewerageUpdateMutation;
+            const createdConnection = serviceType == "WATER" ? data?.WaterConnection?.[0] : data?.SewerageConnections?.[0];
+            
+            let updatePayload = {
+              ...createdConnection,
+              dateEffectiveFrom: createdConnection?.dateEffectiveFrom || Date.now(),
+              processInstance: {
+                ...createdConnection?.processInstance,
+                action: "APPLY_MUTATION",
+              }
+            };
+            
+            // Apply customization if it exists in the platform
+            if (Digit?.Customizations?.WS?.customiseUpdatePayloadOfWS) {
+              updatePayload = Digit.Customizations.WS.customiseUpdatePayloadOfWS(createdConnection, updatePayload, serviceType);
+            }
+
+            let reqDetailsUpdate = serviceType == "WATER"
+              ? { WaterConnection: updatePayload, reconnectRequest: false, disconnectRequest: false }
+              : { SewerageConnection: updatePayload, reconnectRequest: false, disconnectRequest: false };
+
+            updateMutation(reqDetailsUpdate, {
+              onError: (error) => {
+                setIsSubmitting(false);
+                setShowToast({ key: "error", message: error?.response?.data?.Errors?.[0]?.message || "Failed to update workflow" });
+              },
+              onSuccess: (updateData) => {
+                setIsSubmitting(false);
+                if (updateData instanceof Error || updateData?.isAxiosError || updateData?.response?.data?.Errors) {
+                  const apiErrors = updateData?.response?.data?.Errors;
+                  const errorMessage = apiErrors?.[0]?.message || updateData?.message || "Failed to update workflow";
+                  setShowToast({ key: "error", message: errorMessage });
+                  return;
+                }
+
+                if (updateData?.Errors && updateData.Errors.length > 0) {
+                  setShowToast({ key: "error", message: updateData.Errors[0].message || "Failed to update workflow" });
+                  return;
+                }
+                
+                clearSessionFormData();
+                const newAppNo = serviceType == "WATER" ? updateData?.WaterConnection?.[0]?.applicationNo : updateData?.SewerageConnections?.[0]?.applicationNo;
+                setGeneratedAppNo(newAppNo);
+                setCurrentStep(5);
+              }
+            });
+          }
         }
-      }
+      });
+    } catch (e) {
+      console.error(e);
+      setIsSubmitting(false);
+      setShowToast({ key: "error", message: "Failed to submit application" });
     }
   };
 
-  const closeToastOfError = () => {
-    setShowToast(null);
+  const handleTimelineSelect = (route, index) => {
+    const targetStep = index + 1;
+    // Allow going back to any previously visited step
+    if (targetStep < currentStep) {
+      setCurrentStep(targetStep);
+      return;
+    }
+    // Allow clicking current step (no-op)
+    if (targetStep === currentStep) return;
+    // Prevent skipping ahead
+    if (targetStep > currentStep) {
+      setShowToast({ key: "warning", message: `Please complete Step ${currentStep} before proceeding to Step ${targetStep}.` });
+    }
   };
 
-  const closeToast = () => {
-    setShowToast(null);
-  };
+  const timelineConfig = [
+    { sectionId: "application", route: "application-selection", actions: "Existing Connection" },
+    { sectionId: "applicant", route: "applicant-details", actions: "New Consumer Details" },
+    { sectionId: "documents", route: "documents", actions: "Documents" },
+    { sectionId: "Review", route: "review", actions: "Preview" }
+  ].map((step, index) => ({
+    ...step,
+    timeLine: [{ actions: step.actions, currentStep: index + 1 }],
+  }));
 
-  if (enabledLoader || isEnableLoader || isConfigLoading) {
+  if (isDetailsLoading || (propertyId && isPropertyLoading)) {
     return <Loader />;
   }
 
   return (
     <React.Fragment>
-      <style>{`
-        .mutation-disabled-section { pointer-events: none; opacity: 0.8; margin-top: -24px !important; }
-        .mutation-hidden-section { display: none !important; margin: 0 !important; padding: 0 !important; height: 0 !important; overflow: hidden !important; border: 0 !important; }
-        .mutation-hidden-section + hr { display: none !important; margin: 0 !important; }
-        .mutation-hidden-section + .break-line { display: none !important; margin: 0 !important; }
-      `}</style>
-      <Header>{t(config.head)}</Header>
-      <Card>
-        <CardSubHeader>{t("WS_MUTATION_DETAILS")}</CardSubHeader>
-        <StatusTable>
-          <Row label={t("WS_MYCONNECTIONS_APPLICATION_NO")} text={applicationDetails?.applicationData?.applicationNo || "NA"} />
-          <Row label={t("WS_CONNECTION_CATEGORY")} text={applicationDetails?.applicationData?.connectionCategory || "NA"} />
-          <Row label={t("WS_PROPERTY_ID_LABEL")} text={applicationDetails?.applicationData?.propertyId || propertyId || "NA"} />
-          <Row label={t("WS_APPLICATION_ID")} text={applicationDetails?.applicationData?.id || applicationDetails?.applicationData?.connectionNo || "NA"} />
-          <Row label={t("WS_CONNECTION_DATE")} text={applicationDetails?.applicationData?.connectionExecutionDate ? Digit.DateUtils.ConvertEpochToDate(applicationDetails?.applicationData?.connectionExecutionDate) : "NA"} />
-        </StatusTable>
-      </Card>
-      <FormComposer
-        config={config.body}
-        userType={"employee"}
-        onFormValueChange={onFormValueChange}
-        label={t("CS_COMMON_SUBMIT")}
-        onSubmit={onSubmit}
-        defaultValues={sessionFormData}
-        appData={appData}
-      ></FormComposer>
-      {showToast && <Toast isDleteBtn={true} error={showToast?.key === "error" ? true : false} label={t(showToast?.message)} onClose={closeToast} />}
+      <div className="employee-form-section-wrapper">
+        {currentStep !== 5 && (
+          <VerticalTimeline config={timelineConfig} currentActiveIndex={currentStep - 1} showFinalStep={false} onSelect={handleTimelineSelect} />
+        )}
+
+        <div style={{ flex: "1", minWidth: 0 }}>
+          {currentStep === 1 && (
+        <Fragment>
+          <Step1_ExistingConnection t={t} applicationDetails={applicationDetails} propertyId={propertyId} />
+          <div style={{ display: "flex", justifyContent: "flex-end" }}>
+            <button 
+              onClick={() => { setCompletedSteps(prev => new Set([...prev, 1])); setCurrentStep(2); }}
+              style={{ padding: "10px 24px", backgroundColor: "#00497e", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}
+            >
+              Proceed to New Consumer Details &#8594;
+            </button>
+          </div>
+        </Fragment>
+      )}
+
+      {currentStep === 2 && (
+        <Step2_NewConsumerDetails 
+          t={t} 
+          defaultValues={formData}
+          onNext={handleNextStep2} 
+          onBack={() => setCurrentStep(1)} 
+        />
+      )}
+
+      {currentStep === 3 && (
+        <Step3_UploadDocuments 
+          t={t} 
+          defaultValues={formData}
+          onNext={handleNextStep3} 
+          onBack={() => setCurrentStep(2)} 
+        />
+      )}
+
+      {currentStep === 4 && (
+        <Step4_Preview 
+          t={t} 
+          formData={formData}
+          applicationDetails={applicationDetails}
+          onBack={() => setCurrentStep(3)}
+          onSubmit={submitApplication}
+          isLoading={isSubmitting}
+        />
+      )}
+
+      {currentStep === 5 && (
+        <Step5_Submission 
+          t={t} 
+          applicationNumber={generatedAppNo}
+          serviceType={serviceType || applicationDetails?.applicationData?.serviceType}
+        />
+      )}
+
+          {showToast && <Toast error={showToast?.key === "error"} warning={showToast?.key === "warning"} label={t(showToast?.message)} onClose={() => setShowToast(null)} isDleteBtn={true} />}
+        </div>
+      </div>
     </React.Fragment>
   );
 };
 
 export default MutationApplication;
-
