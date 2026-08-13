@@ -46,7 +46,7 @@ export const initKeycloak = async () => {
   }
 
   _kc = new Keycloak({
-    url: "https://dev-djberp.nitcon.in/keycloak",
+    url: "https://ejalsewa.nitcon.in/keycloak",
     realm: "DL",
     clientId: "workbench",
   });
@@ -100,7 +100,7 @@ export const triggerKeycloakLogin = () => {
   if (!kc) {
     // KC not initialised — do a manual redirect to KC login
     const ctx = window.contextPath || "workbench-ui";
-    const kcBase = "https://dev-djberp.nitcon.in/keycloak";
+    const kcBase = "https://ejalsewa.nitcon.in/keycloak";
     const realm = "DL";
     const clientId = "workbench";
     const redirectUri = encodeURIComponent(window.location.origin + `/${ctx}/employee/user/login`);

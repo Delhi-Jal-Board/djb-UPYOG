@@ -34,7 +34,7 @@
 //   }
 
 //   _kc = new Keycloak({
-//     url: "https://dev-djberp.nitcon.in/keycloak",
+//     url: "https://ejalsewa.nitcon.in/keycloak",
 //     realm: "DL",
 //     clientId: "local-upyog",
 //     // redirectUri: window.location.origin,
@@ -94,7 +94,7 @@ export const initKeycloak = async () => {
   }
 
   _kc = new Keycloak({
-    url: "https://dev-djberp.nitcon.in/keycloak",
+    url: "https://ejalsewa.nitcon.in/keycloak",
     realm: "DL",
     clientId: "upyog",
   });
