@@ -274,7 +274,25 @@ public class EnrichmentService {
 					driverSearchCriteria.setOwnerIds(Arrays.asList(driver.getOwnerId()));
 					UserDetailResponse userDetailResponse = userService.getUsers(VendorSearchCriteria.builder()
 							.tenantId(tenantId).ids(Arrays.asList(driver.getOwnerId())).build(), requestInfo);
-					driver.setOwner(userDetailResponse.getUser().get(0));
+//					driver.setOwner(userDetailResponse.getUser().get(0));
+					// FIX (2026-08-14): mirrors the existing null/empty guard
+					// already used a few lines above (~231) for the vendor's
+					// own owner lookup — that one already handles "no
+					// matching user found" safely; this driver-owner lookup
+					// did not, and threw a bare NullPointerException whenever
+					// a driver's ownerId had no matching user record (a
+					// stale/deleted owner account). Confirmed live via
+					// vendor-service logs: enrichVendorSearch() enriched 7
+					// vendors successfully, then NPE'd partway through the
+					// 8th — consistent with exactly one driver on that
+					// vendor having an unresolvable ownerId. This crashed
+					// the WHOLE vendor _search call (HTTP 400) for every
+					// caller in that request, not just this one driver —
+					// including every other vendor already enriched fine in
+					// the same call.
+					if (userDetailResponse != null && !CollectionUtils.isEmpty(userDetailResponse.getUser())) {
+						driver.setOwner(userDetailResponse.getUser().get(0));
+					}
 					driver.setVendorDriverStatus(org.egov.vendor.driver.web.model.Driver.StatusEnum.ACTIVE);
 
 				});
