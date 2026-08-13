@@ -1,6 +1,17 @@
 import {
-  ActionBar, Card, DatePicker, Dropdown, FormComposer, Header, Loader, Modal, Row, StatusTable, SubmitBar,
-  Toast
+  ActionBar,
+  Card,
+  DatePicker,
+  Dropdown,
+  FormComposer,
+  Header,
+  Loader,
+  Modal,
+  Row,
+  StatusTable,
+  SubmitBar,
+  Toast,
+  VerticalTimeline,
 } from "@djb25/digit-ui-react-components";
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
@@ -37,10 +48,14 @@ const ConsumptionDetails = ({ view }) => {
   const { isLoading: billingPeriodLoading, data: mdmsBillingPeriod } = Digit.Hooks.ws.useGetBillingPeriodValidation(tenantId);
 
   let connectionFilters = {
-    connectionNumber: applicationNo
+    connectionNumber: applicationNo,
   };
 
-  const { isLoading: isConnectionDetailsLoading, data: connectionDetailsData } = Digit.Hooks.ws.useOldValue({tenantId : tenantId, filters: { ...connectionFilters },businessService : businessService === "WS"? "WATER" : "SEWERAGE"})
+  const { isLoading: isConnectionDetailsLoading, data: connectionDetailsData } = Digit.Hooks.ws.useOldValue({
+    tenantId: tenantId,
+    filters: { ...connectionFilters },
+    businessService: businessService === "WS" ? "WATER" : "SEWERAGE",
+  });
 
   const {
     isLoading: updatingMeterConnectionLoading,
@@ -56,11 +71,12 @@ const ConsumptionDetails = ({ view }) => {
       let connectionData = connectionDetails?.filter((ob) => ob?.applicationType?.includes("DISCONNECT"));
       if (connectionData?.length == 0) setisAddMeterReadingButtonEnable(true);
       connectionData?.map((data) => {
-        if (data?.applicationStatus === "DISCONNECTION_EXECUTED" || data?.applicationStatus === "PENDING_FOR_DISCONNECTION_EXECUTION") setisAddMeterReadingButtonEnable(false);
+        if (data?.applicationStatus === "DISCONNECTION_EXECUTED" || data?.applicationStatus === "PENDING_FOR_DISCONNECTION_EXECUTION")
+          setisAddMeterReadingButtonEnable(false);
         else setisAddMeterReadingButtonEnable(true);
-      })
+      });
     }
-  }, [connectionDetailsData])
+  }, [connectionDetailsData]);
 
   const convertDateToEpoch = (dateString, dayStartOrEnd = "dayend") => {
     //example input format : "2018-10-02"
@@ -335,9 +351,10 @@ const ConsumptionDetails = ({ view }) => {
   let { meterReadings } = response || {};
   return (
     <React.Fragment>
-      <div>
-        <Header styles={{ marginLeft: "15px" }}>{`${t("WS_VIEW_CONSUMPTION")}`}</Header>
-        <div>
+      <div className="employee-form-section-wrapper">
+        <VerticalTimeline config={[{ timeLine: [{ actions: "WS_VIEW_CONSUMPTION", currentStep: 1 }] }]} showFinalStep={false} />
+
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "16px" }}>
           {meterReadings?.length > 0 &&
             meterReadings.map((application, index) => (
               <div key={index}>
@@ -399,9 +416,11 @@ const ConsumptionDetails = ({ view }) => {
         </div>
         {isLoading || meterStatusLoading || billingPeriodLoading || !isUserAllowedToAddMeterReading ? null : (
           <div>
-            {isAddMeterReadingButtonEnable && <ActionBar>
-            <SubmitBar label={t("WS_CONSUMPTION_BUTTON_METER_READING_LABEL")} onSubmit={popUp} />
-          </ActionBar>}
+            {isAddMeterReadingButtonEnable && (
+              <ActionBar>
+                <SubmitBar label={t("WS_CONSUMPTION_BUTTON_METER_READING_LABEL")} onSubmit={popUp} />
+              </ActionBar>
+            )}
           </div>
         )}
       </div>

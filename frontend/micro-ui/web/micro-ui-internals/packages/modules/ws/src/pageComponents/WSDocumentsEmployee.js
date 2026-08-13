@@ -164,6 +164,7 @@ function SelectDocument({
   const [file, setFile] = useState(null);
   const [uploadedFile, setUploadedFile] = useState(() => filteredDocument?.fileStoreId || null);
   const [documentUid, setDocumentUid] = useState(() => filteredDocument?.documentUid || filteredDocument?.documentNumber || "");
+  const [isDocumentUidLocked, setIsDocumentUidLocked] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isCameraFile, setIsCameraFile] = useState(false);
@@ -192,15 +193,16 @@ function SelectDocument({
       try {
         const res = await Digit.UploadServices.FileFetchbyid(uploadedFile, Digit.ULBService.getStateId());
         if (res?.data) {
-          const blob = res.data instanceof Blob ? res.data : new Blob([res.data], { type: res.headers["content-type"] || res.headers["Content-Type"] || "image/jpeg" });
+          const contentType = res.headers?.["content-type"] || res.headers?.["Content-Type"] || "";
+          // Determine type by content-type or fall back to checking blob type
+          const isPdf =
+            contentType.toLowerCase().includes("pdf") ||
+            (res.data instanceof Blob && res.data.type && res.data.type.toLowerCase().includes("pdf"));
+          const mimeType = isPdf ? "application/pdf" : contentType || "image/jpeg";
+          const blob = res.data instanceof Blob ? res.data : new Blob([res.data], { type: mimeType });
           const fileURL = URL.createObjectURL(blob);
           setDocFileUrl(fileURL);
-          const contentType = res.headers["content-type"] || res.headers["Content-Type"] || "";
-          if (contentType.toLowerCase().includes("pdf")) {
-            setDocFileType("pdf");
-          } else {
-            setDocFileType("image");
-          }
+          setDocFileType(isPdf ? "pdf" : "image");
           setShowDocModal(true);
         }
       } catch (err) {
@@ -358,8 +360,12 @@ function SelectDocument({
             <TextInput
               type="text"
               value={documentUid}
-              onChange={(e) => setDocumentUid(e.target.value)}
+              onChange={(e) => {
+                if (!isDocumentUidLocked) setDocumentUid(e.target.value);
+              }}
               placeholder={t("WS_IDENTITY_NO_PLACEHOLDER")}
+              disabled={isDocumentUidLocked}
+              style={isDocumentUidLocked ? { backgroundColor: "#f0f0f0", cursor: "not-allowed", color: "#555" } : {}}
             />
           </div>
         </LabelFieldPair>
@@ -380,6 +386,7 @@ function SelectDocument({
                   setUploadedFile(null);
                   setFile(null);
                   setIsCameraFile(false);
+                  setIsDocumentUidLocked(false);
                 }}
                 id={id}
                 message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
@@ -394,8 +401,13 @@ function SelectDocument({
                   setUploadedFile(null);
                   setFile(null);
                   setIsCameraFile(false);
+                  setIsDocumentUidLocked(false);
                 }}
                 documentType={selectedDocument?.code}
+                onDocumentNumber={(num) => {
+                  setDocumentUid(num);
+                  setIsDocumentUidLocked(true);
+                }}
               />
             ) : (
               <UploadFile
