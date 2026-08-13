@@ -188,15 +188,16 @@ const UploadFileDigiLocker = (props) => {
    const fetchDigiLockerDocuments = async (e) => {
     e.preventDefault();
     try {
-      const digiLockerToken = sessionStorage.getItem("DigiLocker.token1") || "dummy_token";
-      // if (!digiLockerToken) {
-      //   setShowToast({ error: true, label: "Please login to DigiLocker first to fetch documents." });
-      //   return;
-      // }
+      const digiLockerToken = sessionStorage.getItem("DigiLocker.token1");
+      if (!digiLockerToken) {
+        setShowToast({ error: true, label: "Please login to DigiLocker first to fetch documents." });
+        return;
+      }
       let TokenReq = {
         authToken: digiLockerToken,
       };
-      const res1 = await Digit.DigiLockerService.issueDoc({ TokenReq });
+      const tenantId = Digit.ULBService.getCurrentTenantId() || "dl.djb";
+      const res1 = await Digit.DigiLockerService.issueDoc({ TokenReq }, tenantId);
       if (!res1 || !res1.IssuedDoc) {
         setShowToast({ error: true, label: "Failed to fetch documents from DigiLocker. Please login again." });
         return;
@@ -218,7 +219,8 @@ const UploadFileDigiLocker = (props) => {
           authToken: digiLockerToken,
           id: uri[0].uri,
         };
-        const res2 = await Digit.DigiLockerService.uri({ TokenReq: TokenReqNew });
+        const tenantId = Digit.ULBService.getCurrentTenantId() || "dl.djb";
+        const res2 = await Digit.DigiLockerService.uri({ TokenReq: TokenReqNew }, tenantId);
         let c = new Blob([res2]);
         let filename = `${doctype}_${uri[0].name || "document"}.pdf`;
         convertToFile(e, c, filename);

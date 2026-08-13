@@ -45,38 +45,7 @@ const WSInfoPage = () => {
     }
   );
 
-  useEffect(() => {
-    const fetchToken = async () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const code = urlParams.get("code");
-      const state = urlParams.get("state");
 
-      if (code && state === "oidc_flow") {
-        try {
-          const TokenReq = {
-            module: "WS",
-            code: code,
-          };
-          const res = await Digit.DigiLockerService.token({ TokenReq });
-          // If the token endpoint returns access_token in TokenRes, store it
-          if (res?.TokenRes?.access_token) {
-            sessionStorage.setItem("DigiLocker.token1", res.TokenRes.access_token);
-          } else {
-            // as fallback
-            sessionStorage.setItem("DigiLocker.token1", "dummy_token");
-          }
-
-          // Optionally, clean up the URL
-          const newUrl = window.location.pathname;
-          window.history.replaceState({}, document.title, newUrl);
-        } catch (error) {
-          console.error("Error fetching DigiLocker token", error);
-        }
-      }
-    };
-
-    fetchToken();
-  }, []);
 
   const radioOptions = [
     { code: "YES", i18nKey: "TL_COMMON_YES" },

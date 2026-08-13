@@ -20,31 +20,34 @@ export const DigiLockerService = {
       userService: true,
       params: { module: module || "REGISTER", tenantId: tenantId, ...filters },
     }),
-  token: (data) =>
+  token: (data, tenantId) =>
     Request({
       url: Urls.digiLocker.token,
       useCache: false,
       method: "POST",
       auth: true,
       userService: true,
+      params: { tenantId: tenantId },
       data: data,
     }),
-  issueDoc: (data) =>
+  issueDoc: (data, tenantId) =>
     Request({
       url: Urls.digiLocker.issueDoc,
       useCache: false,
       method: "POST",
       auth: true,
       userService: true,
+      params: { tenantId: tenantId },
       data: data,
     }),
-  uri: (data) =>
+  uri: (data, tenantId) =>
     Request({
       url: Urls.digiLocker.uri,
       useCache: false,
       method: "POST",
       auth: true,
       userService: true,
+      params: { tenantId: tenantId },
       data: data,
     }),
 };

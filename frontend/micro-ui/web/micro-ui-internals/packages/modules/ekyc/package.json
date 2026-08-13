@@ -1,6 +1,6 @@
 {
   "name": "@djb25/digit-ui-module-ekyc",
-  "version": "1.0.54",
+  "version": "1.0.55",
   "description": "Digit UI Module for Ekyc",
   "main": "dist/index.js",
   "module": "dist/index.modern.js",
