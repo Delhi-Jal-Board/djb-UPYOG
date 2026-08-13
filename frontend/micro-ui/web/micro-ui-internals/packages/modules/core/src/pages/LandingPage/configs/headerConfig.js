@@ -84,7 +84,7 @@ const headerConfig = {
       type: "dropdown",
       children: [
         {
-          label: "Citizen Login",
+          label: "Consumer Login",
           // Redirect to the citizen portal dashboard (accessible to guests/unauthenticated users)
           link: `/${contextPath}/citizen`,
         },

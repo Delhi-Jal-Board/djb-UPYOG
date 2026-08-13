@@ -80,7 +80,7 @@ const StatusCards = ({ countData }) => {
       }
 
       const excludedKeys = [
-        "status", "source", "submittedAt", "assignedAt", "connectionType", "approvedAt",
+        "status", "source", "assignedAt", "connectionType", "approvedAt",
         "alternateMobileNo", "city", "state", "addressType", "addressProofType", "mrcode",
         "areacode", "verificationStatus", "surveyorId", "supervisorId", "vendorId",
         "assignmentType", "assignmentValue", "assignedTime", "isSelfAssigned", "userType",
@@ -226,10 +226,28 @@ const StatusCards = ({ countData }) => {
           cleanObj[t("CONSUMER_NAME") || "Consumer Name"] = toTitleCase(name);
         }
 
-        Object.keys(item).forEach(key => {
+        const keys = Object.keys(item);
+
+        // submittedAt ko last column me bhejne ke liye
+        const orderedKeys = [
+          ...keys.filter(key => key !== "submittedAt"),
+          ...(keys.includes("submittedAt") ? ["submittedAt"] : [])
+        ];
+
+        orderedKeys.forEach(key => {
           if (excludedKeys.includes(key)) return;
 
           let val = item[key];
+
+          // Convert submittedAt timestamp to date/time
+          if (key === "submittedAt" && val) {
+            const date = new Date(Number(val));
+
+            const pad = (n) => String(n).padStart(2, "0");
+
+            val = `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+          }
+
           if (typeof val === "object" && val !== null) {
             return;
           }
@@ -240,7 +258,8 @@ const StatusCards = ({ countData }) => {
             val = t("CS_NO");
           }
 
-          const friendlyHeader = headerMapping[key] || t(key.toUpperCase()) || key;
+          const friendlyHeader =
+            headerMapping[key] || t(key.toUpperCase()) || key;
 
           if (typeof val === "string" && translatedFields.includes(key)) {
             cleanObj[friendlyHeader] = t(val);
@@ -250,7 +269,6 @@ const StatusCards = ({ countData }) => {
             cleanObj[friendlyHeader] = val;
           }
         });
-
         return cleanObj;
       });
 

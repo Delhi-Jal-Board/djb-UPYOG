@@ -238,7 +238,7 @@ const AddVendor = () => {
     if (isEkyc) {
       vendorData = {
         ...vendorData,
-        zoneIds: mergedData?.zoneIds?.map((z) => z?.name) || [],
+        zoneIds: mergedData?.zoneIds?.map((z) => z?.code) || [],
         clusterIds: mergedData?.clusterIds?.map((c) => c?.[1]?.code) || [],
         contractStartDate: mergedData.contractStartDate ? new Date(mergedData.contractStartDate).getTime() : null,
         contractEndDate: mergedData.contractEndDate ? new Date(mergedData.contractEndDate).getTime() : null,

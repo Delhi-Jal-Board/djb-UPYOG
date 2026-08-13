@@ -415,7 +415,7 @@ const SupervisorDetailsCard = () => {
             }
 
             const excludedKeys = [
-                "status", "source", "submittedAt", "assignedAt", "connectionType", "approvedAt",
+                "status", "source", "assignedAt", "connectionType", "approvedAt",
                 "alternateMobileNo", "city", "state", "addressType", "addressProofType", "mrcode",
                 "areacode", "verificationStatus", "surveyorId", "supervisorId", "vendorId",
                 "assignmentType", "assignmentValue", "assignedTime", "isSelfAssigned", "userType",
@@ -664,13 +664,13 @@ const SupervisorDetailsCard = () => {
 
                 {/* Download Report — far right */}
                 <div className="report-download">
-                <button
-                    className="download-btn"
-                    disabled={reportLoading}
-                    onClick={handleDownload}
-                >
-                    {reportLoading ? t("DOWNLOADING") || "Downloading..." : t("DOWNLOAD_REPORT") || "Download Report"}
-                </button>
+                    <button
+                        className="download-btn"
+                        disabled={reportLoading}
+                        onClick={handleDownload}
+                    >
+                        {reportLoading ? t("DOWNLOADING") || "Downloading..." : t("DOWNLOAD_REPORT") || "Download Report"}
+                    </button>
                 </div>
             </div>
 

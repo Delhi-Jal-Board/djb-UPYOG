@@ -294,7 +294,7 @@ const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true, 
 
       if (!initialized.current && selected) {
         initialized.current = true;
-        onSelect(config.key, selected.name || "");
+        onSelect(config.key, selected.code || "");
       }
     }
   }, [zones, formData?.zoneIds, config.key, onSelect, isMultiSelect]);
@@ -303,7 +303,7 @@ const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true, 
     if (isEkycSupervisor && zones.length > 0 && !formData?.zoneIds && !initialized.current) {
       initialized.current = true;
       setSelectedZones([zones[0]]);
-      onSelect(config.key, zones[0].name || "");
+      onSelect(config.key, zones[0].code || "");
     }
   }, [isEkycSupervisor, zones, formData?.zoneIds, config.key, onSelect]);
 
@@ -315,7 +315,7 @@ const SelectEkycZones = ({ config, onSelect, t, formData, isMultiSelect = true, 
     } else {
       const selectedZone = Array.isArray(value) ? (Array.isArray(value[0]) ? value[0][1] : value[0]) : value;
       setSelectedZones(selectedZone ? [selectedZone] : []);
-      onSelect(config.key, selectedZone?.name || "");
+      onSelect(config.key, selectedZone?.code || "");
     }
   };
 

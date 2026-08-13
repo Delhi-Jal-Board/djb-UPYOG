@@ -47,8 +47,8 @@ export const EkycService = {
       userService: true,
     }),
 
-  application_approve: (data, tenantId) =>
-    Request({
+  application_approve: async (data, tenantId) => {
+    const response = await Request({
       url: Urls.ekyc.application_approve,
       data: data,
       useCache: false,
@@ -56,7 +56,14 @@ export const EkycService = {
       params: { tenantId },
       auth: true,
       userService: true,
-    }),
+    });
+
+    if (response?.error || response?.Errors || response?.responseInfo?.status === "failed" || response?.code) {
+      throw response;
+    }
+
+    return response;
+  },
 
   fetchSummary: (data) =>
     Request({
