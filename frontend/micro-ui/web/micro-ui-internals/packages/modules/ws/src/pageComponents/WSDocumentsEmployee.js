@@ -2,6 +2,14 @@ import React, { useEffect, useRef, useState } from "react";
 import { CardLabel, LabelFieldPair, Dropdown, UploadFile, Toast, Loader, TextInput, CollapsibleCardPage, Modal, ViewsIcon, FormStep } from "@djb25/digit-ui-react-components";
 import Timeline from "../components/Timeline";
 import { useLocation } from "react-router-dom";
+import UploadFileDigiLocker from "../../../pt/src/utils/UploadFile";
+
+const DIGILOCKER_SUPPORTED_CODES = ["AADHAAR", "AADHAR", "DRIVING", "DRVLC", "PAN"];
+
+const isDigiLockerEligible = (code = "") => {
+  const upper = code.toUpperCase();
+  return DIGILOCKER_SUPPORTED_CODES.some((keyword) => upper.includes(keyword));
+};
 
 const WSDocumentsEmployee = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -164,6 +172,13 @@ function SelectDocument({
   const [docFileUrl, setDocFileUrl] = useState("");
   const [docFileType, setDocFileType] = useState("");
 
+  const [digiLockerUpload, setDigilockerUpload] = useState(false);
+
+  useEffect(() => {
+    const eligible = isDigiLockerEligible(selectedDocument?.code || "");
+    setDigilockerUpload(eligible);
+  }, [selectedDocument]);
+
   const handleCapture = (capturedFile) => {
     setFile(capturedFile);
     setIsCameraFile(true);
@@ -213,8 +228,12 @@ function SelectDocument({
     }
   }, []);
 
-  function selectfile(e) {
-    setFile(e.target.files[0]);
+  function selectfile(e, newFile) {
+    if (newFile) {
+      setFile(newFile);
+    } else {
+      setFile(e.target.files[0]);
+    }
     setIsCameraFile(false);
   }
   const { dropdownData } = doc;
@@ -354,28 +373,54 @@ function SelectDocument({
         </CardLabel>
         <div className="field" style={{ display: "flex", gap: "20px", alignItems: "center", width: "100%" }}>
           <div style={{ flex: 1 }}>
-            <UploadFile
-              onUpload={selectfile}
-              onDelete={() => {
-                setUploadedFile(null);
-                setFile(null);
-                setIsCameraFile(false);
-              }}
-              id={id}
-              message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
-              textStyles={{ width: "100%" }}
-              buttonType="button"
-              error={!uploadedFile}
-              accept={doc?.code === "OWNER.APPLICANTPHOTO" ? "image/jpeg, image/png, .jpg, .jpeg, .png" : "image/*, .pdf, .png, .jpeg, .jpg"}
-              uploadedFiles={
-                uploadedFile && !file ? [[filteredDocument?.fileName || file?.name || t("CS_COMMON_DOCUMENT"), { fileStoreId: uploadedFile }]] : undefined
-              }
-              removeTargetedFile={() => {
-                setUploadedFile(null);
-                setFile(null);
-                setIsCameraFile(false);
-              }}
-            />
+            {digiLockerUpload ? (
+              <UploadFileDigiLocker
+                onUpload={selectfile}
+                onDelete={() => {
+                  setUploadedFile(null);
+                  setFile(null);
+                  setIsCameraFile(false);
+                }}
+                id={id}
+                message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
+                textStyles={{ width: "100%" }}
+                buttonType="button"
+                error={!uploadedFile}
+                accept={doc?.code === "OWNER.APPLICANTPHOTO" ? "image/jpeg, image/png, .jpg, .jpeg, .png" : "image/*, .pdf, .png, .jpeg, .jpg"}
+                uploadedFiles={
+                  uploadedFile && !file ? [[filteredDocument?.fileName || file?.name || t("CS_COMMON_DOCUMENT"), { fileStoreId: uploadedFile }]] : undefined
+                }
+                removeTargetedFile={() => {
+                  setUploadedFile(null);
+                  setFile(null);
+                  setIsCameraFile(false);
+                }}
+                documentType={selectedDocument?.code}
+              />
+            ) : (
+              <UploadFile
+                onUpload={selectfile}
+                onDelete={() => {
+                  setUploadedFile(null);
+                  setFile(null);
+                  setIsCameraFile(false);
+                }}
+                id={id}
+                message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
+                textStyles={{ width: "100%" }}
+                buttonType="button"
+                error={!uploadedFile}
+                accept={doc?.code === "OWNER.APPLICANTPHOTO" ? "image/jpeg, image/png, .jpg, .jpeg, .png" : "image/*, .pdf, .png, .jpeg, .jpg"}
+                uploadedFiles={
+                  uploadedFile && !file ? [[filteredDocument?.fileName || file?.name || t("CS_COMMON_DOCUMENT"), { fileStoreId: uploadedFile }]] : undefined
+                }
+                removeTargetedFile={() => {
+                  setUploadedFile(null);
+                  setFile(null);
+                  setIsCameraFile(false);
+                }}
+              />
+            )}
           </div>
           {uploadedFile && (
             <div onClick={viewDocument} style={{ cursor: "pointer" }}>

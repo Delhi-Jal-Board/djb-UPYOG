@@ -3,11 +3,21 @@ import { FormStep, UploadFile, CardLabelDesc, Dropdown, CardLabel } from "@djb25
 import { stringReplaceAll } from "../utils";
 import { useLocation } from "react-router-dom";
 import Timeline from "../components/TLTimeline";
+import UploadFileDigiLocker from "../utils/UploadFile";
+
+// Document type codes that support DigiLocker fetch
+const DIGILOCKER_SUPPORTED_CODES = ["AADHAAR", "AADHAR", "DRIVING", "DRVLC", "PAN"];
+
+const isDigiLockerEligible = (code = "") => {
+  const upper = code.toUpperCase();
+  return DIGILOCKER_SUPPORTED_CODES.some((keyword) => upper.includes(keyword));
+};
 
 const SelectProofIdentity = ({ t, config, onSelect, userType, formData, ownerIndex = 0, addNewOwner }) => {
   const { pathname: url } = useLocation();
   // const editScreen = url.includes("/modify-application/");
   const isMutation = url.includes("property-mutation");
+  const [digiLockerUpload, setDigilockerUpload] = useState(false);
 
   let index = isMutation ? ownerIndex : window.location.href.charAt(window.location.href.length - 1);
 
@@ -34,11 +44,18 @@ const SelectProofIdentity = ({ t, config, onSelect, userType, formData, ownerInd
   }
 
   function setTypeOfDropdownValue(dropdownValue) {
+    const eligible = isDigiLockerEligible(dropdownValue?.code || "");
+    setDigilockerUpload(eligible);
+    if (eligible) setUploadedFile(null);
     setDropdownValue(dropdownValue);
   }
 
-  function selectfile(e) {
-    setFile(e.target.files[0]);
+  function selectfile(e, newFile) {
+    if (newFile) {
+      setFile(newFile);
+    } else {
+      setFile(e.target.files[0]);
+    }
   }
 
   useEffect(() => {
@@ -160,17 +177,32 @@ const SelectProofIdentity = ({ t, config, onSelect, userType, formData, ownerInd
           select={setTypeOfDropdownValue}
           placeholder={t(`PT_MUTATION_SELECT_DOC_LABEL`)}
         />
-        <UploadFile
-          id={"pt-doc"}
-          extraStyleName={"propertyCreate"}
-          accept=".jpg,.png,.pdf"
-          onUpload={selectfile}
-          onDelete={() => {
-            setUploadedFile(null);
-          }}
-          message={uploadedFile ? `1 ${t(`PT_ACTION_FILEUPLOADED`)}` : t(`PT_ACTION_NO_FILEUPLOADED`)}
-          error={error}
-        />
+        {digiLockerUpload ? (
+          <UploadFileDigiLocker
+            id={"pt-doc"}
+            extraStyleName={"propertyCreate"}
+            accept=".jpg,.png,.pdf"
+            onUpload={selectfile}
+            onDelete={() => {
+              setUploadedFile(null);
+            }}
+            message={uploadedFile ? `1 ${t(`PT_ACTION_FILEUPLOADED`)}` : t(`PT_ACTION_NO_FILEUPLOADED`)}
+            error={error}
+            documentType={dropdownValue?.code}
+          />
+        ) : (
+          <UploadFile
+            id={"pt-doc"}
+            extraStyleName={"propertyCreate"}
+            accept=".jpg,.png,.pdf"
+            onUpload={selectfile}
+            onDelete={() => {
+              setUploadedFile(null);
+            }}
+            message={uploadedFile ? `1 ${t(`PT_ACTION_FILEUPLOADED`)}` : t(`PT_ACTION_NO_FILEUPLOADED`)}
+            error={error}
+          />
+        )}
         {error ? <div style={{ height: "20px", width: "100%", fontSize: "20px", color: "red", marginTop: "5px" }}>{error}</div> : ""}
         <div style={{ disabled: "true", height: "20px", width: "100%" }}></div>
       </FormStep>

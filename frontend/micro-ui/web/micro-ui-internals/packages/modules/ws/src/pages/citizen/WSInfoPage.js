@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useHistory, useRouteMatch, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
@@ -16,10 +16,8 @@ import {
 } from "@djb25/digit-ui-react-components";
 
 const getAddress = (address, t) => {
-  return `${address?.doorNo ? `${address?.doorNo}, ` : ""} ${address?.street ? `${address?.street}, ` : ""}${
-    address?.landmark ? `${address?.landmark}, ` : ""
-  }${t(Digit.Utils.pt.getMohallaLocale(address?.locality.code, address?.tenantId))}, ${t(Digit.Utils.pt.getCityLocale(address?.tenantId))}${
-    address?.pincode && t(address?.pincode) ? `, ${address.pincode}` : " "
+  return `${address?.doorNo ? `${address?.doorNo}, ` : ""} ${address?.street ? `${address?.street}, ` : ""}${address?.landmark ? `${address?.landmark}, ` : ""
+    }${t(Digit.Utils.pt.getMohallaLocale(address?.locality.code, address?.tenantId))}, ${t(Digit.Utils.pt.getCityLocale(address?.tenantId))}${address?.pincode && t(address?.pincode) ? `, ${address.pincode}` : " "
     }`;
 };
 
@@ -46,6 +44,39 @@ const WSInfoPage = () => {
       enabled: hasProperty?.code === "YES" && mobileNumberToSearch?.length === 10 ? true : false,
     }
   );
+
+  useEffect(() => {
+    const fetchToken = async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const code = urlParams.get("code");
+      const state = urlParams.get("state");
+
+      if (code && state === "oidc_flow") {
+        try {
+          const TokenReq = {
+            module: "WS",
+            code: code,
+          };
+          const res = await Digit.DigiLockerService.token({ TokenReq });
+          // If the token endpoint returns access_token in TokenRes, store it
+          if (res?.TokenRes?.access_token) {
+            sessionStorage.setItem("DigiLocker.token1", res.TokenRes.access_token);
+          } else {
+            // as fallback
+            sessionStorage.setItem("DigiLocker.token1", "dummy_token");
+          }
+
+          // Optionally, clean up the URL
+          const newUrl = window.location.pathname;
+          window.history.replaceState({}, document.title, newUrl);
+        } catch (error) {
+          console.error("Error fetching DigiLocker token", error);
+        }
+      }
+    };
+
+    fetchToken();
+  }, []);
 
   const radioOptions = [
     { code: "YES", i18nKey: "TL_COMMON_YES" },
@@ -248,7 +279,9 @@ const WSInfoPage = () => {
           <li>{t("WS_BANK_ACCOUNT_NO")}</li>
         </ul>
 
-        <CardSubHeader style={{ marginTop: "0", marginBottom: "0" }}>{t("WS_DOCUMENTS")}</CardSubHeader>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "0", marginBottom: "16px" }}>
+          <CardSubHeader style={{ marginTop: "0", marginBottom: "0" }}>{t("WS_DOCUMENTS")}</CardSubHeader>
+        </div>
         <ul style={{ listStyleType: "disc", marginLeft: "20px", marginBottom: "24px", lineHeight: "2" }}>
           <li>{t("WS_DOC_IDENTITY_PROOF")}</li>
           <li>{t("WS_DOC_ADDRESS_PROOF")}</li>
@@ -271,10 +304,32 @@ const WSInfoPage = () => {
         </ul> */}
 
         {!hasProperty || (hasProperty?.code === "YES" && !selectedProperty) ? (
-          <SubmitBar label={t("CS_COMMON_NEXT")} onSubmit={() => {}} disabled={true} />
+          <SubmitBar label={t("CS_COMMON_NEXT")} onSubmit={() => { }} disabled={true} />
         ) : (
           <SubmitBar label={t("CS_COMMON_NEXT")} onSubmit={handleNext} disabled={(hasProperty?.code === "NO")} />
         )}
+        <div style={{ display: "flex", justifyContent: "flex-start", marginTop: "12px" }}>
+          <SubmitBar
+            label={t("WS_LOGIN_WITH_DIGILOCKER")}
+            onSubmit={async (e) => {
+              e.preventDefault();
+              try {
+                const data = await Digit.DigiLockerService.authorization({ module: "WS", tenantId });
+                const redirectUrl = data?.redirectURL || data?.redirectUrl;
+                if (data?.codeverifier) {
+                  sessionStorage.setItem("code_verfier_register", data?.codeverifier);
+                }
+                if (redirectUrl) {
+                  window.location.href = redirectUrl;
+                } else {
+                  console.error("No redirect URL returned from DigiLocker API", data);
+                }
+              } catch (error) {
+                console.error("Error fetching DigiLocker authorization URL", error);
+              }
+            }}
+          />
+        </div>
       </Card>
     </React.Fragment>
   );
