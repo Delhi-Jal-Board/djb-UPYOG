@@ -41,7 +41,7 @@
 package org.egov.dx.web.controller;
 
 import java.net.URI;
-
+import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
@@ -61,8 +61,10 @@ import org.egov.dx.web.models.UserRes;
 import org.egov.dx.web.models.UserResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -147,10 +149,37 @@ public class DLRequestController {
 		return new ResponseEntity<>(tokenResponse,HttpStatus.OK);
 	}
 	
-	@RequestMapping(value = "/file", method = RequestMethod.POST,produces = {"application/pdf"})
-	@ResponseBody	
-    public  byte[] getFile(@Valid @RequestBody TokenRequest tokenRequest)    { 
-		byte[] doc=dlRequestService.getDoc(tokenRequest.getTokenReq(),tokenRequest.getTokenReq().getId());
-		return doc;
-	}
+//	@RequestMapping(value = "/file", method = RequestMethod.POST,produces = {"application/pdf"})
+//	@ResponseBody	
+//    public  byte[] getFile(@Valid @RequestBody TokenRequest tokenRequest)    { 
+//		byte[] doc=dlRequestService.getDoc(tokenRequest.getTokenReq(),tokenRequest.getTokenReq().getId());
+//		return doc;
+//	}
+	
+	
+	@PostMapping(value = "/file",produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<byte[]> getFile(@Valid @RequestBody TokenRequest tokenRequest) {
+
+        byte[] doc = dlRequestService.getDoc(tokenRequest.getTokenReq(),tokenRequest.getTokenReq().getId());
+
+        if (doc == null || doc.length == 0) {
+            log.warn("DigiLocker returned empty document");
+            return ResponseEntity.noContent().build();
+        }
+
+        log.info("Document size: {}", doc.length);
+
+        if (doc.length >= 5) {
+            String header = new String(doc,0,5,StandardCharsets.US_ASCII);
+
+            log.info("Document header: {}", header);
+            if (!header.startsWith("%PDF-")) {
+                log.warn("Response does not appear to be a valid PDF. Header: {}",header);
+            }
+        }
+
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_PDF).contentLength(doc.length).body(doc);
+    }
+	
+	
 }
