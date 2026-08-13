@@ -101,7 +101,11 @@ public class WSCalculationServiceImpl implements WSCalculationService {
 					throw new RuntimeException(e);
 				}
 			}
-			connectionRequest = request.getIsDisconnectionRequest();
+			// Disconnection fee demand should use applicationNo as consumerCode and
+			// businessService='WS.ONE_TIME_FEE' (same pattern as reconnection at line 120).
+			// Setting connectionRequest=true would wrongly UPDATE the existing WS monthly
+			// demand instead of CREATING a new disconnection fee demand.
+			connectionRequest = false;
 			masterMap = masterDataService.loadMasterData(request.getRequestInfo(),
 					request.getCalculationCriteria().get(0).getTenantId());
 			calculations = getCalculations(request, masterMap);
@@ -188,7 +192,6 @@ public class WSCalculationServiceImpl implements WSCalculationService {
 		if(isLastElementWithDisconnectionRequest) {
 			if (waterConnection.getApplicationStatus().equalsIgnoreCase(WSCalculationConstant.PENDING_APPROVAL_FOR_DISCONNECTION)) {
 
-				Map<String, Object> finalMap = new HashMap<>();
 				List<WaterConnection> waterConnectionList = calculatorUtil.getWaterConnection(requestInfo, criteria.getConnectionNo(), requestInfo.getUserInfo().getTenantId());
 				for (WaterConnection connection : waterConnectionList) {
 					if (connection.getApplicationType().equalsIgnoreCase(NEW_WATER_CONNECTION)) {
@@ -238,6 +241,52 @@ public class WSCalculationServiceImpl implements WSCalculationService {
 								}
 							});
 						}
+
+						// Initialize Disconnection Fees to ZERO (strictly rely on MDMS)
+						BigDecimal temporaryFee = BigDecimal.ZERO;
+						BigDecimal nonPaymentFee = BigDecimal.ZERO;
+						BigDecimal permanentFee = BigDecimal.ZERO;
+
+						try {
+							JSONArray feeSlab = (JSONArray) masterMap.get(WSCalculationConstant.WC_FEESLAB_MASTER);
+							if (feeSlab != null && !feeSlab.isEmpty()) {
+								for (Object obj : feeSlab) {
+									Map<String, Object> feeObj = mapper.convertValue(obj, Map.class);
+									String feeComponent = feeObj.get("feeComponent") != null ? feeObj.get("feeComponent").toString() : "";
+									if (WSCalculationConstant.TEMPORARY_DISCONNECTION_FEE_CONST.equalsIgnoreCase(feeComponent) && feeObj.get("amount") != null) {
+										temporaryFee = new BigDecimal(feeObj.get("amount").toString());
+									} else if (WSCalculationConstant.NON_PAYMENT_DISCONNECTION_FEE_CONST.equalsIgnoreCase(feeComponent) && feeObj.get("amount") != null) {
+										nonPaymentFee = new BigDecimal(feeObj.get("amount").toString());
+									} else if (WSCalculationConstant.PERMANENT_DISCONNECTION_FEE_CONST.equalsIgnoreCase(feeComponent) && feeObj.get("amount") != null) {
+										permanentFee = new BigDecimal(feeObj.get("amount").toString());
+									}
+								}
+							} else {
+								log.warn("FeeSlab master not found in MDMS. Disconnection fees will be 0.");
+							}
+						} catch (Exception e) {
+							log.error("Error fetching disconnection fees from MDMS FeeSlab", e);
+						}
+
+						BigDecimal finalDisconnectionFee = permanentFee; // Default to permanent
+						if (waterConnection.getIsDisconnectionTemporary() != null && waterConnection.getIsDisconnectionTemporary()) {
+							finalDisconnectionFee = temporaryFee;
+						} else if ("Non-Payment".equalsIgnoreCase(waterConnection.getDisconnectionReason())) {
+							finalDisconnectionFee = nonPaymentFee;
+						}
+
+						log.info("[Disconnection] Applying fixed disconnection fee of {} for connectionNo={} (isTemporary={}, reason={})", 
+							finalDisconnectionFee, connection.getConnectionNo(), waterConnection.getIsDisconnectionTemporary(), waterConnection.getDisconnectionReason());
+
+						estimates.clear();
+						estimates.add(TaxHeadEstimate.builder()
+								.taxHeadCode(WSCalculationConstant.WS_DISCONNECTION_FEE)
+								.estimateAmount(finalDisconnectionFee.setScale(2, 2))
+								.build());
+						
+						// Billing period for disconnection fee demand should just be current time (one-time fee)
+						criteria.setTo(System.currentTimeMillis());
+						criteria.setFrom(System.currentTimeMillis());
 					}
 				}
 			}

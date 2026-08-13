@@ -83,6 +83,8 @@ public class WSCalculationConstant {
 	public static final String WS_WATER_CESS = "WS_WATER_CESS";
 
 	public static final String WS_CHARGE = "WS_CHARGE";
+
+	public static final String WS_DISCONNECTION_FEE = "WS_DISCONNECTION_FEE";
 	
 	public static final String WS_TIME_REBATE="WS_TIME_REBATE";
 
@@ -442,6 +444,10 @@ public class WSCalculationConstant {
 
 	public static final String WS_NEW_CONNECTION_FEE = "WS_NEW_CONNECTION_FEE";
 	public static final String WS_INFRASTRUCTURE_CHARGE = "WS_INFRASTRUCTURE_CHARGE";
+
+	public static final String TEMPORARY_DISCONNECTION_FEE_CONST = "temporaryDisconnectionFee";
+	public static final String NON_PAYMENT_DISCONNECTION_FEE_CONST = "nonPaymentDisconnectionFee";
+	public static final String PERMANENT_DISCONNECTION_FEE_CONST = "permanentDisconnectionFee";
 	public static final String LOCALITY_CATEGORY_MAP = "LOCALITY_CATEGORY_MAP";
 
 	public static final String TAX_PERCENTAGE = "TAX_PERCENTAGE";
