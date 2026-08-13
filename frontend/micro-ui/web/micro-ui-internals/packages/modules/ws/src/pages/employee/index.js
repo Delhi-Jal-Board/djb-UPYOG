@@ -431,6 +431,12 @@ const BILLSBreadCrumbs = ({ location, showPrint }) => {
       show: location.pathname.includes("/required-documents") ? true : false,
     },
     {
+      path: `${location?.pathname}${location.search}`,
+      label: t("WS_MUTATION_CONNECTION_LABEL"),
+      show: location.pathname.includes("/mutation-application") ? true : false,
+      isBack: true,
+    },
+    {
       path: requestParam ? `/digit-ui/employee/ws/bill-amendment?${requestParam}` : "/digit-ui/employee/ws/bill-amendment",
       label: t("WS_BILL_AMEND_APP"),
       show: location.pathname.includes("ws/bill-amendment") && !IsEdit ? true : false,
