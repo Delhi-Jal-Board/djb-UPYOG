@@ -512,6 +512,7 @@ const App = ({ path }) => {
           const TokenReq = {
             module: "WS",
             code: code,
+            dlReqRef: sessionStorage.getItem("code_verfier_register"),
           };
           const tenantId = Digit.ULBService.getCurrentTenantId() || "dl.djb";
           const res = await Digit.DigiLockerService.token({ TokenReq }, tenantId);
