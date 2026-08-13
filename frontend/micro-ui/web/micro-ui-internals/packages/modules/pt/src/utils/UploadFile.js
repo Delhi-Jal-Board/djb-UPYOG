@@ -4,7 +4,6 @@ import { useTranslation } from "react-i18next";
 import RemoveableTag from "./RemoveableTag";
 import { Toast } from "@djb25/digit-ui-react-components";
 
-
 const getRandomId = () => {
   return Math.floor((Math.random() || 1) * 139);
 };
@@ -18,7 +17,7 @@ const getCitizenStyles = (value) => {
         width: "100%",
         overflow: "hidden",
         textOverflow: "ellipsis",
-        width: "80%"
+        width: "80%",
       },
       tagStyles: {
         width: "90%",
@@ -28,27 +27,26 @@ const getCitizenStyles = (value) => {
         width: "44%",
         minHeight: "2rem",
         maxHeight: "3rem",
-        top: "20%"
+        top: "20%",
       },
       buttonStyles: {
         height: "auto",
         minHeight: "2rem",
         width: "40%",
-        maxHeight: "3rem"
+        maxHeight: "3rem",
       },
       tagContainerStyles: {
         width: "60%",
-        display: "flex", 
-        marginTop: "0px"
+        display: "flex",
+        marginTop: "0px",
       },
       closeIconStyles: {
-        width : "20px"
+        width: "20px",
       },
       containerStyles: {
-        padding: "10px", 
-        marginTop: "0px"
+        padding: "10px",
+        marginTop: "0px",
       },
-
     };
   } else if (value == "IP") {
     citizenStyles = {
@@ -59,12 +57,12 @@ const getCitizenStyles = (value) => {
         textOverflow: "ellipsis",
       },
       tagStyles: {
-        marginLeft:"-30px"
+        marginLeft: "-30px",
       },
       inputStyles: {},
       closeIconStyles: {
-        position:"absolute",
-        marginTop:"-12px"
+        position: "absolute",
+        marginTop: "-12px",
       },
       buttonStyles: {},
       tagContainerStyles: {},
@@ -72,24 +70,24 @@ const getCitizenStyles = (value) => {
   } else if (value == "OBPS") {
     citizenStyles = {
       containerStyles: {
-        display: "flex", 
-        justifyContent: "flex-start", 
-        alignItems: "center", 
+        display: "flex",
+        justifyContent: "flex-start",
+        alignItems: "center",
         flexWrap: "wrap",
         margin: "0px",
-        padding: "0px"
+        padding: "0px",
       },
       tagContainerStyles: {
-       margin: "0px",
-       padding: "0px",
-       width: "46%"
+        margin: "0px",
+        padding: "0px",
+        width: "46%",
       },
       tagStyles: {
-        height: "auto", 
-        padding: "5px", 
+        height: "auto",
+        padding: "5px",
         margin: 0,
         width: "100%",
-        margin: "5px"
+        margin: "5px",
       },
       textStyles: {
         wordBreak: "break-word",
@@ -97,14 +95,14 @@ const getCitizenStyles = (value) => {
         lineHeight: "16px",
         overflow: "hidden",
         // minHeight: "35px",
-        maxHeight: "34px"
-      },   
+        maxHeight: "34px",
+      },
       inputStyles: {
         width: "43%",
         minHeight: "42px",
         maxHeight: "42px",
         top: "5px",
-        left: "5px"
+        left: "5px",
       },
       buttonStyles: {
         height: "auto",
@@ -112,17 +110,16 @@ const getCitizenStyles = (value) => {
         width: "43%",
         maxHeight: "40px",
         margin: "5px",
-        padding: "0px"
+        padding: "0px",
       },
       closeIconStyles: {
-        width : "20px"
+        width: "20px",
       },
       uploadFile: {
-        minHeight: "50px"
-      }
+        minHeight: "50px",
+      },
     };
-  }
-  else {
+  } else {
     citizenStyles = {
       textStyles: {},
       tagStyles: {},
@@ -142,18 +139,17 @@ const UploadFileDigiLocker = (props) => {
   const [showModal, setShowModal] = useState(false);
   const [showToast, setShowToast] = useState(null);
   const user_type = Digit.SessionStorage.get("userType");
-  const { isLoading, isSuccess,error,count,data:dataNew,  mutate: assessmentMutate } = Digit.Hooks.createTokenAPI("document");
+  const { isLoading, isSuccess, error, count, data: dataNew, mutate: assessmentMutate } = Digit.Hooks.createTokenAPI("document");
   let extraStyles = {};
   const handleChange = () => {
-    if (inpRef.current.files[0])
-    { setHasFile(true);
-      setprevSate(inpRef.current.files[0])
-    }
-    else setHasFile(false);
+    if (inpRef.current.files[0]) {
+      setHasFile(true);
+      setprevSate(inpRef.current.files[0]);
+    } else setHasFile(false);
   };
   const closeModal = () => {
     setShowModal(false);
-}
+  };
   // for common aligmnent issues added common styles
   extraStyles = getCitizenStyles("OBPS");
   const handleDelete = () => {
@@ -161,8 +157,8 @@ const UploadFileDigiLocker = (props) => {
     props.onDelete();
   };
   const handleEmpty = () => {
-    if(inpRef.current.files.length <= 0 && prevSate !== null)
-    { inpRef.current.value = "";
+    if (inpRef.current.files.length <= 0 && prevSate !== null) {
+      inpRef.current.value = "";
       props.onDelete();
     }
   };
@@ -171,21 +167,21 @@ const UploadFileDigiLocker = (props) => {
     handleDelete();
     setHasFile(false);
   }
-  useEffect(() => handleEmpty(), [inpRef?.current?.files])
+  useEffect(() => handleEmpty(), [inpRef?.current?.files]);
 
   useEffect(() => handleChange(), [props.message]);
 
   const dataURItoBlob = (dataURI) => {
-    var binary = atob(dataURI.split(',')[1]);
+    var binary = atob(dataURI.split(",")[1]);
     var array = [];
     for (var i = 0; i < binary.length; i++) {
-        array.push(binary.charCodeAt(i));
+      array.push(binary.charCodeAt(i));
     }
-    return new Blob([new Uint8Array(array)], { type: 'application/pdf' });
+    return new Blob([new Uint8Array(array)], { type: "application/pdf" });
   };
-/* this fetchDigiLockerDocuments function is used to fetch documents from Digilocker*/
+  /* this fetchDigiLockerDocuments function is used to fetch documents from Digilocker*/
 
-   const fetchDigiLockerDocuments = async (e) => {
+  const fetchDigiLockerDocuments = async (e) => {
     e.preventDefault();
     try {
       const digiLockerToken = sessionStorage.getItem("DigiLocker.token1");
@@ -196,7 +192,8 @@ const UploadFileDigiLocker = (props) => {
       let TokenReq = {
         authToken: digiLockerToken,
       };
-      const res1 = await Digit.DigiLockerService.issueDoc({ TokenReq });
+      const tenantId = Digit.ULBService.getCurrentTenantId() || "dl.djb";
+      const res1 = await Digit.DigiLockerService.issueDoc({ TokenReq }, tenantId);
       if (!res1 || !res1.IssuedDoc) {
         setShowToast({ error: true, label: "Failed to fetch documents from DigiLocker. Please login again." });
         return;
@@ -235,7 +232,8 @@ const UploadFileDigiLocker = (props) => {
           authToken: digiLockerToken,
           id: uriStr,
         };
-        const res2 = await Digit.DigiLockerService.uri({ TokenReq: TokenReqNew });
+        const tenantId = Digit.ULBService.getCurrentTenantId() || "dl.djb";
+        const res2 = await Digit.DigiLockerService.uri({ TokenReq: TokenReqNew }, tenantId);
         // res2 may be base64 string or binary data depending on backend
         let blobData;
         if (typeof res2 === "string" && res2.includes("base64")) {
@@ -246,7 +244,10 @@ const UploadFileDigiLocker = (props) => {
           // Backend returned a fileStoreId directly — fetch the file
           const fileRes = await Digit.UploadServices.FileFetchbyid(res2.fileStoreId, Digit.ULBService.getStateId());
           if (fileRes?.data) {
-            blobData = fileRes.data instanceof Blob ? fileRes.data : new Blob([fileRes.data], { type: fileRes.headers?.["content-type"] || "application/pdf" });
+            blobData =
+              fileRes.data instanceof Blob
+                ? fileRes.data
+                : new Blob([fileRes.data], { type: fileRes.headers?.["content-type"] || "application/pdf" });
           }
         } else {
           blobData = new Blob([JSON.stringify(res2)], { type: "application/pdf" });
@@ -275,15 +276,28 @@ const UploadFileDigiLocker = (props) => {
   };
   const Close = () => (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="#FFFFFF" xmlns="http://www.w3.org/2000/svg">
-        <path d="M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12L19 6.41Z" fill="#0B0C0C" />
+      <path d="M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12L19 6.41Z" fill="#0B0C0C" />
     </svg>
   );
   const showHint = props?.showHint || false;
   return (
     <Fragment>
       {showHint && <p className="cell-text">{t(props?.hintText)}</p>}
-      <div className={`upload-file ${user_type === "employee" ? "":"upload-file-max-width"} ${props.disabled ? " disabled" : ""}`} style={extraStyles?.uploadFile ? extraStyles?.uploadFile : {}}>
-        <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap", borderBottom: "1px solid #d6d5d4", paddingBottom: "10px", marginBottom: "10px" }}>
+      <div
+        className={`upload-file ${user_type === "employee" ? "" : "upload-file-max-width"} ${props.disabled ? " disabled" : ""}`}
+        style={extraStyles?.uploadFile ? extraStyles?.uploadFile : {}}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            flexWrap: "wrap",
+            borderBottom: "1px solid #d6d5d4",
+            paddingBottom: "10px",
+            marginBottom: "10px",
+          }}
+        >
           <ButtonSelector
             theme="border"
             label={t("CS_COMMON_CHOOSE_FILE")}
@@ -292,19 +306,35 @@ const UploadFileDigiLocker = (props) => {
             type={props.buttonType || "button"}
             onSubmit={() => inpRef.current.click()}
           />
-          <span style={{fontWeight:"bold"}}>OR</span>
+          <span style={{ fontWeight: "bold" }}>OR</span>
           <div>
-            <button className="digilocker-btn" type="button" onClick={(e)=> fetchDigiLockerDocuments(e)} style={{ margin: 0, display: "flex", alignItems: "center", gap: "5px", padding: "8px 10px", border: "1px solid #d6d5d4", borderRadius: "2px", background: "#f8f9fa" }}>
-              <img src="https://meripehchaan.gov.in/assets/img/icon/digi.png" className="mr-2" style={{width: "20px"}}/>
-             {t("CS_COMMON_FETCH_FROM_DIGILOCKER")}
+            <button
+              className="digilocker-btn"
+              type="button"
+              onClick={(e) => fetchDigiLockerDocuments(e)}
+              style={{
+                margin: 0,
+                display: "flex",
+                alignItems: "center",
+                gap: "5px",
+                padding: "8px 10px",
+                border: "1px solid #d6d5d4",
+                borderRadius: "2px",
+                background: "#f8f9fa",
+              }}
+            >
+              <img src="https://meripehchaan.gov.in/assets/img/icon/digi.png" className="mr-2" style={{ width: "20px" }} />
+              {t("CS_COMMON_FETCH_FROM_DIGILOCKER")}
             </button>
           </div>
         </div>
         {props?.uploadedFiles?.map((file, index) => {
-          const fileDetailsData = file[1]
-          return <div className="tag-container" style={extraStyles ? extraStyles?.tagContainerStyles : null}>
-            <RemoveableTag extraStyles={extraStyles} key={index} text={file[0]} onClick={(e) => props?.removeTargetedFile(fileDetailsData, e)} />
-          </div>
+          const fileDetailsData = file[1];
+          return (
+            <div className="tag-container" style={extraStyles ? extraStyles?.tagContainerStyles : null}>
+              <RemoveableTag extraStyles={extraStyles} key={index} text={file[0]} onClick={(e) => props?.removeTargetedFile(fileDetailsData, e)} />
+            </div>
+          );
         })}
         {!hasFile || props.error ? (
           <h2 className="file-upload-status">{props.message}</h2>
@@ -312,7 +342,7 @@ const UploadFileDigiLocker = (props) => {
           <div className="tag-container" style={extraStyles ? extraStyles?.tagContainerStyles : null}>
             <div className="tag" style={extraStyles ? extraStyles?.tagStyles : null}>
               <span className="text" style={extraStyles ? extraStyles?.textStyles : null}>
-                 {(typeof inpRef.current.files[0]?.name !== "undefined") && !(props?.file)  ? inpRef.current.files[0]?.name : props.file?.name} 
+                {typeof inpRef.current.files[0]?.name !== "undefined" && !props?.file ? inpRef.current.files[0]?.name : props.file?.name}
               </span>
               <span onClick={() => handleDelete()} style={extraStyles ? extraStyles?.closeIconStyles : null}>
                 <Close style={props.Multistyle} className="close" />
@@ -331,22 +361,15 @@ const UploadFileDigiLocker = (props) => {
           accept={props.accept}
           disabled={props.disabled}
           onChange={(e) => props.onUpload(e)}
-          onClick ={ event => {
+          onClick={(event) => {
             const { target = {} } = event || {};
             target.value = "";
           }}
         />
       </div>
-      {props.iserror && <p style={{color: "red"}}>{props.iserror}</p>}
+      {props.iserror && <p style={{ color: "red" }}>{props.iserror}</p>}
       {props?.showHintBelow && <p className="cell-text">{t(props?.hintText)}</p>}
-      {showToast && (
-        <Toast
-          error={showToast.error}
-          warning={showToast.warning}
-          label={t(showToast.label)}
-          onClose={() => setShowToast(null)}
-        />
-      )}
+      {showToast && <Toast error={showToast.error} warning={showToast.warning} label={t(showToast.label)} onClose={() => setShowToast(null)} />}
     </Fragment>
   );
 };
