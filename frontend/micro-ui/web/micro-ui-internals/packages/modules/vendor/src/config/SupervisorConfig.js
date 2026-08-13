@@ -65,7 +65,7 @@ const SupervisorConfig = (t, genderMenu = [], disabled = false) => {
         },
 
         {
-          label: "ES_FSM_REGISTRY_NEW_GENDER",
+          label: t("ES_FSM_REGISTRY_NEW_GENDER"),
           isMandatory: true,
           type: "component",
           key: "gender",
