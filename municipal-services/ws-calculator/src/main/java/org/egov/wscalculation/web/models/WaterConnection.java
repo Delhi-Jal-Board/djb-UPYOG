@@ -43,6 +43,12 @@ import javax.validation.Valid;
 	@JsonProperty("noOfTaps")
 	private Integer noOfTaps = null;
 
+	@JsonProperty("isDisconnectionTemporary")
+	private Boolean isDisconnectionTemporary = false;
+
+	@JsonProperty("disconnectionReason")
+	private String disconnectionReason = null;
+
 	@JsonProperty("dueVerification")
 	@Valid
 	private List<DueVerification> dueVerification = null;
@@ -53,6 +59,22 @@ import javax.validation.Valid;
 
 	public void setDueVerification(List<DueVerification> dueVerification) {
 		this.dueVerification = dueVerification;
+	}
+
+	public Boolean getIsDisconnectionTemporary() {
+		return isDisconnectionTemporary;
+	}
+
+	public void setIsDisconnectionTemporary(Boolean isDisconnectionTemporary) {
+		this.isDisconnectionTemporary = isDisconnectionTemporary;
+	}
+
+	public String getDisconnectionReason() {
+		return disconnectionReason;
+	}
+
+	public void setDisconnectionReason(String disconnectionReason) {
+		this.disconnectionReason = disconnectionReason;
 	}
 
 	public WaterConnection waterSource(String waterSource) {
