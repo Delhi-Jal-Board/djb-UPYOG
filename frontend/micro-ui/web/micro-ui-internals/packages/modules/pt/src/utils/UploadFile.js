@@ -138,6 +138,8 @@ const UploadFileDigiLocker = (props) => {
   const [prevSate, setprevSate] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [showToast, setShowToast] = useState(null);
+  const [digiLockerPreviewUrl, setDigiLockerPreviewUrl] = useState(null);
+  const [showDigiLockerPreview, setShowDigiLockerPreview] = useState(false);
   const user_type = Digit.SessionStorage.get("userType");
   const { isLoading, isSuccess, error, count, data: dataNew, mutate: assessmentMutate } = Digit.Hooks.createTokenAPI("document");
   let extraStyles = {};
@@ -154,6 +156,11 @@ const UploadFileDigiLocker = (props) => {
   extraStyles = getCitizenStyles("OBPS");
   const handleDelete = () => {
     inpRef.current.value = "";
+    // Revoke blob URL to free memory
+    if (digiLockerPreviewUrl) {
+      URL.revokeObjectURL(digiLockerPreviewUrl);
+      setDigiLockerPreviewUrl(null);
+    }
     props.onDelete();
   };
   const handleEmpty = () => {
@@ -170,6 +177,13 @@ const UploadFileDigiLocker = (props) => {
   useEffect(() => handleEmpty(), [inpRef?.current?.files]);
 
   useEffect(() => handleChange(), [props.message]);
+
+  // Cleanup blob URL when component unmounts
+  useEffect(() => {
+    return () => {
+      if (digiLockerPreviewUrl) URL.revokeObjectURL(digiLockerPreviewUrl);
+    };
+  }, [digiLockerPreviewUrl]);
 
   const dataURItoBlob = (dataURI) => {
     var binary = atob(dataURI.split(",")[1]);
@@ -233,27 +247,58 @@ const UploadFileDigiLocker = (props) => {
           id: uriStr,
         };
         const tenantId = Digit.ULBService.getCurrentTenantId() || "dl.djb";
-        const res2 = await Digit.DigiLockerService.uri({ TokenReq: TokenReqNew }, tenantId);
-        // res2 may be base64 string or binary data depending on backend
-        let blobData;
-        if (typeof res2 === "string" && res2.includes("base64")) {
-          blobData = dataURItoBlob(res2);
-        } else if (res2 instanceof Blob) {
-          blobData = res2;
-        } else if (res2 && typeof res2 === "object" && res2.fileStoreId) {
-          // Backend returned a fileStoreId directly — fetch the file
-          const fileRes = await Digit.UploadServices.FileFetchbyid(res2.fileStoreId, Digit.ULBService.getStateId());
-          if (fileRes?.data) {
-            blobData =
-              fileRes.data instanceof Blob
-                ? fileRes.data
-                : new Blob([fileRes.data], { type: fileRes.headers?.["content-type"] || "application/pdf" });
-          }
+        const res2 = await Digit.DigiLockerService.uriFile({ TokenReq: TokenReqNew }, tenantId);
+
+        const contentType = (res2?.headers?.["content-type"] || res2?.headers?.["Content-Type"] || "").toLowerCase();
+        console.log("[DigiLocker] file response - content-type:", contentType, "| blob size:", res2?.data?.size);
+
+        let blobData = null;
+        const rawBlob = res2?.data instanceof Blob ? res2.data : new Blob([res2?.data || ""], { type: contentType || "application/pdf" });
+
+        if (contentType.includes("pdf") || contentType.includes("octet-stream")) {
+          // API returned raw binary PDF — use directly
+          blobData = rawBlob;
         } else {
-          blobData = new Blob([JSON.stringify(res2)], { type: "application/pdf" });
+          // API may have returned JSON — read and inspect
+          try {
+            const text = await rawBlob.text();
+            console.log("[DigiLocker] Response text (first 300 chars):", text.substring(0, 300));
+            let parsed = null;
+            try { parsed = JSON.parse(text); } catch { /* not JSON */ }
+
+            if (parsed) {
+              // Case 1: JSON contains a fileStoreId → fetch from filestore
+              const fsId = parsed.fileStoreId || parsed.fileStoreid || parsed.filestoreId || parsed.FileStoreId;
+              if (fsId) {
+                console.log("[DigiLocker] Got fileStoreId from JSON:", fsId);
+                const fileRes = await Digit.UploadServices.FileFetchbyid(fsId, Digit.ULBService.getStateId());
+                blobData = fileRes?.data instanceof Blob
+                  ? fileRes.data
+                  : new Blob([fileRes?.data || ""], { type: fileRes?.headers?.["content-type"] || "application/pdf" });
+              } else {
+                // Case 2: JSON contains base64 encoded content
+                const b64 = parsed.docContent || parsed.fileContent || parsed.content || parsed.base64 || parsed.data;
+                if (b64 && typeof b64 === "string") {
+                  console.log("[DigiLocker] Got base64 content from JSON field");
+                  const dataUri = b64.startsWith("data:") ? b64 : `data:application/pdf;base64,${b64}`;
+                  blobData = dataURItoBlob(dataUri);
+                }
+              }
+            }
+
+            // Case 3: Not JSON but not labeled PDF — treat as raw binary anyway
+            if (!blobData) {
+              console.log("[DigiLocker] Unknown format — treating as raw binary");
+              blobData = rawBlob;
+            }
+          } catch (readErr) {
+            console.warn("[DigiLocker] Could not read blob as text:", readErr);
+            blobData = rawBlob;
+          }
         }
-        let filename = `${doctype}_${uri[0].name || "document"}.pdf`;
-        if (blobData) convertToFile(e, blobData, filename);
+
+        const filename = `${doctype}_${uri[0].name || "document"}.pdf`;
+        if (blobData && blobData.size > 0) convertToFile(e, blobData, filename);
         else setShowToast({ error: true, label: "Failed to read document from DigiLocker." });
       } else {
         setShowToast({ error: true, label: `Selected document (${props?.documentType || doctype}) is not available in your DigiLocker.` });
@@ -265,6 +310,10 @@ const UploadFileDigiLocker = (props) => {
   };
 
   const convertToFile = (e, blob, filename = "document.pdf") => {
+    // Create preview URL directly from the blob (no filestore round-trip needed)
+    const previewUrl = URL.createObjectURL(blob);
+    setDigiLockerPreviewUrl(previewUrl);
+
     var reader = new FileReader();
     reader.readAsDataURL(blob);
     reader.onloadend = function () {
@@ -327,6 +376,23 @@ const UploadFileDigiLocker = (props) => {
               {t("CS_COMMON_FETCH_FROM_DIGILOCKER")}
             </button>
           </div>
+          {/* DigiLocker eye icon — appears after a doc is successfully fetched */}
+          {digiLockerPreviewUrl && (
+            <button
+              type="button"
+              title={t("WS_VIEW_DOCUMENT") || "Preview document"}
+              onClick={() => setShowDigiLockerPreview(true)}
+              style={{
+                background: "none", border: "none", cursor: "pointer",
+                display: "flex", alignItems: "center", padding: "4px",
+              }}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" height="22" viewBox="0 0 24 24" width="22" fill="#00497e">
+                <path d="M0 0h24v24H0z" fill="none"/>
+                <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+              </svg>
+            </button>
+          )}
         </div>
         {props?.uploadedFiles?.map((file, index) => {
           const fileDetailsData = file[1];
@@ -370,6 +436,47 @@ const UploadFileDigiLocker = (props) => {
       {props.iserror && <p style={{ color: "red" }}>{props.iserror}</p>}
       {props?.showHintBelow && <p className="cell-text">{t(props?.hintText)}</p>}
       {showToast && <Toast error={showToast.error} warning={showToast.warning} label={t(showToast.label)} onClose={() => setShowToast(null)} />}
+      {/* DigiLocker PDF Preview Modal */}
+      {showDigiLockerPreview && digiLockerPreviewUrl && (
+        <div
+          style={{
+            position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
+            backgroundColor: "rgba(0,0,0,0.7)", zIndex: 9999,
+            display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+          }}
+          onClick={() => setShowDigiLockerPreview(false)}
+        >
+          <div
+            style={{
+              background: "#fff", borderRadius: "8px", width: "85%", maxWidth: "860px",
+              overflow: "hidden", boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
+            }}
+            onClick={(ev) => ev.stopPropagation()}
+          >
+            {/* Header */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", background: "#00497e" }}>
+              <span style={{ color: "#fff", fontWeight: "bold", fontSize: "14px" }}>{t("WS_VIEW_DOCUMENT") || "View Document"}</span>
+              <button
+                type="button"
+                onClick={() => setShowDigiLockerPreview(false)}
+                style={{ background: "none", border: "none", cursor: "pointer", padding: "4px" }}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#fff" width="22" height="22">
+                  <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+                </svg>
+              </button>
+            </div>
+            {/* PDF embed */}
+            <embed
+              src={digiLockerPreviewUrl}
+              type="application/pdf"
+              width="100%"
+              height="520px"
+              style={{ border: "none", display: "block" }}
+            />
+          </div>
+        </div>
+      )}
     </Fragment>
   );
 };
