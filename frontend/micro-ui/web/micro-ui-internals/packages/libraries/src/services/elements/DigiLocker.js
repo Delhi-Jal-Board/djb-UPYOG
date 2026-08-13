@@ -50,4 +50,18 @@ export const DigiLockerService = {
       params: { tenantId: tenantId },
       data: data,
     }),
+  // Fetches the actual binary file from DigiLocker.
+  // Uses userDownload:true so Request sets responseType:'arraybuffer',
+  // sets Accept:application/pdf header, and returns the full Axios response.
+  uriFile: (data, tenantId) =>
+    Request({
+      url: Urls.digiLocker.uri,
+      useCache: false,
+      method: "POST",
+      auth: true,
+      userService: true,
+      params: { tenantId: tenantId },
+      data: data,
+      userDownload: true,
+    }),
 };

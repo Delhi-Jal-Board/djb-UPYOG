@@ -33,7 +33,7 @@
     "@djb25/digit-ui-module-asset": "1.0.6",
     "@djb25/digit-ui-module-ws": "1.0.68",
     "@djb25/digit-ui-module-rwh": "1.0.2",
-    "@djb25/digit-ui-module-pt": "1.0.5",
+    "@djb25/digit-ui-module-pt": "1.0.6",
     "babel-loader": "9.1.2",
     "@djb25/digit-ui-module-formio": "1.0.0",
     "@djb25/digit-ui-module-ekyc": "1.0.55",
