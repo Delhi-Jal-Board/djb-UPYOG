@@ -460,6 +460,15 @@ const Review = () => {
   const handleDeclaration = () => setAgree(!agree);
 
   const loggedInUserInfo = Digit.UserService.getUser()?.info;
+
+  const { data: userData } = Digit.Hooks.useUserSearch(
+    tenantId,
+    { uuid: [loggedInUserInfo?.uuid] },
+    {},
+    { enabled: !!loggedInUserInfo?.uuid }
+  );
+  const supervisorData = userData?.user || [];
+
   const matchedSupervisor = supervisorData?.find(
     (s) => s?.uuid === loggedInUserInfo?.uuid || s?.userName === loggedInUserInfo?.userName
   );
