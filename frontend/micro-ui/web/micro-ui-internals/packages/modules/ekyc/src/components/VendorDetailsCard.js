@@ -222,7 +222,7 @@ const VendorDetailsCard = () => {
             }
 
             const excludedKeys = [
-                "status", "source", "submittedAt", "assignedAt", "connectionType", "approvedAt",
+                "status", "source", "assignedAt", "connectionType", "approvedAt",
                 "alternateMobileNo", "city", "state", "addressType", "addressProofType", "mrcode",
                 "areacode", "verificationStatus", "surveyorId", "supervisorId", "vendorId",
                 "assignmentType", "assignmentValue", "assignedTime", "isSelfAssigned", "userType",

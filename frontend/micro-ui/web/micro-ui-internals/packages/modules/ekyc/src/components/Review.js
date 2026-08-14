@@ -198,7 +198,13 @@ const Review = () => {
 
   const userRoles = Digit.SessionStorage.get("User")?.info?.roles?.map((ele) => ele.code) || [];
   const isZRO = userRoles.includes("EKYC_ZRO") || userRoles.includes("ZRO");
-  const isSupervisorOrSurveyorOrVendor = userRoles.includes("EKYC_SUPERVISOR") || userRoles.includes("EKYC_SURVEYOR") || userRoles.includes("EKYC_VENDOR");
+  // const isSupervisorOrSurveyorOrVendor = userRoles.includes("EKYC_SUPERVISOR") || userRoles.includes("EKYC_SURVEYOR") || userRoles.includes("EKYC_VENDOR");
+  const isSupervisorOrSurveyorOrVendor = userRoles.includes("EKYC_SURVEYOR") || userRoles.includes("EKYC_VENDOR");
+
+  // Dynamically resolve the primary EKYC role of the logged-in user
+  const EKYC_ROLE_PRIORITY = ["EKYC_ZRO", "ZRO", "EKYC_SUPERVISOR", "EKYC_SURVEYOR", "EKYC_VENDOR"];
+  const currentUserRole = EKYC_ROLE_PRIORITY.find((r) => userRoles.includes(r)) || userRoles[0] || "EMPLOYEE";
+
   const isStatusView = location.pathname.includes("/status/");
   const hideEditButton = (isSupervisorOrSurveyorOrVendor && !isZRO) || isStatusView;
 
@@ -453,6 +459,12 @@ const Review = () => {
 
   const handleDeclaration = () => setAgree(!agree);
 
+  const loggedInUserInfo = Digit.UserService.getUser()?.info;
+  const matchedSupervisor = supervisorData?.find(
+    (s) => s?.uuid === loggedInUserInfo?.uuid || s?.userName === loggedInUserInfo?.userName
+  );
+  const supervisorId = matchedSupervisor?.uuid || loggedInUserInfo?.uuid;
+
   const handleReject = async () => {
     const payload = {
       RequestInfo: {
@@ -465,16 +477,31 @@ const Review = () => {
       kno: activeKno,
       action: "REJECTED",
       remarks: "Application rejected by reviewer",
-      reviewedBy: Digit.UserService.getUser()?.info?.userName,
-      role: "ZRO",
+      reviewedBy: supervisorId,
+      role: currentUserRole,
     };
     try {
       const result = await workflowMutation.mutateAsync(payload);
       if (result) {
-        history.push("/digit-ui/employee/ekyc/response", { success: true, result });
+        setToastData({
+          error: true,
+          label: t("EKYC_APPLICATION_REJECT_SUCCESSFUL") || "Application Rejected Successfully",
+        });
+        setShowToast(true);
+        setTimeout(() => {
+          history.push("/digit-ui/employee/ekyc/inbox");
+        }, 2000);
       }
     } catch (err) {
       console.error("Reject Error:", err);
+      const errMsg =
+        err?.message ||
+        err?.response?.data?.message ||
+        err?.response?.data?.Errors?.[0]?.message ||
+        err?.Errors?.[0]?.message ||
+        t("EKYC_REJECT_ERROR") || "Reject failed. Please try again.";
+      setToastData({ error: true, label: errMsg });
+      setShowToast(true);
     }
   };
 
@@ -490,8 +517,8 @@ const Review = () => {
       kno: activeKno,
       action: "APPROVED",
       remarks: "All documents verified",
-      reviewedBy: Digit.UserService.getUser()?.info?.userName,
-      role: "ZRO",
+      reviewedBy: supervisorId,
+      role: currentUserRole,
     };
     try {
       const result = await workflowMutation.mutateAsync(payload);
@@ -507,10 +534,12 @@ const Review = () => {
       }
     } catch (err) {
       console.error("Approve Error:", err);
-      setToastData({
-        error: true,
-        label: err?.message || err?.response?.data?.message || "Approve Error",
-      });
+      const errMsg =
+        err?.response?.data?.Errors?.[0]?.message ||
+        err?.Errors?.[0]?.message ||
+        err?.message ||
+        t("EKYC_APPROVE_ERROR") || "Approve failed. Please try again.";
+      setToastData({ error: true, label: errMsg });
       setShowToast(true);
     }
   };
@@ -556,16 +585,15 @@ const Review = () => {
 
   const handleMenuSelect = (option) => {
     setShowOptions(false); // close menu
-    if (option.action === t("Approve")) {
+    if (option.action === t("APPROVE")) {
       handleApprove();
-    } else if (option.action === t("Reject")) {
+    } else if (option.action === t("REJECT")) {
       handleReject();
     }
   };
 
   if (isSearchLoading || isSubmitting) return <Loader />;
 
-  const baseUrl = "/digit-ui/employee/ekyc";
 
   return (
     <Fragment>
