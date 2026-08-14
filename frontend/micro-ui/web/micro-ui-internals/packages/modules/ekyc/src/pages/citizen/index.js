@@ -148,7 +148,7 @@ const CitizenApp = () => {
           <PrivateRoute
             path={`${path}/review`}
             component={() => (
-              <LayoutWrapper layoutClass="normal">
+              <LayoutWrapper layoutClass="action">
                 <Review />
               </LayoutWrapper>
             )}

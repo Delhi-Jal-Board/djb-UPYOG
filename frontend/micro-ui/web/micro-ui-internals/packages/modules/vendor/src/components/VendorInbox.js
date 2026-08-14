@@ -1276,6 +1276,14 @@ const VendorInbox = (props) => {
           ...(props.selectedTab === "SUPERVISOR"
             ? [
               {
+                Header: t("ES_VENDOR_SUPERVISOR_ZONE_NAME"),
+                id: "zoneId",
+                accessor: (row) => row.assignedZoneId || "NA",
+                Cell: ({ row }) => {
+                  return <div>{row.original?.assignedZoneId || "NA"}</div>
+                }
+              },
+              {
                 Header: t("ES_VENDOR_SUPERVISOR_AGENCY_NAME") || "Agency Name",
                 id: "agencyName",
                 accessor: (row) => row.vendorName || row.vendorData?.name || row.vendor?.name || "NA",
@@ -1542,8 +1550,8 @@ const VendorInbox = (props) => {
     }
 
     if (props.selectedTab === "VENDOR") {
-      try{
-        const response=await Digit.FSMService.vendorSearch(tenantId, {
+      try {
+        const response = await Digit.FSMService.vendorSearch(tenantId, {
           status: "ACTIVE,DISABLED",
           name: props.searchParams?.name,
           mobileNumber: props.searchParams?.mobileNumber || undefined,
@@ -1551,7 +1559,7 @@ const VendorInbox = (props) => {
           offset: 0,
         });
         return response?.vendors || response?.vendor || [];
-      }catch(e){
+      } catch (e) {
         console.error(e);
         return [];
       }
