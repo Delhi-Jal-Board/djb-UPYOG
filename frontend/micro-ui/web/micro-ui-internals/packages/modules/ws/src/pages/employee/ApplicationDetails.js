@@ -482,7 +482,7 @@ const ApplicationDetails = () => {
         </div>
 
         {/* Right Column: Application Details */}
-        <div style={{ flex: "2 1 500px", minWidth: "300px", overflowY: "auto" }}>
+        <div style={{ flex: "2 1 500px", minWidth: "300px" }}>
           <ApplicationDetailsTemplate
             applicationDetails={applicationDetails}
             isLoading={isLoading || isBillingServiceLoading || isCommonmastersLoading || isServicesMasterLoading}
