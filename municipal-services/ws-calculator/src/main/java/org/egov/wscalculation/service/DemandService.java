@@ -242,8 +242,12 @@ public class DemandService {
 			
 			log.info("in create Demand | isForConnectionNO: " + isForConnectionNO + " | consumerCode: " + consumerCode + " | Business Service is: " + businessService);
 			
-			if(calculationReq.getIsReconnectionRequest())
+			if(calculationReq.getIsReconnectionRequest() != null && calculationReq.getIsReconnectionRequest())
 				businessService="WSReconnection";
+
+			if (calculationReq.getIsDisconnectionRequest() != null && calculationReq.getIsDisconnectionRequest())
+				businessService="WS.DISCONNECTION";
+
 			log.info("in create Demand  Business Service is" +businessService );
 
 			addRoundOffTaxHead(calculation.getTenantId(), demandDetails);
@@ -525,6 +529,8 @@ public class DemandService {
 		String businessService = taxPeriodFrom == null && !isDisconnectionRequest ? ONE_TIME_FEE_SERVICE_FIELD : configs.getBusinessService();
 		if(isReconnectionRequest)
 			businessService="WSReconnection";
+		if (isDisconnectionRequest)
+			businessService = "WS.DISCONNECTION";
 
 		if (consumerCodes != null && !consumerCodes.isEmpty() && requestInfo != null) {
 			String firstCode = consumerCodes.iterator().next();
