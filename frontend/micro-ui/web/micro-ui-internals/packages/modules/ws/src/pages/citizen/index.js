@@ -150,6 +150,7 @@ const App = ({ path }) => {
   const WNSMyBillsComponent = Digit?.ComponentRegistryService?.getComponent("WNSMyBillsComponent");
   const WSOLDApplication = Digit?.ComponentRegistryService?.getComponent("WSOLDApplication");
   const WSInfoPage = Digit?.ComponentRegistryService?.getComponent("WSInfoPage");
+  const WSMutationApplication = Digit?.ComponentRegistryService?.getComponent("WSMutationApplication");
   return (
     <React.Fragment>
       <Switch>
@@ -189,6 +190,7 @@ const App = ({ path }) => {
                 <PrivateRoute path={`${path}/old-application`} component={WSOLDApplication} />
                 <PrivateRoute path={`${path}/info`} component={WSInfoPage} />
                 <PrivateRoute path={`${path}/ws-response`} component={WSResponse} />
+                <PrivateRoute path={`${path}/mutation-application`} component={WSMutationApplication} />
               </div>
             </div>
           </div>

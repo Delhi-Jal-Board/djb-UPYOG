@@ -30,7 +30,7 @@ const WSApplication = ({ application }) => {
     { tenantId: application?.tenantId, filters: { propertyIds: application?.propertyId } },
     { filters: { propertyIds: application?.propertyId }, privacy: Digit.Utils.getPrivacyObject() }
   );
-  const businessService = application?.applicationNo?.includes("SW") ? (application?.applicationNo?.includes("DC") ? "SW" : "SW.ONE_TIME_FEE") : (application?.applicationNo?.includes("DC") ? "WS" : "WS.ONE_TIME_FEE")
+  const businessService = application?.applicationNo?.includes("SW") ? (application?.applicationNo?.includes("DC") ? "SW" : (application?.applicationNo?.includes("MUT") ? "SW.MUTATION" : "SW.ONE_TIME_FEE")) : (application?.applicationNo?.includes("DC") ? "WS" : (application?.applicationNo?.includes("MUT") ? "WS.MUTATION" : "WS.ONE_TIME_FEE"))
   const fetchBillParams = { consumerCode: application?.applicationNo?.includes("DC") ? application?.connectionNo : application?.connectionNo };
   if (isLoading) {
     return <Loader />;
@@ -73,7 +73,8 @@ const WSApplication = ({ application }) => {
               }/${application?.applicationNo?.includes("DC") ? (stringReplaceAll(application?.connectionNo, "/", "+") || stringReplaceAll(application?.connectionNo, "/", "+")) :
                 (stringReplaceAll(application?.applicationNo, "/", "+") ||
                   stringReplaceAll(application?.applicationNo, "/", "+"))
-              }?workflow=WNS&tenantId=${application?.tenantId}&ConsumerName=${application?.connectionHolders?.map((owner) => owner.name).join(",") || application?.connectionHolders?.map((owner) => owner.name).join(",") || PTData?.Properties?.[0]?.owners?.map((owner) => owner.name).join(",")}&isDisoconnectFlow=${application?.applicationNo?.includes("DC") ? true : false}`,
+              }`,
+            search: `?workflow=WNS&tenantId=${application?.tenantId}&ConsumerName=${application?.connectionHolders?.map((owner) => owner.name).join(",") || application?.connectionHolders?.map((owner) => owner.name).join(",") || PTData?.Properties?.[0]?.owners?.map((owner) => owner.name).join(",")}&isDisoconnectFlow=${application?.applicationNo?.includes("DC") ? true : false}&consumerCode=${application?.applicationNo?.includes("DC") ? application?.connectionNo : application?.applicationNo}`,
             state: {},
           }}
         >

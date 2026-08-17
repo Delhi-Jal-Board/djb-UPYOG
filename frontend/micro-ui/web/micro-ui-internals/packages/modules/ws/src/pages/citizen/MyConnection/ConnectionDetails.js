@@ -45,11 +45,9 @@ const ConnectionDetails = () => {
   const [showActionToast, setshowActionToast] = useState(null);
   const mobileView = Digit.Utils.browser.isMobile();
   const getAddress = (address) => {
-    return `${address?.doorNo ? `${address?.doorNo}, ` : ""}${address?.street ? `${address?.street}, ` : ""}${
-      address?.landmark ? `${address?.landmark}, ` : ""
-    }${address?.locality?.code ? t(`TENANTS_MOHALLA_${address?.locality?.code}`) : ""}${
-      address?.city?.code || address?.city ? `, ${t(address?.city.code || address?.city)}` : ""
-    }${address?.pincode ? `, ${address.pincode}` : " "}`;
+    return `${address?.doorNo ? `${address?.doorNo}, ` : ""}${address?.street ? `${address?.street}, ` : ""}${address?.landmark ? `${address?.landmark}, ` : ""
+      }${address?.locality?.code ? t(`TENANTS_MOHALLA_${address?.locality?.code}`) : ""}${address?.city?.code || address?.city ? `, ${t(address?.city.code || address?.city)}` : ""
+      }${address?.pincode ? `, ${address.pincode}` : " "}`;
   };
 
   let filter1 = { tenantId: tenantId, applicationNumber: applicationNobyData };
@@ -72,8 +70,8 @@ const ConnectionDetails = () => {
     Object.keys(state)?.length > 0
       ? state
       : applicationNobyData?.includes("WS")
-      ? connectionData?.WaterConnection?.[0]
-      : connectionData?.SewerageConnections?.[0];
+        ? connectionData?.WaterConnection?.[0]
+        : connectionData?.SewerageConnections?.[0];
   //this code hampering all Sewerage functionality thatswhy removed
   // if(data && data["SewerageConnections"]){
   //   isSewerageConnections = true;
@@ -263,6 +261,10 @@ const ConnectionDetails = () => {
   }
   function onActionSelectRestoration() {
     getRestorationButton();
+  }
+  function onActionSelectMutation() {
+    let pathname = `/digit-ui/citizen/ws/mutation-application?applicationNumber=${state?.connectionNo}&service=${isSW ? "SEWERAGE" : "WATER"}&propertyId=${state?.propertyId}&from=WS_COMMON_CONNECTION_DETAIL`;
+    history.push(pathname);
   }
   const Close = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FFFFFF">
@@ -728,8 +730,11 @@ const ConnectionDetails = () => {
               </div>
             ))}
           {(state?.status !== "inactive" || state?.applicationStatus !== "Inactive" || state?.applicationStatus !== "INACTIVE") &&
-          !isDisconnectionDone ? (
-            <ActionBar style={{ position: "relative", boxShadow: "none", minWidth: "240px", maxWidth: "310px", padding: "0px", marginTop: "15px" }}>
+            !isDisconnectionDone ? (
+            <ActionBar style={{ position: "relative", boxShadow: "none", minWidth: "240px", maxWidth: "620px", padding: "0px", marginTop: "15px", display: "flex", gap: "10px" }}>
+              <div style={{ width: "100%" }}>
+                <SubmitBar style={{ width: "100%" }} label={t("WS_MUTATION_BUTTON")} onSubmit={onActionSelectMutation} />
+              </div>
               <div style={{ width: "100%" }}>
                 <SubmitBar style={{ width: "100%" }} label={t("WS_DISCONNECTION_BUTTON")} onSubmit={onActionSelect} />
               </div>
@@ -757,8 +762,7 @@ const ConnectionDetails = () => {
               hideSubmit={true}
               actionSingleSubmit={() => {
                 history.push(
-                  `/digit-ui/citizen/payment/collect/${isSW ? "SW" : "WS"}/${encodeURIComponent(state?.connectionNo)}/${tenantId}?consumerCode=${
-                    state?.connectionNo
+                  `/digit-ui/citizen/payment/collect/${isSW ? "SW" : "WS"}/${encodeURIComponent(state?.connectionNo)}/${tenantId}?consumerCode=${state?.connectionNo
                   }&&tenantId=${tenantId}&&workflow=WNS`
                 );
                 setshowModal(false);

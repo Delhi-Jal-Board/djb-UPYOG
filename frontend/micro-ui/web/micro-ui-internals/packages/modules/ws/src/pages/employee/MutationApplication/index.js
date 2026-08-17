@@ -1,4 +1,5 @@
 import React, { useState, useEffect, Fragment } from "react";
+import { useQuery } from "react-query";
 import { Header, Loader, Toast } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useLocation, useHistory } from "react-router-dom";
@@ -19,7 +20,7 @@ const MutationApplication = () => {
   state = state ? (typeof (state) === "string" ? JSON.parse(state) : state) : {};
   const history = useHistory();
   let filters = func.getQueryStringParams(location.search);
-  
+
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({});
   const [showToast, setShowToast] = useState(null);
@@ -27,17 +28,60 @@ const MutationApplication = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [completedSteps, setCompletedSteps] = useState(new Set());
 
-  let tenantId = Digit.ULBService.getCurrentTenantId();
+  const user = Digit.UserService.getUser();
+  let tenantId = filters?.tenantId
+    || Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code
+    || user?.info?.permanentCity
+    || Digit.ULBService.getCurrentTenantId();
   const applicationNumber = filters?.applicationNumber;
   const serviceType = filters?.service;
 
-  let details = cloneDeep(state?.data);
-  let { isLoading: isDetailsLoading, data: applicationDetails } = Digit.Hooks.ws.useWSDetailsPage(
-    t, 
-    tenantId, 
-    details?.applicationNo || applicationNumber, 
-    (serviceType?.toUpperCase() || details?.applicationData?.serviceType)
+  const details = cloneDeep(state?.data);
+  const mobileNumber = user?.info?.userName?.match(/^[0-9]{10}$/)
+    ? user?.info?.userName
+    : user?.info?.mobileNumber;
+
+
+  const hasStateData = !!(details?.applicationData?.id);
+
+  const wsSearchNumber = details?.applicationNo || applicationNumber;
+  const businessService = (serviceType?.toUpperCase() === "SEWERAGE") ? "SW" : "WS";
+
+
+  const { isLoading: isDetailsLoading, data: fetchedApplicationDetails } = useQuery(
+    ["WS_MUTATION_DIRECT_SEARCH", wsSearchNumber, tenantId, mobileNumber, businessService],
+    async () => {
+      if (!wsSearchNumber) return null;
+      const params = {
+        connectionNumber: wsSearchNumber,
+        // mobileNumber,
+        // limit: 10,
+        // sortBy: "commencementDate",
+        // searchType: "CONNECTION",
+        // sortOrder: "DESC",
+      };
+      // Remove undefined/null values
+      Object.keys(params).forEach(k => (params[k] == null) && delete params[k]);
+      const rawData = await Digit.WSService.search({ tenantId, filters: params, businessService });
+      // Wrap in the same shape that useWSDetailsPage / applicationDetails produces
+      const wsData = businessService === "WS"
+        ? rawData?.WaterConnection?.[0]
+        : rawData?.SewerageConnections?.[0];
+      if (!wsData) return null;
+      return {
+        applicationData: wsData,
+        WaterConnection: rawData?.WaterConnection,
+        SewerageConnections: rawData?.SewerageConnections,
+        propertyDetails: null,
+        processInstancesDetails: [],
+      };
+    },
+    // Skip the fetch when employee already provided full data via router state
+    { enabled: !!wsSearchNumber && !hasStateData }
   );
+
+  // Prefer router state data (employee) over fetched data (citizen)
+  const applicationDetails = hasStateData ? details : fetchedApplicationDetails;
 
   const [propertyId, setPropertyId] = useState(new URLSearchParams(useLocation().search).get("propertyId") || applicationDetails?.applicationData?.propertyId);
 
@@ -57,7 +101,7 @@ const MutationApplication = () => {
         sessionStorage.setItem("IsDetailsExists", JSON.stringify(true));
       }
     };
-    
+
     if (applicationDetails?.applicationData?.id && !sessionFormData?.applicationData) {
       fetchAppData();
     }
@@ -120,9 +164,9 @@ const MutationApplication = () => {
       }
 
       const sessionDetails = sessionStorage.getItem("WS_EDIT_APPLICATION_DETAILS") ? JSON.parse(sessionStorage.getItem("WS_EDIT_APPLICATION_DETAILS")) : {};
-      
+
       let convertAppData = await convertModifyApplicationDetails(finalData, sessionDetails, "INITIATE");
-      
+
       // Ensure dateEffectiveFrom is present for mutation creation validation
       if (!convertAppData.dateEffectiveFrom) {
         convertAppData.dateEffectiveFrom = Date.now();
@@ -183,7 +227,7 @@ const MutationApplication = () => {
             setShowToast({ key: "error", message: errorMessage });
             return;
           }
-          
+
           // Check if the API returned 200 OK but with an Errors array
           if (data?.Errors && data.Errors.length > 0) {
             setIsSubmitting(false);
@@ -192,7 +236,7 @@ const MutationApplication = () => {
             // Create succeeded, now call update API to trigger workflow submission
             const updateMutation = serviceType == "WATER" ? waterUpdateMutation : sewerageUpdateMutation;
             const createdConnection = serviceType == "WATER" ? data?.WaterConnection?.[0] : data?.SewerageConnections?.[0];
-            
+
             let updatePayload = {
               ...createdConnection,
               dateEffectiveFrom: createdConnection?.dateEffectiveFrom || Date.now(),
@@ -201,7 +245,7 @@ const MutationApplication = () => {
                 action: "APPLY_MUTATION",
               }
             };
-            
+
             // Apply customization if it exists in the platform
             if (Digit?.Customizations?.WS?.customiseUpdatePayloadOfWS) {
               updatePayload = Digit.Customizations.WS.customiseUpdatePayloadOfWS(createdConnection, updatePayload, serviceType);
@@ -229,7 +273,7 @@ const MutationApplication = () => {
                   setShowToast({ key: "error", message: updateData.Errors[0].message || "Failed to update workflow" });
                   return;
                 }
-                
+
                 clearSessionFormData();
                 const newAppNo = serviceType == "WATER" ? updateData?.WaterConnection?.[0]?.applicationNo : updateData?.SewerageConnections?.[0]?.applicationNo;
                 setGeneratedAppNo(newAppNo);
@@ -284,55 +328,55 @@ const MutationApplication = () => {
 
         <div style={{ flex: "1", minWidth: 0 }}>
           {currentStep === 1 && (
-        <Fragment>
-          <Step1_ExistingConnection t={t} applicationDetails={applicationDetails} propertyId={propertyId} />
-          <div style={{ display: "flex", justifyContent: "flex-end" }}>
-            <button 
-              onClick={() => { setCompletedSteps(prev => new Set([...prev, 1])); setCurrentStep(2); }}
-              style={{ padding: "10px 24px", backgroundColor: "#00497e", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}
-            >
-              Proceed to New Consumer Details &#8594;
-            </button>
-          </div>
-        </Fragment>
-      )}
+            <Fragment>
+              <Step1_ExistingConnection t={t} applicationDetails={applicationDetails} propertyId={propertyId} />
+              <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                <button
+                  onClick={() => { setCompletedSteps(prev => new Set([...prev, 1])); setCurrentStep(2); }}
+                  style={{ padding: "10px 24px", backgroundColor: "#00497e", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}
+                >
+                  Proceed to New Consumer Details &#8594;
+                </button>
+              </div>
+            </Fragment>
+          )}
 
-      {currentStep === 2 && (
-        <Step2_NewConsumerDetails 
-          t={t} 
-          defaultValues={formData}
-          onNext={handleNextStep2} 
-          onBack={() => setCurrentStep(1)} 
-        />
-      )}
+          {currentStep === 2 && (
+            <Step2_NewConsumerDetails
+              t={t}
+              defaultValues={formData}
+              onNext={handleNextStep2}
+              onBack={() => setCurrentStep(1)}
+            />
+          )}
 
-      {currentStep === 3 && (
-        <Step3_UploadDocuments 
-          t={t} 
-          defaultValues={formData}
-          onNext={handleNextStep3} 
-          onBack={() => setCurrentStep(2)} 
-        />
-      )}
+          {currentStep === 3 && (
+            <Step3_UploadDocuments
+              t={t}
+              defaultValues={formData}
+              onNext={handleNextStep3}
+              onBack={() => setCurrentStep(2)}
+            />
+          )}
 
-      {currentStep === 4 && (
-        <Step4_Preview 
-          t={t} 
-          formData={formData}
-          applicationDetails={applicationDetails}
-          onBack={() => setCurrentStep(3)}
-          onSubmit={submitApplication}
-          isLoading={isSubmitting}
-        />
-      )}
+          {currentStep === 4 && (
+            <Step4_Preview
+              t={t}
+              formData={formData}
+              applicationDetails={applicationDetails}
+              onBack={() => setCurrentStep(3)}
+              onSubmit={submitApplication}
+              isLoading={isSubmitting}
+            />
+          )}
 
-      {currentStep === 5 && (
-        <Step5_Submission 
-          t={t} 
-          applicationNumber={generatedAppNo}
-          serviceType={serviceType || applicationDetails?.applicationData?.serviceType}
-        />
-      )}
+          {currentStep === 5 && (
+            <Step5_Submission
+              t={t}
+              applicationNumber={generatedAppNo}
+              serviceType={serviceType || applicationDetails?.applicationData?.serviceType}
+            />
+          )}
 
           {showToast && <Toast error={showToast?.key === "error"} warning={showToast?.key === "warning"} label={t(showToast?.message)} onClose={() => setShowToast(null)} isDleteBtn={true} />}
         </div>
