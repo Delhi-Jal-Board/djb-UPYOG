@@ -101,11 +101,9 @@ public class WSCalculationServiceImpl implements WSCalculationService {
 					throw new RuntimeException(e);
 				}
 			}
-			// Disconnection fee demand should use applicationNo as consumerCode and
-			// businessService='WS.ONE_TIME_FEE' (same pattern as reconnection at line 120).
-			// Setting connectionRequest=true would wrongly UPDATE the existing WS monthly
-			// demand instead of CREATING a new disconnection fee demand.
-			connectionRequest = false;
+			// Set connectionRequest to true for disconnection so it binds to the connection number,
+			// but it will be routed to the WS.DISCONNECTION business service in DemandService.
+			connectionRequest = request.getIsDisconnectionRequest();
 			masterMap = masterDataService.loadMasterData(request.getRequestInfo(),
 					request.getCalculationCriteria().get(0).getTenantId());
 			calculations = getCalculations(request, masterMap);
