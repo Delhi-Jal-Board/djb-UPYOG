@@ -631,7 +631,7 @@ public class EstimationService {
 
 		// Determine payment status based on workflow state
 		String appStatus = criteria.getWaterConnection().getApplicationStatus();
-		List<String> unpaidInitialStates = Arrays.asList("INITIATED", "PENDING_FOR_PAYMENT", "PENDING_FOR_CITIZEN_ACTION");
+		List<String> unpaidInitialStates = Arrays.asList("INITIATED", "PENDING_APPROVAL_FOR_MUTATION", "PENDING_FOR_PAYMENT", "PENDING_FOR_CITIZEN_ACTION");
 		boolean isInitialFeePaid = appStatus != null && !unpaidInitialStates.contains(appStatus.toUpperCase());
 				
 		boolean isFinalFeePaid = "PENDING_FOR_CONNECTION_ACTIVATION".equalsIgnoreCase(appStatus)
