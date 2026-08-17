@@ -345,7 +345,7 @@ const EditVendor = () => {
         name: mergedData?.ownerName || name,
         fatherOrHusbandName: mergedData?.fatherOrHusbandName || name,
         relationship: mergedData?.relationship?.code || "OTHER",
-        gender: mergedData?.gender,
+        gender: mergedData?.gender?.code || mergedData?.gender,
         dob: mergedData?.dob ? new Date(mergedData.dob).getTime() : new Date(`1/1/1970`).getTime(),
         emailId: emailId || "",
         mobileNumber: phone,
