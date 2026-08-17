@@ -654,21 +654,30 @@ export const WSSearch = {
 
     // Group documents by category for structured display
     const allDocs = wsDataDetails?.documents || [];
-    const identityDoc = allDocs.find((d) => d?.documentType?.includes("IDENTITYPROOF") || d?.documentType?.includes("IDENTITY"));
+    const identityDoc = allDocs.find((d) => d?.documentType?.includes("IDENTITYPROOF") || d?.documentType?.includes("IDENTITY") || ["AADHAAR", "PAN_CARD", "PASSPORT", "VOTER_ID_CARD", "DRIVING_LICENSE", "ANY_OTHER_GOVT_ID"].includes(d?.documentType));
     const ownershipDoc = allDocs.find(
-      (d) => d?.documentType?.includes("ADDRESSPROOF") || d?.documentType?.includes("OWNERSHIP") || d?.documentType?.includes("PROPERTY")
-    );
-    const otherDoc = allDocs.find(
-      (d) =>
-        d?.id !== identityDoc?.id &&
-        d?.id !== ownershipDoc?.id &&
-        (d?.documentType?.includes("OTHER") ||
-          d?.documentType?.includes("ELECTRICITY") ||
-          d?.documentType?.includes("PLUMBER") ||
-          d?.documentType?.includes("BUILDING") ||
-          d?.documentType?.includes("TAX"))
+      (d) => d?.documentType?.includes("ADDRESSPROOF") || d?.documentType?.includes("OWNERSHIP") || d?.documentType?.includes("PROPERTY") || ["REGISTERED_SALE_DEED", "CONVEYANCE_DEED", "GIFT_DEED", "WILL", "RELINQUISHMENT_DEED", "MUTATION_CERTIFICATE", "GPA", "ALLOTMENT_LETTER", "ELECTRICITY_BILL", "WATER_BILL"].includes(d?.documentType)
     );
     const applicantPhoto = allDocs.find((d) => d?.documentType?.includes("APPLICANTPHOTO") || d?.documentType?.includes("PHOTO"));
+
+    const unmappedDocs = allDocs.filter(d => 
+        d?.id !== identityDoc?.id && 
+        d?.id !== ownershipDoc?.id && 
+        d?.id !== applicantPhoto?.id
+    );
+
+    const otherDocsValues = unmappedDocs.map(d => ({
+        title: d?.documentType?.includes("ELECTRICITY") ? "WS_ELECTRICITY_BILL" : 
+               d?.documentType?.includes("PLUMBER") ? "WS_PLUMBER_REPORT" :
+               d?.documentType?.includes("BUILDING") ? "WS_BUILDING_PLAN" :
+               d?.documentType?.includes("TAX") ? "WS_PROPERTY_TAX" : "WS_OTHER_DOCUMENTS",
+        categoryLabel: "Other Documents",
+        documentType: d?.documentType,
+        documentUid: wsDataDetails?.additionalDetails?.otherDocumentNumber || d?.documentNumber || "NA",
+        fileStoreId: d?.fileStoreId,
+        numberLabel: "Other Document Number",
+        originalDoc: d,
+    }));
 
     const documentDetails = {
       title: "WS_DOCUMENTS",
@@ -700,17 +709,7 @@ export const WSSearch = {
                   originalDoc: ownershipDoc,
                 }
                 : null,
-              otherDoc
-                ? {
-                  title: "WS_OTHER_DOCUMENTS",
-                  categoryLabel: "Other Documents",
-                  documentType: otherDoc?.documentType,
-                  documentUid: wsDataDetails?.additionalDetails?.otherDocumentNumber || otherDoc?.documentNumber || "NA",
-                  fileStoreId: otherDoc?.fileStoreId,
-                  numberLabel: "Other Document Number",
-                  originalDoc: otherDoc,
-                }
-                : null,
+              ...otherDocsValues,
               applicantPhoto
                 ? {
                   title: "WS_APPLICANT_PHOTO",
