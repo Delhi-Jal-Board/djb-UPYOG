@@ -387,6 +387,7 @@ function SelectDocument({
                   setFile(null);
                   setIsCameraFile(false);
                   setIsDocumentUidLocked(false);
+                  setDocumentUid("");
                 }}
                 id={id}
                 message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
@@ -402,6 +403,7 @@ function SelectDocument({
                   setFile(null);
                   setIsCameraFile(false);
                   setIsDocumentUidLocked(false);
+                  setDocumentUid("");
                 }}
                 documentType={selectedDocument?.code}
                 onDocumentNumber={(num) => {
@@ -416,6 +418,8 @@ function SelectDocument({
                   setUploadedFile(null);
                   setFile(null);
                   setIsCameraFile(false);
+                  setIsDocumentUidLocked(false);
+                  setDocumentUid("");
                 }}
                 id={id}
                 message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
@@ -430,6 +434,8 @@ function SelectDocument({
                   setUploadedFile(null);
                   setFile(null);
                   setIsCameraFile(false);
+                  setIsDocumentUidLocked(false);
+                  setDocumentUid("");
                 }}
               />
             )}
@@ -488,6 +494,7 @@ function SelectDocument({
           center
           actionCancelOnSubmit={() => setShowDocModal(false)}
           actionCancelLabel={t("CS_COMMON_CLOSE") || "Close"}
+          hideSubmit={true}
           popupStyles={{ width: "80%", maxWidth: "800px" }}
         >
           <div style={{ display: "flex", justifyContent: "center", alignItems: "center", padding: "20px", minHeight: "300px" }}>
