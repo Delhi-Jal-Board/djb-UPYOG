@@ -57,7 +57,6 @@ public class User {
     @JsonProperty("name")
     private String name;
 
-    @NotNull
     @SafeHtml
     @JsonProperty("gender")
     private String gender;
