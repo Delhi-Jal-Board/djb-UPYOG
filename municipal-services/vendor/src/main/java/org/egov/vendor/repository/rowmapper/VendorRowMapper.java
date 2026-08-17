@@ -118,12 +118,27 @@ public class VendorRowMapper implements ResultSetExtractor<List<Vendor>> {
 
 		Boundary locality = Boundary.builder().code(rs.getString("locality")).build();
 
+		Double latitude = rs.getObject("latitude") != null ? rs.getDouble("latitude") : null;
+		Double longitude = rs.getObject("longitude") != null ? rs.getDouble("longitude") : null;
+
 		Address address = Address.builder().id(rs.getString("vendor_address_id")).tenantId(rs.getString("tenantid"))
 				.doorNo(rs.getString("doorno")).plotNo(rs.getString("plotno")).landmark(rs.getString("landmark"))
 				.city(rs.getString("city")).district(rs.getString("district")).region(rs.getString("region"))
 				.state(rs.getString("state")).country(rs.getString("country")).pincode(rs.getString("pincode"))
 				.additionalDetails(rs.getString("additionaldetails")).buildingName(rs.getString("buildingname"))
-				.street(rs.getString("street")).locality(locality).build();
+				.street(rs.getString("street")).locality(locality)
+				.latitude(latitude)
+				.longitude(longitude)
+				.subLocality(rs.getString("sub_locality"))
+				.actualAssembly(rs.getString("actual_assembly"))
+				.actualZone(rs.getString("actual_zone"))
+				.actualWard(rs.getString("actual_ward"))
+				.addressLine1(rs.getString("address_line_1"))
+				.addressLine2(rs.getString("address_line_2"))
+				.assembly(rs.getString("assembly"))
+				.block(rs.getString("block"))
+				.zone(rs.getString("zone"))
+				.build();
 		vendor.setAddress(address);
 		vendor.setAuditDetails(auditdetails);
 

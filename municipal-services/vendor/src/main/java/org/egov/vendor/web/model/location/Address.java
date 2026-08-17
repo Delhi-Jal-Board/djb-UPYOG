@@ -94,4 +94,46 @@ public class Address {
 	@JsonProperty("auditDetails")
 	private AuditDetails auditDetails = null;
 
+	@JsonProperty("latitude")
+	private Double latitude = null;
+
+	@JsonProperty("longitude")
+	private Double longitude = null;
+
+	@SafeHtml
+	@JsonProperty("subLocality")
+	private String subLocality = null;
+
+	@SafeHtml
+	@JsonProperty("actualAssembly")
+	private String actualAssembly = null;
+
+	@SafeHtml
+	@JsonProperty("actualZone")
+	private String actualZone = null;
+
+	@SafeHtml
+	@JsonProperty("actualWard")
+	private String actualWard = null;
+
+	@SafeHtml
+	@JsonProperty("addressLine1")
+	private String addressLine1 = null;
+
+	@SafeHtml
+	@JsonProperty("addressLine2")
+	private String addressLine2 = null;
+
+	@SafeHtml
+	@JsonProperty("assembly")
+	private String assembly = null;
+
+	@SafeHtml
+	@JsonProperty("block")
+	private String block = null;
+
+	@SafeHtml
+	@JsonProperty("zone")
+	private String zone = null;
+
 }
