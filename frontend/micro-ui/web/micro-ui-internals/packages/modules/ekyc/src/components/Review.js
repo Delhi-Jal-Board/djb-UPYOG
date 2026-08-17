@@ -202,8 +202,8 @@ const Review = () => {
   const isSupervisorOrSurveyorOrVendor = userRoles.includes("EKYC_SURVEYOR") || userRoles.includes("EKYC_VENDOR");
 
   // Dynamically resolve the primary EKYC role of the logged-in user
-  const EKYC_ROLE_PRIORITY = ["EKYC_ZRO", "ZRO", "EKYC_SUPERVISOR", "EKYC_SURVEYOR", "EKYC_VENDOR"];
-  const currentUserRole = EKYC_ROLE_PRIORITY.find((r) => userRoles.includes(r)) || userRoles[0] || "EMPLOYEE";
+  // const EKYC_ROLE_PRIORITY = ["EKYC_ZRO", "ZRO", "EKYC_SUPERVISOR", "EKYC_SURVEYOR", "EKYC_VENDOR"];
+  // const currentUserRole = EKYC_ROLE_PRIORITY.find((r) => userRoles.includes(r)) || userRoles[0] || "EMPLOYEE";
 
   const isStatusView = location.pathname.includes("/status/");
   const hideEditButton = (isSupervisorOrSurveyorOrVendor && !isZRO) || isStatusView;
@@ -487,7 +487,8 @@ const Review = () => {
       action: "REJECTED",
       remarks: "Application rejected by reviewer",
       reviewedBy: supervisorId,
-      role: currentUserRole,
+      // role: currentUserRole,
+      role: "ZRO"
     };
     try {
       const result = await workflowMutation.mutateAsync(payload);
@@ -527,7 +528,8 @@ const Review = () => {
       action: "APPROVED",
       remarks: "All documents verified",
       reviewedBy: supervisorId,
-      role: currentUserRole,
+      // role: currentUserRole,
+      role: "ZRO"
     };
     try {
       const result = await workflowMutation.mutateAsync(payload);

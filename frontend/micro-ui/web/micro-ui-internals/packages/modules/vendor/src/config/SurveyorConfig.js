@@ -89,19 +89,19 @@ const SurveyorConfig = (t, genderMenu = [], disabled = false) => {
             className: "payment-form-text-input-correction",
           },
         },
-        {
-          label: t("ES_VENDOR_ZONE"),
-          isMandatory: true,
-          type: "component",
-          key: "zoneIds",
-          populators: {
-            name: "zoneIds",
-            validation: { required: true },
-            className: "mb-16",
-          },
-          props: { isMultiSelect: false },
-          component: "SelectEkycZones",
-        },
+        // {
+        //   label: t("ES_VENDOR_ZONE"),
+        //   isMandatory: true,
+        //   type: "component",
+        //   key: "zoneIds",
+        //   populators: {
+        //     name: "zoneIds",
+        //     validation: { required: true },
+        //     className: "mb-16",
+        //   },
+        //   props: { isMultiSelect: false },
+        //   component: "SelectEkycZones",
+        // },
         {
           label: t("ES_VENDOR_SURVEYOR_DESCRIPTION"),
           isMandatory: false,

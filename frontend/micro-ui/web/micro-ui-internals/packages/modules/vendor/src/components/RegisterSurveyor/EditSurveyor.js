@@ -54,10 +54,12 @@ const EditSurveyor = () => {
         mobileNumber: details?.owner?.mobileNumber || details?.mobileNo,
         emailId: details?.owner?.emailId,
         employeeId: details?.employeeId,
-        gender: details?.owner?.gender ? { code: details.owner.gender, name: `COMMON_GENDER_${details.owner.gender}` } : null,
+        gender: details?.owner?.gender
+          ? { code: details.owner.gender, value: details.owner.gender, i18nKey: `COMMON_GENDER_${details.owner.gender}` }
+          : null,
         fatherOrHusbandName: details?.owner?.fatherOrHusbandName,
         relationship: details?.owner?.relationship
-          ? { code: details.owner.relationship, name: `ES_COMMON_RELATION_${details.owner.relationship}` }
+          ? { code: details.owner.relationship, value: details.owner.relationship, i18nKey: `ES_COMMON_RELATION_${details.owner.relationship}` }
           : null,
         dob: details?.owner?.dob && Digit.DateUtils.ConvertTimestampToDate(details?.owner?.dob, "yyyy-MM-dd"),
         correspondenceAddress: details?.correspondenceAddress || details?.owner?.correspondenceAddress,
