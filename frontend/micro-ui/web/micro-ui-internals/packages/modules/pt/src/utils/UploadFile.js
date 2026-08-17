@@ -179,12 +179,7 @@ const UploadFileDigiLocker = (props) => {
 
   useEffect(() => handleChange(), [props.message]);
 
-  // Cleanup blob URL when component unmounts
-  useEffect(() => {
-    return () => {
-      if (digiLockerPreviewUrl) URL.revokeObjectURL(digiLockerPreviewUrl);
-    };
-  }, [digiLockerPreviewUrl]);
+
 
   const dataURItoBlob = (dataURI) => {
     var b64Data = dataURI.split(",")[1].replace(/\s/g, "");
