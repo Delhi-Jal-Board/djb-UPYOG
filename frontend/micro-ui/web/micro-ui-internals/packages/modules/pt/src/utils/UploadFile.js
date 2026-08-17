@@ -138,8 +138,6 @@ const UploadFileDigiLocker = (props) => {
   const [prevSate, setprevSate] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [showToast, setShowToast] = useState(null);
-  const [digiLockerPreviewUrl, setDigiLockerPreviewUrl] = useState(null);
-  const [showDigiLockerPreview, setShowDigiLockerPreview] = useState(false);
   const [digiLockerFilename, setDigiLockerFilename] = useState(null);
   const user_type = Digit.SessionStorage.get("userType");
   const { isLoading, isSuccess, error, count, data: dataNew, mutate: assessmentMutate } = Digit.Hooks.createTokenAPI("document");
@@ -159,13 +157,11 @@ const UploadFileDigiLocker = (props) => {
   extraStyles = getCitizenStyles("OBPS");
   const handleDelete = () => {
     inpRef.current.value = "";
-    // Revoke blob URL to free memory
-    if (digiLockerPreviewUrl) {
-      URL.revokeObjectURL(digiLockerPreviewUrl);
-      setDigiLockerPreviewUrl(null);
-    }
     setDigiLockerFilename(null);
     setHasFile(false);
+    if (props.onDocumentNumber) {
+      props.onDocumentNumber("");
+    }
     props.onDelete();
   };
   const handleEmpty = () => {
@@ -409,10 +405,6 @@ const UploadFileDigiLocker = (props) => {
     }
   };
   const convertToFile = (e, blob, filename = "document.pdf") => {
-    // Create preview URL directly from the blob (no filestore round-trip needed)
-    const previewUrl = URL.createObjectURL(blob);
-    setDigiLockerPreviewUrl(previewUrl);
-
     var reader = new FileReader();
     reader.readAsDataURL(blob);
     reader.onloadend = function () {
@@ -477,27 +469,6 @@ const UploadFileDigiLocker = (props) => {
               {t("CS_COMMON_FETCH_FROM_DIGILOCKER")}
             </button>
           </div>
-          {/* DigiLocker eye icon — appears after a doc is successfully fetched */}
-          {digiLockerPreviewUrl && (
-            <button
-              type="button"
-              title={t("WS_VIEW_DOCUMENT") || "Preview document"}
-              onClick={() => setShowDigiLockerPreview(true)}
-              style={{
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                padding: "4px",
-              }}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" height="22" viewBox="0 0 24 24" width="22" fill="#00497e">
-                <path d="M0 0h24v24H0z" fill="none" />
-                <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
-              </svg>
-            </button>
-          )}
         </div>
         {props?.uploadedFiles?.map((file, index) => {
           const fileDetailsData = file[1];
@@ -545,53 +516,6 @@ const UploadFileDigiLocker = (props) => {
       {props.iserror && <p style={{ color: "red" }}>{props.iserror}</p>}
       {props?.showHintBelow && <p className="cell-text">{t(props?.hintText)}</p>}
       {showToast && <Toast error={showToast.error} warning={showToast.warning} label={t(showToast.label)} onClose={() => setShowToast(null)} />}
-      {/* DigiLocker PDF Preview Modal */}
-      {showDigiLockerPreview && digiLockerPreviewUrl && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            backgroundColor: "rgba(0,0,0,0.7)",
-            zIndex: 9999,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-          onClick={() => setShowDigiLockerPreview(false)}
-        >
-          <div
-            style={{
-              background: "#fff",
-              borderRadius: "8px",
-              width: "85%",
-              maxWidth: "860px",
-              overflow: "hidden",
-              boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
-            }}
-            onClick={(ev) => ev.stopPropagation()}
-          >
-            {/* Header */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", background: "#00497e" }}>
-              <span style={{ color: "#fff", fontWeight: "bold", fontSize: "14px" }}>{t("WS_VIEW_DOCUMENT") || "View Document"}</span>
-              <button
-                type="button"
-                onClick={() => setShowDigiLockerPreview(false)}
-                style={{ background: "none", border: "none", cursor: "pointer", padding: "4px" }}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#fff" width="22" height="22">
-                  <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
-                </svg>
-              </button>
-            </div>
-            {/* PDF embed */}
-            <embed src={digiLockerPreviewUrl} type="application/pdf" width="100%" height="520px" style={{ border: "none", display: "block" }} />
-          </div>
-        </div>
-      )}
     </Fragment>
   );
 };
