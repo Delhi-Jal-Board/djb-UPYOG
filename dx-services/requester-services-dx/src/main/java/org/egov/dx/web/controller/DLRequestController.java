@@ -158,27 +158,24 @@ public class DLRequestController {
 	
 	
 	@PostMapping(value = "/file",produces = MediaType.APPLICATION_PDF_VALUE)
-    public ResponseEntity<byte[]> getFile(@Valid @RequestBody TokenRequest tokenRequest) {
+    public byte[] getFile(@Valid @RequestBody TokenRequest tokenRequest) {
 
         byte[] doc = dlRequestService.getDoc(tokenRequest.getTokenReq(),tokenRequest.getTokenReq().getId());
 
         if (doc == null || doc.length == 0) {
             log.warn("DigiLocker returned empty document");
-            return ResponseEntity.noContent().build();
+            return new byte[0];
         }
-
         log.info("Document size: {}", doc.length);
 
         if (doc.length >= 5) {
             String header = new String(doc,0,5,StandardCharsets.US_ASCII);
-
             log.info("Document header: {}", header);
             if (!header.startsWith("%PDF-")) {
                 log.warn("Response does not appear to be a valid PDF. Header: {}",header);
             }
         }
-
-        return ResponseEntity.ok().contentType(MediaType.APPLICATION_PDF).contentLength(doc.length).body(doc);
+        return doc;
     }
 	
 	
