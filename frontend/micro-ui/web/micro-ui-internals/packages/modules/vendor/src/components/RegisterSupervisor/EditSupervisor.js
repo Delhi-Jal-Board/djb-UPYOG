@@ -54,7 +54,7 @@ const EditSupervisor = () => {
         mobileNumber: details?.owner?.mobileNumber || details?.mobileNo,
         emailId: details?.owner?.emailId,
         employeeId: details?.employeeId,
-        gender: details?.owner?.gender ? { code: details.owner.gender, active: true, i18nKey: `COMMON_GENDER_${details.owner.gender}` } : null,
+        gender: details?.owner?.gender ? { code: details.owner.gender, value: details.owner.gender, i18nKey: `COMMON_GENDER_${details.owner.gender}` } : null,
         dob: details?.owner?.dob && Digit.DateUtils.ConvertTimestampToDate(details?.owner?.dob, "yyyy-MM-dd"),
         correspondenceAddress: details?.correspondenceAddress || details?.owner?.correspondenceAddress,
         description: details?.description,
