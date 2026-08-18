@@ -68,16 +68,17 @@ const WSApplicationDetails = () => {
     select: (data) =>
       data["common-masters"]?.uiCommonPay?.filter(({ code }) => "WS.ONE_TIME_FEE"?.includes(code))[0]?.receiptKey || "consolidatedreceipt",
   });
+  const isMutation = data?.WaterConnection?.[0]?.applicationType?.includes("MUTATION") || data?.SewerageConnections?.[0]?.applicationType?.includes("MUTATION");
 
   const paymentDetails = Digit.Hooks.useFetchBillsForBuissnessService(
     {
       businessService: applicationNobyData?.includes("SW")
         ? applicationNobyData?.includes("DC")
           ? "SW"
-          : "SW.ONE_TIME_FEE"
+          : (isMutation ? "SW.MUTATION" : "SW.ONE_TIME_FEE")
         : applicationNobyData?.includes("DC")
           ? "WS"
-          : "WS.ONE_TIME_FEE",
+          : (isMutation ? "WS.MUTATION" : "WS.ONE_TIME_FEE"),
       ...fetchBillParams,
       tenantId: tenantId,
     },
@@ -115,7 +116,7 @@ const WSApplicationDetails = () => {
     }) || false;
 
   const applicationStatus = data?.WaterConnection?.[0]?.applicationStatus || data?.SewerageConnections?.[0]?.applicationStatus;
-  
+
   const isPaid =
     applicationStatus && applicationStatus !== "INITIATED" && applicationStatus !== "PENDING_FOR_PAYMENT" && applicationStatus !== "PENDING_FOR_FINAL_PAYMENT" && applicationStatus !== "PENDING_FOR_ADDITIONAL_PAYMENT"
       ? true
@@ -186,7 +187,7 @@ const WSApplicationDetails = () => {
     const tenantId = Digit.ULBService.getCurrentTenantId();
     const state = Digit.ULBService.getStateId();
 
-    let key = data?.WaterConnection?.[0] ? "WS.ONE_TIME_FEE" : "SW.ONE_TIME_FEE";
+    let key = data?.WaterConnection?.[0] ? (isMutation ? "WS.MUTATION" : "WS.ONE_TIME_FEE") : (isMutation ? "SW.MUTATION" : "SW.ONE_TIME_FEE");
     const payments = await Digit.PaymentService.getReciept(tenantId, key, {
       consumerCodes: data?.WaterConnection?.[0] ? data?.WaterConnection?.[0]?.applicationNo : data?.SewerageConnections?.[0]?.applicationNo,
     });
@@ -934,15 +935,11 @@ const WSApplicationDetails = () => {
                 data?.SewerageConnections?.[0]?.applicationStatus === "PENDING_FOR_ADDITIONAL_PAYMENT" ? (
                 <Link
                   to={{
-                    pathname: `/digit-ui/citizen/payment/my-bills/${paymentDetails?.data?.Bill?.[0]?.businessService}/${applicationNobyData?.includes("DC")
-                      ? stringReplaceAll(data?.WaterConnection?.[0]?.connectionNo, "/", "+") ||
-                      stringReplaceAll(data?.SewerageConnections?.[0]?.connectionNo, "/", "+")
-                      : stringReplaceAll(data?.WaterConnection?.[0]?.applicationNo, "/", "+") ||
-                      stringReplaceAll(data?.SewerageConnections?.[0]?.applicationNo, "/", "+")
-                      }?workflow=WNS&tenantId=${data?.WaterConnection?.[0]?.tenantId || data?.SewerageConnections?.[0]?.tenantId}&ConsumerName=${data?.WaterConnection?.[0]?.connectionHolders?.map((owner) => owner.name).join(",") ||
+                    pathname: `/digit-ui/citizen/payment/my-bills/${paymentDetails?.data?.Bill?.[0]?.businessService}/${stringReplaceAll(paymentDetails?.data?.Bill?.[0]?.consumerCode, "/", "+")}`,
+                    search: `?workflow=WNS&tenantId=${data?.WaterConnection?.[0]?.tenantId || data?.SewerageConnections?.[0]?.tenantId}&ConsumerName=${data?.WaterConnection?.[0]?.connectionHolders?.map((owner) => owner.name).join(",") ||
                       data?.SewerageConnections?.[0]?.connectionHolders?.map((owner) => owner.name).join(",") ||
                       PTData?.Properties?.[0]?.owners?.map((owner) => owner.name).join(",")
-                      }&isDisoconnectFlow=${applicationNobyData?.includes("DC") ? true : false}`,
+                      }&isDisoconnectFlow=${applicationNobyData?.includes("DC") ? true : false}&consumerCode=${paymentDetails?.data?.Bill?.[0]?.consumerCode}`,
                     state: {},
                   }}
                 >
