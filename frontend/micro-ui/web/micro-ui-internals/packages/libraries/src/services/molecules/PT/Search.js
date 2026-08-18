@@ -29,8 +29,8 @@ export const PTSearch = {
       title: "PT_PROPERTY_ADDRESS_SUB_HEADER",
       asSectionHeader: true,
       values: [
-        { title: "WS_ZRO_LOCATION", value: property?.address?.zroLocation || property?.address?.additionalDetails?.zroLocation?.name || property?.address?.additionalDetails?.zroLocation || property?.additionalDetails?.zroLocation || "NA" },
-        { title: "COMMON_ADDRESS_TYPE", value: property?.address?.addressType || "NA" },
+        // { title: "WS_ZRO_LOCATION", value: property?.address?.zroLocation || property?.address?.additionalDetails?.zroLocation?.name || property?.address?.additionalDetails?.zroLocation || property?.additionalDetails?.zroLocation || "NA" },
+        // { title: "COMMON_ADDRESS_TYPE", value: property?.address?.addressType || "NA" },
         { title: "PT_PROPERTY_ADDRESS_CITY", value: property?.address?.city || "NA" },
         { title: "PT_PROPERTY_ADDRESS_PINCODE", value: property?.address?.pincode || "NA" },
         {
@@ -208,8 +208,8 @@ export const PTSearch = {
         title: "PT_PROPERTY_ADDRESS_SUB_HEADER",
         asSectionHeader: true,
         values: [
-          { title: "WS_ZRO_LOCATION", value: response?.address?.zroLocation || response?.address?.additionalDetails?.zroLocation?.name || response?.address?.additionalDetails?.zroLocation || response?.additionalDetails?.zroLocation || "NA" },
-          { title: "COMMON_ADDRESS_TYPE", value: response?.address?.addressType || "NA" },
+          // { title: "WS_ZRO_LOCATION", value: response?.address?.zroLocation || response?.address?.additionalDetails?.zroLocation?.name || response?.address?.additionalDetails?.zroLocation || response?.additionalDetails?.zroLocation || "NA" },
+          // { title: "COMMON_ADDRESS_TYPE", value: response?.address?.addressType || "NA" },
           { title: "PT_PROPERTY_ADDRESS_CITY", value: response?.address?.city || "NA" },
           { title: "PT_PROPERTY_ADDRESS_PINCODE", value: response?.address?.pincode || "NA" },
           {

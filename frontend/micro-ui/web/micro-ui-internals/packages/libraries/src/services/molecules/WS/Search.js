@@ -455,14 +455,14 @@ export const WSSearch = {
         //     },
         //   },
         // },
-        {
-          title: "WS_ZRO_LOCATION",
-          value:
-            propertyDataDetails?.address?.zroLocation ||
-            propertyDataDetails?.additionalDetails?.zroLocation ||
-            propertyDataDetails?.address?.additionalDetails?.zroLocation ||
-            t("NA"),
-        },
+        // {
+        //   title: "WS_ZRO_LOCATION",
+        //   value:
+        //     propertyDataDetails?.address?.zroLocation ||
+        //     propertyDataDetails?.additionalDetails?.zroLocation ||
+        //     propertyDataDetails?.address?.additionalDetails?.zroLocation ||
+        //     t("NA"),
+        // },
         { title: "CITY", value: propertyDataDetails?.address?.city || t("NA") },
         { title: "PINCODE", value: propertyDataDetails?.address?.pincode || t("NA") },
         {
