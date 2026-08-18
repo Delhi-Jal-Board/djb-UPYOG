@@ -33,7 +33,7 @@ const VendorConfig = (t, module = "", genderMenu, update, addressHeader) => {
           isMandatory: true,
           type: "mobileNumber",
           key: "phone",
-          disable: false,
+          disable: update,
           populators: {
             name: "phone",
             validation: {

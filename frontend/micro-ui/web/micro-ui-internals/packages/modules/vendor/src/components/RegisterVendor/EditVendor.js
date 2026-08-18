@@ -6,9 +6,9 @@ import { useQueryClient } from "react-query";
 import VendorConfig from "../../config/VendorConfig";
 
 const EditVendor = () => {
-  const tenantId = Digit.ULBService.getCurrentTenantId();
-  // const rawTenantId = Digit.ULBService.getCurrentTenantId();
-  // const tenantId = rawTenantId?.includes(".") ? rawTenantId : `${rawTenantId}.djb`;
+  // const tenantId = Digit.ULBService.getCurrentTenantId();
+  const rawTenantId = Digit.ULBService.getCurrentTenantId();
+  const tenantId = rawTenantId?.includes(".") ? rawTenantId : `${rawTenantId}.djb`;
   const { t } = useTranslation();
   const history = useHistory();
   let { id: dsoId } = useParams();
@@ -91,6 +91,9 @@ const EditVendor = () => {
           subLocality: dsoDetails.address.subLocality,
           addressLine1: dsoDetails.address.addressLine1,
           addressLine2: dsoDetails.address.addressLine2,
+          actualAssembly: dsoDetails.address.actualAssembly,
+          actualWard: dsoDetails.address.actualWard,
+          actualZone: dsoDetails.address.actualZone,
           landmark: dsoDetails?.address?.landmark || "",
           latitude: dsoDetails?.address?.geoLocation?.latitude || "",
           longitude: dsoDetails?.address?.geoLocation?.longitude || "",
@@ -113,6 +116,9 @@ const EditVendor = () => {
               subLocality: dsoDetails.address.subLocality,
               addressLine1: dsoDetails.address.addressLine1,
               addressLine2: dsoDetails.address.addressLine2,
+              actualAssembly: dsoDetails.address.actualAssembly,
+              actualWard: dsoDetails.address.actualWard,
+              actualZone: dsoDetails.address.actualZone,
               landmark: dsoDetails.address.landmark,
               geoLocation: {
                 latitude: dsoDetails.address.geoLocation?.latitude,
@@ -210,7 +216,9 @@ const EditVendor = () => {
     const subLocality = address?.subLocality || address?.subLocality?.name || address?.subLocality;
     const addressLine1 = address?.addressLine1;
     const addressLine2 = address?.addressLine2;
-
+    const actualAssembly = address?.actualAssembly;
+    const actualWard = address?.actualWard;
+    const actualZone = address?.actualZone;
     const name = mergedData?.vendorName;
     const plotNo = mergedData?.plotNo?.trim();
     const buildingName = mergedData?.buildingName?.trim();
@@ -246,9 +254,12 @@ const EditVendor = () => {
           label: "Locality",
           area: localityArea || "",
         },
-        subLocality: subLocality,
-        addressLine1: addressLine1,
-        addressLine2: addressLine2,
+        subLocality,
+        addressLine1,
+        addressLine2,
+        actualAssembly,
+        actualWard,
+        actualZone,
         ward: wardCode
           ? {
               code: wardCode,
@@ -316,6 +327,7 @@ const EditVendor = () => {
       },
     });
   };
+
   const config = React.useMemo(() => {
     const addressHeader = dsoDetails?.additionalDetails?.serviceType === "ekyc" ? "PT_LOCATION_DETAILS_EKYC" : "PT_LOCATION_DETAILS";
     return VendorConfig(t, defaultValues?.serviceType?.i18nKey || "", genderMenu, true, addressHeader);

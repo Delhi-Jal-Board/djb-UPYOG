@@ -177,6 +177,9 @@ const AddVendor = () => {
     const subLocality = address?.subLocality || address?.subLocality?.name || address?.subLocality;
     const addressLine1 = address?.addressLine1;
     const addressLine2 = address?.addressLine2;
+    const actualAssembly = address?.actualAssembly;
+    const actualWard = address?.actualWard;
+    const actualZone = address?.actualZone;
 
     const name = mergedData?.vendorName;
     const plotNo = mergedData?.plotNo?.trim();
@@ -213,6 +216,9 @@ const AddVendor = () => {
         subLocality: subLocality,
         addressLine1: addressLine1,
         addressLine2: addressLine2,
+        actualAssembly,
+        actualWard,
+        actualZone,
         ward: wardCode
           ? {
               code: wardCode,
