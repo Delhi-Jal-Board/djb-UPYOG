@@ -132,7 +132,13 @@ const EditVendor = () => {
         contractStartDate: Digit.DateUtils.ConvertTimestampToDate(dsoDetails.contractStartDate, "yyyy-MM-dd"),
         fatherOrHusbandName: dsoDetails?.owner?.fatherOrHusbandName,
         relationship: dsoDetails?.owner?.relationship,
-        gender: genderMenu.find((ele) => ele.code === dsoDetails.owner.gender) || dsoDetails.owner.gender,
+        gender: dsoDetails?.owner?.gender
+          ? {
+              code: dsoDetails.owner.gender,
+              value: dsoDetails.owner.gender,
+              i18nKey: `COMMON_GENDER_${dsoDetails.owner.gender}`,
+            }
+          : null,
         dob: dsoDetails?.owner?.dob && Digit.DateUtils.ConvertTimestampToDate(dsoDetails?.owner?.dob, "yyyy-MM-dd"),
         emailId: dsoDetails?.owner?.emailId === "abc@egov.com" ? "" : dsoDetails?.owner?.emailId,
         correspondenceAddress: dsoDetails?.owner?.correspondenceAddress,
