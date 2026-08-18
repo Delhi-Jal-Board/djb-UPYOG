@@ -6,9 +6,9 @@ import { useQueryClient } from "react-query";
 import VendorConfig from "../../config/VendorConfig";
 
 const EditVendor = () => {
-  const tenantId = Digit.ULBService.getCurrentTenantId();
-  // const rawTenantId = Digit.ULBService.getCurrentTenantId();
-  // const tenantId = rawTenantId?.includes(".") ? rawTenantId : `${rawTenantId}.djb`;
+  // const tenantId = Digit.ULBService.getCurrentTenantId();
+  const rawTenantId = Digit.ULBService.getCurrentTenantId();
+  const tenantId = rawTenantId?.includes(".") ? rawTenantId : `${rawTenantId}.djb`;
   const { t } = useTranslation();
   const history = useHistory();
   let { id: dsoId } = useParams();
@@ -69,7 +69,7 @@ const EditVendor = () => {
       const dsoDetails = dsoData[0]?.dsoDetails;
       setDsoDetails(dsoDetails);
       const serviceType = {
-        i18nKey: dsoDetails?.additionalDetails?.serviceType.toUpperCase(),
+        i18nKey: dsoDetails?.additionalDetails?.serviceType?.toUpperCase(),
         code: dsoDetails?.additionalDetails?.serviceType,
       };
       const values = {
@@ -88,6 +88,12 @@ const EditVendor = () => {
           },
           houseNo: dsoDetails?.address?.doorNo || "",
           streetName: dsoDetails?.address?.street || "",
+          subLocality: dsoDetails.address.subLocality,
+          addressLine1: dsoDetails.address.addressLine1,
+          addressLine2: dsoDetails.address.addressLine2,
+          actualAssembly: dsoDetails.address.actualAssembly,
+          actualWard: dsoDetails.address.actualWard,
+          actualZone: dsoDetails.address.actualZone,
           landmark: dsoDetails?.address?.landmark || "",
           latitude: dsoDetails?.address?.geoLocation?.latitude || "",
           longitude: dsoDetails?.address?.geoLocation?.longitude || "",
@@ -95,8 +101,7 @@ const EditVendor = () => {
         cpt: {
           details: {
             address: {
-              pincode
-                : dsoDetails.address.pincode,
+              pincode: dsoDetails.address.pincode,
               city: {
                 code: tenantId,
                 name: dsoDetails.address.city,
@@ -108,6 +113,12 @@ const EditVendor = () => {
               },
               houseNo: dsoDetails.address.doorNo,
               street: dsoDetails.address.street,
+              subLocality: dsoDetails.address.subLocality,
+              addressLine1: dsoDetails.address.addressLine1,
+              addressLine2: dsoDetails.address.addressLine2,
+              actualAssembly: dsoDetails.address.actualAssembly,
+              actualWard: dsoDetails.address.actualWard,
+              actualZone: dsoDetails.address.actualZone,
               landmark: dsoDetails.address.landmark,
               geoLocation: {
                 latitude: dsoDetails.address.geoLocation?.latitude,
@@ -142,6 +153,7 @@ const EditVendor = () => {
         serviceType: serviceType,
         zoneIds: dsoDetails?.zoneIds,
       };
+
       setDefaultValues(values);
     }
   }, [dsoData]);
@@ -167,12 +179,7 @@ const EditVendor = () => {
     let isEkycFieldsFilled = true;
     if (isEkyc) {
       isEkycFieldsFilled =
-        data?.ownerName &&
-        data?.contractStartDate &&
-        data?.contractEndDate &&
-        data?.zoneIds?.length > 0 &&
-        data?.gender &&
-        data?.dob;
+        data?.ownerName && data?.contractStartDate && data?.contractEndDate && data?.zoneIds?.length > 0 && data?.gender && data?.dob;
     }
 
     if (isVendorDetailsFilled && isEkycFieldsFilled) {
@@ -186,91 +193,9 @@ const EditVendor = () => {
     setShowToast(null);
   };
 
-  // const onSubmit = (data) => {
-  //   const name = data?.vendorName;
-  //   const phone = data?.phone;
-  //   const pincode = data?.pincode;
-  //   const street = data?.street?.trim();
-  //   const doorNo = data?.doorNo?.trim();
-  //   const plotNo = data?.plotNo?.trim();
-  //   const landmark = data?.landmark?.trim();
-  //   const city = data?.address?.city?.name;
-  //   const state = data?.address?.city?.state;
-  //   const district = data?.address?.city?.name;
-  //   const region = data?.address?.city?.name;
-  //   const buildingName = data?.buildingName?.trim();
-  //   const localityCode = data?.address?.locality?.code;
-  //   const localityName = data?.address?.locality?.name;
-  //   const localityArea = data?.address?.locality?.area;
-  //   const additionalDetails = data?.additionalDetails;
-  //   const gender = data?.selectGender?.code;
-  //   const emailId = data?.emailId;
-  //   const dob = new Date(`${data.dob}`).getTime() || new Date(`1/1/1970`).getTime();
-  //   const formData = {
-  //     vendor: {
-  //       ...dsoDetails,
-  //       name,
-  //       address: {
-  //         ...dsoDetails.address,
-  //         landmark,
-  //         doorNo,
-  //         plotNo,
-  //         street,
-  //         city,
-  //         district,
-  //         region,
-  //         state,
-  //         country: "in",
-  //         pincode,
-  //         buildingName,
-  //         locality: {
-  //           ...dsoDetails.address.locality,
-  //           code: localityCode || "",
-  //           name: localityName || "",
-  //           label: "Locality",
-  //           area: localityArea || "",
-  //         },
-  //         geoLocation: {
-  //           ...dsoDetails.address.geoLocation,
-  //           latitude: data?.address?.latitude || 0,
-  //           longitude: data?.address?.longitude || 0,
-  //         },
-  //       },
-  //       owner: {
-  //         ...dsoDetails.owner,
-  //         gender: gender || dsoDetails.owner?.gender || "OTHER",
-  //         dob: dob,
-  //         emailId: emailId || "abc@egov.com",
-  //         mobileNumber: phone,
-  //         relationship: dsoDetails.owner?.relationship || "OTHER",
-  //       },
-  //       additionalDetails: {
-  //         ...dsoDetails.additionalDetails,
-  //         description: additionalDetails,
-  //       },
-  //     },
-  //   };
-  //   mutate(formData, {
-  //     onError: (error, variables) => {
-  //       setShowToast({ key: "error", action: error });
-  //     },
-  //     onSuccess: (data, variables) => {
-  //       setShowToast({ key: "success", action: "UPDATE_VENDOR" });
-  //       queryClient.invalidateQueries("DSO_SEARCH");
-  //       history.push({
-  //         pathname: `/digit-ui/${userType}/vendor/registry/vendor-details/${dsoId}`,
-  //         state: {
-  //           showSuccessToast: true,
-  //           message: { key: "success", action: `ES_VENDOR_ADD_VENDOR` },
-  //         },
-  //       });
-  //     },
-  //   });
-  // };
-
   const onSubmit = (data) => {
     // FINAL SUBMIT
-    const mergedData = data;
+    const mergedData = { ...data };
     const address = mergedData?.propertyAddress;
 
     const pincode = address?.pincode;
@@ -288,7 +213,12 @@ const EditVendor = () => {
     const localityArea = address?.subLocality;
     const wardCode = address?.ward?.code;
     const wardName = address?.ward?.name;
-
+    const subLocality = address?.subLocality || address?.subLocality?.name || address?.subLocality;
+    const addressLine1 = address?.addressLine1;
+    const addressLine2 = address?.addressLine2;
+    const actualAssembly = address?.actualAssembly;
+    const actualWard = address?.actualWard;
+    const actualZone = address?.actualZone;
     const name = mergedData?.vendorName;
     const plotNo = mergedData?.plotNo?.trim();
     const buildingName = mergedData?.buildingName?.trim();
@@ -324,11 +254,17 @@ const EditVendor = () => {
           label: "Locality",
           area: localityArea || "",
         },
+        subLocality,
+        addressLine1,
+        addressLine2,
+        actualAssembly,
+        actualWard,
+        actualZone,
         ward: wardCode
           ? {
-            code: wardCode,
-            name: wardName,
-          }
+              code: wardCode,
+              name: wardName,
+            }
           : undefined,
         geoLocation: {
           ...dsoDetails.address.geoLocation,
@@ -342,7 +278,7 @@ const EditVendor = () => {
         name: mergedData?.ownerName || name,
         fatherOrHusbandName: mergedData?.fatherOrHusbandName || name,
         relationship: mergedData?.relationship?.code || "OTHER",
-        gender: mergedData?.gender?.code || mergedData?.gender,
+        gender: mergedData?.gender?.code || mergedData?.gender || defaultValues?.gender?.code,
         dob: mergedData?.dob ? new Date(mergedData.dob).getTime() : new Date(`1/1/1970`).getTime(),
         emailId: emailId || "",
         mobileNumber: phone,
@@ -391,8 +327,10 @@ const EditVendor = () => {
       },
     });
   };
+
   const config = React.useMemo(() => {
-    return VendorConfig(t, defaultValues?.serviceType?.i18nKey || "", genderMenu, true);
+    const addressHeader = dsoDetails?.additionalDetails?.serviceType === "ekyc" ? "PT_LOCATION_DETAILS_EKYC" : "PT_LOCATION_DETAILS";
+    return VendorConfig(t, defaultValues?.serviceType?.i18nKey || "", genderMenu, true, addressHeader);
   }, [t, defaultValues?.serviceType?.i18nKey, genderMenu]);
 
   if (daoDataLoading || isLoading || Object.keys(defaultValues).length === 0) {

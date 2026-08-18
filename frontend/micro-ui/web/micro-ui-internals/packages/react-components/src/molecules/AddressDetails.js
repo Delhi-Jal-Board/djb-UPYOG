@@ -398,7 +398,14 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
       // to prevent an infinite setState loop between the two useEffects
       if (addressData.silent) return;
 
-      const addressStr = JSON.stringify(addressData) + "_" + (structuredLocalityData?.length || 0) + "_" + (allCities?.length || 0) + "_" + (_mappedZROLocation?.length || 0);
+      const addressStr =
+        JSON.stringify(addressData) +
+        "_" +
+        (structuredLocalityData?.length || 0) +
+        "_" +
+        (allCities?.length || 0) +
+        "_" +
+        (_mappedZROLocation?.length || 0);
       if (addressUpdateRef.current === addressStr) return;
       addressUpdateRef.current = addressStr;
 
@@ -982,57 +989,61 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
           />
         </LabelFieldPair>
 
-        <LabelFieldPair>
-          <CardLabel>{`${t("LATITUDE_GEOTAG")}`}</CardLabel>
-          <TextInput
-            t={t}
-            type="text"
-            isMandatory={false}
-            name="latitude"
-            value={latitude}
-            onChange={(e) => {
-              setLatitude(e.target.value);
-            }}
-            disabled={disable}
-            style={{ width: "100%" }}
-            placeholder="Enter latitude (e.g. 28.6139)"
-            ValidationRequired={true}
-            validation={{
-              required: false,
-              pattern: "^-?[0-9]+(?:\\.[0-9]+)?$",
-              type: "number",
-              title: t("SV_ADDRESS_PINCODE_INVALID"),
-            }}
-            step="any"
-            className="form-field"
-          />
-        </LabelFieldPair>
+        {!props?.isVendor && (
+          <LabelFieldPair>
+            <CardLabel>{`${t("LATITUDE_GEOTAG")}`}</CardLabel>
+            <TextInput
+              t={t}
+              type="text"
+              isMandatory={false}
+              name="latitude"
+              value={latitude}
+              onChange={(e) => {
+                setLatitude(e.target.value);
+              }}
+              disabled={disable}
+              style={{ width: "100%" }}
+              placeholder="Enter latitude (e.g. 28.6139)"
+              ValidationRequired={true}
+              validation={{
+                required: false,
+                pattern: "^-?[0-9]+(?:\\.[0-9]+)?$",
+                type: "number",
+                title: t("SV_ADDRESS_PINCODE_INVALID"),
+              }}
+              step="any"
+              className="form-field"
+            />
+          </LabelFieldPair>
+        )}
 
-        <LabelFieldPair>
-          <CardLabel>{`${t("LONGITUDE_GEOTAG")}`}</CardLabel>
-          <TextInput
-            t={t}
-            type="text"
-            isMandatory={false}
-            name="longitude"
-            value={longitude}
-            onChange={(e) => {
-              setLongitude(e.target.value);
-            }}
-            disabled={disable}
-            style={{ width: "100%" }}
-            placeholder="Enter longitude (e.g. 28.6139)"
-            ValidationRequired={true}
-            validation={{
-              required: false,
-              pattern: "^-?[0-9]+(?:\\.[0-9]+)?$",
-              type: "number",
-              title: t("SV_ADDRESS_PINCODE_INVALID"),
-            }}
-            step="any"
-            className="form-field"
-          />
-        </LabelFieldPair>
+        {!props?.isVendor && (
+          <LabelFieldPair>
+            <CardLabel>{`${t("LONGITUDE_GEOTAG")}`}</CardLabel>
+            <TextInput
+              t={t}
+              type="text"
+              isMandatory={false}
+              name="longitude"
+              value={longitude}
+              onChange={(e) => {
+                setLongitude(e.target.value);
+              }}
+              disabled={disable}
+              style={{ width: "100%" }}
+              placeholder="Enter longitude (e.g. 28.6139)"
+              ValidationRequired={true}
+              validation={{
+                required: false,
+                pattern: "^-?[0-9]+(?:\\.[0-9]+)?$",
+                type: "number",
+                title: t("SV_ADDRESS_PINCODE_INVALID"),
+              }}
+              step="any"
+              className="form-field"
+            />
+          </LabelFieldPair>
+        )}
         <LabelFieldPair>
           <CardLabel>{`${t("COMMON_ASSEMBLY")}`}</CardLabel>
           <TextInput
