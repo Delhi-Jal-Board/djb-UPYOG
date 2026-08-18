@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import useInterval from "../../../hooks/useInterval";
 import { useHistory, useRouteMatch } from "react-router-dom";
 
-const SelectOtp = ({ mobileNumber, inputRefs, timer, canResend, handleVerifyOtp, otp, handleEditNumber, onResend, setOtp }) => {
+const SelectOtp = ({ mobileNumber, inputRefs, timer, canResend, handleVerifyOtp, otp, handleEditNumber, onResend, setOtp, t }) => {
   const [timeLeft, setTimeLeft] = useState(180);
   const TYPE_REGISTER = { type: "register" };
   const TYPE_LOGIN = { type: "login" };
@@ -169,7 +169,7 @@ const SelectOtp = ({ mobileNumber, inputRefs, timer, canResend, handleVerifyOtp,
       <div className="registration__otp-footer">
         <span>Resend in {timer}s</span>
         <span onClick={onResend} className={`registration__resend ${canResend ? "registration__resend--active" : "registration__resend--disabled"}`}>
-          Resend
+          {t("CORE_OTP_RESEND")}
         </span>
       </div>
 

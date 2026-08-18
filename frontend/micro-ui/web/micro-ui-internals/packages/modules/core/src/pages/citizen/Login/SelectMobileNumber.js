@@ -75,7 +75,7 @@ const SelectMobileNumber = ({ t, handleMobileNumberSelect, mobileNumber, setMobi
 
       <div className="registration__field">
         <label name="mobile-number" for="mobile-number" className="registration__label">
-          Mobile Number
+          {t("BPA_HOME_SEARCH_RESULTS_OWN_MOB_LABEL")}
         </label>
 
         <div className="registration__input-group">
@@ -141,18 +141,18 @@ const SelectMobileNumber = ({ t, handleMobileNumberSelect, mobileNumber, setMobi
           />
         </div>
       )}
-
+      {/* 
       <div className="or-separator-container">
         <div className="or-text">{t("OR_CONTINUE_WITH", "OR CONTINUE WITH")}</div>
         <button className="digilocker-btn" type="button" onClick={(e) => register(e)}>
           <img src="https://meripehchaan.gov.in/assets/img/icon/digi.png" alt="DigiLocker" />
           {t("CS_REGISTER_WITH_DIGILOCKER", "Register with DigiLocker")}
         </button>
-      </div>
+      </div> */}
 
       <div className="btn-tooltip-wrapper">
         <button className="registration__button" disabled={!isValidIndianMobile(mobileNumber) || !isCheckBox} type="submit">
-          Send OTP
+          {t("PTUPNO_SENDOTP")}
         </button>
 
         {(!isValidIndianMobile(mobileNumber) || !isCheckBox) && <div className="btn-tooltip">{getErrorMessage()}</div>}
