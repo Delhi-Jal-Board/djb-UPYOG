@@ -21,7 +21,7 @@ const Register = ({ stateCode }) => {
     setParams({ ...params, ...data });
     setIsLoading(true);
     try {
-      await Digit.UserService.sendOtp(
+      const response = await Digit.UserService.sendOtp(
         {
           otp: {
             mobileNumber: data.mobileNumber,
@@ -32,18 +32,25 @@ const Register = ({ stateCode }) => {
         },
         stateCode
       );
+      if (response?.error) {
+        setIsLoading(false);
+        const errorMessage = response?.data?.error?.fields?.[0]?.message || response?.data?.error?.message || response?.data?.Errors?.[0]?.message || t("CORE_COMMON_OTP_SEND_FAILED", "Failed to send OTP");
+        setShowToast({ label: errorMessage, error: true });
+        return;
+      }
       setIsLoading(false);
       history.push(`${path}/otp`);
     } catch (err) {
       setIsLoading(false);
-      setShowToast({ label: t("CORE_COMMON_OTP_SEND_FAILED", "Failed to send OTP"), error: true });
+      const errorMessage = err?.response?.data?.error?.fields?.[0]?.message || err?.response?.data?.error?.message || err?.response?.data?.Errors?.[0]?.message || t("CORE_COMMON_OTP_SEND_FAILED", "Failed to send OTP");
+      setShowToast({ label: errorMessage, error: true });
       console.error("OTP send failed:", err);
     }
   };
 
   const handleResendOtp = async () => {
     try {
-      await Digit.UserService.sendOtp(
+      const response = await Digit.UserService.sendOtp(
         {
           otp: {
             mobileNumber: params.mobileNumber,
@@ -54,9 +61,15 @@ const Register = ({ stateCode }) => {
         },
         stateCode
       );
+      if (response?.error) {
+        const errorMessage = response?.data?.error?.fields?.[0]?.message || response?.data?.error?.message || response?.data?.Errors?.[0]?.message || t("CORE_COMMON_OTP_RESEND_FAILED", "Failed to resend OTP");
+        setShowToast({ label: errorMessage, error: true });
+        return;
+      }
       setShowToast({ label: t("CORE_COMMON_OTP_RESENT", "OTP Resent Successfully") });
     } catch (err) {
-      setShowToast({ label: t("CORE_COMMON_OTP_RESEND_FAILED", "Failed to resend OTP"), error: true });
+      const errorMessage = err?.response?.data?.error?.fields?.[0]?.message || err?.response?.data?.error?.message || err?.response?.data?.Errors?.[0]?.message || t("CORE_COMMON_OTP_RESEND_FAILED", "Failed to resend OTP");
+      setShowToast({ label: errorMessage, error: true });
       console.error("OTP resend failed:", err);
     }
   };
@@ -80,8 +93,24 @@ const Register = ({ stateCode }) => {
     };
     setIsLoading(true);
     try {
-      await Digit.UserService.registerUser(finalData, stateCode);
+      const response = await Digit.UserService.registerUser(finalData, stateCode);
       setIsLoading(false);
+      
+      if (response instanceof Error || response?.error) {
+        const err = response;
+        const isLoginError = err?.response?.data?.Errors?.[0]?.code === "LOGIN_ERROR";
+        if (isLoginError) {
+          setShowToast({ label: t("CORE_COMMON_REGISTRATION_SUCCESSFUL", "Successfully Registered") });
+          setIsRegistered(true);
+          Digit.SessionStorage.del("CITIZEN_REGISTRATION_DATA");
+        } else {
+          const errorMessage = err?.response?.data?.error?.fields?.[0]?.message || err?.response?.data?.error?.message || err?.response?.data?.Errors?.[0]?.message || err?.message || t("CORE_COMMON_REGISTRATION_FAILED", "Registration Failed");
+          setShowToast({ label: errorMessage, error: true });
+          console.error("Registration failed:", err);
+        }
+        return;
+      }
+
       setShowToast({ label: t("CORE_COMMON_REGISTRATION_SUCCESSFUL", "Successfully Registered") });
       setIsRegistered(true);
       Digit.SessionStorage.del("CITIZEN_REGISTRATION_DATA");
@@ -94,7 +123,8 @@ const Register = ({ stateCode }) => {
         setIsRegistered(true);
         Digit.SessionStorage.del("CITIZEN_REGISTRATION_DATA");
       } else {
-        setShowToast({ label: t("CORE_COMMON_REGISTRATION_FAILED", "Registration Failed"), error: true });
+        const errorMessage = err?.response?.data?.error?.fields?.[0]?.message || err?.response?.data?.error?.message || err?.response?.data?.Errors?.[0]?.message || t("CORE_COMMON_REGISTRATION_FAILED", "Registration Failed");
+        setShowToast({ label: errorMessage, error: true });
         console.error("Registration failed:", err);
       }
     }
