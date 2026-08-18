@@ -14,7 +14,7 @@ const WSCard = () => {
   sessionStorage.removeItem("IsDetailsExists");
 
   const filterFormDefaultValues = {
-    businessService: ["NewWS1", "ModifyWSConnection", "DisconnectWSConnection"],
+    businessService: ["NewWS1", "ModifyWSConnection", "DisconnectWSConnection", "mutationWSConnection"],
     moduleName: "ws-services",
     locality: [],
     applicationStatus: [],
