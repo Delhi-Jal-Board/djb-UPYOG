@@ -64,7 +64,8 @@ const AddVendor = () => {
   const [formData, setFormData] = useState(defaultValues);
 
   const Config = React.useMemo(() => {
-    return VendorConfig(t, formData.serviceType?.code, genderMenu);
+    const addressHeader = formData?.serviceType?.code === "EKYC" ? "PT_LOCATION_DETAILS_EKYC" : "PT_LOCATION_DETAILS";
+    return VendorConfig(t, formData.serviceType?.code, genderMenu, false, addressHeader);
   }, [t, formData?.serviceType?.i18nKey, genderMenu]);
 
   const onFormValueChange = (setValue, data) => {
@@ -173,6 +174,9 @@ const AddVendor = () => {
     const localityArea = address?.subLocality;
     const wardCode = address?.ward?.code;
     const wardName = address?.ward?.name;
+    const subLocality = address?.subLocality || address?.subLocality?.name || address?.subLocality;
+    const addressLine1 = address?.addressLine1;
+    const addressLine2 = address?.addressLine2;
 
     const name = mergedData?.vendorName;
     const plotNo = mergedData?.plotNo?.trim();
@@ -206,6 +210,9 @@ const AddVendor = () => {
           label: "Locality",
           area: localityArea || "",
         },
+        subLocality: subLocality,
+        addressLine1: addressLine1,
+        addressLine2: addressLine2,
         ward: wardCode
           ? {
               code: wardCode,

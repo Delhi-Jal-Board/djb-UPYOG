@@ -93,7 +93,6 @@ const PropertyLocationDetails = ({
           locality: localityCode,
           streetName: addressData.street || "",
           houseNo: addressData.houseNo || "",
-          addressLine1: addressData.street || "",
           latitude: lat,
           longitude: lng,
           zroLocation: zroCode,
@@ -151,6 +150,7 @@ const PropertyLocationDetails = ({
       showMapActualLocation={true}
       disable={isPropertyFound}
       hideNextButton={true}
+      isVendor={props.isVendor}
     />
   );
 };
