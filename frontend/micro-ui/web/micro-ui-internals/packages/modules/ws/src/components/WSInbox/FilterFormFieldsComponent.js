@@ -27,6 +27,7 @@ const FilterFormFieldsComponent = ({
   let totalnewWSCount = 0,
     totalModifyWSCount = 0,
     totalDisconnectionWSCount = 0,
+    totalMutationWSCount = 0,
     totalnewSWCOunt = 0,
     totalModifySWCount = 0,
     totalDisconnectionSWCount = 0;
@@ -37,6 +38,9 @@ const FilterFormFieldsComponent = ({
   const totalDisconnectionWS = statuses
     ?.filter((e) => e.businessservice === "DisconnectWSConnection")
     ?.forEach((data) => (totalDisconnectionWSCount = totalDisconnectionWSCount + data?.count));
+  const totalMutationWS = statuses
+    ?.filter((e) => e.businessservice === "mutationWSConnection")
+    ?.forEach((data) => (totalMutationWSCount = totalMutationWSCount + data?.count));
   const totalnewSW = statuses?.filter((e) => e.businessservice === "NewSW1")?.forEach((data) => (totalnewSWCOunt = totalnewSWCOunt + data?.count));
   const totalModifySW = statuses
     ?.filter((e) => e.businessservice === "ModifySWConnection")
@@ -58,6 +62,10 @@ const FilterFormFieldsComponent = ({
         {
           code: "DisconnectWSConnection",
           name: `${t("CS_COMMON_INBOX_DISCONNECTIONWS")} (${totalDisconnectionWSCount})`,
+        },
+        {
+          code: "mutationWSConnection",
+          name: `${t("CS_COMMON_INBOX_MUTATIONWSCONNECTION") || t("WS_MUTATION_CONNECTION") || "Water Mutation"} (${totalMutationWSCount})`,
         },
       ]
     : [
