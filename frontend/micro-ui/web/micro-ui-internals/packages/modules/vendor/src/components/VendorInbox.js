@@ -1280,7 +1280,8 @@ const VendorInbox = (props) => {
                 id: "zoneId",
                 accessor: (row) => row.assignedZoneId || "NA",
                 Cell: ({ row }) => {
-                  return <div>{row.original?.assignedZoneId || "NA"}</div>
+                  const zoneId = row.original?.assignedZoneId;
+                  return <div>{zoneId ? t(zoneId) : "NA"}</div>;
                 }
               },
               {
@@ -1594,10 +1595,10 @@ const VendorInbox = (props) => {
     let emptyButtonText = "";
     if (props.selectedTab === "VENDOR") {
       emptyCardText = "ES_FSM_REGISTRY_EMPTY_CARD_VENDOR";
-      emptyButtonText = "ES_FSM_REGISTRY_EMPTY_BUTTON_VENDOR";
+      // emptyButtonText = "ES_FSM_REGISTRY_EMPTY_BUTTON_VENDOR";
     } else if (props.selectedTab === "VEHICLE") {
       emptyCardText = "ES_FSM_REGISTRY_EMPTY_CARD_VEHICLE";
-      emptyButtonText = "ES_FSM_REGISTRY_EMPTY_BUTTON_VEHICLE";
+      // emptyButtonText = "ES_FSM_REGISTRY_EMPTY_BUTTON_VEHICLE";
     } else if (props.selectedTab === "SUPERVISOR") {
       emptyCardText = "ES_FSM_REGISTRY_EMPTY_CARD_SUPERVISOR";
       // emptyButtonText = "ES_FSM_REGISTRY_EMPTY_BUTTON_SUPERVISOR";
@@ -1606,7 +1607,7 @@ const VendorInbox = (props) => {
       // emptyButtonText = "ES_FSM_REGISTRY_EMPTY_BUTTON_SURVEYOR";
     } else {
       emptyCardText = "ES_FSM_REGISTRY_EMPTY_CARD_DRIVER";
-      emptyButtonText = "ES_FSM_REGISTRY_EMPTY_BUTTON_DRIVER";
+      // emptyButtonText = "ES_FSM_REGISTRY_EMPTY_BUTTON_DRIVER";
     }
     result = (
       <Card className="flex-center flex-box">
