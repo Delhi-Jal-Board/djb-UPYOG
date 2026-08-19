@@ -1,6 +1,6 @@
 import {
   Loader, NavBar
-} from "@djb25/digit-ui-react-components";
+} from "@djb25/workbench-ui-react-components";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";

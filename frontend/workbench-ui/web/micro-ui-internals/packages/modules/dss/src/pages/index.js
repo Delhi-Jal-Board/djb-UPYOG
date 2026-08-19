@@ -8,7 +8,7 @@ import {
   RemoveableTag,
   ShareIcon,
   WhatsappIcon,
-} from "@djb25/digit-ui-react-components";
+} from "@djb25/workbench-ui-react-components";
 import { format } from "date-fns";
 import React, { useEffect, Fragment, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";

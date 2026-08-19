@@ -1,5 +1,5 @@
 import React from "react";
-import { Dropdown } from "@djb25/digit-ui-react-components"
+import { Dropdown } from "@djb25/workbench-ui-react-components"
 
 export const configAcceptDso = ({ t, dsoData, dso, selectVehicleNo, vehicleNoList, vehicleNo, vehicle, action }) => {
   return {

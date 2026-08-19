@@ -1,4 +1,4 @@
-import { Card, Loader } from "@djb25/digit-ui-react-components";
+import { Card, Loader } from "@djb25/workbench-ui-react-components";
 import React, { useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ArrowDownwardElement } from "./ArrowDownward";

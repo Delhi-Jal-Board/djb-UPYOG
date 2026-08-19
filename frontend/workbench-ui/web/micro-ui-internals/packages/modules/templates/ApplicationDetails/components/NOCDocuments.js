@@ -5,7 +5,7 @@ import {
   StatusTable,
   Row,
   LabelFieldPair
-} from "@djb25/digit-ui-react-components"
+} from "@djb25/workbench-ui-react-components"
 import DocumentsPreview from "./DocumentsPreview";
 
 function SelectDocument({

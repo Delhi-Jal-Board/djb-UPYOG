@@ -1,5 +1,5 @@
 import React from "react";
-import { DatePicker } from "@djb25/digit-ui-react-components"
+import { DatePicker } from "@djb25/workbench-ui-react-components"
 
 export const configCompleteApplication = ({ t, vehicle, applicationCreatedTime = 0, action }) => ({
   label: {

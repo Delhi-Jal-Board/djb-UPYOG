@@ -1,4 +1,4 @@
-import { AddFilled, Button, Header, InboxSearchComposer, Loader } from "@djb25/digit-ui-react-components"
+import { AddFilled, Button, Header, InboxSearchComposer, Loader } from "@djb25/workbench-ui-react-components"
 import React, { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory, useParams } from "react-router-dom";

@@ -10,7 +10,7 @@ import {
   MobileNumber,
   CheckBox,
   CitizenConsentForm
-} from "@djb25/digit-ui-react-components";
+} from "@djb25/workbench-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useForm } from "react-hook-form";
 import { useParams, useHistory, useLocation } from "react-router-dom";

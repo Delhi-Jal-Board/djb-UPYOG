@@ -1,6 +1,6 @@
 {
-  "name": "@egovernments/digit-ui-module-utilities",
-  "version": "1.0.0",
+  "name": "@djb25/workbench-ui-module-utilities",
+  "version": "1.0.1",
   "description": "Utilities Module UI",
   "main": "dist/index.js",
   "module": "dist/index.modern.js",
@@ -18,7 +18,7 @@
     "react-router-dom": "5.3.0"
   },
   "dependencies": {
-    "@djb25/digit-ui-react-components": "1.0.0",
+    "@djb25/workbench-ui-react-components": "1.0.1",
     "react": "17.0.2",
     "react-date-range": "^1.4.0",
     "react-dom": "17.0.2",
@@ -27,7 +27,7 @@
     "react-query": "3.6.1",
     "react-router-dom": "5.3.0"
   },
-  "author": "Jagankumar <jagan.kumar@egov.org.in>",
+  "author": "Satyam Gupta",
   "license": "MIT",
   "keywords": [
     "digit",

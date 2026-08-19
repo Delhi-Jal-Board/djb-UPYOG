@@ -1,6 +1,6 @@
-import { Dropdown, ArrowDown } from "@djb25/digit-ui-react-components";
+import { Dropdown, ArrowDown } from "@djb25/workbench-ui-react-components";
 import React, { useState, useEffect } from "react";
-import { CustomButton, Menu } from "@djb25/digit-ui-react-components";
+import { CustomButton, Menu } from "@djb25/workbench-ui-react-components";
 import { useHistory } from "react-router-dom";
 
 const stringReplaceAll = (str = "", searcher = "", replaceWith = "") => {

@@ -2,7 +2,7 @@ import {
   Card,
   CaseIcon, ComplaintIcon, HelpLineIcon, Loader, MCollectIcon, PTIcon, RupeeSymbol, ServiceCenterIcon, TimerIcon, ValidityTimeIcon,
   WhatsappIconGreen
-} from "@djb25/digit-ui-react-components";
+} from "@djb25/workbench-ui-react-components";
 import React from "react";
 import { useTranslation } from "react-i18next";
 

@@ -1,6 +1,6 @@
 {
-  "name": "@egovernments/digit-ui-libraries",
-  "version": "1.8.1",
+  "name": "@djb25/workbench-ui-libraries",
+  "version": "1.0.1",
   "main": "dist/index.js",
   "module": "dist/index.modern.js",
   "source": "src/index.js",
@@ -39,7 +39,7 @@
     "redux": "4.1.2",
     "xlsx": "0.17.5"
   },
-  "author": "JaganKumar <jagan.kumar@egov.org.in>",
+  "author": "Satyam Gupta",
   "keywords": [
     "digit",
     "egov",

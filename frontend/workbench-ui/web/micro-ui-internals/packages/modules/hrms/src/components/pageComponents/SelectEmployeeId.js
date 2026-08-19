@@ -1,5 +1,5 @@
 import React from "react";
-import { LabelFieldPair, CardLabel, TextInput, CardLabelError } from "@djb25/digit-ui-react-components";
+import { LabelFieldPair, CardLabel, TextInput, CardLabelError } from "@djb25/workbench-ui-react-components";
 import { useLocation } from "react-router-dom";
 
 const SelectEmployeeId = ({ t, config, onSelect, formData = {}, userType, register, errors }) => {

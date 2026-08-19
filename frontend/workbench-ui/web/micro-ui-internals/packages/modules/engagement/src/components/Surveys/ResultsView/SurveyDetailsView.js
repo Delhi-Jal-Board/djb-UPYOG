@@ -1,4 +1,4 @@
-import { TextInput, Dropdown, RemoveableTag, LinkButton,SearchField,SubmitBar } from '@djb25/digit-ui-react-components'
+import { TextInput, Dropdown, RemoveableTag, LinkButton,SearchField,SubmitBar } from '@djb25/workbench-ui-react-components'
 import React,{useMemo} from 'react'
 import { useHistory } from "react-router-dom";
 

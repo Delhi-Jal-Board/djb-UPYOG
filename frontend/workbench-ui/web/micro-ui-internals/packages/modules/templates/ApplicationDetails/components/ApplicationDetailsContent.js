@@ -11,7 +11,7 @@ import {
   Row,
   StatusTable,
   Table,
-} from "@djb25/digit-ui-react-components";
+} from "@djb25/workbench-ui-react-components";
 import { values } from "lodash";
 import React, { Fragment, useCallback, useReducer, useState } from "react";
 import { useTranslation } from "react-i18next";

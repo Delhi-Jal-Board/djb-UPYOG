@@ -13,7 +13,7 @@ RUN ls -lah
 #RUN node web/envs.js
 RUN cd web/ \
     &&  ./install-deps.sh \
-    && yarn install --ignore-engines \
+    && yarn install \
     && yarn build:webpack 
 
 FROM nginx:mainline-alpine

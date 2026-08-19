@@ -1,5 +1,5 @@
 import React,{Fragment} from 'react'
-import { Header,BreakLine, CardHeader,Card,CardSubHeader } from '@djb25/digit-ui-react-components'
+import { Header,BreakLine, CardHeader,Card,CardSubHeader } from '@djb25/workbench-ui-react-components'
 
 const WhoHasResponded = ({t,userInfo}) => {
     const data = Object.entries(userInfo);

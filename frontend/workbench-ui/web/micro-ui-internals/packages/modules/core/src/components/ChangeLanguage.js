@@ -1,6 +1,6 @@
-import { ActionBar, Button, Dropdown, ArrowDown } from "@djb25/digit-ui-react-components";
+import { ActionBar, Button, Dropdown, ArrowDown } from "@djb25/workbench-ui-react-components";
 import React, { useState } from "react";
-import { CustomButton, Menu } from "@djb25/digit-ui-react-components";
+import { CustomButton, Menu } from "@djb25/workbench-ui-react-components";
 
 const FlagIcon = () => (
   <svg width="22" height="14" viewBox="0 0 90 60" xmlns="http://www.w3.org/2000/svg" style={{ borderRadius: "2px", border: "0.5px solid #e2e8f0" }}>

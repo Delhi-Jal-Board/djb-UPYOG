@@ -1,4 +1,4 @@
-import { FormComposer, Toast,Loader } from "@djb25/digit-ui-react-components"
+import { FormComposer, Toast,Loader } from "@djb25/workbench-ui-react-components"
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";

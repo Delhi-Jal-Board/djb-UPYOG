@@ -1,6 +1,6 @@
 import {
   BackButton, CloseSvg, CustomButton, DownloadImgIcon, Header, Loader, PDFSvg
-} from "@djb25/digit-ui-react-components";
+} from "@djb25/workbench-ui-react-components";
 import React, { Fragment, useState } from "react";
 import { useTranslation } from "react-i18next";
 
