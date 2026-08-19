@@ -88,6 +88,9 @@ public class Address {
 	@JsonProperty("actualZone")
 	private String actualZone;
 
+	@JsonProperty("zone")
+	private String zone;
+
 	@JsonProperty("actualAssembly")
 	private String actualAssembly;
 
