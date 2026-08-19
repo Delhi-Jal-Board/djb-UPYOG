@@ -15,6 +15,7 @@ import org.egov.waterconnection.repository.ServiceRequestRepository;
 import org.egov.waterconnection.web.models.*;
 import org.egov.waterconnection.web.models.workflow.BusinessService;
 import org.egov.waterconnection.workflow.WorkflowService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -24,6 +25,7 @@ import org.springframework.util.StringUtils;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 public class WaterServicesUtil {
 
@@ -351,5 +353,132 @@ public class WaterServicesUtil {
 	public StringBuilder getcollectionURL() {
 		StringBuilder builder = new StringBuilder();
 		return builder.append(config.getCollectionHost()).append(config.getPaymentSearch());
+	}
+
+	/**
+	 * Normalizes zone string by stripping suffixes like ZRO, removing non-alphanumeric characters,
+	 * converting to uppercase, and stripping spaces.
+	 *
+	 * @param zone raw zone string
+	 * @return canonical normalized zone string
+	 */
+	public String normalizeZone(String zone) {
+		if (StringUtils.isEmpty(zone)) {
+			return "";
+		}
+		String s = zone.toUpperCase().trim();
+		s = s.replaceAll("[^A-Z0-9]+", " ").trim();
+		s = s.replaceAll("\\bZRO\\b", "").trim();
+		s = s.replaceAll("\\s+", "");
+		return s;
+	}
+
+	/**
+	 * Retrieves property zone strictly from address.zone.
+	 *
+	 * @param property Property object
+	 * @return zone string if present, null otherwise
+	 */
+	public String getPropertyZone(Property property) {
+		if (property != null && property.getAddress() != null) {
+			return property.getAddress().getZone();
+		}
+		return null;
+	}
+
+	/**
+	 * Fetches assigned jurisdiction zones for employee users from HRMS.
+	 *
+	 * @param requestInfo RequestInfo object
+	 * @param tenantId Tenant ID
+	 * @return set of normalized employee jurisdiction zones
+	 */
+	public Set<String> getEmployeeZones(RequestInfo requestInfo, String tenantId) {
+		Set<String> zones = new HashSet<>();
+		if (requestInfo == null || requestInfo.getUserInfo() == null) {
+			return zones;
+		}
+		org.egov.common.contract.request.User userInfo = requestInfo.getUserInfo();
+		if (!"EMPLOYEE".equalsIgnoreCase(userInfo.getType())) {
+			return zones;
+		}
+		// Skip zone filtering for SUPERUSER role
+		if (!CollectionUtils.isEmpty(userInfo.getRoles())) {
+			boolean isSuperUser = userInfo.getRoles().stream()
+					.anyMatch(role -> "SUPERUSER".equalsIgnoreCase(role.getCode()));
+			if (isSuperUser) {
+				log.info("User is SUPERUSER, skipping employee zone filter.");
+				return zones;
+			}
+		}
+		try {
+			StringBuilder url = new StringBuilder(config.getHrmsHost())
+					.append(config.getHrmsContextPath())
+					.append(config.getHrmsSearchEndpoint())
+					.append("?uuids=").append(userInfo.getUuid());
+			if (!StringUtils.isEmpty(tenantId)) {
+				url.append("&tenantId=").append(tenantId);
+			} else if (!StringUtils.isEmpty(userInfo.getTenantId())) {
+				url.append("&tenantId=").append(userInfo.getTenantId());
+			}
+
+			Object response = serviceRequestRepository.fetchResult(url, RequestInfoWrapper.builder().requestInfo(requestInfo).build());
+			
+			// Fallback: If search by UUID returns no employees, try searching by employee code (userName)
+			if (response == null || isEmployeesListEmpty(response)) {
+				if (!StringUtils.isEmpty(userInfo.getUserName())) {
+					StringBuilder fallbackUrl = new StringBuilder(config.getHrmsHost())
+							.append(config.getHrmsContextPath())
+							.append(config.getHrmsSearchEndpoint())
+							.append("?codes=").append(userInfo.getUserName());
+					if (!StringUtils.isEmpty(tenantId)) {
+						fallbackUrl.append("&tenantId=").append(tenantId);
+					} else if (!StringUtils.isEmpty(userInfo.getTenantId())) {
+						fallbackUrl.append("&tenantId=").append(userInfo.getTenantId());
+					}
+					log.info("Primary HRMS search by UUID returned empty. Retrying with codes={}", userInfo.getUserName());
+					response = serviceRequestRepository.fetchResult(fallbackUrl, RequestInfoWrapper.builder().requestInfo(requestInfo).build());
+				}
+			}
+
+			if (response != null) {
+				Map<String, Object> respMap = objectMapper.convertValue(response, Map.class);
+				List<Map<String, Object>> employees = (List<Map<String, Object>>) respMap.get("Employees");
+				if (!CollectionUtils.isEmpty(employees)) {
+					for (Map<String, Object> emp : employees) {
+						List<Map<String, Object>> jurisdictions = (List<Map<String, Object>>) emp.get("jurisdictions");
+						if (!CollectionUtils.isEmpty(jurisdictions)) {
+							for (Map<String, Object> jur : jurisdictions) {
+								Object isActiveObj = jur.get("isActive");
+								boolean isActive = isActiveObj == null || Boolean.TRUE.equals(isActiveObj);
+								if (isActive) {
+									String rawZone = (String) jur.get("zone");
+									if (!StringUtils.isEmpty(rawZone)) {
+										String normalized = normalizeZone(rawZone);
+										if (!StringUtils.isEmpty(normalized)) {
+											zones.add(normalized);
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		} catch (Exception e) {
+			log.error("Error fetching employee zones from HRMS: ", e);
+		}
+		log.info("Fetched employee zones for uuid {}: {}", userInfo.getUuid(), zones);
+		return zones;
+	}
+
+	private boolean isEmployeesListEmpty(Object response) {
+		try {
+			Map<String, Object> respMap = objectMapper.convertValue(response, Map.class);
+			List<Map<String, Object>> employees = (List<Map<String, Object>>) respMap.get("Employees");
+			return CollectionUtils.isEmpty(employees);
+		} catch (Exception e) {
+			return true;
+		}
 	}
 }

@@ -538,6 +538,8 @@ public class EnrichmentService {
 
 		Set<String> propertyIds = new HashSet<>();
 		Map<String, List<OwnerInfo>> propertyToOwner = new HashMap<>();
+		Map<String, Property> propertyMap = new HashMap<>();
+
 		for (WaterConnection waterConnection : waterConnectionList) {
 			if (!StringUtils.isEmpty(waterConnection.getPropertyId()))
 				propertyIds.add(waterConnection.getPropertyId());
@@ -554,10 +556,28 @@ public class EnrichmentService {
 			if (!CollectionUtils.isEmpty(propertyList)) {
 				for (Property property : propertyList) {
 					propertyToOwner.put(property.getPropertyId(), property.getOwners());
+					propertyMap.put(property.getPropertyId(), property);
 				}
 			}
 
+			// Get employee zone filter if request user is EMPLOYEE
+			String tenantId = !StringUtils.isEmpty(criteria.getTenantId()) ? criteria.getTenantId() : (requestInfo != null && requestInfo.getUserInfo() != null ? requestInfo.getUserInfo().getTenantId() : null);
+			Set<String> employeeZones = waterServicesUtil.getEmployeeZones(requestInfo, tenantId);
+
 			for (WaterConnection waterConnection : waterConnectionList) {
+				Property property = propertyMap.get(waterConnection.getPropertyId());
+
+				// Apply employee zone filtering if zones are assigned to the employee
+				if (!CollectionUtils.isEmpty(employeeZones)) {
+					String propZoneRaw = waterServicesUtil.getPropertyZone(property);
+					String normalizedPropZone = waterServicesUtil.normalizeZone(propZoneRaw);
+					if (StringUtils.isEmpty(normalizedPropZone) || !employeeZones.contains(normalizedPropZone)) {
+						log.info("Filtering out water connection {} as property zone '{}' (normalized: '{}') does not match employee zones {}",
+								waterConnection.getApplicationNo(), propZoneRaw, normalizedPropZone, employeeZones);
+						continue;
+					}
+				}
+
 				HashMap<String, Object> additionalDetail = new HashMap<>();
 				HashMap<String, Object> addDetail = mapper
 						.convertValue(waterConnection.getAdditionalDetails(), HashMap.class);
