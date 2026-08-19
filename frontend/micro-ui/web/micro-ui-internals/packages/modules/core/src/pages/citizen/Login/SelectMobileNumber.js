@@ -65,7 +65,7 @@ const SelectMobileNumber = ({ t, handleMobileNumberSelect, mobileNumber, setMobi
   };
 
   return (
-    <form onSubmit={() => handleMobileNumberSelect()}>
+    <form onSubmit={(e) => { e.preventDefault(); handleMobileNumberSelect(); }}>
       <div className="registration__header">
         <h1 className="registration__title">Step 1: Enter Mobile Number</h1>
         <span className="registration__step-count">1 of 3</span>
