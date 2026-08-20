@@ -1,5 +1,5 @@
 import React from "react";
-import { Card, Banner, CardText, SubmitBar } from "@djb25/digit-ui-react-components";
+import { Card, Banner, CardText, SubmitBar } from "@djb25/workbench-ui-react-components";
 import { Link, useRouteMatch } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { PgrRoutes, getRoute } from "../../constants/Routes";

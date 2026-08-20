@@ -1,6 +1,6 @@
 {
-  "name": "@egovernments/digit-ui-svg-components",
-  "version": "1.0.0",
+  "name": "@djb25/workbench-ui-svg-components",
+  "version": "1.0.1",
   "main": "dist/index.js",
   "module": "dist/index.modern.js",
   "source": "src/index.js",
@@ -8,7 +8,7 @@
     "node": ">=18"
   },
   "homepage": "https://unified-dev.digit.org/storybook-svg/",
-  "author": "Jagankumar <jagan.kumar@egov.org.in>",
+  "author": "Satyam Gupta",
   "license": "MIT",
   "scripts": {
     "example": "cd example && npm run start",
@@ -55,6 +55,11 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "resolutions": {
+    "brace-expansion": "2.0.1",
+    "lru-cache": "^6.0.0",
+    "**/lru-cache": "^6.0.0"
   },
   "keywords": [
     "digit",

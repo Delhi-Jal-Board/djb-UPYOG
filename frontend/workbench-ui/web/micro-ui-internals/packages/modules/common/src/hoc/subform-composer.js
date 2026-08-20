@@ -1,7 +1,7 @@
-import { Card, CardHeader } from "@djb25/digit-ui-react-components";
+import { Card, CardHeader } from "@djb25/workbench-ui-react-components";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
-import { subFormRegistry } from "@egovernments/digit-ui-libraries";
+import { subFormRegistry } from "@djb25/workbench-ui-libraries";
 
 export const SubformComposer = ({ _key, ...props }) => {
   const config = subFormRegistry._registry[_key];

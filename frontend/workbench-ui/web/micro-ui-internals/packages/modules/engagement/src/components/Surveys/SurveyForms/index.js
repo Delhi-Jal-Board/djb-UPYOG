@@ -1,4 +1,4 @@
-import { ActionBar, Card, SubmitBar } from "@djb25/digit-ui-react-components"
+import { ActionBar, Card, SubmitBar } from "@djb25/workbench-ui-react-components"
 import React, { useEffect, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 

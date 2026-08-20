@@ -1,5 +1,5 @@
 import React from "react";
-import { Toast } from "@djb25/digit-ui-react-components";
+import { Toast } from "@djb25/workbench-ui-react-components";
 
 function ApplicationDetailsToast({ t, showToast, closeToast, businessService }) {
   if (businessService?.includes("NewTL") || businessService?.includes("TL") || businessService?.includes("EDITRENEWAL")) {

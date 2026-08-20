@@ -1,4 +1,4 @@
-import { Loader, Modal, FormComposer, Toast } from "@djb25/digit-ui-react-components"
+import { Loader, Modal, FormComposer, Toast } from "@djb25/workbench-ui-react-components"
 import React, { useState, useEffect } from "react";
 import { useQueryClient } from "react-query";
 

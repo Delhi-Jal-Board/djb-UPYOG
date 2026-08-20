@@ -1,4 +1,4 @@
-import { CardLabelError, CardText, FormStep, OTPInput } from "@djb25/digit-ui-react-components";
+import { CardLabelError, CardText, FormStep, OTPInput } from "@djb25/workbench-ui-react-components";
 import React, { Fragment, useState } from "react";
 import useInterval from "../../../hooks/useInterval";
 

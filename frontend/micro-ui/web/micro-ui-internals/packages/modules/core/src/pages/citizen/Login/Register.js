@@ -273,6 +273,7 @@ function RegistrationFlow({ t, handleMobileNumberSelect, handleOtpSelect, handle
         {/* STEP 2 */}
         {currentStep === 2 && (
           <SelectOtp
+            t={t}
             mobileNumber={mobileNumber || params.mobileNumber}
             inputRefs={inputRefs}
             timer={timer}

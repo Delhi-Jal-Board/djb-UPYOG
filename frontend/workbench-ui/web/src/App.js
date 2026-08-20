@@ -1,16 +1,16 @@
 import React from "react";
-import { initLibraries } from "@egovernments/digit-ui-libraries";
-import { DigitUI } from "@egovernments/digit-ui-module-core";
-import { initKeycloak } from "@egovernments/digit-ui-module-core/src/pages/employee/Login/keyCloak";
+import { initLibraries } from "@djb25/workbench-ui-libraries";
+import { DigitUI } from "@djb25/workbench-ui-module-core";
+import { initKeycloak } from "@djb25/workbench-ui-module-core/src/pages/employee/Login/keyCloak";
 // import { initHRMSComponents } from "@egovernments/digit-ui-module-hrms";
 import { UICustomizations } from "./Customisations/UICustomizations";
-import { initWorkbenchComponents } from "@nudmcdgnpm/digit-ui-module-workbench";
-import { initUtilitiesComponents } from "@egovernments/digit-ui-module-utilities";
+import { initWorkbenchComponents } from "@djb25/workbench-ui-module-workbench";
+import { initUtilitiesComponents } from "@djb25/workbench-ui-module-utilities";
 import {
   initPGRComponents,
   PGRReducers,
-} from "@egovernments/digit-ui-module-pgr";
-import { initEngagementComponents } from "@egovernments/digit-ui-module-engagement";
+} from "@djb25/workbench-ui-module-pgr";
+import { initEngagementComponents } from "@djb25/workbench-ui-module-engagement";
 
 window.contextPath = window?.globalConfigs?.getConfig("CONTEXT_PATH");
 

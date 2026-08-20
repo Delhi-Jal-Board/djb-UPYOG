@@ -18,7 +18,7 @@ import {
   BirthIcon,
   DeathIcon,
   FirenocIcon,
-} from "@djb25/digit-ui-react-components";
+} from "@djb25/workbench-ui-react-components";
 import { Link, useLocation } from "react-router-dom";
 import SideBarMenu from "../../../config/sidebar-menu";
 import { useTranslation } from "react-i18next";

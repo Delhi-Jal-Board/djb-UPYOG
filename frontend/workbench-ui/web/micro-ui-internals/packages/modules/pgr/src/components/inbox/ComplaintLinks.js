@@ -1,4 +1,4 @@
-import { Card } from "@djb25/digit-ui-react-components";
+import { Card } from "@djb25/workbench-ui-react-components";
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";

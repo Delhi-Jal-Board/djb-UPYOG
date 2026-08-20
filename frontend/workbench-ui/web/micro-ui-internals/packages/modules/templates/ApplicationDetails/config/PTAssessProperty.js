@@ -1,5 +1,5 @@
 import React from "react";
-import { RadioButtons } from "@djb25/digit-ui-react-components"
+import { RadioButtons } from "@djb25/workbench-ui-react-components"
 
 export const configPTAssessProperty = ({ t, action, financialYears, selectedFinancialYear, setSelectedFinancialYear }) => {
   return {

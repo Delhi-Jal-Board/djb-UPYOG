@@ -285,4 +285,14 @@ public class WSConfiguration {
     @Value("${egov.url.shortner.host}")
     private String urlShortnerHost;
 
+    // HRMS config
+    @Value("${egov.hrms.host}")
+    private String hrmsHost;
+
+    @Value("${egov.hrms.context.path}")
+    private String hrmsContextPath;
+
+    @Value("${egov.hrms.search.endpoint}")
+    private String hrmsSearchEndpoint;
+
 }

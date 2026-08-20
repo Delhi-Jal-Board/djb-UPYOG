@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ArrowDown, EditPencilIcon, LogoutIcon } from "@djb25/digit-ui-react-components";
+import { ArrowDown, EditPencilIcon, LogoutIcon } from "@djb25/workbench-ui-react-components";
 
 const TextToImg = (props) => (
   <span className="user-img-txt" onClick={props.toggleMenu} title={props.name}>

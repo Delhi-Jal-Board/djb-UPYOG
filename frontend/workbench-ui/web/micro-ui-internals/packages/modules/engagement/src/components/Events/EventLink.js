@@ -1,5 +1,5 @@
 import React from "react";
-import { Card, DocumentIcon, EventCalendar } from "@djb25/digit-ui-react-components"
+import { Card, DocumentIcon, EventCalendar } from "@djb25/workbench-ui-react-components"
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 

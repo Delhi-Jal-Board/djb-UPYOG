@@ -5,7 +5,7 @@ import {
     LabelFieldPair,
     MultiUploadWrapper,
     CardSubHeader
-} from "@djb25/digit-ui-react-components"
+} from "@djb25/workbench-ui-react-components"
 import DocumentsPreview from "./DocumentsPreview";
 
 const BPADocuments = ({ t, formData, applicationData, docs, bpaActionsDetails }) => {

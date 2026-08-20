@@ -1,4 +1,4 @@
-// import { Dropdown, Hamburger, TopBar as TopBarComponent } from "@djb25/digit-ui-react-components";
+// import { Dropdown, Hamburger, TopBar as TopBarComponent } from "@djb25/workbench-ui-react-components";
 // import React from "react";
 // import { useHistory, useLocation } from "react-router-dom";
 // import ChangeCity from "../ChangeCity";
@@ -157,7 +157,7 @@
 // export default TopBar;
 
 import React from "react";
-import { Hamburger, Calender } from "@djb25/digit-ui-react-components";
+import { Hamburger, Calender } from "@djb25/workbench-ui-react-components";
 // import { useHistory, useLocation } from "react-router-dom";
 import ChangeCity from "../ChangeCity";
 import ChangeLanguage from "../ChangeLanguage";
