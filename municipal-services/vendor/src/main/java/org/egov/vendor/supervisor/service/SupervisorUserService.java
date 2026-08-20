@@ -5,12 +5,14 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Calendar;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.Role;
 import org.egov.tracer.model.CustomException;
 import org.egov.vendor.config.VendorConfiguration;
 import org.egov.vendor.repository.ServiceRequestRepository;
 import org.egov.vendor.service.ModuleRoleService;
+import org.egov.vendor.supervisor.web.model.Supervisor;
 import org.egov.vendor.supervisor.web.model.SupervisorRequest;
 import org.egov.vendor.supervisor.web.model.SupervisorSearchCriteria;
 import org.egov.vendor.util.VendorConstants;
@@ -123,13 +125,15 @@ public class SupervisorUserService {
 
             if (found == null)
                 found = addRoleToExistingUser(existing.getUser().get(0), ownerInfo, requestInfo, errorMap, roleCode, roleName, roleMapping);
-            else
-                found = updateUserDetails(ownerInfo, requestInfo, errorMap);
+            else {
 
+                found = updateUserDetails(ownerInfo, requestInfo, errorMap, request.getSupervisor().getStatus());
+            }
         } else if (isCreate) {
             found = createUser(ownerInfo, requestInfo, roleCode, roleName, roleMapping);
         } else {
-            found = updateUserDetails(ownerInfo, requestInfo, errorMap);
+
+            found = updateUserDetails(ownerInfo, requestInfo, errorMap,request.getSupervisor().getStatus());
         }
 
         if (found != null) request.getSupervisor().setOwner(found);
@@ -232,7 +236,7 @@ public class SupervisorUserService {
     }
 
     private User updateUserDetails(User ownerInfo, RequestInfo requestInfo,
-                                   HashMap<String, String> errorMap) {
+                                   HashMap<String, String> errorMap,Supervisor.StatusEnum status) {
         // If DOB is being changed on update — validate minimum age
         if (ownerInfo.getDob() != null && ownerInfo.getDob() != 0L) {
             validateMinimumAge(ownerInfo.getDob(), "Supervisor");
@@ -243,10 +247,14 @@ public class SupervisorUserService {
             mergeOwnerFields(existingDigitUser, ownerInfo);
             ownerInfo = existingDigitUser;
         }
+
+       ownerInfo.setActive(Supervisor.StatusEnum.ACTIVE.equals(status));
+
         StringBuilder uri = new StringBuilder(config.getUserHost())
                 .append(config.getUserContextPath()).append(config.getUserUpdateEndpoint());
         UserDetailResponse response = ownerCall(
                 UserRequest.builder().user(ownerInfo).requestInfo(requestInfo).build(), uri);
+
         if (response != null && !CollectionUtils.isEmpty(response.getUser()))
             return response.getUser().get(0);
         errorMap.put(VendorErrorConstants.INVALID_DRIVER_ERROR, "Unable to update Supervisor user details");
@@ -261,6 +269,7 @@ public class SupervisorUserService {
         if (!StringUtils.isEmpty(owner.getMobileNumber()))
             search.setMobileNumber(owner.getMobileNumber());
         StringBuilder uri = new StringBuilder(config.getUserHost()).append(config.getUserSearchEndpoint());
+//System.out.println(uri+"  "+search.getMobileNumber()+" "+search.getTenantId());
         return ownerCall(search, uri);
     }
 
@@ -313,12 +322,45 @@ public class SupervisorUserService {
     @SuppressWarnings("rawtypes")
     private UserDetailResponse ownerCall(Object ownerRequest, StringBuilder uri) {
         String dobFormat = uri.toString().contains(config.getUserCreateEndpoint()) ? "dd/MM/yyyy" : "yyyy-MM-dd";
+        System.out.println(uri);
         try {
             LinkedHashMap responseMap = (LinkedHashMap) serviceRequestRepository.fetchResult(uri, ownerRequest);
+        //    parseResponse(responseMap, dobFormat);
+            System.out.println(responseMap.size());
+
+
+
+            System.out.println("========== BEFORE parseResponse ==========");
+            System.out.println(
+                    mapper.writerWithDefaultPrettyPrinter()
+                            .writeValueAsString(responseMap)
+            );
+
             parseResponse(responseMap, dobFormat);
+
+            System.out.println("========== AFTER parseResponse ==========");
+            System.out.println(
+                    mapper.writerWithDefaultPrettyPrinter()
+                            .writeValueAsString(responseMap)
+            );
+
+            System.out.println("responseMap size = " + responseMap.size());
+
+            UserDetailResponse response =
+                    mapper.convertValue(responseMap, UserDetailResponse.class);
+
+            System.out.println("========== CONVERTED RESPONSE ==========");
+            System.out.println(
+                    mapper.writerWithDefaultPrettyPrinter()
+                            .writeValueAsString(response)
+            );
+
+
             return mapper.convertValue(responseMap, UserDetailResponse.class);
         } catch (IllegalArgumentException e) {
             throw new CustomException("IllegalArgumentException", "ObjectMapper convertValue failed in ownerCall");
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
         }
     }
 

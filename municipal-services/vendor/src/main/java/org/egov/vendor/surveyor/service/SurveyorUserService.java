@@ -10,6 +10,7 @@ import org.egov.tracer.model.CustomException;
 import org.egov.vendor.config.VendorConfiguration;
 import org.egov.vendor.repository.ServiceRequestRepository;
 import org.egov.vendor.service.ModuleRoleService;
+import org.egov.vendor.supervisor.web.model.Supervisor;
 import org.egov.vendor.surveyor.web.model.Surveyor;
 import org.egov.vendor.surveyor.web.model.SurveyorRequest;
 import org.egov.vendor.surveyor.web.model.SurveyorSearchCriteria;
@@ -108,13 +109,16 @@ public class SurveyorUserService {
                 foundUser = assignRole(existing.getUser().get(0), ownerInfo, requestInfo,
                         errorMap, roleMapping);
             } else {
-                foundUser = fetchMergeAndUpdate(foundUser, ownerInfo, requestInfo, errorMap);
+                foundUser = fetchMergeAndUpdate(foundUser, ownerInfo, requestInfo, errorMap,surveyorRequest.getSurveyor().getStatus());
+              //  System.out.println("   test33 ");
             }
 
         } else if (isCreate) {
+           // System.out.println("pawsn    1444 33 ");
             foundUser = createSurveyorUser(ownerInfo, requestInfo, roleMapping);
         } else {
-            foundUser = updateUserDetails(ownerInfo, requestInfo, errorMap);
+           // System.out.println("pawsn    1233 ");
+            foundUser = updateUserDetails(ownerInfo, requestInfo, errorMap,surveyorRequest.getSurveyor().getStatus());
         }
 
         if (foundUser != null) {
@@ -141,11 +145,13 @@ public class SurveyorUserService {
     }
 
     private User fetchMergeAndUpdate(User existingDigitUser, User requestOwner,
-                                     RequestInfo requestInfo, HashMap<String, String> errorMap) {
+                                     RequestInfo requestInfo, HashMap<String, String> errorMap,Surveyor.StatusEnum status) {
         mergeOwnerFields(existingDigitUser, requestOwner);
         if (requestOwner.getDob() != null) {
             validateMinimumAge(requestOwner.getDob(), "Surveyor");
         }
+
+        existingDigitUser.setActive(Surveyor.StatusEnum.ACTIVE.equals(status));
         StringBuilder uri = new StringBuilder(config.getUserHost())
                 .append(config.getUserContextPath()).append(config.getUserUpdateEndpoint());
         UserDetailResponse resp = ownerCall(UserRequest.builder()
@@ -194,10 +200,14 @@ public class SurveyorUserService {
     }
 
     private User updateUserDetails(User ownerInfo, RequestInfo requestInfo,
-                                   HashMap<String, String> errorMap) {
+                                   HashMap<String, String> errorMap,Surveyor.StatusEnum status) {
         if (ownerInfo.getDob() != null && ownerInfo.getDob() != 0L) {
             validateMinimumAge(ownerInfo.getDob(), "Surveyor");
         }
+        ownerInfo.setActive(Surveyor.StatusEnum.ACTIVE.equals(status));
+     //   System.out.println("ashsish    ");
+       // System.out.println("testttttttttt   ");
+
         StringBuilder uri = new StringBuilder(config.getUserHost())
                 .append(config.getUserContextPath()).append(config.getUserUpdateEndpoint());
         UserDetailResponse resp = ownerCall(UserRequest.builder()
