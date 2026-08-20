@@ -71,10 +71,14 @@ public class DLRequestService {
     	 params.add("state", configurations.getState());
     	 if(module.equalsIgnoreCase("SSO")) {
         	 params.add("redirect_uri", configurations.getRegisterRedirectURL());
-    	 	 params.add("client_id", configurations.getRegisterClientId());}
-
+    	 	 params.add("client_id", configurations.getRegisterClientId());
+    	 	 
+    	 }else if (module.equalsIgnoreCase("EKYC")) {
+    		    params.add("redirect_uri", configurations.getEkycRedirectURL());
+    		    params.add("client_id", configurations.getClientId());
+    	}
     	 else {
-    		 params.add("redirect_uri", configurations.getPtRedirectURL());
+    		 params.add("redirect_uri", configurations.getWsRedirectURL());
     	 	 params.add("client_id", configurations.getClientId());
     	 }
     	 params.add("code_challenge",getCodeChallenge(authResponse));
@@ -144,7 +148,7 @@ public class DLRequestService {
     	 else
     	 {
     		 map.add("client_id", configurations.getClientId());
-    	     map.add("redirect_uri", configurations.getPtRedirectURL());
+    	     map.add("redirect_uri", configurations.getWsRedirectURL());
     	     map.add("client_secret", configurations.getClientSecret());
     	 }
          //map.add("code_verifier",tokenReq.getDlReqRef());

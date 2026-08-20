@@ -18,8 +18,11 @@ public class Configurations {
 	@Value("${authorization.url}")
 	private String authorizationURL;
 
-	@Value("${pt.redirect.url}")
-	private String ptRedirectURL;
+	@Value("${ws.redirect.url}")
+	private String wsRedirectURL;
+	
+	@Value("${ekyc.redirect.url}")
+	private String ekycRedirectURL;
 
 	@Value("${register.redirect.url}")
 	private String registerRedirectURL;
