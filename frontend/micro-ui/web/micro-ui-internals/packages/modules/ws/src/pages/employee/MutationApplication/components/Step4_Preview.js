@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardHeader, CheckBox, ActionBar, SubmitBar } from "@djb25/digit-ui-react-components";
 
-const Step4_Preview = ({ t, formData, applicationDetails, onBack, onSubmit, isLoading }) => {
+const Step4_Preview = ({ t, formData, applicationDetails, resolvedServiceType, onBack, onSubmit, isLoading }) => {
   const [agreed, setAgreed] = useState(false);
   const [fee, setFee] = useState(0);
+  const [taxHeads, setTaxHeads] = useState([]);
   const [slab, setSlab] = useState("Calculating...");
 
   const getMaskedName = (name) => {
@@ -25,13 +26,20 @@ const Step4_Preview = ({ t, formData, applicationDetails, onBack, onSubmit, isLo
   const oldName = getMaskedName(oldHolder?.name);
   const oldPhone = getMaskedPhone(oldHolder?.mobileNumber);
   
-  const address = appData?.property?.address || {};
+  const tenantId = appData?.tenantId || Digit.ULBService.getCurrentTenantId();
+  const { data: propertyData } = Digit.Hooks.pt.usePropertySearch(
+    { filters: { propertyIds: propertyId }, tenantId },
+    { filters: { propertyIds: propertyId }, tenantId, enabled: !!propertyId && propertyId !== "NA" }
+  );
+
+  const propertyAddress = propertyData?.Properties?.[0]?.address || appData?.property?.address || {};
   const oldAddress = [
-    address?.doorNo,
-    address?.buildingName,
-    address?.street,
-    address?.locality?.name,
-    address?.city
+    propertyAddress?.houseNo || propertyAddress?.doorNo,
+    propertyAddress?.buildingName,
+    propertyAddress?.street,
+    propertyAddress?.locality?.name,
+    propertyAddress?.city,
+    propertyAddress?.pincode
   ].filter(Boolean).join(", ") || "NA";
 
   const { proposedNewConsumerName, newOwnerMobileNumber, relationshipWithExistingConsumer, reasonForNameChange, identityProofType, documentNumber, identityProofDocumentId, saleDeedDocumentId } = formData;
@@ -48,8 +56,6 @@ const Step4_Preview = ({ t, formData, applicationDetails, onBack, onSubmit, isLo
     return map[code] || code;
   };
 
-  const tenantId = Digit.ULBService.getCurrentTenantId();
-
   const viewDocument = async (fileStoreId) => {
     if (!fileStoreId) return;
     try {
@@ -65,67 +71,88 @@ const Step4_Preview = ({ t, formData, applicationDetails, onBack, onSubmit, isLo
   };
 
   useEffect(() => {
-    const relationCode = relationshipWithExistingConsumer?.code || relationshipWithExistingConsumer;
-    if (relationCode && relationCode !== "OTHER") {
-      setFee(100);
-      setSlab("Blood relation slab");
-    } else {
-      setFee(1350);
-      setSlab("Other Slab");
-    }
-  }, [relationshipWithExistingConsumer]);
+    const calculateStaticFee = () => {
+      const relationCode = formData?.relationshipWithExistingConsumer?.code || formData?.relationshipWithExistingConsumer;
+      
+      if (relationCode === "BLOOD_RELATION") {
+        setFee(100);
+        setTaxHeads([]);
+        setSlab("Blood relation slab");
+      } else {
+        setFee(1350);
+        setTaxHeads([
+          { taxHeadCode: "WS_MUTATION_TRADE_SECURITY", estimateAmount: 250.00 },
+          { taxHeadCode: "WS_MUTATION_FEE", estimateAmount: 100.00 },
+          { taxHeadCode: "WS_WATER_ADVANCE", estimateAmount: 1000.00 }
+        ]);
+        setSlab("Other Slab");
+      }
+    };
+
+    calculateStaticFee();
+  }, [formData]);
 
   const sectionStyle = { border: "1px solid #e0e0e0", borderRadius: "8px", padding: "16px", marginBottom: "16px" };
-  const labelStyle = { color: "#666", fontSize: "14px", marginBottom: "4px" };
-  const valueStyle = { fontWeight: "bold", fontSize: "16px" };
+  const labelStyle = { color: "#666", fontSize: "13px", marginBottom: "4px" };
+  const valueStyle = { fontWeight: "bold", fontSize: "15px", wordBreak: "break-word" };
   const uploadDocStatusStyle = { fontSize: "14px", fontWeight: "bold" };
+
+  // Responsive info item
+  const infoItem = (label, value) => (
+    <div style={{ minWidth: 0 }}>
+      <div style={labelStyle}>{label}</div>
+      <div style={valueStyle}>{value}</div>
+    </div>
+  );
 
   return (
     <Card style={{ marginBottom: "20px" }}>
-      <div style={{ display: "flex", alignItems: "center", marginBottom: "16px" }}>
-        <span style={{ fontSize: "24px", marginRight: "8px" }}>📋</span>
-        <h2 style={{ fontSize: "20px", fontWeight: "700", margin: 0 }}>4. Application Preview & Final Declaration</h2>
+      <div style={{ display: "flex", alignItems: "center", marginBottom: "16px", flexWrap: "wrap", gap: "8px" }}>
+        <span style={{ fontSize: "22px" }}>📋</span>
+        <h2 style={{ fontSize: "18px", fontWeight: "700", margin: 0 }}>4. Application Preview & Final Declaration</h2>
       </div>
 
+      {/* Property & Connection Summary */}
       <div style={{ ...sectionStyle, borderLeft: "4px solid #00497e" }}>
-        <h3 style={{ fontSize: "16px", fontWeight: "bold", color: "#00497e", marginBottom: "12px" }}>Property & Connection Summary</h3>
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <div><div style={labelStyle}>Connection No</div><div style={valueStyle}>{connectionNo}</div></div>
-          <div><div style={labelStyle}>Meter Number</div><div style={valueStyle}>{meterId}</div></div>
-          <div><div style={labelStyle}>Property ID</div><div style={valueStyle}>{propertyId}</div></div>
-          {/* <div><div style={labelStyle}>Category</div><div style={valueStyle}>{connectionCategory}</div></div> */}
+        <h3 style={{ fontSize: "15px", fontWeight: "bold", color: "#00497e", marginBottom: "12px" }}>Property & Connection Summary</h3>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: "16px" }}>
+          {infoItem("Connection No", connectionNo)}
+          {infoItem("Meter Number", meterId)}
+          {infoItem("Property ID", propertyId)}
         </div>
       </div>
 
+      {/* Existing Owner */}
       <div style={{ ...sectionStyle, borderLeft: "4px solid #f29c1f" }}>
-        <h3 style={{ fontSize: "16px", fontWeight: "bold", color: "#f29c1f", marginBottom: "12px" }}>🔒 Existing / Previous Owner Details (Masked Information)</h3>
-        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "12px" }}>
-          <div><div style={labelStyle}>Registered Name:</div><div style={valueStyle}>{oldName}</div></div>
-          <div><div style={labelStyle}>Meter Number:</div><div style={valueStyle}>{meterId}</div></div>
-          <div><div style={labelStyle}>Registered Phone:</div><div style={valueStyle}>{oldPhone}</div></div>
+        <h3 style={{ fontSize: "15px", fontWeight: "bold", color: "#f29c1f", marginBottom: "12px" }}>🔒 Existing / Previous Owner Details (Masked Information)</h3>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: "16px", marginBottom: "12px" }}>
+          {infoItem("Registered Name:", oldName)}
+          {infoItem("Registered Phone:", oldPhone)}
         </div>
-        <div><div style={labelStyle}>Registered Address:</div><div style={valueStyle}>{oldAddress}</div></div>
+        {infoItem("Registered Address:", oldAddress)}
       </div>
 
+      {/* New Owner */}
       <div style={{ ...sectionStyle, borderLeft: "4px solid #00497e" }}>
-        <h3 style={{ fontSize: "16px", fontWeight: "bold", color: "#00497e", marginBottom: "12px" }}>👤 Transferee (New Owner) Summary</h3>
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <div><div style={labelStyle}>New Owner Name</div><div style={valueStyle}>{proposedNewConsumerName}</div></div>
-          <div><div style={labelStyle}>Mobile Number</div><div style={valueStyle}>{newOwnerMobileNumber}</div></div>
-          <div><div style={labelStyle}>Relation Type</div><div style={valueStyle}>{getRelationshipName(relationshipWithExistingConsumer)}</div></div>
-          <div><div style={labelStyle}>Transfer Reason</div><div style={valueStyle}>{getReasonName(reasonForNameChange)}</div></div>
+        <h3 style={{ fontSize: "15px", fontWeight: "bold", color: "#00497e", marginBottom: "12px" }}>👤 Transferee (New Owner) Summary</h3>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: "16px" }}>
+          {infoItem("New Owner Name", proposedNewConsumerName)}
+          {infoItem("Mobile Number", newOwnerMobileNumber)}
+          {infoItem("Relation Type", getRelationshipName(relationshipWithExistingConsumer))}
+          {infoItem("Transfer Reason", getReasonName(reasonForNameChange))}
         </div>
       </div>
 
+      {/* Documents */}
       <div style={{ ...sectionStyle, borderLeft: "4px solid #17a2b8" }}>
-        <h3 style={{ fontSize: "16px", fontWeight: "bold", color: "#17a2b8", marginBottom: "12px" }}>Uploaded Documents</h3>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "16px" }}>
+        <h3 style={{ fontSize: "15px", fontWeight: "bold", color: "#17a2b8", marginBottom: "12px" }}>Uploaded Documents</h3>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: "16px" }}>
           <div>
             <div style={labelStyle}>Address / Identity Proof</div>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
               <span style={uploadDocStatusStyle}>✓ {identityProofType?.i18nKey || "Document"}</span>
               {identityProofDocumentId && (
-                <button type="button" onClick={() => viewDocument(identityProofDocumentId)} style={{ color: "#00497e", background: "none", border: "none", textDecoration: "underline", cursor: "pointer", fontSize: "14px", fontWeight: "bold" }}>View</button>
+                <button type="button" onClick={() => viewDocument(identityProofDocumentId)} style={{ color: "#00497e", background: "none", border: "none", textDecoration: "underline", cursor: "pointer", fontSize: "14px", fontWeight: "bold", padding: 0 }}>View</button>
               )}
             </div>
           </div>
@@ -135,25 +162,45 @@ const Step4_Preview = ({ t, formData, applicationDetails, onBack, onSubmit, isLo
           </div>
           <div>
             <div style={labelStyle}>Reason-Based Proof</div>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
               <span style={uploadDocStatusStyle}>✓ Uploaded</span>
               {saleDeedDocumentId && (
-                <button type="button" onClick={() => viewDocument(saleDeedDocumentId)} style={{ color: "#00497e", background: "none", border: "none", textDecoration: "underline", cursor: "pointer", fontSize: "14px", fontWeight: "bold" }}>View</button>
+                <button type="button" onClick={() => viewDocument(saleDeedDocumentId)} style={{ color: "#00497e", background: "none", border: "none", textDecoration: "underline", cursor: "pointer", fontSize: "14px", fontWeight: "bold", padding: 0 }}>View</button>
               )}
             </div>
           </div>
         </div>
       </div>
 
+      {/* Fee */}
       <div style={{ ...sectionStyle, backgroundColor: "#f2fff5", border: "1px solid #c3e6cb", borderLeft: "4px solid #28a745" }}>
-        <h3 style={{ fontSize: "16px", fontWeight: "bold", color: "#28a745", marginBottom: "12px" }}>💵 Mutation Fee Details (Money to Pay in Mutation)</h3>
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <div><div style={labelStyle}>Mutation Money to Pay:</div><div style={{ ...valueStyle, color: "#28a745", fontSize: "20px" }}>₹ {fee}.00</div></div>
-          <div><div style={labelStyle}>Fee Status:</div><span style={{ padding: "4px 8px", backgroundColor: "#d1ecf1", color: "#0c5460", borderRadius: "16px", fontSize: "12px", fontWeight: "bold" }}>PAYABLE POST VERIFICATION</span></div>
-          <div><div style={labelStyle}>Applicable Slab:</div><div style={valueStyle}>{slab}</div></div>
+        <h3 style={{ fontSize: "15px", fontWeight: "bold", color: "#28a745", marginBottom: "12px" }}>💵 Mutation Fee Details</h3>
+        
+        {taxHeads && taxHeads.length > 0 && (
+          <div style={{ marginBottom: "16px" }}>
+            {taxHeads.map((tax, index) => (
+              <div key={index} style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px", maxWidth: "400px" }}>
+                <div style={labelStyle}>{t(tax.taxHeadCode)}:</div>
+                <div style={valueStyle}>₹ {tax.estimateAmount}.00</div>
+              </div>
+            ))}
+            <hr style={{ borderTop: "1px solid #c3e6cb", margin: "12px 0", maxWidth: "400px" }} />
+          </div>
+        )}
+
+        <div style={{ display: "flex", justifyContent: "space-between", maxWidth: "400px", flexWrap: "wrap", gap: "8px" }}>
+          <div>
+            <div style={labelStyle}>Total Amount Payable:</div>
+            <div style={{ ...valueStyle, color: "#28a745", fontSize: "20px" }}>₹ {fee}.00</div>
+          </div>
+          <div>
+            <div style={labelStyle}>Fee Status:</div>
+            <span style={{ padding: "4px 8px", backgroundColor: "#d1ecf1", color: "#0c5460", borderRadius: "16px", fontSize: "12px", fontWeight: "bold", display: "inline-block", marginTop: "4px" }}>PAYABLE POST VERIFICATION</span>
+          </div>
         </div>
       </div>
 
+      {/* Declaration */}
       <div style={{ padding: "16px", backgroundColor: "#fffbeb", border: "1px solid #ffeeba", borderRadius: "8px", marginBottom: "24px" }}>
         <CheckBox
           label="I want to go ahead with submitting this application. I confirm that the details and information provided by me are true and correct to the best of my knowledge."
@@ -162,13 +209,14 @@ const Step4_Preview = ({ t, formData, applicationDetails, onBack, onSubmit, isLo
         />
       </div>
 
+      {/* Action Bar */}
       <ActionBar>
         <button 
           type="button" 
           onClick={onBack} 
-          style={{ padding: "8px 24px", backgroundColor: "#e0e0e0", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold", marginRight: "16px" }}
+          style={{ padding: "10px 20px", backgroundColor: "#e0e0e0", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold", marginRight: "12px" }}
         >
-          &#8592; Edit Information
+          ← Edit Information
         </button>
         <SubmitBar 
           label={isLoading ? "Submitting..." : "Submit Mutation Application"} 

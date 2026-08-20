@@ -262,10 +262,6 @@ const ConnectionDetails = () => {
   function onActionSelectRestoration() {
     getRestorationButton();
   }
-  function onActionSelectMutation() {
-    let pathname = `/digit-ui/citizen/ws/mutation-application?applicationNumber=${state?.connectionNo}&service=${isSW ? "SEWERAGE" : "WATER"}&propertyId=${state?.propertyId}&from=WS_COMMON_CONNECTION_DETAIL`;
-    history.push(pathname);
-  }
   const Close = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FFFFFF">
       <path d="M0 0h24v24H0V0z" fill="none" />
@@ -732,9 +728,6 @@ const ConnectionDetails = () => {
           {(state?.status !== "inactive" || state?.applicationStatus !== "Inactive" || state?.applicationStatus !== "INACTIVE") &&
             !isDisconnectionDone ? (
             <ActionBar style={{ position: "relative", boxShadow: "none", minWidth: "240px", maxWidth: "620px", padding: "0px", marginTop: "15px", display: "flex", gap: "10px" }}>
-              <div style={{ width: "100%" }}>
-                <SubmitBar style={{ width: "100%" }} label={t("WS_MUTATION_BUTTON")} onSubmit={onActionSelectMutation} />
-              </div>
               <div style={{ width: "100%" }}>
                 <SubmitBar style={{ width: "100%" }} label={t("WS_DISCONNECTION_BUTTON")} onSubmit={onActionSelect} />
               </div>

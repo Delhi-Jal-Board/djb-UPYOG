@@ -3,7 +3,7 @@ import { Card, CardHeader, CardLabel, TextInput, Dropdown, MobileNumber, CardLab
 import { useForm, Controller, useWatch } from "react-hook-form";
 
 const Step2_NewConsumerDetails = ({ t, onNext, onBack, defaultValues }) => {
-  const { control, handleSubmit, formState: { errors }, trigger, setError, clearErrors } = useForm({
+  const { control, handleSubmit, formState: { errors }, trigger, setError, clearErrors, setValue } = useForm({
     defaultValues: defaultValues || {},
     mode: "onBlur"
   });
@@ -45,7 +45,6 @@ const Step2_NewConsumerDetails = ({ t, onNext, onBack, defaultValues }) => {
   };
 
   const onSubmit = (data) => {
-    // Additional cross-field validation
     if (data.proposedNewConsumerName && data.proposedNewConsumerName.trim().length < 3) {
       setError("proposedNewConsumerName", { type: "manual", message: "Name must be at least 3 characters" });
       return;
@@ -66,15 +65,14 @@ const Step2_NewConsumerDetails = ({ t, onNext, onBack, defaultValues }) => {
 
   return (
     <Card style={{ marginBottom: "20px" }}>
-      <div style={{ display: "flex", alignItems: "center", marginBottom: "16px" }}>
-        <span style={{ fontSize: "24px", marginRight: "8px" }}>👤</span>
-        <h2 style={{ fontSize: "20px", fontWeight: "700", margin: 0 }}>2. New Consumer Details.</h2>
+      <div style={{ display: "flex", alignItems: "center", marginBottom: "16px", flexWrap: "wrap", gap: "8px" }}>
+        <span style={{ fontSize: "22px" }}>👤</span>
+        <h2 style={{ fontSize: "18px", fontWeight: "700", margin: 0 }}>2. New Consumer Details.</h2>
       </div>
 
-      {/* Validation summary banner */}
       {Object.keys(errors).length > 0 && (
-        <div style={{ padding: "12px 16px", backgroundColor: "#fdecea", color: "#611a15", borderRadius: "8px", border: "1px solid #f5c6cb", marginBottom: "16px", display: "flex", alignItems: "center" }}>
-          <span style={{ marginRight: "8px", fontSize: "18px" }}>⚠️</span>
+        <div style={{ padding: "12px 16px", backgroundColor: "#fdecea", color: "#611a15", borderRadius: "8px", border: "1px solid #f5c6cb", marginBottom: "16px", display: "flex", alignItems: "flex-start", gap: "8px" }}>
+          <span style={{ fontSize: "16px", flexShrink: 0 }}>⚠️</span>
           <span style={{ fontWeight: "500", fontSize: "14px" }}>
             Please fill in all required fields marked with <span style={{ color: "#d32f2f", fontWeight: "bold" }}>*</span> before proceeding.
           </span>
@@ -82,9 +80,14 @@ const Step2_NewConsumerDetails = ({ t, onNext, onBack, defaultValues }) => {
       )}
 
       <form onSubmit={handleSubmit(onSubmit, onError)}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "24px", padding: "16px 0" }}>
+        {/* Responsive grid: 1 col on mobile, 2 col on tablet+, 3 col on large screens */}
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
+          gap: "20px",
+          padding: "8px 0 16px"
+        }}>
           
-          {/* Row 1 */}
           <div>
             <CardLabel style={{ fontWeight: "bold" }}>New Consumer Full Name {mandatoryIndicator}</CardLabel>
             <Controller
@@ -150,7 +153,6 @@ const Step2_NewConsumerDetails = ({ t, onNext, onBack, defaultValues }) => {
             {errors?.newOwnerMobileNumber && <CardLabelError style={errorStyle}>{errors?.newOwnerMobileNumber?.message}</CardLabelError>}
           </div>
 
-          {/* Row 2 */}
           <div>
             <CardLabel style={{ fontWeight: "bold" }}>Email ID <span style={{ color: "#999", fontSize: "12px" }}>(Optional)</span></CardLabel>
             <Controller
@@ -182,7 +184,13 @@ const Step2_NewConsumerDetails = ({ t, onNext, onBack, defaultValues }) => {
                 <Dropdown
                   selected={props.value}
                   option={reasonOptions}
-                  select={(val) => { props.onChange(val); setTouched(p => ({...p, reasonForNameChange: true})); }}
+                  select={(val) => { 
+                    props.onChange(val); 
+                    setTouched(p => ({...p, reasonForNameChange: true})); 
+                    if (val?.code !== "OTHER" && val !== "OTHER") {
+                      setValue("relationshipWithExistingConsumer", null);
+                    }
+                  }}
                   optionKey="i18nKey"
                   t={t}
                   placeholder="Select reason"
@@ -220,22 +228,23 @@ const Step2_NewConsumerDetails = ({ t, onNext, onBack, defaultValues }) => {
 
         </div>
 
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "24px" }}>
+        {/* Navigation Buttons */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "24px", flexWrap: "wrap", gap: "12px" }}>
           <button 
             type="button" 
             onClick={onBack} 
-            style={{ padding: "8px 24px", backgroundColor: "#e0e0e0", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}
+            style={{ padding: "10px 20px", backgroundColor: "#e0e0e0", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}
           >
-            &#8592; Back
+            ← Back
           </button>
           
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
             <span style={{ fontSize: "12px", color: "#999" }}>Fields marked with <span style={{ color: "#d32f2f" }}>*</span> are mandatory</span>
             <button 
               type="submit" 
-              style={{ padding: "10px 24px", backgroundColor: "#00497e", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}
+              style={{ padding: "10px 20px", backgroundColor: "#00497e", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}
             >
-              Save & Proceed to Documents &#8594;
+              Save & Proceed to Documents →
             </button>
           </div>
         </div>

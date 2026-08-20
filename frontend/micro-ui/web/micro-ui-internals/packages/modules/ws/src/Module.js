@@ -155,6 +155,10 @@ export const WSLinks = ({ matchPath, userType }) => {
       link: `${matchPath}/my-connections`,
       i18nKey: t("ACTION_TEXT_WS_MY_CONNECTION"),
     },
+    {
+      link: `${matchPath}/mutation-application`,
+      i18nKey: t("WS_APPLY_MUTATION"),
+    },
   ];
 
   return <CitizenHomeCard header={t("ACTION_TEST_WATER_AND_SEWERAGE")} links={links} Icon={() => <WSICon />} />;
