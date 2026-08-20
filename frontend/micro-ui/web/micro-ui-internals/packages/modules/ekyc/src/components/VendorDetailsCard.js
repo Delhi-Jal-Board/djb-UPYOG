@@ -643,56 +643,26 @@ const VendorDetailsCard = () => {
             {/* Details */}
             <div className="ekyc-dashboard-section">
                 <div className="ekyc-details-wrapper">
-                    {/* Left side details */}
-                    <div className="details-left">
-                        <div className="details-grid">
-                            <div className="detail-item">
-                                <span className="label">{t("MOBILE")}</span>
-                                <span className="value">{mobileNumber}</span>
-                            </div>
-
-                            <div className="detail-item">
-                                <span className="label">{t("EMAIL")}</span>
-                                <span className="value">{email}</span>
-                            </div>
-
-                            {/* <div className="detail-item">
-                                <span className="label">{t("STATUS")}</span>
-                                <span className="value">{status}</span>
-                            </div> */}
-
-                            {/* <div className="detail-item">
-                                <span className="label">{t("JURISDICTIONS") || "Jurisdictions"}</span>
-                                <span className="value">{jurisdictions}</span>
-                            </div> */}
-
-                            <div className="detail-item" style={{ gridColumn: "1 / -1" }}>
-                                <span className="label">{t("ASSIGNED_ZONES") || "Assigned Zones"}</span>
-                                <span className="value">
-                                    {zoneIds.length > 0
-                                        ? (
-                                            <div className="selected-zones" style={{ marginTop: "4px", width: "100%" }}>
-                                                {zoneIds.map(zone => (
-                                                    <span key={zone} className="selected-zone-chip">
-                                                        {t(zone) || zone}
-                                                    </span>
-                                                ))}
-                                            </div>
-                                        )
-                                        : "N/A"}
-                                </span>
-                            </div>
+                    {/* Top Row: Mobile, Email, and Download eKYC Data */}
+                    <div className="details-top-row">
+                        <div className="detail-item">
+                            <span className="label">{t("MOBILE")}</span>
+                            <span className="value">{mobileNumber}</span>
                         </div>
-                    </div>
 
-                    {/* Right side download card */}
-                    <div className="details-right">
+                        <div className="detail-item">
+                            <span className="label">{t("EMAIL")}</span>
+                            <span className="value">{email}</span>
+                        </div>
+
                         <div className="download-card">
-                            <h4>{t("DOWNLOAD_EKYC_DATA") || "Download eKYC Data"}</h4>
-                            <p>
-                                {t("DOWNLOAD_EKYC_DATA_DESC") ||
-                                    "Export the complete eKYC verification records for your assigned jurisdiction into Excel format."}
-                            </p>
+                            <div>
+                                <h4>{t("DOWNLOAD_EKYC_DATA") || "Download eKYC Data"}</h4>
+                                <p>
+                                    {t("DOWNLOAD_EKYC_DATA_DESC") ||
+                                        "Export the complete eKYC verification records for your assigned jurisdiction into Excel format."}
+                                </p>
+                            </div>
                             <div className="report-download" ref={reportMenuRef}>
                                 <button
                                     className="download-excel-btn"
@@ -774,10 +744,28 @@ const VendorDetailsCard = () => {
                             </div>
                         </div>
                     </div>
+
+                    {/* Bottom Row: Assigned Zones Full Width */}
+                    <div className="full-width-item">
+                        <span className="label">{t("ASSIGNED_ZONES") || "Assigned Zones"}</span>
+                        <span className="value">
+                            {zoneIds.length > 0
+                                ? (
+                                    <div className="selected-zones" style={{ marginTop: "4px", width: "100%", display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                                        {zoneIds.map(zone => (
+                                            <span key={zone} className="selected-zone-chip">
+                                                {t(zone) || zone}
+                                            </span>
+                                        ))}
+                                    </div>
+                                )
+                                : "N/A"}
+                        </span>
+                    </div>
                 </div>
             </div>
 
-            <Card className="dashboard-card">
+            {/* <Card className="dashboard-card">
                 <Table
                     t={t}
                     tableTitle={t("CONNECTED_SUPERVISORS") || "Connected Supervisors"}
@@ -805,6 +793,38 @@ const VendorDetailsCard = () => {
                     onLastPage={() => {
                         setCurrentPage(Math.max(Math.ceil(vendorSupervisors.length / pageSize) - 1, 0));
                     }}
+                    onPageSizeChange={(e) => {
+                        setPageSize(Number(e.target.value));
+                        setCurrentPage(0);
+                    }}
+                />
+            </Card> */}
+
+            <Card className="dashboard-card">
+                <Table
+                    t={t}
+                    tableTitle={t("CONNECTED_SUPERVISORS") || "Connected Supervisors"}
+                    tableClass="ekycTable"
+                    isTableScrollable={true}
+                    data={paginatedSupervisors}
+                    columns={supervisorColumns}
+                    isLoading={isPageLoading}
+                    totalRecords={vendorSupervisors.length}
+                    currentPage={currentPage}
+                    pageSizeLimit={pageSize}
+                    isPaginationRequired={true}
+                    onNextPage={() => {
+                        if (currentPage < Math.ceil(vendorSupervisors.length / pageSize) - 1) {
+                            setCurrentPage((prev) => prev + 1);
+                        }
+                    }}
+                    onPrevPage={() => {
+                        if (currentPage > 0) {
+                            setCurrentPage((prev) => prev - 1);
+                        }
+                    }}
+                    onFirstPage={() => setCurrentPage(0)}
+                    onLastPage={() => setCurrentPage(Math.max(Math.ceil(vendorSupervisors.length / pageSize) - 1, 0))}
                     onPageSizeChange={(e) => {
                         setPageSize(Number(e.target.value));
                         setCurrentPage(0);

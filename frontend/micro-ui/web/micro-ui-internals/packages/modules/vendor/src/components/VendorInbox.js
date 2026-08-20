@@ -196,6 +196,14 @@ const VendorInbox = (props) => {
   const userRoles = userInfo.info.roles;
   const userType = userInfo.info.type?.toLowerCase();
 
+  const isVendor =
+    Digit.Utils.vendorAccess() ||
+    Digit.UserService.hasAccess(["WT_VENDOR", "EKYC_VENDOR", "VENDOR", "FSM_VENDOR", "DSO", "FSM_DSO"]) ||
+    userRoles?.some((role) =>
+      ["FSM_VENDOR", "VENDOR", "EKYC_VENDOR", "WT_VENDOR", "DSO", "FSM_DSO"].includes(typeof role === "string" ? role : role?.code)
+    ) ||
+    userType === "vendor";
+
   const EKYC_ROLES = ["EKYC_SUPERVISOR", "EKYC_SURVEYOR"];
   const isEkycRole = userRoles?.some((role) => EKYC_ROLES.includes(role?.code || role));
 
@@ -888,21 +896,25 @@ const VendorInbox = (props) => {
           },
 
           //enabled/disabled
-          {
-            Header: t("ES_VENDOR_REGISTRY_INBOX_ENABLED"),
-            id: "status",
-            accessor: (row) => row.dsoDetails?.status || "",
-            Cell: ({ row }) => {
-              return (
-                <ToggleSwitch
-                  style={{ display: "flex", justifyContent: "left" }}
-                  value={row.original?.dsoDetails?.status === "DISABLED" ? false : true}
-                  onChange={() => onVendorUpdate(row)}
-                  name={`switch-${row.id}`}
-                />
-              );
-            },
-          },
+          ...(!isVendor
+            ? [
+              {
+                Header: t("ES_VENDOR_REGISTRY_INBOX_ENABLED"),
+                id: "status",
+                accessor: (row) => row.dsoDetails?.status || "",
+                Cell: ({ row }) => {
+                  return (
+                    <ToggleSwitch
+                      style={{ display: "flex", justifyContent: "left" }}
+                      value={row.original?.dsoDetails?.status === "DISABLED" ? false : true}
+                      onChange={() => onVendorUpdate(row)}
+                      name={`switch-${row.id}`}
+                    />
+                  );
+                },
+              },
+            ]
+            : []),
           // {
           //   Header: t("ES_VENDOR_ADDITIONAL_DETAILS"),
           //   disableSortBy: true,
@@ -1134,21 +1146,25 @@ const VendorInbox = (props) => {
           },
 
           //enabled
-          {
-            Header: t("ES_FSM_REGISTRY_INBOX_ENABLED"),
-            id: "status",
-            accessor: (row) => row.status || "",
-            Cell: ({ row }) => {
-              return (
-                <ToggleSwitch
-                  style={{ display: "flex", justifyContent: "left" }}
-                  value={row.original?.status === "DISABLED" ? false : true}
-                  onChange={() => onVehicleUpdate(row)}
-                  name={`switch-${row.id}`}
-                />
-              );
-            },
-          },
+          ...(!isVendor
+            ? [
+              {
+                Header: t("ES_FSM_REGISTRY_INBOX_ENABLED"),
+                id: "status",
+                accessor: (row) => row.status || "",
+                Cell: ({ row }) => {
+                  return (
+                    <ToggleSwitch
+                      style={{ display: "flex", justifyContent: "left" }}
+                      value={row.original?.status === "DISABLED" ? false : true}
+                      onChange={() => onVehicleUpdate(row)}
+                      name={`switch-${row.id}`}
+                    />
+                  );
+                },
+              },
+            ]
+            : []),
         ];
 
       //if toggle on driver then it will show the below columns
@@ -1231,21 +1247,25 @@ const VendorInbox = (props) => {
           },
 
           //enabled
-          {
-            Header: t("ES_FSM_REGISTRY_INBOX_ENABLED"),
-            id: "status",
-            accessor: (row) => row.status || "",
-            Cell: ({ row }) => {
-              return (
-                <ToggleSwitch
-                  style={{ display: "flex", justifyContent: "left" }}
-                  value={row.original?.status === "DISABLED" ? false : true}
-                  onChange={() => onDriverUpdate(row)}
-                  name={`switch-${row.id}`}
-                />
-              );
-            },
-          },
+          ...(!isVendor
+            ? [
+              {
+                Header: t("ES_FSM_REGISTRY_INBOX_ENABLED"),
+                id: "status",
+                accessor: (row) => row.status || "",
+                Cell: ({ row }) => {
+                  return (
+                    <ToggleSwitch
+                      style={{ display: "flex", justifyContent: "left" }}
+                      value={row.original?.status === "DISABLED" ? false : true}
+                      onChange={() => onDriverUpdate(row)}
+                      name={`switch-${row.id}`}
+                    />
+                  );
+                },
+              },
+            ]
+            : []),
         ];
       case "SUPERVISOR":
       case "SURVEYOR":
@@ -1331,33 +1351,33 @@ const VendorInbox = (props) => {
           //     return <div>{row.original.vendorData?.name || row.original.vendor?.name || "NA"}</div>;
           //   },
           // },
-          {
-            Header: t("ES_FSM_REGISTRY_INBOX_ENABLED"),
-            id: "status",
-            accessor: (row) => row.status || "",
-            Cell: ({ row }) => {
-              return (
-                <ToggleSwitch
-                  style={{ display: "flex", justifyContent: "left" }}
-                  value={row.original?.status === "DISABLED" ? false : true}
-                  onChange={() => {
-                    if (props.selectedTab === "SUPERVISOR") {
-                      onSupervisorUpdate(row);
-                    } else if (props.selectedTab === "SURVEYOR") {
-                      onSurveyorUpdate(row);
-                    }
-                  }}
-                  name={`switch-${row.id}`}
-                />
-              );
-            },
-          },
+          // {
+          //   Header: t("ES_FSM_REGISTRY_INBOX_ENABLED"),
+          //   id: "status",
+          //   accessor: (row) => row.status || "",
+          //   Cell: ({ row }) => {
+          //     return (
+          //       <ToggleSwitch
+          //         style={{ display: "flex", justifyContent: "left" }}
+          //         value={row.original?.status === "DISABLED" ? false : true}
+          //         onChange={() => {
+          //           if (props.selectedTab === "SUPERVISOR") {
+          //             onSupervisorUpdate(row);
+          //           } else if (props.selectedTab === "SURVEYOR") {
+          //             onSurveyorUpdate(row);
+          //           }
+          //         }}
+          //         name={`switch-${row.id}`}
+          //       />
+          //     );
+          //   },
+          // },
         ];
       default:
         return [];
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props.selectedTab, vendors, drivers, tableData, additionalVendorData, allFillingPoints, supervisors, t]);
+  }, [props.selectedTab, vendors, drivers, tableData, additionalVendorData, allFillingPoints, supervisors, isVendor, t]);
 
   const csvExportColumns = React.useMemo(() => {
     switch (props.selectedTab) {

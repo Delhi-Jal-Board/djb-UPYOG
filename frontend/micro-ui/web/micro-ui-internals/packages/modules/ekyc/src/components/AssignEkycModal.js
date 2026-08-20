@@ -505,6 +505,7 @@ const AssignEkycModal = ({ surveyor, isReassign, closeModal, refetchDashboard, t
         <Table
           tableTitle="eKYC Applications"
           tableClass="ekycTable"
+          isTableScrollable={true}
           data={paginatedData}
           columns={columns}
           isLoading={isLoading}

@@ -215,6 +215,8 @@ const Table = ({
   csvExportColumns,
   csvExportButtonLabel,
   isLoading,
+  isTableScrollable = false,
+  isStickyHeader = false,
 }) => {
   const [internalSearch, setInternalSearch] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
@@ -355,8 +357,10 @@ const Table = ({
     }
   };
 
+  const isScrollable = isTableScrollable || isStickyHeader;
+
   return (
-    <div className="basetable no-scrollbar">
+    <div className={`basetable no-scrollbar ${isScrollable ? "is-table-scrollable" : ""}`}>
       {/* ── Top Bar ──────────────────────────────────────────────────────── */}
       <div className="table-topbar">
         {/* Left: title + total badge */}
