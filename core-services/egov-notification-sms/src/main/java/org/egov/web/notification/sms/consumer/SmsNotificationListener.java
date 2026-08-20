@@ -8,6 +8,7 @@ import org.egov.web.notification.sms.consumer.contract.SMSRequest;
 import org.egov.web.notification.sms.models.Category;
 import org.egov.web.notification.sms.models.RequestContext;
 import org.egov.web.notification.sms.service.SMSService;
+import org.egov.web.notification.sms.service.WhatsAppService;
 import org.springframework.beans.factory.annotation.*;
 import org.springframework.boot.autoconfigure.kafka.*;
 import org.springframework.context.ApplicationContext;
@@ -47,7 +48,11 @@ public class SmsNotificationListener {
     @Value("${sms.enabled}")
     Boolean smsEnable;
 
+    @Autowired
+    private WhatsAppService whatsAppService;
 
+    @Value("${whatsapp.enabled:false}")
+    private Boolean whatsappEnabled;
     @Autowired
     public SmsNotificationListener(
             ApplicationContext context,
@@ -79,9 +84,15 @@ public class SmsNotificationListener {
                             kafkaTemplate.send(expiredSmsTopic, request);
                     } else {
                         smsService.sendSMS(request.toDomain());
+                        if (whatsappEnabled) {
+                            whatsAppService.sendWhatsApp(request.toDomain());
+                        }
                     }
                 } else {
                     smsService.sendSMS(request.toDomain());
+                    if (whatsappEnabled) {
+                        whatsAppService.sendWhatsApp(request.toDomain());
+                    }
                 }
             }
 
