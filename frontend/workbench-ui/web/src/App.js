@@ -5,21 +5,21 @@ import { initKeycloak } from "@djb25/workbench-ui-module-core/src/pages/employee
 // import { initHRMSComponents } from "@egovernments/digit-ui-module-hrms";
 import { UICustomizations } from "./Customisations/UICustomizations";
 import { initWorkbenchComponents } from "@djb25/workbench-ui-module-workbench";
-import { initUtilitiesComponents } from "@djb25/workbench-ui-module-utilities";
+// import { initUtilitiesComponents } from "@djb25/workbench-ui-module-utilities";
 import {
   initPGRComponents,
   PGRReducers,
 } from "@djb25/workbench-ui-module-pgr";
-import { initEngagementComponents } from "@djb25/workbench-ui-module-engagement";
+// import { initEngagementComponents } from "@djb25/workbench-ui-module-engagement";
 
 window.contextPath = window?.globalConfigs?.getConfig("CONTEXT_PATH");
 
 const enabledModules = [
-  "DSS",
-  "NDSS",
-  "Utilities",
+  // "DSS",
+  // "NDSS",
+  // "Utilities",
   // "HRMS",
-  "Engagement",
+  // "Engagement",
   "Workbench",
   // "PGR"
 ];
@@ -35,9 +35,9 @@ const initDigitUI = () => {
     commonUiConfig: UICustomizations,
   };
   // initPGRComponents();
-  initEngagementComponents();
+  // initEngagementComponents();
   // initHRMSComponents();
-  initUtilitiesComponents();
+  // initUtilitiesComponents();
   initWorkbenchComponents();
 };
 

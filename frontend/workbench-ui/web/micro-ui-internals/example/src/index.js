@@ -111,11 +111,11 @@ const initDigitUI = (isKcAuthenticated) => {
   });
 
   // initDSSComponents();
-  initHRMSComponents();
-  initEngagementComponents();
+  // initHRMSComponents();
+  // initEngagementComponents();
   // initUtilitiesComponents();
   initWorkbenchComponents();
-  initPGRComponents();
+  // initPGRComponents();
 
   const moduleReducers = (initData) => ({
     pgr: PGRReducers(initData),
