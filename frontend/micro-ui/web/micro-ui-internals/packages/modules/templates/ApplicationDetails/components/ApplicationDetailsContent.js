@@ -551,7 +551,7 @@ function ApplicationDetailsContent({
               "PENDING_FOR_FINAL_PAYMENT",
               "CONNECTION_ACTIVATED",
               "PENDING_FOR_CONNECTION_ACTIVATION",
-            ].includes(applicationData?.applicationStatus) && <DueVerification applicationData={applicationData} />}{" "}
+            ].includes(applicationData?.applicationStatus) && <div></div>}{" "}
           {detail?.additionalDetails?.documents &&
             [
               "PENDING_FOR_FIELD_INSPECTION",
@@ -562,7 +562,7 @@ function ApplicationDetailsContent({
               "PENDING_FOR_FINAL_PAYMENT",
               "CONNECTION_ACTIVATED",
               "PENDING_FOR_CONNECTION_ACTIVATION",
-            ].includes(applicationData?.applicationStatus) && <InspectionInformation applicationData={applicationData} />}
+            ].includes(applicationData?.applicationStatus) && <div></div>}
           {detail?.additionalDetails?.taxHeadEstimatesCalculation && (
             <PropertyEstimates taxHeadEstimatesCalculation={detail?.additionalDetails?.taxHeadEstimatesCalculation} />
           )}

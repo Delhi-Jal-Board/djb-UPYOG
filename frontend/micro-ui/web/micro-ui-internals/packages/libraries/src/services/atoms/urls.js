@@ -21,6 +21,7 @@ const Urls = {
   pgr_count: `/pgr-services/v2/request/_count`,
 
   OTP_Send: "/user-otp/v1/_send",
+  OTP_Validate: "/otp/v1/_validate",
   Authenticate: "/user/oauth/token",
   RegisterUser: "/user/citizen/_create",
   ChangePassword: "/user/password/nologin/_update",

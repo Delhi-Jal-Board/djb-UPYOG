@@ -20,16 +20,16 @@ function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false, 
           requiredDocsCount++;
           const isChecked = checkedMap[value?.fileStoreId] ?? value?.originalDoc?.isVerified ?? false;
           if (isChecked) {
-             checkedCount++;
+            checkedCount++;
           }
         }
       });
     });
 
     const allChecked = requiredDocsCount === 0 || checkedCount === requiredDocsCount;
-    const isDocVerifState = !applicationStatus || applicationStatus === "PENDING_FOR_DOCUMENT_VERIFICATION";
+    const isDocVerifState = !applicationStatus || applicationStatus === "PENDING_FOR_DOCUMENT_VERIFICATION" || applicationStatus === "PENDING_APPROVAL_FOR_MUTATION";
     const finalVerified = isDocVerifState ? allChecked : true;
-    
+
     window.isDocumentsVerified = finalVerified;
     window.dispatchEvent(new CustomEvent("DOCUMENTS_VERIFIED", { detail: finalVerified }));
   }, [checkedMap, documents, applicationStatus]);
@@ -74,7 +74,7 @@ function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false, 
       }
       const blob = await response.blob();
       const contentType = response.headers.get("content-type") || blob.type;
-      
+
       const blobUrl = window.URL.createObjectURL(blob);
       const baseFileName = fileName.replace(/\.[^/.]+$/, "");
 
@@ -109,10 +109,10 @@ function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false, 
         headerBarMain={<h1 className="heading-m">Document Preview</h1>}
         headerBarEnd={
           <div style={{ display: "flex", gap: "15px", alignItems: "center", paddingRight: "10px" }}>
-            <div 
+            <div
               onClick={() => {
                 forceDownload(modalFile, "Document.pdf");
-              }} 
+              }}
               style={{ cursor: "pointer", display: "flex", alignItems: "center" }}
               title="Download Document"
             >
@@ -210,15 +210,15 @@ function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false, 
                   const isChecked = checkedMap[value?.fileStoreId] ?? value?.originalDoc?.isVerified ?? false;
                   return (
                     <React.Fragment>
-                      <div 
+                      <div
                         onClick={() => {
                           if (fileUrl) {
                             forceDownload(fileUrl, `${docSubType || "Document"}.pdf`);
                           }
                         }}
                         title="Download Document"
-                        style={{ 
-                          cursor: "pointer", 
+                        style={{
+                          cursor: "pointer",
                           display: "flex",
                           alignItems: "center"
                         }}
@@ -227,13 +227,13 @@ function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false, 
                       </div>
                       {applicationStatus !== "PENDING_FOR_PAYMENT" && applicationStatus !== "WF_PENDING_FOR_PAYMENT" && (
                         <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "14px", color: "#0B0C0C", margin: 0 }}>
-                          <input 
+                          <input
                             key={`chk-${value?.fileStoreId}-${value?.originalDoc?.isVerified}`}
-                            type="checkbox" 
+                            type="checkbox"
                             className="verify-doc-checkbox"
-                            style={{ width: "18px", height: "18px", accentColor: "#F47738", cursor: (applicationStatus && applicationStatus !== "PENDING_FOR_DOCUMENT_VERIFICATION") ? "not-allowed" : "pointer" }} 
-                            disabled={applicationStatus && applicationStatus !== "PENDING_FOR_DOCUMENT_VERIFICATION"}
-                            defaultChecked={value?.originalDoc?.isVerified}
+                            style={{ width: "18px", height: "18px", accentColor: "#F47738", cursor: (applicationStatus && applicationStatus !== "PENDING_FOR_DOCUMENT_VERIFICATION" && applicationStatus !== "PENDING_APPROVAL_FOR_MUTATION") ? "not-allowed" : "pointer" }}
+                            disabled={applicationStatus && applicationStatus !== "PENDING_FOR_DOCUMENT_VERIFICATION" && applicationStatus !== "PENDING_APPROVAL_FOR_MUTATION" && applicationStatus!== "ACTIVATE_MUTATION"}
+                            checked={applicationStatus === "PENDING_FOR_MUTATION_ACTIVATION"  || (checkedMap[value?.fileStoreId] ?? value?.originalDoc?.isVerified ?? false)}
                             onChange={(e) => {
                               const checked = e.target.checked;
                               if (value?.originalDoc) {
@@ -281,49 +281,49 @@ function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false, 
                 {document?.values && document?.values.length > 0
                   ? document.values.map((value, idx) => renderDocumentRow(value, idx))
                   : !window.location.href.includes("citizen") && (
-                      <div>
-                        <p>{t("BPA_NO_DOCUMENTS_UPLOADED_LABEL")}</p>
-                      </div>
-                    )}
+                    <div>
+                      <p>{t("BPA_NO_DOCUMENTS_UPLOADED_LABEL")}</p>
+                    </div>
+                  )}
               </div>
             ) : (
               <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "flex-start" }}>
                 {document?.values && document?.values.length > 0
                   ? document?.values?.map((value, index) => (
-                      <a
-                        target="_"
-                        href={pdfFiles[value.fileStoreId]?.split(",")[0]}
-                        style={{ minWidth: "80px", marginRight: "10px", maxWidth: "100px", height: "auto" }}
-                        key={index}
-                      >
-                        <div style={{ display: "flex", justifyContent: "center" }}>
-                          <PDFSvg />
-                        </div>
-                        <p
-                          style={
-                            checkLocation
-                              ? { marginTop: "8px", fontWeight: "bold", fontSize: "16px", lineHeight: "19px", color: "#505A5F", textAlign: "center" }
-                              : { marginTop: "8px", fontWeight: "bold" }
-                          }
-                        >
-                          {t(value?.title)}
-                        </p>
-                        {isSendBackFlow ? (
-                          value?.documentType?.includes("NOC") ? (
-                            <p style={{ textAlign: "center" }}>{t(value?.documentType.split(".")[1])}</p>
-                          ) : (
-                            <p style={{ textAlign: "center" }}>{t(value?.documentType)}</p>
-                          )
-                        ) : (
-                          ""
-                        )}
-                      </a>
-                    ))
-                  : !window.location.href.includes("citizen") && (
-                      <div>
-                        <p>{t("BPA_NO_DOCUMENTS_UPLOADED_LABEL")}</p>
+                    <a
+                      target="_"
+                      href={pdfFiles[value.fileStoreId]?.split(",")[0]}
+                      style={{ minWidth: "80px", marginRight: "10px", maxWidth: "100px", height: "auto" }}
+                      key={index}
+                    >
+                      <div style={{ display: "flex", justifyContent: "center" }}>
+                        <PDFSvg />
                       </div>
-                    )}
+                      <p
+                        style={
+                          checkLocation
+                            ? { marginTop: "8px", fontWeight: "bold", fontSize: "16px", lineHeight: "19px", color: "#505A5F", textAlign: "center" }
+                            : { marginTop: "8px", fontWeight: "bold" }
+                        }
+                      >
+                        {t(value?.title)}
+                      </p>
+                      {isSendBackFlow ? (
+                        value?.documentType?.includes("NOC") ? (
+                          <p style={{ textAlign: "center" }}>{t(value?.documentType.split(".")[1])}</p>
+                        ) : (
+                          <p style={{ textAlign: "center" }}>{t(value?.documentType)}</p>
+                        )
+                      ) : (
+                        ""
+                      )}
+                    </a>
+                  ))
+                  : !window.location.href.includes("citizen") && (
+                    <div>
+                      <p>{t("BPA_NO_DOCUMENTS_UPLOADED_LABEL")}</p>
+                    </div>
+                  )}
               </div>
             )}
           </React.Fragment>
@@ -339,31 +339,31 @@ function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false, 
             <div>
               {document?.values && document?.values.length > 0
                 ? document?.values?.map((value, index) => (
-                    <a
-                      target="_"
-                      href={pdfFiles[value.fileStoreId]?.split(",")[0]}
-                      style={{ minWidth: svgStyles?.minWidth ? svgStyles?.minWidth : "160px", marginRight: "20px" }}
-                      key={index}
-                    >
-                      <div style={{ maxWidth: "940px", padding: "8px", borderRadius: "4px", border: "1px solid #D6D5D4", background: "#FAFAFA" }}>
-                        <p style={{ marginTop: "8px", fontWeight: "bold", marginBottom: "10px" }}>{t(value?.title)}</p>
-                        {value?.docInfo ? (
-                          <div style={{ fontSize: "12px", color: "#505A5F", fontWeight: 400, lineHeight: "15px", marginBottom: "10px" }}>{`${t(
-                            value?.docInfo
-                          )}`}</div>
-                        ) : null}
-                        <PDFSvg />
-                        <p style={{ marginTop: "8px", fontSize: "16px", lineHeight: "19px", color: "#505A5F", fontWeight: "400" }}>{`${t(
-                          value?.title
-                        )}`}</p>
-                      </div>
-                    </a>
-                  ))
-                : !window.location.href.includes("citizen") && (
-                    <div>
-                      <p>{t("BPA_NO_DOCUMENTS_UPLOADED_LABEL")}</p>
+                  <a
+                    target="_"
+                    href={pdfFiles[value.fileStoreId]?.split(",")[0]}
+                    style={{ minWidth: svgStyles?.minWidth ? svgStyles?.minWidth : "160px", marginRight: "20px" }}
+                    key={index}
+                  >
+                    <div style={{ maxWidth: "940px", padding: "8px", borderRadius: "4px", border: "1px solid #D6D5D4", background: "#FAFAFA" }}>
+                      <p style={{ marginTop: "8px", fontWeight: "bold", marginBottom: "10px" }}>{t(value?.title)}</p>
+                      {value?.docInfo ? (
+                        <div style={{ fontSize: "12px", color: "#505A5F", fontWeight: 400, lineHeight: "15px", marginBottom: "10px" }}>{`${t(
+                          value?.docInfo
+                        )}`}</div>
+                      ) : null}
+                      <PDFSvg />
+                      <p style={{ marginTop: "8px", fontSize: "16px", lineHeight: "19px", color: "#505A5F", fontWeight: "400" }}>{`${t(
+                        value?.title
+                      )}`}</p>
                     </div>
-                  )}
+                  </a>
+                ))
+                : !window.location.href.includes("citizen") && (
+                  <div>
+                    <p>{t("BPA_NO_DOCUMENTS_UPLOADED_LABEL")}</p>
+                  </div>
+                )}
             </div>
           </React.Fragment>
         ))}

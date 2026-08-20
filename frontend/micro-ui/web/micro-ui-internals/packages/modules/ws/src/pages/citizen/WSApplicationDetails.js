@@ -118,7 +118,7 @@ const WSApplicationDetails = () => {
   const applicationStatus = data?.WaterConnection?.[0]?.applicationStatus || data?.SewerageConnections?.[0]?.applicationStatus;
 
   const isPaid =
-    applicationStatus && applicationStatus !== "INITIATED" && applicationStatus !== "PENDING_FOR_PAYMENT" && applicationStatus !== "PENDING_FOR_FINAL_PAYMENT" && applicationStatus !== "PENDING_FOR_ADDITIONAL_PAYMENT"
+    applicationStatus && applicationStatus !== "INITIATED" && applicationStatus !== "PENDING_APPROVAL_FOR_MUTATION" && applicationStatus !== "PENDING_FOR_PAYMENT" && applicationStatus !== "PENDING_FOR_FINAL_PAYMENT" && applicationStatus !== "PENDING_FOR_ADDITIONAL_PAYMENT" && applicationStatus !== "PENDING_FOR_CITIZEN_ACTION"
       ? true
       : false;
 
@@ -310,9 +310,9 @@ const WSApplicationDetails = () => {
   sessionStorage.setItem("ApplicationNoState", applicationNobyData);
   return (
     <React.Fragment>
-      <div className={"employee-main-application-details"} style={{ display: "flex", gap: "20px" }}>
+      <div className={"employee-main-application-details"} style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
         {/* Left Column: Workflow Timeline */}
-        <div className={`workflow-timeline-wrapper no-scrollbar`} style={{ flex: "1 1 300px", maxWidth: "400px" }}>
+        <div className={`workflow-timeline-wrapper no-scrollbar`} style={{ flex: "1 1 280px", maxWidth: "400px", minWidth: "240px" }}>
           <Card>
             <div id="timeline">
               <WSWFApplicationTimeline
@@ -325,7 +325,7 @@ const WSApplicationDetails = () => {
         </div>
 
         {/* Right Column: Application Details */}
-        <div style={{ flex: "2 1 500px" }}>
+        <div style={{ flex: "2 1 300px", minWidth: 0 }}>
 
           <Card>
             <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
@@ -952,7 +952,8 @@ const WSApplicationDetails = () => {
                   data?.SewerageConnections?.[0]?.applicationStatus.includes("PENDING_FOR_CITIZEN_ACTION")) ? (
                 <Link
                   to={{
-                    pathname: `/digit-ui/citizen/ws/edit-application/${data?.WaterConnection?.[0]?.tenantId || data?.SewerageConnections?.[0]?.tenantId}`,
+                    pathname: isMutation ? `/digit-ui/citizen/ws/mutation-application` : `/digit-ui/citizen/ws/edit-application/${data?.WaterConnection?.[0]?.tenantId || data?.SewerageConnections?.[0]?.tenantId}`,
+                    search: isMutation ? `?applicationNumber=${data?.WaterConnection?.[0]?.applicationNo || data?.SewerageConnections?.[0]?.applicationNo}&tenantId=${data?.WaterConnection?.[0]?.tenantId || data?.SewerageConnections?.[0]?.tenantId}&service=${data?.WaterConnection?.[0] ? "WATER" : "SEWERAGE"}&propertyId=${data?.WaterConnection?.[0]?.propertyId || data?.SewerageConnections?.[0]?.propertyId}` : "",
                     state: { id: `${data?.WaterConnection?.[0]?.applicationNo || data?.SewerageConnections?.[0]?.applicationNo}` },
                   }}
                 >

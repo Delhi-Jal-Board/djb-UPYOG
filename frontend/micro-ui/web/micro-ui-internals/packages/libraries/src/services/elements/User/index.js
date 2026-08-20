@@ -128,6 +128,13 @@ export const UserService = {
       auth: false,
       params: { tenantId: stateCode },
     }),
+  validateOtp: (details) =>
+    ServiceRequest({
+      serviceName: "validateOtp",
+      url: Urls.OTP_Validate,
+      data: details,
+      auth: true,
+    }),
   setUser: (data) => {
     Digit.SessionStorage.set("User", data);
     localStorage.setItem("Digit.User", JSON.stringify(data));

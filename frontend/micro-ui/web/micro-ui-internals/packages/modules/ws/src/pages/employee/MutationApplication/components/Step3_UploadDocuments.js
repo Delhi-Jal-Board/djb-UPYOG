@@ -111,6 +111,62 @@ const Step3_UploadDocuments = ({ t, onNext, onBack, defaultValues }) => {
     if (rawFiles.mutation) handleFileUpload(rawFiles.mutation, "mutation");
   }, [rawFiles.mutation]);
 
+  const [identityFileName, setIdentityFileName] = useState("");
+  const [mutationFileName, setMutationFileName] = useState("");
+  const [identityFileUrl, setIdentityFileUrl] = useState("");
+  const [mutationFileUrl, setMutationFileUrl] = useState("");
+
+  useEffect(() => {
+    const fetchFileDetails = async () => {
+      const tenantId = window.Digit.ULBService.getStateId();
+      
+      if (identityProofFile && !rawFiles.identity) {
+        try {
+          const res = await window.Digit.UploadServices.Filefetch([identityProofFile], tenantId);
+          if (res?.data?.[identityProofFile]) {
+            const url = res.data[identityProofFile].split(",")[0];
+            setIdentityFileUrl(url);
+            
+            // Extract a readable filename from the URL, or default
+            let fileName = "Identity_Document";
+            try {
+              const decoded = decodeURIComponent(url);
+              const urlParts = decoded.split("?")[0].split("/");
+              fileName = urlParts[urlParts.length - 1];
+              if (fileName.includes("-")) fileName = fileName.split("-").slice(1).join("-"); // Remove UUID prefix if present
+            } catch (e) {}
+            setIdentityFileName(fileName);
+          }
+        } catch (e) {
+          console.error("Error fetching identity doc", e);
+        }
+      }
+
+      if (mutationDocFile && !rawFiles.mutation) {
+        try {
+          const res = await window.Digit.UploadServices.Filefetch([mutationDocFile], tenantId);
+          if (res?.data?.[mutationDocFile]) {
+            const url = res.data[mutationDocFile].split(",")[0];
+            setMutationFileUrl(url);
+            
+            let fileName = "Supporting_Document";
+            try {
+              const decoded = decodeURIComponent(url);
+              const urlParts = decoded.split("?")[0].split("/");
+              fileName = urlParts[urlParts.length - 1];
+              if (fileName.includes("-")) fileName = fileName.split("-").slice(1).join("-");
+            } catch (e) {}
+            setMutationFileName(fileName);
+          }
+        } catch (e) {
+          console.error("Error fetching mutation doc", e);
+        }
+      }
+    };
+    
+    fetchFileDetails();
+  }, [identityProofFile, mutationDocFile, rawFiles]);
+
   // Re-validate on every change if user has already attempted submit
   useEffect(() => {
     if (hasAttemptedSubmit) {
@@ -176,15 +232,15 @@ const Step3_UploadDocuments = ({ t, onNext, onBack, defaultValues }) => {
 
       {/* Validation summary */}
       {hasAttemptedSubmit && errorCount > 0 && (
-        <div style={{ padding: "12px 16px", backgroundColor: "#fdecea", color: "#611a15", borderRadius: "8px", border: "1px solid #f5c6cb", marginBottom: "16px", display: "flex", alignItems: "center" }}>
-          <span style={{ marginRight: "8px", fontSize: "18px" }}>⚠️</span>
+        <div style={{ padding: "12px 16px", backgroundColor: "#fdecea", color: "#611a15", borderRadius: "8px", border: "1px solid #f5c6cb", marginBottom: "16px", display: "flex", alignItems: "flex-start", gap: "8px" }}>
+          <span style={{ fontSize: "16px", flexShrink: 0 }}>⚠️</span>
           <span style={{ fontWeight: "500", fontSize: "14px" }}>
             {errorCount} required item{errorCount > 1 ? "s" : ""} still need{errorCount === 1 ? "s" : ""} your attention before proceeding.
           </span>
         </div>
       )}
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "24px" }}>
         
         {/* Address / Identity Proof */}
         <div>
@@ -234,6 +290,13 @@ const Step3_UploadDocuments = ({ t, onNext, onBack, defaultValues }) => {
           </div>
           {fieldErrors.identityFile && <div style={errorTextStyle}>{fieldErrors.identityFile}</div>}
           {identityProofFile && <div style={successTextStyle}>✓ Document uploaded successfully</div>}
+          {identityProofFile && identityFileUrl && !rawFiles.identity && (
+            <div style={{ marginTop: "8px" }}>
+              <a href={identityFileUrl} target="_blank" rel="noreferrer" style={{ color: "#f47738", textDecoration: "underline", fontSize: "14px", display: "inline-flex", alignItems: "center" }}>
+                <span style={{ marginRight: "4px" }}>📄</span> View {identityFileName}
+              </a>
+            </div>
+          )}
         </div>
 
         {/* Reason-Based Document */}
@@ -255,25 +318,32 @@ const Step3_UploadDocuments = ({ t, onNext, onBack, defaultValues }) => {
           </div>
           {fieldErrors.mutationFile && <div style={errorTextStyle}>{fieldErrors.mutationFile}</div>}
           {mutationDocFile && <div style={successTextStyle}>✓ Document uploaded successfully</div>}
+          {mutationDocFile && mutationFileUrl && !rawFiles.mutation && (
+            <div style={{ marginTop: "8px" }}>
+              <a href={mutationFileUrl} target="_blank" rel="noreferrer" style={{ color: "#f47738", textDecoration: "underline", fontSize: "14px", display: "inline-flex", alignItems: "center" }}>
+                <span style={{ marginRight: "4px" }}>📄</span> View {mutationFileName}
+              </a>
+            </div>
+          )}
         </div>
       </div>
 
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "32px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "32px", flexWrap: "wrap", gap: "12px" }}>
         <button 
           type="button" 
           onClick={onBack} 
-          style={{ padding: "8px 24px", backgroundColor: "#e0e0e0", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}
+          style={{ padding: "10px 20px", backgroundColor: "#e0e0e0", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}
         >
-          &#8592; Back
+          ← Back
         </button>
         
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
           <span style={{ fontSize: "12px", color: "#999" }}>All documents are mandatory</span>
           <button 
             type="button" 
             onClick={onProceed}
             disabled={isUploading}
-            style={{ padding: "10px 24px", backgroundColor: isUploading ? "#ccc" : "#00497e", color: "white", border: "none", borderRadius: "4px", cursor: isUploading ? "not-allowed" : "pointer", fontWeight: "bold" }}
+            style={{ padding: "10px 20px", backgroundColor: isUploading ? "#ccc" : "#00497e", color: "white", border: "none", borderRadius: "4px", cursor: isUploading ? "not-allowed" : "pointer", fontWeight: "bold" }}
           >
             {isUploading ? "Uploading..." : "Proceed to Application Preview →"}
           </button>
@@ -295,3 +365,4 @@ const Step3_UploadDocuments = ({ t, onNext, onBack, defaultValues }) => {
 };
 
 export default Step3_UploadDocuments;
+
