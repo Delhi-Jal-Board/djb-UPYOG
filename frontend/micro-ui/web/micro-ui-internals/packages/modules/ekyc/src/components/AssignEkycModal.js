@@ -5,9 +5,8 @@ const AssignEkycModal = ({ surveyor, isReassign, closeModal, refetchDashboard, t
   const { t } = useTranslation();
   const tenantId = propsTenantId || Digit.ULBService.getCurrentTenantId();
   const [selectedKnos, setSelectedKnos] = useState([]);
-  const [isBulkSelection, setIsBulkSelection] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(20);
   const [showToast, setShowToast] = useState(false);
   const [toastData, setToastData] = useState({
     error: false,
@@ -192,15 +191,15 @@ const AssignEkycModal = ({ surveyor, isReassign, closeModal, refetchDashboard, t
     },
     {
       tenantId: tenantId,
-      offset: currentPage * pageSize,
-      limit: pageSize,
+      offset: 0,
+      limit: 5000,
     },
     {
       keepPreviousData: true,
     }
   );
 
-  const handleAssignmentError = (errMsg, variables) => {
+  const handleAssignmentError = (errMsg) => {
     const isAlreadyAssigned =
       errMsg.toLowerCase().includes("already assigned") ||
       errMsg.toLowerCase().includes("already assign") ||
@@ -211,19 +210,10 @@ const AssignEkycModal = ({ surveyor, isReassign, closeModal, refetchDashboard, t
       errMsg.toLowerCase().includes("already exists");
 
     if (isAlreadyAssigned) {
-      const isMrKeyType = variables?.assignmentType === "MRKEY";
-
-      if (isMrKeyType) {
-        setToastData({
-          error: true,
-          label: t("EKYC_MR_KEY_ALREADY_ASSIGNED_WITH_ANOTHER_SURVEYOR") || "mr key is already assign with another surveyor",
-        });
-      } else {
-        setToastData({
-          error: true,
-          label: t("EKYC_KNO_ALREADY_ASSIGNED_WITH_ANOTHER_SURVEYOR") || "kno is already assign with another surveyor",
-        });
-      }
+      setToastData({
+        error: true,
+        label: t("EKYC_KNO_ALREADY_ASSIGNED_WITH_ANOTHER_SURVEYOR") || "kno is already assign with another surveyor",
+      });
     } else {
       setToastData({
         error: true,
@@ -312,42 +302,27 @@ const AssignEkycModal = ({ surveyor, isReassign, closeModal, refetchDashboard, t
 
   const activeMutation = isReassign ? reassignMutation : assignmentMutation;
 
-  const tableData = applicationData?.consumerList || [];
+  const allData = useMemo(() => applicationData?.consumerList || [], [applicationData]);
+  const totalRecords = allData.length;
+  const totalPages = useMemo(() => Math.ceil(totalRecords / pageSize) || 1, [totalRecords, pageSize]);
 
-  const getAssignmentPayload = () => {
-    if (isBulkSelection) {
-      const filterMappings = [
-        { key: "ekycStatus", type: "EKYCSTATUS" },
-        { key: "zoneName", type: "ZONENAME" },
-        { key: "assembly", type: "ASSEMBLY" },
-        { key: "ward", type: "WARD" },
-        { key: "mrkey", type: "MRKEY" },
-        { key: "pincode", type: "PINCODE" },
-      ];
+  const paginatedData = useMemo(() => {
+    const start = currentPage * pageSize;
+    return allData.slice(start, start + pageSize);
+  }, [allData, currentPage, pageSize]);
 
-      const appliedFilter = filterMappings.find(({ key }) => debouncedFilters[key]);
-
-      if (appliedFilter) {
-        return {
-          assignmentType: appliedFilter.type,
-          assignmentValue: debouncedFilters[appliedFilter.key],
-        };
-      }
+  useEffect(() => {
+    if (filters.mrkey && allData?.length > 0) {
+      const mrKnos = allData.map((item) => item.kno).filter(Boolean);
+      setSelectedKnos(mrKnos);
     }
-
-    return {
-      assignmentType: "KNO",
-      assignmentValue: selectedKnos,
-    };
-  };
+  }, [filters.mrkey, allData]);
 
   const handleAssign = () => {
-    const { assignmentType, assignmentValue } = getAssignmentPayload();
-
     const payload = {
       tenantId: tenantId,
-      assignmentType,
-      assignmentValue,
+      assignmentType: "KNO",
+      assignmentValue: selectedKnos,
     };
 
     if (isReassign) {
@@ -360,13 +335,11 @@ const AssignEkycModal = ({ surveyor, isReassign, closeModal, refetchDashboard, t
   };
 
   const handleSelectAll = () => {
-    setIsBulkSelection(true);
+    const currentKnos = paginatedData.map((item) => item.kno);
 
-    const pageKnos = tableData.map((item) => item.kno);
+    const allSelected = currentKnos.length > 0 && currentKnos.every((kno) => selectedKnos.includes(kno));
 
-    const allSelected = pageKnos.length > 0 && pageKnos.every((kno) => selectedKnos.includes(kno));
-
-    setSelectedKnos((prev) => (allSelected ? prev.filter((kno) => !pageKnos.includes(kno)) : [...new Set([...prev, ...pageKnos])]));
+    setSelectedKnos((prev) => (allSelected ? prev.filter((kno) => !currentKnos.includes(kno)) : [...new Set([...prev, ...currentKnos])]));
   };
 
   const handleFilterChange = (key, value) => {
@@ -382,7 +355,7 @@ const AssignEkycModal = ({ surveyor, isReassign, closeModal, refetchDashboard, t
         Header: () => (
           <input
             type="checkbox"
-            checked={tableData.length > 0 && tableData.every((item) => selectedKnos.includes(item.kno))}
+            checked={paginatedData.length > 0 && paginatedData.every((item) => selectedKnos.includes(item.kno))}
             onChange={handleSelectAll}
           />
         ),
@@ -427,7 +400,7 @@ const AssignEkycModal = ({ surveyor, isReassign, closeModal, refetchDashboard, t
       },
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [selectedKnos, tableData]
+    [selectedKnos, paginatedData]
   );
 
   const handleSelect = (kno) => {
@@ -495,7 +468,7 @@ const AssignEkycModal = ({ surveyor, isReassign, closeModal, refetchDashboard, t
                 );
               })}
           </select> */}
-{/* 
+          {/* 
           <select className="form-control" value={filters.assembly} onChange={(e) => handleFilterChange("assembly", e.target.value)}>
             <option value="">Select Assembly</option>
             {assemblyOptions.map((assembly) => (
@@ -532,7 +505,7 @@ const AssignEkycModal = ({ surveyor, isReassign, closeModal, refetchDashboard, t
         <Table
           tableTitle="eKYC Applications"
           tableClass="ekycTable"
-          data={tableData}
+          data={paginatedData}
           columns={columns}
           isLoading={isLoading}
           totalRecords={applicationData?.totalCount || 0}
@@ -541,7 +514,7 @@ const AssignEkycModal = ({ surveyor, isReassign, closeModal, refetchDashboard, t
           manualPagination={true}
           isPaginationRequired={true}
           onNextPage={() => {
-            if (currentPage < (applicationData?.totalPages || 1) - 1) {
+            if (currentPage < totalPages - 1) {
               setCurrentPage((prev) => prev + 1);
             }
           }}
@@ -554,7 +527,7 @@ const AssignEkycModal = ({ surveyor, isReassign, closeModal, refetchDashboard, t
             setCurrentPage(0);
           }}
           onLastPage={() => {
-            setCurrentPage(Math.max((applicationData?.totalPages || 1) - 1, 0));
+            setCurrentPage(Math.max(totalPages - 1, 0));
           }}
           onPageSizeChange={(e) => {
             setPageSize(Number(e.target.value));
