@@ -458,8 +458,7 @@ const VendorDetails = () => {
                                 </div>
                               </Card>
                             ) : (
-                              userType !== "CITIZEN" &&
-                              !isEkyc && (
+                              userType !== "CITIZEN" && (
                                 <div
                                   onClick={() =>
                                     history.push(
