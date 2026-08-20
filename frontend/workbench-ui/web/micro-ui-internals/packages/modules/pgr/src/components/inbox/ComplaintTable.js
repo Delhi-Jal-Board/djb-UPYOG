@@ -1,5 +1,5 @@
 import React from "react";
-import { Table } from "@djb25/digit-ui-react-components";
+import { Table } from "@djb25/workbench-ui-react-components";
 
 const ComplaintTable = ({ t, columns, data, getCellProps, onNextPage, onPrevPage, currentPage, totalRecords, pageSizeLimit, onPageSizeChange }) => (
   <Table

@@ -1,4 +1,4 @@
-import { Modal, Text } from "@djb25/digit-ui-react-components";
+import { Modal, Text } from "@djb25/workbench-ui-react-components";
 import React, { useState, useEffect } from "react";
 
 const Heading = ({ t, heading }) => {

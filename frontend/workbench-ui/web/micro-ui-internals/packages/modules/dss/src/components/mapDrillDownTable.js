@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { useTranslation } from "react-i18next";
-import { Loader } from "@djb25/digit-ui-react-components";
+import { Loader } from "@djb25/workbench-ui-react-components";
 import { ResponsiveContainer } from "recharts";
 import { format } from "date-fns";
 

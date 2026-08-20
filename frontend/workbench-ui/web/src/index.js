@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { initLibraries } from "@egovernments/digit-ui-libraries";
+import { initLibraries } from "@djb25/workbench-ui-libraries";
 import "./index.css";
 import App from './App';
 import { TLCustomisations } from './Customisations/tl/TLCustomisation';
@@ -9,7 +9,7 @@ import { TLCustomisations } from './Customisations/tl/TLCustomisation';
 initLibraries();
 
 
-window.Digit.Customizations = { PGR: {} ,TL:TLCustomisations};
+window.Digit.Customizations = { PGR: {}, TL: TLCustomisations };
 
 const user = window.Digit.SessionStorage.get("User");
 

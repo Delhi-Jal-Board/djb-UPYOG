@@ -1,4 +1,4 @@
-import { LabelFieldPair,CardLabel} from '@djb25/digit-ui-react-components';
+import { LabelFieldPair,CardLabel} from '@djb25/workbench-ui-react-components';
 import React from 'react'
 
 const configAttendanceRejectModal = ({

@@ -1,7 +1,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { ApplicationCard } from "./ApplicationCard";
-// import { ApplicationLinks } from "@djb25/digit-ui-react-components"
+// import { ApplicationLinks } from "@djb25/workbench-ui-react-components"
 
 const MobileInbox = ({
   data,

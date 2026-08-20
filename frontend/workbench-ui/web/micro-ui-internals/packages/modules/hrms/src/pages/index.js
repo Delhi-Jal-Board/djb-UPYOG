@@ -1,4 +1,4 @@
-import { PrivateRoute } from "@djb25/digit-ui-react-components"
+import { PrivateRoute } from "@djb25/workbench-ui-react-components"
 import React, { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, Switch, useLocation } from "react-router-dom";

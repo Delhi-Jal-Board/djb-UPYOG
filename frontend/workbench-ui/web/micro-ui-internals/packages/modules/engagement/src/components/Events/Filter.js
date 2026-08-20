@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ActionBar, RemoveableTag, CloseSvg, Loader, DateRange, Localities, ApplyFilterBar, SubmitBar, Dropdown, RefreshIcon } from "@djb25/digit-ui-react-components"
+import { ActionBar, RemoveableTag, CloseSvg, Loader, DateRange, Localities, ApplyFilterBar, SubmitBar, Dropdown, RefreshIcon } from "@djb25/workbench-ui-react-components"
 import { useTranslation } from "react-i18next";
 import Status from "./Status";
 

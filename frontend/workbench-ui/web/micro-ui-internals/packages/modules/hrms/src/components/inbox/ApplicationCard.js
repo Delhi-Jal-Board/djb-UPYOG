@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 
-import { Card, DetailsCard, Loader, PopUp, SearchAction } from "@djb25/digit-ui-react-components"
-import { FilterAction } from "@djb25/digit-ui-react-components";
+import { Card, DetailsCard, Loader, PopUp, SearchAction } from "@djb25/workbench-ui-react-components"
+import { FilterAction } from "@djb25/workbench-ui-react-components";
 import Filter from "../InboxFilter";
 import SearchApplication from "./search";
 

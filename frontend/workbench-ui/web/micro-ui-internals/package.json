@@ -12,9 +12,12 @@
     "packages/modules/utilities",
     "packages/modules/engagement",
     "packages/modules/common",
-    "packages/modules/dss"
+    "packages/modules/dss",
+    "packages/modules/hrms",
+    "packages/modules/pgr",
+    "packages/svg-components"
   ],
-  "author": "JaganKumar <jagan.kumar@egov.org.in>",
+  "author": "Satyam Gupta",
   "license": "MIT",
   "private": true,
   "engines": {
@@ -71,7 +74,7 @@
   "dependencies": {
     "lodash": "4.17.21",
     "microbundle-crl": "0.13.11",
-    "@djb25/digit-ui-react-components": "1.0.0",
+    "@djb25/workbench-ui-react-components": "1.0.1",
     "react": "17.0.2",
     "react-dom": "17.0.2",
     "react-hook-form": "6.15.8",

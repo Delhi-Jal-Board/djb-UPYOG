@@ -1,4 +1,4 @@
-import { BackButton, DownloadBtnCommon, Header, Loader, SearchForm, Table } from "@djb25/digit-ui-react-components";
+import { BackButton, DownloadBtnCommon, Header, Loader, SearchForm, Table } from "@djb25/workbench-ui-react-components";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import MobileSearchApplication from "./MobileSearchApplication";

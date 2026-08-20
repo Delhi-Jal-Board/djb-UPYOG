@@ -1,5 +1,5 @@
 import React from "react";
-import { ActionLinks, CheckPoint } from "@djb25/digit-ui-react-components";
+import { ActionLinks, CheckPoint } from "@djb25/workbench-ui-react-components";
 import { Link } from "react-router-dom";
 import StarRated from "./StarRated";
 import { useTranslation } from "react-i18next";

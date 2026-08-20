@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
-import { Card, LabelFieldPair, CardLabel, TextInput, SubmitBar, Toast, TextArea, ActionBar } from "@djb25/digit-ui-react-components";
+import { Card, LabelFieldPair, CardLabel, TextInput, SubmitBar, Toast, TextArea, ActionBar } from "@djb25/workbench-ui-react-components";
 
 const SchemaAdd = ({ parentRoute }) => {
   const { t } = useTranslation();

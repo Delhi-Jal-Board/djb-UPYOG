@@ -3,18 +3,18 @@ import ReactDOM from "react-dom";
 import "@djb25/workbench-ui-css";
 
 
-import { initLibraries } from "@egovernments/digit-ui-libraries";
-// import { paymentConfigs, PaymentLinks, PaymentModule } from "@egovernments/digit-ui-module-common";
-import { DigitUI } from "@egovernments/digit-ui-module-core";
-import { initKeycloak } from "@egovernments/digit-ui-module-core/src/pages/employee/Login/keyCloak";
-// import { initDSSComponents } from "@egovernments/digit-ui-module-dss";
-import { initEngagementComponents } from "@egovernments/digit-ui-module-engagement";
-import { initHRMSComponents } from "@egovernments/digit-ui-module-hrms";
-// import { initUtilitiesComponents } from  "@egovernments/digit-ui-module-utilities";
-import { initWorkbenchComponents } from "@nudmcdgnpm/digit-ui-module-workbench";
-import { PGRReducers, initPGRComponents } from "@egovernments/digit-ui-module-pgr";
+import { initLibraries } from "@djb25/workbench-ui-libraries";
+// import { paymentConfigs, PaymentLinks, PaymentModule } from "@djb25/workbench-ui-module-common";
+import { DigitUI } from "@djb25/workbench-ui-module-core";
+import { initKeycloak } from "@djb25/workbench-ui-module-core/src/pages/employee/Login/keyCloak";
+// import { initDSSComponents } from "@djb25/workbench-ui-module-dss";
+import { initEngagementComponents } from "@djb25/workbench-ui-module-engagement";
+import { initHRMSComponents } from "@djb25/digit-ui-module-hrms";
+// import { initUtilitiesComponents } from  "@djb25/workbench-ui-module-utilities";
+import { initWorkbenchComponents } from "@djb25/workbench-ui-module-workbench";
+import { PGRReducers, initPGRComponents } from "@djb25/workbench-ui-module-pgr";
 import "@djb25/workbench-ui-css/dist/index.css";
-// import "@egovernments/digit-ui-css/example/index.css";
+// import "@djb25/workbench-ui-css/example/index.css";
 
 import { pgrCustomizations } from "./pgr";
 import { UICustomizations } from "./UICustomizations";

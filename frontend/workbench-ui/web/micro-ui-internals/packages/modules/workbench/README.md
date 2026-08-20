@@ -21,7 +21,7 @@ frontend/micro-ui/web/package.json
 ```
 
 ```json
-"@nudmcdgnpm/digit-ui-module-workbench":"0.1.0",
+"@djb25/workbench-ui-module-workbench":"0.1.0",
 ```
 
 then navigate to App.js
@@ -33,7 +33,7 @@ then navigate to App.js
 ```jsx
 /** add this import **/
 
-import { initWorkbenchComponents } from "@nudmcdgnpm/digit-ui-module-workbench";
+import { initWorkbenchComponents } from "@djb25/workbench-ui-module-workbench";
 
 /** inside enabledModules add this new module key **/
 
@@ -100,7 +100,7 @@ const didEmployeeHasAtleastOneRole = (roles = []) => {
 
 4 . stylesheet link has to be added 
 ```jsx
-<link rel="stylesheet" href="https://unpkg.com/@egovernments/digit-ui-css@1.2.114/dist/index.css" />
+<link rel="stylesheet" href="https://unpkg.com/@djb25/workbench-ui-css@1.2.114/dist/index.css" />
 ```
 Reference commit for the enabling workbench
 https://github.com/egovernments/DIGIT-OSS/pull/99/commits/6e711bdc005c226c7debd533209681fc77078a3e

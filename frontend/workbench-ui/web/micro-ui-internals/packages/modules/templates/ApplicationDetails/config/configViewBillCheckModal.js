@@ -1,4 +1,4 @@
-import { Dropdown, Loader } from '@djb25/digit-ui-react-components';
+import { Dropdown, Loader } from '@djb25/workbench-ui-react-components';
 import React, { useState } from 'react'
 
 const configViewBillCheckModal = ({

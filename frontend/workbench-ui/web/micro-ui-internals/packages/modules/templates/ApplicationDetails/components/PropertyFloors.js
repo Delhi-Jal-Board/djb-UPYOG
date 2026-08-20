@@ -1,6 +1,6 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { CardSubHeader, StatusTable, Row, CardSectionHeader } from "@djb25/digit-ui-react-components"
+import { CardSubHeader, StatusTable, Row, CardSectionHeader } from "@djb25/workbench-ui-react-components"
 
 function PropertyFloors({ floors }) {
   const { t } = useTranslation();

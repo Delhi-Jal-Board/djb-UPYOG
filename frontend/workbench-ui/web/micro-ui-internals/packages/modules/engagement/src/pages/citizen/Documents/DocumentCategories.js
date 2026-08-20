@@ -1,4 +1,4 @@
-import { AppContainer, Card, CardCaption, Header, Loader, PrevIcon } from "@djb25/digit-ui-react-components"
+import { AppContainer, Card, CardCaption, Header, Loader, PrevIcon } from "@djb25/workbench-ui-react-components"
 import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
 import Searchbar from "../../../components/Documents/Searchbar";

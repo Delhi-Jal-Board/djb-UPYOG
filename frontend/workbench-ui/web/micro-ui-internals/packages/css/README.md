@@ -5,7 +5,7 @@
 ## Install
 
 ```bash
-npm install --save @egovernments/digit-ui-css
+npm install --save @djb25/workbench-ui-css
 ```
 
 ## Limitation
@@ -24,7 +24,7 @@ frontend/micro-ui/web/package.json
 ```
 
 ```json
-"@egovernments/digit-ui-css":"^1.5.0",
+"@djb25/workbench-ui-css":"^1.5.0",
 ```
 
 then navigate to App.js
@@ -36,7 +36,7 @@ frontend/micro-ui/web/public/index.html
 ```jsx
 /** add this import **/
 
-  <link rel="stylesheet" href="https://unpkg.com/@egovernments/digit-ui-css@1.5.22/dist/index.css" />
+  <link rel="stylesheet" href="https://unpkg.com/@djb25/workbench-ui-css@1.5.22/dist/index.css" />
 
 ```
 ### Changelog

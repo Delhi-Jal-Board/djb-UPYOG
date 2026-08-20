@@ -1,4 +1,4 @@
-import { Loader, InboxSearchComposer, FormComposerV2 } from "@djb25/digit-ui-react-components"
+import { Loader, InboxSearchComposer, FormComposerV2 } from "@djb25/workbench-ui-react-components"
 import React from "react";
 import { useRouteMatch } from "react-router-dom";
 import { default as EmployeeApp } from "./pages/employee";
