@@ -42,25 +42,28 @@ const CitizenConsentForm = ({ t, styles, mdmsConfig = "", setMdmsConfig, labels 
     <div style={styles ? styles : {}}>
       {showModal ? (
         <Modal
-          headerBarMain={<Heading label={mdmsConfig && url ? t(`CCF_${mdmsConfig?.toUpperCase()}_HEADER`) : ""} />}
+          headerBarMain={
+            <Heading
+              label={
+                mdmsConfig && url
+                  ? t(labels?.find((data) => data.linkId === mdmsConfig)?.link || `CCF_${mdmsConfig?.toUpperCase()}_HEADER`)
+                  : ""
+              }
+            />
+          }
           headerBarEnd={<CloseBtn onClick={closeModal} />}
           actionCancelOnSubmit={closeModal}
           formId="modal-action"
-          popupStyles={{ width: "750px", overflow: "auto" }}
           style={{ minHeight: "45px", height: "auto", width: "160px" }}
           hideSubmit={true}
           headerBarMainStyle={{ margin: "0px", height: "35px" }}
         >
           {url ? (
-            <div style={{ width: "auto", height: "91vh", overflow: "hidden" }}>
+            <div style={{ width: "100%", height: "75vh" }}>
               <iframe
-                // allowfullscreen="true"
-                scrollbar={"none"}
-                border="none"
-                width={"100%"}
-                height={"100%"}
-                overflow={"auto"}
+                style={{ border: "none", width: "100%", height: "100%" }}
                 src={`${url}`}
+                title="Citizen Consent Form"
               ></iframe>
             </div>
           ) : (
