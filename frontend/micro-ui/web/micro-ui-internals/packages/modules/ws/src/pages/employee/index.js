@@ -635,7 +635,9 @@ const App = ({ path }) => {
               <PrivateRoute path={`${path}/edit-disconnection-application`} component={WSEditDisconnectionApplication} />
               <PrivateRoute path={`${path}/resubmit-disconnection-application`} component={WSResubmitDisconnection} />
               <PrivateRoute path={`${path}/config-by-disconnection-application`} component={WSEditDisconnectionByConfig} />
-              <PrivateRoute path={`${path}/application-details`} component={WSApplicationDetails} />
+              <PrivateRoute path={`${path}/application-details`} component={() => (
+                <LayoutWrapper layoutClass="action"><WSApplicationDetails/></LayoutWrapper>
+              )} />
               <PrivateRoute path={`${path}/modify-details`} component={WSModifyApplicationDetails} />
               <PrivateRoute path={`${path}/connection-details`} component={WSGetConnectionDetails} />
               <PrivateRoute path={`${path}/bill-amendment`} component={() => <WSApplicationBillAmendment {...{ path }} />} />

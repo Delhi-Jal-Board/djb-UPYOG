@@ -18,7 +18,7 @@ import { VerticalTimeline } from "@djb25/digit-ui-react-components";
 const MutationApplication = () => {
   const { t } = useTranslation();
   let { state } = useLocation();
-  state = state ? (typeof (state) === "string" ? JSON.parse(state) : state) : {};
+  state = state ? (typeof state === "string" ? JSON.parse(state) : state) : {};
   const history = useHistory();
   let filters = func.getQueryStringParams(location.search);
 
@@ -41,20 +41,18 @@ const MutationApplication = () => {
   const [authServiceType, setAuthServiceType] = useState("");
 
   const user = Digit.UserService.getUser();
-  let tenantId = filters?.tenantId
-    || Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code
-    || user?.info?.permanentCity
-    || Digit.ULBService.getCurrentTenantId();
+  let tenantId =
+    filters?.tenantId ||
+    Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code ||
+    user?.info?.permanentCity ||
+    Digit.ULBService.getCurrentTenantId();
   const applicationNumber = filters?.applicationNumber;
   const serviceType = filters?.service;
 
   const details = cloneDeep(state?.data);
-  const mobileNumber = user?.info?.userName?.match(/^[0-9]{10}$/)
-    ? user?.info?.userName
-    : user?.info?.mobileNumber;
+  const mobileNumber = user?.info?.userName?.match(/^[0-9]{10}$/) ? user?.info?.userName : user?.info?.mobileNumber;
 
-
-  const hasStateData = !!(details?.applicationData?.id);
+  const hasStateData = !!details?.applicationData?.id;
 
   // Determine if we are editing an existing application
   const editApplicationNumber = details?.applicationNo || applicationNumber;
@@ -74,8 +72,7 @@ const MutationApplication = () => {
   const querySearchParam = isEditFlow ? editApplicationNumber : authKNumber;
 
   const fallbackServiceType = serviceType || authServiceType;
-  const businessService = (fallbackServiceType?.toUpperCase() === "SEWERAGE") ? "SW" : "WS";
-
+  const businessService = fallbackServiceType?.toUpperCase() === "SEWERAGE" ? "SW" : "WS";
 
   const { isLoading: isDetailsLoading, data: fetchedApplicationDetails } = useQuery(
     ["WS_MUTATION_DIRECT_SEARCH", querySearchParam, tenantId, mobileNumber, businessService, isEditFlow],
@@ -83,19 +80,17 @@ const MutationApplication = () => {
       if (!querySearchParam) return null;
       const params = isEditFlow
         ? {
-          applicationNumber: querySearchParam,
-        }
+            applicationNumber: querySearchParam,
+          }
         : {
-          connectionNumber: querySearchParam,
-          isConnectionSearch: true,
-        };
+            connectionNumber: querySearchParam,
+            isConnectionSearch: true,
+          };
       // Remove undefined/null values
-      Object.keys(params).forEach(k => (params[k] == null) && delete params[k]);
+      Object.keys(params).forEach((k) => params[k] == null && delete params[k]);
       const rawData = await Digit.WSService.search({ tenantId, filters: params, businessService });
       // Wrap in the same shape that useWSDetailsPage / applicationDetails produces
-      const wsData = businessService === "WS"
-        ? rawData?.WaterConnection?.[0]
-        : rawData?.SewerageConnections?.[0];
+      const wsData = businessService === "WS" ? rawData?.WaterConnection?.[0] : rawData?.SewerageConnections?.[0];
       if (!wsData) return null;
       return {
         applicationData: wsData,
@@ -113,7 +108,9 @@ const MutationApplication = () => {
   const applicationDetails = hasStateData ? details : fetchedApplicationDetails;
   const resolvedServiceType = serviceType || authServiceType || applicationDetails?.applicationData?.serviceType || "WATER";
 
-  const [propertyId, setPropertyId] = useState(new URLSearchParams(useLocation().search).get("propertyId") || applicationDetails?.applicationData?.propertyId);
+  const [propertyId, setPropertyId] = useState(
+    new URLSearchParams(useLocation().search).get("propertyId") || applicationDetails?.applicationData?.propertyId
+  );
 
   const { data: propertyDetails, isLoading: isPropertyLoading } = Digit.Hooks.pt.usePropertySearch(
     { filters: { propertyIds: propertyId }, tenantId: tenantId },
@@ -126,7 +123,13 @@ const MutationApplication = () => {
     const fetchAppData = async () => {
       const dataToConvert = applicationDetails || details;
       if (dataToConvert?.applicationData?.id) {
-        const convertAppData = await convertApplicationData(dataToConvert, (resolvedServiceType?.toUpperCase() || dataToConvert?.applicationData?.serviceType), true, undefined, t);
+        const convertAppData = await convertApplicationData(
+          dataToConvert,
+          resolvedServiceType?.toUpperCase() || dataToConvert?.applicationData?.serviceType,
+          true,
+          undefined,
+          t
+        );
         setSessionFormData((prev) => ({ ...prev, ...convertAppData }));
         sessionStorage.setItem("IsDetailsExists", JSON.stringify(true));
       }
@@ -143,23 +146,32 @@ const MutationApplication = () => {
     if (isCitizen && isEditFlow && applicationDetails?.applicationData) {
       const data = applicationDetails.applicationData;
       const holders = data?.connectionHolders || [];
-      const primaryHolder = holders.find(h => h.isPrimaryOwner) || holders[0] || {};
+      const primaryHolder = holders.find((h) => h.isPrimaryOwner) || holders[0] || {};
       const additionalDetails = data?.additionalDetails || {};
       const documents = data?.documents || [];
 
-      setFormData(prev => {
+      setFormData((prev) => {
         if (Object.keys(prev).length > 0) return prev;
 
-        const identityDoc = documents.find(d => ["AADHAAR", "VOTERID", "VOTER_ID", "PAN", "DRIVING_LICENSE", "PASSPORT"].includes(d.documentType?.toUpperCase()));
-        const mutationDoc = documents.find(d => d.documentType === "REGISTERED_SALE_DEED" || d.documentType === "SALE_DEED" || d.documentType === "GIFT_DEED" || d.documentType === "WILL");
+        const identityDoc = documents.find((d) =>
+          ["AADHAAR", "VOTERID", "VOTER_ID", "PAN", "DRIVING_LICENSE", "PASSPORT"].includes(d.documentType?.toUpperCase())
+        );
+        const mutationDoc = documents.find(
+          (d) =>
+            d.documentType === "REGISTERED_SALE_DEED" || d.documentType === "SALE_DEED" || d.documentType === "GIFT_DEED" || d.documentType === "WILL"
+        );
 
         return {
           proposedNewConsumerName: primaryHolder.name || "",
           gender: primaryHolder.gender ? { code: primaryHolder.gender, i18nKey: primaryHolder.gender } : null,
           newOwnerMobileNumber: primaryHolder.mobileNumber || "",
           newOwnerEmailAddress: primaryHolder.emailId || "",
-          reasonForNameChange: additionalDetails.reasonForNameChange ? { code: additionalDetails.reasonForNameChange, i18nKey: additionalDetails.reasonForNameChange } : null,
-          relationshipWithExistingConsumer: additionalDetails.relationshipWithExistingConsumer ? { code: additionalDetails.relationshipWithExistingConsumer, i18nKey: additionalDetails.relationshipWithExistingConsumer } : null,
+          reasonForNameChange: additionalDetails.reasonForNameChange
+            ? { code: additionalDetails.reasonForNameChange, i18nKey: additionalDetails.reasonForNameChange }
+            : null,
+          relationshipWithExistingConsumer: additionalDetails.relationshipWithExistingConsumer
+            ? { code: additionalDetails.relationshipWithExistingConsumer, i18nKey: additionalDetails.relationshipWithExistingConsumer }
+            : null,
 
           saleDeedDocumentId: mutationDoc?.fileStoreId || additionalDetails.saleDeedDocumentId || "",
           identityProofDocumentId: identityDoc?.fileStoreId || "",
@@ -182,14 +194,14 @@ const MutationApplication = () => {
   const { mutate: sewerageUpdateMutation } = Digit.Hooks.ws.useWSApplicationActions("SEWERAGE");
 
   const handleNextStep2 = (data) => {
-    setFormData(prev => ({ ...prev, ...data }));
-    setCompletedSteps(prev => new Set([...prev, 3]));
+    setFormData((prev) => ({ ...prev, ...data }));
+    setCompletedSteps((prev) => new Set([...prev, 3]));
     setCurrentStep(4);
   };
 
   const handleNextStep3 = (data) => {
-    setFormData(prev => ({ ...prev, ...data }));
-    setCompletedSteps(prev => new Set([...prev, 4]));
+    setFormData((prev) => ({ ...prev, ...data }));
+    setCompletedSteps((prev) => new Set([...prev, 4]));
     setCurrentStep(5);
   };
 
@@ -212,29 +224,27 @@ const MutationApplication = () => {
         identityProofType: formData.identityProofType,
         identityProofDocumentId: formData.identityProofDocumentId,
         documentNumber: formData.documentNumber,
-        gender: formData.gender
       };
-
-      const sessionDetails = sessionStorage.getItem("WS_EDIT_APPLICATION_DETAILS") ? JSON.parse(sessionStorage.getItem("WS_EDIT_APPLICATION_DETAILS")) : {};
-
-      let convertAppData = await convertModifyApplicationDetails(finalData, sessionDetails, "INITIATE");
 
       if (finalData?.MutationApplicantDetails) {
         const mutDetails = finalData.MutationApplicantDetails;
-        const existingHolder = sessionDetails?.applicationData?.connectionHolders?.[0] || {};
-        convertAppData.connectionHolders = [{
-          ...existingHolder,
-          name: mutDetails.proposedNewConsumerName || existingHolder.name,
-          gender: mutDetails.gender?.code || mutDetails.gender || existingHolder.gender,
-          mobileNumber: mutDetails.newOwnerMobileNumber || existingHolder.mobileNumber,
-          emailId: mutDetails.newOwnerEmailAddress || existingHolder.emailId,
-          fatherOrHusbandName: existingHolder.fatherOrHusbandName || "",
-          relationship: existingHolder.relationship || "OTHERS",
-          ownerType: existingHolder.ownerType || "NONE",
-          correspondenceAddress: existingHolder.correspondenceAddress || "",
-          sameAsOwnerDetails: false
-        }];
+        const existingHolder = finalData?.ConnectionHolderDetails?.[0] || {};
+        finalData.ConnectionHolderDetails = [
+          {
+            ...existingHolder,
+            name: mutDetails.proposedNewConsumerName || existingHolder.name,
+            mobileNumber: mutDetails.newOwnerMobileNumber || existingHolder.mobileNumber,
+            emailId: mutDetails.newOwnerEmailAddress || existingHolder.emailId,
+            sameAsOwnerDetails: false,
+          },
+        ];
       }
+
+      const sessionDetails = sessionStorage.getItem("WS_EDIT_APPLICATION_DETAILS")
+        ? JSON.parse(sessionStorage.getItem("WS_EDIT_APPLICATION_DETAILS"))
+        : {};
+
+      let convertAppData = await convertModifyApplicationDetails(finalData, sessionDetails, "INITIATE");
 
       // Ensure dateEffectiveFrom is present for mutation creation validation
       if (!convertAppData.dateEffectiveFrom) {
@@ -244,182 +254,169 @@ const MutationApplication = () => {
       if (finalData?.MutationApplicantDetails) {
         const mutDetails = finalData.MutationApplicantDetails;
         if (!convertAppData.additionalDetails) convertAppData.additionalDetails = {};
-        if (mutDetails.reasonForNameChange) convertAppData.additionalDetails.reasonForNameChange = mutDetails.reasonForNameChange?.code || mutDetails.reasonForNameChange;
+        if (mutDetails.reasonForNameChange)
+          convertAppData.additionalDetails.reasonForNameChange = mutDetails.reasonForNameChange?.code || mutDetails.reasonForNameChange;
         if (mutDetails.relationshipWithExistingConsumer) {
           const relationCode = mutDetails.relationshipWithExistingConsumer?.code || mutDetails.relationshipWithExistingConsumer;
           convertAppData.additionalDetails.relationshipWithExistingConsumer = relationCode;
           convertAppData.additionalDetails.isBloodRelation = relationCode !== "OTHER";
         }
 
-        const existingDocs = sessionDetails?.applicationData?.documents || applicationDetails?.applicationData?.documents || [];
-
         if (mutDetails.saleDeedDocumentId) {
           convertAppData.additionalDetails.saleDeedDocumentId = mutDetails.saleDeedDocumentId;
-          const existingMutationDoc = existingDocs.find(d => d.documentType?.includes("OWNERSHIP") || d.documentType?.includes("REGISTERED_SALE_DEED") || ["REGISTERED_SALE_DEED", "SALE_DEED", "GIFT_DEED", "WILL"].includes(d.documentType?.toUpperCase()));
-
           if (!convertAppData.documents) convertAppData.documents = [];
           convertAppData.documents.push({
-            id: existingMutationDoc?.id,
-            documentType: "OWNER.OWNERSHIPPROOF.REGISTERED_SALE_DEED",
+            documentType: "REGISTERED_SALE_DEED",
             fileStoreId: mutDetails.saleDeedDocumentId,
-            documentUid: existingMutationDoc?.id || existingMutationDoc?.documentUid || mutDetails.saleDeedDocumentId,
-            documentNumber: existingMutationDoc?.documentNumber || mutDetails.saleDeedDocumentId,
-            auditDetails: null,
+            documentUid: mutDetails.saleDeedDocumentId,
             status: "ACTIVE",
-            isVerified: true
           });
         }
 
         if (mutDetails.identityProofDocumentId) {
-          const existingIdentityDoc = existingDocs.find(d => d.documentType?.includes("IDENTITYPROOF") || ["AADHAAR", "VOTERID", "VOTER_ID", "PAN", "DRIVING_LICENSE", "PASSPORT"].includes(d.documentType?.toUpperCase()));
-          
-          let idpCode = mutDetails.identityProofType?.code || mutDetails.identityProofType || "AADHAAR";
-          if (idpCode === "IDENTITY_PROOF") idpCode = "AADHAAR";
-          const identityType = idpCode.includes("IDENTITYPROOF") ? idpCode : `OWNER.IDENTITYPROOF.${idpCode}`;
-
           if (!convertAppData.documents) convertAppData.documents = [];
           convertAppData.documents.push({
-            id: existingIdentityDoc?.id,
-            documentType: identityType,
+            documentType: mutDetails.identityProofType?.code || "IDENTITY_PROOF",
             fileStoreId: mutDetails.identityProofDocumentId,
-            documentUid: existingIdentityDoc?.id || existingIdentityDoc?.documentUid || mutDetails.identityProofDocumentId,
+            documentUid: mutDetails.documentNumber || mutDetails.identityProofDocumentId,
             documentNumber: mutDetails.documentNumber,
-            auditDetails: null,
             status: "ACTIVE",
-            isVerified: true
           });
-          convertAppData.additionalDetails.identityProofNumber = mutDetails.documentNumber;
         }
       }
 
-      convertAppData.applicationType = resolvedServiceType == "WATER" ? "MUTATION_WATER_CONNECTION" : "MUTATION_SEWERAGE_CONNECTION";
+      convertAppData.applicationType = resolvedServiceType === "WATER" ? "MUTATION_WATER_CONNECTION" : "MUTATION_SEWERAGE_CONNECTION";
 
-      // The backend expects the existing connection's ID and applicationNo to be present
-      // so it knows which connection is being mutated. Do not strip them.
-
-      const reqDetails = resolvedServiceType == "WATER"
-        ? { WaterConnection: convertAppData, reconnectRequest: false, disconnectRequest: false }
-        : { SewerageConnection: convertAppData, reconnectRequest: false, disconnectRequest: false };
-
-      const isEdit = isEditFlow;
-
-      if (isEdit) {
-        // Skip create, just update with RESUBMIT_APPLICATION
-        const updateMutation = resolvedServiceType == "WATER" ? waterUpdateMutation : sewerageUpdateMutation;
+      if (isEditFlow) {
         let updatePayload = {
           ...convertAppData,
+          id: applicationDetails?.applicationData?.id,
+          applicationNo: editApplicationNumber,
           processInstance: {
+            ...applicationDetails?.applicationData?.processInstance,
             ...convertAppData?.processInstance,
             action: "RESUBMIT_APPLICATION",
-          }
+          },
         };
 
         if (Digit?.Customizations?.WS?.customiseUpdatePayloadOfWS) {
-          updatePayload = Digit.Customizations.WS.customiseUpdatePayloadOfWS(convertAppData, updatePayload, resolvedServiceType);
+          updatePayload = Digit.Customizations.WS.customiseUpdatePayloadOfWS(applicationDetails?.applicationData || {}, updatePayload, resolvedServiceType);
         }
 
-        let reqDetailsUpdate = resolvedServiceType == "WATER"
-          ? { WaterConnection: updatePayload, reconnectRequest: false, disconnectRequest: false }
-          : { SewerageConnection: updatePayload, reconnectRequest: false, disconnectRequest: false };
+        const updateMutation = resolvedServiceType === "WATER" ? waterUpdateMutation : sewerageUpdateMutation;
+        let reqDetailsUpdate =
+          resolvedServiceType === "WATER"
+            ? { WaterConnection: updatePayload, reconnectRequest: false, disconnectRequest: false }
+            : { SewerageConnection: updatePayload, reconnectRequest: false, disconnectRequest: false };
 
         updateMutation(reqDetailsUpdate, {
           onError: (error) => {
             setIsSubmitting(false);
-            setShowToast({ key: "error", message: error?.response?.data?.Errors?.[0]?.message || "Failed to update workflow" });
+            setShowToast({ key: "error", message: error?.response?.data?.Errors?.[0]?.message || "Failed to update application" });
           },
           onSuccess: (updateData) => {
             setIsSubmitting(false);
             if (updateData instanceof Error || updateData?.isAxiosError || updateData?.response?.data?.Errors) {
               const apiErrors = updateData?.response?.data?.Errors;
-              const errorMessage = apiErrors?.[0]?.message || updateData?.message || "Failed to update workflow";
+              const errorMessage = apiErrors?.[0]?.message || updateData?.message || "Failed to update application";
               setShowToast({ key: "error", message: errorMessage });
               return;
             }
+
             if (updateData?.Errors && updateData.Errors.length > 0) {
-              setShowToast({ key: "error", message: updateData.Errors[0].message || "Failed to update workflow" });
+              setShowToast({ key: "error", message: updateData.Errors[0].message || "Failed to update application" });
               return;
             }
+
             clearSessionFormData();
-            const newAppNo = resolvedServiceType == "WATER" ? updateData?.WaterConnection?.[0]?.applicationNo : updateData?.SewerageConnections?.[0]?.applicationNo;
+            const newAppNo =
+              resolvedServiceType === "WATER" ? updateData?.WaterConnection?.[0]?.applicationNo : updateData?.SewerageConnections?.[0]?.applicationNo;
             setGeneratedAppNo(newAppNo);
             setCurrentStep(6);
-          }
-        });
-
-      } else {
-        const mutation = resolvedServiceType == "WATER" ? waterMutation : sewerageMutation;
-
-        await mutation(reqDetails, {
-          onError: (error) => {
-            setIsSubmitting(false);
-            setShowToast({ key: "error", message: error?.response?.data?.Errors?.[0]?.message || "Failed to submit application" });
           },
-          onSuccess: (data) => {
-            // Check if the Request utility returned an Axios error object
-            if (data instanceof Error || data?.isAxiosError || data?.response?.data?.Errors) {
-              setIsSubmitting(false);
-              const apiErrors = data?.response?.data?.Errors;
-              const errorMessage = apiErrors?.[0]?.message || data?.message || "Failed to submit application";
-              setShowToast({ key: "error", message: errorMessage });
-              return;
+        });
+        return;
+      }
+
+      const reqDetails =
+        resolvedServiceType === "WATER"
+          ? { WaterConnection: convertAppData, reconnectRequest: false, disconnectRequest: false }
+          : { SewerageConnection: convertAppData, reconnectRequest: false, disconnectRequest: false };
+
+      const mutation = resolvedServiceType === "WATER" ? waterMutation : sewerageMutation;
+
+      await mutation(reqDetails, {
+        onError: (error) => {
+          setIsSubmitting(false);
+          setShowToast({ key: "error", message: error?.response?.data?.Errors?.[0]?.message || "Failed to submit application" });
+        },
+        onSuccess: (data) => {
+          // Check if the Request utility returned an Axios error object
+          if (data instanceof Error || data?.isAxiosError || data?.response?.data?.Errors) {
+            setIsSubmitting(false);
+            const apiErrors = data?.response?.data?.Errors;
+            const errorMessage = apiErrors?.[0]?.message || data?.message || "Failed to submit application";
+            setShowToast({ key: "error", message: errorMessage });
+            return;
+          }
+
+          // Check if the API returned 200 OK but with an Errors array
+          if (data?.Errors && data.Errors.length > 0) {
+            setIsSubmitting(false);
+            setShowToast({ key: "error", message: data.Errors[0].message || "Failed to submit application" });
+          } else {
+            // Create succeeded, now call update API to trigger workflow submission
+            const updateMutation = resolvedServiceType === "WATER" ? waterUpdateMutation : sewerageUpdateMutation;
+            const createdConnection = resolvedServiceType === "WATER" ? data?.WaterConnection?.[0] : data?.SewerageConnections?.[0];
+
+            let updatePayload = {
+              ...createdConnection,
+              dateEffectiveFrom: createdConnection?.dateEffectiveFrom || Date.now(),
+              processInstance: {
+                ...createdConnection?.processInstance,
+                action: "APPLY_MUTATION",
+              },
+            };
+
+            // Apply customization if it exists in the platform
+            if (Digit?.Customizations?.WS?.customiseUpdatePayloadOfWS) {
+              updatePayload = Digit.Customizations.WS.customiseUpdatePayloadOfWS(createdConnection, updatePayload, resolvedServiceType);
             }
 
-            // Check if the API returned 200 OK but with an Errors array
-            if (data?.Errors && data.Errors.length > 0) {
-              setIsSubmitting(false);
-              setShowToast({ key: "error", message: data.Errors[0].message || "Failed to submit application" });
-            } else {
-              // Create succeeded, now call update API to trigger workflow submission
-              const updateMutation = resolvedServiceType == "WATER" ? waterUpdateMutation : sewerageUpdateMutation;
-              const createdConnection = resolvedServiceType == "WATER" ? data?.WaterConnection?.[0] : data?.SewerageConnections?.[0];
-
-              let updatePayload = {
-                ...createdConnection,
-                dateEffectiveFrom: createdConnection?.dateEffectiveFrom || Date.now(),
-                processInstance: {
-                  ...createdConnection?.processInstance,
-                  action: "APPLY_MUTATION",
-                }
-              };
-
-              // Apply customization if it exists in the platform
-              if (Digit?.Customizations?.WS?.customiseUpdatePayloadOfWS) {
-                updatePayload = Digit.Customizations.WS.customiseUpdatePayloadOfWS(createdConnection, updatePayload, resolvedServiceType);
-              }
-
-              let reqDetailsUpdate = resolvedServiceType == "WATER"
+            let reqDetailsUpdate =
+              resolvedServiceType === "WATER"
                 ? { WaterConnection: updatePayload, reconnectRequest: false, disconnectRequest: false }
                 : { SewerageConnection: updatePayload, reconnectRequest: false, disconnectRequest: false };
 
-              updateMutation(reqDetailsUpdate, {
-                onError: (error) => {
-                  setIsSubmitting(false);
-                  setShowToast({ key: "error", message: error?.response?.data?.Errors?.[0]?.message || "Failed to update workflow" });
-                },
-                onSuccess: (updateData) => {
-                  setIsSubmitting(false);
-                  if (updateData instanceof Error || updateData?.isAxiosError || updateData?.response?.data?.Errors) {
-                    const apiErrors = updateData?.response?.data?.Errors;
-                    const errorMessage = apiErrors?.[0]?.message || updateData?.message || "Failed to update workflow";
-                    setShowToast({ key: "error", message: errorMessage });
-                    return;
-                  }
-
-                  if (updateData?.Errors && updateData.Errors.length > 0) {
-                    setShowToast({ key: "error", message: updateData.Errors[0].message || "Failed to update workflow" });
-                    return;
-                  }
-
-                  clearSessionFormData();
-                  const newAppNo = resolvedServiceType == "WATER" ? updateData?.WaterConnection?.[0]?.applicationNo : updateData?.SewerageConnections?.[0]?.applicationNo;
-                  setGeneratedAppNo(newAppNo);
-                  setCurrentStep(6);
+            updateMutation(reqDetailsUpdate, {
+              onError: (error) => {
+                setIsSubmitting(false);
+                setShowToast({ key: "error", message: error?.response?.data?.Errors?.[0]?.message || "Failed to update workflow" });
+              },
+              onSuccess: (updateData) => {
+                setIsSubmitting(false);
+                if (updateData instanceof Error || updateData?.isAxiosError || updateData?.response?.data?.Errors) {
+                  const apiErrors = updateData?.response?.data?.Errors;
+                  const errorMessage = apiErrors?.[0]?.message || updateData?.message || "Failed to update workflow";
+                  setShowToast({ key: "error", message: errorMessage });
+                  return;
                 }
-              });
-            }
+
+                if (updateData?.Errors && updateData.Errors.length > 0) {
+                  setShowToast({ key: "error", message: updateData.Errors[0].message || "Failed to update workflow" });
+                  return;
+                }
+
+                clearSessionFormData();
+                const newAppNo =
+                  resolvedServiceType === "WATER" ? updateData?.WaterConnection?.[0]?.applicationNo : updateData?.SewerageConnections?.[0]?.applicationNo;
+                setGeneratedAppNo(newAppNo);
+                setCurrentStep(6);
+              },
+            });
           }
-        });
-      }
+        },
+      });
     } catch (e) {
       console.error(e);
       setIsSubmitting(false);
@@ -447,7 +444,7 @@ const MutationApplication = () => {
     { sectionId: "application", route: "application-selection", actions: "Existing Connection" },
     { sectionId: "applicant", route: "applicant-details", actions: "New Consumer Details" },
     { sectionId: "documents", route: "documents", actions: "Documents" },
-    { sectionId: "Review", route: "review", actions: "Preview" }
+    { sectionId: "Review", route: "review", actions: "Preview" },
   ].map((step, index) => ({
     ...step,
     timeLine: [{ actions: step.actions, currentStep: index + 1 }],
@@ -473,7 +470,7 @@ const MutationApplication = () => {
                 setAuthKNumber(kNumber);
                 setAuthMobileNumber(mobileNumber);
                 if (detectedServiceType) setAuthServiceType(detectedServiceType);
-                setCompletedSteps(prev => new Set([...prev, 1]));
+                setCompletedSteps((prev) => new Set([...prev, 1]));
                 setCurrentStep(2);
               }}
             />
@@ -487,30 +484,16 @@ const MutationApplication = () => {
                 propertyId={applicationDetails?.applicationData?.propertyId}
                 mobileNumber={authMobileNumber}
                 onVerify={() => {
-                  setCompletedSteps(prev => new Set([...prev, 2]));
+                  setCompletedSteps((prev) => new Set([...prev, 2]));
                   setCurrentStep(3);
                 }}
               />
             </Fragment>
           )}
 
-          {currentStep === 3 && (
-            <Step2_NewConsumerDetails
-              t={t}
-              defaultValues={formData}
-              onNext={handleNextStep2}
-              onBack={() => setCurrentStep(2)}
-            />
-          )}
+          {currentStep === 3 && <Step2_NewConsumerDetails t={t} defaultValues={formData} onNext={handleNextStep2} onBack={() => setCurrentStep(2)} />}
 
-          {currentStep === 4 && (
-            <Step3_UploadDocuments
-              t={t}
-              defaultValues={formData}
-              onNext={handleNextStep3}
-              onBack={() => setCurrentStep(3)}
-            />
-          )}
+          {currentStep === 4 && <Step3_UploadDocuments t={t} defaultValues={formData} onNext={handleNextStep3} onBack={() => setCurrentStep(3)} />}
 
           {currentStep === 5 && (
             <Step4_Preview
@@ -524,15 +507,17 @@ const MutationApplication = () => {
             />
           )}
 
-          {currentStep === 6 && (
-            <Step5_Submission
-              t={t}
-              applicationNumber={generatedAppNo}
-              serviceType={resolvedServiceType}
+          {currentStep === 6 && <Step5_Submission t={t} applicationNumber={generatedAppNo} serviceType={resolvedServiceType} />}
+
+          {showToast && (
+            <Toast
+              error={showToast?.key === "error"}
+              warning={showToast?.key === "warning"}
+              label={t(showToast?.message)}
+              onClose={() => setShowToast(null)}
+              isDleteBtn={true}
             />
           )}
-
-          {showToast && <Toast error={showToast?.key === "error"} warning={showToast?.key === "warning"} label={t(showToast?.message)} onClose={() => setShowToast(null)} isDleteBtn={true} />}
         </div>
       </div>
     </React.Fragment>
