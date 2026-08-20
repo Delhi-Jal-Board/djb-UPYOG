@@ -1,20 +1,18 @@
 package org.egov.vendor.service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.Role;
 import org.egov.tracer.model.CustomException;
+import org.egov.tracer.model.ServiceCallException;
 import org.egov.vendor.config.VendorConfiguration;
 import org.egov.vendor.driver.web.model.Driver;
 import org.egov.vendor.repository.VendorRepository;
@@ -27,6 +25,7 @@ import org.egov.vendor.web.model.VendorResponse;
 import org.egov.vendor.web.model.VendorSearchCriteria;
 import org.egov.vendor.web.model.user.User;
 import org.egov.vendor.web.model.user.UserDetailResponse;
+import org.egov.vendor.web.model.user.UserRequest;
 import org.egov.vendor.web.model.vehicle.Vehicle;
 import org.egov.vendor.web.model.vehicle.VehicleSearchCriteria;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +34,9 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.RestTemplate;
 
 @Service
 @Slf4j
@@ -66,6 +68,13 @@ public class VendorService {
 
 	@Autowired
 	private SupervisorRepository supervisorRepository;
+
+	@Autowired
+	private RestTemplate restTemplate;
+
+	@Autowired
+	private ObjectMapper mapper;
+
 
 
 	public Vendor create(VendorRequest vendorRequest) {
@@ -107,6 +116,8 @@ public class VendorService {
 					"Owner details not present in the present" + vendorRequest.getVendor().getName());
 		}
 
+
+
 		VendorSearchCriteria criteria = new VendorSearchCriteria();
 		criteria.setTenantId(vendorRequest.getVendor().getTenantId());
 		criteria.setIds(Arrays.asList(vendorRequest.getVendor().getId()));
@@ -145,13 +156,124 @@ public class VendorService {
 		}
 
 		Object mdmsData = util.mDMSCall(requestInfo, tenantId);
+
+		updateVendorUserStatus(vendorRequest, requestInfo) ;
 		vendorValidator.validateCreateOrUpdateRequest(vendorRequest, mdmsData, false, requestInfo);
 		enrichmentService.enrichUpdate(vendorRequest);
 		updateVendor(vendorRequest, tenantId);
 
+
 		return vendorRequest.getVendor();
 
 	}
+
+	private void updateVendorUserStatus(VendorRequest vendorRequest, RequestInfo requestInfo) {
+
+		Vendor vendor = vendorRequest.getVendor();
+
+		if (vendor.getStatus() == null) {
+			return;
+		}
+
+		User owner = vendor.getOwner();
+
+		if (owner == null) {
+			throw new CustomException(
+					VendorConstants.UPDATE_ERROR,
+					"Vendor owner details not found");
+		}
+
+		// ACTIVE  -> login allowed
+		// DISABLED/INACTIVE -> login disabled
+		boolean active = Vendor.StatusEnum.ACTIVE.equals(vendor.getStatus());
+
+		owner.setActive(active);
+
+		StringBuilder uri = new StringBuilder(config.getUserHost())
+				.append(config.getUserContextPath())
+				.append(config.getUserUpdateEndpoint());
+
+		UserDetailResponse response = ownerCall(
+				UserRequest.builder()
+						.user(owner)
+						.requestInfo(requestInfo)
+						.build(),
+				uri);
+
+		if (response == null || CollectionUtils.isEmpty(response.getUser())) {
+			throw new CustomException(
+					VendorConstants.UPDATE_ERROR,
+					"Unable to update Vendor user status");
+		}
+	}
+
+	@SuppressWarnings({"rawtypes", "unchecked"})
+	private UserDetailResponse ownerCall(Object request, StringBuilder uri) {
+		String dobFormat = uri.toString().contains(config.getUserCreateEndpoint())
+				? "dd/MM/yyyy" : "yyyy-MM-dd";
+		try {
+			LinkedHashMap responseMap = (LinkedHashMap) fetchResult(uri, request);
+			parseResponse(responseMap, dobFormat);
+			return mapper.convertValue(responseMap, UserDetailResponse.class);
+		} catch (IllegalArgumentException e) {
+			throw new CustomException("IllegalArgumentException", "ObjectMapper failed in ownerCall");
+		}
+	}
+
+	@SuppressWarnings({"rawtypes", "unchecked"})
+	private void parseResponse(LinkedHashMap responseMap, String dobFormat) {
+		List<LinkedHashMap> users = (List<LinkedHashMap>) responseMap.get("user");
+		String fmt = "dd-MM-yyyy HH:mm:ss";
+		if (users != null) {
+			users.forEach(m -> {
+				m.put(VendorConstants.CREATED_DATE,
+						dateToLong((String) m.get(VendorConstants.CREATED_DATE), fmt));
+				if (m.get(VendorConstants.LAST_MODIFIED_DATE) != null)
+					m.put(VendorConstants.LAST_MODIFIED_DATE,
+							dateToLong((String) m.get(VendorConstants.LAST_MODIFIED_DATE), fmt));
+				if (m.get(VendorConstants.DOB) != null)
+					m.put(VendorConstants.DOB,
+							dateToLong((String) m.get(VendorConstants.DOB), dobFormat));
+				if (m.get("pwdExpiryDate") != null)
+					m.put("pwdExpiryDate",
+							dateToLong((String) m.get("pwdExpiryDate"), fmt));
+			});
+		}
+	}
+
+
+	private Long dateToLong(String date, String format) {
+		try {
+			return new SimpleDateFormat(format).parse(date).getTime();
+		} catch (ParseException e) { return 0L; }
+	}
+
+
+	/**
+	 * fetchResult form the different services based on the url and request object
+	 *
+	 * @param uri
+	 * @param request
+	 * @return
+	 */
+	public Object fetchResult(StringBuilder uri, Object request) {
+		log.info("Sending request to {}: {}", uri, request);
+		Object response = null;
+		try {
+			response = restTemplate.postForObject(uri.toString(), request, Map.class);
+		} catch (HttpClientErrorException e) {
+			log.error("External Service Call Failed", e);
+			throw new ServiceCallException(e.getResponseBodyAsString());
+		} catch (HttpServerErrorException e) {          // ADD THIS BLOCK
+			log.error("External Service Call Failed", e);
+			throw new ServiceCallException(e.getResponseBodyAsString()); // gets actual error body
+		} catch (Exception e) {
+			log.error("External Service Call Failed", e);
+			throw new ServiceCallException(e.getMessage() != null ? e.getMessage() : e.getClass().getName());
+		}
+		return response;
+	}
+
 
 	private void updateVendor(VendorRequest vendorRequest, String tenantId) {
 		List<Driver> vendorDriverToBeUpdated = new ArrayList<>();
