@@ -691,59 +691,26 @@ const SupervisorDetailsCard = () => {
             {/* Details */}
             <div className="ekyc-dashboard-section">
                 <div className="ekyc-details-wrapper">
-                    {/* Left side details */}
-                    <div className="details-left">
-                        <div className="details-grid">
-                            <div className="detail-item">
-                                <span className="label">{t("MOBILE")}</span>
-                                <span className="value">{mobileNumber}</span>
-                            </div>
-
-                            <div className="detail-item">
-                                <span className="label">{t("EMAIL")}</span>
-                                <span className="value">{email}</span>
-                            </div>
-
-                            <div className="detail-item">
-                                <span className="label">{t("GENDER")}</span>
-                                <span className="value">{gender}</span>
-                            </div>
-
-                            <div className="detail-item">
-                                <span className="label">{t("STATUS")}</span>
-                                <span className="value">{status}</span>
-                            </div>
-
-                            <div className="detail-item">
-                                <span className="label">{t("ASSIGNED_ZONE") || "Assigned Zone"}</span>
-                                <span className="value">
-                                    {assignedZone && assignedZone !== "N/A"
-                                        ? (
-                                            <div className="selected-zones" style={{ marginTop: "4px" }}>
-                                                <span className="selected-zone-chip">
-                                                    {t(assignedZone.trim().toUpperCase()) || assignedZone}
-                                                </span>
-                                            </div>
-                                        )
-                                        : assignedZone}
-                                </span>
-                            </div>
-
-                            <div className="detail-item">
-                                <span className="label">{t("VENDOR_NAME") || "Vendor Name"}</span>
-                                <span className="value">{vendorName}</span>
-                            </div>
+                    {/* Top Row: Mobile, Email, and Download eKYC Data */}
+                    <div className="details-top-row">
+                        <div className="detail-item">
+                            <span className="label">{t("MOBILE")}</span>
+                            <span className="value">{mobileNumber}</span>
                         </div>
-                    </div>
 
-                    {/* Right side download card */}
-                    <div className="details-right">
+                        <div className="detail-item">
+                            <span className="label">{t("EMAIL")}</span>
+                            <span className="value">{email}</span>
+                        </div>
+
                         <div className="download-card">
-                            <h4>{t("DOWNLOAD_EKYC_DATA") || "Download eKYC Data"}</h4>
-                            <p>
-                                {t("DOWNLOAD_EKYC_DATA_DESC") ||
-                                    "Export the complete eKYC verification records for your assigned jurisdiction into Excel format."}
-                            </p>
+                            <div>
+                                <h4>{t("DOWNLOAD_EKYC_DATA") || "Download eKYC Data"}</h4>
+                                <p>
+                                    {t("DOWNLOAD_EKYC_DATA_DESC") ||
+                                        "Export the complete eKYC verification records for your assigned jurisdiction into Excel format."}
+                                </p>
+                            </div>
                             <div className="report-download" ref={reportMenuRef}>
                                 <button
                                     className="download-excel-btn"
@@ -825,6 +792,39 @@ const SupervisorDetailsCard = () => {
                             </div>
                         </div>
                     </div>
+
+                    {/* Bottom Row: Remaining Details */}
+                    <div className="details-grid-row">
+                        <div className="detail-item">
+                            <span className="label">{t("GENDER")}</span>
+                            <span className="value">{gender}</span>
+                        </div>
+
+                        <div className="detail-item">
+                            <span className="label">{t("STATUS")}</span>
+                            <span className="value">{status}</span>
+                        </div>
+
+                        <div className="detail-item">
+                            <span className="label">{t("ASSIGNED_ZONE") || "Assigned Zone"}</span>
+                            <span className="value">
+                                {assignedZone && assignedZone !== "N/A"
+                                    ? (
+                                        <div className="selected-zones" style={{ marginTop: "4px" }}>
+                                            <span className="selected-zone-chip">
+                                                {t(assignedZone.trim().toUpperCase()) || assignedZone}
+                                            </span>
+                                        </div>
+                                    )
+                                    : assignedZone}
+                            </span>
+                        </div>
+
+                        <div className="detail-item">
+                            <span className="label">{t("VENDOR_NAME") || "Vendor Name"}</span>
+                            <span className="value">{vendorName}</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -833,6 +833,7 @@ const SupervisorDetailsCard = () => {
                     t={t}
                     tableTitle={t("CONNECTED_SURVEYORS") || "Connected Surveyors"}
                     tableClass="ekycTable"
+                    isTableScrollable={true}
                     data={paginatedSurveyors}
                     columns={surveyorColumns}
                     isLoading={isProgressLoading}
