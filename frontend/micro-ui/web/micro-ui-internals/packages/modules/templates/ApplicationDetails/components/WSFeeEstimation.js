@@ -239,17 +239,7 @@ const WSFeeEstimation = ({ wsAdditionalDetails, workflowDetails }) => {
             </div>
           </StatusTable>
         )}
-        {wsAdditionalDetails?.additionalDetails?.isAdhocRebate ? (
-          <div
-            onClick={(e) => {
-              showPopUp(true);
-            }}
-          >
-            <span className="add-details-link hover-button" style={{ cursor: "pointer", color: "#a82227" }}>
-              {t("WS_PAYMENT_ADD_REBATE_PENALTY")}
-            </span>
-          </div>
-        ) : null}
+
         {popup && (
           <Modal
             headerBarMain={<Heading label={t("PT_ADD_REBATE_PENALITY")} />}

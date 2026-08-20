@@ -310,7 +310,7 @@ const WSApplicationDetails = () => {
   sessionStorage.setItem("ApplicationNoState", applicationNobyData);
   return (
     <React.Fragment>
-      <div className={"employee-main-application-details"} style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
+      <div className={"employee-main-application-details"} >
         {/* Left Column: Workflow Timeline */}
         <div className={`workflow-timeline-wrapper no-scrollbar`} style={{ flex: "1 1 280px", maxWidth: "400px", minWidth: "240px" }}>
           <Card>
