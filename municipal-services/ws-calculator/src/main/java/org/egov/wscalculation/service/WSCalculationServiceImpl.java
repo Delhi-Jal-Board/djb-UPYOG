@@ -104,7 +104,7 @@ public class WSCalculationServiceImpl implements WSCalculationService {
 			// Set connectionRequest to true for disconnection so it binds to the connection number,
 			// but it will be routed to the WS.DISCONNECTION business service in DemandService.
 			connectionRequest = request.getIsDisconnectionRequest();
-			masterMap = masterDataService.loadMasterData(request.getRequestInfo(),
+			masterMap = masterDataService.loadExemptionMaster(request.getRequestInfo(),
 					request.getCalculationCriteria().get(0).getTenantId());
 			calculations = getCalculations(request, masterMap);
 		} else if (request.getIsconnectionCalculation()) {
@@ -147,7 +147,12 @@ public class WSCalculationServiceImpl implements WSCalculationService {
 		Map<String, Object> masterData = masterDataService.loadExemptionMaster(request.getRequestInfo(),
 				request.getCalculationCriteria().get(0).getTenantId());
 		log.info("MDMS(getMasterMap) loaded keys in  getEstimation = {}", masterData.keySet());
-		List<Calculation> calculations = getFeeCalculation(request, masterData);
+		List<Calculation> calculations;
+		if (request.getIsDisconnectionRequest() != null && request.getIsDisconnectionRequest()) {
+			calculations = getCalculations(request, masterData);
+		} else {
+			calculations = getFeeCalculation(request, masterData);
+		}
 		unsetWaterConnection(calculations);
 		return calculations;
 	}
@@ -251,11 +256,11 @@ public class WSCalculationServiceImpl implements WSCalculationService {
 								for (Object obj : feeSlab) {
 									Map<String, Object> feeObj = mapper.convertValue(obj, Map.class);
 									String feeComponent = feeObj.get("feeComponent") != null ? feeObj.get("feeComponent").toString() : "";
-									if (WSCalculationConstant.TEMPORARY_DISCONNECTION_FEE_CONST.equalsIgnoreCase(feeComponent) && feeObj.get("amount") != null) {
+									if ((WSCalculationConstant.TEMPORARY_DISCONNECTION_FEE_CONST.equalsIgnoreCase(feeComponent) || "temporaryDisconnectionFee".equalsIgnoreCase(feeComponent)) && feeObj.get("amount") != null) {
 										temporaryFee = new BigDecimal(feeObj.get("amount").toString());
-									} else if (WSCalculationConstant.NON_PAYMENT_DISCONNECTION_FEE_CONST.equalsIgnoreCase(feeComponent) && feeObj.get("amount") != null) {
+									} else if ((WSCalculationConstant.NON_PAYMENT_DISCONNECTION_FEE_CONST.equalsIgnoreCase(feeComponent) || "nonPaymentDisconnectionFee".equalsIgnoreCase(feeComponent)) && feeObj.get("amount") != null) {
 										nonPaymentFee = new BigDecimal(feeObj.get("amount").toString());
-									} else if (WSCalculationConstant.PERMANENT_DISCONNECTION_FEE_CONST.equalsIgnoreCase(feeComponent) && feeObj.get("amount") != null) {
+									} else if ((WSCalculationConstant.PERMANENT_DISCONNECTION_FEE_CONST.equalsIgnoreCase(feeComponent) || "permanentDisconnectionFee".equalsIgnoreCase(feeComponent)) && feeObj.get("amount") != null) {
 										permanentFee = new BigDecimal(feeObj.get("amount").toString());
 									}
 								}
