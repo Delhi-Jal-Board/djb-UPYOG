@@ -459,14 +459,12 @@ const MutationApplication = () => {
 
   return (
     <React.Fragment>
-      <div className="employee-form-section-wrapper" style={{ display: "flex", flexWrap: "wrap", gap: "16px", alignItems: "flex-start" }}>
+      <div className="employee-form-section-wrapper">
         {currentStep !== 6 && !isMobile && (
-          <div style={{ flexShrink: 0, width: "100%", maxWidth: "220px" }}>
-            <VerticalTimeline config={timelineConfig} currentActiveIndex={currentStep - 1} showFinalStep={false} onSelect={handleTimelineSelect} />
-          </div>
+          <VerticalTimeline config={timelineConfig} currentActiveIndex={currentStep - 1} showFinalStep={false} onSelect={handleTimelineSelect} />
         )}
 
-        <div style={{ flex: "1 1 300px", minWidth: 0 }}>
+        <div style={{ flex: "1", overflowY: "auto", minWidth: 0 }}>
           {currentStep === 1 && (
             <Step1_SearchConnection
               t={t}
