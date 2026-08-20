@@ -553,54 +553,26 @@ const SurveyorDetailsDashboard = () => {
       {/* Details */}
       <div className="ekyc-dashboard-section">
         <div className="ekyc-details-wrapper">
-          {/* Left side details */}
-          <div className="details-left">
-            <div className="details-grid">
-              <div className="detail-item">
-                <span className="label">{t("MOBILE")}</span>
-                <span className="value">{surveyor?.owner?.mobileNumber || surveyor?.mobileNo || "N/A"}</span>
-              </div>
-
-              <div className="detail-item">
-                <span className="label">{t("EMAIL")}</span>
-                <span className="value">{surveyor?.owner?.emailId || "N/A"}</span>
-              </div>
-
-              <div className="detail-item">
-                <span className="label">{t("GENDER")}</span>
-                <span className="value">{surveyor?.owner?.gender || "N/A"}</span>
-              </div>
-
-              <div className="detail-item">
-                <span className="label">{t("STATUS")}</span>
-                <span className="value">{surveyor?.status || "N/A"}</span>
-              </div>
-
-              {/* <div className="detail-item">
-                <span className="label">{t("SERVICE_TYPE")}</span>
-                <span className="value">{surveyor?.additionalDetails?.serviceType || "N/A"}</span>
-              </div> */}
-
-              <div className="detail-item">
-                <span className="label">{t("VENDOR_NAME") || "Vendor Name"}</span>
-                <span className="value">{vendorName}</span>
-              </div>
-
-              <div className="detail-item">
-                <span className="label">{t("SUPERVISOR_NAME") || "Supervisor Name"}</span>
-                <span className="value">{supervisorName}</span>
-              </div>
+          {/* Top Row: Mobile, Email, and Download eKYC Data */}
+          <div className="details-top-row">
+            <div className="detail-item">
+              <span className="label">{t("MOBILE")}</span>
+              <span className="value">{surveyor?.owner?.mobileNumber || surveyor?.mobileNo || "N/A"}</span>
             </div>
-          </div>
 
-          {/* Right side download card */}
-          <div className="details-right">
+            <div className="detail-item">
+              <span className="label">{t("EMAIL")}</span>
+              <span className="value">{surveyor?.owner?.emailId || "N/A"}</span>
+            </div>
+
             <div className="download-card">
-              <h4>{t("DOWNLOAD_EKYC_DATA") || "Download eKYC Data"}</h4>
-              <p>
-                {t("DOWNLOAD_EKYC_DATA_DESC") ||
-                  "Export the complete eKYC verification records for your assigned jurisdiction into Excel format."}
-              </p>
+              <div>
+                <h4>{t("DOWNLOAD_EKYC_DATA") || "Download eKYC Data"}</h4>
+                <p>
+                  {t("DOWNLOAD_EKYC_DATA_DESC") ||
+                    "Export the complete eKYC verification records for your assigned jurisdiction into Excel format."}
+                </p>
+              </div>
               <div className="report-download" ref={reportMenuRef}>
                 <button
                   className="download-excel-btn"
@@ -675,6 +647,29 @@ const SurveyorDetailsDashboard = () => {
               </div>
             </div>
           </div>
+
+          {/* Bottom Row: Remaining Details */}
+          <div className="details-grid-row">
+            <div className="detail-item">
+              <span className="label">{t("GENDER")}</span>
+              <span className="value">{surveyor?.owner?.gender || "N/A"}</span>
+            </div>
+
+            <div className="detail-item">
+              <span className="label">{t("STATUS")}</span>
+              <span className="value">{surveyor?.status || "N/A"}</span>
+            </div>
+
+            <div className="detail-item">
+              <span className="label">{t("VENDOR_NAME") || "Vendor Name"}</span>
+              <span className="value">{vendorName}</span>
+            </div>
+
+            <div className="detail-item">
+              <span className="label">{t("SUPERVISOR_NAME") || "Supervisor Name"}</span>
+              <span className="value">{supervisorName}</span>
+            </div>
+          </div>
         </div>
       </div>
       <Card className="dashboard-card">
@@ -682,6 +677,7 @@ const SurveyorDetailsDashboard = () => {
           t={t}
           tableTitle={t("ASSIGNED_KNOS")}
           tableClass="ekycTable"
+          isTableScrollable={true}
           data={dashboardData?.dashboardInfo?.consumerList || []}
           columns={knoColumns}
           isLoading={isDashboardLoading}

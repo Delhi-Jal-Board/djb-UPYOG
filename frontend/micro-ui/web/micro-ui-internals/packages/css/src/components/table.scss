@@ -28,6 +28,36 @@
   overflow-y: scroll;
   display: flex;
   flex-direction: column;
+
+  &.is-table-scrollable {
+    overflow: hidden;
+
+    .table-content-wrapper {
+      max-height: 480px;
+      overflow-y: auto;
+      position: relative;
+
+      .table-content {
+        thead {
+          position: sticky;
+          top: 0;
+          z-index: 10;
+
+          .tr {
+            .th-s-no,
+            .th {
+              position: sticky;
+              top: 0;
+              z-index: 10;
+              background: #f8fafc;
+              box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+            }
+          }
+        }
+      }
+    }
+  }
+
   .table-topbar {
     display: flex;
     align-items: center;
