@@ -18,7 +18,7 @@ const getOwnerDetails = (application, t) => {
         { title: t("WS_OWNER_S_MOBILE_NUM_LABEL"), value: application?.tradeLicenseDetail?.owners[0]?.mobileNumber || t("CS_NA") },
         { title: t("WS_NEW_OWNER_DETAILS_GENDER_LABEL"), value: t(application?.tradeLicenseDetail?.owners[0]?.gender) || t("CS_NA") },
         { title: t("WS_NEW_OWNER_DETAILS_EMAIL_LABEL"), value: application?.tradeLicenseDetail?.owners[0]?.emailId || t("CS_NA") },
-        { title: t("WS_OWNER_SPECIAL_CATEGORY"), value: application?.tradeLicenseDetail?.owners[0]?.ownerType ? t(`COMMON_MASTERS_OWNERTYPE_${application?.tradeLicenseDetail?.owners[0]?.ownerType}`) : t("CS_NA") },
+        // { title: t("WS_OWNER_SPECIAL_CATEGORY"), value: application?.tradeLicenseDetail?.owners[0]?.ownerType ? t(`COMMON_MASTERS_OWNERTYPE_${application?.tradeLicenseDetail?.owners[0]?.ownerType}`) : t("CS_NA") },
         { title: t("WS_NEW_OWNER_DETAILS_ADDR_LABEL"), value: application?.tradeLicenseDetail?.owners[0]?.permanentAddress || t("CS_NA") },
       ],
     };
@@ -30,7 +30,7 @@ const getOwnerDetails = (application, t) => {
         { title: t("CORE_COMMON_MOBILE_NUMBER"), value: owner?.mobileNumber || t("CS_NA") },
         { title: t("WS_OWN_DETAIL_GENDER_LABEL"), value: t(owner?.gender) || t("CS_NA") },
         { title: t("CS_PROFILE_EMAIL"), value: owner?.emailId || t("CS_NA") },
-        { title: t("WS_OWNER_SPECIAL_CATEGORY"), value: owner?.ownerType ? t(`COMMON_MASTERS_OWNERTYPE_${owner?.ownerType}`) : t("CS_NA") },
+        // { title: t("WS_OWNER_SPECIAL_CATEGORY"), value: owner?.ownerType ? t(`COMMON_MASTERS_OWNERTYPE_${owner?.ownerType}`) : t("CS_NA") },
         { title: t("WS_NEW_OWNER_DETAILS_ADDR_LABEL"), value: owner?.permanentAddress || t("CS_NA") },
       ];
       values.push(...indOwner);

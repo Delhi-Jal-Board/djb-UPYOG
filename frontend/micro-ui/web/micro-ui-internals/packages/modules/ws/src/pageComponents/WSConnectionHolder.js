@@ -279,7 +279,7 @@ const reversedOwners= Array.isArray(formData?.cpt?.details?.owners) ? formData?.
                 title: t("WS_ADDR_ERROR_MESSAGE"),
               })}
             />
-            <CardLabel>{`${t("WS_OWN_SPECIAL_CAT_LABEL")}*`}</CardLabel>
+            {/* <CardLabel>{`${t("WS_OWN_SPECIAL_CAT_LABEL")}*`}</CardLabel>
             <Dropdown
                 className="form-field"
                 selected={ownerType}
@@ -290,7 +290,7 @@ const reversedOwners= Array.isArray(formData?.cpt?.details?.owners) ? formData?.
                 select={setTypeOfOwner}
                 optionKey="i18nKey"
                 t={t}
-            />
+            /> */}
             <div>
             <CardLabel>{`${t("WS_EMAIL_ID")}`}</CardLabel>
             <TextInput
