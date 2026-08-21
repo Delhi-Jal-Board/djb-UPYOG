@@ -46,10 +46,14 @@ public class FillingPointServiceImpl implements FillingPointService {
     @Autowired
     private FillingPointVendorMapRepository vendorMapRepository;
 
+    @Autowired
+    private org.upyog.rs.validator.FillingPointValidator validator;
+
 
     @Override
     public List<FillingPoint> create(FillingPointRequest request) {
 
+        validator.validateCreate(request);
         enrichmentService.enrichCreateFillingPointRequest(request);
 
         for (FillingPoint fp : request.getFillingPoints()) {
@@ -94,6 +98,7 @@ public class FillingPointServiceImpl implements FillingPointService {
 
         request.setFillingPoints(Collections.singletonList(fp));
 
+        validator.validateCreate(request);
         enrichmentService.enrichCreateFillingPointRequest(request);
 
         FillingPointKafkaRequest kafkaRequest = new FillingPointKafkaRequest();
@@ -137,6 +142,7 @@ public class FillingPointServiceImpl implements FillingPointService {
     @Override
     public List<FillingPoint> update(FillingPointRequest request) {
 
+        validator.validateUpdate(request);
         enrichmentService.enrichUpdateFillingPointRequest(request);
 
         for (FillingPoint fp : request.getFillingPoints()) {

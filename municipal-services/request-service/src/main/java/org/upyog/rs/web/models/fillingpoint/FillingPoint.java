@@ -22,12 +22,14 @@ public class FillingPoint {
     private String fillingPointName;
 
     @JsonProperty("emergencyName")
+    @JsonInclude(JsonInclude.Include.ALWAYS)
     private String emergencyName;
 
     @JsonProperty("eeName")
     private String eeName;
 
     @JsonProperty("eeEmail")
+    @JsonInclude(JsonInclude.Include.ALWAYS)
     private String eeEmail;
 
     @JsonProperty("eeMobile")
@@ -37,6 +39,7 @@ public class FillingPoint {
     private String aeName;
 
     @JsonProperty("aeEmail")
+    @JsonInclude(JsonInclude.Include.ALWAYS)
     private String aeEmail;
 
     @JsonProperty("aeMobile")
@@ -46,6 +49,7 @@ public class FillingPoint {
     private String jeName;
 
     @JsonProperty("jeEmail")
+    @JsonInclude(JsonInclude.Include.ALWAYS)
     private String jeEmail;
 
     @JsonProperty("jeMobile")
