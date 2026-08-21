@@ -128,7 +128,7 @@ const AddFillingPointMetaData = ({
             <LabelFieldPair>
               <CardLabel className="card-label-smaller">
                 {t(input.label)}
-                {input.isMandatory ? " *" : ""}
+                {input.isMandatory ? <span className="check-page-link-button" style={{ color: "red", fontWeight: "bold" }}> * </span> : ""}
               </CardLabel>
 
               <div style={{ display: "flex" }}>
