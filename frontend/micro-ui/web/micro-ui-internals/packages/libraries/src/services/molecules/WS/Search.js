@@ -654,11 +654,29 @@ export const WSSearch = {
 
     // Group documents by category for structured display
     const allDocs = wsDataDetails?.documents || [];
-    const identityDoc = allDocs.find((d) => d?.documentType?.includes("IDENTITYPROOF") || d?.documentType?.includes("IDENTITY") || ["AADHAAR", "PAN_CARD", "PASSPORT", "VOTER_ID_CARD", "DRIVING_LICENSE", "ANY_OTHER_GOVT_ID"].includes(d?.documentType));
-    const ownershipDoc = allDocs.find(
+    let identityDoc = allDocs.find((d) => d?.documentType?.includes("IDENTITYPROOF") || d?.documentType?.includes("IDENTITY") || ["AADHAAR", "PAN_CARD", "PASSPORT", "VOTER_ID_CARD", "DRIVING_LICENSE", "ANY_OTHER_GOVT_ID"].includes(d?.documentType));
+    let ownershipDoc = allDocs.find(
       (d) => d?.documentType?.includes("ADDRESSPROOF") || d?.documentType?.includes("OWNERSHIP") || d?.documentType?.includes("PROPERTY") || ["REGISTERED_SALE_DEED", "CONVEYANCE_DEED", "GIFT_DEED", "WILL", "RELINQUISHMENT_DEED", "MUTATION_CERTIFICATE", "GPA", "ALLOTMENT_LETTER", "ELECTRICITY_BILL", "WATER_BILL"].includes(d?.documentType)
     );
     const applicantPhoto = allDocs.find((d) => d?.documentType?.includes("APPLICANTPHOTO") || d?.documentType?.includes("PHOTO"));
+
+    const isMutationApp = wsDataDetails?.applicationType?.includes("MUTATION");
+    if (isMutationApp) {
+      if (wsDataDetails?.additionalDetails?.identityProofDocumentId || wsDataDetails?.additionalDetails?.identityProofDocumentName || wsDataDetails?.additionalDetails?.identityProofDocumentNumber) {
+        identityDoc = {
+          ...(identityDoc || {}),
+          documentType: wsDataDetails?.additionalDetails?.identityProofDocumentName || identityDoc?.documentType || "IDENTITY_PROOF",
+          documentNumber: wsDataDetails?.additionalDetails?.identityProofDocumentNumber || wsDataDetails?.additionalDetails?.identityProofNumber || identityDoc?.documentNumber || "NA",
+          fileStoreId: wsDataDetails?.additionalDetails?.identityProofDocumentId || identityDoc?.fileStoreId
+        };
+      }
+      if (wsDataDetails?.additionalDetails?.saleDeedDocumentId) {
+        ownershipDoc = {
+          ...(ownershipDoc || {}),
+          fileStoreId: wsDataDetails?.additionalDetails?.saleDeedDocumentId || ownershipDoc?.fileStoreId
+        };
+      }
+    }
 
     const unmappedDocs = allDocs.filter(d => 
         d?.id !== identityDoc?.id && 
@@ -687,29 +705,29 @@ export const WSSearch = {
           {
             title: "",
             values: [
-              identityDoc
+              (isMutationApp ? identityDoc?.fileStoreId : identityDoc)
                 ? {
                   title: "WS_IDENTITY_PROOF",
                   categoryLabel: "Proof of Identity",
                   documentType: identityDoc?.documentType,
-                  documentUid: wsDataDetails?.additionalDetails?.identityProofNumber || identityDoc?.documentNumber || "NA",
+                  documentUid: isMutationApp ? identityDoc?.documentNumber : (wsDataDetails?.additionalDetails?.identityProofNumber || identityDoc?.documentNumber || "NA"),
                   fileStoreId: identityDoc?.fileStoreId,
                   numberLabel: "Identity Proof Document Number",
                   originalDoc: identityDoc,
                 }
                 : null,
-              ownershipDoc
+              (isMutationApp ? ownershipDoc?.fileStoreId : ownershipDoc)
                 ? {
-                  title: "WS_OWNERSHIP_PROOF",
-                  categoryLabel: "Proof of Ownership",
-                  documentType: ownershipDoc?.documentType,
-                  documentUid: wsDataDetails?.additionalDetails?.ownershipDocumentNumber || ownershipDoc?.documentNumber || "NA",
+                  title: isMutationApp ? "WS_REASON_BASED_DOCUMENT" : "WS_OWNERSHIP_PROOF",
+                  categoryLabel: isMutationApp ? "Supporting Document" : "Proof of Ownership",
+                  documentType: ownershipDoc?.documentType || (isMutationApp ? "SUPPORTING_DOCUMENT" : ""),
+                  documentUid: isMutationApp ? "NA" : (wsDataDetails?.additionalDetails?.ownershipDocumentNumber || ownershipDoc?.documentNumber || "NA"),
                   fileStoreId: ownershipDoc?.fileStoreId,
-                  numberLabel: "Ownership Proof Document Number",
+                  numberLabel: isMutationApp ? "" : "Ownership Proof Document Number",
                   originalDoc: ownershipDoc,
                 }
                 : null,
-              ...otherDocsValues,
+              ...(isMutationApp ? [] : otherDocsValues),
               applicantPhoto
                 ? {
                   title: "WS_APPLICANT_PHOTO",

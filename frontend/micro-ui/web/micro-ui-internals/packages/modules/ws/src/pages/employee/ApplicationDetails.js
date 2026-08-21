@@ -191,7 +191,10 @@ const ApplicationDetails = () => {
       };
     }
     if (action?.action === "RESUBMIT_APPLICATION") {
-      let pathName = `/digit-ui/employee/ws/edit-application?applicationNumber=${applicationNumber}&service=${serviceType}&propertyId=${applicationDetails?.propertyDetails?.propertyId}`;
+      const isMutation = applicationDetails?.applicationData?.applicationType?.includes("MUTATION");
+      let pathName = isMutation
+        ? `/digit-ui/employee/ws/mutation-application?applicationNumber=${applicationNumber}&tenantId=${tenantId}&service=${serviceType}&propertyId=${applicationDetails?.propertyDetails?.propertyId}`
+        : `/digit-ui/employee/ws/edit-application?applicationNumber=${applicationNumber}&service=${serviceType}&propertyId=${applicationDetails?.propertyDetails?.propertyId}`;
 
       const userConfig = servicesMasterData?.["ws-services-masters"]?.WSEditApplicationByConfigUser || [];
       const editApplicationUserRole = userConfig?.[0]?.roles || [];
@@ -204,7 +207,7 @@ const ApplicationDetails = () => {
         else return true;
       });
 
-      if (isFieldInspector && appStatus === mdmsApplicationStatus) {
+      if (!isMutation && isFieldInspector && appStatus === mdmsApplicationStatus) {
         pathName = `/digit-ui/employee/ws/edit-application-by-config?applicationNumber=${applicationNumber}&service=${serviceType}&propertyId=${applicationDetails?.propertyDetails?.propertyId}`;
       }
 
@@ -241,7 +244,10 @@ const ApplicationDetails = () => {
 
   workflowDetails?.data?.actionState?.nextActions?.forEach((action) => {
     if (action?.action === "EDIT") {
-      let pathName = `/digit-ui/employee/ws/edit-application?applicationNumber=${applicationNumber}&service=${serviceType}&propertyId=${applicationDetails?.propertyDetails?.propertyId}`;
+      const isMutation = applicationDetails?.applicationData?.applicationType?.includes("MUTATION");
+      let pathName = isMutation
+        ? `/digit-ui/employee/ws/mutation-application?applicationNumber=${applicationNumber}&tenantId=${tenantId}&service=${serviceType}&propertyId=${applicationDetails?.propertyDetails?.propertyId}`
+        : `/digit-ui/employee/ws/edit-application?applicationNumber=${applicationNumber}&service=${serviceType}&propertyId=${applicationDetails?.propertyDetails?.propertyId}`;
 
       const userConfig = servicesMasterData?.["ws-services-masters"]?.WSEditApplicationByConfigUser || [];
       const editApplicationUserRole = userConfig?.[0]?.roles || [];
@@ -254,7 +260,7 @@ const ApplicationDetails = () => {
         else return true;
       });
 
-      if (isFieldInspector && appStatus === mdmsApplicationStatus) {
+      if (!isMutation && isFieldInspector && appStatus === mdmsApplicationStatus) {
         pathName = `/digit-ui/employee/ws/edit-application-by-config?applicationNumber=${applicationNumber}&service=${serviceType}&propertyId=${applicationDetails?.propertyDetails?.propertyId}`;
       }
 

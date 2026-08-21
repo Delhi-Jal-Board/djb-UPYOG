@@ -57,7 +57,7 @@ const Step5_Submission = ({ applicationNumber, serviceType, t }) => {
       }}>
         <div>
           <h2 style={{ color: "#28a745", fontSize: "18px", fontWeight: "bold", margin: "0 0 4px", display: "flex", alignItems: "center", flexWrap: "wrap", gap: "6px" }}>
-            <span>✅</span> Your application has been submitted successfully!
+            <span>✅</span> Your application has been submitted successfully to the respective Zonal Officer !
           </h2>
           <div style={{ color: "#666", marginTop: "4px", fontSize: "14px", wordBreak: "break-all" }}>
             Your SRN Reference No. is: <strong style={{ color: "#00497e" }}>{applicationNumber}</strong>
