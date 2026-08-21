@@ -258,7 +258,7 @@ const OLDApplication = () => {
       )
     ) {
       console.warn("[WS] onSubmit EXIT: formState errors blocking submit", formStateErros);
-      setShowToast({ warning: true, message: "PLEASE_FILL_MANDATORY_DETAILS" });
+      setShowToast({ key: "error", message: "PLEASE_FILL_MANDATORY_DETAILS" });
       return;
     }
 
@@ -589,6 +589,7 @@ const OLDApplication = () => {
           noCard={true}
           noBreakLine={true}
           cardFormWrapperClassName="new-application-card"
+          isDisabled={!sessionFormData?.declarationData?.agree}
         />
         {showToast && (
           <Toast

@@ -282,7 +282,7 @@ const GetConnectionDetails = () => {
   };
   return (
     <Fragment>
-        <div style={{ position: "relative" }}>
+        <div style={{ position: "relative", width: "100%", height: "100%", overflowY:"scroll" }}>
           {dowloadOptions && dowloadOptions.length > 0 && (
             <div style={{ position: "absolute", right: "24px", zIndex: 11 }}>
               <MultiLink

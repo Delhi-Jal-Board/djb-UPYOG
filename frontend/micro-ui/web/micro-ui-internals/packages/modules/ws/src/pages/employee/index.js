@@ -639,7 +639,7 @@ const App = ({ path }) => {
                 <LayoutWrapper layoutClass="action"><WSApplicationDetails/></LayoutWrapper>
               )} />
               <PrivateRoute path={`${path}/modify-details`} component={WSModifyApplicationDetails} />
-              <PrivateRoute path={`${path}/connection-details`} component={WSGetConnectionDetails} />
+              <PrivateRoute path={`${path}/connection-details`} component={()=>(<LayoutWrapper layoutClass="action"><WSGetConnectionDetails/></LayoutWrapper>)} />
               <PrivateRoute path={`${path}/bill-amendment`} component={() => <WSApplicationBillAmendment {...{ path }} />} />
               <PrivateRoute path={`${path}/generate-note-bill-amendment`} component={() => <WSApplicationDetailsBillAmendment {...{ path }} />} />
               <PrivateRoute path={`${path}/response`} component={() => <Response {...{ path }} />} />
