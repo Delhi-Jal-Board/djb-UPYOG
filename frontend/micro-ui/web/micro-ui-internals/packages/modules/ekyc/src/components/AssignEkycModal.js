@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import { Modal, Close, Table, Toast } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 const AssignEkycModal = ({ surveyor, isReassign, closeModal, refetchDashboard, tenantId: propsTenantId }) => {
@@ -311,13 +311,6 @@ const AssignEkycModal = ({ surveyor, isReassign, closeModal, refetchDashboard, t
     return allData.slice(start, start + pageSize);
   }, [allData, currentPage, pageSize]);
 
-  useEffect(() => {
-    if (filters.mrkey && allData?.length > 0) {
-      const mrKnos = allData.map((item) => item.kno).filter(Boolean);
-      setSelectedKnos(mrKnos);
-    }
-  }, [filters.mrkey, allData]);
-
   const handleAssign = () => {
     const payload = {
       tenantId: tenantId,
@@ -334,12 +327,18 @@ const AssignEkycModal = ({ surveyor, isReassign, closeModal, refetchDashboard, t
     activeMutation.mutate(payload);
   };
 
-  const handleSelectAll = () => {
-    const currentKnos = paginatedData.map((item) => item.kno);
+  const handleSelect = (kno) => {
+    setSelectedKnos((prev) => (prev.includes(kno) ? prev.filter((item) => item !== kno) : [...prev, kno]));
+  };
 
-    const allSelected = currentKnos.length > 0 && currentKnos.every((kno) => selectedKnos.includes(kno));
+  const handleSelectAll = (e) => {
+    e?.stopPropagation();
+    const allMatchingKnos = allData.map((item) => item.kno).filter(Boolean);
+    if (allMatchingKnos.length === 0) return;
 
-    setSelectedKnos((prev) => (allSelected ? prev.filter((kno) => !currentKnos.includes(kno)) : [...new Set([...prev, ...currentKnos])]));
+    const isAllSelected = allMatchingKnos.length > 0 && allMatchingKnos.every((kno) => selectedKnos.includes(kno));
+
+    setSelectedKnos(isAllSelected ? [] : allMatchingKnos);
   };
 
   const handleFilterChange = (key, value) => {
@@ -347,23 +346,42 @@ const AssignEkycModal = ({ surveyor, isReassign, closeModal, refetchDashboard, t
       ...prev,
       [key]: value,
     }));
+    setCurrentPage(0);
   };
 
   const columns = useMemo(
     () => [
       {
-        Header: () => (
-          <input
-            type="checkbox"
-            checked={paginatedData.length > 0 && paginatedData.every((item) => selectedKnos.includes(item.kno))}
-            onChange={handleSelectAll}
-          />
-        ),
+        Header: () => {
+          const allMatchingKnos = allData.map((item) => item.kno).filter(Boolean);
+          const isAllChecked = allMatchingKnos.length > 0 && allMatchingKnos.every((kno) => selectedKnos.includes(kno));
+          return (
+            <input
+              type="checkbox"
+              checked={isAllChecked}
+              onChange={(e) => {
+                e.stopPropagation();
+                handleSelectAll(e);
+              }}
+              onClick={(e) => e.stopPropagation()}
+            />
+          );
+        },
         id: "selection",
         Cell: ({ row }) => {
           const kno = row.original.kno;
 
-          return <input type="checkbox" checked={selectedKnos.includes(kno)} onChange={() => handleSelect(kno)} />;
+          return (
+            <input
+              type="checkbox"
+              checked={selectedKnos.includes(kno)}
+              onChange={(e) => {
+                e.stopPropagation();
+                handleSelect(kno);
+              }}
+              onClick={(e) => e.stopPropagation()}
+            />
+          );
         },
       },
       {
@@ -400,12 +418,8 @@ const AssignEkycModal = ({ surveyor, isReassign, closeModal, refetchDashboard, t
       },
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [selectedKnos, paginatedData]
+    [selectedKnos, paginatedData, allData]
   );
-
-  const handleSelect = (kno) => {
-    setSelectedKnos((prev) => (prev.includes(kno) ? prev.filter((item) => item !== kno) : [...prev, kno]));
-  };
 
   return (
     <Modal
