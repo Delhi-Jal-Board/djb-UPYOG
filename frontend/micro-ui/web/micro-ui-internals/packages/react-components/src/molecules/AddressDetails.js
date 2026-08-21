@@ -846,6 +846,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
                   if (val?.ward) {
                     setBlock(val.ward);
                   }
+                  if (val?.subAreaName) setSubLocality(val.subAreaName);
                 }}
                 option={filteredLocalities}
                 optionCardStyles={{ overflowY: "auto", maxHeight: "300px" }}

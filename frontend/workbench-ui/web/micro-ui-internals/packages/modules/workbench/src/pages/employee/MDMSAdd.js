@@ -79,6 +79,10 @@ const MDMSAdd = ({ FormSession }) => {
   const onSubmit = (data) => {
     const formattedData = Digit.Utils.workbench.getFormattedData(data);
     const onSuccess = (resp) => {
+      if (resp?.error || resp?.ResponseInfo?.status === "FAILED") {
+        setShowErrorToast(`Error :: ${resp?.data?.Errors?.[0]?.code || resp?.message}`);
+        return;
+      }
       setTimeout(()=>{setSessionFormData({})},1500);
       setShowToast(`Success ::  ${ resp?.mdms?.[0]?.id}`);
     };

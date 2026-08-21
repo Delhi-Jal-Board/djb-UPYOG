@@ -1,5 +1,6 @@
 .toast-success,
-.toast-error {
+.toast-error,
+.toast-warning {
   max-width: 480px;
   width: calc(100% - 20px);
   bottom: 100px;
@@ -33,9 +34,14 @@
   @apply bg-error-gradient;
 }
 
+.toast-warning {
+  background-color: #FBC02D;
+}
+
 @screen dt {
   .toast-success,
-  .toast-error {
+  .toast-error,
+  .toast-warning {
     width: 100%;
     left: calc(50% - 240px);
   }
