@@ -18,8 +18,9 @@ public class SurveyorQueryBuilder {
     private static final String QUERY =
             "SELECT count(*) OVER() AS full_count,"
                     + " surveyor.*,"
-                    + " sup.name AS supervisor_name,"
-                    + " v.name   AS vendor_name"
+                    + " sup.name             AS supervisor_name,"
+                    + " sup.assigned_zone_id AS zone_id,"
+                    + " v.name               AS vendor_name"
                     + " FROM eg_surveyor surveyor"
                     + " LEFT JOIN eg_supervisor sup ON sup.id = surveyor.supervisor_id"
                     + " LEFT JOIN eg_vendor     v   ON v.id   = surveyor.vendor_id";

@@ -50,6 +50,10 @@ public class SurveyorRowMapper implements ResultSetExtractor<List<Surveyor>> {
             // Joined fields from eg_supervisor and eg_vendor
             String supervisorName = rs.getString("supervisor_name");
             String vendorName     = rs.getString("vendor_name");
+            // Surveyor has no zone column of its own — the surveyor's zone
+            // is their supervisor's assigned_zone_id (already joined in
+            // SurveyorQueryBuilder as zone_id). Raw code, e.g. "ASHOK_VIHAR_ZRO".
+            String zoneId         = rs.getString("zone_id");
             Object additionalDetails = getAdditionalDetail("additionaldetails", rs);
             this.setFullCount(rs.getInt("full_count"));
 
@@ -70,6 +74,7 @@ public class SurveyorRowMapper implements ResultSetExtractor<List<Surveyor>> {
                         .additionalDetails(additionalDetails)
                         .supervisorName(supervisorName)
                         .vendorName(vendorName)
+                        .zoneId(zoneId)
                         .build();
                 surveyorMap.put(id, current);
             }
