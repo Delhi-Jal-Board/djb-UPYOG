@@ -29,8 +29,14 @@ const App = ({ path }) => {
   const userMobileNumber = user?.info?.userName?.match(/^[0-9]{10}$/) ? user?.info?.userName : user?.info?.mobileNumber;
   const isMyApps = location.pathname.includes("/my-applications");
 
-  const { data: wsData } = window.Digit.Hooks.ws.useMyApplicationSearch({ filters: { tenantId, mobileNumber: userMobileNumber } }, { filters: { tenantId, mobileNumber: userMobileNumber }, enabled: isMyApps });
-  const { data: swData } = window.Digit.Hooks.ws.useMyApplicationSearch({ filters: { tenantId, mobileNumber: userMobileNumber }, BusinessService: "SW" }, { filters: { tenantId, mobileNumber: userMobileNumber }, enabled: isMyApps });
+  const { data: wsData } = window.Digit.Hooks.ws.useMyApplicationSearch(
+    { filters: { tenantId, mobileNumber: userMobileNumber } },
+    { filters: { tenantId, mobileNumber: userMobileNumber }, enabled: isMyApps }
+  );
+  const { data: swData } = window.Digit.Hooks.ws.useMyApplicationSearch(
+    { filters: { tenantId, mobileNumber: userMobileNumber }, BusinessService: "SW" },
+    { filters: { tenantId, mobileNumber: userMobileNumber }, enabled: isMyApps }
+  );
 
   let wsCount = wsData?.WaterConnection?.filter((ob) => ob?.applicationType !== "MODIFY_WATER_CONNECTION")?.length || 0;
   let swCount = swData?.SewerageConnections?.filter((ob) => ob?.applicationType !== "MODIFY_SEWERAGE_CONNECTION")?.length || 0;
@@ -69,7 +75,6 @@ const App = ({ path }) => {
 
     fetchToken();
   }, []);
-
 
   const crumbs = [
     // {
@@ -187,7 +192,14 @@ const App = ({ path }) => {
                 <PrivateRoute path={`${path}/consumption/details`} component={WSCitizenConsumptionDetails} />
                 <PrivateRoute path={`${path}/edit-application/:tenantId`} component={WSCitizenEditApplication} />
                 <PrivateRoute path={`${path}/modify-connection/:tenantId`} component={WSCitizenEditApplication} />
-                <PrivateRoute path={`${path}/old-application`} component={WSOLDApplication} />
+                <PrivateRoute
+                  path={`${path}/old-application`}
+                  component={() => (
+                    <LayoutWrapper layoutClass="action">
+                      <WSOLDApplication />
+                    </LayoutWrapper>
+                  )}
+                />
                 <PrivateRoute path={`${path}/info`} component={WSInfoPage} />
                 <PrivateRoute path={`${path}/ws-response`} component={WSResponse} />
                 <PrivateRoute path={`${path}/mutation-application`} component={WSMutationApplication} />

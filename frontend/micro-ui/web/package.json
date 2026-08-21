@@ -31,7 +31,7 @@
     "@djb25/digit-ui-module-vendor": "1.0.78",
     "@djb25/digit-ui-module-wt": "1.0.80",
     "@djb25/digit-ui-module-asset": "1.0.6",
-    "@djb25/digit-ui-module-ws": "1.0.73",
+    "@djb25/digit-ui-module-ws": "1.0.74",
     "@djb25/digit-ui-module-rwh": "1.0.2",
     "@djb25/digit-ui-module-pt": "1.0.13",
     "babel-loader": "9.1.2",
