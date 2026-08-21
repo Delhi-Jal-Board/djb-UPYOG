@@ -66,7 +66,8 @@ const MutationApplication = () => {
     { enabled: !!editApplicationNumber }
   );
 
-  const isEditFlow = !!editApplicationNumber && workflowData?.action === "SEND_BACK_TO_CITIZEN";
+  const isEmployee = window.location.href.includes("/employee/");
+  const isEditFlow = !!editApplicationNumber && (isEmployee || workflowData?.action === "SEND_BACK_TO_CITIZEN");
 
   // For searching details: use application number if editing, otherwise use authenticated K Number
   const querySearchParam = isEditFlow ? editApplicationNumber : authKNumber;
@@ -142,8 +143,9 @@ const MutationApplication = () => {
 
   useEffect(() => {
     const isCitizen = window.location.href.includes("/citizen/");
+    const isEmployee = window.location.href.includes("/employee/");
 
-    if (isCitizen && isEditFlow && applicationDetails?.applicationData) {
+    if ((isCitizen || isEmployee) && isEditFlow && applicationDetails?.applicationData) {
       const data = applicationDetails.applicationData;
       const holders = data?.connectionHolders || [];
       const primaryHolder = holders.find((h) => h.isPrimaryOwner) || holders[0] || {};
@@ -161,22 +163,35 @@ const MutationApplication = () => {
             d.documentType === "REGISTERED_SALE_DEED" || d.documentType === "SALE_DEED" || d.documentType === "GIFT_DEED" || d.documentType === "WILL"
         );
 
+        const reasonOptions = [
+          { code: "SALE_PURCHASE", i18nKey: "Purchase of Property" },
+          { code: "DEVOLUTION_INHERITANCE", i18nKey: "Devolution/Inheritance" },
+          { code: "OTHER", i18nKey: "Other Reason(Gift Deed, Lease Agreement, etc)" }
+        ];
+        const relationshipOptions = [
+          { code: "BLOOD_RELATION", i18nKey: "Blood Relation (Son / Daughter / Spouse)" },
+          { code: "LEGAL_HEIR", i18nKey: "Legal Heir" },
+          { code: "OTHER", i18nKey: "Other" }
+        ];
+
+        const reasonCode = additionalDetails.reasonForNameChange;
+        const reasonObj = reasonOptions.find(o => o.code === reasonCode) || (reasonCode ? { code: reasonCode, i18nKey: reasonCode } : null);
+
+        const relationCode = additionalDetails.relationshipWithExistingConsumer;
+        const relationObj = relationshipOptions.find(o => o.code === relationCode) || (relationCode ? { code: relationCode, i18nKey: relationCode } : null);
+
         return {
           proposedNewConsumerName: primaryHolder.name || "",
           gender: primaryHolder.gender ? { code: primaryHolder.gender, i18nKey: primaryHolder.gender } : null,
           newOwnerMobileNumber: primaryHolder.mobileNumber || "",
           newOwnerEmailAddress: primaryHolder.emailId || "",
-          reasonForNameChange: additionalDetails.reasonForNameChange
-            ? { code: additionalDetails.reasonForNameChange, i18nKey: additionalDetails.reasonForNameChange }
-            : null,
-          relationshipWithExistingConsumer: additionalDetails.relationshipWithExistingConsumer
-            ? { code: additionalDetails.relationshipWithExistingConsumer, i18nKey: additionalDetails.relationshipWithExistingConsumer }
-            : null,
+          reasonForNameChange: reasonObj,
+          relationshipWithExistingConsumer: relationObj,
 
-          saleDeedDocumentId: mutationDoc?.fileStoreId || additionalDetails.saleDeedDocumentId || "",
-          identityProofDocumentId: identityDoc?.fileStoreId || "",
-          identityProofType: identityDoc?.documentType ? { code: identityDoc.documentType, i18nKey: identityDoc.documentType } : null,
-          documentNumber: additionalDetails.identityProofNumber || identityDoc?.documentUid || "",
+          saleDeedDocumentId: additionalDetails.saleDeedDocumentId || mutationDoc?.fileStoreId || "",
+          identityProofDocumentId: additionalDetails.identityProofDocumentId || identityDoc?.fileStoreId || "",
+          identityProofType: additionalDetails.identityProofDocumentName ? { code: additionalDetails.identityProofDocumentName, i18nKey: additionalDetails.identityProofDocumentName } : identityDoc?.documentType ? { code: identityDoc.documentType, i18nKey: identityDoc.documentType } : null,
+          documentNumber: additionalDetails.identityProofDocumentNumber || additionalDetails.identityProofNumber || identityDoc?.documentUid || "",
         };
       });
     }
@@ -282,6 +297,10 @@ const MutationApplication = () => {
             documentNumber: mutDetails.documentNumber,
             status: "ACTIVE",
           });
+          if (!convertAppData.additionalDetails) convertAppData.additionalDetails = {};
+          convertAppData.additionalDetails.identityProofDocumentNumber = mutDetails.documentNumber || "";
+          convertAppData.additionalDetails.identityProofDocumentName = mutDetails.identityProofType?.code || "IDENTITY_PROOF";
+          convertAppData.additionalDetails.identityProofDocumentId = mutDetails.identityProofDocumentId || "";
         }
       }
 
