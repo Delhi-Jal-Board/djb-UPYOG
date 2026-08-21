@@ -116,4 +116,7 @@ public class Surveyor {
 
     @JsonProperty("vendorName")
     private String vendorName = null;
+
+    @JsonProperty("zoneId")
+    private String zoneId = null;      // raw zone_code from eg_supervisor.assigned_zone_id (via surveyor's supervisor)
 }
