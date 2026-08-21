@@ -106,7 +106,7 @@ const App = ({ path }) => {
     {
       path: "/digit-ui/citizen/ws/my-connections",
       label: t("WS_MYCONNECTIONS_HEADER"),
-      show: location.pathname.includes("/my-connections"),
+      show: location.pathname.includes("/my-connections") || location.pathname.includes("/connection/details"),
     },
     {
       path: "/digit-ui/citizen/ws/my-bills",
@@ -127,6 +127,11 @@ const App = ({ path }) => {
       path: location.pathname,
       label: t("WS_APPLICATION_DETAILS_HEADER"),
       show: location.pathname.includes("/connection/application"),
+    },
+    {
+      path: location.pathname,
+      label: t("WS_COMMON_CONNECTION_DETAIL"),
+      show: location.pathname.includes("/connection/details"),
     },
     {
       path: location.pathname,

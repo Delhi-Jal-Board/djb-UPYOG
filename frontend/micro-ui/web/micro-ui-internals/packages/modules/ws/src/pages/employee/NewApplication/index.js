@@ -2739,7 +2739,6 @@ const NewApplication = () => {
                 <Controller
                   control={control}
                   name="declaration.signatureFile"
-                  rules={{ validate: (value) => !!value || "Signature upload is required." }}
                   render={(props) => (
                     <FileUploadField
                       error={getFieldError("declaration.signatureFile")}
@@ -2748,7 +2747,6 @@ const NewApplication = () => {
                       label="Upload Signature"
                       onDelete={() => clearUploadedFile("declaration.signatureFile", props.onChange)}
                       onUpload={(event) => uploadFile(event, "declaration.signatureFile", props.onChange)}
-                      required
                       value={props.value}
                     />
                   )}
@@ -2965,12 +2963,12 @@ const NewApplication = () => {
         {!previewMode ? (
           <React.Fragment>
             <SubmitBar label="Reset" onSubmit={onReset} style={secondaryButtonStyle} />
-            <SubmitBar disabled={hasPendingUpload} label={hasPendingUpload ? "Uploading..." : "Preview"} onSubmit={handleSubmit(onPreview)} />
+            <SubmitBar disabled={hasPendingUpload || !formValues?.declaration?.agree} label={hasPendingUpload ? "Uploading..." : "Preview"} onSubmit={handleSubmit(onPreview)} />
           </React.Fragment>
         ) : (
           <React.Fragment>
             <SubmitBar label="Edit Details" onSubmit={onEdit} style={secondaryButtonStyle} />
-            <SubmitBar disabled={hasPendingUpload} label={hasPendingUpload ? "Uploading..." : "Submit"} onSubmit={handleSubmit(onSubmit)} />
+            <SubmitBar disabled={hasPendingUpload || !formValues?.declaration?.agree} label={hasPendingUpload ? "Uploading..." : "Submit"} onSubmit={handleSubmit(onSubmit)} />
           </React.Fragment>
         )}
       </ActionBar>

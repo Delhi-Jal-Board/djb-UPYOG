@@ -155,7 +155,7 @@ const ConnectionDetails = () => {
   const applicationDownloadObject = {
     order: 2,
     label: t("WS_APPLICATION"),
-    onClick: () => handleDownloadPdf,
+    onClick: () => handleDownloadPdf(),
   };
 
   const receiptApplicationFeeDownloadObject = {
@@ -293,23 +293,24 @@ const ConnectionDetails = () => {
   let serviceType = state?.applicationType?.includes("WATER") ? "WATER" : "SEWERAGE";
   return (
     <React.Fragment>
-      <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
-        {/* <Header>{t("WS_COMMON_CONNECTION_DETAIL")}</Header> */}
-        {downloadOptions && downloadOptions.length > 0 && (
-          <div ref={menuRef}>
-            <MultiLink
-              className="multilinkWrapper"
-              onHeadClick={() => setShowOptions(!showOptions)}
-              displayOptions={showOptions}
-              options={downloadOptions}
-              optionsStyle={{ margin: "0px" }}
-            />
-          </div>
-        )}
-      </div>
       {checkifPrivacyenabled && <WSInfoLabel t={t} />}
       <div className="hide-seperator">
         <Card>
+          {downloadOptions && downloadOptions.length > 0 && (
+            <div style={{ position: "absolute", right: "24px", zIndex: 11 }}>
+              <div ref={menuRef}>
+                <MultiLink
+                  label={t("CS_COMMON_DOWNLOAD")}
+                  className="multilinkWrapper employee-mulitlink-main-divNew"
+                  onHeadClick={() => setShowOptions(!showOptions)}
+                  displayOptions={showOptions}
+                  options={downloadOptions}
+                  downloadBtnClassName={"employee-download-btn-className"}
+                  optionsClassName={"employee-options-btn-className"}
+                />
+              </div>
+            </div>
+          )}
           <StatusTable>
             <Row className="border-none" label={t("WS_MYCONNECTIONS_CONSUMER_NO")} text={state?.connectionNo} />
             <Row
@@ -727,20 +728,16 @@ const ConnectionDetails = () => {
             ))}
           {(state?.status !== "inactive" || state?.applicationStatus !== "Inactive" || state?.applicationStatus !== "INACTIVE") &&
             !isDisconnectionDone ? (
-            <ActionBar style={{ position: "relative", boxShadow: "none", minWidth: "240px", maxWidth: "620px", padding: "0px", marginTop: "15px", display: "flex", gap: "10px" }}>
-              <div style={{ width: "100%" }}>
-                <SubmitBar style={{ width: "100%" }} label={t("WS_DISCONNECTION_BUTTON")} onSubmit={onActionSelect} />
-              </div>
-            </ActionBar>
+            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "15px", width: "100%" }}>
+              <SubmitBar label={t("WS_DISCONNECTION_BUTTON")} onSubmit={onActionSelect} />
+            </div>
           ) : (
             state?.applicationStatus == "DISCONNECTION_EXECUTED" &&
             state?.status == "Inactive" &&
             state?.isDisconnectionTemporary && (
-              <ActionBar style={{ position: "relative", boxShadow: "none", minWidth: "240px", maxWidth: "310px", padding: "0px", marginTop: "15px" }}>
-                <div style={{ width: "100%" }}>
-                  <SubmitBar style={{ width: "100%" }} label={t("WS_RECONNECTION_BUTTON")} onSubmit={onActionSelectRestoration} />
-                </div>
-              </ActionBar>
+              <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "15px", width: "100%" }}>
+                <SubmitBar label={t("WS_RECONNECTION_BUTTON")} onSubmit={onActionSelectRestoration} />
+              </div>
             )
           )}
 
