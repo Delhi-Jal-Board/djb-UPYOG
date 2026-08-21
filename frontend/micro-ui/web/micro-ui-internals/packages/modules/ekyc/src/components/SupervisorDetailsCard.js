@@ -118,6 +118,8 @@ const SupervisorDetailsCard = () => {
                             surveyorId: surv.id || surv.owner?.uuid,
                             surveyorName: surv.name || surv.owner?.name || "N/A",
                             mobileNo: surv.owner?.mobileNumber || surv.mobileNo || "N/A",
+                            email: surv.owner?.emailId || "N/A",
+                            gender: surv.owner?.gender || "N/A",
                             status: surv.status || "ACTIVE",
                             totalKnos: realStats?.totalKnos || 0,
                             submittedKnos: realStats?.submittedKnos || 0,
@@ -136,6 +138,8 @@ const SupervisorDetailsCard = () => {
                 supervisorId: matchedSup.id || matchedSup.owner?.uuid,
                 supervisorName: matchedSup.name || matchedSup.owner?.name || "N/A",
                 mobileNo: matchedSup.owner?.mobileNumber || matchedSup.mobileNo || "N/A",
+                email: matchedSup.owner?.emailId || matchedSup.owner?.email || matchedSup.email || matchedSup.emailId || "N/A",
+                gender: matchedSup.owner?.gender || matchedSup.gender || "N/A",
                 status: matchedSup.status || "ACTIVE",
                 assignedZoneId: matchedSup.assignedZoneId || "N/A",
                 vendorId: matchedSup.vendorId,
@@ -153,6 +157,13 @@ const SupervisorDetailsCard = () => {
             const supervisorName = isSelf ? (loggedInUser?.name || progressReport.supervisorName || "N/A") : (progressReport.supervisorName || "N/A");
             const mobileNo = isSelf ? (loggedInUser?.mobileNumber || progressReport.mobileNo || "N/A") : (progressReport.mobileNo || "N/A");
 
+            const matchedSupForFallback = supervisorSearchResponse?.supervisors?.find(
+                (s) => s.id?.toLowerCase() === (progressReport.supervisorId || progressReport.id)?.toLowerCase() || s.owner?.uuid?.toLowerCase() === (progressReport.supervisorId || progressReport.id)?.toLowerCase()
+            );
+
+            const email = matchedSupForFallback?.owner?.emailId || matchedSupForFallback?.owner?.email || matchedSupForFallback?.email || (isSelf ? loggedInUser?.emailId : null) || progressReport.email || "N/A";
+            const gender = matchedSupForFallback?.owner?.gender || matchedSupForFallback?.gender || (isSelf ? loggedInUser?.gender : null) || progressReport.gender || "N/A";
+
             const surveyorsMapped = progressReport.surveyors
                 ? progressReport.surveyors.map((surv) => {
                     const matchedSurv = surveyorSearchResponse?.surveyors?.find(
@@ -163,6 +174,8 @@ const SupervisorDetailsCard = () => {
                         surveyorId: surv.surveyorId || surv.id,
                         surveyorName: matchedSurv?.name || matchedSurv?.owner?.name || surv.surveyorName || "N/A",
                         mobileNo: matchedSurv?.owner?.mobileNumber || matchedSurv?.mobileNo || surv.mobileNo || "N/A",
+                        email: matchedSurv?.owner?.emailId || matchedSurv?.owner?.email || matchedSurv?.email || surv.email || "N/A",
+                        gender: matchedSurv?.owner?.gender || matchedSurv?.gender || surv.gender || "N/A",
                         status: matchedSurv?.status || surv.status || "ACTIVE",
                         totalKnos: surv.totalKnos || 0,
                         submittedKnos: surv.submittedKnos || 0,
@@ -176,6 +189,8 @@ const SupervisorDetailsCard = () => {
                 supervisorId: progressReport.supervisorId || progressReport.id,
                 supervisorName,
                 mobileNo,
+                email,
+                gender,
                 status: progressReport.status || "ACTIVE",
                 assignedZoneId: progressReport.assignedZoneId || "N/A",
                 vendorId: progressReport.vendorId,
@@ -192,8 +207,8 @@ const SupervisorDetailsCard = () => {
 
     const fullName = supervisor?.supervisorName || "N/A";
     const mobileNumber = supervisor?.mobileNo || "N/A";
-    const email = loggedInUser?.emailId || "N/A";
-    const gender = loggedInUser?.gender || "N/A";
+    const email = supervisor?.email || (supervisor?.supervisorId === loggedInUser?.uuid ? loggedInUser?.emailId : null) || "N/A";
+    const gender = supervisor?.gender || (supervisor?.supervisorId === loggedInUser?.uuid ? loggedInUser?.gender : null) || "N/A";
     const status = supervisor?.status || "N/A";
     const assignedZone = supervisor?.assignedZoneId || "N/A";
 
@@ -797,7 +812,7 @@ const SupervisorDetailsCard = () => {
                     <div className="details-grid-row">
                         <div className="detail-item">
                             <span className="label">{t("GENDER")}</span>
-                            <span className="value">{gender}</span>
+                            <span className="value">{t(gender) || gender}</span>
                         </div>
 
                         <div className="detail-item">

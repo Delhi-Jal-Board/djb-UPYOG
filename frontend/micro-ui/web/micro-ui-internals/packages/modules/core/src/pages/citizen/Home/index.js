@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Fragment } from "react";
 import {
   Loader,
   ComplaintIcon,
@@ -33,8 +33,16 @@ const Home = () => {
   const [user, setUser] = useState(null);
   const DEFAULT_REDIRECT_URL = "/digit-ui/citizen";
   const { data: { uiHomePage } = {}, isLoading } = Digit.Hooks.useStore.getInitData();
-  const userInfo = Digit.UserService.getUser();
+  const sessionUser = Digit.SessionStorage.get("User");
+  const userInfo = Digit.UserService.getUser() || sessionUser;
   const name = userInfo?.info?.name;
+  const rawRoles = userInfo?.info?.roles || sessionUser?.info?.roles || [];
+  const userRoles = Array.isArray(rawRoles) ? rawRoles.map((r) => (typeof r === "string" ? r : r?.code || "")) : [];
+  const isEkycRoleUser =
+    Digit.UserService.hasAccess(["EKYC_VENDOR", "EKYC_SUPERVISOR", "EKYC_SURVEYOR"]) ||
+    userRoles.some((role) =>
+      ["EKYC_VENDOR", "EKYC_SUPERVISOR", "EKYC_SURVEYOR", "SURVEYOR", "SUPERVISOR"].includes(String(role).toUpperCase())
+    );
   if (window.Digit.SessionStorage.get("TL_CREATE_TRADE")) window.Digit.SessionStorage.set("TL_CREATE_TRADE", {});
 
   const conditionsToDisableNotificationCountTrigger = () => {
@@ -128,60 +136,65 @@ const Home = () => {
     }
   };
 
+  const citizenServiceOptions = [
+    {
+      name: t(infoAndUpdatesObj?.props?.[0]?.label),
+      description: t("Return to the main dashboard"),
+      Icon: <HomeIcon className="fill-path-primary-main" width="40" height="40" />,
+      onClick: () => handleCardClick(infoAndUpdatesObj?.props?.[0]?.navigationUrl),
+    },
+    {
+      name: t("WT_MODULE_NAME"),
+      description: t("Request water tanker services"),
+      Icon: <CHBIcon className="fill-path-primary-main" />,
+      onClick: () => handleCardClick("/digit-ui/citizen/wt-home"),
+    },
+    {
+      name: t("EKYC_MODULE_NAME"),
+      description: t("Verify your identity and connection details"),
+      Icon: <DocumentIcon className="fill-path-primary-main" />,
+      onClick: () => handleCardClick("/digit-ui/citizen/ekyc"),
+      // isHighlighted: isEkycRoleUser,
+      isRoleCard: true,
+    },
+    {
+      name: t("ACTION_TEST_WATER_AND_SEWERAGE"),
+      description: t("Apply for new water connection"),
+      Icon: <DropIcon className="fill-path-primary-main" />,
+      onClick: () => handleCardClick("/digit-ui/citizen/ws-home"),
+    },
+    ...(Digit.UserService.hasAccess(["WT_VENDOR", "EKYC_VENDOR", "EKYC_SUPERVISOR"])
+      ? [
+        {
+          name: t("ACTION_VENDOR_MANAGEMENT"),
+          description: t("Apply for new water connection"),
+          Icon: <VendorManagementIcon className="fill-path-primary-main" />,
+          onClick: () => handleCardClick("/digit-ui/citizen/vendor"),
+          isRoleCard: true,
+        },
+      ]
+      : []),
+    {
+      name: t("ACTION_TEST_COMMON_PROPERTY_TAX"),
+      description: t("Search and pay property tax"),
+      Icon: <PTIcon className="fill-path-primary-main" />,
+      onClick: () => handleCardClick("/digit-ui/citizen/commonpt-home"),
+    },
+    {
+      name: t("ACTION_TEST_BILLGENIE"),
+      description: t("Search and pay your bills"),
+      Icon: <CollectionIcon className="fill-path-primary-main" />,
+      onClick: () => handleCardClick("/digit-ui/citizen/bills-home"),
+    }
+  ];
+
   const allCitizenServicesProps = {
     header: t(citizenServicesObj?.headerLabel),
     sideOption: {
       name: t(citizenServicesObj?.sideOption?.name),
       onClick: () => handleCardClick(citizenServicesObj?.sideOption?.navigationUrl),
     },
-    options: [
-      {
-        name: t(infoAndUpdatesObj?.props?.[0]?.label),
-        description: t("Return to the main dashboard"),
-        Icon: <HomeIcon className="fill-path-primary-main" width="40" height="40" />,
-        onClick: () => handleCardClick(infoAndUpdatesObj?.props?.[0]?.navigationUrl),
-      },
-      {
-        name: t("WT_MODULE_NAME"),
-        description: t("Request water tanker services"),
-        Icon: <CHBIcon className="fill-path-primary-main" />,
-        onClick: () => handleCardClick("/digit-ui/citizen/wt-home"),
-      },
-      {
-        name: t("EKYC_MODULE_NAME"),
-        description: t("Verify your identity and connection details"),
-        Icon: <DocumentIcon className="fill-path-primary-main" />,
-        onClick: () => handleCardClick("/digit-ui/citizen/ekyc"),
-      },
-      {
-        name: t("ACTION_TEST_WATER_AND_SEWERAGE"),
-        description: t("Apply for new water connection"),
-        Icon: <DropIcon className="fill-path-primary-main" />,
-        onClick: () => handleCardClick("/digit-ui/citizen/ws-home"),
-      },
-      ...(Digit.UserService.hasAccess(["WT_VENDOR", "EKYC_VENDOR", "EKYC_SUPERVISOR"])
-        ? [
-          {
-            name: t("ACTION_VENDOR_MANAGEMENT"),
-            description: t("Apply for new water connection"),
-            Icon: <VendorManagementIcon className="fill-path-primary-main" />,
-            onClick: () => handleCardClick("/digit-ui/citizen/vendor"),
-          },
-        ]
-        : []),
-      {
-        name: t("ACTION_TEST_COMMON_PROPERTY_TAX"),
-        description: t("Search and pay property tax"),
-        Icon: <PTIcon className="fill-path-primary-main" />,
-        onClick: () => handleCardClick("/digit-ui/citizen/commonpt-home"),
-      },
-      {
-        name: t("ACTION_TEST_BILLGENIE"),
-        description: t("Search and pay your bills"),
-        Icon: <CollectionIcon className="fill-path-primary-main" />,
-        onClick: () => handleCardClick("/digit-ui/citizen/bills-home"),
-      }
-    ],
+    options: citizenServiceOptions,
     styles: { display: "flex", flexWrap: "wrap", justifyContent: "flex-start", width: "100%" },
   };
 
@@ -397,171 +410,44 @@ const Home = () => {
             </div>
           </div>
 
-          {/* Service Cards Grid - Redesigned */}
-          <div className="citizen-module-grid">
-            {allCitizenServicesProps.options.map((opt, idx) => (
-              <div
-                className="citizen-service-card"
-                key={`svc-${idx}`}
-                onClick={opt.onClick}
-                onMouseEnter={(e) => {
-                  const label = e.currentTarget.querySelector(".slide-label");
-                  const desc = e.currentTarget.querySelector(".slide-desc");
-                  if (label) {
-                    label.style.transform = "translateY(-110%)";
-                    label.style.opacity = "0";
-                  }
-                  if (desc) {
-                    desc.style.transform = "translateY(0)";
-                    desc.style.opacity = "1";
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  const label = e.currentTarget.querySelector(".slide-label");
-                  const desc = e.currentTarget.querySelector(".slide-desc");
-                  if (label) {
-                    label.style.transform = "translateY(0)";
-                    label.style.opacity = "1";
-                  }
-                  if (desc) {
-                    desc.style.transform = "translateY(110%)";
-                    desc.style.opacity = "0";
-                  }
-                }}
-              >
-                <div className="citizen-service-card__icon">{opt.Icon}</div>
-                <div
-                  style={{
-                    flex: 1,
-                    position: "relative",
-                    height: "40px",
-                    overflow: "hidden",
-                    display: "block",
-                  }}
-                >
-                  <p
-                    className="slide-label"
-                    style={{
-                      position: "absolute",
-                      inset: 0,
-                      display: "flex",
-                      alignItems: "center",
-                      margin: 0,
-                      fontSize: "14px",
-                      fontWeight: 600,
-                      color: "#1e293b",
-                      lineHeight: 1.35,
-                      transition: "transform 0.32s cubic-bezier(0.4,0,0.2,1), opacity 0.25s ease",
-                      transform: "translateY(0)",
-                      opacity: 1,
-                    }}
+          {/* Helper to render card grids */}
+          {(() => {
+            const renderCardList = (optionsList, prefix = "svc") => (
+              <div className="citizen-module-grid">
+                {optionsList.map((opt, idx) => (
+                  <div
+                    className={`citizen-service-card ${opt.isHighlighted ? "citizen-service-card--highlighted" : ""}`}
+                    key={`${prefix}-${idx}`}
+                    onClick={opt.onClick}
                   >
-                    {opt.name}
-                  </p>
-                  <p
-                    className="slide-desc"
-                    style={{
-                      position: "absolute",
-                      inset: 0,
-                      display: "flex",
-                      alignItems: "center",
-                      margin: 0,
-                      fontSize: "12.5px",
-                      fontWeight: 400,
-                      color: "#2563eb",
-                      lineHeight: 1.4,
-                      transition: "transform 0.32s cubic-bezier(0.4,0,0.2,1), opacity 0.25s ease",
-                      transform: "translateY(110%)",
-                      opacity: 0,
-                    }}
-                  >
-                    {opt.description}
-                  </p>
-                </div>
+                    <div className="citizen-service-card__icon">{opt.Icon}</div>
+                    <div className="citizen-service-card__content">
+                      <p className="citizen-service-card__label">{opt.name}</p>
+                      <p className="citizen-service-card__description">{opt.description}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-            {allInfoAndUpdatesProps.options.map((opt, idx) => (
-              <div
-                className="citizen-service-card"
-                key={`info-${idx}`}
-                onClick={opt.onClick}
-                onMouseEnter={(e) => {
-                  const label = e.currentTarget.querySelector(".slide-label");
-                  const desc = e.currentTarget.querySelector(".slide-desc");
-                  if (label) {
-                    label.style.transform = "translateY(-110%)";
-                    label.style.opacity = "0";
-                  }
-                  if (desc) {
-                    desc.style.transform = "translateY(0)";
-                    desc.style.opacity = "1";
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  const label = e.currentTarget.querySelector(".slide-label");
-                  const desc = e.currentTarget.querySelector(".slide-desc");
-                  if (label) {
-                    label.style.transform = "translateY(0)";
-                    label.style.opacity = "1";
-                  }
-                  if (desc) {
-                    desc.style.transform = "translateY(110%)";
-                    desc.style.opacity = "0";
-                  }
-                }}
-              >
-                <div className="citizen-service-card__icon">{opt.Icon}</div>
-                <div
-                  style={{
-                    flex: 1,
-                    position: "relative",
-                    height: "40px",
-                    overflow: "hidden",
-                    display: "block",
-                  }}
-                >
-                  <p
-                    className="slide-label"
-                    style={{
-                      position: "absolute",
-                      inset: 0,
-                      display: "flex",
-                      alignItems: "center",
-                      margin: 0,
-                      fontSize: "14px",
-                      fontWeight: 600,
-                      color: "#1e293b",
-                      lineHeight: 1.35,
-                      transition: "transform 0.32s cubic-bezier(0.4,0,0.2,1), opacity 0.25s ease",
-                      transform: "translateY(0)",
-                      opacity: 1,
-                    }}
-                  >
-                    {opt.name}
-                  </p>
-                  <p
-                    className="slide-desc"
-                    style={{
-                      position: "absolute",
-                      inset: 0,
-                      display: "flex",
-                      alignItems: "center",
-                      margin: 0,
-                      fontSize: "12.5px",
-                      fontWeight: 400,
-                      color: "#2563eb",
-                      lineHeight: 1.4,
-                      transition: "transform 0.32s cubic-bezier(0.4,0,0.2,1), opacity 0.25s ease",
-                      transform: "translateY(110%)",
-                      opacity: 0,
-                    }}
-                  >
-                    {opt.description}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
+            );
+
+            return isEkycRoleUser ? (
+              <>
+                {/* Section 1: Role Services */}
+                <h3 className="citizen-section-header">
+                  {t("MY_ROLE_SERVICES") || "My Role Services"}
+                </h3>
+                {renderCardList(allCitizenServicesProps.options.filter((opt) => opt.isRoleCard), "role-svc")}
+
+                {/* Section 2: Other Services */}
+                <h3 className="citizen-section-header citizen-section-header--secondary">
+                  {t("OTHER_CITIZEN_SERVICES") || "Other Services"}
+                </h3>
+                {renderCardList([...allCitizenServicesProps.options.filter((opt) => !opt.isRoleCard), ...allInfoAndUpdatesProps.options], "other-svc")}
+              </>
+            ) : (
+              renderCardList([...allCitizenServicesProps.options, ...allInfoAndUpdatesProps.options], "svc")
+            );
+          })()}
         </div>
 
         {conditionsToDisableNotificationCountTrigger() ? (

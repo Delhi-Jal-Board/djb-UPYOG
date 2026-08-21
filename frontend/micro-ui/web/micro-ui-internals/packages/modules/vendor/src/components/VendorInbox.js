@@ -1298,9 +1298,9 @@ const VendorInbox = (props) => {
               {
                 Header: t("ES_VENDOR_SUPERVISOR_ZONE_NAME"),
                 id: "zoneId",
-                accessor: (row) => row.assignedZoneId || "NA",
+                accessor: (row) => row.assignedZoneId || row.zoneId || row.zoneCode || "NA",
                 Cell: ({ row }) => {
-                  const zoneId = row.original?.assignedZoneId;
+                  const zoneId = row.original?.assignedZoneId || row.original?.zoneId || row.original?.zoneCode;
                   return <div>{zoneId ? t(zoneId) : "NA"}</div>;
                 }
               },
@@ -1316,6 +1316,15 @@ const VendorInbox = (props) => {
             : []),
           ...(props.selectedTab === "SURVEYOR"
             ? [
+              {
+                Header: t("ES_VENDOR_SURVEYOR_ZONE_NAME"),
+                id: "zoneId",
+                accessor: (row) => row.assignedZoneId || row.zoneId || row.zoneCode || "NA",
+                Cell: ({ row }) => {
+                  const zoneId = row.original?.assignedZoneId || row.original?.zoneId || row.original?.zoneCode;
+                  return <div>{zoneId ? t(zoneId) : "NA"}</div>;
+                }
+              },
               {
                 Header: t("ES_FSM_REGISTRY_INBOX_SUPERVISOR_NAME"),
                 id: "supervisor",
@@ -1485,6 +1494,10 @@ const VendorInbox = (props) => {
             exportAccessor: (row) => row?.name || "NA",
           },
           {
+            Header: t("ZONE"),
+            exportAccessor: (row) => row?.assignedZoneId || row?.zoneId || row?.zoneCode || "NA",
+          },
+          {
             Header: t("VENDOR_NAME"),
             exportAccessor: (row) => row?.vendorName || row?.vendorData?.name || row?.vendor?.name || "NA",
           },
@@ -1518,7 +1531,7 @@ const VendorInbox = (props) => {
           },
           {
             Header: t("ZONE"),
-            exportAccessor: (row) => row?.assignedZoneId || "NA",
+            exportAccessor: (row) => row?.assignedZoneId || row?.zoneId || row?.zoneCode || "NA",
           },
           {
             Header: t("VENDOR_NAME"),
