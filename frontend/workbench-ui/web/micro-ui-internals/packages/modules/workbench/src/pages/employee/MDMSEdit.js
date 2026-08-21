@@ -84,6 +84,14 @@ const MDMSEdit = ({...props}) => {
   const handleUpdate = async (formData) => {
 
     const onSuccess = (resp) => {
+      if (resp?.error || resp?.ResponseInfo?.status === "FAILED") {
+        setShowToast({
+          label:`${t("WBH_ERROR_MDMS_DATA")} ${t(resp?.data?.Errors?.[0]?.code || resp?.message)}`,
+          isError:true
+        });
+        closeToast();
+        return;
+      }
       
       setShowToast({
         label:`${t("WBH_SUCCESS_UPD_MDMS_MSG")} ${resp?.mdms?.[0]?.id}`
