@@ -96,10 +96,13 @@
 
 .employee-main-application-details {
   width: 100%;
-  overflow-y: scroll;
+  overflow-y: auto;
   display: flex;
   gap: 20px;
-  flex-wrap: wrap;
+  align-items: flex-start;
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
 }
 
 .employee-form-content {

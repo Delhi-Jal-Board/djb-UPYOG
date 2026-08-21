@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Loader, Modal, FormComposer } from "@djb25/digit-ui-react-components";
+import { Loader, Modal, FormComposer, CardLabelError } from "@djb25/digit-ui-react-components";
 import { configWSApproverApplication, configWSDisConnectApplication } from "../config";
 // import * as predefinedConfig from "../config";
 import cloneDeep from "lodash/cloneDeep";
@@ -73,6 +73,19 @@ const ActionModal = ({
   const [file, setFile] = useState(null);
   const [uploadedFile, setUploadedFile] = useState(null);
   const [error, setError] = useState(null);
+  const [selectedReason, setSelectedReason] = useState(null);
+  const [otherReasonText, setOtherReasonText] = useState("");
+
+  const isMutationApp =
+    applicationData?.applicationType?.includes("MUTATION") ||
+    applicationData?.businessService?.includes("MUTATION") ||
+    businessService?.includes("MUTATION") ||
+    applicationData?.applicationNo?.includes("MUT");
+
+  const isReasonRequiredAction =
+    isMutationApp &&
+    (action?.action?.includes("SEND_BACK") || action?.action?.includes("REJECT"));
+
   const isMobile = window.Digit.Utils.browser.isMobile();
   const isEmployee = window.location.href.includes("/employee");
 
@@ -111,8 +124,26 @@ const ActionModal = ({
   }, [file]);
 
   function submit(data) {
+    let commentValue = data?.comments || "";
+
+    if (isReasonRequiredAction) {
+      if (!selectedReason) {
+        setError(t("PLEASE_SELECT_REASON") || "Please select a reason");
+        return;
+      }
+      if (selectedReason?.code === "OTHER") {
+        if (!otherReasonText || otherReasonText.trim() === "") {
+          setError(t("PLEASE_ENTER_REASON") || "Please enter the reason");
+          return;
+        }
+        commentValue = otherReasonText.trim();
+      } else {
+        commentValue = selectedReason?.name || (selectedReason?.i18nKey ? t(selectedReason?.i18nKey) : selectedReason?.code);
+      }
+    }
+
     if (applicationData?.isBillAmend) {
-      const comments = data?.comments ? data.comments : null;
+      const comments = commentValue || (data?.comments ? data.comments : null);
 
       const additionalDetails = { ...applicationData?.billAmendmentDetails?.additionalDetails, comments };
       const amendment = {
@@ -124,7 +155,7 @@ const ActionModal = ({
           businessService: applicationData?.applicationType?.includes("WATER") ? "WS.AMENDMENT" : "SW.AMENDMENT",
           moduleName: applicationData?.applicationType?.includes("WATER") ? "WS" : "SW",
           assignes: !selectedApprover?.uuid ? [] : [{ uuid: selectedApprover?.uuid }],
-          comment: data?.comments || "",
+          comment: commentValue || data?.comments || "",
           documents: uploadedFile
             ? [
                 {
@@ -136,7 +167,7 @@ const ActionModal = ({
             : [],
         },
         additionalDetails,
-        comment: data?.comments || "",
+        comment: commentValue || data?.comments || "",
         wfDocuments: uploadedFile
           ? [
               {
@@ -149,7 +180,7 @@ const ActionModal = ({
         processInstance: {
           action: action?.action,
           assignes: !selectedApprover?.uuid ? [] : [{ uuid: selectedApprover?.uuid }],
-          comment: data?.comments || "",
+          comment: commentValue || data?.comments || "",
           documents: uploadedFile
             ? [
                 {
@@ -165,11 +196,11 @@ const ActionModal = ({
       submitAction({ AmendmentUpdate: amendment });
       return;
     }
-    let workflow = { action: action?.action, comments: data?.comments, businessService, moduleName: moduleCode };
+    let workflow = { action: action?.action, comments: commentValue, businessService, moduleName: moduleCode };
     applicationData = {
       ...applicationData,
       action: action?.action,
-      comment: data?.comments || "",
+      comment: commentValue,
       assignee: !selectedApprover?.uuid ? [] : [selectedApprover?.uuid],
       assignes: !selectedApprover?.uuid ? [] : [{ uuid: selectedApprover?.uuid }],
       wfDocuments: uploadedFile
@@ -185,7 +216,7 @@ const ActionModal = ({
         ...applicationData?.processInstance,
         action: action?.action,
         assignes: !selectedApprover?.uuid ? [] : [{ uuid: selectedApprover?.uuid }],
-        comment: data?.comments || "",
+        comment: commentValue,
         documents: uploadedFile
           ? [
               {
@@ -231,8 +262,6 @@ const ActionModal = ({
         applicationData.additionalDetails.adhocRebateComment = parsedAdhocRebateData?.value?.adhocRebateComment || "";
       if (parsedAdhocRebateData?.value?.adhocRebateReason)
         applicationData.additionalDetails.adhocRebateReason = parsedAdhocRebateData?.value?.adhocRebateReason || "";
-      
-
 
       applicationData?.serviceType == "WATER"
         ? submitAction({ WaterConnection: applicationData, disconnectRequest: false, reconnectRequest: false })
@@ -275,11 +304,16 @@ const ActionModal = ({
             setUploadedFile,
             businessService,
             error,
+            isReasonRequiredAction,
+            selectedReason,
+            setSelectedReason,
+            otherReasonText,
+            setOtherReasonText,
           })
         );
       }
     }
-  }, [action, approvers, uploadedFile, error]);
+  }, [action, approvers, uploadedFile, error, isReasonRequiredAction, selectedReason, otherReasonText]);
 
   return action && config.form ? (
     <Modal
@@ -295,19 +329,22 @@ const ActionModal = ({
       {PTALoading ? (
         <Loader />
       ) : (
-        <FormComposer
-          config={config.form}
-          noBoxShadow
-          inline
-          childrenAtTheBottom
-          onSubmit={submit}
-          defaultValues={defaultValues}
-          formId="modal-action"
-          cardFormClassName={cardFormClassName}
-          cardFormWrapperClassName={cardFormWrapperClassName}
-          cardClassName={cardClassName}
-          formClassName={formClassName}
-        />
+        <React.Fragment>
+          {error && <CardLabelError style={{ marginBottom: "12px", marginLeft: "12px", marginRight: "12px" }}>{error}</CardLabelError>}
+          <FormComposer
+            config={config.form}
+            noBoxShadow
+            inline
+            childrenAtTheBottom
+            onSubmit={submit}
+            defaultValues={defaultValues}
+            formId="modal-action"
+            cardFormClassName={cardFormClassName}
+            cardFormWrapperClassName={cardFormWrapperClassName}
+            cardClassName={cardClassName}
+            formClassName={formClassName}
+          />
+        </React.Fragment>
       )}
     </Modal>
   ) : (

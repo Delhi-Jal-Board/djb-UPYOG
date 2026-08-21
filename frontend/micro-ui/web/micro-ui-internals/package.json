@@ -14,7 +14,12 @@
     "packages/modules/dss",
     "packages/modules/engagement",
     "packages/modules/asset",
-    "packages/modules/vendor"
+    "packages/modules/vendor",
+    "packages/modules/wt",
+    "packages/modules/ws",
+    "packages/modules/fsm",
+    "packages/modules/ekyc",
+    "packages/modules/bills"
   ],
   "license": "MIT",
   "private": true,
