@@ -61,6 +61,65 @@
 
 // export const getKeycloak = () => _kc;
 
+
+
+
+
+// import Keycloak from "keycloak-js";
+
+// let _kc;
+
+// const NO_KEYCLOAK_PATHS = [
+//   "/digit-ui/home",
+// ];
+
+// const requiresNoKeycloak = (path) => {
+//   return NO_KEYCLOAK_PATHS.some((p) => {
+//     return path === p || path.startsWith(p + "/");
+//   });
+// };
+
+// export const initKeycloak = async () => {
+//   if (_kc) return _kc;
+
+//   const path = window.location.pathname;
+  
+//   // Skip Keycloak entirely ONLY for landing pages (/digit-ui/home/*)
+//   if (requiresNoKeycloak(path)) {
+//     return null;
+//   }
+
+//   if (
+//     !path.includes("/digit-ui/citizen/home") &&
+//     !path.includes("/digit-ui/employee/user/login") &&
+//     (path.includes("/digit-ui/employee") || path.includes("/digit-ui/citizen"))
+//   ) {
+//     sessionStorage.setItem("post_keycloak_redirect", window.location.pathname + window.location.search);
+//   }
+
+//   _kc = new Keycloak({
+//     url: "https://dev-djberp.nitcon.in/keycloak",
+//     realm: "DL",
+//     clientId: "local-upyog",
+//   });
+
+//   try {
+//     await _kc.init({
+//       onLoad: "check-sso",
+//       pkceMethod: "S256",
+//       checkLoginIframe: false,
+//       redirectUri: window.location.origin + "/digit-ui/citizen/home",
+//     });
+//   } catch (err) {
+//     console.error("Keycloak init failed", err);
+//   }
+
+//   return _kc;
+// };
+
+// export const getKeycloak = () => _kc;
+
+
 import Keycloak from "keycloak-js";
 
 let _kc;
@@ -79,7 +138,7 @@ export const initKeycloak = async () => {
   if (_kc) return _kc;
 
   const path = window.location.pathname;
-  
+
   // Skip Keycloak entirely ONLY for landing pages (/digit-ui/home/*)
   if (requiresNoKeycloak(path)) {
     return null;
@@ -88,13 +147,20 @@ export const initKeycloak = async () => {
   if (
     !path.includes("/digit-ui/citizen/home") &&
     !path.includes("/digit-ui/employee/user/login") &&
-    (path.includes("/digit-ui/employee") || path.includes("/digit-ui/citizen"))
+    (path.includes("/digit-ui/employee") ||
+      path.includes("/digit-ui/citizen"))
   ) {
-    sessionStorage.setItem("post_keycloak_redirect", window.location.pathname + window.location.search);
+    sessionStorage.setItem(
+      "post_keycloak_redirect",
+      window.location.pathname + window.location.search
+    );
   }
 
+  // Get Portal URL dynamically from global config
+  const portalUrl = globalConfigs.getConfig("PORTAL_URL");
+
   _kc = new Keycloak({
-    url: "https://dev-djberp.nitcon.in/keycloak",
+    url: `${portalUrl}/keycloak`,
     realm: "DL",
     clientId: "upyog",
   });
@@ -104,7 +170,8 @@ export const initKeycloak = async () => {
       onLoad: "check-sso",
       pkceMethod: "S256",
       checkLoginIframe: false,
-      redirectUri: window.location.origin + "/digit-ui/citizen/home",
+      redirectUri:
+        window.location.origin + "/digit-ui/citizen/home",
     });
   } catch (err) {
     console.error("Keycloak init failed", err);
