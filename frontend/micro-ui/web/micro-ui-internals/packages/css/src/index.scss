@@ -187,9 +187,10 @@ h6 {
   }
 }
 
-.check-page-link-button, .astericColor {
+.check-page-link-button,
+.astericColor {
   color: red !important;
-  font-size: 18px !important;
+  font-size: inherit;
   font-weight: bold;
 }
 

@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect, useRef } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { Modal, Close, Table, Toast } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 const AssignEkycModal = ({ surveyor, isReassign, closeModal, refetchDashboard, tenantId: propsTenantId }) => {
@@ -25,13 +25,13 @@ const AssignEkycModal = ({ surveyor, isReassign, closeModal, refetchDashboard, t
 
   const [debouncedFilters, setDebouncedFilters] = useState(filters);
 
-  const { data: zroLocationsData, isLoading: isZroLoading } = Digit.Hooks.ws.useWSConfigMDMS.ZROLocation(tenantId);
-  const mappedZROLocation = useMemo(() => {
-    return (zroLocationsData || []).map((item) => ({
-      code: item.code,
-      name: item.name,
-    }));
-  }, [zroLocationsData]);
+  // const { data: zroLocationsData, isLoading: isZroLoading } = Digit.Hooks.ws.useWSConfigMDMS.ZROLocation(tenantId);
+  // const mappedZROLocation = useMemo(() => {
+  //   return (zroLocationsData || []).map((item) => ({
+  //     code: item.code,
+  //     name: item.name,
+  //   }));
+  // }, [zroLocationsData]);
 
   const { data: egovLocationData } = Digit.Hooks.useCommonMDMS(tenantId, "egov-location", ["TenantBoundary"]);
 
@@ -42,36 +42,36 @@ const AssignEkycModal = ({ surveyor, isReassign, closeModal, refetchDashboard, t
     return Array.isArray(boundary) ? boundary : [boundary];
   }, [egovLocationData]);
 
-  const { assemblyOptions, wardOptions } = useMemo(() => {
-    const assemblies = new Map();
-    const wards = new Map();
+  // const { assemblyOptions, wardOptions } = useMemo(() => {
+  //   const assemblies = new Map();
+  //   const wards = new Map();
 
-    const boundaries = Array.isArray(boundaryData) ? boundaryData : boundaryData ? [boundaryData] : [];
+  //   const boundaries = Array.isArray(boundaryData) ? boundaryData : boundaryData ? [boundaryData] : [];
 
-    const traverse = (node) => {
-      if (!node) return;
-      if (node.label === "Ward" || node.label === "WARD" || node.label === "Block" || node.label === "BLOCK") {
-        const code = node.code || node.localname || node.name;
-        const name = node.name || node.localname || code;
-        if (code) wards.set(code, { code, name: name });
-      }
-      if (node.label === "Assembly Constituency" || node.label === "ASSEMBLY_CONSTITUENCY") {
-        const code = node.code || node.localname || node.name;
-        const name = node.name || node.localname || code;
-        if (code) assemblies.set(code, { code, name: name });
-      }
-      if (node.children && node.children.length > 0) {
-        node.children.forEach(traverse);
-      }
-    };
+  //   const traverse = (node) => {
+  //     if (!node) return;
+  //     if (node.label === "Ward" || node.label === "WARD" || node.label === "Block" || node.label === "BLOCK") {
+  //       const code = node.code || node.localname || node.name;
+  //       const name = node.name || node.localname || code;
+  //       if (code) wards.set(code, { code, name: name });
+  //     }
+  //     if (node.label === "Assembly Constituency" || node.label === "ASSEMBLY_CONSTITUENCY") {
+  //       const code = node.code || node.localname || node.name;
+  //       const name = node.name || node.localname || code;
+  //       if (code) assemblies.set(code, { code, name: name });
+  //     }
+  //     if (node.children && node.children.length > 0) {
+  //       node.children.forEach(traverse);
+  //     }
+  //   };
 
-    boundaries.forEach(traverse);
+  //   boundaries.forEach(traverse);
 
-    return {
-      assemblyOptions: Array.from(assemblies.values()).sort((a, b) => a.name.localeCompare(b.name)),
-      wardOptions: Array.from(wards.values()).sort((a, b) => a.name.localeCompare(b.name)),
-    };
-  }, [boundaryData]);
+  //   return {
+  //     assemblyOptions: Array.from(assemblies.values()).sort((a, b) => a.name.localeCompare(b.name)),
+  //     wardOptions: Array.from(wards.values()).sort((a, b) => a.name.localeCompare(b.name)),
+  //   };
+  // }, [boundaryData]);
 
   const structuredLocalityData = useMemo(() => {
     let localities = [];
@@ -427,7 +427,7 @@ const AssignEkycModal = ({ surveyor, isReassign, closeModal, refetchDashboard, t
       headerBarEnd={<Close onClick={closeModal} />}
       actionCancelLabel="Cancel"
       actionCancelOnSubmit={closeModal}
-      actionSaveLabel={isReassign ? (t("EKYC_REASSIGN_KNOS") || "Reassign KNOs") : (t("EKYC_ASSIGN_KNOS") || "Assign KNOs")}
+      actionSaveLabel={isReassign ? t("EKYC_REASSIGN_KNOS") || "Reassign KNOs" : t("EKYC_ASSIGN_KNOS") || "Assign KNOs"}
       actionSaveOnSubmit={handleAssign}
       isDisabled={!selectedKnos?.length}
     >
@@ -436,7 +436,7 @@ const AssignEkycModal = ({ surveyor, isReassign, closeModal, refetchDashboard, t
         <div className="filters-grid">
           <input className="form-control" placeholder="KNO" value={filters.kno} onChange={(e) => handleFilterChange("kno", e.target.value)} />
 
-          <select className="form-control" value={filters.pincode} onChange={(e) => handleFilterChange("pincode", e.target.value)}>
+          <select className="form-control disabled" value={filters.pincode} onChange={(e) => handleFilterChange("pincode", e.target.value)} disabled>
             <option value="">Select Pincode</option>
             {pincodeOptions.map((pin) => (
               <option key={pin} value={pin}>
