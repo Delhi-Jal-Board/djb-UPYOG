@@ -28,7 +28,7 @@ const SurveyorDetailsDashboard = () => {
     { enabled: !!surveyorId, staleTime: Infinity }
   );
 
-  const hasFoundById = !!(surveyorSearchById?.surveyors?.length);
+  const hasFoundById = !!surveyorSearchById?.surveyors?.length;
 
   const { data: surveyorSearchByOwner, isLoading: isLoadingOwner } = Digit.Hooks.fsm.useSurveyorSearch(
     tenantId,
@@ -43,7 +43,7 @@ const SurveyorDetailsDashboard = () => {
     return surveyorSearchByOwner;
   }, [surveyorId, hasFoundById, surveyorSearchById, surveyorSearchByOwner]);
 
-  const isLoading = surveyorId ? (isLoadingId || (isLoadingOwner && !hasFoundById)) : isLoadingOwner;
+  const isLoading = surveyorId ? isLoadingId || (isLoadingOwner && !hasFoundById) : isLoadingOwner;
 
   const roles = Digit.SessionStorage.get("User")?.info?.roles.map((ele) => ele.code);
 
@@ -297,13 +297,39 @@ const SurveyorDetailsDashboard = () => {
       }
 
       const excludedKeys = [
-        "status", "source", "assignedAt", "connectionType", "approvedAt",
-        "alternateMobileNo", "city", "state", "addressType", "addressProofType", "mrcode",
-        "areacode", "verificationStatus", "surveyorId", "supervisorId", "vendorId",
-        "assignmentType", "assignmentValue", "assignedTime", "isSelfAssigned", "userType",
-        "tenantName", "tenantMobile", "doorPhotoFilestoreId", "panFilestoreId",
-        "documentProofFilestoreId", "buildingImageFileStoreId", "propertyDocumentFileStoreId",
-        "meterPhotoFileStoreId", "modifiedBy", "zoneCode", "propertyType", "subPropertyCategory"
+        "status",
+        "source",
+        "assignedAt",
+        "connectionType",
+        "approvedAt",
+        "alternateMobileNo",
+        "city",
+        "state",
+        "addressType",
+        "addressProofType",
+        "mrcode",
+        "areacode",
+        "verificationStatus",
+        "surveyorId",
+        "supervisorId",
+        "vendorId",
+        "assignmentType",
+        "assignmentValue",
+        "assignedTime",
+        "isSelfAssigned",
+        "userType",
+        "tenantName",
+        "tenantMobile",
+        "doorPhotoFilestoreId",
+        "panFilestoreId",
+        "documentProofFilestoreId",
+        "buildingImageFileStoreId",
+        "propertyDocumentFileStoreId",
+        "meterPhotoFileStoreId",
+        "modifiedBy",
+        "zoneCode",
+        "propertyType",
+        "subPropertyCategory",
       ];
 
       const headerMapping = {
@@ -410,7 +436,6 @@ const SurveyorDetailsDashboard = () => {
         meterPhotoFileStoreId: t("METER_PHOTO_FILESTORE_ID"),
         modifiedBy: t("MODIFIED_BY"),
         emailId: t("EMAIL_ID"),
-        fatherOrHusbandName: t("FATHER_HUSBUND_NAME"),
         dob: t("DOB"),
         consumerType: t("CONSUMER_TYPE"),
         createdTime: t("CREATED_TIME"),
@@ -419,7 +444,19 @@ const SurveyorDetailsDashboard = () => {
         meterLongitude: t("EKYC_METER_LONGITUDE1"),
       };
 
-      const skipTitleCase = ["kno", "mobileNumber", "emailId", "email", "pincode", "mrkey", "dob", "createdTime", "lastModifiedTime", "meterLatitude", "meterLongitude"];
+      const skipTitleCase = [
+        "kno",
+        "mobileNumber",
+        "emailId",
+        "email",
+        "pincode",
+        "mrkey",
+        "dob",
+        "createdTime",
+        "lastModifiedTime",
+        "meterLatitude",
+        "meterLongitude",
+      ];
       const translatedFields = ["meterMake", "meterLocation"];
 
       const excelData = consumerList.map((item) => {
@@ -430,7 +467,7 @@ const SurveyorDetailsDashboard = () => {
           cleanObj[t("CONSUMER_NAME") || "Consumer Name"] = toTitleCase(fullName);
         }
 
-        Object.keys(item).forEach(key => {
+        Object.keys(item).forEach((key) => {
           if (excludedKeys.includes(key)) return;
 
           let val = item[key];
@@ -491,11 +528,7 @@ const SurveyorDetailsDashboard = () => {
 
         {/* Download Report — far right */}
         <div className="report-download">
-          <button
-            className="download-btn"
-            disabled={reportLoading}
-            onClick={handleDownload}
-          >
+          <button className="download-btn" disabled={reportLoading} onClick={handleDownload}>
             {reportLoading ? t("DOWNLOADING") || "Downloading..." : t("DOWNLOAD_REPORT") || "Download Report"}
           </button>
         </div>
@@ -503,10 +536,34 @@ const SurveyorDetailsDashboard = () => {
 
       {/* Stats */}
       <div className="stats-wrapper">
-        <StatCard title={t("TOTAL_ASSIGNED")} value={dashboardData?.dashboardInfo?.total || 0} type="today" isLoading={isDashboardLoading} icon={<FaUsers />} />
-        <StatCard title={t("COMPLETED")} value={dashboardData?.dashboardInfo?.completed || 0} type="week" isLoading={isDashboardLoading} icon={<FaCheckCircle />} />
-        <StatCard title={t("PENDING")} value={dashboardData?.dashboardInfo?.pending || 0} type="pending" isLoading={isDashboardLoading} icon={<FaClock />} />
-        <StatCard title={t("SUBMITTED")} value={dashboardData?.dashboardInfo?.submittedCount || 0} type="month" isLoading={isDashboardLoading} icon={<FaChartLine />} />
+        <StatCard
+          title={t("TOTAL_ASSIGNED")}
+          value={dashboardData?.dashboardInfo?.total || 0}
+          type="today"
+          isLoading={isDashboardLoading}
+          icon={<FaUsers />}
+        />
+        <StatCard
+          title={t("COMPLETED")}
+          value={dashboardData?.dashboardInfo?.completed || 0}
+          type="week"
+          isLoading={isDashboardLoading}
+          icon={<FaCheckCircle />}
+        />
+        <StatCard
+          title={t("PENDING")}
+          value={dashboardData?.dashboardInfo?.pending || 0}
+          type="pending"
+          isLoading={isDashboardLoading}
+          icon={<FaClock />}
+        />
+        <StatCard
+          title={t("SUBMITTED")}
+          value={dashboardData?.dashboardInfo?.submittedCount || 0}
+          type="month"
+          isLoading={isDashboardLoading}
+          icon={<FaChartLine />}
+        />
       </div>
 
       {/* Charts */}
@@ -569,8 +626,7 @@ const SurveyorDetailsDashboard = () => {
               <div>
                 <h4>{t("DOWNLOAD_EKYC_DATA") || "Download eKYC Data"}</h4>
                 <p>
-                  {t("DOWNLOAD_EKYC_DATA_DESC") ||
-                    "Export the complete eKYC verification records for your assigned jurisdiction into Excel format."}
+                  {t("DOWNLOAD_EKYC_DATA_DESC") || "Export the complete eKYC verification records for your assigned jurisdiction into Excel format."}
                 </p>
               </div>
               <div className="report-download" ref={reportMenuRef}>
@@ -582,7 +638,16 @@ const SurveyorDetailsDashboard = () => {
                     setShowCustomPicker(false);
                   }}
                 >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                     <polyline points="7 10 12 15 17 10" />
                     <line x1="12" y1="15" x2="12" y2="3" />
@@ -611,19 +676,11 @@ const SurveyorDetailsDashboard = () => {
                         <div className="date-inputs">
                           <label>
                             <span>From</span>
-                            <input
-                              type="date"
-                              value={customDate.from}
-                              onChange={(e) => setCustomDate({ ...customDate, from: e.target.value })}
-                            />
+                            <input type="date" value={customDate.from} onChange={(e) => setCustomDate({ ...customDate, from: e.target.value })} />
                           </label>
                           <label>
                             <span>To</span>
-                            <input
-                              type="date"
-                              value={customDate.to}
-                              onChange={(e) => setCustomDate({ ...customDate, to: e.target.value })}
-                            />
+                            <input type="date" value={customDate.to} onChange={(e) => setCustomDate({ ...customDate, to: e.target.value })} />
                           </label>
                         </div>
                         <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
@@ -728,7 +785,9 @@ const SurveyorDetailsDashboard = () => {
         </ActionBar>
       )}
 
-      {showModal && <AssignEkycModal surveyor={surveyor} isReassign={showModal === "EKYC_REASSIGN"} closeModal={closeModal} refetchDashboard={refetchDashboard} />}
+      {showModal && (
+        <AssignEkycModal surveyor={surveyor} isReassign={showModal === "EKYC_REASSIGN"} closeModal={closeModal} refetchDashboard={refetchDashboard} />
+      )}
     </Card>
   );
 };
