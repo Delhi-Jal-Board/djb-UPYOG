@@ -16,9 +16,9 @@
   ],
   "homepage": "/workbench-ui",
   "dependencies": {
-    "@djb25/workbench-ui-css": "1.0.3",
+    "@djb25/workbench-ui-css": "1.0.4",
     "@djb25/workbench-ui-libraries": "1.0.1",
-    "@djb25/workbench-ui-module-workbench": "1.0.1",
+    "@djb25/workbench-ui-module-workbench": "1.0.2",
     "@djb25/workbench-ui-module-core": "1.0.1",
     "@djb25/workbench-ui-react-components": "1.0.1",
     "@djb25/workbench-ui-module-utilities": "1.0.1",

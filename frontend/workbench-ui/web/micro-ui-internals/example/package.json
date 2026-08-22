@@ -10,7 +10,7 @@
   },
   "devDependencies": {
     "@djb25/workbench-ui-libraries": "1.0.1",
-    "@djb25/workbench-ui-module-workbench": "1.0.1",
+    "@djb25/workbench-ui-module-workbench": "1.0.2",
     "@djb25/workbench-ui-module-dss": "1.0.1",
     "@djb25/workbench-ui-module-core": "1.0.1",
     "@djb25/workbench-ui-module-common": "1.0.1",
