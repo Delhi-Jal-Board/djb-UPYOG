@@ -41,9 +41,8 @@ const CreatePropertyForm = ({ config, onSelect, value, userType, redirectUrl }) 
       if (applicant && contact) {
         setOwners([
           {
-            name: `${applicant.firstName}${applicant.middleName ? ` ${applicant.middleName}` : ""}${
-              applicant.lastName ? ` ${applicant.lastName}` : ""
-            }`,
+            name: `${applicant.firstName}${applicant.middleName ? ` ${applicant.middleName}` : ""}${applicant.lastName ? ` ${applicant.lastName}` : ""
+              }`,
             mobileNumber: contact.mobileNumber,
             gender: useDetails?.gender || { code: "MALE", name: "Male" },
             fatherOrHusbandName: applicant.ParentorSpouse || "NA",
@@ -89,6 +88,15 @@ const CreatePropertyForm = ({ config, onSelect, value, userType, redirectUrl }) 
     clearSuccessData();
   }, []);
 
+  useEffect(() => {
+    if (showToast) {
+      const timer = setTimeout(() => {
+        setShowToast(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [showToast]);
+
   const currentConfig = React.useMemo(() => {
     const isEmployee = userType === "employee" || window.location.href.includes("/employee/");
     return newConfig.filter((step) => {
@@ -105,8 +113,8 @@ const CreatePropertyForm = ({ config, onSelect, value, userType, redirectUrl }) 
 
   const onSubmit = async () => {
     const loc = formValue?.locationDet;
-    if (!loc?.addressType || !loc?.city || !loc?.pincode || !loc?.locality || !loc?.buildingColonyName) {
-      setShowToast({ key: true, label: "Please fill all the mandatory fields" });
+    if (!loc?.addressType || !loc?.city || !loc?.pincode || !loc?.locality || !loc?.addressLine1 || !loc?.houseNo) {
+      setShowToast({ key: true, label: t("Please fill all the mandatory fields") });
       return;
     }
 
@@ -219,6 +227,7 @@ const CreatePropertyForm = ({ config, onSelect, value, userType, redirectUrl }) 
         <Toast
           error={showToast.key}
           label={showToast.label}
+          isDleteBtn={true}
           onClose={() => {
             setShowToast(null);
           }}
