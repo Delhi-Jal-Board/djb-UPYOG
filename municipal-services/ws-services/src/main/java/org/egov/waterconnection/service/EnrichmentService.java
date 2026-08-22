@@ -735,6 +735,9 @@ public class EnrichmentService {
 					if (document == null || StringUtils.isEmpty(document.getDocumentType()))
 						continue;
 
+					if (!StringUtils.isEmpty(document.getDocumentNumber()))
+						continue;
+
 					String docType = document.getDocumentType().toUpperCase();
 					if (docType.contains("IDENTITYPROOF") || docType.contains("IDENTITY")) {
 						document.setDocumentNumber(identityProofNumber);
