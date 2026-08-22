@@ -68,6 +68,79 @@ public class WhatsAppService {
         }
     }
 
+    public void sendWhatsAppTemplate(org.egov.web.notification.sms.consumer.contract.WhatsAppRequest request) {
+        if (whatsappUrl == null || whatsappUrl.isEmpty()) {
+            log.warn("WhatsApp URL is not configured. Skipping WhatsApp message.");
+            return;
+        }
+
+        if (request.getMobileNumber() == null || request.getMobileNumber().isEmpty()) {
+            log.error("WhatsApp message mobile number is missing");
+            return;
+        }
+
+        if (smsProperties.isNumberBlacklisted(request.getMobileNumber())) {
+            log.error(String.format("WhatsApp to %s is blacklisted", request.getMobileNumber()));
+            return;
+        }
+
+        if (!smsProperties.isNumberWhitelisted(request.getMobileNumber())) {
+            log.error(String.format("WhatsApp to %s is not in whitelist", request.getMobileNumber()));
+            return;
+        }
+        
+        log.info("Sending WhatsApp template {} to {}", request.getTemplateName(), request.getMobileNumber());
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("apikey", whatsappApikey);
+
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("messaging_product", "whatsapp");
+            requestBody.put("recipient_type", "individual");
+            requestBody.put("to", request.getMobileNumber());
+            requestBody.put("type", "template");
+
+            Map<String, Object> templateBody = new HashMap<>();
+            templateBody.put("name", request.getTemplateName());
+            
+            Map<String, Object> language = new HashMap<>();
+            language.put("code", "en");
+            templateBody.put("language", language);
+
+            if (request.getParameters() != null && !request.getParameters().isEmpty()) {
+                java.util.List<Map<String, Object>> paramList = new java.util.ArrayList<>();
+                for (String paramValue : request.getParameters()) {
+                    Map<String, Object> param = new HashMap<>();
+                    param.put("type", "text");
+                    param.put("text", paramValue);
+                    paramList.add(param);
+                }
+                
+                Map<String, Object> component = new HashMap<>();
+                component.put("type", "BODY");
+                component.put("parameters", paramList);
+                
+                templateBody.put("components", java.util.Collections.singletonList(component));
+            }
+
+            requestBody.put("template", templateBody);
+
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+
+            ResponseEntity<String> response = secureRestTemplate.exchange(
+                    whatsappUrl,
+                    HttpMethod.POST,
+                    entity,
+                    String.class
+            );
+
+            log.info("WhatsApp API response status: {}, body: {}", response.getStatusCode(), response.getBody());
+        } catch (Exception e) {
+            log.error("Error occurred while sending WhatsApp template message: ", e);
+        }
+    }
+
     public void sendWhatsApp(Sms sms) {
         if (whatsappUrl == null || whatsappUrl.isEmpty()) {
             log.warn("WhatsApp URL is not configured. Skipping WhatsApp message.");
@@ -99,24 +172,60 @@ public class WhatsAppService {
             requestBody.put("messaging_product", "whatsapp");
             requestBody.put("recipient_type", "individual");
             requestBody.put("to", sms.getMobileNumber());
-            requestBody.put("type", "text");
-
-            Map<String, String> textBody = new HashMap<>();
-            
-            // Format message for WhatsApp (e.g., make OTP bold)
+            // Format message for WhatsApp
             String message = sms.getMessage();
             if (message != null) {
                 java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("(?<!\\d)(\\d{6})(?!\\d)").matcher(message);
                 if (matcher.find() && sms.getCategory() != null && sms.getCategory().name().equals("OTP")) {
                     String otp = matcher.group(1);
-                    message = "Your OTP is *" + otp + "* for Login Verification on DJB Portal. Valid for 10 mins. Do not share it with anyone. Delhi Jal Board";
+                    
+                    requestBody.put("type", "template");
+                    Map<String, Object> templateBody = new HashMap<>();
+                    templateBody.put("name", "djb_portal_otp_verification");
+                    
+                    Map<String, Object> language = new HashMap<>();
+                    language.put("code", "en");
+                    templateBody.put("language", language);
+                    
+                    java.util.List<Map<String, Object>> components = new java.util.ArrayList<>();
+                    
+                    // Body component
+                    Map<String, Object> bodyComponent = new HashMap<>();
+                    bodyComponent.put("type", "body");
+                    Map<String, Object> bodyParam = new HashMap<>();
+                    bodyParam.put("type", "text");
+                    bodyParam.put("text", otp);
+                    bodyComponent.put("parameters", java.util.Collections.singletonList(bodyParam));
+                    components.add(bodyComponent);
+                    
+                    // Button component
+                    Map<String, Object> buttonComponent = new HashMap<>();
+                    buttonComponent.put("type", "button");
+                    buttonComponent.put("sub_type", "url");
+                    buttonComponent.put("index", "0");
+                    Map<String, Object> buttonParam = new HashMap<>();
+                    buttonParam.put("type", "text");
+                    buttonParam.put("text", otp);
+                    buttonComponent.put("parameters", java.util.Collections.singletonList(buttonParam));
+                    components.add(buttonComponent);
+                    
+                    templateBody.put("components", components);
+                    requestBody.put("template", templateBody);
+                    
                 } else {
+                    requestBody.put("type", "text");
+                    Map<String, String> textBody = new HashMap<>();
                     // Fallback to bolding the 6 digits if it's not the primary OTP category
                     message = message.replaceAll("(?<!\\d)(\\d{6})(?!\\d)", "*$1*");
+                    textBody.put("body", message);
+                    requestBody.put("text", textBody);
                 }
+            } else {
+                requestBody.put("type", "text");
+                Map<String, String> textBody = new HashMap<>();
+                textBody.put("body", "");
+                requestBody.put("text", textBody);
             }
-            textBody.put("body", message);
-            requestBody.put("text", textBody);
 
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
 
