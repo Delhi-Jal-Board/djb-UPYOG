@@ -411,7 +411,7 @@
                 <span class="dot dot-yellow"></span>
                 <span class="dot dot-green"></span>
               </div>
-              <div class="browser-url">https://dev-djberp.nitcon.in/digit-ui/employee</div>
+              <div class="browser-url" data-portal-path="/digit-ui/employee"></div>
             </div>
             <div class="browser-content">
               <img src="images/ekyc_work_step1_dashboard.png" alt="Employee Dashboard Landing Page & eKYC Admin Card">
@@ -447,7 +447,7 @@
                 <span class="dot dot-yellow"></span>
                 <span class="dot dot-green"></span>
               </div>
-              <div class="browser-url">https://dev-djberp.nitcon.in/digit-ui/employee/module/details</div>
+              <div class="browser-url" data-portal-path="/digit-ui/employee/module/details"></div>
             </div>
             <div class="browser-content">
               <img src="images/ekyc_work_step2_module_details.png" alt="eKYC Admin Options: M.F DOR FINANCE VIEW, Admin Dashboard, Inbox">
@@ -488,7 +488,7 @@
                 <span class="dot dot-yellow"></span>
                 <span class="dot dot-green"></span>
               </div>
-              <div class="browser-url">https://dev-djberp.nitcon.in/digit-ui/employee/ekyc/inbox</div>
+              <div class="browser-url" data-portal-path="/digit-ui/employee/ekyc/inbox"></div>
             </div>
             <div class="browser-content">
               <img src="images/ekyc_work_step3_inbox_ksearch.png" alt="eKYC Application Inbox & K Number Search Table">
@@ -530,7 +530,7 @@
                 <span class="dot dot-yellow"></span>
                 <span class="dot dot-green"></span>
               </div>
-              <div class="browser-url">https://dev-djberp.nitcon.in/digit-ui/employee/ekyc/admin-dashboard</div>
+              <div class="browser-url" data-portal-path="/digit-ui/employee/ekyc/admin-dashboard"></div>
             </div>
             <div class="browser-content">
               <img src="images/ekyc_work_step4_admin_dashboard.png" alt="Admin Dashboard Overview & Vendors Performance Tracking">
@@ -650,6 +650,24 @@
         Object.keys(map).forEach(function (id) {
           var el = document.getElementById(id);
           if (el) obs.observe(el);
+        });
+      }
+    })();
+
+    // Dynamic Portal URL from globalConfigs
+    (function () {
+      var portalUrl =
+        window.globalConfigs &&
+        typeof window.globalConfigs.getConfig === 'function'
+          ? window.globalConfigs.getConfig('PORTAL_URL')
+          : '';
+
+      if (portalUrl) {
+        portalUrl = portalUrl.replace(/\/+$/, '');
+
+        document.querySelectorAll('.browser-url[data-portal-path]').forEach(function (element) {
+          var path = element.getAttribute('data-portal-path');
+          element.textContent = portalUrl + path;
         });
       }
     })();
