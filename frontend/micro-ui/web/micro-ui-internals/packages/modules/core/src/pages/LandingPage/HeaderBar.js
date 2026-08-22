@@ -3,32 +3,7 @@ import { useHistory } from "react-router-dom";
 import headerConfig from "./configs/headerConfig";
 import ChangeLanguage from "../../components/ChangeLanguage";
 import { useTranslation } from "react-i18next";
-import { Modal, CloseSvg } from "@djb25/digit-ui-react-components";
 
-/* =========================
-   🔹 Training Modal (UI ONLY)
-   ========================= */
-const TrainingModal = ({ open, onClose }) => {
-  if (!open) return null;
-
-  return (
-    <Modal
-      headerBarMain="Training Presentation"
-      headerBarEnd={<CloseSvg onClick={onClose} style={{ cursor: "pointer", width: "24px", height: "24px" }} />}
-      hideSubmit={true}
-    >
-      <div style={{ padding: "10px" }}>
-        <iframe
-          src="https://docs.google.com/presentation/d/e/2PACX-1vRyjm4bQkEWVwpc6F0ZQDYEaOw66ngOuCb8FeSorxPM6mredx1T0mvRVhdH0xUguw/pubembed?start=true&loop=true&delayms=3000"
-          frameBorder="0"
-          allowFullScreen
-          title="Training Presentation"
-          style={{ width: "100%", height: "450px" }}
-        />
-      </div>
-    </Modal>
-  );
-};
 
 /* =========================
    🔹 HeaderBar Component
@@ -42,7 +17,7 @@ const HeaderBar = ({ logoUrl, stateInfo }) => {
      🔹 States
   ========================= */
   const [loginDropdownOpen, setLoginDropdownOpen] = useState(false);
-  const [showTrainingModal, setShowTrainingModal] = useState(false);
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const displayLogo = logoUrl || branding.logo;
@@ -70,20 +45,7 @@ const HeaderBar = ({ logoUrl, stateInfo }) => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  /* =========================
-     🔹 Body Scroll Lock (Modal/Mobile Menu)
-  ========================= */
-  useEffect(() => {
-    if (showTrainingModal) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
 
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [showTrainingModal]);
 
   /* =========================
      🔹 Close menus on outside click
@@ -433,9 +395,8 @@ const HeaderBar = ({ logoUrl, stateInfo }) => {
                 rel={item.external ? "noopener noreferrer" : undefined}
                 onClick={(e) => {
                   setMobileMenuOpen(false);
-                  if (item.openModal === "TRAINING_PPT") {
+                  if (item.link === "#") {
                     e.preventDefault();
-                    setShowTrainingModal(true);
                   } else if (item.link && !item.external) {
                     e.preventDefault();
                     history.push(item.link);
@@ -457,13 +418,7 @@ const HeaderBar = ({ logoUrl, stateInfo }) => {
         </nav>
       </div>
 
-      {/* =========================
-         🔹 Training Modal
-      ========================= */}
-      <TrainingModal
-        open={showTrainingModal}
-        onClose={() => setShowTrainingModal(false)}
-      />
+
     </React.Fragment>
   );
 };

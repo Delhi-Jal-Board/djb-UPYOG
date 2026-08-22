@@ -76,8 +76,7 @@ const headerConfig = {
     },
     {
       label: "TRAINING",
-      link: "#",
-      openModal: "TRAINING_PPT",
+      link: `/${contextPath}/home/user-guide`,
     },
     {
       label: "LOGIN",

@@ -8,6 +8,7 @@ import LandingPage from "./pages/LandingPage/LandingPage";
 import About from "./pages/LandingPage/About";
 import ContactUs from "./pages/LandingPage/ContactUs";
 import PrivacyPolicy from "./pages/LandingPage/PrivacyPolicy";
+import UserGuide from "./pages/LandingPage/UserGuide";
 
 export const DigitApp = ({ stateCode, modules, appTenants, logoUrl, initData }) => {
   const history = useHistory();
@@ -110,6 +111,12 @@ export const DigitApp = ({ stateCode, modules, appTenants, logoUrl, initData }) 
       <Route path="/digit-ui/home/privacy-policy">
         <PrivacyPolicy {...commonProps} />
       </Route>
+      <Route path="/digit-ui/home/user-guide">
+        <UserGuide {...commonProps} />
+      </Route>
+      <Route path="/digit-ui/home/training">
+        <UserGuide {...commonProps} />
+      </Route>
       <Route exact path="/digit-ui/home">
         <LandingPage {...commonProps} />
       </Route>
@@ -136,6 +143,12 @@ export const DigitApp = ({ stateCode, modules, appTenants, logoUrl, initData }) 
       </Route>
       <Route path="/digit-ui/citizen/privacy-policy">
         <PrivacyPolicy {...commonProps} />
+      </Route>
+      <Route path="/digit-ui/citizen/user-guide">
+        <UserGuide {...commonProps} />
+      </Route>
+      <Route path="/digit-ui/citizen/training">
+        <UserGuide {...commonProps} />
       </Route>
       <Route path="/digit-ui/citizen">
         <CitizenApp {...commonProps} />

@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Help &amp; Guide — EKYC DJB eKYC Operations</title>
+
+  <!-- Bootstrap Icons & Google Fonts -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Theme Script (EKYC parity) -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('ekyc-theme') || 'mazer';
+        if (t === 'midnight' || t === 'dark') t = 'night';
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (e) { /* private mode fallback */ }
+    })();
+  </script>
+
+  <style>
+    :root {
+      --bs-body-bg: #ffffff;
+      --bs-body-color: #334155;
+      --bs-heading-color: #0f172a;
+      --bs-secondary-color: #64748b;
+      --bs-tertiary-bg: #f8fafc;
+      --bs-secondary-bg: #ffffff;
+      --bs-primary: #2563eb;
+      --bs-primary-dark: #1d4ed8;
+      --bs-teal-brand: #00acb1;
+      --bs-border-color: #e2e8f0;
+      --bs-link-color: #2563eb;
+      --bs-accent: #f47738;
+      --bs-success: #059669;
+      --bs-warning: #d97706;
+      --bs-danger: #dc2626;
+    }
+
+    [data-theme="night"], [data-theme="dark"] {
+      --bs-body-bg: #0f172a;
+      --bs-body-color: #cbd5e1;
+      --bs-heading-color: #f8fafc;
+      --bs-secondary-color: #94a3b8;
+      --bs-tertiary-bg: #1e293b;
+      --bs-secondary-bg: #151c2c;
+      --bs-primary: #3b82f6;
+      --bs-primary-dark: #2563eb;
+      --bs-teal-brand: #22d3ee;
+      --bs-border-color: #334155;
+      --bs-link-color: #60a5fa;
+    }
+
+    html { scroll-behavior: smooth; }
+    body { background: var(--bs-body-bg); color: var(--bs-body-color); margin: 0; font-family: 'Inter', system-ui, -apple-system, sans-serif; line-height: 1.6; }
+    
+    .help-wrap { max-width: 1140px; margin-inline: auto; padding: 1.5rem 1.5rem 4rem; }
+
+    /* Topbar Styling (Matched to EKYC Guide) */
+    .help-topbar {
+      display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+      padding-bottom: 1.25rem; margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+    .help-brand { display: flex; align-items: center; gap: .5rem; font-weight: 700; font-size: 1.15rem; color: var(--bs-heading-color); }
+    .help-brand .drop {
+      width: 22px; height: 22px; border-radius: 50% 50% 50% 0; transform: rotate(45deg);
+      background: var(--bs-teal-brand); flex: none; display: inline-block; margin-right: 4px;
+    }
+    .help-brand small { font-weight: 500; color: var(--bs-secondary-color); font-size: 0.9rem; }
+
+    .topbar-actions { display: flex; align-items: center; gap: .75rem; flex-wrap: wrap; }
+
+    /* Search Bar */
+    .search-box {
+      position: relative;
+      width: 220px;
+    }
+    .search-box input {
+      width: 100%;
+      padding: .42rem .7rem .42rem 2.1rem;
+      border-radius: .375rem;
+      border: 1px solid var(--bs-border-color);
+      background: var(--bs-secondary-bg);
+      color: var(--bs-body-color);
+      font-size: .85rem;
+      outline: none;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .search-box input:focus {
+      border-color: var(--bs-primary);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--bs-primary) 15%, transparent);
+    }
+    .search-box i {
+      position: absolute; left: .7rem; top: 50%; transform: translateY(-50%);
+      color: var(--bs-secondary-color); font-size: .85rem;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex; align-items: center; gap: .45rem; padding: .45rem .9rem; border-radius: .4rem;
+      font-size: .85rem; font-weight: 600; text-decoration: none; cursor: pointer; border: 1px solid transparent; transition: all .15s;
+    }
+    .btn-primary { background: var(--bs-primary); color: #ffffff; border-color: var(--bs-primary); }
+    .btn-primary:hover { background: var(--bs-primary-dark); border-color: var(--bs-primary-dark); }
+    .btn-outline-secondary { background: transparent; color: var(--bs-secondary-color); border-color: var(--bs-border-color); }
+    .btn-outline-secondary:hover { background: var(--bs-tertiary-bg); color: var(--bs-heading-color); }
+
+    /* Grid Layout with Sticky Sidebar */
+    .help-grid { display: grid; grid-template-columns: 240px 1fr; gap: 2.5rem; align-items: start; }
+
+    /* Sidebar Table of Contents (Matching EKYC Guide Exact Palette & Style) */
+    .help-toc { position: sticky; top: 1.5rem; display: flex; flex-direction: column; gap: 4px; }
+    .help-toc .toc-label {
+      font-size: .68rem; letter-spacing: .1em; text-transform: uppercase;
+      color: var(--bs-secondary-color); font-weight: 700; margin: 0 .5rem .5rem;
+    }
+    .help-toc a {
+      display: flex; align-items: center; gap: .6rem; padding: .4rem .6rem; border-radius: .25rem;
+      color: #475467; text-decoration: none; font-size: .875rem; font-weight: 500;
+      border-left: 2px solid transparent; transition: all .15s;
+    }
+    [data-theme="night"] .help-toc a, [data-theme="dark"] .help-toc a { color: #94a3b8; }
+    .help-toc a:hover { color: var(--bs-heading-color); background: var(--bs-tertiary-bg); }
+    .help-toc a.active { color: var(--bs-heading-color); border-left-color: var(--bs-primary); font-weight: 600; background: var(--bs-tertiary-bg); }
+    .help-toc a i { width: 18px; text-align: center; font-size: .95rem; color: var(--bs-secondary-color); flex: none; }
+    .help-toc a.active i { color: var(--bs-primary); }
+
+    /* Prerequisite Link Banner */
+    .prereq-banner {
+      background: var(--bs-tertiary-bg);
+      border: 1px solid var(--bs-border-color);
+      border-left: 3px solid var(--bs-primary);
+      border-radius: .5rem;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+    .prereq-banner .title { font-size: .92rem; font-weight: 700; color: var(--bs-heading-color); margin: 0 0 .2rem; }
+    .prereq-banner .desc { font-size: .84rem; color: var(--bs-secondary-color); margin: 0; }
+
+    /* Roles Filter Bar */
+    .roles-bar {
+      background: var(--bs-secondary-bg);
+      border: 1px solid var(--bs-border-color);
+      border-radius: .5rem;
+      padding: .85rem 1.1rem;
+      margin-bottom: 1.75rem;
+    }
+    .roles-bar .bar-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: .6rem; }
+    .roles-bar .bar-head span { font-size: .82rem; font-weight: 700; color: var(--bs-heading-color); text-transform: uppercase; letter-spacing: .05em; }
+    .role-pills { display: flex; gap: .5rem; flex-wrap: wrap; }
+    .role-pill {
+      background: var(--bs-tertiary-bg);
+      border: 1px solid var(--bs-border-color);
+      color: var(--bs-secondary-color);
+      padding: .35rem .75rem;
+      border-radius: 2rem;
+      font-size: .78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .role-pill:hover, .role-pill.active {
+      background: var(--bs-primary);
+      color: #ffffff;
+      border-color: var(--bs-primary);
+    }
+
+    /* Sections */
+    .help-section { scroll-margin-top: 1.5rem; }
+    .help-section + .help-section { margin-top: 2.25rem; padding-top: 2.25rem; border-top: 1px solid var(--bs-border-color); }
+    .help-section h2 {
+      font-size: 1.25rem; font-weight: 700; letter-spacing: -.01em;
+      display: flex; align-items: center; gap: .5rem; margin: 0 0 .4rem;
+      color: var(--bs-heading-color);
+    }
+    .help-section h2 i { font-size: 1.15rem; color: var(--bs-secondary-color); }
+    .help-section > p.lead { color: var(--bs-secondary-color); font-size: .95rem; line-height: 1.6; margin: 0 0 1.25rem; max-width: 72ch; }
+
+    /* Step Items Styling */
+    .help-step { display: flex; gap: .75rem; align-items: flex-start; line-height: 1.55; }
+    .help-step + .help-step { margin-top: .65rem; }
+    .help-step .num {
+      flex: none; width: 22px; height: 22px; border-radius: 50%;
+      background: var(--bs-primary); color: #fff; font-size: .72rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center; margin-top: 2px;
+    }
+    .help-step .txt { font-size: .92rem; color: var(--bs-body-color); }
+    .help-step .txt b { color: var(--bs-heading-color); }
+
+    /* Subheadings */
+    .sub-head {
+      font-size: .95rem; font-weight: 700; color: var(--bs-heading-color);
+      margin: 1.25rem 0 .6rem; display: flex; align-items: center; gap: .45rem;
+    }
+
+    /* Alert / Callout Box */
+    .callout-box {
+      border-radius: .5rem;
+      padding: .85rem 1rem;
+      font-size: .88rem;
+      margin-top: 1rem;
+      display: flex;
+      gap: .75rem;
+      align-items: flex-start;
+      border: 1px solid var(--bs-border-color);
+      background: var(--bs-tertiary-bg);
+    }
+    .callout-info i { color: var(--bs-primary); font-size: 1.1rem; flex: none; }
+    .callout-warning i { color: var(--bs-warning); font-size: 1.1rem; flex: none; }
+    .callout-success i { color: var(--bs-success); font-size: 1.1rem; flex: none; }
+
+    /* Visual Browser Frames */
+    .browser-frame {
+      background: var(--bs-secondary-bg);
+      border: 1px solid var(--bs-border-color);
+      border-radius: .5rem;
+      overflow: hidden;
+      margin-top: 1.25rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+    .browser-bar {
+      background: #1e293b;
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .browser-dots { display: flex; gap: 5px; }
+    .dot { width: 9px; height: 9px; border-radius: 50%; }
+    .dot-red { background: #ef4444; }
+    .dot-yellow { background: #f59e0b; }
+    .dot-green { background: #10b981; }
+    .browser-url {
+      background: #334155;
+      color: #94a3b8;
+      font-family: monospace;
+      font-size: .78rem;
+      padding: 3px 10px;
+      border-radius: 4px;
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .browser-content img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* Grid layout for cards */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .grid-card {
+      background: var(--bs-secondary-bg);
+      border: 1px solid var(--bs-border-color);
+      border-radius: .5rem;
+      padding: 1rem;
+      transition: border-color .15s;
+    }
+    .grid-card:hover {
+      border-color: var(--bs-primary);
+    }
+    .grid-card .icon {
+      width: 32px; height: 32px; border-radius: .375rem;
+      background: var(--bs-tertiary-bg);
+      color: var(--bs-primary);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; margin-bottom: .6rem;
+    }
+    .grid-card h4 { font-size: .92rem; font-weight: 700; color: var(--bs-heading-color); margin: 0 0 .3rem; }
+    .grid-card p { font-size: .84rem; color: var(--bs-secondary-color); margin: 0; line-height: 1.5; }
+
+    /* Footer */
+    .help-footer {
+      text-align: center;
+      padding-top: 2rem;
+      margin-top: 3.5rem;
+      border-top: 1px solid var(--bs-border-color);
+      color: var(--bs-secondary-color);
+      font-size: .82rem;
+    }
+
+    /* Embedded Mode Support */
+    body.embed .help-topbar { display: none; }
+    body.embed .help-grid { grid-template-columns: 1fr; }
+    body.embed .help-toc { display: none; }
+    body.embed .help-wrap { padding: 1rem 1rem 2.5rem; }
+
+    @media (max-width: 860px) {
+      .help-grid { grid-template-columns: 1fr; }
+      .help-toc { position: static; flex-direction: row; flex-wrap: wrap; margin-bottom: 1.25rem; }
+      .help-toc .toc-label { width: 100%; }
+      .search-box { width: 100%; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="help-wrap">
+
+    <!-- Top Navigation Bar (Matches EKYC Portal Header) -->
+    <div class="help-topbar">
+      <div class="help-brand">
+        <span class="drop" aria-hidden="true"></span>
+        <span>Help &amp; Guide <small>- EKYC</small></span>
+      </div>
+
+      <div class="topbar-actions">
+        <div class="search-box">
+          <i class="bi bi-search"></i>
+          <input type="text" id="manualSearch" placeholder="Search guide..." onkeyup="searchManual()">
+        </div>
+
+        <button id="themeToggle" type="button" class="btn btn-outline-secondary" title="Switch Theme">
+          <i class="bi bi-moon-stars-fill me-1"></i> <span>Dark Mode</span>
+        </button>
+          <a href="./index.html" class="btn btn-outline-secondary">
+            <i class="bi bi-house-door-fill me-1"></i> Manuals Hub
+          </a>
+
+
+        <a href="./employee_login.html" class="btn btn-outline-secondary">
+          <i class="bi bi-key me-1"></i> Login Guide
+        </a>
+
+        <button type="button" class="btn btn-primary" onclick="window.print()">
+          <i class="bi bi-box-arrow-right me-1"></i> Back to app
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Content Layout Grid -->
+    <div class="help-grid">
+
+      <!-- Left Sidebar: Table of Contents -->
+      <aside class="help-toc" id="helpToc">
+        <span class="toc-label">ON THIS PAGE</span>
+        <a href="#step1"><i class="bi bi-grid-1x2"></i> 1. Dashboard Card</a>
+        <a href="#step2"><i class="bi bi-folder-symlink"></i> 2. Sub-Modules</a>
+        <a href="#step3"><i class="bi bi-inbox"></i> 3. Inbox &amp; Search</a>
+        <a href="#step4"><i class="bi bi-speedometer2"></i> 4. Admin Dashboard</a>
+        <a href="#step5"><i class="bi bi-graph-up-arrow"></i> 5. Finance View</a>
+      </aside>
+
+      <!-- Right Main Workspace -->
+      <main class="help-content">
+
+        <!-- Prerequisite Login Link Banner -->
+        <div class="prereq-banner">
+          <div>
+            <div class="title"><i class="bi bi-shield-lock text-primary me-1"></i> Prerequisite: Authentication Required</div>
+            <p class="desc">This operational manual starts post-login. If you need help with Single Sign-On (SSO) & OTP verification, visit the Login Manual.</p>
+          </div>
+          <a href="./employee_login.html" class="btn btn-outline-secondary" style="white-space: nowrap;">
+            Login User Manual →
+          </a>
+        </div>
+
+        <!-- Role Filter Bar -->
+        <div class="roles-bar">
+          <div class="bar-head">
+            <span><i class="bi bi-people me-1"></i> Supported System Roles</span>
+            <small style="color: var(--bs-secondary-color);">Filter instructions by your designated role:</small>
+          </div>
+          <div class="role-pills">
+            <button class="role-pill active" onclick="filterRole('ALL')">All Roles</button>
+            <button class="role-pill" onclick="filterRole('EMPLOYEE')">EMPLOYEE</button>
+            <button class="role-pill" onclick="filterRole('SURVEYOR')">EKYC_SURVEYOR</button>
+            <button class="role-pill" onclick="filterRole('SUPERVISOR')">EKYC_SUPERVISOR</button>
+            <button class="role-pill" onclick="filterRole('VENDOR')">EKYC_VENDOR</button>
+            <button class="role-pill" onclick="filterRole('ZRO')">EKYC_ZRO</button>
+          </div>
+        </div>
+
+        <!-- STEP 1: LOCATING EKYC ADMIN CARD ON DASHBOARD -->
+        <section id="step1" class="help-section" data-roles="EMPLOYEE SURVEYOR SUPERVISOR VENDOR ZRO">
+          <h2><i class="bi bi-grid-1x2"></i> Step 1: Locating eKYC Admin Module on Dashboard</h2>
+          <p class="lead">Accessing module cards under Core Services based on your assigned staff role.</p>
+
+          <div class="help-step"><span class="num">1</span><span class="txt">After successful login, your browser displays the <b>Employee Home Landing Page</b> showing your greeting, designation (e.g. <i>DDO - Drawing and Disbursing Officer</i>), and active financial year.</span></div>
+          <div class="help-step"><span class="num">2</span><span class="txt">Scroll down to the <b>Core Services</b> card section on your dashboard.</span></div>
+          <div class="help-step"><span class="num">3</span><span class="txt">Locate the <b>eKYC Admin</b> module card. The card displays live summary metrics such as <b style="color: var(--bs-primary);">TOTAL EKYC: 3498162</b>.</span></div>
+          <div class="help-step"><span class="num">4</span><span class="txt">Click on the <b>Details</b> button at the bottom-right of the eKYC Admin card to view available sub-modules.</span></div>
+
+          <div class="callout-box callout-info">
+            <i class="bi bi-info-circle-fill"></i>
+            <div>
+              <b>Role Visibility:</b> Module cards displayed under Core Services automatically adapt based on your Keycloak user roles (e.g. <i>EMPLOYEE</i>, <i>EKYC_SURVEYOR</i>, <i>EKYC_SUPERVISOR</i>, <i>EKYC_VENDOR</i>, <i>EKYC_ZRO</i>).
+            </div>
+          </div>
+
+          <!-- Browser Mockup 1 -->
+          <div class="browser-frame">
+            <div class="browser-bar">
+              <div class="browser-dots">
+                <span class="dot dot-red"></span>
+                <span class="dot dot-yellow"></span>
+                <span class="dot dot-green"></span>
+              </div>
+              <div class="browser-url">https://dev-djberp.nitcon.in/digit-ui/employee</div>
+            </div>
+            <div class="browser-content">
+              <img src="images/ekyc_work_step1_dashboard.png" alt="Employee Dashboard Landing Page & eKYC Admin Card">
+            </div>
+          </div>
+        </section>
+
+        <!-- STEP 2: EKYC ADMIN SUB-MODULE OPTIONS -->
+        <section id="step2" class="help-section" data-roles="EMPLOYEE SURVEYOR SUPERVISOR VENDOR ZRO">
+          <h2><i class="bi bi-folder-symlink"></i> Step 2: Navigating eKYC Admin Sub-Modules</h2>
+          <p class="lead">Selecting operational options based on your departmental responsibilities.</p>
+
+          <div class="help-step"><span class="num">1</span><span class="txt">Clicking <b>Details</b> redirects you to the eKYC Admin options page (<code>/digit-ui/employee/module/details</code>).</span></div>
+          <div class="help-step"><span class="num">2</span><span class="txt">Depending on your assigned roles, you will see up to three core operational cards:
+            <br>• 📥 <b>Inbox</b> (Shows live counter, e.g., <b style="color: var(--bs-primary);">3498162</b>): Click to search, review, and process consumer applications.
+            <br>• 📊 <b>Admin Dashboard</b>: Click to monitor total eKYC applications, platform performance, and vendor efficiency.
+            <br>• 💰 <b>M.F DOR FINANCE VIEW</b>: Designed for executive officers to review revenue impact, agency performance, and zone-wise progress.
+          </span></div>
+          <div class="help-step"><span class="num">3</span><span class="txt">Click on any card option arrow (<b>›</b>) to open that module workspace.</span></div>
+
+          <div class="callout-box callout-success">
+            <i class="bi bi-lightning-charge-fill"></i>
+            <div>
+              <b>Quick Tip:</b> You can also use the left sidebar menu under <i>ALL MODULES → eKYC Admin</i> to jump between modules at any time!
+            </div>
+          </div>
+
+          <!-- Browser Mockup 2 -->
+          <div class="browser-frame">
+            <div class="browser-bar">
+              <div class="browser-dots">
+                <span class="dot dot-red"></span>
+                <span class="dot dot-yellow"></span>
+                <span class="dot dot-green"></span>
+              </div>
+              <div class="browser-url">https://dev-djberp.nitcon.in/digit-ui/employee/module/details</div>
+            </div>
+            <div class="browser-content">
+              <img src="images/ekyc_work_step2_module_details.png" alt="eKYC Admin Options: M.F DOR FINANCE VIEW, Admin Dashboard, Inbox">
+            </div>
+          </div>
+        </section>
+
+        <!-- STEP 3: EKYC INBOX & K. NUMBER SEARCH -->
+        <section id="step3" class="help-section" data-roles="EMPLOYEE SURVEYOR SUPERVISOR VENDOR ZRO">
+          <h2><i class="bi bi-inbox"></i> Step 3: eKYC Application Inbox &amp; Searching by K. Number</h2>
+          <p class="lead">Retrieving consumer eKYC applications and reviewing submission records.</p>
+
+          <div class="help-step"><span class="num">1</span><span class="txt">Click on <b>Inbox</b> from the eKYC Admin details page (<code>/digit-ui/employee/ekyc/inbox</code>).</span></div>
+          <div class="help-step"><span class="num">2</span><span class="txt"><b>Search by K. Number:</b> Type the consumer's <b>K. Number</b> into the search box at the top and click the blue <b>Search</b> button. Click <b>Clear Search</b> to reset filters.</span></div>
+          <div class="help-step"><span class="num">3</span><span class="txt"><b>Total Records Counter:</b> Displays total applications in the system (e.g. <b style="color: var(--bs-primary);">3498162 TOTAL RECORDS</b>).</span></div>
+          <div class="help-step"><span class="num">4</span><span class="txt"><b>Data Table Columns:</b>
+            <br>• <b>Application Number:</b> Clickable ID link (e.g., <i>3354985034</i>, <i>9881841000</i>).
+            <br>• <b>Name:</b> Consumer full name (e.g., <i>Meenu Jha</i>, <i>Virender Virender</i>).
+            <br>• <b>Status:</b> Connection state (<i>ACTIVE</i> / <i>STOPPED</i>).
+            <br>• <b>Submitted At:</b> Date of application submission.
+            <br>• <b>Assigned At:</b> Current staff/surveyor assigned.
+            <br>• <b>eKYC Status:</b> Verification stage tag (<i>SUBMITTED</i>, <i>PENDING</i>, <i>APPROVED</i>).
+          </span></div>
+          <div class="help-step"><span class="num">5</span><span class="txt">Click on any blue <b>Application Number / K. Number</b> link to open full application details, meter photos, and take verification actions.</span></div>
+
+          <div class="callout-box callout-warning">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <div>
+              <b>Action Required for Field Staff:</b> Click on assigned application numbers to perform field surveys, capture meter photos, or approve/reject eKYC data.
+            </div>
+          </div>
+
+          <!-- Browser Mockup 3 -->
+          <div class="browser-frame">
+            <div class="browser-bar">
+              <div class="browser-dots">
+                <span class="dot dot-red"></span>
+                <span class="dot dot-yellow"></span>
+                <span class="dot dot-green"></span>
+              </div>
+              <div class="browser-url">https://dev-djberp.nitcon.in/digit-ui/employee/ekyc/inbox</div>
+            </div>
+            <div class="browser-content">
+              <img src="images/ekyc_work_step3_inbox_ksearch.png" alt="eKYC Application Inbox & K Number Search Table">
+            </div>
+          </div>
+        </section>
+
+        <!-- STEP 4: ADMIN DASHBOARD & VENDOR PERFORMANCE -->
+        <section id="step4" class="help-section" data-roles="EMPLOYEE SUPERVISOR VENDOR ZRO">
+          <h2><i class="bi bi-speedometer2"></i> Step 4: Admin Dashboard &amp; Vendor Performance Monitoring</h2>
+          <p class="lead">Tracking overall eKYC application progress, platform efficiency, and agency metrics.</p>
+
+          <div class="help-step"><span class="num">1</span><span class="txt">Click on <b>Admin Dashboard</b> card (<code>/digit-ui/employee/ekyc/admin-dashboard</code>).</span></div>
+          <div class="help-step"><span class="num">2</span><span class="txt"><b>Institutional Overview:</b>
+            <br>• <b>Total Applications:</b> Real-time counter of total submissions with a <b>Download Excel</b> button for automated report generation.
+            <br>• <b>Status Breakdown:</b> Visual progress tracking for <i>Completed</i>, <i>Pending</i>, <i>Submitted</i>, and <i>In-Progress</i> verification lifecycles.
+            <br>• <b>Submission Health:</b> Platform efficiency rate %, average processing latency (seconds/minutes), and system error rate %.
+          </span></div>
+          <div class="help-step"><span class="num">3</span><span class="txt"><b>Vendors Performance:</b>
+            <br>• Real-time cards evaluating registered vendor agencies:
+            <br>&nbsp;&nbsp;- 🏢 <b>CHECK Pvt. Ltd.</b> (Mobile: 9845681234)
+            <br>&nbsp;&nbsp;- 🏢 <b>Avinash Pvt. Ltd.</b> (Mobile: 9875434256)
+            <br>&nbsp;&nbsp;- 🏢 <b>Kesuki Honda Pvt. Ltd.</b> (Mobile: 9452394523)
+            <br>• Tracks completion percentage, field surveyor activity, and agency SLA compliance.
+          </span></div>
+
+          <div class="callout-box callout-success">
+            <i class="bi bi-file-earmark-excel-fill"></i>
+            <div>
+              <b>Excel Export:</b> Click the green <b>Download Excel</b> button on the dashboard to export full raw application datasets for offline reporting and meetings!
+            </div>
+          </div>
+
+          <!-- Browser Mockup 4 -->
+          <div class="browser-frame">
+            <div class="browser-bar">
+              <div class="browser-dots">
+                <span class="dot dot-red"></span>
+                <span class="dot dot-yellow"></span>
+                <span class="dot dot-green"></span>
+              </div>
+              <div class="browser-url">https://dev-djberp.nitcon.in/digit-ui/employee/ekyc/admin-dashboard</div>
+            </div>
+            <div class="browser-content">
+              <img src="images/ekyc_work_step4_admin_dashboard.png" alt="Admin Dashboard Overview & Vendors Performance Tracking">
+            </div>
+          </div>
+        </section>
+
+        <!-- STEP 5: M.F DOR FINANCE VIEW (EXECUTIVE ANALYTICS) -->
+        <section id="step5" class="help-section" data-roles="SUPERVISOR ZRO">
+          <h2><i class="bi bi-graph-up-arrow"></i> Step 5: M.F DOR FINANCE VIEW (Executive Financial &amp; Zone Analytics)</h2>
+          <p class="lead">Macro-level oversight for higher authorities (ZRO, DOR, Finance Officers, and Dept Heads).</p>
+
+          <div class="cards-grid">
+            <div class="grid-card">
+              <div class="icon"><i class="bi bi-currency-rupee"></i></div>
+              <h4>Revenue Data &amp; Module Progress</h4>
+              <p>Full financial analytics detailing eKYC coverage, revenue integrity, bill accuracy improvements, and portal adoption across all Delhi Jal Board zones.</p>
+            </div>
+
+            <div class="grid-card">
+              <div class="icon"><i class="bi bi-building"></i></div>
+              <h4>Agency Performance Snapshot</h4>
+              <p>Search, filter, and navigate into detailed operational analytics for every assigned vendor agency, evaluating field surveyor productivity and completion rates.</p>
+            </div>
+
+            <div class="grid-card">
+              <div class="icon"><i class="bi bi-geo-alt"></i></div>
+              <h4>Jurisdiction Performance</h4>
+              <p>Top zones and divisions evaluated from the full agency dataset, highlighting top-performing revenue circles and areas needing intervention.</p>
+            </div>
+
+            <div class="grid-card">
+              <div class="icon"><i class="bi bi-shield-exclamation"></i></div>
+              <h4>Critical Alerts &amp; Efficiency</h4>
+              <p>Automated flagging of SLA delays, field verification bottlenecks, workforce activity tracking, and turnaround efficiency across all revenue divisions.</p>
+            </div>
+          </div>
+
+          <div class="callout-box callout-info">
+            <i class="bi bi-person-badge-fill"></i>
+            <div>
+              <b>Executive Access:</b> The M.F DOR Finance View is specifically enabled for ZRO (Zone Revenue Officers), DOR, and senior executive officers to ensure complete transparency and data-driven decision making.
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="help-footer">
+      <p>© 2026 Delhi Jal Board | Integrated Enterprise Management System | Designed &amp; Developed by NITCON Ltd.</p>
+    </footer>
+
+  </div>
+
+  <script>
+    (function () {
+      // Embedded mode detection (inside right-sidebar iframe)
+      if (new URLSearchParams(location.search).get('embed') === '1') {
+        document.body.classList.add('embed');
+      }
+
+      // Theme Application & Toggle
+      function apply(theme) {
+        if (!theme) theme = 'mazer';
+        if (theme === 'midnight' || theme === 'dark') theme = 'night';
+        document.documentElement.setAttribute('data-theme', theme);
+
+        var btn = document.getElementById('themeToggle');
+        if (btn) {
+          if (theme === 'night') {
+            btn.innerHTML = '<i class="bi bi-sun-fill text-warning me-1"></i> <span>Light Mode</span>';
+            btn.setAttribute('title', 'Switch to Light Mode');
+          } else {
+            btn.innerHTML = '<i class="bi bi-moon-stars-fill me-1"></i> <span>Dark Mode</span>';
+            btn.setAttribute('title', 'Switch to Dark Mode');
+          }
+        }
+      }
+
+      // Initial Sync
+      var currentSaved = localStorage.getItem('ekyc-theme') || 'mazer';
+      apply(currentSaved);
+
+      window.addEventListener('storage', function (e) {
+        if (e.key === 'ekyc-theme') apply(e.newValue);
+      });
+
+      var toggle = document.getElementById('themeToggle');
+      if (toggle) {
+        toggle.addEventListener('click', function () {
+          var cur = document.documentElement.getAttribute('data-theme');
+          var next = (cur === 'night') ? 'mazer' : 'night';
+          try { localStorage.setItem('ekyc-theme', next); } catch (e) {}
+          apply(next);
+        });
+      }
+
+      // Scroll-spy ToC Active Link observer
+      var links = Array.prototype.slice.call(document.querySelectorAll('#helpToc a'));
+      var map = {};
+      links.forEach(function (a) {
+        var id = a.getAttribute('href').slice(1);
+        var sec = document.getElementById(id);
+        if (sec) map[id] = a;
+      });
+      if ('IntersectionObserver' in window) {
+        var obs = new IntersectionObserver(function (entries) {
+          entries.forEach(function (en) {
+            if (en.isIntersecting) {
+              links.forEach(function (l) { l.classList.remove('active'); });
+              if (map[en.target.id]) map[en.target.id].classList.add('active');
+            }
+          });
+        }, { rootMargin: '0px 0px -70% 0px', threshold: 0 });
+        Object.keys(map).forEach(function (id) {
+          var el = document.getElementById(id);
+          if (el) obs.observe(el);
+        });
+      }
+    })();
+
+    // Live Text Search Functionality
+    function searchManual() {
+      var query = document.getElementById('manualSearch').value.toLowerCase();
+      var sections = document.querySelectorAll('.help-section');
+      
+      sections.forEach(function (sec) {
+        var text = sec.textContent.toLowerCase();
+        if (text.indexOf(query) !== -1) {
+          sec.style.display = 'block';
+        } else {
+          sec.style.display = 'none';
+        }
+      });
+    }
+
+    // Role-based Filtering Functionality
+    function filterRole(role) {
+      var pills = document.querySelectorAll('.role-pill');
+      pills.forEach(function (p) { p.classList.remove('active'); });
+      if (event && event.target) event.target.classList.add('active');
+
+      var sections = document.querySelectorAll('.help-section');
+      sections.forEach(function (sec) {
+        var allowedRoles = sec.getAttribute('data-roles');
+        if (role === 'ALL' || (allowedRoles && allowedRoles.indexOf(role) !== -1)) {
+          sec.style.display = 'block';
+        } else {
+          sec.style.display = 'none';
+        }
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="mazer">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Delhi Jal Board - eKYC User Manual Documentation Hub</title>
+    <meta
+      name="description"
+      content="Official Delhi Jal Board (DJB) eKYC Module User Manual Hub. Step-by-step guides for Employee Login, Vendor Onboarding, Supervisor Creation, Surveyor Mapping, and 2FA Authentication."
+    />
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Bootstrap Icons v1.11.3 -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.com/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    />
+
+    <!-- Theme Script (EKYC parity) -->
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem("ekyc-theme") || "mazer";
+          if (t === "midnight" || t === "dark") t = "night";
+          document.documentElement.setAttribute("data-theme", t);
+        } catch (e) {}
+      })();
+    </script>
+
+    <style>
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      :root {
+        --bs-body-bg: #f8fafc;
+        --bs-body-color: #334155;
+        --bs-heading-color: #0f172a;
+        --bs-secondary-color: #64748b;
+        --bs-tertiary-bg: #ffffff;
+        --bs-secondary-bg: #ffffff;
+        --bs-primary: #2563eb;
+        --bs-primary-dark: #1d4ed8;
+        --bs-teal-brand: #00acb1;
+        --bs-border-color: #e2e8f0;
+        --bs-link-color: #2563eb;
+        --bs-accent: #f47738;
+        --bs-success: #059669;
+        --bs-warning: #d97706;
+        --bs-card-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06);
+        --bs-card-hover-shadow: 0 12px 30px -4px rgba(37, 99, 235, 0.12);
+      }
+
+      [data-theme="night"],
+      [data-theme="dark"] {
+        --bs-body-bg: #0f172a;
+        --bs-body-color: #cbd5e1;
+        --bs-heading-color: #f8fafc;
+        --bs-secondary-color: #94a3b8;
+        --bs-tertiary-bg: #1e293b;
+        --bs-secondary-bg: #151c2c;
+        --bs-primary: #3b82f6;
+        --bs-primary-dark: #2563eb;
+        --bs-teal-brand: #22d3ee;
+        --bs-border-color: #334155;
+        --bs-link-color: #60a5fa;
+        --bs-card-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.3);
+        --bs-card-hover-shadow: 0 12px 30px -4px rgba(59, 130, 246, 0.2);
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        background: var(--bs-body-bg);
+        color: var(--bs-body-color);
+        margin: 0;
+        font-family: "Inter", system-ui, -apple-system, sans-serif;
+        line-height: 1.6;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Main Wrapper */
+      .hub-wrap {
+        width: 100%;
+        max-width: 1320px;
+        margin: 0 auto;
+        padding: 1.5rem 1.5rem 4rem;
+        flex: 1;
+      }
+
+      /* Topbar Styling */
+      .help-topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.9rem 1.5rem;
+        background: var(--bs-secondary-bg);
+        border: 1px solid var(--bs-border-color);
+        border-radius: 0.75rem;
+        box-shadow: var(--bs-card-shadow);
+        margin-bottom: 2rem;
+      }
+
+      .help-brand {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-weight: 800;
+        font-size: 1.15rem;
+        color: var(--bs-heading-color);
+        letter-spacing: -0.02em;
+        text-decoration: none;
+      }
+
+      .help-brand .drop {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        background: var(--bs-teal-brand);
+        border-radius: 50% 50% 50% 0;
+        transform: rotate(-45deg);
+      }
+
+      .help-brand small {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--bs-secondary-color);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-left: 0.35rem;
+      }
+
+      .topbar-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+      }
+
+      /* Search Box */
+      .search-box {
+        position: relative;
+        width: 260px;
+        max-width: 100%;
+        box-sizing: border-box;
+      }
+
+      .search-box input {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 0.48rem 0.75rem 0.48rem 2.2rem;
+        border-radius: 0.5rem;
+        border: 1px solid var(--bs-border-color);
+        background: var(--bs-tertiary-bg);
+        color: var(--bs-body-color);
+        font-size: 0.85rem;
+        outline: none;
+        transition: border-color 0.15s, box-shadow 0.15s;
+      }
+
+      .search-box input:focus {
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--bs-primary) 15%, transparent);
+      }
+
+      .search-box i {
+        position: absolute;
+        left: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--bs-secondary-color);
+        font-size: 0.85rem;
+        pointer-events: none;
+      }
+
+      /* Buttons */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.45rem 0.95rem;
+        border-radius: 0.5rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        border: 1px solid transparent;
+        transition: all 0.15s ease-in-out;
+      }
+
+      .btn-primary {
+        background: var(--bs-primary);
+        color: #ffffff;
+        border-color: var(--bs-primary);
+      }
+
+      .btn-primary:hover {
+        background: var(--bs-primary-dark);
+        border-color: var(--bs-primary-dark);
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+      }
+
+      .btn-outline-secondary {
+        background: transparent;
+        color: var(--bs-secondary-color);
+        border-color: var(--bs-border-color);
+      }
+
+      .btn-outline-secondary:hover {
+        background: var(--bs-tertiary-bg);
+        color: var(--bs-heading-color);
+        border-color: var(--bs-primary);
+      }
+
+      /* Hero Section */
+      .hero-card {
+        background: linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, rgba(0, 172, 177, 0.05) 100%);
+        border: 1px solid var(--bs-border-color);
+        border-radius: 1rem;
+        padding: 2.5rem 2rem;
+        margin-bottom: 2.5rem;
+        box-shadow: var(--bs-card-shadow);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .hero-card::before {
+        content: "";
+        position: absolute;
+        top: -50px;
+        right: -50px;
+        width: 250px;
+        height: 250px;
+        background: radial-gradient(circle, rgba(37, 99, 235, 0.12) 0%, transparent 70%);
+        border-radius: 50%;
+        pointer-events: none;
+      }
+
+      .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.3rem 0.75rem;
+        border-radius: 2rem;
+        background: rgba(37, 99, 235, 0.1);
+        color: var(--bs-primary);
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 1rem;
+      }
+
+      .hero-title {
+        font-size: 2.1rem;
+        font-weight: 800;
+        color: var(--bs-heading-color);
+        margin: 0 0 0.75rem;
+        letter-spacing: -0.03em;
+        line-height: 1.25;
+      }
+
+      .hero-desc {
+        font-size: 1.05rem;
+        color: var(--bs-secondary-color);
+        margin: 0 0 1.75rem;
+        max-width: 78ch;
+        line-height: 1.6;
+      }
+
+      .hero-stats {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+        padding-top: 1.25rem;
+        border-top: 1px dashed var(--bs-border-color);
+      }
+
+      .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--bs-heading-color);
+      }
+
+      .stat-item i {
+        color: var(--bs-primary);
+        font-size: 1.1rem;
+      }
+
+      /* Workflow Stepper Diagram */
+      .section-header {
+        margin-bottom: 1.5rem;
+      }
+
+      .section-title {
+        font-size: 1.35rem;
+        font-weight: 800;
+        color: var(--bs-heading-color);
+        margin: 0 0 0.35rem;
+        letter-spacing: -0.02em;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .section-subtitle {
+        font-size: 0.9rem;
+        color: var(--bs-secondary-color);
+        margin: 0;
+      }
+
+      .workflow-pipeline {
+        background: var(--bs-secondary-bg);
+        border: 1px solid var(--bs-border-color);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        margin-bottom: 3rem;
+        box-shadow: var(--bs-card-shadow);
+      }
+
+      .pipeline-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 0.75rem;
+        align-items: center;
+      }
+
+      .pipeline-step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 0.85rem 0.6rem;
+        background: var(--bs-tertiary-bg);
+        border: 1px solid var(--bs-border-color);
+        border-radius: 0.6rem;
+        text-decoration: none;
+        color: var(--bs-body-color);
+        transition: all 0.2s ease;
+        position: relative;
+      }
+
+      .pipeline-step:hover {
+        transform: translateY(-3px);
+        border-color: var(--bs-primary);
+        background: var(--bs-secondary-bg);
+        box-shadow: var(--bs-card-hover-shadow);
+      }
+
+      .step-num {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: var(--bs-primary);
+        color: #ffffff;
+        font-size: 0.75rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 0.4rem;
+      }
+
+      .step-icon {
+        font-size: 1.25rem;
+        color: var(--bs-teal-brand);
+        margin-bottom: 0.35rem;
+      }
+
+      .step-label {
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: var(--bs-heading-color);
+        line-height: 1.2;
+      }
+
+      .step-role {
+        font-size: 0.68rem;
+        color: var(--bs-secondary-color);
+        margin-top: 0.2rem;
+      }
+
+      /* Filter Toolbar */
+      .filter-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+      }
+
+      .filter-buttons {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        flex-wrap: wrap;
+      }
+
+      .filter-btn {
+        padding: 0.35rem 0.85rem;
+        border-radius: 2rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+        border: 1px solid var(--bs-border-color);
+        background: var(--bs-secondary-bg);
+        color: var(--bs-secondary-color);
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+
+      .filter-btn:hover,
+      .filter-btn.active {
+        background: var(--bs-primary);
+        color: #ffffff;
+        border-color: var(--bs-primary);
+      }
+
+      .results-count {
+        font-size: 0.85rem;
+        color: var(--bs-secondary-color);
+        font-weight: 500;
+      }
+
+      /* Cards Grid */
+      .manuals-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+      }
+
+      .manual-card {
+        background: var(--bs-secondary-bg);
+        border: 1px solid var(--bs-border-color);
+        border-radius: 0.85rem;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        box-shadow: var(--bs-card-shadow);
+        transition: all 0.25s ease;
+        position: relative;
+      }
+
+      .manual-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--bs-card-hover-shadow);
+        border-color: color-mix(in srgb, var(--bs-primary) 40%, transparent);
+      }
+
+      .card-top {
+        margin-bottom: 1.25rem;
+      }
+
+      .card-badge-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
+      }
+
+      .role-badge {
+        font-size: 0.72rem;
+        font-weight: 700;
+        padding: 0.2rem 0.65rem;
+        border-radius: 0.25rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+
+      .badge-employee {
+        background: rgba(37, 99, 235, 0.1);
+        color: #2563eb;
+      }
+
+      .badge-vendor {
+        background: rgba(0, 172, 177, 0.1);
+        color: #00acb1;
+      }
+
+      .badge-supervisor {
+        background: rgba(217, 119, 6, 0.1);
+        color: #d97706;
+      }
+
+      .badge-surveyor {
+        background: rgba(5, 150, 105, 0.1);
+        color: #059669;
+      }
+
+      .badge-operations {
+        background: rgba(147, 51, 234, 0.1);
+        color: #9333ea;
+      }
+
+      .steps-badge {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--bs-secondary-color);
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+      }
+
+      .card-title {
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: var(--bs-heading-color);
+        margin: 0 0 0.5rem;
+        line-height: 1.35;
+        letter-spacing: -0.01em;
+      }
+
+      .card-desc {
+        font-size: 0.88rem;
+        color: var(--bs-secondary-color);
+        margin: 0;
+        line-height: 1.55;
+      }
+
+      .card-highlights {
+        margin: 0.85rem 0 0;
+        padding: 0;
+        list-style: none;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+      }
+
+      .tag-item {
+        font-size: 0.72rem;
+        background: var(--bs-tertiary-bg);
+        border: 1px solid var(--bs-border-color);
+        color: var(--bs-secondary-color);
+        padding: 0.15rem 0.5rem;
+        border-radius: 0.25rem;
+      }
+
+      .card-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--bs-border-color);
+        margin-top: 1rem;
+      }
+
+      .card-author {
+        font-size: 0.78rem;
+        color: var(--bs-secondary-color);
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+      }
+
+      /* No Results */
+      .no-results {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 3rem 1.5rem;
+        background: var(--bs-secondary-bg);
+        border: 1px dashed var(--bs-border-color);
+        border-radius: 0.75rem;
+        display: none;
+      }
+
+      .no-results i {
+        font-size: 2.5rem;
+        color: var(--bs-secondary-color);
+        margin-bottom: 0.75rem;
+      }
+
+      /* Footer */
+      .hub-footer {
+        background: var(--bs-secondary-bg);
+        border-top: 1px solid var(--bs-border-color);
+        padding: 2rem 1.5rem;
+        margin-top: auto;
+      }
+
+      .footer-inner {
+        max-width: 1320px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+        font-size: 0.85rem;
+        color: var(--bs-secondary-color);
+      }
+
+      .footer-links {
+        display: flex;
+        gap: 1.25rem;
+      }
+
+      .footer-links a {
+        color: var(--bs-secondary-color);
+        text-decoration: none;
+        transition: color 0.15s;
+      }
+
+      .footer-links a:hover {
+        color: var(--bs-primary);
+      }
+
+      @media (max-width: 768px) {
+        .help-topbar {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+        .topbar-actions {
+          width: 100%;
+        }
+        .search-box {
+          width: 100%;
+        }
+        .hero-title {
+          font-size: 1.65rem;
+        }
+        .manuals-grid {
+          grid-template-columns: 1fr;
+        }
+        .footer-inner {
+          flex-direction: column;
+          text-align: center;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="hub-wrap">
+      <!-- Top Navigation Header -->
+      <header class="help-topbar">
+        <a href="./index.html" class="help-brand">
+          <span class="drop" aria-hidden="true"></span>
+          <span>Help &amp; Guide <small>- EKYC</small></span>
+        </a>
+
+        <div class="topbar-actions">
+          <div class="search-box">
+            <i class="bi bi-search"></i>
+            <input
+              type="text"
+              id="globalSearch"
+              placeholder="Search user manuals..."
+              onkeyup="filterManuals()"
+            />
+          </div>
+
+          <button
+            id="themeToggle"
+            type="button"
+            class="btn btn-outline-secondary"
+            title="Switch Theme"
+          >
+            <i class="bi bi-moon-stars-fill me-1"></i> <span>Dark Mode</span>
+          </button>
+
+          <a
+            href="https://uat-ejalsewa.delhi.gov.in/digit-ui/home"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn btn-primary"
+          >
+            <i class="bi bi-box-arrow-up-right me-1"></i> Official Portal
+          </a>
+        </div>
+      </header>
+
+      <!-- Hero Header Section -->
+      <section class="hero-card">
+        <span class="hero-badge">
+          <i class="bi bi-shield-check me-1"></i> DJB eKYC Help Portal
+        </span>
+        <h1 class="hero-title">
+          Delhi Jal Board — eKYC User Manual Documentation Hub
+        </h1>
+        <p class="hero-desc">
+          Welcome to the central documentation portal for the Delhi Jal Board (DJB) eKYC System. Access step-by-step pictorial guides for <b>Employee Onboarding</b>, <b>Vendor Registration</b>, <b>Supervisor Creation</b>, <b>Surveyor Mapping</b>, and <b>2FA Authenticator Setup</b>.
+        </p>
+
+        <div class="hero-stats">
+          <div class="stat-item">
+            <i class="bi bi-people-fill"></i>
+            <span>4 Persona Roles</span>
+          </div>
+          <div class="stat-item">
+            <i class="bi bi-journal-check"></i>
+            <span>7 Step-by-Step Manuals</span>
+          </div>
+          <div class="stat-item">
+            <i class="bi bi-shield-lock-fill"></i>
+            <span>Google 2FA &amp; SSO Standard</span>
+          </div>
+          <div class="stat-item">
+            <i class="bi bi-diagram-3-fill"></i>
+            <span>End-to-End Workflow</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Workflow Pipeline Visual Diagram -->
+      <section class="workflow-pipeline">
+        <div class="section-header">
+          <h2 class="section-title">
+            <i class="bi bi-diagram-3-fill text-primary"></i>
+            Complete eKYC Onboarding Workflow
+          </h2>
+          <p class="section-subtitle">
+            Follow the chronological sequence of system setup from DJB Officer login down to field surveyor verification.
+          </p>
+        </div>
+
+        <div class="pipeline-grid">
+          <a href="./employee_login.html" class="pipeline-step">
+            <span class="step-num">1</span>
+            <i class="bi bi-person-badge-fill step-icon"></i>
+            <span class="step-label">Employee Login</span>
+            <span class="step-role">DJB Officer</span>
+          </a>
+
+          <a href="./vendor_creation.html" class="pipeline-step">
+            <span class="step-num">2</span>
+            <i class="bi bi-building-add step-icon"></i>
+            <span class="step-label">Vendor Creation</span>
+            <span class="step-role">DJB Officer</span>
+          </a>
+
+          <a href="./vendor_login.html" class="pipeline-step">
+            <span class="step-num">3</span>
+            <i class="bi bi-key-fill step-icon"></i>
+            <span class="step-label">Vendor Login</span>
+            <span class="step-role">Vendor Agency</span>
+          </a>
+
+          <a href="./supervisor_creation.html" class="pipeline-step">
+            <span class="step-num">4</span>
+            <i class="bi bi-person-plus-fill step-icon"></i>
+            <span class="step-label">Supervisor Creation</span>
+            <span class="step-role">Vendor Agency</span>
+          </a>
+
+          <a href="./supervisor_login.html" class="pipeline-step">
+            <span class="step-num">5</span>
+            <i class="bi bi-shield-lock-fill step-icon"></i>
+            <span class="step-label">Supervisor Login</span>
+            <span class="step-role">Supervisor</span>
+          </a>
+
+          <a href="./surveyor_creation.html" class="pipeline-step">
+            <span class="step-num">6</span>
+            <i class="bi bi-person-vcard-fill step-icon"></i>
+            <span class="step-label">Surveyor Creation</span>
+            <span class="step-role">Supervisor</span>
+          </a>
+
+          <a href="./surveyor_login.html" class="pipeline-step">
+            <span class="step-num">7</span>
+            <i class="bi bi-check-circle-fill step-icon"></i>
+            <span class="step-label">Surveyor Login</span>
+            <span class="step-role">Field Surveyor</span>
+          </a>
+        </div>
+      </section>
+
+      <!-- Documentation Manual Cards Section -->
+      <section>
+        <div class="filter-toolbar">
+          <div class="filter-buttons">
+            <button class="filter-btn active" onclick="setFilter('all', this)">
+              All Guides
+            </button>
+            <button class="filter-btn" onclick="setFilter('employee', this)">
+              Employee
+            </button>
+            <button class="filter-btn" onclick="setFilter('vendor', this)">
+              Vendor
+            </button>
+            <button class="filter-btn" onclick="setFilter('supervisor', this)">
+              Supervisor
+            </button>
+            <button class="filter-btn" onclick="setFilter('surveyor', this)">
+              Surveyor
+            </button>
+            <button class="filter-btn" onclick="setFilter('operations', this)">
+              Operations
+            </button>
+          </div>
+
+          <div class="results-count" id="resultsCount">
+            Showing 8 manuals
+          </div>
+        </div>
+
+        <div class="manuals-grid" id="manualsGrid">
+          <!-- 1. Employee Login Guide -->
+          <div class="manual-card" data-role="employee" data-keywords="employee login keycloak sso 2fa otp dashboard official djb">
+            <div class="card-top">
+              <div class="card-badge-row">
+                <span class="role-badge badge-employee">DJB Employee</span>
+                <span class="steps-badge"><i class="bi bi-list-check"></i> 6 Steps</span>
+              </div>
+              <h3 class="card-title">DJB Employee Login &amp; Portal Access Guide</h3>
+              <p class="card-desc">
+                Step-by-step guide for DJB internal employees to access the official portal, authenticate via Keycloak SSO with 2FA OTP, and access employee dashboards.
+              </p>
+              <div class="card-highlights">
+                <span class="tag-item">Keycloak SSO</span>
+                <span class="tag-item">Mobile 2FA</span>
+                <span class="tag-item">Employee Menu</span>
+              </div>
+            </div>
+            <div class="card-footer">
+              <span class="card-author"><i class="bi bi-person-fill"></i> DJB Officials</span>
+              <a href="./employee_login.html" class="btn btn-primary">
+                Open Guide <i class="bi bi-arrow-right"></i>
+              </a>
+            </div>
+          </div>
+
+          <!-- 2. Vendor Creation Guide -->
+          <div class="manual-card" data-role="employee" data-keywords="vendor creation onboarding agency registration address property djb employee">
+            <div class="card-top">
+              <div class="card-badge-row">
+                <span class="role-badge badge-employee">DJB Employee</span>
+                <span class="steps-badge"><i class="bi bi-list-check"></i> 6 Steps</span>
+              </div>
+              <h3 class="card-title">Vendor Registration &amp; Onboarding Guide</h3>
+              <p class="card-desc">
+                Instructions for DJB Employees to register third-party Vendor agencies, fill service location details, submit credentials, and manage vendors.
+              </p>
+              <div class="card-highlights">
+                <span class="tag-item">Vendor Onboarding</span>
+                <span class="tag-item">Property Mapping</span>
+                <span class="tag-item">Agency Admin</span>
+              </div>
+            </div>
+            <div class="card-footer">
+              <span class="card-author"><i class="bi bi-building"></i> Vendor Management</span>
+              <a href="./vendor_creation.html" class="btn btn-primary">
+                Open Guide <i class="bi bi-arrow-right"></i>
+              </a>
+            </div>
+          </div>
+
+          <!-- 3. Vendor Login Guide -->
+          <div class="manual-card" data-role="vendor" data-keywords="vendor login citizen authentication 2fa google authenticator totp activation setup">
+            <div class="card-top">
+              <div class="card-badge-row">
+                <span class="role-badge badge-vendor">Vendor Agency</span>
+                <span class="steps-badge"><i class="bi bi-list-check"></i> 7 Steps</span>
+              </div>
+              <h3 class="card-title">Vendor Portal Login &amp; 2FA Setup Guide</h3>
+              <p class="card-desc">
+                Guide for Vendor agencies to log in via Citizen Login with registered mobile numbers, configure 2FA Authenticator app, and activate account profiles.
+              </p>
+              <div class="card-highlights">
+                <span class="tag-item">Citizen Login</span>
+                <span class="tag-item">Google Authenticator</span>
+                <span class="tag-item">First-Time Setup</span>
+              </div>
+            </div>
+            <div class="card-footer">
+              <span class="card-author"><i class="bi bi-key-fill"></i> Authentication</span>
+              <a href="./vendor_login.html" class="btn btn-primary">
+                Open Guide <i class="bi bi-arrow-right"></i>
+              </a>
+            </div>
+          </div>
+
+          <!-- 4. Supervisor Creation Guide -->
+          <div class="manual-card" data-role="vendor" data-keywords="supervisor creation vendor management agency mapped supervisor form submit">
+            <div class="card-top">
+              <div class="card-badge-row">
+                <span class="role-badge badge-vendor">Vendor Agency</span>
+                <span class="steps-badge"><i class="bi bi-list-check"></i> 6 Steps</span>
+              </div>
+              <h3 class="card-title">Supervisor Registration &amp; Profile Guide</h3>
+              <p class="card-desc">
+                Guide for Vendor agencies to navigate eKYC Vendor Management, register new Supervisors, fill profile information, and verify mapped supervisor lists.
+              </p>
+              <div class="card-highlights">
+                <span class="tag-item">Supervisor Form</span>
+                <span class="tag-item">Vendor Portal</span>
+                <span class="tag-item">Supervisor List</span>
+              </div>
+            </div>
+            <div class="card-footer">
+              <span class="card-author"><i class="bi bi-person-plus"></i> Supervisor Admin</span>
+              <a href="./supervisor_creation.html" class="btn btn-primary">
+                Open Guide <i class="bi bi-arrow-right"></i>
+              </a>
+            </div>
+          </div>
+
+          <!-- 5. Supervisor Login Guide -->
+          <div class="manual-card" data-role="supervisor" data-keywords="supervisor login citizen login 2fa authenticator activation dashboard vendor">
+            <div class="card-top">
+              <div class="card-badge-row">
+                <span class="role-badge badge-supervisor">Supervisor</span>
+                <span class="steps-badge"><i class="bi bi-list-check"></i> 7 Steps</span>
+              </div>
+              <h3 class="card-title">Supervisor Portal Login &amp; 2FA Guide</h3>
+              <p class="card-desc">
+                Step-by-step instructions for Supervisors to sign in using vendor-issued credentials, configure mobile 2FA security, and access the Supervisor Dashboard.
+              </p>
+              <div class="card-highlights">
+                <span class="tag-item">Supervisor 2FA</span>
+                <span class="tag-item">Account Activation</span>
+                <span class="tag-item">Dashboard Access</span>
+              </div>
+            </div>
+            <div class="card-footer">
+              <span class="card-author"><i class="bi bi-shield-check"></i> Supervisor Portal</span>
+              <a href="./supervisor_login.html" class="btn btn-primary">
+                Open Guide <i class="bi bi-arrow-right"></i>
+              </a>
+            </div>
+          </div>
+
+          <!-- 6. Surveyor Creation Guide -->
+          <div class="manual-card" data-role="supervisor" data-keywords="surveyor creation supervisor management zone mapping field surveyor list">
+            <div class="card-top">
+              <div class="card-badge-row">
+                <span class="role-badge badge-supervisor">Supervisor</span>
+                <span class="steps-badge"><i class="bi bi-list-check"></i> 6 Steps</span>
+              </div>
+              <h3 class="card-title">Field Surveyor Registration &amp; Mapping Guide</h3>
+              <p class="card-desc">
+                Instructions for Supervisors to create field surveyors, assign operational zones and mobile details, and review mapped surveyor rosters.
+              </p>
+              <div class="card-highlights">
+                <span class="tag-item">Surveyor Mapping</span>
+                <span class="tag-item">Zone Assignment</span>
+                <span class="tag-item">Roster Management</span>
+              </div>
+            </div>
+            <div class="card-footer">
+              <span class="card-author"><i class="bi bi-person-vcard"></i> Field Admin</span>
+              <a href="./surveyor_creation.html" class="btn btn-primary">
+                Open Guide <i class="bi bi-arrow-right"></i>
+              </a>
+            </div>
+          </div>
+
+          <!-- 7. Surveyor Login Guide -->
+          <div class="manual-card" data-role="surveyor" data-keywords="surveyor login field mobile 2fa totp authenticator verification dashboard">
+            <div class="card-top">
+              <div class="card-badge-row">
+                <span class="role-badge badge-surveyor">Field Surveyor</span>
+                <span class="steps-badge"><i class="bi bi-list-check"></i> 7 Steps</span>
+              </div>
+              <h3 class="card-title">Field Surveyor Portal Login &amp; 2FA Guide</h3>
+              <p class="card-desc">
+                Instructions for Field Surveyors to log in via Citizen Portal, pair mobile 2FA Authenticator, complete profile activation, and conduct field eKYC verification.
+              </p>
+              <div class="card-highlights">
+                <span class="tag-item">Field Verification</span>
+                <span class="tag-item">Mobile 2FA</span>
+                <span class="tag-item">Surveyor Portal</span>
+              </div>
+            </div>
+            <div class="card-footer">
+              <span class="card-author"><i class="bi bi-phone"></i> Mobile eKYC</span>
+              <a href="./surveyor_login.html" class="btn btn-primary">
+                Open Guide <i class="bi bi-arrow-right"></i>
+              </a>
+            </div>
+          </div>
+
+          <!-- 8. Comprehensive Operations Manual -->
+          <div class="manual-card" data-role="operations" data-keywords="ekyc operations inbox application processing kno search zro approval audit dashboard">
+            <div class="card-top">
+              <div class="card-badge-row">
+                <span class="role-badge badge-operations">Full Operations</span>
+                <span class="steps-badge"><i class="bi bi-journal-text"></i> Complete Module</span>
+              </div>
+              <h3 class="card-title">eKYC Operations &amp; Application Inbox Manual</h3>
+              <p class="card-desc">
+                Comprehensive reference manual for eKYC consumer application inbox processing, K. Number search, verification workflow audit, and ZRO approval stages.
+              </p>
+              <div class="card-highlights">
+                <span class="tag-item">Inbox Processing</span>
+                <span class="tag-item">K. No Search</span>
+                <span class="tag-item">ZRO Approval</span>
+              </div>
+            </div>
+            <div class="card-footer">
+              <span class="card-author"><i class="bi bi-gear-fill"></i> Operations Core</span>
+              <a href="./ekyc_module_work_manual.html" class="btn btn-primary">
+                Open Manual <i class="bi bi-arrow-right"></i>
+              </a>
+            </div>
+          </div>
+
+          <!-- No Results Box -->
+          <div class="no-results" id="noResults">
+            <i class="bi bi-search"></i>
+            <h4 style="font-size: 1.1rem; color: var(--bs-heading-color); margin: 0 0 0.25rem;">
+              No manuals found
+            </h4>
+            <p style="font-size: 0.85rem; color: var(--bs-secondary-color); margin: 0;">
+              Try searching with different keywords like 'supervisor', 'login', or '2FA'.
+            </p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Footer -->
+    <footer class="hub-footer">
+      <div class="footer-inner">
+        <div>
+          <b>Delhi Jal Board — eKYC Enterprise Help System</b> &copy; 2026. All rights reserved.
+        </div>
+        <div class="footer-links">
+          <a href="https://uat-ejalsewa.delhi.gov.in/digit-ui/home" target="_blank" rel="noopener noreferrer">
+            <i class="bi bi-globe me-1"></i> DJB e-Jalsewa
+          </a>
+          <a href="./employee_login.html">
+            <i class="bi bi-journal-code me-1"></i> Quick Start
+          </a>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Theme & Search Scripts -->
+    <script>
+      // Theme Toggle Logic
+      (function () {
+        function applyTheme(theme) {
+          var t = theme === "midnight" || theme === "dark" ? "night" : theme;
+          document.documentElement.setAttribute("data-theme", t);
+
+          var toggleSpan = document.querySelector("#themeToggle span");
+          var toggleIcon = document.querySelector("#themeToggle i");
+
+          if (t === "night") {
+            if (toggleSpan) toggleSpan.textContent = "Light Mode";
+            if (toggleIcon) toggleIcon.className = "bi bi-sun-fill me-1";
+          } else {
+            if (toggleSpan) toggleSpan.textContent = "Dark Mode";
+            if (toggleIcon) toggleIcon.className = "bi bi-moon-stars-fill me-1";
+          }
+        }
+
+        var savedTheme = localStorage.getItem("ekyc-theme") || "mazer";
+        applyTheme(savedTheme);
+
+        window.addEventListener("storage", function (e) {
+          if (e.key === "ekyc-theme") applyTheme(e.newValue);
+        });
+
+        var btn = document.getElementById("themeToggle");
+        if (btn) {
+          btn.addEventListener("click", function () {
+            var cur = document.documentElement.getAttribute("data-theme");
+            var next = cur === "night" ? "mazer" : "night";
+            try {
+              localStorage.setItem("ekyc-theme", next);
+            } catch (e) {}
+            applyTheme(next);
+          });
+        }
+      })();
+
+      // Search & Filter Logic
+      var currentFilter = "all";
+
+      function setFilter(filter, el) {
+        currentFilter = filter;
+        var buttons = document.querySelectorAll(".filter-btn");
+        buttons.forEach(function (b) {
+          b.classList.remove("active");
+        });
+        if (el) el.classList.add("active");
+        filterManuals();
+      }
+
+      function filterManuals() {
+        var query = document.getElementById("globalSearch").value.toLowerCase().trim();
+        var cards = document.querySelectorAll(".manual-card");
+        var visibleCount = 0;
+
+        cards.forEach(function (card) {
+          var role = card.getAttribute("data-role");
+          var keywords = card.getAttribute("data-keywords") || "";
+          var title = card.querySelector(".card-title").textContent.toLowerCase();
+          var desc = card.querySelector(".card-desc").textContent.toLowerCase();
+
+          var matchesFilter = currentFilter === "all" || role === currentFilter;
+          var matchesSearch =
+            query === "" ||
+            title.includes(query) ||
+            desc.includes(query) ||
+            keywords.includes(query);
+
+          if (matchesFilter && matchesSearch) {
+            card.style.display = "flex";
+            visibleCount++;
+          } else {
+            card.style.display = "none";
+          }
+        });
+
+        var resultsCountEl = document.getElementById("resultsCount");
+        if (resultsCountEl) {
+          resultsCountEl.textContent = "Showing " + visibleCount + " of " + cards.length + " manuals";
+        }
+
+        var noResultsEl = document.getElementById("noResults");
+        if (noResultsEl) {
+          noResultsEl.style.display = visibleCount === 0 ? "block" : "none";
+        }
+      }
+    </script>
+  </body>
+</html>
