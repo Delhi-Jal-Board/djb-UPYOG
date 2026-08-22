@@ -585,7 +585,7 @@
               <span class="txt">
                 Open your web browser and navigate to the official Delhi Jal Board portal URL:
                 <br />
-                <code>https://uat-ejalsewa.delhi.gov.in/digit-ui/home</code>
+                <code data-portal-path="/digit-ui/home"></code>
               </span>
             </div>
             <div class="help-step">
@@ -603,9 +603,7 @@
                   <span class="dot dot-yellow"></span>
                   <span class="dot dot-green"></span>
                 </div>
-                <div class="browser-url">
-                  https://uat-ejalsewa.delhi.gov.in/digit-ui/home
-                </div>
+                <div class="browser-url" data-portal-path="/digit-ui/home"></div>
               </div>
               <div class="browser-content">
                 <img
@@ -652,9 +650,7 @@
                   <span class="dot dot-yellow"></span>
                   <span class="dot dot-green"></span>
                 </div>
-                <div class="browser-url">
-                  https://uat-ejalsewa.delhi.gov.in/digit-ui/home#login-menu
-                </div>
+                <div class="browser-url" data-portal-path="/digit-ui/home#login-menu"></div>
               </div>
               <div class="browser-content">
                 <img
@@ -695,9 +691,7 @@
                   <span class="dot dot-yellow"></span>
                   <span class="dot dot-green"></span>
                 </div>
-                <div class="browser-url">
-                  https://uat-ejalsewa.delhi.gov.in/digit-ui/citizen
-                </div>
+                <div class="browser-url" data-portal-path="/digit-ui/citizen"></div>
               </div>
               <div class="browser-content">
                 <img
@@ -757,9 +751,7 @@
                   <span class="dot dot-yellow"></span>
                   <span class="dot dot-green"></span>
                 </div>
-                <div class="browser-url">
-                  https://dev-djberp.nitcon.in/keycloak/realms/DL/protocol/openid-connect/auth
-                </div>
+                <div class="browser-url" data-portal-path="/keycloak/realms/DL/protocol/openid-connect/auth"></div>
               </div>
               <div class="browser-content">
                 <img
@@ -852,9 +844,7 @@
                   <span class="dot dot-yellow"></span>
                   <span class="dot dot-green"></span>
                 </div>
-                <div class="browser-url">
-                  https://dev-djberp.nitcon.in/keycloak/realms/DL/login-actions/required-action
-                </div>
+                <div class="browser-url" data-portal-path="/keycloak/realms/DL/login-actions/required-action"></div>
               </div>
               <div class="browser-content">
                 <img
@@ -920,9 +910,7 @@
                   <span class="dot dot-yellow"></span>
                   <span class="dot dot-green"></span>
                 </div>
-                <div class="browser-url">
-                  https://dev-djberp.nitcon.in/keycloak/realms/DL/login-actions/required-action#update-profile
-                </div>
+                <div class="browser-url" data-portal-path="/keycloak/realms/DL/login-actions/required-action#update-profile"></div>
               </div>
               <div class="browser-content">
                 <img
@@ -976,9 +964,7 @@
                   <span class="dot dot-yellow"></span>
                   <span class="dot dot-green"></span>
                 </div>
-                <div class="browser-url">
-                  https://uat-ejalsewa.delhi.gov.in/digit-ui/citizen/home#supervisor-dashboard
-                </div>
+                <div class="browser-url" data-portal-path="/digit-ui/citizen/home#supervisor-dashboard"></div>
               </div>
               <div class="browser-content">
                 <img
@@ -1111,6 +1097,24 @@
           Object.keys(map).forEach(function (id) {
             var el = document.getElementById(id);
             if (el) obs.observe(el);
+          });
+        }
+      })();
+
+      // Dynamic Portal URL from globalConfigs
+      (function () {
+        var portalUrl =
+          window.globalConfigs &&
+          typeof window.globalConfigs.getConfig === "function"
+            ? window.globalConfigs.getConfig("PORTAL_URL")
+            : "";
+
+        if (portalUrl) {
+          portalUrl = portalUrl.replace(/\/+$/, "");
+
+          document.querySelectorAll("[data-portal-path]").forEach(function (element) {
+            var path = element.getAttribute("data-portal-path");
+            element.textContent = portalUrl + path;
           });
         }
       })();

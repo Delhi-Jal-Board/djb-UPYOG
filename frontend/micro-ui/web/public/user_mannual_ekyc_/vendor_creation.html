@@ -637,9 +637,7 @@
                   <span class="dot dot-yellow"></span>
                   <span class="dot dot-green"></span>
                 </div>
-                <div class="browser-url">
-                  https://dev-djberp.nitcon.in/digit-ui/employee/vendor/search-vendor
-                </div>
+                <div class="browser-url" data-portal-path="/digit-ui/employee/vendor/search-vendor"></div>
               </div>
               <div class="browser-content">
                 <img
@@ -686,9 +684,7 @@
                   <span class="dot dot-yellow"></span>
                   <span class="dot dot-green"></span>
                 </div>
-                <div class="browser-url">
-                  https://dev-djberp.nitcon.in/digit-ui/employee/vendor-management
-                </div>
+                <div class="browser-url" data-portal-path="/digit-ui/employee/vendor-management"></div>
               </div>
               <div class="browser-content">
                 <img
@@ -775,9 +771,7 @@
                   <span class="dot dot-yellow"></span>
                   <span class="dot dot-green"></span>
                 </div>
-                <div class="browser-url">
-                  https://dev-djberp.nitcon.in/digit-ui/employee/vendor/add-vendor
-                </div>
+                <div class="browser-url" data-portal-path="/digit-ui/employee/vendor/add-vendor"></div>
               </div>
               <div class="browser-content">
                 <img
@@ -830,9 +824,7 @@
                   <span class="dot dot-yellow"></span>
                   <span class="dot dot-green"></span>
                 </div>
-                <div class="browser-url">
-                  https://dev-djberp.nitcon.in/digit-ui/employee/vendor/add-vendor#property-address
-                </div>
+                <div class="browser-url" data-portal-path="/digit-ui/employee/vendor/add-vendor#property-address"></div>
               </div>
               <div class="browser-content">
                 <img
@@ -935,9 +927,7 @@
                   <span class="dot dot-yellow"></span>
                   <span class="dot dot-green"></span>
                 </div>
-                <div class="browser-url">
-                  https://dev-djberp.nitcon.in/digit-ui/employee/vendor/vendor-search
-                </div>
+                <div class="browser-url" data-portal-path="/digit-ui/employee/vendor/vendor-search"></div>
               </div>
               <div class="browser-content">
                 <img
@@ -1070,6 +1060,24 @@
           Object.keys(map).forEach(function (id) {
             var el = document.getElementById(id);
             if (el) obs.observe(el);
+          });
+        }
+      })();
+
+      // Dynamic Portal URL from globalConfigs
+      (function () {
+        var portalUrl =
+          window.globalConfigs &&
+          typeof window.globalConfigs.getConfig === "function"
+            ? window.globalConfigs.getConfig("PORTAL_URL")
+            : "";
+
+        if (portalUrl) {
+          portalUrl = portalUrl.replace(/\/+$/, "");
+
+          document.querySelectorAll("[data-portal-path]").forEach(function (element) {
+            var path = element.getAttribute("data-portal-path");
+            element.textContent = portalUrl + path;
           });
         }
       })();

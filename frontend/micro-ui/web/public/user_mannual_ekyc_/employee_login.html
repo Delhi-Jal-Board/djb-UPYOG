@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -6,16 +6,10 @@
     <title>Help &amp; Guide — DJB eKYC Employee Login</title>
 
     <!-- Bootstrap Icons & Google Fonts -->
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
-    />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
     <!-- Theme Script (EKYC parity) -->
     <script>
@@ -31,7 +25,9 @@
     </script>
 
     <style>
-      *, *::before, *::after {
+      *,
+      *::before,
+      *::after {
         box-sizing: border-box;
       }
 
@@ -75,11 +71,7 @@
         background: var(--bs-body-bg);
         color: var(--bs-body-color);
         margin: 0;
-        font-family:
-          "Inter",
-          system-ui,
-          -apple-system,
-          sans-serif;
+        font-family: "Inter", system-ui, -apple-system, sans-serif;
         line-height: 1.6;
       }
 
@@ -144,14 +136,11 @@
         color: var(--bs-body-color);
         font-size: 0.85rem;
         outline: none;
-        transition:
-          border-color 0.15s,
-          box-shadow 0.15s;
+        transition: border-color 0.15s, box-shadow 0.15s;
       }
       .search-box input:focus {
         border-color: var(--bs-primary);
-        box-shadow: 0 0 0 3px
-          color-mix(in srgb, var(--bs-primary) 15%, transparent);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--bs-primary) 15%, transparent);
       }
       .search-box i {
         position: absolute;
@@ -495,26 +484,13 @@
         <div class="topbar-actions">
           <div class="search-box">
             <i class="bi bi-search"></i>
-            <input
-              type="text"
-              id="manualSearch"
-              placeholder="Search login guide..."
-              onkeyup="searchManual()"
-            />
+            <input type="text" id="manualSearch" placeholder="Search login guide..." onkeyup="searchManual()" />
           </div>
 
-          <button
-            id="themeToggle"
-            type="button"
-            class="btn btn-outline-secondary"
-            title="Switch Theme"
-          >
+          <button id="themeToggle" type="button" class="btn btn-outline-secondary" title="Switch Theme">
             <i class="bi bi-moon-stars-fill me-1"></i> <span>Dark Mode</span>
           </button>
-          <a href="./index.html" class="btn btn-outline-secondary">
-            <i class="bi bi-house-door-fill me-1"></i> Manuals Hub
-          </a>
-
+          <a href="./index.html" class="btn btn-outline-secondary"> <i class="bi bi-house-door-fill me-1"></i> Manuals Hub </a>
 
           <!-- <a
             href="./ekyc_module_work_manual.html"
@@ -523,13 +499,7 @@
             <i class="bi bi-briefcase me-1"></i> Operations Guide
           </a> -->
 
-          <button
-            type="button"
-            class="btn btn-primary"
-            onclick="window.print()"
-          >
-            <i class="bi bi-box-arrow-right me-1"></i> Back to app
-          </button>
+          <button type="button" class="btn btn-primary" onclick="window.print()"><i class="bi bi-box-arrow-right me-1"></i> Back to app</button>
         </div>
       </div>
 
@@ -539,43 +509,19 @@
         <aside class="help-toc" id="helpToc">
           <span class="toc-label">ON THIS PAGE</span>
           <a href="#step1"><i class="bi bi-globe"></i> 1. Portal Access</a>
-          <a href="#step2"
-            ><i class="bi bi-box-arrow-in-right"></i> 2. Employee Login</a
-          >
-          <a href="#step3"
-            ><i class="bi bi-person-badge"></i> 3. Keycloak SSO</a
-          >
+          <a href="#step2"><i class="bi bi-box-arrow-in-right"></i> 2. Employee Login</a>
+          <a href="#step3"><i class="bi bi-person-badge"></i> 3. Keycloak SSO</a>
           <a href="#step4"><i class="bi bi-shield-lock"></i> 4. Mobile OTP</a>
-          <a href="#step5"
-            ><i class="bi bi-layout-sidebar-inset"></i> 5. Dashboard</a
-          >
-          <a href="#known-issues"
-            ><i class="bi bi-life-preserver"></i> Issues &amp; Solutions</a
-          >
-          <a href="#security"
-            ><i class="bi bi-shield-check"></i> Security &amp; Data</a
-          >
+          <a href="#step5"><i class="bi bi-layout-sidebar-inset"></i> 5. Dashboard</a>
+          <a href="#known-issues"><i class="bi bi-life-preserver"></i> Issues &amp; Solutions</a>
+          <a href="#security"><i class="bi bi-shield-check"></i> Security &amp; Data</a>
         </aside>
 
         <!-- Right Main Workspace -->
         <main class="help-content">
           <!-- Page Purpose Header -->
-          <div
-            class="page-header-card"
-            style="
-              margin-bottom: 1.75rem;
-              padding-bottom: 1.25rem;
-              border-bottom: 1px solid var(--bs-border-color);
-            "
-          >
-            <div
-              style="
-                display: flex;
-                align-items: center;
-                gap: 0.6rem;
-                margin-bottom: 0.35rem;
-              "
-            >
+          <div class="page-header-card" style="margin-bottom: 1.75rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--bs-border-color)">
+            <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.35rem">
               <span
                 class="badge"
                 style="
@@ -589,102 +535,58 @@
                   letter-spacing: 0.05em;
                 "
               >
-                <i class="bi bi-journal-bookmark-fill me-1"></i> User Manual
-                Guide
+                <i class="bi bi-journal-bookmark-fill me-1"></i> User Manual Guide
               </span>
             </div>
-            <h1
-              style="
-                font-size: 1.75rem;
-                font-weight: 800;
-                color: var(--bs-heading-color);
-                margin: 0 0 0.5rem;
-                letter-spacing: -0.02em;
-              "
-            >
+            <h1 style="font-size: 1.75rem; font-weight: 800; color: var(--bs-heading-color); margin: 0 0 0.5rem; letter-spacing: -0.02em">
               DJB Employee Login &amp; Portal Access Guide
             </h1>
-            <p
-              style="
-                font-size: 0.95rem;
-                color: var(--bs-secondary-color);
-                margin: 0;
-                line-height: 1.5;
-                max-width: 75ch;
-              "
-            >
-              <b>What this page helps with:</b> This manual guides Delhi Jal
-              Board (DJB) internal employees step-by-step through accessing the
-              official portal, navigating the Employee Login menu,
-              authenticating via Keycloak SSO with 2FA Mobile OTP, and reaching
-              the internal employee dashboard to manage vendor onboarding and
-              eKYC operations.
+            <p style="font-size: 0.95rem; color: var(--bs-secondary-color); margin: 0; line-height: 1.5; max-width: 75ch">
+              <b>What this page helps with:</b> This manual guides Delhi Jal Board (DJB) internal employees step-by-step through accessing the
+              official portal, navigating the Employee Login menu, authenticating via Keycloak SSO with 2FA Mobile OTP, and reaching the internal
+              employee dashboard to manage vendor onboarding and eKYC operations.
             </p>
           </div>
 
           <!-- Banner Link to Operations Manual -->
           <div class="prereq-banner">
             <div>
-              <div class="title">
-                <i class="bi bi-briefcase-fill text-primary me-1"></i> Already
-                Logged In?
-              </div>
+              <div class="title"><i class="bi bi-briefcase-fill text-primary me-1"></i> Already Logged In?</div>
               <p class="desc">
-                If you have already authenticated and want to learn about
-                vendor creation process and vendor dashboard guide, jump to the
-                Vendor Creation Guide.
+                If you have already authenticated and want to learn about vendor creation process and vendor dashboard guide, jump to the Vendor
+                Creation Guide.
               </p>
             </div>
-            <a
-              href="./vendor_creation.html"
-              class="btn btn-outline-secondary"
-              style="white-space: nowrap"
-            >
-              Vendor Creation Guide →
-            </a>
+            <a href="./vendor_creation.html" class="btn btn-outline-secondary" style="white-space: nowrap"> Vendor Creation Guide → </a>
           </div>
 
           <!-- STEP 1: NAVIGATING TO THE DJB WEB PORTAL -->
           <section id="step1" class="help-section">
-            <h2>
-              <i class="bi bi-globe"></i> Step 1: Navigating to the Delhi Jal
-              Board Web Portal
-            </h2>
-            <p class="lead">
-              Open your web browser and navigate to the official Delhi Jal Board
-              ERP URL.
-            </p>
+            <h2><i class="bi bi-globe"></i> Step 1: Navigating to the Delhi Jal Board Web Portal</h2>
+            <p class="lead">Open your web browser and navigate to the official Delhi Jal Board ERP URL.</p>
 
             <div class="help-step">
               <span class="num">1</span
-              ><span class="txt"
-                >Open any standard desktop or mobile web browser (Google Chrome,
-                Mozilla Firefox, Microsoft Edge, or Safari).</span
-              >
+              ><span class="txt">Open any standard desktop or mobile web browser (Google Chrome, Mozilla Firefox, Microsoft Edge, or Safari).</span>
             </div>
             <div class="help-step">
               <span class="num">2</span
               ><span class="txt"
-                >In the address bar, type
-                <code>https://dev-djberp.nitcon.in/digit-ui/employee</code> (or
-                live DJB portal domain) and press Enter.</span
+                >In the address bar, type <code data-portal-path="/digit-ui/employee"></code> (or live DJB portal domain) and press Enter.</span
               >
             </div>
             <div class="help-step">
               <span class="num">3</span
               ><span class="txt"
-                >The <b>Delhi Jal Board Public Landing Page</b> will load,
-                displaying official branding, citizen quick links, and top
-                navigation header bar.</span
+                >The <b>Delhi Jal Board Public Landing Page</b> will load, displaying official branding, citizen quick links, and top navigation
+                header bar.</span
               >
             </div>
 
             <div class="callout-box callout-info">
               <i class="bi bi-info-circle-fill"></i>
               <div>
-                <b>Recommended Browser:</b> For optimal performance and
-                security, ensure your web browser is updated to the latest
-                stable release.
+                <b>Recommended Browser:</b> For optimal performance and security, ensure your web browser is updated to the latest stable release.
               </div>
             </div>
 
@@ -696,57 +598,31 @@
                   <span class="dot dot-yellow"></span>
                   <span class="dot dot-green"></span>
                 </div>
-                <div class="browser-url">
-                  https://dev-djberp.nitcon.in/digit-ui/employee
-                </div>
+                <div class="browser-url" data-portal-path="/digit-ui/employee"></div>
               </div>
               <div class="browser-content">
-                <img
-                  src="images/supervisor_login_step1_home.png"
-                  alt="DJB Public Portal Home Page"
-                />
+                <img src="images/supervisor_login_step1_home.png" alt="DJB Public Portal Home Page" />
               </div>
             </div>
           </section>
 
           <!-- STEP 2: ACCESSING EMPLOYEE LOGIN OPTION -->
           <section id="step2" class="help-section">
-            <h2>
-              <i class="bi bi-box-arrow-in-right"></i> Step 2: Accessing
-              Employee Login Option
-            </h2>
-            <p class="lead">
-              Locating and selecting Employee Login from the top header
-              navigation menu.
-            </p>
+            <h2><i class="bi bi-box-arrow-in-right"></i> Step 2: Accessing Employee Login Option</h2>
+            <p class="lead">Locating and selecting Employee Login from the top header navigation menu.</p>
 
             <div class="help-step">
-              <span class="num">1</span
-              ><span class="txt"
-                >Look at the top-right corner of the header bar on the landing
-                page.</span
-              >
+              <span class="num">1</span><span class="txt">Look at the top-right corner of the header bar on the landing page.</span>
             </div>
             <div class="help-step">
-              <span class="num">2</span
-              ><span class="txt"
-                >Hover over or click on the blue <b>LOGIN</b> button
-                dropdown.</span
-              >
+              <span class="num">2</span><span class="txt">Hover over or click on the blue <b>LOGIN</b> button dropdown.</span>
             </div>
             <div class="help-step">
-              <span class="num">3</span
-              ><span class="txt"
-                >Select <b>Employee Login</b> from the menu list (do not click
-                Citizen Login).</span
-              >
+              <span class="num">3</span><span class="txt">Select <b>Employee Login</b> from the menu list (do not click Citizen Login).</span>
             </div>
             <div class="help-step">
               <span class="num">4</span
-              ><span class="txt"
-                >You will be redirected automatically to the secure Keycloak
-                Single Sign-On (SSO) login portal.</span
-              >
+              ><span class="txt">You will be redirected automatically to the secure Keycloak Single Sign-On (SSO) login portal.</span>
             </div>
 
             <!-- Browser Mockup 2 -->
@@ -757,66 +633,40 @@
                   <span class="dot dot-yellow"></span>
                   <span class="dot dot-green"></span>
                 </div>
-                <div class="browser-url">
-                  https://dev-djberp.nitcon.in/digit-ui/employee (Dropdown
-                  Active)
-                </div>
+                <div class="browser-url" data-portal-path="/digit-ui/employee" data-portal-suffix=" (Dropdown Active)"></div>
               </div>
               <div class="browser-content">
-                <img
-                  src="images/step2_login_dropdown.png"
-                  alt="Header Navigation & Employee Login Dropdown"
-                />
+                <img src="images/step2_login_dropdown.png" alt="Header Navigation & Employee Login Dropdown" />
               </div>
             </div>
           </section>
 
           <!-- STEP 3: ENTERING KEYCLOAK SSO CREDENTIALS -->
           <section id="step3" class="help-section">
-            <h2>
-              <i class="bi bi-person-badge"></i> Step 3: Entering Keycloak SSO
-              Credentials
-            </h2>
-            <p class="lead">
-              Providing your government-issued Employee ID / Username and
-              Password.
-            </p>
+            <h2><i class="bi bi-person-badge"></i> Step 3: Entering Keycloak SSO Credentials</h2>
+            <p class="lead">Providing your government-issued Employee ID / Username and Password.</p>
 
             <div class="help-step">
               <span class="num">1</span
-              ><span class="txt"
-                >On the <b>Delhi Jal Board Employee Sign In</b> page, locate the
-                username and password fields.</span
-              >
+              ><span class="txt">On the <b>Delhi Jal Board Employee Sign In</b> page, locate the username and password fields.</span>
             </div>
             <div class="help-step">
               <span class="num">2</span
-              ><span class="txt"
-                >Enter your official <b>Username / Employee Code</b> (e.g.
-                <i>EMP10245</i> or <i>9845681234</i>).</span
-              >
+              ><span class="txt">Enter your official <b>Username / Employee Code</b> (e.g. <i>EMP10245</i> or <i>9845681234</i>).</span>
             </div>
             <div class="help-step">
               <span class="num">3</span
-              ><span class="txt"
-                >Enter your confidential <b>Password</b>. Your password is
-                encrypted in the browser before transmission.</span
-              >
+              ><span class="txt">Enter your confidential <b>Password</b>. Your password is encrypted in the browser before transmission.</span>
             </div>
             <div class="help-step">
-              <span class="num">4</span
-              ><span class="txt"
-                >Click the blue <b>LOG IN</b> button to submit
-                credentials.</span
-              >
+              <span class="num">4</span><span class="txt">Click the blue <b>LOG IN</b> button to submit credentials.</span>
             </div>
 
             <div class="callout-box callout-info">
               <i class="bi bi-shield-check"></i>
               <div>
-                <b>Single Sign-On Security:</b> Keycloak SSO ensures your
-                credentials are encrypted end-to-end and valid across all DJB
-                enterprise modules.
+                <b>Single Sign-On Security:</b> Keycloak SSO ensures your credentials are encrypted end-to-end and valid across all DJB enterprise
+                modules.
               </div>
             </div>
 
@@ -828,63 +678,39 @@
                   <span class="dot dot-yellow"></span>
                   <span class="dot dot-green"></span>
                 </div>
-                <div class="browser-url">
-                  https://dev-djberp.nitcon.in/auth/realms/djb/protocol/openid-connect
-                </div>
+                <div class="browser-url" data-portal-path="/auth/realms/djb/protocol/openid-connect"></div>
               </div>
               <div class="browser-content">
-                <img
-                  src="images/step3_keycloak_sso.png"
-                  alt="Keycloak SSO Login Credentials Screen"
-                />
+                <img src="images/step3_keycloak_sso.png" alt="Keycloak SSO Login Credentials Screen" />
               </div>
             </div>
           </section>
 
           <!-- STEP 4: ENTERING MOBILE AUTHENTICATOR / OTP VERIFICATION -->
           <section id="step4" class="help-section">
-            <h2>
-              <i class="bi bi-shield-lock"></i> Step 4: Mobile Authenticator /
-              OTP Verification
-            </h2>
-            <p class="lead">
-              Completing Two-Factor Authentication (2FA) via registered SMS or
-              Mobile Authenticator.
-            </p>
+            <h2><i class="bi bi-shield-lock"></i> Step 4: Mobile Authenticator / OTP Verification</h2>
+            <p class="lead">Completing Two-Factor Authentication (2FA) via registered SMS or Mobile Authenticator.</p>
 
             <div class="help-step">
-              <span class="num">1</span
-              ><span class="txt"
-                >Upon credential validation, the <b>Enter OTP</b> verification
-                prompt will appear.</span
-              >
+              <span class="num">1</span><span class="txt">Upon credential validation, the <b>Enter OTP</b> verification prompt will appear.</span>
             </div>
             <div class="help-step">
               <span class="num">2</span
               ><span class="txt"
-                >A 6-digit One-Time Password (OTP) will be dispatched instantly
-                via SMS to your registered official mobile number (e.g.,
+                >A 6-digit One-Time Password (OTP) will be dispatched instantly via SMS to your registered official mobile number (e.g.,
                 <i>Sent to +91 ******4567</i>).</span
               >
             </div>
+            <div class="help-step"><span class="num">3</span><span class="txt">Enter the 6-digit passcode into the OTP input boxes.</span></div>
             <div class="help-step">
-              <span class="num">3</span
-              ><span class="txt"
-                >Enter the 6-digit passcode into the OTP input boxes.</span
-              >
-            </div>
-            <div class="help-step">
-              <span class="num">4</span
-              ><span class="txt">Click <b>VERIFY &amp; PROCEED</b>.</span>
+              <span class="num">4</span><span class="txt">Click <b>VERIFY &amp; PROCEED</b>.</span>
             </div>
 
             <div class="callout-box callout-warning">
               <i class="bi bi-phone-vibrate"></i>
               <div>
-                <b>Demo / Staging Mode Note:</b> On staging/review builds, a
-                fixed demo OTP <code>11111</code> (or <code>12345</code>) is
-                enabled and no actual SMS is sent. Live production always
-                transmits real SMS passcodes.
+                <b>Demo / Staging Mode Note:</b> On staging/review builds, a fixed demo OTP <code>11111</code> (or <code>12345</code>) is enabled and
+                no actual SMS is sent. Live production always transmits real SMS passcodes.
               </div>
             </div>
 
@@ -896,49 +722,29 @@
                   <span class="dot dot-yellow"></span>
                   <span class="dot dot-green"></span>
                 </div>
-                <div class="browser-url">
-                  https://dev-djberp.nitcon.in/digit-ui/employee/otp-verify
-                </div>
+                <div class="browser-url" data-portal-path="/digit-ui/employee/otp-verify"></div>
               </div>
               <div class="browser-content">
-                <img
-                  src="images/ekyc_login_step4_otp.png"
-                  alt="Mobile Authenticator 2FA OTP Screen"
-                />
+                <img src="images/ekyc_login_step4_otp.png" alt="Mobile Authenticator 2FA OTP Screen" />
               </div>
             </div>
           </section>
 
           <!-- STEP 5: DASHBOARD REDIRECTION -->
           <section id="step5" class="help-section">
-            <h2>
-              <i class="bi bi-layout-sidebar-inset"></i> Step 5: Redirection to
-              Employee Dashboard
-            </h2>
-            <p class="lead">
-              Accessing role-based options under the Core Services workspace.
-            </p>
+            <h2><i class="bi bi-layout-sidebar-inset"></i> Step 5: Redirection to Employee Dashboard</h2>
+            <p class="lead">Accessing role-based options under the Core Services workspace.</p>
 
             <div class="help-step">
-              <span class="num">1</span
-              ><span class="txt"
-                >Once 2FA is verified, you are redirected to the
-                <b>Employee Home Dashboard</b>.</span
-              >
+              <span class="num">1</span><span class="txt">Once 2FA is verified, you are redirected to the <b>Employee Home Dashboard</b>.</span>
             </div>
             <div class="help-step">
               <span class="num">2</span
-              ><span class="txt"
-                >Your name, officer designation, and active zone appear in the
-                top profile welcome bar.</span
-              >
+              ><span class="txt">Your name, officer designation, and active zone appear in the top profile welcome bar.</span>
             </div>
             <div class="help-step">
               <span class="num">3</span
-              ><span class="txt"
-                >Locate the <b>eKYC Admin</b> card under Core Services to
-                proceed with consumer application processing!</span
-              >
+              ><span class="txt">Locate the <b>eKYC Admin</b> card under Core Services to proceed with consumer application processing!</span>
             </div>
 
             <!-- Browser Mockup 5 -->
@@ -949,97 +755,71 @@
                   <span class="dot dot-yellow"></span>
                   <span class="dot dot-green"></span>
                 </div>
-                <div class="browser-url">
-                  https://dev-djberp.nitcon.in/digit-ui/employee
-                </div>
+                <div class="browser-url" data-portal-path="/digit-ui/employee"></div>
               </div>
               <div class="browser-content">
-                <img
-                  src="images/ekyc_login_step5_dashboard.png"
-                  alt="Employee Dashboard Landing Page"
-                />
+                <img src="images/ekyc_login_step5_dashboard.png" alt="Employee Dashboard Landing Page" />
               </div>
             </div>
           </section>
 
           <!-- TROUBLESHOOTING & COMMON ISSUES -->
           <section id="known-issues" class="help-section">
-            <h2>
-              <i class="bi bi-life-preserver"></i> Common Issues &amp; Solutions
-            </h2>
-            <p class="lead">
-              Quick fixes for the problems people run into most.
-            </p>
+            <h2><i class="bi bi-life-preserver"></i> Common Issues &amp; Solutions</h2>
+            <p class="lead">Quick fixes for the problems people run into most.</p>
 
-            <div class="sub-head">
-              <i class="bi bi-chat-dots"></i> OTP Not Received
-            </div>
+            <div class="sub-head"><i class="bi bi-chat-dots"></i> OTP Not Received</div>
             <div class="help-step">
               <span class="num">›</span
               ><span class="txt"
-                >Wait a few seconds — it arrives by <b>SMS</b> on your
-                registered mobile. Use <b>Resend OTP</b> if needed (up to 3
-                times), and check mobile network coverage.</span
+                >Wait a few seconds — it arrives by <b>SMS</b> on your registered mobile. Use <b>Resend OTP</b> if needed (up to 3 times), and check
+                mobile network coverage.</span
               >
             </div>
             <div class="help-step">
               <span class="num">›</span
               ><span class="txt"
-                >Not landing on the OTP screen at all? You’re probably still
-                signed in via an existing session — log out (or use an Incognito
-                / private window) to sign in fresh.</span
+                >Not landing on the OTP screen at all? You’re probably still signed in via an existing session — log out (or use an Incognito /
+                private window) to sign in fresh.</span
               >
             </div>
             <div class="help-step">
               <span class="num">›</span
               ><span class="txt"
-                ><b>Demo / review builds only:</b> A fixed OTP <b>11111</b> is
-                used for everyone and <b>no SMS is sent</b>. On the live system
-                a real OTP is always sent to your phone.</span
+                ><b>Demo / review builds only:</b> A fixed OTP <b>11111</b> is used for everyone and <b>no SMS is sent</b>. On the live system a real
+                OTP is always sent to your phone.</span
               >
             </div>
 
-            <div class="sub-head">
-              <i class="bi bi-key"></i> Forgot / Reset Password
-            </div>
+            <div class="sub-head"><i class="bi bi-key"></i> Forgot / Reset Password</div>
             <div class="help-step">
               <span class="num">›</span
               ><span class="txt"
-                >On the login page tap <b>Forgot password</b>, verify with the
-                OTP sent to your registered mobile, then set a new
-                password.</span
+                >On the login page tap <b>Forgot password</b>, verify with the OTP sent to your registered mobile, then set a new password.</span
               >
             </div>
 
-            <div class="sub-head">
-              <i class="bi bi-lock"></i> Account Locked
-            </div>
+            <div class="sub-head"><i class="bi bi-lock"></i> Account Locked</div>
             <div class="help-step">
               <span class="num">›</span
               ><span class="txt"
-                >After <b>5 wrong password attempts</b> the account locks for
-                <b>15 minutes</b> and unlocks automatically — or ask your system
+                >After <b>5 wrong password attempts</b> the account locks for <b>15 minutes</b> and unlocks automatically — or ask your system
                 administrator to unlock it immediately.</span
               >
             </div>
 
-            <div class="sub-head">
-              <i class="bi bi-three-dots"></i> Other Tips
-            </div>
+            <div class="sub-head"><i class="bi bi-three-dots"></i> Other Tips</div>
             <div class="help-step">
               <span class="num">›</span
               ><span class="txt"
-                ><b>Dashboard blank?</b> Some VPNs or restrictive network proxy
-                configurations block embedded frames — click
+                ><b>Dashboard blank?</b> Some VPNs or restrictive network proxy configurations block embedded frames — click
                 <b>“Open in new tab”</b> to view directly.</span
               >
             </div>
             <div class="help-step">
               <span class="num">›</span
               ><span class="txt"
-                ><b>Signed out unexpectedly?</b> Sessions auto-expire after
-                <b>1 hour</b> of inactivity for security — simply sign in
-                again.</span
+                ><b>Signed out unexpectedly?</b> Sessions auto-expire after <b>1 hour</b> of inactivity for security — simply sign in again.</span
               >
             </div>
           </section>
@@ -1050,56 +830,30 @@
             <div class="help-step">
               <span class="num">›</span
               ><span class="txt"
-                ><b>Two-factor login</b> and <b>role-based access control</b> —
-                you only see the tools and applications for your assigned
-                role.</span
+                ><b>Two-factor login</b> and <b>role-based access control</b> — you only see the tools and applications for your assigned role.</span
               >
             </div>
             <div class="help-step">
               <span class="num">›</span
               ><span class="txt"
-                ><b>Full audit log</b> — every important administrative action
-                is logged with user timestamp and IP for security audit.</span
+                ><b>Full audit log</b> — every important administrative action is logged with user timestamp and IP for security audit.</span
               >
             </div>
             <div class="help-step">
-              <span class="num">›</span
-              ><span class="txt"
-                >Independently <b>security-audited</b> by CERT-In empanelled
-                security auditors.</span
-              >
+              <span class="num">›</span><span class="txt">Independently <b>security-audited</b> by CERT-In empanelled security auditors.</span>
             </div>
 
-            <p
-              style="
-                text-align: center;
-                color: var(--bs-secondary-color);
-                font-size: 0.85rem;
-                margin-top: 2rem;
-              "
-            >
+            <p style="text-align: center; color: var(--bs-secondary-color); font-size: 0.85rem; margin-top: 2rem">
               Need more help? Contact your DJB / EKYC System Administrator.
             </p>
 
-            <div
-              style="
-                text-align: center;
-                margin-top: 1.25rem;
-                margin-bottom: 1rem;
-              "
-            >
+            <div style="text-align: center; margin-top: 1.25rem; margin-bottom: 1rem">
               <a
                 href="./vendor_creation.html"
                 class="btn btn-primary"
-                style="
-                  padding: 0.65rem 1.4rem;
-                  font-size: 0.9rem;
-                  border-radius: 0.5rem;
-                  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
-                "
+                style="padding: 0.65rem 1.4rem; font-size: 0.9rem; border-radius: 0.5rem; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2)"
               >
-                <i class="bi bi-person-plus-fill me-1"></i> How to Create Vendor
-                Guide →
+                <i class="bi bi-person-plus-fill me-1"></i> How to Create Vendor Guide →
               </a>
             </div>
           </section>
@@ -1108,10 +862,7 @@
 
       <!-- Footer -->
       <footer class="help-footer">
-        <p>
-          © 2026 Delhi Jal Board | Integrated Enterprise Management System |
-          Designed &amp; Developed by NITCON Ltd.
-        </p>
+        <p>© 2026 Delhi Jal Board | Integrated Enterprise Management System | Designed &amp; Developed by NITCON Ltd.</p>
       </footer>
     </div>
 
@@ -1131,12 +882,10 @@
           var btn = document.getElementById("themeToggle");
           if (btn) {
             if (theme === "night") {
-              btn.innerHTML =
-                '<i class="bi bi-sun-fill text-warning me-1"></i> <span>Light Mode</span>';
+              btn.innerHTML = '<i class="bi bi-sun-fill text-warning me-1"></i> <span>Light Mode</span>';
               btn.setAttribute("title", "Switch to Light Mode");
             } else {
-              btn.innerHTML =
-                '<i class="bi bi-moon-stars-fill me-1"></i> <span>Dark Mode</span>';
+              btn.innerHTML = '<i class="bi bi-moon-stars-fill me-1"></i> <span>Dark Mode</span>';
               btn.setAttribute("title", "Switch to Dark Mode");
             }
           }
@@ -1163,9 +912,7 @@
         }
 
         // Scroll-spy ToC Active Link observer
-        var links = Array.prototype.slice.call(
-          document.querySelectorAll("#helpToc a"),
-        );
+        var links = Array.prototype.slice.call(document.querySelectorAll("#helpToc a"));
         var map = {};
         links.forEach(function (a) {
           var id = a.getAttribute("href").slice(1);
@@ -1180,16 +927,31 @@
                   links.forEach(function (l) {
                     l.classList.remove("active");
                   });
-                  if (map[en.target.id])
-                    map[en.target.id].classList.add("active");
+                  if (map[en.target.id]) map[en.target.id].classList.add("active");
                 }
               });
             },
-            { rootMargin: "0px 0px -70% 0px", threshold: 0 },
+            { rootMargin: "0px 0px -70% 0px", threshold: 0 }
           );
           Object.keys(map).forEach(function (id) {
             var el = document.getElementById(id);
             if (el) obs.observe(el);
+          });
+        }
+      })();
+
+      // Dynamic Portal URL from globalConfigs
+      (function () {
+        var portalUrl =
+          window.globalConfigs && typeof window.globalConfigs.getConfig === "function" ? window.globalConfigs.getConfig("PORTAL_URL") : "";
+
+        if (portalUrl) {
+          portalUrl = portalUrl.replace(/\/+$/, "");
+
+          document.querySelectorAll("[data-portal-path]").forEach(function (element) {
+            var path = element.getAttribute("data-portal-path");
+            var suffix = element.getAttribute("data-portal-suffix") || "";
+            element.textContent = portalUrl + path + suffix;
           });
         }
       })();
