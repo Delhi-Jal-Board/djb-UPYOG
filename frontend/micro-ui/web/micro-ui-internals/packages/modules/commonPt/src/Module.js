@@ -25,7 +25,8 @@ export const CommonPTModule = ({ userType, tenants }) => {
 
   const moduleCode = ["PT", "ws"];
   const language = Digit.StoreData.getCurrentLanguage();
-  Digit.Services.useStore({ moduleCode, language });
+  const stateCode = Digit.ULBService.getStateId();
+  Digit.Services.useStore({ stateCode, moduleCode, language });
 
   Digit.SessionStorage.set("PT_TENANTS", tenants);
 

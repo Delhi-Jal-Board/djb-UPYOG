@@ -218,8 +218,9 @@ const OLDApplication = () => {
     const cleanedFormData = JSON.parse(JSON.stringify(updatedFormData));
     if (!_.isEqual(sessionFormData, cleanedFormData)) {
       setSessionFormData(cleanedFormData);
-      sessionStorage.setItem("FORMSTATE_ERRORS", JSON.stringify(formState?.errors));
     }
+    // Always update errors to avoid stale validation states blocking submit
+    sessionStorage.setItem("FORMSTATE_ERRORS", JSON.stringify(formState?.errors || {}));
 
     // if (
     //   Object.keys(formState.errors).length > 0 &&
@@ -241,25 +242,6 @@ const OLDApplication = () => {
         setShowToast({ key: "error", message: "ERR_INVALID_PROPERTY_ID" });
         return;
       }
-    }
-
-    // FIX 4: Read and validate sessionStorage errors
-    const errors = sessionStorage.getItem("FORMSTATE_ERRORS");
-    const formStateErros = typeof errors === "string" && errors !== "null" ? JSON.parse(errors) : {};
-
-    if (
-      Object.keys(formStateErros).length > 0 &&
-      !(
-        Object.keys(formStateErros).length === 1 &&
-        formStateErros?.["ConnectionHolderDetails"]?.type &&
-        Object.keys(formStateErros?.["ConnectionHolderDetails"]?.type)?.length === 1 &&
-        formStateErros["ConnectionHolderDetails"] &&
-        Object.values(formStateErros["ConnectionHolderDetails"].type).filter((ob) => ob.type === "required" && ob?.ref?.value !== "").length > 0
-      )
-    ) {
-      console.warn("[WS] onSubmit EXIT: formState errors blocking submit", formStateErros);
-      setShowToast({ key: "error", message: "PLEASE_FILL_MANDATORY_DETAILS" });
-      return;
     }
 
     // Validation passed, show CheckPage

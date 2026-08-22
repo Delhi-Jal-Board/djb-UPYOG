@@ -755,7 +755,7 @@ const WSApplicationDetails = () => {
 
               <CardHeader styles={{ fontSize: "28px" }}>{t("PT_LOCATION_DETAILS")}</CardHeader>
               <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
-                <Row
+                {/* <Row
                   label={t("WS_ZRO_LOCATION")}
                   text={`${t(
                     checkForNA(
@@ -770,7 +770,7 @@ const WSApplicationDetails = () => {
                 <Row
                   label={t("COMMON_ADDRESS_TYPE")}
                   text={`${t(checkForNA(propertyAddress?.addressType?.i18nKey || propertyAddress?.addressType?.code || propertyAddress?.addressType))}`}
-                />
+                /> */}
                 <Row label={t("CORE_COMMON_PROFILE_CITY")} text={`${t(checkForNA(propertyAddress?.city?.name || propertyAddress?.city?.code || propertyAddress?.city))}`} />
                 <Row label={t("PINCODE")} text={`${t(checkForNA(propertyAddress?.pincode || propertyAddress?.pinCode))}`} />
                 <Row

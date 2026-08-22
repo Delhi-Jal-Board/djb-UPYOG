@@ -26,17 +26,17 @@ const CitizenPayment = ({ stateCode, cityCode, moduleCode }) => {
     {
       path: "/digit-ui/citizen/payment/my-bills",
       label: t("CS_PAYMENT_BILL_DETAILS"),
-      show: pathname.includes("/my-bills"),
+      show: pathname.includes("/my-bills") || pathname.includes("/billDetails") || pathname.includes("/collect") || pathname.includes("/success") || pathname.includes("/failure"),
     },
     {
       path: pathname,
       label: t("PAYERS_DETAILS_HEADER"),
-      show: pathname.includes("/billDetails"),
+      show: pathname.includes("/billDetails") || pathname.includes("/collect") || pathname.includes("/success") || pathname.includes("/failure"),
     },
     {
       path: pathname,
       label: t("PAYMENT_CS_HEADER"),
-      show: pathname.includes("/collect"),
+      show: pathname.includes("/collect") || pathname.includes("/success") || pathname.includes("/failure"),
     },
     {
       path: pathname,
@@ -61,13 +61,12 @@ const CitizenPayment = ({ stateCode, cityCode, moduleCode }) => {
         show: true,
       });
 
-      if (routerState?.fromMyApplications || routerState?.fromApplicationDetails) {
-        activeCrumbs.splice(2, 0, {
-          path: "/digit-ui/citizen/ws/my-applications",
-          label: t("CS_HOME_MY_APPLICATIONS"),
-          show: true,
-        });
-      }
+      // User requested "My Applications" in the WNS payment breadcrumbs
+      activeCrumbs.splice(2, 0, {
+        path: "/digit-ui/citizen/ws/my-applications",
+        label: t("CS_HOME_MY_APPLICATIONS"),
+        show: true,
+      });
 
       if (routerState?.fromApplicationDetails) {
         activeCrumbs.splice(3, 0, {
@@ -78,8 +77,19 @@ const CitizenPayment = ({ stateCode, cityCode, moduleCode }) => {
       }
     }
 
+    // Set paths of previous crumbs to window.history.back() to avoid hardcoded paths if they are in a flow
+    // except for static paths like home, my-bills, etc.
+    activeCrumbs.forEach((crumb, index) => {
+      if (index < activeCrumbs.length - 1 && crumb.path === pathname) {
+        // If it's a previous crumb that just copied the pathname, make it go back
+        crumb.path = "";
+        crumb.onClick = () => window.history.go(index - (activeCrumbs.length - 1));
+      }
+    });
+
     if (activeCrumbs.length > 0) {
       activeCrumbs[activeCrumbs.length - 1].path = "";
+      delete activeCrumbs[activeCrumbs.length - 1].onClick;
     }
 
     return activeCrumbs;
