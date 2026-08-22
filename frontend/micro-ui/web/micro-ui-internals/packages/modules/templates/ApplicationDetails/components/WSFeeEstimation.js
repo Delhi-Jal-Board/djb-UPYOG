@@ -73,7 +73,7 @@ const WSFeeEstimation = ({ wsAdditionalDetails, workflowDetails }) => {
       const values = billAccountDetails.length > 0 
         ? billAccountDetails.map((bill) => ({
             title: bill?.taxHeadCode,
-            value: <span>&#8377;{Number(bill?.amount).toFixed(2)}{bill?.status ? <span style={{ color: bill?.status?.toUpperCase() === "PAID" ? "green" : "red" }}>{` (${bill?.status})`}</span> : ""}</span>
+            value: <span>&#8377;{Number(bill?.amount).toFixed(2)}</span>
           }))
         : [
             { title: "WS_APPLICATION_FEE_HEADER", value: <span>&#8377;{sessionFormData?.billDetails?.[0]?.fee}</span> },
@@ -160,7 +160,7 @@ const WSFeeEstimation = ({ wsAdditionalDetails, workflowDetails }) => {
             const values = taxHeadEstimates.length > 0 
               ? taxHeadEstimates.map((data) => ({
                   title: data?.taxHeadCode,
-                  value: <span>&#8377;{Number(data?.estimateAmount).toFixed(2)}{data?.status ? <span style={{ color: data?.status?.toUpperCase() === "PAID" ? "green" : "red" }}>{` (${data?.status})`}</span> : ""}</span>
+                  value: <span>&#8377;{Number(data?.estimateAmount).toFixed(2)}</span>
                 }))
               : [
                   { title: "WS_APPLICATION_FEE_HEADER", value: result.Calculation?.[0]?.fee },

@@ -21,11 +21,11 @@ const Step4_Preview = ({ t, formData, applicationDetails, resolvedServiceType, o
   const meterId = appData?.meterId || "NA";
   const propertyId = appData?.propertyId || "NA";
   const connectionCategory = appData?.connectionCategory || "NA";
-  
+
   const oldHolder = appData?.connectionHolders?.[0] || {};
   const oldName = getMaskedName(oldHolder?.name);
   const oldPhone = getMaskedPhone(oldHolder?.mobileNumber);
-  
+
   const tenantId = appData?.tenantId || Digit.ULBService.getCurrentTenantId();
   const { data: propertyData } = Digit.Hooks.pt.usePropertySearch(
     { filters: { propertyIds: propertyId }, tenantId },
@@ -47,7 +47,7 @@ const Step4_Preview = ({ t, formData, applicationDetails, resolvedServiceType, o
   const getRelationshipName = (code) => {
     if (code?.code) return code.i18nKey;
     const map = { "BLOOD_RELATION": "Blood Relation", "LEGAL_HEIR": "Legal Heir", "OTHER": "Other" };
-    return map[code] || code;
+    return map[code] || code || "NA";
   };
 
   const getReasonName = (code) => {
@@ -73,7 +73,7 @@ const Step4_Preview = ({ t, formData, applicationDetails, resolvedServiceType, o
   useEffect(() => {
     const calculateStaticFee = () => {
       const relationCode = formData?.relationshipWithExistingConsumer?.code || formData?.relationshipWithExistingConsumer;
-      
+
       if (relationCode === "BLOOD_RELATION") {
         setFee(100);
         setTaxHeads([]);
@@ -175,7 +175,7 @@ const Step4_Preview = ({ t, formData, applicationDetails, resolvedServiceType, o
       {/* Fee */}
       <div style={{ ...sectionStyle, backgroundColor: "#f2fff5", border: "1px solid #c3e6cb", borderLeft: "4px solid #28a745" }}>
         <h3 style={{ fontSize: "15px", fontWeight: "bold", color: "#28a745", marginBottom: "12px" }}>💵 Mutation Fee Details</h3>
-        
+
         {taxHeads && taxHeads.length > 0 && (
           <div style={{ marginBottom: "16px" }}>
             {taxHeads.map((tax, index) => (
@@ -211,17 +211,17 @@ const Step4_Preview = ({ t, formData, applicationDetails, resolvedServiceType, o
 
       {/* Action Bar */}
       <ActionBar>
-        <button 
-          type="button" 
-          onClick={onBack} 
+        <button
+          type="button"
+          onClick={onBack}
           style={{ padding: "10px 20px", backgroundColor: "#e0e0e0", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold", marginRight: "12px" }}
         >
           ← Edit Information
         </button>
-        <SubmitBar 
-          label={isLoading ? "Submitting..." : "Submit Mutation Application"} 
-          onSubmit={onSubmit} 
-          disabled={!agreed || isLoading} 
+        <SubmitBar
+          label={isLoading ? "Submitting..." : "Submit Mutation Application"}
+          onSubmit={onSubmit}
+          disabled={!agreed || isLoading}
         />
       </ActionBar>
 

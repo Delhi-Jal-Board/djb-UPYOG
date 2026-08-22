@@ -312,7 +312,7 @@ const WSApplicationDetails = () => {
     <React.Fragment>
       <div className={"employee-main-application-details"} >
         {/* Left Column: Workflow Timeline */}
-        <div className={`workflow-timeline-wrapper no-scrollbar`} style={{ flex: "1 1 280px", maxWidth: "400px", minWidth: "240px" }}>
+        <div className={`workflow-timeline-wrapper no-scrollbar`} style={{ flex: "0 0 300px", maxWidth: "350px", minWidth: "240px" }}>
           <Card>
             <div id="timeline">
               <WSWFApplicationTimeline
@@ -325,7 +325,7 @@ const WSApplicationDetails = () => {
         </div>
 
         {/* Right Column: Application Details */}
-        <div style={{ flex: "2 1 300px", minWidth: 0 }}>
+        <div style={{ flex: "1 1 0%", minWidth: 0 }}>
 
           <Card>
             <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
@@ -535,62 +535,64 @@ const WSApplicationDetails = () => {
                         },
                       }}
                     />
-                    <Row
-
-                      label={t("WS_OWN_DETAIL_FATHER_OR_HUSBAND_NAME")}
-                      text={
-                        data?.WaterConnection?.[0]?.connectionHolders?.[0]?.fatherOrHusbandName ||
-                        data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.fatherOrHusbandName ||
-                        t("CS_NA")
-                      }
-                      textStyle={{ whiteSpace: "pre" }}
-                      privacy={{
-                        uuid: applicationNobyData?.includes("WS")
-                          ? data?.WaterConnection?.[0]?.connectionHolders?.[0]?.uuid
-                          : data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.uuid,
-                        fieldName: "fatherOrHusbandName",
-                        model: "WnSConnectionOwner", //applicationNobyData?.includes("WS") ? "WaterConnectionOwner" : "User"
-                        showValue: false,
-                        loadData: {
-                          serviceName: serviceType === "WATER" ? "/ws-services/wc/_search" : "/sw-services/swc/_search",
-                          requestBody: {},
-                          requestParam: { tenantId, applicationNumber: applicationNobyData },
-                          jsonPath:
-                            serviceType === "WATER"
-                              ? "WaterConnection[0].connectionHolders[0].fatherOrHusbandName"
-                              : "SewerageConnections[0].connectionHolders[0].fatherOrHusbandName",
-                          isArray: false,
-                        },
-                      }}
-                    />
-                    <Row
-
-                      label={t("WS_OWN_DETAIL_RELATION_LABEL")}
-                      text={
-                        data?.WaterConnection?.[0]?.connectionHolders?.[0]?.relationship ||
-                        data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.relationship ||
-                        t("CS_NA")
-                      }
-                      textStyle={{ whiteSpace: "pre" }}
-                      privacy={{
-                        uuid: applicationNobyData?.includes("WS")
-                          ? data?.WaterConnection?.[0]?.connectionHolders?.[0]?.uuid
-                          : data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.uuid,
-                        fieldName: "relationship",
-                        model: "WnSConnection",
-                        showValue: false,
-                        loadData: {
-                          serviceName: serviceType === "WATER" ? "/ws-services/wc/_search" : "/sw-services/swc/_search",
-                          requestBody: {},
-                          requestParam: { tenantId, applicationNumber: applicationNobyData },
-                          jsonPath:
-                            serviceType === "WATER"
-                              ? "WaterConnection[0].connectionHolders[0].relationship"
-                              : "SewerageConnections[0].connectionHolders[0].relationship",
-                          isArray: false,
-                        },
-                      }}
-                    />
+                    {!isMutation && (
+                      <React.Fragment>
+                        <Row
+                          label={t("WS_OWN_DETAIL_FATHER_OR_HUSBAND_NAME")}
+                          text={
+                            data?.WaterConnection?.[0]?.connectionHolders?.[0]?.fatherOrHusbandName ||
+                            data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.fatherOrHusbandName ||
+                            t("CS_NA")
+                          }
+                          textStyle={{ whiteSpace: "pre" }}
+                          privacy={{
+                            uuid: applicationNobyData?.includes("WS")
+                              ? data?.WaterConnection?.[0]?.connectionHolders?.[0]?.uuid
+                              : data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.uuid,
+                            fieldName: "fatherOrHusbandName",
+                            model: "WnSConnectionOwner",
+                            showValue: false,
+                            loadData: {
+                              serviceName: serviceType === "WATER" ? "/ws-services/wc/_search" : "/sw-services/swc/_search",
+                              requestBody: {},
+                              requestParam: { tenantId, applicationNumber: applicationNobyData },
+                              jsonPath:
+                                serviceType === "WATER"
+                                  ? "WaterConnection[0].connectionHolders[0].fatherOrHusbandName"
+                                  : "SewerageConnections[0].connectionHolders[0].fatherOrHusbandName",
+                              isArray: false,
+                            },
+                          }}
+                        />
+                        <Row
+                          label={t("WS_OWN_DETAIL_RELATION_LABEL")}
+                          text={
+                            data?.WaterConnection?.[0]?.connectionHolders?.[0]?.relationship ||
+                            data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.relationship ||
+                            t("CS_NA")
+                          }
+                          textStyle={{ whiteSpace: "pre" }}
+                          privacy={{
+                            uuid: applicationNobyData?.includes("WS")
+                              ? data?.WaterConnection?.[0]?.connectionHolders?.[0]?.uuid
+                              : data?.SewerageConnections?.[0]?.connectionHolders?.[0]?.uuid,
+                            fieldName: "relationship",
+                            model: "WnSConnection",
+                            showValue: false,
+                            loadData: {
+                              serviceName: serviceType === "WATER" ? "/ws-services/wc/_search" : "/sw-services/swc/_search",
+                              requestBody: {},
+                              requestParam: { tenantId, applicationNumber: applicationNobyData },
+                              jsonPath:
+                                serviceType === "WATER"
+                                  ? "WaterConnection[0].connectionHolders[0].relationship"
+                                  : "SewerageConnections[0].connectionHolders[0].relationship",
+                              isArray: false,
+                            },
+                          }}
+                        />
+                      </React.Fragment>
+                    )}
                     <Row
 
                       label={t("WS_OWN_DETAIL_CROSADD")}
@@ -817,7 +819,7 @@ const WSApplicationDetails = () => {
 
                 <Row label={t("COMMON_CURRENT_ASSEMBLY")} text={`${t(checkForNA(propertyAddress?.actualAssembly || additionalDetails?.actualAssembly))}`} />
                 <Row label={t("COMMON_CURRENT_WARD")} text={`${t(checkForNA(propertyAddress?.actualWard || additionalDetails?.actualWard))}`} />
-                <Row label={t("COMMON_CURRENT_ZONE")} text={`${t(checkForNA(propertyAddress?.actualZone || additionalDetails?.actualZone))}`} />
+                <Row label={t("COMMON_CURRENT_ZONE")} text={`${t(checkForNA(propertyAddress?.zone?.name || propertyAddress?.zone?.code || propertyAddress?.zone || propertyAddress?.actualZone || additionalDetails?.actualZone))}`} />
                 <Row label={t("LANDMARK")} text={`${t(checkForNA(propertyAddress?.landmark))}`} />
               </StatusTable>
 
@@ -886,13 +888,17 @@ const WSApplicationDetails = () => {
                 )}
               </StatusTable>
 
-              <CardHeader styles={{ fontSize: "28px" }}>{t("WS_BANK_DETAILS")}</CardHeader>
-              <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
-                <Row label={t("WS_NAME_OF_BANK")} text={`${t(checkForNA(bankDetails?.bankName))}`} />
-                <Row label={t("WS_NAME_OF_BRANCH")} text={`${t(checkForNA(bankDetails?.bankBranchName || bankDetails?.branchName))}`} />
-                <Row label={t("WS_IFSC_CODE")} text={`${t(checkForNA(bankDetails?.ifscCode))}`} />
-                <Row label={t("WS_BANK_ACCOUNT_NO")} text={`${t(checkForNA(bankDetails?.bankAccountNumber || bankDetails?.accountNumber))}`} />
-              </StatusTable>
+              {!isMutation && (
+                <React.Fragment>
+                  <CardHeader styles={{ fontSize: "28px" }}>{t("WS_BANK_DETAILS")}</CardHeader>
+                  <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
+                    <Row label={t("WS_NAME_OF_BANK")} text={`${t(checkForNA(bankDetails?.bankName))}`} />
+                    <Row label={t("WS_NAME_OF_BRANCH")} text={`${t(checkForNA(bankDetails?.bankBranchName || bankDetails?.branchName))}`} />
+                    <Row label={t("WS_IFSC_CODE")} text={`${t(checkForNA(bankDetails?.ifscCode))}`} />
+                    <Row label={t("WS_BANK_ACCOUNT_NO")} text={`${t(checkForNA(bankDetails?.bankAccountNumber || bankDetails?.accountNumber))}`} />
+                  </StatusTable>
+                </React.Fragment>
+              )}
               <CardHeader styles={{ fontSize: "28px" }}>{t("WS_COMMON_DOCUMENT_DETAILS")}</CardHeader>
               {data?.WaterConnection?.[0]?.documents &&
                 data?.WaterConnection?.[0]?.documents.map((doc, index) => (

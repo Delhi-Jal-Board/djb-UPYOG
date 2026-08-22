@@ -241,7 +241,7 @@ const CheckPage = ({ onSubmit, value }) => {
 
         <Row label={t("COMMON_CURRENT_ASSEMBLY")} text={`${t(checkForNA(propertyAddress?.actualAssembly || additionalDetails?.actualAssembly))}`} />
         <Row label={t("COMMON_CURRENT_WARD")} text={`${t(checkForNA(propertyAddress?.actualWard || additionalDetails?.actualWard))}`} />
-        <Row label={t("COMMON_CURRENT_ZONE")} text={`${t(checkForNA(propertyAddress?.actualZone || additionalDetails?.actualZone))}`} />
+        <Row label={t("COMMON_CURRENT_ZONE")} text={`${t(checkForNA(propertyAddress?.zone?.name || propertyAddress?.zone?.code || propertyAddress?.zone || propertyAddress?.actualZone || additionalDetails?.actualZone))}`} />
         <Row label={t("LANDMARK")} text={`${t(checkForNA(propertyAddress?.landmark))}`} />
       </StatusTable>
 
