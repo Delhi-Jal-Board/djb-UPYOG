@@ -24,7 +24,7 @@
     "@djb25/digit-ui-module-hrms": "1.0.21",
     "@djb25/digit-ui-module-finance": "1.0.0",
     "@djb25/digit-ui-module-mcollect": "1.0.0",
-    "@djb25/digit-ui-module-commonpt": "1.0.29",
+    "@djb25/digit-ui-module-commonpt": "1.0.30",
     "@djb25/digit-ui-module-receipts": "1.0.0",
     "@djb25/digit-ui-react-components": "1.0.0",
     "@djb25/digit-ui-module-pgr": "1.0.2",
