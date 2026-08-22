@@ -1,6 +1,6 @@
 import { AppContainer, ArrowLeft, BackButton, HomeIcon, ModuleHeader, PrivateRoute, LayoutWrapper } from "@djb25/digit-ui-react-components";
 import React from "react";
-import { Route, Switch, useRouteMatch } from "react-router-dom";
+import { Route, Switch, useRouteMatch, useLocation } from "react-router-dom";
 import CreateProperty from "./Create";
 import SearchPropertyComponent from "./SearchProperty";
 import SearchResultsComponent from "./SearchResults";
@@ -14,7 +14,8 @@ import { useTranslation } from "react-i18next";
 const App = ({ stateCode }) => {
   const { t } = useTranslation();
   const { path, url, ...match } = useRouteMatch();
-  
+  const location = useLocation();
+
   const getBreadcrumbLabel = () => {
     const pathname = location.pathname;
     if (pathname.includes("/commonpt/search")) return "SEARCH_PROPERTY";
@@ -24,8 +25,32 @@ const App = ({ stateCode }) => {
     return "ES_COMMON_INBOX";
   };
 
-  const breadcrumbs = [{ icon: HomeIcon, path: "/digit-ui/employee" }, { label: t(getBreadcrumbLabel()) }];
+  const getDynamicBreadcrumbs = () => {
+    let crumbs = [
+      {
+        path: "/digit-ui/citizen",
+        icon: HomeIcon,
+      }
+    ];
 
+    crumbs.push({
+      path: "/digit-ui/citizen/commonpt-home",
+      label: t("ACTION_TEST_COMMON_PROPERTY_TAX"),
+    });
+
+    if (location.state?.fromSearch) {
+      crumbs.push({
+        label: t("ES_COMMON_INBOX"),
+        onClick: () => window.history.back(),
+      });
+    }
+
+    crumbs.push({
+      label: t(getBreadcrumbLabel()),
+    });
+
+    return crumbs;
+  };
   return (
     <AppContainer>
       <div className="ground-container employee-app-container form-container">
@@ -33,11 +58,11 @@ const App = ({ stateCode }) => {
           leftContent={
             <React.Fragment>
               <ArrowLeft className="icon" />
-              Back
+              {t("CS_COMMON_BACK")}
             </React.Fragment>
           }
           onLeftClick={() => window.history.back()}
-          breadcrumbs={breadcrumbs}
+          breadcrumbs={getDynamicBreadcrumbs()}
         />
         <div className="employee-form">
           <div className="employee-form-content">
@@ -50,9 +75,9 @@ const App = ({ stateCode }) => {
                   <CitizenOtp stateCode={stateCode} />
                 </Route>
                 <PrivateRoute path={`${path}/property/link-success/:propertyIds`} component={PropertyLinkSuccess}></PrivateRoute>
-                <PrivateRoute 
-                  path={`${path}/property/new-application`} 
-                  component={CreateProperty} 
+                <PrivateRoute
+                  path={`${path}/property/new-application`}
+                  component={CreateProperty}
                 />
                 <PrivateRoute path={`${path}/view-property`} component={ViewProperty} />
               </Switch>

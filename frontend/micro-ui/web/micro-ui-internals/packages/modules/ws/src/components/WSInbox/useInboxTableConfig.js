@@ -38,7 +38,7 @@ const useInboxTableConfig = ({
           return (
             <div>
               <Link
-                to={`/digit-ui/employee/ws/${application}-details?applicationNumber=${row.original["applicationNo"]}&tenantId=${tenantId}&service=${service}&from=WS_SEWERAGE_INBOX`}
+                to={`/digit-ui/employee/ws/${application}-details?applicationNumber=${row.original["applicationNo"]}&tenantId=${tenantId}&service=${service}&from=${service === "WATER" ? "WS_WATER_INBOX" : "WS_SEWERAGE_INBOX"}`}
               >
                 {" "}
                 <span className="link">{row.original["applicationNo"]}</span>

@@ -230,11 +230,13 @@ const WSDisconnectionForm = ({ t, config, onSelect, userType }) => {
 
   if (userType === "citizen") {
     return (
-      <div>
-        {userType === "citizen" && <DisconnectTimeline currentStep={1} />}
-        <FormStep config={config} onSelect={handleSubmit} onSkip={onSkip} t={t}>
-          <div style={{ padding: "0px 10px 10px 10px" }}>
-            <CardHeader>{isReSubmit ? t("RESUBMIT_DISCONNECTION_FORM") : t("WS_APPLICATION_FORM")}</CardHeader>
+      <React.Fragment>
+        <CitizenInfoLabel textStyle={{ color: "#0B0C0C" }} text={t(`WS_DISONNECT_APPL_INFO`)} info={t("CS_COMMON_INFO")} />
+        <div className="employee-form-section-wrapper">
+          {userType === "citizen" && <DisconnectTimeline currentStep={1} />}
+          <FormStep config={config} onSelect={handleSubmit} onSkip={onSkip} t={t}>
+            <div style={{ padding: "0px 10px 10px 10px" }}>
+              <CardHeader>{isReSubmit ? t("RESUBMIT_DISCONNECTION_FORM") : t("WS_APPLICATION_FORM")}</CardHeader>
             <StatusTable>
               <Row
                 key={t("PDF_STATIC_LABEL_CONSUMER_NUMBER_LABEL")}
@@ -361,10 +363,10 @@ const WSDisconnectionForm = ({ t, config, onSelect, userType }) => {
               }
             />
             {error && <Toast error={error?.key === "error" ? true : false} label={t(error?.message)} onClose={() => setError(null)} />}
-          </div>
-        </FormStep>
-        <CitizenInfoLabel style={{ margin: "0px" }} textStyle={{ color: "#0B0C0C" }} text={t(`WS_DISONNECT_APPL_INFO`)} info={t("CS_COMMON_INFO")} />
-      </div>
+            </div>
+          </FormStep>
+        </div>
+      </React.Fragment>
     );
   }
   return (

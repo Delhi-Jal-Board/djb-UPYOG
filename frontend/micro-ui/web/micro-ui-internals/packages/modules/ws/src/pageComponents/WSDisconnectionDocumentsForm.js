@@ -37,7 +37,7 @@ function WSDisconnectionDocumentsForm({ t, config, onSelect, userType, formData 
   }
 
   return (
-    <div style={{ marginTop: "19px" }}>
+    <div className="employee-form-section-wrapper" style={{ marginTop: "19px" }}>
       {userType === "citizen" && (<DisconnectTimeline currentStep={2} />)}
       <FormStep
         t={t}

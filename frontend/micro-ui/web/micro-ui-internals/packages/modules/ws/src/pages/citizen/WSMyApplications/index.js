@@ -130,7 +130,7 @@ export const WSMyApplications = () => {
               <Link
                 to={{
                   pathname: `/digit-ui/citizen/payment/my-bills/${businessService}/${application?.applicationNo?.includes("DC") ? (stringReplaceAll(application?.connectionNo, "/", "+") || stringReplaceAll(application?.connectionNo, "/", "+")) : (stringReplaceAll(application?.applicationNo, "/", "+") || stringReplaceAll(application?.applicationNo, "/", "+"))}?workflow=WNS&tenantId=${application?.tenantId}&ConsumerName=${application?.connectionHolders?.map((owner) => owner.name).join(",") || application?.connectionHolders?.map((owner) => owner.name).join(",") || application?.property?.owners?.map((owner) => owner.name).join(",")}&isDisoconnectFlow=${application?.applicationNo?.includes("DC") ? true : false}`,
-                  state: {},
+                  state: { fromMyApplications: true },
                 }}
               >
                 {t("MAKE_PAYMENT")}

@@ -137,10 +137,11 @@ import { convertDateToEpoch, convertEpochToDate, createPayloadOfWSDisconnection,
 
   return(
     <React.Fragment>
-    <Header styles={{fontSize:"32px"}}>{t("WS_COMMON_SUMMARY")}</Header>
-    <DisconnectTimeline currentStep={3} />
-  
-    <Card style={{paddingRight:"16px"}}>
+      <div className="employee-form-section-wrapper">
+        <DisconnectTimeline currentStep={3} flow="RESTORATION" />
+        <div style={{ width: "100%" }}>
+          <Header styles={{fontSize:"32px"}}>{t("WS_COMMON_SUMMARY")}</Header>
+          <Card style={{paddingRight:"16px"}}>
       <div style={{display: "inline"}}>
       <CardHeader styles={{fontSize:"28px"}}>{t("WS_RESTORATION_APPLICATION_DETAILS")}</CardHeader>
       <LinkButton
@@ -161,6 +162,8 @@ import { convertDateToEpoch, convertEpochToDate, createPayloadOfWSDisconnection,
         <SubmitBar label={t("CS_COMMON_SUBMIT")} onSubmit={() => onSubmit(value?.WSDisconnectionForm)} />
       </Card>
       {error && <Toast error={error?.key === "error" ? true : false} label={t(error?.message)} onClose={() => setError(null)} />}
+      </div>
+      </div>
     </React.Fragment>
     )
   }

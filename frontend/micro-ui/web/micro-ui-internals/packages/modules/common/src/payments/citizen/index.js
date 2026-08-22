@@ -1,5 +1,5 @@
 import React from "react";
-import { Switch, Route, useRouteMatch } from "react-router-dom";
+import { Switch, Route, useRouteMatch, useLocation } from "react-router-dom";
 import { PrivateRoute, ModuleHeader, ArrowLeft, AppContainer, HomeIcon } from "@djb25/digit-ui-react-components";
 import PayersDetails from "./payers-details";
 import { MyBills } from "./bills";
@@ -9,10 +9,10 @@ import { useTranslation } from "react-i18next";
 
 const CitizenPayment = ({ stateCode, cityCode, moduleCode }) => {
   const { path: currentPath } = useRouteMatch();
+  const { state: routerState } = useLocation();
   const commonProps = { stateCode, cityCode, moduleCode };
   const { t } = useTranslation();
   let isMobile = window.Digit.Utils.browser.isMobile();
-
 
   const pathname = window.location.pathname;
 
@@ -51,7 +51,38 @@ const CitizenPayment = ({ stateCode, cityCode, moduleCode }) => {
   ];
 
   const getDynamicBreadcrumbs = () => {
-    return crumbs.filter((crumb) => crumb.show);
+    let activeCrumbs = crumbs.filter((crumb) => crumb.show);
+
+    const isWNS = pathname.includes("/WS") || pathname.includes("/SW") || window.location.search.includes("workflow=WNS");
+    if (isWNS) {
+      activeCrumbs.splice(1, 0, {
+        path: "/digit-ui/citizen/ws-home",
+        label: t("ES_TITLE_WATER_AND_SEWERAGE"),
+        show: true,
+      });
+
+      if (routerState?.fromMyApplications || routerState?.fromApplicationDetails) {
+        activeCrumbs.splice(2, 0, {
+          path: "/digit-ui/citizen/ws/my-applications",
+          label: t("CS_HOME_MY_APPLICATIONS"),
+          show: true,
+        });
+      }
+
+      if (routerState?.fromApplicationDetails) {
+        activeCrumbs.splice(3, 0, {
+          label: t("WS_APPLICATION_DETAILS_HEADER"),
+          show: true,
+          onClick: () => window.history.back(),
+        });
+      }
+    }
+
+    if (activeCrumbs.length > 0) {
+      activeCrumbs[activeCrumbs.length - 1].path = "";
+    }
+
+    return activeCrumbs;
   };
 
   return (

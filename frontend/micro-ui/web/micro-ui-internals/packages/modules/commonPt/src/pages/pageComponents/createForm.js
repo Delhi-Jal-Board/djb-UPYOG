@@ -104,8 +104,13 @@ const CreatePropertyForm = ({ config, onSelect, value, userType, redirectUrl }) 
   }
 
   const onSubmit = async () => {
+    const loc = formValue?.locationDet;
+    if (!loc?.addressType || !loc?.city || !loc?.pincode || !loc?.locality || !loc?.buildingColonyName) {
+      setShowToast({ key: true, label: "Please fill all the mandatory fields" });
+      return;
+    }
+
     let ownersArray = owners && owners.length > 0 ? owners : formValue?.owners;
-    
     // Inject logged in user details if ownersArray is empty
     if (!ownersArray || ownersArray.length === 0) {
       const userInfo = Digit.UserService.getUser()?.info;

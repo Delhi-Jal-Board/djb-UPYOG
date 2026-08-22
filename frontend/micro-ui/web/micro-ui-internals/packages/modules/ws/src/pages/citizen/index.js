@@ -83,13 +83,18 @@ const App = ({ path }) => {
     //   show: true,
     // },
     {
-      path: "/digit-ui/employee",
+      path: "/digit-ui/citizen",
       show: true,
       style: isMobile ? { width: "20%" } : {},
       icon: HomeIcon,
     },
     {
-      path: "/digit-ui/citizen/ws/create-application",
+      path: "/digit-ui/citizen/ws-home",
+      label: t("ES_TITLE_WATER_AND_SEWERAGE"),
+      show: true,
+    },
+    {
+      path: "/digit-ui/citizen/ws/info",
       label: t("WS_COMMON_APPL_NEW_CONNECTION"),
       show: location.pathname.includes("/create-application") || location.pathname.includes("/info"),
     },
@@ -101,7 +106,7 @@ const App = ({ path }) => {
     {
       path: "/digit-ui/citizen/ws/my-applications",
       label: `${t("CS_HOME_MY_APPLICATIONS")} ${totalAppsCount ? `(${totalAppsCount})` : ""}`,
-      show: location.pathname.includes("/my-applications"),
+      show: location.pathname.includes("/my-applications") || location.pathname.includes("/connection/application"),
     },
     {
       path: "/digit-ui/citizen/ws/my-connections",
@@ -141,7 +146,11 @@ const App = ({ path }) => {
   ];
 
   const getDynamicBreadcrumbs = () => {
-    return crumbs.filter((crumb) => crumb.show);
+    let activeCrumbs = crumbs.filter((crumb) => crumb.show);
+    if (activeCrumbs.length > 0) {
+      activeCrumbs[activeCrumbs.length - 1].path = "";
+    }
+    return activeCrumbs;
   };
 
   const WSCreate = Digit?.ComponentRegistryService?.getComponent("WSCreate");

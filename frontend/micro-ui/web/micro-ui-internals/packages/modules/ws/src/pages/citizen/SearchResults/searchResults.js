@@ -77,7 +77,7 @@ const ChallanSearchResults = ({ template, header, actionButtonLabel }) => {
         <p style={{ marginLeft: "16px", marginTop: "16px" }}>
         {t("WS_WANT_TO_ADD_NEW_CONNECTION")}{" "}
         <span className="link" style={{ display: "block" }}>
-          <Link to="/digit-ui/citizen/ws/create-application/search-property">{t("WS_CLICK_HERE_TO_APPLY")}</Link>
+          <Link to="/digit-ui/citizen/ws/info">{t("WS_CLICK_HERE_TO_APPLY")}</Link>
         </span>
         </p>
       </div>
