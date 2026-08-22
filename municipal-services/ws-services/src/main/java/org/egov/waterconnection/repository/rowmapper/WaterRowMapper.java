@@ -144,6 +144,7 @@ public class WaterRowMapper implements ResultSetExtractor<List<WaterConnection>>
 			applicationDocument.setDocumentType(rs.getString("documenttype"));
 			applicationDocument.setFileStoreId(rs.getString("filestoreid"));
 			applicationDocument.setDocumentUid(rs.getString("doc_Id"));
+			applicationDocument.setDocumentNumber(rs.getString("documentnumber"));
 			applicationDocument.setIsVerified(rs.getBoolean("is_verified"));
 			applicationDocument.setStatus(Status.fromValue(isActive));
 			waterConnection.addDocumentsItem(applicationDocument);
