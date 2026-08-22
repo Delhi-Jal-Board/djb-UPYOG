@@ -946,7 +946,7 @@ const WSApplicationDetails = () => {
                       data?.SewerageConnections?.[0]?.connectionHolders?.map((owner) => owner.name).join(",") ||
                       PTData?.Properties?.[0]?.owners?.map((owner) => owner.name).join(",")
                       }&isDisoconnectFlow=${applicationNobyData?.includes("DC") ? true : false}&consumerCode=${paymentDetails?.data?.Bill?.[0]?.consumerCode}`,
-                    state: {},
+                    state: { fromApplicationDetails: true },
                   }}
                 >
                   <SubmitBar label={t("MAKE_PAYMENT")} />

@@ -202,17 +202,13 @@ const BILLSBreadCrumbs = ({ location, showPrint }) => {
       icon: HomeIcon,
     },
     {
-      path: "/digit-ui/employee/ws/wsinformation",
-      label: t("WS_COMMON_APPL_NEW_CONNECTION"),
-      show:
-        location.pathname.includes("/create-application") ||
-        location.pathname.includes("/new-application") ||
-        location.pathname.includes("/old-application") ||
-        location.pathname.includes("/info"),
-    },
-    {
       path: "/digit-ui/employee/module/details",
       label: t("ES_TITLE_WATER_AND_SEWERAGE"),
+      show: true,
+    },
+    {
+      path: "/digit-ui/employee/ws/info",
+      label: t("WS_COMMON_APPL_NEW_CONNECTION"),
       show:
         location.pathname.includes("/create-application") ||
         location.pathname.includes("/new-application") ||
@@ -476,7 +472,45 @@ const BILLSBreadCrumbs = ({ location, showPrint }) => {
   crumbs[lastCrumbIndex] = { ...crumbs[lastCrumbIndex], isclickable: false };
 
   const getDynamicBreadcrumbs = () => {
-    return crumbs.filter((crumb) => crumb.show);
+    let activeCrumbs = crumbs.filter((crumb) => crumb.show);
+
+    if (fromScreen && activeCrumbs.length > 0) {
+      const lastCrumbIndex = activeCrumbs.length - 1;
+      const lastCrumb = activeCrumbs[lastCrumbIndex];
+      
+      if (lastCrumb.label && lastCrumb.label.includes(" / ")) {
+        const parts = lastCrumb.label.split(" / ");
+        let fromScreenPath = "";
+        
+        const isSewerage = serviceType === "SEWERAGE" || applicationNumber?.includes("SW_AP") || applicationNumbercheck?.includes("SW_AP");
+        const svc = isSewerage ? "sewerage" : "water";
+        
+        if (fromScreen === "WS_SEWERAGE_INBOX") fromScreenPath = "/digit-ui/employee/ws/sewerage/inbox";
+        else if (fromScreen === "WS_WATER_INBOX") fromScreenPath = "/digit-ui/employee/ws/water/inbox";
+        else if (fromScreen === "WS_SEARCH_APPLICATIONS") fromScreenPath = `/digit-ui/employee/ws/${svc}/search-application`;
+        else if (fromScreen === "WS_SEARCH_CONNECTION") fromScreenPath = `/digit-ui/employee/ws/${svc}/search-connection`;
+        else if (fromScreen === "WS_SEARCH_INTEGRATED_BILL") fromScreenPath = "/digit-ui/employee/ws/water/wns-search";
+        else fromScreenPath = lastCrumb.path; 
+        
+        activeCrumbs.pop();
+        activeCrumbs.push({
+          label: parts[0],
+          show: true,
+          isBack: true,
+          onClick: () => window.history.back(),
+        });
+        activeCrumbs.push({
+          path: "",
+          label: parts[1],
+          show: true,
+          isclickable: false,
+          rightContent: lastCrumb.rightContent,
+        });
+      }
+    } else if (activeCrumbs.length > 0) {
+      activeCrumbs[activeCrumbs.length - 1].path = "";
+    }
+    return activeCrumbs;
   };
 
   return (

@@ -281,7 +281,13 @@ const PropertySearchResults = ({
                   return (
                     <div>
                       <span className="link">
-                        <Link to={`/digit-ui/citizen/commonpt/view-property?propertyId=${row.original.property_id}&tenantId=${tenantId}`}>
+                        <Link 
+                          to={{
+                            pathname: `/digit-ui/citizen/commonpt/view-property`,
+                            search: `?propertyId=${row.original.property_id}&tenantId=${tenantId}`,
+                            state: { fromSearch: true }
+                          }}
+                        >
                           {row.original.property_id}
                         </Link>
                       </span>

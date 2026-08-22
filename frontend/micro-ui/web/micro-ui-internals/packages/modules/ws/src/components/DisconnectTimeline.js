@@ -1,6 +1,6 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { TickMark } from "@djb25/digit-ui-react-components";
+import { TickMark, VerticalTimeline } from "@djb25/digit-ui-react-components";
 
 let actions = [];
 
@@ -17,19 +17,14 @@ const DisconnectTimeline = ({ currentStep = 1, flow="" }) => {
   const { t } = useTranslation();
   const isMobile = window.Digit.Utils.browser.isMobile();
   getAction(flow);
+  const timelineConfig = actions.map((action, index) => ({
+    route: `step-${index + 1}`,
+    timeLine: [{ actions: action, currentStep: index + 1 }],
+  }));
+
   return (
-    <div className="timeline-container" style={isMobile?{}:{maxWidth:"960px",minWidth:"640px",marginRight:"auto"}} >
-      {actions.map((action, index, arr) => (
-        <div className="timeline-checkpoint" key={index}>
-          <div className="timeline-content">
-            <span className={`circle ${index <= currentStep - 1 && 'active'}`}>{index < currentStep - 1 ? <TickMark /> : index + 1}</span>
-            <span className="secondary-color">{t(action)}</span>
-          </div>
-          {index < arr.length - 1 && <span className={`line ${index < currentStep - 1 && 'active'}`}></span>}
-        </div>
-      ))}
-    </div>
-  )
+    <VerticalTimeline config={timelineConfig} currentActiveIndex={currentStep - 1} showFinalStep={false} />
+  );
 }
 
 export default DisconnectTimeline; 

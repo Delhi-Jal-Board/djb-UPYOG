@@ -220,13 +220,15 @@ console.log("disconnectionTypes",disconnectionTypes)
 
 if(userType === 'citizen') {
     return (
-      <div>
-        {userType === "citizen" && (<DisconnectTimeline currentStep={1} />)}
+      <React.Fragment>
+        <CitizenInfoLabel style={{ margin: "0px", marginBottom: "1.5rem" }} textStyle={{ color: "#0B0C0C" }} text={t(`WS_DISONNECT_APPL_INFO`)} info={t("CS_COMMON_INFO")} />
+        <div className="employee-form-section-wrapper">
+        {userType === "citizen" && (<DisconnectTimeline currentStep={1} flow="RESTORATION" />)}
         <FormStep
           config={config}
           onSelect={handleSubmit}
           onSkip={onSkip}
-          t={t}       
+          t={t}
         >
           
           <div style={{padding:"0px 10px 10px 10px"}}>
@@ -274,8 +276,8 @@ if(userType === 'citizen') {
              {error && <Toast error={error?.key === "error" ? true : false} label={t(error?.message)} onClose={() => setError(null)} />}
           </div>
         </FormStep>
-        <CitizenInfoLabel style={{ margin: "0px" }} textStyle={{ color: "#0B0C0C" }} text={t(`WS_DISONNECT_APPL_INFO`)} info={t("CS_COMMON_INFO")} />
       </div>
+      </React.Fragment>
     );
   }
 console.log("applicationData",applicationData)
