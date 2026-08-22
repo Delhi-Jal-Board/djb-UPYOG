@@ -57,12 +57,7 @@ const ViewBreakup = ({ wsAdditionalDetails, workflowDetails, print, download }) 
     const amountRows = (rows = []) =>
       rows.map((row) => ({
         title: t(row?.taxHeadCode),
-        value: (
-          <span>
-            {`₹${formatNumber(row?.amount)}`}
-            {row?.status ? <span style={{ color: row?.status?.toUpperCase() === "PAID" ? "green" : "red" }}>{` (${row?.status})`}</span> : ""}
-          </span>
-        ),
+        value: <span>{`₹${formatNumber(row?.amount)}`}</span>,
       }));
 
     const connectionHolder = wsAdditionalDetails?.additionalDetails?.appDetails?.connectionHolders?.[0];
@@ -252,7 +247,7 @@ const ViewBreakup = ({ wsAdditionalDetails, workflowDetails, print, download }) 
                       labelStyle={{ width: "50%" }}
                       key={`${data?.taxHeadCode}`}
                       label={`${t(`${data?.taxHeadCode}`)}`}
-                      text={<span>&#8377;{Number(data?.amount) || 0}{data?.status ? <span style={{ color: data?.status?.toUpperCase() === "PAID" ? "green" : "red" }}>{` (${data?.status})`}</span> : ""}</span>}
+                      text={<span>&#8377;{Number(data?.amount) || 0}</span>}
                       textStyle={{ textAlign: "right" }}
                     />
                   ))}
@@ -263,7 +258,7 @@ const ViewBreakup = ({ wsAdditionalDetails, workflowDetails, print, download }) 
                       labelStyle={{ width: "50%" }}
                       key={`${data?.taxHeadCode}`}
                       label={`${t(`${data?.taxHeadCode}`)}`}
-                      text={<span>&#8377;{Number(data?.amount) || 0}{data?.status ? <span style={{ color: data?.status?.toUpperCase() === "PAID" ? "green" : "red" }}>{` (${data?.status})`}</span> : ""}</span>}
+                      text={<span>&#8377;{Number(data?.amount) || 0}</span>}
                       textStyle={{ textAlign: "right" }}
                     />
                   ))}
@@ -275,7 +270,7 @@ const ViewBreakup = ({ wsAdditionalDetails, workflowDetails, print, download }) 
                       labelStyle={{ width: "50%" }}
                       key={`${data?.taxHeadCode}`}
                       label={`${t(`${data?.taxHeadCode}`)}`}
-                      text={<span>&#8377;{Number(data?.amount) || 0}{data?.status ? <span style={{ color: data?.status?.toUpperCase() === "PAID" ? "green" : "red" }}>{` (${data?.status})`}</span> : ""}</span>}
+                      text={<span>&#8377;{Number(data?.amount) || 0}</span>}
                       textStyle={{ textAlign: "right" }}
                     />
                   ))}

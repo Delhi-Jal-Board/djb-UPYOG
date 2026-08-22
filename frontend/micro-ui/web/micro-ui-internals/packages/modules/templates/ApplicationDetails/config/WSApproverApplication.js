@@ -12,11 +12,74 @@ export const configWSApproverApplication = ({
   setUploadedFile,
   assigneeLabel,
   businessService,
-  error
+  error,
+  isReasonRequiredAction,
+  selectedReason,
+  setSelectedReason,
+  otherReasonText,
+  setOtherReasonText,
 }) => {
   let checkCondtions = true;
   if (action?.action?.includes("SEND_BACK") || action?.action == "APPROVE_FOR_CONNECTION") checkCondtions = false;
   if (action.isTerminateState) checkCondtions = false;
+
+  const reasonOptions = [
+    { code: "INCOMPLETE_DOCUMENTS", name: "Incomplete / Incorrect Documents", i18nKey: "WS_MUTATION_REASON_INCOMPLETE_DOCUMENTS" },
+    { code: "MISMATCH_DETAILS", name: "Mismatch in Owner / Consumer Details", i18nKey: "WS_MUTATION_REASON_MISMATCH_DETAILS" },
+    { code: "INVALID_PROOF", name: "Invalid / Unverified Proof Provided", i18nKey: "WS_MUTATION_REASON_INVALID_PROOF" },
+    { code: "OTHER", name: "Other", i18nKey: "WS_MUTATION_REASON_OTHER" },
+  ];
+
+  const commentsField = isReasonRequiredAction
+    ? [
+        {
+          label: t("WF_REASON_LABEL") || t("Reason"),
+          isMandatory: true,
+          populators: (
+            <Dropdown
+              option={reasonOptions}
+              autoComplete="off"
+              optionKey="name"
+              id="mutationActionReason"
+              select={(val) => {
+                setSelectedReason(val);
+                if (val?.code !== "OTHER") {
+                  setOtherReasonText("");
+                }
+              }}
+              selected={selectedReason}
+              t={t}
+              placeholder={t("WF_SELECT_REASON_PLACEHOLDER") || "Select Reason"}
+            />
+          ),
+        },
+        ...(selectedReason?.code === "OTHER"
+          ? [
+              {
+                label: t("WF_OTHER_REASON_LABEL") || t("Please specify reason"),
+                isMandatory: true,
+                populators: (
+                  <textarea
+                    className="employee-card-input"
+                    style={{ width: "100%", height: "80px", resize: "vertical", marginTop: "4px" }}
+                    value={otherReasonText}
+                    onChange={(e) => setOtherReasonText(e.target.value)}
+                    placeholder={t("WF_ENTER_OTHER_REASON_PLACEHOLDER") || "Enter reason details..."}
+                  />
+                ),
+              },
+            ]
+          : []),
+      ]
+    : [
+        {
+          label: t("WF_COMMON_COMMENTS"),
+          type: "textarea",
+          populators: {
+            name: "comments",
+          },
+        },
+      ];
 
   return {
     label: {
@@ -27,29 +90,7 @@ export const configWSApproverApplication = ({
     form: [
       {
         body: [
-          // {
-          //   label: !checkCondtions ? null : t("WF_ASSIGNEE_NAME_LABEL"),
-          //   placeholder: !checkCondtions ? null : t("WF_ASSIGNEE_NAME_PLACEHOLDER"),
-          //   // isMandatory: false,
-          //   type: "dropdown",
-          //   populators: !checkCondtions ? null : (
-          //     <Dropdown
-          //       option={approvers}
-          //       autoComplete="off"
-          //       optionKey="name"
-          //       id="fieldInspector"
-          //       select={setSelectedApprover}
-          //       selected={selectedApprover}
-          //     />
-          //   ),
-          // },
-          {
-            label: t("WF_COMMON_COMMENTS"),
-            type: "textarea",
-            populators: {
-              name: "comments",
-            },
-          },
+          ...commentsField,
           {
             label: t("WS_APPROVAL_CHECKLIST_BUTTON_UP_FILE"),
             populators: (
@@ -66,7 +107,7 @@ export const configWSApproverApplication = ({
                 showHintBelow={true}
                 hintText={"WS_HINT_TEXT_LABEL"}
               />
-            )
+            ),
           },
         ],
       },

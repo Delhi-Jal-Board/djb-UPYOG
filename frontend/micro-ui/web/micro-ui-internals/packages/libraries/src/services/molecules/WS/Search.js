@@ -401,7 +401,7 @@ export const WSSearch = {
     const feeValues = billAccountDetails.length > 0
       ? billAccountDetails.map((bill) => ({
         title: bill?.taxHeadCode,
-        value: <span>&#8377;{Number(bill?.amount).toFixed(2)}{bill?.status ? <span style={{ color: bill?.status?.toUpperCase() === "PAID" ? "green" : "red" }}>{` (${bill?.status})`}</span> : ""}</span>
+        value: <span>&#8377;{Number(bill?.amount).toFixed(2)}</span>
       }))
       : [
         { title: "WS_APPLICATION_FEE_HEADER", value: <span>&#8377;{fetchBillData?.Bill?.[0]?.fee || 0}</span> },
@@ -499,6 +499,9 @@ export const WSSearch = {
         {
           title: "ZONE",
           value:
+            propertyDataDetails?.address?.zone?.name ||
+            propertyDataDetails?.address?.zone?.code ||
+            propertyDataDetails?.address?.zone ||
             propertyDataDetails?.additionalDetails?.zone ||
             propertyDataDetails?.address?.additionalDetails?.zone ||
             t("NA"),
@@ -531,6 +534,7 @@ export const WSSearch = {
       });
     }
 
+    const isMutationApp = wsDataDetails?.applicationType?.includes("MUTATION");
     const uuid = wsDataDetails?.connectionHolders?.[0]?.uuid;
     const applicationNoForPrivacy = wsDataDetails?.applicationNo;
     const connectionHolderDetails = {
@@ -540,14 +544,16 @@ export const WSSearch = {
         wsDataDetails?.connectionHolders?.length > 0
           ? [
             { title: "WS_OWN_DETAIL_NAME", value: wsDataDetails?.connectionHolders?.[0]?.name || t("NA") },
-            {
-              title: "WS_OWN_DETAIL_MIDDLE_NAME",
-              value: wsDataDetails?.connectionHolders?.[0]?.middleName || t("NA"),
-            },
-            {
-              title: "WS_OWN_DETAIL_LAST_NAME",
-              value: wsDataDetails?.connectionHolders?.[0]?.lastName || t("NA"),
-            },
+            ...(!isMutationApp ? [
+              {
+                title: "WS_OWN_DETAIL_MIDDLE_NAME",
+                value: wsDataDetails?.connectionHolders?.[0]?.middleName || t("NA"),
+              },
+              {
+                title: "WS_OWN_DETAIL_LAST_NAME",
+                value: wsDataDetails?.connectionHolders?.[0]?.lastName || t("NA"),
+              },
+            ] : []),
             {
               title: "WS_CONN_HOLDER_OWN_DETAIL_GENDER_LABEL",
               value: wsDataDetails?.connectionHolders?.[0]?.gender,
@@ -588,46 +594,48 @@ export const WSSearch = {
                 },
               },
             },
-            {
-              title: "WS_OWN_DETAIL_GUARDIAN_LABEL",
-              value: wsDataDetails?.connectionHolders?.[0]?.fatherOrHusbandName,
-              privacy: {
-                uuid: uuid,
-                fieldName: ["fatherOrHusbandName"],
-                model: "WnSConnectionOwner",
-                showValue: false,
-                loadData: {
-                  serviceName: serviceType === "WATER" ? "/ws-services/wc/_search" : "/sw-services/swc/_search",
-                  requestBody: {},
-                  requestParam: { tenantId, applicationNumber },
-                  jsonPath:
-                    serviceType === "WATER"
-                      ? "WaterConnection[0].connectionHolders[0].fatherOrHusbandName"
-                      : "SewerageConnections[0].connectionHolders[0].fatherOrHusbandName",
-                  isArray: false,
+            ...(!isMutationApp ? [
+              {
+                title: "WS_OWN_DETAIL_GUARDIAN_LABEL",
+                value: wsDataDetails?.connectionHolders?.[0]?.fatherOrHusbandName,
+                privacy: {
+                  uuid: uuid,
+                  fieldName: ["fatherOrHusbandName"],
+                  model: "WnSConnectionOwner",
+                  showValue: false,
+                  loadData: {
+                    serviceName: serviceType === "WATER" ? "/ws-services/wc/_search" : "/sw-services/swc/_search",
+                    requestBody: {},
+                    requestParam: { tenantId, applicationNumber },
+                    jsonPath:
+                      serviceType === "WATER"
+                        ? "WaterConnection[0].connectionHolders[0].fatherOrHusbandName"
+                        : "SewerageConnections[0].connectionHolders[0].fatherOrHusbandName",
+                    isArray: false,
+                  },
                 },
               },
-            },
-            {
-              title: "WS_CONN_HOLDER_OWN_DETAIL_RELATION_LABEL",
-              value: wsDataDetails?.connectionHolders?.[0]?.relationship,
-              privacy: {
-                uuid: uuid,
-                fieldName: ["relationship"],
-                model: "WnSConnection",
-                showValue: false,
-                loadData: {
-                  serviceName: serviceType === "WATER" ? "/ws-services/wc/_search" : "/sw-services/swc/_search",
-                  requestBody: {},
-                  requestParam: { tenantId, applicationNumber },
-                  jsonPath:
-                    serviceType === "WATER"
-                      ? "WaterConnection[0].connectionHolders[0].relationship"
-                      : "SewerageConnections[0].connectionHolders[0].relationship",
-                  isArray: false,
+              {
+                title: "WS_CONN_HOLDER_OWN_DETAIL_RELATION_LABEL",
+                value: wsDataDetails?.connectionHolders?.[0]?.relationship,
+                privacy: {
+                  uuid: uuid,
+                  fieldName: ["relationship"],
+                  model: "WnSConnection",
+                  showValue: false,
+                  loadData: {
+                    serviceName: serviceType === "WATER" ? "/ws-services/wc/_search" : "/sw-services/swc/_search",
+                    requestBody: {},
+                    requestParam: { tenantId, applicationNumber },
+                    jsonPath:
+                      serviceType === "WATER"
+                        ? "WaterConnection[0].connectionHolders[0].relationship"
+                        : "SewerageConnections[0].connectionHolders[0].relationship",
+                    isArray: false,
+                  },
                 },
               },
-            },
+            ] : []),
             {
               title: "WS_EMAIL_ID",
               value: wsDataDetails?.connectionHolders?.[0]?.emailId,
@@ -660,7 +668,6 @@ export const WSSearch = {
     );
     const applicantPhoto = allDocs.find((d) => d?.documentType?.includes("APPLICANTPHOTO") || d?.documentType?.includes("PHOTO"));
 
-    const isMutationApp = wsDataDetails?.applicationType?.includes("MUTATION");
     if (isMutationApp) {
       if (wsDataDetails?.additionalDetails?.identityProofDocumentId || wsDataDetails?.additionalDetails?.identityProofDocumentName || wsDataDetails?.additionalDetails?.identityProofDocumentNumber) {
         identityDoc = {
@@ -975,7 +982,7 @@ export const WSSearch = {
       connectionHolderDetails,
       propertyDetails,
       propertyWaterConnectionUseDetails,
-      bankDetails,
+      ...(isMutationApp ? [] : [bankDetails]),
       documentDetails,
     ];
 
