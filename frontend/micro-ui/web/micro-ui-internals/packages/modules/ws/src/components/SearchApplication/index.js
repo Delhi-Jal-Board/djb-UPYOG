@@ -1,5 +1,5 @@
 import React, { useEffect, useCallback, useMemo } from "react";
-import { SearchForm, Table, Card, Loader, CollapsibleCardPage, MobileNumber, SearchField, SubmitBar } from "@djb25/digit-ui-react-components";
+import { SearchForm, Table, Card, Loader, CollapsibleCardPage, MobileNumber, SearchField, SubmitBar, TextInput } from "@djb25/digit-ui-react-components";
 import { useForm, Controller } from "react-hook-form";
 import SearchFields from "./SearchFields";
 import { useTranslation } from "react-i18next";
@@ -230,6 +230,18 @@ const SearchApplication = ({ tenantId, onSubmit, data, count, resultOk, business
                     })}
                     type="number"
                     maxlength={10}
+                  />
+                </div>
+                <div className="search-field-wrapper">
+                  <label>{t("WS_ACK_COMMON_APP_NO_LABEL")}</label>
+                  <TextInput
+                    name="applicationNumber"
+                    inputRef={register({
+                      pattern: {
+                        value: /^[a-zA-Z0-9-_/]*$/,
+                        message: t("ERR_INVALID_APPLICATION_NO"),
+                      },
+                    })}
                   />
                 </div>
               </div>

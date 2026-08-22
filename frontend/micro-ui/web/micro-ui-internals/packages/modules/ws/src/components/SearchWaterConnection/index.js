@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { SearchForm, Table, Card, Loader, Toast, CollapsibleCardPage, MobileNumber, SearchField, SubmitBar } from "@djb25/digit-ui-react-components";
+import { SearchForm, Table, Card, Loader, Toast, CollapsibleCardPage, MobileNumber, SearchField, SubmitBar, TextInput } from "@djb25/digit-ui-react-components";
 import { useForm, Controller } from "react-hook-form";
 import SearchFields from "./SearchFields";
 import { useTranslation } from "react-i18next";
@@ -344,10 +344,18 @@ const SearchWaterConnection = ({ tenantId, onSubmit, data, count, resultOk, busi
                       {/* <CardLabelError>{formState?.errors?.["mobileNumber"]?.message}</CardLabelError> */}
                     </div>
 
-                    {/* <div className="search-field-wrapper">
-                    <label>{t("WS_APPLICANT_NAME")}</label>
-                    <TextInput name="applicantName" inputRef={register({})} />
-                  </div> */}
+                    <div className="search-field-wrapper">
+                      <label>{t("WS_MYCONNECTIONS_CONSUMER_NO")}</label>
+                      <TextInput
+                        name="connectionNumber"
+                        inputRef={register({
+                          pattern: {
+                            value: /^[a-zA-Z0-9/-]*$/,
+                            message: t("ERR_INVALID_CONSUMER_NO"),
+                          },
+                        })}
+                      />
+                    </div>
                   </div>
                 )}
                 {/* --- ADVANCED SEARCH --- */}
