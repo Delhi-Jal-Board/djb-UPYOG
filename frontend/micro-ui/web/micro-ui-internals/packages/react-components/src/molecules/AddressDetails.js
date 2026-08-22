@@ -184,17 +184,19 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
     const traverse = (node) => {
       if (!node) return;
       if (node.label === "Zone" || node.label === "ZONE") {
-        const code = node.code || node.localname || node.name;
-        const name = node.name || node.localname || code;
+        const code = node.localname || node.name || node.code;
+        const name = node.localname || node.name || code;
         if (code) zones.set(code, { code, i18nKey: code, name: name });
       }
       if (node.label === "Ward" || node.label === "WARD" || node.label === "Block" || node.label === "BLOCK") {
-        const code = node.code || node.localname || node.name;
-        if (code) wards.set(code, { code, i18nKey: code, name: code });
+        const code = node.localname || node.name || node.code;
+        const name = node.localname || node.name || code;
+        if (code) wards.set(code, { code, i18nKey: code, name: name });
       }
       if (node.label === "Assembly Constituency" || node.label === "ASSEMBLY_CONSTITUENCY") {
-        const code = node.code || node.localname || node.name;
-        if (code) assemblies.set(code, { code, i18nKey: code, name: code });
+        const code = node.localname || node.name || node.code;
+        const name = node.localname || node.name || code;
+        if (code) assemblies.set(code, { code, i18nKey: code, name: name });
       }
       if (node.children && node.children.length > 0) {
         node.children.forEach(traverse);
@@ -222,13 +224,13 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
       let currentAssembly = assembly;
 
       if (node.label === "Zone" || node.label === "ZONE") {
-        currentZone = node.localname || node.code || node.name;
+        currentZone = node.localname || node.name || node.code;
       }
       if (node.label === "Ward" || node.label === "WARD" || node.label === "Block" || node.label === "BLOCK") {
-        currentWard = node.code || node.localname || node.name;
+        currentWard = node.localname || node.name || node.code;
       }
       if (node.label === "Assembly Constituency" || node.label === "ASSEMBLY_CONSTITUENCY") {
-        currentAssembly = node.code || node.localname || node.name;
+        currentAssembly = node.localname || node.name || node.code;
       }
 
       // Specifically target nodes that are officially labeled as Locality

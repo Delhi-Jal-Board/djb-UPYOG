@@ -184,8 +184,9 @@ const PTAcknowledgement = ({ onSuccess, onSelect, formData, redirectUrl, userTyp
   return isMutationLoading ? (
     <Loader />
   ) : (
-    <Card>
-      <BannerPicker t={t} data={responseData} isSuccess={isMutationSuccess} isLoading={isMutationLoading} />
+    <div style={{ width: "100%" }}>
+      <Card>
+        <BannerPicker t={t} data={responseData} isSuccess={isMutationSuccess} isLoading={isMutationLoading} />
       {isMutationSuccess && <CardText>{window.location.href.includes("employee") ? t("CS_CREATE_PROPERTY_SUCCESS_EMP_RESPONSE") : t("CS_CREATE_PROPERTY_SUCCESS_CITIZEN_RESPONSE")}</CardText>}
       {!isMutationSuccess && <CardText>{t("CS_FILE_PROPERTY_FAILED_RESPONSE")}</CardText>}
 
@@ -224,6 +225,7 @@ const PTAcknowledgement = ({ onSuccess, onSelect, formData, redirectUrl, userTyp
           />
         ))}
     </Card>
+    </div>
   );
 };
 

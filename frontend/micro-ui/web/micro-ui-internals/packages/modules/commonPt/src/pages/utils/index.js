@@ -17,8 +17,8 @@ export const setAddressDetailsLW = (data) => {
     longitude: address?.longitude || address?.Longitude,
     locality: {
       code: address?.locality?.code || address?.locality?.name || address?.locality,
-      latitude: address?.locality?.latitude,
-      longitude: address?.locality?.longitude,
+      latitude: address?.locality?.latitude ? address?.locality?.latitude : (address?.latitude || address?.Latitude),
+      longitude: address?.locality?.longitude ? address?.locality?.longitude : (address?.longitude || address?.Longitude),
     },
     addressLine1: address?.addressLine1,
     addressLine2: address?.addressLine2,
