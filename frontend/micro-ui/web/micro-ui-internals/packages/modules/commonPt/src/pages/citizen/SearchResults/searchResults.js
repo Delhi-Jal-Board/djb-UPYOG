@@ -205,6 +205,11 @@ const PropertySearchResults = ({
         },
       },
     };
+  })?.sort((a, b) => {
+    if (a.property_id && b.property_id) {
+      return a.property_id.localeCompare(b.property_id);
+    }
+    return 0;
   });
   const getUserType = () => Digit.UserService.getType();
 

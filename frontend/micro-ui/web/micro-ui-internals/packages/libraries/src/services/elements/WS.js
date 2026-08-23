@@ -247,4 +247,15 @@ export const WSService = {
       params: { tenantId, ...filters },
       auth: true,
     }),
+  dueVerification: (details, params) =>
+    Request({
+      url: Urls.ws.due_verification,
+      data: details,
+      useCache: false,
+      setTimeParam: false,
+      userService: true,
+      method: "POST",
+      params: params,
+      auth: true,
+    }),
 };

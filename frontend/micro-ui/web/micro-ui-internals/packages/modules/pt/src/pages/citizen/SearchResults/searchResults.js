@@ -124,6 +124,11 @@ const PropertySearchResults = ({ template, header, actionButtonLabel, isMutation
       total_due: payment[property?.propertyId]?.total_due || 0,
       bil_due__date: payment[property?.propertyId]?.bil_due__date || t("N/A"),
     };
+  })?.sort((a, b) => {
+    if (a.property_id && b.property_id) {
+      return a.property_id.localeCompare(b.property_id);
+    }
+    return 0;
   });
 
   return (
