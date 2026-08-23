@@ -136,7 +136,16 @@ public class WsQueryBuilder {
 
 		if (!StringUtils.isEmpty(criteria.getMobileNumber()) || !StringUtils.isEmpty(criteria.getDoorNo())
 				|| !StringUtils.isEmpty(criteria.getOwnerName()) || !StringUtils.isEmpty(criteria.getPropertyId())) {
+			String originalMobileNumber = criteria.getMobileNumber();
+			if (!StringUtils.isEmpty(originalMobileNumber)) {
+				criteria.setMobileNumber(""); // Prevent PT search by Mobile
+			}
+
 			List<Property> propertyList = waterServicesUtil.propertySearchOnCriteria(criteria, requestInfo);
+
+			if (!StringUtils.isEmpty(originalMobileNumber)) {
+				criteria.setMobileNumber(originalMobileNumber); // Restore for Connection Holder search
+			}
 			propertyList.forEach(property -> propertyIds.add(property.getPropertyId()));
 			criteria.setPropertyIds(propertyIds);
 			if (!propertyIds.isEmpty()) {
@@ -146,6 +155,27 @@ public class WsQueryBuilder {
 				propertyIdsPresent = true;
 			}
 		}
+
+		/* 
+		 * Preserving the old logic below as a fallback. 
+		 * The new logic above restricts water connection searches to the connection holder 
+		 * by temporarily disabling the property-owner-based mobile number search.
+		 * If we ever need to revert to the previous behavior (where mobile number searches included property owners), 
+		 * the old logic can be uncommented and restored.
+		 *
+		 * if (!StringUtils.isEmpty(criteria.getMobileNumber()) || !StringUtils.isEmpty(criteria.getDoorNo())
+		 * 		|| !StringUtils.isEmpty(criteria.getOwnerName()) || !StringUtils.isEmpty(criteria.getPropertyId())) {
+		 * 	List<Property> propertyList = waterServicesUtil.propertySearchOnCriteria(criteria, requestInfo);
+		 * 	propertyList.forEach(property -> propertyIds.add(property.getPropertyId()));
+		 * 	criteria.setPropertyIds(propertyIds);
+		 * 	if (!propertyIds.isEmpty()) {
+		 * 		addClauseIfRequired(preparedStatement, query);
+		 * 		query.append(propertyIdQuery).append(createQuery(propertyIds)).append(" )");
+		 * 		addToPreparedStatement(preparedStatement, propertyIds);
+		 * 		propertyIdsPresent = true;
+		 * 	}
+		 * }
+		 */
 		
 		Set<String> uuids = null;
 		if(!StringUtils.isEmpty(criteria.getMobileNumber()) || !StringUtils.isEmpty(criteria.getOwnerName())
