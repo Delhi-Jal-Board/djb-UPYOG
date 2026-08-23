@@ -234,9 +234,14 @@ const WSDisconnectionForm = ({ t, config, onSelect, userType }) => {
         <CitizenInfoLabel textStyle={{ color: "#0B0C0C" }} text={t(`WS_DISONNECT_APPL_INFO`)} info={t("CS_COMMON_INFO")} />
         <div className="employee-form-section-wrapper">
           {userType === "citizen" && <DisconnectTimeline currentStep={1} />}
-          <FormStep config={config} onSelect={handleSubmit} onSkip={onSkip} t={t}>
-            <div style={{ padding: "0px 10px 10px 10px" }}>
-              <CardHeader>{isReSubmit ? t("RESUBMIT_DISCONNECTION_FORM") : t("WS_APPLICATION_FORM")}</CardHeader>
+          <FormStep
+            config={config}
+            onSelect={handleSubmit}
+            onSkip={onSkip}
+            t={t}
+            title={isReSubmit ? t("RESUBMIT_DISCONNECTION_FORM") : t("WS_APPLICATION_FORM")}
+          >
+            {/* <CardHeader>{isReSubmit ? t("RESUBMIT_DISCONNECTION_FORM") : t("WS_APPLICATION_FORM")}</CardHeader> */}
             <StatusTable>
               <Row
                 key={t("PDF_STATIC_LABEL_CONSUMER_NUMBER_LABEL")}
@@ -246,47 +251,51 @@ const WSDisconnectionForm = ({ t, config, onSelect, userType }) => {
               />
             </StatusTable>
 
-            <CardLabel className="card-label-smaller" style={{ display: "inline" }}>
-              {t("WS_DISCONNECTION_TYPE") + "*"}
-            </CardLabel>
-            <RadioButtons
-              t={t}
-              options={disconnectionTypeList}
-              optionsKey="i18nKey"
-              value={disconnectionData.type?.value?.code}
-              selectedOption={disconnectionData.type?.value}
-              isMandatory={false}
-              onSelect={(val) => filedChange({ code: "type", value: val })}
-              labelKey="WS_DISCONNECTION_TYPE"
-              inputStyle={isMobile ? { marginLeft: "unset" } : {}}
-            />
-            <CardLabel className="card-label-smaller" style={{ display: "inline" }}>
-              {t("WS_DISCONNECTION_PROPOSED_DATE") + "*"}
-              <div className={`tooltip`} style={{ position: "absolute" }}>
-                <InfoIcon />
-                <span
-                  className="tooltiptext"
-                  style={{
-                    whiteSpace: Digit.Utils.browser.isMobile() ? "unset" : "nowrap",
-                    fontSize: "medium",
-                    width: Digit.Utils.browser.isMobile() ? "150px" : "unset",
-                  }}
-                >
-                  {t("SHOULD_BE_DATE") + " " + slaData?.slaDays + " " + t("DAYS_OF_APPLICATION_DATE")}
-                </span>
+            <LabelFieldPair>
+              <CardLabel className="card-label-smaller">{t("WS_DISCONNECTION_TYPE") + "*"}</CardLabel>
+              <div className="field">
+                <RadioButtons
+                  t={t}
+                  options={disconnectionTypeList}
+                  optionsKey="i18nKey"
+                  value={disconnectionData.type?.value?.code}
+                  selectedOption={disconnectionData.type?.value}
+                  isMandatory={false}
+                  onSelect={(val) => filedChange({ code: "type", value: val })}
+                  labelKey="WS_DISCONNECTION_TYPE"
+                  inputStyle={isMobile ? { marginLeft: "unset" } : {}}
+                />
               </div>
-            </CardLabel>
-            <div className="field">
-              <DatePicker
-                date={disconnectionData?.date}
-                onChange={(date) => {
-                  setDisconnectionData({ ...disconnectionData, date: date });
-                }}
-              ></DatePicker>
-            </div>
+            </LabelFieldPair>
+            <LabelFieldPair>
+              <CardLabel className="card-label-smaller">
+                {t("WS_DISCONNECTION_PROPOSED_DATE") + "*"}
+                <div className={`tooltip`} style={{ position: "absolute" }}>
+                  <InfoIcon />
+                  <span
+                    className="tooltiptext"
+                    style={{
+                      whiteSpace: Digit.Utils.browser.isMobile() ? "unset" : "nowrap",
+                      fontSize: "medium",
+                      width: Digit.Utils.browser.isMobile() ? "150px" : "unset",
+                    }}
+                  >
+                    {t("SHOULD_BE_DATE") + " " + slaData?.slaDays + " " + t("DAYS_OF_APPLICATION_DATE")}
+                  </span>
+                </div>
+              </CardLabel>
+              <div className="field">
+                <DatePicker
+                  date={disconnectionData?.date}
+                  onChange={(date) => {
+                    setDisconnectionData({ ...disconnectionData, date: date });
+                  }}
+                ></DatePicker>
+              </div>
+            </LabelFieldPair>
             {disconnectionData.type?.value?.code === "Temporary" ? (
-              <div>
-                <CardLabel className="card-label-smaller" style={{ display: "inline" }}>
+              <LabelFieldPair>
+                <CardLabel className="card-label-smaller">
                   {t("WS_DISCONNECTION_PROPOSED_END_DATE") + "*"}
                   <div className={`tooltip`} style={{ position: "absolute" }}>
                     <InfoIcon />
@@ -310,60 +319,61 @@ const WSDisconnectionForm = ({ t, config, onSelect, userType }) => {
                     }}
                   ></DatePicker>
                 </div>
-              </div>
+              </LabelFieldPair>
             ) : (
               ""
             )}
             <LabelFieldPair>
-              <CardLabel className="card-label-smaller" style={{ display: "inline" }}>
-                {t("WS_DISCONNECTION_REASON") + "*"}
-              </CardLabel>
-              <Dropdown
-                option={disconnectionReasonList}
-                isMandatory={false}
-                optionKey="i18nKey"
-                t={t}
-                name={"reason"}
-                value={disconnectionData.reason?.value?.code}
-                selectedOption={disconnectionData.reason?.value}
-                labelKey="WS_DISCONNECTION_REASON"
-                select={(e) => filedChange({ code: "reason", value: e })}
-              />
+              <CardLabel className="card-label-smaller">{t("WS_DISCONNECTION_REASON") + "*"}</CardLabel>
+              <div className="field">
+                <Dropdown
+                  option={disconnectionReasonList}
+                  isMandatory={false}
+                  optionKey="i18nKey"
+                  t={t}
+                  name={"reason"}
+                  value={disconnectionData.reason?.value?.code}
+                  selectedOption={disconnectionData.reason?.value}
+                  labelKey="WS_DISCONNECTION_REASON"
+                  select={(e) => filedChange({ code: "reason", value: e })}
+                />
+              </div>
             </LabelFieldPair>
-            <SubmitBar
-              label={t("CS_COMMON_NEXT")}
-              onSubmit={() => {
-                const appDate = new Date();
-                const proposedDate = format(addDays(appDate, slaData?.slaDays), "yyyy-MM-dd").toString();
-                if (convertDateToEpoch(disconnectionData?.date) < convertDateToEpoch(proposedDate)) {
-                  setError({ key: "error", message: "PROPOSED_DISCONNECTION_INVALID_DATE" });
-                  setTimeout(() => {
-                    setError(false);
-                  }, 3000);
-                } else if (
-                  disconnectionData?.type?.value?.code == "Temporary" &&
-                  parseInt(convertDateToEpoch(disconnectionData.endDate)) <= parseInt(convertDateToEpoch(disconnectionData?.date))
-                ) {
-                  console.log("Temporary connection");
-                  setError({ key: "error", message: "PROPOSED_DISCONNECTION_INVALID_END_DATE" });
-                  setTimeout(() => {
-                    setError(false);
-                  }, 3000);
-                } else {
-                  history.push(match.path.replace("application-form", "documents-upload"));
-                }
-              }}
-              disabled={
-                disconnectionData?.reason?.value === "" ||
+            <div style={{ display: "flex", justifyContent: "flex-end", width: "100%", gridColumn: "1 / -1" }}>
+              <SubmitBar
+                label={t("CS_COMMON_NEXT")}
+                onSubmit={() => {
+                  const appDate = new Date();
+                  const proposedDate = format(addDays(appDate, slaData?.slaDays), "yyyy-MM-dd").toString();
+                  if (convertDateToEpoch(disconnectionData?.date) < convertDateToEpoch(proposedDate)) {
+                    setError({ key: "error", message: "PROPOSED_DISCONNECTION_INVALID_DATE" });
+                    setTimeout(() => {
+                      setError(false);
+                    }, 3000);
+                  } else if (
+                    disconnectionData?.type?.value?.code == "Temporary" &&
+                    parseInt(convertDateToEpoch(disconnectionData.endDate)) <= parseInt(convertDateToEpoch(disconnectionData?.date))
+                  ) {
+                    console.log("Temporary connection");
+                    setError({ key: "error", message: "PROPOSED_DISCONNECTION_INVALID_END_DATE" });
+                    setTimeout(() => {
+                      setError(false);
+                    }, 3000);
+                  } else {
+                    history.push(match.path.replace("application-form", "documents-upload"));
+                  }
+                }}
+                disabled={
+                  disconnectionData?.reason?.value === "" ||
                   disconnectionData?.reason === "" ||
                   disconnectionData?.date === "" ||
                   disconnectionData?.type === ""
-                  ? true
-                  : false
-              }
-            />
-            {error && <Toast error={error?.key === "error" ? true : false} label={t(error?.message)} onClose={() => setError(null)} />}
+                    ? true
+                    : false
+                }
+              />
             </div>
+            {error && <Toast error={error?.key === "error" ? true : false} label={t(error?.message)} onClose={() => setError(null)} />}
           </FormStep>
         </div>
       </React.Fragment>
@@ -519,10 +529,10 @@ const WSDisconnectionForm = ({ t, config, onSelect, userType }) => {
             label={t("ACTION_TEST_SUBMIT")}
             onSubmit={() => onSubmit(disconnectionData)}
             style={{ margin: "10px 10px 0px 0px" }}
-          // disabled={
-          //   wsDocsLoading || documents.length < 2 || disconnectionData?.reason?.value === "" || disconnectionData?.reason === "" || disconnectionData?.date === "" || disconnectionData?.type === ""
-          //   ? true
-          //   : false}
+            // disabled={
+            //   wsDocsLoading || documents.length < 2 || disconnectionData?.reason?.value === "" || disconnectionData?.reason === "" || disconnectionData?.date === "" || disconnectionData?.type === ""
+            //   ? true
+            //   : false}
           />
         }
       </ActionBar>
@@ -537,8 +547,8 @@ function SelectDocument({ t, key, document: doc, setDocuments, error, setError, 
     filteredDocument
       ? { ...filteredDocument, active: true, code: filteredDocument?.documentType, i18nKey: filteredDocument?.documentType }
       : doc?.dropdownData?.length === 1
-        ? doc?.dropdownData[0]
-        : {}
+      ? doc?.dropdownData[0]
+      : {}
   );
   const [file, setFile] = useState(null);
   const [uploadedFile, setUploadedFile] = useState(() => filteredDocument?.fileStoreId || null);

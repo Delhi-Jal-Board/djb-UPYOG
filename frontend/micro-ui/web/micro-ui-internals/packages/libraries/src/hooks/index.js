@@ -258,6 +258,7 @@ import useDisconnectionWorkflow from "./ws/useDisconnectionWorkflow";
 import useDisConnectionDetails from "./ws/useDisConnectionDetails";
 import useWSModifyDetailsPage from "./ws/useWSModifyDetailsPage";
 import useBulkMeterReadingCreateAPI from "./ws/useBulkMeterCreate";
+import useDueVerification from "./ws/useDueVerification";
 
 import useGetHowItWorksJSON from "./useHowItWorksJSON";
 import useGetFAQsJSON from "./useGetFAQsJSON";
@@ -719,6 +720,7 @@ const ws = {
   useToCheckPrivacyEnablement,
   useBulkMeterReadingCreateAPI,
   useWSConfigMDMS: useWSConfigMDMS,
+  useDueVerification,
 };
 
 const reports = {

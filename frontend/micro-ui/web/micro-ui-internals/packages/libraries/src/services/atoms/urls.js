@@ -208,6 +208,7 @@ const Urls = {
     disconnection_notice: "/pdf-service/v1/_createnosave",
     meter_search: "/ws-calculator/meterConnection/_search",
     calculatercharges: "/ws-calculator/waterCalculator/_calculator",
+    due_verification: "/ws-services/wc/due-verification",
   },
 
   asset: {

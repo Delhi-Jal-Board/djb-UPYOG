@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { TextInput, Table, AddIcon } from "@djb25/digit-ui-react-components";
+import { TextInput, Table, AddIcon, Toast } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 
 const DueVerification = ({ applicationData }) => {
@@ -87,23 +87,48 @@ const DueVerification = ({ applicationData }) => {
     }
   }, [applicationData]);
 
-  const handleAdd = () => {
+  const tenantId = window?.Digit?.ULBService?.getCurrentTenantId() || "dl.djb";
+  const { mutateAsync: checkDueVerification } = window?.Digit?.Hooks?.ws?.useDueVerification(tenantId);
+
+  const [showToast, setShowToast] = useState(null);
+
+  const handleAdd = async () => {
     if (kno) {
-      const mockData = {
-        kno: kno,
-        fullName: "John Doe",
-        fullAddress: "123 Main St, New Delhi, Delhi 110001",
-        dueAmount: "1500",
-        totalAmount: "1500",
-        remarks: remarks,
-      };
-      const newTableData = [...tableData, mockData];
-      setTableData(newTableData);
-      if (applicationData) {
-        applicationData.dueVerification = newTableData;
+      try {
+        const response = await checkDueVerification({ DueVerification: { kno: kno } });
+
+        // Check if the response is actually an error object returned by Request
+        if (response?.response?.data?.Errors && response?.response?.data?.Errors?.length > 0) {
+          setShowToast({ isError: true, message: response.response.data.Errors[0].message || t("CS_SOMETHING_WENT_WRONG") });
+          return;
+        }
+
+        const dueVerifications = Array.isArray(response) ? response : (response?.DueVerifications || response?.dueVerifications || response?.dueVerification || []);
+
+        if (dueVerifications && dueVerifications.length > 0) {
+          const newEntries = dueVerifications.map((dueVerificationData) => ({
+            kno: dueVerificationData.kno || kno,
+            fullName: dueVerificationData.fullName || "NA",
+            fullAddress: dueVerificationData.fullAddress || "NA",
+            dueAmount: dueVerificationData.dueAmount || "0",
+            totalAmount: dueVerificationData.totalAmount || "0",
+            remarks: dueVerificationData.remarks || remarks,
+          }));
+          
+          const newTableData = [...tableData, ...newEntries];
+          setTableData(newTableData);
+          if (applicationData) {
+            applicationData.dueVerification = newTableData;
+          }
+          setKno("");
+          setRemarks("");
+        } else {
+          setShowToast({ isError: true, message: response?.Errors?.[0]?.message || t("CS_NO_DATA_FOUND") || "No data found for this K No." });
+        }
+      } catch (error) {
+        console.error("Error fetching due verification data:", error);
+        setShowToast({ isError: true, message: error?.response?.data?.Errors?.[0]?.message || error?.message || t("CS_SOMETHING_WENT_WRONG") || "Something went wrong." });
       }
-      setKno("");
-      setRemarks("");
     }
   };
 
@@ -116,7 +141,7 @@ const DueVerification = ({ applicationData }) => {
             <span style={{ fontSize: "16px", color: "#0B0C0C", marginBottom: "8px", display: "inline-block" }}>
               {t("K No.(Existing KNo of same property)")} <span style={{ color: "red" }}>*</span>
             </span>
-            <TextInput type="number" value={kno} onChange={(e) => setKno(e.target.value)} style={{ width: "100%", marginBottom: "0" }} />
+            <TextInput type="text" value={kno} onChange={(e) => setKno(e.target.value)} style={{ width: "100%", marginBottom: "0" }} />
           </div>
           <div style={{ flex: 1, paddingBottom: "2px" }}>
             <button
@@ -149,6 +174,14 @@ const DueVerification = ({ applicationData }) => {
             columns={columns}
           />
         </div>
+      )}
+      {showToast && (
+        <Toast
+          error={showToast.isError}
+          label={showToast.message}
+          onClose={() => setShowToast(null)}
+          isDleteBtn={true}
+        />
       )}
     </div>
   );
