@@ -1066,20 +1066,29 @@
 
       // Dynamic Portal URL from globalConfigs
       (function () {
-        var portalUrl =
-          window.globalConfigs &&
-          typeof window.globalConfigs.getConfig === "function"
-            ? window.globalConfigs.getConfig("PORTAL_URL")
-            : "";
-
-        if (portalUrl) {
-          portalUrl = portalUrl.replace(/\/+$/, "");
-
-          document.querySelectorAll("[data-portal-path]").forEach(function (element) {
-            var path = element.getAttribute("data-portal-path");
-            element.textContent = portalUrl + path;
-          });
+        function getPortalUrl() {
+          try {
+            if (window.globalConfigs && typeof window.globalConfigs.getConfig === "function") {
+              var url = window.globalConfigs.getConfig("PORTAL_URL") || window.globalConfigs.getConfig("REACT_APP_PROXY_API");
+              if (url) return url;
+            }
+          } catch (e) {}
+          try {
+            if (window.parent && window.parent.globalConfigs && typeof window.parent.globalConfigs.getConfig === "function") {
+              var parentUrl = window.parent.globalConfigs.getConfig("PORTAL_URL") || window.parent.globalConfigs.getConfig("REACT_APP_PROXY_API");
+              if (parentUrl) return parentUrl;
+            }
+          } catch (e) {}
+          return window.location.origin;
         }
+
+        var portalUrl = (getPortalUrl() || "").replace(/\/+$/, "");
+
+        document.querySelectorAll("[data-portal-path]").forEach(function (element) {
+          var path = element.getAttribute("data-portal-path") || "";
+          var suffix = element.getAttribute("data-portal-suffix") || "";
+          element.textContent = portalUrl + path + suffix;
+        });
       })();
 
       // Live Text Search Functionality
