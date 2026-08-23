@@ -481,4 +481,68 @@ public class WaterServicesUtil {
 			return true;
 		}
 	}
+
+	/**
+	 * Helper method to search and format property address cleanly without using ObjectMapper conversion
+	 */
+	public String extractFullAddress(String propertyId, String tenantId, RequestInfo requestInfo, String kno) {
+		if (StringUtils.isEmpty(propertyId)) {
+			log.warn("Property ID not found for KNO: {}", kno);
+			return null;
+		}
+
+		try {
+			SearchCriteria propertySearchCriteria = SearchCriteria.builder().propertyId(propertyId).tenantId(tenantId).build();
+			log.info("Fetching property for propertyId: {}, KNO: {}", propertyId, kno);
+			List<Property> properties = propertySearchOnCriteria(propertySearchCriteria,requestInfo);
+
+			if (!CollectionUtils.isEmpty(properties) && properties.get(0) != null) {
+				Address address = properties.get(0).getAddress();
+
+				if (address != null) {
+					StringBuilder addressBuilder = new StringBuilder();
+
+					appendAddressPart(addressBuilder, address.getDoorNo());
+					appendAddressPart(addressBuilder, address.getBuildingName());
+					appendAddressPart(addressBuilder, address.getPlotNo());
+					appendAddressPart(addressBuilder, address.getStreet());
+					appendAddressPart(addressBuilder, address.getLandmark());
+					appendAddressPart(addressBuilder, address.getLocality() != null ? address.getLocality().getName() : null);
+					appendAddressPart(addressBuilder, address.getDistrict());
+					appendAddressPart(addressBuilder, address.getCity());
+					appendAddressPart(addressBuilder, address.getState());
+					appendAddressPart(addressBuilder, address.getPincode());
+
+					String fullAddress = addressBuilder.length() > 0 ? addressBuilder.toString() : null;
+					log.info("Property found. propertyId: {}, fullAddress: {}", propertyId, fullAddress);
+					return fullAddress;
+				}
+			} else {
+				log.warn("No property found for propertyId: {}", propertyId);
+			}
+
+		} catch (Exception e) {
+			log.error("Error fetching property address for propertyId: {}, KNO: {}", propertyId, kno, e);
+		}
+		return null;
+	}
+
+	/**
+	 * Helper method to append address parts with comma separation
+	 */
+	private void appendAddressPart(StringBuilder addressBuilder, Object value) {
+		if (value == null) {
+			return;
+		}
+
+		String part = String.valueOf(value).trim();
+		if (part.isEmpty() || "null".equalsIgnoreCase(part)) {
+			return;
+		}
+
+		if (addressBuilder.length() > 0) {
+			addressBuilder.append(", ");
+		}
+		addressBuilder.append(part);
+	}
 }
