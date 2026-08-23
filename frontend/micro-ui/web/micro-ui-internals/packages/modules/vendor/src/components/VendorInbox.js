@@ -99,7 +99,11 @@ const getSelectedVendorOption = (row = {}, vendors = []) => {
 const getSelectedSupervisorOption = (row = {}, supervisorsList = []) => {
   const supervisorId = row?.supervisorId;
   if (!supervisorId) return null;
-  return supervisorsList.find((s) => s.id === supervisorId || s.owner?.uuid === supervisorId || s.name === supervisorId || s.owner?.name === supervisorId) || null;
+  return (
+    supervisorsList.find(
+      (s) => s.id === supervisorId || s.owner?.uuid === supervisorId || s.name === supervisorId || s.owner?.name === supervisorId
+    ) || null
+  );
 };
 
 const getVendorFillingPoints = (vendor = {}) => {
@@ -143,9 +147,9 @@ const getDriverFillingPointIdentifiers = (driver = {}) => {
 const getVendorDriversForFillingPoint = (vendor, fillingPoint) => {
   const vendorDrivers = Array.isArray(vendor?.drivers)
     ? vendor.drivers.filter(Boolean).map((d) => ({
-      ...d,
-      displayName: `${d.name} (${d.owner?.mobileNumber || "N/A"})`,
-    }))
+        ...d,
+        displayName: `${d.name} (${d.owner?.mobileNumber || "N/A"})`,
+      }))
     : [];
   if (!fillingPoint) return [];
 
@@ -494,7 +498,6 @@ const VendorInbox = (props) => {
         setShowToast({ key: "error", action: error?.message || error });
       },
       onSuccess: (data, variables) => {
-        console.log("newStatus:", newStatus, "isDisable:", newStatus === "DISABLED");
         setShowToast({ key: "success", action: "SUPERVISOR", isDisable: newStatus === "DISABLED" });
         queryClient.invalidateQueries("FSM_SUPERVISOR_SEARCH");
         queryClient.invalidateQueries("SUPERVISOR_SEARCH");
@@ -526,7 +529,6 @@ const VendorInbox = (props) => {
         setShowToast({ key: "error", action: error?.message || error });
       },
       onSuccess: (data, variables) => {
-        console.log("newStatus:", newStatus, "isDisable:", newStatus === "DISABLED");
         setShowToast({ key: "success", action: "SURVEYOR", isDisable: newStatus === "DISABLED" });
         queryClient.invalidateQueries("FSM_SURVEYOR_SEARCH");
         queryClient.invalidateQueries("SURVEYOR_SEARCH");
@@ -623,7 +625,10 @@ const VendorInbox = (props) => {
         onSuccess: (data) => {
           const isError = data?.error === true || data?.Errors?.length > 0 || data?.data?.Errors?.length > 0;
           if (isError) {
-            setShowToast({ key: "error", action: data?.data?.Errors?.[0]?.message || data?.Errors?.[0]?.message || data?.message || "UPDATE_FAILED" });
+            setShowToast({
+              key: "error",
+              action: data?.data?.Errors?.[0]?.message || data?.Errors?.[0]?.message || data?.message || "UPDATE_FAILED",
+            });
             return;
           }
           updateVehicleRowState(currentVehicle?.id, {
@@ -653,7 +658,10 @@ const VendorInbox = (props) => {
         onSuccess: (data) => {
           const isError = data?.error === true || data?.Errors?.length > 0 || data?.data?.Errors?.length > 0;
           if (isError) {
-            setShowToast({ key: "error", action: data?.data?.Errors?.[0]?.message || data?.Errors?.[0]?.message || data?.message || "UPDATE_FAILED" });
+            setShowToast({
+              key: "error",
+              action: data?.data?.Errors?.[0]?.message || data?.Errors?.[0]?.message || data?.message || "UPDATE_FAILED",
+            });
             return;
           }
           addVehicleToSelectedVendor();
@@ -708,7 +716,10 @@ const VendorInbox = (props) => {
       onSuccess: (data) => {
         const isError = data?.error === true || data?.Errors?.length > 0 || data?.data?.Errors?.length > 0;
         if (isError) {
-          setShowToast({ key: "error", label: data?.data?.Errors?.[0]?.message || data?.Errors?.[0]?.message || data?.message || "Failed to map filling point" });
+          setShowToast({
+            key: "error",
+            label: data?.data?.Errors?.[0]?.message || data?.Errors?.[0]?.message || data?.message || "Failed to map filling point",
+          });
           return;
         }
         const mappedVendor = getSelectedVendorOption(row.original, vendors);
@@ -763,7 +774,14 @@ const VendorInbox = (props) => {
       onSuccess: (data) => {
         const isError = data?.error === true || data?.Errors?.length > 0 || data?.data?.Errors?.length > 0;
         if (isError) {
-          setShowToast({ key: "error", label: data?.data?.Errors?.[0]?.message || data?.Errors?.[0]?.message || data?.message || t("ES_FSM_REGISTRY_INBOX_FAILED_TO_UPDATE_SUPERVISOR") });
+          setShowToast({
+            key: "error",
+            label:
+              data?.data?.Errors?.[0]?.message ||
+              data?.Errors?.[0]?.message ||
+              data?.message ||
+              t("ES_FSM_REGISTRY_INBOX_FAILED_TO_UPDATE_SUPERVISOR"),
+          });
           return;
         }
         setShowToast({ key: "success", label: t("ES_FSM_REGISTRY_INBOX_SUPERVISOR_MAPPED_SUCCESSFULLY") });
@@ -898,22 +916,22 @@ const VendorInbox = (props) => {
           //enabled/disabled
           ...(!isVendor
             ? [
-              {
-                Header: t("ES_VENDOR_REGISTRY_INBOX_ENABLED"),
-                id: "status",
-                accessor: (row) => row.dsoDetails?.status || "",
-                Cell: ({ row }) => {
-                  return (
-                    <ToggleSwitch
-                      style={{ display: "flex", justifyContent: "left" }}
-                      value={row.original?.dsoDetails?.status === "DISABLED" ? false : true}
-                      onChange={() => onVendorUpdate(row)}
-                      name={`switch-${row.id}`}
-                    />
-                  );
+                {
+                  Header: t("ES_VENDOR_REGISTRY_INBOX_ENABLED"),
+                  id: "status",
+                  accessor: (row) => row.dsoDetails?.status || "",
+                  Cell: ({ row }) => {
+                    return (
+                      <ToggleSwitch
+                        style={{ display: "flex", justifyContent: "left" }}
+                        value={row.original?.dsoDetails?.status === "DISABLED" ? false : true}
+                        onChange={() => onVendorUpdate(row)}
+                        name={`switch-${row.id}`}
+                      />
+                    );
+                  },
                 },
-              },
-            ]
+              ]
             : []),
           // {
           //   Header: t("ES_VENDOR_ADDITIONAL_DETAILS"),
@@ -950,63 +968,63 @@ const VendorInbox = (props) => {
           // },
           ...(!(userType !== "CITIZEN" && isEkycRole)
             ? [
-              {
-                Header: t("ES_VENDOR_ADDITIONAL_DETAILS"),
-                disableSortBy: true,
-                Cell: ({ row }) => {
-                  const vendorId = row.original?.id;
+                {
+                  Header: t("ES_VENDOR_ADDITIONAL_DETAILS"),
+                  disableSortBy: true,
+                  Cell: ({ row }) => {
+                    const vendorId = row.original?.id;
 
-                  // Guard: if data not yet loaded, show a neutral state
-                  if (!additionalVendorData) {
-                    return <span>Loading...</span>;
-                  }
+                    // Guard: if data not yet loaded, show a neutral state
+                    if (!additionalVendorData) {
+                      return <span>Loading...</span>;
+                    }
 
-                  const hasDetails = row.original?.vendorAdditionalDetails !== null;
-                  return (
-                    <Link
-                      to={
-                        !hasDetails
-                          ? `/digit-ui/${userType}/vendor/registry/additionaldetails/modify-details?vendorId=` + vendorId
-                          : `/digit-ui/${userType}/vendor/registry/vendor-details/` + vendorId
-                      }
-                    >
-                      <button
-                        className="submit-bar"
-                        style={{
-                          backgroundColor: hasDetails ? "#417505" : "#3A8DCC",
-                          color: "white",
-                        }}
+                    const hasDetails = row.original?.vendorAdditionalDetails !== null;
+                    return (
+                      <Link
+                        to={
+                          !hasDetails
+                            ? `/digit-ui/${userType}/vendor/registry/additionaldetails/modify-details?vendorId=` + vendorId
+                            : `/digit-ui/${userType}/vendor/registry/vendor-details/` + vendorId
+                        }
                       >
-                        {hasDetails ? "View Details" : "Add Details"}
-                      </button>
-                    </Link>
-                  );
+                        <button
+                          className="submit-bar"
+                          style={{
+                            backgroundColor: hasDetails ? "#417505" : "#3A8DCC",
+                            color: "white",
+                          }}
+                        >
+                          {hasDetails ? "View Details" : "Add Details"}
+                        </button>
+                      </Link>
+                    );
+                  },
                 },
-              },
-            ]
+              ]
             : []),
 
           ...(!isEkycRole
             ? [
-              {
-                Header: t("VIEW_WORKORDER_DETAILS"),
-                disableSortBy: true,
-                Cell: ({ row }) => {
-                  return (
-                    <button
-                      className="submit-bar"
-                      style={{
-                        backgroundColor: "#417505",
-                        color: "white",
-                      }}
-                      onClick={() => openWorkOrderModal(row.original)}
-                    >
-                      {t("VIEW_WORKORDER_DETAILS")}
-                    </button>
-                  );
+                {
+                  Header: t("VIEW_WORKORDER_DETAILS"),
+                  disableSortBy: true,
+                  Cell: ({ row }) => {
+                    return (
+                      <button
+                        className="submit-bar"
+                        style={{
+                          backgroundColor: "#417505",
+                          color: "white",
+                        }}
+                        onClick={() => openWorkOrderModal(row.original)}
+                      >
+                        {t("VIEW_WORKORDER_DETAILS")}
+                      </button>
+                    );
+                  },
                 },
-              },
-            ]
+              ]
             : []),
         ];
 
@@ -1148,22 +1166,22 @@ const VendorInbox = (props) => {
           //enabled
           ...(!isVendor
             ? [
-              {
-                Header: t("ES_FSM_REGISTRY_INBOX_ENABLED"),
-                id: "status",
-                accessor: (row) => row.status || "",
-                Cell: ({ row }) => {
-                  return (
-                    <ToggleSwitch
-                      style={{ display: "flex", justifyContent: "left" }}
-                      value={row.original?.status === "DISABLED" ? false : true}
-                      onChange={() => onVehicleUpdate(row)}
-                      name={`switch-${row.id}`}
-                    />
-                  );
+                {
+                  Header: t("ES_FSM_REGISTRY_INBOX_ENABLED"),
+                  id: "status",
+                  accessor: (row) => row.status || "",
+                  Cell: ({ row }) => {
+                    return (
+                      <ToggleSwitch
+                        style={{ display: "flex", justifyContent: "left" }}
+                        value={row.original?.status === "DISABLED" ? false : true}
+                        onChange={() => onVehicleUpdate(row)}
+                        name={`switch-${row.id}`}
+                      />
+                    );
+                  },
                 },
-              },
-            ]
+              ]
             : []),
         ];
 
@@ -1249,22 +1267,22 @@ const VendorInbox = (props) => {
           //enabled
           ...(!isVendor
             ? [
-              {
-                Header: t("ES_FSM_REGISTRY_INBOX_ENABLED"),
-                id: "status",
-                accessor: (row) => row.status || "",
-                Cell: ({ row }) => {
-                  return (
-                    <ToggleSwitch
-                      style={{ display: "flex", justifyContent: "left" }}
-                      value={row.original?.status === "DISABLED" ? false : true}
-                      onChange={() => onDriverUpdate(row)}
-                      name={`switch-${row.id}`}
-                    />
-                  );
+                {
+                  Header: t("ES_FSM_REGISTRY_INBOX_ENABLED"),
+                  id: "status",
+                  accessor: (row) => row.status || "",
+                  Cell: ({ row }) => {
+                    return (
+                      <ToggleSwitch
+                        style={{ display: "flex", justifyContent: "left" }}
+                        value={row.original?.status === "DISABLED" ? false : true}
+                        onChange={() => onDriverUpdate(row)}
+                        name={`switch-${row.id}`}
+                      />
+                    );
+                  },
                 },
-              },
-            ]
+              ]
             : []),
         ];
       case "SUPERVISOR":
@@ -1295,56 +1313,61 @@ const VendorInbox = (props) => {
           },
           ...(props.selectedTab === "SUPERVISOR"
             ? [
-              {
-                Header: t("ES_VENDOR_SUPERVISOR_ZONE_NAME"),
-                id: "zoneId",
-                accessor: (row) => row.assignedZoneId || row.zoneId || row.zoneCode || "NA",
-                Cell: ({ row }) => {
-                  const zoneId = row.original?.assignedZoneId || row.original?.zoneId || row.original?.zoneCode;
-                  return <div>{zoneId ? t(zoneId) : "NA"}</div>;
-                }
-              },
-              {
-                Header: t("ES_VENDOR_SUPERVISOR_AGENCY_NAME") || "Agency Name",
-                id: "agencyName",
-                accessor: (row) => row.vendorName || row.vendorData?.name || row.vendor?.name || "NA",
-                Cell: ({ row }) => {
-                  return <div>{row.original?.vendorName || row.original?.vendorData?.name || row.original?.vendor?.name || "NA"}</div>;
+                {
+                  Header: t("ES_VENDOR_SUPERVISOR_ZONE_NAME"),
+                  id: "zoneId",
+                  accessor: (row) => row.assignedZoneId || row.zoneId || row.zoneCode || "NA",
+                  Cell: ({ row }) => {
+                    const zoneId = row.original?.assignedZoneId || row.original?.zoneId || row.original?.zoneCode;
+                    return <div>{zoneId ? t(zoneId) : "NA"}</div>;
+                  },
                 },
-              },
-            ]
+                {
+                  Header: t("ES_VENDOR_SUPERVISOR_AGENCY_NAME") || "Agency Name",
+                  id: "agencyName",
+                  accessor: (row) => row.vendorName || row.vendorData?.name || row.vendor?.name || "NA",
+                  Cell: ({ row }) => {
+                    return <div>{row.original?.vendorName || row.original?.vendorData?.name || row.original?.vendor?.name || "NA"}</div>;
+                  },
+                },
+              ]
             : []),
           ...(props.selectedTab === "SURVEYOR"
             ? [
-              {
-                Header: t("ES_VENDOR_SURVEYOR_ZONE_NAME"),
-                id: "zoneId",
-                accessor: (row) => row.assignedZoneId || row.zoneId || row.zoneCode || "NA",
-                Cell: ({ row }) => {
-                  const zoneId = row.original?.assignedZoneId || row.original?.zoneId || row.original?.zoneCode;
-                  return <div>{zoneId ? t(zoneId) : "NA"}</div>;
-                }
-              },
-              {
-                Header: t("ES_FSM_REGISTRY_INBOX_SUPERVISOR_NAME"),
-                id: "supervisor",
-                accessor: (row) => row.supervisorName || row.reportingManager?.name || "NA",
-                Cell: ({ row }) => {
-                  return (
-                    <Dropdown
-                      className="fsm-registry-dropdown"
-                      selected={getSelectedSupervisorOption(row.original, supervisors)}
-                      option={supervisors}
-                      select={(value) => onSurveyorSupervisorSelect(row, value)}
-                      optionKey="displayName"
-                      t={t}
-                      style={{ textAlign: "left", width: "100%", minWidth: "250px" }}
-                      disable={!supervisors.length}
-                    />
-                  );
+                {
+                  Header: t("ES_VENDOR_INBOX_VENDOR_NAME"),
+                  id: "vendorName",
+                  accessor: (row) => row.vendorName,
                 },
-              },
-            ]
+                {
+                  Header: t("ES_VENDOR_SURVEYOR_ZONE_NAME"),
+                  id: "zoneId",
+                  accessor: (row) => row.assignedZoneId || row.zoneId || row.zoneCode || "NA",
+                  Cell: ({ row }) => {
+                    const zoneId = row.original?.assignedZoneId || row.original?.zoneId || row.original?.zoneCode;
+                    return <div>{zoneId ? t(zoneId) : "NA"}</div>;
+                  },
+                },
+                {
+                  Header: t("ES_FSM_REGISTRY_INBOX_SUPERVISOR_NAME"),
+                  id: "supervisor",
+                  accessor: (row) => row.supervisorName || row.reportingManager?.name || "NA",
+                  Cell: ({ row }) => {
+                    return (
+                      <Dropdown
+                        className="fsm-registry-dropdown"
+                        selected={getSelectedSupervisorOption(row.original, supervisors)}
+                        option={supervisors}
+                        select={(value) => onSurveyorSupervisorSelect(row, value)}
+                        optionKey="displayName"
+                        t={t}
+                        style={{ textAlign: "left", width: "100%", minWidth: "250px" }}
+                        disable={!supervisors.length}
+                      />
+                    );
+                  },
+                },
+              ]
             : []),
           {
             Header: t("ES_FSM_REGISTRY_INBOX_DATE_CREATION"),
@@ -1395,7 +1418,8 @@ const VendorInbox = (props) => {
           {
             Header: t("ES_VENDOR_INBOX_VENDOR_NAME"),
             exportAccessor: (row) =>
-              `${row?.name || row?.dsoDetails?.name || "NA"} (${row?.mobileNumber || row?.owner?.mobileNumber || row?.dsoDetails?.mobileNumber || row?.dsoDetails?.owner?.mobileNumber || "NA"
+              `${row?.name || row?.dsoDetails?.name || "NA"} (${
+                row?.mobileNumber || row?.owner?.mobileNumber || row?.dsoDetails?.mobileNumber || row?.dsoDetails?.owner?.mobileNumber || "NA"
               })`,
           },
           {
@@ -1428,11 +1452,12 @@ const VendorInbox = (props) => {
           {
             Header: "Map Vendor",
             exportAccessor: (row) =>
-              `${row?.vendor?.name || row?.vendorData?.name || "NA"} (${row?.vendor?.mobileNumber ||
-              row?.vendor?.owner?.mobileNumber ||
-              row?.vendorData?.mobileNumber ||
-              row?.vendorData?.owner?.mobileNumber ||
-              "NA"
+              `${row?.vendor?.name || row?.vendorData?.name || "NA"} (${
+                row?.vendor?.mobileNumber ||
+                row?.vendor?.owner?.mobileNumber ||
+                row?.vendorData?.mobileNumber ||
+                row?.vendorData?.owner?.mobileNumber ||
+                "NA"
               })`,
           },
           {
@@ -1446,7 +1471,8 @@ const VendorInbox = (props) => {
           {
             Header: t("ES_FSM_REGISTRY_SELECT_DRIVER"),
             exportAccessor: (row) =>
-              `${row?.driverData?.name || row?.driver?.name || "NA"} (${row?.driverData?.owner?.mobileNumber || row?.driver?.owner?.mobileNumber || "NA"
+              `${row?.driverData?.name || row?.driver?.name || "NA"} (${
+                row?.driverData?.owner?.mobileNumber || row?.driver?.owner?.mobileNumber || "NA"
               })`,
           },
           {
@@ -1471,11 +1497,12 @@ const VendorInbox = (props) => {
           {
             Header: t("ES_FSM_REGISTRY_INBOX_VENDOR_NAME"),
             exportAccessor: (row) =>
-              `${row?.vendorData?.name || row?.vendor?.name || "NA"} (${row?.vendorData?.mobileNumber ||
-              row?.vendorData?.owner?.mobileNumber ||
-              row?.vendor?.mobileNumber ||
-              row?.vendor?.owner?.mobileNumber ||
-              "NA"
+              `${row?.vendorData?.name || row?.vendor?.name || "NA"} (${
+                row?.vendorData?.mobileNumber ||
+                row?.vendorData?.owner?.mobileNumber ||
+                row?.vendor?.mobileNumber ||
+                row?.vendor?.owner?.mobileNumber ||
+                "NA"
               })`,
           },
           {
@@ -1744,8 +1771,8 @@ const VendorInbox = (props) => {
             showToast.label
               ? t(showToast.label)
               : showToast.key === "success"
-                ? t(`ES_FSM_REGISTRY_${showToast.action}_${showToast.isDisable ? "DISABLE" : "ENABLE"}_SUCCESS`)
-                : t(showToast.action)
+              ? t(`ES_FSM_REGISTRY_${showToast.action}_${showToast.isDisable ? "DISABLE" : "ENABLE"}_SUCCESS`)
+              : t(showToast.action)
           }
           onClose={closeToast}
         />

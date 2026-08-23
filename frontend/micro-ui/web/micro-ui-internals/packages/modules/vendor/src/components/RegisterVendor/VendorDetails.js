@@ -315,7 +315,11 @@ const VendorDetails = () => {
       },
       {
         Header: "Zone",
-        accessor: "assignedZoneId",
+        accessor: "zoneId",
+        Cell: ({ row }) => {
+          const zoneId = row.original?.assignedZoneId || row.original?.zoneId || row.original?.zoneCode;
+          return <div>{zoneId ? t(zoneId) : "NA"}</div>;
+        },
       },
       {
         Header: "Description",
@@ -451,7 +455,9 @@ const VendorDetails = () => {
                                 <div
                                   className="add-details-link hover-button"
                                   onClick={() =>
-                                    history.push(`/digit-ui/${userType}/vendor/registry/additionaldetails/modify-details?vendorId=${dsoId || vendorId}`)
+                                    history.push(
+                                      `/digit-ui/${userType}/vendor/registry/additionaldetails/modify-details?vendorId=${dsoId || vendorId}`
+                                    )
                                   }
                                 >
                                   {t("Edit Details")}
@@ -534,7 +540,7 @@ const VendorDetails = () => {
             {isEkyc && (
               <React.Fragment>
                 <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>{t("ES_VENDOR_SUPERVISOR_DETAILS")}</CardSectionHeader>
-                <div >
+                <div>
                   <Table
                     data={supervisorData?.supervisors || []}
                     columns={supervisorColumns}
@@ -587,8 +593,8 @@ const VendorDetails = () => {
                     selectedAction === "DELETE"
                       ? "ES_FSM_REGISTRY_DELETE_POPUP_HEADER"
                       : selectedAction === "ADD_VEHICLE"
-                        ? "ES_FSM_REGISTRY_ADD_VEHICLE_POPUP_HEADER"
-                        : "ES_FSM_REGISTRY_ADD_DRIVER_POPUP_HEADER"
+                      ? "ES_FSM_REGISTRY_ADD_VEHICLE_POPUP_HEADER"
+                      : "ES_FSM_REGISTRY_ADD_DRIVER_POPUP_HEADER"
                   )}
                 </h1>
               }
