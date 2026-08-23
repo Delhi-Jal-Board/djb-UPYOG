@@ -595,9 +595,7 @@
                   <span class="dot dot-yellow"></span>
                   <span class="dot dot-green"></span>
                 </div>
-                <div class="browser-url">
-                  https://uat-ejalsewa.delhi.gov.in/digit-ui/citizen/home
-                </div>
+                <div class="browser-url" data-portal-path="/digit-ui/citizen/home"></div>
               </div>
               <div class="browser-content">
                 <img
@@ -638,9 +636,7 @@
                   <span class="dot dot-yellow"></span>
                   <span class="dot dot-green"></span>
                 </div>
-                <div class="browser-url">
-                  https://uat-ejalsewa.delhi.gov.in/digit-ui/citizen/ekyc-home
-                </div>
+                <div class="browser-url" data-portal-path="/digit-ui/citizen/ekyc-home"></div>
               </div>
               <div class="browser-content">
                 <img
@@ -681,9 +677,7 @@
                   <span class="dot dot-yellow"></span>
                   <span class="dot dot-green"></span>
                 </div>
-                <div class="browser-url">
-                  https://uat-ejalsewa.delhi.gov.in/digit-ui/citizen/ekyc/vendor-search#surveyor
-                </div>
+                <div class="browser-url" data-portal-path="/digit-ui/citizen/ekyc/vendor-search#surveyor"></div>
               </div>
               <div class="browser-content">
                 <img
@@ -730,9 +724,7 @@
                   <span class="dot dot-yellow"></span>
                   <span class="dot dot-green"></span>
                 </div>
-                <div class="browser-url">
-                  https://uat-ejalsewa.delhi.gov.in/digit-ui/citizen/ekyc/vendor-search#add-dropdown
-                </div>
+                <div class="browser-url" data-portal-path="/digit-ui/citizen/ekyc/vendor-search#add-dropdown"></div>
               </div>
               <div class="browser-content">
                 <img
@@ -808,9 +800,7 @@
                   <span class="dot dot-yellow"></span>
                   <span class="dot dot-green"></span>
                 </div>
-                <div class="browser-url">
-                  https://uat-ejalsewa.delhi.gov.in/digit-ui/citizen/ekyc/new-surveyor
-                </div>
+                <div class="browser-url" data-portal-path="/digit-ui/citizen/ekyc/new-surveyor"></div>
               </div>
               <div class="browser-content">
                 <img
@@ -880,9 +870,7 @@
                   <span class="dot dot-yellow"></span>
                   <span class="dot dot-green"></span>
                 </div>
-                <div class="browser-url">
-                  https://uat-ejalsewa.delhi.gov.in/digit-ui/citizen/ekyc/vendor-search#surveyor-list
-                </div>
+                <div class="browser-url" data-portal-path="/digit-ui/citizen/ekyc/vendor-search#surveyor-list"></div>
               </div>
               <div class="browser-content">
                 <img
@@ -941,6 +929,33 @@
     </div>
 
     <script>
+      // Dynamic Portal URL from globalConfigs
+      (function () {
+        function getPortalUrl() {
+          try {
+            if (window.globalConfigs && typeof window.globalConfigs.getConfig === "function") {
+              var url = window.globalConfigs.getConfig("PORTAL_URL") || window.globalConfigs.getConfig("REACT_APP_PROXY_API");
+              if (url) return url;
+            }
+          } catch (e) {}
+          try {
+            if (window.parent && window.parent.globalConfigs && typeof window.parent.globalConfigs.getConfig === "function") {
+              var parentUrl = window.parent.globalConfigs.getConfig("PORTAL_URL") || window.parent.globalConfigs.getConfig("REACT_APP_PROXY_API");
+              if (parentUrl) return parentUrl;
+            }
+          } catch (e) {}
+          return window.location.origin;
+        }
+
+        var portalUrl = (getPortalUrl() || "").replace(/\/+$/, "");
+
+        document.querySelectorAll("[data-portal-path]").forEach(function (element) {
+          var path = element.getAttribute("data-portal-path") || "";
+          var suffix = element.getAttribute("data-portal-suffix") || "";
+          element.textContent = portalUrl + path + suffix;
+        });
+      })();
+
       (function () {
         // Embedded mode detection (inside right-sidebar iframe)
         if (new URLSearchParams(location.search).get("embed") === "1") {

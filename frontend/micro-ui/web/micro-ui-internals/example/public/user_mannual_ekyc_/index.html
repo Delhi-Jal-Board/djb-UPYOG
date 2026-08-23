@@ -679,7 +679,8 @@
           </button>
 
           <a
-            href="https://uat-ejalsewa.delhi.gov.in/digit-ui/home"
+            id="portalHomeLink"
+            href="#"
             target="_blank"
             rel="noopener noreferrer"
             class="btn btn-primary"
@@ -1036,7 +1037,7 @@
           <b>Delhi Jal Board — eKYC Enterprise Help System</b> &copy; 2026. All rights reserved.
         </div>
         <div class="footer-links">
-          <a href="https://uat-ejalsewa.delhi.gov.in/digit-ui/home" target="_blank" rel="noopener noreferrer">
+          <a id="portalFooterLink" href="#" target="_blank" rel="noopener noreferrer">
             <i class="bi bi-globe me-1"></i> DJB e-Jalsewa
           </a>
           <a href="./employee_login.html">
@@ -1045,6 +1046,39 @@
         </div>
       </div>
     </footer>
+
+    <!-- Dynamic Portal URL -->
+    <script>
+      (function () {
+        function getPortalUrl() {
+          try {
+            if (window.globalConfigs && typeof window.globalConfigs.getConfig === "function") {
+              var url = window.globalConfigs.getConfig("PORTAL_URL") || window.globalConfigs.getConfig("REACT_APP_PROXY_API");
+              if (url) return url;
+            }
+          } catch (e) {}
+          try {
+            if (window.parent && window.parent.globalConfigs && typeof window.parent.globalConfigs.getConfig === "function") {
+              var parentUrl = window.parent.globalConfigs.getConfig("PORTAL_URL") || window.parent.globalConfigs.getConfig("REACT_APP_PROXY_API");
+              if (parentUrl) return parentUrl;
+            }
+          } catch (e) {}
+          return window.location.origin;
+        }
+
+        var portalUrl = (getPortalUrl() || "").replace(/\/+$/, "");
+
+        var portalHomeLink = document.getElementById("portalHomeLink");
+        if (portalHomeLink) {
+          portalHomeLink.href = portalUrl + "/digit-ui/home";
+        }
+
+        var portalFooterLink = document.getElementById("portalFooterLink");
+        if (portalFooterLink) {
+          portalFooterLink.href = portalUrl + "/digit-ui/home";
+        }
+      })();
+    </script>
 
     <!-- Theme & Search Scripts -->
     <script>

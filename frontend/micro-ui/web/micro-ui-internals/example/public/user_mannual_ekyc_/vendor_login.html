@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -6,16 +6,10 @@
     <title>Help &amp; Guide — DJB Vendor Portal Login Manual</title>
 
     <!-- Bootstrap Icons & Google Fonts -->
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
-    />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
     <!-- Theme Script (EKYC parity) -->
     <script>
@@ -31,7 +25,9 @@
     </script>
 
     <style>
-      *, *::before, *::after {
+      *,
+      *::before,
+      *::after {
         box-sizing: border-box;
       }
 
@@ -75,11 +71,7 @@
         background: var(--bs-body-bg);
         color: var(--bs-body-color);
         margin: 0;
-        font-family:
-          "Inter",
-          system-ui,
-          -apple-system,
-          sans-serif;
+        font-family: "Inter", system-ui, -apple-system, sans-serif;
         line-height: 1.6;
       }
 
@@ -144,14 +136,11 @@
         color: var(--bs-body-color);
         font-size: 0.85rem;
         outline: none;
-        transition:
-          border-color 0.15s,
-          box-shadow 0.15s;
+        transition: border-color 0.15s, box-shadow 0.15s;
       }
       .search-box input:focus {
         border-color: var(--bs-primary);
-        box-shadow: 0 0 0 3px
-          color-mix(in srgb, var(--bs-primary) 15%, transparent);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--bs-primary) 15%, transparent);
       }
       .search-box i {
         position: absolute;
@@ -481,26 +470,13 @@
         <div class="topbar-actions">
           <div class="search-box">
             <i class="bi bi-search"></i>
-            <input
-              type="text"
-              id="manualSearch"
-              placeholder="Search vendor login guide..."
-              onkeyup="searchManual()"
-            />
+            <input type="text" id="manualSearch" placeholder="Search vendor login guide..." onkeyup="searchManual()" />
           </div>
 
-          <button
-            id="themeToggle"
-            type="button"
-            class="btn btn-outline-secondary"
-            title="Switch Theme"
-          >
+          <button id="themeToggle" type="button" class="btn btn-outline-secondary" title="Switch Theme">
             <i class="bi bi-moon-stars-fill me-1"></i> <span>Dark Mode</span>
           </button>
-          <a href="./index.html" class="btn btn-outline-secondary">
-            <i class="bi bi-house-door-fill me-1"></i> Manuals Hub
-          </a>
-
+          <a href="./index.html" class="btn btn-outline-secondary"> <i class="bi bi-house-door-fill me-1"></i> Manuals Hub </a>
 
           <!-- <a href="./employee_login.html" class="btn btn-outline-secondary">
             <i class="bi bi-key me-1"></i> Employee Login
@@ -510,13 +486,7 @@
             <i class="bi bi-person-plus me-1"></i> Vendor Creation Guide
           </a> -->
 
-          <button
-            type="button"
-            class="btn btn-primary"
-            onclick="window.print()"
-          >
-            <i class="bi bi-box-arrow-right me-1"></i> Back to app
-          </button>
+          <button type="button" class="btn btn-primary" onclick="window.print()"><i class="bi bi-box-arrow-right me-1"></i> Back to app</button>
         </div>
       </div>
 
@@ -537,72 +507,67 @@
         <!-- Right Main Workspace -->
         <main class="help-content">
           <!-- Page Purpose Header -->
-          <div class="page-header-card" style="margin-bottom: 1.75rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--bs-border-color);">
-            <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.35rem;">
-              <span class="badge" style="background: rgba(37, 99, 235, 0.1); color: var(--bs-primary); font-size: 0.75rem; font-weight: 700; padding: 0.25rem 0.6rem; border-radius: 0.25rem; text-transform: uppercase; letter-spacing: 0.05em;">
+          <div class="page-header-card" style="margin-bottom: 1.75rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--bs-border-color)">
+            <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.35rem">
+              <span
+                class="badge"
+                style="
+                  background: rgba(37, 99, 235, 0.1);
+                  color: var(--bs-primary);
+                  font-size: 0.75rem;
+                  font-weight: 700;
+                  padding: 0.25rem 0.6rem;
+                  border-radius: 0.25rem;
+                  text-transform: uppercase;
+                  letter-spacing: 0.05em;
+                "
+              >
                 <i class="bi bi-journal-bookmark-fill me-1"></i> User Manual Guide
               </span>
             </div>
-            <h1 style="font-size: 1.75rem; font-weight: 800; color: var(--bs-heading-color); margin: 0 0 0.5rem; letter-spacing: -0.02em;">
+            <h1 style="font-size: 1.75rem; font-weight: 800; color: var(--bs-heading-color); margin: 0 0 0.5rem; letter-spacing: -0.02em">
               Vendor Portal Login &amp; 2FA Setup Guide
             </h1>
-            <p style="font-size: 0.95rem; color: var(--bs-secondary-color); margin: 0; line-height: 1.5; max-width: 75ch;">
-              <b>What this page helps with:</b> This manual assists onboarded Vendor agency personnel with accessing the DJB portal, authenticating via Citizen Login with their registered mobile number and DJB-issued password, configuring Mobile 2FA Authenticator (Google Authenticator) during first login, updating profile details, and accessing the Vendor management dashboard.
+            <p style="font-size: 0.95rem; color: var(--bs-secondary-color); margin: 0; line-height: 1.5; max-width: 75ch">
+              <b>What this page helps with:</b> This manual assists onboarded Vendor agency personnel with accessing the DJB portal, authenticating
+              via Citizen Login with their registered mobile number and DJB-issued password, configuring Mobile 2FA Authenticator (Google
+              Authenticator) during first login, updating profile details, and accessing the Vendor management dashboard.
             </p>
           </div>
 
           <!-- Prerequisite Banner -->
           <div class="prereq-banner">
             <div>
-              <div class="title">
-                <i class="bi bi-info-circle-fill text-primary me-1"></i> Vendor Account Requirement
-              </div>
+              <div class="title"><i class="bi bi-info-circle-fill text-primary me-1"></i> Vendor Account Requirement</div>
               <p class="desc">
-                Vendor accounts are pre-created by <b>DJB Officials</b>. Ensure your official registered mobile number and login credentials have been issued by DJB administrators before logging in.
+                Vendor accounts are pre-created by <b>DJB Officials</b>. Ensure your official registered mobile number and login credentials have been
+                issued by DJB administrators before logging in.
               </p>
             </div>
-            <a
-              href="./vendor_creation.html"
-              class="btn btn-outline-secondary"
-              style="white-space: nowrap"
-            >
-              Vendor Creation Guide →
-            </a>
+            <a href="./vendor_creation.html" class="btn btn-outline-secondary" style="white-space: nowrap"> Vendor Creation Guide → </a>
           </div>
 
           <!-- STEP 1: GO TO OFFICIAL DJB PORTAL -->
           <section id="step1" class="help-section">
-            <h2>
-              <i class="bi bi-globe"></i> Step 1: Navigating to Official DJB Portal
-            </h2>
-            <p class="lead">
-              Access the official Delhi Jal Board Integrated Enterprise Management Portal homepage.
-            </p>
+            <h2><i class="bi bi-globe"></i> Step 1: Navigating to Official DJB Portal</h2>
+            <p class="lead">Access the official Delhi Jal Board Integrated Enterprise Management Portal homepage.</p>
 
             <div class="help-step">
               <span class="num">1</span>
               <span class="txt">
                 Open your web browser and navigate to the official Delhi Jal Board integrated portal URL:
-                <a
-                  href="https://uat-ejalsewa.delhi.gov.in/digit-ui/home"
-                  target="_blank"
-                  style="color: var(--bs-link-color); font-weight: 600; text-decoration: underline;"
-                >
-                  https://uat-ejalsewa.delhi.gov.in/digit-ui/home
-                </a>.
+                <a id="portalHomeLink" href="#" target="_blank" style="color: var(--bs-link-color); font-weight: 600; text-decoration: underline"
+                  >Link</a
+                >.
               </span>
             </div>
             <div class="help-step">
               <span class="num">2</span>
-              <span class="txt">
-                You will see the portal homepage featuring service search and quick links.
-              </span>
+              <span class="txt"> You will see the portal homepage featuring service search and quick links. </span>
             </div>
             <div class="help-step">
               <span class="num">3</span>
-              <span class="txt">
-                Locate the blue <b>LOGIN</b> button at the top-right corner of the header menu.
-              </span>
+              <span class="txt"> Locate the blue <b>LOGIN</b> button at the top-right corner of the header menu. </span>
             </div>
 
             <!-- Browser Mockup 1 -->
@@ -613,45 +578,30 @@
                   <span class="dot dot-yellow"></span>
                   <span class="dot dot-green"></span>
                 </div>
-                <div class="browser-url">
-                  https://uat-ejalsewa.delhi.gov.in/digit-ui/home
-                </div>
+                <div class="browser-url" data-portal-path="/digit-ui/home"></div>
               </div>
               <div class="browser-content">
-                <img
-                  src="images/vendor_login_step1_homepage.png"
-                  alt="Delhi Jal Board Portal Homepage with top right Login Button"
-                />
+                <img src="images/vendor_login_step1_homepage.png" alt="Delhi Jal Board Portal Homepage with top right Login Button" />
               </div>
             </div>
           </section>
 
           <!-- STEP 2: SELECTING CITIZEN LOGIN OPTION -->
           <section id="step2" class="help-section">
-            <h2>
-              <i class="bi bi-person-badge"></i> Step 2: Selecting Citizen Login Option
-            </h2>
-            <p class="lead">
-              Opening the top-right LOGIN dropdown menu and choosing Citizen Login.
-            </p>
+            <h2><i class="bi bi-person-badge"></i> Step 2: Selecting Citizen Login Option</h2>
+            <p class="lead">Opening the top-right LOGIN dropdown menu and choosing Citizen Login.</p>
 
             <div class="help-step">
               <span class="num">1</span>
-              <span class="txt">
-                Click or hover over the <b>LOGIN</b> button in the top-right header bar.
-              </span>
+              <span class="txt"> Click or hover over the <b>LOGIN</b> button in the top-right header bar. </span>
             </div>
             <div class="help-step">
               <span class="num">2</span>
-              <span class="txt">
-                A dropdown menu will appear presenting two access options: <b>Citizen Login</b> and <b>Employee Login</b>.
-              </span>
+              <span class="txt"> A dropdown menu will appear presenting two access options: <b>Citizen Login</b> and <b>Employee Login</b>. </span>
             </div>
             <div class="help-step">
               <span class="num">3</span>
-              <span class="txt">
-                Click on <b>Citizen Login</b> from the dropdown menu to proceed to the citizen/vendor portal.
-              </span>
+              <span class="txt"> Click on <b>Citizen Login</b> from the dropdown menu to proceed to the citizen/vendor portal. </span>
             </div>
 
             <!-- Browser Mockup 2 -->
@@ -662,45 +612,32 @@
                   <span class="dot dot-yellow"></span>
                   <span class="dot dot-green"></span>
                 </div>
-                <div class="browser-url">
-                  https://uat-ejalsewa.delhi.gov.in/digit-ui/home#login-dropdown
-                </div>
+                <div class="browser-url" data-portal-path="/digit-ui/home#login-dropdown"></div>
               </div>
               <div class="browser-content">
-                <img
-                  src="images/vendor_login_step2_dropdown.png"
-                  alt="Header LOGIN dropdown displaying Citizen Login and Employee Login options"
-                />
+                <img src="images/vendor_login_step2_dropdown.png" alt="Header LOGIN dropdown displaying Citizen Login and Employee Login options" />
               </div>
             </div>
           </section>
 
           <!-- STEP 3: SIDEBAR LOGIN LINK -->
           <section id="step3" class="help-section">
-            <h2>
-              <i class="bi bi-layout-sidebar"></i> Step 3: Accessing Login from Citizen Services Sidebar
-            </h2>
-            <p class="lead">
-              Navigating into the Citizen Services dashboard and selecting the Login option.
-            </p>
+            <h2><i class="bi bi-layout-sidebar"></i> Step 3: Accessing Login from Citizen Services Sidebar</h2>
+            <p class="lead">Navigating into the Citizen Services dashboard and selecting the Login option.</p>
 
             <div class="help-step">
               <span class="num">1</span>
               <span class="txt">
-                After selecting Citizen Login, you will land on the Citizen Services page (<code>https://uat-ejalsewa.delhi.gov.in/digit-ui/citizen</code>).
+                After selecting Citizen Login, you will land on the Citizen Services page (<code id="portalCitizenUrl"></code>).
               </span>
             </div>
             <div class="help-step">
               <span class="num">2</span>
-              <span class="txt">
-                On the left sidebar <b>MENU</b>, locate the <b>Login</b> option with the power/key icon.
-              </span>
+              <span class="txt"> On the left sidebar <b>MENU</b>, locate the <b>Login</b> option with the power/key icon. </span>
             </div>
             <div class="help-step">
               <span class="num">3</span>
-              <span class="txt">
-                Click on <b>Login</b> to open the Single Sign-On (SSO) authentication page.
-              </span>
+              <span class="txt"> Click on <b>Login</b> to open the Single Sign-On (SSO) authentication page. </span>
             </div>
 
             <!-- Browser Mockup 3 -->
@@ -711,57 +648,46 @@
                   <span class="dot dot-yellow"></span>
                   <span class="dot dot-green"></span>
                 </div>
-                <div class="browser-url">
-                  https://uat-ejalsewa.delhi.gov.in/digit-ui/citizen
-                </div>
+                <div class="browser-url" data-portal-path="/digit-ui/citizen"></div>
               </div>
               <div class="browser-content">
-                <img
-                  src="images/vendor_login_step3_sidebar.png"
-                  alt="Citizen Services Page showing Sidebar MENU with Login Option"
-                />
+                <img src="images/vendor_login_step3_sidebar.png" alt="Citizen Services Page showing Sidebar MENU with Login Option" />
               </div>
             </div>
           </section>
 
           <!-- STEP 4: SINGLE SIGN-ON (SSO) AUTHENTICATION -->
           <section id="step4" class="help-section">
-            <h2>
-              <i class="bi bi-shield-lock"></i> Step 4: Single Sign-On (SSO) Authentication
-            </h2>
-            <p class="lead">
-              Entering your registered vendor mobile number as Username and official DJB password.
-            </p>
+            <h2><i class="bi bi-shield-lock"></i> Step 4: Single Sign-On (SSO) Authentication</h2>
+            <p class="lead">Entering your registered vendor mobile number as Username and official DJB password.</p>
 
             <!-- MANDATORY USERNAME NOTE CALLOUT -->
-            <div class="callout-box callout-warning" style="border-left: 4px solid var(--bs-warning); background: color-mix(in srgb, var(--bs-warning) 8%, var(--bs-tertiary-bg));">
-              <i class="bi bi-exclamation-triangle-fill" style="font-size: 1.25rem;"></i>
+            <div
+              class="callout-box callout-warning"
+              style="border-left: 4px solid var(--bs-warning); background: color-mix(in srgb, var(--bs-warning) 8%, var(--bs-tertiary-bg))"
+            >
+              <i class="bi bi-exclamation-triangle-fill" style="font-size: 1.25rem"></i>
               <div>
-                <b style="color: var(--bs-warning); font-size: 0.95rem;">MANDATORY USERNAME NOTE:</b>
+                <b style="color: var(--bs-warning); font-size: 0.95rem">MANDATORY USERNAME NOTE:</b>
                 <br />
-                <span style="font-weight: 600; color: var(--bs-heading-color);">
-                  For Vendors, the <code>Username</code> field <u>MUST</u> be the 10-digit registered mobile number provided during vendor creation by DJB officials.
+                <span style="font-weight: 600; color: var(--bs-heading-color)">
+                  For Vendors, the <code>Username</code> field <u>MUST</u> be the 10-digit registered mobile number provided during vendor creation by
+                  DJB officials.
                 </span>
               </div>
             </div>
 
-            <div class="help-step" style="margin-top: 1.25rem;">
+            <div class="help-step" style="margin-top: 1.25rem">
               <span class="num">1</span>
-              <span class="txt">
-                In the <b>Username *</b> field, type your 10-digit <b>Registered Mobile Number</b>.
-              </span>
+              <span class="txt"> In the <b>Username *</b> field, type your 10-digit <b>Registered Mobile Number</b>. </span>
             </div>
             <div class="help-step">
               <span class="num">2</span>
-              <span class="txt">
-                In the <b>Password *</b> field, type the official password assigned to your vendor account by DJB officials.
-              </span>
+              <span class="txt"> In the <b>Password *</b> field, type the official password assigned to your vendor account by DJB officials. </span>
             </div>
             <div class="help-step">
               <span class="num">3</span>
-              <span class="txt">
-                Click the blue <b>Sign In</b> button to authenticate.
-              </span>
+              <span class="txt"> Click the blue <b>Sign In</b> button to authenticate. </span>
             </div>
 
             <!-- Browser Mockup 4 -->
@@ -772,46 +698,39 @@
                   <span class="dot dot-yellow"></span>
                   <span class="dot dot-green"></span>
                 </div>
-                <div class="browser-url">
-                  https://uat-ejalsewa.delhi.gov.in/auth/realms/djb/protocol/openid-connect/auth
-                </div>
+                <div class="browser-url" data-portal-path="/auth/realms/djb/protocol/openid-connect/auth"></div>
               </div>
               <div class="browser-content">
-                <img
-                  src="images/vendor_login_step4_sso.png"
-                  alt="DJB Single Sign-On Access Portal Login Form"
-                />
+                <img src="images/vendor_login_step4_sso.png" alt="DJB Single Sign-On Access Portal Login Form" />
               </div>
             </div>
           </section>
 
           <!-- STEP 5: MOBILE AUTHENTICATOR APP SETUP -->
           <section id="step5" class="help-section">
-            <h2>
-              <i class="bi bi-qr-code-scan"></i> Step 5: Mobile Authenticator Setup (First-Time Login)
-            </h2>
-            <p class="lead">
-              Activating account security by linking a smartphone Mobile Authenticator app.
-            </p>
+            <h2><i class="bi bi-qr-code-scan"></i> Step 5: Mobile Authenticator Setup (First-Time Login)</h2>
+            <p class="lead">Activating account security by linking a smartphone Mobile Authenticator app.</p>
 
             <div class="callout-box callout-info">
               <i class="bi bi-info-circle-fill"></i>
               <div>
-                <b>First-Time Login Requirement:</b> When signing in for the first time, the portal will display the <b>Mobile Authenticator Setup</b> page to pair your 2FA TOTP security key.
+                <b>First-Time Login Requirement:</b> When signing in for the first time, the portal will display the
+                <b>Mobile Authenticator Setup</b> page to pair your 2FA TOTP security key.
               </div>
             </div>
 
-            <div class="help-step" style="margin-top: 1.25rem;">
+            <div class="help-step" style="margin-top: 1.25rem">
               <span class="num">1</span>
               <span class="txt">
-                <b>Download &amp; Install Authenticator App:</b> Install any supported authenticator app on your smartphone (Google Authenticator, Microsoft Authenticator, or FreeOTP).
+                <b>Download &amp; Install Authenticator App:</b> Install any supported authenticator app on your smartphone (Google Authenticator,
+                Microsoft Authenticator, or FreeOTP).
                 <br />
-                <span style="font-size: 0.85rem; color: var(--bs-secondary-color);">
+                <span style="font-size: 0.85rem; color: var(--bs-secondary-color)">
                   📌 <b>Google Authenticator Play Store Link:</b>
                   <a
                     href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2&amp;pcampaignid=web_share"
                     target="_blank"
-                    style="color: var(--bs-link-color); text-decoration: underline;"
+                    style="color: var(--bs-link-color); text-decoration: underline"
                   >
                     https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2
                   </a>
@@ -820,9 +739,7 @@
             </div>
             <div class="help-step">
               <span class="num">2</span>
-              <span class="txt">
-                Open the installed Authenticator application on your mobile phone.
-              </span>
+              <span class="txt"> Open the installed Authenticator application on your mobile phone. </span>
             </div>
             <div class="help-step">
               <span class="num">3</span>
@@ -832,27 +749,22 @@
             </div>
             <div class="help-step">
               <span class="num">4</span>
-              <span class="txt">
-                Once scanned, your mobile app will display a 6-digit live <b>One-Time Code (OTP)</b> for Delhi Jal Board SSO.
-              </span>
+              <span class="txt"> Once scanned, your mobile app will display a 6-digit live <b>One-Time Code (OTP)</b> for Delhi Jal Board SSO. </span>
             </div>
             <div class="help-step">
               <span class="num">5</span>
-              <span class="txt">
-                Enter the 6-digit code into the <b>One-time code *</b> input field on your computer screen.
-              </span>
+              <span class="txt"> Enter the 6-digit code into the <b>One-time code *</b> input field on your computer screen. </span>
             </div>
             <div class="help-step">
               <span class="num">6</span>
-              <span class="txt">
-                Click the blue <b>Submit</b> button to complete the 2FA setup and enter your vendor workspace dashboard.
-              </span>
+              <span class="txt"> Click the blue <b>Submit</b> button to complete the 2FA setup and enter your vendor workspace dashboard. </span>
             </div>
 
             <div class="callout-box callout-success">
               <i class="bi bi-check-circle-fill"></i>
               <div>
-                <b>Setup Complete!</b> Your mobile authenticator is now registered. On future logins, simply enter the 6-digit code from your mobile authenticator app after entering your password.
+                <b>Setup Complete!</b> Your mobile authenticator is now registered. On future logins, simply enter the 6-digit code from your mobile
+                authenticator app after entering your password.
               </div>
             </div>
 
@@ -864,9 +776,7 @@
                   <span class="dot dot-yellow"></span>
                   <span class="dot dot-green"></span>
                 </div>
-                <div class="browser-url">
-                  https://uat-ejalsewa.delhi.gov.in/auth/realms/djb/login-actions/required-action
-                </div>
+                <div class="browser-url" data-portal-path="/auth/realms/djb/login-actions/required-action"></div>
               </div>
               <div class="browser-content">
                 <img
@@ -879,43 +789,32 @@
 
           <!-- STEP 6: UPDATE ACCOUNT INFORMATION (FIRST-TIME LOGIN) -->
           <section id="step6" class="help-section">
-            <h2>
-              <i class="bi bi-person-gear"></i> Step 6: Update Account Information (First-Time Login)
-            </h2>
-            <p class="lead">
-              Completing mandatory profile information required only during initial vendor account activation.
-            </p>
+            <h2><i class="bi bi-person-gear"></i> Step 6: Update Account Information (First-Time Login)</h2>
+            <p class="lead">Completing mandatory profile information required only during initial vendor account activation.</p>
 
             <div class="callout-box callout-info">
               <i class="bi bi-info-circle-fill"></i>
               <div>
-                <b>First-Time Login Note:</b> The <b>Update Account Information</b> screen occurs <b>only for first-time login</b> after authenticator setup is completed.
+                <b>First-Time Login Note:</b> The <b>Update Account Information</b> screen occurs <b>only for first-time login</b> after authenticator
+                setup is completed.
               </div>
             </div>
 
-            <div class="help-step" style="margin-top: 1.25rem;">
+            <div class="help-step" style="margin-top: 1.25rem">
               <span class="num">1</span>
-              <span class="txt">
-                In the <b>Email *</b> field, type your official corporate email address.
-              </span>
+              <span class="txt"> In the <b>Email *</b> field, type your official corporate email address. </span>
             </div>
             <div class="help-step">
               <span class="num">2</span>
-              <span class="txt">
-                In the <b>First name *</b> field, enter your first name or primary agency representative name.
-              </span>
+              <span class="txt"> In the <b>First name *</b> field, enter your first name or primary agency representative name. </span>
             </div>
             <div class="help-step">
               <span class="num">3</span>
-              <span class="txt">
-                In the <b>Last name *</b> field, enter your last name or agency designation.
-              </span>
+              <span class="txt"> In the <b>Last name *</b> field, enter your last name or agency designation. </span>
             </div>
             <div class="help-step">
               <span class="num">4</span>
-              <span class="txt">
-                Review all required fields and click the blue <b>Submit</b> button.
-              </span>
+              <span class="txt"> Review all required fields and click the blue <b>Submit</b> button. </span>
             </div>
 
             <!-- Browser Mockup 6 -->
@@ -926,38 +825,31 @@
                   <span class="dot dot-yellow"></span>
                   <span class="dot dot-green"></span>
                 </div>
-                <div class="browser-url">
-                  https://uat-ejalsewa.delhi.gov.in/auth/realms/djb/login-actions/first-login-update
-                </div>
+                <div class="browser-url" data-portal-path="/auth/realms/djb/login-actions/first-login-update"></div>
               </div>
               <div class="browser-content">
-                <img
-                  src="images/vendor_login_step6_update_account.png"
-                  alt="Welcome to Delhi Jal Board Update Account Information Screen"
-                />
+                <img src="images/vendor_login_step6_update_account.png" alt="Welcome to Delhi Jal Board Update Account Information Screen" />
               </div>
             </div>
           </section>
 
           <!-- STEP 7: VENDOR PORTAL DASHBOARD -->
           <section id="step7" class="help-section">
-            <h2>
-              <i class="bi bi-speedometer2"></i> Step 7: Successful Vendor Portal Login &amp; Dashboard Access
-            </h2>
-            <p class="lead">
-              Accessing your vendor homepage and managing core operational modules.
-            </p>
+            <h2><i class="bi bi-speedometer2"></i> Step 7: Successful Vendor Portal Login &amp; Dashboard Access</h2>
+            <p class="lead">Accessing your vendor homepage and managing core operational modules.</p>
 
             <div class="help-step">
               <span class="num">1</span>
               <span class="txt">
-                After clicking <b>Submit</b> on the Update Account Information screen, you will be successfully logged in to the vendor portal workspace.
+                After clicking <b>Submit</b> on the Update Account Information screen, you will be successfully logged in to the vendor portal
+                workspace.
               </span>
             </div>
             <div class="help-step">
               <span class="num">2</span>
               <span class="txt">
-                The portal homepage displays a personalized greeting (e.g. <b>"Good Evening! Vendor Manual"</b>) along with your active user profile in the top-right header.
+                The portal homepage displays a personalized greeting (e.g. <b>"Good Evening! Vendor Manual"</b>) along with your active user profile
+                in the top-right header.
               </span>
             </div>
             <div class="help-step">
@@ -979,9 +871,7 @@
 
             <div class="callout-box callout-success">
               <i class="bi bi-check-circle-fill"></i>
-              <div>
-                <b>Login Complete!</b> You are now fully authenticated and ready to manage vendor operations on the Delhi Jal Board portal.
-              </div>
+              <div><b>Login Complete!</b> You are now fully authenticated and ready to manage vendor operations on the Delhi Jal Board portal.</div>
             </div>
 
             <!-- Browser Mockup 7 -->
@@ -992,50 +882,24 @@
                   <span class="dot dot-yellow"></span>
                   <span class="dot dot-green"></span>
                 </div>
-                <div class="browser-url">
-                  https://uat-ejalsewa.delhi.gov.in/digit-ui/citizen
-                </div>
+                <div class="browser-url" data-portal-path="/digit-ui/citizen"></div>
               </div>
               <div class="browser-content">
-                <img
-                  src="images/vendor_login_step7_vendor_dashboard.png"
-                  alt="Delhi Jal Board Vendor Portal Dashboard Homepage"
-                />
+                <img src="images/vendor_login_step7_vendor_dashboard.png" alt="Delhi Jal Board Vendor Portal Dashboard Homepage" />
               </div>
             </div>
 
             <!-- Bottom Navigation Buttons -->
-            <div
-              style="
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                gap: 1rem;
-                margin-top: 2.25rem;
-                flex-wrap: wrap;
-              "
-            >
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-top: 2.25rem; flex-wrap: wrap">
               <a
                 href="./vendor_creation.html"
                 class="btn btn-outline-secondary"
-                style="
-                  padding: 0.65rem 1.25rem;
-                  font-size: 0.9rem;
-                  border-radius: 0.5rem;
-                "
+                style="padding: 0.65rem 1.25rem; font-size: 0.9rem; border-radius: 0.5rem"
               >
                 <i class="bi bi-arrow-left me-1"></i> Vendor Creation Guide
               </a>
 
-              <a
-                href="./supervisor_creation.html"
-                class="btn btn-primary"
-                style="
-                  padding: 0.65rem 1.25rem;
-                  font-size: 0.9rem;
-                  border-radius: 0.5rem;
-                "
-              >
+              <a href="./supervisor_creation.html" class="btn btn-primary" style="padding: 0.65rem 1.25rem; font-size: 0.9rem; border-radius: 0.5rem">
                 Supervisor Creation Guide <i class="bi bi-arrow-right ms-1"></i>
               </a>
             </div>
@@ -1045,14 +909,49 @@
 
       <!-- Footer -->
       <footer class="help-footer">
-        <p>
-          © 2026 Delhi Jal Board | Integrated Enterprise Management System |
-          Designed &amp; Developed by NITCON Ltd.
-        </p>
+        <p>© 2026 Delhi Jal Board | Integrated Enterprise Management System | Designed &amp; Developed by NITCON Ltd.</p>
       </footer>
     </div>
 
     <script>
+      // Dynamic Portal URL from globalConfigs
+      (function () {
+        function getPortalUrl() {
+          try {
+            if (window.globalConfigs && typeof window.globalConfigs.getConfig === "function") {
+              var url = window.globalConfigs.getConfig("PORTAL_URL") || window.globalConfigs.getConfig("REACT_APP_PROXY_API");
+              if (url) return url;
+            }
+          } catch (e) {}
+          try {
+            if (window.parent && window.parent.globalConfigs && typeof window.parent.globalConfigs.getConfig === "function") {
+              var parentUrl = window.parent.globalConfigs.getConfig("PORTAL_URL") || window.parent.globalConfigs.getConfig("REACT_APP_PROXY_API");
+              if (parentUrl) return parentUrl;
+            }
+          } catch (e) {}
+          return window.location.origin;
+        }
+
+        var portalUrl = (getPortalUrl() || "").replace(/\/+$/, "");
+
+        var portalHomeLink = document.getElementById("portalHomeLink");
+        if (portalHomeLink) {
+          portalHomeLink.href = portalUrl + "/digit-ui/home";
+          portalHomeLink.textContent = portalUrl + "/digit-ui/home";
+        }
+
+        var portalCitizenUrl = document.getElementById("portalCitizenUrl");
+        if (portalCitizenUrl) {
+          portalCitizenUrl.textContent = portalUrl + "/digit-ui/citizen";
+        }
+
+        document.querySelectorAll("[data-portal-path]").forEach(function (element) {
+          var path = element.getAttribute("data-portal-path") || "";
+          var suffix = element.getAttribute("data-portal-suffix") || "";
+          element.textContent = portalUrl + path + suffix;
+        });
+      })();
+
       (function () {
         // Embedded mode detection (inside right-sidebar iframe)
         if (new URLSearchParams(location.search).get("embed") === "1") {
@@ -1068,12 +967,10 @@
           var btn = document.getElementById("themeToggle");
           if (btn) {
             if (theme === "night") {
-              btn.innerHTML =
-                '<i class="bi bi-sun-fill text-warning me-1"></i> <span>Light Mode</span>';
+              btn.innerHTML = '<i class="bi bi-sun-fill text-warning me-1"></i> <span>Light Mode</span>';
               btn.setAttribute("title", "Switch to Light Mode");
             } else {
-              btn.innerHTML =
-                '<i class="bi bi-moon-stars-fill me-1"></i> <span>Dark Mode</span>';
+              btn.innerHTML = '<i class="bi bi-moon-stars-fill me-1"></i> <span>Dark Mode</span>';
               btn.setAttribute("title", "Switch to Dark Mode");
             }
           }
@@ -1100,9 +997,7 @@
         }
 
         // Scroll-spy ToC Active Link observer
-        var links = Array.prototype.slice.call(
-          document.querySelectorAll("#helpToc a"),
-        );
+        var links = Array.prototype.slice.call(document.querySelectorAll("#helpToc a"));
         var map = {};
         links.forEach(function (a) {
           var id = a.getAttribute("href").slice(1);
@@ -1117,12 +1012,11 @@
                   links.forEach(function (l) {
                     l.classList.remove("active");
                   });
-                  if (map[en.target.id])
-                    map[en.target.id].classList.add("active");
+                  if (map[en.target.id]) map[en.target.id].classList.add("active");
                 }
               });
             },
-            { rootMargin: "0px 0px -70% 0px", threshold: 0 },
+            { rootMargin: "0px 0px -70% 0px", threshold: 0 }
           );
           Object.keys(map).forEach(function (id) {
             var el = document.getElementById(id);
