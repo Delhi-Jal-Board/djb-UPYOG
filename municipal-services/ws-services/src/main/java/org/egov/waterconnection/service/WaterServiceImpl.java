@@ -24,6 +24,9 @@ import org.egov.waterconnection.validator.MDMSValidator;
 import org.egov.waterconnection.validator.ValidateProperty;
 import org.egov.waterconnection.validator.WaterConnectionValidator;
 import org.egov.waterconnection.web.models.*;
+import org.egov.waterconnection.web.models.collection.Bill;
+import org.egov.waterconnection.web.models.collection.BillResponse;
+import java.math.BigDecimal;
 import org.egov.waterconnection.web.models.Connection.StatusEnum;
 import org.egov.waterconnection.web.models.workflow.BusinessService;
 import org.egov.waterconnection.web.models.workflow.ProcessInstance;
@@ -35,6 +38,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -87,6 +91,12 @@ public class WaterServiceImpl implements WaterService {
 
 	@Autowired
 	private WaterServicesUtil wsUtil;
+
+	@Autowired
+	private org.egov.waterconnection.repository.ServiceRequestRepository serviceRequestRepository;
+
+	@Autowired
+	private com.fasterxml.jackson.databind.ObjectMapper mapper;
 
 	@Autowired
 	EncryptionDecryptionUtil encryptionDecryptionUtil;
@@ -856,5 +866,119 @@ public class WaterServiceImpl implements WaterService {
 
 		return Arrays.asList(waterConnectionRequest.getWaterConnection());
 	}
+
+	@Override
+	public DueVerification fetchDueVerification(DueVerificationRequest dueVerificationRequest) {
+
+		if (dueVerificationRequest == null || dueVerificationRequest.getDueVerification() == null) {
+			throw new CustomException("INVALID_REQUEST", "Request payload or DueVerification object cannot be null.");
+		}
+
+		DueVerification searchDv = dueVerificationRequest.getDueVerification();
+		RequestInfo requestInfo = dueVerificationRequest.getRequestInfo();
+
+		if (StringUtils.isEmpty(searchDv.getKno())) {
+			throw new CustomException("INVALID_KNO", "K-Number (kno) is mandatory for due verification.");
+		}
+		String kno = searchDv.getKno().trim();
+
+		String tenantId = (requestInfo != null && requestInfo.getUserInfo() != null) ? requestInfo.getUserInfo().getTenantId() : null;
+
+		if (StringUtils.isEmpty(tenantId)) {
+			throw new CustomException("INVALID_TENANT", "Tenant ID is mandatory for due verification.");
+		}
+
+		SearchCriteria criteria = SearchCriteria.builder()
+				.connectionNumber(Collections.singleton(kno))
+				.tenantId(tenantId)
+				.applicationStatus(Collections.singleton(WCConstants.STATUS_APPROVED))
+				.status("Active")
+				.build();
+
+		List<WaterConnection> connections = search(criteria, requestInfo);
+
+		if (CollectionUtils.isEmpty(connections)) {
+			throw new CustomException("CONNECTION_NOT_FOUND","No active Water Connection found with connection number: " + kno
+			);
+		}
+
+		WaterConnection connection = connections.get(0);
+		String fullName = "";
+		String mobileNumber = null;
+
+		if (!CollectionUtils.isEmpty(connection.getConnectionHolders())) {
+			OwnerInfo holder = connection.getConnectionHolders().get(0);
+			if (holder != null) {
+				fullName = holder.getName() != null ? holder.getName() : "";
+				mobileNumber = holder.getMobileNumber();
+			}
+		}
+
+		if (StringUtils.isEmpty(mobileNumber)) {
+			throw new CustomException("MOBILE_NUMBER_NOT_FOUND", "Mobile number not found for K-Number: " + kno
+			);
+		}
+
+		String fullAddress = wsUtil.extractFullAddress(connection.getPropertyId(), tenantId, requestInfo, kno);
+
+		BigDecimal totalAmount = BigDecimal.ZERO;
+		BigDecimal totalDue = BigDecimal.ZERO;
+
+		try {
+			String billSearchUrl = UriComponentsBuilder.fromHttpUrl(config.getBillingServiceHost())
+					.path(config.getSearchBillEndPoint())
+					.queryParam("tenantId", tenantId)
+					.queryParam("mobileNumber", mobileNumber)
+					.queryParam("status", "ACTIVE")
+					.toUriString();
+
+			log.info("Searching active bills for mobileNumber: {}, KNO: {}", mobileNumber, kno);
+
+			Object result = serviceRequestRepository.fetchResult(new StringBuilder(billSearchUrl),RequestInfoWrapper.builder().requestInfo(requestInfo).build());
+
+			BillResponse billResponse = mapper.convertValue(result, BillResponse.class);
+
+			if (billResponse != null && !CollectionUtils.isEmpty(billResponse.getBill())) {
+
+				for (Bill bill : billResponse.getBill()) {
+					if (bill == null) {
+						continue;
+					}
+
+					if (!Bill.StatusEnum.ACTIVE.equals(bill.getStatus())) {
+						continue;
+					}
+					if (StringUtils.isEmpty(bill.getConsumerCode()) || !kno.equalsIgnoreCase(bill.getConsumerCode().trim())) {
+						continue;
+					}
+
+					BigDecimal billAmount = bill.getTotalAmount() != null ? bill.getTotalAmount() : BigDecimal.ZERO;
+					BigDecimal amountPaid = bill.getAmountPaid() != null ? bill.getAmountPaid() : BigDecimal.ZERO;
+					totalAmount = totalAmount.add(billAmount);
+					BigDecimal pendingAmount = billAmount.subtract(amountPaid);
+
+					if (pendingAmount.compareTo(BigDecimal.ZERO) > 0) {
+						totalDue = totalDue.add(pendingAmount);
+					}
+
+					log.info("Matching bill found. KNO: {}, BillNo: {}, BusinessService: {}, Total: {}, Paid: {}, Pending: {}",
+							kno, bill.getBillNumber(),bill.getBusinessService(),billAmount, amountPaid, pendingAmount);
+				}
+			}
+
+		} catch (Exception e) {
+			log.error("Error searching bills for KNO: {}", kno, e);
+			throw new CustomException("BILL_SEARCH_FAILED", "Unable to verify dues for K-Number: " + kno);
+		}
+
+		return DueVerification.builder()
+				.kno(kno)
+				.fullName(fullName)
+				.fullAddress(fullAddress)
+				.dueAmount(totalDue.toString())
+				.totalAmount(totalAmount.toString())
+				.build();
+	}
+
 
 }

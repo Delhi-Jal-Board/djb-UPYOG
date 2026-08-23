@@ -5,6 +5,9 @@ import javax.validation.Valid;
 
 import org.egov.tracer.model.CustomException;
 import org.egov.waterconnection.service.WaterEncryptionService;
+import org.egov.waterconnection.web.models.DueVerification;
+import org.egov.waterconnection.web.models.DueVerificationRequest;
+import org.egov.waterconnection.web.models.DueVerificationResponse;
 import org.egov.waterconnection.web.models.RequestInfoWrapper;
 import org.egov.waterconnection.web.models.SearchCriteria;
 import org.egov.waterconnection.web.models.WaterConnection;
@@ -55,7 +58,7 @@ public class WaterController {
 	}
 	@RequestMapping(value = "/_search", method = RequestMethod.POST)
 	public ResponseEntity<WaterConnectionResponse> search(@Valid @RequestBody RequestInfoWrapper requestInfoWrapper,
-														  @Valid @ModelAttribute SearchCriteria criteria) {
+	                                                      @Valid @ModelAttribute SearchCriteria criteria) {
 		List<WaterConnection> waterConnectionList = waterService.search(criteria, requestInfoWrapper.getRequestInfo());
 		Integer count = waterService.countAllWaterApplications(criteria, requestInfoWrapper.getRequestInfo());
 		WaterConnectionResponse response = WaterConnectionResponse.builder().waterConnection(waterConnectionList)
@@ -105,5 +108,17 @@ public class WaterController {
 		waterConnectionResponse.setResponseInfo(
 				responseInfoFactory.createResponseInfoFromRequestInfo(requestInfoWrapper.getRequestInfo(), true));
 		return new ResponseEntity<>(waterConnectionResponse, HttpStatus.OK);*/
+	}
+
+
+	@RequestMapping(value = "/due-verification", method = RequestMethod.POST)
+	public ResponseEntity<DueVerificationResponse> dueVerification(@Valid @RequestBody DueVerificationRequest dueVerificationRequest) {
+		DueVerification dueVerification = waterService.fetchDueVerification(dueVerificationRequest);
+		DueVerificationResponse response = DueVerificationResponse.builder()
+				.dueVerifications(java.util.Collections.singletonList(dueVerification))
+				.responseInfo(responseInfoFactory
+						.createResponseInfoFromRequestInfo(dueVerificationRequest.getRequestInfo(), true))
+				.build();
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 }

@@ -278,6 +278,9 @@ public class WSConfiguration {
     @Value("${egov.fetch.bill.endpoint}")
     private String fetchBillEndPoint;
 
+    @Value("${egov.search.bill.endpoint}")
+    private String searchBillEndPoint;
+
     // central-instance configs
     @Value("#{${egov.ui.app.host.map}}")
     private Map<String, String> uiAppHostMap;
