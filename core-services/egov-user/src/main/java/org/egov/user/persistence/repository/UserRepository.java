@@ -286,10 +286,10 @@ public class UserRepository {
             } else if (Gender.TRANSGENDER.toString().equals(user.getGender().toString())) {
                 updateuserInputs.put("Gender", 4);
             } else if (Gender.THIRD_GENDER.toString().equals(user.getGender().toString())) {
-                updateuserInputs.put("gender", 5);
+                updateuserInputs.put("Gender", 5);
 
             } else if (Gender.NOT_DISCLOSED.toString().equals(user.getGender().toString())) {
-                updateuserInputs.put("gender", 6);
+                updateuserInputs.put("Gender", 6);
             } else {
                 updateuserInputs.put("Gender", 0);
             }
@@ -796,7 +796,10 @@ public class UserRepository {
                 updateuserInputs.put("Gender", 3);
             } else if (Gender.TRANSGENDER.toString().equals(user.getGender().toString())) {
                 updateuserInputs.put("Gender", 4);
-
+            } else if (Gender.THIRD_GENDER.toString().equals(user.getGender().toString())) {
+                updateuserInputs.put("Gender", 5);
+            } else if (Gender.NOT_DISCLOSED.toString().equals(user.getGender().toString())) {
+                updateuserInputs.put("Gender", 6);
             }
             else {
                 updateuserInputs.put("Gender", 0);

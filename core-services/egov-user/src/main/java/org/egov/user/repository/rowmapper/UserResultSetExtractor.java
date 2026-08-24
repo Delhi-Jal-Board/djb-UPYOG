@@ -81,6 +81,10 @@ public class UserResultSetExtractor implements ResultSetExtractor<List<User>> {
                     user.setGender(Gender.OTHERS);
                 } else if (rs.getInt("gender") == 4) {
                     user.setGender(Gender.TRANSGENDER);
+                } else if (rs.getInt("gender") == 5) {
+                    user.setGender(Gender.THIRD_GENDER);
+                } else if (rs.getInt("gender") == 6) {
+                    user.setGender(Gender.NOT_DISCLOSED);
                 }
                 for (GuardianRelation guardianRelation : GuardianRelation.values()) {
                     if (guardianRelation.toString().equals(rs.getString("guardianrelation"))) {
