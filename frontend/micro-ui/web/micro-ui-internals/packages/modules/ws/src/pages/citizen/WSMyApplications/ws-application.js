@@ -30,7 +30,8 @@ const WSApplication = ({ application }) => {
     { tenantId: application?.tenantId, filters: { propertyIds: application?.propertyId } },
     { filters: { propertyIds: application?.propertyId }, privacy: Digit.Utils.getPrivacyObject() }
   );
-  const businessService = application?.applicationNo?.includes("SW") ? (application?.applicationNo?.includes("DC") ? "SW" : (application?.applicationNo?.includes("MUT") ? "SW.MUTATION" : "SW.ONE_TIME_FEE")) : (application?.applicationNo?.includes("DC") ? "WS" : (application?.applicationNo?.includes("MUT") ? "WS.MUTATION" : "WS.ONE_TIME_FEE"))
+  const isMutation = application?.applicationType?.includes("MUTATION");
+  const businessService = application?.applicationNo?.includes("SW") ? (application?.applicationNo?.includes("DC") ? "SW" : (isMutation ? "SW.MUTATION" : "SW.ONE_TIME_FEE")) : (application?.applicationNo?.includes("DC") ? "WS" : (isMutation ? "WS.MUTATION" : "WS.ONE_TIME_FEE"));
   const fetchBillParams = { consumerCode: application?.applicationNo?.includes("DC") ? application?.connectionNo : application?.connectionNo };
   if (isLoading) {
     return <Loader />;

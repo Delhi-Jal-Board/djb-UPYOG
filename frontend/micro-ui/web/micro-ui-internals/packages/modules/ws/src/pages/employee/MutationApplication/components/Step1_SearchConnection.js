@@ -59,30 +59,32 @@ const Step1_SearchConnection = ({ t, defaultKNumber, onNext }) => {
     }
   };
 
+  const isMobileView = window.innerWidth < 768;
+
   return (
-    <Card style={{ marginBottom: "20px" }}>
+    <Card style={{ marginBottom: "20px", padding: isMobileView ? "12px" : undefined }}>
       <div style={{ display: "flex", alignItems: "center", marginBottom: "16px", flexWrap: "wrap", gap: "8px" }}>
-        <span style={{ fontSize: "24px" }}>🔍</span>
-        <h2 style={{ fontSize: "18px", fontWeight: "700", margin: 0 }}>1. Connection Authentication</h2>
+        <span style={{ fontSize: isMobileView ? "20px" : "24px" }}>🔍</span>
+        <h2 style={{ fontSize: isMobileView ? "16px" : "18px", fontWeight: "700", margin: 0 }}>1. Connection Authentication</h2>
       </div>
-      <CardText>Please enter your K Number to proceed with the mutation application. An OTP will be sent to the registered mobile number.</CardText>
+      <CardText style={{ fontSize: isMobileView ? "13px" : undefined }}>Please enter your K Number to proceed with the mutation application. An OTP will be sent to the registered mobile number.</CardText>
       
-      <div style={{ marginBottom: "24px", marginTop: "16px", padding: "16px", backgroundColor: "#f9f9f9", borderRadius: "8px", borderLeft: "4px solid #00497e" }}>
+      <div style={{ marginBottom: "24px", marginTop: "16px", padding: isMobileView ? "12px" : "16px", backgroundColor: "#f9f9f9", borderRadius: "8px", borderLeft: "4px solid #00497e" }}>
         <div style={{ marginBottom: "16px" }}>
-          <div style={{ fontWeight: "bold", marginBottom: "8px" }}>K Number / Connection ID *</div>
+          <div style={{ fontWeight: "bold", marginBottom: "8px", fontSize: isMobileView ? "14px" : undefined }}>K Number / Connection ID *</div>
           <TextInput
             value={kNumber}
             onChange={(e) => setKNumber(e.target.value)}
             placeholder="Enter K Number"
-            style={{ width: "100%", maxWidth: "400px" }}
+            style={{ width: "100%" }}
           />
         </div>
         
-        <div style={{ display: "flex", justifyContent: "flex-end" }}>
+        <div style={{ display: "flex", justifyContent: isMobileView ? "center" : "flex-end" }}>
           <button
             onClick={handleSendOtp}
             disabled={isLoading}
-            style={{ padding: "10px 20px", backgroundColor: "#00497e", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold", opacity: isLoading ? 0.7 : 1, width: "100%", maxWidth: "200px" }}
+            style={{ padding: isMobileView ? "12px 16px" : "10px 20px", backgroundColor: "#00497e", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold", opacity: isLoading ? 0.7 : 1, width: isMobileView ? "100%" : "auto", maxWidth: isMobileView ? "100%" : "200px", fontSize: isMobileView ? "14px" : undefined }}
           >
             {isLoading ? "Sending OTP..." : "Send OTP →"}
           </button>
