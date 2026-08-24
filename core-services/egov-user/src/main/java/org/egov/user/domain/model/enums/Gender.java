@@ -45,7 +45,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum Gender {
     //This order should not be interrupted
-    FEMALE, MALE, OTHERS, TRANSGENDER,THIRD_GENDER, NOT_TO_DISCLOSE;
+    FEMALE, MALE, OTHERS, TRANSGENDER,THIRD_GENDER, NOT_DISCLOSED;
 
     @JsonCreator
     public static Gender fromValue(String value) {
@@ -58,10 +58,10 @@ public enum Gender {
             case "MALE" -> MALE;
             case "OTHERS", "OTHER" -> OTHERS;
             case "TRANSGENDER" -> TRANSGENDER;
-            case "THIRD GENDER", "THIRD_GENDER" -> THIRD_GENDER;
+            case "THIRD GENDER", "THIRD_GENDER","" -> THIRD_GENDER;
             case "NOT TO DISCLOSE",
-                 "NOT DISCLOSED",
-                 "NOT_TO_DISCLOSE" -> NOT_TO_DISCLOSE;
+                 "NOT DISCLOSED","NOT_DISCLOSED",
+                 "NOT_TO_DISCLOSE" -> NOT_DISCLOSED;
             default -> throw new IllegalArgumentException(
                     "Invalid gender: " + value
             );
