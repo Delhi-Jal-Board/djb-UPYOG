@@ -216,6 +216,7 @@ const Step3_UploadDocuments = ({ t, onNext, onBack, defaultValues }) => {
     transition: "all 0.2s ease"
   });
 
+  const isMobileView = window.innerWidth < 768;
   const errorTextStyle = { fontSize: "12px", color: "#d32f2f", marginTop: "4px" };
   const successTextStyle = { fontSize: "12px", color: "#28a745", marginTop: "4px", fontWeight: "500" };
   const mandatoryIndicator = <span style={{ color: "#d32f2f", marginLeft: "2px" }}>*</span>;
@@ -223,24 +224,24 @@ const Step3_UploadDocuments = ({ t, onNext, onBack, defaultValues }) => {
   const errorCount = Object.keys(fieldErrors).length;
 
   return (
-    <Card style={{ marginBottom: "20px" }}>
+    <Card style={{ marginBottom: "20px", padding: isMobileView ? "12px" : undefined }}>
       <div style={{ display: "flex", alignItems: "center", marginBottom: "8px" }}>
-        <span style={{ fontSize: "24px", marginRight: "8px" }}>📄</span>
-        <h2 style={{ fontSize: "20px", fontWeight: "700", margin: 0 }}>3. Upload Verification Documents</h2>
+        <span style={{ fontSize: isMobileView ? "20px" : "24px", marginRight: "8px" }}>📄</span>
+        <h2 style={{ fontSize: isMobileView ? "16px" : "20px", fontWeight: "700", margin: 0 }}>3. Upload Verification Documents</h2>
       </div>
-      <p style={{ color: "#666", marginBottom: "20px" }}>Please upload legible scanned copies or photos (PDF, PNG, JPEG - Max 5MB).</p>
+      <p style={{ color: "#666", marginBottom: "20px", fontSize: isMobileView ? "12px" : undefined }}>Please upload legible scanned copies or photos (PDF, PNG, JPEG - Max 5MB).</p>
 
       {/* Validation summary */}
       {hasAttemptedSubmit && errorCount > 0 && (
-        <div style={{ padding: "12px 16px", backgroundColor: "#fdecea", color: "#611a15", borderRadius: "8px", border: "1px solid #f5c6cb", marginBottom: "16px", display: "flex", alignItems: "flex-start", gap: "8px" }}>
+        <div style={{ padding: isMobileView ? "10px 12px" : "12px 16px", backgroundColor: "#fdecea", color: "#611a15", borderRadius: "8px", border: "1px solid #f5c6cb", marginBottom: "16px", display: "flex", alignItems: "flex-start", gap: "8px" }}>
           <span style={{ fontSize: "16px", flexShrink: 0 }}>⚠️</span>
-          <span style={{ fontWeight: "500", fontSize: "14px" }}>
+          <span style={{ fontWeight: "500", fontSize: isMobileView ? "12px" : "14px" }}>
             {errorCount} required item{errorCount > 1 ? "s" : ""} still need{errorCount === 1 ? "s" : ""} your attention before proceeding.
           </span>
         </div>
       )}
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "24px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: isMobileView ? "1fr" : "repeat(auto-fill, minmax(280px, 1fr))", gap: isMobileView ? "20px" : "24px" }}>
         
         {/* Address / Identity Proof */}
         <div>
@@ -328,26 +329,38 @@ const Step3_UploadDocuments = ({ t, onNext, onBack, defaultValues }) => {
         </div>
       </div>
 
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "32px", flexWrap: "wrap", gap: "12px" }}>
-        <button 
-          type="button" 
-          onClick={onBack} 
-          style={{ padding: "10px 20px", backgroundColor: "#e0e0e0", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}
-        >
-          ← Back
-        </button>
+      <div style={{ display: "flex", flexDirection: isMobileView ? "column" : "row", justifyContent: "space-between", alignItems: isMobileView ? "stretch" : "center", marginTop: isMobileView ? "24px" : "32px", gap: "12px" }}>
+        {!isMobileView && (
+          <button 
+            type="button" 
+            onClick={onBack} 
+            style={{ padding: "10px 20px", backgroundColor: "#e0e0e0", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}
+          >
+            ← Back
+          </button>
+        )}
         
-        <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
-          <span style={{ fontSize: "12px", color: "#999" }}>All documents are mandatory</span>
+        <div style={{ display: "flex", flexDirection: isMobileView ? "column" : "row", alignItems: isMobileView ? "stretch" : "center", gap: "12px" }}>
+          <span style={{ fontSize: "12px", color: "#999", textAlign: isMobileView ? "center" : undefined }}>All documents are mandatory</span>
           <button 
             type="button" 
             onClick={onProceed}
             disabled={isUploading}
-            style={{ padding: "10px 20px", backgroundColor: isUploading ? "#ccc" : "#00497e", color: "white", border: "none", borderRadius: "4px", cursor: isUploading ? "not-allowed" : "pointer", fontWeight: "bold" }}
+            style={{ padding: isMobileView ? "14px 20px" : "10px 20px", backgroundColor: isUploading ? "#ccc" : "#00497e", color: "white", border: "none", borderRadius: "4px", cursor: isUploading ? "not-allowed" : "pointer", fontWeight: "bold", width: isMobileView ? "100%" : "auto", fontSize: isMobileView ? "14px" : undefined }}
           >
-            {isUploading ? "Uploading..." : "Proceed to Application Preview →"}
+            {isUploading ? "Uploading..." : "Proceed to Preview →"}
           </button>
         </div>
+
+        {isMobileView && (
+          <button 
+            type="button" 
+            onClick={onBack} 
+            style={{ padding: "12px 20px", backgroundColor: "#e0e0e0", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold", width: "100%", fontSize: "14px" }}
+          >
+            ← Back
+          </button>
+        )}
       </div>
 
       {showToast && (

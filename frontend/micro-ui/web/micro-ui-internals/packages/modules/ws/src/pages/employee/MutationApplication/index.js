@@ -259,6 +259,15 @@ const MutationApplication = () => {
         ? JSON.parse(sessionStorage.getItem("WS_EDIT_APPLICATION_DETAILS"))
         : {};
 
+      const existingDocs =
+        applicationDetails?.applicationData?.documents ||
+        applicationDetails?.WaterConnection?.[0]?.documents ||
+        applicationDetails?.SewerageConnections?.[0]?.documents ||
+        applicationDetails?.documents ||
+        details?.applicationData?.documents ||
+        details?.documents ||
+        [];
+
       let convertAppData = await convertModifyApplicationDetails(finalData, sessionDetails, "INITIATE");
 
       // Ensure dateEffectiveFrom is present for mutation creation validation
@@ -304,6 +313,10 @@ const MutationApplication = () => {
         }
       }
 
+      if (convertAppData?.documents?.length > 0 && existingDocs.length > 0) {
+        convertAppData.documents = func.mapExistingDocIdsToPayload(convertAppData.documents, existingDocs);
+      }
+
       convertAppData.applicationType = resolvedServiceType === "WATER" ? "MUTATION_WATER_CONNECTION" : "MUTATION_SEWERAGE_CONNECTION";
 
       if (isEditFlow) {
@@ -317,6 +330,10 @@ const MutationApplication = () => {
             action: "RESUBMIT_APPLICATION",
           },
         };
+
+        if (updatePayload?.documents?.length > 0 && existingDocs.length > 0) {
+          updatePayload.documents = func.mapExistingDocIdsToPayload(updatePayload.documents, existingDocs);
+        }
 
         if (Digit?.Customizations?.WS?.customiseUpdatePayloadOfWS) {
           updatePayload = Digit.Customizations.WS.customiseUpdatePayloadOfWS(applicationDetails?.applicationData || {}, updatePayload, resolvedServiceType);
@@ -396,6 +413,15 @@ const MutationApplication = () => {
                 action: "APPLY_MUTATION",
               },
             };
+
+            const combinedExistingDocs = [
+              ...existingDocs,
+              ...(createdConnection?.documents || []),
+            ];
+
+            if (updatePayload?.documents?.length > 0 && combinedExistingDocs.length > 0) {
+              updatePayload.documents = func.mapExistingDocIdsToPayload(updatePayload.documents, combinedExistingDocs);
+            }
 
             // Apply customization if it exists in the platform
             if (Digit?.Customizations?.WS?.customiseUpdatePayloadOfWS) {

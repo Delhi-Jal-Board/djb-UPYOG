@@ -38,8 +38,10 @@ const Step5_Submission = ({ applicationNumber, serviceType, t }) => {
     history.push("/digit-ui/employee");
   };
 
+  const isMobileView = window.innerWidth < 768;
+
   return (
-    <div style={{ padding: "16px 0" }}>
+    <div style={{ padding: isMobileView ? "8px 0" : "16px 0" }}>
       
       {/* Success Banner */}
       <div style={{
@@ -47,24 +49,24 @@ const Step5_Submission = ({ applicationNumber, serviceType, t }) => {
         border: "1px solid #d4edda",
         borderTop: "4px solid #28a745",
         borderRadius: "8px",
-        padding: "20px",
+        padding: isMobileView ? "16px" : "20px",
         display: "flex",
+        flexDirection: isMobileView ? "column" : "row",
         justifyContent: "space-between",
-        alignItems: "flex-start",
-        flexWrap: "wrap",
+        alignItems: isMobileView ? "stretch" : "flex-start",
         gap: "12px",
         marginBottom: "20px"
       }}>
         <div>
-          <h2 style={{ color: "#28a745", fontSize: "18px", fontWeight: "bold", margin: "0 0 4px", display: "flex", alignItems: "center", flexWrap: "wrap", gap: "6px" }}>
-            <span>✅</span> Your application has been submitted successfully to the respective Zonal Officer !
+          <h2 style={{ color: "#28a745", fontSize: isMobileView ? "15px" : "18px", fontWeight: "bold", margin: "0 0 4px", display: "flex", alignItems: "center", flexWrap: "wrap", gap: "6px" }}>
+            <span>✅</span> Your application has been submitted successfully to the respective Zonal Officer!
           </h2>
-          <div style={{ color: "#666", marginTop: "4px", fontSize: "14px", wordBreak: "break-all" }}>
+          <div style={{ color: "#666", marginTop: "4px", fontSize: isMobileView ? "13px" : "14px", wordBreak: "break-all" }}>
             Your SRN Reference No. is: <strong style={{ color: "#00497e" }}>{applicationNumber}</strong>
           </div>
         </div>
-        <div>
-          <span style={{ padding: "6px 12px", backgroundColor: "#fff3cd", color: "#856404", borderRadius: "16px", fontSize: "12px", fontWeight: "bold", whiteSpace: "nowrap" }}>
+        <div style={{ alignSelf: isMobileView ? "flex-start" : undefined }}>
+          <span style={{ padding: "6px 12px", backgroundColor: "#fff3cd", color: "#856404", borderRadius: "16px", fontSize: isMobileView ? "11px" : "12px", fontWeight: "bold", whiteSpace: "nowrap" }}>
             Pending for Zonal Officer approval
           </span>
         </div>
@@ -73,7 +75,7 @@ const Step5_Submission = ({ applicationNumber, serviceType, t }) => {
       <div style={{ marginTop: "24px", textAlign: "center" }}>
         <button 
           onClick={goHome}
-          style={{ padding: "12px 28px", backgroundColor: "#00497e", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold", fontSize: "15px", width: "100%", maxWidth: "280px" }}
+          style={{ padding: isMobileView ? "14px 28px" : "12px 28px", backgroundColor: "#00497e", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold", fontSize: "15px", width: isMobileView ? "100%" : "auto", maxWidth: "280px" }}
         >
           Go to Home
         </button>

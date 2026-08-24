@@ -1561,10 +1561,56 @@ export const convertApplicationData = (data, serviceType, modify = false, editBy
   return payload;
 };
 
+export const mapExistingDocIdsToPayload = (uploadingDocs = [], existingDocs = []) => {
+  if (!Array.isArray(uploadingDocs) || uploadingDocs.length === 0) return uploadingDocs;
+  if (!Array.isArray(existingDocs) || existingDocs.length === 0) return uploadingDocs;
+
+  return uploadingDocs.map((doc) => {
+    if (doc?.id) return doc;
+
+    const uploadType = doc?.documentType;
+    if (!uploadType) return doc;
+
+    const normUpload = String(uploadType).trim().toUpperCase();
+    const uploadParts = normUpload.split(".");
+    const uploadCode = uploadParts[uploadParts.length - 1];
+
+    const matchedDoc = existingDocs.find((exDoc) => {
+      if (!exDoc?.id || !exDoc?.documentType) return false;
+
+      const normExisting = String(exDoc.documentType).trim().toUpperCase();
+      const existingParts = normExisting.split(".");
+      const existingCode = existingParts[existingParts.length - 1];
+
+      if (normExisting === normUpload) return true;
+      if (existingCode === uploadCode) return true;
+      if (normExisting.endsWith("." + normUpload) || normUpload.endsWith("." + normExisting)) return true;
+      if (normExisting.includes(normUpload) || normUpload.includes(normExisting)) return true;
+
+      return false;
+    });
+
+    if (matchedDoc && matchedDoc.id) {
+      return {
+        ...doc,
+        id: matchedDoc.id,
+      };
+    }
+
+    return doc;
+  });
+};
+
 export const convertEditApplicationDetails = async (data, appData, actionData) => {
   data?.cpt?.details?.owners?.forEach((owner) => {
     if (owner?.permanentAddress) owner.correspondenceAddress = owner?.permanentAddress;
   });
+
+  const existingDocs = appData?.applicationData?.documents || appData?.documents || [];
+  let docs = data?.DocumentsRequired?.documents || [];
+  if (docs && docs.length > 0 && existingDocs && existingDocs.length > 0) {
+    docs = mapExistingDocIdsToPayload(docs, existingDocs);
+  }
 
   let payload = {
     ...appData.applicationData,
@@ -1597,7 +1643,7 @@ export const convertEditApplicationDetails = async (data, appData, actionData) =
       action: actionData ? actionData : "RESUBMIT_APPLICATION",
     },
     action: actionData ? actionData : "RESUBMIT_APPLICATION",
-    documents: data?.DocumentsRequired?.documents,
+    documents: docs,
   };
 
   return payload;
@@ -1762,6 +1808,11 @@ export const convertModifyApplicationDetails = async (data, appData, actionData 
 
   if (data?.DocumentsRequired?.documents?.length) formData.documents = data?.DocumentsRequired?.documents;
   else formData.documents = null;
+
+  const existingDocs = appData?.applicationData?.documents || appData?.documents || [];
+  if (formData.documents && formData.documents.length > 0 && existingDocs && existingDocs.length > 0) {
+    formData.documents = mapExistingDocIdsToPayload(formData.documents, existingDocs);
+  }
 
   if (!data?.ConnectionHolderDetails?.[0]?.sameAsOwnerDetails) {
     formData.connectionHolders = [

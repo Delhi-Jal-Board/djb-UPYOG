@@ -36,6 +36,7 @@ const Step2_NewConsumerDetails = ({ t, onNext, onBack, defaultValues }) => {
     { code: "OTHER", i18nKey: "Other" }
   ];
 
+  const isMobileView = window.innerWidth < 768;
   const errorStyle = { width: "100%", marginLeft: "0px", fontSize: "12px", marginTop: "4px", color: "#d32f2f" };
   
   const getFieldBorderStyle = (fieldName) => {
@@ -64,16 +65,16 @@ const Step2_NewConsumerDetails = ({ t, onNext, onBack, defaultValues }) => {
   const mandatoryIndicator = <span style={{ color: "#d32f2f", marginLeft: "2px" }}>*</span>;
 
   return (
-    <Card style={{ marginBottom: "20px" }}>
+    <Card style={{ marginBottom: "20px", padding: isMobileView ? "12px" : undefined }}>
       <div style={{ display: "flex", alignItems: "center", marginBottom: "16px", flexWrap: "wrap", gap: "8px" }}>
-        <span style={{ fontSize: "22px" }}>👤</span>
-        <h2 style={{ fontSize: "18px", fontWeight: "700", margin: 0 }}>2. New Consumer Details.</h2>
+        <span style={{ fontSize: isMobileView ? "20px" : "22px" }}>👤</span>
+        <h2 style={{ fontSize: isMobileView ? "16px" : "18px", fontWeight: "700", margin: 0 }}>2. New Consumer Details.</h2>
       </div>
 
       {Object.keys(errors).length > 0 && (
-        <div style={{ padding: "12px 16px", backgroundColor: "#fdecea", color: "#611a15", borderRadius: "8px", border: "1px solid #f5c6cb", marginBottom: "16px", display: "flex", alignItems: "flex-start", gap: "8px" }}>
+        <div style={{ padding: isMobileView ? "10px 12px" : "12px 16px", backgroundColor: "#fdecea", color: "#611a15", borderRadius: "8px", border: "1px solid #f5c6cb", marginBottom: "16px", display: "flex", alignItems: "flex-start", gap: "8px" }}>
           <span style={{ fontSize: "16px", flexShrink: 0 }}>⚠️</span>
-          <span style={{ fontWeight: "500", fontSize: "14px" }}>
+          <span style={{ fontWeight: "500", fontSize: isMobileView ? "12px" : "14px" }}>
             Please fill in all required fields marked with <span style={{ color: "#d32f2f", fontWeight: "bold" }}>*</span> before proceeding.
           </span>
         </div>
@@ -83,8 +84,8 @@ const Step2_NewConsumerDetails = ({ t, onNext, onBack, defaultValues }) => {
         {/* Responsive grid: 1 col on mobile, 2 col on tablet+, 3 col on large screens */}
         <div style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
-          gap: "20px",
+          gridTemplateColumns: isMobileView ? "1fr" : "repeat(auto-fill, minmax(240px, 1fr))",
+          gap: isMobileView ? "16px" : "20px",
           padding: "8px 0 16px"
         }}>
           
@@ -229,24 +230,36 @@ const Step2_NewConsumerDetails = ({ t, onNext, onBack, defaultValues }) => {
         </div>
 
         {/* Navigation Buttons */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "24px", flexWrap: "wrap", gap: "12px" }}>
-          <button 
-            type="button" 
-            onClick={onBack} 
-            style={{ padding: "10px 20px", backgroundColor: "#e0e0e0", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}
-          >
-            ← Back
-          </button>
+        <div style={{ display: "flex", flexDirection: isMobileView ? "column" : "row", justifyContent: "space-between", alignItems: isMobileView ? "stretch" : "center", marginTop: "24px", gap: "12px" }}>
+          {!isMobileView && (
+            <button 
+              type="button" 
+              onClick={onBack} 
+              style={{ padding: "10px 20px", backgroundColor: "#e0e0e0", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}
+            >
+              ← Back
+            </button>
+          )}
           
-          <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
-            <span style={{ fontSize: "12px", color: "#999" }}>Fields marked with <span style={{ color: "#d32f2f" }}>*</span> are mandatory</span>
+          <div style={{ display: "flex", flexDirection: isMobileView ? "column" : "row", alignItems: isMobileView ? "stretch" : "center", gap: "12px" }}>
+            <span style={{ fontSize: "12px", color: "#999", textAlign: isMobileView ? "center" : undefined }}>Fields marked with <span style={{ color: "#d32f2f" }}>*</span> are mandatory</span>
             <button 
               type="submit" 
-              style={{ padding: "10px 20px", backgroundColor: "#00497e", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}
+              style={{ padding: isMobileView ? "14px 20px" : "10px 20px", backgroundColor: "#00497e", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold", width: isMobileView ? "100%" : "auto", fontSize: isMobileView ? "14px" : undefined }}
             >
               Save & Proceed to Documents →
             </button>
           </div>
+
+          {isMobileView && (
+            <button 
+              type="button" 
+              onClick={onBack} 
+              style={{ padding: "12px 20px", backgroundColor: "#e0e0e0", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold", width: "100%", fontSize: "14px" }}
+            >
+              ← Back
+            </button>
+          )}
         </div>
       </form>
 

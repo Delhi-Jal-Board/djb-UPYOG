@@ -40,6 +40,7 @@ function WSDocument({ value = {}, Code, index, showFileName= false}) {
                 <PDFSvg /* width={85} height={100} style={{ background: "#f6f6f6", padding: "8px" }}  *//>
                {/*  <p style={{ marginTop: "8px" }}>{pdfDocumentName(documentLink, index)}</p> */}
                { showFileName ? <p style={{ marginTop: "8px" }}>{t(Code?.split('.').slice(0,3).join('_'))}</p> : null}
+               { document?.documentNumber ? <p style={{ marginTop: "8px" }}>{document?.documentNumber}</p> : "N/A" }
               </a>
             );
           })}
