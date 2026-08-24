@@ -143,7 +143,7 @@ function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false, 
   const renderDocumentRow = (value, index) => {
     const fileUrl = pdfFiles[value.fileStoreId]?.split(",")[0];
     const docSubType = getDocSubType(value?.documentType);
-    const docUid = value?.documentUid || "";
+    const docUid = value?.documentNumber || value?.documentUid || "";
     const isPhoto = value?.isPhoto;
 
     let typeLabel = "";

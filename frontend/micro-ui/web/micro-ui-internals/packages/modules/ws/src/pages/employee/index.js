@@ -465,7 +465,7 @@ const BILLSBreadCrumbs = ({ location, showPrint }) => {
       label: t("WS_CALCULATION"),
       show: location.pathname.includes("/ws/water/calculation") ? true : false,
       //isclickable : false,
-    }
+    },
   ];
 
   let lastCrumbIndex = findLastIndex(crumbs, "show", true);
@@ -477,21 +477,21 @@ const BILLSBreadCrumbs = ({ location, showPrint }) => {
     if (fromScreen && activeCrumbs.length > 0) {
       const lastCrumbIndex = activeCrumbs.length - 1;
       const lastCrumb = activeCrumbs[lastCrumbIndex];
-      
+
       if (lastCrumb.label && lastCrumb.label.includes(" / ")) {
         const parts = lastCrumb.label.split(" / ");
         let fromScreenPath = "";
-        
+
         const isSewerage = serviceType === "SEWERAGE" || applicationNumber?.includes("SW_AP") || applicationNumbercheck?.includes("SW_AP");
         const svc = isSewerage ? "sewerage" : "water";
-        
+
         if (fromScreen === "WS_SEWERAGE_INBOX") fromScreenPath = "/digit-ui/employee/ws/sewerage/inbox";
         else if (fromScreen === "WS_WATER_INBOX") fromScreenPath = "/digit-ui/employee/ws/water/inbox";
         else if (fromScreen === "WS_SEARCH_APPLICATIONS") fromScreenPath = `/digit-ui/employee/ws/${svc}/search-application`;
         else if (fromScreen === "WS_SEARCH_CONNECTION") fromScreenPath = `/digit-ui/employee/ws/${svc}/search-connection`;
         else if (fromScreen === "WS_SEARCH_INTEGRATED_BILL") fromScreenPath = "/digit-ui/employee/ws/water/wns-search";
-        else fromScreenPath = lastCrumb.path; 
-        
+        else fromScreenPath = lastCrumb.path;
+
         activeCrumbs.pop();
         activeCrumbs.push({
           label: parts[0],
@@ -669,11 +669,23 @@ const App = ({ path }) => {
               <PrivateRoute path={`${path}/edit-disconnection-application`} component={WSEditDisconnectionApplication} />
               <PrivateRoute path={`${path}/resubmit-disconnection-application`} component={WSResubmitDisconnection} />
               <PrivateRoute path={`${path}/config-by-disconnection-application`} component={WSEditDisconnectionByConfig} />
-              <PrivateRoute path={`${path}/application-details`} component={() => (
-                <LayoutWrapper layoutClass="action"><WSApplicationDetails/></LayoutWrapper>
-              )} />
+              <PrivateRoute
+                path={`${path}/application-details`}
+                component={() => (
+                  <LayoutWrapper layoutClass="action">
+                    <WSApplicationDetails />
+                  </LayoutWrapper>
+                )}
+              />
               <PrivateRoute path={`${path}/modify-details`} component={WSModifyApplicationDetails} />
-              <PrivateRoute path={`${path}/connection-details`} component={()=>(<LayoutWrapper layoutClass="action"><WSGetConnectionDetails/></LayoutWrapper>)} />
+              <PrivateRoute
+                path={`${path}/connection-details`}
+                component={() => (
+                  <LayoutWrapper layoutClass="action">
+                    <WSGetConnectionDetails />
+                  </LayoutWrapper>
+                )}
+              />
               <PrivateRoute path={`${path}/bill-amendment`} component={() => <WSApplicationBillAmendment {...{ path }} />} />
               <PrivateRoute path={`${path}/generate-note-bill-amendment`} component={() => <WSApplicationDetailsBillAmendment {...{ path }} />} />
               <PrivateRoute path={`${path}/response`} component={() => <Response {...{ path }} />} />
@@ -700,7 +712,14 @@ const App = ({ path }) => {
               <PrivateRoute path={`${path}/water/inbox`} component={(props) => <WSInbox {...props} parentRoute={path} />} />
               <PrivateRoute path={`${path}/sewerage/inbox`} component={(props) => <WSInbox {...props} parentRoute={path} />} />
               <PrivateRoute path={`${path}/edit-application-by-config`} component={WSEditApplicationByConfig} />
-              <PrivateRoute path={`${path}/disconnection-details`} component={WSGetDisconnectionDetails} />
+              <PrivateRoute
+                path={`${path}/disconnection-details`}
+                component={() => (
+                  <LayoutWrapper layoutClass="action">
+                    <WSGetDisconnectionDetails />
+                  </LayoutWrapper>
+                )}
+              />
               <PrivateRoute
                 path={`${path}/water/bill-amendment/inbox`}
                 component={(props) => <WSBillIAmendMentInbox {...props} parentRoute={path} />}
