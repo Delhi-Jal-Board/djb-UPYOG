@@ -284,12 +284,15 @@ public class UserRepository {
             } else if (Gender.OTHERS.toString().equals(user.getGender().toString())) {
                 updateuserInputs.put("Gender", 3);
             } else if (Gender.TRANSGENDER.toString().equals(user.getGender().toString())) {
-                updateuserInputs.put("Gender", 4); 
+                updateuserInputs.put("Gender", 4);
+            } else if (Gender.THIRD_GENDER.toString().equals(user.getGender().toString())) {
+                updateuserInputs.put("gender", 5);
+
+            } else if (Gender.NOT_TO_DISCLOSE.toString().equals(user.getGender().toString())) {
+                updateuserInputs.put("gender", 6);
             } else {
                 updateuserInputs.put("Gender", 0);
             }
-        } else {
-            updateuserInputs.put("Gender", 0);
         }
         updateuserInputs.put("Guardian", user.getGuardian());
 
@@ -430,7 +433,6 @@ public class UserRepository {
 
         if (users.isEmpty())
             return;
-
         Map<String, Role> roleCodeMap = fetchRolesFromMdms(users);
 
         for (User user : users) {
@@ -566,6 +568,12 @@ public class UserRepository {
             userInputs.put("gender", 3);
         } else if (Gender.TRANSGENDER.equals(entityUser.getGender())) {
             userInputs.put("gender", 4);
+
+        } else if (Gender.THIRD_GENDER.equals(entityUser.getGender())) {
+            userInputs.put("gender", 5);
+
+        } else if (Gender.NOT_TO_DISCLOSE.equals(entityUser.getGender())) {
+            userInputs.put("gender", 6);
         } else {
             userInputs.put("gender", 0);
         }
@@ -621,7 +629,12 @@ public class UserRepository {
         userInputs.put("lastmodifiedby", entityUser.getLoggedInUserId());
         userInputs.put("alternatemobilenumber", entityUser.getAlternateMobileNumber());
 
+      //  System.out.println("test9");
+
         namedParameterJdbcTemplate.update(userTypeQueryBuilder.getInsertUserQuery(), userInputs);
+
+       // System.out.println("test10");
+
         return entityUser;
     }
 
@@ -783,7 +796,9 @@ public class UserRepository {
                 updateuserInputs.put("Gender", 3);
             } else if (Gender.TRANSGENDER.toString().equals(user.getGender().toString())) {
                 updateuserInputs.put("Gender", 4);
-            } else {
+
+            }
+            else {
                 updateuserInputs.put("Gender", 0);
             }
         } else {
