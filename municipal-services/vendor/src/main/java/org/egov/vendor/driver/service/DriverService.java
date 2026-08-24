@@ -131,7 +131,18 @@ public class DriverService {
 			return;
 		}
 
-		List<String> roleCodes = requestInfo.getUserInfo().getRoles().stream()
+		// getRoles() can be null (not just empty) when a caller sends
+		// userInfo without a roles field at all — e.g. a minimal admin/
+		// enumeration-style search that only sets type="EMPLOYEE" with no
+		// roles list. Confirmed live: threw a bare NullPointerException
+		// here, which crashed the entire /vendor/v1/_search call (HTTP 400)
+		// partway through enriching the vendor list — surfaced by
+		// ekyc-service's allVendorsDetailed feature, whose vendor-listing
+		// call builds exactly that minimal userInfo shape. Treat null the
+		// same as an empty list rather than crashing.
+		List<String> roleCodes = requestInfo.getUserInfo().getRoles() == null
+				? java.util.Collections.emptyList()
+				: requestInfo.getUserInfo().getRoles().stream()
 				.map(Role::getCode)
 				.collect(Collectors.toList());
 
