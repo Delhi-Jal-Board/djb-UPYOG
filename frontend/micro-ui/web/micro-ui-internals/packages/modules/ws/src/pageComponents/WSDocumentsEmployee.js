@@ -320,6 +320,7 @@ function SelectDocument({
             fileStoreId: uploadedFile,
             fileName: file?.name || filteredDocument?.fileName || "",
             documentUid: documentUid,
+            documentNumber: documentUid,
             i18nKey: selectedDocument?.code,
             id: selectedDocument?.id,
             status: "ACTIVE",
