@@ -312,12 +312,26 @@ public class EnrichmentService {
 			VehicleSearchCriteria vehicleSearchCriteria = VehicleSearchCriteria.builder().ids(vehicleIds)
 					.status(statusData).tenantId(tenantId).build();
 
-			vendor.setVehicles(vehicleService.getVehicles(vehicleSearchCriteria, requestInfo));
+			// FIX: mirrors the null/empty guard already used by the sibling
+			// addDrivers() method a few lines above (~293) — that one
+			// already handles "service call returned nothing" safely; this
+			// one did not, and threw a bare NullPointerException whenever
+			// vehicleService.getVehicles() returned null for a vendor with
+			// active vehicleIds (e.g. vehicle records deleted/unresolvable
+			// downstream). Confirmed live via vendor-service logs: crashed
+			// the WHOLE vendor _search call (HTTP 400) partway through
+			// enriching the vendor list — same failure class as the
+			// already-fixed driver-owner NPE, different unguarded spot.
+			List<org.egov.vendor.web.model.vehicle.Vehicle> vehicles =
+					vehicleService.getVehicles(vehicleSearchCriteria, requestInfo);
+			vendor.setVehicles(vehicles);
 
-			vendor.getVehicles().forEach(vehicle -> {
-				// vehicle.setVendorVehicleStatus(vehicle.getStatus());
-				vehicle.setVendorVehicleStatus(org.egov.vendor.web.model.vehicle.Vehicle.StatusEnum.ACTIVE);
-			});
+			if (!CollectionUtils.isEmpty(vendor.getVehicles())) {
+				vendor.getVehicles().forEach(vehicle -> {
+					// vehicle.setVendorVehicleStatus(vehicle.getStatus());
+					vehicle.setVendorVehicleStatus(org.egov.vendor.web.model.vehicle.Vehicle.StatusEnum.ACTIVE);
+				});
+			}
 
 		}
 
