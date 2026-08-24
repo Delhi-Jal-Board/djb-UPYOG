@@ -40,7 +40,47 @@
 
 package org.egov.user.domain.model.enums;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 public enum Gender {
     //This order should not be interrupted
-    FEMALE, MALE, OTHERS, TRANSGENDER;
-}
+    FEMALE, MALE, OTHERS, TRANSGENDER,THIRD_GENDER, NOT_TO_DISCLOSE;
+
+    @JsonCreator
+    public static Gender fromValue(String value) {
+        if (value == null) {
+            return null;
+        }
+
+        return switch (value.trim().toUpperCase()) {
+            case "FEMALE" -> FEMALE;
+            case "MALE" -> MALE;
+            case "OTHERS", "OTHER" -> OTHERS;
+            case "TRANSGENDER" -> TRANSGENDER;
+            case "THIRD GENDER", "THIRD_GENDER" -> THIRD_GENDER;
+            case "NOT TO DISCLOSE",
+                 "NOT DISCLOSED",
+                 "NOT_TO_DISCLOSE" -> NOT_TO_DISCLOSE;
+            default -> throw new IllegalArgumentException(
+                    "Invalid gender: " + value
+            );
+        };
+    }
+
+
+
+
+//        @JsonValue
+//        public String toValue() {
+//            return switch (this) {
+//                case FEMALE -> "FEMALE";
+//                case MALE -> "MALE";
+//                case OTHERS -> "OTHERS";
+//                case TRANSGENDER -> "TRANSGENDER";
+//                case THIRD_GENDER -> "THIRD GENDER";
+//                case NOT_TO_DISCLOSE -> "NOT TO DISCLOSE";
+//            };
+//        }
+    }
+
