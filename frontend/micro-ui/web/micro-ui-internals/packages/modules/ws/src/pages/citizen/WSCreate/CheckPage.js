@@ -16,6 +16,7 @@ import {
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory, useRouteMatch, Link } from "react-router-dom";
+import { getFiles } from "../../../utils";
 import Timeline from "../../../components/Timeline";
 import WSDocument from "../../../pageComponents/WSDocument";
 
@@ -42,7 +43,11 @@ const CheckPage = ({ onSubmit, value }) => {
   const checkForNA = (val) => (val ? val : "CS_NA");
   const onEdit = () => {};
   const ActionButton = () => null;
-  const openFilePDF = () => {};
+  const openFilePDF = async (fileStoreId) => {
+    if (fileStoreId) {
+      getFiles([fileStoreId], value?.tenantId || Digit.ULBService.getStateId());
+    }
+  };
 
   let propAddArr = [];
   if (cpt && cpt?.details && Object.keys(cpt?.details).length > 0) {
@@ -308,6 +313,19 @@ const CheckPage = ({ onSubmit, value }) => {
             <Row label={t("WS_EMPLOYEE_ID")} text={`${t(checkForNA(djbEmployee?.employeeId))}`} />
             <Row label={t("WS_DATE_OF_RETIREMENT")} text={`${t(checkForNA(djbEmployee?.dor))}`} />
             <Row label={t("WS_EMPLOYEE_DESIGNATION")} text={`${t(checkForNA(djbEmployee?.designation))}`} />
+            {djbEmployee?.document && (
+              <Row
+                label={t("WS_UPLOAD_EMPLOYEE_ID_DOC")}
+                text={
+                  <span
+                    style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", color: "#f47738" }}
+                    onClick={() => openFilePDF(djbEmployee?.document)}
+                  >
+                    <GenericFileIcon /> {t("CS_COMMON_VIEW")}
+                  </span>
+                }
+              />
+            )}
           </React.Fragment>
         )}
       </StatusTable>

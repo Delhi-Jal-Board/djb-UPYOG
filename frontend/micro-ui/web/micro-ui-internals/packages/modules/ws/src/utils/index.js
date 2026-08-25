@@ -257,6 +257,25 @@ export const createPayloadOfWS = async (data) => {
   const useDetailsObject = data?.useDetails || connectionDetailsObject || {};
   const connectionHolder = data?.ConnectionHolderDetails?.[0] || data?.ConnectionHolderDetails;
 
+
+  let allDocuments = Array.isArray(data?.documents?.documents) ? [...data.documents.documents] : (Array.isArray(data?.documents) ? [...data.documents] : []);
+
+  if (data?.djbEmployee?.document) {
+    allDocuments.push({
+      documentType: "OWNER.DJB_EMPLOYEE_ID",
+      fileStoreId: data?.djbEmployee?.document?.fileStoreId || data?.djbEmployee?.document,
+      documentUid: "",
+      status: "ACTIVE",
+    });
+  }
+  if (data?.governmentEmployee?.organizationDocument) {
+    allDocuments.push({
+      documentType: "OWNER.GOVERNMENT_EMPLOYEE_ID",
+      fileStoreId: data?.governmentEmployee?.organizationDocument?.fileStoreId || data?.governmentEmployee?.organizationDocument,
+      documentUid: "",
+      status: "ACTIVE",
+    });
+  }
   let payload = {
     water: !!isWater,
     sewerage: !!isSewerage,
@@ -345,6 +364,7 @@ export const createPayloadOfWS = async (data) => {
     additionalDetails: {
       ...useDetailsObject,
       ...data?.djbEmployee,
+      document: data?.djbEmployee?.document?.fileStoreId || data?.djbEmployee?.document || undefined,
       ...data?.bankDetails,
       ...data?.declarationData,
       ...data?.declaration,
@@ -376,7 +396,7 @@ export const createPayloadOfWS = async (data) => {
       detailsProvidedBy: "",
       channel: isCitizen ? "CITIZEN" : "CFC_COUNTER",
     },
-    documents: data?.documents?.documents || data?.documents || [],
+    documents: allDocuments,
     tenantId: "dl.djb",
     processInstance: {
       action: "INITIATE",

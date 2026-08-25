@@ -186,6 +186,7 @@ function RegistrationFlow({ t, handleMobileNumberSelect, handleOtpSelect, handle
   const [profileData, setProfileData] = useState({
     fullName: "",
     dob: "",
+    emailId: "",
   });
   const history = useHistory();
   const { path } = useRouteMatch();
@@ -245,7 +246,7 @@ function RegistrationFlow({ t, handleMobileNumberSelect, handleOtpSelect, handle
 
   const handleComplete = () => {
     if (profileData.fullName && profileData.dob) {
-      handleNameSelect({ otp: params.otp, mobileNumber: params.mobileNumber, name: profileData.fullName, dob: profileData.dob });
+      handleNameSelect({ otp: params.otp, mobileNumber: params.mobileNumber, name: profileData.fullName, dob: profileData.dob, emailId: profileData.emailId });
     }
   };
 

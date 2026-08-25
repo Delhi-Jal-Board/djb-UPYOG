@@ -334,6 +334,19 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
                 <Row label={t("WS_EMPLOYEE_ID")} text={`${t(checkForNA(djbEmployee?.employeeId))}`} />
                 <Row label={t("WS_DATE_OF_RETIREMENT")} text={`${t(checkForNA(djbEmployee?.dor))}`} />
                 <Row label={t("WS_EMPLOYEE_DESIGNATION")} text={`${t(checkForNA(djbEmployee?.designation))}`} />
+                {djbEmployee?.document && (
+                  <Row
+                    label={t("WS_UPLOAD_EMPLOYEE_ID_DOC")}
+                    text={
+                      <span
+                        style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", color: "#f47738" }}
+                        onClick={() => openFilePDF(djbEmployee?.document)}
+                      >
+                        <GenericFileIcon /> {t("CS_COMMON_VIEW")}
+                      </span>
+                    }
+                  />
+                )}
               </React.Fragment>
             )}
           </StatusTable>

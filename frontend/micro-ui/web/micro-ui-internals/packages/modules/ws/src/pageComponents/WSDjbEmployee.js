@@ -1,6 +1,6 @@
-import { CardLabel, LabelFieldPair, TextInput, CheckBox, Dropdown, DatePicker, CollapsibleCardPage, FormStep } from "@djb25/digit-ui-react-components";
+import { CardLabel, LabelFieldPair, TextInput, CheckBox, Dropdown, DatePicker, CollapsibleCardPage, FormStep, UploadFile } from "@djb25/digit-ui-react-components";
 import _ from "lodash";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import Timeline from "../components/Timeline";
@@ -13,6 +13,7 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
       employeeId: formData?.djbEmployee?.employeeId || formData?.additionalDetails?.employeeId || "",
       dor: formData?.djbEmployee?.dor || formData?.additionalDetails?.dor || "",
       designation: formData?.djbEmployee?.designation || formData?.additionalDetails?.designation || "",
+      document: formData?.djbEmployee?.document || formData?.additionalDetails?.document || "",
     },
   });
 
@@ -26,8 +27,42 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
       setValue("employeeId", formData?.djbEmployee?.employeeId || formData?.additionalDetails?.employeeId || "");
       setValue("dor", formData?.djbEmployee?.dor || formData?.additionalDetails?.dor || "");
       setValue("designation", formData?.djbEmployee?.designation || formData?.additionalDetails?.designation || "");
+      setValue("document", formData?.djbEmployee?.document || formData?.additionalDetails?.document || "");
     }
   }, [formData?.djbEmployee, formData?.additionalDetails, setValue]);
+
+  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const [file, setFile] = useState(null);
+  const [uploadedFile, setUploadedFile] = useState(() => formData?.djbEmployee?.document || formData?.additionalDetails?.document || null);
+  const [errorUpload, setErrorUpload] = useState(null);
+
+  useEffect(() => {
+    (async () => {
+      setErrorUpload(null);
+      if (file) {
+        if (file.size >= 5242880) {
+          setErrorUpload({ key: "error", message: "CS_MAXIMUM_UPLOAD_SIZE_EXCEEDED" });
+        } else {
+          try {
+            setUploadedFile(null);
+            const response = await Digit.UploadServices.Filestorage("WS", file, tenantId?.split(".")[0]);
+            if (response?.data?.files?.length > 0) {
+              setUploadedFile(response?.data?.files[0]?.fileStoreId);
+              setValue("document", response?.data?.files[0]?.fileStoreId);
+            } else {
+              setErrorUpload({ key: "error", message: "CS_FILE_UPLOAD_ERROR" });
+            }
+          } catch (err) {
+            setErrorUpload({ key: "error", message: "CS_FILE_UPLOAD_ERROR" });
+          }
+        }
+      }
+    })();
+  }, [file]);
+
+  function selectfile(e) {
+    setFile(e.target.files[0]);
+  }
 
   useEffect(() => {
     if (userType === "employee") {
@@ -57,7 +92,7 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
 
   const FormContent = (
     <CollapsibleCardPage title={t("WS_DJB_EMPLOYEE")} defaultOpen={true}>
-      <div style={{ marginBottom: "24px" }}>
+      <div>
         <Controller
           control={control}
           name="isDjbEmployee"
@@ -102,6 +137,36 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
                   name="designation"
                   rules={{ required: isDjbEmployee ? t("CORE_COMMON_REQUIRED_ERRMSG") : false }}
                   render={(props) => <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} onBlur={props.onBlur} />}
+                />
+              </div>
+            </LabelFieldPair>
+          </div>
+
+          <div>
+            <LabelFieldPair>
+              <CardLabel>{t("WS_UPLOAD_EMPLOYEE_ID_DOC") + " *"}</CardLabel>
+              <div className="field">
+                <Controller
+                  control={control}
+                  name="document"
+                  rules={{ required: isDjbEmployee ? t("CORE_COMMON_REQUIRED_ERRMSG") : false }}
+                  render={(props) => (
+                    <UploadFile
+                      id={"employee-doc"}
+                      extraStyleName={"propertyCreate"}
+                      accept="image/*, .pdf, .png, .jpeg, .jpg"
+                      onUpload={(e) => {
+                         selectfile(e);
+                      }}
+                      onDelete={() => {
+                        setUploadedFile(null);
+                        setFile(null);
+                        props.onChange("");
+                      }}
+                      message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`ES_NO_FILE_SELECTED_LABEL`)}
+                      error={errorUpload}
+                    />
+                  )}
                 />
               </div>
             </LabelFieldPair>
