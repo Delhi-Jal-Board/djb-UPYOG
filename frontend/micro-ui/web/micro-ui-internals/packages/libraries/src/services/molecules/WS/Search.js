@@ -952,8 +952,8 @@ export const WSSearch = {
         asSectionHeader: true,
         values: [
           { title: "WS_EMPLOYEE_ID", value: wsDataDetails?.additionalDetails?.employeeId || t("NA") },
-          { title: "WS_DATE_OF_RETIREMENT", value: wsDataDetails?.additionalDetails?.retirementDate || t("NA") },
-          { title: "WS_EMPLOYEE_DESIGNATION", value: wsDataDetails?.additionalDetails?.officeNameAndAddress || t("NA") },
+          { title: "WS_DATE_OF_RETIREMENT", value: wsDataDetails?.additionalDetails?.dor || t("NA") },
+          { title: "WS_EMPLOYEE_DESIGNATION", value: wsDataDetails?.additionalDetails?.designation || t("NA") },
         ],
       }
       : null;
@@ -2012,8 +2012,8 @@ export const WSSearch = {
         asSectionHeader: true,
         values: [
           { title: "WS_EMPLOYEE_ID", value: wsDataDetails?.additionalDetails?.employeeId || t("NA") },
-          { title: "WS_DATE_OF_RETIREMENT", value: wsDataDetails?.additionalDetails?.retirementDate || t("NA") },
-          { title: "WS_EMPLOYEE_DESIGNATION", value: wsDataDetails?.additionalDetails?.officeNameAndAddress || t("NA") },
+          { title: "WS_DATE_OF_RETIREMENT", value: wsDataDetails?.additionalDetails?.dor || t("NA") },
+          { title: "WS_EMPLOYEE_DESIGNATION", value: wsDataDetails?.additionalDetails?.designation || t("NA") },
         ],
       }
       : null;
@@ -2567,8 +2567,8 @@ export const WSSearch = {
         asSectionHeader: true,
         values: [
           { title: "WS_EMPLOYEE_ID", value: wsDataDetails?.additionalDetails?.employeeId || t("NA") },
-          { title: "WS_DATE_OF_RETIREMENT", value: wsDataDetails?.additionalDetails?.retirementDate || t("NA") },
-          { title: "WS_EMPLOYEE_DESIGNATION", value: wsDataDetails?.additionalDetails?.officeNameAndAddress || t("NA") },
+          { title: "WS_DATE_OF_RETIREMENT", value: wsDataDetails?.additionalDetails?.dor || t("NA") },
+          { title: "WS_EMPLOYEE_DESIGNATION", value: wsDataDetails?.additionalDetails?.designation || t("NA") },
         ],
       }
       : null;
@@ -2956,8 +2956,8 @@ export const WSSearch = {
         asSectionHeader: true,
         values: [
           { title: "WS_EMPLOYEE_ID", value: wsDataDetails?.additionalDetails?.employeeId || t("NA") },
-          { title: "WS_DATE_OF_RETIREMENT", value: wsDataDetails?.additionalDetails?.retirementDate || t("NA") },
-          { title: "WS_EMPLOYEE_DESIGNATION", value: wsDataDetails?.additionalDetails?.officeNameAndAddress || t("NA") },
+          { title: "WS_DATE_OF_RETIREMENT", value: wsDataDetails?.additionalDetails?.dor || t("NA") },
+          { title: "WS_EMPLOYEE_DESIGNATION", value: wsDataDetails?.additionalDetails?.designation || t("NA") },
         ],
       }
       : null;

@@ -11,6 +11,7 @@ import {
   CardText,
   CardHeader,
   SubmitBar,
+  GenericFileIcon,
 } from "@djb25/digit-ui-react-components";
 import React, { useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
@@ -884,6 +885,19 @@ const WSApplicationDetails = () => {
                     <Row label={t("WS_EMPLOYEE_ID")} text={`${t(checkForNA(djbEmployee?.employeeId))}`} />
                     <Row label={t("WS_DATE_OF_RETIREMENT")} text={`${t(checkForNA(djbEmployee?.dor))}`} />
                     <Row label={t("WS_EMPLOYEE_DESIGNATION")} text={`${t(checkForNA(djbEmployee?.designation))}`} />
+                    {djbEmployee?.document && (
+                      <Row
+                        label={t("WS_UPLOAD_EMPLOYEE_ID_DOC")}
+                        text={
+                          <span
+                            style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", color: "#f47738" }}
+                            onClick={() => getFiles([djbEmployee?.document], tenantId)}
+                          >
+                            <GenericFileIcon /> {t("CS_COMMON_VIEW")}
+                          </span>
+                        }
+                      />
+                    )}
                   </React.Fragment>
                 )}
               </StatusTable>
