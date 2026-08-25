@@ -168,6 +168,33 @@ public class CalculationService {
 		return isNoPayment;
 	}
 
+	public boolean hasPendingWaterDues(String tenantId, String connectionNo, RequestInfo requestInfo) {
+		try {
+			Object result = serviceRequestRepository.fetchResult(getFetchBillURL(tenantId, connectionNo)
+					, RequestInfoWrapper.builder().requestInfo(requestInfo).build());
+			BillResponse billResponse = mapper.convertValue(result, BillResponse.class);
+			
+			// Condition 1: If there are no active bills (Empty array) -> No dues
+			if (billResponse.getBill() == null || billResponse.getBill().isEmpty()) {
+				return false; 
+			}
+			
+			for (Bill bill : billResponse.getBill()) {
+				BigDecimal totalAmount = bill.getTotalAmount() != null ? bill.getTotalAmount() : BigDecimal.ZERO;
+				BigDecimal amountPaid = bill.getAmountPaid() != null ? bill.getAmountPaid() : BigDecimal.ZERO;
+				
+				// Condition 2 & 3: Use .compareTo to safely ignore BigDecimal scale and check for pending amount
+				if (totalAmount.subtract(amountPaid).compareTo(BigDecimal.ZERO) > 0) {
+					return true; // Pending dues exist
+				}
+			}
+			return false; // No pending dues found
+		} catch (Exception ex) {
+			log.error("Error fetching bills for connectionNo: {}", connectionNo, ex);
+			throw new CustomException("WATER_FETCH_BILL_ERROR", "Error while fetching the bill for dues: " + ex.getMessage());
+		}
+	}
+
 	public boolean fetchBillForReconnect(String tenantId, String connectionNo, RequestInfo requestInfo) {
 		boolean isNoPayment = false;
 		try {
