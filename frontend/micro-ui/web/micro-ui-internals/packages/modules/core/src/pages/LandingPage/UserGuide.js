@@ -16,6 +16,9 @@ import {
   ocrRoleTasks,
   podPipelineSteps,
   podRelationshipSteps,
+  nirikshanPipelineSteps,
+  nirikshanAppEcosystem,
+  nirikshanTroubleshooting,
   pdfGuideText,
 } from "./configs/UserGuideConfig";
 
@@ -74,6 +77,17 @@ const CardIcon = ({ type }) => {
             <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
             <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
             <line x1="12" y1="22.08" x2="12" y2="12" />
+          </svg>
+        </span>
+      );
+    case "nirikshan":
+      return (
+        <span className="card-header-icon" style={{ backgroundColor: "#e0f2fe", color: "#0284c7" }}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            <line x1="11" y1="8" x2="11" y2="14" />
+            <line x1="8" y1="11" x2="14" y2="11" />
           </svg>
         </span>
       );
@@ -352,7 +366,12 @@ const UserGuide = (props) => {
                         <ul style={{ paddingLeft: "20px", color: "#475569", lineHeight: "1.8", fontSize: "14px" }}>
                           {card.items.map((item, idx) => (
                             <li key={idx}>
-                              <strong>{t(item.bold)}</strong> {t(item.text)}
+                              {item.bold && (
+                                <strong style={{ color: "#0f172a", fontWeight: "700" }}>
+                                  {t(item.bold, { nsSeparator: false })}
+                                </strong>
+                              )}{" "}
+                              {t(item.text, { nsSeparator: false })}
                             </li>
                           ))}
                         </ul>
@@ -856,6 +875,221 @@ const UserGuide = (props) => {
                 </Card>
               )}
 
+              {/* ── DEDICATED NIRIKSHAN DIGITAL FIELD INSPECTION HUB SECTION ── */}
+              {(selectedModule === "all" || selectedModule === "nirikshan") && (
+                <Card
+                  id="nirikshan-interactive-hub"
+                  className="contact-card"
+                  style={{
+                    padding: "32px",
+                    margin: "0 0 40px 0",
+                    background: "linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%)",
+                    border: "1px solid #7dd3fc",
+                    borderRadius: "16px",
+                    boxShadow: "0 10px 25px -5px rgba(2, 132, 199, 0.1)",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "16px", marginBottom: "20px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                      <div
+                        style={{
+                          width: "48px",
+                          height: "48px",
+                          borderRadius: "12px",
+                          backgroundColor: "#0284c7",
+                          color: "#ffffff",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontSize: "24px",
+                        }}
+                      >
+                        🔍
+                      </div>
+                      <div>
+                        <h3 style={{ fontSize: "22px", fontWeight: "700", color: "#0369a1", margin: 0 }}>
+                          {t("Nirikshan Digital Field Inspection Application Guide")}
+                        </h3>
+                        <p style={{ fontSize: "14px", color: "#0284c7", margin: 0, marginTop: "4px" }}>
+                          {t("Field Inspector's digital inspection, photographic evidence capture, GPS location validation, continuous workflow & submission.")}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* <button
+                      type="button"
+                      onClick={() => openManual("/user_mannual_ekyc_/nirikshan_module_work_manual.html")}
+                      style={{
+                        padding: "10px 18px",
+                        backgroundColor: "#0284c7",
+                        color: "#ffffff",
+                        border: "none",
+                        borderRadius: "8px",
+                        fontWeight: "600",
+                        fontSize: "14px",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                        boxShadow: "0 4px 12px rgba(2, 132, 199, 0.25)",
+                      }}
+                    >
+                      <span>📘</span>
+                      {t("Open Nirikshan Full Work Manual")} →
+                    </button> */}
+                  </div>
+
+                  {/* Golden Rule Banner */}
+                  <div
+                    style={{
+                      background: "linear-gradient(135deg, #0284c7 0%, #0369a1 100%)",
+                      color: "#ffffff",
+                      padding: "16px 20px",
+                      borderRadius: "12px",
+                      marginBottom: "28px",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "14px",
+                      boxShadow: "0 4px 14px rgba(2, 132, 199, 0.2)",
+                    }}
+                  >
+                    <span style={{ fontSize: "28px" }}>⭐</span>
+                    <div>
+                      <h4 style={{ margin: 0, fontSize: "15px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                        {t("The Golden Operating Rule")}
+                      </h4>
+                      <p style={{ margin: "2px 0 0 0", fontSize: "13px", opacity: 0.95, lineHeight: "1.5" }}>
+                        {t("Start with a FRESH LOGIN SESSION (Logout → Close App → Reopen → Fresh Login) and complete the inspection without unnecessary interruption or app switching to prevent stale session timeouts and authorization errors.")}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* 10-Step Interactive Operating Pipeline Stepper */}
+                  <div style={{ marginBottom: "28px" }}>
+                    <h4 style={{ fontSize: "15px", fontWeight: "700", color: "#0369a1", marginBottom: "16px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                      {t("10-Step Standard Operating Sequence")}
+                    </h4>
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+                        gap: "14px",
+                      }}
+                    >
+                      {nirikshanPipelineSteps.map((s, idx) => (
+                        <div
+                          key={idx}
+                          style={{
+                            background: "#ffffff",
+                            padding: "16px",
+                            borderRadius: "12px",
+                            border: "1px solid #bae6fd",
+                            boxShadow: "0 2px 6px rgba(2, 132, 199, 0.05)",
+                          }}
+                        >
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                            <span style={{ fontSize: "20px" }}>{s.icon}</span>
+                            <span
+                              style={{
+                                fontSize: "11px",
+                                fontWeight: "700",
+                                padding: "2px 8px",
+                                borderRadius: "10px",
+                                background: "#e0f2fe",
+                                color: "#0284c7",
+                              }}
+                            >
+                              STEP {s.step}
+                            </span>
+                          </div>
+                          <h5 style={{ fontSize: "14px", fontWeight: "700", color: "#0c4a6e", margin: "0 0 4px 0" }}>{t(s.title)}</h5>
+                          <p style={{ fontSize: "12px", color: "#0369a1", margin: 0, lineHeight: "1.5" }}>{t(s.desc)}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Ecosystem Comparison: Meter Reading vs PoD vs Nirikshan */}
+                  <div style={{ marginBottom: "28px" }}>
+                    <h4 style={{ fontSize: "15px", fontWeight: "700", color: "#0369a1", marginBottom: "16px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                      {t("How Nirikshan Differs Across DJB Ecosystem Apps")}
+                    </h4>
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+                        gap: "16px",
+                      }}
+                    >
+                      {nirikshanAppEcosystem.map((app, idx) => (
+                        <div
+                          key={idx}
+                          style={{
+                            backgroundColor: app.bgColor,
+                            border: `1px solid ${app.color}40`,
+                            borderRadius: "12px",
+                            padding: "18px",
+                          }}
+                        >
+                          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
+                            <span style={{ fontSize: "24px" }}>{app.icon}</span>
+                            <h5 style={{ fontSize: "16px", fontWeight: "700", color: app.color, margin: 0 }}>{t(app.name)}</h5>
+                          </div>
+                          <div style={{ fontSize: "13px", color: "#334155", marginBottom: "8px" }}>
+                            <strong>{t("Main Purpose:")}</strong> {t(app.purpose)}
+                          </div>
+                          <div style={{ fontSize: "12px", backgroundColor: "#ffffff", padding: "8px 12px", borderRadius: "6px", border: `1px solid ${app.color}30`, fontWeight: "600", color: app.color }}>
+                            {t("Activity Flow:")} {t(app.flow)}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Troubleshooting & Session Resolution Matrix */}
+                  <div
+                    style={{
+                      backgroundColor: "#ffffff",
+                      padding: "20px",
+                      borderRadius: "12px",
+                      border: "1px solid #bae6fd",
+                    }}
+                  >
+                    <h4 style={{ fontSize: "16px", fontWeight: "700", color: "#0369a1", marginBottom: "16px", display: "flex", alignItems: "center", gap: "8px" }}>
+                      <span>🛠️</span> {t("Nirikshan Troubleshooting & Session Resolution Guide")}
+                    </h4>
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+                        gap: "14px",
+                      }}
+                    >
+                      {nirikshanTroubleshooting.map((tItem, idx) => (
+                        <div
+                          key={idx}
+                          style={{
+                            backgroundColor: "#f8fafc",
+                            border: "1px solid #e2e8f0",
+                            borderRadius: "8px",
+                            padding: "14px",
+                          }}
+                        >
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px" }}>
+                            <span style={{ fontSize: "18px" }}>{tItem.icon}</span>
+                            <h5 style={{ fontSize: "13px", fontWeight: "700", color: "#0f172a", margin: 0 }}>{t(tItem.issue)}</h5>
+                          </div>
+                          <p style={{ fontSize: "11px", color: "#dc2626", margin: "0 0 6px 0", fontWeight: "600" }}>{t(tItem.msg)}</p>
+                          <div style={{ fontSize: "12px", color: "#334155", lineHeight: "1.4" }}>
+                            <strong>{t("Resolution:")}</strong> {t(tItem.fix)}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </Card>
+              )}
+
               {/* FAQs Accordion */}
               <Card className="contact-card" style={{ padding: "30px", margin: 0 }}>
                 <h3 style={{ fontSize: "20px", fontWeight: "700", color: "#0f172a", marginBottom: "20px" }}>{t("Frequently Asked Questions")}</h3>
@@ -983,6 +1217,8 @@ const UserGuide = (props) => {
                                 ? "📸 OCR Meter"
                                 : service.id === "pod_app"
                                 ? "📦 Proof of Delivery (PoD)"
+                                : service.id === "nirikshan"
+                                ? "🔍 Nirikshan"
                                 : service.id === "water_tanker"
                                 ? "🚰 Water Tanker"
                                 : "💧 Water & Sewerage"}

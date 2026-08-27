@@ -44,6 +44,13 @@ export const pdfServices = [
     desc: "Field-work app manual for DJB staff to scan bill QR codes, verify KNO & bill details, capture bill photo evidence & record delivery outcome.",
   },
   {
+    id: "nirikshan",
+    label: "🔍 Nirikshan Digital Field Inspection Manual",
+    url: "https://docs.google.com/document/d/1U1AZLwRaa7HQm4bZfqTFD5j4VjbNB5lS/preview",
+    updated: "2026",
+    desc: "Digital field-inspection application for DJB inspectors to record site observations, capture photo evidence, validate GPS location & digitally submit inspection records.",
+  },
+  {
     id: "water_tanker",
     label: "🚰 Water Tanker Booking & Delivery Manual",
     url: "",
@@ -64,11 +71,31 @@ export const moduleOptions = [
   { value: "ekyc", label: "🛡️ eKYC Verification & Management" },
   { value: "ocr_meter", label: "📸 OCR Meter Reading Application" },
   { value: "pod_app", label: "📦 Proof of Delivery (PoD) Application" },
+  { value: "nirikshan", label: "🔍 Nirikshan Field Inspection App" },
   { value: "water_tanker", label: "🚰 Water Tanker Services (WT)" },
   { value: "water_sewerage", label: "💧 Water & Sewerage Services" },
 ];
 
 export const liveGuideCards = [
+  {
+    id: "nirikshan",
+    borderColor: "#0284c7",
+    title: "Nirikshan Field Inspection App",
+    iconType: "nirikshan",
+    items: [
+      { bold: "Digital Inspection & Reporting:", text: "Replaces paper-based site inspections with continuous mobile app recording." },
+      { bold: "Photo Evidence & GPS Tagging:", text: "Capture clear site photographs and validate exact physical location via GPS." },
+      { bold: "Standard Operating Sequence:", text: "Fresh login session → verify assigned project → uninterrupted capture → single submit." },
+      { bold: "Troubleshooting & Authorization:", text: "Step-by-step resolution for session staleness, missing assignments & GPS permissions." },
+    ],
+    actionBtn: {
+      text: "View Nirikshan Workflow Guide",
+      targetId: "nirikshan-interactive-hub",
+      color: "#0284c7",
+      shadowColor: "rgba(2, 132, 199, 0.25)",
+      type: "scroll",
+    },
+  },
   {
     id: "water_sewerage",
     borderColor: "#1f5fa8",
@@ -166,6 +193,26 @@ export const liveGuideCards = [
 ];
 
 export const faqs = [
+  {
+    q: "What is the Nirikshan Module and how does it work?",
+    a:
+      "Nirikshan is DJB's digital field-inspection application. It allows authorized field inspectors to go to assigned sites, record findings, capture photo evidence, validate GPS location, fill dynamic project requirements, and digitally submit inspection reports directly from their mobile devices.",
+  },
+  {
+    q: "How does Nirikshan differ from the Meter Reading and Proof of Delivery (PoD) Apps?",
+    a:
+      "While Meter Reading App focuses on consumer meter digit capture for billing, and PoD App focuses on physical bill delivery tracking, Nirikshan is a standalone digital field-inspection system for site visits, project audits, photographic evidence, and formal inspection reporting.",
+  },
+  {
+    q: "What is the Golden Rule for using the Nirikshan Application?",
+    a:
+      "Always start with a FRESH LOGIN SESSION (Logout → Close App → Reopen → Login) and complete the inspection without unnecessary interruption or switching apps. Prolonged inactivity or app switching can cause session timeouts and authorization errors.",
+  },
+  {
+    q: "How do I fix an 'Authorization Error' during Nirikshan field inspection?",
+    a:
+      "If you see 'You are not authorised to perform the actions', perform the fresh login sequence: Logout → Close App → Reopen → Login Again → Verify Dashboard → Open Nirikshan. If the issue persists, take a screenshot and contact your administrator.",
+  },
   {
     q: "How do I register for a new Water & Sewerage connection?",
     a:
@@ -272,6 +319,79 @@ export const podRelationshipSteps = [
   { icon: "📦", title: "PoD App", desc: "QR Scan & Proof of Delivery" },
 ];
 
+export const nirikshanPipelineSteps = [
+  { step: "01", title: "Fresh User Login", desc: "Always start with fresh login (Logout → Close → Reopen → Login) to prevent stale session errors", icon: "🔑" },
+  { step: "02", title: "Select Assigned Inspection", desc: "Open assigned section, select target record & carefully verify project/location details", icon: "📋" },
+  { step: "03", title: "Start Nirikshan", desc: "Tap 'Start Nirikshan / Start Inspection' to initiate digital field inspection session", icon: "🚀" },
+  { step: "04", title: "Record Inspection Findings", desc: "Enter observations, inspection findings & project-specific dynamic form fields", icon: "✍️" },
+  { step: "05", title: "Capture Photographs", desc: "Take clear, relevant photographs showing the required subject; retake blurred photos immediately", icon: "📸" },
+  { step: "06", title: "GPS & Location Validation", desc: "Enable GPS & location permissions to validate and attach exact site location coordinates", icon: "📍" },
+  { step: "07", title: "Uninterrupted Execution", desc: "Complete inspection without leaving app or pausing to avoid session timeouts & auth errors", icon: "⚡" },
+  { step: "08", title: "Quality Control Review", desc: "Verify inspection type, findings, photos, GPS tag, remarks & status prior to submission", icon: "🔎" },
+  { step: "09", title: "Single Click Submit", desc: "Press Submit ONCE & wait for application processing without double-tapping", icon: "📤" },
+  { step: "10", title: "Verify Confirmation", desc: "Confirm submission success message & verify status change to 'Submitted'", icon: "✅" },
+];
+
+export const nirikshanAppEcosystem = [
+  {
+    name: "Meter Reading App",
+    purpose: "Record water-meter readings and billing",
+    flow: "Meter Photo → OCR → Verify Reading → Bill",
+    icon: "📸",
+    color: "#8b5cf6",
+    bgColor: "#f3e8ff",
+  },
+  {
+    name: "PoD App",
+    purpose: "Record delivery of the generated bill",
+    flow: "Scan Bill QR → Bill Photo → Delivery Status → Submit",
+    icon: "📦",
+    color: "#f59e0b",
+    bgColor: "#fffbeb",
+  },
+  {
+    name: "Nirikshan App",
+    purpose: "Conduct field inspections & site evidence capture",
+    flow: "Assigned Inspection → Field Visit → Evidence → Inspection Report",
+    icon: "🔍",
+    color: "#0284c7",
+    bgColor: "#f0f9ff",
+  },
+];
+
+export const nirikshanTroubleshooting = [
+  {
+    issue: "Authorization Error",
+    msg: "'You are not authorised to perform the actions'",
+    fix: "Logout → Close App → Reopen → Login Again → Verify Dashboard → Open Nirikshan",
+    icon: "🚫",
+  },
+  {
+    issue: "Inspection Not Visible",
+    msg: "Assigned inspection missing from list",
+    fix: "Refresh → Fresh Login → Verify Assignment. Contact supervisor if still unavailable.",
+    icon: "🙈",
+  },
+  {
+    issue: "GPS / Location Problem",
+    msg: "GPS coordinates not captured or failed",
+    fix: "Turn GPS ON → Grant Location Permissions → Ensure Connectivity → Retry capture",
+    icon: "📍",
+  },
+  {
+    issue: "Photo Capture Failure",
+    msg: "Camera black screen or retake needed",
+    fix: "Check Camera Permission → Ensure clear lighting → Retake photo immediately",
+    icon: "📷",
+  },
+  {
+    issue: "App Interruption / Crash",
+    msg: "App unexpectedly closed or backgrounded",
+    fix: "Reopen app → Fresh login if required → Verify saved info & inspection status before resuming",
+    icon: "⚠️",
+  },
+];
+
 export const pdfGuideText = {
   selectServiceTitle: "Select Service PDF Guide",
   hintBanner: "For best viewing and printing options, click 'Print / Download PDF' to open the document in full page view.",
@@ -293,7 +413,11 @@ const userGuideConfig = {
   ocrRoleTasks,
   podPipelineSteps,
   podRelationshipSteps,
+  nirikshanPipelineSteps,
+  nirikshanAppEcosystem,
+  nirikshanTroubleshooting,
   pdfGuideText,
 };
 
 export default userGuideConfig;
+
