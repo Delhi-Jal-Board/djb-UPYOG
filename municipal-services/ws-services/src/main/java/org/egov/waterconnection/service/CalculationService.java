@@ -77,7 +77,7 @@ public class CalculationService {
 		}
 
 		
-		else if (WCConstants.APPROVE_MUTATION_CONST.equalsIgnoreCase(action) && waterServiceUtil.isMutationConnectionRequest(request)) {
+		else if (WCConstants.APPLY_MUTATION_CONST.equalsIgnoreCase(action) && waterServiceUtil.isMutationConnectionRequest(request)) {
 			triggerCalculation(request, property, action);
 		}
 		else if (WCConstants.APPROVE_DISCONNECTION_CONST.equalsIgnoreCase(action)) {
