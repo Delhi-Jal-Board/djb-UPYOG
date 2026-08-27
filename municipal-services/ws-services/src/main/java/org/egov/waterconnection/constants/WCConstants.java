@@ -275,9 +275,13 @@ public class WCConstants {
 	
 	public static final String APPROVE_MUTATION_CONST = "APPROVE_MUTATION";
 	
+	public static final String APPLY_MUTATION_CONST = "APPLY_MUTATION";
+	
 	public static final String ACTIVATE_MUTATION_CONST = "ACTIVATE_MUTATION";
 	
 	public static final String PENDING_FOR_MUTATION_ACTIVATION_STATUS_CODE = "PENDING_FOR_MUTATION_ACTIVATION";
+	
+	public static final String PENDING_APPROVAL_FOR_MUTATION_STATUS_CODE = "PENDING_APPROVAL_FOR_MUTATION";
 	
 	public static final String WATER_SERVICE_BUSINESS_ID = "WS";
 

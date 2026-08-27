@@ -155,9 +155,9 @@ public class PaymentUpdateService {
 						paymentDetail.getBusinessService().equalsIgnoreCase(config.getMutationFeeBusinessServiceName()) || 
 						waterServiceUtil.isMutationConnectionRequest(waterConnectionRequest)) {
 
-					waterConnectionRequest.getWaterConnection().setApplicationStatus(WCConstants.PENDING_FOR_MUTATION_ACTIVATION_STATUS_CODE);
+					waterConnectionRequest.getWaterConnection().setApplicationStatus(WCConstants.PENDING_APPROVAL_FOR_MUTATION_STATUS_CODE);
 					repo.updateWaterConnection(waterConnectionRequest, true);
-					log.info("Mutation payment successful. Moving to " + WCConstants.PENDING_FOR_MUTATION_ACTIVATION_STATUS_CODE);
+					log.info("Mutation payment successful. Moving to " + WCConstants.PENDING_APPROVAL_FOR_MUTATION_STATUS_CODE);
 
 				} 
 				
