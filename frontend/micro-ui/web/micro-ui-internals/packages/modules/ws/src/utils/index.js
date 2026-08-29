@@ -409,7 +409,7 @@ export const createPayloadOfWS = async (data) => {
   delete payload.additionalDetails.proposedToilets;
   delete payload.additionalDetails.proposedWaterClosets;
 
-  sessionStorage.setItem("WS_DOCUMENTS_INOF", JSON.stringify(data?.documents?.documents || data?.documents || []));
+  sessionStorage.setItem("WS_DOCUMENTS_INOF", JSON.stringify(allDocuments));
   sessionStorage.setItem("WS_PROPERTY_INOF", JSON.stringify(data?.cpt?.details || {}));
   /* use customiseCreateFormData hook to make some chnages to the water object */
   payload = Digit?.Customizations?.WS?.customiseCreatePayloadOfWS ? Digit?.Customizations?.WS?.customiseCreatePayloadOfWS(data, payload) : payload;
@@ -443,11 +443,32 @@ export const updatePayloadOfWS = async (data, type) => {
   return payload;
 };
 
+export const getAllDocumentsForUpdate = (data) => {
+  let allDocuments = Array.isArray(data?.documents?.documents) ? [...data.documents.documents] : (Array.isArray(data?.documents) ? [...data.documents] : []);
+  if (data?.djbEmployee?.document) {
+    allDocuments.push({
+      documentType: "OWNER.DJB_EMPLOYEE_ID",
+      fileStoreId: data?.djbEmployee?.document?.fileStoreId || data?.djbEmployee?.document,
+      documentUid: "",
+      status: "ACTIVE",
+    });
+  }
+  if (data?.governmentEmployee?.organizationDocument) {
+    allDocuments.push({
+      documentType: "OWNER.GOVERNMENT_EMPLOYEE_ID",
+      fileStoreId: data?.governmentEmployee?.organizationDocument?.fileStoreId || data?.governmentEmployee?.organizationDocument,
+      documentUid: "",
+      status: "ACTIVE",
+    });
+  }
+  return allDocuments;
+};
+
 export const convertToWSUpdate = (data) => {
   let formdata = {
     WaterConnection: {
       ...data?.WaterConnectionResult?.WaterConnection?.[0],
-      documents: [...data?.documents?.documents],
+      documents: getAllDocumentsForUpdate(data),
       processInstance: {
         action: "SUBMIT_APPLICATION",
       },
@@ -471,7 +492,7 @@ export const convertToEditWSUpdate = (data) => {
       status: data?.isEditApplication ? data?.status : waterResult?.status,
       connectionNo: (data?.isEditApplication ? data?.connectionNo : waterResult?.connectionNo) || null,
       oldConnectionNo: null,
-      documents: [...data?.documents?.documents],
+      documents: getAllDocumentsForUpdate(data),
       plumberInfo: data?.isEditApplication ? data?.plumberInfo : waterResult?.plumberInfo || [],
       roadType: null,
       roadCuttingArea: null,
@@ -564,7 +585,7 @@ export const convertToEditWSUpdate = (data) => {
         //     "linkText": "View",
         //     "name": "JOdiYvhKXM.png"
         // }
-        ...data?.documents?.documents,
+        ...getAllDocumentsForUpdate(data),
       ],
       proposedWaterClosets: data?.sewerageConnectionDetails?.proposedWaterClosets,
       proposedToilets: data?.sewerageConnectionDetails?.proposedToilets,
@@ -593,7 +614,7 @@ export const convertToEditSWUpdate = (data) => {
       status: data?.isEditApplication ? data?.status : SewerageResult?.status,
       connectionNo: (data?.isEditApplication ? data?.connectionNo : SewerageResult?.connectionNo) || null,
       oldConnectionNo: null,
-      documents: [...data?.documents?.documents],
+      documents: getAllDocumentsForUpdate(data),
       plumberInfo: data?.isEditApplication ? data?.plumberInfo : SewerageResult?.plumberInfo || [],
       roadType: null,
       roadCuttingArea: null,
@@ -686,7 +707,7 @@ export const convertToEditSWUpdate = (data) => {
         //     "linkText": "View",
         //     "name": "JOdiYvhKXM.png"
         // }
-        ...data?.documents?.documents,
+        ...getAllDocumentsForUpdate(data),
       ],
       proposedWaterClosets: data?.sewerageConnectionDetails?.proposedWaterClosets,
       proposedToilets: data?.sewerageConnectionDetails?.proposedToilets,
@@ -707,7 +728,7 @@ export const convertToSWUpdate = (data) => {
     SewerageConnection: {
       ...data?.SewerageConnectionResult?.SewerageConnections?.[0],
       connectionType: "Non Metered",
-      documents: [...data?.documents?.documents],
+      documents: getAllDocumentsForUpdate(data),
       processInstance: {
         action: "SUBMIT_APPLICATION",
       },
