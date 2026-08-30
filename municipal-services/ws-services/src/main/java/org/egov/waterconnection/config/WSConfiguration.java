@@ -92,6 +92,15 @@ public class WSConfiguration {
     @Value("${kafka.topics.notification.sms}")
     private String smsNotifTopic;
 
+    @Value("${kafka.topics.notification.whatsapp.name}")
+    private String whatsappNotificationTopic;
+
+    @Value("${whatsapp.notifications.enabled:false}")
+    private Boolean whatsappNotificationsEnabled;
+
+    @Value("${pinbot.template.name.payment:ws_payment_notification_template}")
+    private String paymentTemplateName;
+
     @Value("${notification.sms.enabled}")
     private Boolean isSMSEnabled;
 
