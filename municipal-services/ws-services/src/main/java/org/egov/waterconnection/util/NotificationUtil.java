@@ -141,6 +141,21 @@ public class NotificationUtil {
 			}
 		}
 	}
+
+	/**
+	 * Send the WhatsAppRequest on the WhatsAppNotification kafka topic
+	 * @param whatsappRequestList The list of WhatsAppRequest to be sent
+	 */
+	public void sendWhatsApp(List<WhatsAppRequest> whatsappRequestList, String tenantId) {
+		if (CollectionUtils.isEmpty(whatsappRequestList)) {
+			log.info("WhatsApp requests list is empty!");
+			return;
+		}
+		for (WhatsAppRequest whatsappRequest : whatsappRequestList) {
+			producer.push(tenantId, config.getWhatsappNotificationTopic(), whatsappRequest);
+			log.info("WhatsApp Request Pushed: " + whatsappRequest.toString());
+		}
+	}
 	
 	/**
 	 * 

@@ -319,6 +319,13 @@ public class PaymentUpdateService {
 			}
 		}
 
+		if (config.getWhatsappNotificationsEnabled() != null && config.getWhatsappNotificationsEnabled()) {
+			List<WhatsAppRequest> whatsappRequests = getWhatsAppRequest(waterConnectionRequest, property, paymentDetail);
+			if (!CollectionUtils.isEmpty(whatsappRequests)) {
+				notificationUtil.sendWhatsApp(whatsappRequests, tenantId);
+			}
+		}
+
 
 		if(configuredChannelNames.contains(CHANNEL_NAME_EMAIL)) {
 			if (config.getIsEmailNotificationEnabled() != null && config.getIsEmailNotificationEnabled()) {
@@ -633,6 +640,59 @@ public class PaymentUpdateService {
 			messageToReturn.put(mobAndMesg.getKey(), message);
 		}
 		return messageToReturn;
+	}
+
+	private List<WhatsAppRequest> getWhatsAppRequest(WaterConnectionRequest waterConnectionRequest,
+										   Property property, PaymentDetail paymentDetail) {
+		if(paymentDetail.getTotalAmountPaid().intValue() == 0)
+			return null;
+
+		Map<String, String> mobileNumbersAndNames = new HashMap<>();
+		Set<String> mobileNumbers = new HashSet<>();
+		Set<String> ownersUuids = new HashSet<>();
+
+		property.getOwners().forEach(owner -> {
+			if (owner.getUuid() != null)
+				ownersUuids.add(owner.getUuid());
+		});
+		if (!CollectionUtils.isEmpty(waterConnectionRequest.getWaterConnection().getConnectionHolders())) {
+			waterConnectionRequest.getWaterConnection().getConnectionHolders().forEach(holder -> {
+				if (!org.apache.commons.lang.StringUtils.isEmpty(holder.getUuid())) {
+					ownersUuids.add(holder.getUuid());
+				}
+			});
+		}
+
+		UserDetailResponse userDetailResponse = workflowNotificationService.fetchUserByUUID(ownersUuids, waterConnectionRequest.getRequestInfo(), waterConnectionRequest.getWaterConnection().getTenantId());
+		if (userDetailResponse != null && !CollectionUtils.isEmpty(userDetailResponse.getUser())) {
+			for (OwnerInfo user : userDetailResponse.getUser()) {
+				mobileNumbersAndNames.put(user.getMobileNumber(), user.getName());
+			}
+		}
+
+		mobileNumbers.addAll(mobileNumbersAndNames.keySet());
+
+		if (waterConnectionRequest.getRequestInfo().getUserInfo() != null && 
+			!org.apache.commons.lang.StringUtils.isEmpty(waterConnectionRequest.getRequestInfo().getUserInfo().getMobileNumber())) {
+			mobileNumbersAndNames.put(waterConnectionRequest.getRequestInfo().getUserInfo().getMobileNumber(), waterConnectionRequest.getRequestInfo().getUserInfo().getName());
+			mobileNumbers.add(waterConnectionRequest.getRequestInfo().getUserInfo().getMobileNumber());
+		}
+
+		List<WhatsAppRequest> whatsappRequests = new ArrayList<>();
+		mobileNumbersAndNames.forEach((mobileNumber, name) -> {
+			List<String> parameters = Arrays.asList(
+					name != null ? name : "Citizen", 
+					waterConnectionRequest.getWaterConnection().getApplicationNo(), 
+					String.valueOf(paymentDetail.getTotalAmountPaid())
+			);
+			WhatsAppRequest req = WhatsAppRequest.builder()
+					.mobileNumber(mobileNumber)
+					.templateName(config.getPaymentTemplateName())
+					.parameters(parameters)
+					.build();
+			whatsappRequests.add(req);
+		});
+		return whatsappRequests;
 	}
 
 	public void noPaymentWorkflow(WaterConnectionRequest request, Property property, RequestInfo requestInfo) {
