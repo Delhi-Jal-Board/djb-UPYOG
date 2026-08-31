@@ -94,78 +94,73 @@ const AdminDashboard = () => {
             {/* Vendors */}
             {Array.isArray(progressData?.vendorReports) &&
               progressData?.vendorReports.length &&
-              progressData?.vendorReports.map(
-                (vendor) => (
-                  console.log(vendor),
-                  (
-                    <div
-                      key={vendor.vendorId}
-                      className="vendor-perf-card"
-                      onClick={() => history.push(`/digit-ui/employee/ekyc/vendors/${vendor.vendorId}`)}
-                    >
-                      <div className="vendor-card-header">
-                        <div className="vendor-title">
-                          <div className="vendor-icon">
-                            <span>{vendor.vendorName[0].toUpperCase()}</span>
-                          </div>
-
-                          <div>
-                            <h4>{vendor.vendorName}</h4>
-                            <span className="vendor-subtitle">{t("EKYC_VENDOR") || "eKYC Vendor"}</span>
-                          </div>
-                        </div>
-
-                        <div className="progress-badge">{vendor.progressPercent}%</div>
+              progressData?.vendorReports.map((vendor) => (
+                <div
+                  key={vendor.vendorId}
+                  className="vendor-perf-card"
+                  onClick={() => history.push(`/digit-ui/employee/ekyc/vendors/${vendor.vendorId}`)}
+                >
+                  <div className="vendor-card-header">
+                    <div className="vendor-title">
+                      <div className="vendor-icon">
+                        <span>{vendor.vendorName[0].toUpperCase()}</span>
                       </div>
 
-                      <div className="progress-section">
-                        <div className="progress-bar-container">
-                          <div className="progress-bar-fill" style={{ width: `${vendor.progressPercent}%` }} />
-                        </div>
-
-                        <div className="progress-label">
-                          <span>{t("PROGRESS") || "Progress"}</span>
-                          <span>{vendor.progressPercent}%</span>
-                        </div>
-                      </div>
-
-                      <div className="stats-grid">
-                        <div className="stat-item">
-                          <span className="stat-value">{vendor.totalSupervisors}</span>
-                          <span className="stat-label">{t("SUPERVISORS") || "Supervisors"}</span>
-                        </div>
-
-                        <div className="stat-item">
-                          <span className="stat-value">{vendor.totalSurveyors}</span>
-                          <span className="stat-label">{t("SURVEYORS") || "Surveyors"}</span>
-                        </div>
-
-                        <div className="stat-item">
-                          <span className="stat-value completed-val">{vendor.submittedKnos}</span>
-                          <span className="stat-label">{t("COMPLETED") || "Completed"}</span>
-                        </div>
-                      </div>
-
-                      <div className="knos-summary">
-                        <div className="kno-stat">
-                          <span className="kno-label">{t("TOTAL") || "Total"}</span>
-                          <strong>{vendor.totalKnos}</strong>
-                        </div>
-
-                        <div className="kno-stat pending">
-                          <span className="kno-label">{t("PENDING") || "Pending"}</span>
-                          <strong>{vendor.pendingKnos}</strong>
-                        </div>
-
-                        <div className="kno-stat rejected">
-                          <span className="kno-label">{t("REJECTED") || "Rejected"}</span>
-                          <strong>{vendor.rejectedKnos}</strong>
-                        </div>
+                      <div>
+                        <h4>{vendor.vendorName}</h4>
+                        <span className="vendor-subtitle">{t("EKYC_VENDOR") || "eKYC Vendor"}</span>
                       </div>
                     </div>
-                  )
-                )
-              )}
+
+                    <div className="progress-badge">{vendor.progressPercent}%</div>
+                  </div>
+
+                  <div className="progress-section">
+                    <div className="progress-bar-container">
+                      <div className="progress-bar-fill" style={{ width: `${vendor.progressPercent}%` }} />
+                    </div>
+
+                    <div className="progress-label">
+                      <span>{t("PROGRESS") || "Progress"}</span>
+                      <span>{vendor.progressPercent}%</span>
+                    </div>
+                  </div>
+
+                  <div className="stats-grid">
+                    <div className="stat-item">
+                      <span className="stat-value">{vendor.totalSupervisors}</span>
+                      <span className="stat-label">{t("SUPERVISORS") || "Supervisors"}</span>
+                    </div>
+
+                    <div className="stat-item">
+                      <span className="stat-value">{vendor.totalSurveyors}</span>
+                      <span className="stat-label">{t("SURVEYORS") || "Surveyors"}</span>
+                    </div>
+
+                    <div className="stat-item">
+                      <span className="stat-value completed-val">{vendor.submittedKnos}</span>
+                      <span className="stat-label">{t("COMPLETED") || "Completed"}</span>
+                    </div>
+                  </div>
+
+                  <div className="knos-summary">
+                    <div className="kno-stat">
+                      <span className="kno-label">{t("TOTAL") || "Total"}</span>
+                      <strong>{vendor.totalKnos}</strong>
+                    </div>
+
+                    <div className="kno-stat pending">
+                      <span className="kno-label">{t("PENDING") || "Pending"}</span>
+                      <strong>{vendor.pendingKnos}</strong>
+                    </div>
+
+                    <div className="kno-stat rejected">
+                      <span className="kno-label">{t("REJECTED") || "Rejected"}</span>
+                      <strong>{vendor.rejectedKnos}</strong>
+                    </div>
+                  </div>
+                </div>
+              ))}
           </div>
         )}
       </div>
