@@ -169,7 +169,7 @@ export const EkycService = {
 
     return response;
   },
-  assignment_progress: async ({ tenantId = "dl.djb", includeHierarchy = true, vendorId, vendorIds, ...extraData } = {}) => {
+  assignment_progress: async ({ tenantId = "dl.djb", includeHierarchy = false, vendorId, vendorIds, ...extraData } = {}) => {
     const effectiveVendorId = vendorId || (vendorIds && vendorIds.length > 0 ? vendorIds[0] : undefined);
 
     const response = await Request({
