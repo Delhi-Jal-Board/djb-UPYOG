@@ -199,6 +199,15 @@ public class VendorQueryBuilder {
 				addToPreparedStatement(preparedStmtList, fillingPointIds);
 			}
 
+			List<String> serviceTypes = criteria.getServiceType();
+			if (!CollectionUtils.isEmpty(serviceTypes)) {
+				addClauseIfRequired(preparedStmtList, builder);
+				builder.append(" vendor.additionaldetails::jsonb ->> 'serviceType' IN (")
+						.append(createQuery(serviceTypes))
+						.append(") ");
+				addToPreparedStatement(preparedStmtList, serviceTypes);
+			}
+
 			// Name Filter
 			List<String> vendorNames = criteria.getName();
 			if (!CollectionUtils.isEmpty(vendorNames)) {
@@ -270,6 +279,15 @@ public class VendorQueryBuilder {
 						.append(createQuery(fillingPointIds))
 						.append(") ) ");
 				addToPreparedStatement(preparedStmtList, fillingPointIds);
+			}
+
+			List<String> serviceTypes = criteria.getServiceType();
+			if (!CollectionUtils.isEmpty(serviceTypes)) {
+				addClauseIfRequired(preparedStmtList, builder);
+				builder.append(" vendor.additionaldetails::jsonb ->> 'serviceType' IN (")
+						.append(createQuery(serviceTypes))
+						.append(") ");
+				addToPreparedStatement(preparedStmtList, serviceTypes);
 			}
 
 			List<String> vendorName = criteria.getName();
