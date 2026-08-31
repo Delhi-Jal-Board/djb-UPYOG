@@ -199,6 +199,9 @@ const VendorInbox = (props) => {
 
   const userRoles = userInfo.info.roles;
   const userType = userInfo.info.type?.toLowerCase();
+  const isEmployee = userType === "employee";
+
+  const isEkycSupervisor = userRoles.some((role) => role.code === "EKYC_SUPERVISOR");
 
   const isVendor =
     Digit.Utils.vendorAccess() ||
@@ -914,7 +917,7 @@ const VendorInbox = (props) => {
           },
 
           //enabled/disabled
-          ...(!isVendor
+          ...(isEmployee
             ? [
                 {
                   Header: t("ES_VENDOR_REGISTRY_INBOX_ENABLED"),
@@ -1362,7 +1365,7 @@ const VendorInbox = (props) => {
                         optionKey="displayName"
                         t={t}
                         style={{ textAlign: "left", width: "100%", minWidth: "250px" }}
-                        disable={!supervisors.length}
+                        disable={!supervisors.length || isEkycSupervisor}
                       />
                     );
                   },
@@ -1375,35 +1378,32 @@ const VendorInbox = (props) => {
             Cell: ({ row }) =>
               GetCell(row.original?.auditDetails?.createdTime ? Digit.DateUtils.ConvertEpochToDate(row.original?.auditDetails?.createdTime) : ""),
           },
-          // {
-          //   Header: props.selectedTab === "SUPERVISOR" ? t("ES_VENDOR_SUPERVISOR_AGENCY_NAME") : t("ES_VENDOR_SURVEYOR_AGENCY_NAME"),
-          //   id: "vendorName",
-          //   accessor: (row) => row.vendorData?.name || row.vendor?.name || "NA",
-          //   Cell: ({ row }) => {
-          //     return <div>{row.original.vendorData?.name || row.original.vendor?.name || "NA"}</div>;
-          //   },
-          // },
-          // {
-          //   Header: t("ES_FSM_REGISTRY_INBOX_ENABLED"),
-          //   id: "status",
-          //   accessor: (row) => row.status || "",
-          //   Cell: ({ row }) => {
-          //     return (
-          //       <ToggleSwitch
-          //         style={{ display: "flex", justifyContent: "left" }}
-          //         value={row.original?.status === "DISABLED" ? false : true}
-          //         onChange={() => {
-          //           if (props.selectedTab === "SUPERVISOR") {
-          //             onSupervisorUpdate(row);
-          //           } else if (props.selectedTab === "SURVEYOR") {
-          //             onSurveyorUpdate(row);
-          //           }
-          //         }}
-          //         name={`switch-${row.id}`}
-          //       />
-          //     );
-          //   },
-          // },
+
+          ...(!isEmployee
+            ? [
+                {
+                  Header: t("ES_FSM_REGISTRY_INBOX_ENABLED"),
+                  id: "status",
+                  accessor: (row) => row.status || "",
+                  Cell: ({ row }) => {
+                    return (
+                      <ToggleSwitch
+                        style={{ display: "flex", justifyContent: "left" }}
+                        value={row.original?.status === "DISABLED" ? false : true}
+                        onChange={() => {
+                          if (props.selectedTab === "SUPERVISOR") {
+                            onSupervisorUpdate(row);
+                          } else if (props.selectedTab === "SURVEYOR") {
+                            onSurveyorUpdate(row);
+                          }
+                        }}
+                        name={`switch-${row.id}`}
+                      />
+                    );
+                  },
+                },
+              ]
+            : []),
         ];
       default:
         return [];
@@ -1759,6 +1759,7 @@ const VendorInbox = (props) => {
           onTabChange={props.onTabChange}
           selectedTab={props.selectedTab}
           matchedRoles={matchedRoles}
+          ekycVendorCount={props.ekycVendorCount}
         />
         <div className="result" style={{ marginLeft: FSTP || props.userRole === "FSM_ADMIN" ? "" : !props?.isSearch ? "24px" : "", flex: 1 }}>
           {result}

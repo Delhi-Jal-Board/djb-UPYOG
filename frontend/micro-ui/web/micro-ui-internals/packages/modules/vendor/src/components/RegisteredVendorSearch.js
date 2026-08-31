@@ -4,18 +4,19 @@ import { TextInput, SubmitBar, LinkLabel, CloseSvg, DatePicker, Menu, AddIcon, D
 import DropdownStatus from "./inbox/DropdownStatus";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
+import { Toast } from "@djb25/digit-ui-react-components";
 
 const RegisteredVendorSearch = ({
   onSearch,
   type,
   onClose,
   onTabChange,
-  isFstpOperator,
   searchFields,
   searchParams,
   isInboxPage,
   selectedTab,
   matchedRoles,
+  ekycVendorCount,
 }) => {
   const storedSearchParams = isInboxPage
     ? Digit.SessionStorage.get("vendor/inbox/searchParams")
@@ -27,6 +28,8 @@ const RegisteredVendorSearch = ({
     defaultValues: storedSearchParams || searchParams,
   });
   const [showAddMenu, setShowAddMenu] = useState(false);
+
+  const [showToast, setShowToast] = useState(null);
   const mobileView = window.Digit.Utils.browser.isMobile();
   const FSTP = Digit.UserService.hasAccess("FSM_EMP_FSTPO") || false;
 
@@ -70,9 +73,16 @@ const RegisteredVendorSearch = ({
 
   function onActionSelect(action) {
     const userPath = userType?.toLowerCase();
+
     switch (action) {
       case "VENDOR":
-        return history.push(`/digit-ui/${userPath}/vendor/registry/new-vendor`);
+        if (ekycVendorCount >= 3) {
+          setShowToast({
+            key: "error",
+            action: "You can't create more than 3 eKYC vendors. Please delete an existing vendor before creating a new one.",
+          });
+          return;
+        } else return history.push(`/digit-ui/${userPath}/vendor/registry/new-vendor`);
       case "VEHICLE":
         return history.push(`/digit-ui/${userPath}/vendor/registry/new-vehicle`);
       case "DRIVER":
@@ -85,6 +95,10 @@ const RegisteredVendorSearch = ({
         break;
     }
   }
+
+  const closeToast = () => {
+    setShowToast(null);
+  };
 
   const getFields = (input) => {
     switch (input.type) {
@@ -223,7 +237,9 @@ const RegisteredVendorSearch = ({
                 </button>
               )}
               {/* {(matchedRoles?.ekyc?.includes("EKYC_SUPERVISOR") || matchedRoles?.ekyc?.includes("EKYC_VENDOR")) && ( */}
-              {(matchedRoles?.ekyc?.includes("EKYC_SUPERVISOR") || matchedRoles?.ekyc?.includes("EKYC_VENDOR") || matchedRoles?.ekyc?.includes("EMPLOYEE")) && (
+              {(matchedRoles?.ekyc?.includes("EKYC_SUPERVISOR") ||
+                matchedRoles?.ekyc?.includes("EKYC_VENDOR") ||
+                matchedRoles?.ekyc?.includes("EMPLOYEE")) && (
                 <button
                   className={selectedTab === "SURVEYOR" ? "search-tab-head-selected" : "search-tab-head"}
                   onClick={() => {
@@ -262,6 +278,7 @@ const RegisteredVendorSearch = ({
           </form>
         </div>
       </div>
+      {showToast && <Toast error={showToast?.key === "error"} label={t(showToast?.action)} onClose={closeToast} duration={5000} />}
     </React.Fragment>
   );
 };
