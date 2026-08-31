@@ -1,11 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import * as Chartjs from "chart.js/auto";
+import { FaChartBar, MdDownloadIcon } from "@djb25/digit-ui-react-components";
 
 const getChartConstructor = () => {
   const C = Chartjs.Chart || Chartjs.default || Chartjs;
   return C;
 };
+
 const StatusCards = ({ countData }) => {
   const { t } = useTranslation();
   const [ekycDownloadLoading, setEkycDownloadLoading] = useState(false);
@@ -33,34 +35,6 @@ const StatusCards = ({ countData }) => {
   const loggedInUser = Digit.SessionStorage.get("User")?.info;
   const fullName = loggedInUser?.name || "Admin";
 
-  const hasExternalData = countData && typeof countData.total === "number" && typeof countData.submittedCount === "number";
-
-  const { data: dashboardData } = Digit.Hooks.ekyc.useEkycSurveyorDashboard(
-    {},
-    {
-      tenantId,
-      offset: 0,
-      limit: 10,
-      ekycStatus: "submitted"
-    },
-    {
-      enabled: !!tenantId && !hasExternalData,
-    }
-  );
-
-  const apiCountData = React.useMemo(() => {
-    const info = dashboardData?.dashboardInfo || {};
-    return {
-      total: info.total || 0,
-      completed: info.completed || 0,
-      pending: info.pending || 0,
-      submittedCount: info.submittedCount || 0,
-      inProgressCount: info.inProgressCount || 0,
-      rejected: info.rejected || 0,
-      active: info.active || 0,
-    };
-  }, [dashboardData]);
-
   const handleDownloadEkycData = async (fromDate, toDate) => {
     setEkycDownloadLoading(true);
     try {
@@ -80,13 +54,39 @@ const StatusCards = ({ countData }) => {
       }
 
       const excludedKeys = [
-        "status", "source", "assignedAt", "connectionType", "approvedAt",
-        "alternateMobileNo", "city", "state", "addressType", "addressProofType", "mrcode",
-        "areacode", "verificationStatus", "surveyorId", "supervisorId", "vendorId",
-        "assignmentType", "assignmentValue", "assignedTime", "isSelfAssigned", "userType",
-        "tenantName", "tenantMobile", "doorPhotoFilestoreId", "panFilestoreId",
-        "documentProofFilestoreId", "buildingImageFileStoreId", "propertyDocumentFileStoreId",
-        "meterPhotoFileStoreId", "modifiedBy", "zoneCode", "propertyType", "subPropertyCategory"
+        "status",
+        "source",
+        "assignedAt",
+        "connectionType",
+        "approvedAt",
+        "alternateMobileNo",
+        "city",
+        "state",
+        "addressType",
+        "addressProofType",
+        "mrcode",
+        "areacode",
+        "verificationStatus",
+        "surveyorId",
+        "supervisorId",
+        "vendorId",
+        "assignmentType",
+        "assignmentValue",
+        "assignedTime",
+        "isSelfAssigned",
+        "userType",
+        "tenantName",
+        "tenantMobile",
+        "doorPhotoFilestoreId",
+        "panFilestoreId",
+        "documentProofFilestoreId",
+        "buildingImageFileStoreId",
+        "propertyDocumentFileStoreId",
+        "meterPhotoFileStoreId",
+        "modifiedBy",
+        "zoneCode",
+        "propertyType",
+        "subPropertyCategory",
       ];
 
       const headerMapping = {
@@ -193,7 +193,6 @@ const StatusCards = ({ countData }) => {
         meterPhotoFileStoreId: t("METER_PHOTO_FILESTORE_ID"),
         modifiedBy: t("MODIFIED_BY"),
         emailId: t("EMAIL_ID"),
-        fatherOrHusbandName: t("FATHER_HUSBUND_NAME"),
         dob: t("DOB"),
         consumerType: t("CONSUMER_TYPE"),
         createdTime: t("CREATED_TIME"),
@@ -215,7 +214,19 @@ const StatusCards = ({ countData }) => {
           .replace(/\b\w/g, (c) => c.toUpperCase());
       };
 
-      const skipTitleCase = ["kno", "mobileNumber", "emailId", "email", "pincode", "mrkey", "dob", "createdTime", "lastModifiedTime", "meterLatitude", "meterLongitude"];
+      const skipTitleCase = [
+        "kno",
+        "mobileNumber",
+        "emailId",
+        "email",
+        "pincode",
+        "mrkey",
+        "dob",
+        "createdTime",
+        "lastModifiedTime",
+        "meterLatitude",
+        "meterLongitude",
+      ];
       const translatedFields = ["meterMake", "meterLocation"];
 
       const excelData = consumerList.map((item) => {
@@ -229,12 +240,9 @@ const StatusCards = ({ countData }) => {
         const keys = Object.keys(item);
 
         // submittedAt ko last column me bhejne ke liye
-        const orderedKeys = [
-          ...keys.filter(key => key !== "submittedAt"),
-          ...(keys.includes("submittedAt") ? ["submittedAt"] : [])
-        ];
+        const orderedKeys = [...keys.filter((key) => key !== "submittedAt"), ...(keys.includes("submittedAt") ? ["submittedAt"] : [])];
 
-        orderedKeys.forEach(key => {
+        orderedKeys.forEach((key) => {
           if (excludedKeys.includes(key)) return;
 
           let val = item[key];
@@ -245,7 +253,9 @@ const StatusCards = ({ countData }) => {
 
             const pad = (n) => String(n).padStart(2, "0");
 
-            val = `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+            val = `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(
+              date.getSeconds()
+            )}`;
           }
 
           if (typeof val === "object" && val !== null) {
@@ -258,8 +268,7 @@ const StatusCards = ({ countData }) => {
             val = t("CS_NO");
           }
 
-          const friendlyHeader =
-            headerMapping[key] || t(key.toUpperCase()) || key;
+          const friendlyHeader = headerMapping[key] || t(key.toUpperCase()) || key;
 
           if (typeof val === "string" && translatedFields.includes(key)) {
             cleanObj[friendlyHeader] = t(val);
@@ -325,20 +334,9 @@ const StatusCards = ({ countData }) => {
 
   const chartRef1 = useRef(null);
   const chartInstance1 = useRef(null);
-  const total = hasExternalData ? countData.total : (apiCountData?.total || countData?.total || countData?.totalCount || 0);
-  const pending = hasExternalData ? countData.pending : (apiCountData?.pending || countData?.pending || 0);
-  const active = hasExternalData ? countData.active : (apiCountData?.active || countData?.active || 0);
-  const completed = hasExternalData ? countData.completed : (apiCountData?.completed || countData?.completed || 0);
-  const inprocess = hasExternalData ? countData.inProgressCount : (apiCountData?.inProgressCount || countData?.inProgressCount || 0);
-  const submitted = hasExternalData ? countData.submittedCount : (apiCountData?.submittedCount || countData?.submittedCount || 0);
-  const actualCompleted = completed;
-  const approved = actualCompleted;
 
-  const efficiency = total > 0 ? Math.round(((submitted + completed) / total) * 100) : 0;
-  // const healthPct = total > 0 ? Math.round((approved / total) * 100) : 0;
-  const healthPct = submitted > 0 ? Math.round((approved / submitted) * 100) : 0;
+  const efficiency = countData?.total > 0 ? Math.round(((countData?.submittedCount + countData?.completed) / countData?.total) * 100) : 0;
   const formatNumber = (num) => new Intl.NumberFormat("en-IN").format(num || 0);
-
 
   useEffect(() => {
     if (chartRef1.current) {
@@ -351,7 +349,7 @@ const StatusCards = ({ countData }) => {
           labels: [t("EKYC_PENDING"), t("EKYC_COMPLETED"), t("EKYC_SUBMITTED"), t("EKYC_INPROCESS")],
           datasets: [
             {
-              data: [pending, completed, submitted, inprocess],
+              data: [countData?.pending, countData?.completed, countData?.submitted, countData?.inprocess],
               backgroundColor: ["#0c2a52", "#77B6EA", "#c8ddf5", "#49a3fb"],
               borderColor: ["#ffffff", "#ffffff", "#ffffff", "#ffffff"],
               borderWidth: 2,
@@ -371,14 +369,15 @@ const StatusCards = ({ countData }) => {
     return () => {
       if (chartInstance1.current) chartInstance1.current.destroy();
     };
-  }, [pending, completed, active, t]);
+  }, [countData, t]);
 
   const legendItems = [
-    { color: "#77B6EA", label: t("EKYC_COMPLETED"), value: completed },
-    { color: "#0c2a52", label: t("EKYC_PENDING"), value: pending },
-    { color: "#c8ddf5", label: t("EKYC_SUBMITTED"), value: submitted },
-    { color: "#49a3fb", label: t("EKYC_INPROCESS"), value: inprocess }
-
+    { color: "#77B6EA", label: t("EKYC_TOTAL"), value: countData?.total },
+    { color: "#77B6EA", label: t("EKYC_COMPLETED"), value: countData?.completed },
+    { color: "#0c2a52", label: t("EKYC_PENDING"), value: countData?.pending },
+    { color: "#c8ddf5", label: t("EKYC_SUBMITTED_BY_VENDORS"), value: countData?.submittedCount },
+    { color: "#c8ddf5", label: t("EKYC_SUBMITTED_BY_CITIZEN"), value: countData?.selfEkycCount || 0 },
+    { color: "#c8ddf5", label: t("EKYC_REJECTED"), value: countData?.rejected || 0 },
   ];
 
   return (
@@ -386,36 +385,23 @@ const StatusCards = ({ countData }) => {
       <div className="status-cards-wrapper">
         {/* Header */}
         <div className="status-cards-header">
-          <div>
-            <div className="eyebrow">
-              <span className="eyebrow-dot" />
-              {t("EKYC_INSTITUTIONAL_OVERVIEW") || "Institutional Performance Overview"}
-            </div>
+          <div className="status-card-title">
+            <FaChartBar size={32} color="#fff" backgroundColor="#065297" style={{ paddingInline: "4px", borderRadius: "4px  " }} />
+
             <h1 className="status-cards-h1">{t("EKYC_DASHBOARD_TITLE") || "eKYC Verification Dashboard"}</h1>
-            <p className="status-cards-subtitle">
-              {t("EKYC_DASHBOARD_SUBTITLE") || "Real-time monitoring of consumer verification workflows across all administrative zones."}
-            </p>
           </div>
-          <div className="total-applications-card">
-            <div className="total-label">{t("EKYC_TOTAL_APPLICATIONS") || "Total Applications Processed"}</div>
-            <div className="total-number">{formatNumber(total)}</div>
-            {/* <div className="total-badge">↗ +12.4% {t("EKYC_FROM_LAST_QUARTER") || "from last quarter"}</div> */}
-            <div className="report-download" ref={reportMenuRef}>
-              <button
-                className="download-excel-btn"
-                disabled={ekycDownloadLoading}
-                onClick={() => {
-                  setShowReportMenu((p) => !p);
-                  setShowCustomPicker(false);
-                }}
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                  <polyline points="7 10 12 15 17 10" />
-                  <line x1="12" y1="15" x2="12" y2="3" />
-                </svg>
-                {ekycDownloadLoading ? t("DOWNLOADING") || "Downloading..." : t("DOWNLOAD_EXCEL") || "Download Excel"}
-              </button>
+          <div className="report-download" ref={reportMenuRef}>
+            <button
+              className="total-applications-card download-btn"
+              disabled={ekycDownloadLoading}
+              onClick={() => {
+                setShowReportMenu((p) => !p);
+                setShowCustomPicker(false);
+              }}
+            >
+              {t("DOWNLOAD_REPORT") || "Download Report"}
+
+              <MdDownloadIcon />
 
               {showReportMenu && (
                 <div className="report-menu">
@@ -463,60 +449,46 @@ const StatusCards = ({ countData }) => {
                   )}
                 </div>
               )}
-            </div>
+            </button>
           </div>
         </div>
 
         {/* Panels */}
         <div className="status-panels-grid">
-          {/* Panel 1: Status Breakdown */}
           <div className="status-panel">
-            <div className="panel-title">{t("EKYC_STATUS_BREAKDOWN") || "Status Breakdown"}</div>
-            <div className="panel-subtitle">{t("EKYC_VERIFICATION_LIFECYCLE") || "Verification lifecycle distribution"}</div>
-            <div className="breakdown-body">
-              <div className="status-legend">
-                {legendItems.map((item) => (
-                  <div key={item.label} className="legend-row">
-                    <span className="legend-label">
-                      <span className="indicator-dot" style={{ background: item.color }} />
-                      {item.label}
-                    </span>
-                    <span className="legend-value">{formatNumber(item.value)}</span>
-                  </div>
-                ))}
+            <div className="panel-header">
+              <div>
+                <div className="panel-title">{t("EKYC_STATUS_BREAKDOWN") || "Status Breakdown"}</div>
+                <div className="panel-subtitle">{t("EKYC_VERIFICATION_LIFECYCLE") || "Verification lifecycle"}</div>
               </div>
+
+              <div className="completion-badge">{efficiency}% Complete</div>
+            </div>
+
+            <div className="status-breakdown-content">
+              {/* Chart */}
               <div className="chart-wrapper">
                 <canvas ref={chartRef1} style={{ width: "100%", height: "100%" }} />
+
                 <div className="chart-center">
                   <div className="chart-percentage">{efficiency}%</div>
                   <div className="chart-label">{t("EKYC_COMPLETE") || "Complete"}</div>
                 </div>
               </div>
-            </div>
-          </div>
 
-          {/* Panel 2: Submission Health */}
-          <div className="status-panel">
-            <div className="panel-title">
-              {t("EKYC_SUBMISSION_HEALTH") || "Submission Health"}
-              {/* <span className="optimal-badge">{t("EKYC_OPTIMAL") || "Optimal"}</span> */}
-            </div>
-            <div className="panel-subtitle">{t("EKYC_PLATFORM_EFFICIENCY") || "Platform operational efficiency"}</div>
-            <div className="health-metrics-row">
-              <div className="health-percentage">{healthPct}%</div>
-              {/* <div className="health-trend">↗ +2.1%</div> */}
-            </div>
-            <div className="status-progress-bar">
-              <div className="progress-fill" style={{ width: `${healthPct}%` }} />
-            </div>
-            <div className="mini-metrics-grid">
-              <div className="metric-box">
-                <div className="metric-label">{t("EKYC_AVG_LATENCY") || "Avg Latency"}</div>
-                <div className="metric-value">0s</div>
-              </div>
-              <div className="metric-box">
-                <div className="metric-label">{t("EKYC_ERROR_RATE") || "Error Rate"}</div>
-                <div className="metric-value">0.0%</div>
+              {/* Status Boxes */}
+              <div className="status-boxes">
+                {legendItems.map((item) => (
+                  <div className="status-box" key={item.label}>
+                    <div className="status-box-top">
+                      <span className="status-indicator" style={{ backgroundColor: item.color }} />
+
+                      <span className="status-name">{item.label}</span>
+                    </div>
+
+                    <div className="status-box-value">{formatNumber(item.value)}</div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>

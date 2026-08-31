@@ -1,7 +1,6 @@
 import React from "react";
 import { useHistory } from "react-router-dom";
 import { useQuery, useQueryClient, useMutation } from "react-query";
-import { MockDashboardData } from "./mockData";
 import { DashboardConfig } from "./dashboardConfig";
 
 // search connection
@@ -104,42 +103,6 @@ export const useEkycUpdate = (tenantId, config = {}) => {
   return useMutation((data) => Digit.EkycService.application_update(data, tenantId), config);
 };
 
-export const useEkycDashboardData = (role, filters = {}, config = {}) => {
-  const isMock = true; // Default to mock mode as requested "moke hook"
-
-  // const { data: summary, isLoading: isLoadingSummary } = useQuery(
-  //   ["EKYC_DASHBOARD_SUMMARY", role, filters],
-  //   () => (isMock ? Promise.resolve(MockDashboardData.getSummary(role, filters)) : Digit.EkycService.fetchSummary({ role, filters })),
-  //   config
-  // );
-
-  // const { data: agencies, isLoading: isLoadingAgencies } = useQuery(
-  //   ["EKYC_AGENCY_ANALYTICS", filters],
-  //   () => (isMock ? Promise.resolve(MockDashboardData.getAgencies(filters)) : Digit.EkycService.fetchAgencyAnalytics({ filters })),
-  //   config
-  // );
-
-  // const { data: heatmap, isLoading: isLoadingHeatmap } = useQuery(
-  //   ["EKYC_CLUSTER_HEATMAP", filters],
-  //   () => (isMock ? Promise.resolve(MockDashboardData.getClusterHeatmap(filters)) : Digit.EkycService.fetchClusterHeatmap({ filters })),
-  //   config
-  // );
-
-  // const { data: workflow, isLoading: isLoadingWorkflow } = useQuery(
-  //   ["EKYC_WORKFLOW_TRACKING", filters],
-  //   () => (isMock ? Promise.resolve(MockDashboardData.getWorkflowTracking(filters)) : Digit.EkycService.fetchWorkflowTracking({ filters })),
-  //   config
-  // );
-
-  return {
-    summary,
-    agencies,
-    heatmap,
-    workflow,
-    isLoading: isLoadingSummary || isLoadingAgencies || isLoadingHeatmap || isLoadingWorkflow,
-  };
-};
-
 export const useEkycDashboardConfigs = (roleType = "CEO") => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const userRoles = Digit.UserService.getUser()?.info?.roles?.map((role) => role.code) || [];
@@ -214,14 +177,10 @@ export const useEkycAssignmentProgress = (params = {}, config = {}) => {
 
   Object.keys(queryConfig).forEach((key) => queryConfig[key] === undefined && delete queryConfig[key]);
 
-  return useQuery(
-    ["useEkycAssignmentProgress", apiParams],
-    () => Digit.EkycService.assignment_progress({ includeHierarchy: true, ...apiParams }),
-    {
-      staleTime: 20000, // Cache for 20 seconds by default
-      ...queryConfig,
-    }
-  );
+  return useQuery(["useEkycAssignmentProgress", apiParams], () => Digit.EkycService.assignment_progress({ includeHierarchy: true, ...apiParams }), {
+    staleTime: 20000, // Cache for 20 seconds by default
+    ...queryConfig,
+  });
 };
 
 export const useEkycApplicationList = (data, params, config = {}) => {
@@ -230,23 +189,21 @@ export const useEkycApplicationList = (data, params, config = {}) => {
   return useQuery(
     ["useEkycApplicationList", tenantId, offset, limit, data],
     () =>
-      Digit.EkycService.application_list(
-        {
-          kno: null,
-          ekycStatus: null,
-          zoneName: null,
-          assembly: null,
-          ward: null,
-          pincode: null,
-          mrkey: null,
-          surveyorId: null,
-          fetchFilterOptions: null,
-          ...data,
-          tenantId,
-          offset,
-          limit,
-        }
-      ),
+      Digit.EkycService.application_list({
+        kno: null,
+        ekycStatus: null,
+        zoneName: null,
+        assembly: null,
+        ward: null,
+        pincode: null,
+        mrkey: null,
+        surveyorId: null,
+        fetchFilterOptions: null,
+        ...data,
+        tenantId,
+        offset,
+        limit,
+      }),
     {
       staleTime: 10000, // Cache for 10 seconds by default
       ...config,

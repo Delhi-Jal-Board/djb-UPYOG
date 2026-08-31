@@ -1,104 +1,104 @@
 .ekyc-dashboard-section {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
 }
 
 .report-download {
-    position: relative;
-    flex-shrink: 0;
+  position: relative;
+  flex-shrink: 0;
 
-    .download-btn {
-        background: #0b2559;
-        color: #fff;
-        border: none;
-        border-radius: 8px;
-        padding: 10px 20px;
-        cursor: pointer;
-        font-weight: 600;
-        font-size: 0.875rem;
-        display: flex;
-        align-items: center;
-        gap: 8px;
+  .download-btn {
+    background: #065297 !important;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .report-menu {
+    position: absolute;
+    top: 44px;
+    right: 0;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    z-index: 999;
+    min-width: 220px;
+    padding: 8px 0;
+  }
+
+  .menu-item {
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    color: #111;
+    transition: background 0.15s;
+
+    &:hover {
+      background: #f3f4f6;
     }
+  }
 
-    .report-menu {
-        position: absolute;
-        top: 44px;
-        right: 0;
-        background: #fff;
-        border: 1px solid #e5e7eb;
-        border-radius: 10px;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-        z-index: 999;
-        min-width: 220px;
-        padding: 8px 0;
+  .custom-date-trigger {
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    color: #0b2559;
+    font-weight: 600;
+    border-top: 1px solid #e5e7eb;
+    margin-top: 4px;
+
+    &:hover {
+      background: #f3f4f6;
     }
+  }
 
-    .menu-item {
-        padding: 10px 20px;
-        cursor: pointer;
-        font-size: 0.875rem;
-        color: #111;
-        transition: background 0.15s;
+  .custom-picker {
+    padding: 12px 20px;
+    border-top: 1px solid #e5e7eb;
+  }
 
-        &:hover {
-            background: #f3f4f6;
-        }
+  .date-field {
+    margin-bottom: 12px;
+  }
+
+  .date-label {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 0.75rem;
+    color: #6b7280;
+  }
+
+  .date-input {
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.8125rem;
+    outline: none;
+
+    &:focus {
+      border-color: #0b2559;
     }
+  }
 
-    .custom-date-trigger {
-        padding: 10px 20px;
-        cursor: pointer;
-        font-size: 0.875rem;
-        color: #0b2559;
-        font-weight: 600;
-        border-top: 1px solid #e5e7eb;
-        margin-top: 4px;
-
-        &:hover {
-            background: #f3f4f6;
-        }
-    }
-
-    .custom-picker {
-        padding: 12px 20px;
-        border-top: 1px solid #e5e7eb;
-    }
-
-    .date-field {
-        margin-bottom: 12px;
-    }
-
-    .date-label {
-        display: block;
-        margin-bottom: 4px;
-        font-size: 0.75rem;
-        color: #6b7280;
-    }
-
-    .date-input {
-        width: 100%;
-        padding: 6px 8px;
-        border: 1px solid #d1d5db;
-        border-radius: 6px;
-        font-size: 0.8125rem;
-        outline: none;
-
-        &:focus {
-            border-color: #0b2559;
-        }
-    }
-
-    .download-action-btn {
-        width: 100%;
-        background: #0b2559;
-        color: #fff;
-        border: none;
-        border-radius: 6px;
-        padding: 8px;
-        cursor: pointer;
-        font-weight: 600;
-        font-size: 0.8125rem;
-    }
+  .download-action-btn {
+    width: 100%;
+    background: #0b2559;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.8125rem;
+  }
 }

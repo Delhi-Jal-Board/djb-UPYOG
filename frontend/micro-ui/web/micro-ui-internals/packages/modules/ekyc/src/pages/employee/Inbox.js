@@ -24,7 +24,6 @@ const StatCard = ({ title, value, type, isLoading, icon }) => (
   </div>
 );
 
-
 const Inbox = ({ parentRoute }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const location = useLocation();
@@ -64,44 +63,44 @@ const Inbox = ({ parentRoute }) => {
   });
 
   // Fetch vendors from DSO search to get vendor ID for progress API
-  const { data: vendorSearchResponse } = Digit.Hooks.fsm.useDsoSearch(
-    tenantId,
-    { status: "ACTIVE" },
-    { enabled: !!tenantId, staleTime: 300000 }
-  );
+  // const { data: vendorSearchResponse } = Digit.Hooks.fsm.useDsoSearch(
+  //   tenantId,
+  //   { status: "ACTIVE" },
+  //   { enabled: !!tenantId, staleTime: 300000 }
+  // );
 
-  const { targetVendorId, allVendorIds } = useMemo(() => {
-    if (!vendorSearchResponse || vendorSearchResponse.length === 0) {
-      return { targetVendorId: null, allVendorIds: [] };
-    }
-    const loggedInUser = Digit.SessionStorage.get("User")?.info;
-    const userUuid = loggedInUser?.uuid;
-    const userMobile = loggedInUser?.mobileNumber;
-    const matchesUser = (v) => {
-      const ownerUuid = v.owner?.uuid || v.owner?.id;
-      const ownerMobile = v.owner?.mobileNumber || v.mobileNumber;
-      return (userUuid && ownerUuid === userUuid) || (userMobile && ownerMobile === userMobile);
-    };
+  // const { targetVendorId, allVendorIds } = useMemo(() => {
+  //   if (!vendorSearchResponse || vendorSearchResponse.length === 0) {
+  //     return { targetVendorId: null, allVendorIds: [] };
+  //   }
+  //   const loggedInUser = Digit.SessionStorage.get("User")?.info;
+  //   const userUuid = loggedInUser?.uuid;
+  //   const userMobile = loggedInUser?.mobileNumber;
+  //   const matchesUser = (v) => {
+  //     const ownerUuid = v.owner?.uuid || v.owner?.id;
+  //     const ownerMobile = v.owner?.mobileNumber || v.mobileNumber;
+  //     return (userUuid && ownerUuid === userUuid) || (userMobile && ownerMobile === userMobile);
+  //   };
 
-    const allIds = vendorSearchResponse
-      .map((v) => {
-        const dso = v.dsoDetails || v;
-        return dso.id || dso.vendorId || v.id || v.vendorId;
-      })
-      .filter(Boolean);
+  //   const allIds = vendorSearchResponse
+  //     .map((v) => {
+  //       const dso = v.dsoDetails || v;
+  //       return dso.id || dso.vendorId || v.id || v.vendorId;
+  //     })
+  //     .filter(Boolean);
 
-    const matched = vendorSearchResponse.find((v) => matchesUser(v.dsoDetails || v));
-    let matchedId = null;
-    if (matched) {
-      const dso = matched.dsoDetails || matched;
-      matchedId = dso.id || dso.vendorId || matched.id || matched.vendorId;
-    }
+  //   const matched = vendorSearchResponse.find((v) => matchesUser(v.dsoDetails || v));
+  //   let matchedId = null;
+  //   if (matched) {
+  //     const dso = matched.dsoDetails || matched;
+  //     matchedId = dso.id || dso.vendorId || matched.id || matched.vendorId;
+  //   }
 
-    return { targetVendorId: matchedId, allVendorIds: allIds };
-  }, [vendorSearchResponse]);
+  //   return { targetVendorId: matchedId, allVendorIds: allIds };
+  // }, [vendorSearchResponse]);
 
   const { isLoading: isProgressLoading, data: progressData } = Digit.Hooks.ekyc.useEkycAssignmentProgress(
-    { tenantId },
+    { tenantId, allVendorsDetailed: true },
     {
       enabled: !!tenantId,
       keepPreviousData: true,
@@ -178,16 +177,16 @@ const Inbox = ({ parentRoute }) => {
     });
   }, [sourceData]);
 
-
   const { t } = useTranslation();
 
   const progressMetrics = useMemo(() => {
     if (!progressData) return { totalKnos: 0, submittedKnos: 0, pendingKnos: 0, progressPercent: 0 };
 
     const totalKnos = progressData?.totalKnos ?? progressData?.totalAssignments ?? 0;
-    const submittedKnos = progressData?.completedKnos ?? progressData?.submittedKnos ?? 0;
+    const submittedKnos = progressData?.submittedKnos ?? 0;
     const pendingKnos = progressData?.pendingKnos ?? (totalKnos >= submittedKnos ? totalKnos - submittedKnos : 0);
-    const progressPercent = progressData?.overallProgressPercent ?? progressData?.progressPercent ?? (totalKnos > 0 ? ((submittedKnos / totalKnos) * 100).toFixed(1) : 0);
+    const progressPercent =
+      progressData?.overallProgressPercent ?? progressData?.progressPercent ?? (totalKnos > 0 ? ((submittedKnos / totalKnos) * 100).toFixed(1) : 0);
 
     return {
       totalKnos,
@@ -197,36 +196,39 @@ const Inbox = ({ parentRoute }) => {
     };
   }, [progressData]);
 
-  const cards = useMemo(() => [
-    {
-      label: t("TOTAL_EKYC_APPLICATIONS"),
-      count: progressMetrics?.totalKnos || 0,
-      color: "#0B2559",
-      type: "today",
-      icon: <FaUsers />,
-    },
-    {
-      label: t("EKYC_COMPLETED"),
-      count: progressMetrics?.submittedKnos || 0,
-      color: "#10B981",
-      type: "month",
-      icon: <FaCheckCircle />,
-    },
-    {
-      label: t("PENDING_APPLICATIONS"),
-      count: progressMetrics?.pendingKnos || 0,
-      color: "#F59E0B",
-      type: "pending",
-      icon: <FaClock />,
-    },
-    {
-      label: t("OVERALL_PROGRESS"),
-      count: `${progressMetrics?.progressPercent || 0}%`,
-      color: "#A855F7",
-      type: "progress",
-      icon: <FaChartLine />,
-    },
-  ], [progressMetrics, t]);
+  const cards = useMemo(
+    () => [
+      {
+        label: t("TOTAL_EKYC_APPLICATIONS"),
+        count: progressMetrics?.totalKnos || 0,
+        color: "#0B2559",
+        type: "today",
+        icon: <FaUsers />,
+      },
+      {
+        label: t("EKYC_COMPLETED"),
+        count: progressMetrics?.submittedKnos || 0,
+        color: "#10B981",
+        type: "month",
+        icon: <FaCheckCircle />,
+      },
+      {
+        label: t("PENDING_APPLICATIONS"),
+        count: progressMetrics?.pendingKnos || 0,
+        color: "#F59E0B",
+        type: "pending",
+        icon: <FaClock />,
+      },
+      {
+        label: t("OVERALL_PROGRESS"),
+        count: `${progressMetrics?.progressPercent || 0}%`,
+        color: "#A855F7",
+        type: "progress",
+        icon: <FaChartLine />,
+      },
+    ],
+    [progressMetrics, t]
+  );
   const totalRecords = listData?.totalCount || 0;
 
   const checkPathName = location.pathname.includes("ekyc/inbox");
@@ -364,14 +366,7 @@ const Inbox = ({ parentRoute }) => {
       <div className="surveyor-dashboard" style={{ overflowY: "visible", marginBottom: "24px" }}>
         <div className="stats-wrapper" style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
           {cards.map((card, idx) => (
-            <StatCard
-              key={idx}
-              title={t(card.label)}
-              value={card.count}
-              type={card.type}
-              isLoading={isProgressLoading}
-              icon={card.icon}
-            />
+            <StatCard key={idx} title={t(card.label)} value={card.count} type={card.type} isLoading={isProgressLoading} icon={card.icon} />
           ))}
         </div>
       </div>
