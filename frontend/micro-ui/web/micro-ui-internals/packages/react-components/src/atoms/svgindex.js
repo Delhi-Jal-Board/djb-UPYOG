@@ -510,6 +510,28 @@ const DownloadBtnCommon = () => (
   </svg>
 );
 
+const MdDownloadIcon = ({ size = 16, color = "currentColor", strokeWidth = 2.5, className, style, ...props }) => {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      style={style}
+      {...props}
+    >
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <polyline points="7 10 12 15 17 10" />
+      <line x1="12" y1="15" x2="12" y2="3" />
+    </svg>
+  );
+};
+
 const DownloadIcon = ({ styles, className, onClick }) => (
   <svg
     style={{ ...styles }}
@@ -696,6 +718,26 @@ const ExternalLinkIcon = () => (
     />
   </svg>
 );
+
+const FaChartBar = ({ size = 24, color = "currentColor", backgroundColor = "transparent", strokeWidth = 2, className, style, ...props }) => {
+  return (
+    <svg
+      viewBox="0 0 512 512"
+      width={size}
+      height={size}
+      fill={color}
+      strokeWidth={strokeWidth}
+      className={className}
+      style={{
+        backgroundColor,
+        ...style,
+      }}
+      {...props}
+    >
+      <path d="M332.8 320h38.4c6.4 0 12.8-6.4 12.8-12.8V172.8c0-6.4-6.4-12.8-12.8-12.8h-38.4c-6.4 0-12.8 6.4-12.8 12.8v134.4c0 6.4 6.4 12.8 12.8 12.8zm96 0h38.4c6.4 0 12.8-6.4 12.8-12.8V76.8c0-6.4-6.4-12.8-12.8-12.8h-38.4c-6.4 0-12.8 6.4-12.8 12.8v230.4c0 6.4 6.4 12.8 12.8 12.8zm-288 0h38.4c6.4 0 12.8-6.4 12.8-12.8v-70.4c0-6.4-6.4-12.8-12.8-12.8h-38.4c-6.4 0-12.8 6.4-12.8 12.8v70.4c0 6.4 6.4 12.8 12.8 12.8zm96 0h38.4c6.4 0 12.8-6.4 12.8-12.8V108.8c0-6.4-6.4-12.8-12.8-12.8h-38.4c-6.4 0-12.8 6.4-12.8 12.8v198.4c0 6.4 6.4 12.8 12.8 12.8zM496 384H64V80c0-8.84-7.16-16-16-16H16C7.16 64 0 71.16 0 80v336c0 17.67 14.33 32 32 32h464c8.84 0 16-7.16 16-16v-32c0-8.84-7.16-16-16-16z" />
+    </svg>
+  );
+};
 
 const FastBackward = ({ size = 24, color = "currentColor", className = "", ...props }) => {
   return (
@@ -1940,6 +1982,7 @@ export {
   DocumentSVG,
   DownloadBtnCommon,
   DownloadIcon,
+  MdDownloadIcon,
   DownloadImgIcon,
   DownloadPrefixIcon,
   DownwardArrow,
@@ -1958,6 +2001,7 @@ export {
   EventsIconSolid,
   EventsIconComp,
   ExternalLinkIcon,
+  FaChartBar,
   FastBackward,
   FastForward,
   Feedback,
