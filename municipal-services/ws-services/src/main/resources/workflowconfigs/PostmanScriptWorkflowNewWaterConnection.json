@@ -1,17 +1,17 @@
 curl --location --request POST 'https: //dev.digit.org/egov-workflow-v2/egov-wf/businessservice/_create' \
 --header 'Content-Type: application/json' \
 --data-raw '{
-	"RequestInfo": {
-		"apiId": "Rainmaker",
-		"action": "",
-		"did": 1,
-		"key": "",
-		"msgId": "20170310130900|en_IN",
-		"requesterId": "",
-		"ts": 1513579888683,
-		"ver": ".01",
-		"authToken": "{{Auth_Token}}"
-	},
+    "RequestInfo": {
+        "apiId": "Rainmaker",
+        "action": "",
+        "did": 1,
+        "key": "",
+        "msgId": "20170310130900|en_IN",
+        "requesterId": "",
+        "ts": 1513579888683,
+        "ver": ".01",
+        "authToken": "{{Auth_Token}}"
+    },
     "BusinessServices": [
         {
             "tenantId": "dl",
@@ -106,7 +106,7 @@ curl --location --request POST 'https: //dev.digit.org/egov-workflow-v2/egov-wf/
                     "actions": [
                         {
                             "action": "VERIFY_AND_FORWARD",
-                            "nextState": "PENDING_FOR_DUE_VERIFICATION",
+                            "nextState": "PENDING_FOR_EE_APPROVAL",
                             "roles": [
                                 "WS_DOC_VERIFIER"
                             ]
@@ -138,171 +138,8 @@ curl --location --request POST 'https: //dev.digit.org/egov-workflow-v2/egov-wf/
                 },
                 {
                     "sla": 86400000,
-                    "state": "PENDING_FOR_DUE_VERIFICATION",
-                    "applicationStatus": "PENDING_FOR_DUE_VERIFICATION",
-                    "docUploadRequired": false,
-                    "isStartState": false,
-                    "isTerminateState": false,
-                    "isStateUpdatable": true,
-                    "actions": [
-                        {
-                            "action": "VERIFY_AND_FORWARD",
-                            "nextState": "PENDING_FOR_FIELD_INSPECTION",
-                            "roles": [
-                                "WS_BILLING_CLERK"
-                            ]
-                        },
-                        {
-                            "action": "SEND_BACK_FOR_DOCUMENT_VERIFICATION",
-                            "nextState": "PENDING_FOR_DOCUMENT_VERIFICATION",
-                            "roles": [
-                                "WS_BILLING_CLERK"
-                            ]
-                        },
-                        {
-                            "action": "SEND_BACK_TO_CITIZEN",
-                            "nextState": "PENDING_FOR_CITIZEN_ACTION",
-                            "roles": [
-                                "WS_BILLING_CLERK"
-                            ]
-                        },
-                        {
-                            "action": "REJECT",
-                            "nextState": "REJECTED",
-                            "roles": [
-                                "WS_BILLING_CLERK"
-                            ]
-                        }
-                    ]
-                },
-                {
-                    "sla": 86400000,
-                    "state": "PENDING_FOR_FIELD_INSPECTION",
-                    "applicationStatus": "PENDING_FOR_FIELD_INSPECTION",
-                    "docUploadRequired": false,
-                    "isStartState": false,
-                    "isTerminateState": false,
-                    "isStateUpdatable": true,
-                    "actions": [
-                        {
-                            "action": "REJECT",
-                            "nextState": "REJECTED",
-                            "roles": [
-                                "WS_FIELD_INSPECTOR"
-                            ]
-                        },
-                        {
-                            "action": "SEND_BACK_FOR_DUE_VERIFICATION",
-                            "nextState": "PENDING_FOR_DUE_VERIFICATION",
-                            "roles": [
-                                "WS_FIELD_INSPECTOR"
-                            ]
-                        },
-                        {
-                            "action": "VERIFY_AND_FORWARD",
-                            "nextState": "PENDING_FOR_BILLING_CLERK_REVIEW",
-                            "roles": [
-                                "WS_FIELD_INSPECTOR"
-                            ]
-                        },
-                        {
-                            "action": "SEND_BACK_TO_CITIZEN",
-                            "nextState": "PENDING_FOR_CITIZEN_ACTION",
-                            "roles": [
-                                "WS_FIELD_INSPECTOR"
-                            ]
-                        }
-                    ]
-                },
-                {
-                    "sla": 86400000,
-                    "state": "PENDING_FOR_BILLING_CLERK_REVIEW",
-                    "applicationStatus": "PENDING_FOR_BILLING_CLERK_REVIEW",
-                    "docUploadRequired": false,
-                    "isStartState": false,
-                    "isTerminateState": false,
-                    "isStateUpdatable": true,
-                    "actions": [
-                        {
-                            "action": "VERIFY_AND_FORWARD_TO_ASO",
-                            "nextState": "PENDING_FOR_ASO_APPROVAL",
-                            "roles": [
-                                "WS_BILLING_CLERK"
-                            ]
-                        },
-                        {
-                            "action": "VERIFY_AND_FORWARD_TO_AE",
-                            "nextState": "PENDING_FOR_AE_APPROVAL",
-                            "roles": [
-                                "WS_BILLING_CLERK"
-                            ]
-                        },
-                        {
-                            "action": "SEND_BACK_FOR_FIELD_INSPECTION",
-                            "nextState": "PENDING_FOR_FIELD_INSPECTION",
-                            "roles": [
-                                "WS_BILLING_CLERK"
-                            ]
-                        },
-                        {
-                            "action": "SEND_BACK_TO_CITIZEN",
-                            "nextState": "PENDING_FOR_CITIZEN_ACTION",
-                            "roles": [
-                                "WS_BILLING_CLERK"
-                            ]
-                        },
-                        {
-                            "action": "REJECT",
-                            "nextState": "REJECTED",
-                            "roles": [
-                                "WS_BILLING_CLERK"
-                            ]
-                        }
-                    ]
-                },
-                {
-                    "sla": 43200000,
-                    "state": "PENDING_FOR_AE_APPROVAL",
-                    "applicationStatus": "PENDING_FOR_AE_APPROVAL",
-                    "docUploadRequired": false,
-                    "isStartState": false,
-                    "isTerminateState": false,
-                    "isStateUpdatable": true,
-                    "actions": [
-                        {
-                            "action": "VERIFY_AND_FORWARD",
-                            "nextState": "PENDING_FOR_ASO_APPROVAL",
-                            "roles": [
-                                "WS_AE"
-                            ]
-                        },
-                        {
-                            "action": "SEND_BACK_FOR_BILLING_CLERK_REVIEW",
-                            "nextState": "PENDING_FOR_BILLING_CLERK_REVIEW",
-                            "roles": [
-                                "WS_AE"
-                            ]
-                        },
-                        {
-                            "action": "SEND_BACK_TO_CITIZEN",
-                            "nextState": "PENDING_FOR_CITIZEN_ACTION",
-                            "roles": [
-                                "WS_AE"
-                            ]
-                        },
-                        {
-                            "action": "REJECT",
-                            "nextState": "REJECTED",
-                            "roles": [
-                                "WS_AE"
-                            ]
-                        }
-                    ]
-                },
-                {
-                    "sla": 43200000,
-                    "state": "PENDING_FOR_ASO_APPROVAL",
-                    "applicationStatus": "PENDING_FOR_ASO_APPROVAL",
+                    "state": "PENDING_FOR_EE_APPROVAL",
+                    "applicationStatus": "PENDING_FOR_EE_APPROVAL",
                     "docUploadRequired": false,
                     "isStartState": false,
                     "isTerminateState": false,
@@ -312,28 +149,28 @@ curl --location --request POST 'https: //dev.digit.org/egov-workflow-v2/egov-wf/
                             "action": "VERIFY_AND_FORWARD",
                             "nextState": "PENDING_FOR_ZRO_APPROVAL",
                             "roles": [
-                                "WS_ASO"
+                                "EE"
+                            ]
+                        },
+                        {
+                            "action": "SEND_BACK_FOR_DOCUMENT_VERIFICATION",
+                            "nextState": "PENDING_FOR_DOCUMENT_VERIFICATION",
+                            "roles": [
+                                "EE"
                             ]
                         },
                         {
                             "action": "SEND_BACK_TO_CITIZEN",
                             "nextState": "PENDING_FOR_CITIZEN_ACTION",
                             "roles": [
-                                "WS_ASO"
-                            ]
-                        },
-                        {
-                            "action": "SEND_BACK_FOR_BILLING_CLERK_REVIEW",
-                            "nextState": "PENDING_FOR_BILLING_CLERK_REVIEW",
-                            "roles": [
-                                "WS_ASO"
+                                "EE"
                             ]
                         },
                         {
                             "action": "REJECT",
                             "nextState": "REJECTED",
                             "roles": [
-                                "WS_ASO"
+                                "EE"
                             ]
                         }
                     ]
@@ -362,36 +199,17 @@ curl --location --request POST 'https: //dev.digit.org/egov-workflow-v2/egov-wf/
                             ]
                         },
                         {
-                            "action": "SEND_BACK_FOR_ASO_APPROVAL",
-                            "nextState": "PENDING_FOR_ASO_APPROVAL",
+                            "action": "SEND_BACK_FOR_EE_APPROVAL",
+                            "nextState": "PENDING_FOR_EE_APPROVAL",
                             "roles": [
                                 "WS_APPROVER"
                             ]
                         },
                         {
                             "action": "APPROVE_FOR_CONNECTION",
-                            "nextState": "PENDING_FOR_ADDITIONAL_PAYMENT",
-                            "roles": [
-                                "WS_APPROVER"
-                            ]
-                        }
-                    ]
-                },
-                {
-                    "sla": 43200000,
-                    "state": "PENDING_FOR_ADDITIONAL_PAYMENT",
-                    "applicationStatus": "PENDING_FOR_ADDITIONAL_PAYMENT",
-                    "docUploadRequired": false,
-                    "isStartState": false,
-                    "isTerminateState": false,
-                    "isStateUpdatable": false,
-                    "actions": [
-                        {
-                            "action": "PAY",
                             "nextState": "PENDING_FOR_CONNECTION_ACTIVATION",
                             "roles": [
-                                "CITIZEN",
-                                "WS_CEMP"
+                                "WS_APPROVER"
                             ]
                         }
                     ]
