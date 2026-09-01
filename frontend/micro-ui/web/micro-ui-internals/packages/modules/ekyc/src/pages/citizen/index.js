@@ -17,6 +17,7 @@ const CitizenApp = () => {
   const { t } = useTranslation();
   const location = useLocation();
   const { path } = useRouteMatch();
+  const { data: { stateInfo } = {} } = Digit.Hooks.useStore.getInitData();
 
   sessionStorage.removeItem("revalidateddone");
 
