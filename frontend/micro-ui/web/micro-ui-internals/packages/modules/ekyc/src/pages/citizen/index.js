@@ -1,13 +1,11 @@
 import React from "react";
-import { AppContainer, PrivateRoute, ModuleHeader, ArrowLeft, HomeIcon, LayoutWrapper, BackButton, ExpandedViewContext } from "@djb25/digit-ui-react-components";
-import EKYCCard from "../../components/EKYCCard";
+import { AppContainer, PrivateRoute, ModuleHeader, ArrowLeft, HomeIcon, LayoutWrapper } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { Switch, useLocation, useRouteMatch, Redirect, Route } from "react-router-dom";
 import AadhaarVerification from "../../components/AadhaarVerification";
 import PropertyInfo from "../../components/PropertyInfo";
 import MeterDetails from "../../components/MeterDetails";
 import Review from "../../components/Review";
-import Home from "./Home";
 import Inbox from "./Inbox";
 import AssignEkyc from "../../components/AssignEkyc";
 import SurveyorDetailsCard from "../../components/SurveyorDetailsCard";
@@ -19,7 +17,6 @@ const CitizenApp = () => {
   const { t } = useTranslation();
   const location = useLocation();
   const { path } = useRouteMatch();
-  const { data: { stateInfo } = {} } = Digit.Hooks.useStore.getInitData();
 
   sessionStorage.removeItem("revalidateddone");
 
@@ -72,7 +69,6 @@ const CitizenApp = () => {
 
   // const roles = Digit.SessionStorage.get("User")?.info?.roles.map((ele) => ele.code);
   // const isEkyAction = (!roles?.includes("EKYC_SURVEYOR") || roles?.includes("EMPLOYEE"))
-
 
   return (
     <AppContainer>
