@@ -27,13 +27,14 @@ export const configWSApproverApplication = ({
     { code: "INCOMPLETE_DOCUMENTS", name: "Incomplete / Incorrect Documents", i18nKey: "WS_MUTATION_REASON_INCOMPLETE_DOCUMENTS" },
     { code: "MISMATCH_DETAILS", name: "Mismatch in Owner / Consumer Details", i18nKey: "WS_MUTATION_REASON_MISMATCH_DETAILS" },
     { code: "INVALID_PROOF", name: "Invalid / Unverified Proof Provided", i18nKey: "WS_MUTATION_REASON_INVALID_PROOF" },
+    { code: "OTHER", name: "Other", i18nKey: "WS_MUTATION_REASON_OTHER" },
   ];
 
   const commentsField = isReasonRequiredAction
     ? [
         {
           label: t("WF_REASON_LABEL") || t("Reason"),
-          isMandatory: true,
+          isMandatory: false,
           populators: (
             <Dropdown
               option={reasonOptions}

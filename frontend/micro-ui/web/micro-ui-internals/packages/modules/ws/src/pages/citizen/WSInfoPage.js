@@ -66,9 +66,9 @@ const WSInfoPage = () => {
   const proceedToNext = () => {
     const isEmployee = window.location.href.includes("/employee");
     const baseUrl = isEmployee ? "/digit-ui/employee/ws" : "/digit-ui/citizen/ws";
-    if (hasProperty?.code === "YES" && selectedProperty  ) {
+    if (hasProperty?.code === "YES" && selectedProperty) {
       history.push(`${baseUrl}/old-application?propertyId=${selectedProperty.propertyId}`);
-    } 
+    }
     else {
       history.push(`${baseUrl}/old-application`);
     }
@@ -89,24 +89,24 @@ const WSInfoPage = () => {
           userType: isEmployee ? "EMPLOYEE" : "CITIZEN"
         }
       };
-      
+
       const response = await Digit.UserService.sendOtp(payload, "dl");
       if (!response) {
-         setIsOtpSending(false);
-         setShowToast({ key: "error", message: "Failed to send OTP (No response)" });
-         return;
+        setIsOtpSending(false);
+        setShowToast({ key: "error", message: "Failed to send OTP (No response)" });
+        return;
       }
       if (response?.error || response?.data?.error) {
-         const errObj = response?.error || response?.data?.error;
-         setIsOtpSending(false);
-         setShowToast({ key: "error", message: errObj?.fields?.[0]?.message || errObj?.message || "Failed to send OTP" });
-         return;
+        const errObj = response?.error || response?.data?.error;
+        setIsOtpSending(false);
+        setShowToast({ key: "error", message: errObj?.fields?.[0]?.message || errObj?.message || "Failed to send OTP" });
+        return;
       }
       if (response?.Errors || response?.data?.Errors) {
-         const errObj = response?.Errors || response?.data?.Errors;
-         setIsOtpSending(false);
-         setShowToast({ key: "error", message: errObj?.[0]?.message || "Failed to send OTP" });
-         return;
+        const errObj = response?.Errors || response?.data?.Errors;
+        setIsOtpSending(false);
+        setShowToast({ key: "error", message: errObj?.[0]?.message || "Failed to send OTP" });
+        return;
       }
 
       setIsOtpSending(false);
@@ -145,26 +145,26 @@ const WSInfoPage = () => {
           tenantId: "dl"
         }
       };
-      
+
       const response = await Digit.UserService.validateOtp(payload);
-      
+
       if (!response || (typeof response === "object" && Object.keys(response).length === 0)) {
-         throw new Error("OTP validation unsuccessful"); 
+        throw new Error("OTP validation unsuccessful");
       }
 
       // If the API responds with 200 OK but includes an error payload:
       if (response?.error || response?.data?.error) {
-         const errObj = response?.error || response?.data?.error;
-         throw new Error(errObj?.fields?.[0]?.message || errObj?.message || "Failed to verify OTP");
+        const errObj = response?.error || response?.data?.error;
+        throw new Error(errObj?.fields?.[0]?.message || errObj?.message || "Failed to verify OTP");
       }
       if (response?.Errors || response?.data?.Errors) {
-         const errObj = response?.Errors || response?.data?.Errors;
-         throw new Error(errObj?.[0]?.message || "Failed to verify OTP");
+        const errObj = response?.Errors || response?.data?.Errors;
+        throw new Error(errObj?.[0]?.message || "Failed to verify OTP");
       }
 
       setIsOtpVerifying(false);
       setShowToast({ key: "success", message: "OTP verified successfully!" });
-      
+
       // Proceed safely
       proceedToNext();
     } catch (err) {
@@ -227,27 +227,27 @@ const WSInfoPage = () => {
               />
             </div>
             <div style={{ display: "flex", gap: "16px", marginBottom: "24px" }}>
-               <button 
-                 type="button"
-                 onClick={handleSendOtp} 
-                 disabled={isOtpSending}
-                 style={{ color: "#f47738", background: "none", border: "none", cursor: "pointer", fontWeight: "bold", textDecoration: "underline" }}
-               >
-                 {isOtpSending ? (t("WS_SENDING_OTP") || "Sending...") : (t("WS_RESEND_OTP") || "Resend OTP")}
-               </button>
-               <button 
-                 type="button"
-                 onClick={() => setShowOtpVerification(false)} 
-                 style={{ color: "#f47738", background: "none", border: "none", cursor: "pointer", fontWeight: "bold", textDecoration: "underline" }}
-               >
-                 {t("CS_COMMON_CANCEL") || "Cancel"}
-               </button>
+              <button
+                type="button"
+                onClick={handleSendOtp}
+                disabled={isOtpSending}
+                style={{ color: "#f47738", background: "none", border: "none", cursor: "pointer", fontWeight: "bold", textDecoration: "underline" }}
+              >
+                {isOtpSending ? (t("WS_SENDING_OTP") || "Sending...") : (t("WS_RESEND_OTP") || "Resend OTP")}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowOtpVerification(false)}
+                style={{ color: "#f47738", background: "none", border: "none", cursor: "pointer", fontWeight: "bold", textDecoration: "underline" }}
+              >
+                {t("CS_COMMON_CANCEL") || "Cancel"}
+              </button>
             </div>
-            <SubmitBar 
-               label={t("WS_VERIFY_OTP_AND_PROCEED") || "Verify & Proceed"} 
-               onSubmit={handleVerifyOtp} 
-               disabled={otp.length < 6 || isOtpVerifying} 
-               submit={true}
+            <SubmitBar
+              label={t("WS_VERIFY_OTP_AND_PROCEED") || "Verify & Proceed"}
+              onSubmit={handleVerifyOtp}
+              disabled={otp.length < 6 || isOtpVerifying}
+              submit={true}
             />
           </form>
         </Card>

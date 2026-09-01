@@ -126,12 +126,14 @@ const ActionModal = ({
     let commentValue = data?.comments || "";
 
     if (isReasonRequiredAction) {
-      if (!selectedReason) {
-        setError(t("PLEASE_SELECT_REASON") || "Please select a reason");
+      if (!selectedReason && !commentValue?.trim()) {
+        setError(t("PLEASE_PROVIDE_REASON_OR_COMMENT") || "Please provide a reason or comment");
         return;
       }
-      const reasonValue = selectedReason?.name || (selectedReason?.i18nKey ? t(selectedReason?.i18nKey) : selectedReason?.code);
-      commentValue = commentValue ? `${reasonValue}\n${commentValue}` : reasonValue;
+      if (selectedReason) {
+        const reasonValue = selectedReason?.name || (selectedReason?.i18nKey ? t(selectedReason?.i18nKey) : selectedReason?.code);
+        commentValue = commentValue ? `${reasonValue}\n${commentValue}` : reasonValue;
+      }
     }
 
     if (applicationData?.isBillAmend) {
