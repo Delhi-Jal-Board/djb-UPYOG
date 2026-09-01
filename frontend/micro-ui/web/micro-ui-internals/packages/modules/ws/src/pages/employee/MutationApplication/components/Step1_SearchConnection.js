@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Card, CardText, TextInput, Toast } from "@djb25/digit-ui-react-components";
 
-const Step1_SearchConnection = ({ t, defaultKNumber, onNext }) => {
+const Step1_SearchConnection = ({ t, defaultKNumber, onNext, isEditFlow }) => {
   const [kNumber, setKNumber] = useState(defaultKNumber || "");
   const [isLoading, setIsLoading] = useState(false);
   const [showToast, setShowToast] = useState(null);
@@ -18,17 +18,17 @@ const Step1_SearchConnection = ({ t, defaultKNumber, onNext }) => {
       
       let detectedServiceType = "WATER";
       const wsResponse = await Digit.WSService.search({ tenantId, filters: params, businessService: "WS" }).catch(() => null);
-      let connection = wsResponse?.WaterConnection?.[0];
+      let connection = wsResponse?.WaterConnection?.find(c => c.applicationStatus === 'CONNECTION_ACTIVATED');
 
       if (!connection) {
         const swResponse = await Digit.WSService.search({ tenantId, filters: params, businessService: "SW" }).catch(() => null);
-        connection = swResponse?.SewerageConnections?.[0];
+        connection = swResponse?.SewerageConnections?.find(c => c.applicationStatus === 'CONNECTION_ACTIVATED');
         if (connection) detectedServiceType = "SEWERAGE";
       }
 
       if (!connection) {
         setIsLoading(false);
-        setShowToast({ key: "error", message: "Connection not found for the given K Number" });
+        setShowToast({ key: "error", message: "Active connection not found for the given K Number" });
         return;
       }
 
@@ -52,7 +52,7 @@ const Step1_SearchConnection = ({ t, defaultKNumber, onNext }) => {
       
       await Digit.UserService.sendOtp(payload, "dl");
       setIsLoading(false);
-      onNext({ kNumber, mobileNumber: fetchedMobileNumber, serviceType: detectedServiceType });
+      onNext({ kNumber, mobileNumber: fetchedMobileNumber, serviceType: detectedServiceType, activeConnection: connection });
     } catch (err) {
       setIsLoading(false);
       setShowToast({ key: "error", message: err?.response?.data?.Errors?.[0]?.message || "Failed to send OTP" });
@@ -77,6 +77,7 @@ const Step1_SearchConnection = ({ t, defaultKNumber, onNext }) => {
             onChange={(e) => setKNumber(e.target.value)}
             placeholder="Enter K Number"
             style={{ width: "100%" }}
+            disabled={isEditFlow}
           />
         </div>
         

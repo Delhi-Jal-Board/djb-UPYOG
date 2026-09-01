@@ -34,7 +34,7 @@ export const configWSApproverApplication = ({
     ? [
         {
           label: t("WF_REASON_LABEL") || t("Reason"),
-          isMandatory: true,
+          isMandatory: false,
           populators: (
             <Dropdown
               option={reasonOptions}
@@ -43,9 +43,6 @@ export const configWSApproverApplication = ({
               id="mutationActionReason"
               select={(val) => {
                 setSelectedReason(val);
-                if (val?.code !== "OTHER") {
-                  setOtherReasonText("");
-                }
               }}
               selected={selectedReason}
               t={t}
@@ -53,23 +50,13 @@ export const configWSApproverApplication = ({
             />
           ),
         },
-        ...(selectedReason?.code === "OTHER"
-          ? [
-              {
-                label: t("WF_OTHER_REASON_LABEL") || t("Please specify reason"),
-                isMandatory: true,
-                populators: (
-                  <textarea
-                    className="employee-card-input"
-                    style={{ width: "100%", height: "80px", resize: "vertical", marginTop: "4px" }}
-                    value={otherReasonText}
-                    onChange={(e) => setOtherReasonText(e.target.value)}
-                    placeholder={t("WF_ENTER_OTHER_REASON_PLACEHOLDER") || "Enter reason details..."}
-                  />
-                ),
-              },
-            ]
-          : []),
+        {
+          label: t("WF_COMMON_COMMENTS"),
+          type: "textarea",
+          populators: {
+            name: "comments",
+          },
+        },
       ]
     : [
         {

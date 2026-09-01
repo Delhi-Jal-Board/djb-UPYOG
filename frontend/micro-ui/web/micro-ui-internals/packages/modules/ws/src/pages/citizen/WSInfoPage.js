@@ -13,7 +13,13 @@ import {
   CitizenInfoLabel,
   Label,
   TextInput,
+  Toast,
 } from "@djb25/digit-ui-react-components";
+
+const getMaskedPhone = (phone) => {
+  if (!phone || phone.length < 10) return "NA";
+  return `******${phone.slice(-4)}`;
+};
 
 const getAddress = (address, t) => {
   return `${address?.doorNo ? `${address?.doorNo}, ` : ""} ${address?.street ? `${address?.street}, ` : ""}${address?.landmark ? `${address?.landmark}, ` : ""
@@ -31,6 +37,11 @@ const WSInfoPage = () => {
   const [hasProperty, setHasProperty] = useState(null);
   const [selectedProperty, setSelectedProperty] = useState(null);
   const [searchMobileNumber, setSearchMobileNumber] = useState("");
+  const [showOtpVerification, setShowOtpVerification] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [isOtpSending, setIsOtpSending] = useState(false);
+  const [isOtpVerifying, setIsOtpVerifying] = useState(false);
+  const [showToast, setShowToast] = useState(null);
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const userMobileNumber = Digit.UserService.getUser()?.info?.mobileNumber;
@@ -52,17 +63,137 @@ const WSInfoPage = () => {
     { code: "NO", i18nKey: "TL_COMMON_NO" },
   ];
 
-  const handleNext = () => {
+  const proceedToNext = () => {
     const isEmployee = window.location.href.includes("/employee");
     const baseUrl = isEmployee ? "/digit-ui/employee/ws" : "/digit-ui/citizen/ws";
     if (hasProperty?.code === "YES" && selectedProperty) {
       history.push(`${baseUrl}/old-application?propertyId=${selectedProperty.propertyId}`);
+    }
+    else {
+      history.push(`${baseUrl}/old-application`);
+    }
+  };
+
+  const handleSendOtp = async (e) => {
+    if (e) {
+      if (e.preventDefault) e.preventDefault();
+      if (e.stopPropagation) e.stopPropagation();
+    }
+    setIsOtpSending(true);
+    try {
+      const payload = {
+        otp: {
+          mobileNumber: mobileNumberToSearch,
+          tenantId: "dl",
+          type: "register",
+          userType: isEmployee ? "EMPLOYEE" : "CITIZEN"
+        }
+      };
+
+      const response = await Digit.UserService.sendOtp(payload, "dl");
+      if (!response) {
+        setIsOtpSending(false);
+        setShowToast({ key: "error", message: "Failed to send OTP (No response)" });
+        return;
+      }
+      if (response?.error || response?.data?.error) {
+        const errObj = response?.error || response?.data?.error;
+        setIsOtpSending(false);
+        setShowToast({ key: "error", message: errObj?.fields?.[0]?.message || errObj?.message || "Failed to send OTP" });
+        return;
+      }
+      if (response?.Errors || response?.data?.Errors) {
+        const errObj = response?.Errors || response?.data?.Errors;
+        setIsOtpSending(false);
+        setShowToast({ key: "error", message: errObj?.[0]?.message || "Failed to send OTP" });
+        return;
+      }
+
+      setIsOtpSending(false);
+      setShowOtpVerification(true);
+      setShowToast({ key: "success", message: "OTP sent successfully!" });
+    } catch (err) {
+      setIsOtpSending(false);
+      let errMsg = "Failed to send OTP";
+      if (err?.response?.data?.error) {
+        errMsg = err.response.data.error?.fields?.[0]?.message || err.response.data.error?.message || errMsg;
+      } else if (err?.response?.data?.Errors) {
+        errMsg = err.response.data.Errors?.[0]?.message || errMsg;
+      } else if (err.message) {
+        errMsg = err.message;
+      }
+      setShowToast({ key: "error", message: errMsg });
+    }
+  };
+
+  const handleVerifyOtp = async (e) => {
+    if (e) {
+      if (e.preventDefault) e.preventDefault();
+      if (e.stopPropagation) e.stopPropagation();
+    }
+    if (!otp || otp.length < 6) {
+      setShowToast({ key: "warning", message: "Please enter a valid 6-digit OTP" });
+      return;
+    }
+    setIsOtpVerifying(true);
+    try {
+      // Intentionally not sending userType in validateOtp as per original mutation code
+      const payload = {
+        otp: {
+          otp: otp,
+          identity: mobileNumberToSearch,
+          tenantId: "dl"
+        }
+      };
+
+      const response = await Digit.UserService.validateOtp(payload);
+
+      if (!response || (typeof response === "object" && Object.keys(response).length === 0)) {
+        throw new Error("OTP validation unsuccessful");
+      }
+
+      // If the API responds with 200 OK but includes an error payload:
+      if (response?.error || response?.data?.error) {
+        const errObj = response?.error || response?.data?.error;
+        throw new Error(errObj?.fields?.[0]?.message || errObj?.message || "Failed to verify OTP");
+      }
+      if (response?.Errors || response?.data?.Errors) {
+        const errObj = response?.Errors || response?.data?.Errors;
+        throw new Error(errObj?.[0]?.message || "Failed to verify OTP");
+      }
+
+      setIsOtpVerifying(false);
+      setShowToast({ key: "success", message: "OTP verified successfully!" });
+
+      // Proceed safely
+      proceedToNext();
+    } catch (err) {
+      setIsOtpVerifying(false);
+      let errMsg = err.message || "Failed to verify OTP";
+      if (err?.response?.data?.error) {
+        errMsg = err.response.data.error?.fields?.[0]?.message || err.response.data.error?.message || errMsg;
+      } else if (err?.response?.data?.Errors) {
+        errMsg = err.response.data.Errors?.[0]?.message || errMsg;
+      } else if (err.message) {
+        errMsg = err.message;
+      }
+      setShowToast({ key: "error", message: errMsg });
+    }
+  };
+
+  const handleNext = (e) => {
+    if (e) {
+      if (e.preventDefault) e.preventDefault();
+      if (e.stopPropagation) e.stopPropagation();
+    }
+    if (hasProperty?.code === "YES" && selectedProperty) {
+      handleSendOtp(e);
     } else if (hasProperty?.code === "YES" && !selectedProperty) {
       // Should not be reachable since button is disabled, but just in case
       return;
     } else {
       // Proceed without property
-      history.push(`${baseUrl}/old-application`);
+      proceedToNext();
     }
   };
 
@@ -76,6 +207,62 @@ const WSInfoPage = () => {
       ...prop,
       displayName: `${prop.propertyId} - ${getAddress(prop.address, t)}`,
     })) || [];
+
+  if (showOtpVerification) {
+    return (
+      <React.Fragment>
+        <Card>
+          <form onSubmit={handleVerifyOtp}>
+            <CardHeader>{t("WS_VERIFY_OTP_HEADER") || "Verify OTP"}</CardHeader>
+            <div style={{ marginBottom: "24px" }}>
+              <Label>{t("WS_ENTER_OTP_SENT_TO") || "Enter OTP sent to"} +91 {getMaskedPhone(mobileNumberToSearch)} *</Label>
+              <TextInput
+                t={t}
+                type="number"
+                isMandatory={false}
+                value={otp}
+                onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                placeholder={t("WS_ENTER_6_DIGIT_OTP") || "Enter 6-digit OTP"}
+                style={{ width: "100%", maxWidth: "300px" }}
+              />
+            </div>
+            <div style={{ display: "flex", gap: "16px", marginBottom: "24px" }}>
+              <button
+                type="button"
+                onClick={handleSendOtp}
+                disabled={isOtpSending}
+                style={{ color: "#f47738", background: "none", border: "none", cursor: "pointer", fontWeight: "bold", textDecoration: "underline" }}
+              >
+                {isOtpSending ? (t("WS_SENDING_OTP") || "Sending...") : (t("WS_RESEND_OTP") || "Resend OTP")}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowOtpVerification(false)}
+                style={{ color: "#f47738", background: "none", border: "none", cursor: "pointer", fontWeight: "bold", textDecoration: "underline" }}
+              >
+                {t("CS_COMMON_CANCEL") || "Cancel"}
+              </button>
+            </div>
+            <SubmitBar
+              label={t("WS_VERIFY_OTP_AND_PROCEED") || "Verify & Proceed"}
+              onSubmit={handleVerifyOtp}
+              disabled={otp.length < 6 || isOtpVerifying}
+              submit={true}
+            />
+          </form>
+        </Card>
+        {showToast && (
+          <Toast
+            error={showToast.key === "error"}
+            warning={showToast.key === "warning"}
+            label={t(showToast.message)}
+            onClose={() => setShowToast(null)}
+            isDleteBtn={true}
+          />
+        )}
+      </React.Fragment>
+    );
+  }
 
   return (
     <React.Fragment>
@@ -100,6 +287,8 @@ const WSInfoPage = () => {
             onSelect={(val) => {
               setHasProperty(val);
               setSelectedProperty(null);
+              setShowOtpVerification(false);
+              setOtp("");
             }}
             style={{ display: "flex", gap: "24px" }}
           />
@@ -122,6 +311,8 @@ const WSInfoPage = () => {
                       if (val.length <= 10) {
                         setSearchMobileNumber(val);
                         setSelectedProperty(null);
+                        setShowOtpVerification(false);
+                        setOtp("");
                       }
                     }}
                     placeholder={t("Enter mobile number")}
@@ -137,7 +328,11 @@ const WSInfoPage = () => {
                       optionKey="displayName"
                       id="propertyId"
                       selected={selectedProperty}
-                      select={setSelectedProperty}
+                      select={(val) => {
+                        setSelectedProperty(val);
+                        setShowOtpVerification(false);
+                        setOtp("");
+                      }}
                       t={t}
                       placeholder={t("PT_SELECT_PROPERTY")}
                       disable={isLoading || propertyOptions.length === 0}
@@ -159,7 +354,11 @@ const WSInfoPage = () => {
                     optionKey="displayName"
                     id="propertyId"
                     selected={selectedProperty}
-                    select={setSelectedProperty}
+                    select={(val) => {
+                      setSelectedProperty(val);
+                      setShowOtpVerification(false);
+                      setOtp("");
+                    }}
                     t={t}
                     placeholder={t("PT_SELECT_PROPERTY")}
                   />
@@ -261,17 +460,6 @@ const WSInfoPage = () => {
           <li>{t("WS_DOC_APPLICANT_PHOTOGRAPH")}</li>
         </ul>
 
-        {/* <CardSubHeader style={{ marginTop: "0", marginBottom: "0" }}>{t("WS_DECLARATION")}</CardSubHeader>
-        <ul style={{ listStyleType: "disc", marginLeft: "20px", marginBottom: "24px", lineHeight: "2" }}>
-          <li>{t("WS_DOC_IDENTITY_PROOF")}</li>
-          <li>{t("WS_DOC_ADDRESS_PROOF")}</li>
-          <li>{t("WS_DOC_ELECTRICITY_BILL")}</li>
-          <li>{t("WS_DOC_PLUMBER_REPORT")}</li>
-          <li>{t("WS_DOC_BUILDING_PLAN")}</li>
-          <li>{t("WS_DOC_PROPERTY_TAX_RECEIPT")}</li>
-          <li>{t("WS_DOC_APPLICANT_PHOTOGRAPH")}</li>
-        </ul> */}
-
         {!hasProperty || (hasProperty?.code === "YES" && !selectedProperty) ? (
           <SubmitBar label={t("CS_COMMON_NEXT")} onSubmit={() => { }} disabled={true} />
         ) : (
@@ -301,6 +489,15 @@ const WSInfoPage = () => {
           />
         </div>
       </Card>
+      {showToast && (
+        <Toast
+          error={showToast.key === "error"}
+          warning={showToast.key === "warning"}
+          label={t(showToast.message)}
+          onClose={() => setShowToast(null)}
+          isDleteBtn={true}
+        />
+      )}
     </React.Fragment>
   );
 };

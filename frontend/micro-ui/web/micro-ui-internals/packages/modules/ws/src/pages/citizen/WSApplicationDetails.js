@@ -915,14 +915,23 @@ const WSApplicationDetails = () => {
               )}
               <CardHeader styles={{ fontSize: "28px" }}>{t("WS_COMMON_DOCUMENT_DETAILS")}</CardHeader>
               {data?.WaterConnection?.[0]?.documents &&
-                data?.WaterConnection?.[0]?.documents.map((doc, index) => (
+                data?.WaterConnection?.[0]?.documents
+                  .reduce((acc, current) => {
+                    const x = acc.find((item) => item.documentType === current.documentType);
+                    if (!x) {
+                      return acc.concat([current]);
+                    } else {
+                      return acc;
+                    }
+                  }, [])
+                  .map((doc, index, array) => (
                   <div key={`doc-${index}`}>
                     {
                       <div>
                         <CardSectionHeader>{t(doc?.documentType?.split(".").slice(0, 2).join("_"))}</CardSectionHeader>
                         <StatusTable>
                           {<WSDocument value={data?.WaterConnection?.[0]?.documents} Code={doc?.documentType} index={index} />}
-                          {data?.WaterConnection?.[0]?.documents.length != index + 1 ? (
+                          {array.length != index + 1 ? (
                             <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
                           ) : null}
                         </StatusTable>
@@ -931,14 +940,23 @@ const WSApplicationDetails = () => {
                   </div>
                 ))}
               {data?.SewerageConnections?.[0]?.documents &&
-                data?.SewerageConnections?.[0]?.documents.map((doc, index) => (
+                data?.SewerageConnections?.[0]?.documents
+                  .reduce((acc, current) => {
+                    const x = acc.find((item) => item.documentType === current.documentType);
+                    if (!x) {
+                      return acc.concat([current]);
+                    } else {
+                      return acc;
+                    }
+                  }, [])
+                  .map((doc, index, array) => (
                   <div key={`doc-${index}`}>
                     {
                       <div>
                         <CardSectionHeader>{t(doc?.documentType?.split(".").slice(0, 2).join("_"))}</CardSectionHeader>
                         <StatusTable>
                           {<WSDocument value={data?.SewerageConnections?.[0]?.documents} Code={doc?.documentType} index={index} />}
-                          {data?.SewerageConnections?.[0]?.documents.length != index + 1 ? (
+                          {array.length != index + 1 ? (
                             <hr style={{ color: "white", backgroundColor: "white", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
                           ) : null}
                         </StatusTable>
