@@ -39,6 +39,7 @@ const MutationApplication = () => {
   const [authKNumber, setAuthKNumber] = useState("");
   const [authMobileNumber, setAuthMobileNumber] = useState("");
   const [authServiceType, setAuthServiceType] = useState("");
+  const [authActiveConnection, setAuthActiveConnection] = useState(null);
 
   const user = Digit.UserService.getUser();
   let tenantId =
@@ -91,7 +92,12 @@ const MutationApplication = () => {
       Object.keys(params).forEach((k) => params[k] == null && delete params[k]);
       const rawData = await Digit.WSService.search({ tenantId, filters: params, businessService });
       // Wrap in the same shape that useWSDetailsPage / applicationDetails produces
-      const wsData = businessService === "WS" ? rawData?.WaterConnection?.[0] : rawData?.SewerageConnections?.[0];
+      let wsData;
+      if (businessService === "WS") {
+        wsData = rawData?.WaterConnection?.find(c => c.applicationStatus === 'CONNECTION_ACTIVATED') || rawData?.WaterConnection?.[0];
+      } else {
+        wsData = rawData?.SewerageConnections?.find(c => c.applicationStatus === 'CONNECTION_ACTIVATED') || rawData?.SewerageConnections?.[0];
+      }
       if (!wsData) return null;
       return {
         applicationData: wsData,
@@ -313,9 +319,7 @@ const MutationApplication = () => {
         }
       }
 
-      if (convertAppData?.documents?.length > 0 && existingDocs.length > 0) {
-        convertAppData.documents = func.mapExistingDocIdsToPayload(convertAppData.documents, existingDocs);
-      }
+      // Replaced by custom document mapping logic below
 
       convertAppData.applicationType = resolvedServiceType === "WATER" ? "MUTATION_WATER_CONNECTION" : "MUTATION_SEWERAGE_CONNECTION";
 
@@ -332,7 +336,30 @@ const MutationApplication = () => {
         };
 
         if (updatePayload?.documents?.length > 0 && existingDocs.length > 0) {
-          updatePayload.documents = func.mapExistingDocIdsToPayload(updatePayload.documents, existingDocs);
+          const activePayloadDocs = updatePayload.documents;
+          let finalDocs = [];
+
+          activePayloadDocs.forEach(newDoc => {
+             const oldDoc = existingDocs.find(d => d.documentType === newDoc.documentType);
+             if (oldDoc) {
+                 if (oldDoc.fileStoreId === newDoc.fileStoreId) {
+                     finalDocs.push({ ...newDoc, id: oldDoc.id });
+                 } else {
+                     finalDocs.push(newDoc);
+                     finalDocs.push({ ...oldDoc, status: "INACTIVE" });
+                 }
+             } else {
+                 finalDocs.push(newDoc);
+             }
+          });
+
+          existingDocs.forEach(oldDoc => {
+             if (!activePayloadDocs.find(d => d.documentType === oldDoc.documentType)) {
+                 finalDocs.push({ ...oldDoc, status: "INACTIVE" });
+             }
+          });
+
+          updatePayload.documents = finalDocs;
         }
 
         if (Digit?.Customizations?.WS?.customiseUpdatePayloadOfWS) {
@@ -511,10 +538,12 @@ const MutationApplication = () => {
             <Step1_SearchConnection
               t={t}
               defaultKNumber={isEditFlow ? applicationDetails?.applicationData?.connectionNo : ""}
-              onNext={({ kNumber, mobileNumber, serviceType: detectedServiceType }) => {
+              isEditFlow={isEditFlow}
+              onNext={({ kNumber, mobileNumber, serviceType: detectedServiceType, activeConnection }) => {
                 setAuthKNumber(kNumber);
                 setAuthMobileNumber(mobileNumber);
                 if (detectedServiceType) setAuthServiceType(detectedServiceType);
+                if (activeConnection) setAuthActiveConnection(activeConnection);
                 setCompletedSteps((prev) => new Set([...prev, 1]));
                 setCurrentStep(2);
               }}
@@ -525,8 +554,8 @@ const MutationApplication = () => {
             <Fragment>
               <Step1_ExistingConnection
                 t={t}
-                applicationDetails={applicationDetails}
-                propertyId={applicationDetails?.applicationData?.propertyId}
+                applicationDetails={authActiveConnection ? { applicationData: authActiveConnection } : applicationDetails}
+                propertyId={authActiveConnection?.propertyId || applicationDetails?.applicationData?.propertyId}
                 mobileNumber={authMobileNumber}
                 onVerify={() => {
                   setCompletedSteps((prev) => new Set([...prev, 2]));
@@ -544,7 +573,7 @@ const MutationApplication = () => {
             <Step4_Preview
               t={t}
               formData={formData}
-              applicationDetails={applicationDetails}
+              applicationDetails={authActiveConnection ? { applicationData: authActiveConnection } : applicationDetails}
               resolvedServiceType={resolvedServiceType}
               onBack={() => setCurrentStep(4)}
               onSubmit={submitApplication}

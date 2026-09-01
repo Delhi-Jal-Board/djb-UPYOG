@@ -83,8 +83,7 @@ const ActionModal = ({
     applicationData?.applicationNo?.includes("MUT");
 
   const isReasonRequiredAction =
-    isMutationApp &&
-    (action?.action?.includes("SEND_BACK") || action?.action?.includes("REJECT"));
+    action?.action?.includes("SEND_BACK") || action?.action?.includes("REJECT");
 
   const isMobile = window.Digit.Utils.browser.isMobile();
   const isEmployee = window.location.href.includes("/employee");
@@ -131,15 +130,8 @@ const ActionModal = ({
         setError(t("PLEASE_SELECT_REASON") || "Please select a reason");
         return;
       }
-      if (selectedReason?.code === "OTHER") {
-        if (!otherReasonText || otherReasonText.trim() === "") {
-          setError(t("PLEASE_ENTER_REASON") || "Please enter the reason");
-          return;
-        }
-        commentValue = otherReasonText.trim();
-      } else {
-        commentValue = selectedReason?.name || (selectedReason?.i18nKey ? t(selectedReason?.i18nKey) : selectedReason?.code);
-      }
+      const reasonValue = selectedReason?.name || (selectedReason?.i18nKey ? t(selectedReason?.i18nKey) : selectedReason?.code);
+      commentValue = commentValue ? `${reasonValue}\n${commentValue}` : reasonValue;
     }
 
     if (applicationData?.isBillAmend) {
