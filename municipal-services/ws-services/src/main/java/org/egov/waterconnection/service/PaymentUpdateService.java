@@ -680,11 +680,46 @@ public class PaymentUpdateService {
 
 		List<WhatsAppRequest> whatsappRequests = new ArrayList<>();
 		mobileNumbersAndNames.forEach((mobileNumber, name) -> {
+			String citizenName = name != null ? name : "Citizen";
+
+			String appType = waterConnectionRequest.getWaterConnection().getApplicationType();
+			String serviceName = "Water Connection";
+			if (NEW_WATER_CONNECTION.equalsIgnoreCase(appType)) {
+				serviceName = "New Water Connection";
+			} else if (MODIFY_WATER_CONNECTION.equalsIgnoreCase(appType)) {
+				serviceName = "Modify Water Connection";
+			} else if (MUTATION_WATER_CONNECTION.equalsIgnoreCase(appType)) {
+				serviceName = "Water Connection Mutation";
+			} else if (DISCONNECT_WATER_CONNECTION.equalsIgnoreCase(appType)) {
+				serviceName = "Water Connection Disconnection";
+			} else if (WATER_RECONNECTION.equalsIgnoreCase(appType)) {
+				serviceName = "Water Connection Reconnection";
+			} else if (appType != null) {
+				serviceName = appType;
+			}
+
+			String knoOrSrn = !StringUtils.isEmpty(waterConnectionRequest.getWaterConnection().getConnectionNo())
+					? waterConnectionRequest.getWaterConnection().getConnectionNo()
+					: waterConnectionRequest.getWaterConnection().getApplicationNo();
+
+			String amount = paymentDetail.getTotalAmountPaid() != null
+					? paymentDetail.getTotalAmountPaid().toPlainString()
+					: "0";
+
+			Long receiptTimestamp = paymentDetail.getReceiptDate() != null ? paymentDetail.getReceiptDate() : System.currentTimeMillis();
+			LocalDate paymentDate = Instant.ofEpochMilli(receiptTimestamp)
+					.atZone(ZoneId.systemDefault()).toLocalDate();
+			DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd-MMM-yyyy", Locale.ENGLISH);
+			String formattedDate = paymentDate.format(dateFormatter);
+
 			List<String> parameters = Arrays.asList(
-					name != null ? name : "Citizen", 
-					waterConnectionRequest.getWaterConnection().getApplicationNo(), 
-					String.valueOf(paymentDetail.getTotalAmountPaid())
+					citizenName,
+					serviceName,
+					knoOrSrn,
+					amount,
+					formattedDate
 			);
+
 			WhatsAppRequest req = WhatsAppRequest.builder()
 					.mobileNumber(mobileNumber)
 					.templateName(config.getPaymentTemplateName())
