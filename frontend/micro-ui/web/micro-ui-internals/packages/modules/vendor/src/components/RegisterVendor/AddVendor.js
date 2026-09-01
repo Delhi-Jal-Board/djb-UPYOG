@@ -264,7 +264,7 @@ const AddVendor = () => {
       if (data?.totalCount >= 3) {
         setShowToast({
           key: "error",
-          message: "You can't create more than 3 eKYC vendors. Please delete an existing vendor before creating a new one.",
+          message: t("EKYC_VENDOR_LIMIT"),
           duration: 5000,
         });
         return;
