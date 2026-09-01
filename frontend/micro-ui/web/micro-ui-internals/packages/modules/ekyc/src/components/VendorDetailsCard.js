@@ -215,17 +215,19 @@ const VendorDetailsCard = () => {
 
   const [ekycDownloadLoading, setEkycDownloadLoading] = useState(false);
 
-  const handleDownloadEkycData = async (fromDate, toDate) => {
-    setEkycDownloadLoading(true);
-    try {
-      const response = await Digit.EkycService.application_list({
-        tenantId: tenantId,
-        offset: 0,
-        limit: 10000,
-        reportDownload: true,
-        ...(fromDate && { fromDate }),
-        ...(toDate && { toDate }),
-      });
+    const handleDownloadEkycData = async (fromDate, toDate) => {
+        setEkycDownloadLoading(true);
+        try {
+            const response = await Digit.EkycService.application_list({
+                tenantId: tenantId,
+                offset: 0,
+                limit: 10000,
+                // Vendor-specific filter 
+                vendorId: targetVendorId,
+                reportDownload: true,
+                ...(fromDate && { fromDate }),
+                ...(toDate && { toDate }),
+            });
 
       const consumerList = response?.consumerList || [];
 
@@ -659,13 +661,17 @@ const VendorDetailsCard = () => {
           </div>
         </div>
 
-        {/* Download Report — far right */}
-        <div className="report-download">
-          <button className="download-btn" disabled={reportLoading} onClick={handleDownload}>
-            {reportLoading ? t("DOWNLOADING") || "Downloading..." : t("DOWNLOAD_REPORT") || "Download Report"}
-          </button>
-        </div>
-      </div>
+                {/* Download Report — far right */}
+                <div className="report-download">
+                    <button
+                        className="download-btn"
+                        disabled={reportLoading}
+                        onClick={handleDownload}
+                    >
+                        {reportLoading ? t("DOWNLOADING") || "Downloading..." : t("DOWNLOAD_REPORT") || "Download Report"}
+                    </button>
+                </div>
+            </div>
 
       {/* Stats */}
       <div className="stats-wrapper">

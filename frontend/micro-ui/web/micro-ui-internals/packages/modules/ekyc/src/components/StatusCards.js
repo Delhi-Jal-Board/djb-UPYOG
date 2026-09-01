@@ -402,54 +402,55 @@ const StatusCards = ({ countData }) => {
               {t("DOWNLOAD_REPORT") || "Download Report"}
 
               <MdDownloadIcon />
-
-              {showReportMenu && (
-                <div className="report-menu">
-                  {[
-                    { label: t("TODAY") || "Today", key: "today" },
-                    { label: t("THIS_WEEK") || "This Week", key: "week" },
-                    { label: t("THIS_MONTH") || "This Month", key: "month" },
-                  ].map(({ label, key }) => (
-                    <div key={key} className="menu-item" onClick={() => handlePresetDownload(key)}>
-                      {label}
-                    </div>
-                  ))}
-
-                  <div className="custom-date-trigger" onClick={() => setShowCustomPicker((p) => !p)}>
-                    {t("CUSTOM_DATE") || "Custom Date"}
-                  </div>
-
-                  {showCustomPicker && (
-                    <div className="custom-picker">
-                      <div className="date-inputs">
-                        <label>
-                          <span>From</span>
-                          <input type="date" value={customDate.from} onChange={(e) => setCustomDate({ ...customDate, from: e.target.value })} />
-                        </label>
-                        <label>
-                          <span>To</span>
-                          <input type="date" value={customDate.to} onChange={(e) => setCustomDate({ ...customDate, to: e.target.value })} />
-                        </label>
-                      </div>
-                      <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
-                        <button
-                          className="picker-cancel-btn"
-                          onClick={() => {
-                            setShowCustomPicker(false);
-                            setCustomDate({ from: "", to: "" });
-                          }}
-                        >
-                          {t("CANCEL") || "Cancel"}
-                        </button>
-                        <button className="picker-apply-btn" onClick={handleCustomDownload}>
-                          {t("APPLY") || "Apply"}
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
             </button>
+
+            {showReportMenu && (
+              <div className="report-menu">
+                {[
+                  { label: t("TODAY") || "Today", key: "today" },
+                  { label: t("THIS_WEEK") || "This Week", key: "week" },
+                  { label: t("THIS_MONTH") || "This Month", key: "month" },
+                ].map(({ label, key }) => (
+                  <div key={key} className="menu-item" onClick={() => handlePresetDownload(key)}>
+                    {label}
+                  </div>
+                ))}
+
+                <div className="custom-date-trigger" onClick={() => setShowCustomPicker((p) => !p)}>
+                  {t("CUSTOM_DATE") || "Custom Date"}
+                </div>
+
+                {showCustomPicker && (
+                  <div className="custom-picker">
+                    <div className="date-inputs">
+                      <label>
+                        <span>From</span>
+                        <input type="date" value={customDate.from} onChange={(e) => setCustomDate({ ...customDate, from: e.target.value })} />
+                      </label>
+                      <label>
+                        <span>To</span>
+                        <input type="date" value={customDate.to} onChange={(e) => setCustomDate({ ...customDate, to: e.target.value })} />
+                      </label>
+                    </div>
+                    <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
+                      <button
+                        className="picker-cancel-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowCustomPicker(false);
+                          setCustomDate({ from: "", to: "" });
+                        }}
+                      >
+                        {t("CANCEL") || "Cancel"}
+                      </button>
+                      <button className="picker-apply-btn" onClick={(e) => { e.stopPropagation(); handleCustomDownload(); }}>
+                        {t("APPLY") || "Apply"}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 

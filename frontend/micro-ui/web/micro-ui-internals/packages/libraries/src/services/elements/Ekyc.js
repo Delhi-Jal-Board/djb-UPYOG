@@ -106,21 +106,19 @@ export const EkycService = {
     tenantId = "dl.djb",
     offset = 0,
     limit = 20,
-    kno = null,
-    ekycStatus = null,
-    zoneName = null,
-    assembly = null,
-    ward = null,
-    pincode = null,
-    mrkey = null,
-    surveyorId = null,
-    unassignedOnly = null,
-    reportDownload = null,
-    fetchFilterOptions = null,
     fromDate = null,
     toDate = null,
-  } = {}) =>
-    Request({
+    ...extraData
+  } = {}) => {
+    // Clean null and undefined values
+    const data = {};
+    Object.keys(extraData).forEach((key) => {
+      if (extraData[key] !== null && extraData[key] !== undefined) {
+        data[key] = extraData[key];
+      }
+    });
+
+    return Request({
       url: Urls.ekyc.application_list,
       method: "POST",
       auth: true,
@@ -133,20 +131,10 @@ export const EkycService = {
         ...(fromDate && { fromDate }),
         ...(toDate && { toDate }),
       },
-      data: {
-        kno,
-        ekycStatus,
-        zoneName,
-        assembly,
-        ward,
-        pincode,
-        mrkey,
-        surveyorId,
-        unassignedOnly,
-        reportDownload,
-        fetchFilterOptions,
-      },
-    }),
+      data,
+    });
+  },
+
   assignment_create: async ({ tenantId = "dl.djb", surveyorId, assignmentType, assignmentValue, assignmentValues } = {}) => {
     const response = await Request({
       url: Urls.ekyc.assignment_create,
