@@ -105,7 +105,8 @@ public class WhatsAppService {
             templateBody.put("name", request.getTemplateName());
             
             Map<String, Object> language = new HashMap<>();
-            language.put("code", "en");
+            String langCode = (request.getTemplateName() != null && request.getTemplateName().endsWith("_hi")) ? "hi" : "en";
+            language.put("code", langCode);
             templateBody.put("language", language);
 
             if (request.getParameters() != null && !request.getParameters().isEmpty()) {
