@@ -20,4 +20,5 @@ public class WhatsAppRequest {
     private String mobileNumber;
     private String templateName;
     private List<String> parameters;
+    private String language;
 }
