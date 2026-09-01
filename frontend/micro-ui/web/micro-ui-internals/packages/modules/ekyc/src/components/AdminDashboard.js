@@ -100,10 +100,11 @@ const AdminDashboard = () => {
                   className="vendor-perf-card"
                   onClick={() => history.push(`/digit-ui/employee/ekyc/vendors/${vendor.vendorId}`)}
                 >
+                  {/* Header */}
                   <div className="vendor-card-header">
                     <div className="vendor-title">
                       <div className="vendor-icon">
-                        <span>{vendor.vendorName[0].toUpperCase()}</span>
+                        <span>{vendor.vendorName?.[0]?.toUpperCase()}</span>
                       </div>
 
                       <div>
@@ -115,6 +116,7 @@ const AdminDashboard = () => {
                     <div className="progress-badge">{vendor.progressPercent}%</div>
                   </div>
 
+                  {/* Progress */}
                   <div className="progress-section">
                     <div className="progress-bar-container">
                       <div className="progress-bar-fill" style={{ width: `${vendor.progressPercent}%` }} />
@@ -126,6 +128,7 @@ const AdminDashboard = () => {
                     </div>
                   </div>
 
+                  {/* Team */}
                   <div className="stats-grid">
                     <div className="stat-item">
                       <span className="stat-value">{vendor.totalSupervisors}</span>
@@ -138,15 +141,16 @@ const AdminDashboard = () => {
                     </div>
 
                     <div className="stat-item">
-                      <span className="stat-value completed-val">{vendor.submittedKnos}</span>
-                      <span className="stat-label">{t("COMPLETED") || "Completed"}</span>
+                      <span className="stat-value">{vendor.totalKnos}</span>
+                      <span className="stat-label">{t("TOTAL_KNOS") || "Total KNOs"}</span>
                     </div>
                   </div>
 
+                  {/* Status */}
                   <div className="knos-summary">
                     <div className="kno-stat">
-                      <span className="kno-label">{t("TOTAL") || "Total"}</span>
-                      <strong>{vendor.totalKnos}</strong>
+                      <span className="kno-label">{t("SUBMITTED") || "Submitted"}</span>
+                      <strong>{vendor.submittedKnos}</strong>
                     </div>
 
                     <div className="kno-stat pending">

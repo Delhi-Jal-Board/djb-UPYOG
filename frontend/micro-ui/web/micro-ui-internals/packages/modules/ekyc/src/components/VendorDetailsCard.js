@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useRef, useEffect } from "react";
-import { Card, Loader, Table } from "@djb25/digit-ui-react-components";
+import { Card, Loader, Table, MdDownloadIcon } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useParams, useHistory } from "react-router-dom";
 import { ekycMockData } from "./mockData";
@@ -70,7 +70,7 @@ const VendorDetailsCard = () => {
 
   // Fetch assignment progress with hierarchy (supervisor and surveyor details) for target vendor
   const { isLoading: isProgressLoading, data: progressData } = Digit.Hooks.ekyc.useEkycAssignmentProgress(
-    targetVendorId ? { vendorId: targetVendorId, vendorIds: [targetVendorId] } : {},
+    targetVendorId ? { vendorId: targetVendorId } : {},
     {
       enabled: !!tenantId,
       keepPreviousData: true,
@@ -145,33 +145,20 @@ const VendorDetailsCard = () => {
 
   // KPI stats calculation
   const cards = useMemo(() => {
-    const hasRealData = vendorSupervisors.some((s) => s.totalKnos > 0);
-
-    console.log("11111111111111111", vendorSupervisors);
-    console.log(progressData);
-    const totalKnos = hasRealData
-      ? vendorSupervisors.reduce((acc, s) => acc + (s.totalKnos || 0), 0)
-      : progressData?.totalKnos || vendor?.assignedConnections || 0;
-    const totalAssignments = hasRealData
-      ? vendorSupervisors.reduce((acc, s) => acc + (s.totalKnos || 0), 0)
-      : progressData?.totalKnos || vendor?.assignedConnections || 0;
-
-    const completedKnos = hasRealData
-      ? vendorSupervisors.reduce((acc, s) => acc + (s.submittedKnos || 0), 0)
-      : progressData?.completedKnos || vendor?.completedEkyc || 0;
-
-    const pendingKnos = hasRealData ? vendorSupervisors.reduce((acc, s) => acc + (s.pendingKnos || 0), 0) : totalKnos - completedKnos;
-
-    const progressPercent = totalKnos > 0 ? Math.round((completedKnos / totalKnos) * 100) : vendor?.progress || 0;
+    // const totalKnos = progressData?.totalKnosInSystem || 0;
+    const totalAssignments = progressData?.totalKnos || 0;
+    const completedKnos = progressData?.completedKnos || 0;
+    const pendingKnos = progressData?.pendingKnos || 0;
+    const progressPercent = progressData?.overallProgressPercent || 0;
 
     return [
-      {
-        label: "TOTAL_EKYC_APPLICATIONS",
-        count: totalKnos,
-        color: "#0B2559",
-        type: "today",
-        icon: <FaUsers />,
-      },
+      // {
+      //   label: "TOTAL_EKYC_APPLICATIONS",
+      //   count: totalKnos,
+      //   color: "#0B2559",
+      //   type: "today",
+      //   icon: <FaUsers />,
+      // },
       {
         label: "TOTAL_EKYC_APPLICATIONS",
         count: totalAssignments,
@@ -215,19 +202,19 @@ const VendorDetailsCard = () => {
 
   const [ekycDownloadLoading, setEkycDownloadLoading] = useState(false);
 
-    const handleDownloadEkycData = async (fromDate, toDate) => {
-        setEkycDownloadLoading(true);
-        try {
-            const response = await Digit.EkycService.application_list({
-                tenantId: tenantId,
-                offset: 0,
-                limit: 10000,
-                // Vendor-specific filter 
-                vendorId: targetVendorId,
-                reportDownload: true,
-                ...(fromDate && { fromDate }),
-                ...(toDate && { toDate }),
-            });
+  const handleDownloadEkycData = async (fromDate, toDate) => {
+    setEkycDownloadLoading(true);
+    try {
+      const response = await Digit.EkycService.application_list({
+        tenantId: tenantId,
+        offset: 0,
+        limit: 10000,
+        // Vendor-specific filter
+        vendorId: targetVendorId,
+        reportDownload: true,
+        ...(fromDate && { fromDate }),
+        ...(toDate && { toDate }),
+      });
 
       const consumerList = response?.consumerList || [];
 
@@ -661,17 +648,13 @@ const VendorDetailsCard = () => {
           </div>
         </div>
 
-                {/* Download Report — far right */}
-                <div className="report-download">
-                    <button
-                        className="download-btn"
-                        disabled={reportLoading}
-                        onClick={handleDownload}
-                    >
-                        {reportLoading ? t("DOWNLOADING") || "Downloading..." : t("DOWNLOAD_REPORT") || "Download Report"}
-                    </button>
-                </div>
-            </div>
+        {/* Download Report — far right */}
+        <div className="report-download">
+          <button className="download-btn" disabled={reportLoading} onClick={handleDownload}>
+            {reportLoading ? t("DOWNLOADING") || "Downloading..." : t("DOWNLOAD_REPORT") || "Download Report"}
+          </button>
+        </div>
+      </div>
 
       {/* Stats */}
       <div className="stats-wrapper">
@@ -711,20 +694,7 @@ const VendorDetailsCard = () => {
                     setShowCustomPicker(false);
                   }}
                 >
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                    <polyline points="7 10 12 15 17 10" />
-                    <line x1="12" y1="15" x2="12" y2="3" />
-                  </svg>
+                  <MdDownloadIcon />
                   {ekycDownloadLoading ? t("DOWNLOADING") || "Downloading..." : t("DOWNLOAD_EXCEL") || "Download Excel"}
                 </button>
 
@@ -797,41 +767,6 @@ const VendorDetailsCard = () => {
           </div>
         </div>
       </div>
-
-      {/* <Card className="dashboard-card">
-                <Table
-                    t={t}
-                    tableTitle={t("CONNECTED_SUPERVISORS") || "Connected Supervisors"}
-                    tableClass="ekycTable"
-                    data={paginatedSupervisors}
-                    columns={supervisorColumns}
-                    isLoading={isPageLoading}
-                    totalRecords={vendorSupervisors.length}
-                    currentPage={currentPage}
-                    pageSizeLimit={pageSize}
-                    isPaginationRequired={true}
-                    onNextPage={() => {
-                        if (currentPage < Math.ceil(vendorSupervisors.length / pageSize) - 1) {
-                            setCurrentPage((prev) => prev + 1);
-                        }
-                    }}
-                    onPrevPage={() => {
-                        if (currentPage > 0) {
-                            setCurrentPage((prev) => prev - 1);
-                        }
-                    }}
-                    onFirstPage={() => {
-                        setCurrentPage(0);
-                    }}
-                    onLastPage={() => {
-                        setCurrentPage(Math.max(Math.ceil(vendorSupervisors.length / pageSize) - 1, 0));
-                    }}
-                    onPageSizeChange={(e) => {
-                        setPageSize(Number(e.target.value));
-                        setCurrentPage(0);
-                    }}
-                />
-            </Card> */}
 
       <Card className="dashboard-card">
         <Table
