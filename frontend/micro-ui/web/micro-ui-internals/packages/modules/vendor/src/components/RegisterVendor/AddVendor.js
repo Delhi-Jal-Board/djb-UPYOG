@@ -98,7 +98,7 @@ const AddVendor = () => {
           key: "error",
           action: "INVALID_CONTRACT_DATE",
         });
-      } else if (!isInvalid && showToast) {
+      } else if (!isInvalid && showToast?.action === "INVALID_CONTRACT_DATE") {
         setShowToast(null);
       }
     }
@@ -154,7 +154,18 @@ const AddVendor = () => {
     setShowToast(null);
   };
 
-  const onSubmit = (data) => {
+  const { refetch } = Digit.Hooks.fsm.useVendorSearch({
+    tenantId,
+    filters: {
+      status: "ACTIVE,DISABLED",
+      serviceType: "ekyc",
+    },
+    config: {
+      enabled: false,
+    },
+  });
+
+  const onSubmit = async (data) => {
     // FINAL SUBMIT
     const mergedData = data;
     const address = mergedData?.propertyAddress;
@@ -249,6 +260,15 @@ const AddVendor = () => {
     };
 
     if (isEkyc) {
+      const { data } = await refetch();
+      if (data?.totalCount >= 3) {
+        setShowToast({
+          key: "error",
+          message: "You can't create more than 3 eKYC vendors. Please delete an existing vendor before creating a new one.",
+          duration: 5000,
+        });
+        return;
+      }
       vendorData = {
         ...vendorData,
         zoneIds: mergedData?.zoneIds?.map((z) => z?.code) || [],
@@ -317,11 +337,14 @@ const AddVendor = () => {
           <Toast
             error={showToast.key === "error"}
             label={
-              showToast.action === "INVALID_CONTRACT_DATE"
-                ? `${t("ES_VENDOR_CONTRACT_END_DATE")} cannot be earlier than ${t("ES_VENDOR_CONTRACT_START_DATE")}`
-                : t(showToast.key === "success" ? `ES_FSM_REGISTRY_${showToast.action}_SUCCESS` : showToast.action)
+              showToast.message
+              // ? showToast.message
+              // : showToast.action === "INVALID_CONTRACT_DATE"
+              // ? `${t("ES_VENDOR_CONTRACT_END_DATE")} cannot be earlier than ${t("ES_VENDOR_CONTRACT_START_DATE")}`
+              // : t(showToast.key === "success" ? `ES_FSM_REGISTRY_${showToast.action}_SUCCESS` : showToast.action)
             }
             onClose={closeToast}
+            duration={showToast.duration || 5000}
           />
         )}
       </div>

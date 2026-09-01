@@ -76,13 +76,7 @@ const RegisteredVendorSearch = ({
 
     switch (action) {
       case "VENDOR":
-        if (ekycVendorCount >= 3) {
-          setShowToast({
-            key: "error",
-            action: "You can't create more than 3 eKYC vendors. Please delete an existing vendor before creating a new one.",
-          });
-          return;
-        } else return history.push(`/digit-ui/${userPath}/vendor/registry/new-vendor`);
+        return history.push(`/digit-ui/${userPath}/vendor/registry/new-vendor`);
       case "VEHICLE":
         return history.push(`/digit-ui/${userPath}/vendor/registry/new-vehicle`);
       case "DRIVER":
