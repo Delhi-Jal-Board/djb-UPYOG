@@ -364,7 +364,7 @@ const Inbox = ({ parentRoute }) => {
     <div className="app-container">
       {/* Stats */}
       <div className="surveyor-dashboard" style={{ overflowY: "visible", marginBottom: "24px" }}>
-        <div className="stats-wrapper" style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
+        <div className="stats-wrapper">
           {cards.map((card, idx) => (
             <StatCard key={idx} title={t(card.label)} value={card.count} type={card.type} isLoading={isProgressLoading} icon={card.icon} />
           ))}

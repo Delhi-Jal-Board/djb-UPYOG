@@ -98,7 +98,7 @@ const SearchCitizenFilter = ({ searchParams, onFilterChange, defaultSearchParams
               <Dropdown t={t} option={serviceTypeList} value={service} selected={service} select={setService} optionKey={"name"} />
             </div>
 
-            <div>
+            <div style={{ marginTop: "16px", paddingLeft: "16px" }}>
               <SubmitBar
                 disabled={_.isEqual(_searchParams, searchParams)}
                 onSubmit={() => onFilterChange(_searchParams)}

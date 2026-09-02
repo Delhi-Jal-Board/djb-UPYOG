@@ -1,10 +1,9 @@
 import React, { useMemo, useState, useRef, useEffect } from "react";
-import { Card, Loader, Table, MdDownloadIcon } from "@djb25/digit-ui-react-components";
+import { Card, Loader, Table, MdDownloadIcon, FaDatabase, FaFileAlt } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useParams, useHistory } from "react-router-dom";
-import { ekycMockData } from "./mockData";
 import { downloadVendorPDF } from "../utils/reportDownloader";
-import { FaUsers, FaCheckCircle, FaClock, FaChartLine } from "react-icons/fa";
+import { FaCheckCircle, FaBuilding, FaUser, FaClock, FaChartLine } from "react-icons/fa";
 
 const VendorDetailsCard = () => {
   const { t } = useTranslation();
@@ -12,12 +11,17 @@ const VendorDetailsCard = () => {
   const tenantId = Digit.ULBService.getCurrentTenantId() || "dl.djb";
   const { vendorId } = useParams();
 
-  // Fetch all vendors from DSO search
-  const { data: vendorSearchResponse, isLoading: isVendorSearchLoading } = Digit.Hooks.fsm.useDsoSearch(
+  const { data: { vendor: [vendor] = [] } = {}, isLoading: isVendorSearchLoading } = Digit.Hooks.fsm.useVendorSearch({
     tenantId,
-    { status: "ACTIVE" },
-    { enabled: !!tenantId, staleTime: 300000 }
-  );
+    filters: {
+      status: "ACTIVE",
+      ids: vendorId,
+    },
+    config: {
+      enabled: !!tenantId,
+      staleTime: 300000,
+    },
+  });
 
   // Fetch all supervisors to filter by vendor
   const { data: supervisorSearchResponse, isLoading: isSupervisorSearchLoading } = Digit.Hooks.fsm.useSupervisorSearch(
@@ -26,45 +30,7 @@ const VendorDetailsCard = () => {
     { enabled: !!tenantId, staleTime: 300000 }
   );
 
-  const loggedInUser = Digit.SessionStorage.get("User")?.info;
-
   // Match vendor details
-  const vendor = useMemo(() => {
-    const userUuid = loggedInUser?.uuid;
-    const userMobile = loggedInUser?.mobileNumber;
-
-    // Helper to check if a vendor matches the logged in user
-    const matchesUser = (v) => {
-      const ownerUuid = v.owner?.uuid || v.owner?.id;
-      const ownerMobile = v.owner?.mobileNumber || v.mobileNumber;
-      return (userUuid && ownerUuid === userUuid) || (userMobile && ownerMobile === userMobile);
-    };
-
-    // Find in real API search first
-    if (vendorSearchResponse) {
-      if (vendorId) {
-        const matched = vendorSearchResponse.find(
-          (v) => v.dsoDetails?.id === vendorId || v.dsoDetails?.vendorId === vendorId || v.id === vendorId || v.vendorId === vendorId
-        );
-        if (matched) return matched.dsoDetails || matched;
-      } else {
-        // Try matching logged in user
-        const matched = vendorSearchResponse.find((v) => matchesUser(v.dsoDetails || v));
-        if (matched) return matched.dsoDetails || matched;
-        // Default to first vendor if no match found
-        if (vendorSearchResponse.length > 0) return vendorSearchResponse[0].dsoDetails || vendorSearchResponse[0];
-      }
-    }
-
-    // Fall back to ekycMockData vendors
-    if (vendorId) {
-      return ekycMockData.vendors.find((v) => v.id === Number(vendorId) || v.name === vendorId) || ekycMockData.vendors[0];
-    } else {
-      // Match mock vendor with user name or return first
-      const matchedMock = ekycMockData.vendors.find((v) => v.name?.toLowerCase() === loggedInUser?.name?.toLowerCase());
-      return matchedMock || ekycMockData.vendors[0];
-    }
-  }, [vendorSearchResponse, vendorId, loggedInUser]);
 
   const targetVendorId = vendorId || vendor?.id || vendor?.vendorId;
 
@@ -145,40 +111,49 @@ const VendorDetailsCard = () => {
 
   // KPI stats calculation
   const cards = useMemo(() => {
-    // const totalKnos = progressData?.totalKnosInSystem || 0;
+    const totalKnos = progressData?.totalKnosInZones || 0;
     const totalAssignments = progressData?.totalKnos || 0;
-    const completedKnos = progressData?.completedKnos || 0;
+    const completedKnos = progressData?.submittedKnos || 0;
+    const selfEkycCount = progressData?.selfEkycCountInZones || 0;
+    const submittedKnos = progressData?.submittedKnosInZones || 0;
     const pendingKnos = progressData?.pendingKnos || 0;
     const progressPercent = progressData?.overallProgressPercent || 0;
 
     return [
-      // {
-      //   label: "TOTAL_EKYC_APPLICATIONS",
-      //   count: totalKnos,
-      //   color: "#0B2559",
-      //   type: "today",
-      //   icon: <FaUsers />,
-      // },
+      {
+        label: "TOTAL_KNOS",
+        count: totalKnos,
+        color: "#0B2559",
+        type: "today",
+        icon: <FaDatabase />,
+      },
       {
         label: "TOTAL_EKYC_APPLICATIONS",
         count: totalAssignments,
         color: "#0B2559",
         type: "today",
-        icon: <FaUsers />,
+        icon: <FaFileAlt />,
       },
-      // {
-      //     label: "TOTAL_ASSIGNMENTS",
-      //     count: totalKnos,
-      //     color: "#3B82F6",
-      //     type: "week",
-      //     icon: <FaMapMarkedAlt />,
-      // },
       {
         label: "EKYC_COMPLETED",
         count: completedKnos,
         color: "#10B981",
         type: "month",
         icon: <FaCheckCircle />,
+      },
+      {
+        label: "EKYC_SUBMITTED_BY_VENDORS",
+        count: submittedKnos,
+        color: "#10B981",
+        type: "month",
+        icon: <FaBuilding />,
+      },
+      {
+        label: "EKYC_SUBMITTED_BY_CITIZEN",
+        count: selfEkycCount,
+        color: "#10B981",
+        type: "month",
+        icon: <FaUser />,
       },
       {
         label: "PENDING_APPLICATIONS",
@@ -768,7 +743,7 @@ const VendorDetailsCard = () => {
         </div>
       </div>
 
-      <Card className="dashboard-card">
+      <div className="dashboard-card">
         <Table
           t={t}
           tableTitle={t("CONNECTED_SUPERVISORS") || "Connected Supervisors"}
@@ -798,7 +773,7 @@ const VendorDetailsCard = () => {
             setCurrentPage(0);
           }}
         />
-      </Card>
+      </div>
     </Card>
   );
 };

@@ -23,12 +23,12 @@ const Inbox = ({ parentRoute, initialStates, businessService, filterComponent, i
   let paginationParams = isMobile
     ? { limit: 10, offset: 0, sortBy: sortParams?.[0]?.id, sortOrder: sortParams?.[0]?.desc ? "DESC" : "ASC" }
     : {
-        limit: pageSize,
-        mobileNumber: Digit.SessionStorage.get("User")?.info?.mobileNumber,
-        offset: pageOffset,
-        sortBy: sortParams?.[0]?.id,
-        sortOrder: sortParams?.[0]?.desc ? "DESC" : "ASC",
-      };
+      limit: pageSize,
+      mobileNumber: Digit.SessionStorage.get("User")?.info?.mobileNumber,
+      offset: pageOffset,
+      sortBy: sortParams?.[0]?.id,
+      sortOrder: sortParams?.[0]?.desc ? "DESC" : "ASC",
+    };
 
   const { isFetching, isLoading: hookLoading, searchResponseKey, data, searchFields, ...rest } = Digit.Hooks.useBillSearch({
     tenantId,
@@ -149,8 +149,8 @@ const Inbox = ({ parentRoute, initialStates, businessService, filterComponent, i
     );
   } else {
     return (
-      <div>
-        {isInbox && <Header>{t("ABG_SEARCH_BILL_COMMON_HEADER")}</Header>}
+      // <div className="workspace-content">
+        // {/* {isInbox && <Header styles={{ paddingLeft: "15px", paddingTop: "15px" }}>{t("ABG_SEARCH_BILL_COMMON_HEADER")}</Header>} */}
         <CitizenInbox
           data={data}
           tableConfig={rest?.tableConfig}
@@ -177,7 +177,7 @@ const Inbox = ({ parentRoute, initialStates, businessService, filterComponent, i
           totalRecords={totalRecords}
           filterComponent={filterComponent}
         />
-      </div>
+      // </div>
     );
   }
 };

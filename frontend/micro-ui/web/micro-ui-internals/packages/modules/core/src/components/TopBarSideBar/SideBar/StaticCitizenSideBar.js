@@ -74,6 +74,9 @@ const Profile = ({ info, stateName, t }) => {
         <img className="img-responsive img-circle img-Profile" src={info?.photo ? info?.photo : defaultImage} alt="" />
       </div>
       <div id="profile-location" className="label-container loc-Profile" onClick={redirectToProfile} style={{ cursor: "pointer" }}>
+        <div className="label-text"> {info?.name} </div>
+      </div>
+      <div id="profile-location" className="label-container loc-Profile" onClick={redirectToProfile} style={{ cursor: "pointer" }}>
         <div className="label-text"> {info?.mobileNumber} </div>
       </div>
       {info?.emailId && (

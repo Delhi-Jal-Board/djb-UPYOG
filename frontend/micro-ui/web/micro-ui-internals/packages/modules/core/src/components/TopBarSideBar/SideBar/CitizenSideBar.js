@@ -33,32 +33,46 @@ const defaultImage =
 const Profile = ({ info, stateName, t }) => {
   const [profilePic, setProfilePic] = React.useState(null);
   React.useEffect(() => {
-    if (profilePic !== null) {
-      const tenant = Digit.ULBService.getCurrentTenantId();
-      const uuid = info?.uuid;
-      (async () => {
-        if (uuid) {
-          const usersResponse = await Digit.UserService.userSearch(tenant, { uuid: [uuid] }, {});
-
-          if (usersResponse && usersResponse.user && usersResponse.user.length) {
-            const userDetails = usersResponse.user[0];
-            const thumbs = userDetails?.photo?.split(",");
-            setProfilePic(thumbs?.at(0));
-          }
+    if (info?.photo) {
+      Digit.UploadServices.Filefetch([info.photo], Digit.ULBService.getStateId()).then((res) => {
+        if (res?.data?.fileStoreIds && res.data.fileStoreIds.length > 0) {
+          const url = res.data.fileStoreIds[0].url;
+          setProfilePic(url.split(",")[3] || Digit.Utils.getFileUrl(url));
         }
-      })();
+      }).catch(() => {
+        setProfilePic(info?.photo?.split(",")?.at(0));
+      });
+    } else {
+      setProfilePic(null);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profilePic]);
+  }, [info?.photo]);
   return (
     <div className="profile-section">
       <div className="imageloader imageloader-loaded">
-        <img
-          className="img-responsive img-circle img-Profile"
-          src={profilePic ? profilePic : defaultImage}
-          style={{ objectFit: "cover", objectPosition: "center" }}
-          alt=""
-        />
+        {profilePic ? (
+          <img
+            className="img-responsive img-circle img-Profile"
+            src={profilePic}
+            style={{ objectFit: "cover", objectPosition: "center" }}
+            alt=""
+          />
+        ) : (
+          <div
+            className="img-responsive img-circle img-Profile"
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              backgroundColor: "#065297",
+              color: "#fff",
+              fontSize: "36px",
+              fontWeight: "bold",
+              margin: "0 auto",
+            }}
+          >
+            {info?.name ? info?.name?.[0]?.toUpperCase() : ""}
+          </div>
+        )}
       </div>
       <div id="profile-location" className="label-container loc-Profile">
         <div className="label-text"> {info?.mobileNumber} </div>

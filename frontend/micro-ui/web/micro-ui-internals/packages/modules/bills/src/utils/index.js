@@ -90,7 +90,7 @@ export const getActionButton = (businessService, receiptNumber) => {
   return (
     <a
       style={{
-        color: "#FE7A51",
+        color: "#5282e6",
         cursor: "pointer",
       }}
       onClick={() => {
@@ -108,7 +108,7 @@ export const getBillNumber = (businessService, consumerCode, billNumber) => {
     <a
       href="javascript:void(0)"
       style={{
-        color: "#FE7A51",
+        color: "#5282e6",
         cursor: "pointer",
       }}
       onClick={() => {
@@ -138,7 +138,7 @@ export const getRetryButton = (key, tenantId, locality, isConsolidated, business
     <>
     <div
       style={{
-        color: "#FE7A51",
+        color: "#5282e6",
         cursor: "pointer",
       }}
       onClick={() => {
@@ -156,7 +156,7 @@ export const getCancelButton = (jobid,setShowToast,t) => {
   return (
     <div
       style={{
-        color: "#FE7A51",
+        color: "#5282e6",
         cursor: "pointer",
       }}
       onClick={() => {

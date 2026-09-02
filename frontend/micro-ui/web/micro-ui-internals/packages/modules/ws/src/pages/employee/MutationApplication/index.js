@@ -2,7 +2,7 @@ import React, { useState, useEffect, Fragment } from "react";
 import { useQuery } from "react-query";
 import { Header, Loader, Toast } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
-import { useLocation, useHistory } from "react-router-dom";
+import { useLocation, useHistory, Switch, Route, useRouteMatch, Redirect } from "react-router-dom";
 import cloneDeep from "lodash/cloneDeep";
 import * as func from "../../../utils";
 import { convertApplicationData, convertModifyApplicationDetails } from "../../../utils";
@@ -17,17 +17,25 @@ import { VerticalTimeline } from "@djb25/digit-ui-react-components";
 
 const MutationApplication = () => {
   const { t } = useTranslation();
-  let { state } = useLocation();
+  const { path } = useRouteMatch();
+  const location = useLocation();
+  let { state } = location;
   state = state ? (typeof state === "string" ? JSON.parse(state) : state) : {};
   const history = useHistory();
   let filters = func.getQueryStringParams(location.search);
 
-  const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState({});
+  const currentStep = location.pathname.includes("/search-connection") ? 1
+    : location.pathname.includes("/existing-connection") ? 2
+    : location.pathname.includes("/consumer-details") ? 3
+    : location.pathname.includes("/document") ? 4
+    : location.pathname.includes("/preview") ? 5
+    : location.pathname.includes("/submission") ? 6
+    : 1;
+  const [formData, setFormData, clearFormData] = Digit.Hooks.useSessionStorage("MUTATION_APP_FORM_DATA", {});
   const [showToast, setShowToast] = useState(null);
   const [generatedAppNo, setGeneratedAppNo] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [completedSteps, setCompletedSteps] = useState(new Set());
+  const [completedSteps, setCompletedSteps, clearCompletedSteps] = Digit.Hooks.useSessionStorage("MUTATION_APP_COMPLETED_STEPS", []);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   useEffect(() => {
@@ -36,10 +44,10 @@ const MutationApplication = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const [authKNumber, setAuthKNumber] = useState("");
-  const [authMobileNumber, setAuthMobileNumber] = useState("");
-  const [authServiceType, setAuthServiceType] = useState("");
-  const [authActiveConnection, setAuthActiveConnection] = useState(null);
+  const [authKNumber, setAuthKNumber, clearAuthKNumber] = Digit.Hooks.useSessionStorage("MUTATION_APP_K_NUMBER", "");
+  const [authMobileNumber, setAuthMobileNumber, clearAuthMobileNumber] = Digit.Hooks.useSessionStorage("MUTATION_APP_MOBILE", "");
+  const [authServiceType, setAuthServiceType, clearAuthServiceType] = Digit.Hooks.useSessionStorage("MUTATION_APP_SERVICE", "");
+  const [authActiveConnection, setAuthActiveConnection, clearAuthActiveConnection] = Digit.Hooks.useSessionStorage("MUTATION_APP_ACTIVE_CONN", null);
 
   const user = Digit.UserService.getUser();
   let tenantId =
@@ -86,7 +94,7 @@ const MutationApplication = () => {
           }
         : {
             connectionNumber: querySearchParam,
-            isConnectionSearch: true,
+            searchType:'CONNECTION'
           };
       // Remove undefined/null values
       Object.keys(params).forEach((k) => params[k] == null && delete params[k]);
@@ -214,17 +222,9 @@ const MutationApplication = () => {
   const { mutate: waterUpdateMutation } = Digit.Hooks.ws.useWSApplicationActions("WATER");
   const { mutate: sewerageUpdateMutation } = Digit.Hooks.ws.useWSApplicationActions("SEWERAGE");
 
-  const handleNextStep2 = (data) => {
-    setFormData((prev) => ({ ...prev, ...data }));
-    setCompletedSteps((prev) => new Set([...prev, 3]));
-    setCurrentStep(4);
-  };
+  // Handled inline in Route component
 
-  const handleNextStep3 = (data) => {
-    setFormData((prev) => ({ ...prev, ...data }));
-    setCompletedSteps((prev) => new Set([...prev, 4]));
-    setCurrentStep(5);
-  };
+  // Handled inline in Route component
 
   const submitApplication = async () => {
     setIsSubmitting(true);
@@ -392,10 +392,16 @@ const MutationApplication = () => {
             }
 
             clearSessionFormData();
+                        clearFormData();
+            clearCompletedSteps();
+            clearAuthKNumber();
+            clearAuthMobileNumber();
+            clearAuthServiceType();
+            clearAuthActiveConnection();
             const newAppNo =
               resolvedServiceType === "WATER" ? updateData?.WaterConnection?.[0]?.applicationNo : updateData?.SewerageConnections?.[0]?.applicationNo;
             setGeneratedAppNo(newAppNo);
-            setCurrentStep(6);
+            history.push(`${path}/submission`);
           },
         });
         return;
@@ -480,10 +486,16 @@ const MutationApplication = () => {
                 }
 
                 clearSessionFormData();
+                                clearFormData();
+                clearCompletedSteps();
+                clearAuthKNumber();
+                clearAuthMobileNumber();
+                clearAuthServiceType();
+                clearAuthActiveConnection();
                 const newAppNo =
                   resolvedServiceType === "WATER" ? updateData?.WaterConnection?.[0]?.applicationNo : updateData?.SewerageConnections?.[0]?.applicationNo;
                 setGeneratedAppNo(newAppNo);
-                setCurrentStep(6);
+                history.push(`${path}/submission`);
               },
             });
           }
@@ -498,15 +510,13 @@ const MutationApplication = () => {
 
   const handleTimelineSelect = (route, index) => {
     const targetStep = index + 1;
-    // Allow going back to any previously visited step
     if (targetStep < currentStep) {
-      setCurrentStep(targetStep);
-      return;
-    }
-    // Allow clicking current step (no-op)
-    if (targetStep === currentStep) return;
-    // Prevent skipping ahead
-    if (targetStep > currentStep) {
+      if (targetStep === 1) history.push(`${path}/search-connection`);
+      else if (targetStep === 2) history.push(`${path}/existing-connection`);
+      else if (targetStep === 3) history.push(`${path}/consumer-details`);
+      else if (targetStep === 4) history.push(`${path}/document`);
+      else if (targetStep === 5) history.push(`${path}/preview`);
+    } else if (targetStep > currentStep) {
       setShowToast({ key: "warning", message: `Please complete Step ${currentStep} before proceeding to Step ${targetStep}.` });
     }
   };
@@ -534,54 +544,84 @@ const MutationApplication = () => {
         )}
 
         <div style={{ flex: "1", overflowY: "auto", minWidth: 0 }}>
-          {currentStep === 1 && (
-            <Step1_SearchConnection
-              t={t}
-              defaultKNumber={isEditFlow ? applicationDetails?.applicationData?.connectionNo : ""}
-              isEditFlow={isEditFlow}
-              onNext={({ kNumber, mobileNumber, serviceType: detectedServiceType, activeConnection }) => {
-                setAuthKNumber(kNumber);
-                setAuthMobileNumber(mobileNumber);
-                if (detectedServiceType) setAuthServiceType(detectedServiceType);
-                if (activeConnection) setAuthActiveConnection(activeConnection);
-                setCompletedSteps((prev) => new Set([...prev, 1]));
-                setCurrentStep(2);
-              }}
-            />
-          )}
-
-          {currentStep === 2 && (
-            <Fragment>
-              <Step1_ExistingConnection
+<Switch>
+            <Route path={`${path}/search-connection`}>
+              <Step1_SearchConnection
                 t={t}
-                applicationDetails={authActiveConnection ? { applicationData: authActiveConnection } : applicationDetails}
-                propertyId={authActiveConnection?.propertyId || applicationDetails?.applicationData?.propertyId}
-                mobileNumber={authMobileNumber}
-                onVerify={() => {
-                  setCompletedSteps((prev) => new Set([...prev, 2]));
-                  setCurrentStep(3);
+                defaultKNumber={isEditFlow ? applicationDetails?.applicationData?.connectionNo : ""}
+                isEditFlow={isEditFlow}
+                onNext={({ kNumber, mobileNumber, serviceType: detectedServiceType, activeConnection }) => {
+                  setAuthKNumber(kNumber);
+                  setAuthMobileNumber(mobileNumber);
+                  if (detectedServiceType) setAuthServiceType(detectedServiceType);
+                  if (activeConnection) setAuthActiveConnection(activeConnection);
+                  setCompletedSteps((prev) => [...new Set([...prev, 1])]);
+                  history.push(`${path}/existing-connection`);
                 }}
               />
-            </Fragment>
-          )}
+            </Route>
 
-          {currentStep === 3 && <Step2_NewConsumerDetails t={t} defaultValues={formData} onNext={handleNextStep2} onBack={() => setCurrentStep(2)} />}
+            <Route path={`${path}/existing-connection`}>
+              <Fragment>
+                <Step1_ExistingConnection
+                  t={t}
+                  applicationDetails={authActiveConnection ? { applicationData: authActiveConnection } : applicationDetails}
+                  propertyId={authActiveConnection?.propertyId || applicationDetails?.applicationData?.propertyId}
+                  mobileNumber={authMobileNumber}
+                  onVerify={() => {
+                    setCompletedSteps((prev) => [...new Set([...prev, 2])]);
+                    history.push(`${path}/consumer-details`);
+                  }}
+                />
+              </Fragment>
+            </Route>
 
-          {currentStep === 4 && <Step3_UploadDocuments t={t} defaultValues={formData} onNext={handleNextStep3} onBack={() => setCurrentStep(3)} />}
+            <Route path={`${path}/consumer-details`}>
+              <Step2_NewConsumerDetails 
+                t={t} 
+                defaultValues={formData} 
+                onNext={(data) => {
+                  setFormData((prev) => ({ ...prev, ...data }));
+                  setCompletedSteps((prev) => [...new Set([...prev, 3])]);
+                  history.push(`${path}/document`);
+                }} 
+                onBack={() => history.push(`${path}/existing-connection`)} 
+              />
+            </Route>
 
-          {currentStep === 5 && (
-            <Step4_Preview
-              t={t}
-              formData={formData}
-              applicationDetails={authActiveConnection ? { applicationData: authActiveConnection } : applicationDetails}
-              resolvedServiceType={resolvedServiceType}
-              onBack={() => setCurrentStep(4)}
-              onSubmit={submitApplication}
-              isLoading={isSubmitting}
-            />
-          )}
+            <Route path={`${path}/document`}>
+              <Step3_UploadDocuments 
+                t={t} 
+                defaultValues={formData} 
+                onNext={(data) => {
+                  setFormData((prev) => ({ ...prev, ...data }));
+                  setCompletedSteps((prev) => [...new Set([...prev, 4])]);
+                  history.push(`${path}/preview`);
+                }} 
+                onBack={() => history.push(`${path}/consumer-details`)} 
+              />
+            </Route>
 
-          {currentStep === 6 && <Step5_Submission t={t} applicationNumber={generatedAppNo} serviceType={resolvedServiceType} />}
+            <Route path={`${path}/preview`}>
+              <Step4_Preview
+                t={t}
+                formData={formData}
+                applicationDetails={authActiveConnection ? { applicationData: authActiveConnection } : applicationDetails}
+                resolvedServiceType={resolvedServiceType}
+                onBack={() => history.push(`${path}/document`)}
+                onSubmit={submitApplication}
+                isLoading={isSubmitting}
+              />
+            </Route>
+
+            <Route path={`${path}/submission`}>
+              <Step5_Submission t={t} applicationNumber={generatedAppNo} serviceType={resolvedServiceType} />
+            </Route>
+
+            <Route exact path={path}>
+              <Redirect to={`${path}/search-connection`} />
+            </Route>
+          </Switch>
 
           {showToast && (
             <Toast

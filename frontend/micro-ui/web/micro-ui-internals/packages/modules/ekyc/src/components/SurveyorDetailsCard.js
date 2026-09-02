@@ -744,7 +744,8 @@ const SurveyorDetailsDashboard = () => {
           showAutoSerialNo={true}
           isPaginationRequired={true}
           onNextPage={() => {
-            if (currentPage < (dashboardData?.dashboardInfo?.totalPages || 1) - 1) {
+            const total = dashboardData?.dashboardInfo?.total || 0;
+            if (currentPage < Math.ceil(total / pageSize) - 1) {
               setCurrentPage((prev) => prev + 1);
             }
           }}
@@ -757,7 +758,8 @@ const SurveyorDetailsDashboard = () => {
             setCurrentPage(0);
           }}
           onLastPage={() => {
-            setCurrentPage(Math.max((dashboardData?.dashboardInfo?.totalPages || 1) - 1, 0));
+            const total = dashboardData?.dashboardInfo?.total || 0;
+            setCurrentPage(Math.max(Math.ceil(total / pageSize) - 1, 0));
           }}
           onPageSizeChange={(e) => {
             setPageSize(Number(e.target.value));

@@ -739,6 +739,34 @@ const FaChartBar = ({ size = 24, color = "currentColor", backgroundColor = "tran
   );
 };
 
+const FaDatabase = ({ size = 24, color = "currentColor", strokeWidth = 2, className, style, ...props }) => {
+  return (
+    <svg viewBox="0 0 448 512" width={size} height={size} fill={color} strokeWidth={strokeWidth} className={className} style={style} {...props}>
+      <path d="M448 73.143v45.714C448 159.143 347.667 192 224 192S0 159.143 0 118.857V73.143C0 32.857 100.333 0 224 0s224 32.857 224 73.143zM448 176v102.857C448 319.143 347.667 352 224 352S0 319.143 0 278.857V176c48.125 33.143 136.208 48.572 224 48.572S399.874 209.143 448 176zm0 160v102.857C448 479.143 347.667 512 224 512S0 479.143 0 438.857V336c48.125 33.143 136.208 48.572 224 48.572S399.874 369.143 448 336z" />
+    </svg>
+  );
+};
+
+const FaFileAlt = ({ size = 24, color = "currentColor", strokeWidth = 2, className, style, title, ...props }) => {
+  return (
+    <svg
+      viewBox="0 0 384 512"
+      width={size}
+      height={size}
+      fill={color}
+      strokeWidth={strokeWidth}
+      className={className}
+      style={style}
+      aria-hidden={title ? undefined : true}
+      role="img"
+      {...props}
+    >
+      {title ? <title>{title}</title> : null}
+      <path d="M224 136V0H24C10.7 0 0 10.7 0 24v464c0 13.3 10.7 24 24 24h336c13.3 0 24-10.7 24-24V160H248c-13.2 0-24-10.8-24-24zm64 236c0 6.6-5.4 12-12 12H108c-6.6 0-12-5.4-12-12v-8c0-6.6 5.4-12 12-12h168c6.6 0 12 5.4 12 12v8zm0-64c0 6.6-5.4 12-12 12H108c-6.6 0-12-5.4-12-12v-8c0-6.6 5.4-12 12-12h168c6.6 0 12 5.4 12 12v8zm0-72v8c0 6.6-5.4 12-12 12H108c-6.6 0-12-5.4-12-12v-8c0-6.6 5.4-12 12-12h168c6.6 0 12 5.4 12 12zm96-114.1v6.1H256V0h6.1c6.4 0 12.5 2.5 17 7l97.9 98c4.5 4.5 7 10.6 7 16.9z" />
+    </svg>
+  );
+};
+
 const FastBackward = ({ size = 24, color = "currentColor", className = "", ...props }) => {
   return (
     <svg
@@ -2002,6 +2030,8 @@ export {
   EventsIconComp,
   ExternalLinkIcon,
   FaChartBar,
+  FaDatabase,
+  FaFileAlt,
   FastBackward,
   FastForward,
   Feedback,

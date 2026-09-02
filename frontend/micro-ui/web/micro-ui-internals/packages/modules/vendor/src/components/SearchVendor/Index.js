@@ -131,7 +131,6 @@ const SearchVendor = () => {
 
   const ekycVendorCount = vendorData?.filter((ele) => ele?.dsoDetails?.additionalDetails?.serviceType?.toLowerCase() === "ekyc").length;
 
-  console.log(ekycVendorCount);
   const inboxTotalCount = dsoData?.totalCount || 50;
 
   useEffect(() => {

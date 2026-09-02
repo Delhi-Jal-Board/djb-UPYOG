@@ -92,7 +92,7 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
 
   const FormContent = (
     <CollapsibleCardPage title={t("WS_DJB_EMPLOYEE")} defaultOpen={true}>
-      <div>
+      <div style={{ width: "max-content" }}>
         <Controller
           control={control}
           name="isDjbEmployee"

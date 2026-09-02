@@ -197,7 +197,22 @@ const UploadFileDigiLocker = (props) => {
     try {
       const digiLockerToken = sessionStorage.getItem("DigiLocker.token1");
       if (!digiLockerToken) {
-        setShowToast({ error: true, label: "Please login to DigiLocker first to fetch documents." });
+        try {
+          const tenantId = Digit.ULBService.getCurrentTenantId() || "dl.djb";
+          const data = await Digit.DigiLockerService.authorization({ module: "WS", tenantId });
+          const redirectUrl = data?.redirectURL || data?.redirectUrl;
+          const verifier = data?.dlReqRef || data?.codeverifier || data?.codeVerifier || data?.code_verifier;
+          if (verifier) {
+            sessionStorage.setItem("code_verfier_register", verifier);
+          }
+          if (redirectUrl) {
+            window.location.href = redirectUrl;
+          } else {
+            setShowToast({ error: true, label: "No redirect URL returned from DigiLocker API." });
+          }
+        } catch (error) {
+          setShowToast({ error: true, label: "Error fetching DigiLocker authorization URL." });
+        }
         return;
       }
       let TokenReq = {
@@ -482,8 +497,8 @@ const UploadFileDigiLocker = (props) => {
                 {digiLockerFilename
                   ? digiLockerFilename
                   : typeof inpRef.current.files[0]?.name !== "undefined" && !props?.file
-                  ? inpRef.current.files[0]?.name
-                  : props.file?.name}
+                    ? inpRef.current.files[0]?.name
+                    : props.file?.name}
               </span>
               <span onClick={() => handleDelete()} style={extraStyles ? extraStyles?.closeIconStyles : null}>
                 <Close style={props.Multistyle} className="close" />

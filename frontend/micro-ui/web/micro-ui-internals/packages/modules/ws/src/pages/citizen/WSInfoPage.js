@@ -187,7 +187,11 @@ const WSInfoPage = () => {
       if (e.stopPropagation) e.stopPropagation();
     }
     if (hasProperty?.code === "YES" && selectedProperty) {
-      handleSendOtp(e);
+      if (!isEmployee) {
+        proceedToNext();
+      } else {
+        handleSendOtp(e);
+      }
     } else if (hasProperty?.code === "YES" && !selectedProperty) {
       // Should not be reachable since button is disabled, but just in case
       return;
@@ -297,57 +301,70 @@ const WSInfoPage = () => {
         {hasProperty?.code === "YES" && (
           <div style={{ marginBottom: "24px" }}>
             {isEmployee && (
-              <div style={{ display: "flex", gap: "24px", marginBottom: "16px", alignItems: "flex-end" }}>
-                <div style={{ flex: 1 }}>
-                  <Label>{t("CORE_COMMON_MOBILE_NUMBER")}</Label>
-                  <TextInput
-                    t={t}
-                    type={"number"}
-                    isMandatory={false}
-                    name="mobileNumber"
-                    value={searchMobileNumber}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      if (val.length <= 10) {
-                        setSearchMobileNumber(val);
-                        setSelectedProperty(null);
-                        setShowOtpVerification(false);
-                        setOtp("");
-                      }
-                    }}
-                    placeholder={t("Enter mobile number")}
-                    maxLength={10}
-                  />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <Label>{t("WS_SELECT_EXISTING_PROPERTY")}</Label>
-                  <div className="field">
-                    <Dropdown
-                      className="form-field"
-                      option={propertyOptions}
-                      optionKey="displayName"
-                      id="propertyId"
-                      selected={selectedProperty}
-                      select={(val) => {
-                        setSelectedProperty(val);
-                        setShowOtpVerification(false);
-                        setOtp("");
-                      }}
+              <div style={{ display: "flex", flexDirection: "column", gap: "16px", marginBottom: "16px" }}>
+                <div style={{ display: "flex", gap: "24px", alignItems: "flex-end" }}>
+                  <div style={{ flex: 1 }}>
+                    <Label>{t("CORE_COMMON_MOBILE_NUMBER")}</Label>
+                    <TextInput
                       t={t}
-                      placeholder={t("PT_SELECT_PROPERTY")}
-                      disable={isLoading || propertyOptions.length === 0}
+                      type={"number"}
+                      isMandatory={false}
+                      name="mobileNumber"
+                      value={searchMobileNumber}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val.length <= 10) {
+                          setSearchMobileNumber(val);
+                          setSelectedProperty(null);
+                          setShowOtpVerification(false);
+                          setOtp("");
+                        }
+                      }}
+                      placeholder={t("Enter mobile number")}
+                      maxLength={10}
                     />
                   </div>
+                  <div style={{ flex: 1 }}>
+                    <Label>{t("WS_SELECT_EXISTING_PROPERTY")}</Label>
+                    <div className="field">
+                      <Dropdown
+                        className="form-field"
+                        option={propertyOptions}
+                        optionKey="displayName"
+                        id="propertyId"
+                        selected={selectedProperty}
+                        select={(val) => {
+                          setSelectedProperty(val);
+                          setShowOtpVerification(false);
+                          setOtp("");
+                        }}
+                        t={t}
+                        placeholder={t("PT_SELECT_PROPERTY")}
+                        disable={isLoading || propertyOptions.length === 0}
+                      />
+                    </div>
+                  </div>
                 </div>
+                {searchMobileNumber?.length === 10 && !isLoading && propertyOptions.length === 0 && (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                    <span style={{ color: "#d63031", fontWeight: "bold" }}>
+                      {t("WS_NO_PROPERTY_FOUND_ON_THIS_NUMBER") || "No property found on this number, please create the property first."}
+                    </span>
+                    <span onClick={handleCreateProperty}>
+                      <button className="submit-bar" type="button" style={{ color: "white", margin: 0 }}>
+                        {t("CPT_CREATE_PROPERTY")}
+                      </button>
+                    </span>
+                  </div>
+                )}
               </div>
             )}
 
-            {!isEmployee && <Label>{t("WS_SELECT_EXISTING_PROPERTY")}</Label>}
+            {!isEmployee && (isLoading || propertyOptions.length > 0) && <Label>{t("WS_SELECT_EXISTING_PROPERTY")}</Label>}
             {isLoading && !isEmployee ? (
               <Loader />
-            ) : (
-              propertyOptions.length > 0 &&
-              !isEmployee && (
+            ) : !isEmployee ? (
+              propertyOptions.length > 0 ? (
                 <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                   <Dropdown
                     option={propertyOptions}
@@ -364,8 +381,19 @@ const WSInfoPage = () => {
                   />
                   <span style={{ fontSize: "14px", color: "#505A5F" }}>{t("WS_PROPERTY_AUTOFILL_MSG")}</span>
                 </div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: "16px", marginTop: "16px" }}>
+                  <span style={{ color: "#d63031", fontWeight: "bold" }}>
+                    {t("WS_NO_PROPERTY_FOUND_ON_THIS_NUMBER") || "No property found on this number, please create the property first."}
+                  </span>
+                  <span onClick={handleCreateProperty}>
+                    <button className="submit-bar" type="button" style={{ color: "white", margin: 0 }}>
+                      {t("CPT_CREATE_PROPERTY")}
+                    </button>
+                  </span>
+                </div>
               )
-            )}
+            ) : null}
           </div>
         )}
 

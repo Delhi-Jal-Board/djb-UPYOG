@@ -60,7 +60,7 @@ const AdminDashboard = () => {
                   <p>{t("SELF_EKYC_BY_USERS") || "eKYC completed directly by users"}</p>
                 </div>
 
-                <span className="progress-badge">{11111 || 0}%</span>
+                <span className="kno-count-badge">{11111 || 0}%</span>
               </div>
 
               <div className="progress-bar-container">
@@ -113,7 +113,10 @@ const AdminDashboard = () => {
                       </div>
                     </div>
 
-                    <div className="progress-badge">{vendor.progressPercent}%</div>
+                    <div className="kno-count-badge">
+                      <span className="kno-count-label">{t("TOTAL_KNOS") || "Total KNOs"} -</span>
+                      <span className="kno-count-value">{vendor.totalKnosInZones}</span>
+                    </div>
                   </div>
 
                   {/* Progress */}
