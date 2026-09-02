@@ -139,19 +139,19 @@ public class SurveyorRepository {
         return results.get(0);
     }
 
-    public int syncEkycAssignmentSupervisor(String surveyorOwnerId, String newSupervisorId, String newVendorId) {
-        String sql = "UPDATE ekyc_assignment " +
-                "SET supervisor_id = ?, " +
-                "    vendor_id = COALESCE(?, vendor_id), " +
-                "    last_modified_time = EXTRACT(EPOCH FROM NOW())::BIGINT " +
-                "WHERE surveyor_id = ? " +
-                "  AND status = 'ACTIVE'";
-        int updatedRows = jdbcTemplate.update(sql, newSupervisorId, newVendorId, surveyorOwnerId);
-        log.info("syncEkycAssignment: updated {} ACTIVE assignment(s) " +
-                        "for surveyorOwnerId={} to supervisorId={}, vendorId={}",
-                updatedRows, surveyorOwnerId, newSupervisorId, newVendorId);
-        return updatedRows;
-    }
+//    public int syncEkycAssignmentSupervisor(String surveyorOwnerId, String newSupervisorId, String newVendorId) {
+//        String sql = "UPDATE ekyc_assignment " +
+//                "SET supervisor_id = ?, " +
+//                "    vendor_id = COALESCE(?, vendor_id), " +
+//                "    last_modified_time = EXTRACT(EPOCH FROM NOW())::BIGINT " +
+//                "WHERE surveyor_id = ? " +
+//                "  AND status = 'ACTIVE'";
+//        int updatedRows = jdbcTemplate.update(sql, newSupervisorId, newVendorId, surveyorOwnerId);
+//        log.info("syncEkycAssignment: updated {} ACTIVE assignment(s) " +
+//                        "for surveyorOwnerId={} to supervisorId={}, vendorId={}",
+//                updatedRows, surveyorOwnerId, newSupervisorId, newVendorId);
+//        return updatedRows;
+//    }
 
     /**
      * Look up supervisor profile by their owner UUID.
