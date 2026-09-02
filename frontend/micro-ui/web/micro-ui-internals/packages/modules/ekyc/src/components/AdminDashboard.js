@@ -114,7 +114,7 @@ const AdminDashboard = () => {
                     </div>
 
                     <div className="kno-count-badge">
-                      <span className="kno-count-label">Total KNOs -</span>
+                      <span className="kno-count-label">{t("TOTAL_KNOS") || "Total KNOs"} -</span>
                       <span className="kno-count-value">{vendor.totalKnosInZones}</span>
                     </div>
                   </div>
