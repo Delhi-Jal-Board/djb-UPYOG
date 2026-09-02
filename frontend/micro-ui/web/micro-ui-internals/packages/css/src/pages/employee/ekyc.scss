@@ -878,161 +878,150 @@
   }
 
   /* StatusCards Styles */
-  .status-cards-wrapper {
-    display: flex !important;
-    flex-direction: column;
-    gap: 8px;
-    font-family: "Segoe UI", sans-serif;
-    width: 100%;
-    background: #eef3fb;
-    border-radius: 16px;
-    padding: 16px;
+
+  .status-cards-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 16px;
     margin-bottom: 24px;
 
-    .status-cards-header {
+    .status-card-title {
       display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      flex-wrap: wrap;
-      gap: 16px;
-      margin-bottom: 24px;
+      gap: 8px !important;
+      align-items: center;
+    }
 
-      .status-card-title {
-        display: flex;
-        gap: 8px !important;
-        align-items: center;
+    .eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.6875rem;
+      font-weight: 700;
+      color: #185fa5;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+
+      .eyebrow-dot {
+        width: 12px;
+        height: 12px;
+        background: #185fa5;
+        border-radius: 3px;
+        flex-shrink: 0;
+      }
+    }
+
+    .status-cards-h1 {
+      font-size: 1.625rem;
+      font-weight: 800;
+      color: #0c2a52;
+      line-height: 1.2;
+      margin: 0;
+    }
+
+    .status-cards-subtitle {
+      font-size: 0.8125rem;
+      color: #5a7a9e;
+      max-width: 380px;
+    }
+
+    .total-applications-card {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      background: #0c2a52;
+      border-radius: 12px;
+      padding: 8px 16px;
+
+      .total-label {
+        font-size: 0.625rem;
+        font-weight: 700;
+        letter-spacing: 1.2px;
+        color: #7db4e8;
+        text-transform: uppercase;
       }
 
-      .eyebrow {
-        display: flex;
+      .total-number {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: #fff;
+        line-height: 1;
+      }
+
+      .total-badge {
+        display: inline-flex;
         align-items: center;
-        gap: 6px;
+        gap: 4px;
+        background: rgba(255, 255, 255, 0.12);
+        border-radius: 6px;
+        padding: 4px 10px;
+        margin-top: 10px;
         font-size: 0.6875rem;
         font-weight: 700;
-        color: #185fa5;
-        letter-spacing: 1.2px;
-        text-transform: uppercase;
+        color: #7dd3b2;
+      }
 
-        .eyebrow-dot {
-          width: 12px;
-          height: 12px;
-          background: #185fa5;
-          border-radius: 3px;
-          flex-shrink: 0;
+      .download-excel-btn {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 8px 16px;
+        background-color: #10b981;
+        color: #ffffff;
+        border: none;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 0.8125rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        width: 100%;
+        box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+
+        &:hover {
+          background-color: #059669;
+          box-shadow: 0 4px 8px rgba(5, 150, 105, 0.3);
+        }
+
+        &:disabled {
+          background-color: #a7f3d0;
+          cursor: not-allowed;
+          box-shadow: none;
+        }
+
+        svg {
+          font-size: 0.875rem;
         }
       }
+    }
+  }
 
-      .status-cards-h1 {
-        font-size: 1.625rem;
-        font-weight: 800;
-        color: #0c2a52;
-        line-height: 1.2;
-        margin: 0;
-      }
+  @media (max-width: 768px) {
+    padding: 16px;
+    border-radius: 12px;
+
+    .status-cards-header {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 16px;
 
       .status-cards-subtitle {
-        font-size: 0.8125rem;
-        color: #5a7a9e;
-        max-width: 380px;
+        max-width: 100%;
       }
 
       .total-applications-card {
-        display: flex;
-        gap: 8px;
-        align-items: center;
-        background: #0c2a52;
-        border-radius: 12px;
-        padding: 8px 16px;
-
-        .total-label {
-          font-size: 0.625rem;
-          font-weight: 700;
-          letter-spacing: 1.2px;
-          color: #7db4e8;
-          text-transform: uppercase;
-        }
-
-        .total-number {
-          font-size: 1.25rem;
-          font-weight: 800;
-          color: #fff;
-          line-height: 1;
-        }
-
-        .total-badge {
-          display: inline-flex;
-          align-items: center;
-          gap: 4px;
-          background: rgba(255, 255, 255, 0.12);
-          border-radius: 6px;
-          padding: 4px 10px;
-          margin-top: 10px;
-          font-size: 0.6875rem;
-          font-weight: 700;
-          color: #7dd3b2;
-        }
-
-        .download-excel-btn {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-          padding: 8px 16px;
-          background-color: #10b981;
-          color: #ffffff;
-          border: none;
-          border-radius: 8px;
-          font-weight: 700;
-          font-size: 0.8125rem;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          width: 100%;
-          box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
-
-          &:hover {
-            background-color: #059669;
-            box-shadow: 0 4px 8px rgba(5, 150, 105, 0.3);
-          }
-
-          &:disabled {
-            background-color: #a7f3d0;
-            cursor: not-allowed;
-            box-shadow: none;
-          }
-
-          svg {
-            font-size: 0.875rem;
-          }
-        }
+        margin-top: 0;
+        width: 100%;
+        min-width: unset;
       }
     }
+  }
 
-    @media (max-width: 768px) {
-      padding: 16px;
-      border-radius: 12px;
-
-      .status-cards-header {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 16px;
-
-        .status-cards-subtitle {
-          max-width: 100%;
-        }
-
-        .total-applications-card {
-          margin-top: 0;
-          width: 100%;
-          min-width: unset;
-        }
-      }
-    }
-
-    @media (max-width: 480px) {
-      .status-cards-header {
-        .status-cards-h1 {
-          font-size: 1.25rem;
-        }
+  @media (max-width: 480px) {
+    .status-cards-header {
+      .status-cards-h1 {
+        font-size: 1.25rem;
       }
     }
   }
@@ -1174,13 +1163,25 @@
   color: #9ca3af;
 }
 
-.progress-badge {
+.kno-count-badge {
   flex-shrink: 0;
-  padding: 5px 9px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
   border-radius: 20px;
   background: #ecfdf5;
   color: #059669;
-  font-size: 12px;
+  white-space: nowrap;
+}
+
+.kno-count-label {
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.kno-count-value {
+  font-size: 13px;
   font-weight: 700;
 }
 
