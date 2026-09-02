@@ -98,7 +98,7 @@ const useInboxTableConfig = ({
     manualPagination: true,
     initSortId: "applicationDate",
     onPageSizeChange: onPageSizeChange,
-    currentPage: offset,
+    currentPage: Math.floor(offset / limit),
     onNextPage: () =>
       dispatch({
         action: "mutateTableForm",

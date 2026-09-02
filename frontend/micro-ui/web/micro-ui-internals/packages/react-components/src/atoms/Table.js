@@ -274,6 +274,7 @@ const Table = ({
         return {
           ...state,
           pageIndex: manualPagination ? currentPage : state.pageIndex,
+          pageSize: manualPagination ? pageSizeLimit : state.pageSize,
         };
       },
       // ─────────────────────────────────────────────────────────────────────
