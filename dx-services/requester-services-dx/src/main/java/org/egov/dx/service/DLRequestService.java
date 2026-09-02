@@ -149,6 +149,16 @@ public class DLRequestService {
 	         map.add("redirect_uri", configurations.getRegisterRedirectURL());
 	         map.add("client_secret", configurations.getRegisterClientSecret());
          }
+         else if (tokenReq.getModule().equalsIgnoreCase("EKYC")) {
+             map.add("client_id", configurations.getClientId());
+             map.add("redirect_uri", configurations.getEkycRedirectURL());
+             map.add("client_secret", configurations.getClientSecret());
+         }
+         else if (tokenReq.getModule().equalsIgnoreCase("MUTATION")) {
+             map.add("client_id", configurations.getClientId());
+             map.add("redirect_uri", configurations.getMutationRedirectURL());
+             map.add("client_secret", configurations.getClientSecret());
+         }
     	 else
     	 {
     		 map.add("client_id", configurations.getClientId());
