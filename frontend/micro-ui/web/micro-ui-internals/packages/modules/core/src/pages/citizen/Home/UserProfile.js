@@ -162,8 +162,23 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
         value: userDetails.gender,
       });
 
-      const thumbs = userDetails?.photo?.split(",");
-      setProfileImg(thumbs?.at(0));
+      if (userDetails?.photo) {
+        getThumbnails([userDetails.photo], stateId).then((thumbnails) => {
+          if (thumbnails?.thumbs?.[0]) {
+            setProfileImg(thumbnails.thumbs[0]);
+          } else if (thumbnails?.images?.[0]) {
+            setProfileImg(thumbnails.images[0]);
+          } else {
+            const thumbs = userDetails?.photo?.split(",");
+            setProfileImg(thumbs?.at(0));
+          }
+        }).catch(() => {
+          const thumbs = userDetails?.photo?.split(",");
+          setProfileImg(thumbs?.at(0));
+        });
+      } else {
+        setProfileImg("");
+      }
 
       if (userDetails.dob) {
         setDob(userDetails.dob);

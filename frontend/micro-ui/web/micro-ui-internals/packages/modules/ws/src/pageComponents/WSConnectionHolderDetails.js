@@ -42,9 +42,26 @@ const WSConnectionHolderDetails = ({ config, onSelect, userType, formData, setEr
   const { t } = useTranslation();
   const { pathname } = useLocation();
   const filters = func.getQueryStringParams(location.search);
-  const [connectionHolderDetails, setConnectionHolderDetails] = useState(
-    formData?.ConnectionHolderDetails ? [{ ...formData?.ConnectionHolderDetails?.[0] }] : [createConnectionHolderDetails()]
-  );
+  const [connectionHolderDetails, setConnectionHolderDetails] = useState(() => {
+    if (formData?.ConnectionHolderDetails) {
+      return [{ ...formData?.ConnectionHolderDetails?.[0] }];
+    } else {
+      let initData = createConnectionHolderDetails();
+      const userInfo = Digit.UserService.getUser()?.info;
+      if (userInfo && userInfo.type === "CITIZEN" && window.location.href.includes("citizen")) {
+        initData = {
+          ...initData,
+          name: userInfo?.name || "",
+          mobileNumber: userInfo?.mobileNumber || "",
+          emailId: userInfo?.emailId || "",
+          gender: userInfo?.gender ? { code: userInfo?.gender, i18nKey: `COMMON_GENDER_${userInfo?.gender}`, value: userInfo?.gender } : "",
+          guardian: userInfo?.fatherOrHusbandName || "",
+          relationship: userInfo?.relationship ? { code: userInfo?.relationship, name: userInfo?.relationship, i18nKey: `COMMON_MASTERS_OWNERTYPE_${userInfo?.relationship}` } : "",
+        };
+      }
+      return [initData];
+    }
+  });
   const [focusIndex, setFocusIndex] = useState({ index: -1, type: "" });
   const stateId = Digit.ULBService.getStateId();
   const [isErrors, setIsErrors] = useState(false);
@@ -140,7 +157,20 @@ const WSConnectionHolderDetails = ({ config, onSelect, userType, formData, setEr
 
   useEffect(() => {
     if (!formData?.ConnectionHolderDetails) {
-      setConnectionHolderDetails([createConnectionHolderDetails()]);
+      let initData = createConnectionHolderDetails();
+      const userInfo = Digit.UserService.getUser()?.info;
+      if (userInfo && userInfo.type === "CITIZEN" && window.location.href.includes("citizen")) {
+        initData = {
+          ...initData,
+          name: userInfo?.name || "",
+          mobileNumber: userInfo?.mobileNumber || "",
+          emailId: userInfo?.emailId || "",
+          gender: userInfo?.gender ? { code: userInfo?.gender, i18nKey: `COMMON_GENDER_${userInfo?.gender}`, value: userInfo?.gender } : "",
+          guardian: userInfo?.fatherOrHusbandName || "",
+          relationship: userInfo?.relationship ? { code: userInfo?.relationship, name: userInfo?.relationship, i18nKey: `COMMON_MASTERS_OWNERTYPE_${userInfo?.relationship}` } : "",
+        };
+      }
+      setConnectionHolderDetails([initData]);
     }
   }, [formData?.ConnectionHolderDetails]);
 
