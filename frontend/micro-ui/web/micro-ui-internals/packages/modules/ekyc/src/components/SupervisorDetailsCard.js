@@ -422,17 +422,17 @@ const SupervisorDetailsCard = () => {
       return;
     }
 
-        setEkycDownloadLoading(true);
-        try {
-            const response = await Digit.EkycService.application_list({
-                tenantId: tenantId || "dl.djb",
-                offset: 0,
-                limit: 10000,
-                supervisorId: supervisor?.supervisorId || supervisorId,
-                reportDownload: true,
-                ...(fromDate && { fromDate }),
-                ...(toDate && { toDate }),
-            });
+    setEkycDownloadLoading(true);
+    try {
+      const response = await Digit.EkycService.application_list({
+        tenantId: tenantId || "dl.djb",
+        offset: 0,
+        limit: 10000,
+        supervisorId: supervisor?.supervisorId || supervisorId,
+        reportDownload: true,
+        ...(fromDate && { fromDate }),
+        ...(toDate && { toDate }),
+      });
 
       const consumerList = response?.consumerList || [];
 
