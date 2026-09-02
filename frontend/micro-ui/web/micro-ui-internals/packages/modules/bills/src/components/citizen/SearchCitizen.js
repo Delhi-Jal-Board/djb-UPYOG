@@ -109,7 +109,7 @@ const SearchCitizen = ({ onSearch, type, onClose, searchFields, searchParams, is
   return (
     <React.Fragment>
       <form onSubmit={handleSubmit(onSubmitInput)}>
-        <div className="search-container" style={{ width: "auto", marginLeft: isInboxPage ? "24px" : "revert" }}>
+        <div className="search-container">
           <div className="search-complaint-container">
             {(type === "mobile" || mobileView) && (
               <div className="complaint-header" style={{ display: "flex", justifyContent: "space-between" }}>
@@ -174,11 +174,10 @@ const SearchCitizen = ({ onSearch, type, onClose, searchFields, searchParams, is
                   </div>
                 ))}
               {type === "desktop" && !mobileView && !isInboxPage && (
-                <div className="search-action-wrapper">
+                <div className="search-action-wrapper" style={{ marginTop: "16px", paddingLeft: "16px" }}>
                   <SubmitBar
                     className="submit-bar-search"
                     label={t("ABG_SEARCH_BUTTON")}
-                    // disabled={!!Object.keys(formState.errors).length || Object.keys(form).every((key) => !form?.[key])}
                     submit
                   />
                   <div style={{ width: "100%", textAlign: "right", width: "240px", textAlign: "right", marginLeft: "96px", marginTop: "8px" }}>
@@ -186,25 +185,20 @@ const SearchCitizen = ({ onSearch, type, onClose, searchFields, searchParams, is
                   </div>
                 </div>
               )}
-            </div>
-            {isInboxPage && (
-              <div className="inbox-action-container">
-                {type === "desktop" && !mobileView && (
-                  <span style={{ paddingTop: "9px" }} className="clear-search">
+              {type === "desktop" && !mobileView && isInboxPage && (
+                <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", width: "100%", gridColumn: "1 / -1", marginTop: "16px", paddingLeft: "16px" }}>
+                  <span style={{ paddingTop: "9px", marginRight: "16px" }} className="clear-search">
                     {clearAll()}
                   </span>
-                )}
-                {type === "desktop" && !mobileView && (
                   <SubmitBar
                     style={{ marginTop: "unset" }}
-                    // disabled={!!Object.keys(formState.errors).length || formValueEmpty()}
                     className="submit-bar-search"
                     label={t("ABG_SEARCH_BUTTON")}
                     submit
                   />
-                )}
-              </div>
-            )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
         {(type === "mobile" || mobileView) && (

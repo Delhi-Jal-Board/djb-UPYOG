@@ -95,8 +95,8 @@ const CitizenInbox = ({ tableConfig, filterComponent, ...props }) => {
               <Link
                 to={{
                   pathname: `/digit-ui/citizen/payment/my-bills/${row.original?.["businessService"]}/${row.original?.["businessService"] === "WS" || row.original?.["businessService"] === "SW"
-                    ? row.original?.["consumerCode"].replace(/\//g, "+")
-                    : encodeURIComponent(row.original?.["consumerCode"])
+                      ? row.original?.["consumerCode"].replace(/\//g, "+")
+                      : encodeURIComponent(row.original?.["consumerCode"])
                     }`,
                   search: `?workflow=${row.original?.["businessService"] === "WS" || row.original?.["businessService"] === "SW" ? "WNS" : "mcollect"
                     }&tenantId=${row.original?.["tenantId"]}`,
@@ -115,8 +115,8 @@ const CitizenInbox = ({ tableConfig, filterComponent, ...props }) => {
               <Link
                 to={{
                   pathname: `/digit-ui/citizen/payment/my-bills/${row.original?.["businessService"]}/${row.original?.["businessService"] === "WS" || row.original?.["businessService"] === "SW"
-                    ? row.original?.["consumerCode"].replace(/\//g, "+")
-                    : encodeURIComponent(row.original?.["consumerCode"])
+                      ? row.original?.["consumerCode"].replace(/\//g, "+")
+                      : encodeURIComponent(row.original?.["consumerCode"])
                     }`,
                   search: `?workflow=${row.original?.["businessService"] === "WS" || row.original?.["businessService"] === "SW" ? "WNS" : "mcollect"
                     }&tenantId=${row.original?.["tenantId"]}`,
@@ -153,36 +153,40 @@ const CitizenInbox = ({ tableConfig, filterComponent, ...props }) => {
     );
   } else if (data?.length > 0) {
     result = (
-      <ApplicationTable
-        t={t}
-        data={data}
-        columns={columns}
-        getCellProps={(cellInfo) => {
-          return {
-            style: {
-              maxWidth: cellInfo.column.Header === t("HR_EMP_ID_LABEL") ? "140px" : "",
-              padding: "20px 18px",
-              fontSize: "16px",
-            },
-          };
-        }}
-        onPageSizeChange={props.onPageSizeChange}
-        currentPage={props.currentPage}
-        onNextPage={props.onNextPage}
-        onPrevPage={props.onPrevPage}
-        onLastPage={props.onLastPage}
-        onFirstPage={props.onFirstPage}
-        pageSizeLimit={props.pageSizeLimit}
-        onSort={props.onSort}
-        disableSort={props.disableSort}
-        sortParams={props.sortParams}
-        totalRecords={props.totalRecords}
-      />
+      <Card style={{ marginTop: 20, padding: 0 }}>
+        <div style={{ overflowX: "auto" }}>
+          <ApplicationTable
+            t={t}
+            data={data}
+            columns={columns}
+            getCellProps={(cellInfo) => {
+              return {
+                style: {
+                  maxWidth: cellInfo.column.Header === t("HR_EMP_ID_LABEL") ? "140px" : "",
+                  padding: "20px 18px",
+                  fontSize: "16px",
+                },
+              };
+            }}
+            onPageSizeChange={props.onPageSizeChange}
+            currentPage={props.currentPage}
+            onNextPage={props.onNextPage}
+            onPrevPage={props.onPrevPage}
+            onLastPage={props.onLastPage}
+            onFirstPage={props.onFirstPage}
+            pageSizeLimit={props.pageSizeLimit}
+            onSort={props.onSort}
+            disableSort={props.disableSort}
+            sortParams={props.sortParams}
+            totalRecords={props.totalRecords}
+          />
+        </div>
+      </Card>
     );
   }
 
   return (
-    <div className="inbox-container">
+    <div className="inbox-container w-fullwidth">
       {!props.isSearch && (
         <div className="filters-container">
           <div>
@@ -208,7 +212,7 @@ const CitizenInbox = ({ tableConfig, filterComponent, ...props }) => {
           isInboxPage={!props?.isSearch}
           searchParams={props.searchParams}
         />
-        <div className="result" style={{ marginLeft: !props?.isSearch ? "24px" : "", flex: 1 }}>
+        <div className="result" style={{ flex: 1 }}>
           {result}
         </div>
       </div>

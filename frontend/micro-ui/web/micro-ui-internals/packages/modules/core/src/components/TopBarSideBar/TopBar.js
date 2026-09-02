@@ -73,8 +73,21 @@ const TopBar = ({
 
           if (isMounted && usersResponse?.user?.length) {
             const user = usersResponse.user[0];
-            const thumbs = user?.photo?.split(",");
-            setProfilePic(thumbs?.at(0));
+            if (user?.photo) {
+              try {
+                const res = await Digit.UploadServices.Filefetch([user.photo], Digit.ULBService.getStateId());
+                if (isMounted && res?.data?.fileStoreIds && res.data.fileStoreIds.length > 0) {
+                  const url = res.data.fileStoreIds[0].url;
+                  setProfilePic(url.split(",")[3] || Digit.Utils.getFileUrl(url));
+                } else if (isMounted) {
+                  setProfilePic(user?.photo?.split(",")?.at(0));
+                }
+              } catch (e) {
+                if (isMounted) setProfilePic(user?.photo?.split(",")?.at(0));
+              }
+            } else if (isMounted) {
+              setProfilePic(null);
+            }
           }
         }
       } catch (err) {
