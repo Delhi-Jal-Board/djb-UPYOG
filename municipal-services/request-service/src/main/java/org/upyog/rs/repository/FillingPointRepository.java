@@ -83,7 +83,7 @@ public class FillingPointRepository {
             params.add(criteria.getId());
         }
 
-        if (criteria.getStatus() != null && !criteria.getStatus()) {
+        if (criteria.getStatus() != null) {
             query.append(" AND fp.status = ?");
             params.add(criteria.getStatus());
         }
@@ -253,6 +253,11 @@ public class FillingPointRepository {
         if (criteria.getId() != null && !criteria.getId().isEmpty()) {
             query.append(" AND fp.id = ?");
             params.add(criteria.getId());
+        }
+
+        if (criteria.getStatus() != null) {
+            query.append(" AND fp.status = ?");
+            params.add(criteria.getStatus());
         }
 
         if (criteria.getFillingPointName() != null && !criteria.getFillingPointName().isEmpty()) {
