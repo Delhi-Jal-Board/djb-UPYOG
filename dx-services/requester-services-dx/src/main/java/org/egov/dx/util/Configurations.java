@@ -138,4 +138,7 @@ public class Configurations {
 	@Value("${egov.user.endpoint}")
 	private String userEndpoint;
 
+	@Value("${ws.mutation.redirect.url}")
+	private String mutationRedirectURL;
+
 }

@@ -77,6 +77,10 @@ public class DLRequestService {
     		    params.add("redirect_uri", configurations.getEkycRedirectURL());
     		    params.add("client_id", configurations.getClientId());
     	}
+         else if (module.equalsIgnoreCase("MUTATION")) {
+             params.add("redirect_uri", configurations.getMutationRedirectURL());
+             params.add("client_id", configurations.getClientId());
+         }
     	 else {
     		 params.add("redirect_uri", configurations.getWsRedirectURL());
     	 	 params.add("client_id", configurations.getClientId());
@@ -104,7 +108,7 @@ public class DLRequestService {
     	encoded= encoded.replace("/", "_");     
     	log.info("challenge is: " +encoded );        
     	EncReqObject encReqObject = EncReqObject.builder().tenantId("dl").type("Normal").value(codeVerifier).build();        
-    	EncryptionRequest encryptionRequest = EncryptionRequest.builder().encryptionRequests(Collections.singletonList(encReqObject)).build();        
+    	EncryptionRequest encryptionRequest = EncryptionRequest.builder().encryptionRequests(Collections.singletonList(encReqObject)).build();
     	String responseBody= restTemplate.postForEntity(configurations.getEncHost() + configurations.getEncEncryptURL(), encryptionRequest, String.class).getBody();     
         try {
        	    String value = new ObjectMapper().readValue(responseBody, String[].class)[0];
@@ -175,7 +179,7 @@ public class DLRequestService {
         	    log.info("tokenRes: {}", tokenRes);  
         	    return tokenRes;
         	} catch (Exception e) {
-        	    log.error("Error occurred while fetching token", e);  
+        	    log.error("Error occurred while fetching token", e);
         	    return null;  
         	}
     }
