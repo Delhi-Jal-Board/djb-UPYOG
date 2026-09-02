@@ -372,18 +372,46 @@ const StatusCards = ({ countData }) => {
   }, [countData, t]);
 
   const legendItems = [
-    { color: "#77B6EA", label: t("EKYC_TOTAL"), value: countData?.total },
-    { color: "#77B6EA", label: t("EKYC_COMPLETED"), value: countData?.completed },
-    { color: "#0c2a52", label: t("EKYC_PENDING"), value: countData?.pending },
-    { color: "#c8ddf5", label: t("EKYC_SUBMITTED_BY_VENDORS"), value: countData?.submittedCount },
-    { color: "#c8ddf5", label: t("EKYC_SUBMITTED_BY_CITIZEN"), value: countData?.selfEkycCount || 0 },
-    { color: "#c8ddf5", label: t("EKYC_REJECTED"), value: countData?.rejected || 0 },
+    {
+      color: "#77B6EA",
+      label: t("EKYC_TOTAL"),
+      value: countData?.total || 0,
+    },
+    {
+      color: "#4C8BF5",
+      label: t("EKYC_ASSIGNED"),
+      value: countData?.totalAssignments || 0,
+    },
+    {
+      color: "#2E8B57",
+      label: t("EKYC_COMPLETED"),
+      value: countData?.completed || 0,
+    },
+    {
+      color: "#0c2a52",
+      label: t("EKYC_PENDING"),
+      value: countData?.pending || 0,
+    },
+    {
+      color: "#8B5CF6",
+      label: t("EKYC_SUBMITTED_BY_VENDORS"),
+      value: countData?.submittedCount || 0,
+    },
+    {
+      color: "#F59E0B",
+      label: t("EKYC_SUBMITTED_BY_CITIZEN"),
+      value: countData?.selfEkycCount || 0,
+    },
+    {
+      color: "#DC3545",
+      label: t("EKYC_REJECTED"),
+      value: countData?.rejected || 0,
+    },
   ];
 
   return (
     <div className="ekyc-employee-container">
-      <div className="status-cards-wrapper">
-        {/* Header */}
+      <div className="status-panel">
         <div className="status-cards-header">
           <div className="status-card-title">
             <FaChartBar size={32} color="#fff" backgroundColor="#065297" style={{ paddingInline: "4px", borderRadius: "4px  " }} />
@@ -443,7 +471,13 @@ const StatusCards = ({ countData }) => {
                       >
                         {t("CANCEL") || "Cancel"}
                       </button>
-                      <button className="picker-apply-btn" onClick={(e) => { e.stopPropagation(); handleCustomDownload(); }}>
+                      <button
+                        className="picker-apply-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCustomDownload();
+                        }}
+                      >
                         {t("APPLY") || "Apply"}
                       </button>
                     </div>
@@ -454,44 +488,30 @@ const StatusCards = ({ countData }) => {
           </div>
         </div>
 
-        {/* Panels */}
-        <div className="status-panels-grid">
-          <div className="status-panel">
-            <div className="panel-header">
-              <div>
-                <div className="panel-title">{t("EKYC_STATUS_BREAKDOWN") || "Status Breakdown"}</div>
-                <div className="panel-subtitle">{t("EKYC_VERIFICATION_LIFECYCLE") || "Verification lifecycle"}</div>
-              </div>
+        <div className="status-breakdown-content">
+          {/* Chart */}
+          <div className="chart-wrapper">
+            <canvas ref={chartRef1} style={{ width: "100%", height: "100%" }} />
 
-              <div className="completion-badge">{efficiency}% Complete</div>
+            <div className="chart-center">
+              <div className="chart-percentage">{efficiency}%</div>
+              <div className="chart-label">{t("EKYC_COMPLETE") || "Complete"}</div>
             </div>
+          </div>
 
-            <div className="status-breakdown-content">
-              {/* Chart */}
-              <div className="chart-wrapper">
-                <canvas ref={chartRef1} style={{ width: "100%", height: "100%" }} />
+          {/* Status Boxes */}
+          <div className="status-boxes">
+            {legendItems.map((item) => (
+              <div className="status-box" key={item.label} style={{ "--status-color": item.color }}>
+                <div className="status-box-top">
+                  <span className="status-indicator" style={{ backgroundColor: item.color }} />
 
-                <div className="chart-center">
-                  <div className="chart-percentage">{efficiency}%</div>
-                  <div className="chart-label">{t("EKYC_COMPLETE") || "Complete"}</div>
+                  <span className="status-name">{item.label}</span>
                 </div>
+
+                <div className="status-box-value">{formatNumber(item.value)}</div>
               </div>
-
-              {/* Status Boxes */}
-              <div className="status-boxes">
-                {legendItems.map((item) => (
-                  <div className="status-box" key={item.label}>
-                    <div className="status-box-top">
-                      <span className="status-indicator" style={{ backgroundColor: item.color }} />
-
-                      <span className="status-name">{item.label}</span>
-                    </div>
-
-                    <div className="status-box-value">{formatNumber(item.value)}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </div>
