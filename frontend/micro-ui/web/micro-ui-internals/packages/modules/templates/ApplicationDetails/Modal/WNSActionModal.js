@@ -194,6 +194,7 @@ const ActionModal = ({
     applicationData = {
       ...applicationData,
       action: action?.action,
+      oldApplication: isMutationApp ? (action?.action === "REJECT") : false,
       comment: commentValue,
       assignee: !selectedApprover?.uuid ? [] : [selectedApprover?.uuid],
       assignes: !selectedApprover?.uuid ? [] : [{ uuid: selectedApprover?.uuid }],
