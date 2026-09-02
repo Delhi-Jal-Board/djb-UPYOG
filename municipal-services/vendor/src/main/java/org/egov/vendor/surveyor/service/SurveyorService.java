@@ -87,30 +87,18 @@ public class SurveyorService {
 
         Surveyor surveyor = surveyorRequest.getSurveyor();
 
-        // ── Supervisor remapping — ekyc_assignment sync ───────────────
-        // When a vendor remaps a surveyor to a different supervisor,
-        // existing ACTIVE assignments in ekyc_assignment still carry the
-        // old supervisor_id — causing wrong KNO counts in _progress and
-        // hierarchy reports.
-        //
-        // We detect a supervisor change by fetching the current DB state
-        // BEFORE persisting the update, then syncing ekyc_assignment if
-        // supervisorId has changed.
-        //
-        // Security: surveyorId and newSupervisorId come from the validated
-        // request, ownerId from DB — never directly from frontend. The sync
-        // only touches ACTIVE assignments for this specific surveyor's
-        // ownerUUID — no cross-surveyor/cross-vendor side effects possible.
-        //
-        // Failure isolation: if sync fails (e.g. ekyc_assignment table
-        // unavailable), we log a warning but DO NOT block the surveyor
-        // update — eg_surveyor is the source of truth; the sync is a
-        // derived operation that self-heals on next assignment activity.
+        // ── Supervisor remapping — cross-vendor validation only ───────────
+// When a vendor remaps a surveyor to a different supervisor, we
+// verify the new supervisor belongs to the SAME vendor (hard block
+// if not). The actual ekyc_assignment sync does NOT happen here —
+// it happens in ekyc-service's SurveyorSupervisorSyncConsumer,
+// triggered by the update-surveyor-application event this method
+// publishes unconditionally below (via surveyorRepository.update()),
+// regardless of whether this validation block runs at all.
         if (StringUtils.hasLength(surveyor.getId())
                 && StringUtils.hasLength(surveyor.getSupervisorId())) {
 
             try {
-                // Fetch current surveyor state from DB to detect supervisor change
                 SurveyorSearchCriteria currentCriteria = SurveyorSearchCriteria.builder()
                         .ids(java.util.Arrays.asList(surveyor.getId()))
                         .tenantId(surveyor.getTenantId())
@@ -120,23 +108,16 @@ public class SurveyorService {
 
                 SurveyorResponse currentResponse = surveyorRepository.getSurveyorData(currentCriteria);
 
-                if (currentResponse != null
-                        && !CollectionUtils.isEmpty(currentResponse.getSurveyors())) {
+                if (currentResponse != null && !CollectionUtils.isEmpty(currentResponse.getSurveyors())) {
 
                     Surveyor current = currentResponse.getSurveyors().get(0);
                     String oldSupervisorId = current.getSupervisorId();
                     String newSupervisorId = surveyor.getSupervisorId();
 
-                    // Only sync if supervisor has actually changed
-                    if (StringUtils.hasLength(oldSupervisorId)
-                            && !oldSupervisorId.equals(newSupervisorId)
-                            && StringUtils.hasLength(current.getOwnerId())) {
+                    if (StringUtils.hasLength(oldSupervisorId) && !oldSupervisorId.equals(newSupervisorId)) {
 
-                        // Resolve new supervisor's vendor — cross-vendor remap is NOT
-                        // allowed. A surveyor can only be remapped to a supervisor
-                        // within their OWN vendor. This check is deliberately OUTSIDE
-                        // the try/catch below — it is a hard business-rule block, not
-                        // a soft/self-healing sync, so it must never be swallowed.
+                        // Cross-vendor remap check — a surveyor may only move to a
+                        // supervisor within their OWN vendor. Hard block.
                         Map<String, String> newSupervisorProfile =
                                 surveyorRepository.findSupervisorById(newSupervisorId);
 
@@ -159,35 +140,19 @@ public class SurveyorService {
                         }
 
                         log.info("Surveyor {} supervisorId changed: {} → {} (same vendor {}). " +
-                                        "Syncing ekyc_assignment...",
+                                        "ekyc-service will sync ekyc_assignment via the " +
+                                        "update-surveyor-application Kafka event.",
                                 surveyor.getId(), oldSupervisorId, newSupervisorId, newVendorId);
-
-                        try {
-                            int synced = surveyorRepository.syncEkycAssignmentSupervisor(
-                                    current.getOwnerId(), newSupervisorId, newVendorId);
-
-                            log.info("ekyc_assignment sync complete: {} rows updated " +
-                                    "for surveyorOwnerId={}", synced, current.getOwnerId());
-                        } catch (Exception syncEx) {
-                            // Soft failure — ONLY the derived ekyc_assignment sync is
-                            // allowed to fail silently (self-heals on next assignment
-                            // activity). The vendor-match validation above already ran
-                            // and passed, so the surveyor update itself may proceed.
-                            log.warn("ekyc_assignment supervisor sync failed for surveyorId={}. " +
-                                    "Surveyor update will proceed. Manual DB fix may be needed. " +
-                                    "Error: {}", surveyor.getId(), syncEx.getMessage());
-                        }
+                        // ekyc_assignment sync itself happens in ekyc-service's
+                        // SurveyorSupervisorSyncConsumer, off the event
+                        // surveyorRepository.update() publishes unconditionally
+                        // below — not dependent on this block succeeding.
                     }
                 }
             } catch (CustomException ce) {
-                // Hard validation failures (e.g. cross-vendor remap) must propagate
-                // and block the update — never swallow these.
-                throw ce;
+                throw ce; // hard validation failure — must block the update
             } catch (Exception e) {
-                // Any other unexpected error while reading current surveyor state —
-                // soft failure, surveyor update must not be blocked for this.
-                log.warn("Supervisor-change detection failed for surveyorId={}. " +
-                                "Surveyor update will proceed without sync. Error: {}",
+                log.warn("Supervisor cross-vendor check failed for surveyorId={}. Update will proceed. Error: {}",
                         surveyor.getId(), e.getMessage());
             }
         }
