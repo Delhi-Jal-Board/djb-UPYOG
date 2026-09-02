@@ -24,7 +24,7 @@ export const EkycModule = ({ stateCode, userType, tenants }) => {
   useEffect(
     () =>
       Digit.LocalizationService.getLocale({
-        modules: [`rainmaker-ekyc`, `rainmaker-${Digit.ULBService.getCurrentTenantId()}`],
+        modules: [`rainmaker-${Digit.ULBService.getCurrentTenantId()}`],
         locale: Digit.StoreData.getCurrentLanguage(),
         tenantId: Digit.ULBService.getCurrentTenantId(),
       }),
