@@ -283,6 +283,8 @@ import {
   CHBIconComp,
   GridIcon,
   CollapseIcon,
+  FaDatabase,
+  FaFileAlt,
 } from "./atoms/svgindex";
 import { FormComposer } from "./hoc/FormComposer";
 import { FilterForm, FilterFormField } from "./molecules/FilterForm";
@@ -583,5 +585,7 @@ export {
   SurveyIconComp,
   CHBIconComp,
   GridIcon,
+  FaDatabase,
+  FaFileAlt,
   CollapseIcon,
 };
