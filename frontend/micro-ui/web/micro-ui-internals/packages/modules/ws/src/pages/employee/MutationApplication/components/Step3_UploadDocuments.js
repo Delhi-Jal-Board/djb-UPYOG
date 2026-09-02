@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardHeader, CardLabel, Dropdown, UploadFile, Toast, TextInput } from "@djb25/digit-ui-react-components";
+import UploadFileDigiLocker from "../../../../../../pt/src/utils/UploadFile";
 
 const Step3_UploadDocuments = ({ t, onNext, onBack, defaultValues }) => {
   const [identityProofType, setIdentityProofType] = useState(defaultValues?.identityProofType || null);
@@ -13,6 +14,8 @@ const Step3_UploadDocuments = ({ t, onNext, onBack, defaultValues }) => {
   const [showToast, setShowToast] = useState(null);
   const [fieldErrors, setFieldErrors] = useState({});
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
+  const [digiLockerUpload, setDigilockerUpload] = useState(false);
+  const [isDocumentUidLocked, setIsDocumentUidLocked] = useState(false);
 
   const identityOptions = [
     { code: "AADHAAR", i18nKey: "Aadhaar Card" },
@@ -102,6 +105,13 @@ const Step3_UploadDocuments = ({ t, onNext, onBack, defaultValues }) => {
       setIsUploading(false);
     }
   };
+
+  useEffect(() => {
+    const DIGILOCKER_SUPPORTED_CODES = ["AADHAAR", "AADHAR", "DRIVING", "DRVLC", "PAN"];
+    const upper = (identityProofType?.code || "").toUpperCase();
+    const eligible = DIGILOCKER_SUPPORTED_CODES.some((keyword) => upper.includes(keyword));
+    setDigilockerUpload(eligible);
+  }, [identityProofType]);
 
   useEffect(() => {
     if (rawFiles.identity) handleFileUpload(rawFiles.identity, "identity");
@@ -249,7 +259,16 @@ const Step3_UploadDocuments = ({ t, onNext, onBack, defaultValues }) => {
           <Dropdown
             selected={identityProofType}
             option={identityOptions}
-            select={(val) => { setIdentityProofType(val); setFieldErrors(prev => ({ ...prev, identityType: null })); }}
+            select={(val) => { 
+              if (val.code !== identityProofType?.code) {
+                setIdentityProofFile(null);
+                setRawFiles(prev => ({ ...prev, identity: null }));
+                setDocumentNumber("");
+                setIsDocumentUidLocked(false);
+              }
+              setIdentityProofType(val); 
+              setFieldErrors(prev => ({ ...prev, identityType: null })); 
+            }}
             optionKey="i18nKey"
             t={t}
             placeholder="Select Document Type"
@@ -260,7 +279,12 @@ const Step3_UploadDocuments = ({ t, onNext, onBack, defaultValues }) => {
           <CardLabel style={{ fontWeight: "bold", marginTop: "8px" }}>Document Number {mandatoryIndicator}</CardLabel>
           <TextInput 
             value={documentNumber} 
-            onChange={(e) => { setDocumentNumber(e.target.value); setFieldErrors(prev => ({ ...prev, documentNumber: null })); }}
+            onChange={(e) => { 
+              if (!isDocumentUidLocked) {
+                setDocumentNumber(e.target.value); 
+                setFieldErrors(prev => ({ ...prev, documentNumber: null })); 
+              }
+            }}
             onBlur={() => {
               if (hasAttemptedSubmit) {
                 const err = validateDocumentNumber(documentNumber, identityProofType);
@@ -268,7 +292,12 @@ const Step3_UploadDocuments = ({ t, onNext, onBack, defaultValues }) => {
               }
             }}
             placeholder={identityProofType?.code === "AADHAAR" ? "Enter 12-digit Aadhaar number" : identityProofType?.code === "PAN" ? "Enter PAN (e.g. ABCDE1234F)" : "Enter Document Number"} 
-            style={{ marginBottom: "4px", ...(fieldErrors.documentNumber ? { border: "1px solid #d32f2f" } : {}) }}
+            disabled={isDocumentUidLocked}
+            style={{ 
+              marginBottom: "4px", 
+              ...(fieldErrors.documentNumber ? { border: "1px solid #d32f2f" } : {}),
+              ...(isDocumentUidLocked ? { backgroundColor: "#f0f0f0", cursor: "not-allowed", color: "#555" } : {})
+            }}
           />
           {fieldErrors.documentNumber && <div style={errorTextStyle}>{fieldErrors.documentNumber}</div>}
           {identityProofType?.code === "AADHAAR" && !fieldErrors.documentNumber && (
@@ -279,15 +308,49 @@ const Step3_UploadDocuments = ({ t, onNext, onBack, defaultValues }) => {
           )}
 
           <div style={uploadBoxStyle(!!fieldErrors.identityFile, !!identityProofFile)}>
-            <UploadFile
-              id="identity-upload"
-              onUpload={(e) => setRawFiles(prev => ({ ...prev, identity: e.target.files[0] }))}
-              onDelete={() => { setIdentityProofFile(null); setRawFiles(prev => ({ ...prev, identity: null })); }}
-              message={identityProofFile ? `Uploaded` : `Click to Choose File`}
-              accept="image/*, .pdf, .png, .jpeg, .jpg"
-              uploadedFiles={identityProofFile && !rawFiles.identity ? [["Document", { fileStoreId: identityProofFile }]] : undefined}
-              removeTargetedFile={() => { setIdentityProofFile(null); setRawFiles(prev => ({ ...prev, identity: null })); }}
-            />
+            {digiLockerUpload ? (
+              <UploadFileDigiLocker
+                id="identity-upload"
+                onUpload={(e, newFile) => {
+                  if (newFile) {
+                    setRawFiles(prev => ({ ...prev, identity: newFile }));
+                  } else {
+                    setRawFiles(prev => ({ ...prev, identity: e.target.files[0] }));
+                  }
+                }}
+                onDelete={() => { 
+                  setIdentityProofFile(null); 
+                  setRawFiles(prev => ({ ...prev, identity: null })); 
+                  setDocumentNumber(""); 
+                  setIsDocumentUidLocked(false);
+                }}
+                message={identityProofFile ? `Uploaded` : `Click to Choose File`}
+                accept="image/*, .pdf, .png, .jpeg, .jpg"
+                uploadedFiles={identityProofFile && !rawFiles.identity ? [["Document", { fileStoreId: identityProofFile }]] : undefined}
+                removeTargetedFile={() => { 
+                  setIdentityProofFile(null); 
+                  setRawFiles(prev => ({ ...prev, identity: null })); 
+                  setDocumentNumber(""); 
+                  setIsDocumentUidLocked(false);
+                }}
+                documentType={identityProofType?.code}
+                onDocumentNumber={(num) => {
+                  setDocumentNumber(num);
+                  setIsDocumentUidLocked(true);
+                  setFieldErrors(prev => ({ ...prev, documentNumber: null }));
+                }}
+              />
+            ) : (
+              <UploadFile
+                id="identity-upload"
+                onUpload={(e) => setRawFiles(prev => ({ ...prev, identity: e.target.files[0] }))}
+                onDelete={() => { setIdentityProofFile(null); setRawFiles(prev => ({ ...prev, identity: null })); }}
+                message={identityProofFile ? `Uploaded` : `Click to Choose File`}
+                accept="image/*, .pdf, .png, .jpeg, .jpg"
+                uploadedFiles={identityProofFile && !rawFiles.identity ? [["Document", { fileStoreId: identityProofFile }]] : undefined}
+                removeTargetedFile={() => { setIdentityProofFile(null); setRawFiles(prev => ({ ...prev, identity: null })); }}
+              />
+            )}
           </div>
           {fieldErrors.identityFile && <div style={errorTextStyle}>{fieldErrors.identityFile}</div>}
           {identityProofFile && <div style={successTextStyle}>✓ Document uploaded successfully</div>}

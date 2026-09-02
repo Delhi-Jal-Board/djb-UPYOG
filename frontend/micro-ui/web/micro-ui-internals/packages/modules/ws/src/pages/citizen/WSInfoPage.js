@@ -187,7 +187,11 @@ const WSInfoPage = () => {
       if (e.stopPropagation) e.stopPropagation();
     }
     if (hasProperty?.code === "YES" && selectedProperty) {
-      handleSendOtp(e);
+      if (!isEmployee) {
+        proceedToNext();
+      } else {
+        handleSendOtp(e);
+      }
     } else if (hasProperty?.code === "YES" && !selectedProperty) {
       // Should not be reachable since button is disabled, but just in case
       return;
