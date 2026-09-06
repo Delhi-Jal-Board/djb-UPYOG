@@ -71,6 +71,19 @@ public class VendorSearchCriteria {
 	@JsonProperty("zoneIds")
 	private List<String> zoneIds;
 
+	// PERF (2026-09-05): optional, defaults to null/false for every existing
+	// caller (Water-Tanker UI, driver flows, existing eKYC callers, etc.) —
+	// when explicitly set true, vendorsearch() skips the per-vendor
+	// enrichVendorSearch() fan-out (owner/drivers/vehicles/supervisors/
+	// surveyors/boundary) for a caller that only needs core vendor columns.
+	// Not referenced by isEmpty()/tenantIdOnly()/validateSearchParams()
+	// (same as driverIds/zoneIds/etc. above), so it cannot change search
+	// scoping or param validation for anyone.
+	@JsonProperty("skipEnrichment")
+	private Boolean skipEnrichment;
+
+	// ─────────────────────────────────────────────────────────────────────────
+
 	// ─────────────────────────────────────────────────────────────────────────
 
 	public enum SortOrder {
