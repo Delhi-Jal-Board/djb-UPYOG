@@ -362,7 +362,7 @@ body {
   display: none;
 }
 
-.carousel-track>div {
+.carousel-track > div {
   scroll-snap-align: start;
   box-sizing: border-box;
   width: 100%;
@@ -422,7 +422,7 @@ body {
   margin-top: -28px;
   margin-bottom: 24px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
-  background-image: linear-gradient(135deg, rgba(186, 230, 253, .2), rgba(243, 232, 255, .15));
+  background-image: linear-gradient(135deg, rgba(186, 230, 253, 0.2), rgba(243, 232, 255, 0.15));
 }
 
 .engagement-panel__header {
@@ -467,7 +467,6 @@ body {
 }
 
 @keyframes eng-pulse {
-
   0%,
   100% {
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18);
@@ -495,7 +494,7 @@ body {
 }
 
 /* Has visible cards below — add spacing between chips and cards */
-.engagement-panel__chip-row+.engagement-panel__cards {
+.engagement-panel__chip-row + .engagement-panel__cards {
   margin-top: 16px;
 }
 
@@ -554,42 +553,42 @@ body {
 
   /* Ensure cards inside the grid fill their cells and don't have extra margins */
   .new-employee-card {
-    &:nth-child(6n+1) {
+    &:nth-child(6n + 1) {
       --card-bg: #f2fbf7;
       --card-border: #d1efe2;
       --card-icon-color: #1d9e75;
       --card-text-color: #0f6e56;
       --card-hover-shadow: rgba(29, 158, 117, 0.12);
     }
-    &:nth-child(6n+2) {
+    &:nth-child(6n + 2) {
       --card-bg: #f0f7ff;
       --card-border: #cce3fd;
       --card-icon-color: #2563eb;
       --card-text-color: #1e3a8a;
       --card-hover-shadow: rgba(37, 99, 235, 0.12);
     }
-    &:nth-child(6n+3) {
+    &:nth-child(6n + 3) {
       --card-bg: #f5f3ff;
       --card-border: #e5d5ff;
       --card-icon-color: #7c3aed;
       --card-text-color: #4c1d95;
       --card-hover-shadow: rgba(124, 58, 237, 0.12);
     }
-    &:nth-child(6n+4) {
+    &:nth-child(6n + 4) {
       --card-bg: #fffbeb;
       --card-border: #fde08b;
       --card-icon-color: #d97706;
       --card-text-color: #78350f;
       --card-hover-shadow: rgba(217, 119, 6, 0.12);
     }
-    &:nth-child(6n+5) {
+    &:nth-child(6n + 5) {
       --card-bg: #fff1f2;
       --card-border: #fecdd3;
       --card-icon-color: #e11d48;
       --card-text-color: #881337;
       --card-hover-shadow: rgba(225, 29, 72, 0.12);
     }
-    &:nth-child(6n+6) {
+    &:nth-child(6n + 6) {
       --card-bg: #ecfeff;
       --card-border: #a5f3fc;
       --card-icon-color: #0891b2;
@@ -606,11 +605,11 @@ body {
     border: 1px solid var(--card-border);
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
     gap: 8px;
-    
+
     .card-header-row {
       padding-bottom: 10px;
       gap: 8px;
-      
+
       &::after {
         background: linear-gradient(90deg, transparent 0%, var(--card-border) 50%, transparent 100%);
       }
@@ -632,7 +631,7 @@ body {
       font-size: 0.95rem;
       color: var(--card-text-color);
     }
-    
+
     .main-kpi-number {
       font-size: 1.6rem;
       color: var(--card-icon-color);
@@ -655,7 +654,7 @@ body {
     .sec-kpi-label {
       font-size: 0.7rem;
     }
-    
+
     .sec-kpi-value {
       font-size: 0.8rem;
     }
@@ -824,18 +823,5 @@ body {
   to {
     transform: translateY(0) scale(1);
     opacity: 1;
-  }
-}
-
-.coming-soon-toast {
-  h2 {
-    color: #ffffff !important;
-    margin: 0 !important;
-    font-size: 1rem !important;
-    font-weight: 600 !important;
-  }
-
-  svg {
-    fill: #ffffff !important;
   }
 }

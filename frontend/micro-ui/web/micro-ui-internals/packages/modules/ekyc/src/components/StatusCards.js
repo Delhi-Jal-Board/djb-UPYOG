@@ -378,20 +378,21 @@ const StatusCards = ({ countData }) => {
       value: countData?.total || 0,
     },
     {
-      color: "#4C8BF5",
-      label: t("EKYC_ASSIGNED"),
-      value: countData?.totalAssignments || 0,
+      color: "#0c2a52",
+      label: t("EKYC_PENDING"),
+      value: countData?.pending || 0,
     },
     {
       color: "#2E8B57",
       label: t("EKYC_COMPLETED"),
       value: countData?.completed || 0,
     },
-    {
-      color: "#0c2a52",
-      label: t("EKYC_PENDING"),
-      value: countData?.pending || 0,
-    },
+    // {
+    //   color: "#4C8BF5",
+    //   label: t("EKYC_ASSIGNED"),
+    //   value: countData?.totalAssignments || 0,
+    // },
+
     {
       color: "#8B5CF6",
       label: t("EKYC_SUBMITTED_BY_VENDORS"),

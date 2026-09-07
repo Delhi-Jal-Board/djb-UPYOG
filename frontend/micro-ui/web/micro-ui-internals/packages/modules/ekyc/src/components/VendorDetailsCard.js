@@ -3,7 +3,7 @@ import { Card, Loader, Table, MdDownloadIcon, FaDatabase, FaFileAlt } from "@djb
 import { useTranslation } from "react-i18next";
 import { useParams, useHistory } from "react-router-dom";
 import { downloadVendorPDF } from "../utils/reportDownloader";
-import { FaCheckCircle, FaBuilding, FaUser, FaClock, FaChartLine } from "react-icons/fa";
+import { FaBuilding, FaUser, FaClock, FaChartLine } from "react-icons/fa";
 
 const VendorDetailsCard = () => {
   const { t } = useTranslation();
@@ -23,13 +23,6 @@ const VendorDetailsCard = () => {
     },
   });
 
-  // Fetch all supervisors to filter by vendor
-  const { data: supervisorSearchResponse, isLoading: isSupervisorSearchLoading } = Digit.Hooks.fsm.useSupervisorSearch(
-    tenantId,
-    { status: "ACTIVE" },
-    { enabled: !!tenantId, staleTime: 300000 }
-  );
-
   // Match vendor details
 
   const targetVendorId = vendorId || vendor?.id || vendor?.vendorId;
@@ -42,58 +35,6 @@ const VendorDetailsCard = () => {
       keepPreviousData: true,
     }
   );
-
-  const createDummySupervisors = (vendor) => {
-    const count = Number(vendor?.supervisors) || 5;
-
-    return Array.from({ length: count }, (_, i) => ({
-      id: `SUP_V_${vendor?.id || "DEFAULT"}_${i + 1}`,
-      name: `Supervisor ${i + 1}`,
-      mobileNo: `99999120${i}`,
-      status: "ACTIVE",
-      totalKnos: 0,
-      submittedKnos: 0,
-      pendingKnos: 0,
-      progressPercent: 0,
-      isDummy: true,
-    }));
-  };
-
-  // Supervisors belonging to this vendor
-  const vendorSupervisors = useMemo(() => {
-    const currentVendorId = vendor?.id || vendor?.vendorId || vendorId;
-
-    // No real supervisor data available
-    if (!Array.isArray(supervisorSearchResponse?.supervisors)) {
-      return vendor ? createDummySupervisors(vendor) : [];
-    }
-
-    // Filter real supervisors belonging to this vendor
-    const matchedSups = supervisorSearchResponse.supervisors.filter(
-      (s) => s.vendorId === currentVendorId || s.vendorId === vendor?.id || s.vendorId === vendor?.vendorId
-    );
-
-    // API returned supervisors, but none belong to this vendor
-    if (matchedSups.length === 0) {
-      return [];
-    }
-
-    return matchedSups.map((sup) => {
-      const report = progressData?.supervisorReport?.find((r) => r.supervisorId === sup.id || r.supervisorId === sup.owner?.uuid);
-
-      return {
-        id: sup.id || sup.owner?.uuid,
-        name: sup.name || sup.owner?.name || "N/A",
-        mobileNo: sup.owner?.mobileNumber || sup.mobileNo || "N/A",
-        status: sup.status || "ACTIVE",
-        totalKnos: report?.totalKnos || 0,
-        submittedKnos: report?.submittedKnos || 0,
-        pendingKnos: report?.pendingKnos || 0,
-        progressPercent: report?.progressPercent || 0,
-        isDummy: false,
-      };
-    });
-  }, [supervisorSearchResponse, vendor, progressData, vendorId]);
 
   const vendorName = vendor?.name || "N/A";
   const mobileNumber = vendor?.mobileNumber || vendor?.owner?.mobileNumber || "N/A";
@@ -113,10 +54,10 @@ const VendorDetailsCard = () => {
   const cards = useMemo(() => {
     const totalKnos = progressData?.totalKnosInZones || 0;
     const totalAssignments = progressData?.totalKnos || 0;
-    const completedKnos = progressData?.submittedKnos || 0;
+    // const completedKnos = progressData?.submittedKnos || 0;
     const selfEkycCount = progressData?.selfEkycCountInZones || 0;
     const submittedKnos = progressData?.submittedKnosInZones || 0;
-    const pendingKnos = progressData?.pendingKnos || 0;
+    const pendingKnos = progressData?.pendingKnosInZones || 0;
     const progressPercent = progressData?.overallProgressPercent || 0;
 
     return [
@@ -134,13 +75,13 @@ const VendorDetailsCard = () => {
         type: "today",
         icon: <FaFileAlt />,
       },
-      {
-        label: "EKYC_COMPLETED",
-        count: completedKnos,
-        color: "#10B981",
-        type: "month",
-        icon: <FaCheckCircle />,
-      },
+      // {
+      //   label: "EKYC_COMPLETED",
+      //   count: completedKnos,
+      //   color: "#10B981",
+      //   type: "month",
+      //   icon: <FaCheckCircle />,
+      // },
       {
         label: "EKYC_SUBMITTED_BY_VENDORS",
         count: submittedKnos,
@@ -170,7 +111,7 @@ const VendorDetailsCard = () => {
         icon: <FaChartLine />,
       },
     ];
-  }, [vendorSupervisors, vendor, progressData]);
+  }, [vendor, progressData]);
 
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize, setPageSize] = useState(20);
@@ -440,20 +381,15 @@ const VendorDetailsCard = () => {
     return null;
   };
 
-  const paginatedSupervisors = useMemo(() => {
-    const start = currentPage * pageSize;
-    const end = start + pageSize;
-    return vendorSupervisors.slice(start, end);
-  }, [vendorSupervisors, currentPage, pageSize]);
-
   const supervisorColumns = useMemo(
     () => [
       {
         Header: t("SUPERVISOR_NAME") || "Supervisor Name",
-        accessor: (row) => row?.name || "N/A",
+        accessor: (row) => row?.original?.supervisorName || "N/A",
         Cell: ({ row }) => {
           const userType = Digit.SessionStorage.get("User")?.info?.type?.toLowerCase() || "citizen";
-          const targetPath = `/digit-ui/${userType}/ekyc/supervisor-dashboard/${row.original.id}`;
+          const targetPath = `/digit-ui/${userType}/ekyc/supervisor-dashboard/${row?.original?.supervisorId}`;
+
           return (
             <a
               href={targetPath}
@@ -463,7 +399,7 @@ const VendorDetailsCard = () => {
                 history.push(targetPath);
               }}
             >
-              {row.original?.name || "N/A"}
+              {row?.original?.supervisorName || "N/A"}
             </a>
           );
         },
@@ -471,7 +407,7 @@ const VendorDetailsCard = () => {
       {
         Header: t("MOBILE_NUMBER") || "Mobile Number",
         accessor: (row) => row?.mobileNo || "N/A",
-        id: "mobileNumber",
+        id: "mobileNo",
       },
       {
         Header: t("STATUS") || "Status",
@@ -496,7 +432,7 @@ const VendorDetailsCard = () => {
       },
       {
         Header: t("OVERALL_PROGRESS") || "Overall Progress",
-        accessor: (row) => `${row?.progressPercent || row?.progressPercent === 0 ? row.progressPercent : row.progress}%`,
+        accessor: (row) => `${row?.progressPercent || 0}%`,
         id: "overallProgress",
       },
     ],
@@ -524,18 +460,14 @@ const VendorDetailsCard = () => {
   const handleDownload = () => {
     setReportLoading(true);
     try {
-      const rowsWithStats = vendorSupervisors.map((s) => ({
-        name: s.name,
+      const rowsWithStats = progressData?.supervisorReport.map((s) => ({
+        name: s.supervisorName,
         mobileNo: s.mobileNo,
-        status: s.status,
         total: s.totalKnos,
         completed: s.submittedKnos,
         pending: s.pendingKnos,
-        progress: `${s.progressPercent}%`,
+        progress: `${s.progressPercent || 0}%`,
       }));
-
-      const totalKnos = vendorSupervisors.reduce((acc, s) => acc + (s.totalKnos || 0), 0) || vendor?.assignedConnections || 0;
-      const completedKnos = vendorSupervisors.reduce((acc, s) => acc + (s.submittedKnos || 0), 0) || vendor?.completedEkyc || 0;
 
       downloadVendorPDF({
         rows: rowsWithStats,
@@ -543,10 +475,10 @@ const VendorDetailsCard = () => {
         mobileNumber,
         email,
         dashboardInfo: {
-          total: totalKnos,
-          completed: completedKnos,
-          pending: totalKnos - completedKnos,
-          submittedCount: completedKnos,
+          total: progressData?.totalKnosInZones,
+          completed: progressData?.submittedKnosInZones + progressData?.selfEkycCountInZones,
+          pending: progressData?.pendingKnosInZones,
+          submittedCount: progressData?.submittedKnosInZones,
         },
         t,
       });
@@ -596,7 +528,7 @@ const VendorDetailsCard = () => {
     </div>
   );
 
-  const isPageLoading = isProgressLoading || isVendorSearchLoading || isSupervisorSearchLoading;
+  const isPageLoading = isProgressLoading || isVendorSearchLoading;
 
   if (isPageLoading && !vendor) {
     return <Loader />;
@@ -749,15 +681,15 @@ const VendorDetailsCard = () => {
           tableTitle={t("CONNECTED_SUPERVISORS") || "Connected Supervisors"}
           tableClass="ekycTable"
           isTableScrollable={true}
-          data={paginatedSupervisors}
+          data={progressData?.supervisorReport}
           columns={supervisorColumns}
-          isLoading={isPageLoading}
-          totalRecords={vendorSupervisors.length}
+          isLoading={isProgressLoading}
+          totalRecords={progressData?.supervisorReport?.length}
           currentPage={currentPage}
           pageSizeLimit={pageSize}
           isPaginationRequired={true}
           onNextPage={() => {
-            if (currentPage < Math.ceil(vendorSupervisors.length / pageSize) - 1) {
+            if (currentPage < Math.ceil(progressData?.supervisorReport?.length / pageSize) - 1) {
               setCurrentPage((prev) => prev + 1);
             }
           }}
@@ -767,7 +699,7 @@ const VendorDetailsCard = () => {
             }
           }}
           onFirstPage={() => setCurrentPage(0)}
-          onLastPage={() => setCurrentPage(Math.max(Math.ceil(vendorSupervisors.length / pageSize) - 1, 0))}
+          onLastPage={() => setCurrentPage(Math.max(Math.ceil(progressData?.supervisorReport?.length / pageSize) - 1, 0))}
           onPageSizeChange={(e) => {
             setPageSize(Number(e.target.value));
             setCurrentPage(0);

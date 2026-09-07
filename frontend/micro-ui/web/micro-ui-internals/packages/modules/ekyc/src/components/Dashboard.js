@@ -22,8 +22,8 @@ const Dashboard = () => {
   const countData = useMemo(() => {
     return {
       total: progressData?.totalKnosInSystem || 0,
-      completed: progressData?.submittedKnos + progressData?.selfEkycCount || 0,
-      pending: progressData?.pendingKnos || 0,
+      completed: progressData?.completedKnosInZones || 0,
+      pending: progressData?.pendingKnosInZones || 0,
       rejected: progressData?.rejectedKnos || 0,
       totalAssignments: progressData?.totalAssignments || 0,
       submittedCount: progressData?.submittedKnos || 0,
