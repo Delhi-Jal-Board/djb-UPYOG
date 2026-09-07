@@ -201,11 +201,12 @@ public class VendorQueryBuilder {
 
 			List<String> serviceTypes = criteria.getServiceType();
 			if (!CollectionUtils.isEmpty(serviceTypes)) {
+				List<String> serviceTypesLowerCase = serviceTypes.stream().map(String::toLowerCase).collect(Collectors.toList());
 				addClauseIfRequired(preparedStmtList, builder);
-				builder.append(" vendor.additionaldetails::jsonb ->> 'serviceType' IN (")
-						.append(createQuery(serviceTypes))
+				builder.append(" LOWER(vendor.additionaldetails::jsonb ->> 'serviceType') IN (")
+						.append(createQuery(serviceTypesLowerCase))
 						.append(") ");
-				addToPreparedStatement(preparedStmtList, serviceTypes);
+				addToPreparedStatement(preparedStmtList, serviceTypesLowerCase);
 			}
 
 			// Name Filter
@@ -283,11 +284,12 @@ public class VendorQueryBuilder {
 
 			List<String> serviceTypes = criteria.getServiceType();
 			if (!CollectionUtils.isEmpty(serviceTypes)) {
+				List<String> serviceTypesLowerCase = serviceTypes.stream().map(String::toLowerCase).collect(Collectors.toList());
 				addClauseIfRequired(preparedStmtList, builder);
-				builder.append(" vendor.additionaldetails::jsonb ->> 'serviceType' IN (")
-						.append(createQuery(serviceTypes))
+				builder.append(" LOWER(vendor.additionaldetails::jsonb ->> 'serviceType') IN (")
+						.append(createQuery(serviceTypesLowerCase))
 						.append(") ");
-				addToPreparedStatement(preparedStmtList, serviceTypes);
+				addToPreparedStatement(preparedStmtList, serviceTypesLowerCase);
 			}
 
 			List<String> vendorName = criteria.getName();
