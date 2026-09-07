@@ -145,7 +145,7 @@ const AdminDashboard = () => {
 
                     <div className="stat-item">
                       <span className="stat-value">{vendor.totalKnos}</span>
-                      <span className="stat-label">{t("TOTAL_KNOS") || "Total KNOs"}</span>
+                      <span className="stat-label">{t("TOTAL_EKYC_APPLICATIONS") || "Total KNOs"}</span>
                     </div>
                   </div>
 
@@ -153,17 +153,17 @@ const AdminDashboard = () => {
                   <div className="knos-summary">
                     <div className="kno-stat">
                       <span className="kno-label">{t("SUBMITTED") || "Submitted"}</span>
-                      <strong>{vendor.submittedKnos}</strong>
+                      <strong>{vendor.submittedKnosInZones}</strong>
                     </div>
 
                     <div className="kno-stat pending">
                       <span className="kno-label">{t("PENDING") || "Pending"}</span>
-                      <strong>{vendor.pendingKnos}</strong>
+                      <strong>{vendor.pendingKnosInZones}</strong>
                     </div>
 
                     <div className="kno-stat rejected">
-                      <span className="kno-label">{t("REJECTED") || "Rejected"}</span>
-                      <strong>{vendor.rejectedKnos}</strong>
+                      <span className="kno-label">{t("EKYC_SUBMITTED_BY_CITIZEN") || "SUBMITTED BY CITIZEN"}</span>
+                      <strong>{vendor.selfEkycCountInZones}</strong>
                     </div>
                   </div>
                 </div>
