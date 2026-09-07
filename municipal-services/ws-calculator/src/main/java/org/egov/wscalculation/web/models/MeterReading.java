@@ -84,6 +84,11 @@ public class MeterReading {
 	@JsonProperty("meterStatus")
 	private MeterStatusEnum meterStatus = null;
 
+
+	@SafeHtml
+	@JsonProperty("readingQualityCode")
+	private String readingQualityCode = null;
+
 	@JsonProperty("lastReading")
 	private Double lastReading = null;
 
@@ -200,6 +205,21 @@ public class MeterReading {
 
 	public void setMeterStatus(MeterStatusEnum meterStatus) {
 		this.meterStatus = meterStatus;
+	}
+
+
+	public MeterReading readingQualityCode(String readingQualityCode) {
+		this.readingQualityCode = readingQualityCode;
+		return this;
+	}
+
+	@ApiModelProperty(value = "DJB reading quality / billing remark")
+	public String getReadingQualityCode() {
+		return readingQualityCode;
+	}
+
+	public void setReadingQualityCode(String readingQualityCode) {
+		this.readingQualityCode = readingQualityCode;
 	}
 
 	public MeterReading lastReading(Double lastReading) {
