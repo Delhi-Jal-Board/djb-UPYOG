@@ -6,6 +6,18 @@ import { useTranslation } from "react-i18next";
 import ExpandedViewContext from "./ExpandedViewContext";
 import ModuleLinksView from "./ModuleLinksView";
 
+const engagementModuleCodes = [
+  "ENGAGEMENT",
+  "Engagement",
+  "PGR",
+  "Events",
+  "Documents",
+  "Public Message broadcast",
+  "MessageBroadcast",
+  "Broadcast",
+  "Surveys",
+];
+
 const ExpandedViewPage = ({ modules = [] }) => {
   const { t } = useTranslation();
   const history = useHistory();
@@ -25,6 +37,13 @@ const ExpandedViewPage = ({ modules = [] }) => {
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  const sidebarList = modules.filter(
+    (module) =>
+      !engagementModuleCodes.includes(module.code) &&
+      Digit.Utils.hasEmployeeModuleAccess(module) &&
+      Digit.ComponentRegistryService.getComponent(`${module.code}Card`)
+  );
+
   useEffect(() => {
     if (!moduleName && !location.state) {
       history.push("/digit-ui/employee");
@@ -32,7 +51,7 @@ const ExpandedViewPage = ({ modules = [] }) => {
     }
 
     if (moduleName) {
-      const found = modules.find((m) => {
+      const found = sidebarList.find((m) => {
         return m.code === moduleName || t(`ACTION_TEST_${m.code}`) === moduleName || m.name === moduleName;
       });
 
@@ -42,9 +61,7 @@ const ExpandedViewPage = ({ modules = [] }) => {
         setActiveModuleCode(moduleName);
       }
     }
-  }, [location.state, moduleName, history, modules, t]);
-
-  const sidebarList = modules.filter((m) => Digit.ComponentRegistryService.getComponent(`${m.code}Card`));
+  }, [location.state, moduleName, history, sidebarList, t]);
 
   const activeModuleLabel = useMemo(() => {
     if (!activeModuleCode) return "";
@@ -96,7 +113,7 @@ const ExpandedViewPage = ({ modules = [] }) => {
           leftContent={
             <Fragment>
               <ArrowLeft className="icon" />
-              BACK
+              {t("CS_COMMON_BACK")}
             </Fragment>
           }
           onLeftClick={() => window.history.back()}

@@ -189,7 +189,7 @@ const AddFixFillAddress = ({ t, config, formData, onSelect, isEdit, userDetails 
       setStreetName(addressData.streetName || "");
       setLandmark(addressData.landmark || "");
       setAddressLine1(addressData.addressLine1 || "");
-      // setAddressLine2(addressData.addressLine2 || "");
+      setAddressLine2(addressData.addressLine2 || "");
       setAddressType(
         allOptions.find((a) => a.code === addressData.addressType) || addressData.addressType || allOptions.find((a) => a.code === "PERMANENT")
       );
@@ -243,7 +243,7 @@ const AddFixFillAddress = ({ t, config, formData, onSelect, isEdit, userDetails 
       setStreetName(selectedAddress.streetName);
       setLandmark(selectedAddress.landmark);
       setAddressLine1(selectedAddress.address);
-      // setAddressLine2(selectedAddress.address2);
+      setAddressLine2(selectedAddress.address2);
       setZone(selectedAddress.zone);
       setBlock(selectedAddress.block);
       setAssembly(selectedAddress.assembly);

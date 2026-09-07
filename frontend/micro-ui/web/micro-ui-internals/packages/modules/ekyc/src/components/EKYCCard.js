@@ -4,15 +4,14 @@ import { useTranslation } from "react-i18next";
 
 const EKYCCard = () => {
   const { t } = useTranslation();
+  if (!Digit.Utils.ekycAccess()) {
+    return null;
+  }
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const citizenInfo = Digit.SessionStorage.get("User")?.info?.roles;
   const roles = Array.isArray(citizenInfo) ? citizenInfo.map((ele) => ele.code || ele) : [];
 
-  const { data: listData, isLoading } = Digit.Hooks.ekyc.useEkycApplicationList(
-    {},
-    { tenantId, offset: 0, limit: 1 },
-    { enabled: !!tenantId }
-  );
+  const { data: listData, isLoading } = Digit.Hooks.ekyc.useEkycApplicationList({}, { tenantId, offset: 0, limit: 1 }, { enabled: !!tenantId });
 
   const totalCount = isLoading ? "-" : listData?.totalCount || 0;
 
@@ -86,11 +85,11 @@ const EKYCCard = () => {
       },
       ...(!roles.includes("EMPLOYEE")
         ? [
-          {
-            label: t("EKYC_ASSIGN"),
-            link: `${prefix}/assign`,
-          },
-        ]
+            {
+              label: t("EKYC_ASSIGN"),
+              link: `${prefix}/assign`,
+            },
+          ]
         : []),
     ];
   }
@@ -101,12 +100,12 @@ const EKYCCard = () => {
     kpis: isCitizen
       ? []
       : [
-        {
-          count: totalCount,
-          label: t("TOTAL_EKYC"),
-          link: `${prefix}/admin-dashboard`,
-        },
-      ],
+          {
+            count: totalCount,
+            label: t("TOTAL_EKYC"),
+            link: `${prefix}/admin-dashboard`,
+          },
+        ],
     links: links,
   };
 

@@ -5,9 +5,9 @@ import { EmployeeModuleCard, PropertyHouse } from "@djb25/digit-ui-react-compone
 const CommonPTCard = () => {
   const { t } = useTranslation();
 
-  // if (!Digit.Utils.ptAccess()) {
-  //   return null;
-  // }
+  if (!Digit.Utils.ptAccess()) {
+    return null;
+  }
 
   const propsForModuleCard = {
     Icon: <PropertyHouse />,
