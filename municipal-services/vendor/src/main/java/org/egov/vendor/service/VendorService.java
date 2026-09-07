@@ -422,7 +422,12 @@ public class VendorService {
 				|| !CollectionUtils.isEmpty(vendorCriteria.getIds())) {
 
 			vendorResponse = repository.getVendorData(criteria);
-			if (vendorResponse != null && !vendorResponse.getVendor().isEmpty()) {
+			// PERF (2026-09-05): unchanged for every existing caller —
+			// Boolean.TRUE.equals(null) is false, so criteria.skipEnrichment
+			// being absent (the case for every caller today except the one
+			// explicitly opting in) takes this exact same branch as before.
+			if (vendorResponse != null && !vendorResponse.getVendor().isEmpty()
+					&& !Boolean.TRUE.equals(criteria.getSkipEnrichment())) {
 				enrichmentService.enrichVendorSearch(vendorResponse.getVendor(), requestInfo, criteria.getTenantId());
 			}
 			if (vendorResponse != null && vendorResponse.getVendor().isEmpty()) {
