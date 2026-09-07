@@ -4,7 +4,6 @@ import { EmployeeModuleCard, PropertyHouse } from "@djb25/digit-ui-react-compone
 
 const ASSETCard = () => {
   const { t } = useTranslation();
-
   const [total, setTotal] = useState("-");
   const { data, isLoading, isFetching, isSuccess } = Digit.Hooks.useNewInboxGeneral({
     tenantId: Digit.ULBService.getCurrentTenantId(),
@@ -41,8 +40,11 @@ const ASSETCard = () => {
     {
       label: t("AST_REPORT"),
       link: `/digit-ui/employee/asset/assetservice/report`,
-    }
+    },
   ];
+  if (!Digit.Utils.assetAccess()) {
+    return null;
+  }
   const ASSETRole = Digit.UserService.hasAccess(["ASSET_INITIATOR"]) || false;
   const propsForModuleCard = {
     Icon: <PropertyHouse />,

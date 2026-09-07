@@ -535,7 +535,7 @@ export default function LiveTrackingSystem() {
 
   const { data: fillingPointData } = Digit.Hooks.wt.useFillPointSearch({
     tenantId,
-    filters: { status: "ACTIVE" },
+    filters: { status: "true" },
   });
 
   const fillingPointOptions = useMemo(() => {

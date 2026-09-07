@@ -337,6 +337,27 @@ const dashboardAccess = () => {
   return DASHBOARD_ACCESS?.length > 0;
 };
 
+const ekycAccess = () => {
+  const userInfo = Digit.UserService.getUser();
+  const userRoles = userInfo?.info?.roles?.map((roleData) => roleData?.code?.toUpperCase());
+  const EKYC_ACCESS = userRoles?.filter((role) => role?.includes("EKYC"));
+  return EKYC_ACCESS?.length > 0;
+};
+
+const formioAccess = () => {
+  const userInfo = Digit.UserService.getUser();
+  const userRoles = userInfo?.info?.roles?.map((roleData) => roleData?.code?.toUpperCase());
+  const FORMIO_ACCESS = userRoles?.filter((role) => role?.includes("FORMIO"));
+  return FORMIO_ACCESS?.length > 0;
+};
+
+const rwhAccess = () => {
+  const userInfo = Digit.UserService.getUser();
+  const userRoles = userInfo?.info?.roles?.map((roleData) => roleData?.code?.toUpperCase());
+  const RWH_ACCESS = userRoles?.filter((role) => role?.includes("RWH"));
+  return RWH_ACCESS?.length > 0;
+};
+
 const wsAccess = () => {
   const userInfo = Digit.UserService.getUser();
   const userRoles = userInfo?.info?.roles?.map((roleData) => roleData?.code);
@@ -363,6 +384,51 @@ const vendorAccess = () => {
   const vendorRoles = ["VENDOR"];
   const VENDOR_ACCESS = userRoles?.filter((role) => vendorRoles?.includes(role));
   return VENDOR_ACCESS?.length > 0;
+};
+
+const hasEmployeeModuleAccess = (module) => {
+  const accessCheckers = {
+    ADS: adsAccess,
+    ASSET: assetAccess,
+    BPA: BPAAccess,
+    BPAREG: BPAREGAccess,
+    CHB: chbAccess,
+    COMMONPT: ptAccess,
+    DASHBOARD: dashboardAccess,
+    DSS: () => Digit.UserService.hasAccess(["NATADMIN"]),
+    DOCUMENTS: engagementAccess,
+    ENGAGEMENT: engagementAccess,
+    EVENTS: engagementAccess,
+    EKYC: ekycAccess,
+    EW: ewAccess,
+    FORMIO: formioAccess,
+    FSM: fsmAccess,
+    HRMS: hrmsAccess,
+    MCOLLECT: mCollectAccess,
+    MT: mtAccess,
+    "NATIONAL DASHBOARD": () => Digit.UserService.hasAccess(["NATADMIN"]),
+    NATIONAL_DASHBOARD: () => Digit.UserService.hasAccess(["NATADMIN"]),
+    NDSS: () => Digit.UserService.hasAccess(["NATADMIN"]),
+    NOC: NOCAccess,
+    PGR: pgrAccess,
+    PT: ptAccess,
+    PTR: ptrAccess,
+    RWH: rwhAccess,
+    NATIONALDASHBOARD: dashboardAccess,
+    SURVEYS: engagementAccess,
+    SV: svAccess,
+    SW: swAccess,
+    TL: tlAccess,
+    USER: hrmsAccess,
+    USERMANAGEMENT: hrmsAccess,
+    VENDOR: () => vendorAccess() || Digit.UserService.hasAccess(["WT_VENDOR", "MT_VENDOR", "EKYC_VENDOR", "EKYC_SUPERVISOR"]),
+    WT: wtAccess,
+    WS: wsAccess,
+  };
+
+  const moduleCode = module?.code?.toUpperCase();
+  const accessChecker = accessCheckers[moduleCode];
+  return !accessChecker || accessChecker();
 };
 
 export default {
@@ -410,5 +476,9 @@ export default {
   svAccess,
   vendorAccess,
   dashboardAccess,
+  ekycAccess,
+  formioAccess,
+  rwhAccess,
+  hasEmployeeModuleAccess,
   ...privacy,
 };

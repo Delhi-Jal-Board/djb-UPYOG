@@ -14,6 +14,9 @@ import { APPLICATION_PATH } from "../utils";
  */
 const WTCard = () => {
   const { t } = useTranslation();
+  if (!Digit.Utils.wtAccess()) {
+    return null;
+  }
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const emergencyRequestLabel =
     t("WT_EMERGENCY_WATER_TANKER_REQUEST") !== "WT_EMERGENCY_WATER_TANKER_REQUEST"

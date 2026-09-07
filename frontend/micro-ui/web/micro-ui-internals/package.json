@@ -43,6 +43,7 @@
     "dev:ekyc": "cd packages/modules/ekyc && yarn start",
     "dev:ws": "cd packages/modules/ws && yarn start",
     "dev:wt": "cd packages/modules/wt && yarn start",
+    "dev:pt": "cd packages/modules/pt && yarn start",
     "dev:engagement": "cd packages/modules/engagement && yarn start",
     "dev:bills": "cd packages/modules/bills && yarn start",
     "dev:reports": "cd packages/modules/reports && yarn start",
@@ -73,6 +74,7 @@
     "buildD:finance": "cd packages/modules/finance && yarn build",
     "buildD:cm": "cd packages/modules/cm && yarn build",
     "build:vendor": "cd packages/modules/vendor && yarn build",
+    "buildD:pt": "cd packages/modules/pt && yarn build",
     "buildR:reports": "cd packages/modules/reports && yarn build",
     "deploy:jenkins": "./scripts/jenkins.sh"
   },

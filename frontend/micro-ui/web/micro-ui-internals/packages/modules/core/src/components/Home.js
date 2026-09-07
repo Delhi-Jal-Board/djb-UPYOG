@@ -220,6 +220,40 @@ const engagementModuleMeta = {
   Engagement: { icon: "users", label: "Engagement" },
 };
 
+const employeeModuleAccess = {
+  ADS: "adsAccess",
+  ASSET: "assetAccess",
+  BPA: "BPAAccess",
+  BPAREG: "BPAREGAccess",
+  CHB: "chbAccess",
+  Documents: "engagementAccess",
+  EW: "ewAccess",
+  Engagement: "engagementAccess",
+  Events: "engagementAccess",
+  FSM: "fsmAccess",
+  FORMIO: "formioAccess",
+  HRMS: "hrmsAccess",
+  MCollect: "mCollectAccess",
+  MT: "mtAccess",
+  NOC: "NOCAccess",
+  PGR: "pgrAccess",
+  PT: "ptAccess",
+  PTR: "ptrAccess",
+  RWH: "rwhAccess",
+  SV: "svAccess",
+  SW: "swAccess",
+  Surveys: "engagementAccess",
+  TL: "tlAccess",
+  WT: "wtAccess",
+  WS: "wsAccess",
+};
+
+const getAccessibleEmployeeModules = (modules) =>
+  modules.filter((module) => {
+    const accessChecker = employeeModuleAccess[module?.code?.toUpperCase()];
+    return !accessChecker || Digit.Utils?.[accessChecker]?.();
+  });
+
 /* ─── Engagement Panel ───────────────────────────────────────────────────────
  * Replaces the old ModuleCarousel for engagement modules.
  * Renders a soft shell with a chip row for filtering, and renders each
@@ -471,8 +505,9 @@ const EmployeeHome = ({ modules }) => {
 
   const greeting = getGreeting();
 
-  const engagementModules = modules.filter((mod) => engagementModuleCodes.includes(mod?.code));
-  const mainModules = modules.filter((mod) => !engagementModuleCodes.includes(mod?.code));
+  const accessibleModules = getAccessibleEmployeeModules(modules);
+  // const engagementModules = accessibleModules.filter((mod) => engagementModuleCodes.includes(mod?.code));
+  const mainModules = accessibleModules.filter((mod) => !engagementModuleCodes.includes(mod?.code));
 
   return (
     <div className="employee-app-homepage-container">
@@ -547,8 +582,8 @@ const EmployeeHome = ({ modules }) => {
           {/* Core services — unchanged carousel */}
           <ModuleCarousel modules={mainModules} title={t("Core Services")} className="core-carousel-section" />
 
-          {/* Engagement — new panel replaces the old ModuleCarousel */}
-          {engagementModules.length > 0 && <EngagementPanel modules={engagementModules} t={t} />}
+          {/* Engagement panel temporarily disabled. */}
+          {/* {engagementModules.length > 0 && <EngagementPanel modules={engagementModules} t={t} />} */}
         </div>
       </div>
     </div>
