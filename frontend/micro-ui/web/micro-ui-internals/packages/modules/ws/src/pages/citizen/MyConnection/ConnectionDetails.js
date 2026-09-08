@@ -70,8 +70,8 @@ const ConnectionDetails = () => {
     Object.keys(state)?.length > 0
       ? state
       : applicationNobyData?.includes("WS")
-        ? connectionData?.WaterConnection?.[0]
-        : connectionData?.SewerageConnections?.[0];
+        ? (connectionData?.WaterConnection?.find(c => c.applicationStatus === "CONNECTION_ACTIVATED") || connectionData?.WaterConnection?.[0])
+        : (connectionData?.SewerageConnections?.find(c => c.applicationStatus === "CONNECTION_ACTIVATED") || connectionData?.SewerageConnections?.[0]);
   //this code hampering all Sewerage functionality thatswhy removed
   // if(data && data["SewerageConnections"]){
   //   isSewerageConnections = true;
