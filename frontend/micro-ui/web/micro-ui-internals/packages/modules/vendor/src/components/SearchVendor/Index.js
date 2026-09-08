@@ -35,6 +35,12 @@ const SearchVendor = () => {
   const [showToast, setShowToast] = useState(null);
   const { consumeToast } = Digit.Hooks.useToast();
 
+  const { data: serviceTypes, isLoading: isServiceTypeLoading } = Digit.Hooks.useCustomMDMS(tenantId, "tenant", [{ name: "citymodule" }], {
+    select: (data) => data?.tenant?.citymodule,
+  });
+
+  const formattedServiceTypes = serviceTypes?.map((service) => ({ i18nKey: service.code, code: service.code, value: service.name })) || [];
+
   useEffect(() => {
     const message = consumeToast();
 
@@ -105,19 +111,10 @@ const SearchVendor = () => {
             ...paginationParms,
             name: searchParams?.name,
             status: "ACTIVE,DISABLED",
+            serviceType: searchParams?.vendor?.code?.toLowerCase(),
           },
           config: { enabled: false },
         });
-
-  Digit.Hooks.fsm.useVendorSearch({
-    tenantId,
-    filters: {
-      ...paginationParms,
-      name: searchParams?.name,
-      status: "ACTIVE,DISABLED",
-    },
-    config: { enabled: false },
-  });
 
   const { data: vendorData, isLoading: isVendorLoading, refetch: refetchVendor } = Digit.Hooks.fsm.useDsoSearch(
     tenantId,
@@ -136,9 +133,7 @@ const SearchVendor = () => {
   useEffect(() => {
     refetch();
     refetchVendor();
-    if (location.state?.showSuccessToast) {
-      setShowToast(location.state?.message);
-    }
+    if (location.state?.showSuccessToast) setShowToast(location.state?.message);
   }, []);
 
   useEffect(() => {
@@ -314,6 +309,20 @@ const SearchVendor = () => {
             title: t("ES_FSM_MOBILE_NUMBER_FORMAT_TIP") || "Enter 10-digit mobile number",
           },
         ]
+      : tab === "VENDOR"
+      ? [
+          {
+            label: t("ES_VENDOR_SEARCH_VENDOR_NAME"),
+            name: "name",
+          },
+          {
+            label: t("ES_VENDOR_SEARCH_VENDOR_TYPE"),
+            name: "vendor",
+            type: "dropdown",
+            options: formattedServiceTypes,
+            optionsKey: "code",
+          },
+        ]
       : [
           {
             label: t("ES_VENDOR_SEARCH_VENDOR_NAME"),
@@ -356,7 +365,7 @@ const SearchVendor = () => {
         <VendorInbox
           data={{ table: tableData }}
           searchParams={searchParams}
-          isLoading={isLoading || isVendorLoading}
+          isLoading={isLoading || isVendorLoading || isServiceTypeLoading}
           onSort={handleSort}
           disableSort={false}
           sortParams={sortParams}
