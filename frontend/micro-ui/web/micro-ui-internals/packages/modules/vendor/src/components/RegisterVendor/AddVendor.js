@@ -261,7 +261,10 @@ const AddVendor = () => {
 
     if (isEkyc) {
       const { data } = await refetch();
-      if (data?.totalCount >= 3) {
+
+      const activeVendorCount = data?.vendor?.filter((vendor) => vendor.status === "ACTIVE").length || 0;
+
+      if (activeVendorCount >= 3) {
         setShowToast({
           key: "error",
           message: t("EKYC_VENDOR_LIMIT"),
