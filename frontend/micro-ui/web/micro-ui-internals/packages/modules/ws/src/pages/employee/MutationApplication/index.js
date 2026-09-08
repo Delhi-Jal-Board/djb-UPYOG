@@ -49,23 +49,57 @@ const MutationApplication = () => {
   const [authServiceType, setAuthServiceType, clearAuthServiceType] = Digit.Hooks.useSessionStorage("MUTATION_APP_SERVICE", "");
   const [authActiveConnection, setAuthActiveConnection, clearAuthActiveConnection] = Digit.Hooks.useSessionStorage("MUTATION_APP_ACTIVE_CONN", null);
 
+  const [persistedEditParams, setPersistedEditParams] = Digit.Hooks.useSessionStorage("MUTATION_EDIT_PARAMS", {});
   const user = Digit.UserService.getUser();
+  
+  const urlParams = new URLSearchParams(location.search);
+  const urlAppNo = filters?.applicationNumber || urlParams.get("applicationNumber") || state?.id;
+  const urlTenantId = filters?.tenantId || urlParams.get("tenantId") || state?.tenantId;
+  const urlService = filters?.service || urlParams.get("service") || state?.service;
+
+  useEffect(() => {
+    // FIX: Clear persisted edit parameters if starting a fresh new mutation to prevent state bleeding
+    if (location.pathname.endsWith("/search-connection") && !urlAppNo) {
+      setPersistedEditParams({});
+    } else if (urlAppNo || urlTenantId || urlService) {
+      setPersistedEditParams({
+        applicationNumber: urlAppNo || persistedEditParams?.applicationNumber,
+        tenantId: urlTenantId || persistedEditParams?.tenantId,
+        service: urlService || persistedEditParams?.service,
+      });
+    }
+  }, [urlAppNo, urlTenantId, urlService, location.pathname]);
+
+  const applicationNumber = urlAppNo || persistedEditParams?.applicationNumber;
+  const serviceType = urlService || persistedEditParams?.service;
   let tenantId =
-    filters?.tenantId ||
+    urlTenantId ||
+    persistedEditParams?.tenantId ||
     Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code ||
     user?.info?.permanentCity ||
     Digit.ULBService.getCurrentTenantId();
-  const applicationNumber = filters?.applicationNumber;
-  const serviceType = filters?.service;
 
   const details = cloneDeep(state?.data);
   const mobileNumber = user?.info?.userName?.match(/^[0-9]{10}$/) ? user?.info?.userName : user?.info?.mobileNumber;
 
   const hasStateData = !!details?.applicationData?.id;
-
+useEffect(() => {
+    // When a user clicks the sidebar link, they land on the base 'path' before redirecting to step 1.
+    // This is the perfect time to wipe all stale session data so nothing bleeds into the new application.
+    if (location.pathname === path) {
+      if (typeof clearFormData === "function") clearFormData();
+      if (typeof clearSessionFormData === "function") clearSessionFormData();
+      if (typeof clearCompletedSteps === "function") clearCompletedSteps();
+      if (typeof clearAuthKNumber === "function") clearAuthKNumber();
+      if (typeof clearAuthMobileNumber === "function") clearAuthMobileNumber();
+      if (typeof clearAuthServiceType === "function") clearAuthServiceType();
+      if (typeof clearAuthActiveConnection === "function") clearAuthActiveConnection();
+      if (typeof setPersistedEditParams === "function") setPersistedEditParams({});
+    }
+  }, [location.pathname, path]);
   // Determine if we are editing an existing application
   const editApplicationNumber = details?.applicationNo || applicationNumber;
-
+console.log(editApplicationNumber, "editApplicationNumber");
   const { isLoading: isWorkflowLoading, data: workflowData } = useQuery(
     ["WORKFLOW_SEARCH", editApplicationNumber, tenantId],
     async () => {
@@ -74,9 +108,15 @@ const MutationApplication = () => {
     },
     { enabled: !!editApplicationNumber }
   );
-
+console.log(workflowData, "workflowData");
   const isEmployee = window.location.href.includes("/employee/");
-  const isEditFlow = !!editApplicationNumber && (isEmployee || workflowData?.action === "SEND_BACK_TO_CITIZEN");
+  
+  // FIX: Airtight check ensuring we are truly in an Edit Flow and not a Create Flow
+  const isEditFlow = !!editApplicationNumber && (
+    !!urlAppNo || 
+    workflowData?.businessService === "mutationWSConnection" || 
+    workflowData?.action === "SEND_BACK_TO_CITIZEN"
+  );
 
   // For searching details: use application number if editing, otherwise use authenticated K Number
   const querySearchParam = isEditFlow ? editApplicationNumber : authKNumber;
@@ -106,11 +146,11 @@ const MutationApplication = () => {
       } else {
         wsData = rawData?.SewerageConnections?.find(c => c.applicationStatus === 'CONNECTION_ACTIVATED') || rawData?.SewerageConnections?.[0];
       }
-      if (!wsData) return null;
+     if (!wsData) return null;
       return {
         applicationData: wsData,
-        WaterConnection: rawData?.WaterConnection,
-        SewerageConnections: rawData?.SewerageConnections,
+        WaterConnection: [wsData], 
+        SewerageConnections: [wsData], 
         propertyDetails: null,
         processInstancesDetails: [],
       };
@@ -158,7 +198,6 @@ const MutationApplication = () => {
   useEffect(() => {
     const isCitizen = window.location.href.includes("/citizen/");
     const isEmployee = window.location.href.includes("/employee/");
-
     if ((isCitizen || isEmployee) && isEditFlow && applicationDetails?.applicationData) {
       const data = applicationDetails.applicationData;
       const holders = data?.connectionHolders || [];
@@ -328,6 +367,8 @@ const MutationApplication = () => {
           ...convertAppData,
           id: applicationDetails?.applicationData?.id,
           applicationNo: editApplicationNumber,
+                      action: "RESUBMIT_APPLICATION",
+
           processInstance: {
             ...applicationDetails?.applicationData?.processInstance,
             ...convertAppData?.processInstance,
@@ -546,34 +587,42 @@ const MutationApplication = () => {
         <div style={{ flex: "1", overflowY: "auto", minWidth: 0 }}>
 <Switch>
             <Route path={`${path}/search-connection`}>
-              <Step1_SearchConnection
-                t={t}
-                defaultKNumber={isEditFlow ? applicationDetails?.applicationData?.connectionNo : ""}
-                isEditFlow={isEditFlow}
-                onNext={({ kNumber, mobileNumber, serviceType: detectedServiceType, activeConnection }) => {
-                  setAuthKNumber(kNumber);
-                  setAuthMobileNumber(mobileNumber);
-                  if (detectedServiceType) setAuthServiceType(detectedServiceType);
-                  if (activeConnection) setAuthActiveConnection(activeConnection);
-                  setCompletedSteps((prev) => [...new Set([...prev, 1])]);
-                  history.push(`${path}/existing-connection`);
-                }}
-              />
+              {isEditFlow ? (
+                <Redirect to={{ pathname: `${path}/consumer-details`, search: location.search, state: location.state }} />
+              ) : (
+                <Step1_SearchConnection
+                  t={t}
+                  defaultKNumber={isEditFlow ? applicationDetails?.applicationData?.connectionNo : ""}
+                  isEditFlow={isEditFlow}
+                  onNext={({ kNumber, mobileNumber, serviceType: detectedServiceType, activeConnection }) => {
+                    setAuthKNumber(kNumber);
+                    setAuthMobileNumber(mobileNumber);
+                    if (detectedServiceType) setAuthServiceType(detectedServiceType);
+                    if (activeConnection) setAuthActiveConnection(activeConnection);
+                    setCompletedSteps((prev) => [...new Set([...prev, 1])]);
+                    history.push(`${path}/existing-connection`);
+                  }}
+                />
+              )}
             </Route>
 
             <Route path={`${path}/existing-connection`}>
-              <Fragment>
-                <Step1_ExistingConnection
-                  t={t}
-                  applicationDetails={authActiveConnection ? { applicationData: authActiveConnection } : applicationDetails}
-                  propertyId={authActiveConnection?.propertyId || applicationDetails?.applicationData?.propertyId}
-                  mobileNumber={authMobileNumber}
-                  onVerify={() => {
-                    setCompletedSteps((prev) => [...new Set([...prev, 2])]);
-                    history.push(`${path}/consumer-details`);
-                  }}
-                />
-              </Fragment>
+              {isEditFlow ? (
+                <Redirect to={{ pathname: `${path}/consumer-details`, search: location.search, state: location.state }} />
+              ) : (
+                <Fragment>
+                  <Step1_ExistingConnection
+                    t={t}
+                    applicationDetails={authActiveConnection ? { applicationData: authActiveConnection } : applicationDetails}
+                    propertyId={authActiveConnection?.propertyId || applicationDetails?.applicationData?.propertyId}
+                    mobileNumber={authMobileNumber}
+                    onVerify={() => {
+                      setCompletedSteps((prev) => [...new Set([...prev, 2])]);
+                      history.push(`${path}/consumer-details`);
+                    }}
+                  />
+                </Fragment>
+              )}
             </Route>
 
             <Route path={`${path}/consumer-details`}>
@@ -618,8 +667,8 @@ const MutationApplication = () => {
               <Step5_Submission t={t} applicationNumber={generatedAppNo} serviceType={resolvedServiceType} />
             </Route>
 
-            <Route exact path={path}>
-              <Redirect to={`${path}/search-connection`} />
+          <Route exact path={path}>
+              <Redirect to={{ pathname: isEditFlow ? `${path}/consumer-details` : `${path}/search-connection`, search: location.search, state: location.state }} />
             </Route>
           </Switch>
 

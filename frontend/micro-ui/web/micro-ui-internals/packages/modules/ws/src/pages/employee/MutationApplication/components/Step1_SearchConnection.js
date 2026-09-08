@@ -1,10 +1,41 @@
 import React, { useState } from "react";
-import { Card, CardText, TextInput, Toast } from "@djb25/digit-ui-react-components";
+import { Card, CardText, SubmitBar, TextInput, Toast } from "@djb25/digit-ui-react-components";
 
 const Step1_SearchConnection = ({ t, defaultKNumber, onNext, isEditFlow }) => {
   const [kNumber, setKNumber] = useState(defaultKNumber || "");
   const [isLoading, setIsLoading] = useState(false);
+  const [isConsenting, setIsConsenting] = useState(false);
   const [showToast, setShowToast] = useState(null);
+
+  const handleDigiLockerConsent = async (e) => {
+    if (e?.preventDefault) e.preventDefault();
+    if (e?.stopPropagation) e.stopPropagation();
+
+    setIsConsenting(true);
+    try {
+      const tenantId = Digit.ULBService.getCurrentTenantId() || "dl";
+      const data = await Digit.DigiLockerService.authorization({ module: "WS", tenantId });
+      const redirectUrl = data?.redirectURL || data?.redirectUrl;
+      const verifier = data?.dlReqRef || data?.codeverifier || data?.codeVerifier || data?.code_verifier;
+
+      if (verifier) {
+        sessionStorage.setItem("code_verfier_register", verifier);
+      }
+
+      if (redirectUrl) {
+        window.location.href = redirectUrl;
+      } else {
+        setShowToast({ key: "error", message: "No redirect URL returned from DigiLocker API" });
+      }
+    } catch (err) {
+      setShowToast({
+        key: "error",
+        message: err?.response?.data?.Errors?.[0]?.message || err?.message || "Error fetching DigiLocker authorization URL",
+      });
+    } finally {
+      setIsConsenting(false);
+    }
+  };
 
   const handleSendOtp = async () => {
     if (!kNumber) {
@@ -15,7 +46,7 @@ const Step1_SearchConnection = ({ t, defaultKNumber, onNext, isEditFlow }) => {
     try {
       const tenantId = Digit.ULBService.getCurrentTenantId() || "dl";
       const params = { connectionNumber: kNumber, isConnectionSearch: true };
-      
+
       let detectedServiceType = "WATER";
       const wsResponse = await Digit.WSService.search({ tenantId, filters: params, businessService: "WS" }).catch(() => null);
       let connection = wsResponse?.WaterConnection?.find(c => c.applicationStatus === 'CONNECTION_ACTIVATED');
@@ -37,6 +68,13 @@ const Step1_SearchConnection = ({ t, defaultKNumber, onNext, isEditFlow }) => {
       if (!fetchedMobileNumber || fetchedMobileNumber.length !== 10) {
         setIsLoading(false);
         setShowToast({ key: "error", message: "No valid registered mobile number found for this connection" });
+        return;
+      }
+
+      // FIX: Skip OTP completely if it is the edit flow
+      if (isEditFlow) {
+        setIsLoading(false);
+        onNext({ kNumber, mobileNumber: fetchedMobileNumber, serviceType: detectedServiceType, activeConnection: connection });
         return;
       }
 
@@ -67,8 +105,12 @@ const Step1_SearchConnection = ({ t, defaultKNumber, onNext, isEditFlow }) => {
         <span style={{ fontSize: isMobileView ? "20px" : "24px" }}>🔍</span>
         <h2 style={{ fontSize: isMobileView ? "16px" : "18px", fontWeight: "700", margin: 0 }}>1. Connection Authentication</h2>
       </div>
-      <CardText style={{ fontSize: isMobileView ? "13px" : undefined }}>Please enter your K Number to proceed with the mutation application. An OTP will be sent to the registered mobile number.</CardText>
-      
+      <CardText style={{ fontSize: isMobileView ? "13px" : undefined }}>
+        {isEditFlow 
+          ? "Please verify the K Number to proceed with the mutation edit." 
+          : "Please enter your K Number to proceed with the mutation application. An OTP will be sent to the registered mobile number."}
+      </CardText>
+
       <div style={{ marginBottom: "24px", marginTop: "16px", padding: isMobileView ? "12px" : "16px", backgroundColor: "#f9f9f9", borderRadius: "8px", borderLeft: "4px solid #00497e" }}>
         <div style={{ marginBottom: "16px" }}>
           <div style={{ fontWeight: "bold", marginBottom: "8px", fontSize: isMobileView ? "14px" : undefined }}>K Number / Connection ID *</div>
@@ -81,13 +123,27 @@ const Step1_SearchConnection = ({ t, defaultKNumber, onNext, isEditFlow }) => {
           />
         </div>
         
+        {/* Hide DigiLocker during Edit Flow */}
+        {!isEditFlow && (
+          <div>
+            <SubmitBar
+              label={t("WS_LOGIN_WITH_DIGILOCKER") || "Login with DigiLocker"}
+              onSubmit={handleDigiLockerConsent}
+              disabled={isConsenting}
+              submit={true}
+            />
+          </div>
+        )}
+
         <div style={{ display: "flex", justifyContent: isMobileView ? "center" : "flex-end" }}>
           <button
             onClick={handleSendOtp}
             disabled={isLoading}
             style={{ padding: isMobileView ? "12px 16px" : "10px 20px", backgroundColor: "#00497e", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold", opacity: isLoading ? 0.7 : 1, width: isMobileView ? "100%" : "auto", maxWidth: isMobileView ? "100%" : "200px", fontSize: isMobileView ? "14px" : undefined }}
           >
-            {isLoading ? "Sending OTP..." : "Send OTP →"}
+            {isLoading 
+              ? (isEditFlow ? "Proceeding..." : "Sending OTP...") 
+              : (isEditFlow ? "Proceed →" : "Send OTP →")}
           </button>
         </div>
       </div>
