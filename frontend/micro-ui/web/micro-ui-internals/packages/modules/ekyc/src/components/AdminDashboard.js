@@ -1,54 +1,93 @@
-import React, { useMemo } from "react";
-import { Card, Loader } from "@djb25/digit-ui-react-components";
+import React from "react";
+import { Card } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
 import Dashboard from "./Dashboard";
 
+const VendorCardSkeleton = () => {
+  return (
+    <div className="vendor-perf-card vendor-perf-card-skeleton">
+      {/* Header */}
+      <div className="vendor-card-header">
+        <div className="vendor-title">
+          <div className="skeleton skeleton-icon" />
+
+          <div className="skeleton-title-wrapper">
+            <div className="skeleton skeleton-title" />
+            <div className="skeleton skeleton-subtitle" />
+          </div>
+        </div>
+
+        <div className="skeleton skeleton-kno-badge" />
+      </div>
+
+      {/* Progress */}
+      <div className="progress-section">
+        <div className="skeleton skeleton-progress-bar" />
+
+        <div className="progress-label">
+          <div className="skeleton skeleton-progress-label" />
+          <div className="skeleton skeleton-progress-value" />
+        </div>
+      </div>
+
+      {/* Team Stats */}
+      <div className="stats-grid">
+        {[1, 2, 3].map((item) => (
+          <div className="stat-item" key={item}>
+            <div className="skeleton skeleton-stat-value" />
+            <div className="skeleton skeleton-stat-label" />
+          </div>
+        ))}
+      </div>
+
+      {/* Status */}
+      <div className="knos-summary">
+        {[1, 2, 3].map((item) => (
+          <div className="kno-stat" key={item}>
+            <div className="skeleton skeleton-status-label" />
+            <div className="skeleton skeleton-status-value" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const VendorPerformanceSkeleton = () => {
+  return (
+    <div className="vendors-grid">
+      {[1, 2, 3].map((item) => (
+        <VendorCardSkeleton key={item} />
+      ))}
+    </div>
+  );
+};
+
 const AdminDashboard = () => {
   const { t } = useTranslation();
   const history = useHistory();
-  let tenantId = Digit.ULBService.getCurrentTenantId();
-  if (!tenantId || tenantId === "dl") {
-    tenantId = "dl.djb";
-  }
-
-  // Fetch all vendors from DSO search
-  const { data: vendorSearchResponse, isLoading: isVendorSearchLoading } = Digit.Hooks.fsm.useDsoSearch(
-    tenantId,
-    { status: "ACTIVE" },
-    { enabled: !!tenantId }
-  );
-
-  const allVendorIds = useMemo(() => {
-    if (!vendorSearchResponse) return [];
-    return vendorSearchResponse
-      .map((v) => {
-        const dso = v.dsoDetails || v;
-        return dso.id || dso.vendorId || v.id || v.vendorId;
-      })
-      .filter(Boolean);
-  }, [vendorSearchResponse]);
 
   // Fetch assignment progress with hierarchy (supervisor and surveyor details)
   const { data: progressData, isLoading: isProgressLoading } = Digit.Hooks.ekyc.useEkycAssignmentProgress(
     {
-      tenantId,
+      tenantId: "dl.djb",
       allVendorsDetailed: true,
     },
     {
-      enabled: !!tenantId && allVendorIds.length > 0,
+      enabled: true,
       keepPreviousData: true,
     }
   );
 
   return (
     <Card className="surveyor-dashboard">
-      <Dashboard />
+      <Dashboard isProgressLoading={isProgressLoading} progressData={progressData} />
       <div className="admin-performance-section">
         <h3 className="section-title">{t("EKYC_VENDORS_PERFORMANCE") || "eKYC Vendors Performance"}</h3>
 
-        {isVendorSearchLoading || isProgressLoading ? (
-          <Loader />
+        {isProgressLoading ? (
+          <VendorPerformanceSkeleton />
         ) : (
           <div className="vendors-grid">
             {/* Self eKYC */}
@@ -162,7 +201,7 @@ const AdminDashboard = () => {
                     </div>
 
                     <div className="kno-stat rejected">
-                      <span className="kno-label">{t("EKYC_SUBMITTED_BY_CITIZEN") || "SUBMITTED BY CITIZEN"}</span>
+                      <span className="kno-label">{t("EKYC_SUBMITTED_BY_CITIZENS").toLowerCase() || "Submitted by citizen"}</span>
                       <strong>{vendor.selfEkycCountInZones}</strong>
                     </div>
                   </div>

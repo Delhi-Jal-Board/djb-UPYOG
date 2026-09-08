@@ -1074,6 +1074,81 @@
   }
 }
 
+
+.ekyc-skel-panel {
+  pointer-events: none;
+}
+
+.ekyc-skel {
+  position: relative;
+  overflow: hidden;
+  background: #e5e7eb;
+  border-radius: 4px;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.6),
+      transparent
+    );
+    animation: ekyc-skel-loading 1.5s infinite;
+  }
+}
+
+@keyframes ekyc-skel-loading {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.ekyc-skel-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.ekyc-skel-title {
+  width: 220px;
+  height: 26px;
+}
+
+.ekyc-skel-download-btn {
+  width: 170px;
+  height: 40px;
+  border-radius: 6px;
+}
+
+.ekyc-skel-donut {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.ekyc-skel-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.ekyc-skel-name {
+  width: 130px;
+  height: 12px;
+}
+
+.ekyc-skel-value {
+  width: 90px;
+  height: 22px;
+  margin-top: 10px;
+}
+
 .status-search-composer-wrapper {
   .inbox-container {
     padding: 0;
