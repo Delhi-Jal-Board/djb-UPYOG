@@ -1,38 +1,56 @@
-import React, { useMemo } from "react";
+import React from "react";
 import StatusCards from "./StatusCards";
-import { Loader } from "@djb25/digit-ui-react-components";
 
-// Mock data removed in favor of API integration
+const Dashboard = ({ progressData, isProgressLoading }) => {
+  const countData = {
+    total: progressData?.totalKnosInSystem || 0,
+    completed: progressData?.completedKnosInZones || 0,
+    pending: progressData?.pendingKnosInZones || 0,
+    rejected: progressData?.rejectedKnos || 0,
+    totalAssignments: progressData?.totalAssignments || 0,
+    submittedCount: progressData?.submittedKnos || 0,
+    selfEkycCount: progressData?.selfEkycCount || 0,
+    overallProgressPercent: progressData?.overallProgressPercent || 0,
+  };
 
-const Dashboard = () => {
-  const tenantId = Digit.ULBService.getCurrentTenantId();
-
-  // Fetch assignment progress with hierarchy (supervisor and surveyor details)
-  const { data: progressData, isLoading: isProgressLoading } = Digit.Hooks.ekyc.useEkycAssignmentProgress(
-    {
-      tenantId,
-      allVendorsDetailed: true,
-    },
-    {
-      enabled: true,
-      keepPreviousData: true,
-    }
-  );
-
-  const countData = useMemo(() => {
-    return {
-      total: progressData?.totalKnosInSystem || 0,
-      completed: progressData?.completedKnosInZones || 0,
-      pending: progressData?.pendingKnosInZones || 0,
-      rejected: progressData?.rejectedKnos || 0,
-      totalAssignments: progressData?.totalAssignments || 0,
-      submittedCount: progressData?.submittedKnos || 0,
-      selfEkycCount: progressData?.selfEkycCount || 0,
-      overallProgressPercent: progressData?.overallProgressPercent || 0,
-    };
-  }, [progressData]);
-
-  return isProgressLoading ? <Loader /> : <StatusCards countData={countData} />;
+  return isProgressLoading ? <EkycDashboardSkeleton /> : <StatusCards countData={countData} />;
 };
 
 export default Dashboard;
+
+const EkycDashboardSkeleton = () => {
+  return (
+    <div className="ekyc-employee-container">
+      <div className="status-panel ekyc-skel-panel">
+        <div className="status-cards-header">
+          <div className="status-card-title">
+            <div className="ekyc-skel ekyc-skel-icon" />
+            <div className="ekyc-skel ekyc-skel-title" />
+          </div>
+
+          <div className="ekyc-skel ekyc-skel-download-btn" />
+        </div>
+
+        <div className="status-breakdown-content">
+          {/* Chart */}
+          <div className="chart-wrapper">
+            <div className="ekyc-skel ekyc-skel-donut" />
+          </div>
+
+          {/* Status Boxes */}
+          <div className="status-boxes">
+            {[1, 2, 3, 4].map((item) => (
+              <div className="status-box" key={item}>
+                <div className="status-box-top">
+                  <div className="ekyc-skel ekyc-skel-dot" />
+                  <div className="ekyc-skel ekyc-skel-name" />
+                </div>
+                <div className="ekyc-skel ekyc-skel-value" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
