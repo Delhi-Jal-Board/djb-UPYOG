@@ -872,7 +872,7 @@ const SupervisorDetailsCard = () => {
         </div>
       </div>
 
-      <Card className="dashboard-card">
+      <div>
         <Table
           t={t}
           tableTitle={t("CONNECTED_SURVEYORS") || "Connected Surveyors"}
@@ -906,7 +906,7 @@ const SupervisorDetailsCard = () => {
             setCurrentPage(0);
           }}
         />
-      </Card>
+      </div>
     </Card>
   );
 };

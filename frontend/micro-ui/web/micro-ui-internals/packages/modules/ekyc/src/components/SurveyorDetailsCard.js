@@ -729,7 +729,7 @@ const SurveyorDetailsDashboard = () => {
           </div>
         </div>
       </div>
-      <Card className="dashboard-card">
+      <div>
         <Table
           t={t}
           tableTitle={t("ASSIGNED_KNOS")}
@@ -766,7 +766,7 @@ const SurveyorDetailsDashboard = () => {
             setCurrentPage(0);
           }}
         />
-      </Card>
+      </div>
       {/* Actions */}
       {roles.includes("EKYC_SUPERVISOR") && (
         <ActionBar>

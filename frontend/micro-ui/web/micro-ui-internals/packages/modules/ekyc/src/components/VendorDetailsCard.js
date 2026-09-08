@@ -675,7 +675,7 @@ const VendorDetailsCard = () => {
         </div>
       </div>
 
-      <div className="dashboard-card">
+      <div>
         <Table
           t={t}
           tableTitle={t("CONNECTED_SUPERVISORS") || "Connected Supervisors"}
