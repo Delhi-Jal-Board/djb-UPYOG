@@ -458,18 +458,6 @@ const EmployeeHome = ({ modules }) => {
     setShowToast(null);
   };
 
-  React.useEffect(() => {
-    if (!showToast) return;
-
-    const timer = setTimeout(() => {
-      setShowToast(null);
-    }, 3000);
-
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [showToast]);
-
   if (window.Digit.SessionStorage.get("PT_CREATE_EMP_TRADE_NEW_FORM")) window.Digit.SessionStorage.set("PT_CREATE_EMP_TRADE_NEW_FORM", {});
 
   const { data: dashboardConfig } = Digit.Hooks.useCustomMDMS(Digit.ULBService.getStateId(), "common-masters", [{ name: "CommonConfig" }], {
@@ -527,7 +515,7 @@ const EmployeeHome = ({ modules }) => {
                 if (dashboardUrl) {
                   window.open(dashboardUrl, "_blank");
                 } else {
-                  setShowToast({ label: t("Dashboard URL not found") });
+                  setShowToast({ label: t("Dashboard URL not found"), error: true });
                 }
               }}
               className="view-dashboard-btn"
@@ -545,32 +533,7 @@ const EmployeeHome = ({ modules }) => {
         </div>
       </div>
 
-      {showToast && (
-        <Toast
-          label={showToast.label}
-          onClose={clearToast}
-          className="coming-soon-toast"
-          style={{
-            position: "fixed",
-            bottom: "24px",
-            right: "24px",
-            zIndex: 10001,
-            background: "linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%)",
-            border: "1px solid rgba(255, 255, 255, 0.1)",
-            boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
-            backdropFilter: "blur(4px)",
-            WebkitBackdropFilter: "blur(4px)",
-            borderRadius: "12px",
-            maxWidth: "350px",
-            minWidth: "200px",
-            padding: "16px",
-            display: "flex",
-            alignItems: "center",
-            transform: "translateY(0)",
-            animation: "toastSlideUp 0.3s ease-out forwards",
-          }}
-        />
-      )}
+      {showToast && <Toast label={showToast.label} onClose={clearToast} error={showToast?.error} />}
 
       <div className="employee-home-main-content">
         <div className="ground-container">
