@@ -35,6 +35,7 @@ import WSDisconnectionAppDetails from "./pageComponents/WSDisconnectionAppDetail
 import WSBankDetails from "./pageComponents/WSBankDetails";
 import WSDeclaration from "./pageComponents/WSDeclaration";
 import WSDjbEmployee from "./pageComponents/WSDjbEmployee";
+import WSDivyangjan from "./pageComponents/WSDivyangjan";
 import WSPropertyWaterConnection from "./pageComponents/WSPropertyWaterConnection";
 
 //Components
@@ -271,6 +272,7 @@ const componentsToRegister = {
   WSSearchWaterConnectionViewIntegrated: SearchWaterConnectionViewIntegrated,
   WSBulkBillGeneration: BulkBillGeneration,
   WSOLDApplication: OLDApplication,
+  WSDivyangjan: WSDivyangjan,
 };
 
 export const initWSComponents = () => {

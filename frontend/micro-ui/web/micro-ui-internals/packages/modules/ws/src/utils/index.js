@@ -364,6 +364,8 @@ export const createPayloadOfWS = async (data) => {
     additionalDetails: {
       ...useDetailsObject,
       ...data?.djbEmployee,
+      ...data?.disability,
+      isDivyangjan: !!data?.disability?.isDivyangjan,
       document: data?.djbEmployee?.document?.fileStoreId || data?.djbEmployee?.document || undefined,
       ...data?.bankDetails,
       ...data?.declarationData,

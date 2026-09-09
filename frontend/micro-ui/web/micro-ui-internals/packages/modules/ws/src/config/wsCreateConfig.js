@@ -151,11 +151,25 @@ export const newConfig = [
         },
       },
       {
+        route: "disability-details",
+        component: "WSDivyangjan",
+        key: "disability",
+        nextStep: "document-details",
+        WATER: "document-details",
+        hideInEmployee: true,
+        texts: {
+          headerCaption: "WS_COMMON_CONNECTION_DETAIL",
+          header: "Divyangjan/Person with Disability?",
+          cardText: "",
+          submitBarLabel: "CS_COMMON_NEXT",
+        },
+      },
+      {
         route: "djb-employee-details",
         component: "WSDjbEmployee",
         key: "djbEmployee",
-        nextStep: "document-details",
-        WATER: "document-details",
+        nextStep: "disability-details",
+        WATER: "disability-details",
         hideInEmployee: true,
         texts: {
           headerCaption: "WS_COMMON_CONNECTION_DETAIL",
