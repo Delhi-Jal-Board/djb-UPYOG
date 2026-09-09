@@ -1,7 +1,7 @@
 import React from "react";
 const { DatePicker } = require("@djb25/digit-ui-react-components");
 
-const SupervisorConfig = (t, genderMenu = [], disabled = false) => {
+const SupervisorConfig = (t, genderMenu = [], update = false) => {
   return [
     {
       head: t("ES_VENDOR_SUPERVISOR_BASIC_DETAILS"),
@@ -10,7 +10,6 @@ const SupervisorConfig = (t, genderMenu = [], disabled = false) => {
           label: t("ES_VENDOR_SUPERVISOR_FULL_NAME"),
           isMandatory: true,
           type: "text",
-          disable: disabled,
           populators: {
             name: "fullName",
             validation: {
@@ -36,7 +35,7 @@ const SupervisorConfig = (t, genderMenu = [], disabled = false) => {
           label: t("ES_VENDOR_SUPERVISOR_MOBILE_NUMBER"),
           isMandatory: true,
           type: "mobileNumber",
-          disable: disabled,
+          disable: update,
           populators: {
             name: "mobileNumber",
             validation: {
