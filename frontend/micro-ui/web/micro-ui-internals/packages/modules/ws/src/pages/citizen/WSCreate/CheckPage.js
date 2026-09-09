@@ -37,6 +37,7 @@ const CheckPage = ({ onSubmit, value }) => {
   const propertyAddress = value?.propertyLocationDetails || {};
   const useDetails = value?.waterConnection?.useDetails || {};
   const djbEmployee = value?.djbEmployee || {};
+  const disability = value?.disability || value?.additionalDetails || {};
   const bankDetails = value?.bankDetails || {};
   const additionalDetails = {};
 
@@ -328,6 +329,11 @@ const CheckPage = ({ onSubmit, value }) => {
             )}
           </React.Fragment>
         )}
+      </StatusTable>
+
+      <CardSubHeader>Divyangjan/Person with Disability?</CardSubHeader>
+      <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
+        <Row label="Divyangjan/Person with Disability?" text={`${disability?.isDivyangjan ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}`} />
       </StatusTable>
 
       <CardSubHeader>{t("WS_BANK_DETAILS")}</CardSubHeader>

@@ -273,6 +273,7 @@ const DEFAULT_SECTION_STATE = {
   applicant: true,
   contact: true,
   djbEmployee: true,
+  disability: true,
   governmentEmployee: true,
   address: true,
   usage: true,
@@ -322,6 +323,9 @@ const DEFAULT_FORM_VALUES = {
     employeeId: "",
     retirementDate: "",
     officeNameAndAddress: "",
+  },
+  disability: {
+    isDivyangjan: false,
   },
   governmentEmployee: {
     isGovernmentEmployee: false,
@@ -536,6 +540,7 @@ const buildDefaultValues = () => ({
   applicant: { ...DEFAULT_FORM_VALUES.applicant },
   contact: { ...DEFAULT_FORM_VALUES.contact },
   djbEmployee: { ...DEFAULT_FORM_VALUES.djbEmployee },
+  disability: { ...DEFAULT_FORM_VALUES.disability },
   propertyAddress: { ...DEFAULT_FORM_VALUES.propertyAddress },
   useDetails: { ...DEFAULT_FORM_VALUES.useDetails },
   bankDetails: { ...DEFAULT_FORM_VALUES.bankDetails },
@@ -750,6 +755,7 @@ const NewApplication = () => {
   const [appDetails, setAppDetails] = useState({});
   const [waterAndSewerageBoth, setWaterAndSewerageBoth] = useState(null);
   const [propertyId, setPropertyId] = useState(new URLSearchParams(location.search).get("propertyId"));
+  const initialPropertyQuery = useRef(location.search);
   const initialFormValues = buildDefaultValues();
   const [city, setCity] = useState("");
 
@@ -847,6 +853,7 @@ const NewApplication = () => {
     applicant: React.useRef(null),
     contact: React.useRef(null),
     djbEmployee: React.useRef(null),
+    disability: React.useRef(null),
     governmentEmployee: React.useRef(null),
     propertyAddress: React.useRef(null),
     useDetails: React.useRef(null),
@@ -929,6 +936,7 @@ const NewApplication = () => {
     { sectionId: "application", route: "application-selection", actions: "Application Selection" },
     { sectionId: "applicant", route: "applicant-details", actions: applicantSectionTitle },
     ...(isDjbEmployee ? [{ sectionId: "djbEmployee", route: "djb-employee", actions: "For DJB Employee" }] : []),
+    { sectionId: "disability", route: "disability", actions: "Divyangjan/Person with Disability" },
     ...(isGovernmentEmployee ? [{ sectionId: "governmentEmployee", route: "government-employee", actions: "For Government Employee" }] : []),
     { sectionId: "propertyAddress", route: "property-address", actions: "Property Address" },
     { sectionId: "useDetails", route: "use-details", actions: "Property & Connection Use Details" },
@@ -984,6 +992,13 @@ const NewApplication = () => {
   const { mutate: waterUpdateMutation } = Digit.Hooks.ws.useWSApplicationActions("WATER");
   const { mutate: sewerageMutation } = Digit.Hooks.ws.useWaterCreateAPI("SEWERAGE");
   const { mutate: sewerageUpdateMutation } = Digit.Hooks.ws.useWSApplicationActions("SEWERAGE");
+
+  useEffect(() => {
+    if (location.search !== initialPropertyQuery.current) {
+      window.sessionStorage.removeItem(FORM_STORAGE_KEY);
+      history.replace("/digit-ui/employee/ws/info");
+    }
+  }, [history, location.search]);
 
   useEffect(() => {
     if (!isGovernmentOrganization) {
@@ -2153,6 +2168,29 @@ const NewApplication = () => {
               </SectionCard>
 
               <SectionCard
+                description="Please indicate whether the applicant is a Divyangjan/Person with Disability."
+                isOpen={collapsedSections.disability}
+                onToggle={toggleSection}
+                sectionKey="disability"
+                title="Divyangjan/Person with Disability?"
+                sectionRef={sectionRefs.disability}
+              >
+                <FieldBlock label="Divyangjan/Person with Disability?">
+                  <Controller
+                    control={control}
+                    name="disability.isDivyangjan"
+                    render={(props) => (
+                      <CheckBox
+                        checked={!!props.value}
+                        label="Divyangjan/Person with Disability?"
+                        onChange={(event) => props.onChange(event.target.checked)}
+                      />
+                    )}
+                  />
+                </FieldBlock>
+              </SectionCard>
+
+              <SectionCard
                 description={t("WS_PROPERTY_ADDRESS_DESC")}
                 isOpen={collapsedSections.address}
                 onToggle={toggleSection}
@@ -2849,6 +2887,17 @@ const NewApplication = () => {
                     <PreviewItem isFullWidth label="Office Name & Address" value={formValues?.djbEmployee?.officeNameAndAddress} />
                   </React.Fragment>
                 ) : null}
+              </SectionCard>
+
+              <SectionCard
+                description="Divyangjan/Person with Disability declaration."
+                isOpen={collapsedSections.disability}
+                onToggle={toggleSection}
+                sectionKey="disability"
+                title="Divyangjan/Person with Disability?"
+                onEditClick={() => handleSectionEdit("disability")}
+              >
+                <PreviewItem label="Divyangjan/Person with Disability?" value={formValues?.disability?.isDivyangjan} />
               </SectionCard>
 
               {formValues?.governmentEmployee?.isGovernmentEmployee && (

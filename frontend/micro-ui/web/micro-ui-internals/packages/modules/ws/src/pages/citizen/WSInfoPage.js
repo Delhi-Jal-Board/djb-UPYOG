@@ -33,19 +33,25 @@ const WSInfoPage = () => {
   const location = useLocation();
   const match = useRouteMatch();
   const isEmployee = window.location.href.includes("/employee");
+  const user = Digit.UserService.getUser();
+  const userMobileNumber = user?.info?.userName?.match(/^[0-9]{10}$/) ? user.info.userName : user?.info?.mobileNumber;
 
   const [hasProperty, setHasProperty] = useState(null);
   const [selectedProperty, setSelectedProperty] = useState(null);
-  const [searchMobileNumber, setSearchMobileNumber] = useState("");
+  const [searchMobileNumber, setSearchMobileNumber] = useState(isEmployee ? "" : userMobileNumber || "");
   const [showOtpVerification, setShowOtpVerification] = useState(false);
   const [otp, setOtp] = useState("");
   const [isOtpSending, setIsOtpSending] = useState(false);
   const [isOtpVerifying, setIsOtpVerifying] = useState(false);
   const [showToast, setShowToast] = useState(null);
 
+  useEffect(() => {
+    // A property may only be used after a fresh OTP verification in this flow.
+    sessionStorage.removeItem("WS_OTP_VERIFIED_PROPERTY_ID");
+  }, []);
+
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  const userMobileNumber = Digit.UserService.getUser()?.info?.mobileNumber;
-  const mobileNumberToSearch = isEmployee ? searchMobileNumber : userMobileNumber;
+  const mobileNumberToSearch = searchMobileNumber;
 
   const { isLoading, data: propertyDetails } = Digit.Hooks.pt.usePropertySearch(
     { filters: { mobileNumber: mobileNumberToSearch }, tenantId: tenantId },
@@ -67,6 +73,8 @@ const WSInfoPage = () => {
     const isEmployee = window.location.href.includes("/employee");
     const baseUrl = isEmployee ? "/digit-ui/employee/ws" : "/digit-ui/citizen/ws";
     if (hasProperty?.code === "YES" && selectedProperty) {
+      // Bind the OTP verification to the property selected before verification.
+      sessionStorage.setItem("WS_OTP_VERIFIED_PROPERTY_ID", selectedProperty.propertyId);
       history.push(`${baseUrl}/old-application?propertyId=${selectedProperty.propertyId}`);
     }
     else {
@@ -86,7 +94,7 @@ const WSInfoPage = () => {
           mobileNumber: mobileNumberToSearch,
           tenantId: "dl",
           type: "register",
-          userType: isEmployee ? "EMPLOYEE" : "CITIZEN"
+          userType: "EMPLOYEE"
         }
       };
 
@@ -187,11 +195,7 @@ const WSInfoPage = () => {
       if (e.stopPropagation) e.stopPropagation();
     }
     if (hasProperty?.code === "YES" && selectedProperty) {
-      if (!isEmployee) {
-        proceedToNext();
-      } else {
-        handleSendOtp(e);
-      }
+      handleSendOtp(e);
     } else if (hasProperty?.code === "YES" && !selectedProperty) {
       // Should not be reachable since button is disabled, but just in case
       return;
@@ -300,6 +304,27 @@ const WSInfoPage = () => {
 
         {hasProperty?.code === "YES" && (
           <div style={{ marginBottom: "24px" }}>
+            {!isEmployee && (
+              <div style={{ marginBottom: "16px" }}>
+                <Label>{t("CORE_COMMON_MOBILE_NUMBER")}</Label>
+                <TextInput
+                  t={t}
+                  type="number"
+                  isMandatory={false}
+                  name="mobileNumber"
+                  value={searchMobileNumber}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/\D/g, "").slice(0, 10);
+                    setSearchMobileNumber(val);
+                    setSelectedProperty(null);
+                    setShowOtpVerification(false);
+                    setOtp("");
+                  }}
+                  placeholder={t("Enter mobile number")}
+                  maxLength={10}
+                />
+              </div>
+            )}
             {isEmployee && (
               <div style={{ display: "flex", flexDirection: "column", gap: "16px", marginBottom: "16px" }}>
                 <div style={{ display: "flex", gap: "24px", alignItems: "flex-end" }}>
