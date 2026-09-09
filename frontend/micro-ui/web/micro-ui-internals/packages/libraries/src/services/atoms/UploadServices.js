@@ -96,5 +96,43 @@ export const UploadServices = {
       };
     }
   },
+
+  DownloadFile: async (fileStoreId, tenantId, fileName = "document.pdf") => {
+    if (!fileStoreId || !tenantId) return false;
+
+    const previewWindow = window.open("about:blank", "_blank");
+    const response = await UploadServices.Filefetch([fileStoreId], tenantId);
+    const fileUrl = response?.data?.[fileStoreId];
+    if (!fileUrl || response?.success === false) {
+      previewWindow?.close();
+      return false;
+    }
+
+    const downloadUrl = fileUrl.split(",").find((url) => !url.includes("large") && !url.includes("medium") && !url.includes("small")) || fileUrl.split(",")[0];
+    if (previewWindow) previewWindow.location.href = downloadUrl;
+
+    try {
+      const fileResponse = await fetch(downloadUrl);
+      if (!fileResponse.ok) throw new Error("File download failed");
+      const blobUrl = URL.createObjectURL(await fileResponse.blob());
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = fileName.endsWith(".pdf") ? fileName : `${fileName}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(blobUrl);
+      return true;
+    } catch (error) {}
+
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+    link.download = fileName.endsWith(".pdf") ? fileName : `${fileName}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    return true;
+  },
 };
 

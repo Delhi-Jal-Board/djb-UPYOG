@@ -11,22 +11,46 @@ import {
   Modal,
   ViewsIcon,
   FormStep,
+  RemoveIcon,
 } from "@djb25/digit-ui-react-components";
 import Timeline from "../components/Timeline";
 import { useLocation } from "react-router-dom";
 import UploadFileDigiLocker from "../../../pt/src/utils/UploadFile";
 
 const DIGILOCKER_SUPPORTED_CODES = ["AADHAAR", "AADHAR", "DRIVING", "DRVLC", "PAN"];
+const ENVIRONMENT_FILE_STORE_IDS = {
+  uat: "261542df-8dae-41e7-aa17-00cd288faf3b",
+  dev: "0d394691-45ed-4036-97e8-8de8b0f166b1",
+};
+
+const getEnvironmentFileStoreId = () => {
+  const hostname = window.location.hostname.toLowerCase();
+  return hostname.includes("uat") ? ENVIRONMENT_FILE_STORE_IDS.uat : ENVIRONMENT_FILE_STORE_IDS.dev;
+};
 
 const isDigiLockerEligible = (code = "") => {
   const upper = code.toUpperCase();
   return DIGILOCKER_SUPPORTED_CODES.some((keyword) => upper.includes(keyword));
 };
 
+const isOtherDocument = (code = "") => code.toUpperCase().includes("OTHER");
+
+const removeDuplicateOtherDocuments = (documentList = []) => {
+  const documentTypes = new Set();
+  return documentList.filter((document) => {
+    if (!isOtherDocument(document?.documentType)) return true;
+    if (documentTypes.has(document.documentType)) return false;
+    documentTypes.add(document.documentType);
+    return true;
+  });
+};
+
 const WSDocumentsEmployee = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  const [documents, setDocuments] = useState(
-    userType === "citizen" ? formData?.documents?.documents || formData?.documents || [] : formData?.DocumentsRequired?.documents || []
+  const [documents, setDocuments] = useState(() =>
+    removeDuplicateOtherDocuments(
+      userType === "citizen" ? formData?.documents?.documents || formData?.documents || [] : formData?.DocumentsRequired?.documents || []
+    )
   );
   const [enableSubmit, setEnableSubmit] = useState(true);
   const [error, setError] = useState(null);
@@ -50,7 +74,14 @@ const WSDocumentsEmployee = ({ t, config, onSelect, userType, formData, setError
       let documentStep = { ...formData?.documents, documents: documents };
       onSelect(config.key, documentStep);
     } else {
-      onSelect(config.key, { documents });
+      onSelect(config.key, { documents: removeDuplicateOtherDocuments(documents) });
+    }
+  };
+
+  const downloadDocument = async () => {
+    const downloaded = await Digit.UploadServices.DownloadFile(getEnvironmentFileStoreId(), "dl", "NOC for New Delhi Jal Board Connection.pdf");
+    if (!downloaded) {
+      setError(t("CS_FILE_DOWNLOAD_ERROR") || "PDF download failed");
     }
   };
 
@@ -118,6 +149,7 @@ const WSDocumentsEmployee = ({ t, config, onSelect, userType, formData, setError
             clearFormErrors={clearFormErrors}
             config={config}
             formState={formState}
+            isOtherDocument={isOtherDocument(document?.code)}
           />
         );
       })}
@@ -138,6 +170,27 @@ const WSDocumentsEmployee = ({ t, config, onSelect, userType, formData, setError
 
   return (
     <CollapsibleCardPage title={t("WS_DOCUMENTS")} defaultOpen={true}>
+      <button
+        type="button"
+        onClick={(event) => {
+          event.stopPropagation();
+          downloadDocument();
+        }}
+        style={{
+          cursor: "pointer",
+          color: "#fff",
+          fontWeight: "bold",
+          padding: "6px 14px",
+          border: "1px solid #00497e",
+          borderRadius: "4px",
+          backgroundColor: "#00497e",
+          marginLeft: "auto",
+          marginRight: "32px",
+          whiteSpace: "nowrap",
+        }}
+      >
+        {t("WS_DOWNLOAD_DOCUMENT")}
+      </button>
       {innerContent}
       {error && <Toast label={error} onClose={() => setError(null)} error />}
     </CollapsibleCardPage>
@@ -159,9 +212,11 @@ function SelectDocument({
   formState,
   fromRawData,
   id,
+  isOtherDocument: isOther = false,
 }) {
   const fileRef = useRef();
-  const filteredDocument = documents?.filter((item) => item?.documentType?.includes(doc?.code))[0];
+  const otherUploadedDocuments = isOther ? documents?.filter((item) => item?.documentType?.includes(doc?.code)) || [] : [];
+  const filteredDocument = isOther ? null : documents?.filter((item) => item?.documentType?.includes(doc?.code))[0];
   const [selectedDocument, setSelectedDocument] = useState(() => {
     if (filteredDocument && doc?.dropdownData) {
       const match = doc?.dropdownData?.find((d) => d.code === filteredDocument.documentType);
@@ -176,8 +231,8 @@ function SelectDocument({
       : doc;
   });
   const [file, setFile] = useState(null);
-  const [uploadedFile, setUploadedFile] = useState(() => filteredDocument?.fileStoreId || null);
-  const [documentUid, setDocumentUid] = useState(() => filteredDocument?.documentUid || filteredDocument?.documentNumber || "");
+  const [uploadedFile, setUploadedFile] = useState(() => (isOther ? null : filteredDocument?.fileStoreId || null));
+  const [documentUid, setDocumentUid] = useState(() => (isOther ? "" : filteredDocument?.documentUid || filteredDocument?.documentNumber || ""));
   const [isDocumentUidLocked, setIsDocumentUidLocked] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -226,10 +281,19 @@ function SelectDocument({
 
   const handleSelectDocument = (value) => setSelectedDocument(value);
 
-  const viewDocument = async () => {
-    if (uploadedFile) {
+  const removeUploadedDocument = (fileStoreId) => {
+    setDocuments((previousDocuments) => previousDocuments.filter((item) => item?.fileStoreId !== fileStoreId));
+    if (fileStoreId === uploadedFile) {
+      setUploadedFile(null);
+      setFile(null);
+      setDocumentUid("");
+    }
+  };
+
+  const viewDocument = async (fileStoreId = uploadedFile) => {
+    if (fileStoreId) {
       try {
-        const res = await Digit.UploadServices.FileFetchbyid(uploadedFile, Digit.ULBService.getStateId());
+        const res = await Digit.UploadServices.FileFetchbyid(fileStoreId, Digit.ULBService.getStateId());
         if (res?.data) {
           const contentType = res.headers?.["content-type"] || res.headers?.["Content-Type"] || "";
           // Determine type by content-type or fall back to checking blob type
@@ -306,7 +370,9 @@ function SelectDocument({
   useEffect(() => {
     if (selectedDocument?.code) {
       setDocuments((prev) => {
-        const filteredDocumentsByDocumentType = prev?.filter((item) => item?.documentType !== selectedDocument?.code);
+        const filteredDocumentsByDocumentType = isOther
+          ? prev?.filter((item) => item?.fileStoreId !== filteredDocument?.fileStoreId)
+          : prev?.filter((item) => item?.documentType !== selectedDocument?.code);
 
         if (uploadedFile?.length === 0 || uploadedFile === null) {
           return filteredDocumentsByDocumentType;
@@ -319,6 +385,7 @@ function SelectDocument({
             documentType: selectedDocument?.code,
             fileStoreId: uploadedFile,
             fileName: file?.name || filteredDocument?.fileName || "",
+            documentName: selectedDocument?.i18nKey || selectedDocument?.code || "",
             documentUid: documentUid,
             documentNumber: documentUid,
             i18nKey: selectedDocument?.code,
@@ -326,7 +393,7 @@ function SelectDocument({
             status: "ACTIVE",
           },
         ];
-        sessionStorage.setItem("DISCONNECTION_EDIT_DOCS", JSON.stringify(data));
+      sessionStorage.setItem("DISCONNECTION_EDIT_DOCS", JSON.stringify(data));
         return data;
       });
     }
@@ -352,7 +419,15 @@ function SelectDocument({
     (async () => {
       setError(null);
       if (file) {
-        if (file.size >= 5242880) {
+        const isDuplicateDocument = isOther && documents.some((item) => item?.documentType === selectedDocument?.code);
+
+        if (isDuplicateDocument) {
+          const documentNameKey = selectedDocument?.i18nKey || selectedDocument?.code || "This";
+          const translatedDocumentName = t(documentNameKey);
+          const documentName = translatedDocumentName === documentNameKey ? documentNameKey.replaceAll("_", " ") : translatedDocumentName;
+          setError(`Document "${documentName}" has already been uploaded.`);
+          setFile(null);
+        } else if (file.size >= 5242880) {
           setError(t("CS_MAXIMUM_UPLOAD_SIZE_EXCEEDED"));
         } else if (doc?.code === "OWNER.APPLICANTPHOTO" && !file.type.match(/image\/(jpeg|png)/i) && !file.name.match(/\.(jpg|jpeg|png)$/i)) {
           setError(t("WS_ONLY_JPG_PNG_ALLOWED") || "Only JPG and PNG files are allowed for Applicant Photo");
@@ -493,11 +568,35 @@ function SelectDocument({
       )}
 
       <div style={{ display: "flex", flexDirection: "column", gap: "8px", gridColumn: "span 1" }}>
-        <CardLabel style={{ margin: 0 }}>
-          {doc?.required
-            ? `${t(`${doc?.i18nKey?.replaceAll(".", "_")}_UPLOAD_DOCUMENT`)}*`
-            : `${t(`${doc?.i18nKey?.replaceAll(".", "_")}_UPLOAD_DOCUMENT`)}`}
-        </CardLabel>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <CardLabel style={{ margin: 0 }}>
+            {t(`${doc?.i18nKey?.replaceAll(".", "_")}_UPLOAD_DOCUMENT`)}
+            {doc?.required ? "*" : ""}
+          </CardLabel>
+          {isOther && (
+            <button
+              type="button"
+              onClick={() => {
+                setUploadedFile(null);
+                setFile(null);
+                setSelectedDocument(doc?.hasDropdown ? {} : doc);
+                setDocumentUid("");
+                setDocNumberError(null);
+              }}
+              style={{
+                border: "1px solid #00497e",
+                background: "#fff",
+                color: "#00497e",
+                borderRadius: "4px",
+                padding: "4px 10px",
+                cursor: "pointer",
+                fontWeight: "bold",
+              }}
+            >
+              + Add
+            </button>
+          )}
+        </div>
         <div className="field" style={{ display: "flex", gap: "20px", alignItems: "center", width: "100%" }}>
           <div style={{ flex: 1 }}>
             {digiLockerUpload ? (
@@ -566,6 +665,35 @@ function SelectDocument({
             )}
           </div>
         </div>
+        {(isOther ? otherUploadedDocuments : uploadedFile ? [{ fileStoreId: uploadedFile, fileName: file?.name || filteredDocument?.fileName, documentNumber: documentUid }] : []).map(
+          (uploadedDocument, index) => (
+            <div key={uploadedDocument.fileStoreId || index} style={{ display: "flex", alignItems: "center", gap: "12px", marginTop: "4px", color: "#00497e" }}>
+              
+              <span style={{ fontWeight: "bold" }}>
+                {uploadedDocument.documentName || uploadedDocument.i18nKey || uploadedDocument.documentType
+                  ? t(uploadedDocument.documentName || uploadedDocument.i18nKey || uploadedDocument.documentType)
+                  : t("CS_COMMON_DOCUMENT")} - {uploadedDocument.fileName || t("CS_COMMON_DOCUMENT")}
+              </span>
+              {uploadedDocument.documentNumber && <span>{uploadedDocument.documentNumber}</span>}
+              <button
+                type="button"
+                onClick={() => viewDocument(uploadedDocument.fileStoreId)}
+                title={t("WS_VIEW_DOCUMENT") || "View Document"}
+                style={{ border: "none", background: "transparent", color: "#00497e", cursor: "pointer", padding: 0 }}
+              >
+                <ViewsIcon />
+              </button>
+              <button
+                type="button"
+                onClick={() => removeUploadedDocument(uploadedDocument.fileStoreId)}
+                title="Remove Document"
+                style={{ border: "none", background: "transparent", color: "#d32f2f", cursor: "pointer", padding: 0, fontSize: "18px" }}
+              >
+                <RemoveIcon />
+              </button>
+            </div>
+          )
+        )}
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: "8px", gridColumn: "span 1" }}>
@@ -602,26 +730,6 @@ function SelectDocument({
             </div>
           )}
 
-          {uploadedFile && (
-            <div
-              onClick={viewDocument}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-                cursor: "pointer",
-                color: "#00497e",
-                fontWeight: "bold",
-                padding: "8px 16px",
-                border: "1px solid #00497e",
-                borderRadius: "4px",
-                backgroundColor: "#fff",
-              }}
-            >
-              <ViewsIcon />
-              <span>{t("WS_VIEW_DOCUMENT") || "View Document"}</span>
-            </div>
-          )}
         </div>
       </div>
       {showCamera && <CameraCaptureModal onCapture={handleCapture} onClose={() => setShowCamera(false)} t={t} />}
