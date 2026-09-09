@@ -118,10 +118,22 @@ public class EnrichmentService {
 			property.setStatus(Status.ACTIVE);
 			property.getAddress().setId(propertyFromDb.getAddress().getId());
 
-		} else if (isWfEnabled && iswfStarting) {
+		}  else if (isWfEnabled && iswfStarting) {
 
-			enrichPropertyForNewWf(requestInfo, property, false);
-		}
+           String ackNo = propertyutil.getIdList(requestInfo, property.getTenantId(),
+            config.getAckIdGenName(), config.getAckIdGenFormat(), 1).get(0);
+            property.setAcknowldgementNumber(ackNo);
+
+             property.setId(propertyFromDb.getId());
+             property.getAddress().setId(propertyFromDb.getAddress().getId());
+
+             property.getOwners().forEach(owner -> {
+             propertyFromDb.getOwners().stream()
+            .filter(oldOwner -> oldOwner.getUuid() != null && oldOwner.getUuid().equals(owner.getUuid()))
+            .findFirst()
+            .ifPresent(oldOwner -> owner.setOwnerInfoUuid(oldOwner.getOwnerInfoUuid()));
+    });
+}
 		
 		if (!CollectionUtils.isEmpty(property.getDocuments()))
 			property.getDocuments().forEach(doc -> {
