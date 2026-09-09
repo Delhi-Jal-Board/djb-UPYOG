@@ -41,7 +41,7 @@ const EditSupervisor = () => {
   }, [genderTypeData]);
 
   const Config = React.useMemo(() => {
-    return SupervisorConfig(t, genderMenu);
+    return SupervisorConfig(t, genderMenu, true);
   }, [t, genderMenu]);
 
   useEffect(() => {

@@ -41,7 +41,7 @@ const EditSurveyor = () => {
   }, [genderTypeData]);
 
   const Config = React.useMemo(() => {
-    return SurveyorConfig(t, genderMenu);
+    return SurveyorConfig(t, genderMenu, true);
   }, [t, genderMenu]);
 
   useEffect(() => {
