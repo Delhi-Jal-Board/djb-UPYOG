@@ -272,3 +272,48 @@ export const downloadVendorPDF = async ({ rows, vendorName, mobileNumber, email,
     Date.prototype.toLocaleDateString = originalToLocaleDateString;
   }
 };
+
+import { getEkycExcelData } from "./ekycExcelData";
+
+export const downloadEkycExcel = async ({
+    tenantId,
+    vendorId,
+    fromDate,
+    toDate,
+    fileName = "eKYC_Data",
+    t,
+}) => {
+    try {
+        const response = await Digit.EkycService.application_list({
+            tenantId,
+            offset: 0,
+            limit: 10000,
+            vendorId,
+            reportDownload: true,
+            ...(fromDate && { fromDate }),
+            ...(toDate && { toDate }),
+        });
+
+        const consumerList = response?.consumerList || [];
+
+        if (!consumerList.length) {
+            alert(t("NO_EKYC_DATA_FOUND") || "No eKYC data found to download.");
+            return false;
+        }
+
+        const excelData = getEkycExcelData(consumerList, t);
+
+        Digit.Download.Excel(excelData, fileName);
+
+        return true;
+    } catch (error) {
+        console.error("Failed to download eKYC data:", error);
+
+        alert(
+            t("EKYC_DOWNLOAD_FAILED") ||
+            "Failed to download eKYC data. Please try again."
+        );
+
+        return false;
+    }
+};
