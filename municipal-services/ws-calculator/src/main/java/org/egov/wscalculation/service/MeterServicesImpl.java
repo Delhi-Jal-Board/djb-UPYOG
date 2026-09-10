@@ -8,6 +8,7 @@ import org.egov.common.contract.request.RequestInfo;
 import org.egov.wscalculation.repository.WSCalculationDao;
 import org.egov.wscalculation.validator.WSCalculationValidator;
 import org.egov.wscalculation.validator.WSCalculationWorkflowValidator;
+import org.egov.wscalculation.djbmonthlybilling.service.DJBShadowMeterBillingService;
 import org.egov.wscalculation.web.models.CalculationCriteria;
 import org.egov.wscalculation.web.models.CalculationReq;
 import org.egov.wscalculation.web.models.MeterConnectionRequest;
@@ -34,6 +35,9 @@ public class MeterServicesImpl implements MeterService {
 	@Autowired
 	private EstimationService estimationService;
 
+	@Autowired
+	private DJBShadowMeterBillingService djbShadowMeterBillingService;
+
 	private EnrichmentService enrichmentService;
 	
 	@Autowired
@@ -58,11 +62,21 @@ public class MeterServicesImpl implements MeterService {
 			wsCalulationWorkflowValidator.applicationValidation(meterConnectionRequest.getRequestInfo(),meterConnectionRequest.getMeterReading().getTenantId(),meterConnectionRequest.getMeterReading().getConnectionNo(),genratedemand);
 			wsCalculationValidator.validateMeterReading(meterConnectionRequest.getRequestInfo(),meterConnectionRequest.getMeterReading(), true);
 		}
+		if (meterConnectionRequest.getMeterReading().getGenerateDemand()
+				&& "dl.djb".equalsIgnoreCase(meterConnectionRequest.getMeterReading().getTenantId())) {
+			djbShadowMeterBillingService.validateCanCreateBillingCycle(meterConnectionRequest.getMeterReading());
+		}
+
 		enrichmentService.enrichMeterReadingRequest(meterConnectionRequest.getRequestInfo(),meterConnectionRequest.getMeterReading());
 		meterReadingsList.add(meterConnectionRequest.getMeterReading());
 		wSCalculationDao.saveMeterReading(meterConnectionRequest);
 		if (meterConnectionRequest.getMeterReading().getGenerateDemand()) {
-			generateDemandForMeterReading(meterReadingsList, meterConnectionRequest.getRequestInfo());
+			if ("dl.djb".equalsIgnoreCase(meterConnectionRequest.getMeterReading().getTenantId())) {
+
+				djbShadowMeterBillingService.processDjbBilling(meterConnectionRequest.getMeterReading(), meterConnectionRequest.getRequestInfo());
+			} else {
+				generateDemandForMeterReading(meterReadingsList, meterConnectionRequest.getRequestInfo());
+			}
 		}
 		return meterReadingsList;
 	}
