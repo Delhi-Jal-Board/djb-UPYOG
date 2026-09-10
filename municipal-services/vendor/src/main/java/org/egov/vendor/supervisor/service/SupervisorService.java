@@ -1,9 +1,6 @@
 package org.egov.vendor.supervisor.service;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.egov.common.contract.request.RequestInfo;
@@ -11,14 +8,17 @@ import org.egov.common.contract.request.Role;
 import org.egov.tracer.model.CustomException;
 import org.egov.vendor.config.VendorConfiguration;
 import org.egov.vendor.supervisor.repository.SupervisorRepository;
+import org.egov.vendor.supervisor.web.model.Supervisor;
 import org.egov.vendor.supervisor.web.model.SupervisorRequest;
 import org.egov.vendor.supervisor.web.model.SupervisorResponse;
 import org.egov.vendor.supervisor.web.model.SupervisorSearchCriteria;
+import org.egov.vendor.surveyor.web.model.Surveyor;
 import org.egov.vendor.util.VendorConstants;
 import org.egov.vendor.web.model.user.User;
 import org.egov.vendor.web.model.user.UserDetailResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
@@ -69,6 +69,7 @@ public class SupervisorService {
 
     // ── UPDATE ────────────────────────────────────────────────────────────────
 
+     @Transactional
     public org.egov.vendor.supervisor.web.model.Supervisor update(SupervisorRequest request) {
 
         if (request.getSupervisor().getTenantId().split("\\.").length == 1) {
@@ -80,11 +81,110 @@ public class SupervisorService {
                     "Supervisor id is mandatory for update");
         }
 
-        userService.manageSupervisors(request, false);
-        enrichmentService.enrichUpdate(request);
-        repository.update(request);
-        return request.getSupervisor();
+        if (!StringUtils.isEmpty(request.getOldSupervisorId()) &&
+                !StringUtils.isEmpty(request.getReplacementSupervisorId())) {
+
+            if (request.getOldSupervisorId()
+                    .equals(request.getReplacementSupervisorId())) {
+
+                throw new CustomException(
+                        "INVALID_SUPERVISOR_REASSIGNMENT",
+                        "Old and replacement supervisor cannot be same");
+            }
+            /*
+             * Get OLD supervisor using oldSupervisorId.
+             */
+            Supervisor oldSupervisor =
+                    repository.getSupervisorById(
+                            request.getOldSupervisorId(),
+                            request.getSupervisor().getTenantId());
+
+            /*
+             * Get REPLACEMENT supervisor.
+             */
+            Supervisor replacementSupervisor =
+                    repository.getSupervisorById(
+                            request.getReplacementSupervisorId(),
+                            request.getSupervisor().getTenantId());
+
+            /*
+             * Same zone.
+             */
+            if (!Objects.equals(
+                    oldSupervisor.getAssignedZoneId(),
+                    replacementSupervisor.getAssignedZoneId())) {
+
+                throw new CustomException(
+                        "ZONE_MISMATCH",
+                        "Replacement supervisor must belong to the same zone");
+            }
+
+            /*
+             * Same vendor.
+             */
+            if (!Objects.equals(
+                    oldSupervisor.getVendorId(),
+                    replacementSupervisor.getVendorId())) {
+
+                throw new CustomException(
+                        "VENDOR_MISMATCH",
+                        "Replacement supervisor must belong to the same vendor");
+            }
+            /*
+             * Reassign:
+             *
+             * eg_surveyor
+             * ekyc_assignment
+             */
+
+            reassignSurveyors(
+                    oldSupervisor,
+                    replacementSupervisor,
+                    request.getRequestInfo());
+        }
+
+        /*
+         * Normal supervisor update.
+         */
+
+       userService.manageSupervisors(request, false);
+       enrichmentService.enrichUpdate(request);
+       repository.update(request);
+       return request.getSupervisor();
+
     }
+
+    private void reassignSurveyors(
+            Supervisor oldSupervisor,
+            Supervisor replacementSupervisor,
+            RequestInfo requestInfo) {
+
+        String oldSupervisorId =
+                oldSupervisor.getId();
+
+        String replacementSupervisorId =
+                replacementSupervisor.getId();
+
+
+        int surveyorCount =
+                repository.bulkUpdateSurveyors(
+                        oldSupervisor.getId(),
+                        replacementSupervisor.getId(),
+                        oldSupervisor.getVendorId(),
+                        oldSupervisor.getTenantId(),
+                        requestInfo);
+
+        int assignmentCount =
+                repository.bulkUpdateEkycAssignments(
+                        oldSupervisor.getId(),
+                        replacementSupervisor.getId(),
+                        oldSupervisor.getVendorId(),
+                        oldSupervisor.getTenantId(),
+                        requestInfo);
+
+
+    }
+
 
     // ── SEARCH ────────────────────────────────────────────────────────────────
 
