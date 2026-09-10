@@ -3,17 +3,11 @@ import { InboxComposer } from "@djb25/digit-ui-react-components";
 import SupervisorInboxTableConfig from "../hook/SupervisorInboxTableConfig";
 import SearchFormFieldsComponents from "./SearchFormFieldsComponent";
 import { formInitValue, formReducer } from "../../../vendor/src/config/tableConfig";
-import { FaUsers, FaCheckCircle, FaClock, FaChartLine, FaMapMarkedAlt } from "react-icons/fa";
 import useInboxMobileCardsData from "../hook/useInboxMobileCardsData";
 
 // Mock data removed in favor of API integration
 
 const AssignEkyc = () => {
-  let tenantId = Digit.ULBService.getCurrentTenantId();
-  if (!tenantId || tenantId === "dl") {
-    tenantId = "dl.djb"; // Force tenantId to dl.djb for EKYC APIs in citizen portal
-  }
-
   const [formState, dispatch] = useReducer(formReducer, formInitValue);
 
   let paginationParms = {
@@ -35,12 +29,7 @@ const AssignEkyc = () => {
     filters.mobileNumber = mobileNumber;
   }
 
-  const { data: dashboardData, isLoading } = Digit.Hooks.fsm.useSurveyorSearch(tenantId, filters, { enabled: !!tenantId, keepPreviousData: true });
-
-  const { isLoading: isDataSearchLoading, data } = Digit.Hooks.ekyc.useEkycAssignmentProgress({
-    enabled: !!tenantId,
-    keepPreviousData: true,
-  });
+  const { data: dashboardData, isLoading } = Digit.Hooks.fsm.useSurveyorSearch("dl.djb", filters, { enabled: true, keepPreviousData: true });
 
   const sourceData = useMemo(() => {
     return dashboardData?.surveyors || [];
@@ -172,58 +161,13 @@ const AssignEkyc = () => {
       table: filteredData,
       dispatch,
       onSortingByData,
-      tenantId,
+      tenantId: "dl.djb",
       inboxStyles: { overflowX: "scroll", overflowY: "hidden" },
       tableStyle: { width: "70%" },
     },
   });
 
   const isInboxLoading = isLoading;
-
-  const cards = [
-    {
-      label: "TOTAL_EKYC_APPLICATIONS",
-      count: data?.totalKnos || 0,
-      color: "#0B2559",
-      filter: null,
-      active: true,
-      type: "today",
-      icon: <FaUsers />,
-    },
-    {
-      label: "TOTAL_ASSIGNMENTS",
-      count: data?.totalAssignments || 0,
-      color: "#3B82F6",
-      filter: ["ASSIGNED"],
-      type: "week",
-      icon: <FaMapMarkedAlt />,
-    },
-    {
-      label: "EKYC_COMPLETED",
-      count: data?.completedKnos || 0,
-      color: "#10B981",
-      filter: ["COMPLETED"],
-      type: "month",
-      icon: <FaCheckCircle />,
-    },
-    {
-      label: "PENDING_APPLICATIONS",
-      count: (data?.totalKnos || 0) - (data?.completedKnos || 0),
-      color: "#F59E0B",
-      filter: ["PENDING"],
-      type: "pending",
-      icon: <FaClock />,
-    },
-    {
-      label: "OVERALL_PROGRESS",
-      count: `${data?.overallProgressPercent || 0}%`,
-      color: "#A855F7",
-      filter: ["IN_PROGRESS"],
-      type: "progress",
-      icon: <FaChartLine />,
-    },
-  ];
-
 
   const onMobileSortOrderData = (data) => {
     const { sortOrder } = data;
@@ -252,7 +196,7 @@ const AssignEkyc = () => {
           formState,
           countData: dashboardData?.dashboardInfo,
           // cards,
-          isCardLoading: isDataSearchLoading,
+          isCardLoading: false,
           showSearchOnMobile: true,
           forceTable: true,
         }}
