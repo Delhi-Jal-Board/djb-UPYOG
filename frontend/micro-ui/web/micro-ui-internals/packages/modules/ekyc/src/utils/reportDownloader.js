@@ -1,11 +1,13 @@
+import { getEkycExcelData } from "./ekycExcelData";
+
 export const downloadSurveyorPDF = async ({ rows, surveyorName, employeeId, mobileNumber, vendorName, supervisorName, dashboardInfo, t }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  const initData = Digit.SessionStorage.get("initData");
-  const tenants = initData?.tenants || [];
-  const tenantInfo = tenants.find((tenant) => tenant.code === tenantId);
+  // const initData = Digit.SessionStorage.get("initData");
+  // const tenants = initData?.tenants || [];
+  // const tenantInfo = tenants.find((tenant) => tenant.code === tenantId);
 
-  const capitalize = (text) => text && text.substr(0, 1).toUpperCase() + text.substr(1);
-  const ulbCamel = (ulb) => ulb && ulb.toLowerCase().split(" ").map(capitalize).join(" ");
+  // const capitalize = (text) => text && text.substr(0, 1).toUpperCase() + text.substr(1);
+  // const ulbCamel = (ulb) => ulb && ulb.toLowerCase().split(" ").map(capitalize).join(" ");
 
   const name = "Delhi Jal Board";
   const email = "contact@delhijalboard.nic.in";
@@ -117,24 +119,15 @@ export const downloadSupervisorPDF = async ({ rows, supervisorName, mobileNumber
 
   // Map rows from surveyors format to the table template format
   const mappedRows = rows.map((row) => ({
-    kno: row.name || row.owner?.name || "N/A",
-    firstName: row.owner?.mobileNumber || row.mobileNo || "N/A",
-    lastName: "",
-    mobileNo: row.status || "N/A",
-    zoneName: String(row.total || 0),
-    ekycStatus: `${row.completed || 0} / ${row.pending || 0}`,
-    progress: row.progress || "0%",
-  }));
-
-  // Intercept Hindi date formatting to show overall progress
-  const originalToLocaleDateString = Date.prototype.toLocaleDateString;
-  let progressIndex = 0;
-  Date.prototype.toLocaleDateString = function (...args) {
-    if (progressIndex < mappedRows.length) {
-      return mappedRows[progressIndex++].progress || "0%";
-    }
-    return originalToLocaleDateString.apply(this, args);
-  };
+  kno: row.name || row.owner?.name || "N/A",
+  firstName: row.owner?.mobileNumber || row.mobileNo || "N/A",
+  lastName: "",
+  mobileNo: row.status || "N/A",
+  zoneName: String(row.total || 0),
+  ekycStatus: `${row.completed || 0} / ${row.pending || 0}`,
+  progress: row.progress || "0%",
+  submittedAt: null,
+}));
 
   // Custom translator to rewrite headers
   const customT = (key) => {
@@ -167,8 +160,8 @@ export const downloadSupervisorPDF = async ({ rows, supervisorName, mobileNumber
     } else {
       console.error("Digit.Utils.pdf.generateSurveyorReport is not available");
     }
-  } finally {
-    Date.prototype.toLocaleDateString = originalToLocaleDateString;
+  }catch{
+
   }
 };
 
@@ -228,16 +221,6 @@ export const downloadVendorPDF = async ({ rows, vendorName, mobileNumber, email,
     progress: row.progress || "0%",
   }));
 
-  // Intercept Hindi date formatting to show overall progress
-  const originalToLocaleDateString = Date.prototype.toLocaleDateString;
-  let progressIndex = 0;
-  Date.prototype.toLocaleDateString = function (...args) {
-    if (progressIndex < mappedRows.length) {
-      return mappedRows[progressIndex++].progress || "0%";
-    }
-    return originalToLocaleDateString.apply(this, args);
-  };
-
   // Custom translator to rewrite headers
   const customT = (key) => {
     if (key === "KNO") return t("SUPERVISOR_NAME") || "Supervisor Name";
@@ -268,52 +251,40 @@ export const downloadVendorPDF = async ({ rows, vendorName, mobileNumber, email,
     } else {
       console.error("Digit.Utils.pdf.generateSurveyorReport is not available");
     }
-  } finally {
-    Date.prototype.toLocaleDateString = originalToLocaleDateString;
+  } catch {
+    
   }
 };
 
-import { getEkycExcelData } from "./ekycExcelData";
+export const downloadEkycExcel = async ({ tenantId, vendorId, fromDate, toDate, fileName = "eKYC_Data", t }) => {
+  try {
+    const response = await Digit.EkycService.application_list({
+      tenantId,
+      offset: 0,
+      limit: 10000,
+      vendorId,
+      reportDownload: true,
+      ...(fromDate && { fromDate }),
+      ...(toDate && { toDate }),
+    });
 
-export const downloadEkycExcel = async ({
-    tenantId,
-    vendorId,
-    fromDate,
-    toDate,
-    fileName = "eKYC_Data",
-    t,
-}) => {
-    try {
-        const response = await Digit.EkycService.application_list({
-            tenantId,
-            offset: 0,
-            limit: 10000,
-            vendorId,
-            reportDownload: true,
-            ...(fromDate && { fromDate }),
-            ...(toDate && { toDate }),
-        });
+    const consumerList = response?.consumerList || [];
 
-        const consumerList = response?.consumerList || [];
-
-        if (!consumerList.length) {
-            alert(t("NO_EKYC_DATA_FOUND") || "No eKYC data found to download.");
-            return false;
-        }
-
-        const excelData = getEkycExcelData(consumerList, t);
-
-        Digit.Download.Excel(excelData, fileName);
-
-        return true;
-    } catch (error) {
-        console.error("Failed to download eKYC data:", error);
-
-        alert(
-            t("EKYC_DOWNLOAD_FAILED") ||
-            "Failed to download eKYC data. Please try again."
-        );
-
-        return false;
+    if (!consumerList.length) {
+      alert(t("NO_EKYC_DATA_FOUND") || "No eKYC data found to download.");
+      return false;
     }
+
+    const excelData = getEkycExcelData(consumerList, t);
+
+    Digit.Download.Excel(excelData, fileName);
+
+    return true;
+  } catch (error) {
+    console.error("Failed to download eKYC data:", error);
+
+    alert(t("EKYC_DOWNLOAD_FAILED") || "Failed to download eKYC data. Please try again.");
+
+    return false;
+  }
 };
