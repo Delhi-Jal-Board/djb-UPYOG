@@ -77,7 +77,7 @@ const VendorDetailsCard = () => {
         icon: <FaFileAlt />,
       },
       // {
-      //   label: "EKYC_COMPLETED",
+      //   label: "EKYC_SUBMITTED",
       //   count: completedKnos,
       //   color: "#10B981",
       //   type: "month",
@@ -210,7 +210,7 @@ const VendorDetailsCard = () => {
         id: "totalEkycApplications",
       },
       {
-        Header: t("EKYC_COMPLETED") || "eKYC Completed",
+        Header: t("EKYC_SUBMITTED") || "eKYC Completed",
         accessor: (row) => row?.submittedKnos || 0,
         id: "ekycCompleted",
       },
