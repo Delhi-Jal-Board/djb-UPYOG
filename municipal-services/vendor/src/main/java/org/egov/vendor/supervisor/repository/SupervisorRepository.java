@@ -4,14 +4,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.egov.common.contract.request.RequestInfo;
+import org.egov.tracer.model.CustomException;
 import org.egov.vendor.config.VendorConfiguration;
 import org.egov.vendor.producer.Producer;
 import org.egov.vendor.supervisor.repository.querybuilder.SupervisorQueryBuilder;
+import org.egov.vendor.supervisor.repository.rowmapper.ActiveSurveyorRowMapper;
 import org.egov.vendor.supervisor.repository.rowmapper.SupervisorRowMapper;
 import org.egov.vendor.supervisor.web.model.Supervisor;
 import org.egov.vendor.supervisor.web.model.SupervisorRequest;
 import org.egov.vendor.supervisor.web.model.SupervisorResponse;
 import org.egov.vendor.supervisor.web.model.SupervisorSearchCriteria;
+import org.egov.vendor.surveyor.web.model.Surveyor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
@@ -28,6 +32,7 @@ public class SupervisorRepository {
     @Autowired private SupervisorQueryBuilder queryBuilder;
     @Autowired private JdbcTemplate jdbcTemplate;
     @Autowired private SupervisorRowMapper rowMapper;
+    @Autowired private ActiveSurveyorRowMapper activeSurveyorRowMapper;
 
     public void save(SupervisorRequest request) {
         producer.push(configuration.getSaveSupervisorTopic(), request);
@@ -129,4 +134,145 @@ public class SupervisorRepository {
         });
         return rows.isEmpty() ? null : rows.get(0);
     }
+
+
+    public Supervisor getSupervisorById(
+            String supervisorId,
+            String tenantId) {
+
+        String query = "SELECT\n" +
+                       "    id,\n" +
+                       "    name,\n" +
+                       "    tenantid,\n" +
+                       "    vendor_id,\n" +
+                       "    assigned_zone_id,\n" +
+                       "    status\n" +
+                       "FROM eg_supervisor\n" +
+                       "WHERE id = ?\n" +
+                       "  AND tenantid = ?\n" +
+                       "LIMIT 1\n";
+
+        List<Supervisor> results = jdbcTemplate.query(
+                query,
+                new Object[]{supervisorId, tenantId},
+                (rs, rowNum) -> {
+
+                    Supervisor supervisor = new Supervisor();
+
+                    supervisor.setId(rs.getString("id"));
+                    supervisor.setName(rs.getString("name"));
+                    supervisor.setTenantId(rs.getString("tenantid"));
+                    supervisor.setVendorId(rs.getString("vendor_id"));
+
+                    // Assigned Zone
+                    supervisor.setAssignedZoneId(
+                            rs.getString("assigned_zone_id")
+                    );
+
+                    String status = rs.getString("status");
+
+                    if (status != null) {
+                        supervisor.setStatus(
+                                Supervisor.StatusEnum.fromValue(status)
+                        );
+                    }
+
+                    return supervisor;
+                }
+        );
+
+        if (results.isEmpty()) {
+            log.warn(
+                    "No supervisor found for supervisorId={}, tenantId={}",
+                    supervisorId,
+                    tenantId
+            );
+            return null;
+        }
+
+        Supervisor supervisor = results.get(0);
+
+        log.info(
+                "Found supervisor: id={}, vendorId={}, tenantId={}, assignedZoneId={}, status={}",
+                supervisor.getId(),
+                supervisor.getVendorId(),
+                supervisor.getTenantId(),
+                supervisor.getAssignedZoneId(),
+                supervisor.getStatus()
+        );
+
+        return supervisor;
+    }
+
+    public int bulkUpdateSurveyors(
+            String oldSupervisorId,
+            String replacementSupervisorId,
+            String vendorId,
+            String tenantId,
+            RequestInfo requestInfo) {
+
+        String sql = "UPDATE eg_surveyor\n" +
+                     "   SET supervisor_id = ?,\n" +
+                     "       lastmodifiedby = ?,\n" +
+                     "       lastmodifiedtime = ?\n" +
+                     " WHERE supervisor_id = ?\n" +
+                     "   AND vendor_id = ?\n" +
+                     "   AND tenantid = ?\n";
+
+        int updatedRows = jdbcTemplate.update(
+                sql,
+                replacementSupervisorId,
+                requestInfo.getUserInfo().getUuid(),
+                System.currentTimeMillis(),
+                oldSupervisorId,
+                vendorId,
+                tenantId
+        );
+
+        log.info(
+                "Bulk reassigned {} surveyors from supervisor {} to {}",
+                updatedRows,
+                oldSupervisorId,
+                replacementSupervisorId
+        );
+
+        return updatedRows;
+    }
+
+
+    public int bulkUpdateEkycAssignments(
+            String oldSupervisorId,
+            String replacementSupervisorId,
+            String vendorId,
+            String tenantId,
+            RequestInfo requestInfo) {
+
+        String sql = "UPDATE ekyc_assignment\n" +
+                     "   SET supervisor_id = ?,\n" +
+                     "       lastmodifiedby = ?,\n" +
+                     "       lastmodifiedtime = ?\n" +
+                     " WHERE supervisor_id = ?\n" +
+                     "   AND vendor_id = ?\n" +
+                     "   AND tenant_id = ?\n";
+
+        int updatedRows = jdbcTemplate.update(
+                sql,
+                replacementSupervisorId,
+                requestInfo.getUserInfo().getUuid(),
+                System.currentTimeMillis(),
+                oldSupervisorId,
+                vendorId,
+                tenantId
+        );
+
+        log.info(
+                "Bulk reassigned {} ekyc assignments from supervisor {} to {}",
+                updatedRows,
+                oldSupervisorId,
+                replacementSupervisorId
+        );
+
+        return updatedRows;
+    }
+
 }

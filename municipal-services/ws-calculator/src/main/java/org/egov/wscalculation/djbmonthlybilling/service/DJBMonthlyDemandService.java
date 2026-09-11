@@ -14,8 +14,10 @@ import org.egov.wscalculation.constants.WSCalculationConstant;
 import org.egov.wscalculation.djbmonthlybilling.model.WaterBillingCycle;
 import org.egov.wscalculation.djbmonthlybilling.model.enums.BillingCycleStatus;
 import org.egov.wscalculation.djbmonthlybilling.model.enums.CorrectionStatus;
+import org.egov.wscalculation.djbmonthlybilling.model.enums.BillingBasis;
 import org.egov.wscalculation.djbmonthlybilling.model.enums.ZroStatus;
 import org.egov.wscalculation.djbmonthlybilling.model.master.DJBAdditionalSewerageCharge;
+import org.egov.wscalculation.djbmonthlybilling.model.master.DJBMonthlyBillingRule;
 import org.egov.wscalculation.djbmonthlybilling.model.master.DJBMonthlyRebate;
 import org.egov.wscalculation.djbmonthlybilling.model.master.DJBMonthlySewerageRule;
 import org.egov.wscalculation.djbmonthlybilling.model.master.DJBMonthlyWaterTariff;
@@ -26,6 +28,9 @@ import org.egov.wscalculation.djbmonthlybilling.service.dto.SewerageCalculationR
 import org.egov.wscalculation.djbmonthlybilling.service.dto.TariffCalculationResult;
 import org.egov.wscalculation.djbmonthlybilling.service.master.DJBMonthlyBillingMasterProvider;
 import org.egov.wscalculation.djbmonthlybilling.service.ResidualCreditService.CreditReservationResult;
+import org.egov.wscalculation.djbmonthlybilling.repository.ZroVerificationDao;
+import org.egov.wscalculation.djbmonthlybilling.repository.WaterBillingCycleDao;
+import org.egov.wscalculation.djbmonthlybilling.model.ZroVerification;
 import org.egov.wscalculation.producer.WSCalculationProducer;
 import org.egov.wscalculation.repository.DemandRepository;
 import org.egov.wscalculation.repository.ServiceRequestRepository;
@@ -52,6 +57,7 @@ public class DJBMonthlyDemandService {
 
 	private final DJBMonthlyBillingMasterProvider masterProvider;
 	private final TariffCalculationService tariffCalculationService;
+	private final ConsumptionService consumptionService;
 	private final SewerageCalculationService sewerageCalculationService;
 	private final RebateCalculationService rebateCalculationService;
 	private final DemandRepository demandRepository;
@@ -62,16 +68,20 @@ public class DJBMonthlyDemandService {
 	private final ObjectMapper objectMapper;
 	private final WSCalculationProducer wsCalculationProducer;
 	private final ResidualCreditService residualCreditService;
+	private final ZroVerificationDao zroVerificationDao;
+	private final WaterBillingCycleDao billingCycleDao;
 
 	public DJBMonthlyDemandService(DJBMonthlyBillingMasterProvider masterProvider,
-			TariffCalculationService tariffCalculationService, SewerageCalculationService sewerageCalculationService,
+			TariffCalculationService tariffCalculationService, ConsumptionService consumptionService, SewerageCalculationService sewerageCalculationService,
 			RebateCalculationService rebateCalculationService, DemandRepository demandRepository,
 			CalculatorUtil calculatorUtil, WSCalculationUtil wsCalculationUtil, WSCalculationConfiguration config,
 			ServiceRequestRepository serviceRequestRepository, ObjectMapper objectMapper,
-			WSCalculationProducer wsCalculationProducer, ResidualCreditService residualCreditService) {
+			WSCalculationProducer wsCalculationProducer, ResidualCreditService residualCreditService,
+			ZroVerificationDao zroVerificationDao, WaterBillingCycleDao billingCycleDao) {
 
 		this.masterProvider = masterProvider;
 		this.tariffCalculationService = tariffCalculationService;
+		this.consumptionService = consumptionService;
 		this.sewerageCalculationService = sewerageCalculationService;
 		this.rebateCalculationService = rebateCalculationService;
 		this.demandRepository = demandRepository;
@@ -82,6 +92,8 @@ public class DJBMonthlyDemandService {
 		this.objectMapper = objectMapper;
 		this.wsCalculationProducer = wsCalculationProducer;
 		this.residualCreditService = residualCreditService;
+		this.zroVerificationDao = zroVerificationDao;
+		this.billingCycleDao = billingCycleDao;
 	}
 
 	/**
@@ -122,15 +134,6 @@ public class DJBMonthlyDemandService {
 					.message("DJB demand already exists for billing cycle").build();
 		}
 
-		if (Boolean.TRUE.equals(cycle.getOnepointfivexflag()) && isDomestic(cycle, requestInfo)) {
-			cycle.setZrostatus(ZroStatus.PENDING);
-			cycle.setZroremarks("Consumption exceeds DJB 1.5x threshold; ZRO verification required");
-			cycle.setStatus(BillingCycleStatus.CALCULATED);
-
-			return DemandResult.builder().demandCreated(false).zroRequired(true)
-					.message("Demand not generated because DJB 1.5x ZRO verification is required").build();
-		}
-
 		BigDecimal consumption = cycle.getBillingconsumption();
 		if (consumption == null) {
 			throw new IllegalStateException("Billing consumption is required before demand generation");
@@ -145,6 +148,44 @@ public class DJBMonthlyDemandService {
 				WaterConnectionRequest.builder().requestInfo(requestInfo).waterConnection(connection).build());
 
 		String category = resolveTariffCategory(connection, property);
+
+		/*
+		 * DJB 1.5x/ZRO is applicable only for domestic connections. Use the same
+		 * resolved tariff category that drives the DJB tariff calculation instead of
+		 * performing a second connection lookup in a separate isDomestic() method.
+		 * This avoids silently bypassing ZRO when connection lookup/category data is
+		 * temporarily unavailable.
+		 */
+		if (Boolean.TRUE.equals(cycle.getOnepointfivexflag())
+				&& "DOMESTIC".equalsIgnoreCase(category)
+				&& !ZroStatus.APPROVED.equals(cycle.getZrostatus())) {
+
+			/*
+			 * PENDING means ZRO has not decided yet, so no demand may be generated.
+			 * REJECTED is different: DJB's 1.5x rule requires the rejected high
+			 * consumption to fall back to average/provisional billing rather than
+			 * disappearing from billing altogether. The ZRO rejection handler prepares
+			 * the fallback provisional billing values before calling this method.
+			 */
+			if (!ZroStatus.REJECTED.equals(cycle.getZrostatus())) {
+				cycle.setZrostatus(ZroStatus.PENDING);
+				cycle.setZroremarks("Consumption exceeds DJB 1.5x threshold; ZRO verification required");
+				cycle.setStatus(BillingCycleStatus.CALCULATED);
+				cycle.setLastmodifiedby(actorForDemand(requestInfo));
+				cycle.setLastmodifiedtime(System.currentTimeMillis());
+
+				createPendingZroVerification(cycle, actorForDemand(requestInfo));
+
+				if (billingCycleDao.update(cycle) != 1) {
+					throw new IllegalStateException(
+							"Failed to persist DJB ZRO PENDING status for billing cycle " + cycle.getId());
+				}
+
+				return DemandResult.builder().demandCreated(false).zroRequired(true)
+						.message("Demand not generated because DJB 1.5x ZRO verification is required").build();
+			}
+
+		}
 
 		List<DJBMonthlyWaterTariff> tariffs = masterProvider.getWaterTariffs(requestInfo, tenantId);
 
@@ -336,6 +377,80 @@ public class DJBMonthlyDemandService {
 				.message(StringUtils.hasText(billId) ? "DJB demand and bill created successfully"
 						: "DJB demand created successfully")
 				.build();
+	}
+
+	/**
+	 * Generates the fallback bill required when a domestic DJB 1.5x case is rejected
+	 * by ZRO. The rejected actual consumption is NOT billed; the cycle is converted
+	 * to DJB provisional billing. For the first two consecutive provisional rounds
+	 * the billing consumption is the past actual average; from the next round onward
+	 * it is the higher of past average and the configured 25 KL floor.
+	 */
+	public DemandResult createRejectedOnePointFiveFallbackDemand(RequestInfo requestInfo, WaterBillingCycle cycle) {
+		validateCycle(cycle);
+
+		if (!Boolean.TRUE.equals(cycle.getOnepointfivexflag())) {
+			throw new IllegalArgumentException(
+					"Rejected 1.5x fallback billing is only valid for a DJB 1.5x flagged billing cycle");
+		}
+
+		if (StringUtils.hasText(cycle.getDemandid()) || StringUtils.hasText(cycle.getBillid())) {
+			throw new IllegalStateException(
+					"Cannot generate rejected 1.5x fallback bill because demand/bill already exists for billing cycle "
+							+ cycle.getId());
+		}
+
+		String tenantId = cycle.getTenantid();
+		String connectionNo = cycle.getConnectionno();
+		DJBMonthlyBillingRule rule = masterProvider.getBillingRule(requestInfo, tenantId);
+
+		BigDecimal historicalAverage = consumptionService.calculateHistoricalAverage(tenantId, connectionNo,
+				cycle.getBillingperiodto(), rule.getAverageLookbackMonths());
+		if (historicalAverage == null) {
+			throw new IllegalStateException(
+					"No actual consumption history is available for rejected DJB 1.5x fallback billing");
+		}
+
+		int consecutiveEstimatedCycles = 0;
+		List<WaterBillingCycle> recent = billingCycleDao.findCyclesForConnection(tenantId, connectionNo,
+				cycle.getBillingperiodto(), 24);
+		if (recent != null) {
+			for (WaterBillingCycle previous : recent) {
+				/*
+				 * A ZRO rejection starts a DJB PROVISIONAL billing sequence. Do not
+				 * consume the two-cycle provisional allowance because an older cycle was
+				 * billed on the separate AVERAGE basis (for example MLOC/PLOC/RDDT/ADF).
+				 * The DJB rules treat those as different billing treatments.
+				 */
+				if (BillingBasis.PROVISIONAL.equals(previous.getBillingbasis())) {
+					consecutiveEstimatedCycles++;
+				} else {
+					break;
+				}
+			}
+		}
+
+		int currentProvisionalCycle = consecutiveEstimatedCycles + 1;
+		BigDecimal minimumPostAverage = BigDecimal.valueOf(rule.getMinimumPostAverageConsumptionKl().longValue());
+		BigDecimal billingConsumption = currentProvisionalCycle <= rule.getProvisionalMaximumCycles()
+				? historicalAverage
+				: historicalAverage.max(minimumPostAverage);
+
+		cycle.setAverageconsumption(historicalAverage);
+		cycle.setBillingconsumption(billingConsumption);
+		cycle.setBillingbasis(BillingBasis.PROVISIONAL);
+		cycle.setAveragecyclecount(0);
+		cycle.setProvisionalcyclecount(currentProvisionalCycle);
+		cycle.setStatus(BillingCycleStatus.CALCULATED);
+		cycle.setLastmodifiedby(actorForDemand(requestInfo));
+		cycle.setLastmodifiedtime(System.currentTimeMillis());
+
+		if (billingCycleDao.update(cycle) != 1) {
+			throw new IllegalStateException(
+					"Failed to persist rejected DJB 1.5x fallback billing values for " + cycle.getId());
+		}
+
+		return createDemand(requestInfo, cycle);
 	}
 
 	/**
@@ -556,20 +671,6 @@ public class DJBMonthlyDemandService {
 		throw new IllegalStateException("Unsupported DJB tariff category: " + candidate);
 	}
 
-	private boolean isDomestic(WaterBillingCycle cycle, RequestInfo requestInfo) {
-
-		try {
-			WaterConnection connection = loadWaterConnection(requestInfo, cycle.getConnectionno(), cycle.getTenantid());
-
-			String category = connection.getConnectionCategory();
-
-			return category != null && (category.toUpperCase().contains("DOMESTIC")
-					|| category.toUpperCase().contains("RESIDENTIAL") || category.toUpperCase().contains("CAT_I"));
-		} catch (RuntimeException ex) {
-			return false;
-		}
-	}
-
 	private boolean isAdditionalWaterSource(WaterConnection connection) {
 
 		String source = connection.getWaterSource();
@@ -608,6 +709,47 @@ public class DJBMonthlyDemandService {
 		details.put("propertyId", propertyId);
 
 		return details;
+	}
+
+	private void createPendingZroVerification(WaterBillingCycle cycle, String actor) {
+
+		ZroVerification existing = zroVerificationDao.findByBillingCycle(cycle.getTenantid(), cycle.getId());
+
+		if (existing != null) {
+			if (ZroStatus.APPROVED.equals(existing.getStatus())) {
+				return;
+			}
+			if (ZroStatus.PENDING.equals(existing.getStatus())) {
+				return;
+			}
+			// Keep the existing rejected state explicit. A rejected cycle must be
+			// re-submitted as a new billing-cycle review rather than silently reopened.
+			existing.setStatus(ZroStatus.PENDING);
+			existing.setRemarks(cycle.getZroremarks());
+			existing.setActionby(null);
+			existing.setActiondate(null);
+			existing.setLastmodifiedby(actor);
+			existing.setLastmodifiedtime(System.currentTimeMillis());
+			zroVerificationDao.update(existing);
+			return;
+		}
+
+		long now = System.currentTimeMillis();
+		ZroVerification verification = new ZroVerification();
+		verification.setId(java.util.UUID.randomUUID().toString());
+		verification.setTenantid(cycle.getTenantid());
+		verification.setBillingcycleid(cycle.getId());
+		verification.setConnectionno(cycle.getConnectionno());
+		verification.setConsumption(cycle.getActualconsumption());
+		verification.setPreviousconsumption(cycle.getPreviousconsumption());
+		verification.setDeviationfactor(cycle.getDeviationfactor());
+		verification.setStatus(ZroStatus.PENDING);
+		verification.setRemarks(cycle.getZroremarks());
+		verification.setCreatedby(actor);
+		verification.setCreatedtime(now);
+		verification.setLastmodifiedby(actor);
+		verification.setLastmodifiedtime(now);
+		zroVerificationDao.save(verification);
 	}
 
 	private String actorForDemand(RequestInfo requestInfo) {
