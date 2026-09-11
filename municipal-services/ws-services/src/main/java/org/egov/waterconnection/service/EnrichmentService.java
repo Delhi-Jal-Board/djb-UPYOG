@@ -194,6 +194,28 @@ public class EnrichmentService {
 				}
 			}
 		}
+
+		// Enrich zone from property
+		try {
+			String propertyId = waterConnectionRequest.getWaterConnection().getPropertyId();
+			String tenantId = waterConnectionRequest.getWaterConnection().getTenantId();
+			if (!StringUtils.isEmpty(propertyId) && !StringUtils.isEmpty(tenantId)) {
+				PropertyCriteria propertyCriteria = new PropertyCriteria();
+				propertyCriteria.setPropertyIds(Collections.singleton(propertyId));
+				propertyCriteria.setTenantId(tenantId);
+				List<Property> propertyList = waterServicesUtil.searchPropertyOnId(propertyCriteria, waterConnectionRequest.getRequestInfo());
+				if (!CollectionUtils.isEmpty(propertyList)) {
+					String rawZone = waterServicesUtil.getPropertyZone(propertyList.get(0));
+					String normalizedZone = waterServicesUtil.normalizeZone(rawZone);
+					if (!StringUtils.isEmpty(normalizedZone)) {
+						additionalDetail.put("zone", normalizedZone);
+					}
+				}
+			}
+		} catch (Exception e) {
+			log.error("Failed to fetch property zone for additional details enrichment", e);
+		}
+
 		waterConnectionRequest.getWaterConnection().setAdditionalDetails(additionalDetail);
 	}
 
