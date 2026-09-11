@@ -878,7 +878,7 @@ String action = waterConnectionRequest.getWaterConnection().getProcessInstance()
 	}
 
 	@Override
-	public DueVerification fetchDueVerification(DueVerificationRequest dueVerificationRequest) {
+	public List<DueVerification> fetchDueVerification(DueVerificationRequest dueVerificationRequest) {
 
 		if (dueVerificationRequest == null || dueVerificationRequest.getDueVerification() == null) {
 			throw new CustomException("INVALID_REQUEST", "Request payload or DueVerification object cannot be null.");
@@ -887,46 +887,128 @@ String action = waterConnectionRequest.getWaterConnection().getProcessInstance()
 		DueVerification searchDv = dueVerificationRequest.getDueVerification();
 		RequestInfo requestInfo = dueVerificationRequest.getRequestInfo();
 
-		if (StringUtils.isEmpty(searchDv.getKno())) {
-			throw new CustomException("INVALID_KNO", "K-Number (kno) is mandatory for due verification.");
-		}
-		String kno = searchDv.getKno().trim();
-
-		String tenantId = (requestInfo != null && requestInfo.getUserInfo() != null) ? requestInfo.getUserInfo().getTenantId() : null;
-
+		String tenantId = (requestInfo != null && requestInfo.getUserInfo() != null)
+				? requestInfo.getUserInfo().getTenantId() : null;
 		if (StringUtils.isEmpty(tenantId)) {
 			throw new CustomException("INVALID_TENANT", "Tenant ID is mandatory for due verification.");
 		}
 
-		SearchCriteria criteria = SearchCriteria.builder()
-				.connectionNumber(Collections.singleton(kno))
+		boolean hasKno = !StringUtils.isEmpty(searchDv.getKno());
+		boolean hasApplicationNo = !StringUtils.isEmpty(searchDv.getApplicationNo());
+
+		if (!hasKno && !hasApplicationNo) {
+			throw new CustomException("INVALID_REQUEST", "Either kno or applicationNo is mandatory.");
+		}
+
+		List<WaterConnection> connections;
+
+		if (hasKno) {
+			// existing single-KNO flow (unchanged behavior)
+			SearchCriteria criteria = SearchCriteria.builder()
+					.connectionNumber(Collections.singleton(searchDv.getKno().trim()))
+					.tenantId(tenantId)
+					.applicationStatus(Collections.singleton(WCConstants.STATUS_APPROVED))
+					.status("Active")
+					.build();
+			connections = safeSearch(criteria, requestInfo, "CONNECTION_SEARCH_FAILED");
+
+			if (CollectionUtils.isEmpty(connections)) {
+				throw new CustomException("CONNECTION_NOT_FOUND",
+						"No active Water Connection found with connection number: " + searchDv.getKno());
+			}
+			List<DueVerification> single = new ArrayList<>();
+			single.add(calculateDueForConnection(connections.get(0), tenantId, requestInfo,null));
+			return single;
+		}
+
+		// ---- applicationNo flow: applicationNo -> propertyId -> all connections on that property ----
+		String applicationNo = searchDv.getApplicationNo().trim();
+
+		SearchCriteria appCriteria = SearchCriteria.builder()
 				.tenantId(tenantId)
+				.applicationNumber(Collections.singleton(applicationNo))
+				.build();
+		List<WaterConnection> appMatches = safeSearch(appCriteria, requestInfo, "APPLICATION_SEARCH_FAILED");
+
+		if (CollectionUtils.isEmpty(appMatches) || StringUtils.isEmpty(appMatches.get(0).getPropertyId())) {
+			throw new CustomException("APPLICATION_NOT_FOUND",
+					"No application/property found for applicationNo: " + applicationNo);
+		}
+		String propertyId = appMatches.get(0).getPropertyId();
+
+		SearchCriteria propCriteria = SearchCriteria.builder()
+				.tenantId(tenantId)
+				.propertyIds(Collections.singleton(propertyId))
 				.applicationStatus(Collections.singleton(WCConstants.STATUS_APPROVED))
 				.status("Active")
 				.build();
-
-		List<WaterConnection> connections = search(criteria, requestInfo);
+		connections = safeSearch(propCriteria, requestInfo, "CONNECTION_SEARCH_FAILED");
 
 		if (CollectionUtils.isEmpty(connections)) {
-			throw new CustomException("CONNECTION_NOT_FOUND","No active Water Connection found with connection number: " + kno
-			);
+			return Collections.emptyList(); // valid outcome: no existing WS connections on this property
 		}
 
-		WaterConnection connection = connections.get(0);
+		Map<String, WaterConnection> uniqueConnections = new LinkedHashMap<>();
+
+		for (WaterConnection connection : connections) {
+
+			if (connection == null || StringUtils.isEmpty(connection.getConnectionNo())) {
+				continue;
+			}
+
+			String kno = connection.getConnectionNo().trim();
+
+			// Keep only one WaterConnection for each KNO
+			uniqueConnections.putIfAbsent(kno, connection);
+		}
+
+		List<DueVerification> results = new ArrayList<>();
+
+		for (WaterConnection connection : uniqueConnections.values()) {
+			try {
+				DueVerification dv = calculateDueForConnection(
+						connection,
+						tenantId,
+						requestInfo,
+						applicationNo
+				);
+
+				if (dv.getDueAmount() != null
+						&& new BigDecimal(dv.getDueAmount())
+						.compareTo(BigDecimal.ZERO) > 0) {
+					results.add(dv);
+				}
+
+			} catch (Exception e) {
+				log.error("Skipping due calc for connection: {}",
+						connection.getConnectionNo(), e);
+			}
+		}
+
+		return results;
+	}
+
+	private List<WaterConnection> safeSearch(SearchCriteria criteria, RequestInfo requestInfo, String errorCode) {
+		try {
+			return search(criteria, requestInfo);
+		} catch (CustomException ce) {
+			throw ce;
+		} catch (Exception e) {
+			log.error("Search failed [{}]", errorCode, e);
+			throw new CustomException(errorCode, "Unable to fetch water connection(s).");
+		}
+	}
+
+	private DueVerification calculateDueForConnection(WaterConnection connection, String tenantId, RequestInfo requestInfo, String applicationNo) {
+
+		String kno = connection.getConnectionNo();
 		String fullName = "";
-		String mobileNumber = null;
 
 		if (!CollectionUtils.isEmpty(connection.getConnectionHolders())) {
 			OwnerInfo holder = connection.getConnectionHolders().get(0);
 			if (holder != null) {
 				fullName = holder.getName() != null ? holder.getName() : "";
-				mobileNumber = holder.getMobileNumber();
 			}
-		}
-
-		if (StringUtils.isEmpty(mobileNumber)) {
-			throw new CustomException("MOBILE_NUMBER_NOT_FOUND", "Mobile number not found for K-Number: " + kno
-			);
 		}
 
 		String fullAddress = wsUtil.extractFullAddress(connection.getPropertyId(), tenantId, requestInfo, kno);
@@ -938,44 +1020,27 @@ String action = waterConnectionRequest.getWaterConnection().getProcessInstance()
 			String billSearchUrl = UriComponentsBuilder.fromHttpUrl(config.getBillingServiceHost())
 					.path(config.getSearchBillEndPoint())
 					.queryParam("tenantId", tenantId)
-					.queryParam("mobileNumber", mobileNumber)
+					.queryParam("consumerCode", kno)
+					.queryParam("service", WCConstants.WATER_TAX_SERVICE_CODE)
 					.queryParam("status", "ACTIVE")
 					.toUriString();
 
-			log.info("Searching active bills for mobileNumber: {}, KNO: {}", mobileNumber, kno);
-
-			Object result = serviceRequestRepository.fetchResult(new StringBuilder(billSearchUrl),RequestInfoWrapper.builder().requestInfo(requestInfo).build());
-
+			Object result = serviceRequestRepository.fetchResult(new StringBuilder(billSearchUrl),
+					RequestInfoWrapper.builder().requestInfo(requestInfo).build());
 			BillResponse billResponse = mapper.convertValue(result, BillResponse.class);
 
 			if (billResponse != null && !CollectionUtils.isEmpty(billResponse.getBill())) {
-
 				for (Bill bill : billResponse.getBill()) {
-					if (bill == null) {
-						continue;
-					}
-
-					if (!Bill.StatusEnum.ACTIVE.equals(bill.getStatus())) {
-						continue;
-					}
-					if (StringUtils.isEmpty(bill.getConsumerCode()) || !kno.equalsIgnoreCase(bill.getConsumerCode().trim())) {
-						continue;
-					}
+					if (bill == null || !Bill.StatusEnum.ACTIVE.equals(bill.getStatus())) continue;
+					if (StringUtils.isEmpty(bill.getConsumerCode()) || !kno.equalsIgnoreCase(bill.getConsumerCode().trim())) continue;
 
 					BigDecimal billAmount = bill.getTotalAmount() != null ? bill.getTotalAmount() : BigDecimal.ZERO;
 					BigDecimal amountPaid = bill.getAmountPaid() != null ? bill.getAmountPaid() : BigDecimal.ZERO;
 					totalAmount = totalAmount.add(billAmount);
-					BigDecimal pendingAmount = billAmount.subtract(amountPaid);
-
-					if (pendingAmount.compareTo(BigDecimal.ZERO) > 0) {
-						totalDue = totalDue.add(pendingAmount);
-					}
-
-					log.info("Matching bill found. KNO: {}, BillNo: {}, BusinessService: {}, Total: {}, Paid: {}, Pending: {}",
-							kno, bill.getBillNumber(),bill.getBusinessService(),billAmount, amountPaid, pendingAmount);
+					BigDecimal pending = billAmount.subtract(amountPaid);
+					if (pending.compareTo(BigDecimal.ZERO) > 0) totalDue = totalDue.add(pending);
 				}
 			}
-
 		} catch (Exception e) {
 			log.error("Error searching bills for KNO: {}", kno, e);
 			throw new CustomException("BILL_SEARCH_FAILED", "Unable to verify dues for K-Number: " + kno);
@@ -984,9 +1049,10 @@ String action = waterConnectionRequest.getWaterConnection().getProcessInstance()
 		return DueVerification.builder()
 				.kno(kno)
 				.fullName(fullName)
-				.fullAddress(fullAddress)
+				.fullAddress(fullAddress != null ? fullAddress : "")
 				.dueAmount(totalDue.toString())
 				.totalAmount(totalAmount.toString())
+				.applicationNo(applicationNo)
 				.build();
 	}
 

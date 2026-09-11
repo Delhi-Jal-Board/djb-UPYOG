@@ -111,13 +111,12 @@ public class WaterController {
 	}
 
 
-	@RequestMapping(value = "/due-verification", method = RequestMethod.POST)
+	@RequestMapping(value = "/due-verification/_search", method = RequestMethod.POST)
 	public ResponseEntity<DueVerificationResponse> dueVerification(@Valid @RequestBody DueVerificationRequest dueVerificationRequest) {
-		DueVerification dueVerification = waterService.fetchDueVerification(dueVerificationRequest);
+		List<DueVerification> dueVerifications = waterService.fetchDueVerification(dueVerificationRequest);
 		DueVerificationResponse response = DueVerificationResponse.builder()
-				.dueVerifications(java.util.Collections.singletonList(dueVerification))
-				.responseInfo(responseInfoFactory
-						.createResponseInfoFromRequestInfo(dueVerificationRequest.getRequestInfo(), true))
+				.dueVerifications(dueVerifications)
+				.responseInfo(responseInfoFactory.createResponseInfoFromRequestInfo(dueVerificationRequest.getRequestInfo(), true))
 				.build();
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}

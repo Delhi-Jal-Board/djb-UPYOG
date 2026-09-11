@@ -135,7 +135,7 @@ public class WsQueryBuilder {
 		String propertyIdQuery = " (conn.property_id in (";
 
 		if (!StringUtils.isEmpty(criteria.getMobileNumber()) || !StringUtils.isEmpty(criteria.getDoorNo())
-				|| !StringUtils.isEmpty(criteria.getOwnerName()) || !StringUtils.isEmpty(criteria.getPropertyId())) {
+				|| !StringUtils.isEmpty(criteria.getOwnerName()) || !StringUtils.isEmpty(criteria.getPropertyId()) || !StringUtils.isEmpty(criteria.getLocality())) {
 			String originalMobileNumber = criteria.getMobileNumber();
 			if (!StringUtils.isEmpty(originalMobileNumber)) {
 				criteria.setMobileNumber(""); // Prevent PT search by Mobile
