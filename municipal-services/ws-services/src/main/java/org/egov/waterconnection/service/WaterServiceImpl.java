@@ -922,66 +922,164 @@ String action = waterConnectionRequest.getWaterConnection().getProcessInstance()
 		}
 
 		// ---- applicationNo flow: applicationNo -> propertyId -> all connections on that property ----
+		// ---- applicationNo flow: applicationNo -> propertyId -> all connections on that property ----
 		String applicationNo = searchDv.getApplicationNo().trim();
 
 		SearchCriteria appCriteria = SearchCriteria.builder()
 				.tenantId(tenantId)
 				.applicationNumber(Collections.singleton(applicationNo))
 				.build();
-		List<WaterConnection> appMatches = safeSearch(appCriteria, requestInfo, "APPLICATION_SEARCH_FAILED");
 
-		if (CollectionUtils.isEmpty(appMatches) || StringUtils.isEmpty(appMatches.get(0).getPropertyId())) {
-			throw new CustomException("APPLICATION_NOT_FOUND",
+		List<WaterConnection> appMatches = safeSearch(
+				appCriteria,
+				requestInfo,
+				"APPLICATION_SEARCH_FAILED");
+
+		if (CollectionUtils.isEmpty(appMatches)
+				|| StringUtils.isEmpty(appMatches.get(0).getPropertyId())) {
+
+			throw new CustomException(
+					"APPLICATION_NOT_FOUND",
 					"No application/property found for applicationNo: " + applicationNo);
 		}
+
 		String propertyId = appMatches.get(0).getPropertyId();
 
 		SearchCriteria propCriteria = SearchCriteria.builder()
 				.tenantId(tenantId)
 				.propertyIds(Collections.singleton(propertyId))
-				.applicationStatus(Collections.singleton(WCConstants.STATUS_APPROVED))
+				.applicationStatus(new HashSet<>(Arrays.asList(
+						"CONNECTION_ACTIVATED",
+						"MUTATION_ACTIVATED"
+				)))
 				.status("Active")
 				.build();
-		connections = safeSearch(propCriteria, requestInfo, "CONNECTION_SEARCH_FAILED");
+
+		connections = safeSearch(
+				propCriteria,
+				requestInfo,
+				"CONNECTION_SEARCH_FAILED");
 
 		if (CollectionUtils.isEmpty(connections)) {
-			return Collections.emptyList(); // valid outcome: no existing WS connections on this property
+			return Collections.emptyList();
 		}
+
+
+// ============================================================
+// STEP 1: Remove duplicate KNOs
+// ============================================================
 
 		Map<String, WaterConnection> uniqueConnections = new LinkedHashMap<>();
 
 		for (WaterConnection connection : connections) {
 
-			if (connection == null || StringUtils.isEmpty(connection.getConnectionNo())) {
+			if (connection == null
+					|| StringUtils.isEmpty(connection.getConnectionNo())) {
 				continue;
 			}
 
 			String kno = connection.getConnectionNo().trim();
 
-			// Keep only one WaterConnection for each KNO
 			uniqueConnections.putIfAbsent(kno, connection);
 		}
+
+
+// ============================================================
+// STEP 2: Collect all unique KNOs
+// ============================================================
+
+		Set<String> knos = uniqueConnections.keySet();
+
+
+// ============================================================
+// STEP 3: ONE billing-service call for all KNOs
+// ============================================================
+
+		Map<String, List<Bill>> billsByKno =
+				fetchBillsForConnections(
+						knos,
+						tenantId,
+						requestInfo);
+
+
+// ============================================================
+// STEP 4: Calculate dues locally
+// ============================================================
 
 		List<DueVerification> results = new ArrayList<>();
 
 		for (WaterConnection connection : uniqueConnections.values()) {
-			try {
-				DueVerification dv = calculateDueForConnection(
-						connection,
-						tenantId,
-						requestInfo,
-						applicationNo
-				);
 
-				if (dv.getDueAmount() != null
-						&& new BigDecimal(dv.getDueAmount())
-						.compareTo(BigDecimal.ZERO) > 0) {
-					results.add(dv);
+			String kno = connection.getConnectionNo().trim();
+
+			List<Bill> bills = billsByKno.getOrDefault(
+					kno,
+					Collections.emptyList());
+
+			BigDecimal totalAmount = BigDecimal.ZERO;
+			BigDecimal totalDue = BigDecimal.ZERO;
+
+			for (Bill bill : bills) {
+
+				if (bill == null) {
+					continue;
 				}
 
-			} catch (Exception e) {
-				log.error("Skipping due calc for connection: {}",
-						connection.getConnectionNo(), e);
+				BigDecimal billAmount =
+						bill.getTotalAmount() != null
+								? bill.getTotalAmount()
+								: BigDecimal.ZERO;
+
+				BigDecimal amountPaid =
+						bill.getAmountPaid() != null
+								? bill.getAmountPaid()
+								: BigDecimal.ZERO;
+
+				totalAmount = totalAmount.add(billAmount);
+
+				BigDecimal pending =
+						billAmount.subtract(amountPaid);
+
+				if (pending.compareTo(BigDecimal.ZERO) > 0) {
+					totalDue = totalDue.add(pending);
+				}
+			}
+
+			// Only KNOs having outstanding dues
+			if (totalDue.compareTo(BigDecimal.ZERO) > 0) {
+
+				String fullName = "";
+
+				if (!CollectionUtils.isEmpty(
+						connection.getConnectionHolders())) {
+
+					OwnerInfo holder =
+							connection.getConnectionHolders().get(0);
+
+					if (holder != null && holder.getName() != null) {
+						fullName = holder.getName();
+					}
+				}
+
+				String fullAddress =
+						wsUtil.extractFullAddress(
+								connection.getPropertyId(),
+								tenantId,
+								requestInfo,
+								kno);
+
+				results.add(
+						DueVerification.builder()
+								.kno(kno)
+								.fullName(fullName)
+								.fullAddress(
+										fullAddress != null
+												? fullAddress
+												: "")
+								.dueAmount(totalDue.toString())
+								.totalAmount(totalAmount.toString())
+								.applicationNo(applicationNo)
+								.build());
 			}
 		}
 
@@ -1054,6 +1152,86 @@ String action = waterConnectionRequest.getWaterConnection().getProcessInstance()
 				.totalAmount(totalAmount.toString())
 				.applicationNo(applicationNo)
 				.build();
+	}
+
+	private Map<String, List<Bill>> fetchBillsForConnections(
+			Set<String> knos,
+			String tenantId,
+			RequestInfo requestInfo) {
+
+		if (CollectionUtils.isEmpty(knos)) {
+			return Collections.emptyMap();
+		}
+
+		try {
+			String consumerCodes = knos.stream()
+					.filter(Objects::nonNull)
+					.map(String::trim)
+					.filter(code -> !code.isEmpty())
+					.collect(Collectors.joining(","));
+
+			if (StringUtils.isEmpty(consumerCodes)) {
+				return Collections.emptyMap();
+			}
+
+			String billSearchUrl = UriComponentsBuilder
+					.fromHttpUrl(config.getBillingServiceHost())
+					.path(config.getSearchBillEndPoint())
+					.queryParam("tenantId", tenantId)
+					.queryParam("consumerCode", consumerCodes)
+					.queryParam("service", WCConstants.WATER_TAX_SERVICE_CODE)
+					.queryParam("status", "ACTIVE")
+					.toUriString();
+
+			log.info("Fetching bills for {} unique KNOs in one batch request", knos.size());
+			log.debug("Bill search URL: {}", billSearchUrl);
+
+			long startTime = System.currentTimeMillis();
+
+			Object result = serviceRequestRepository.fetchResult(
+					new StringBuilder(billSearchUrl),
+					RequestInfoWrapper.builder()
+							.requestInfo(requestInfo)
+							.build());
+
+			long elapsedTime = System.currentTimeMillis() - startTime;
+
+			log.info("Batch billing search completed in {} ms for {} KNOs",
+					elapsedTime, knos.size());
+
+			BillResponse billResponse =
+					mapper.convertValue(result, BillResponse.class);
+
+			if (billResponse == null
+					|| CollectionUtils.isEmpty(billResponse.getBill())) {
+
+				log.info("No active bills found for {} KNOs", knos.size());
+				return Collections.emptyMap();
+			}
+
+			Map<String, List<Bill>> billsByKno = billResponse.getBill().stream()
+					.filter(Objects::nonNull)
+					.filter(bill ->
+							Bill.StatusEnum.ACTIVE.equals(bill.getStatus()))
+					.filter(bill ->
+							!StringUtils.isEmpty(bill.getConsumerCode()))
+					.collect(Collectors.groupingBy(
+							bill -> bill.getConsumerCode().trim()
+					));
+
+			log.info("Batch billing search returned {} bills for {} KNOs",
+					billResponse.getBill().size(),
+					billsByKno.size());
+
+			return billsByKno;
+
+		} catch (Exception e) {
+			log.error("Error fetching bills for {} KNOs", knos.size(), e);
+
+			throw new CustomException(
+					"BILL_SEARCH_FAILED",
+					"Unable to verify dues for the selected K-Numbers.");
+		}
 	}
 
 

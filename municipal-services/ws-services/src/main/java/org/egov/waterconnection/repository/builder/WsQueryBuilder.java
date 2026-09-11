@@ -128,14 +128,26 @@ public class WsQueryBuilder {
 			query = new StringBuilder("SELECT DISTINCT(conn.applicationNo),max(wc.appCreatedDate) appCreatedDate");
 			query.append(SEARCH_COUNT_QUERY);
 		}
-		
 		boolean propertyIdsPresent = false;
 
 		Set<String> propertyIds = new HashSet<>();
 		String propertyIdQuery = " (conn.property_id in (";
 
+		/* Direct propertyIds filter */
+		if (!CollectionUtils.isEmpty(criteria.getPropertyIds())) {
+			addClauseIfRequired(preparedStatement, query);
+
+			query.append(" conn.property_id IN (")
+					.append(createQuery(criteria.getPropertyIds()))
+					.append(")");
+
+			addToPreparedStatement(preparedStatement, criteria.getPropertyIds());
+
+			propertyIdsPresent = true;
+		}
+
 		if (!StringUtils.isEmpty(criteria.getMobileNumber()) || !StringUtils.isEmpty(criteria.getDoorNo())
-				|| !StringUtils.isEmpty(criteria.getOwnerName()) || !StringUtils.isEmpty(criteria.getPropertyId()) || !StringUtils.isEmpty(criteria.getLocality())) {
+				|| !StringUtils.isEmpty(criteria.getOwnerName()) || !StringUtils.isEmpty(criteria.getPropertyId())) {
 			String originalMobileNumber = criteria.getMobileNumber();
 			if (!StringUtils.isEmpty(originalMobileNumber)) {
 				criteria.setMobileNumber(""); // Prevent PT search by Mobile
