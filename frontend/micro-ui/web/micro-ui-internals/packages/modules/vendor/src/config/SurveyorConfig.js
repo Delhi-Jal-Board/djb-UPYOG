@@ -1,7 +1,7 @@
 import React from "react";
 const { DatePicker } = require("@djb25/digit-ui-react-components");
 
-const SurveyorConfig = (t, genderMenu = [], disabled = false) => {
+const SurveyorConfig = (t, genderMenu = [], update = false) => {
   return [
     {
       head: "ES_VENDOR_SURVEYOR_BASIC_DETAILS",
@@ -41,6 +41,7 @@ const SurveyorConfig = (t, genderMenu = [], disabled = false) => {
             },
             error: t("ES_VENDOR_INVALID_MOBILE"),
           },
+          disable: update,
         },
         {
           label: "ES_VENDOR_SURVEYOR_EMAIL_ID",

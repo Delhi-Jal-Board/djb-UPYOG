@@ -1,5 +1,5 @@
 import { FormComposer, Loader, Toast, VerticalTimeline } from "@djb25/digit-ui-react-components";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useHistory } from "react-router-dom";
 import _ from "lodash";
@@ -9,6 +9,7 @@ import CheckPage from "./CheckPage";
 const OLDApplication = () => {
   const { t } = useTranslation();
   const history = useHistory();
+  const location = useLocation();
   // const [canSubmit, setSubmitValve] = useState(false);
   const [isEnableLoader, setIsEnableLoader] = useState(false);
   const [showToast, setShowToast] = useState(null);
@@ -42,14 +43,32 @@ const OLDApplication = () => {
   const stateId = Digit.ULBService.getStateId();
   let { data: newConfig, isLoading } = Digit.Hooks.ws.useWSConfigMDMS.WSCreateConfig(stateId, {});
 
-  const [propertyId, setPropertyId] = useState(new URLSearchParams(useLocation().search).get("propertyId"));
+  const requestedPropertyId = new URLSearchParams(location.search).get("propertyId");
+  const [propertyId, setPropertyId] = useState(requestedPropertyId);
+  const initialPropertyId = useRef(requestedPropertyId);
+  const verifiedPropertyId = useRef(sessionStorage.getItem("WS_OTP_VERIFIED_PROPERTY_ID"));
 
   const [sessionFormData, setSessionFormData, clearSessionFormData] = Digit.Hooks.useSessionStorage("PT_CREATE_EMP_WS_NEW_FORM", {});
 
   const { data: propertyDetails } = Digit.Hooks.pt.usePropertySearch(
     { filters: { propertyIds: propertyId }, tenantId: tenantId },
-    { filters: { propertyIds: propertyId }, tenantId: tenantId, enabled: propertyId && propertyId !== "" ? true : false }
+    {
+      filters: { propertyIds: propertyId },
+      tenantId: tenantId,
+      enabled:
+        propertyId &&
+        propertyId === requestedPropertyId &&
+        propertyId === verifiedPropertyId.current,
+    }
   );
+
+  useEffect(() => {
+    if (requestedPropertyId !== initialPropertyId.current || (requestedPropertyId && requestedPropertyId !== verifiedPropertyId.current)) {
+      clearSessionFormData();
+      sessionStorage.removeItem("WS_OTP_VERIFIED_PROPERTY_ID");
+      history.replace("/digit-ui/employee/ws/info");
+    }
+  }, [clearSessionFormData, history, requestedPropertyId]);
 
   // FIX 2: Clear stale FORMSTATE_ERRORS from sessionStorage on component mount
   useEffect(() => {
@@ -73,6 +92,7 @@ const OLDApplication = () => {
           "WSPropertyLocationDetails",
           "PropertyWaterConnection",
           "WSDjbEmployee",
+          "WSDivyangjan",
           "WSActivationPlumberDetails",
           "WSRoadCuttingDetails",
           "WSBankDetails",
@@ -163,6 +183,21 @@ const OLDApplication = () => {
                   key: "djbEmployee",
                   component: "WSDjbEmployee",
                   withoutLabel: true,
+                },
+              ],
+            });
+          } else if (compName === "WSDivyangjan") {
+            reorderedBody.push({
+              isCreateConnection: true,
+              body: [
+                {
+                  type: "component",
+                  key: "disability",
+                  component: "WSDivyangjan",
+                  withoutLabel: true,
+                  texts: {
+                    header: "Divyangjan/Person with Disability?",
+                  },
                 },
               ],
             });
@@ -444,6 +479,7 @@ const OLDApplication = () => {
                       onSuccess: async (sewerageUpdateData) => {
                         // setAppDetails((prev) => ({ ...prev, sewerageConnection: sewerageUpdateData?.SewerageConnections?.[0] }));
                         clearSessionFormData();
+                        sessionStorage.removeItem("WS_OTP_VERIFIED_PROPERTY_ID");
                         history.push(
                           `${basePath}/ws-response?applicationNumber=${waterUpdateData?.WaterConnection?.[0]?.applicationNo}&applicationNumber1=${sewerageUpdateData?.SewerageConnections?.[0]?.applicationNo}`
                         );
@@ -486,6 +522,7 @@ const OLDApplication = () => {
               onSuccess: (data) => {
                 // setAppDetails((prev) => ({ ...prev, waterConnection: data?.WaterConnection?.[0] }));
                 clearSessionFormData();
+                sessionStorage.removeItem("WS_OTP_VERIFIED_PROPERTY_ID");
                 history.push(`${basePath}/ws-response?applicationNumber=${data?.WaterConnection?.[0]?.applicationNo}`);
               },
             });
@@ -522,6 +559,7 @@ const OLDApplication = () => {
               onSuccess: (data) => {
                 // setAppDetails((prev) => ({ ...prev, sewerageConnection: data?.SewerageConnections?.[0] }));
                 clearSessionFormData();
+                sessionStorage.removeItem("WS_OTP_VERIFIED_PROPERTY_ID");
                 history.push(`${basePath}/ws-response?applicationNumber1=${data?.SewerageConnections?.[0]?.applicationNo}`);
               },
             });

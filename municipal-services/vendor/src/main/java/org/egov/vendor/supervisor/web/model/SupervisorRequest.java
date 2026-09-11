@@ -1,6 +1,7 @@
 package org.egov.vendor.supervisor.web.model;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Size;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.vendor.service.RequestType;
@@ -23,6 +24,15 @@ public class SupervisorRequest implements RequestType {
     @Valid
     @JsonProperty("supervisor")
     private Supervisor supervisor;
+
+
+    @JsonProperty("oldSupervisorId")
+    @Size(max = 256)
+    private String oldSupervisorId;
+
+    @JsonProperty("replacementSupervisorId")
+    @Size(max = 256)
+    private String replacementSupervisorId;
 
     @Override
     public RequestInfo getRequestInfo() {
