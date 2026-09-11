@@ -76,16 +76,30 @@ const SupervisorDetails = (props) => {
     });
   }, [supervisorSearchResponse, vendorData]);
 
+  const nextStatus =
+    supervisorData?.[0]?.supervisorData?.status === "DISABLED"
+      ? {
+          status: "ES_VENDOR_ACTION_ENABLE",
+          action: "ACTIVE",
+          toastMessage: "ES_FSM_REGISTRY_SUPERVISOR_ENABLE_SUCCESS",
+          popupButton: "ENABLE",
+          popupHeader: "ES_VENDOR_SUPERVISOR_ENABLE_POPUP_HEADER",
+          popupMessage:"ES_VENDOR_SUPERVISOR_ENABLE_POPUP_MESSAGE",
+        }
+      : {
+          status: "ES_VENDOR_ACTION_DISABLE",
+          action: "DISABLED",
+          toastMessage: "ES_FSM_REGISTRY_SUPERVISOR_DISABLE_SUCCESS",
+          popupButton: "DISABLE",
+          popupHeader: "ES_VENDOR_SUPERVISOR_DISABLE_POPUP_HEADER",
+          popupMessage:"ES_VENDOR_SUPERVISOR_DISABLE_POPUP_MESSAGE",
+        };
+
   const { mutate: mutateSupervisor } = Digit.Hooks.fsm.useSupervisorUpdate(tenantId);
 
   useEffect(() => {
     refetch();
-    if (location.state?.showSuccessToast) {
-      setShowToast({
-        key: "success",
-        action: "UPDATE_SUPERVISOR",
-      });
-    }
+    if (location.state?.showSuccessToast) setShowToast(location.state?.message)
   }, []);
 
   useEffect(() => {
@@ -94,7 +108,7 @@ const SupervisorDetails = (props) => {
         return history.push(`/digit-ui/${userType}/vendor/registry/modify-supervisor/${supervisorId}`);
       case "HOME":
         return history.push(`/digit-ui/${userType}/vendor/search-vendor?selectedTabs=SUPERVISOR`);
-      case "DELETE":
+      case nextStatus.status:
         return setShowModal(true);
       default:
         break;
@@ -117,11 +131,11 @@ const SupervisorDetails = (props) => {
   );
 
   const handleDeleteSupervisor = () => {
-    let details = supervisorData?.[0]?.supervisorData;
+    const details = supervisorData?.[0]?.supervisorData;
     const formData = {
       supervisor: {
         ...details,
-        status: "INACTIVE",
+        status: nextStatus.action,
       },
     };
 
@@ -135,7 +149,7 @@ const SupervisorDetails = (props) => {
           pathname: `/digit-ui/${userType}/vendor/search-vendor`,
           state: {
             showSuccessToast: true,
-            message: { key: "success", action: t("ES_VENDOR_DELETE_SUPERVISOR_SUCCESS") },
+            message: { key: "success", action: t(nextStatus.toastMessage) },
           },
         });
       },
@@ -321,15 +335,15 @@ const SupervisorDetails = (props) => {
       </div>
       {showModal && (
         <Modal
-          headerBarMain={<Heading label={t("ES_VENDOR_SUPERVISOR_DELETE_POPUP_HEADER")} />}
+          headerBarMain={<Heading label={t(nextStatus.popupHeader)} />}
           headerBarEnd={<CloseSvg onClick={closeModal} />}
           actionCancelLabel={t("CS_COMMON_CANCEL")}
           actionCancelOnSubmit={closeModal}
-          actionSaveLabel={t("ES_EVENT_DELETE")}
+          actionSaveLabel={t(nextStatus.status)}
           actionSaveOnSubmit={handleDeleteSupervisor}
         >
           <Card style={{ boxShadow: "none" }}>
-            <ConfirmationBox t={t} title={"ES_VENDOR_SUPERVISOR_DELETE_TEXT"} />
+            <ConfirmationBox t={t} title={nextStatus.popupMessage} />
           </Card>
         </Modal>
       )}
@@ -348,8 +362,8 @@ const SupervisorDetails = (props) => {
       <ActionBar style={{ zIndex: "19" }}>
         {displayMenu ? (
           <Menu
-            localeKeyPrefix={"ES_VENDOR_SUPERVISOR_ACTION"}
-            options={["EDIT", "DELETE"]}
+            localeKeyPrefix={"ES_VENDOR_ACTION"}
+            options={["EDIT", nextStatus.popupButton]}
             t={t}
             onSelect={(a) => {
               setDisplayMenu(false);
