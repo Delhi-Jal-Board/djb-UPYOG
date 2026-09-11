@@ -44,4 +44,7 @@ public class DueVerification {
     @JsonProperty("remarks")
     private String remarks;
 
+    @JsonProperty("applicationNo")
+    private String applicationNo;
+
 }

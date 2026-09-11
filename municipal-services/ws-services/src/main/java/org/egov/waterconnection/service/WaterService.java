@@ -17,6 +17,5 @@ public interface WaterService {
 
 	WaterConnectionResponse plainSearch(SearchCriteria criteria, RequestInfo requestInfo);
 
-	DueVerification fetchDueVerification(DueVerificationRequest dueVerificationRequest);
-
+	List<DueVerification> fetchDueVerification(DueVerificationRequest dueVerificationRequest);
 }
