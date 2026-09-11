@@ -206,7 +206,7 @@ const Inbox = ({ parentRoute }) => {
         icon: <FaUsers />,
       },
       {
-        label: t("EKYC_COMPLETED"),
+        label: t("EKYC_SUBMITTED_TITLE"),
         count: progressMetrics?.submittedKnos || 0,
         color: "#10B981",
         type: "month",

@@ -9,8 +9,6 @@ import {
   Menu,
   Toast,
   Modal,
-  CardText,
-  Dropdown,
   AddIcon,
   CloseSvg,
 } from "@djb25/digit-ui-react-components";
@@ -44,8 +42,6 @@ const SurveyorDetails = (props) => {
   const [selectedAction, setSelectedAction] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [showToast, setShowToast] = useState(null);
-  const [vendors, setVendors] = useState([]);
-  const [selectedOption, setSelectedOption] = useState({});
   const { data: vendorData } = Digit.Hooks.fsm.useDsoSearch(tenantId, { sortBy: "name", sortOrder: "ASC", status: "ACTIVE" }, {});
   const { data: surveyorSearchResponse, isLoading, refetch } = Digit.Hooks.fsm.useSurveyorSearch(
     tenantId,
@@ -86,34 +82,38 @@ const SurveyorDetails = (props) => {
     });
   }, [surveyorSearchResponse, vendorData]);
 
+  const nextStatus =
+    surveyorData?.[0]?.surveyorData?.status === "DISABLED"
+      ? {
+          status: "ES_VENDOR_ACTION_ENABLE",
+          action: "ACTIVE",
+          toastMessage: "ES_FSM_REGISTRY_SUPERVISOR_ENABLE_SUCCESS",
+          popupButton: "ENABLE",
+          popupHeader: "ES_VENDOR_SURVEYOR_ENABLE_POPUP_HEADER",
+          popupMessage:"ES_VENDOR_SURVEYOR_ENABLE_POPUP_MESSAGE",
+        }
+      : {
+          status: "ES_VENDOR_ACTION_DISABLE",
+          action: "DISABLED",
+          toastMessage: "ES_FSM_REGISTRY_SUPERVISOR_DISABLE_SUCCESS",
+          popupButton: "DISABLE",
+          popupHeader: "ES_VENDOR_SURVEYOR_DISABLE_POPUP_HEADER",
+          popupMessage:"ES_VENDOR_SURVEYOR_DISABLE_POPUP_MESSAGE",
+        };
+
   const { mutate: mutateSurveyor } = Digit.Hooks.fsm.useSurveyorUpdate(tenantId);
 
   useEffect(() => {
-    if (vendorData) {
-      let vendors = vendorData.map((data) => data.dsoDetails);
-      setVendors(vendors);
-    }
-  }, [vendorData]);
-
-  useEffect(() => {
     refetch();
-    if (location.state?.showSuccessToast) {
-      setShowToast(location.state?.message);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (location.state?.showSuccessToast) setShowToast(location.state?.message)
   }, []);
 
   useEffect(() => {
     switch (selectedAction) {
-      case "DELETE":
-      case "ADD_VENDOR":
-      case "EDIT_VENDOR":
-      case "DELETE_VENDOR":
+      case nextStatus.status:
         return setShowModal(true);
       case "EDIT":
         return history.push(`/digit-ui/${userType}/vendor/registry/modify-surveyor/${surveyorId}`);
-      case "HOME":
-        return history.push(`/digit-ui/${userType}/vendor/search-vendor?selectedTabs=SURVEYOR`);
       default:
         break;
     }
@@ -124,21 +124,12 @@ const SurveyorDetails = (props) => {
     setShowToast(null);
   };
 
-  const handleModalAction = () => {
-    switch (selectedAction) {
-      case "DELETE":
-        return handleDeleteSurveyor();
-      default:
-        break;
-    }
-  };
-
   const handleDeleteSurveyor = () => {
     let details = surveyorData?.[0]?.surveyorData;
     const formData = {
       surveyor: {
         ...details,
-        status: "INACTIVE",
+        status: "DISABLED",
       },
     };
 
@@ -162,41 +153,14 @@ const SurveyorDetails = (props) => {
 
   const closeModal = () => {
     setSelectedAction(null);
-    setSelectedOption({});
     setShowModal(false);
-  };
-
-  const modalHeading = () => {
-    switch (selectedAction) {
-      case "DELETE":
-      case "DELETE_VENDOR":
-        return "ES_VENDOR_SURVEYOR_DELETE_POPUP_HEADER";
-      case "ADD_VENDOR":
-      case "EDIT_VENDOR":
-        return "ES_VENDOR_SURVEYOR_ADD_VENDOR_POPUP_HEADER";
-      default:
-        break;
-    }
-  };
-
-  const renderModalContent = () => {
-    if (selectedAction === "DELETE" || selectedAction === "DELETE_VENDOR") {
-      return <ConfirmationBox t={t} title={"ES_VENDOR_SURVEYOR_DELETE_TEXT"} />;
-    }
-    if (selectedAction === "ADD_VENDOR" || selectedAction === "EDIT_VENDOR") {
-      return (
-        <React.Fragment>
-          <CardText>{t(`ES_FSM_REGISTRY_SELECT_VENODOR`)}</CardText>
-          <Dropdown t={t} option={vendors} value={selectedOption} selected={selectedOption} select={setSelectedOption} optionKey={"name"} />
-        </React.Fragment>
-      );
-    }
   };
 
   if (isLoading) {
     return <Loader />;
   }
 
+  console.log(nextStatus.status)
   return (
     <React.Fragment>
       <div className="employee-form-content">
@@ -256,14 +220,14 @@ const SurveyorDetails = (props) => {
       </div>
       {showModal && (
         <Modal
-          headerBarMain={<Heading label={t(modalHeading())} />}
+          headerBarMain={<Heading label={t(nextStatus.popupHeader)} />}
           headerBarEnd={<CloseBtn onClick={closeModal} />}
           actionCancelLabel={t("CS_COMMON_CANCEL")}
           actionCancelOnSubmit={closeModal}
-          actionSaveLabel={t(selectedAction === "DELETE" || selectedAction === "DELETE_VENDOR" ? "ES_EVENT_DELETE" : "CS_COMMON_SUBMIT")}
-          actionSaveOnSubmit={handleModalAction}
+          actionSaveLabel={t(nextStatus.status)}
+          actionSaveOnSubmit={handleDeleteSurveyor}
         >
-          <Card style={{ boxShadow: "none" }}>{renderModalContent()}</Card>
+            <ConfirmationBox t={t} title={nextStatus.popupMessage} />
         </Modal>
       )}
       {showToast && (
@@ -280,8 +244,8 @@ const SurveyorDetails = (props) => {
       <ActionBar style={{ zIndex: "19" }}>
         {displayMenu ? (
           <Menu
-            localeKeyPrefix={"ES_VENDOR_SURVEYOR_ACTION"}
-            options={["EDIT", "DELETE"]}
+            localeKeyPrefix={"ES_VENDOR_ACTION"}
+            options={["EDIT", nextStatus.popupButton]}
             t={t}
             onSelect={(a) => {
               setDisplayMenu(false);

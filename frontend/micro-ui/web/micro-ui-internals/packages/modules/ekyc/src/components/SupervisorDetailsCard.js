@@ -250,7 +250,7 @@ const SupervisorDetailsCard = () => {
         icon: <FaUsers />,
       },
       {
-        label: "EKYC_COMPLETED",
+        label: "EKYC_SUBMITTED_TITLE",
         count: supervisor?.submittedKnos || 0,
         color: "#10B981",
         type: "month",
@@ -322,7 +322,7 @@ const SupervisorDetailsCard = () => {
         id: "totalEkycApplications",
       },
       {
-        Header: t("EKYC_COMPLETED") || "eKYC Completed",
+        Header: t("EKYC_SUBMITTED") || "eKYC Completed",
         accessor: (row) => row?.submittedKnos || 0,
         id: "ekycCompleted",
       },

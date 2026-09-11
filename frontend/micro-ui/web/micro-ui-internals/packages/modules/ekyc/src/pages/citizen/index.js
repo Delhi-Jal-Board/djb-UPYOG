@@ -171,15 +171,7 @@ const CitizenApp = () => {
           <PrivateRoute
             path={`${path}/surveyor-dashboard/:id`}
             component={() => (
-              <LayoutWrapper layoutClass="normal">
-                <SurveyorDetailsCard />
-              </LayoutWrapper>
-            )}
-          />
-          <PrivateRoute
-            path={`${path}/surveyor-dashboard`}
-            component={() => (
-              <LayoutWrapper layoutClass="normal">
+              <LayoutWrapper layoutClass="action">
                 <SurveyorDetailsCard />
               </LayoutWrapper>
             )}
