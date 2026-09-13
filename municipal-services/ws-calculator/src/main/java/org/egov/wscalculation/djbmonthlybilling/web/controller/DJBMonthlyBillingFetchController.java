@@ -4,7 +4,8 @@ import javax.validation.Valid;
 
 import org.egov.wscalculation.djbmonthlybilling.service.DJBMonthlyBillingFetchService;
 import org.egov.wscalculation.djbmonthlybilling.web.model.DJBMonthlyBillingFetchRequest;
-import org.egov.wscalculation.djbmonthlybilling.web.model.DJBMonthlyBillingFetchResponse;
+import org.egov.wscalculation.djbmonthlybilling.web.model.DJBMonthlyBillingStatementResponse;
+import org.egov.wscalculation.util.ResponseInfoFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,24 +14,32 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/djb/monthly-billing")
+@RequestMapping("/monthly-billing")
 public class DJBMonthlyBillingFetchController {
 
 	private final DJBMonthlyBillingFetchService fetchService;
+	private final ResponseInfoFactory responseInfoFactory;
 
-	public DJBMonthlyBillingFetchController(DJBMonthlyBillingFetchService fetchService) {
+	public DJBMonthlyBillingFetchController(DJBMonthlyBillingFetchService fetchService,
+			ResponseInfoFactory responseInfoFactory) {
 		this.fetchService = fetchService;
+		this.responseInfoFactory = responseInfoFactory;
 	}
 
 	/**
-	 * Read-only endpoint. It does not create meter readings, billing cycles,
-	 * demands or bills. It loads the persisted DJB billing cycle and reconstructs
-	 * the tariff/sewerage/rebate breakdown for inspection, then performs a bill
-	 * search against billing-service.
+	 * Read-only production billing-statement endpoint. The calculation section is
+	 * loaded from the immutable persisted calculation snapshot used to generate the
+	 * demand/bill; the billing-service is queried only to enrich and reconcile the
+	 * final bill details.
 	 */
-	@PostMapping("/_fetch")
-	public ResponseEntity<DJBMonthlyBillingFetchResponse> fetch(@Valid @RequestBody DJBMonthlyBillingFetchRequest request) {
+	@PostMapping("/_search")
+	public ResponseEntity<DJBMonthlyBillingStatementResponse> fetch(
+			@Valid @RequestBody DJBMonthlyBillingFetchRequest request) {
 
-		return new ResponseEntity<>(fetchService.fetch(request), HttpStatus.OK);
+		DJBMonthlyBillingStatementResponse serviceResponse = fetchService.fetch(request);
+		serviceResponse
+				.setResponseInfo(responseInfoFactory.createResponseInfoFromRequestInfo(request.getRequestInfo(), true));
+
+		return new ResponseEntity<>(serviceResponse, HttpStatus.OK);
 	}
 }

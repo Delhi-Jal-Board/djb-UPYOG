@@ -70,6 +70,7 @@ public class DJBMonthlyDemandService {
 	private final ResidualCreditService residualCreditService;
 	private final ZroVerificationDao zroVerificationDao;
 	private final WaterBillingCycleDao billingCycleDao;
+	private final DJBMonthlyBillingCalculationSnapshotService calculationSnapshotService;
 
 	public DJBMonthlyDemandService(DJBMonthlyBillingMasterProvider masterProvider,
 			TariffCalculationService tariffCalculationService, ConsumptionService consumptionService, SewerageCalculationService sewerageCalculationService,
@@ -77,7 +78,8 @@ public class DJBMonthlyDemandService {
 			CalculatorUtil calculatorUtil, WSCalculationUtil wsCalculationUtil, WSCalculationConfiguration config,
 			ServiceRequestRepository serviceRequestRepository, ObjectMapper objectMapper,
 			WSCalculationProducer wsCalculationProducer, ResidualCreditService residualCreditService,
-			ZroVerificationDao zroVerificationDao, WaterBillingCycleDao billingCycleDao) {
+			ZroVerificationDao zroVerificationDao, WaterBillingCycleDao billingCycleDao,
+			DJBMonthlyBillingCalculationSnapshotService calculationSnapshotService) {
 
 		this.masterProvider = masterProvider;
 		this.tariffCalculationService = tariffCalculationService;
@@ -94,6 +96,7 @@ public class DJBMonthlyDemandService {
 		this.residualCreditService = residualCreditService;
 		this.zroVerificationDao = zroVerificationDao;
 		this.billingCycleDao = billingCycleDao;
+		this.calculationSnapshotService = calculationSnapshotService;
 	}
 
 	/**
@@ -148,6 +151,7 @@ public class DJBMonthlyDemandService {
 				WaterConnectionRequest.builder().requestInfo(requestInfo).waterConnection(connection).build());
 
 		String category = resolveTariffCategory(connection, property);
+		DJBMonthlyBillingRule billingRule = masterProvider.getBillingRule(requestInfo, tenantId);
 
 		/*
 		 * DJB 1.5x/ZRO is applicable only for domestic connections. Use the same
@@ -175,6 +179,10 @@ public class DJBMonthlyDemandService {
 				cycle.setLastmodifiedtime(System.currentTimeMillis());
 
 				createPendingZroVerification(cycle, actorForDemand(requestInfo));
+
+				String calculationId = calculationSnapshotService.persistPendingZro(
+						requestInfo, cycle, connection, property, billingRule);
+				cycle.setCalculationid(calculationId);
 
 				if (billingCycleDao.update(cycle) != 1) {
 					throw new IllegalStateException(
@@ -212,7 +220,8 @@ public class DJBMonthlyDemandService {
 
 		RebateCalculationContext rebateContext = RebateCalculationContext.builder().consumption(consumption)
 				.billingBasis(cycle.getBillingbasis()).readingQualityCode(cycle.getReadingqualitycode())
-				.consumerType(category).propertyCategory(category).connectionType(category).bulkConnection(false)
+				.consumerType(resolveConsumerType(category)).propertyCategory(resolvePropertyCategory(category))
+				.connectionType(category).bulkConnection(false)
 				.propertyAreaSqm(property.getSuperBuiltUpArea()).functionalRwh(false)
 				.functionalWastewaterRecycling(false).totalBillBeforeRebate(grossAmount)
 				.freeWaterEligibleAmount(water.getTotalWaterCharge()).build();
@@ -257,6 +266,24 @@ public class DJBMonthlyDemandService {
 
 		BigDecimal netAmount = baseNetAmount.subtract(appliedPaidAdjustment).subtract(carryForwardCreditApplied)
 				.setScale(MONEY_SCALE, RoundingMode.HALF_UP);
+
+		try {
+			String calculationId = calculationSnapshotService.persist(requestInfo, cycle, connection, property,
+					water, sewerage, rebate, billingRule, appliedPaidAdjustment, residualPaidCredit, carryForwardCreditApplied,
+					creditReservation.getAllocationIds(), netAmount);
+			cycle.setCalculationid(calculationId);
+			cycle.setLastmodifiedby(actorForDemand(requestInfo));
+			cycle.setLastmodifiedtime(System.currentTimeMillis());
+			if (billingCycleDao.update(cycle) != 1) {
+				throw new IllegalStateException("Failed to persist DJB calculation snapshot reference for " + cycle.getId());
+			}
+		} catch (RuntimeException ex) {
+			if (creditReservation.isNewReservation()) {
+				residualCreditService.releaseReservations(tenantId, cycle.getId(), actorForDemand(requestInfo),
+						System.currentTimeMillis());
+			}
+			throw ex;
+		}
 
 		List<DemandDetail> demandDetails = new java.util.ArrayList<>();
 
@@ -336,6 +363,7 @@ public class DJBMonthlyDemandService {
 		try {
 			response = demandRepository.saveDemand(requestInfo, Collections.singletonList(demand), notification);
 		} catch (RuntimeException ex) {
+			safeUpdateSnapshotStatus(tenantId, cycle.getCalculationid(), "DEMAND_FAILED");
 			if (creditReservation.isNewReservation()) {
 				residualCreditService.releaseReservations(tenantId, cycle.getId(), actorForDemand(requestInfo),
 						System.currentTimeMillis());
@@ -350,6 +378,17 @@ public class DJBMonthlyDemandService {
 
 		Demand created = response.get(0);
 
+		/* Persist the demand reference before bill generation so a bill failure can be retried safely. */
+		cycle.setDemandid(created.getId());
+		cycle.setStatus(BillingCycleStatus.DEMAND_CREATED);
+		cycle.setLastmodifiedby(actorForDemand(requestInfo));
+		cycle.setLastmodifiedtime(System.currentTimeMillis());
+		if (billingCycleDao.update(cycle) != 1) {
+			safeUpdateSnapshotStatus(tenantId, cycle.getCalculationid(), "DEMAND_PERSIST_FAILED");
+			throw new IllegalStateException("Failed to persist DJB demand reference for billing cycle " + cycle.getId());
+		}
+		safeUpdateSnapshotStatus(tenantId, cycle.getCalculationid(), "DEMAND_CREATED");
+
 		if (creditReservation.isNewReservation()) {
 			residualCreditService.confirmReservations(tenantId, cycle.getId(), created.getId(),
 					actorForDemand(requestInfo), System.currentTimeMillis());
@@ -363,10 +402,28 @@ public class DJBMonthlyDemandService {
 		 */
 		String billId = null;
 		if (!CorrectionStatus.PENDING.equals(cycle.getCorrectionstatus())) {
-			billId = fetchAndGetBillId(requestInfo, created);
-			residualCreditService.attachBillId(tenantId, cycle.getId(), billId, actorForDemand(requestInfo),
-					System.currentTimeMillis());
+			try {
+				billId = fetchAndGetBillId(requestInfo, created);
+				residualCreditService.attachBillId(tenantId, cycle.getId(), billId, actorForDemand(requestInfo),
+						System.currentTimeMillis());
+			} catch (RuntimeException ex) {
+				safeUpdateSnapshotStatus(tenantId, cycle.getCalculationid(), "BILL_FAILED");
+				throw ex;
+			}
 		}
+
+		cycle.setDemandid(created.getId());
+		cycle.setBillid(billId);
+		cycle.setStatus(StringUtils.hasText(billId) ? BillingCycleStatus.BILL_GENERATED : BillingCycleStatus.DEMAND_CREATED);
+		cycle.setLastmodifiedby(actorForDemand(requestInfo));
+		cycle.setLastmodifiedtime(System.currentTimeMillis());
+		if (billingCycleDao.update(cycle) != 1) {
+			safeUpdateSnapshotStatus(tenantId, cycle.getCalculationid(), "BILL_FAILED");
+			throw new IllegalStateException("Failed to persist DJB billing cycle final state for " + cycle.getId());
+		}
+
+		safeUpdateSnapshotStatus(tenantId, cycle.getCalculationid(),
+				StringUtils.hasText(billId) ? "BILL_GENERATED" : "DEMAND_CREATED");
 
 		return DemandResult.builder().demandCreated(true).zroRequired(false).demand(created).billId(billId)
 				.grossAmount(grossAmount).rebateAmount(rebate.getTotalRebate()).netAmount(netAmount)
@@ -645,6 +702,14 @@ public class DJBMonthlyDemandService {
 		throw new IllegalStateException("No owner/payer found for water connection " + connection.getConnectionNo());
 	}
 
+	private String resolveConsumerType(String category) {
+		return "DOMESTIC".equalsIgnoreCase(category) ? "INDIVIDUAL_RESIDENCE" : "COMMERCIAL";
+	}
+
+	private String resolvePropertyCategory(String category) {
+		return "DOMESTIC".equalsIgnoreCase(category) ? "CAT_I" : "CAT_II";
+	}
+
 	private String resolveTariffCategory(WaterConnection connection, Property property) {
 
 		String candidate = connection.getConnectionCategory();
@@ -750,6 +815,15 @@ public class DJBMonthlyDemandService {
 		verification.setLastmodifiedby(actor);
 		verification.setLastmodifiedtime(now);
 		zroVerificationDao.save(verification);
+	}
+
+	private void safeUpdateSnapshotStatus(String tenantId, String calculationId, String status) {
+		try {
+			calculationSnapshotService.updateStatus(tenantId, calculationId, status);
+		} catch (RuntimeException ignored) {
+			// Calculation snapshot status is audit metadata. A status-update failure must
+			// not roll back or mask an already successful demand/bill generation.
+		}
 	}
 
 	private String actorForDemand(RequestInfo requestInfo) {
