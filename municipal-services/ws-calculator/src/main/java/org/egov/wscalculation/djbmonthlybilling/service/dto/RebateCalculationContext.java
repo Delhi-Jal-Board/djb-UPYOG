@@ -4,47 +4,57 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 
+import org.egov.wscalculation.djbmonthlybilling.model.enums.BillingBasis;
+
 import lombok.Builder;
 import lombok.Data;
-import org.egov.wscalculation.djbmonthlybilling.model.enums.BillingBasis;
 
 @Data
 @Builder
 public class RebateCalculationContext {
 
-    private BigDecimal consumption;
+	private BigDecimal consumption;
 
-    private BillingBasis billingBasis;
+	private BillingBasis billingBasis;
 
-    private String readingQualityCode;
+	private String readingQualityCode;
 
-    private String consumerType;
+	private String consumerType;
 
-    private String propertyCategory;
+	private String propertyCategory;
 
-    private String connectionType;
+	private String connectionType;
 
-    private boolean bulkConnection;
+	private boolean bulkConnection;
 
-    private Integer dwellingUnitCount;
+	private Integer dwellingUnitCount;
 
-    private BigDecimal propertyAreaSqm;
+	/**
+	 * True only when the source connection/property data confirms DJB employee
+	 * eligibility.
+	 */
+	private boolean djbEmployeeEligible;
 
-    private boolean functionalRwh;
+	/** Number of eligible domestic connections for the employee rebate. */
+	private Integer eligibleConnectionCount;
 
-    private boolean functionalWastewaterRecycling;
+	private BigDecimal propertyAreaSqm;
 
-    /**
-     * For RWH the DJB document explicitly describes the rebate as a
-     * percentage of the total bill amount.
-     */
-    private BigDecimal totalBillBeforeRebate;
+	private boolean functionalRwh;
 
-    /**
-     * The 20 KL free-water rule is intentionally supplied a base amount
-     * by the caller rather than guessing which tax-heads are free.
-     */
-    private BigDecimal freeWaterEligibleAmount;
+	private boolean functionalWastewaterRecycling;
 
-    private List<String> configuredReadingQualityCodes = Collections.emptyList();
+	/**
+	 * For RWH the DJB document explicitly describes the rebate as a percentage of
+	 * the total bill amount.
+	 */
+	private BigDecimal totalBillBeforeRebate;
+
+	/**
+	 * The 20 KL free-water rule is intentionally supplied a base amount by the
+	 * caller rather than guessing which tax-heads are free.
+	 */
+	private BigDecimal freeWaterEligibleAmount;
+
+	private List<String> configuredReadingQualityCodes = Collections.emptyList();
 }
