@@ -52,6 +52,8 @@ const ActionModal = ({
   applicationData,
   businessService,
   moduleCode,
+  approvalChecklist,
+  showApprovalChecklist,
   cardClassName,
   cardFormWrapperClassName,
   cardFormClassName,
@@ -223,6 +225,15 @@ const ActionModal = ({
           : [],
       },
     };
+    if (showApprovalChecklist) {
+      applicationData.additionalDetails = {
+        ...applicationData?.additionalDetails,
+        waterPipelineFacility: approvalChecklist?.waterPipelineFacility === true,
+        infrastructureChargesApplicable: approvalChecklist?.infrastructureChargesApplicable === true,
+        rainWaterHarvesting: approvalChecklist?.rainWaterHarvesting === true,
+        bulkConnectionVerification: approvalChecklist?.bulkConnectionVerification === true,
+      };
+    }
     if (data?.date && applicationData?.applicationType?.includes("DISCONNECT")) {
       const disconnectionExecutionDate = cloneDeep(data?.date);
       applicationData.disconnectionExecutionDate = convertDateToEpochNew(disconnectionExecutionDate);
@@ -304,11 +315,23 @@ const ActionModal = ({
             setSelectedReason,
             otherReasonText,
             setOtherReasonText,
+            applicationData,
           })
         );
       }
     }
-  }, [action, approvers, uploadedFile, error, isReasonRequiredAction, selectedReason, otherReasonText]);
+  }, [
+    action,
+    approvers,
+    uploadedFile,
+    error,
+    isReasonRequiredAction,
+    selectedReason,
+    otherReasonText,
+    showApprovalChecklist,
+    approvalChecklist,
+    applicationData,
+  ]);
 
   return action && config.form ? (
     <Modal

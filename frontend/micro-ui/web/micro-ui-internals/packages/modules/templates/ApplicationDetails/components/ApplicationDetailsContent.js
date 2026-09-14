@@ -39,6 +39,8 @@ import ViewBreakup from "./ViewBreakup";
 import ArrearSummary from "../../../common/src/payments/citizen/bills/routes/bill-details/arrear-summary";
 import RenewPopup from "../../../asset/src/components/RenewPopup";
 import DueVerification from "./DueVerification";
+import InspectionInformation from "./InspectionInformation";
+import WSApprovalChecklist from "./WSApprovalChecklist";
 
 function ApplicationDetailsContent({
   applicationDetails,
@@ -53,6 +55,9 @@ function ApplicationDetailsContent({
   paymentsList,
   oldValue,
   isInfoLabel = false,
+  approvalChecklist,
+  onApprovalChecklistChange,
+  showApprovalChecklist = false,
 }) {
   const { t } = useTranslation();
   var base_url = window.location.origin;
@@ -277,6 +282,8 @@ function ApplicationDetailsContent({
     // setSelectedData(data);
     setShowPopup(true);
   };
+
+  const documentsDetailIndex = applicationDetails?.applicationDetails?.findIndex((detail) => detail?.additionalDetails?.documents);
 
   return (
     <Card style={{ position: "relative" }} className={"employeeCard-override"}>
@@ -533,8 +540,17 @@ function ApplicationDetailsContent({
             <SubOccupancyTable edcrDetails={detail?.additionalDetails} applicationData={applicationDetails?.applicationData} />
           )}
           {detail?.additionalDetails?.documentsWithUrl && <DocumentsPreview documents={detail?.additionalDetails?.documentsWithUrl} />}
-          {detail?.additionalDetails?.documents && (
-            <PropertyDocuments documents={detail?.additionalDetails?.documents} applicationStatus={applicationData?.applicationStatus} />
+          {detail?.additionalDetails?.documents && index === documentsDetailIndex && (
+            <PropertyDocuments
+              documents={detail?.additionalDetails?.documents}
+              applicationStatus={
+                workflowDetails?.data?.actionState?.state ||
+                workflowDetails?.data?.processInstances?.[0]?.state?.state ||
+                workflowDetails?.data?.ProcessInstances?.[0]?.state?.state ||
+                applicationData?.applicationStatus ||
+                applicationData?.status
+              }
+            />
           )}
           {detail?.additionalDetails?.documents &&
             !applicationData?.applicationType?.includes("MUTATION") &&
@@ -567,6 +583,14 @@ function ApplicationDetailsContent({
           {detail?.additionalDetails?.estimationDetails && <ViewBreakup wsAdditionalDetails={detail} workflowDetails={workflowDetails} />}
         </React.Fragment>
       ))}
+      {showApprovalChecklist && (
+        <WSApprovalChecklist
+          applicationData={applicationData}
+          showApprovalChecklist={showApprovalChecklist}
+          values={approvalChecklist}
+          onChange={onApprovalChecklistChange}
+        />
+      )}
       {showTimeLine && workflowDetails?.data?.timeline?.length > 0 && (
         <React.Fragment>
           <BreakLine />
