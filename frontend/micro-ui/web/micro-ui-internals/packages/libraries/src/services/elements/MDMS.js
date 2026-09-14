@@ -748,7 +748,19 @@ const getMeterStatusTypeList = (tenantId) => ({
       ],
     },
   ],
+});
 
+const getDJBReadingQualityCode = (tenantId) => ({
+  moduleDetails: [
+    {
+      moduleName: "ws-services-calculation",
+      masterDetails: [
+        {
+          name: "DJBReadingQualityCode",
+        },
+      ],
+    },
+  ],
 });
 
 const getBillingPeriodValidation = (tenantId) => ({
@@ -758,7 +770,7 @@ const getBillingPeriodValidation = (tenantId) => ({
       masterDetails: [
         {
           name: "billingPeriod",
-          filter: "*"
+          filter: "*",
         },
       ],
     },
@@ -2484,6 +2496,10 @@ export const MdmsService = {
 
   getMeterStatusType: (tenantId) => {
     return MdmsService.call(tenantId, getMeterStatusTypeList(tenantId));
+  },
+
+  getDJBReadingQualityCodeType: (tenantId) => {
+    return MdmsService.call(tenantId, getDJBReadingQualityCode(tenantId));
   },
 
   getBillingPeriod: (tenantId) => {

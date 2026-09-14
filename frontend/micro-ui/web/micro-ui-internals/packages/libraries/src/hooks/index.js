@@ -251,6 +251,7 @@ import useWSInbox from "./ws/useInbox";
 import useTenantsBills from "./bills/useTenants";
 import useMeterReadingCreateAPI from "./ws/useMeterConnectionCreateAPI";
 import useGetMeterStatusList from "./ws/useGetMeterStatusList";
+import useDjbReadingQualityCodeList from "./ws/useDjbReadingQualityCode";
 import useGetBillingPeriodValidation from "./ws/useBillingPeriodValidation";
 import useReportMeta from "./reports/useReport";
 import useWaterPropertySearch from "./ws/useWaterPropertySearch";
@@ -710,6 +711,7 @@ const ws = {
   useOldValue,
   useMeterReadingCreateAPI,
   useGetMeterStatusList,
+  useDjbReadingQualityCodeList,
   useGetBillingPeriodValidation,
   useWaterPropertySearch,
   useDisconnectionWorkflow,

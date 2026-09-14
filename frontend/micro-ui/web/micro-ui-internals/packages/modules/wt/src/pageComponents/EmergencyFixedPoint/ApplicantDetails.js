@@ -297,7 +297,7 @@ const EmergencyFixedPointApplicantDetails = ({ t, config, onSelect, formData }) 
                 ? !gender
                 : null
         }
-        className={"search-form-wrapper"}
+        // className={"search-form-wrapper"}
       >
         <React.Fragment>
           <div className="form-field wns-search-field">

@@ -36,6 +36,7 @@ const ConsumptionDetails = ({ view }) => {
   const [isEnableLoader, setIsEnableLoader] = useState(false);
   const [currentMeterReading, setCurrentReading] = useState("");
   const [selectedConsumtion, setConsumption] = useState("");
+  const [selectReadingQualityCode, setSelectReadingQualityCode] = useState("");
   const [currentBillingPeriod, setBillingPeriod] = useState("");
   const [isAddMeterReadingButtonEnable, setisAddMeterReadingButtonEnable] = useState(false);
   const userInfo = Digit.UserService.getUser();
@@ -46,6 +47,7 @@ const ConsumptionDetails = ({ view }) => {
 
   const { isLoading: meterStatusLoading, data: mdmsMeterStatus } = Digit.Hooks.ws.useGetMeterStatusList(tenantId);
   const { isLoading: billingPeriodLoading, data: mdmsBillingPeriod } = Digit.Hooks.ws.useGetBillingPeriodValidation(tenantId);
+  const { isLoading: readingQualityLoading, data: DJBReadingQualityCode } = Digit.Hooks.ws.useDjbReadingQualityCodeList(tenantId);
 
   let connectionFilters = {
     connectionNumber: applicationNo,
@@ -148,6 +150,7 @@ const ConsumptionDetails = ({ view }) => {
       lastReading: meterDetails?.currentReading,
       lastReadingDate: meterDetails?.currentReadingDate,
       meterStatus: selectMeterStatus?.code,
+      readingQualityCode: selectReadingQualityCode?.code,
       tenantId: meterDetails?.tenantId,
     };
     let meterReadingsPayload = { meterReadings: meterReadingsJS };
@@ -177,6 +180,14 @@ const ConsumptionDetails = ({ view }) => {
     code: status,
     i18nKey: `WS_SERVICES_CALCULATION_METERSTATUS_${Digit.Utils.locale.getTransformedLocale(status)}`,
   }));
+
+  const ReadingQualityCodeList = DJBReadingQualityCode?.MdmsRes?.["ws-services-calculation"]?.DJBReadingQualityCode?.map((status) => {
+    const statusCode = typeof status === "object" ? status.code : status;
+    return {
+      code: statusCode,
+      i18nKey: `WS_SERVICES_CALCULATION_DJBREADINGQUALITYCODE_${Digit.Utils.locale.getTransformedLocale(statusCode)}`,
+    };
+  });
 
   const onFormValueChange = (setValue, formData, formState) => {
     if (selectMeterStatus?.code === "Working") {
@@ -300,6 +311,24 @@ const ConsumptionDetails = ({ view }) => {
             },
           },
           {
+            label: `${t("WS_READING_QUALITY_CODE")}`,
+            isMandatory: true,
+            type: "dropdown",
+            populators: (
+              <Dropdown
+                option={ReadingQualityCodeList}
+                autoComplete="off"
+                optionKey="i18nKey"
+                id="readingQualityCode"
+                select={(e) => {
+                  setSelectReadingQualityCode(e);
+                }}
+                selected={selectReadingQualityCode}
+                t={t}
+              />
+            ),
+          },
+          {
             label: t("WS_SERV_DETAIL_CONSUMP"),
             isMandatory: false,
             type: "number",
@@ -379,6 +408,12 @@ const ConsumptionDetails = ({ view }) => {
                       className="border-none"
                     />
                     <Row
+                      key={t("WS_READING_QUALITY_CODE")}
+                      label={`${t("WS_READING_QUALITY_CODE")}`}
+                      text={application?.readingQualityCode || t("NA")}
+                      className="border-none"
+                    />
+                    <Row
                       key={t("WS_CONSUMPTION_DETAILS_LAST_READING_LABEL")}
                       label={`${t("WS_CONSUMPTION_DETAILS_LAST_READING_LABEL")}`}
                       text={application?.lastReading || t("NA")}
@@ -442,7 +477,7 @@ const ConsumptionDetails = ({ view }) => {
             <FormComposer
               config={config.form}
               onFormValueChange={onFormValueChange}
-              cardStyle={{ marginLeft: "0px", marginRight: "0px", marginTop: "-25px" }}
+              cardStyle={{ marginLeft: "0px", marginRight: "0px", marginTop: "0px" }}
               className="BPAemployeeCard"
               noBoxShadow
               inline

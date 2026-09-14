@@ -105,7 +105,7 @@ const EmergencyFixedPointDispatchDetails = ({ t, config, onSelect, formData }) =
         onSelect={goNext}
         t={t}
         isDisabled={!fillingPoint || !vendor || !vehicle || !driver}
-        className={"search-form-wrapper"}
+        // className={"search-form-wrapper"}
       >
         <div className="form-field wns-search-field">
           <CardLabel>{`${t("WT_FILLING_POINT", "Filling Point")}`}</CardLabel>
