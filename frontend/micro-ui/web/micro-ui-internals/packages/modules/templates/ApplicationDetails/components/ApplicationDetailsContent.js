@@ -39,7 +39,6 @@ import ViewBreakup from "./ViewBreakup";
 import ArrearSummary from "../../../common/src/payments/citizen/bills/routes/bill-details/arrear-summary";
 import RenewPopup from "../../../asset/src/components/RenewPopup";
 import DueVerification from "./DueVerification";
-import InspectionInformation from "./InspectionInformation";
 
 function ApplicationDetailsContent({
   applicationDetails,
@@ -189,9 +188,9 @@ function ApplicationDetailsContent({
 
   const getRowStyles = () => {
     if (window.location.href.includes("employee/obps") || window.location.href.includes("employee/noc")) {
-      return { justifyContent: "space-between", fontSize: "16px", lineHeight: "19px", color: "#0B0C0C" };
+      return { justifyContent: "space-between", gap: "24px", fontSize: "16px", lineHeight: "19px", color: "#0B0C0C" };
     } else if (checkLocation) {
-      return { justifyContent: "space-between", fontSize: "16px", lineHeight: "19px", color: "#0B0C0C" };
+      return { justifyContent: "space-between", gap: "24px", fontSize: "16px", lineHeight: "19px", color: "#0B0C0C" };
     } else {
       return {};
     }
@@ -553,20 +552,7 @@ function ApplicationDetailsContent({
               "PENDING_FOR_FINAL_PAYMENT",
               "CONNECTION_ACTIVATED",
               "PENDING_FOR_CONNECTION_ACTIVATION",
-            ].includes(applicationData?.applicationStatus) && <DueVerification applicationData={applicationData} />}{" "}
-          {detail?.additionalDetails?.documents &&
-            !applicationData?.applicationType?.includes("MUTATION") &&
-            !businessService?.includes("MUTATION") &&
-            [
-              "PENDING_FOR_FIELD_INSPECTION",
-              "PENDING_FOR_BILLING_CLERK_REVIEW",
-              "PENDING_FOR_ASO_APPROVAL",
-              "PENDING_FOR_ZRO_APPROVAL",
-              "PENDING_FOR_AE_APPROVAL",
-              "PENDING_FOR_FINAL_PAYMENT",
-              "CONNECTION_ACTIVATED",
-              "PENDING_FOR_CONNECTION_ACTIVATION",
-            ].includes(applicationData?.applicationStatus) && <InspectionInformation applicationData={applicationData} />}
+            ].includes(applicationData?.applicationStatus) && <DueVerification applicationData={applicationData} />}
           {detail?.additionalDetails?.taxHeadEstimatesCalculation && (
             <PropertyEstimates taxHeadEstimatesCalculation={detail?.additionalDetails?.taxHeadEstimatesCalculation} />
           )}

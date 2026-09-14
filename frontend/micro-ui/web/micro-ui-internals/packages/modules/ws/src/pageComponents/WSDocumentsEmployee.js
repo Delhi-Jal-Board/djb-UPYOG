@@ -344,6 +344,7 @@ function SelectDocument({
   const { dropdownFilter, enabledActions, filterCondition } = doc?.additionalDetails || {};
   var dropDownData = dropdownData;
   const [isHidden, setHidden] = useState(false);
+  const documentDisplayName = selectedDocument?.i18nKey || selectedDocument?.name || selectedDocument?.code || doc?.i18nKey || doc?.name || doc?.code;
 
   const addError = () => {
     let type = formState?.errors?.[config.key]?.type;
@@ -617,7 +618,7 @@ function SelectDocument({
                 accept={doc?.code === "OWNER.APPLICANTPHOTO" ? "image/jpeg, image/png, .jpg, .jpeg, .png" : "image/*, .pdf, .png, .jpeg, .jpg"}
                 uploadedFiles={
                   uploadedFile && !file
-                    ? [[filteredDocument?.fileName || file?.name || t("CS_COMMON_DOCUMENT"), { fileStoreId: uploadedFile }]]
+                    ? [[filteredDocument?.fileName || file?.name || t(documentDisplayName || "CS_COMMON_DOCUMENT"), { fileStoreId: uploadedFile }]]
                     : undefined
                 }
                 removeTargetedFile={() => {
@@ -651,7 +652,7 @@ function SelectDocument({
                 accept={doc?.code === "OWNER.APPLICANTPHOTO" ? "image/jpeg, image/png, .jpg, .jpeg, .png" : "image/*, .pdf, .png, .jpeg, .jpg"}
                 uploadedFiles={
                   uploadedFile && !file
-                    ? [[filteredDocument?.fileName || file?.name || t("CS_COMMON_DOCUMENT"), { fileStoreId: uploadedFile }]]
+                    ? [[filteredDocument?.fileName || file?.name || t(documentDisplayName || "CS_COMMON_DOCUMENT"), { fileStoreId: uploadedFile }]]
                     : undefined
                 }
                 removeTargetedFile={() => {
@@ -670,8 +671,8 @@ function SelectDocument({
             <div key={uploadedDocument.fileStoreId || index} style={{ display: "flex", alignItems: "center", gap: "12px", marginTop: "4px", color: "#00497e" }}>
               
               <span style={{ fontWeight: "bold" }}>
-                {uploadedDocument.documentName || uploadedDocument.i18nKey || uploadedDocument.documentType
-                  ? t(uploadedDocument.documentName || uploadedDocument.i18nKey || uploadedDocument.documentType)
+                {uploadedDocument.documentName || uploadedDocument.i18nKey || uploadedDocument.documentType || documentDisplayName
+                  ? t(uploadedDocument.documentName || uploadedDocument.i18nKey || uploadedDocument.documentType || documentDisplayName)
                   : t("CS_COMMON_DOCUMENT")} - {uploadedDocument.fileName || t("CS_COMMON_DOCUMENT")}
               </span>
               {uploadedDocument.documentNumber && <span>{uploadedDocument.documentNumber}</span>}

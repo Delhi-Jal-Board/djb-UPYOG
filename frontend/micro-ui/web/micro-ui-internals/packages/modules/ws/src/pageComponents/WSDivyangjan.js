@@ -1,5 +1,5 @@
 import { CheckBox, CollapsibleCardPage, FormStep } from "@djb25/digit-ui-react-components";
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
@@ -12,14 +12,19 @@ const WSDivyangjan = ({ config, onSelect, userType, formData }) => {
   });
 
   const formValue = watch();
+  const onSelectRef = useRef(onSelect);
   const goNext = () => onSelect(config.key, { isDivyangjan: !!formValue.isDivyangjan });
   const onSkip = () => onSelect();
 
   useEffect(() => {
+    onSelectRef.current = onSelect;
+  }, [onSelect]);
+
+  useEffect(() => {
     if (userType === "employee") {
-      onSelect(config.key, { isDivyangjan: !!formValue.isDivyangjan });
+      onSelectRef.current(config.key, { isDivyangjan: !!formValue.isDivyangjan });
     }
-  }, [config.key, formValue.isDivyangjan, onSelect, userType]);
+  }, [config.key, formValue.isDivyangjan, userType]);
   const content = (
     <CollapsibleCardPage title="Divyangjan/Person with Disability?" defaultOpen={true}>
       <div style={{ width: "max-content" }}>

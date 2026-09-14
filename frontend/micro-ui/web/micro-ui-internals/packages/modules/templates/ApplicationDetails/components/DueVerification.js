@@ -22,12 +22,11 @@ const DueVerification = ({ applicationData }) => {
     [applicationData]
   );
 
-  const isPendingApproval = applicationData?.applicationStatus === "PENDING_FOR_FIELD_INSPECTION";
+  const isPendingApproval = ["PENDING_FOR_FIELD_INSPECTION", "PENDING_FOR_ZRO_APPROVAL"].includes(applicationData?.applicationStatus);
 
   const isActivation = [
     "PENDING_FOR_BILLING_CLERK_REVIEW",
     "PENDING_FOR_ASO_APPROVAL",
-    "PENDING_FOR_ZRO_APPROVAL",
     "PENDING_FOR_AE_APPROVAL",
     "PENDING_FOR_FINAL_PAYMENT",
     "PENDING_FOR_CONNECTION_ACTIVATION",

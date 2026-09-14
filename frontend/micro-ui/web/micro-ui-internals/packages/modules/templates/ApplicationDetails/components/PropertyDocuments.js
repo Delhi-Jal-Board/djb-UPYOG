@@ -18,7 +18,7 @@ function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false, 
       document?.values?.forEach(value => {
         if (!value.isPhoto) {
           requiredDocsCount++;
-          const isChecked = checkedMap[value?.fileStoreId] ?? value?.originalDoc?.isVerified ?? false;
+          const isChecked = checkedMap[value?.fileStoreId] ?? value?.isVerified ?? value?.originalDoc?.isVerified ?? false;
           if (isChecked) {
             checkedCount++;
           }
@@ -58,6 +58,7 @@ function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false, 
     window.location.href.includes("employee/tl") || window.location.href.includes("/obps") || window.location.href.includes("employee/ws");
   const isWSLocation = window.location.href.includes("employee/ws");
   const isStakeholderApplication = window.location.href.includes("stakeholder");
+  const canVerifyDocuments = ["PENDING_FOR_ZRO_APPROVAL", "PENDING_FOR_CONNECTION_ACTIVATION"].includes(applicationStatus);
 
   const getDocSubType = (documentType) => {
     if (!documentType) return "";
@@ -207,7 +208,7 @@ function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false, 
                   </div>
                 )}
                 {!isPhoto && (() => {
-                  const isChecked = checkedMap[value?.fileStoreId] ?? value?.originalDoc?.isVerified ?? false;
+                  const isChecked = checkedMap[value?.fileStoreId] ?? value?.isVerified ?? value?.originalDoc?.isVerified ?? false;
                   return (
                     <React.Fragment>
                       <div
@@ -225,17 +226,18 @@ function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false, 
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                       </div>
-                      {applicationStatus !== "PENDING_FOR_PAYMENT" && applicationStatus !== "WF_PENDING_FOR_PAYMENT" && (
+                      {canVerifyDocuments && (
                         <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "14px", color: "#0B0C0C", margin: 0 }}>
                           <input
-                            key={`chk-${value?.fileStoreId}-${value?.originalDoc?.isVerified}`}
+                            key={`chk-${value?.fileStoreId}-${value?.isVerified ?? value?.originalDoc?.isVerified}`}
                             type="checkbox"
                             className="verify-doc-checkbox"
-                            style={{ width: "18px", height: "18px", accentColor: "#F47738", cursor: (applicationStatus && applicationStatus !== "PENDING_FOR_DOCUMENT_VERIFICATION" && applicationStatus !== "PENDING_APPROVAL_FOR_MUTATION") ? "not-allowed" : "pointer" }}
-                            disabled={applicationStatus && applicationStatus !== "PENDING_FOR_DOCUMENT_VERIFICATION" && applicationStatus !== "PENDING_APPROVAL_FOR_MUTATION" && applicationStatus!== "ACTIVATE_MUTATION"}
-                            checked={applicationStatus === "PENDING_FOR_MUTATION_ACTIVATION"  || (checkedMap[value?.fileStoreId] ?? value?.originalDoc?.isVerified ?? false)}
+                            style={{ width: "18px", height: "18px", accentColor: "#F47738", cursor: "not-allowed" }}
+                            disabled={true}
+                            checked={checkedMap[value?.fileStoreId] ?? value?.isVerified ?? value?.originalDoc?.isVerified ?? false}
                             onChange={(e) => {
                               const checked = e.target.checked;
+                              value.isVerified = checked;
                               if (value?.originalDoc) {
                                 value.originalDoc.isVerified = checked;
                               }
