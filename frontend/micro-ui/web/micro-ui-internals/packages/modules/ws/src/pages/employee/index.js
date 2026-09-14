@@ -701,7 +701,14 @@ const App = ({ path }) => {
               <PrivateRoute path={`${path}/sewerage/search-connection`} component={(props) => <WSSearchWater {...props} parentRoute={path} />} />
               <PrivateRoute path={`${path}/water/search-demand`} component={(props) => <WSSearchWater {...props} parentRoute={path} />} />
               <PrivateRoute path={`${path}/sewerage/search-demand`} component={(props) => <WSSearchWater {...props} parentRoute={path} />} />
-              <PrivateRoute path={`${path}/consumption-details`} component={WSConsumptionDetails} />
+              <PrivateRoute
+                path={`${path}/consumption-details`}
+                component={() => (
+                  <LayoutWrapper layoutClass="action">
+                    <WSConsumptionDetails />
+                  </LayoutWrapper>
+                )}
+              />
               <PrivateRoute path={`${path}/modify-application`} component={WSModifyApplication} />
               <PrivateRoute path={`${path}/modify-application-edit`} component={WSEditModifyApplication} />
               <PrivateRoute path={`${path}/mutation-application`} component={WSMutationApplication} />

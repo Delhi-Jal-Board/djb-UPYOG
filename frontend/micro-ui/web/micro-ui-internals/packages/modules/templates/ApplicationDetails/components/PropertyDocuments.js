@@ -232,8 +232,8 @@ function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false, 
                             key={`chk-${value?.fileStoreId}-${value?.isVerified ?? value?.originalDoc?.isVerified}`}
                             type="checkbox"
                             className="verify-doc-checkbox"
-                            style={{ width: "18px", height: "18px", accentColor: "#F47738", cursor: "not-allowed" }}
-                            disabled={true}
+                            style={{ width: "18px", height: "18px", accentColor: "#1a67a3", cursor: applicationStatus === "PENDING_FOR_CONNECTION_ACTIVATION" ? "not-allowed" : "pointer" }}
+                            disabled={applicationStatus === "PENDING_FOR_CONNECTION_ACTIVATION"}
                             checked={checkedMap[value?.fileStoreId] ?? value?.isVerified ?? value?.originalDoc?.isVerified ?? false}
                             onChange={(e) => {
                               const checked = e.target.checked;

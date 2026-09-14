@@ -80,29 +80,29 @@ const ViewBreakup = ({ wsAdditionalDetails, workflowDetails, print, download }) 
         values: amountRows([...(breakUpData?.billSlabData?.FEE || []), ...(breakUpData?.billSlabData?.CHARGES || [])]),
       },
       {
-        title: "Property details",
+        title: t("WS_PROPERTY_DETAILS"),
         values: propertyRows.map(({ label, value, currency, unit, isText }) => ({
           title: label,
           value: currency ? `₹${formatNumber(value)}` : isText ? value || "-" : `${formatNumber(value)}${unit}`,
         })),
       },
-      { title: "Taxes", values: amountRows(breakUpData?.billSlabData?.TAX) },
+      { title: t("WS_TAXES"), values: amountRows(breakUpData?.billSlabData?.TAX) },
       {
-        title: "Water demand details",
+        title: t("WS_WATER_DEMAND_DETAILS"),
         values: waterDemandRows.map(({ label, value, currency, unit, isText }) => ({
           title: label,
           value: currency ? `₹${formatNumber(value)}` : isText ? value || "-" : `${formatNumber(value)}${unit}`,
         })),
       },
       {
-        title: "Infrastructure charge details",
+        title: t("WS_INFRASTRUCTURE_CHARGE_DETAILS"),
         values: infrastructureChargeRows.map(({ label, value, currency, unit, isText }) => ({
           title: label,
           value: currency ? `₹${formatNumber(value)}` : isText ? value || "-" : `${formatNumber(value)}${unit}`,
         })),
       },
       {
-        title: "Total",
+        title: t("WS_TOTAL"),
         values: [{ title: t("PDF_STATIC_LABEL_CONSOLIDATED_TLAPP_TOTAL_AMOUNT"), value: `₹${formatNumber(breakUpData?.totalAmount)}` }],
       },
     ].filter((section) => section.values.length > 0);
@@ -151,62 +151,68 @@ const ViewBreakup = ({ wsAdditionalDetails, workflowDetails, print, download }) 
   const waterDemandDetail = breakUpData?.calculationDetail?.waterDemandDetail;
   const infrastructureChargeDetail = breakUpData?.calculationDetail?.infrastructureChargeDetail;
 
+  const isValidValue = (value) => value !== null && value !== undefined && value !== "" && value !== 0 && value !== "0" && value !== "0.0";
+
   const propertyRows = propertyDetail
     ? [
-        { label: "Property ID", value: propertyDetail.propertyId, isText: true },
-        { label: "Property type", value: propertyDetail.propertyType, isText: true },
-        { label: "Plot area", value: propertyDetail.landArea, unit: " (sq. meter.)" },
-        { label: "Built-up area", value: propertyDetail.superBuiltUpArea, unit: " (sq. meter.)" },
-        { label: "farArea", value: propertyDetail.farArea, isText: true },
-        { label: "coveredArea", value: propertyDetail.coveredArea, isText: true },
-        { label: "numberOfDwellingUnits", value: propertyDetail.numberOfDwellingUnits, isText: true },
-        { label: "numberOfBeds", value: propertyDetail.numberOfBeds, isText: true },
-        { label: "numberOfRooms", value: propertyDetail.numberOfRooms, isText: true },
-        { label: "numberOfStudents", value: propertyDetail.numberOfStudents, isText: true },
-        { label: "numberOfStaff", value: propertyDetail.numberOfStaff, isText: true },
-        { label: "Usage category", value: propertyDetail.usageCategory, isText: true },
-      ]
+        { label: t("WS_PROPERTY_ID"), value: propertyDetail.propertyId, isText: true },
+        { label: t("WS_PROPERTY_TYPE"), value: propertyDetail.propertyType, isText: true },
+        { label: t("WS_PLOT_AREA"), value: propertyDetail.landArea, unit: " (sq. meter.)" },
+        { label: t("WS_BUILT_UP_AREA"), value: propertyDetail.superBuiltUpArea, unit: " (sq. meter.)" },
+        isValidValue(propertyDetail.farArea) ? { label: t("WS_FAR_AREA"), value: propertyDetail.farArea, isText: true } : null,
+        isValidValue(propertyDetail.coveredArea) ? { label: t("WS_COVERED_AREA"), value: propertyDetail.coveredArea, isText: true } : null,
+        isValidValue(propertyDetail.numberOfDwellingUnits)
+          ? { label: t("WS_NUMBER_OF_DWELLING_UNITS"), value: propertyDetail.numberOfDwellingUnits, isText: true }
+          : null,
+        isValidValue(propertyDetail.numberOfBeds) ? { label: t("WS_NUMBER_OF_BEDS"), value: propertyDetail.numberOfBeds, isText: true } : null,
+        isValidValue(propertyDetail.numberOfRooms) ? { label: t("WS_NUMBER_OF_ROOMS"), value: propertyDetail.numberOfRooms, isText: true } : null,
+        isValidValue(propertyDetail.numberOfStudents)
+          ? { label: t("WS_NUMBER_OF_STUDENTS"), value: propertyDetail.numberOfStudents, isText: true }
+          : null,
+        isValidValue(propertyDetail.numberOfStaff) ? { label: t("WS_NUMBER_OF_STAFF"), value: propertyDetail.numberOfStaff, isText: true } : null,
+        { label: t("WS_USAGE_CATEGORY"), value: propertyDetail.usageCategory, isText: true },
+      ].filter(Boolean)
     : [];
 
   const waterDemandRows = waterDemandDetail
     ? [
-        { label: "Calculated occupancy", value: waterDemandDetail.calculatedOccupancy, unit: " person" },
-        { label: "Applied LPCD", value: waterDemandDetail.chosenLpcd, unit: " LPD" },
-        { label: "Base demand", value: waterDemandDetail.baseDemand, unit: " LPD" },
-        { label: "Contingency/Floating Occupancy", value: waterDemandDetail.contingencyPercentage, unit: "%" },
-        { label: "Total water demand", value: waterDemandDetail.totalWaterDemandLPD, unit: " LPD" },
+        { label: t("WS_CALCULATED_OCCUPANCY"), value: waterDemandDetail.calculatedOccupancy, unit: " person" },
+        { label: t("WS_APPLIED_LPCD"), value: waterDemandDetail.chosenLpcd, unit: " LPD" },
+        { label: t("WS_BASE_DEMAND"), value: waterDemandDetail.baseDemand, unit: " LPD" },
+        { label: t("WS_CONTINGENCY_FLOATING_OCCUPANCY"), value: waterDemandDetail.contingencyPercentage, unit: "%" },
+        { label: t("WS_TOTAL_WATER_DEMAND"), value: waterDemandDetail.totalWaterDemandLPD, unit: " LPD" },
       ]
     : [];
 
   const infrastructureChargeRows = infrastructureChargeDetail
     ? [
-        { label: "Colony category", value: infrastructureChargeDetail.colonyCategory, isText: true },
-        { label: "Plot area", value: infrastructureChargeDetail.plotArea, unit: " (sq. meter.)" },
-        { label: "Water rate", value: infrastructureChargeDetail.waterRatePerLPD, currency: true },
-        { label: "Sewer rate", value: infrastructureChargeDetail.sewerRatePerLPD, currency: true },
-        { label: "Water Infra Charges", value: infrastructureChargeDetail.waterComponentIFC, currency: true },
-        { label: "Sewer Infra Charges", value: infrastructureChargeDetail.sewerComponentIFC, currency: true },
+        { label: t("WS_COLONY_CATEGORY"), value: infrastructureChargeDetail.colonyCategory, isText: true },
+        { label: t("WS_PLOT_AREA"), value: infrastructureChargeDetail.plotArea, unit: " (sq. meter.)" },
+        { label: t("WS_WATER_RATE"), value: infrastructureChargeDetail.waterRatePerLPD, currency: true },
+        { label: t("WS_SEWER_RATE"), value: infrastructureChargeDetail.sewerRatePerLPD, currency: true },
+        { label: t("WS_WATER_INFRA_CHARGES"), value: infrastructureChargeDetail.waterComponentIFC, currency: true },
+        { label: t("WS_SEWER_INFRA_CHARGES"), value: infrastructureChargeDetail.sewerComponentIFC, currency: true },
         ...(infrastructureChargeDetail.rebateAmount > 0
           ? [
-              { label: "Rebate", value: infrastructureChargeDetail.rebatePercentage, unit: "%" },
-              { label: "Rebate amount", value: infrastructureChargeDetail.rebateAmount, currency: true },
+              { label: t("WS_REBATE"), value: infrastructureChargeDetail.rebatePercentage, unit: "%" },
+              { label: t("WS_REBATE_AMOUNT"), value: infrastructureChargeDetail.rebateAmount, currency: true },
             ]
           : []),
         ...(infrastructureChargeDetail.institutionalRebateApplied
           ? [
-              { label: "Institutional rebate", value: infrastructureChargeDetail.institutionalRebatePercentage, unit: "%" },
-              { label: "Institutional rebate amount", value: infrastructureChargeDetail.institutionalRebateAmount, currency: true },
-              { label: "Institutional rebate reason", value: t(infrastructureChargeDetail.institutionalRebateReason), isText: true },
+              { label: t("WS_INSTITUTIONAL_REBATE"), value: infrastructureChargeDetail.institutionalRebatePercentage, unit: "%" },
+              { label: t("WS_INSTITUTIONAL_REBATE_AMOUNT"), value: infrastructureChargeDetail.institutionalRebateAmount, currency: true },
+              { label: t("WS_INSTITUTIONAL_REBATE_REASON"), value: t(infrastructureChargeDetail.institutionalRebateReason), isText: true },
             ]
           : []),
         ...(infrastructureChargeDetail.dwellingRebateApplied
           ? [
-              { label: "Dwelling rebate", value: infrastructureChargeDetail.dwellingRebatePercentage, unit: "%" },
-              { label: "Dwelling rebate amount", value: infrastructureChargeDetail.dwellingRebateAmount, currency: true },
-              { label: "Dwelling rebate reason", value: t(infrastructureChargeDetail.dwellingRebateReason), isText: true },
+              { label: t("WS_DWELLING_REBATE"), value: infrastructureChargeDetail.dwellingRebatePercentage, unit: "%" },
+              { label: t("WS_DWELLING_REBATE_AMOUNT"), value: infrastructureChargeDetail.dwellingRebateAmount, currency: true },
+              { label: t("WS_DWELLING_REBATE_REASON"), value: t(infrastructureChargeDetail.dwellingRebateReason), isText: true },
             ]
           : []),
-        { label: "Net IFC", value: infrastructureChargeDetail.netIFC, currency: true },
+        { label: t("WS_NET_IFC"), value: infrastructureChargeDetail.netIFC, currency: true },
       ]
     : [];
 
@@ -277,21 +283,21 @@ const ViewBreakup = ({ wsAdditionalDetails, workflowDetails, print, download }) 
 
                   {propertyRows.length > 0 && (
                     <>
-                      <CardSectionHeader style={{ margin: "10px 0px" }}>Property details</CardSectionHeader>
+                      <CardSectionHeader style={{ margin: "10px 0px" }}>{t("WS_PROPERTY_DETAILS")}</CardSectionHeader>
                       <DetailRows rows={propertyRows} />
                     </>
                   )}
 
                   {waterDemandRows.length > 0 && (
                     <>
-                      <CardSectionHeader style={{ margin: "10px 0px" }}>Water demand details</CardSectionHeader>
+                      <CardSectionHeader style={{ margin: "10px 0px" }}>{t("WS_WATER_DEMAND_DETAILS")}</CardSectionHeader>
                       <DetailRows rows={waterDemandRows} />
                     </>
                   )}
 
                   {infrastructureChargeRows.length > 0 && (
                     <>
-                      <CardSectionHeader style={{ margin: "10px 0px" }}>Infrastructure charge details</CardSectionHeader>
+                      <CardSectionHeader style={{ margin: "10px 0px" }}>{t("WS_INFRASTRUCTURE_CHARGE_DETAILS")}</CardSectionHeader>
                       <DetailRows rows={infrastructureChargeRows} />
                     </>
                   )}
