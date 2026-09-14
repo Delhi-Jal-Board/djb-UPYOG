@@ -24,8 +24,10 @@ public class RebateCalculationService {
 	/**
 	 * Calculates the currently configured DJB monthly rebates.
 	 *
-	 * Supported rules: - FREE_WATER_20KL - RWH_10 / RWH_WATER_RECYCLING_15 (highest
-	 * applicable rate only) - DJB_EMPLOYEE_50
+	 * Supported rules:
+	 * - FREE_WATER_20KL
+	 * - RWH_10 / RWH_WATER_RECYCLING_15 (highest applicable rate only)
+	 * - DJB_EMPLOYEE_50
 	 *
 	 * The service does not modify demand/bill records.
 	 */
@@ -71,10 +73,9 @@ public class RebateCalculationService {
 		BigDecimal baseAmount = context.getFreeWaterEligibleAmount();
 
 		/*
-		 * Do not infer the tax-head scope of the free-water exemption here. The DJB
-		 * source says free water up to 20 KL is 100% and requires Meter OK basis, but
-		 * it does not in the supplied section define every tax-head that must be
-		 * zeroed. The caller supplies the eligible amount explicitly.
+		 * The caller supplies the complete eligible water + sewerage bill amount.
+		 * For an eligible Meter-OK reading at or below the free-water limit, the
+		 * 100% concession therefore makes the user's payable amount zero.
 		 */
 		if (baseAmount == null || baseAmount.signum() <= 0) {
 			return;
@@ -146,8 +147,8 @@ public class RebateCalculationService {
 
 		Integer maxConnections = rule.getMaxEligibleConnections();
 		Integer actualConnections = context.getEligibleConnectionCount();
-		if (maxConnections != null
-				&& (actualConnections == null || actualConnections < 1 || actualConnections > maxConnections)) {
+		if (maxConnections != null && (actualConnections == null || actualConnections < 1
+				|| actualConnections > maxConnections)) {
 			return;
 		}
 
@@ -169,12 +170,13 @@ public class RebateCalculationService {
 		}
 
 		/*
-		 * For a non-bulk domestic connection the 20 KL ceiling applies directly. For a
-		 * bulk domestic connection DJB defines the free-water limit per dwelling unit,
-		 * so the effective limit is 20 KL x dwelling units. Do not apply the
-		 * single-unit 20 KL check before the bulk calculation.
+		 * For a non-bulk domestic connection the 20 KL ceiling applies directly.
+		 * For a bulk domestic connection DJB defines the free-water limit per
+		 * dwelling unit, so the effective limit is 20 KL x dwelling units.
+		 * Do not apply the single-unit 20 KL check before the bulk calculation.
 		 */
-		if (!context.isBulkConnection() && context.getConsumption().compareTo(rule.getMaxConsumptionKl()) > 0) {
+		if (!context.isBulkConnection()
+				&& context.getConsumption().compareTo(rule.getMaxConsumptionKl()) > 0) {
 			return false;
 		}
 
@@ -226,8 +228,7 @@ public class RebateCalculationService {
 
 		String currentBasis = context.getBillingBasis() == null ? null : context.getBillingBasis().name();
 		boolean basisEligible = rule.getEligibleBillingBasis() == null || rule.getEligibleBillingBasis().isEmpty()
-				|| rule.getEligibleBillingBasis().stream()
-						.anyMatch(basis -> isConfiguredBillingBasisEligible(basis, context, currentBasis));
+				|| rule.getEligibleBillingBasis().stream().anyMatch(basis -> isConfiguredBillingBasisEligible(basis, context, currentBasis));
 
 		if (rule.getEligibleReadingQualityCodes() == null || rule.getEligibleReadingQualityCodes().isEmpty()) {
 			readingEligible = "OK".equalsIgnoreCase(context.getReadingQualityCode())
@@ -241,8 +242,7 @@ public class RebateCalculationService {
 		return readingEligible && basisEligible;
 	}
 
-	private boolean isConfiguredBillingBasisEligible(String configuredBasis, RebateCalculationContext context,
-			String currentBasis) {
+	private boolean isConfiguredBillingBasisEligible(String configuredBasis, RebateCalculationContext context, String currentBasis) {
 		if (configuredBasis == null || currentBasis == null) {
 			return false;
 		}
@@ -250,10 +250,10 @@ public class RebateCalculationService {
 			return true;
 		}
 		// DJB source says the free-water concession is based on Meter-OK. A corrected
-		// actual cycle with RQC=OK is still an OK-meter billing outcome, so an MDMS
-		// rule
+		// actual cycle with RQC=OK is still an OK-meter billing outcome, so an MDMS rule
 		// configured for ACTUAL also covers CORRECTED_ACTUAL.
-		return "ACTUAL".equalsIgnoreCase(configuredBasis) && "CORRECTED_ACTUAL".equalsIgnoreCase(currentBasis)
+		return "ACTUAL".equalsIgnoreCase(configuredBasis)
+				&& "CORRECTED_ACTUAL".equalsIgnoreCase(currentBasis)
 				&& "OK".equalsIgnoreCase(context.getReadingQualityCode());
 	}
 
