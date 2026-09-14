@@ -13,6 +13,7 @@ function ApplicationDetailsActionBar({
   MenuStyle = {},
   isAction,
   applicationDetails,
+  isApprovalChecklistValid = false,
 }) {
   const { t } = useTranslation();
   let user = Digit.UserService.getUser();
@@ -21,8 +22,8 @@ function ApplicationDetailsActionBar({
     if (typeof window !== "undefined" && typeof window.isDocumentsVerified !== "undefined") {
       return !window.isDocumentsVerified;
     }
-    // Default to disabled until the DOCUMENTS_VERIFIED event fires
-    return true;
+    return false;
+
   });
 
   React.useEffect(() => {
@@ -93,12 +94,22 @@ function ApplicationDetailsActionBar({
           ) : null}
           {businessService === "ewst" ? (
             modified === uuid || modified == null ? (
-              <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} disabled={false} />
+              <SubmitBar
+    ref={menuRef}
+    label={t("WF_TAKE_ACTION")}
+    onSubmit={() => setDisplayMenu(!displayMenu)}
+    disabled={isSubmitDisabled || !isApprovalChecklistValid}
+  />
             ) : (
               <CardLabel style={{ color: "red", font: "30px", fontWeight: "bold" }}>{`${t("EW_ALERT_ANOTHER_VENDOR")}`}</CardLabel>
             )
           ) : (
-            <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} disabled={false} />
+            <SubmitBar
+    ref={menuRef}
+    label={t("WF_TAKE_ACTION")}
+    onSubmit={() => setDisplayMenu(!displayMenu)}
+    disabled={isSubmitDisabled || !isApprovalChecklistValid}
+  />
           )}
           {/* <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} /> */}
         </ActionBar>

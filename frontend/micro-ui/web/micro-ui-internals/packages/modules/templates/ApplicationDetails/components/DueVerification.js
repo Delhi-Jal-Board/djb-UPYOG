@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { TextInput, Table, AddIcon, Toast } from "@djb25/digit-ui-react-components";
+import { TextInput, Table, AddIcon, Toast, Dropdown, SearchIconSvg } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 
 const DueVerification = ({ applicationData }) => {
@@ -90,6 +90,37 @@ const DueVerification = ({ applicationData }) => {
   const { mutateAsync: checkDueVerification } = window?.Digit?.Hooks?.ws?.useDueVerification(tenantId);
 
   const [showToast, setShowToast] = useState(null);
+  const [zroDropdownOptions, setZroDropdownOptions] = useState(null);
+  const [selectedZroOption, setSelectedZroOption] = useState(null);
+
+  const isZROApproval = applicationData?.applicationStatus === "PENDING_FOR_ZRO_APPROVAL";
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchDueVerification = async () => {
+      if (isZROApproval && applicationData?.applicationNo) {
+        try {
+          const response = await checkDueVerification({ DueVerification: { applicationNo: applicationData.applicationNo } });
+          if (!isMounted) return;
+          const dueVerifications = Array.isArray(response) ? response : (response?.DueVerifications || response?.dueVerifications || response?.dueVerification || []);
+          if (dueVerifications && dueVerifications.length > 0) {
+            const options = dueVerifications.map(item => ({
+              code: item.kno,
+              name: item.kno,
+              ...item
+            }));
+            setZroDropdownOptions(options);
+          } else {
+             setZroDropdownOptions([]);
+          }
+        } catch (error) {
+          console.error("Error auto-fetching due verification:", error);
+        }
+      }
+    };
+    fetchDueVerification();
+    return () => { isMounted = false; };
+  }, [isZROApproval, applicationData?.applicationNo]);
 
   const handleAdd = async () => {
     if (kno) {
@@ -140,7 +171,21 @@ const DueVerification = ({ applicationData }) => {
             <span style={{ fontSize: "16px", color: "#0B0C0C", marginBottom: "8px", display: "inline-block" }}>
               {t("K No.(Existing KNo of same property)")} <span style={{ color: "red" }}>*</span>
             </span>
-            <TextInput type="text" value={kno} onChange={(e) => setKno(e.target.value)} style={{ width: "100%", marginBottom: "0" }} />
+            {/* {isZROApproval && zroDropdownOptions && zroDropdownOptions.length > 0 ? ( */}
+              <Dropdown
+                option={zroDropdownOptions}
+                select={(val) => {
+                  setSelectedZroOption(val);
+                  setKno(val.code);
+                }}
+                selected={selectedZroOption}
+                optionKey="name"
+                t={t}
+                placeholder={t("WS_SELECT_KNO_PLACEHOLDER") || "Select K No."}
+              />
+            {/* ) : ( */}
+              <TextInput type="text" value={kno} onChange={(e) => setKno(e.target.value)} style={{ width: "100%", marginTop: "10px" }} />
+            {/* )} */}
           </div>
           <div style={{ flex: 1, paddingBottom: "2px" }}>
             <button
@@ -152,9 +197,12 @@ const DueVerification = ({ applicationData }) => {
                 borderRadius: "4px",
                 border: "none",
                 cursor: "pointer",
+                color:"white"
               }}
             >
-              <AddIcon />
+              Search
+              {/* <AddIcon /> */}
+              {/* <SearchIconSvg style={{ width: "24px", height: "24px", fill: "white" }} className="search-icon-svg" /> */}
             </button>
           </div>
         </div>

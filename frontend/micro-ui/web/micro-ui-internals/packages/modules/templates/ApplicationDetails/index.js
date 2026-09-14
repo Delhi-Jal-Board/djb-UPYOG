@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "react-query";
 
@@ -11,6 +11,12 @@ import ApplicationDetailsContent from "./components/ApplicationDetailsContent";
 import ApplicationDetailsToast from "./components/ApplicationDetailsToast";
 import ApplicationDetailsActionBar from "./components/ApplicationDetailsActionBar";
 import ApplicationDetailsWarningPopup from "./components/ApplicationDetailsWarningPopup";
+import {
+  getWSApprovalChecklistFields,
+  getWSCurrentState,
+  isWSApprovalChecklistComplete,
+  isWSApprovalChecklistState,
+} from "./components/WSApprovalChecklist";
 
 const ApplicationDetails = (props) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -23,6 +29,7 @@ const ApplicationDetails = (props) => {
   const [showModal, setShowModal] = useState(false);
   const [isEnableLoader, setIsEnableLoader] = useState(false);
   const [isWarningPop, setWarningPopUp] = useState(false);
+  const [approvalChecklist, setApprovalChecklist] = useState({});
 
   const {
     applicationDetails,
@@ -50,6 +57,43 @@ const ApplicationDetails = (props) => {
     clearDataDetails,
     isAction = false,
   } = props;
+
+  const currentWorkflowState = getWSCurrentState(applicationData, workflowDetails);
+  const showApprovalChecklist = moduleCode === "WS" && isWSApprovalChecklistState(applicationData, workflowDetails);
+
+  // While workflow is still loading, treat the checklist as valid so the button isn't blocked during load.
+  // Once loaded, require all mandatory fields to be checked.
+  const approvalChecklistValid =
+    workflowDetails?.isLoading ||
+    !showApprovalChecklist ||
+    isWSApprovalChecklistComplete(applicationData, approvalChecklist);
+
+  // Track the last seeded combination so we don't re-seed (and wipe user changes)
+  // every time workflowDetails reloads and currentWorkflowState flickers.
+  const seededKeyRef = useRef(null);
+
+  useEffect(() => {
+    const seedKey = `${applicationData?.applicationNo}__${currentWorkflowState}`;
+
+    if (showApprovalChecklist) {
+      // Only seed from server data once per application+state combo.
+      // After the initial seed the user's checkbox interactions drive the state.
+      if (seededKeyRef.current !== seedKey) {
+        seededKeyRef.current = seedKey;
+        const initialChecklist = getWSApprovalChecklistFields(applicationData).reduce((values, field) => {
+          values[field.name] = applicationData?.additionalDetails?.[field.name] === true;
+          return values;
+        }, {});
+        setApprovalChecklist(initialChecklist);
+      }
+    } else {
+      // Different application or state no longer requires the checklist — clear it.
+      if (seededKeyRef.current !== null) {
+        seededKeyRef.current = null;
+        setApprovalChecklist({});
+      }
+    }
+  }, [applicationData?.applicationNo, currentWorkflowState, showApprovalChecklist]);
 
   useEffect(() => {
     if (showToast) {
@@ -218,6 +262,9 @@ const ApplicationDetails = (props) => {
             showTimeLine={showTimeLine}
             oldValue={oldValue}
             isInfoLabel={isInfoLabel}
+            approvalChecklist={approvalChecklist}
+            onApprovalChecklistChange={setApprovalChecklist}
+            showApprovalChecklist={showApprovalChecklist}
           />
           {showModal ? (
             <ActionModal
@@ -232,7 +279,8 @@ const ApplicationDetails = (props) => {
               submitAction={submitAction}
               actionData={workflowDetails?.data?.timeline}
               businessService={businessService}
-              workflowDetails={workflowDetails}
+              approvalChecklist={approvalChecklist}
+              showApprovalChecklist={showApprovalChecklist}
               moduleCode={moduleCode}
               cardFormWrapperClassName={"modal-form"}
             />
@@ -258,6 +306,7 @@ const ApplicationDetails = (props) => {
             ActionBarStyle={ActionBarStyle}
             MenuStyle={MenuStyle}
             applicationDetails={applicationDetails}
+            isApprovalChecklistValid={approvalChecklistValid}
           />
         </React.Fragment>
       ) : (
