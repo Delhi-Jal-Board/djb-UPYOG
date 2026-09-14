@@ -109,6 +109,12 @@ public class InboxConfiguration {
 	@Value("${egov.internal.microservice.user.uuid}")
 	private String egovInternalMicroserviceUserUuid;
 
+	@Value("${egov.hrms.host}")
+	private String hrmsHost;
+
+	@Value("${egov.hrms.search.endpoint}")
+	private String hrmsSearchEndpoint;
+
 	@Value("${state.level.tenant.id}")
 	private String parentLevelTenantId;
 

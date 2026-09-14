@@ -716,6 +716,15 @@ public class InboxService {
 			// Redirect request to ElasticSearch in case of WS and SW to fetch data
 			if (!ObjectUtils.isEmpty(processCriteria.getModuleName())
 					&& (processCriteria.getModuleName().equals(WS) || processCriteria.getModuleName().equals(SW))) {
+
+				// Add employee zones to search criteria for WS
+				if (processCriteria.getModuleName().equals(WS)) {
+					List<String> employeeZones = getEmployeeZones(requestInfo, criteria.getTenantId());
+					if (!CollectionUtils.isEmpty(employeeZones)) {
+						moduleSearchCriteria.put("zone", employeeZones);
+					}
+				}
+
 				JsonNode responseNode = null;
 				Map<String, Object> finalResult = new HashMap<>();
 
@@ -1655,4 +1664,93 @@ public class InboxService {
 
 		return results;
 	}
+
+	public static String normalizeZone(String zone) {
+		if (zone == null) return null;
+		String normalized = zone.toUpperCase().replace("ZRO", "").replaceAll("[^A-Z0-9]", "").trim();
+		return normalized;
+	}
+
+	private boolean isEmployeesListEmpty(Object response) {
+		try {
+			Map<String, Object> respMap = mapper.convertValue(response, Map.class);
+			List<Map<String, Object>> employees = (List<Map<String, Object>>) respMap.get("Employees");
+			return CollectionUtils.isEmpty(employees);
+		} catch (Exception e) {
+			return true;
+		}
+	}
+
+	public List<String> getEmployeeZones(RequestInfo requestInfo, String tenantId) {
+		Set<String> zones = new HashSet<>();
+		if (requestInfo == null || requestInfo.getUserInfo() == null) {
+			return new ArrayList<>(zones);
+		}
+		org.egov.common.contract.request.User userInfo = requestInfo.getUserInfo();
+		if (!"EMPLOYEE".equalsIgnoreCase(userInfo.getType())) {
+			return new ArrayList<>(zones);
+		}
+		if (!CollectionUtils.isEmpty(userInfo.getRoles())) {
+			boolean isSuperUser = userInfo.getRoles().stream()
+					.anyMatch(role -> "SUPERUSER".equalsIgnoreCase(role.getCode()));
+			if (isSuperUser) {
+				return new ArrayList<>(zones);
+			}
+		}
+		try {
+			StringBuilder url = new StringBuilder(config.getHrmsHost())
+					.append(config.getHrmsSearchEndpoint())
+					.append("?uuids=").append(userInfo.getUuid());
+			if (!StringUtils.isEmpty(tenantId)) {
+				url.append("&tenantId=").append(tenantId);
+			} else if (!StringUtils.isEmpty(userInfo.getTenantId())) {
+				url.append("&tenantId=").append(userInfo.getTenantId());
+			}
+
+			Object response = serviceRequestRepository.fetchResult(url, RequestInfoWrapper.builder().requestInfo(requestInfo).build());
+			
+			if (response == null || isEmployeesListEmpty(response)) {
+				if (!StringUtils.isEmpty(userInfo.getUserName())) {
+					StringBuilder fallbackUrl = new StringBuilder(config.getHrmsHost())
+							.append(config.getHrmsSearchEndpoint())
+							.append("?codes=").append(userInfo.getUserName());
+					if (!StringUtils.isEmpty(tenantId)) {
+						fallbackUrl.append("&tenantId=").append(tenantId);
+					} else if (!StringUtils.isEmpty(userInfo.getTenantId())) {
+						fallbackUrl.append("&tenantId=").append(userInfo.getTenantId());
+					}
+					response = serviceRequestRepository.fetchResult(fallbackUrl, RequestInfoWrapper.builder().requestInfo(requestInfo).build());
+				}
+			}
+
+			if (response != null) {
+				Map<String, Object> respMap = mapper.convertValue(response, Map.class);
+				List<Map<String, Object>> employees = (List<Map<String, Object>>) respMap.get("Employees");
+				if (!CollectionUtils.isEmpty(employees)) {
+					for (Map<String, Object> emp : employees) {
+						List<Map<String, Object>> jurisdictions = (List<Map<String, Object>>) emp.get("jurisdictions");
+						if (!CollectionUtils.isEmpty(jurisdictions)) {
+							for (Map<String, Object> jur : jurisdictions) {
+								Object isActiveObj = jur.get("isActive");
+								boolean isActive = isActiveObj == null || Boolean.TRUE.equals(isActiveObj);
+								if (isActive) {
+									String rawZone = (String) jur.get("zone");
+									if (!StringUtils.isEmpty(rawZone)) {
+										String normalized = normalizeZone(rawZone);
+										if (!StringUtils.isEmpty(normalized)) {
+											zones.add(normalized);
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		} catch (Exception e) {
+			log.error("Error fetching employee zones from HRMS: ", e);
+		}
+		return new ArrayList<>(zones);
+	}
+
 }
