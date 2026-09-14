@@ -15,163 +15,146 @@ import org.junit.jupiter.api.Test;
 
 class TariffCalculationServiceTest {
 
-    private TariffCalculationService service;
-    private DJBMonthlyWaterTariff domestic;
-    private DJBMonthlyWaterTariff commercial;
+	private TariffCalculationService service;
+	private DJBMonthlyWaterTariff domestic;
+	private DJBMonthlyWaterTariff commercial;
 
-    @BeforeEach
-    void setUp() {
-        service = new TariffCalculationService();
+	@BeforeEach
+	void setUp() {
+		service = new TariffCalculationService();
 
-        domestic = tariff(
-                "DOMESTIC",
-                slab(0, 20, 5.27, 146.41),
-                slab(20, 30, 26.36, 219.62),
-                slab(30, null, 43.93, 292.82));
+		domestic = tariff("DOMESTIC", slab(0, 20, 5.27, 146.41), slab(20, 30, 26.36, 219.62),
+				slab(30, null, 43.93, 292.82));
 
-        commercial = tariff(
-                "COMMERCIAL",
-                slab(0, 6, 17.57, 146.41),
-                slab(6, 15, 26.35, 292.82),
-                slab(15, 25, 35.14, 585.64),
-                slab(25, 50, 87.85, 1024.87),
-                slab(50, 100, 140.56, 1171.28),
-                slab(100, null, 175.69, 1317.69));
-    }
+		commercial = tariff("COMMERCIAL", slab(0, 6, 17.57, 146.41), slab(6, 15, 26.35, 292.82),
+				slab(15, 25, 35.14, 585.64), slab(25, 50, 87.85, 1024.87), slab(50, 100, 140.56, 1171.28),
+				slab(100, null, 175.69, 1317.69));
+	}
 
-    @Test
-    void shouldCalculateDomestic20Kl() {
-        TariffCalculationResult result =
-                service.calculate(bd("20"), "DOMESTIC",
-                        Arrays.asList(domestic));
+	@Test
+	void shouldCalculateDomestic20Kl() {
+		TariffCalculationResult result = service.calculate(bd("20"), "DOMESTIC", Arrays.asList(domestic));
 
-        assertEquals(bd("105.40"), result.getWaterVolumetricCharge());
-        assertEquals(bd("146.41"), result.getServiceCharge());
-        assertEquals(bd("251.81"), result.getTotalWaterCharge());
-        assertEquals(1, result.getSlabCharges().size());
-    }
+		assertEquals(bd("105.40"), result.getWaterVolumetricCharge());
+		assertEquals(bd("146.41"), result.getServiceCharge());
+		assertEquals(bd("251.81"), result.getTotalWaterCharge());
+		assertEquals(1, result.getSlabCharges().size());
+	}
 
-    @Test
-    void shouldCalculateDomestic25KlProgressively() {
-        TariffCalculationResult result =
-                service.calculate(bd("25"), "DOMESTIC",
-                        Arrays.asList(domestic));
+	@Test
+	void shouldCalculateDomestic25KlUsingApplicableSlab() {
+		TariffCalculationResult result = service.calculate(bd("25"), "DOMESTIC", Arrays.asList(domestic));
 
-        assertEquals(bd("237.20"), result.getWaterVolumetricCharge());
-        assertEquals(bd("219.62"), result.getServiceCharge());
-        assertEquals(bd("456.82"), result.getTotalWaterCharge());
-        assertEquals(2, result.getSlabCharges().size());
-    }
+		assertEquals(bd("659.00"), result.getWaterVolumetricCharge());
+		assertEquals(bd("219.62"), result.getServiceCharge());
+		assertEquals(bd("878.62"), result.getTotalWaterCharge());
+		assertEquals(1, result.getSlabCharges().size());
 
-    @Test
-    void shouldCalculateDomestic35KlAcrossThreeSlabs() {
-        TariffCalculationResult result =
-                service.calculate(bd("35"), "DOMESTIC",
-                        Arrays.asList(domestic));
+		assertEquals(bd("25.000"), result.getSlabCharges().get(0).getUnits());
+		assertEquals(bd("26.36"), result.getSlabCharges().get(0).getRatePerKl());
+		assertEquals(bd("659.00"), result.getSlabCharges().get(0).getCharge());
+	}
 
-        BigDecimal expectedVolumetric = bd("588.65");
-        BigDecimal expectedTotal = bd("881.47");
+	@Test
+	void shouldCalculateDomestic35KlUsingApplicableSlab() {
+		TariffCalculationResult result = service.calculate(bd("35"), "DOMESTIC", Arrays.asList(domestic));
 
-        assertEquals(expectedVolumetric, result.getWaterVolumetricCharge());
-        assertEquals(bd("292.82"), result.getServiceCharge());
-        assertEquals(expectedTotal, result.getTotalWaterCharge());
-        assertEquals(3, result.getSlabCharges().size());
-    }
+		BigDecimal expectedVolumetric = bd("1537.55");
+		BigDecimal expectedTotal = bd("1830.37");
 
-    @Test
-    void shouldNormalizeResidentialToDomestic() {
-        TariffCalculationResult result =
-                service.calculate(bd("20"), "residential",
-                        Arrays.asList(domestic));
+		assertEquals(expectedVolumetric, result.getWaterVolumetricCharge());
+		assertEquals(bd("292.82"), result.getServiceCharge());
+		assertEquals(expectedTotal, result.getTotalWaterCharge());
+		assertEquals(1, result.getSlabCharges().size());
+	}
 
-        assertEquals("DOMESTIC", result.getCategory());
-    }
+	@Test
+	void shouldCalculateDomestic39KlUsingSingleApplicableSlab() {
+		TariffCalculationResult result = service.calculate(bd("39"), "DOMESTIC", Arrays.asList(domestic));
 
-    @Test
-    void shouldNormalizeBusinessToCommercial() {
-        TariffCalculationResult result =
-                service.calculate(bd("10"), "business",
-                        Arrays.asList(commercial));
+		assertEquals(bd("1713.27"), result.getWaterVolumetricCharge());
+		assertEquals(bd("292.82"), result.getServiceCharge());
+		assertEquals(bd("2006.09"), result.getTotalWaterCharge());
+		assertEquals(1, result.getSlabCharges().size());
+		assertEquals(bd("39.000"), result.getSlabCharges().get(0).getUnits());
+		assertEquals(bd("43.93"), result.getSlabCharges().get(0).getRatePerKl());
+	}
 
-        assertEquals("COMMERCIAL", result.getCategory());
-        assertEquals(bd("503.64"), result.getTotalWaterCharge());
-    }
+	@Test
+	void shouldNormalizeResidentialToDomestic() {
+		TariffCalculationResult result = service.calculate(bd("20"), "residential", Arrays.asList(domestic));
 
-    @Test
-    void shouldIgnoreInactiveTariff() {
-        domestic.setActive(false);
+		assertEquals("DOMESTIC", result.getCategory());
+	}
 
-        assertThrows(IllegalArgumentException.class, () ->
-                service.calculate(bd("20"), "DOMESTIC",
-                        Arrays.asList(domestic)));
-    }
+	@Test
+	void shouldNormalizeBusinessToCommercial() {
+		TariffCalculationResult result = service.calculate(bd("10"), "business", Arrays.asList(commercial));
 
-    @Test
-    void shouldRejectNegativeConsumption() {
-        assertThrows(IllegalArgumentException.class, () ->
-                service.calculate(bd("-1"), "DOMESTIC",
-                        Arrays.asList(domestic)));
-    }
+		assertEquals("COMMERCIAL", result.getCategory());
+		assertEquals(bd("556.32"), result.getTotalWaterCharge());
+	}
 
-    @Test
-    void shouldRejectMissingConsumption() {
-        assertThrows(IllegalArgumentException.class, () ->
-                service.calculate(null, "DOMESTIC",
-                        Arrays.asList(domestic)));
-    }
+	@Test
+	void shouldIgnoreInactiveTariff() {
+		domestic.setActive(false);
 
-    @Test
-    void shouldRejectMissingTariff() {
-        assertThrows(IllegalArgumentException.class, () ->
-                service.calculate(bd("20"), "DOMESTIC",
-                        Arrays.asList()));
-    }
+		assertThrows(IllegalArgumentException.class,
+				() -> service.calculate(bd("20"), "DOMESTIC", Arrays.asList(domestic)));
+	}
 
-    @Test
-    void shouldRejectInvalidSlabRange() {
-        DJBMonthlyWaterTariff invalid = tariff(
-                "DOMESTIC",
-                slab(20, 20, 5.27, 146.41));
+	@Test
+	void shouldRejectNegativeConsumption() {
+		assertThrows(IllegalArgumentException.class,
+				() -> service.calculate(bd("-1"), "DOMESTIC", Arrays.asList(domestic)));
+	}
 
-        assertThrows(IllegalArgumentException.class, () ->
-                service.calculate(bd("25"), "DOMESTIC",
-                        Arrays.asList(invalid)));
-    }
+	@Test
+	void shouldRejectMissingConsumption() {
+		assertThrows(IllegalArgumentException.class,
+				() -> service.calculate(null, "DOMESTIC", Arrays.asList(domestic)));
+	}
 
-    private DJBMonthlyWaterTariff tariff(
-            String category,
-            DJBMonthlyWaterTariffSlab... slabs) {
+	@Test
+	void shouldRejectMissingTariff() {
+		assertThrows(IllegalArgumentException.class, () -> service.calculate(bd("20"), "DOMESTIC", Arrays.asList()));
+	}
 
-        DJBMonthlyWaterTariff tariff = new DJBMonthlyWaterTariff();
-        tariff.setId(category);
-        tariff.setCategory(category);
-        tariff.setConnectionType("METERED");
-        tariff.setActive(true);
-        tariff.setSlabs(Arrays.asList(slabs));
-        return tariff;
-    }
+	@Test
+	void shouldRejectInvalidSlabRange() {
+		DJBMonthlyWaterTariff invalid = tariff("DOMESTIC", slab(20, 20, 5.27, 146.41));
 
-    private DJBMonthlyWaterTariffSlab slab(
-            int from,
-            Integer to,
-            double rate,
-            double serviceCharge) {
+		assertThrows(IllegalArgumentException.class,
+				() -> service.calculate(bd("25"), "DOMESTIC", Arrays.asList(invalid)));
+	}
 
-        DJBMonthlyWaterTariffSlab slab =
-                new DJBMonthlyWaterTariffSlab();
+	private DJBMonthlyWaterTariff tariff(String category, DJBMonthlyWaterTariffSlab... slabs) {
 
-        slab.setFrom(BigDecimal.valueOf(from));
+		DJBMonthlyWaterTariff tariff = new DJBMonthlyWaterTariff();
+		tariff.setId(category);
+		tariff.setCategory(category);
+		tariff.setConnectionType("METERED");
+		tariff.setActive(true);
+		tariff.setSlabs(Arrays.asList(slabs));
+		return tariff;
+	}
 
-        if (to != null) {
-            slab.setTo(BigDecimal.valueOf(to));
-        }
+	private DJBMonthlyWaterTariffSlab slab(int from, Integer to, double rate, double serviceCharge) {
 
-        slab.setRatePerKl(BigDecimal.valueOf(rate));
-        slab.setServiceCharge(BigDecimal.valueOf(serviceCharge));
-        return slab;
-    }
+		DJBMonthlyWaterTariffSlab slab = new DJBMonthlyWaterTariffSlab();
 
-    private BigDecimal bd(String value) {
-        return new BigDecimal(value);
-    }
+		slab.setFrom(BigDecimal.valueOf(from));
+
+		if (to != null) {
+			slab.setTo(BigDecimal.valueOf(to));
+		}
+
+		slab.setRatePerKl(BigDecimal.valueOf(rate));
+		slab.setServiceCharge(BigDecimal.valueOf(serviceCharge));
+		return slab;
+	}
+
+	private BigDecimal bd(String value) {
+		return new BigDecimal(value);
+	}
 }
