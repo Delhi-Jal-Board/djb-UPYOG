@@ -136,6 +136,24 @@ public class SupervisorRepository {
     }
 
 
+    public boolean existsActiveSurveyorBySupervisor(
+            String supervisorId) {
+
+        String sql = "SELECT EXISTS (\n" +
+                     "    SELECT 1\n" +
+                     "    FROM eg_surveyor\n" +
+                     "    WHERE supervisor_id = ?\n" +
+                     "      AND status = 'ACTIVE'\n" +
+                     ")\n";
+
+        Boolean exists = jdbcTemplate.queryForObject(
+                sql,
+                Boolean.class,
+                supervisorId);
+
+        return Boolean.TRUE.equals(exists);
+    }
+
     public Supervisor getSupervisorById(
             String supervisorId,
             String tenantId) {
@@ -217,7 +235,8 @@ public class SupervisorRepository {
                      "       lastmodifiedtime = ?\n" +
                      " WHERE supervisor_id = ?\n" +
                      "   AND vendor_id = ?\n" +
-                     "   AND tenantid = ?\n";
+                     "   AND tenantid = ?\n"+
+        "  AND status = 'ACTIVE'\n";
 
         int updatedRows = jdbcTemplate.update(
                 sql,
@@ -253,7 +272,8 @@ public class SupervisorRepository {
                      "       lastmodifiedtime = ?\n" +
                      " WHERE supervisor_id = ?\n" +
                      "   AND vendor_id = ?\n" +
-                     "   AND tenant_id = ?\n";
+                     "   AND tenant_id = ?\n"+
+                "  AND status = 'ACTIVE'\n";
 
         int updatedRows = jdbcTemplate.update(
                 sql,

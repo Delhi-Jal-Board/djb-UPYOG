@@ -81,6 +81,28 @@ public class SupervisorService {
                     "Supervisor id is mandatory for update");
         }
 
+
+         Supervisor.StatusEnum status = request.getSupervisor().getStatus();
+
+         if (Supervisor.StatusEnum.INACTIVE.equals(status)
+                 || Supervisor.StatusEnum.DISABLED.equals(status)) {
+
+             boolean hasActiveSurveyors =
+                     repository.existsActiveSurveyorBySupervisor(
+                             request.getSupervisor().getId());
+
+             if (hasActiveSurveyors) {
+                 throw new CustomException(
+                         "SUPERVISOR_HAS_ACTIVE_SURVEYORS",
+                         "Supervisor cannot be deactivated or disabled because active surveyors are assigned to this supervisor");
+             }
+         }
+
+         /*
+          * No ACTIVE surveyors found.
+          * Continue with supervisor update.
+          */
+
         if (!StringUtils.isEmpty(request.getOldSupervisorId()) &&
                 !StringUtils.isEmpty(request.getReplacementSupervisorId())) {
 
@@ -99,48 +121,68 @@ public class SupervisorService {
                             request.getOldSupervisorId(),
                             request.getSupervisor().getTenantId());
 
-            /*
-             * Get REPLACEMENT supervisor.
-             */
-            Supervisor replacementSupervisor =
-                    repository.getSupervisorById(
-                            request.getReplacementSupervisorId(),
-                            request.getSupervisor().getTenantId());
 
             /*
-             * Same zone.
+             * Check old supervisor status.
              */
-            if (!Objects.equals(
-                    oldSupervisor.getAssignedZoneId(),
-                    replacementSupervisor.getAssignedZoneId())) {
+            if (Supervisor.StatusEnum.INACTIVE.equals(oldSupervisor.getStatus())
+                    || Supervisor.StatusEnum.DISABLED.equals(oldSupervisor.getStatus())) {
+                
+                /*
+                 * Get REPLACEMENT supervisor.
+                 */
+                Supervisor replacementSupervisor =
+                        repository.getSupervisorById(
+                                request.getReplacementSupervisorId(),
+                                request.getSupervisor().getTenantId());
 
-                throw new CustomException(
-                        "ZONE_MISMATCH",
-                        "Replacement supervisor must belong to the same zone");
+                /*
+                 * Replacement supervisor must be ACTIVE.
+                 */
+                if (!Supervisor.StatusEnum.ACTIVE.equals(
+                        replacementSupervisor.getStatus())) {
+
+                    throw new CustomException(
+                            "REPLACEMENT_SUPERVISOR_NOT_ACTIVE",
+                            "Replacement supervisor must be active");
+                }
+
+
+                /*
+                 * Same zone.
+                 */
+                if (!Objects.equals(
+                        oldSupervisor.getAssignedZoneId(),
+                        replacementSupervisor.getAssignedZoneId())) {
+
+                    throw new CustomException(
+                            "ZONE_MISMATCH",
+                            "Replacement supervisor must belong to the same zone");
+                }
+
+                /*
+                 * Same vendor.
+                 */
+                if (!Objects.equals(
+                        oldSupervisor.getVendorId(),
+                        replacementSupervisor.getVendorId())) {
+
+                    throw new CustomException(
+                            "VENDOR_MISMATCH",
+                            "Replacement supervisor must belong to the same vendor");
+                }
+                /*
+                 * Reassign:
+                 *
+                 * eg_surveyor
+                 * ekyc_assignment
+                 */
+
+                reassignSurveyors(
+                        oldSupervisor,
+                        replacementSupervisor,
+                        request.getRequestInfo());
             }
-
-            /*
-             * Same vendor.
-             */
-            if (!Objects.equals(
-                    oldSupervisor.getVendorId(),
-                    replacementSupervisor.getVendorId())) {
-
-                throw new CustomException(
-                        "VENDOR_MISMATCH",
-                        "Replacement supervisor must belong to the same vendor");
-            }
-            /*
-             * Reassign:
-             *
-             * eg_surveyor
-             * ekyc_assignment
-             */
-
-            reassignSurveyors(
-                    oldSupervisor,
-                    replacementSupervisor,
-                    request.getRequestInfo());
         }
 
         /*
@@ -181,7 +223,6 @@ public class SupervisorService {
                         oldSupervisor.getVendorId(),
                         oldSupervisor.getTenantId(),
                         requestInfo);
-
 
     }
 
