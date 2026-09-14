@@ -168,7 +168,18 @@ public class ElasticSearchQueryBuilder {
             if (!StringUtils.isEmpty(moduleSearchCriteria.get("businessService"))) {
                 clauses.add(getInnerNode(moduleSearchCriteria.get("businessService").toString(), "Data.history.businessService.keyword"));
             }
-
+            if (moduleSearchCriteria.get("zone") != null) {
+                Object zoneObj = moduleSearchCriteria.get("zone");
+                String zoneStr = "";
+                if (zoneObj instanceof List) {
+                    zoneStr = String.join(",", (List<String>) zoneObj);
+                } else {
+                    zoneStr = zoneObj.toString();
+                }
+                if (!StringUtils.isEmpty(zoneStr)) {
+                    clauses.add(getInnerNode(zoneStr, "Data.additionalDetails.zone.keyword"));
+                }
+            }
             JsonNode mustNode = mapper.convertValue(new HashMap<String, List<JsonNode>>() {{
                 put("must", clauses);
             }}, JsonNode.class);
