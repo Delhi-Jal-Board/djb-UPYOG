@@ -44,6 +44,18 @@ class WaterBillingCycleDaoTest {
 	}
 
 	@Test
+	void shouldUseQueryForObjectForTransactionAdvisoryLock() {
+		String sql = "SELECT pg_advisory_xact_lock(hashtextextended(?, 0))";
+
+		when(queryBuilder.lockConnectionForBilling()).thenReturn(sql);
+		when(jdbcTemplate.queryForObject(eq(sql), eq(Long.class), eq("dl.djb:WS/DJB/2026-27/000367")))
+				.thenReturn(0L);
+
+		assertEquals(1, dao.lockConnectionForBilling("dl.djb", "WS/DJB/2026-27/000367"));
+		verify(jdbcTemplate).queryForObject(eq(sql), eq(Long.class), eq("dl.djb:WS/DJB/2026-27/000367"));
+	}
+
+	@Test
 	void shouldFindBillingCycleByConnectionAndExactPeriod() {
 		String tenantId = "dl";
 		String connectionNo = "WS/DJB/2026-27/000367";
