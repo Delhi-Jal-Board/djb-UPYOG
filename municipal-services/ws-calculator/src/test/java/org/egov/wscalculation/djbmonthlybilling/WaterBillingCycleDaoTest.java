@@ -2,6 +2,7 @@ package org.egov.wscalculation.djbmonthlybilling;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -18,6 +19,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementSetter;
+import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
@@ -44,15 +47,17 @@ class WaterBillingCycleDaoTest {
 	}
 
 	@Test
-	void shouldUseQueryForObjectForTransactionAdvisoryLock() {
+	void shouldUseQueryForTransactionAdvisoryLock() {
 		String sql = "SELECT pg_advisory_xact_lock(hashtextextended(?, 0))";
 
 		when(queryBuilder.lockConnectionForBilling()).thenReturn(sql);
-		when(jdbcTemplate.queryForObject(eq(sql), eq(Long.class), eq("dl.djb:WS/DJB/2026-27/000367")))
-				.thenReturn(0L);
 
 		assertEquals(1, dao.lockConnectionForBilling("dl.djb", "WS/DJB/2026-27/000367"));
-		verify(jdbcTemplate).queryForObject(eq(sql), eq(Long.class), eq("dl.djb:WS/DJB/2026-27/000367"));
+
+		verify(jdbcTemplate).query(
+				eq(sql),
+				any(PreparedStatementSetter.class),
+				any(RowCallbackHandler.class));
 	}
 
 	@Test
