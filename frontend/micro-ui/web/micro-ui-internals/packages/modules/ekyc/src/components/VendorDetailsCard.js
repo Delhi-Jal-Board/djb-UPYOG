@@ -52,67 +52,57 @@ const VendorDetailsCard = () => {
   }, [vendor]);
 
   // KPI stats calculation
-  const cards = useMemo(() => {
-    const totalKnos = progressData?.totalKnosInZones || 0;
-    const totalAssignments = progressData?.totalKnos || 0;
-    // const completedKnos = progressData?.submittedKnos || 0;
-    const selfEkycCount = progressData?.selfEkycCountInZones || 0;
-    const submittedKnos = progressData?.submittedKnosInZones || 0;
-    const pendingKnos = progressData?.pendingKnosInZones || 0;
-    const progressPercent = progressData?.overallProgressPercent || 0;
-
-    return [
-      {
-        label: "TOTAL_KNOS",
-        count: totalKnos,
-        color: "#2563EB", // Blue
-        type: "today",
-        icon: <FaDatabase />,
-      },
-      {
-        label: "TOTAL_EKYC_APPLICATIONS",
-        count: totalAssignments,
-        color: "#0891B2", // Cyan
-        type: "today",
-        icon: <FaFileAlt />,
-      },
-      // {
-      //   label: "EKYC_SUBMITTED",
-      //   count: completedKnos,
-      //   color: "#10B981",
-      //   type: "month",
-      //   icon: <FaCheckCircle />,
-      // },
-      {
-        label: "EKYC_SUBMITTED_BY_VENDORS",
-        count: submittedKnos,
-        color: "#0D9488", // Teal
-        type: "month",
-        icon: <FaBuilding />,
-      },
-      {
-        label: "EKYC_SUBMITTED_BY_CITIZEN",
-        count: selfEkycCount,
-        color: "#7C3AED", // Purple
-        type: "month",
-        icon: <FaUser />,
-      },
-      {
-        label: "PENDING_APPLICATIONS",
-        count: pendingKnos,
-        color: "#EA580C", // Orange
-        type: "pending",
-        icon: <FaClock />,
-      },
-      {
-        label: "OVERALL_PROGRESS",
-        count: `${progressPercent}%`,
-        color: "#DB2777", // Pink
-        type: "progress",
-        icon: <FaChartLine />,
-      },
-    ];
-  }, [vendor, progressData]);
+  const cards = [
+    {
+      label: "TOTAL_KNOS",
+      count: progressData?.totalKnosInZones || 0,
+      color: "#2563EB", // Blue
+      type: "today",
+      icon: <FaDatabase />,
+    },
+    {
+      label: "TOTAL_EKYC_APPLICATIONS",
+      count: progressData?.totalAssignments || 0,
+      color: "#0891B2", // Cyan
+      type: "today",
+      icon: <FaFileAlt />,
+    },
+    // {
+    //   label: "EKYC_SUBMITTED",
+    //   count: progressData?.submittedKnos || 0,
+    //   color: "#10B981",
+    //   type: "month",
+    //   icon: <FaCheckCircle />,
+    // },
+    {
+      label: "EKYC_SUBMITTED_BY_VENDORS",
+      count: progressData?.submittedKnosInZones || 0,
+      color: "#0D9488", // Teal
+      type: "month",
+      icon: <FaBuilding />,
+    },
+    {
+      label: "EKYC_SUBMITTED_BY_CITIZEN",
+      count: progressData?.selfEkycCountInZones || 0,
+      color: "#7C3AED", // Purple
+      type: "month",
+      icon: <FaUser />,
+    },
+    {
+      label: "PENDING_APPLICATIONS",
+      count: progressData?.pendingKnosInZones || 0,
+      color: "#EA580C", // Orange
+      type: "pending",
+      icon: <FaClock />,
+    },
+    {
+      label: "OVERALL_PROGRESS",
+      count: `${progressData?.overallProgressPercent || 0}%`,
+      color: "#DB2777", // Pink
+      type: "progress",
+      icon: <FaChartLine />,
+    },
+  ];
 
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize, setPageSize] = useState(20);
