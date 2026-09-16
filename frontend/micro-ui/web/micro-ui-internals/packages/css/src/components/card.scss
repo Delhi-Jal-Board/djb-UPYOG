@@ -485,6 +485,9 @@
 
 .employeeCard-override {
   margin-left: 0px !important;
+  position: relative;
+  overflow-y: scroll;
+  width: 100%;
 }
 
 .BPAemployeeCard {

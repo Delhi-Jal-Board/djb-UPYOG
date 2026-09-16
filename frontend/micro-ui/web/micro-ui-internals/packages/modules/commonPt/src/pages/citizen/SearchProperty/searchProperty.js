@@ -641,10 +641,10 @@ const SearchProperty = ({ config: propsConfig, onSelect, redirectToUrl }) => {
   }
 
   return (
-    <div>
+    <React.Fragment>
       <div
         className="search-tabs-container"
-        style={{ marginBottom: "16px", display: "flex", gap: "24px", justifyContent: "flex-start", borderBottom: "1px solid #ccc" }}
+       
       >
         <div
           className={`search-tab ${action == 0 ? "active" : ""}`}
@@ -716,6 +716,7 @@ const SearchProperty = ({ config: propsConfig, onSelect, redirectToUrl }) => {
           )}
         </div>
       </div>
+      <div>
       <FormComposer
         key={action}
         onSubmit={onPropertySearch}
@@ -729,7 +730,7 @@ const SearchProperty = ({ config: propsConfig, onSelect, redirectToUrl }) => {
         text={t(propsConfig.texts.text)}
         onFormValueChange={onFormValueChange}
       />
-
+      </div>
       {Object.keys(searchData).length > 0 && (
         <PropertySearchResults
           searchQuery={{ ...searchData.filters, city: searchData.city }}
@@ -750,7 +751,7 @@ const SearchProperty = ({ config: propsConfig, onSelect, redirectToUrl }) => {
           }}
         />
       )}
-    </div>
+    </React.Fragment>
   );
 };
 

@@ -120,11 +120,11 @@ const enabledModules = [
 ];
 window.Digit.ComponentRegistryService.setupRegistry({
   ...paymentConfigs,
-  // PTModule,
-  // PTLinks,
+  PTModule,
+  PTLinks,
   PaymentModule,
   PaymentLinks,
-  // ...PTComponents,
+  ...PTComponents,
   MCollectLinks,
   MCollectModule,
   HRMSModule,

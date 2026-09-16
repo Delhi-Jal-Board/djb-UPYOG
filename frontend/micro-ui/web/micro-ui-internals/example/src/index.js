@@ -4,7 +4,7 @@ import "@djb25/digit-ui-css";
 
 import { initLibraries } from "@djb25/digit-ui-libraries";
 import { PGRReducers } from "@djb25/digit-ui-module-pgr";
-// import { PTModule, PTLinks, PTComponents } from "@djb25/digit-ui-module-pt";
+import { PTModule, PTLinks, PTComponents } from "@djb25/digit-ui-module-pt";
 import { MCollectModule, MCollectLinks } from "@djb25/digit-ui-module-mcollect";
 // import { TLModule, TLLinks } from "@djb25/digit-ui-module-tl";
 import { initFSMComponents } from "@djb25/digit-ui-module-fsm";
@@ -139,9 +139,9 @@ const initDigitUI = () => {
     PaymentModule,
     ...paymentConfigs,
     PaymentLinks,
-    // PTModule,
-    // PTLinks,
-    // ...PTComponents,
+    PTModule,
+    PTLinks,
+    ...PTComponents,
     MCollectLinks,
     MCollectModule,
     HRMSModule,
