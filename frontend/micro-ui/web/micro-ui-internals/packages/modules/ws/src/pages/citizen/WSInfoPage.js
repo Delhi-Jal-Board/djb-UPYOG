@@ -226,10 +226,16 @@ const WSInfoPage = () => {
               <Label>{t("WS_ENTER_OTP_SENT_TO") || "Enter OTP sent to"} +91 {getMaskedPhone(mobileNumberToSearch)} *</Label>
               <TextInput
                 t={t}
-                type="number"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 isMandatory={false}
                 value={otp}
+                maxLength={6}
                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                onKeyDown={(e) => {
+                  if (['-', '+', 'e', 'E', '.'].includes(e.key)) e.preventDefault();
+                }}
                 placeholder={t("WS_ENTER_6_DIGIT_OTP") || "Enter 6-digit OTP"}
                 style={{ width: "100%", maxWidth: "300px" }}
               />
@@ -438,6 +444,7 @@ const WSInfoPage = () => {
           <li>{t("WS_CONNECTION_TYPE")}</li>
           <li>{t("WS_WATER_DEMAND_TYPE")}</li>
           <li>{t("WS_APPLICANT_TYPE")}</li>
+          <li>{t("WS_DIVYANGJAN")}</li>
           <li>{t("WS_DOMESTIC_TYPE")}</li>
         </ul>
 
@@ -485,12 +492,7 @@ const WSInfoPage = () => {
           <li>{t("WS_NUMBER_OF_DWELLING_UNITS")}</li>
         </ul>
 
-        <CardSubHeader style={{ marginTop: "0", marginBottom: "0" }}>{t("WS_DJB_EMPLOYEE")}</CardSubHeader>
-        <ul style={{ listStyleType: "disc", marginLeft: "20px", marginBottom: "24px", lineHeight: "2" }}>
-          <li>{t("WS_EMPLOYEE_ID")}</li>
-          <li>{t("WS_DATE_OF_RETIREMENT")}</li>
-          <li>{t("WS_EMPLOYEE_DESIGNATION")}</li>
-        </ul>
+
 
         <CardSubHeader style={{ marginTop: "0", marginBottom: "0" }}>{t("WS_BANK_DETAILS")}</CardSubHeader>
         <ul style={{ listStyleType: "disc", marginLeft: "20px", marginBottom: "24px", lineHeight: "2" }}>

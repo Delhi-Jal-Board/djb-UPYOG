@@ -98,7 +98,7 @@ const Step1_ExistingConnection = ({ t, applicationDetails, propertyId, mobileNum
       )}
 
       <div style={{ display: "flex", alignItems: "center", marginBottom: "16px", flexWrap: "wrap", gap: "8px" }}>
-        <span style={{ fontSize: isMobileView ? "20px" : "22px" }}>🏢</span>
+        <span style={{ fontSize: isMobileView ? "20px" : "22px" }}></span>
         <h2 style={{ fontSize: isMobileView ? "16px" : "18px", fontWeight: "700", margin: 0 }}>2. Existing Consumer Details</h2>
       </div>
 

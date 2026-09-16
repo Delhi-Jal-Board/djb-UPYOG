@@ -3,8 +3,24 @@ import { Card, CardHeader, CardLabel, TextInput, Dropdown, MobileNumber, CardLab
 import { useForm, Controller, useWatch } from "react-hook-form";
 
 const Step2_NewConsumerDetails = ({ t, onNext, onBack, defaultValues }) => {
+  const userInfo = Digit.UserService.getUser();
+  const isCitizen = userInfo?.info?.type === "CITIZEN";
+  
+  const initialValues = { ...(defaultValues || {}) };
+  if (isCitizen) {
+    if (!initialValues.proposedNewConsumerName && userInfo?.info?.name) {
+      initialValues.proposedNewConsumerName = userInfo.info.name;
+    }
+    if (!initialValues.newOwnerMobileNumber && userInfo?.info?.mobileNumber) {
+      initialValues.newOwnerMobileNumber = userInfo.info.mobileNumber;
+    }
+    if (!initialValues.newOwnerEmailAddress && userInfo?.info?.emailId) {
+      initialValues.newOwnerEmailAddress = userInfo.info.emailId;
+    }
+  }
+
   const { control, handleSubmit, formState: { errors }, trigger, setError, clearErrors, setValue } = useForm({
-    defaultValues: defaultValues || {},
+    defaultValues: initialValues,
     mode: "onBlur"
   });
 
@@ -67,7 +83,7 @@ const Step2_NewConsumerDetails = ({ t, onNext, onBack, defaultValues }) => {
   return (
     <Card style={{ marginBottom: "20px", padding: isMobileView ? "12px" : undefined }}>
       <div style={{ display: "flex", alignItems: "center", marginBottom: "16px", flexWrap: "wrap", gap: "8px" }}>
-        <span style={{ fontSize: isMobileView ? "20px" : "22px" }}>👤</span>
+        <span style={{ fontSize: isMobileView ? "20px" : "22px" }}></span>
         <h2 style={{ fontSize: isMobileView ? "16px" : "18px", fontWeight: "700", margin: 0 }}>2. New Consumer Details.</h2>
       </div>
 

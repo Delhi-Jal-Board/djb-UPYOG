@@ -85,10 +85,14 @@ const getConnectionDetails = (application, t) => {
   return {
     title: t("WS_COMMON_CONNECTION_DETAILS"),
     values: application?.applicationType == "NEW_WATER_CONNECTION" ? [
+      { title: t("WS_DIVYANGJAN"), value: application?.additionalDetails?.isDivyangjan ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO") },
+      ...(Digit.UserService.getUser()?.info?.type !== "CITIZEN" ? [{ title: t("WS_DJB_EMPLOYEE_LABEL"), value: application?.additionalDetails?.isDjbEmployee ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO") }] : []),
       { title: t("WS_APPLY_FOR"), value: t(application?.applicationType) || t("CS_NA") },
       { title: t("WS_TASK_DETAILS_CONN_DETAIL_NO_OF_TAPS_PROPOSED"), value: application?.proposedTaps || t("CS_NA") },
       { title: t("WS_TASK_DETAILS_CONN_DETAIL_PIPE_SIZE_PROPOSED"), value: application?.proposedPipeSize || t("CS_NA") },
     ] : [
+      { title: t("WS_DIVYANGJAN"), value: application?.additionalDetails?.isDivyangjan ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO") },
+      ...(Digit.UserService.getUser()?.info?.type !== "CITIZEN" ? [{ title: t("WS_DJB_EMPLOYEE_LABEL"), value: application?.additionalDetails?.isDjbEmployee ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO") }] : []),
       { title: t("WS_APPLY_FOR"), value: t(application?.applicationType) || t("CS_NA") },
       { title: t("WS_NO_WATER_CLOSETS_LABEL"), value: application?.proposedWaterClosets || t("CS_NA") },
       { title: t("WS_SERV_DETAIL_NO_OF_TOILETS"), value: application?.proposedToilets || t("CS_NA") },

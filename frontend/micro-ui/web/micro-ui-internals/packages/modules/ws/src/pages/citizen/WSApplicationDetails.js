@@ -441,7 +441,15 @@ const WSApplicationDetails = () => {
                 <Row
                   label={t("WS_SERVICE_TYPE")}
                   text={`${t(
-                    checkForNA(connectionDetails?.serviceType?.i18nKey || connectionDetails?.serviceType?.code || connectionDetails?.serviceType)
+                    checkForNA(
+                      connectionDetails?.serviceType?.code
+                        ? `WS_APPLICATION_TYPE_${connectionDetails?.serviceType?.code}`
+                        : connectionDetails?.serviceType
+                          ? `WS_APPLICATION_TYPE_${connectionDetails?.serviceType}`
+                          : applicationData?.applicationType
+                            ? `WS_APPLICATION_TYPE_${applicationData?.applicationType}`
+                            : "NA"
+                    )
                   )}`}
                 />
                 <Row
@@ -467,6 +475,10 @@ const WSApplicationDetails = () => {
                       connectionDetails?.applicantType?.i18nKey || connectionDetails?.applicantType?.code || connectionDetails?.applicantType
                     )
                   )}`}
+                />
+                <Row
+                  label={t("WS_DIVYANGJAN")}
+                  text={`${connectionDetails?.isDivyangjan ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}`}
                 />
                 <Row
                   label={t("WS_SERVICE_TYPE")}
@@ -957,30 +969,7 @@ const WSApplicationDetails = () => {
                 />
               </StatusTable>
 
-              <CardHeader styles={{ fontSize: "28px" }}>{t("WS_DJB_EMPLOYEE")}</CardHeader>
-              <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
-                <Row label={t("WS_DJB_EMPLOYEE")} text={`${djbEmployee?.isDjbEmployee ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}`} />
-                {djbEmployee?.isDjbEmployee && (
-                  <React.Fragment>
-                    <Row label={t("WS_EMPLOYEE_ID")} text={`${t(checkForNA(djbEmployee?.employeeId))}`} />
-                    <Row label={t("WS_DATE_OF_RETIREMENT")} text={`${t(checkForNA(djbEmployee?.dor))}`} />
-                    <Row label={t("WS_EMPLOYEE_DESIGNATION")} text={`${t(checkForNA(djbEmployee?.designation))}`} />
-                    {djbEmployee?.document && (
-                      <Row
-                        label={t("WS_UPLOAD_EMPLOYEE_ID_DOC")}
-                        text={
-                          <span
-                            style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", color: "#f47738" }}
-                            onClick={() => getFiles([djbEmployee?.document], tenantId)}
-                          >
-                            <GenericFileIcon /> {t("CS_COMMON_VIEW")}
-                          </span>
-                        }
-                      />
-                    )}
-                  </React.Fragment>
-                )}
-              </StatusTable>
+
 
               {!isMutation && (
                 <React.Fragment>

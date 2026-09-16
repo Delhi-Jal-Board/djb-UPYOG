@@ -26,7 +26,7 @@ const WSDeclaration = ({ config, onSelect, userType, formData, setError, formSta
       signatureFile: formData?.declarationData?.signatureFile || null,
       signatureFileStoreId: formData?.declarationData?.signatureFileStoreId || null,
       signatureFileName: formData?.declarationData?.signatureFileName || "",
-      declarations: formData?.declarationData?.declarations || Array(9).fill(formData?.declarationData?.agree || false),
+      declarations: formData?.declarationData?.declarations || Array(10).fill(formData?.declarationData?.agree || false),
     },
   });
   const formValue = watch();
@@ -38,7 +38,12 @@ const WSDeclaration = ({ config, onSelect, userType, formData, setError, formSta
 
   useEffect(() => {
     if (wsServicesMastersData?.["ws-services-masters"]?.Declaration) {
-      setDeclarationPoints(wsServicesMastersData["ws-services-masters"].Declaration);
+      const points = [...wsServicesMastersData["ws-services-masters"].Declaration];
+      points.push({
+        code: "WS_SEWERAGE_DISPOSAL_DECLARATION",
+        description: "I declare that sewerage disposal facility is available at the premises and undertake to comply with all applicable DJB rules."
+      });
+      setDeclarationPoints(points);
     }
   }, [wsServicesMastersData]);
 
@@ -143,7 +148,7 @@ const WSDeclaration = ({ config, onSelect, userType, formData, setError, formSta
                 checked={props.value}
                 onChange={(e) => {
                   const val = e.target.checked;
-                  setValue("declarations", Array(9).fill(val));
+                  setValue("declarations", Array(10).fill(val));
                   props.onChange(val);
                 }}
               />

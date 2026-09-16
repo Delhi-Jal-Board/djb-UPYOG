@@ -60,7 +60,7 @@ function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false, 
 
   const checkLocation =
     window.location.href.includes("employee/tl") || window.location.href.includes("/obps") || window.location.href.includes("employee/ws");
-  const isWSLocation = window.location.href.includes("employee/ws");
+  const isWSLocation = window.location.href.includes("/ws/") || window.location.href.includes("employee/ws") || window.location.href.includes("citizen/ws");
   const isStakeholderApplication = window.location.href.includes("stakeholder");
   const canVerifyDocuments = [
     "PENDING_FOR_DOCUMENT_VERIFICATION",
@@ -241,9 +241,9 @@ function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false, 
                             key={`chk-${value?.fileStoreId}-${value?.isVerified ?? value?.originalDoc?.isVerified}`}
                             type="checkbox"
                             className="verify-doc-checkbox"
-                            style={{ width: "18px", height: "18px", accentColor: "#1a67a3", cursor: applicationStatus === "PENDING_FOR_CONNECTION_ACTIVATION" ? "not-allowed" : "pointer" }}
-                            disabled={applicationStatus === "PENDING_FOR_CONNECTION_ACTIVATION"}
-                            checked={checkedMap[value?.fileStoreId] ?? value?.isVerified ?? value?.originalDoc?.isVerified ?? false}
+                            style={{ width: "18px", height: "18px", accentColor: "#1a67a3", cursor: (applicationStatus === "PENDING_FOR_CONNECTION_ACTIVATION" || window.location.href.includes("citizen")) ? "not-allowed" : "pointer" }}
+                            disabled={applicationStatus === "PENDING_FOR_CONNECTION_ACTIVATION" || window.location.href.includes("citizen")}
+                            checked={applicationStatus === "PENDING_FOR_CONNECTION_ACTIVATION" ? true : (checkedMap[value?.fileStoreId] ?? value?.isVerified ?? value?.originalDoc?.isVerified ?? false)}
                             onChange={(e) => {
                               const checked = e.target.checked;
                               value.isVerified = checked;

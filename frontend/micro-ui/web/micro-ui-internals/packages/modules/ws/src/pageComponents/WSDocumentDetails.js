@@ -33,11 +33,54 @@ const WSDocumentDetails = ({ t, config, onSelect, userType, formData, setError: 
     else setEnableSubmit(true);
   }, [documents, checkRequiredFields]);
 
+  const downloadDocument = async () => {
+    const ENVIRONMENT_FILE_STORE_IDS = {
+      uat: "261542df-8dae-41e7-aa17-00cd288faf3b",
+      dev: "0d394691-45ed-4036-97e8-8de8b0f166b1",
+    };
+    const hostname = window.location.hostname.toLowerCase();
+    const fileStoreId = hostname.includes("uat") ? ENVIRONMENT_FILE_STORE_IDS.uat : ENVIRONMENT_FILE_STORE_IDS.dev;
+    const downloaded = await Digit.UploadServices.DownloadFile(fileStoreId, "dl", "NOC for New Delhi Jal Board Connection.pdf");
+    if (!downloaded) {
+      setError(t("CS_FILE_DOWNLOAD_ERROR") || "PDF download failed");
+    }
+  };
+
+  const isTenant = formData?.ConnectionDetails?.[0]?.applicantType?.code === "TENANT";
+
+  const nocDownloadSection = isTenant ? (
+    <div style={{ marginBottom: "20px", display: "flex", alignItems: "center", justifyContent: "space-between", backgroundColor: "#eaf3fa", padding: "16px", borderRadius: "8px", border: "1px solid #00497e" }}>
+      <div style={{ color: "#00497e", fontWeight: "bold" }}>
+        {t("WS_NOC_DOCUMENT_DOWNLOAD_DESC")}
+      </div>
+      <button
+        type="button"
+        onClick={(event) => {
+          event.stopPropagation();
+          downloadDocument();
+        }}
+        style={{
+          cursor: "pointer",
+          color: "#fff",
+          fontWeight: "bold",
+          padding: "6px 14px",
+          border: "1px solid #00497e",
+          borderRadius: "4px",
+          backgroundColor: "#00497e",
+          whiteSpace: "nowrap",
+        }}
+      >
+        {t("WS_DOWNLOAD_DOCUMENT")}
+      </button>
+    </div>
+  ) : null;
+
   return (
     <div>
       {userType === "citizen" && <Timeline currentStep={3} />}
       {!wsDocsLoading ? (
         <FormStep t={t} config={config} onSelect={handleSubmit} onSkip={onSkip} isDisabled={enableSubmit} onAdd={onAdd}>
+          {nocDownloadSection}
           {wsDocs?.Documents?.map((document, index) => {
             return (
               <SelectDocument
