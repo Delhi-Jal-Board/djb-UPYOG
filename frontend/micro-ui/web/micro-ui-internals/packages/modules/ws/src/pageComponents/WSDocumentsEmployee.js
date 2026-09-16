@@ -122,6 +122,7 @@ const WSDocumentsEmployee = ({ t, config, onSelect, userType, formData, setError
           docData.auditDetails = documentData.auditDetails;
           docData.documentType = docData.documentType;
           docData.documentUid = documentData.documentUid;
+          docData.documentNumber = documentData.documentNumber;
           docData.fileStoreId = documentData.fileStoreId;
           docData.id = documentData.id;
           docData.status = "ACTIVE";
@@ -232,7 +233,7 @@ function SelectDocument({
   });
   const [file, setFile] = useState(null);
   const [uploadedFile, setUploadedFile] = useState(() => (isOther ? null : filteredDocument?.fileStoreId || null));
-  const [documentUid, setDocumentUid] = useState(() => (isOther ? "" : filteredDocument?.documentUid || filteredDocument?.documentNumber || ""));
+  const [documentUid, setDocumentUid] = useState(() => (isOther ? "" : filteredDocument?.documentNumber || ""));
   const [isDocumentUidLocked, setIsDocumentUidLocked] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -672,8 +673,8 @@ function SelectDocument({
               
               <span style={{ fontWeight: "bold" }}>
                 {uploadedDocument.documentName || uploadedDocument.i18nKey || uploadedDocument.documentType || documentDisplayName
-                  ? t(uploadedDocument.documentName || uploadedDocument.i18nKey || uploadedDocument.documentType || documentDisplayName)
-                  : t("CS_COMMON_DOCUMENT")} - {uploadedDocument.fileName || t("CS_COMMON_DOCUMENT")}
+                  ? t((uploadedDocument.documentName || uploadedDocument.i18nKey || uploadedDocument.documentType || documentDisplayName).replaceAll('.', '_'))
+                  : t("CS_COMMON_DOCUMENT")}{uploadedDocument.fileName ? ` - ${uploadedDocument.fileName}` : ""}
               </span>
               {uploadedDocument.documentNumber && <span>{uploadedDocument.documentNumber}</span>}
               <button
