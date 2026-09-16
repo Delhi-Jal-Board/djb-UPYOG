@@ -27,7 +27,11 @@ function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false, 
     });
 
     const allChecked = requiredDocsCount === 0 || checkedCount === requiredDocsCount;
-    const isDocVerifState = !applicationStatus || applicationStatus === "PENDING_FOR_DOCUMENT_VERIFICATION" || applicationStatus === "PENDING_APPROVAL_FOR_MUTATION";
+    const isDocVerifState = 
+      !applicationStatus || 
+      applicationStatus === "PENDING_FOR_DOCUMENT_VERIFICATION" || 
+      applicationStatus === "PENDING_APPROVAL_FOR_MUTATION" ||
+      applicationStatus === "PENDING_FOR_ZRO_APPROVAL";
     const finalVerified = isDocVerifState ? allChecked : true;
 
     window.isDocumentsVerified = finalVerified;
@@ -58,7 +62,12 @@ function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false, 
     window.location.href.includes("employee/tl") || window.location.href.includes("/obps") || window.location.href.includes("employee/ws");
   const isWSLocation = window.location.href.includes("employee/ws");
   const isStakeholderApplication = window.location.href.includes("stakeholder");
-  const canVerifyDocuments = ["PENDING_FOR_ZRO_APPROVAL", "PENDING_FOR_CONNECTION_ACTIVATION"].includes(applicationStatus);
+  const canVerifyDocuments = [
+    "PENDING_FOR_DOCUMENT_VERIFICATION",
+    "PENDING_APPROVAL_FOR_MUTATION",
+    "PENDING_FOR_ZRO_APPROVAL",
+    "PENDING_FOR_CONNECTION_ACTIVATION"
+  ].includes(applicationStatus);
 
   const getDocSubType = (documentType) => {
     if (!documentType) return "";
