@@ -286,7 +286,7 @@ function ApplicationDetailsContent({
   const documentsDetailIndex = applicationDetails?.applicationDetails?.findIndex((detail) => detail?.additionalDetails?.documents);
 
   return (
-    <Card style={{ position: "relative" }} className={"employeeCard-override"}>
+    <Card className={"employeeCard-override"}>
       {/* For UM-4418 changes */}
       {isInfoLabel ? (
         <InfoDetails
