@@ -421,7 +421,7 @@ const EditApplication = ({ parentRoute }) => {
                   </div>
                 );
               })}
-              <div style={{ marginTop: "24px" }}>
+              <div>
                 <SubmitBar label={t("SUBMIT")} onSubmit={createApplication} />
               </div>
             </div>

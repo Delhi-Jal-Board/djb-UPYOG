@@ -115,7 +115,6 @@ export const newConfig = [
         nextStep: "property-water-details",
         hideInEmployee: true,
         texts: {
-          headerCaption: "WS_COMMON_CONNECTION_DETAIL",
           header: "WS_PROPERTY_ADDRESS_DETAILS",
           cardText: "",
           submitBarLabel: "CS_COMMON_NEXT",
@@ -130,7 +129,6 @@ export const newConfig = [
         WATER: "bank-details",
         hideInEmployee: true,
         texts: {
-          headerCaption: "WS_COMMON_CONNECTION_DETAIL",
           header: "WS_PROPERTY_ADDRESS_DETAILS",
           cardText: "",
           submitBarLabel: "CS_COMMON_NEXT",

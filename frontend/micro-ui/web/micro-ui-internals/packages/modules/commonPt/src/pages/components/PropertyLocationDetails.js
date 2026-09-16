@@ -38,7 +38,7 @@ const PropertyLocationDetails = ({
     actualZone: address?.actualZone || "",
   });
 
-  const isPropertyFound = window.location.href.includes("ws/old-application") || window.location.href.includes("/edit-property/");
+  const isPropertyFound = window.location.href.includes("ws/old-application") || window.location.href.includes("/edit-property/") || window.location.href.includes("/edit-application/");
 
   useEffect(() => {
     if (props.register) {

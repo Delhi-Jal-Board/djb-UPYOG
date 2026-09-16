@@ -106,12 +106,12 @@ const App = ({ path }) => {
     {
       path: "/digit-ui/citizen/ws/my-applications",
       label: `${t("CS_HOME_MY_APPLICATIONS")} ${totalAppsCount ? `(${totalAppsCount})` : ""}`,
-      show: location.pathname.includes("/my-applications") || location.pathname.includes("/connection/application"),
+      show: location.pathname.includes("/my-applications") || location.pathname.includes("/connection/application") || location.pathname.includes("/edit-application"),
     },
     {
       path: "/digit-ui/citizen/ws/my-connections",
       label: t("WS_MYCONNECTIONS_HEADER"),
-      show: location.pathname.includes("/my-connections") || location.pathname.includes("/connection/details"),
+      show: location.pathname.includes("/my-connections") || location.pathname.includes("/connection/details") || location.pathname.includes("/modify-connection"),
     },
     {
       path: "/digit-ui/citizen/ws/my-bills",
@@ -129,14 +129,19 @@ const App = ({ path }) => {
       show: location.pathname.includes("/old-application"),
     },
     {
-      path: location.pathname,
+      path: sessionStorage.getItem("ApplicationNoState") ? `/digit-ui/citizen/ws/connection/application/${sessionStorage.getItem("ApplicationNoState")}` : location.pathname,
       label: t("WS_APPLICATION_DETAILS_HEADER"),
-      show: location.pathname.includes("/connection/application"),
+      show: location.pathname.includes("/connection/application") || location.pathname.includes("/edit-application"),
     },
     {
       path: location.pathname,
       label: t("WS_COMMON_CONNECTION_DETAIL"),
-      show: location.pathname.includes("/connection/details"),
+      show: location.pathname.includes("/connection/details") || location.pathname.includes("/modify-connection"),
+    },
+    {
+      path: location.pathname,
+      label: t("WS_EDIT_CONNECTION") || "Edit Connection",
+      show: location.pathname.includes("/edit-application"),
     },
     {
       path: location.pathname,

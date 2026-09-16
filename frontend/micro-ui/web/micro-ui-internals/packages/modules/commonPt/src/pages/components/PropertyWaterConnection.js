@@ -56,7 +56,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
     setCategoryTypeList(categories);
   }, [wsServicesMastersData]);
 
-  const isPropertyFound = window.location.href.includes("ws/old-application");
+  const isPropertyFound = window.location.href.includes("ws/old-application") || window.location.href.includes("/edit-application/");
 
   useEffect(() => {
     if (props.register) {
@@ -192,7 +192,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
 
     // Populate the dependent dropdowns only after their master options load.
     // Re-running this effect after a user selection would restore old values.
-    if (!categoryTypeList.length || !categoryOptions.length || !propertyTypeOptions.length || !usageTypeOptions.length) return;
+    if (!categoryTypeList.length || !ptServicesMastersData) return;
 
     if (formData?.cpt?.details) {
       const details = formData.cpt.details;
@@ -202,18 +202,15 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
       const catType = getCode(additionalDetails.categoryType) || (String(usageCategory).includes("RESIDENTIAL") ? "DOMESTIC" : "NON_DOMESTIC");
 
       setValue("useDetails.categoryType", categoryTypeList?.find((o) => normalizeCode(o.code) === normalizeCode(catType)) || null);
-      setValue(
-        "useDetails.propertyCategory",
-        categoryOptions?.find((o) => normalizeCode(o.code) === normalizeCode(usageCategory)) || null
-      );
-      setValue(
-        "useDetails.propertyType",
-        propertyTypeOptions?.find((o) => normalizeCode(o.code) === normalizeCode(getCode(additionalDetails.propertyType || details.propertyType))) || null
-      );
-      setValue(
-        "useDetails.WaterConnectionUsageType",
-        usageTypeOptions?.find((o) => normalizeCode(o.code) === normalizeCode(getCode(additionalDetails.waterConnectionUsageType || additionalDetails.WaterConnectionUsageType))) || null
-      );
+      
+      const propCategoryMatch = ptServicesMastersData?.PropertyTax?.PropertyCategory?.find((o) => normalizeCode(o.code) === normalizeCode(usageCategory));
+      setValue("useDetails.propertyCategory", propCategoryMatch ? { code: propCategoryMatch.code, name: propCategoryMatch.name } : null);
+
+      const propTypeMatch = ptServicesMastersData?.PropertyTax?.PropertyType?.find((o) => normalizeCode(o.code) === normalizeCode(getCode(additionalDetails.propertyType || details.propertyType)));
+      setValue("useDetails.propertyType", propTypeMatch ? { code: propTypeMatch.code, name: propTypeMatch.name } : null);
+
+      const usageTypeMatch = ptServicesMastersData?.PropertyTax?.PropertyNewUsageType?.find((o) => normalizeCode(o.code) === normalizeCode(getCode(additionalDetails.waterConnectionUsageType || additionalDetails.WaterConnectionUsageType)));
+      setValue("useDetails.WaterConnectionUsageType", usageTypeMatch ? { code: usageTypeMatch.code, name: usageTypeMatch.name } : null);
       setValue(
         "useDetails.noOfFloors",
         floorOptions?.find((o) => {
@@ -231,6 +228,10 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
         additionalDetails.numberOfDwellingUnits || additionalDetails.noOfDwellingUnits || details?.noOfDwellingUnits || ""
       );
       setValue("useDetails.NumberofRooms", additionalDetails.numberOfRooms || additionalDetails.noOfRooms || details?.noOfRooms || "");
+      setValue("useDetails.farArea", additionalDetails.farArea || details?.farArea?.toString() || "");
+      setValue("useDetails.servantQuarterArea", additionalDetails.servantQuarterArea || details?.servantQuarterArea?.toString() || "");
+      setValue("useDetails.numberOfBeds", additionalDetails.numberOfBeds || details?.numberOfBeds?.toString() || "");
+      setValue("useDetails.numberOfStudents", additionalDetails.numberOfStudents || details?.numberOfStudents?.toString() || "");
     } else if (formData?.cpt === null) {
       setValue("useDetails.categoryType", null);
       setValue("useDetails.propertyCategory", null);
