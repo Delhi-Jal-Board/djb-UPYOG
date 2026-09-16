@@ -302,38 +302,9 @@ const CheckPage = ({ onSubmit, value }) => {
         <Row label={t("WS_NUMBER_OF_DWELLING_UNITS")} text={`${t(checkForNA(useDetails?.NumberofDwellingUnits || useDetails?.noOfDwellingUnits))}`} />
       </StatusTable>
 
-      <CardSubHeader>{t("WS_DJB_EMPLOYEE")}</CardSubHeader>
+      <CardSubHeader>{t("WS_DIVYANGJAN")}</CardSubHeader>
       <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
-        <Row
-          label={t("WS_DJB_EMPLOYEE")}
-          text={`${djbEmployee?.isDjbEmployee ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}`}
-          actionButton={<ActionButton onClick={onEdit} />}
-        />
-        {djbEmployee?.isDjbEmployee && (
-          <React.Fragment>
-            <Row label={t("WS_EMPLOYEE_ID")} text={`${t(checkForNA(djbEmployee?.employeeId))}`} />
-            <Row label={t("WS_DATE_OF_RETIREMENT")} text={`${t(checkForNA(djbEmployee?.dor))}`} />
-            <Row label={t("WS_EMPLOYEE_DESIGNATION")} text={`${t(checkForNA(djbEmployee?.designation))}`} />
-            {djbEmployee?.document && (
-              <Row
-                label={t("WS_UPLOAD_EMPLOYEE_ID_DOC")}
-                text={
-                  <span
-                    style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", color: "#f47738" }}
-                    onClick={() => openFilePDF(djbEmployee?.document)}
-                  >
-                    <GenericFileIcon /> {t("CS_COMMON_VIEW")}
-                  </span>
-                }
-              />
-            )}
-          </React.Fragment>
-        )}
-      </StatusTable>
-
-      <CardSubHeader>Divyangjan/Person with Disability?</CardSubHeader>
-      <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
-        <Row label="Divyangjan/Person with Disability?" text={`${disability?.isDivyangjan ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}`} />
+        <Row label={t("WS_DIVYANGJAN")} text={`${disability?.isDivyangjan ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}`} />
       </StatusTable>
 
       <CardSubHeader>{t("WS_BANK_DETAILS")}</CardSubHeader>

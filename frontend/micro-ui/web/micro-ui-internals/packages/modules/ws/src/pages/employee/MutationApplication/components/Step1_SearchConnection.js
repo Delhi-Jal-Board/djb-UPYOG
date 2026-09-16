@@ -102,7 +102,7 @@ const Step1_SearchConnection = ({ t, defaultKNumber, onNext, isEditFlow }) => {
   return (
     <Card style={{ marginBottom: "20px", padding: isMobileView ? "12px" : undefined }}>
       <div style={{ display: "flex", alignItems: "center", marginBottom: "16px", flexWrap: "wrap", gap: "8px" }}>
-        <span style={{ fontSize: isMobileView ? "20px" : "24px" }}>🔍</span>
+        <span style={{ fontSize: isMobileView ? "20px" : "24px" }}></span>
         <h2 style={{ fontSize: isMobileView ? "16px" : "18px", fontWeight: "700", margin: 0 }}>1. Connection Authentication</h2>
       </div>
       <CardText style={{ fontSize: isMobileView ? "13px" : undefined }}>

@@ -4,6 +4,11 @@
   .row {
     @apply flex border-b border-border pb-sm mb-sm;
 
+    .row-content {
+      width: 40%;
+      display: inline-block;
+    }
+
     span {
       width: 70%;
       display: contents;
@@ -15,6 +20,8 @@
     }
 
     .value {
+      display: inline-block !important;
+      display: inline-block;
       width: 50%;
       @apply text-heading-s;
       word-break: break-all;
@@ -62,6 +69,7 @@
     }
 
     .value {
+      display: inline-block !important;
       width: 50%;
       @apply text-heading-s;
       white-space: break-spaces !important;
@@ -100,6 +108,7 @@
     }
 
     .value {
+      display: inline-block !important;
       white-space: break-spaces !important;
       word-break: break-all;
       width: 60%;

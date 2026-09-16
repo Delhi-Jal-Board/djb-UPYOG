@@ -19,13 +19,15 @@ const OLDApplication = () => {
   // const [currentStep, setCurrentStep] = useState(1);
   const [showCheckPage, setShowCheckPage] = useState(false);
 
+  const isCitizen = Digit.UserService.getType()?.toUpperCase() === "CITIZEN";
+
   const timelineConfig = [
     { label: "WS_COMMON_PROPERTY_DETAILS" },
     { label: "WS_COMMON_CONNECTION_DETAIL" },
     { label: "WS_COMMON_CONNECTION_HOLDER_DETAILS_HEADER" },
     { label: "PT_LOCATION_DETAILS" },
     { label: "WS_PROPERTY_AND_WATER_CONNECTION_USE_DETAILS" },
-    { label: "WS_DJB_EMPLOYEE" },
+    ...(isCitizen ? [] : [{ label: "WS_DJB_EMPLOYEE" }]),
     { label: "WS_BANK_DETAILS" },
     { label: "WS_DOCUMENTS" },
     { label: "WS_DECLARATION" },
@@ -91,7 +93,7 @@ const OLDApplication = () => {
           "WSConnectionHolderDetails",
           "WSPropertyLocationDetails",
           "PropertyWaterConnection",
-          "WSDjbEmployee",
+          ...(isCitizen ? [] : ["WSDjbEmployee"]),
           "WSDivyangjan",
           "WSActivationPlumberDetails",
           "WSRoadCuttingDetails",
@@ -301,12 +303,12 @@ const OLDApplication = () => {
       data.ConnectionDetails[0].service =
         srvUpper.includes("WATER") && srvUpper.includes("SEWERAGE") ? "Water And Sewerage" : srvUpper.includes("SEWERAGE") ? "Sewerage" : "Water";
       if (typeof srv !== "object") {
-        data.ConnectionDetails[0].serviceType = { code: srvCode };
+        data.ConnectionDetails[0].serviceType = { code: srvCode, i18nKey: srvCode === "WATER" ? "Water Connection" : undefined };
       }
     } else {
       data.ConnectionDetails = [
         {
-          serviceType: { code: "WATER" },
+          serviceType: { code: "WATER", i18nKey: "Water Connection" },
           water: true,
           sewerage: false,
           service: "Water",
@@ -365,7 +367,7 @@ const OLDApplication = () => {
         submittedBy:
           typeof data.declarationData?.submittedBy === "object" ? data.declarationData?.submittedBy?.code : data.declarationData?.submittedBy,
         agree: declarations,
-        declarations: data.declarationData?.declarations || Array(9).fill(declarations),
+        declarations: data.declarationData?.declarations || Array(10).fill(declarations),
       };
       data.declarationData.submittedBy = data.declaration.submittedBy;
       data.declarationData.agree = data.declaration.agree;
@@ -382,7 +384,7 @@ const OLDApplication = () => {
 
     // Ensure applicationSelection is set for createPayloadOfWS compatibility
     data.applicationSelection = {
-      serviceType: connDetail?.serviceType || { code: "WATER" },
+      serviceType: connDetail?.serviceType || { code: "WATER", i18nKey: "Water Connection" },
       connectionType: connDetail?.connectionType || { code: "Metered" },
       applicantType: connDetail?.applicantType || { code: "NONPTPRESSURE" },
       categoryType: connDetail?.categoryType || {

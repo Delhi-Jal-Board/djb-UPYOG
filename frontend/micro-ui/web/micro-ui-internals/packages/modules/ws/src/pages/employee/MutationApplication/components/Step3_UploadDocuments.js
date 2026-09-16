@@ -236,7 +236,7 @@ const Step3_UploadDocuments = ({ t, onNext, onBack, defaultValues }) => {
   return (
     <Card style={{ marginBottom: "20px", padding: isMobileView ? "12px" : undefined }}>
       <div style={{ display: "flex", alignItems: "center", marginBottom: "8px" }}>
-        <span style={{ fontSize: isMobileView ? "20px" : "24px", marginRight: "8px" }}>📄</span>
+        <span style={{ fontSize: isMobileView ? "20px" : "24px", marginRight: "8px" }}></span>
         <h2 style={{ fontSize: isMobileView ? "16px" : "20px", fontWeight: "700", margin: 0 }}>3. Upload Verification Documents</h2>
       </div>
       <p style={{ color: "#666", marginBottom: "20px", fontSize: isMobileView ? "12px" : undefined }}>Please upload legible scanned copies or photos (PDF, PNG, JPEG - Max 5MB).</p>
@@ -357,7 +357,7 @@ const Step3_UploadDocuments = ({ t, onNext, onBack, defaultValues }) => {
           {identityProofFile && identityFileUrl && !rawFiles.identity && (
             <div style={{ marginTop: "8px" }}>
               <a href={identityFileUrl} target="_blank" rel="noreferrer" style={{ color: "#f47738", textDecoration: "underline", fontSize: "14px", display: "inline-flex", alignItems: "center" }}>
-                <span style={{ marginRight: "4px" }}>📄</span> View {identityFileName}
+                <span style={{ marginRight: "4px" }}></span> View {identityFileName}
               </a>
             </div>
           )}
@@ -385,7 +385,7 @@ const Step3_UploadDocuments = ({ t, onNext, onBack, defaultValues }) => {
           {mutationDocFile && mutationFileUrl && !rawFiles.mutation && (
             <div style={{ marginTop: "8px" }}>
               <a href={mutationFileUrl} target="_blank" rel="noreferrer" style={{ color: "#f47738", textDecoration: "underline", fontSize: "14px", display: "inline-flex", alignItems: "center" }}>
-                <span style={{ marginRight: "4px" }}>📄</span> View {mutationFileName}
+                <span style={{ marginRight: "4px" }}></span> View {mutationFileName}
               </a>
             </div>
           )}

@@ -1,4 +1,4 @@
-import { Loader, PDFSvg } from "@djb25/digit-ui-react-components";
+import { Loader, PDFSvg, CheckBox } from "@djb25/digit-ui-react-components";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { pdfDocumentName, pdfDownloadLink } from "../utils";
@@ -9,7 +9,7 @@ import { pdfDocumentName, pdfDownloadLink } from "../utils";
 //   </svg>
 // );
 
-function WSDocument({ value = {}, Code, index, showFileName= false}) {
+function WSDocument({ value = {}, Code, index, showFileName= false, appStatus }) {
   const { t } = useTranslation();
   const { isLoading, isError, error, data } = Digit.Hooks.ws.useWSDocumentSearch(
     {
@@ -36,12 +36,23 @@ function WSDocument({ value = {}, Code, index, showFileName= false}) {
           {documents?.map((document, index) => {
             let documentLink = pdfDownloadLink(data.pdfFiles, document?.fileStoreId);
             return (
-              <a target="_" href={documentLink} style={{ minWidth: "160px" }} key={index}>
-                <PDFSvg /* width={85} height={100} style={{ background: "#f6f6f6", padding: "8px" }}  *//>
-               {/*  <p style={{ marginTop: "8px" }}>{pdfDocumentName(documentLink, index)}</p> */}
-               { showFileName ? <p style={{ marginTop: "8px" }}>{t(Code?.split('.').slice(0,3).join('_'))}</p> : null}
-               { document?.documentNumber ? <p style={{ marginTop: "8px" }}>{document?.documentNumber}</p> : "N/A" }
-              </a>
+              <div style={{ display: "flex", flexDirection: "column", minWidth: "160px", marginRight: "20px" }} key={index}>
+                <a target="_" href={documentLink}>
+                  <PDFSvg />
+                  { showFileName ? <p style={{ marginTop: "8px" }}>{t(Code?.split('.').slice(0,3).join('_'))}</p> : null}
+                  { document?.documentNumber ? <p style={{ marginTop: "8px" }}>{document?.documentNumber}</p> : "N/A" }
+                </a>
+                {appStatus === "PENDING_FOR_CONNECTION_ACTIVATION" && (
+                  <div style={{ marginTop: "10px" }}>
+                    <Checkbox
+                      checked={true}
+                      disabled={true}
+                      style={{ cursor: "not-allowed" }}
+                      label={t("WS_VERIFIED")}
+                    />
+                  </div>
+                )}
+              </div>
             );
           })}
         </div>

@@ -383,18 +383,13 @@ const ConnectionDetails = (_props) => {
             rules={{ required: t("REQUIRED_FIELD") }}
             isMandatory={true}
             render={(props) => (
-              <Dropdown
+              <TextInput
                 className="form-field"
-                selected={getValues("serviceType")}
-                disable={false}
-                option={applicationTypeList}
-                errorStyle={localFormState.touched.serviceType && errors?.serviceType?.message ? true : false}
-                select={(e) => {
-                  props.onChange(e);
-                }}
-                optionKey="i18nKey"
-                onBlur={props.onBlur}
-                t={t}
+                value={"Water Connection"}
+                disable={true}
+                disabled={true}
+                onChange={() => {}}
+                style={{ backgroundColor: "#eee" }}
               />
             )}
           />

@@ -138,8 +138,8 @@ export const newConfig = [
         route: "bank-details",
         component: "WSBankDetails",
         key: "bankDetails",
-        nextStep: "djb-employee-details",
-        WATER: "djb-employee-details",
+        nextStep: "disability-details",
+        WATER: "disability-details",
         hideInEmployee: true,
         texts: {
           headerCaption: "WS_COMMON_CONNECTION_DETAIL",
@@ -169,6 +169,7 @@ export const newConfig = [
         nextStep: "disability-details",
         WATER: "disability-details",
         hideInEmployee: true,
+        hideInCitizen: true,
         texts: {
           headerCaption: "WS_COMMON_CONNECTION_DETAIL",
           header: "WS_DJB_EMPLOYEE",

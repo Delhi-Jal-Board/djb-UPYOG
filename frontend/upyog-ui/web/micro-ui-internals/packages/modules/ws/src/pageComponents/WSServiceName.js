@@ -3,17 +3,22 @@ import {
     FormStep,
     RadioOrSelect,
     CardLabel
-} from "@egovernments/digit-ui-react-components";
+, TextInput} from "@egovernments/digit-ui-react-components";
 import Timeline from "../components/Timeline";
 
 const WSServiceName = ({ t, config, onSelect, userType, formData }) => {
-    const [serviceName, setServiceName] = useState(formData?.serviceName || "");
+    const [serviceName, setServiceName] = useState(() => {
+        if (userType === "citizen" && (!formData?.serviceName || formData?.serviceName === "")) {
+            return { i18nKey: "Water Connection", code: "WATER" };
+        }
+        return formData?.serviceName || "";
+    });
     const [formDetails, setFormDetails] = useState(formData || {});
     const isEdit = window.location.href.includes("/ws/edit-application/");
 
     const serviceNameList = [
         {
-            i18nKey: "WS_WATER_CONNECTION_ONLY",
+            i18nKey: userType === "citizen" ? "Water Connection" : "WS_WATER_CONNECTION_ONLY",
             code: "WATER"
         },
         {
@@ -62,15 +67,37 @@ const WSServiceName = ({ t, config, onSelect, userType, formData }) => {
                 onAdd={onAdd}
             >
                 <CardLabel>{t("WS_SELECT_SERVICE_TYPE_WANT_TO_APPLY")}</CardLabel>
-                <RadioOrSelect
-                    name="gender"
-                    options={serviceNameList}
-                    selectedOption={serviceName}
-                    optionKey="i18nKey"
-                    onSelect={onServiceNameSelect}
-                    t={t}
-                    disabled={isEdit}
-                />
+                {userType === "citizen" || isEdit ? (
+                  <TextInput
+                    className="form-field"
+                    value={"Water Connection"}
+                    disable={true}
+                    disabled={true}
+                    onChange={() => {}}
+                    style={{ backgroundColor: "#eee" }}
+                  />
+                ) : (
+                  {userType === "citizen" || isEdit ? (
+                  <TextInput
+                    className="form-field"
+                    value={"Water Connection"}
+                    disable={true}
+                    disabled={true}
+                    onChange={() => {}}
+                    style={{ backgroundColor: "#eee" }}
+                  />
+                ) : (
+                  <RadioOrSelect
+                      name="gender"
+                      options={serviceNameList}
+                      selectedOption={serviceName}
+                      optionKey="i18nKey"
+                      onSelect={onServiceNameSelect}
+                      t={t}
+                      disabled={false}
+                  />
+                )}
+                )}
             </FormStep>
         </div>
     );

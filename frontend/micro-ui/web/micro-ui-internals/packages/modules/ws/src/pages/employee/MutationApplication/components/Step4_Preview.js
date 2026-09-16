@@ -109,7 +109,7 @@ const Step4_Preview = ({ t, formData, applicationDetails, resolvedServiceType, o
   return (
     <Card style={{ marginBottom: "20px", padding: isMobileView ? "12px" : undefined }}>
       <div style={{ display: "flex", alignItems: "center", marginBottom: "16px", flexWrap: "wrap", gap: "8px" }}>
-        <span style={{ fontSize: isMobileView ? "20px" : "22px" }}>📋</span>
+        <span style={{ fontSize: isMobileView ? "20px" : "22px" }}></span>
         <h2 style={{ fontSize: isMobileView ? "15px" : "18px", fontWeight: "700", margin: 0 }}>4. Application Preview & Final Declaration</h2>
       </div>
 
@@ -125,7 +125,7 @@ const Step4_Preview = ({ t, formData, applicationDetails, resolvedServiceType, o
 
       {/* Existing Owner */}
       <div style={{ ...sectionStyle, borderLeft: "4px solid #f29c1f" }}>
-        <h3 style={{ fontSize: isMobileView ? "13px" : "15px", fontWeight: "bold", color: "#f29c1f", marginBottom: "12px" }}>🔒 Existing / Previous Owner Details (Masked)</h3>
+        <h3 style={{ fontSize: isMobileView ? "13px" : "15px", fontWeight: "bold", color: "#f29c1f", marginBottom: "12px" }}>Existing / Previous Owner Details (Masked)</h3>
         <div style={{ display: "grid", gridTemplateColumns: isMobileView ? "1fr" : "repeat(auto-fill, minmax(150px, 1fr))", gap: isMobileView ? "12px" : "16px", marginBottom: "12px" }}>
           {infoItem("Registered Name:", oldName)}
           {infoItem("Registered Phone:", oldPhone)}
@@ -135,7 +135,7 @@ const Step4_Preview = ({ t, formData, applicationDetails, resolvedServiceType, o
 
       {/* New Owner */}
       <div style={{ ...sectionStyle, borderLeft: "4px solid #00497e" }}>
-        <h3 style={{ fontSize: isMobileView ? "13px" : "15px", fontWeight: "bold", color: "#00497e", marginBottom: "12px" }}>👤 Transferee (New Owner) Summary</h3>
+        <h3 style={{ fontSize: isMobileView ? "13px" : "15px", fontWeight: "bold", color: "#00497e", marginBottom: "12px" }}>Transferee (New Owner) Summary</h3>
         <div style={{ display: "grid", gridTemplateColumns: isMobileView ? "1fr 1fr" : "repeat(auto-fill, minmax(150px, 1fr))", gap: isMobileView ? "12px" : "16px" }}>
           {infoItem("New Owner Name", proposedNewConsumerName)}
           {infoItem("Mobile Number", newOwnerMobileNumber)}
@@ -175,7 +175,7 @@ const Step4_Preview = ({ t, formData, applicationDetails, resolvedServiceType, o
 
       {/* Fee */}
       <div style={{ ...sectionStyle, backgroundColor: "#f2fff5", border: "1px solid #c3e6cb", borderLeft: "4px solid #28a745" }}>
-        <h3 style={{ fontSize: isMobileView ? "13px" : "15px", fontWeight: "bold", color: "#28a745", marginBottom: "12px" }}>💵 Mutation Fee Details</h3>
+        <h3 style={{ fontSize: isMobileView ? "13px" : "15px", fontWeight: "bold", color: "#28a745", marginBottom: "12px" }}>Mutation Fee Details</h3>
 
         {taxHeads && taxHeads.length > 0 && (
           <div style={{ marginBottom: "16px" }}>
