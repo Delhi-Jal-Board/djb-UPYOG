@@ -7,12 +7,27 @@ const DueVerification = ({ applicationData }) => {
   const [kno, setKno] = useState("");
   const [remarks, setRemarks] = useState("");
   const [tableData, setTableData] = useState([]);
+  const [isManualSearch, setIsManualSearch] = useState(false);
 
   const handleRemarkChange = React.useCallback(
     (index, value) => {
       setTableData((prevData) => {
         const newData = [...prevData];
         newData[index] = { ...newData[index], remarks: value };
+        if (applicationData) {
+          applicationData.dueVerification = newData;
+        }
+        return newData;
+      });
+    },
+    [applicationData]
+  );
+
+  const handleRemoveRow = React.useCallback(
+    (index) => {
+      setTableData((prevData) => {
+        const newData = [...prevData];
+        newData.splice(index, 1);
         if (applicationData) {
           applicationData.dueVerification = newData;
         }
@@ -75,10 +90,26 @@ const DueVerification = ({ applicationData }) => {
             />
           ),
       });
+
+      if (!isActivation) {
+        baseColumns.push({
+          Header: t("Action"),
+          accessor: "action",
+          Cell: ({ row }) => (
+            <div
+              style={{ color: "red", cursor: "pointer", fontWeight: "bold", textAlign: "center", fontSize: "16px" }}
+              onClick={() => handleRemoveRow(row.index)}
+              title={t("CS_REMOVE_ROW") || "Remove Row"}
+            >
+              &#10006;
+            </div>
+          ),
+        });
+      }
     }
 
     return baseColumns;
-  }, [t, handleRemarkChange, isPendingApproval, isActivation]);
+  }, [t, handleRemarkChange, handleRemoveRow, isPendingApproval, isActivation]);
 
   useEffect(() => {
     if (applicationData?.dueVerification && Array.isArray(applicationData.dueVerification)) {
@@ -124,6 +155,11 @@ const DueVerification = ({ applicationData }) => {
 
   const handleAdd = async () => {
     if (kno) {
+      if (tableData.some((item) => item.kno === kno)) {
+        setShowToast({ isError: true, message: t("CS_DUPLICATE_KNO") || "K No. already exists in the table." });
+        return;
+      }
+
       try {
         const response = await checkDueVerification({ DueVerification: { kno: kno } });
 
@@ -152,6 +188,9 @@ const DueVerification = ({ applicationData }) => {
           }
           setKno("");
           setRemarks("");
+          if (selectedZroOption) {
+            setSelectedZroOption(null);
+          }
         } else {
           setShowToast({ isError: true, message: response?.Errors?.[0]?.message || t("CS_NO_DATA_FOUND") || "No data found for this K No." });
         }
@@ -166,45 +205,82 @@ const DueVerification = ({ applicationData }) => {
     <div style={{ marginBottom: "20px" }}>
       <h2 style={{ fontSize: "24px", fontWeight: "bold", marginBottom: "16px" }}>{t("Due Verification")}</h2>
       {!isActivation && (
-        <div style={{ display: "flex", alignItems: "flex-end", gap: "20px", marginBottom: "20px" }}>
-          <div style={{ flex: 1 }}>
-            <span style={{ fontSize: "16px", color: "#0B0C0C", marginBottom: "8px", display: "inline-block" }}>
-              {t("K No.(Existing KNo of same property)")} <span style={{ color: "red" }}>*</span>
-            </span>
-            {/* {isZROApproval && zroDropdownOptions && zroDropdownOptions.length > 0 ? ( */}
-              <Dropdown
-                option={zroDropdownOptions}
-                select={(val) => {
-                  setSelectedZroOption(val);
-                  setKno(val.code);
+        <div style={{ marginBottom: "20px" }}>
+          <div style={{ display: "flex", alignItems: "flex-end", gap: "20px" }}>
+            <div style={{ flex: 1 }}>
+              <span style={{ fontSize: "16px", color: "#0B0C0C", marginBottom: "8px", display: "inline-block" }}>
+                {t("K No.(Existing KNo of same property)")} <span style={{ color: "red" }}>*</span>
+              </span>
+              {isZROApproval && zroDropdownOptions && zroDropdownOptions.length > 0 && !isManualSearch ? (
+                <Dropdown
+                  option={zroDropdownOptions}
+                  select={(val) => {
+                    setSelectedZroOption(val);
+                    setKno(val.code);
+                  }}
+                  selected={selectedZroOption}
+                  optionKey="name"
+                  t={t}
+                  placeholder={t("WS_SELECT_KNO_PLACEHOLDER") || "Select K No."}
+                />
+              ) : (
+                <TextInput type="text" value={kno} onChange={(e) => setKno(e.target.value)} style={{ width: "100%", marginTop: "10px", marginBottom: "0px" }} />
+              )}
+            </div>
+            <div style={{ flex: 1, paddingBottom: "2px" }}>
+              <button
+                type="button"
+                onClick={handleAdd}
+                style={{
+                  background: "linear-gradient(135deg, #1f5fa8, #0b2e5b)",
+                  padding: "8px 24px",
+                  borderRadius: "4px",
+                  border: "none",
+                  cursor: "pointer",
+                  color:"white"
                 }}
-                selected={selectedZroOption}
-                optionKey="name"
-                t={t}
-                placeholder={t("WS_SELECT_KNO_PLACEHOLDER") || "Select K No."}
-              />
-            {/* ) : ( */}
-              <TextInput type="text" value={kno} onChange={(e) => setKno(e.target.value)} style={{ width: "100%", marginTop: "10px" }} />
-            {/* )} */}
+              >
+                Search
+              </button>
+            </div>
           </div>
-          <div style={{ flex: 1, paddingBottom: "2px" }}>
-            <button
-              type="button"
-              onClick={handleAdd}
-              style={{
-                background: "linear-gradient(135deg, #1f5fa8, #0b2e5b)",
-                padding: "8px 24px",
-                borderRadius: "4px",
-                border: "none",
-                cursor: "pointer",
-                color:"white"
-              }}
-            >
-              Search
-              {/* <AddIcon /> */}
-              {/* <SearchIconSvg style={{ width: "24px", height: "24px", fill: "white" }} className="search-icon-svg" /> */}
-            </button>
-          </div>
+          
+          {/* Toggle Button Row */}
+          {isZROApproval && zroDropdownOptions && zroDropdownOptions.length > 0 && (
+            <div style={{ marginTop: "8px" }}>
+              {!isManualSearch ? (
+                <button
+                  type="button"
+                  onClick={() => { setIsManualSearch(true); setKno(""); setSelectedZroOption(null); }}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color: "#f47738",
+                    cursor: "pointer",
+                    textDecoration: "underline",
+                    padding: "0"
+                  }}
+                >
+                  {t("Search K No. manually")}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => { setIsManualSearch(false); setKno(""); }}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color: "#f47738",
+                    cursor: "pointer",
+                    textDecoration: "underline",
+                    padding: "0"
+                  }}
+                >
+                  {t("Select from dropdown")}
+                </button>
+              )}
+            </div>
+          )}
         </div>
       )}
       {tableData.length > 0 && (
