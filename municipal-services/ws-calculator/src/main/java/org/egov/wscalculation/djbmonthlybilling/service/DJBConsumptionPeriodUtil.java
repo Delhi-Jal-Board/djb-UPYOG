@@ -28,16 +28,15 @@ public final class DJBConsumptionPeriodUtil {
 
     /**
      * Converts a period consumption into a 30-day monthly equivalent.
-     * Returns null when the period is not at least one day; the caller then skips
-     * the monthly 1.5x comparison rather than inventing a monthly rate for a
-     * sub-day billing interval.
+     * Fractional-day periods are supported so same-day readings can still be
+     * evaluated on the same monthly-equivalent basis.
      */
     public static BigDecimal toMonthlyConsumption(BigDecimal consumption, Long from, Long to) {
         if (consumption == null) {
             return null;
         }
         BigDecimal days = calculateElapsedDays(from, to);
-        if (days == null || days.compareTo(BigDecimal.ONE) < 0) {
+        if (days == null || days.signum() <= 0) {
             return null;
         }
         return consumption.multiply(NORMALIZATION_DAYS).divide(days, SCALE, RoundingMode.HALF_UP);

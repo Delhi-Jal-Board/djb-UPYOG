@@ -94,6 +94,26 @@ class ConsumptionServiceMonthly1Point5Test {
         assertTrue(result.isOnePointFiveX());
     }
 
+
+    @Test
+    void shouldEvaluateSubDayPeriodUsingMonthlyEquivalent() {
+        WaterBillingCycle current = new WaterBillingCycle();
+        current.setBillingperiodfrom(epoch("2026-08-10") + 0L);
+        current.setBillingperiodto(epoch("2026-08-10") + (12L * 60L * 60L * 1000L));
+        current.setPreviousokreading(new BigDecimal("100"));
+        current.setCurrentreading(new BigDecimal("102"));
+
+        BillingBasisDecision decision = BillingBasisDecision.builder()
+                .previousConsumption(new BigDecimal("10"))
+                .billingBasis(BillingBasis.ACTUAL)
+                .build();
+
+        ConsumptionResult result = service.calculate("dl.djb", "WS/DJB/4", current, decision, rule);
+
+        assertEquals(new BigDecimal("120.000000"), result.getMonthlyConsumption());
+        assertTrue(result.isOnePointFiveX());
+    }
+
     private Long epoch(String date) {
         return java.time.ZonedDateTime.parse(date + "T00:00:00Z").toInstant().toEpochMilli();
     }
