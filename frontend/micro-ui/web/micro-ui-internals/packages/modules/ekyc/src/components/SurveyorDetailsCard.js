@@ -347,8 +347,8 @@ const SurveyorDetailsDashboard = () => {
           icon={<FaUsers />}
         />
         <StatCard
-          title={t("COMPLETED")}
-          value={dashboardData?.dashboardInfo?.completed || 0}
+          title={t("IN_PROGRESS")}
+          value={dashboardData?.dashboardInfo?.inProgressCount || 0}
           type="week"
           isLoading={isDashboardLoading}
           icon={<FaCheckCircle />}

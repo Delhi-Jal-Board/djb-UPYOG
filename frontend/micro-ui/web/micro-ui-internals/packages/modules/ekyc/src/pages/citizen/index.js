@@ -17,6 +17,7 @@ const CitizenApp = () => {
   const { t } = useTranslation();
   const location = useLocation();
   const { path } = useRouteMatch();
+  const roles = Digit.SessionStorage.get("User")?.info?.roles.map((ele) => ele.code);
   const { data: { stateInfo } = {} } = Digit.Hooks.useStore.getInitData();
 
   sessionStorage.removeItem("revalidateddone");
@@ -194,7 +195,7 @@ const CitizenApp = () => {
           <PrivateRoute
             path={`${path}/surveyor-dashboard/:id`}
             component={() => (
-              <LayoutWrapper layoutClass="action">
+              <LayoutWrapper layoutClass={roles.includes("EKYC_SUPERVISOR") ? "action" : "normal"}>
                 <SurveyorDetailsCard />
               </LayoutWrapper>
             )}
