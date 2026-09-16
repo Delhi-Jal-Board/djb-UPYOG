@@ -148,6 +148,17 @@ public class WaterServiceImpl implements WaterService {
 				workflowService.validateInProgressWF(previousConnectionsList, waterConnectionRequest.getRequestInfo(),
 						waterConnectionRequest.getWaterConnection().getTenantId());
 			}
+			String action = waterConnectionRequest.getWaterConnection().getProcessInstance().getAction();
+			if (WCConstants.ACTION_INITIATE.equalsIgnoreCase(action)) {
+				boolean hasPendingDues = calculationService.hasPendingWaterDues(waterConnectionRequest.getWaterConnection().getTenantId(),
+						waterConnectionRequest.getWaterConnection().getConnectionNo(),
+						waterConnectionRequest.getRequestInfo());
+				if (hasPendingDues) {
+					throw new CustomException("PENDING_WATER_DUES",
+							"Mutation cannot be initiated because there are pending water bills for connection number: "
+									+ waterConnectionRequest.getWaterConnection().getConnectionNo());
+				}
+			}
 		}
 		else if (wsUtil.isModifyConnectionRequest(waterConnectionRequest)) {
 			List<WaterConnection> previousConnectionsList = getAllWaterApplications(waterConnectionRequest);
@@ -840,7 +851,7 @@ public class WaterServiceImpl implements WaterService {
 		userService.updateUser(waterConnectionRequest, searchResult);
 		waterConnectionValidator.validateUpdate(waterConnectionRequest, searchResult, WCConstants.MUTATION_CONNECTION);
 		
-String action = waterConnectionRequest.getWaterConnection().getProcessInstance().getAction();
+		String action = waterConnectionRequest.getWaterConnection().getProcessInstance().getAction();
 		if (WCConstants.APPROVE_MUTATION_CONST.equalsIgnoreCase(action)) {
 			boolean hasPendingDues = calculationService.hasPendingWaterDues(waterConnectionRequest.getWaterConnection().getTenantId(),
 					waterConnectionRequest.getWaterConnection().getConnectionNo(),
