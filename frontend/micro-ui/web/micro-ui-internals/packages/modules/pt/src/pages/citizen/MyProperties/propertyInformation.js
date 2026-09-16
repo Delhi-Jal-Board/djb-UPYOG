@@ -379,7 +379,7 @@ const PropertyInformation = () => {
             )}
             {property?.status === "ACTIVE" && !enableAudit && (
               <div style={{ marginTop: "1em", bottom: "0px", width: "100%", marginBottom: "1.2em" }}>
-                <Link to={{ pathname: `/digit-ui/citizen/pt/property/edit-application/action=UPDATE/${property.propertyId}` }}>
+                <Link to={{ pathname: `/digit-ui/citizen/commonpt/edit-property/${property.propertyId}` }}>
                   <SubmitBar label={t("PT_UPDATE_PROPERTY_BUTTON")} />
                 </Link>
               </div>

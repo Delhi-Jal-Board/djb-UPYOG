@@ -183,7 +183,7 @@ const AdminDashboard = () => {
                     </div>
 
                     <div className="stat-item">
-                      <span className="stat-value">{vendor.totalKnos}</span>
+                      <span className="stat-value">{vendor.totalAssignments}</span>
                       <span className="stat-label">{t("TOTAL_EKYC_APPLICATIONS") || "Total KNOs"}</span>
                     </div>
                   </div>

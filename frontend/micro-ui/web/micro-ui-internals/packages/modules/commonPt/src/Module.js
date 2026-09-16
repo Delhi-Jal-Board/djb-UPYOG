@@ -20,6 +20,8 @@ import CPTSearchResults from "./pages/citizen/SearchResults";
 import CPTCreateProperty from "./pages/pageComponents/createForm";
 import CPTAcknowledgement from "./pages/pageComponents/PTAcknowledgement";
 import CommonPTCard from "./components/CommonPTCard";
+import CPTEditPropertyForm from "./pages/pageComponents/editForm";
+
 export const CommonPTModule = ({ userType, tenants }) => {
   const { path, url } = useRouteMatch();
 
@@ -87,6 +89,7 @@ const componentsToRegister = {
   CPTSearchResults,
   CPTCreateProperty,
   CPTAcknowledgement,
+  CPTEditPropertyForm,
 };
 
 export const initCommonPTComponents = () => {

@@ -5,6 +5,8 @@ import _ from "lodash";
 
 const NUMBER_PATTERN = /^\d+$/;
 const DECIMAL_PATTERN = /^\d+(\.\d{1,2})?$/;
+const normalizeCode = (value) => String(value || "").replace(/[._\s-]/g, "").toUpperCase();
+const getCode = (value) => (typeof value === "object" ? value?.code || value?.value : value);
 
 const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, setError, clearErrors, ...props }) => {
   const {
@@ -46,6 +48,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
   const { data: wsServicesMastersData } = Digit.Hooks.ws.useMDMS(tenantId, "ws-services-masters", ["WsCategoryType"]);
 
   const [categoryTypeList, setCategoryTypeList] = useState([]);
+  const propertyDetailsInitialized = React.useRef(false);
 
   useEffect(() => {
     const categories = wsServicesMastersData?.["ws-services-masters"]?.WsCategoryType || [];
@@ -99,7 +102,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
   const categoryOptions = useMemo(() => {
     if (!watchCategoryType?.code) return [];
     let options = ptServicesMastersData?.PropertyTax?.PropertyCategory?.filter((item) => item.active) || [];
-    options = options.filter((item) => item.type === watchCategoryType.code);
+    options = options.filter((item) => normalizeCode(item.type) === normalizeCode(watchCategoryType.code));
     return options.map((item) => ({
       code: item.code,
       name: item.name,
@@ -107,13 +110,13 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
   }, [ptServicesMastersData, watchCategoryType]);
 
   useEffect(() => {
-    if (watchCategoryType && watchPropertyCategory) {
+    if (watchCategoryType && watchPropertyCategory && ptServicesMastersData?.PropertyTax?.PropertyCategory) {
       const isCategoryValid = categoryOptions.some((opt) => opt.code === watchPropertyCategory.code);
       if (!isCategoryValid) {
         setValue("useDetails.propertyCategory", null);
       }
     }
-  }, [watchCategoryType, categoryOptions, setValue, watchPropertyCategory]);
+  }, [watchCategoryType, categoryOptions, setValue, watchPropertyCategory, ptServicesMastersData]);
 
   const propertyTypeOptions = useMemo(() => {
     if (!watchPropertyCategory?.code) return [];
@@ -125,7 +128,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
     }
 
     if (watchPropertyCategory?.code?.toUpperCase() !== "MIXED") {
-      options = options.filter((item) => item.type?.toUpperCase() === watchPropertyCategory.code?.toUpperCase());
+      options = options.filter((item) => normalizeCode(item.type) === normalizeCode(watchPropertyCategory.code));
     }
     return options.map((item) => ({
       code: item.code,
@@ -134,13 +137,13 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
   }, [ptServicesMastersData, watchPropertyCategory]);
 
   useEffect(() => {
-    if (watchPropertyCategory && watchPropertyType) {
+    if (watchPropertyCategory && watchPropertyType && ptServicesMastersData?.PropertyTax?.PropertyType) {
       const isTypeValid = propertyTypeOptions.some((opt) => opt.code === watchPropertyType.code);
       if (!isTypeValid) {
         setValue("useDetails.propertyType", null);
       }
     }
-  }, [watchPropertyCategory, propertyTypeOptions, setValue, watchPropertyType]);
+  }, [watchPropertyCategory, propertyTypeOptions, setValue, watchPropertyType, ptServicesMastersData]);
 
   const usageTypeOptions = useMemo(() => {
     if (!watchPropertyType?.code) return [];
@@ -161,13 +164,13 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
   }, [ptServicesMastersData, watchPropertyCategory, watchPropertyType]);
 
   useEffect(() => {
-    if (watchPropertyType && watchWaterConnectionUsageType) {
+    if (watchPropertyType && watchWaterConnectionUsageType && ptServicesMastersData?.PropertyTax?.PropertyNewUsageType) {
       const isUsageTypeValid = usageTypeOptions.some((opt) => opt.code === watchWaterConnectionUsageType.code);
       if (!isUsageTypeValid) {
         setValue("useDetails.WaterConnectionUsageType", null);
       }
     }
-  }, [watchPropertyType, usageTypeOptions, setValue, watchWaterConnectionUsageType]);
+  }, [watchPropertyType, usageTypeOptions, setValue, watchWaterConnectionUsageType, ptServicesMastersData]);
 
   const floorOptions = useMemo(() => {
     return ptServicesMastersData?.PropertyTax?.NoOfFloors?.filter((item) => item.active).map((item) => ({
@@ -185,29 +188,39 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
   }, [formValue, config.key, onSelect]);
 
   useEffect(() => {
+    if (propertyDetailsInitialized.current || !formData?.cpt?.details) return;
+
+    // Populate the dependent dropdowns only after their master options load.
+    // Re-running this effect after a user selection would restore old values.
+    if (!categoryTypeList.length || !categoryOptions.length || !propertyTypeOptions.length || !usageTypeOptions.length) return;
+
     if (formData?.cpt?.details) {
       const details = formData.cpt.details;
       const additionalDetails = details?.additionalDetails || {};
 
-      const catType = additionalDetails.categoryType || (details.usageCategory?.includes("RESIDENTIAL") ? "DOMESTIC" : "NON_DOMESTIC");
+      const usageCategory = getCode(additionalDetails.propertyCategory || additionalDetails.usageCategory || details.usageCategory);
+      const catType = getCode(additionalDetails.categoryType) || (String(usageCategory).includes("RESIDENTIAL") ? "DOMESTIC" : "NON_DOMESTIC");
 
-      setValue("useDetails.categoryType", categoryTypeList?.find((o) => o.code === catType) || null);
+      setValue("useDetails.categoryType", categoryTypeList?.find((o) => normalizeCode(o.code) === normalizeCode(catType)) || null);
       setValue(
         "useDetails.propertyCategory",
-        categoryOptions?.find((o) => o.code === (additionalDetails.propertyCategory || details.usageCategory)) || null
+        categoryOptions?.find((o) => normalizeCode(o.code) === normalizeCode(usageCategory)) || null
       );
       setValue(
         "useDetails.propertyType",
-        propertyTypeOptions?.find((o) => o.code === (additionalDetails.propertyType || details.propertyType)) || null
+        propertyTypeOptions?.find((o) => normalizeCode(o.code) === normalizeCode(getCode(additionalDetails.propertyType || details.propertyType))) || null
       );
-      setValue("useDetails.WaterConnectionUsageType", usageTypeOptions?.find((o) => o.code === additionalDetails.waterConnectionUsageType) || null);
+      setValue(
+        "useDetails.WaterConnectionUsageType",
+        usageTypeOptions?.find((o) => normalizeCode(o.code) === normalizeCode(getCode(additionalDetails.waterConnectionUsageType || additionalDetails.WaterConnectionUsageType))) || null
+      );
       setValue(
         "useDetails.noOfFloors",
         floorOptions?.find((o) => {
-          const val1 = additionalDetails.numberOfFloors;
-          const val2 = additionalDetails.noOfFloors;
+          const val1 = getCode(additionalDetails.numberOfFloors);
+          const val2 = getCode(additionalDetails.noOfFloors);
           const val3 = details.noOfFloors?.toString();
-          return o.code === val1 || o.code === val2 || o.code === val3 || (val3 && o.code === `${val3}_FLOOR`);
+          return normalizeCode(o.code) === normalizeCode(val1) || normalizeCode(o.code) === normalizeCode(val2) || normalizeCode(o.code) === normalizeCode(val3) || (val3 && normalizeCode(o.code) === normalizeCode(`${val3}_FLOOR`));
         }) || null
       );
       setValue("useDetails.plotArea", additionalDetails.plotArea || details?.landArea?.toString() || "");
@@ -234,6 +247,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
       setValue("useDetails.numberOfStudents", "");
       setValue("useDetails.servantQuarterArea", "");
     }
+    propertyDetailsInitialized.current = true;
   }, [
     formData?.cpt?.details,
     formData?.cpt,

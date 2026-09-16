@@ -17,6 +17,7 @@ const CitizenApp = () => {
   const { t } = useTranslation();
   const location = useLocation();
   const { path } = useRouteMatch();
+  const roles = Digit.SessionStorage.get("User")?.info?.roles.map((ele) => ele.code);
   const { data: { stateInfo } = {} } = Digit.Hooks.useStore.getInitData();
 
   sessionStorage.removeItem("revalidateddone");
@@ -90,14 +91,6 @@ const CitizenApp = () => {
             <Redirect to="/digit-ui/citizen/ekyc-home" />
           </Route>
           <PrivateRoute
-            path={[`${path}/vendor-dashboard/:vendorId`, `${path}/vendor-dashboard`]}
-            component={() => (
-              <LayoutWrapper layoutClass="normal">
-                <VendorDetailsCard />
-              </LayoutWrapper>
-            )}
-          />
-          <PrivateRoute
             path={`${path}/inbox`}
             component={() => (
               <LayoutWrapper layoutClass="normal">
@@ -105,7 +98,6 @@ const CitizenApp = () => {
               </LayoutWrapper>
             )}
           />
-
           <PrivateRoute
             path={`${path}/aadhaar-verification`}
             component={() => (
@@ -169,14 +161,6 @@ const CitizenApp = () => {
             )}
           />
           <PrivateRoute
-            path={`${path}/surveyor-dashboard/:id`}
-            component={() => (
-              <LayoutWrapper layoutClass="action">
-                <SurveyorDetailsCard />
-              </LayoutWrapper>
-            )}
-          />
-          <PrivateRoute
             path={`${path}/status/:applicationId`}
             component={() => (
               <LayoutWrapper layoutClass="normal">
@@ -185,10 +169,42 @@ const CitizenApp = () => {
             )}
           />
           <PrivateRoute
-            path={[`${path}/supervisor-dashboard/:id`, `${path}/supervisor-dashboard`]}
+            path={[`${path}/vendor-dashboard/:vendorId`, `${path}/vendor-dashboard`]}
+            component={() => (
+              <LayoutWrapper layoutClass="normal">
+                <VendorDetailsCard />
+              </LayoutWrapper>
+            )}
+          />
+          <PrivateRoute
+            path={`${path}/supervisor-dashboard/:id`}
             component={() => (
               <LayoutWrapper layoutClass="normal">
                 <SupervisorDetailsCard />
+              </LayoutWrapper>
+            )}
+          />
+          <PrivateRoute
+            path={`${path}/supervisor-dashboard`}
+            component={() => (
+              <LayoutWrapper layoutClass="normal">
+                <SupervisorDetailsCard />
+              </LayoutWrapper>
+            )}
+          />
+          <PrivateRoute
+            path={`${path}/surveyor-dashboard/:id`}
+            component={() => (
+              <LayoutWrapper layoutClass={roles.includes("EKYC_SUPERVISOR") ? "action" : "normal"}>
+                <SurveyorDetailsCard />
+              </LayoutWrapper>
+            )}
+          />
+          <PrivateRoute
+            path={`${path}/surveyor-dashboard`}
+            component={() => (
+              <LayoutWrapper layoutClass="normal">
+                <SurveyorDetailsCard />
               </LayoutWrapper>
             )}
           />

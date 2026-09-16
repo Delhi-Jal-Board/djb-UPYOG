@@ -7,9 +7,8 @@ import SearchResultsComponent from "./SearchResults";
 import PropertyLinkSuccess from "./LinkSuccess";
 import CitizenOtp from "./Otp";
 import ViewProperty from "../pageComponents/ViewProperty";
+import EditProperty from "./EditProperty";
 import { useTranslation } from "react-i18next";
-
-
 
 const App = ({ stateCode }) => {
   const { t } = useTranslation();
@@ -20,6 +19,7 @@ const App = ({ stateCode }) => {
     const pathname = location.pathname;
     if (pathname.includes("/commonpt/search")) return "SEARCH_PROPERTY";
     else if (pathname.includes("/view-property")) return "PT_PROPERTY_INFORMATION";
+    else if (pathname.includes("/edit-property")) return "PT_UPDATE_PROPERTY_BUTTON";
     if (pathname.includes("/property/new-application")) return "PT_CREATE_PROPERTY";
 
     return "ES_COMMON_INBOX";
@@ -30,7 +30,7 @@ const App = ({ stateCode }) => {
       {
         path: "/digit-ui/citizen",
         icon: HomeIcon,
-      }
+      },
     ];
 
     crumbs.push({
@@ -66,22 +66,30 @@ const App = ({ stateCode }) => {
         />
         <div className="employee-form">
           <div className="employee-form-content">
-            <span className={"pt-citizen"} style={{ width: "100%" }}>
-              <Switch>
-                <PrivateRoute path={`${path}/search`} component={SearchPropertyComponent} />
-                <PrivateRoute path={`${path}/property/citizen-search`} component={SearchPropertyComponent} />
-                <PrivateRoute path={`${path}/property/search-results`} component={(props) => <SearchResultsComponent {...props} stateCode={stateCode} />} />
-                <Route path={`${path}/property/citizen-otp`}>
-                  <CitizenOtp stateCode={stateCode} />
-                </Route>
-                <PrivateRoute path={`${path}/property/link-success/:propertyIds`} component={PropertyLinkSuccess}></PrivateRoute>
-                <PrivateRoute
-                  path={`${path}/property/new-application`}
-                  component={CreateProperty}
-                />
-                <PrivateRoute path={`${path}/view-property`} component={ViewProperty} />
-              </Switch>
-            </span>
+            {/* <span className={"pt-citizen"} style={{ width: "100%" }}> */}
+            <Switch>
+              <PrivateRoute path={`${path}/search`} component={SearchPropertyComponent} />
+              <PrivateRoute path={`${path}/property/citizen-search`} component={SearchPropertyComponent} />
+              <PrivateRoute
+                path={`${path}/property/search-results`}
+                component={(props) => <SearchResultsComponent {...props} stateCode={stateCode} />}
+              />
+              <Route path={`${path}/property/citizen-otp`}>
+                <CitizenOtp stateCode={stateCode} />
+              </Route>
+              <PrivateRoute path={`${path}/property/link-success/:propertyIds`} component={PropertyLinkSuccess}></PrivateRoute>
+              <PrivateRoute path={`${path}/property/new-application`} component={CreateProperty} />
+              <PrivateRoute
+                path={`${path}/view-property`}
+                component={() => (
+                  <LayoutWrapper layoutClass="action">
+                    <ViewProperty />
+                  </LayoutWrapper>
+                )}
+              />
+              <PrivateRoute path={`${path}/edit-property/:propertyId`} component={EditProperty} />
+            </Switch>
+            {/* </span> */}
           </div>
         </div>
       </div>

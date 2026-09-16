@@ -11,7 +11,7 @@ import { checkArrayLength, stringReplaceAll,getSuperBuiltUpareafromob } from "..
 const getPropertyEditDetails = (data = { }) => {
   // converting owners details
 
-  if((data?.propertyType === "BUILTUP.INDEPENDENTPROPERTY" && data.units.length == 0))
+  if((data?.propertyType === "BUILTUP.INDEPENDENTPROPERTY" && (!data.units || data.units.length === 0)))
     {
       data.units = [{
         constructionDetail:{builtUpArea: data?.superBuiltUpArea},
@@ -38,7 +38,7 @@ const getPropertyEditDetails = (data = { }) => {
       (data.owners[0].documents = document);
     data.owners[0].permanentAddress = data?.owners[0]?.correspondenceAddress;
     data.owners[0].isCorrespondenceAddress = data?.owners[0]?.isCorrespondenceAddress;
-  } else {
+  } else if (data.owners && Array.isArray(data.owners)) {
     data.owners.map((owner) => {
       let document = [];
       owner.documents &&
@@ -421,8 +421,9 @@ const EditProperty = ({ parentRoute }) => {
   const stateId = Digit.ULBService.getStateId();
   let { data: commonFields, isLoading } = Digit.Hooks.pt.useMDMS(stateId, "PropertyTax", "CommonFieldsConfig");
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  const acknowledgementIds = window.location.href.split("/").pop();
-  const propertyIds = window.location.href.split("/").pop();
+  const idFromUrl = match.params.propertyId || window.location.href.split("?")[0].split("/").pop();
+  const acknowledgementIds = idFromUrl;
+  const propertyIds = idFromUrl;
   let application = { };
   const updateProperty = window.location.href.includes("action=UPDATE");
   const typeOfProperty = window.location.href.includes("UPDATE") ? true : false;
@@ -532,19 +533,19 @@ const EditProperty = ({ parentRoute }) => {
       nextStep = key;
     }
     if (nextStep === null) {
-      return redirectWithHistory(`${match.path}/check`);
+      return redirectWithHistory({ pathname: `${match.url}/check`, search: window.location.search });
     }
     if (!isNaN(nextStep.split("/").pop())) {
-      nextPage = `${match.path}/${nextStep}`;
+      nextPage = `${match.url}/${nextStep}`;
     } else {
-      nextPage = isMultiple && nextStep !== "map" ? `${match.path}/${nextStep}/${index}` : `${match.path}/${nextStep}`;
+      nextPage = isMultiple && nextStep !== "map" ? `${match.url}/${nextStep}/${index}` : `${match.url}/${nextStep}`;
     }
 
-    redirectWithHistory(nextPage);
+    redirectWithHistory({ pathname: nextPage, search: window.location.search });
   };
 
   const createProperty = async () => {
-    history.push(`${match.path}/acknowledgement`);
+    history.push({ pathname: `${match.url}/acknowledgement`, search: window.location.search });
   };
 
   function handleSelect(key, data, skipStep, index, isAddMultiple = false) {
@@ -605,7 +606,7 @@ const EditProperty = ({ parentRoute }) => {
         <PTAcknowledgement data={params} onSuccess={onSuccess} />
       </Route>
       <Route>
-        <Redirect to={`${match.path}/${config.indexRoute}`} />
+        <Redirect to={{ pathname: `${match.url}/${config.indexRoute}`, search: window.location.search }} />
       </Route>
     </Switch>
   );

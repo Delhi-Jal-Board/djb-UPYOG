@@ -38,7 +38,7 @@ const PropertyLocationDetails = ({
     actualZone: address?.actualZone || "",
   });
 
-  const isPropertyFound = window.location.href.includes("ws/old-application");
+  const isPropertyFound = window.location.href.includes("ws/old-application") || window.location.href.includes("/edit-property/");
 
   useEffect(() => {
     if (props.register) {
@@ -73,16 +73,20 @@ const PropertyLocationDetails = ({
         city: addressData.city || "",
         locality: localityCode,
         streetName: addressData.street || "",
-        houseNo: addressData.houseNo || "",
+        houseNo: addressData.houseNo || addressData.doorNo || "",
         landmark: addressData.landmark || "",
         latitude: lat,
         longitude: lng,
-        assembly: additionalDetails.assembly || addressData.additionalDetails?.assembly || "",
-        block: additionalDetails.block || addressData.additionalDetails?.block || "",
-        zone: additionalDetails.zone || addressData.additionalDetails?.zone || "",
+        // Read assembly/block/zone from addressData directly (API returns them there)
+        assembly: additionalDetails.assembly || addressData.assembly || addressData.additionalDetails?.assembly || "",
+        block: additionalDetails.block || addressData.block || addressData.additionalDetails?.block || "",
+        zone: additionalDetails.zone || addressData.zone || addressData.additionalDetails?.zone || "",
         zroLocation: zroCode,
         zro: zroValue,
         subLocality: addressData.subLocality || "",
+        // Address lines from API
+        addressLine1: addressData.addressLine1 || "",
+        addressLine2: addressData.addressLine2 || "",
         actualAssembly: addressData.actualAssembly || additionalDetails.actualAssembly || addressData.additionalDetails?.actualAssembly || "",
         actualWard: addressData.actualWard || additionalDetails.actualWard || addressData.additionalDetails?.actualWard || "",
         actualZone: addressData.actualZone || additionalDetails.actualZone || addressData.additionalDetails?.actualZone || "",
@@ -92,15 +96,17 @@ const PropertyLocationDetails = ({
           pincode: addressData.pincode || "",
           locality: localityCode,
           streetName: addressData.street || "",
-          houseNo: addressData.houseNo || "",
+          houseNo: addressData.houseNo || addressData.doorNo || "",
           latitude: lat,
           longitude: lng,
           zroLocation: zroCode,
           zro: zroValue,
-          assembly: additionalDetails.assembly || addressData.additionalDetails?.assembly || "",
-          block: additionalDetails.block || addressData.additionalDetails?.block || "",
-          zone: additionalDetails.zone || addressData.additionalDetails?.zone || "",
+          assembly: additionalDetails.assembly || addressData.assembly || addressData.additionalDetails?.assembly || "",
+          block: additionalDetails.block || addressData.block || addressData.additionalDetails?.block || "",
+          zone: additionalDetails.zone || addressData.zone || addressData.additionalDetails?.zone || "",
           subLocality: addressData.subLocality || "",
+          addressLine1: addressData.addressLine1 || "",
+          addressLine2: addressData.addressLine2 || "",
           actualWard: addressData.actualWard || additionalDetails.actualWard || addressData.additionalDetails?.actualWard || "",
           actualZone: addressData.actualZone || additionalDetails.actualZone || addressData.additionalDetails?.actualZone || "",
           actualAssembly: addressData.actualAssembly || additionalDetails.actualAssembly || addressData.additionalDetails?.actualAssembly || "",
