@@ -6,10 +6,10 @@ const Dashboard = ({ progressData, isProgressLoading }) => {
     total: progressData?.totalKnosInSystem || 0,
     completed: progressData?.completedKnosInZones || 0,
     pending: progressData?.pendingKnosInZones || 0,
-    rejected: progressData?.rejectedKnos || 0,
+    rejected: progressData?.rejectedKnosInZones || 0,
     totalAssignments: progressData?.totalAssignments || 0,
-    submittedCount: progressData?.submittedKnos || 0,
-    selfEkycCount: progressData?.selfEkycCount || 0,
+    submittedCount: progressData?.submittedKnosInZones || 0,
+    selfEkycCount: progressData?.selfEkycCountInZones || 0,
     overallProgressPercent: progressData?.overallProgressPercent || 0,
   };
 
