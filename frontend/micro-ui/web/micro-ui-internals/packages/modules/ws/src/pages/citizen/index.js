@@ -111,7 +111,11 @@ const App = ({ path }) => {
     {
       path: "/digit-ui/citizen/ws/my-connections",
       label: t("WS_MYCONNECTIONS_HEADER"),
-      show: location.pathname.includes("/my-connections") || location.pathname.includes("/connection/details") || location.pathname.includes("/modify-connection"),
+      show:
+        location.pathname.includes("/my-connections") ||
+        location.pathname.includes("/connection/details") ||
+        location.pathname.includes("/modify-connection") ||
+        location.pathname.includes("/consumption/details"),
     },
     {
       path: "/digit-ui/citizen/ws/my-bills",
@@ -134,9 +138,19 @@ const App = ({ path }) => {
       show: location.pathname.includes("/connection/application") || location.pathname.includes("/edit-application"),
     },
     {
-      path: location.pathname,
+      path: location.pathname.includes("/consumption/details")
+        ? `/digit-ui/citizen/ws/connection/details/${new URLSearchParams(location.search).get("applicationNo") || ""}`
+        : location.pathname,
       label: t("WS_COMMON_CONNECTION_DETAIL"),
-      show: location.pathname.includes("/connection/details") || location.pathname.includes("/modify-connection"),
+      show:
+        location.pathname.includes("/connection/details") ||
+        location.pathname.includes("/modify-connection") ||
+        location.pathname.includes("/consumption/details"),
+    },
+    {
+      path: location.pathname,
+      label: t("WS_VIEW_CONSUMPTION_DETAIL"),
+      show: location.pathname.includes("/consumption/details"),
     },
     {
       path: location.pathname,
@@ -208,7 +222,14 @@ const App = ({ path }) => {
                 <PrivateRoute path={`${path}/connection/application/:acknowledgementIds`} component={WSCitizenApplicationDetails} />
                 <PrivateRoute path={`${path}/connection/additional/:acknowledgementIds`} component={WSAdditionalDetails} />
                 <PrivateRoute path={`${path}/connection/details/:acknowledgementIds`} component={WSCitizenConnectionDetails} />
-                <PrivateRoute path={`${path}/consumption/details`} component={WSCitizenConsumptionDetails} />
+                <PrivateRoute
+                  path={`${path}/consumption/details`}
+                  component={() => (
+                    <LayoutWrapper layoutClass="action">
+                      <WSCitizenConsumptionDetails />
+                    </LayoutWrapper>
+                  )}
+                />
                 <PrivateRoute path={`${path}/edit-application/:tenantId`} component={WSCitizenEditApplication} />
                 <PrivateRoute path={`${path}/modify-connection/:tenantId`} component={WSCitizenEditApplication} />
                 <PrivateRoute
