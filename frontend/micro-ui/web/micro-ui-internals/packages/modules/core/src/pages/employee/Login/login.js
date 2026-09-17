@@ -53,8 +53,8 @@ const Login = () => {
           });
           return;
         }
-
-        const tenantId = "dl.djb";
+        
+        const tenantId = kc?.idTokenParsed?.tenantId;
 
         // First API
         const userDetailsResponse = await await Digit.UserService.fetchUserDetails(kc);
