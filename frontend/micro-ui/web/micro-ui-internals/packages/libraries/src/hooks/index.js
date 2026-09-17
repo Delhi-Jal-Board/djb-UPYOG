@@ -236,6 +236,7 @@ import useWSDetailsPage from "./ws/useWSDetailsPage";
 import useWSApplicationActions from "./ws/useApplicationActions";
 import useApplicationActionsBillAmendUpdate from "./ws/useApplicationActionsBillAmendUpdate";
 import useWSConsumptionSearch from "./ws/useConsumptionSearch";
+import useWSBillingStatement from "./ws/useWSBillingStatement";
 import useWSMDMS from "./ws/useWSMDMS";
 import useAccessControl from "./useAccessControl";
 import useConnectionDetail from "./ws/useConnectionDetail";
@@ -698,6 +699,7 @@ const ws = {
   useWSApplicationActions,
   useApplicationActionsBillAmendUpdate,
   useWSConsumptionSearch,
+  useWSBillingStatement,
   useConnectionDetail,
   useMDMS: useWSMDMS,
   useWaterCreateAPI,

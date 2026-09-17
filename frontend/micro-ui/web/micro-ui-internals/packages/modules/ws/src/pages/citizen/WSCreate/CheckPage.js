@@ -203,7 +203,10 @@ const CheckPage = ({ onSubmit, value }) => {
           label={t("COMMON_ADDRESS_TYPE")}
           text={`${t(checkForNA(propertyAddress?.addressType?.i18nKey || propertyAddress?.addressType?.code || propertyAddress?.addressType))}`}
         />
-        <Row label={t("CORE_COMMON_PROFILE_CITY")} text={`${t(checkForNA(propertyAddress?.city?.name || propertyAddress?.city?.code || propertyAddress?.city))}`} />
+        <Row
+          label={t("CORE_COMMON_PROFILE_CITY")}
+          text={`${t(checkForNA(propertyAddress?.city?.name || propertyAddress?.city?.code || propertyAddress?.city))}`}
+        />
         <Row label={t("PINCODE")} text={`${t(checkForNA(propertyAddress?.pincode || propertyAddress?.pinCode))}`} />
         <Row
           label={t("LOCALITY")}
@@ -247,7 +250,18 @@ const CheckPage = ({ onSubmit, value }) => {
 
         <Row label={t("COMMON_CURRENT_ASSEMBLY")} text={`${t(checkForNA(propertyAddress?.actualAssembly || additionalDetails?.actualAssembly))}`} />
         <Row label={t("COMMON_CURRENT_WARD")} text={`${t(checkForNA(propertyAddress?.actualWard || additionalDetails?.actualWard))}`} />
-        <Row label={t("COMMON_CURRENT_ZONE")} text={`${t(checkForNA(propertyAddress?.zone?.name || propertyAddress?.zone?.code || propertyAddress?.zone || propertyAddress?.actualZone || additionalDetails?.actualZone))}`} />
+        <Row
+          label={t("COMMON_CURRENT_ZONE")}
+          text={`${t(
+            checkForNA(
+              propertyAddress?.zone?.name ||
+                propertyAddress?.zone?.code ||
+                propertyAddress?.zone ||
+                propertyAddress?.actualZone ||
+                additionalDetails?.actualZone
+            )
+          )}`}
+        />
         <Row label={t("LANDMARK")} text={`${t(checkForNA(propertyAddress?.landmark))}`} />
       </StatusTable>
 
@@ -300,6 +314,35 @@ const CheckPage = ({ onSubmit, value }) => {
           )}`}
         />
         <Row label={t("WS_NUMBER_OF_DWELLING_UNITS")} text={`${t(checkForNA(useDetails?.NumberofDwellingUnits || useDetails?.noOfDwellingUnits))}`} />
+      </StatusTable>
+
+      <CardSubHeader>{t("WS_DJB_EMPLOYEE")}</CardSubHeader>
+      <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
+        <Row
+          label={t("WS_DJB_EMPLOYEE")}
+          text={`${djbEmployee?.isDjbEmployee ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}`}
+          actionButton={<ActionButton onClick={onEdit} />}
+        />
+        {djbEmployee?.isDjbEmployee && (
+          <React.Fragment>
+            <Row label={t("WS_EMPLOYEE_ID")} text={`${t(checkForNA(djbEmployee?.employeeId))}`} />
+            <Row label={t("WS_DATE_OF_RETIREMENT")} text={`${t(checkForNA(djbEmployee?.dor))}`} />
+            <Row label={t("WS_EMPLOYEE_DESIGNATION")} text={`${t(checkForNA(djbEmployee?.designation))}`} />
+            {djbEmployee?.document && (
+              <Row
+                label={t("WS_UPLOAD_EMPLOYEE_ID_DOC")}
+                text={
+                  <span
+                    style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", color: "#f47738" }}
+                    onClick={() => openFilePDF(djbEmployee?.document)}
+                  >
+                    <GenericFileIcon /> {t("CS_COMMON_VIEW")}
+                  </span>
+                }
+              />
+            )}
+          </React.Fragment>
+        )}
       </StatusTable>
 
       <CardSubHeader>{t("WS_DIVYANGJAN")}</CardSubHeader>

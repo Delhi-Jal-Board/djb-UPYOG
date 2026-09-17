@@ -27,7 +27,8 @@ const OLDApplication = () => {
     { label: "WS_COMMON_CONNECTION_HOLDER_DETAILS_HEADER" },
     { label: "PT_LOCATION_DETAILS" },
     { label: "WS_PROPERTY_AND_WATER_CONNECTION_USE_DETAILS" },
-    ...(isCitizen ? [] : [{ label: "WS_DJB_EMPLOYEE" }]),
+    { label: "WS_DJB_EMPLOYEE" },
+    // ...(isCitizen ? [] : [{ label: "WS_DJB_EMPLOYEE" }]),
     { label: "WS_BANK_DETAILS" },
     { label: "WS_DOCUMENTS" },
     { label: "WS_DECLARATION" },
@@ -57,10 +58,7 @@ const OLDApplication = () => {
     {
       filters: { propertyIds: propertyId },
       tenantId: tenantId,
-      enabled:
-        propertyId &&
-        propertyId === requestedPropertyId &&
-        propertyId === verifiedPropertyId.current,
+      enabled: propertyId && propertyId === requestedPropertyId && propertyId === verifiedPropertyId.current,
     }
   );
 

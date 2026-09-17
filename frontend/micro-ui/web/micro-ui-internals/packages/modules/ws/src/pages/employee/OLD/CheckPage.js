@@ -327,7 +327,7 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
             />
           </StatusTable>
 
-          {!isCitizen && (
+          {/* {!isCitizen && ( */}
             <React.Fragment>
               <CardSubHeader>{t("WS_DJB_EMPLOYEE")}</CardSubHeader>
               <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
@@ -358,7 +358,7 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
                 )}
               </StatusTable>
             </React.Fragment>
-          )}
+          {/* )} */}
 
           <CardSubHeader>Divyangjan/Person with Disability?</CardSubHeader>
           <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>

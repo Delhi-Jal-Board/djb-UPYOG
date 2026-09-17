@@ -22,9 +22,11 @@ const getMaskedPhone = (phone) => {
 };
 
 const getAddress = (address, t) => {
-  return `${address?.doorNo ? `${address?.doorNo}, ` : ""} ${address?.street ? `${address?.street}, ` : ""}${address?.landmark ? `${address?.landmark}, ` : ""
-    }${t(Digit.Utils.pt.getMohallaLocale(address?.locality.code, address?.tenantId))}, ${t(Digit.Utils.pt.getCityLocale(address?.tenantId))}${address?.pincode && t(address?.pincode) ? `, ${address.pincode}` : " "
-    }`;
+  return `${address?.doorNo ? `${address?.doorNo}, ` : ""} ${address?.street ? `${address?.street}, ` : ""}${
+    address?.landmark ? `${address?.landmark}, ` : ""
+  }${t(Digit.Utils.pt.getMohallaLocale(address?.locality.code, address?.tenantId))}, ${t(Digit.Utils.pt.getCityLocale(address?.tenantId))}${
+    address?.pincode && t(address?.pincode) ? `, ${address.pincode}` : " "
+  }`;
 };
 
 const WSInfoPage = () => {
@@ -62,8 +64,6 @@ const WSInfoPage = () => {
     }
   );
 
-
-
   const radioOptions = [
     { code: "YES", i18nKey: "TL_COMMON_YES" },
     { code: "NO", i18nKey: "TL_COMMON_NO" },
@@ -76,8 +76,7 @@ const WSInfoPage = () => {
       // Bind the OTP verification to the property selected before verification.
       sessionStorage.setItem("WS_OTP_VERIFIED_PROPERTY_ID", selectedProperty.propertyId);
       history.push(`${baseUrl}/old-application?propertyId=${selectedProperty.propertyId}`);
-    }
-    else {
+    } else {
       history.push(`${baseUrl}/old-application`);
     }
   };
@@ -94,8 +93,8 @@ const WSInfoPage = () => {
           mobileNumber: mobileNumberToSearch,
           tenantId: "dl",
           type: "register",
-          userType: "EMPLOYEE"
-        }
+          userType: "EMPLOYEE",
+        },
       };
 
       const response = await Digit.UserService.sendOtp(payload, "dl");
@@ -150,8 +149,8 @@ const WSInfoPage = () => {
         otp: {
           otp: otp,
           identity: mobileNumberToSearch,
-          tenantId: "dl"
-        }
+          tenantId: "dl",
+        },
       };
 
       const response = await Digit.UserService.validateOtp(payload);
@@ -223,7 +222,9 @@ const WSInfoPage = () => {
           <form onSubmit={handleVerifyOtp}>
             <CardHeader>{t("WS_VERIFY_OTP_HEADER") || "Verify OTP"}</CardHeader>
             <div style={{ marginBottom: "24px" }}>
-              <Label>{t("WS_ENTER_OTP_SENT_TO") || "Enter OTP sent to"} +91 {getMaskedPhone(mobileNumberToSearch)} *</Label>
+              <Label>
+                {t("WS_ENTER_OTP_SENT_TO") || "Enter OTP sent to"} +91 {getMaskedPhone(mobileNumberToSearch)} *
+              </Label>
               <TextInput
                 t={t}
                 type="text"
@@ -232,9 +233,9 @@ const WSInfoPage = () => {
                 isMandatory={false}
                 value={otp}
                 maxLength={6}
-                onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
                 onKeyDown={(e) => {
-                  if (['-', '+', 'e', 'E', '.'].includes(e.key)) e.preventDefault();
+                  if (["-", "+", "e", "E", "."].includes(e.key)) e.preventDefault();
                 }}
                 placeholder={t("WS_ENTER_6_DIGIT_OTP") || "Enter 6-digit OTP"}
                 style={{ width: "100%", maxWidth: "300px" }}
@@ -247,7 +248,7 @@ const WSInfoPage = () => {
                 disabled={isOtpSending}
                 style={{ color: "#f47738", background: "none", border: "none", cursor: "pointer", fontWeight: "bold", textDecoration: "underline" }}
               >
-                {isOtpSending ? (t("WS_SENDING_OTP") || "Sending...") : (t("WS_RESEND_OTP") || "Resend OTP")}
+                {isOtpSending ? t("WS_SENDING_OTP") || "Sending..." : t("WS_RESEND_OTP") || "Resend OTP"}
               </button>
               <button
                 type="button"
@@ -492,7 +493,12 @@ const WSInfoPage = () => {
           <li>{t("WS_NUMBER_OF_DWELLING_UNITS")}</li>
         </ul>
 
-
+        <CardSubHeader style={{ marginTop: "0", marginBottom: "0" }}>{t("WS_DJB_EMPLOYEE")}</CardSubHeader>
+        <ul style={{ listStyleType: "disc", marginLeft: "20px", marginBottom: "24px", lineHeight: "2" }}>
+          <li>{t("WS_EMPLOYEE_ID")}</li>
+          <li>{t("WS_DATE_OF_RETIREMENT")}</li>
+          <li>{t("WS_EMPLOYEE_DESIGNATION")}</li>
+        </ul>
 
         <CardSubHeader style={{ marginTop: "0", marginBottom: "0" }}>{t("WS_BANK_DETAILS")}</CardSubHeader>
         <ul style={{ listStyleType: "disc", marginLeft: "20px", marginBottom: "24px", lineHeight: "2" }}>
@@ -516,9 +522,9 @@ const WSInfoPage = () => {
         </ul>
 
         {!hasProperty || (hasProperty?.code === "YES" && !selectedProperty) ? (
-          <SubmitBar label={t("CS_COMMON_NEXT")} onSubmit={() => { }} disabled={true} />
+          <SubmitBar label={t("CS_COMMON_NEXT")} onSubmit={() => {}} disabled={true} />
         ) : (
-          <SubmitBar label={t("CS_COMMON_NEXT")} onSubmit={handleNext} disabled={(hasProperty?.code === "NO")} />
+          <SubmitBar label={t("CS_COMMON_NEXT")} onSubmit={handleNext} disabled={hasProperty?.code === "NO"} />
         )}
         <div style={{ display: "flex", justifyContent: "flex-start", marginTop: "12px" }}>
           <SubmitBar
