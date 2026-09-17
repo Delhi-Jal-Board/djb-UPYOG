@@ -169,7 +169,7 @@ export const newConfig = [
         nextStep: "disability-details",
         WATER: "disability-details",
         hideInEmployee: true,
-        hideInCitizen: true,
+        // hideInCitizen: true,
         texts: {
           headerCaption: "WS_COMMON_CONNECTION_DETAIL",
           header: "WS_DJB_EMPLOYEE",

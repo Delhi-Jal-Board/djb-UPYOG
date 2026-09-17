@@ -21,7 +21,7 @@ const ConsumptionDetails = ({ view }) => {
   const { t } = useTranslation();
   const user = Digit.UserService.getUser();
   const tenantId = user?.info?.tenantId || Digit.ULBService.getCurrentTenantId();
-  let filters = func.getQueryStringParams(location.search);
+  let filters = func.getQueryStringParams(window.location.search);
   const { applicationNo } = Digit.Hooks.useQueryParams();
   const serviceType = filters?.service;
   let filter1 = { tenantId: tenantId, connectionNos: applicationNo };
@@ -42,6 +42,37 @@ const ConsumptionDetails = ({ view }) => {
   const userInfo = Digit.UserService.getUser();
   const userRoles = userInfo.info.roles.map((roleData) => roleData.code);
   const isUserAllowedToAddMeterReading = userRoles.filter((role) => role === "WS_CEMP" || role === "SW_CEMP").length > 0;
+
+  const [meterReadingDetailsModal, setMeterReadingDetailsModal] = useState(false);
+  const [meterReadingDetailsData, setMeterReadingDetailsData] = useState(null);
+  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+
+  const handleViewMeterReadingDetails = (application) => {
+    setIsLoadingDetails(true);
+    setMeterReadingDetailsModal(true);
+
+    const tenantIdStr = application?.tenantId || tenantId;
+    const connectionNoStr = application?.connectionNo || applicationNo;
+    const billingCycleIdStr = application?.billingCycleId || application?.billingPeriodId || application?.id;
+
+    fetchBillingStatement(
+      { tenantId: tenantIdStr, connectionNo: connectionNoStr, billingCycleId: billingCycleIdStr },
+      {
+        onSuccess: (data) => {
+          setMeterReadingDetailsData(data?.billingStatement);
+          setIsLoadingDetails(false);
+        },
+        onError: (error) => {
+          console.error(error);
+          setShowToast({ key: "error", message: t("ERROR_FETCHING_METER_READING_DETAILS") });
+          setMeterReadingDetailsModal(false);
+          setIsLoadingDetails(false);
+        },
+      }
+    );
+  };
+
+  const { mutate: fetchBillingStatement } = Digit.Hooks.ws.useWSBillingStatement(businessService);
 
   const { isLoading, isError, data: response } = Digit.Hooks.ws.useWSConsumptionSearch({ filters: filter1 }, { filters: filter1 });
 
@@ -388,6 +419,9 @@ const ConsumptionDetails = ({ view }) => {
             meterReadings.map((application, index) => (
               <div key={index}>
                 <Card>
+                  <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "16px", marginTop: "8px", marginRight: "8px" }}>
+                    <SubmitBar label={t("VIEW_METER_READING_DETAILS")} onSubmit={() => handleViewMeterReadingDetails(application)} />
+                  </div>
                   <StatusTable>
                     <Row
                       key={t("WS_MYCONNECTIONS_CONSUMER_NO")}
@@ -489,6 +523,544 @@ const ConsumptionDetails = ({ view }) => {
           )}
         </Modal>
       )}
+
+      {meterReadingDetailsModal && (
+        <Modal
+          headerBarMain={<Heading label={t("WS_METER_READING_DETAILS")} />}
+          headerBarEnd={<CloseBtn onClick={() => setMeterReadingDetailsModal(false)} />}
+          actionCancelLabel={t("CORE_CHANGE_TENANT_CANCEL")}
+          actionCancelOnSubmit={() => setMeterReadingDetailsModal(false)}
+          hideSubmit={true}
+          formId="meter-reading-details-modal"
+          popupStyles={{ width: mobileView ? "100%" : "800px" }}
+        >
+          {isLoadingDetails ? (
+            <Loader />
+          ) : meterReadingDetailsData ? (
+            <div>
+              <div style={{ marginBottom: "16px" }}>
+                <Header>{t("WS_CONSUMER_DETAILS")}</Header>
+                <StatusTable>
+                  <Row label={t("WS_CONNECTION_NO")} text={meterReadingDetailsData.consumer?.connectionNo || t("NA")} className="border-none" />
+                  <Row label={t("WS_TARIFF_CATEGORY")} text={meterReadingDetailsData.consumer?.tariffCategory || t("NA")} className="border-none" />
+                  <Row label={t("WS_PROPERTY_USAGE")} text={meterReadingDetailsData.consumer?.propertyUsage || t("NA")} className="border-none" />
+                  <Row
+                    label={t("WS_PROPERTY_AREA_SQM")}
+                    text={meterReadingDetailsData.consumer?.propertyAreaSqm ?? t("NA")}
+                    className="border-none"
+                  />
+                </StatusTable>
+              </div>
+
+              <div style={{ marginBottom: "16px" }}>
+                <Header>{t("WS_BILLING_CYCLE")}</Header>
+                <StatusTable>
+                  <Row
+                    label={t("WS_PERIOD_FROM")}
+                    text={
+                      meterReadingDetailsData.billingCycle?.periodFrom
+                        ? Digit.DateUtils.ConvertEpochToDate(meterReadingDetailsData.billingCycle?.periodFrom)
+                        : t("NA")
+                    }
+                    className="border-none"
+                  />
+                  <Row
+                    label={t("WS_PERIOD_TO")}
+                    text={
+                      meterReadingDetailsData.billingCycle?.periodTo
+                        ? Digit.DateUtils.ConvertEpochToDate(meterReadingDetailsData.billingCycle?.periodTo)
+                        : t("NA")
+                    }
+                    className="border-none"
+                  />
+                  <Row
+                    label={t("WS_READING_QUALITY_CODE")}
+                    text={meterReadingDetailsData.billingCycle?.readingQualityCode || t("NA")}
+                    className="border-none"
+                  />
+                  <Row label={t("WS_BILLING_BASIS")} text={meterReadingDetailsData.billingCycle?.billingBasis || t("NA")} className="border-none" />
+                  <Row
+                    label={t("WS_CORRECTION_STATUS")}
+                    text={meterReadingDetailsData.billingCycle?.correctionStatus || t("NA")}
+                    className="border-none"
+                  />
+                  <Row label={t("WS_STATUS")} text={meterReadingDetailsData.billingCycle?.status || t("NA")} className="border-none" />
+                  <Row
+                    label={t("WS_AVERAGE_CYCLE_COUNT")}
+                    text={meterReadingDetailsData.billingCycle?.averageCycleCount ?? t("NA")}
+                    className="border-none"
+                  />
+                  <Row
+                    label={t("WS_PROVISIONAL_CYCLE_COUNT")}
+                    text={meterReadingDetailsData.billingCycle?.provisionalCycleCount ?? t("NA")}
+                    className="border-none"
+                  />
+                  <Row label={t("WS_ZRO_STATUS")} text={meterReadingDetailsData.billingCycle?.zroStatus || t("NA")} className="border-none" />
+                  <Row label={t("WS_ZRO_REMARKS")} text={meterReadingDetailsData.billingCycle?.zroRemarks || t("NA")} className="border-none" />
+                </StatusTable>
+              </div>
+
+              <div style={{ marginBottom: "16px" }}>
+                <Header>{t("WS_READING_DETAILS")}</Header>
+                <StatusTable>
+                  <Row label={t("WS_PREVIOUS_READING")} text={meterReadingDetailsData.reading?.previousReading ?? t("NA")} className="border-none" />
+                  <Row
+                    label={t("WS_PREVIOUS_READING_DATE")}
+                    text={
+                      meterReadingDetailsData.reading?.previousReadingDate
+                        ? Digit.DateUtils.ConvertEpochToDate(meterReadingDetailsData.reading?.previousReadingDate)
+                        : t("NA")
+                    }
+                    className="border-none"
+                  />
+                  <Row label={t("WS_CURRENT_READING")} text={meterReadingDetailsData.reading?.currentReading ?? t("NA")} className="border-none" />
+                  <Row
+                    label={t("WS_CURRENT_READING_DATE")}
+                    text={
+                      meterReadingDetailsData.reading?.currentReadingDate
+                        ? Digit.DateUtils.ConvertEpochToDate(meterReadingDetailsData.reading?.currentReadingDate)
+                        : t("NA")
+                    }
+                    className="border-none"
+                  />
+                  <Row
+                    label={t("WS_PREVIOUS_CONSUMPTION")}
+                    text={meterReadingDetailsData.reading?.previousConsumption ?? t("NA")}
+                    className="border-none"
+                  />
+                  <Row
+                    label={t("WS_ACTUAL_CONSUMPTION")}
+                    text={meterReadingDetailsData.reading?.actualConsumption ?? t("NA")}
+                    className="border-none"
+                  />
+                  <Row
+                    label={t("WS_MONTHLY_CONSUMPTION")}
+                    text={meterReadingDetailsData.reading?.monthlyConsumption ?? t("NA")}
+                    className="border-none"
+                  />
+                  <Row
+                    label={t("WS_BILLING_CONSUMPTION")}
+                    text={meterReadingDetailsData.reading?.billingConsumption ?? t("NA")}
+                    className="border-none"
+                  />
+                  <Row label={t("WS_BILLING_DAYS")} text={meterReadingDetailsData.reading?.billingDays ?? t("NA")} className="border-none" />
+                  <Row
+                    label={t("WS_AVERAGE_CONSUMPTION")}
+                    text={meterReadingDetailsData.reading?.averageConsumption ?? t("NA")}
+                    className="border-none"
+                  />
+                  {/* <Row label={t("WS_DEVIATION_FACTOR")} text={meterReadingDetailsData.reading?.deviationFactor ?? t("NA")} className="border-none" />
+                  <Row label={t("WS_UNIT")} text={meterReadingDetailsData.reading?.unit || t("NA")} className="border-none" /> */}
+                </StatusTable>
+              </div>
+
+              {/* {meterReadingDetailsData.billingDecision && (
+                <div style={{ marginBottom: "16px" }}>
+                  <Header>{t("WS_BILLING_DECISION")}</Header>
+                  <StatusTable>
+                    <Row label={t("WS_BASIS")} text={meterReadingDetailsData.billingDecision?.basis || t("NA")} className="border-none" />
+                    <Row label={t("WS_REASON_CODE")} text={meterReadingDetailsData.billingDecision?.reasonCode || t("NA")} className="border-none" />
+                    <Row label={t("WS_REASON")} text={meterReadingDetailsData.billingDecision?.reason || t("NA")} className="border-none" />
+                    <Row
+                      label={t("WS_ACTUAL_READING_AVAILABLE")}
+                      text={meterReadingDetailsData.billingDecision?.actualReadingAvailable ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}
+                      className="border-none"
+                    />
+                    <Row
+                      label={t("WS_HISTORICAL_AVERAGE")}
+                      text={meterReadingDetailsData.billingDecision?.historicalAverage ?? t("NA")}
+                      className="border-none"
+                    />
+                    <Row
+                      label={t("WS_MINIMUM_BILLING_CONSUMPTION")}
+                      text={meterReadingDetailsData.billingDecision?.minimumBillingConsumption ?? t("NA")}
+                      className="border-none"
+                    />
+                    <Row
+                      label={t("WS_AVERAGE_CYCLE_COUNT")}
+                      text={meterReadingDetailsData.billingDecision?.averageCycleCount ?? t("NA")}
+                      className="border-none"
+                    />
+                    <Row
+                      label={t("WS_PROVISIONAL_CYCLE_COUNT")}
+                      text={meterReadingDetailsData.billingDecision?.provisionalCycleCount ?? t("NA")}
+                      className="border-none"
+                    />
+                    <Row
+                      label={t("WS_BILLING_RULE_CODE")}
+                      text={meterReadingDetailsData.billingDecision?.billingRuleCode || t("NA")}
+                      className="border-none"
+                    />
+                    <Row
+                      label={t("WS_CONFIGURED_AVERAGE_MAXIMUM_CYCLES")}
+                      text={meterReadingDetailsData.billingDecision?.configuredAverageMaximumCycles ?? t("NA")}
+                      className="border-none"
+                    />
+                    <Row
+                      label={t("WS_CONFIGURED_PROVISIONAL_MAXIMUM_CYCLES")}
+                      text={meterReadingDetailsData.billingDecision?.configuredProvisionalMaximumCycles ?? t("NA")}
+                      className="border-none"
+                    />
+                  </StatusTable>
+                </div>
+              )} */}
+
+              {meterReadingDetailsData.onePointFiveX &&
+                (meterReadingDetailsData.onePointFiveX?.evaluated === true ||
+                  meterReadingDetailsData.onePointFiveX?.required === true ||
+                  meterReadingDetailsData.onePointFiveX?.zroRequired === true) && (
+                  <div style={{ marginBottom: "16px" }}>
+                    <Header>{t("WS_ONE_POINT_FIVE_X")}</Header>
+                    <StatusTable>
+                      <Row
+                        label={t("WS_EVALUATED")}
+                        text={meterReadingDetailsData.onePointFiveX?.evaluated ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}
+                        className="border-none"
+                      />
+                      <Row label={t("WS_MULTIPLIER")} text={meterReadingDetailsData.onePointFiveX?.multiplier ?? t("NA")} className="border-none" />
+                      <Row
+                        label={t("WS_PREVIOUS_CONSUMPTION")}
+                        text={meterReadingDetailsData.onePointFiveX?.previousConsumption ?? t("NA")}
+                        className="border-none"
+                      />
+                      <Row
+                        label={t("WS_THRESHOLD_CONSUMPTION")}
+                        text={meterReadingDetailsData.onePointFiveX?.thresholdConsumption ?? t("NA")}
+                        className="border-none"
+                      />
+                      <Row
+                        label={t("WS_ACTUAL_CONSUMPTION")}
+                        text={meterReadingDetailsData.onePointFiveX?.actualConsumption ?? t("NA")}
+                        className="border-none"
+                      />
+                      <Row
+                        label={t("WS_MONTHLY_CONSUMPTION")}
+                        text={meterReadingDetailsData.onePointFiveX?.monthlyConsumption ?? t("NA")}
+                        className="border-none"
+                      />
+                      <Row
+                        label={t("WS_BILLING_DAYS")}
+                        text={meterReadingDetailsData.onePointFiveX?.billingDays ?? t("NA")}
+                        className="border-none"
+                      />
+                      <Row
+                        label={t("WS_EXCEEDED")}
+                        text={meterReadingDetailsData.onePointFiveX?.exceeded ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}
+                        className="border-none"
+                      />
+                      <Row
+                        label={t("WS_MINIMUM_ZRO_CONSUMPTION")}
+                        text={meterReadingDetailsData.onePointFiveX?.minimumZroConsumption ?? t("NA")}
+                        className="border-none"
+                      />
+                      <Row
+                        label={t("WS_ZRO_REQUIRED")}
+                        text={meterReadingDetailsData.onePointFiveX?.zroRequired ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}
+                        className="border-none"
+                      />
+                      <Row label={t("WS_REASON")} text={meterReadingDetailsData.onePointFiveX?.reason || t("NA")} className="border-none" />
+                    </StatusTable>
+                  </div>
+                )}
+
+              {meterReadingDetailsData.charges && (
+                <React.Fragment>
+                  {/* Water Charges */}
+                  <div style={{ marginBottom: "16px" }}>
+                    <Header>{t("WS_WATER_CHARGES")}</Header>
+                    <StatusTable>
+                      {meterReadingDetailsData.charges.water ? (
+                        <React.Fragment>
+                          <Row
+                            label={t("WS_WATER_CONSUMPTION")}
+                            text={
+                              meterReadingDetailsData.charges.water?.consumption != null
+                                ? `${meterReadingDetailsData.charges.water.consumption} ${meterReadingDetailsData.charges.water?.unit || ""}`
+                                : t("NA")
+                            }
+                            className="border-none"
+                          />
+                          <Row
+                            label={t("WS_WATER_CATEGORY")}
+                            text={meterReadingDetailsData.charges.water?.category || meterReadingDetailsData.charges.water?.tariffId || t("NA")}
+                            className="border-none"
+                          />
+                          <Row
+                            label={t("WS_VOLUMETRIC_CHARGE")}
+                            text={meterReadingDetailsData.charges.water?.volumetricCharge ?? t("NA")}
+                            className="border-none"
+                          />
+                          <Row
+                            label={t("WS_SERVICE_CHARGE")}
+                            text={meterReadingDetailsData.charges.water?.serviceCharge ?? t("NA")}
+                            className="border-none"
+                          />
+                          <Row
+                            label={t("WS_TOTAL_WATER_CHARGE")}
+                            text={meterReadingDetailsData.charges.water?.totalWaterCharge ?? t("NA")}
+                            className="border-none"
+                          />
+                          {meterReadingDetailsData.charges.water?.slabs?.map((slab, idx) => (
+                            <Row
+                              key={idx}
+                              label={`${t("WS_WATER_SLAB")} ${idx + 1}`}
+                              text={slab?.explanation || `${slab.units} KL @ Rs. ${slab.ratePerKl} = Rs. ${slab.charge}`}
+                              className="border-none"
+                            />
+                          ))}
+                        </React.Fragment>
+                      ) : (
+                        <Row label={t("WS_TOTAL_WATER_CHARGE")} text={t("NA")} className="border-none" />
+                      )}
+                    </StatusTable>
+                  </div>
+
+                  {/* Sewerage Charges */}
+                  <div style={{ marginBottom: "16px" }}>
+                    <Header>{t("WS_SEWERAGE_CHARGES")}</Header>
+                    <StatusTable>
+                      {meterReadingDetailsData.charges.sewerage ? (
+                        <React.Fragment>
+                          <Row
+                            label={t("WS_REGULAR_SEWERAGE_CHARGE")}
+                            text={meterReadingDetailsData.charges.sewerage?.regularCharge ?? t("NA")}
+                            className="border-none"
+                          />
+                          <Row
+                            label={t("WS_ADDITIONAL_SEWERAGE_CHARGE")}
+                            text={meterReadingDetailsData.charges.sewerage?.additionalCharge ?? t("NA")}
+                            className="border-none"
+                          />
+                          <Row
+                            label={t("WS_TOTAL_SEWERAGE_CHARGE")}
+                            text={meterReadingDetailsData.charges.sewerage?.totalCharge ?? t("NA")}
+                            className="border-none"
+                          />
+                          {/* <Row
+                            label={t("WS_REGULAR_RULE_CODE")}
+                            text={meterReadingDetailsData.charges.sewerage?.regularRuleCode || t("NA")}
+                            className="border-none"
+                          /> */}
+                          {meterReadingDetailsData.charges.sewerage?.additionalRuleCode && (
+                            <Row
+                              label={t("WS_ADDITIONAL_RULE_CODE")}
+                              text={meterReadingDetailsData.charges.sewerage.additionalRuleCode}
+                              className="border-none"
+                            />
+                          )}
+                          <Row
+                            label={t("WS_SEWERAGE_EXPLANATION")}
+                            text={meterReadingDetailsData.charges.sewerage?.explanation || t("NA")}
+                            className="border-none"
+                          />
+                        </React.Fragment>
+                      ) : (
+                        <Row label={t("WS_TOTAL_SEWERAGE_CHARGE")} text={t("NA")} className="border-none" />
+                      )}
+                    </StatusTable>
+                  </div>
+
+                  {/* Rebates */}
+                  {meterReadingDetailsData.charges.rebates && (
+                    <div style={{ marginBottom: "16px" }}>
+                      <Header>{t("WS_REBATES")}</Header>
+                      <StatusTable>
+                        <Row
+                          label={t("WS_TOTAL_REBATE")}
+                          text={meterReadingDetailsData.charges.rebates?.totalRebate ?? t("NA")}
+                          className="border-none"
+                        />
+                        <Row
+                          label={t("WS_REBATE_EXPLANATION")}
+                          text={meterReadingDetailsData.charges.rebates?.explanation || t("NA")}
+                          className="border-none"
+                        />
+                      </StatusTable>
+                    </div>
+                  )}
+
+                  {/* Summary */}
+                  <div style={{ marginBottom: "16px" }}>
+                    <Header>{t("WS_CHARGES_SUMMARY")}</Header>
+                    <StatusTable>
+                      <Row label={t("WS_GROSS_AMOUNT")} text={meterReadingDetailsData.charges?.grossAmount ?? t("NA")} className="border-none" />
+                      {meterReadingDetailsData.charges.water?.totalWaterCharge != null && (
+                        <Row
+                          label={t("WS_TOTAL_WATER_CHARGE")}
+                          text={meterReadingDetailsData.charges.water.totalWaterCharge}
+                          className="border-none"
+                        />
+                      )}
+                      {meterReadingDetailsData.charges.sewerage?.totalCharge != null && (
+                        <Row
+                          label={t("WS_TOTAL_SEWERAGE_CHARGE")}
+                          text={meterReadingDetailsData.charges.sewerage.totalCharge}
+                          className="border-none"
+                        />
+                      )}
+                      {meterReadingDetailsData.charges.rebates?.totalRebate != null && (
+                        <Row label={t("WS_TOTAL_REBATE")} text={meterReadingDetailsData.charges.rebates.totalRebate} className="border-none" />
+                      )}
+                      <Row label={t("WS_NET_AMOUNT")} text={meterReadingDetailsData.charges?.netAmount ?? t("NA")} className="border-none" />
+                    </StatusTable>
+                  </div>
+                </React.Fragment>
+              )}
+
+              {meterReadingDetailsData.adjustments && (
+                <div style={{ marginBottom: "16px" }}>
+                  <Header>{t("WS_ADJUSTMENTS")}</Header>
+                  <StatusTable>
+                    <Row
+                      label={t("WS_PAID_CORRECTION_APPLIED")}
+                      text={meterReadingDetailsData.adjustments?.paidCorrectionApplied ?? t("NA")}
+                      className="border-none"
+                    />
+                    <Row
+                      label={t("WS_RESIDUAL_PAID_CREDIT_CREATED")}
+                      text={meterReadingDetailsData.adjustments?.residualPaidCreditCreated ?? t("NA")}
+                      className="border-none"
+                    />
+                    <Row
+                      label={t("WS_CARRIED_FORWARD_CREDIT_APPLIED")}
+                      text={meterReadingDetailsData.adjustments?.carriedForwardCreditApplied ?? t("NA")}
+                      className="border-none"
+                    />
+                  </StatusTable>
+                </div>
+              )}
+
+              {meterReadingDetailsData.correction && meterReadingDetailsData.correction?.required === true && (
+                <div style={{ marginBottom: "16px" }}>
+                  <Header>{t("WS_CORRECTION")}</Header>
+                  <StatusTable>
+                    <Row
+                      label={t("WS_REQUIRED")}
+                      text={meterReadingDetailsData.correction?.required ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}
+                      className="border-none"
+                    />
+                    <Row label={t("WS_STATUS")} text={meterReadingDetailsData.correction?.status || t("NA")} className="border-none" />
+                    <Row label={t("WS_REASON_CODE")} text={meterReadingDetailsData.correction?.reasonCode || t("NA")} className="border-none" />
+                    <Row label={t("WS_REASON")} text={meterReadingDetailsData.correction?.reason || t("NA")} className="border-none" />
+                    <Row
+                      label={t("WS_PREVIOUS_OK_READING")}
+                      text={meterReadingDetailsData.correction?.previousOkReading ?? t("NA")}
+                      className="border-none"
+                    />
+                    <Row
+                      label={t("WS_CURRENT_READING")}
+                      text={meterReadingDetailsData.correction?.currentReading ?? t("NA")}
+                      className="border-none"
+                    />
+                    <Row
+                      label={t("WS_CORRECTED_CONSUMPTION")}
+                      text={meterReadingDetailsData.correction?.correctedConsumption ?? t("NA")}
+                      className="border-none"
+                    />
+                    <Row
+                      label={t("WS_PREVIOUSLY_CALCULATED_AMOUNT")}
+                      text={meterReadingDetailsData.correction?.previouslyCalculatedAmount ?? t("NA")}
+                      className="border-none"
+                    />
+                  </StatusTable>
+                </div>
+              )}
+
+              {/* {meterReadingDetailsData.reconciliation && (
+                <div style={{ marginBottom: "16px" }}>
+                  <Header>{t("WS_RECONCILIATION")}</Header>
+                  <StatusTable>
+                    <Row
+                      label={t("WS_CALCULATED_AMOUNT")}
+                      text={meterReadingDetailsData.reconciliation?.calculatedAmount ?? t("NA")}
+                      className="border-none"
+                    />
+                    <Row
+                      label={t("WS_BILLED_AMOUNT")}
+                      text={meterReadingDetailsData.reconciliation?.billedAmount ?? t("NA")}
+                      className="border-none"
+                    />
+                    <Row label={t("WS_DIFFERENCE")} text={meterReadingDetailsData.reconciliation?.difference ?? t("NA")} className="border-none" />
+                    <Row label={t("WS_STATUS")} text={meterReadingDetailsData.reconciliation?.status || t("NA")} className="border-none" />
+                  </StatusTable>
+                </div>
+              )} */}
+
+              {/* {meterReadingDetailsData.demand && (
+                <div style={{ marginBottom: "16px" }}>
+                  <Header>{t("WS_DEMAND")}</Header>
+                  <StatusTable>
+                    <Row
+                      label={t("WS_CREATED")}
+                      text={meterReadingDetailsData.demand?.created ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}
+                      className="border-none"
+                    />
+                    <Row label={t("WS_STATUS")} text={meterReadingDetailsData.demand?.status || t("NA")} className="border-none" />
+                    <Row label={t("WS_AMOUNT")} text={meterReadingDetailsData.demand?.amount ?? t("NA")} className="border-none" />
+                  </StatusTable>
+                </div>
+              )} */}
+
+              {meterReadingDetailsData.bill && (
+                <div style={{ marginBottom: "16px" }}>
+                  <Header>{t("WS_BILL_DETAILS")}</Header>
+                  <StatusTable>
+                    <Row
+                      label={t("WS_BILL_GENERATED")}
+                      text={meterReadingDetailsData.bill?.generated ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}
+                      className="border-none"
+                    />
+                    <Row label={t("WS_BILL_NUMBER")} text={meterReadingDetailsData.bill?.number || t("NA")} className="border-none" />
+                    <Row label={t("WS_BILL_STATUS")} text={meterReadingDetailsData.bill?.status || t("NA")} className="border-none" />
+                    <Row label={t("WS_BILL_AMOUNT")} text={meterReadingDetailsData.bill?.amount ?? t("NA")} className="border-none" />
+                    <Row label={t("WS_CALCULATED_AMOUNT")} text={meterReadingDetailsData.bill?.calculatedAmount ?? t("NA")} className="border-none" />
+                    {/* <Row label={t("WS_DIFFERENCE")} text={meterReadingDetailsData.bill?.difference ?? t("NA")} className="border-none" />
+                    <Row
+                      label={t("WS_RECONCILIATION_STATUS")}
+                      text={meterReadingDetailsData.bill?.reconciliationStatus || t("NA")}
+                      className="border-none"
+                    /> */}
+                  </StatusTable>
+                </div>
+              )}
+              {/* Highlighted Net Amount at the very last */}
+              <div
+                style={{
+                  marginTop: "24px",
+                  marginBottom: "8px",
+                  padding: "16px 20px",
+                  backgroundColor: "#FEF7F2",
+                  border: "2px solid #F47738",
+                  borderRadius: "6px",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  boxShadow: "0 2px 6px rgba(244, 119, 56, 0.15)",
+                }}
+              >
+                <div>
+                  <div style={{ fontSize: "18px", fontWeight: "700", color: "#0B0C0C" }}>{t("WS_NET_AMOUNT")}</div>
+                  {meterReadingDetailsData.charges?.grossAmount != null && (
+                    <div style={{ fontSize: "13px", color: "#505A5F", marginTop: "4px" }}>
+                      {t("WS_GROSS_AMOUNT")}: ₹ {meterReadingDetailsData.charges.grossAmount}
+                    </div>
+                  )}
+                </div>
+                <div style={{ fontSize: "24px", fontWeight: "700", color: "#F47738" }}>
+                  ₹{" "}
+                  {meterReadingDetailsData.charges?.netAmount ??
+                    meterReadingDetailsData.bill?.amount ??
+                    meterReadingDetailsData.reconciliation?.billedAmount ??
+                    t("NA")}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div style={{ padding: "16px" }}>{t("CS_NO_DATA")}</div>
+          )}
+        </Modal>
+      )}
+
       {showToast && (
         <Toast style={{ zIndex: "10000" }} error={showToast?.key === "error" ? true : false} label={t(showToast?.message)} onClose={closeToast} />
       )}
