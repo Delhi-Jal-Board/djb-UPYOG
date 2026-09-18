@@ -211,6 +211,8 @@ const Urls = {
     ws_monthly_billing_search: "/ws-calculator/monthly-billing/_search",
     sw_monthly_billing_search: "/sw-calculator/monthly-billing/_search",
     due_verification: "/ws-services/wc/due-verification/_search",
+    zro_verification_search: "/ws-calculator/zro-verification/_search",
+    zro_verification_update: "/ws-calculator/zro-verification/_update",
   },
 
   asset: {

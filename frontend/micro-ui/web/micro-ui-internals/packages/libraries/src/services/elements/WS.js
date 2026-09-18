@@ -2,6 +2,28 @@ import Urls from "../atoms/urls";
 import { Request } from "../atoms/Utils/Request";
 
 export const WSService = {
+  searchZROVerification: (details) =>
+    Request({
+      url: Urls.ws.zro_verification_search,
+      data: details,
+      useCache: false,
+      setTimeParam: false,
+      userService: true,
+      method: "POST",
+      params: {},
+      auth: true,
+    }),
+  updateZROVerification: (details, tenantId) =>
+    Request({
+      url: Urls.ws.zro_verification_update,
+      data: details,
+      useCache: false,
+      setTimeParam: false,
+      userService: true,
+      method: "POST",
+      params: { tenantId },
+      auth: true,
+    }),
   create: (details, businessService) =>
     Request({
       url: businessService === "WATER" ? Urls.ws.water_create : Urls.ws.sewarage_create,
