@@ -63,6 +63,79 @@ const Step1_SearchConnection = ({ t, defaultKNumber, onNext, isEditFlow }) => {
         return;
       }
 
+      // Check for in-progress workflow applications (Water service only)
+      if (detectedServiceType === "WATER") {
+        const allConnections = wsResponse?.WaterConnection || [];
+        const terminalStatuses = [
+          "CONNECTION_ACTIVATED",
+          "APPROVED",
+          "REJECTED",
+          "DISAPPROVED",
+          "CANCELLED",
+          "TERMINATED",
+          "DISCONNECTION_EXECUTED",
+          "CONNECTION_DISCONNECTED"
+        ];
+
+        // 1. Fast check: find any application for this connection that is currently in-progress
+        const pendingStatusApp = allConnections.find(
+          c => c.applicationNo && c.applicationStatus && !terminalStatuses.includes(c.applicationStatus)
+        );
+
+        if (pendingStatusApp) {
+          setIsLoading(false);
+          setShowToast({
+            key: "error",
+            message: `Application (${pendingStatusApp.applicationNo}) already exists in Workflow for Connection No. ${connection?.connectionNo || kNumber}. Cannot modify connection.`,
+          });
+          return;
+        }
+
+        // 2. Comprehensive check: query Workflow service ONLY for non-terminal applications
+        // Applications that are already CONNECTION_ACTIVATED or terminal are never in-progress
+        const appsToCheck = allConnections
+          .filter(c => c.applicationNo && !terminalStatuses.includes(c.applicationStatus))
+          .map(c => c.applicationNo);
+
+        if (appsToCheck.length > 0 && Digit?.WorkflowService?.getByBusinessId) {
+          try {
+            // Pass history = false so workflow service returns only the latest process instance
+            const wfRes = await Digit.WorkflowService.getByBusinessId(
+              connection?.tenantId || tenantId,
+              appsToCheck.join(","),
+              {},
+              false
+            );
+
+            // Group by businessId to check ONLY the latest process instance per application
+            const latestProcessMap = {};
+            (wfRes?.ProcessInstances || []).forEach(pi => {
+              if (pi?.businessId) {
+                const existing = latestProcessMap[pi.businessId];
+                if (!existing || (pi.auditDetails?.lastModifiedTime || 0) > (existing.auditDetails?.lastModifiedTime || 0)) {
+                  latestProcessMap[pi.businessId] = pi;
+                }
+              }
+            });
+
+            const activeProcess = Object.values(latestProcessMap).find(
+              pi => pi?.state && !pi.state.isTerminateState && !terminalStatuses.includes(pi.state.state) && !terminalStatuses.includes(pi.state.applicationStatus)
+            );
+
+            if (activeProcess) {
+              setIsLoading(false);
+              setShowToast({
+                key: "error",
+                message: `Application (${activeProcess.businessId}) already exists in Workflow for Connection No. ${connection?.connectionNo || kNumber}. Cannot modify connection.`,
+              });
+              return;
+            }
+          } catch (wfErr) {
+            console.error("Workflow check error:", wfErr);
+          }
+        }
+      }
+
       const fetchedMobileNumber = connection?.connectionHolders?.[0]?.mobileNumber || connection?.mobileNumber;
 
       if (!fetchedMobileNumber || fetchedMobileNumber.length !== 10) {
