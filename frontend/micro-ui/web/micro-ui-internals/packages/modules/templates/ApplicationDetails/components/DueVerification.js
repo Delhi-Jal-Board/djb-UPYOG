@@ -203,9 +203,10 @@ const DueVerification = ({ applicationData }) => {
 
   return (
     <div style={{ marginBottom: "20px" }}>
-      <h2 style={{ fontSize: "24px", fontWeight: "bold", marginBottom: "16px" }}>{t("Due Verification")}</h2>
       {!isActivation && (
         <div style={{ marginBottom: "20px" }}>
+                <h2 style={{ fontSize: "24px", fontWeight: "bold", marginBottom: "16px" }}>{t("Due Verification")}</h2>
+
           <div style={{ display: "flex", alignItems: "flex-end", gap: "20px" }}>
             <div style={{ flex: 1 }}>
               <span style={{ fontSize: "16px", color: "#0B0C0C", marginBottom: "8px", display: "inline-block" }}>

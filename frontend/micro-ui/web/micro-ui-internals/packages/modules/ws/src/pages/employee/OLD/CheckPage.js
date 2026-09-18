@@ -45,6 +45,10 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
   const [showDocModal, setShowDocModal] = useState(false);
   const [docFileUrl, setDocFileUrl] = useState("");
   const [docFileType, setDocFileType] = useState("");
+  const [formState, setFormState] = useState(
+    JSON.parse(sessionStorage.getItem("FORMSTATE_ERRORS")) || {}
+  );
+  const isCitizen = Digit.UserService.getType()?.toUpperCase() === "CITIZEN";
 
   const handleViewDocument = async (fileStoreId) => {
     if (fileStoreId) {
@@ -323,34 +327,38 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
             />
           </StatusTable>
 
-          <CardSubHeader>{t("WS_DJB_EMPLOYEE")}</CardSubHeader>
-          <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
-            <Row
-              label={t("WS_DJB_EMPLOYEE")}
-              text={`${djbEmployee?.isDjbEmployee ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}`}
-              actionButton={<ActionButton onClick={onEdit} />}
-            />
-            {djbEmployee?.isDjbEmployee && (
-              <React.Fragment>
-                <Row label={t("WS_EMPLOYEE_ID")} text={`${t(checkForNA(djbEmployee?.employeeId))}`} />
-                <Row label={t("WS_DATE_OF_RETIREMENT")} text={`${t(checkForNA(djbEmployee?.dor))}`} />
-                <Row label={t("WS_EMPLOYEE_DESIGNATION")} text={`${t(checkForNA(djbEmployee?.designation))}`} />
-                {djbEmployee?.document && (
-                  <Row
-                    label={t("WS_UPLOAD_EMPLOYEE_ID_DOC")}
-                    text={
-                      <span
-                        style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", color: "#f47738" }}
-                        onClick={() => openFilePDF(djbEmployee?.document)}
-                      >
-                        <GenericFileIcon /> {t("CS_COMMON_VIEW")}
-                      </span>
-                    }
-                  />
+          {/* {!isCitizen && ( */}
+            <React.Fragment>
+              <CardSubHeader>{t("WS_DJB_EMPLOYEE")}</CardSubHeader>
+              <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
+                <Row
+                  label={t("WS_DJB_EMPLOYEE")}
+                  text={`${djbEmployee?.isDjbEmployee ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}`}
+                  actionButton={<ActionButton onClick={onEdit} />}
+                />
+                {djbEmployee?.isDjbEmployee && (
+                  <React.Fragment>
+                    <Row label={t("WS_EMPLOYEE_ID")} text={`${t(checkForNA(djbEmployee?.employeeId))}`} />
+                    <Row label={t("WS_DATE_OF_RETIREMENT")} text={`${t(checkForNA(djbEmployee?.dor))}`} />
+                    <Row label={t("WS_EMPLOYEE_DESIGNATION")} text={`${t(checkForNA(djbEmployee?.designation))}`} />
+                    {djbEmployee?.document && (
+                      <Row
+                        label={t("WS_UPLOAD_EMPLOYEE_ID_DOC")}
+                        text={
+                          <span
+                            style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", color: "#f47738" }}
+                            onClick={() => openFilePDF(djbEmployee?.document)}
+                          >
+                            <GenericFileIcon /> {t("CS_COMMON_VIEW")}
+                          </span>
+                        }
+                      />
+                    )}
+                  </React.Fragment>
                 )}
-              </React.Fragment>
-            )}
-          </StatusTable>
+              </StatusTable>
+            </React.Fragment>
+          {/* )} */}
 
           <CardSubHeader>Divyangjan/Person with Disability?</CardSubHeader>
           <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>

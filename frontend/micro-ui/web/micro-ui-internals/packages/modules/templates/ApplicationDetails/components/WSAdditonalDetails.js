@@ -20,7 +20,7 @@ const WSAdditonalDetails = ({ wsAdditionalDetails, oldValue }) => {
 
   return (
     <React.Fragment>
-      <div style={{ lineHeight: "19px", maxWidth: "950px", minWidth: "280px" }}>
+      <div style={{ lineHeight: "19px", minWidth: "280px" }}>
         {wsAdditionalDetails?.additionalDetails?.connectionDetails && (
           <StatusTable>
             <CardSubHeader style={cardSubHeaderStyles()}>{t("WS_COMMON_CONNECTION_DETAIL")}</CardSubHeader>

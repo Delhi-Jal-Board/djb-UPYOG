@@ -125,13 +125,13 @@ const WSResponse = (props) => {
           {waterApplicationData?.applicationData?.applicationStatus === "PENDING_FOR_PAYMENT" ? (
             <Link
               to={{
-                pathname: `/digit-ui/citizen/payment/my-bills/${
-                  waterApplicationData?.applicationData?.applicationNo?.includes("SW") ? (waterApplicationData?.applicationData?.applicationNo?.includes("DC") ? "SW" : "SW.ONE_TIME_FEE") : (waterApplicationData?.applicationData?.applicationNo?.includes("DC") ? "WS" : "WS.ONE_TIME_FEE")
+                pathname: `/digit-ui/employee/payment/collect/${
+                  (waterApplicationData?.applicationData?.applicationNo?.includes("DC") ? "WS" : "WS.ONE_TIME_FEE")
                 }/${
                   waterApplicationData?.applicationData?.applicationNo?.includes("DC") 
                     ? func.stringReplaceAll(waterApplicationData?.applicationData?.connectionNo, "/", "+")
                     : func.stringReplaceAll(waterApplicationData?.applicationData?.applicationNo, "/", "+")
-                }?workflow=WNS&tenantId=${waterApplicationData?.applicationData?.tenantId}&ConsumerName=${waterApplicationData?.applicationData?.connectionHolders?.map((owner) => owner.name).join(",") || waterApplicationData?.propertyDetails?.owners?.map((owner) => owner.name).join(",")}&isDisconnectFlow=${waterApplicationData?.applicationData?.applicationNo?.includes("DC") ? true : false}`,
+                }/${waterApplicationData?.applicationData?.tenantId}?workflow=WNS&tenantId=${waterApplicationData?.applicationData?.tenantId}&ConsumerName=${waterApplicationData?.applicationData?.connectionHolders?.map((owner) => owner.name).join(",") || waterApplicationData?.propertyDetails?.owners?.map((owner) => owner.name).join(",")}&isDisconnectFlow=${waterApplicationData?.applicationData?.applicationNo?.includes("DC") ? true : false}`,
                 state: {},
               }}
             >
@@ -143,13 +143,13 @@ const WSResponse = (props) => {
           {sewerageApplicationData?.applicationData?.applicationStatus === "PENDING_FOR_PAYMENT" ? (
             <Link
               to={{
-                pathname: `/digit-ui/citizen/payment/my-bills/${
-                  sewerageApplicationData?.applicationData?.applicationNo?.includes("SW") ? (sewerageApplicationData?.applicationData?.applicationNo?.includes("DC") ? "SW" : "SW.ONE_TIME_FEE") : (sewerageApplicationData?.applicationData?.applicationNo?.includes("DC") ? "WS" : "WS.ONE_TIME_FEE")
+                pathname: `/digit-ui/employee/payment/collect/${
+                  (sewerageApplicationData?.applicationData?.applicationNo?.includes("DC") ? "SW" : "SW.ONE_TIME_FEE")
                 }/${
                   sewerageApplicationData?.applicationData?.applicationNo?.includes("DC") 
                     ? func.stringReplaceAll(sewerageApplicationData?.applicationData?.connectionNo, "/", "+")
                     : func.stringReplaceAll(sewerageApplicationData?.applicationData?.applicationNo, "/", "+")
-                }?workflow=WNS&tenantId=${sewerageApplicationData?.applicationData?.tenantId}&ConsumerName=${sewerageApplicationData?.applicationData?.connectionHolders?.map((owner) => owner.name).join(",") || sewerageApplicationData?.propertyDetails?.owners?.map((owner) => owner.name).join(",")}&isDisconnectFlow=${sewerageApplicationData?.applicationData?.applicationNo?.includes("DC") ? true : false}`,
+                }/${sewerageApplicationData?.applicationData?.tenantId}?workflow=WNS&tenantId=${sewerageApplicationData?.applicationData?.tenantId}&ConsumerName=${sewerageApplicationData?.applicationData?.connectionHolders?.map((owner) => owner.name).join(",") || sewerageApplicationData?.propertyDetails?.owners?.map((owner) => owner.name).join(",")}&isDisconnectFlow=${sewerageApplicationData?.applicationData?.applicationNo?.includes("DC") ? true : false}`,
                 state: {},
               }}
             >

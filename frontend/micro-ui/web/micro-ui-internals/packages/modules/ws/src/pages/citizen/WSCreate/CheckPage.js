@@ -203,7 +203,10 @@ const CheckPage = ({ onSubmit, value }) => {
           label={t("COMMON_ADDRESS_TYPE")}
           text={`${t(checkForNA(propertyAddress?.addressType?.i18nKey || propertyAddress?.addressType?.code || propertyAddress?.addressType))}`}
         />
-        <Row label={t("CORE_COMMON_PROFILE_CITY")} text={`${t(checkForNA(propertyAddress?.city?.name || propertyAddress?.city?.code || propertyAddress?.city))}`} />
+        <Row
+          label={t("CORE_COMMON_PROFILE_CITY")}
+          text={`${t(checkForNA(propertyAddress?.city?.name || propertyAddress?.city?.code || propertyAddress?.city))}`}
+        />
         <Row label={t("PINCODE")} text={`${t(checkForNA(propertyAddress?.pincode || propertyAddress?.pinCode))}`} />
         <Row
           label={t("LOCALITY")}
@@ -247,7 +250,18 @@ const CheckPage = ({ onSubmit, value }) => {
 
         <Row label={t("COMMON_CURRENT_ASSEMBLY")} text={`${t(checkForNA(propertyAddress?.actualAssembly || additionalDetails?.actualAssembly))}`} />
         <Row label={t("COMMON_CURRENT_WARD")} text={`${t(checkForNA(propertyAddress?.actualWard || additionalDetails?.actualWard))}`} />
-        <Row label={t("COMMON_CURRENT_ZONE")} text={`${t(checkForNA(propertyAddress?.zone?.name || propertyAddress?.zone?.code || propertyAddress?.zone || propertyAddress?.actualZone || additionalDetails?.actualZone))}`} />
+        <Row
+          label={t("COMMON_CURRENT_ZONE")}
+          text={`${t(
+            checkForNA(
+              propertyAddress?.zone?.name ||
+                propertyAddress?.zone?.code ||
+                propertyAddress?.zone ||
+                propertyAddress?.actualZone ||
+                additionalDetails?.actualZone
+            )
+          )}`}
+        />
         <Row label={t("LANDMARK")} text={`${t(checkForNA(propertyAddress?.landmark))}`} />
       </StatusTable>
 
@@ -331,9 +345,9 @@ const CheckPage = ({ onSubmit, value }) => {
         )}
       </StatusTable>
 
-      <CardSubHeader>Divyangjan/Person with Disability?</CardSubHeader>
+      <CardSubHeader>{t("WS_DIVYANGJAN")}</CardSubHeader>
       <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
-        <Row label="Divyangjan/Person with Disability?" text={`${disability?.isDivyangjan ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}`} />
+        <Row label={t("WS_DIVYANGJAN")} text={`${disability?.isDivyangjan ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}`} />
       </StatusTable>
 
       <CardSubHeader>{t("WS_BANK_DETAILS")}</CardSubHeader>

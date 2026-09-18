@@ -122,6 +122,7 @@ const WSDocumentsEmployee = ({ t, config, onSelect, userType, formData, setError
           docData.auditDetails = documentData.auditDetails;
           docData.documentType = docData.documentType;
           docData.documentUid = documentData.documentUid;
+          docData.documentNumber = documentData.documentNumber;
           docData.fileStoreId = documentData.fileStoreId;
           docData.id = documentData.id;
           docData.status = "ACTIVE";
@@ -156,20 +157,13 @@ const WSDocumentsEmployee = ({ t, config, onSelect, userType, formData, setError
     </div>
   );
 
-  if (userType === "citizen") {
-    return (
-      <div>
-        <Timeline currentStep={3} />
-        <FormStep t={t} config={config} onSelect={goNext} onSkip={() => onSelect()} isDisabled={enableSubmit}>
-          {innerContent}
-          {error && <Toast label={error} onClose={() => setError(null)} error />}
-        </FormStep>
-      </div>
-    );
-  }
+  const isTenant = formData?.ConnectionDetails?.[0]?.applicantType?.code === "TENANT";
 
-  return (
-    <CollapsibleCardPage title={t("WS_DOCUMENTS")} defaultOpen={true}>
+  const nocDownloadSection = isTenant ? (
+    <div style={{ marginBottom: "20px", display: "flex", alignItems: "center", justifyContent: "space-between", backgroundColor: "#eaf3fa", padding: "16px", borderRadius: "8px", border: "1px solid #00497e" }}>
+      <div style={{ color: "#00497e", fontWeight: "bold" }}>
+        {t("WS_NOC_DOCUMENT_DOWNLOAD_DESC")}
+      </div>
       <button
         type="button"
         onClick={(event) => {
@@ -184,13 +178,30 @@ const WSDocumentsEmployee = ({ t, config, onSelect, userType, formData, setError
           border: "1px solid #00497e",
           borderRadius: "4px",
           backgroundColor: "#00497e",
-          marginLeft: "auto",
-          marginRight: "32px",
           whiteSpace: "nowrap",
         }}
       >
         {t("WS_DOWNLOAD_DOCUMENT")}
       </button>
+    </div>
+  ) : null;
+
+  if (userType === "citizen") {
+    return (
+      <div>
+        <Timeline currentStep={3} />
+        <FormStep t={t} config={config} onSelect={goNext} onSkip={() => onSelect()} isDisabled={enableSubmit}>
+          {nocDownloadSection}
+          {innerContent}
+          {error && <Toast label={error} onClose={() => setError(null)} error />}
+        </FormStep>
+      </div>
+    );
+  }
+
+  return (
+    <CollapsibleCardPage title={t("WS_DOCUMENTS")} defaultOpen={true}>
+      {nocDownloadSection}
       {innerContent}
       {error && <Toast label={error} onClose={() => setError(null)} error />}
     </CollapsibleCardPage>
@@ -232,7 +243,7 @@ function SelectDocument({
   });
   const [file, setFile] = useState(null);
   const [uploadedFile, setUploadedFile] = useState(() => (isOther ? null : filteredDocument?.fileStoreId || null));
-  const [documentUid, setDocumentUid] = useState(() => (isOther ? "" : filteredDocument?.documentUid || filteredDocument?.documentNumber || ""));
+  const [documentUid, setDocumentUid] = useState(() => (isOther ? "" : filteredDocument?.documentNumber || ""));
   const [isDocumentUidLocked, setIsDocumentUidLocked] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -672,8 +683,8 @@ function SelectDocument({
               
               <span style={{ fontWeight: "bold" }}>
                 {uploadedDocument.documentName || uploadedDocument.i18nKey || uploadedDocument.documentType || documentDisplayName
-                  ? t(uploadedDocument.documentName || uploadedDocument.i18nKey || uploadedDocument.documentType || documentDisplayName)
-                  : t("CS_COMMON_DOCUMENT")} - {uploadedDocument.fileName || t("CS_COMMON_DOCUMENT")}
+                  ? t((uploadedDocument.documentName || uploadedDocument.i18nKey || uploadedDocument.documentType || documentDisplayName).replaceAll('.', '_'))
+                  : t("CS_COMMON_DOCUMENT")}{uploadedDocument.fileName ? ` - ${uploadedDocument.fileName}` : ""}
               </span>
               {uploadedDocument.documentNumber && <span>{uploadedDocument.documentNumber}</span>}
               <button

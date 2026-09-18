@@ -46,7 +46,7 @@ const ViewProperty = () => {
   })
 
   return (
-    <div>
+    <React.Fragment>
       <ApplicationDetails
         applicationDetails={applicationDetails}
         isLoading={isLoading}
@@ -55,6 +55,14 @@ const ViewProperty = () => {
         applicationData={applicationDetails?.applicationData}
         moduleCode="PT"
       />
+      {window.location.href.includes("/digit-ui/citizen/") && applicationDetails?.applicationData?.status !== "INACTIVE" && (
+        <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
+          <SubmitBar
+            label={t("PT_UPDATE_PROPERTY_BUTTON")}
+            onSubmit={() => history.push(`/digit-ui/citizen/commonpt/edit-property/${propertyId}`)}
+          />
+        </ActionBar>
+      )}
       {window.location.href.includes("redirectToUrl") && window.location.href.includes("redirectToUrl=null") === false && window.location.href.includes("redirectToUrl=undefined") === false && applicationDetails?.applicationData?.status !== "INACTIVE" && (
         <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
           <div>
@@ -62,7 +70,7 @@ const ViewProperty = () => {
           </div>
         </ActionBar>
       )}
-    </div>
+    </React.Fragment>
   );
 };
 

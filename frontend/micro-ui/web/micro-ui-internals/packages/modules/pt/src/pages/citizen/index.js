@@ -34,9 +34,9 @@ const App = () => {
     <span className={"pt-citizen"}style={{width:"100%"}}>
       <Switch>
         <AppContainer>
-          {!shouldHideBackButton(hideBackButtonConfig) ? <BackButton>Back</BackButton> : ""}
+          {!shouldHideBackButton(hideBackButtonConfig) ? <BackButton>{t("ES_COMMON_BACK")}</BackButton> : ""}
           <PrivateRoute path={`${path}/property/new-application`} component={CreateProperty} />
-          <PrivateRoute path={`${path}/property/edit-application`} component={EditProperty} />
+          <PrivateRoute path={`${path}/property/edit-application/:propertyId`} component={EditProperty} />
           <Route path={`${path}/property/citizen-search`} component={SearchPropertyComponent} />
           <Route path={`${path}/property/search-results`} component={SearchResultsComponent} />
           <PrivateRoute path={`${path}/property/application/:acknowledgementIds/:tenantId`} component={PTApplicationDetails}></PrivateRoute>

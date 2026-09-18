@@ -543,6 +543,14 @@ export const WSSearch = {
       values:
         wsDataDetails?.connectionHolders?.length > 0
           ? [
+                        {
+              title: "WS_DIVYANGJAN",
+              value: wsDataDetails?.additionalDetails?.isDivyangjan === true || String(wsDataDetails?.additionalDetails?.isDivyangjan) === "true" ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO"),
+            },
+            {
+              title: "WS_DJB_EMPLOYEE",
+              value: wsDataDetails?.additionalDetails?.isDjbEmployee === true || String(wsDataDetails?.additionalDetails?.isDjbEmployee) === "true" ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO"),
+            },
             { title: "WS_OWN_DETAIL_NAME", value: wsDataDetails?.connectionHolders?.[0]?.name || t("NA") },
             ...(!isMutationApp ? [
               {
@@ -946,7 +954,7 @@ export const WSSearch = {
       },
     };
 
-    const djbEmployeeDetails = wsDataDetails?.additionalDetails?.isDjbEmployee
+    const djbEmployeeDetails = (wsDataDetails?.additionalDetails?.isDjbEmployee === true || String(wsDataDetails?.additionalDetails?.isDjbEmployee) === "true")
       ? {
         title: "WS_DJB_EMPLOYEE",
         asSectionHeader: true,
@@ -1206,8 +1214,15 @@ export const WSSearch = {
       values:
         wsDataDetails?.connectionHolders?.length > 0
           ? [
+                        {
+              title: "WS_DIVYANGJAN",
+              value: wsDataDetails?.additionalDetails?.isDivyangjan === true || String(wsDataDetails?.additionalDetails?.isDivyangjan) === "true" ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO"),
+            },
             {
-              title: "WS_OWN_DETAIL_NAME",
+              title: "WS_DJB_EMPLOYEE",
+              value: wsDataDetails?.additionalDetails?.isDjbEmployee === true || String(wsDataDetails?.additionalDetails?.isDjbEmployee) === "true" ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO"),
+            },
+            { title: "WS_OWN_DETAIL_NAME",
               value: wsDataDetails?.connectionHolders?.[0]?.name || t("NA"),
               oldValue:
                 wsDataDetails?.connectionHolders?.[0]?.name != wsOldData?.connectionHolders?.[0]?.name
@@ -2006,7 +2021,7 @@ export const WSSearch = {
           ],
     };
 
-    const djbEmployeeDetails = wsDataDetails?.additionalDetails?.isDjbEmployee
+    const djbEmployeeDetails = (wsDataDetails?.additionalDetails?.isDjbEmployee === true || String(wsDataDetails?.additionalDetails?.isDjbEmployee) === "true")
       ? {
         title: "WS_DJB_EMPLOYEE",
         asSectionHeader: true,
@@ -2400,8 +2415,15 @@ export const WSSearch = {
       values:
         wsDataDetails?.connectionHolders != null && wsDataDetails?.connectionHolders.length > 0
           ? [
+                        {
+              title: "WS_DIVYANGJAN",
+              value: wsDataDetails?.additionalDetails?.isDivyangjan === true || String(wsDataDetails?.additionalDetails?.isDivyangjan) === "true" ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO"),
+            },
             {
-              title: "WS_OWN_DETAIL_NAME",
+              title: "WS_DJB_EMPLOYEE",
+              value: wsDataDetails?.additionalDetails?.isDjbEmployee === true || String(wsDataDetails?.additionalDetails?.isDjbEmployee) === "true" ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO"),
+            },
+            { title: "WS_OWN_DETAIL_NAME",
               value: wsDataDetails?.connectionHolders?.[0]?.name || t("NA"),
               privacy: {
                 uuid: wsDataDetails?.connectionHolders?.[0]?.uuid,
@@ -2561,7 +2583,7 @@ export const WSSearch = {
     };
 
     let details = [];
-    const djbEmployeeDetails = wsDataDetails?.additionalDetails?.isDjbEmployee
+    const djbEmployeeDetails = (wsDataDetails?.additionalDetails?.isDjbEmployee === true || String(wsDataDetails?.additionalDetails?.isDjbEmployee) === "true")
       ? {
         title: "WS_DJB_EMPLOYEE",
         asSectionHeader: true,
@@ -2730,8 +2752,15 @@ export const WSSearch = {
       values:
         wsDataDetails?.connectionHolders?.length > 0
           ? [
+                        {
+              title: "WS_DIVYANGJAN",
+              value: wsDataDetails?.additionalDetails?.isDivyangjan === true || String(wsDataDetails?.additionalDetails?.isDivyangjan) === "true" ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO"),
+            },
             {
-              title: "WS_OWN_DETAIL_NAME",
+              title: "WS_DJB_EMPLOYEE",
+              value: wsDataDetails?.additionalDetails?.isDjbEmployee === true || String(wsDataDetails?.additionalDetails?.isDjbEmployee) === "true" ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO"),
+            },
+            { title: "WS_OWN_DETAIL_NAME",
               value: wsDataDetails?.connectionHolders?.[0]?.name || t("NA"),
               privacy: {
                 uuid: wsDataDetails?.connectionHolders?.[0]?.uuid,
@@ -2950,7 +2979,7 @@ export const WSSearch = {
     };
 
     let details = [];
-    const djbEmployeeDetails = wsDataDetails?.additionalDetails?.isDjbEmployee
+    const djbEmployeeDetails = (wsDataDetails?.additionalDetails?.isDjbEmployee === true || String(wsDataDetails?.additionalDetails?.isDjbEmployee) === "true")
       ? {
         title: "WS_DJB_EMPLOYEE",
         asSectionHeader: true,

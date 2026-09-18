@@ -39,6 +39,7 @@ const DECLARATION_POINTS = [
   "In case of variation in plot size as per document submitted by the undersigned and on actual measurement by DJB representative, difference of Infrastructure charge/any other charge on actual measurement will be paid by me.",
   "In case connection is found non-feasible on technical ground as per any prevalent policy of DJB the water connection may be denied or if sanctioned inadvertently, the said sanction may be withdrawn and may be disconnected without any notice.",
   "I hereby undertake that all the facts and documents submitted are true and correct, in case of any misrepresentation or wrong facts etc., sanction of connection may be disconnected without any notice..",
+  "I declare that sewerage disposal facility is available at the premises and undertake to comply with all applicable DJB rules.",
 ];
 
 const NAME_PATTERN = /^[a-zA-Z\s.'-]{1,50}$/;
@@ -299,7 +300,7 @@ const DEFAULT_FORM_VALUES = {
     whatsAppNumber: "",
   },
   applicationSelection: {
-    serviceType: dropdownData.serviceTypes[0],
+    serviceType: dropdownData.serviceTypes[1],
     applicantType: dropdownData.applicantTypes[0],
     connectionType: dropdownData.connectionTypes[0],
     categoryType: dropdownData.categoryTypes[1],
@@ -1503,7 +1504,7 @@ const NewApplication = () => {
                       <Dropdown
                         className="form-field"
                         selected={props.value}
-                        disable={false}
+                        disable={true}
                         option={dropdownData.serviceTypes}
                         errorStyle={!!getFieldError("applicationSelection.serviceType")}
                         select={props.onChange}

@@ -1,44 +1,128 @@
 {
   "serviceTypes": [
-    { "code": "WATER_AND_SEWERAGE", "name": "Water and Sewerage" },
-    { "code": "WATER", "name": "Water" },
-    { "code": "SEWERAGE", "name": "Sewerage" },
-    { "code": "REGULARIZATION", "name": "Regularization" }
+    {
+      "code": "WATER_AND_SEWERAGE",
+      "name": "Water and Sewerage"
+    },
+    {
+      "code": "WATER",
+      "name": "Water Connection"
+    },
+    {
+      "code": "SEWERAGE",
+      "name": "Sewerage"
+    },
+    {
+      "code": "REGULARIZATION",
+      "name": "Regularization"
+    }
   ],
   "applicantTypes": [
-    { "code": "OWNER", "name": "Owner" },
-    { "code": "TENANT", "name": "Tenant" },
-    { "code": "RELATIVE", "name": "Relative" }
+    {
+      "code": "OWNER",
+      "name": "Owner"
+    },
+    {
+      "code": "TENANT",
+      "name": "Tenant"
+    },
+    {
+      "code": "RELATIVE",
+      "name": "Relative"
+    }
   ],
   "connectionTypes": [
-    { "code": "PERMANENT", "name": "Permanent" },
-    { "code": "TEMPORARY", "name": "Temporary" }
+    {
+      "code": "PERMANENT",
+      "name": "Permanent"
+    },
+    {
+      "code": "TEMPORARY",
+      "name": "Temporary"
+    }
   ],
   "categoryTypes": [
-    { "code": "BULK", "name": "Bulk" },
-    { "code": "NON_BULK", "name": "Non-Bulk" }
+    {
+      "code": "BULK",
+      "name": "Bulk"
+    },
+    {
+      "code": "NON_BULK",
+      "name": "Non-Bulk"
+    }
   ],
   "subCategories": [
-    { "code": "DOMESTIC", "name": "Domestic" },
-    { "code": "COMMERCIAL", "name": "Commercial" }
+    {
+      "code": "DOMESTIC",
+      "name": "Domestic"
+    },
+    {
+      "code": "COMMERCIAL",
+      "name": "Commercial"
+    }
   ],
   "propertyTypes": [
-    { "code": "SCHOOL", "name": "school" },
-    { "code": "COLLEGE", "name": "college" },
-    { "code": "INDUSTRY", "name": "Industry" },
-    { "code": "MALL", "name": "Mall" },
-    { "code": "HOTEL", "name": "Hotel" },
-    { "code": "SHOP", "name": "Shop" },
-    { "code": "OFFICE", "name": "Office" },
-    { "code": "HOSPITAL", "name": "Hospital" }
+    {
+      "code": "SCHOOL",
+      "name": "school"
+    },
+    {
+      "code": "COLLEGE",
+      "name": "college"
+    },
+    {
+      "code": "INDUSTRY",
+      "name": "Industry"
+    },
+    {
+      "code": "MALL",
+      "name": "Mall"
+    },
+    {
+      "code": "HOTEL",
+      "name": "Hotel"
+    },
+    {
+      "code": "SHOP",
+      "name": "Shop"
+    },
+    {
+      "code": "OFFICE",
+      "name": "Office"
+    },
+    {
+      "code": "HOSPITAL",
+      "name": "Hospital"
+    }
   ],
   "temporaryConnectionTypes": [
-    { "code": "EXHIBITION", "name": "Exhibition" },
-    { "code": "OFFICIAL_FUNCTION", "name": "Official Function" },
-    { "code": "RELIGIOUS_FUNCTION", "name": "Religious Function" },
-    { "code": "CIRCUS", "name": "Circus" },
-    { "code": "CONSTRUCTION", "name": "Construction" },
-    { "code": "AS_PER_COURT_ORDERS", "name": "as per Court Orders" },
-    { "code": "SOCIAL_FAMILY_FUNCTION", "name": "Social/Family Function" }
+    {
+      "code": "EXHIBITION",
+      "name": "Exhibition"
+    },
+    {
+      "code": "OFFICIAL_FUNCTION",
+      "name": "Official Function"
+    },
+    {
+      "code": "RELIGIOUS_FUNCTION",
+      "name": "Religious Function"
+    },
+    {
+      "code": "CIRCUS",
+      "name": "Circus"
+    },
+    {
+      "code": "CONSTRUCTION",
+      "name": "Construction"
+    },
+    {
+      "code": "AS_PER_COURT_ORDERS",
+      "name": "as per Court Orders"
+    },
+    {
+      "code": "SOCIAL_FAMILY_FUNCTION",
+      "name": "Social/Family Function"
+    }
   ]
 }

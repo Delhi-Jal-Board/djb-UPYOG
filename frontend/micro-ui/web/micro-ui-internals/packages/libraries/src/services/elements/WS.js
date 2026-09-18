@@ -258,4 +258,15 @@ export const WSService = {
       params: params,
       auth: true,
     }),
+  monthlyBillingSearch: (details, params, businessService) =>
+    Request({
+      url: businessService === "SW" ? Urls.ws.sw_monthly_billing_search : Urls.ws.ws_monthly_billing_search,
+      data: details,
+      useCache: false,
+      setTimeParam: false,
+      userService: true,
+      method: "POST",
+      params: params,
+      auth: true,
+    }),
 };

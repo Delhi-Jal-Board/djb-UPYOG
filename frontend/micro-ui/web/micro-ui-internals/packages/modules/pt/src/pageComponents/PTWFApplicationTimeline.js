@@ -92,7 +92,8 @@ const PTWFApplicationTimeline = (props) => {
             {businessService != "PT.MUTATION" && (
               <Link
                 to={{
-                  pathname: `/digit-ui/citizen/pt/property/edit-application/action=edit-${businessService}/${props.id}`,
+                  pathname: `/digit-ui/citizen/pt/property/edit-application/${props.id}`,
+                  search: `?action=edit-${businessService}`,
                   state: { tenantId: props.application.tenantId },
                 }}
               >
