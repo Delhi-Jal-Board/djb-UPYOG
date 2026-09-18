@@ -356,7 +356,7 @@ const SupervisorDetails = (props) => {
               : t(showToast.action)
           }
           onClose={() => setShowToast(null)}
-          duration={5000}
+          duration={15000}
         />
       )}
       <ActionBar style={{ zIndex: "19" }}>
@@ -368,6 +368,7 @@ const SupervisorDetails = (props) => {
             onSelect={(a) => {
               setDisplayMenu(false);
               setSelectedAction(a);
+              setShowModal(true);
             }}
           />
         ) : null}

@@ -160,7 +160,6 @@ const SurveyorDetails = (props) => {
     return <Loader />;
   }
 
-  console.log(nextStatus.status)
   return (
     <React.Fragment>
       <div className="employee-form-content">
@@ -250,6 +249,7 @@ const SurveyorDetails = (props) => {
             onSelect={(a) => {
               setDisplayMenu(false);
               setSelectedAction(a);
+              setShowModal(true);
             }}
           />
         ) : null}

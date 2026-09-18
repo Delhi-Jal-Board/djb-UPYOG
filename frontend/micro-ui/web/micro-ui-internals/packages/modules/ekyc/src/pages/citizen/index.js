@@ -18,7 +18,7 @@ const CitizenApp = () => {
   const location = useLocation();
   const { path } = useRouteMatch();
   const roles = Digit.SessionStorage.get("User")?.info?.roles.map((ele) => ele.code);
-  const { data: { stateInfo } = {} } = Digit.Hooks.useStore.getInitData();
+  // Digit.Hooks.useStore.getInitData();
 
   sessionStorage.removeItem("revalidateddone");
 

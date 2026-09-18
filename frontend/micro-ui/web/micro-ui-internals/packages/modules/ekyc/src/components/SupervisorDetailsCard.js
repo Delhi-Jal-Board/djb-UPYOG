@@ -240,7 +240,15 @@ const SupervisorDetailsCard = () => {
     return supervisor?.surveyors || [];
   }, [supervisor]);
 
-  const cards = useMemo(
+ 
+
+  const [currentPage, setCurrentPage] = useState(0);
+  const [pageSize, setPageSize] = useState(20);
+
+  const currentSupervisor = progressData?.supervisorReport?.find((ele)=>ele.supervisorId===supervisorId)
+  const surveyorsData = currentSupervisor?.surveyors||[];
+
+   const cards = useMemo(
     () => [
       {
         label: "TOTAL_EKYC_APPLICATIONS",
@@ -273,16 +281,6 @@ const SupervisorDetailsCard = () => {
     ],
     [supervisor]
   );
-
-  const [currentPage, setCurrentPage] = useState(0);
-  const [pageSize, setPageSize] = useState(20);
-
-  const paginatedSurveyors = useMemo(() => {
-    const start = currentPage * pageSize;
-    const end = start + pageSize;
-    return surveyors.slice(start, end);
-  }, [surveyors, currentPage, pageSize]);
-
   const surveyorColumns = useMemo(
     () => [
       {
@@ -668,7 +666,7 @@ const SupervisorDetailsCard = () => {
           tableTitle={t("CONNECTED_SURVEYORS") || "Connected Surveyors"}
           tableClass="ekycTable"
           isTableScrollable={true}
-          data={paginatedSurveyors}
+          data={surveyorsData}
           columns={surveyorColumns}
           isLoading={isProgressLoading}
           totalRecords={surveyors.length}
