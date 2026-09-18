@@ -33,7 +33,7 @@ const SupervisorDetailsCard = () => {
 
   // Fetch assignment progress with hierarchy (supervisor and surveyor details)
   const { isLoading: isProgressLoading, data: progressData } = Digit.Hooks.ekyc.useEkycAssignmentProgress(
-    targetVendorId ? { vendorId: targetVendorId, vendorIds: [targetVendorId] } : {},
+    { vendorId: targetVendorId },
     {
       enabled: !!tenantId,
       keepPreviousData: true,
@@ -240,13 +240,18 @@ const SupervisorDetailsCard = () => {
     return supervisor?.surveyors || [];
   }, [supervisor]);
 
- 
-
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize, setPageSize] = useState(20);
 
-  const currentSupervisor = progressData?.supervisorReport?.find((ele)=>ele.supervisorId===supervisorId)
-  const surveyorsData = currentSupervisor?.surveyors||[];
+  const userRoles = Digit.UserService.getUser()?.info?.roles;
+
+  const isSupervisor = userRoles?.some((role) => role.code === "EKYC_SUPERVISOR");
+  
+  const currentSupervisor = isSupervisor
+    ? progressData?.supervisorReport[0] || []
+    : progressData?.supervisorReport?.find((ele) => ele.supervisorId === supervisorId);
+    
+  const surveyorsData = currentSupervisor?.surveyors || [];
 
    const cards = useMemo(
     () => [
