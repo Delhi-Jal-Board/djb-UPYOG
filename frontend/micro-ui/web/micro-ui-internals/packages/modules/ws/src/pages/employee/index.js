@@ -14,6 +14,8 @@ import { getFiles, getPDFData, getQueryStringParams } from "../../utils";
 
 import getModifyPDFData from "../../utils/getWsAckDataForModifyPdfs";
 import WSCalculation from "../../pageComponents/WSCalculation";
+import WSZROVerification from "./WSZROVerification";
+import WSZROVerificationDetails from "./WSZROVerificationDetails";
 
 const BILLSBreadCrumbs = ({ location, showPrint }) => {
   const { t } = useTranslation();
@@ -466,6 +468,12 @@ const BILLSBreadCrumbs = ({ location, showPrint }) => {
       show: location.pathname.includes("/ws/water/calculation") ? true : false,
       //isclickable : false,
     },
+    {
+      path: "/digit-ui/employee/ws/zro-application",
+      label: t("WS_ZRO_VERIFICATION"),
+      show: location.pathname.includes("/ws/zro-application") ? true : false,
+      //isclickable : false,
+    },
   ];
 
   let lastCrumbIndex = findLastIndex(crumbs, "show", true);
@@ -740,6 +748,8 @@ const App = ({ path }) => {
               <PrivateRoute path={`${path}/water/bulk-bill`} component={(props) => <WSBulkBillGeneration {...props} parentRoute={path} />} />
 
               <PrivateRoute path={`${path}/water/calculation`} component={(props) => <WSCalculation {...props} parentRoute={path} />} />
+              <PrivateRoute path={`${path}/zro-application`} component={() => <WSZROVerification />} />
+              <PrivateRoute path={`${path}/zro-verification-details`} component={() => <WSZROVerificationDetails />} />
 
               {/* <Route path={`${path}/search`} component={SearchConnectionComponent} />
             <Route path={`${path}/search-results`} component={SearchResultsComponent} /> */}

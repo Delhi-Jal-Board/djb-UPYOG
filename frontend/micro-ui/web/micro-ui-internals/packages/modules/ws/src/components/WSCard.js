@@ -105,14 +105,41 @@ const WSCard = () => {
       {
         label: t("WS_CALCULATION"),
         link: `/digit-ui/employee/ws/water/calculation`,
-        roles: ["WS_CEMP", "WS_APPROVER", "WS_FIELD_INSPECTOR", "WS_DOC_VERIFIER", "WS_CLERK"], 
+        roles: ["WS_CEMP", "WS_APPROVER", "WS_FIELD_INSPECTOR", "WS_DOC_VERIFIER", "WS_CLERK"],
       },
       {
         label: t("WS_APPLY_MUTATION"),
         link: `/digit-ui/employee/ws/mutation-application`,
-        roles: ["WS_CEMP", "WS_APPROVER", "WS_FIELD_INSPECTOR", "WS_DOC_VERIFIER", "WS_CLERK", "SW_CEMP", "SW_APPROVER", "SW_FIELD_INSPECTOR", "SW_DOC_VERIFIER", "SW_CLERK"],
-      }
-    ],
+        roles: [
+          "WS_CEMP",
+          "WS_APPROVER",
+          "WS_FIELD_INSPECTOR",
+          "WS_DOC_VERIFIER",
+          "WS_CLERK",
+          "SW_CEMP",
+          "SW_APPROVER",
+          "SW_FIELD_INSPECTOR",
+          "SW_DOC_VERIFIER",
+          "SW_CLERK",
+        ],
+      },
+      {
+        label: t("WS_ZRO_VERIFICATION"),
+        link: `/digit-ui/employee/ws/zro-application`,
+        roles: [
+          "WS_CEMP",
+          "WS_APPROVER",
+          "WS_FIELD_INSPECTOR",
+          "WS_DOC_VERIFIER",
+          "WS_CLERK",
+          "SW_CEMP",
+          "SW_APPROVER",
+          "SW_FIELD_INSPECTOR",
+          "SW_DOC_VERIFIER",
+          "SW_CLERK",
+        ],
+      },
+    ].filter((link) => (link.roles ? checkForEmployee(link.roles) : true)),
   };
   return <EmployeeModuleCard {...propsForModuleCard} />;
 };

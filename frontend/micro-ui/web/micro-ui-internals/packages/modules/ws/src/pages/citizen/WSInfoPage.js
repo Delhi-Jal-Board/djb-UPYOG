@@ -14,6 +14,7 @@ import {
   Label,
   TextInput,
   Toast,
+  OTPInput,
 } from "@djb25/digit-ui-react-components";
 
 const getMaskedPhone = (phone) => {
@@ -46,6 +47,16 @@ const WSInfoPage = () => {
   const [isOtpSending, setIsOtpSending] = useState(false);
   const [isOtpVerifying, setIsOtpVerifying] = useState(false);
   const [showToast, setShowToast] = useState(null);
+  const [isMobileVerified, setIsMobileVerified] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(0);
+
+  useEffect(() => {
+    let timer;
+    if (timeLeft > 0) {
+      timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
+    }
+    return () => clearTimeout(timer);
+  }, [timeLeft]);
 
   useEffect(() => {
     // A property may only be used after a fresh OTP verification in this flow.
@@ -60,7 +71,7 @@ const WSInfoPage = () => {
     {
       filters: { mobileNumber: mobileNumberToSearch },
       tenantId: tenantId,
-      enabled: hasProperty?.code === "YES" && mobileNumberToSearch?.length === 10 ? true : false,
+      enabled: hasProperty?.code === "YES" && mobileNumberToSearch?.length === 10 && isMobileVerified ? true : false,
     }
   );
 
@@ -106,22 +117,23 @@ const WSInfoPage = () => {
       if (response?.error || response?.data?.error) {
         const errObj = response?.error || response?.data?.error;
         setIsOtpSending(false);
-        setShowToast({ key: "error", message: errObj?.fields?.[0]?.message || errObj?.message || "Failed to send OTP" });
+        setShowToast({ key: "error", message: errObj?.fields?.[0]?.message || errObj?.message || (t("WS_FAILED_TO_SEND_OTP") || "Failed to send OTP") });
         return;
       }
       if (response?.Errors || response?.data?.Errors) {
         const errObj = response?.Errors || response?.data?.Errors;
         setIsOtpSending(false);
-        setShowToast({ key: "error", message: errObj?.[0]?.message || "Failed to send OTP" });
+        setShowToast({ key: "error", message: errObj?.[0]?.message || (t("WS_FAILED_TO_SEND_OTP") || "Failed to send OTP") });
         return;
       }
 
       setIsOtpSending(false);
       setShowOtpVerification(true);
-      setShowToast({ key: "success", message: "OTP sent successfully!" });
+      setTimeLeft(30);
+      setShowToast({ key: "success", message: t("PT_SEC_OTP_SENT_SUCEESS") || "OTP sent successfully!" });
     } catch (err) {
       setIsOtpSending(false);
-      let errMsg = "Failed to send OTP";
+      let errMsg = t("WS_FAILED_TO_SEND_OTP") || "Failed to send OTP";
       if (err?.response?.data?.error) {
         errMsg = err.response.data.error?.fields?.[0]?.message || err.response.data.error?.message || errMsg;
       } else if (err?.response?.data?.Errors) {
@@ -139,7 +151,7 @@ const WSInfoPage = () => {
       if (e.stopPropagation) e.stopPropagation();
     }
     if (!otp || otp.length < 6) {
-      setShowToast({ key: "warning", message: "Please enter a valid 6-digit OTP" });
+      setShowToast({ key: "warning", message: t("WS_PLEASE_ENTER_VALID_OTP") || "Please enter a valid 6-digit OTP" });
       return;
     }
     setIsOtpVerifying(true);
@@ -170,13 +182,12 @@ const WSInfoPage = () => {
       }
 
       setIsOtpVerifying(false);
-      setShowToast({ key: "success", message: "OTP verified successfully!" });
-
-      // Proceed safely
-      proceedToNext();
+      setShowToast({ key: "success", message: t("WS_OTP_VERIFIED_SUCCESSFULLY") || "OTP verified successfully!" });
+      setShowOtpVerification(false);
+      setIsMobileVerified(true);
     } catch (err) {
       setIsOtpVerifying(false);
-      let errMsg = err.message || "Failed to verify OTP";
+      let errMsg = err.message || (t("WS_FAILED_TO_VERIFY_OTP") || "Failed to verify OTP");
       if (err?.response?.data?.error) {
         errMsg = err.response.data.error?.fields?.[0]?.message || err.response.data.error?.message || errMsg;
       } else if (err?.response?.data?.Errors) {
@@ -194,7 +205,11 @@ const WSInfoPage = () => {
       if (e.stopPropagation) e.stopPropagation();
     }
     if (hasProperty?.code === "YES" && selectedProperty) {
-      handleSendOtp(e);
+      if (!isMobileVerified) {
+        setShowToast({ key: "warning", message: t("WS_PLEASE_VERIFY_MOBILE_NUMBER") || "Please verify mobile number first" });
+        return;
+      }
+      proceedToNext();
     } else if (hasProperty?.code === "YES" && !selectedProperty) {
       // Should not be reachable since button is disabled, but just in case
       return;
@@ -215,69 +230,6 @@ const WSInfoPage = () => {
       displayName: `${prop.propertyId} - ${getAddress(prop.address, t)}`,
     })) || [];
 
-  if (showOtpVerification) {
-    return (
-      <React.Fragment>
-        <Card>
-          <form onSubmit={handleVerifyOtp}>
-            <CardHeader>{t("WS_VERIFY_OTP_HEADER") || "Verify OTP"}</CardHeader>
-            <div style={{ marginBottom: "24px" }}>
-              <Label>
-                {t("WS_ENTER_OTP_SENT_TO") || "Enter OTP sent to"} +91 {getMaskedPhone(mobileNumberToSearch)} *
-              </Label>
-              <TextInput
-                t={t}
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                isMandatory={false}
-                value={otp}
-                maxLength={6}
-                onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                onKeyDown={(e) => {
-                  if (["-", "+", "e", "E", "."].includes(e.key)) e.preventDefault();
-                }}
-                placeholder={t("WS_ENTER_6_DIGIT_OTP") || "Enter 6-digit OTP"}
-                style={{ width: "100%", maxWidth: "300px" }}
-              />
-            </div>
-            <div style={{ display: "flex", gap: "16px", marginBottom: "24px" }}>
-              <button
-                type="button"
-                onClick={handleSendOtp}
-                disabled={isOtpSending}
-                style={{ color: "#f47738", background: "none", border: "none", cursor: "pointer", fontWeight: "bold", textDecoration: "underline" }}
-              >
-                {isOtpSending ? t("WS_SENDING_OTP") || "Sending..." : t("WS_RESEND_OTP") || "Resend OTP"}
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowOtpVerification(false)}
-                style={{ color: "#f47738", background: "none", border: "none", cursor: "pointer", fontWeight: "bold", textDecoration: "underline" }}
-              >
-                {t("CS_COMMON_CANCEL") || "Cancel"}
-              </button>
-            </div>
-            <SubmitBar
-              label={t("WS_VERIFY_OTP_AND_PROCEED") || "Verify & Proceed"}
-              onSubmit={handleVerifyOtp}
-              disabled={otp.length < 6 || isOtpVerifying}
-              submit={true}
-            />
-          </form>
-        </Card>
-        {showToast && (
-          <Toast
-            error={showToast.key === "error"}
-            warning={showToast.key === "warning"}
-            label={t(showToast.message)}
-            onClose={() => setShowToast(null)}
-            isDleteBtn={true}
-          />
-        )}
-      </React.Fragment>
-    );
-  }
 
   return (
     <React.Fragment>
@@ -310,57 +262,61 @@ const WSInfoPage = () => {
         </div>
 
         {hasProperty?.code === "YES" && (
-          <div style={{ marginBottom: "24px" }}>
-            {!isEmployee && (
-              <div style={{ marginBottom: "16px" }}>
-                <Label>{t("CORE_COMMON_MOBILE_NUMBER")}</Label>
-                <TextInput
-                  t={t}
-                  type="number"
-                  isMandatory={false}
-                  name="mobileNumber"
-                  value={searchMobileNumber}
-                  onChange={(e) => {
-                    const val = e.target.value.replace(/\D/g, "").slice(0, 10);
-                    setSearchMobileNumber(val);
-                    setSelectedProperty(null);
-                    setShowOtpVerification(false);
-                    setOtp("");
-                  }}
-                  placeholder={t("Enter mobile number")}
-                  maxLength={10}
-                />
-              </div>
-            )}
-            {isEmployee && (
-              <div style={{ display: "flex", flexDirection: "column", gap: "16px", marginBottom: "16px" }}>
-                <div style={{ display: "flex", gap: "24px", alignItems: "flex-end" }}>
-                  <div style={{ flex: 1 }}>
-                    <Label>{t("CORE_COMMON_MOBILE_NUMBER")}</Label>
-                    <TextInput
-                      t={t}
-                      type={"number"}
-                      isMandatory={false}
-                      name="mobileNumber"
-                      value={searchMobileNumber}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        if (val.length <= 10) {
+          <div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "16px", marginBottom: "16px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px", alignItems: "start" }}>
+                <div>
+                  <Label>{t("CORE_COMMON_MOBILE_NUMBER")}</Label>
+                  <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
+                    <div style={{ flex: 1 }}>
+                      <TextInput
+                        t={t}
+                        type="number"
+                        isMandatory={false}
+                        name="mobileNumber"
+                        value={searchMobileNumber}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/\D/g, "").slice(0, 10);
                           setSearchMobileNumber(val);
                           setSelectedProperty(null);
                           setShowOtpVerification(false);
                           setOtp("");
-                        }
-                      }}
-                      placeholder={t("Enter mobile number")}
-                      maxLength={10}
-                    />
+                          setIsMobileVerified(false);
+                        }}
+                        placeholder={t("WS_ENTER_MOBILE_NUMBER") || "Enter mobile number"}
+                        maxLength={10}
+                        disabled={isMobileVerified}
+                      />
+                    </div>
+                    {searchMobileNumber?.length === 10 && !isMobileVerified && !showOtpVerification && (
+                      <button
+                        type="button"
+                        onClick={handleSendOtp}
+                        disabled={isOtpSending}
+                        style={{
+                          padding: "8px 16px",
+                          border: "1px solid #1a67a3",
+                          background: "white",
+                          color: "#1a67a3",
+                          borderRadius: "4px",
+                          cursor: "pointer",
+                          fontWeight: "bold",
+                          whiteSpace: "nowrap"
+                        }}
+                      >
+                        {isOtpSending ? (t("WS_SENDING_OTP") || "Sending...") : (t("PTUPNO_SENDOTP") || "Send OTP")}
+                      </button>
+                    )}
                   </div>
-                  <div style={{ flex: 1 }}>
-                    <Label>{t("WS_SELECT_EXISTING_PROPERTY")}</Label>
-                    <div className="field">
+                </div>
+                
+                <div>
+                  <Label>{t("WS_SELECT_EXISTING_PROPERTY")}</Label>
+                  {isLoading ? (
+                    <Loader />
+                  ) : (
+                    <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                       <Dropdown
-                        className="form-field"
                         option={propertyOptions}
                         optionKey="displayName"
                         id="propertyId"
@@ -372,48 +328,88 @@ const WSInfoPage = () => {
                         }}
                         t={t}
                         placeholder={t("PT_SELECT_PROPERTY")}
-                        disable={isLoading || propertyOptions.length === 0}
+                        disable={!isMobileVerified || propertyOptions.length === 0}
                       />
+                      {propertyOptions.length > 0 && (
+                        <span style={{ fontSize: "14px", color: "#505A5F" }}>{t("WS_PROPERTY_AUTOFILL_MSG")}</span>
+                      )}
                     </div>
-                  </div>
+                  )}
                 </div>
-                {searchMobileNumber?.length === 10 && !isLoading && propertyOptions.length === 0 && (
-                  <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-                    <span style={{ color: "#d63031", fontWeight: "bold" }}>
-                      {t("WS_NO_PROPERTY_FOUND_ON_THIS_NUMBER") || "No property found on this number, please create the property first."}
-                    </span>
-                    <span onClick={handleCreateProperty}>
-                      <button className="submit-bar" type="button" style={{ color: "white", margin: 0 }}>
-                        {t("CPT_CREATE_PROPERTY")}
-                      </button>
-                    </span>
-                  </div>
-                )}
               </div>
-            )}
 
-            {!isEmployee && (isLoading || propertyOptions.length > 0) && <Label>{t("WS_SELECT_EXISTING_PROPERTY")}</Label>}
-            {isLoading && !isEmployee ? (
-              <Loader />
-            ) : !isEmployee ? (
-              propertyOptions.length > 0 ? (
-                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                  <Dropdown
-                    option={propertyOptions}
-                    optionKey="displayName"
-                    id="propertyId"
-                    selected={selectedProperty}
-                    select={(val) => {
-                      setSelectedProperty(val);
-                      setShowOtpVerification(false);
-                      setOtp("");
-                    }}
-                    t={t}
-                    placeholder={t("PT_SELECT_PROPERTY")}
-                  />
-                  <span style={{ fontSize: "14px", color: "#505A5F" }}>{t("WS_PROPERTY_AUTOFILL_MSG")}</span>
+              {/* Inline OTP Verification Box */}
+              {showOtpVerification && !isMobileVerified && (
+                <div style={{ border: "1px solid #d6d5d4", borderRadius: "4px", background: "#f8f9fa", padding: "12px" }}>
+                  <div style={{ fontWeight: "bold", fontSize: "18px", marginBottom: "8px" }}>{t("WS_VERIFY_OTP_HEADER") || "OTP Verification"}</div>
+                  <div style={{ color: "#505A5F", marginBottom: "16px" }}>
+                    {t("WS_ENTER_OTP_SENT_TO") || "Enter the 6-digit OTP sent to"} {getMaskedPhone(searchMobileNumber)}
+                  </div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "15px", alignItems: "center" }}>
+                    <OTPInput style={{marginBottom: "0px" }} length={6} onChange={setOtp} value={otp} />
+                    <button
+                      type="button"
+                      onClick={handleVerifyOtp}
+                      disabled={otp.length < 6 || isOtpVerifying}
+                      style={{
+                        padding: "6px 20px",
+                        background: otp.length < 6 || isOtpVerifying ? "#ccc" : "#1a67a3",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "4px",
+                        cursor: otp.length < 6 || isOtpVerifying ? "not-allowed" : "pointer",
+                        fontWeight: "bold"
+                      }}
+                    >
+                      {isOtpVerifying ? (t("WS_VERIFYING_OTP") || "Verifying...") : (t("WS_VERIFY_OTP_AND_PROCEED") || "Verify OTP")}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleSendOtp}
+                      disabled={timeLeft > 0 || isOtpSending}
+                      style={{
+                        padding: "6px 20px",
+                        background: "white",
+                        color: timeLeft > 0 || isOtpSending ? "#ccc" : "#1a67a3",
+                        border: `1px solid ${timeLeft > 0 || isOtpSending ? "#ccc" : "#1a67a3"}`,
+                        borderRadius: "4px",
+                        cursor: timeLeft > 0 || isOtpSending ? "not-allowed" : "pointer",
+                        fontWeight: "bold"
+                      }}
+                    >
+                      {timeLeft > 0 ? `${t("WS_RESEND_OTP") || "Resend OTP"} (00:${timeLeft < 10 ? `0${timeLeft}` : timeLeft})` : (t("WS_RESEND_OTP") || "Resend OTP")}
+                    </button>
+                  </div>
+                  {timeLeft > 0 && (
+                    <div style={{ marginTop: "12px", color: "#505A5F", fontSize: "14px" }}>
+                      {t("WS_DIDNT_RECEIVE_OTP_RESEND") || "Didn't receive OTP? You can resend after"} {timeLeft} {t("WS_SECONDS") || "seconds"}.
+                    </div>
+                  )}
                 </div>
-              ) : (
+              )}
+
+              {/* Inline Success Banner */}
+              {isMobileVerified && (
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#d4edda", border: "1px solid #c3e6cb", color: "#155724", padding: "12px 16px", borderRadius: "4px"}}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span style={{ background: "#28a745", color: "white", borderRadius: "50%", width: "24px", height: "24px", display: "inline-flex", justifyContent: "center", alignItems: "center", fontWeight: "bold" }}>✓</span>
+                    <span style={{ fontWeight: "bold" }}>{t("WS_MOBILE_VERIFIED_SUCCESSFULLY") || "Mobile number verified successfully!"}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsMobileVerified(false);
+                      setOtp("");
+                      setShowOtpVerification(false);
+                    }}
+                    style={{ color: "#1a67a3", background: "none", border: "none", cursor: "pointer", fontWeight: "bold", textDecoration: "underline" }}
+                  >
+                    {t("WS_CHANGE_NUMBER") || "Change Number"}
+                  </button>
+                </div>
+              )}
+              
+              {searchMobileNumber?.length === 10 && isMobileVerified && !isLoading && propertyOptions.length === 0 && (
                 <div style={{ display: "flex", flexDirection: "column", gap: "16px", marginTop: "16px" }}>
                   <span style={{ color: "#d63031", fontWeight: "bold" }}>
                     {t("WS_NO_PROPERTY_FOUND_ON_THIS_NUMBER") || "No property found on this number, please create the property first."}
@@ -424,8 +420,8 @@ const WSInfoPage = () => {
                     </button>
                   </span>
                 </div>
-              )
-            ) : null}
+              )}
+            </div>
           </div>
         )}
 
@@ -439,87 +435,89 @@ const WSInfoPage = () => {
           </div>
         )}
 
-        <CardSubHeader style={{ marginTop: "0", marginBottom: "0" }}>{t("WS_COMMON_CONNECTION_DETAIL")}</CardSubHeader>
-        <ul style={{ listStyleType: "disc", marginLeft: "20px", marginBottom: "24px", lineHeight: "2" }}>
-          <li>{t("WS_SERVICE_TYPE")}</li>
-          <li>{t("WS_CONNECTION_TYPE")}</li>
-          <li>{t("WS_WATER_DEMAND_TYPE")}</li>
-          <li>{t("WS_APPLICANT_TYPE")}</li>
-          <li>{t("WS_DIVYANGJAN")}</li>
-          <li>{t("WS_DOMESTIC_TYPE")}</li>
-        </ul>
+        <div>
+          <CardSubHeader style={{ marginTop: "0", marginBottom: "0" }}>{t("WS_COMMON_CONNECTION_DETAIL")}</CardSubHeader>
+          <ul style={{ listStyleType: "disc", marginLeft: "20px", marginBottom: "24px", lineHeight: "2" }}>
+            <li>{t("WS_SERVICE_TYPE")}</li>
+            <li>{t("WS_CONNECTION_TYPE")}</li>
+            <li>{t("WS_WATER_DEMAND_TYPE")}</li>
+            <li>{t("WS_APPLICANT_TYPE")}</li>
+            <li>{t("WS_DIVYANGJAN")}</li>
+            <li>{t("WS_DOMESTIC_TYPE")}</li>
+          </ul>
 
-        <CardSubHeader style={{ marginTop: "0", marginBottom: "0" }}>{t("WS_COMMON_CONNECTION_HOLDER_DETAILS_HEADER")}</CardSubHeader>
-        <ul style={{ listStyleType: "disc", marginLeft: "20px", marginBottom: "24px", lineHeight: "2" }}>
-          <li>{t("WS_OWN_DETAIL_NAME")}</li>
-          <li>{t("WS_OWN_DETAIL_MIDDLE_NAME")}</li>
-          <li>{t("WS_OWN_DETAIL_LAST_NAME")}</li>
-          <li>{t("WS_CONN_HOLDER_OWN_DETAIL_GENDER_LABEL")}</li>
-          <li>{t("WS_OWN_DETAIL_GUARDIAN_LABEL")}</li>
-          <li>{t("CORE_COMMON_MOBILE_NUMBER")}</li>
-          <li>{t("WS_EMAIL_ID")}</li>
-        </ul>
+          <CardSubHeader style={{ marginTop: "0", marginBottom: "0" }}>{t("WS_COMMON_CONNECTION_HOLDER_DETAILS_HEADER")}</CardSubHeader>
+          <ul style={{ listStyleType: "disc", marginLeft: "20px", marginBottom: "24px", lineHeight: "2" }}>
+            <li>{t("WS_OWN_DETAIL_NAME")}</li>
+            <li>{t("WS_OWN_DETAIL_MIDDLE_NAME")}</li>
+            <li>{t("WS_OWN_DETAIL_LAST_NAME")}</li>
+            <li>{t("WS_CONN_HOLDER_OWN_DETAIL_GENDER_LABEL")}</li>
+            <li>{t("WS_OWN_DETAIL_GUARDIAN_LABEL")}</li>
+            <li>{t("CORE_COMMON_MOBILE_NUMBER")}</li>
+            <li>{t("WS_EMAIL_ID")}</li>
+          </ul>
 
-        <CardSubHeader style={{ marginTop: "0", marginBottom: "0" }}>{t("PT_LOCATION_DETAILS")}</CardSubHeader>
-        <ul style={{ listStyleType: "disc", marginLeft: "20px", marginBottom: "24px", lineHeight: "2" }}>
-          <li>{t("WS_ZRO_LOCATION")}</li>
-          <li>{t("COMMON_ADDRESS_TYPE")}</li>
-          <li>{t("CITY")}</li>
-          <li>{t("PINCODE")}</li>
-          <li>{t("LOCALITY")}</li>
-          <li>{t("SubLocality")}</li>
-          <li>{t("STREET_NAME")}</li>
-          <li>{t("ADDRESS_LINE1")}</li>
-          <li>{t("ADDRESS_LINE2")}</li>
-          <li>{t("HOUSE_NO")}</li>
-          <li>{t("LATITUDE")}</li>
-          <li>{t("LONGITUDE")}</li>
-          <li>{t("ASSEMBLY")}</li>
-          <li>{t("WARD")}</li>
-          <li>{t("ZONE")}</li>
-          <li>{t("LANDMARK")}</li>
-        </ul>
+          <CardSubHeader style={{ marginTop: "0", marginBottom: "0" }}>{t("PT_LOCATION_DETAILS")}</CardSubHeader>
+          <ul style={{ listStyleType: "disc", marginLeft: "20px", marginBottom: "24px", lineHeight: "2" }}>
+            <li>{t("WS_ZRO_LOCATION")}</li>
+            <li>{t("COMMON_ADDRESS_TYPE")}</li>
+            <li>{t("CITY")}</li>
+            <li>{t("PINCODE")}</li>
+            <li>{t("LOCALITY")}</li>
+            <li>{t("SubLocality")}</li>
+            <li>{t("STREET_NAME")}</li>
+            <li>{t("ADDRESS_LINE1")}</li>
+            <li>{t("ADDRESS_LINE2")}</li>
+            <li>{t("HOUSE_NO")}</li>
+            <li>{t("LATITUDE")}</li>
+            <li>{t("LONGITUDE")}</li>
+            <li>{t("ASSEMBLY")}</li>
+            <li>{t("WARD")}</li>
+            <li>{t("ZONE")}</li>
+            <li>{t("LANDMARK")}</li>
+          </ul>
 
-        <CardSubHeader style={{ marginTop: "0", marginBottom: "0" }}>{t("WS_PROPERTY_AND_WATER_CONNECTION_USE_DETAILS")}</CardSubHeader>
-        <ul style={{ listStyleType: "disc", marginLeft: "20px", marginBottom: "24px", lineHeight: "2" }}>
-          <li>{t("WS_CATEGORY_TYPE")}</li>
-          <li>{t("WS_PROPERTY_CATEGORY")}</li>
-          <li>{t("WS_PROPERTY_TYPE")}</li>
-          <li>{t("WS_WATER_CONNECTION_USAGE_TYPE")}</li>
-          <li>{t("WS_NUMBER_OF_FLOORS")}</li>
-          <li>{t("WS_PLOT_AREA")}</li>
-          <li>{t("WS_BUILT_UP_AREA")}</li>
-          <li>{t("WS_SELECT_YEAR_OF_CONSTRUCTION")}</li>
-          <li>{t("WS_NUMBER_OF_DWELLING_UNITS")}</li>
-        </ul>
+          <CardSubHeader style={{ marginTop: "0", marginBottom: "0" }}>{t("WS_PROPERTY_AND_WATER_CONNECTION_USE_DETAILS")}</CardSubHeader>
+          <ul style={{ listStyleType: "disc", marginLeft: "20px", marginBottom: "24px", lineHeight: "2" }}>
+            <li>{t("WS_CATEGORY_TYPE")}</li>
+            <li>{t("WS_PROPERTY_CATEGORY")}</li>
+            <li>{t("WS_PROPERTY_TYPE")}</li>
+            <li>{t("WS_WATER_CONNECTION_USAGE_TYPE")}</li>
+            <li>{t("WS_NUMBER_OF_FLOORS")}</li>
+            <li>{t("WS_PLOT_AREA")}</li>
+            <li>{t("WS_BUILT_UP_AREA")}</li>
+            <li>{t("WS_SELECT_YEAR_OF_CONSTRUCTION")}</li>
+            <li>{t("WS_NUMBER_OF_DWELLING_UNITS")}</li>
+          </ul>
 
-        <CardSubHeader style={{ marginTop: "0", marginBottom: "0" }}>{t("WS_DJB_EMPLOYEE")}</CardSubHeader>
-        <ul style={{ listStyleType: "disc", marginLeft: "20px", marginBottom: "24px", lineHeight: "2" }}>
-          <li>{t("WS_EMPLOYEE_ID")}</li>
-          <li>{t("WS_DATE_OF_RETIREMENT")}</li>
-          <li>{t("WS_EMPLOYEE_DESIGNATION")}</li>
-        </ul>
+          <CardSubHeader style={{ marginTop: "0", marginBottom: "0" }}>{t("WS_DJB_EMPLOYEE")}</CardSubHeader>
+          <ul style={{ listStyleType: "disc", marginLeft: "20px", marginBottom: "24px", lineHeight: "2" }}>
+            <li>{t("WS_EMPLOYEE_ID")}</li>
+            <li>{t("WS_DATE_OF_RETIREMENT")}</li>
+            <li>{t("WS_EMPLOYEE_DESIGNATION")}</li>
+          </ul>
 
-        <CardSubHeader style={{ marginTop: "0", marginBottom: "0" }}>{t("WS_BANK_DETAILS")}</CardSubHeader>
-        <ul style={{ listStyleType: "disc", marginLeft: "20px", marginBottom: "24px", lineHeight: "2" }}>
-          <li>{t("WS_NAME_OF_BANK")}</li>
-          <li>{t("WS_NAME_OF_BRANCH")}</li>
-          <li>{t("WS_IFSC_CODE")}</li>
-          <li>{t("WS_BANK_ACCOUNT_NO")}</li>
-        </ul>
+          <CardSubHeader style={{ marginTop: "0", marginBottom: "0" }}>{t("WS_BANK_DETAILS")}</CardSubHeader>
+          <ul style={{ listStyleType: "disc", marginLeft: "20px", marginBottom: "24px", lineHeight: "2" }}>
+            <li>{t("WS_NAME_OF_BANK")}</li>
+            <li>{t("WS_NAME_OF_BRANCH")}</li>
+            <li>{t("WS_IFSC_CODE")}</li>
+            <li>{t("WS_BANK_ACCOUNT_NO")}</li>
+          </ul>
 
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "0", marginBottom: "16px" }}>
-          <CardSubHeader style={{ marginTop: "0", marginBottom: "0" }}>{t("WS_DOCUMENTS")}</CardSubHeader>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "0", marginBottom: "16px" }}>
+            <CardSubHeader style={{ marginTop: "0", marginBottom: "0" }}>{t("WS_DOCUMENTS")}</CardSubHeader>
+          </div>
+          <ul style={{ listStyleType: "disc", marginLeft: "20px", marginBottom: "24px", lineHeight: "2" }}>
+            <li>{t("WS_DOC_IDENTITY_PROOF")}</li>
+            <li>{t("WS_DOC_ADDRESS_PROOF")}</li>
+            <li>{t("WS_DOC_ELECTRICITY_BILL")}</li>
+            <li>{t("WS_DOC_PLUMBER_REPORT")}</li>
+            <li>{t("WS_DOC_BUILDING_PLAN")}</li>
+            <li>{t("WS_DOC_PROPERTY_TAX_RECEIPT")}</li>
+            <li>{t("WS_DOC_APPLICANT_PHOTOGRAPH")}</li>
+          </ul>
         </div>
-        <ul style={{ listStyleType: "disc", marginLeft: "20px", marginBottom: "24px", lineHeight: "2" }}>
-          <li>{t("WS_DOC_IDENTITY_PROOF")}</li>
-          <li>{t("WS_DOC_ADDRESS_PROOF")}</li>
-          <li>{t("WS_DOC_ELECTRICITY_BILL")}</li>
-          <li>{t("WS_DOC_PLUMBER_REPORT")}</li>
-          <li>{t("WS_DOC_BUILDING_PLAN")}</li>
-          <li>{t("WS_DOC_PROPERTY_TAX_RECEIPT")}</li>
-          <li>{t("WS_DOC_APPLICANT_PHOTOGRAPH")}</li>
-        </ul>
 
         {!hasProperty || (hasProperty?.code === "YES" && !selectedProperty) ? (
           <SubmitBar label={t("CS_COMMON_NEXT")} onSubmit={() => {}} disabled={true} />

@@ -175,7 +175,7 @@ export const WSMyApplications = () => {
     });
 
   const sortedApplications = applicationsList?.length > 0
-    ? applicationsList.sort((a, b) => b.auditDetails?.lastModifiedTime - a.auditDetails?.lastModifiedTime)
+    ? applicationsList.sort((a, b) => (b.auditDetails?.createdTime || b.auditDetails?.lastModifiedTime || 0) - (a.auditDetails?.createdTime || a.auditDetails?.lastModifiedTime || 0))
     : [];
 
   let filteredApplications = sortedApplications;

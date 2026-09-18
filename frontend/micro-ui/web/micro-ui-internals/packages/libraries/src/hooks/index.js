@@ -220,6 +220,7 @@ import useNOCSearchApplication from "./noc/useSearchApplications";
 import WSSearchMdmsTypes from "./ws/WSSearchMdmsTypes";
 import usewsTenants from "./ws/useTenants";
 import useWaterSearch from "./ws/useWaterSearch";
+import useWSZROVerification from "./ws/useWSZROVerification";
 import useSewarageSearch from "./ws/useSewarageSearch";
 import useMyBillsWaterSearch from "./ws/useMyBillsWaterSearch";
 import useMyBillsSewarageSearch from "./ws/useMyBillsSewarageSearch";
@@ -685,6 +686,7 @@ const ws = {
   WSSearchMdmsTypes,
   usewsTenants,
   useWaterSearch,
+  useWSZROVerification,
   useSewarageSearch,
   useMyBillsWaterSearch,
   useMyBillsSewarageSearch,
