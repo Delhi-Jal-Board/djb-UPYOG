@@ -11,7 +11,7 @@ import { downloadSurveyorPDF } from "../utils/reportDownloader";
 import { getEkycExcelData } from "../utils/ekycExcelData";
 import { FaUsers, FaCheckCircle, FaClock, FaChartLine } from "react-icons/fa";
 
-const SurveyorDetailsDashboard = () => {
+const SurveyorDetailsCard = () => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
 
   const [showModal, setShowModal] = useState(null);
@@ -314,65 +314,11 @@ const SurveyorDetailsDashboard = () => {
   return (
     <Card className="surveyor-dashboard">
       {/* Header + Download Report */}
-      <div className="ekyc-dashboard-section">
-        <div className="ekyc-dashboard-header">
-          <div className="avatar">{fullName?.charAt(0)?.toUpperCase()}</div>
-
-          <div className="header-content">
-            <h2 className="name">{fullName}</h2>
-
-            <div className="designation">{surveyor?.description || t("FIELD_SURVEYOR")}</div>
-
-            {/* <div className="employee-id">
-              {t("EMPLOYEE_ID")}: {employeeId}
-            </div> */}
-          </div>
-        </div>
-
-        {/* Download Report — far right */}
-        <div className="report-download">
-          <button className="download-btn" disabled={reportLoading} onClick={handleDownload}>
-            {reportLoading ? t("DOWNLOADING") || "Downloading..." : t("DOWNLOAD_REPORT") || "Download Report"}
-          </button>
-        </div>
-      </div>
-
-      {/* Stats */}
-      <div className="stats-wrapper">
-        <StatCard
-          title={t("TOTAL_ASSIGNED")}
-          value={dashboardData?.dashboardInfo?.total || 0}
-          type="today"
-          isLoading={isDashboardLoading}
-          icon={<FaUsers />}
-        />
-        <StatCard
-          title={t("IN_PROGRESS")}
-          value={dashboardData?.dashboardInfo?.inProgressCount || 0}
-          type="week"
-          isLoading={isDashboardLoading}
-          icon={<FaCheckCircle />}
-        />
-        <StatCard
-          title={t("PENDING")}
-          value={dashboardData?.dashboardInfo?.pending || 0}
-          type="pending"
-          isLoading={isDashboardLoading}
-          icon={<FaClock />}
-        />
-        <StatCard
-          title={t("SUBMITTED")}
-          value={dashboardData?.dashboardInfo?.submittedCount || 0}
-          type="month"
-          isLoading={isDashboardLoading}
-          icon={<FaChartLine />}
-        />
-      </div>
 
       {/* Charts */}
-      <div className="charts-wrapper">
-        {/* Weekly Chart */}
-        {/* <div className="chart-card">
+      {/* <div className="charts-wrapper"> */}
+      {/* Weekly Chart */}
+      {/* <div className="chart-card">
           <h3 className="chart-title">{t("WEEKLY_SURVEY_PROGRESS")}</h3>
 
           <ResponsiveContainer width="100%" height={300}>
@@ -390,8 +336,8 @@ const SurveyorDetailsDashboard = () => {
           </ResponsiveContainer>
         </div> */}
 
-        {/* Pie Chart */}
-        {/* <div className="chart-card">
+      {/* Pie Chart */}
+      {/* <div className="chart-card">
           <h3 className="chart-title">{t("CASE_DISTRIBUTION")}</h3>
 
           <ResponsiveContainer width="100%" height={300}>
@@ -408,12 +354,32 @@ const SurveyorDetailsDashboard = () => {
             </PieChart>
           </ResponsiveContainer>
         </div> */}
-      </div>
+      {/* </div> */}
 
       {/* Details */}
       <div className="ekyc-dashboard-section">
         <div className="ekyc-details-wrapper">
           {/* Top Row: Mobile, Email, and Download eKYC Data */}
+          <div className="details-top-row">
+          <div className="detail-item first-row">
+            <div className="ekyc-dashboard-header">
+              <div className="header-content">
+                <h2 className="name">{fullName}</h2>
+                <div className="designation">({surveyor?.description || t("FIELD_SURVEYOR")})</div>
+                {/* <div className="employee-id">
+              {t("EMPLOYEE_ID")}: {employeeId}
+            </div> */}
+              </div>
+            </div>
+
+            {/* Download Report — far right */}
+            <div className="report-download">
+              <button className="download-btn" disabled={reportLoading} onClick={handleDownload}>
+                {reportLoading ? t("DOWNLOADING") || "Downloading..." : t("DOWNLOAD_REPORT") || "Download Report"}
+              </button>
+            </div>
+          </div>
+          </div>
           <div className="details-top-row">
             <div className="detail-item">
               <span className="label">{t("MOBILE")}</span>
@@ -532,6 +498,39 @@ const SurveyorDetailsDashboard = () => {
           </div>
         </div>
       </div>
+
+      {/* Stats */}
+      <div className="stats-wrapper">
+        <StatCard
+          title={t("TOTAL_ASSIGNED")}
+          value={dashboardData?.dashboardInfo?.total || 0}
+          type="today"
+          isLoading={isDashboardLoading}
+          icon={<FaUsers />}
+        />
+        <StatCard
+          title={t("IN_PROGRESS")}
+          value={dashboardData?.dashboardInfo?.inProgressCount || 0}
+          type="week"
+          isLoading={isDashboardLoading}
+          icon={<FaCheckCircle />}
+        />
+        <StatCard
+          title={t("PENDING")}
+          value={dashboardData?.dashboardInfo?.pending || 0}
+          type="pending"
+          isLoading={isDashboardLoading}
+          icon={<FaClock />}
+        />
+        <StatCard
+          title={t("SUBMITTED")}
+          value={dashboardData?.dashboardInfo?.submittedCount || 0}
+          type="month"
+          isLoading={isDashboardLoading}
+          icon={<FaChartLine />}
+        />
+      </div>
+
       <div>
         <Table
           t={t}
@@ -597,4 +596,4 @@ const SurveyorDetailsDashboard = () => {
   );
 };
 
-export default SurveyorDetailsDashboard;
+export default SurveyorDetailsCard;
