@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { Modal, Close, Table, Toast } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
+
 const AssignEkycModal = ({ surveyor, isReassign, closeModal, refetchDashboard, tenantId: propsTenantId }) => {
   const { t } = useTranslation();
   const tenantId = propsTenantId || Digit.ULBService.getCurrentTenantId();
@@ -155,7 +156,7 @@ const AssignEkycModal = ({ surveyor, isReassign, closeModal, refetchDashboard, t
 
   const { data: applicationData, isFetching: isLoading, refetch: refetchApplicationList } = Digit.Hooks.ekyc.useEkycApplicationList(
     {
-      unassignedOnly: !isReassign,
+      assignedOnly: isReassign,
       /*
       ...(debouncedFilters.kno && {
         kno: debouncedFilters.kno,
