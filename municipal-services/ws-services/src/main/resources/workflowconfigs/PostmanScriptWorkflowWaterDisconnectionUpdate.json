@@ -1,0 +1,220 @@
+curl --location --request POST 'https://dev-djberp.nitcon.in/egov-workflow-v2/egov-wf/businessservice/_update' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+  "RequestInfo": {
+    "apiId": "Rainmaker",
+    "ver": ".01",
+    "ts": null,
+    "action": "_update",
+    "did": "1",
+    "key": "",
+    "msgId": "20170310130900|en_IN",
+    "authToken": "{{Auth_Token}}"
+  },
+  "BusinessServices": [
+    {
+      "tenantId": "dl",
+      "uuid": "4b8781b4-2e8a-461a-bb30-8cdf950df943",
+      "businessService": "DisconnectWSConnection",
+      "business": "ws-services",
+      "businessServiceSla": 259200000,
+      "states": [
+        {
+          "uuid": "714b98fb-69b4-4c89-b7ac-a7d1568e6e16",
+          "tenantId": "dl",
+          "state": null,
+          "applicationStatus": null,
+          "sla": null,
+          "docUploadRequired": false,
+          "isStartState": false,
+          "isTerminateState": true,
+          "isStateUpdatable": true,
+          "actions": [
+            {
+              "uuid": "eec3b4ac-3645-43a6-96c2-e34f56e308b2",
+              "tenantId": "dl",
+              "currentState": "714b98fb-69b4-4c89-b7ac-a7d1568e6e16",
+              "action": "INITIATE",
+              "nextState": "bbd28f07-9c57-4ba3-875f-8d26bb87ce89",
+              "roles": [
+                "CITIZEN",
+                "WS_CEMP"
+              ],
+              "active": true
+            }
+          ]
+        },
+        {
+          "uuid": "bbd28f07-9c57-4ba3-875f-8d26bb87ce89",
+          "tenantId": "dl",
+          "state": "INITIATED",
+          "applicationStatus": "INITIATED",
+          "sla": null,
+          "docUploadRequired": false,
+          "isStartState": false,
+          "isTerminateState": false,
+          "isStateUpdatable": true,
+          "actions": [
+            {
+              "uuid": "dc61666d-0a16-47cd-9084-3e3919cb96bc",
+              "tenantId": "dl",
+              "currentState": "bbd28f07-9c57-4ba3-875f-8d26bb87ce89",
+              "action": "SUBMIT_APPLICATION",
+              "nextState": "5af730c6-7d02-4627-9d01-39c09f936dd5",
+              "roles": [
+                "CITIZEN",
+                "WS_CEMP"
+              ],
+              "active": true
+            }
+          ]
+        },
+        {
+          "uuid": "5af730c6-7d02-4627-9d01-39c09f936dd5",
+          "tenantId": "dl",
+          "state": "PENDING_FOR_PAYMENT",
+          "applicationStatus": "PENDING_FOR_PAYMENT",
+          "sla": null,
+          "docUploadRequired": false,
+          "isStartState": false,
+          "isTerminateState": false,
+          "isStateUpdatable": false,
+          "actions": [
+            {
+              "uuid": "fccf724c-a09e-4433-ae96-02614931d86d",
+              "tenantId": "dl",
+              "currentState": "5af730c6-7d02-4627-9d01-39c09f936dd5",
+              "action": "PAY",
+              "nextState": "1b4d3371-9ad0-40c1-b460-12fd332971ac",
+              "roles": [
+                "CITIZEN",
+                "WS_CEMP"
+              ],
+              "active": true
+            }
+          ]
+        },
+        {
+          "uuid": "1b4d3371-9ad0-40c1-b460-12fd332971ac",
+          "tenantId": "dl",
+          "state": "PENDING_APPROVAL_FOR_DISCONNECTION",
+          "applicationStatus": "PENDING_APPROVAL_FOR_DISCONNECTION",
+          "sla": null,
+          "docUploadRequired": false,
+          "isStartState": false,
+          "isTerminateState": false,
+          "isStateUpdatable": false,
+          "actions": [
+            {
+              "uuid": "7ee05527-0192-4012-9b1d-78fdb3ab4f7f",
+              "tenantId": "dl",
+              "currentState": "1b4d3371-9ad0-40c1-b460-12fd332971ac",
+              "action": "APPROVE_FOR_DISCONNECTION",
+              "nextState": "ce0e8964-f18f-4375-b3f5-b2c6d6b33450",
+              "roles": [
+                "WS_APPROVER"
+              ],
+              "active": true
+            },
+            {
+              "uuid": "bb9df3a9-6244-4564-8a28-3b867bba757b",
+              "tenantId": "dl",
+              "currentState": "1b4d3371-9ad0-40c1-b460-12fd332971ac",
+              "action": "SEND_BACK_TO_CITIZEN",
+              "nextState": "67fe162e-954c-4e84-aabd-aca5ee8ff33f",
+              "roles": [
+                "WS_APPROVER"
+              ],
+              "active": true
+            },
+            {
+              "uuid": "ffd5142d-4370-4515-a0c3-e528f5b29094",
+              "tenantId": "dl",
+              "currentState": "1b4d3371-9ad0-40c1-b460-12fd332971ac",
+              "action": "REJECT",
+              "nextState": "8512de84-33fe-4b1f-bb2c-24352ebe96f9",
+              "roles": [
+                "WS_APPROVER"
+              ],
+              "active": true
+            }
+          ]
+        },
+        {
+          "uuid": "67fe162e-954c-4e84-aabd-aca5ee8ff33f",
+          "tenantId": "dl",
+          "state": "PENDING_FOR_CITIZEN_ACTION",
+          "applicationStatus": "PENDING_FOR_CITIZEN_ACTION",
+          "sla": null,
+          "docUploadRequired": false,
+          "isStartState": false,
+          "isTerminateState": false,
+          "isStateUpdatable": true,
+          "actions": [
+            {
+              "uuid": "0e022c54-3908-4a4c-a082-ad150e30d43c",
+              "tenantId": "dl",
+              "currentState": "67fe162e-954c-4e84-aabd-aca5ee8ff33f",
+              "action": "RESUBMIT_APPLICATION",
+              "nextState": "1b4d3371-9ad0-40c1-b460-12fd332971ac",
+              "roles": [
+                "CITIZEN",
+                "WS_CEMP"
+              ],
+              "active": true
+            }
+          ]
+        },
+        {
+          "uuid": "ce0e8964-f18f-4375-b3f5-b2c6d6b33450",
+          "tenantId": "dl",
+          "state": "PENDING_FOR_DISCONNECTION_EXECUTION",
+          "applicationStatus": "PENDING_FOR_DISCONNECTION_EXECUTION",
+          "sla": null,
+          "docUploadRequired": false,
+          "isStartState": false,
+          "isTerminateState": false,
+          "isStateUpdatable": true,
+          "actions": [
+            {
+              "uuid": "4b9d2b8c-d685-4853-bece-8b9e8bf590bf",
+              "tenantId": "dl",
+              "currentState": "ce0e8964-f18f-4375-b3f5-b2c6d6b33450",
+              "action": "EXECUTE_DISCONNECTION",
+              "nextState": "d9d1e0cd-aead-40b6-98c2-a16925ae01c3",
+              "roles": [
+                "WS_CLERK"
+              ],
+              "active": true
+            }
+          ]
+        },
+        {
+          "uuid": "d9d1e0cd-aead-40b6-98c2-a16925ae01c3",
+          "tenantId": "dl",
+          "state": "DISCONNECTION_EXECUTED",
+          "applicationStatus": "DISCONNECTION_EXECUTED",
+          "sla": null,
+          "docUploadRequired": false,
+          "isStartState": false,
+          "isTerminateState": true,
+          "isStateUpdatable": false,
+          "actions": null
+        },
+        {
+          "uuid": "8512de84-33fe-4b1f-bb2c-24352ebe96f9",
+          "tenantId": "dl",
+          "state": "REJECTED",
+          "applicationStatus": "REJECTED",
+          "sla": null,
+          "docUploadRequired": false,
+          "isStartState": false,
+          "isTerminateState": true,
+          "isStateUpdatable": false,
+          "actions": null
+        }
+      ]
+    }
+  ]
+}'
+
