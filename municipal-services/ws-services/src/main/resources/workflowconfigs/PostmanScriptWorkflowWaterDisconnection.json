@@ -14,7 +14,7 @@ curl --location --request POST 'https://dev.digit.org/egov-workflow-v2/egov-wf/b
 	},
 	"BusinessServices": [
 		{
-			"tenantId": "pb",
+			"tenantId": "dl",
 			"businessService": "DisconnectWSConnection",
 			"business": "ws-services",
 			"businessServiceSla": 259200000,
@@ -49,7 +49,7 @@ curl --location --request POST 'https://dev.digit.org/egov-workflow-v2/egov-wf/b
 					"actions": [
 						{
 							"action": "SUBMIT_APPLICATION",
-							"nextState": "PENDING_FOR_DOCUMENT_VERIFICATION",
+							"nextState": "PENDING_FOR_PAYMENT",
 							"roles": [
 								"CITIZEN",
 								"WS_CEMP"
@@ -59,71 +59,19 @@ curl --location --request POST 'https://dev.digit.org/egov-workflow-v2/egov-wf/b
 				},
 				{
 					"sla": null,
-					"state": "PENDING_FOR_DOCUMENT_VERIFICATION",
-					"applicationStatus": "PENDING_FOR_DOCUMENT_VERIFICATION",
+					"state": "PENDING_FOR_PAYMENT",
+					"applicationStatus": "PENDING_FOR_PAYMENT",
 					"docUploadRequired": false,
 					"isStartState": false,
 					"isTerminateState": false,
-					"isStateUpdatable": true,
+					"isStateUpdatable": false,
 					"actions": [
 						{
-							"action": "VERIFY_AND_FORWARD",
-							"nextState": "PENDING_FOR_FIELD_INSPECTION",
-							"roles": [
-								"WS_DOC_VERIFIER"
-							]
-						},
-						{
-							"action": "SEND_BACK",
-							"nextState": "PENDING_FOR_COUNTER_EMPLOYEE_ACTION",
-							"roles": [
-								"WS_DOC_VERIFIER"
-							]
-						},
-						{
-							"action": "SEND_BACK_TO_CITIZEN",
-							"nextState": "PENDING_FOR_CITIZEN_ACTION",
-							"roles": [
-								"WS_DOC_VERIFIER"
-							]
-						}
-					]
-				},
-				{
-					"sla": null,
-					"state": "PENDING_FOR_FIELD_INSPECTION",
-					"applicationStatus": "PENDING_FOR_FIELD_INSPECTION",
-					"docUploadRequired": false,
-					"isStartState": false,
-					"isTerminateState": false,
-					"isStateUpdatable": true,
-					"actions": [
-						{
-							"action": "VERIFY_AND_FORWARD",
+							"action": "PAY",
 							"nextState": "PENDING_APPROVAL_FOR_DISCONNECTION",
 							"roles": [
-								"WS_FIELD_INSPECTOR"
-							]
-						},
-						{
-							"action": "SEND_BACK_FOR_DOCUMENT_VERIFICATION",
-							"nextState": "PENDING_FOR_DOCUMENT_VERIFICATION",
-							"roles": [
-								"WS_FIELD_INSPECTOR"
-							]
-						},
-						{
-							"action": "SEND_BACK_TO_CITIZEN",
-							"nextState": "PENDING_FOR_CITIZEN_ACTION",
-							"roles": [
-								"WS_FIELD_INSPECTOR"
-							]
-						},
-						{
-							"action": "REJECT",
-							"nextState": "REJECTED",
-							"roles": [
-								"WS_FIELD_INSPECTOR"
+								"CITIZEN",
+								"WS_CEMP"
 							]
 						}
 					]
@@ -138,8 +86,8 @@ curl --location --request POST 'https://dev.digit.org/egov-workflow-v2/egov-wf/b
 					"isStateUpdatable": false,
 					"actions": [
 						{
-							"action": "SEND_BACK_FOR_FIELD_INSPECTION",
-							"nextState": "PENDING_FOR_FIELD_INSPECTION",
+							"action": "APPROVE_FOR_DISCONNECTION",
+							"nextState": "PENDING_FOR_DISCONNECTION_EXECUTION",
 							"roles": [
 								"WS_APPROVER"
 							]
@@ -147,13 +95,6 @@ curl --location --request POST 'https://dev.digit.org/egov-workflow-v2/egov-wf/b
 						{
 							"action": "SEND_BACK_TO_CITIZEN",
 							"nextState": "PENDING_FOR_CITIZEN_ACTION",
-							"roles": [
-								"WS_APPROVER"
-							]
-						},
-						{
-							"action": "APPROVE_FOR_DISCONNECTION",
-							"nextState": "PENDING_FOR_PAYMENT",
 							"roles": [
 								"WS_APPROVER"
 							]
@@ -178,55 +119,7 @@ curl --location --request POST 'https://dev.digit.org/egov-workflow-v2/egov-wf/b
 					"actions": [
 						{
 							"action": "RESUBMIT_APPLICATION",
-							"nextState": "PENDING_FOR_DOCUMENT_VERIFICATION",
-							"roles": [
-								"CITIZEN",
-								"WS_CEMP"
-							]
-						}
-					]
-				},
-				{
-					"sla": null,
-					"state": "PENDING_FOR_COUNTER_EMPLOYEE_ACTION",
-					"applicationStatus": "PENDING_FOR_COUNTER_EMPLOYEE_ACTION",
-					"docUploadRequired": false,
-					"isStartState": true,
-					"isTerminateState": false,
-					"isStateUpdatable": true,
-					"actions": [
-						{
-							"action": "RESUBMIT_APPLICATION",
-							"nextState": "PENDING_FOR_DOCUMENT_VERIFICATION",
-							"roles": [
-								"CITIZEN",
-								"WS_CEMP"
-							]
-						}
-					]
-				},
-				{
-					"sla": null,
-					"state": "REJECTED",
-					"applicationStatus": "REJECTED",
-					"docUploadRequired": false,
-					"isStartState": false,
-					"isTerminateState": true,
-					"isStateUpdatable": false,
-					"actions": null
-				},
-				{
-					"sla": null,
-					"state": "PENDING_FOR_PAYMENT",
-					"applicationStatus": "PENDING_FOR_PAYMENT",
-					"docUploadRequired": false,
-					"isStartState": false,
-					"isTerminateState": false,
-					"isStateUpdatable": false,
-					"actions": [
-						{
-							"action": "PAY",
-							"nextState": "PENDING_FOR_DISCONNECTION_EXECUTION",
+							"nextState": "PENDING_APPROVAL_FOR_DISCONNECTION",
 							"roles": [
 								"CITIZEN",
 								"WS_CEMP"
@@ -256,6 +149,16 @@ curl --location --request POST 'https://dev.digit.org/egov-workflow-v2/egov-wf/b
 					"sla": null,
 					"state": "DISCONNECTION_EXECUTED",
 					"applicationStatus": "DISCONNECTION_EXECUTED",
+					"docUploadRequired": false,
+					"isStartState": false,
+					"isTerminateState": true,
+					"isStateUpdatable": false,
+					"actions": null
+				},
+				{
+					"sla": null,
+					"state": "REJECTED",
+					"applicationStatus": "REJECTED",
 					"docUploadRequired": false,
 					"isStartState": false,
 					"isTerminateState": true,
