@@ -660,6 +660,7 @@ console.log(workflowData, "workflowData");
                 onBack={() => history.push(`${path}/document`)}
                 onSubmit={submitApplication}
                 isLoading={isSubmitting}
+                isEditFlow={isEditFlow}
               />
             </Route>
 
