@@ -991,7 +991,7 @@ const WSApplicationDetails = () => {
                 )}
               </StatusTable>
 
-              {!isMutation && (
+              {/*!isMutation && (
                 <React.Fragment>
                   <CardHeader styles={{ fontSize: "28px" }}>{t("WS_BANK_DETAILS")}</CardHeader>
                   <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
@@ -1001,7 +1001,7 @@ const WSApplicationDetails = () => {
                     <Row label={t("WS_BANK_ACCOUNT_NO")} text={`${t(checkForNA(bankDetails?.bankAccountNumber || bankDetails?.accountNumber))}`} />
                   </StatusTable>
                 </React.Fragment>
-              )}
+              )*/}
               <CardHeader styles={{ fontSize: "28px" }}>{t("WS_COMMON_DOCUMENT_DETAILS")}</CardHeader>
               {data?.WaterConnection?.[0]?.documents &&
                 data?.WaterConnection?.[0]?.documents
@@ -1060,27 +1060,30 @@ const WSApplicationDetails = () => {
               data?.SewerageConnections?.[0]?.applicationStatus === "PENDING_FOR_PAYMENT" ||
               data?.SewerageConnections?.[0]?.applicationStatus === "PENDING_FOR_FINAL_PAYMENT" ||
               data?.SewerageConnections?.[0]?.applicationStatus === "PENDING_FOR_ADDITIONAL_PAYMENT" ? (
-                <Link
-                  to={{
-                    pathname: `/digit-ui/citizen/payment/my-bills/${paymentDetails?.data?.Bill?.[0]?.businessService}/${stringReplaceAll(
-                      paymentDetails?.data?.Bill?.[0]?.consumerCode,
-                      "/",
-                      "+"
-                    )}`,
-                    search: `?workflow=WNS&tenantId=${
-                      data?.WaterConnection?.[0]?.tenantId || data?.SewerageConnections?.[0]?.tenantId
-                    }&ConsumerName=${
-                      data?.WaterConnection?.[0]?.connectionHolders?.map((owner) => owner.name).join(",") ||
-                      data?.SewerageConnections?.[0]?.connectionHolders?.map((owner) => owner.name).join(",") ||
-                      PTData?.Properties?.[0]?.owners?.map((owner) => owner.name).join(",")
-                    }&isDisoconnectFlow=${applicationNobyData?.includes("DC") ? true : false}&consumerCode=${
-                      paymentDetails?.data?.Bill?.[0]?.consumerCode
-                    }`,
-                    state: { fromApplicationDetails: true },
+              <div style={{ marginTop: "10px" }}>
+                <SubmitBar 
+                  label={t("MAKE_PAYMENT")} 
+                  onSubmit={() => {
+                    history.push({
+                      pathname: `/digit-ui/citizen/payment/my-bills/${paymentDetails?.data?.Bill?.[0]?.businessService}/${stringReplaceAll(
+                        paymentDetails?.data?.Bill?.[0]?.consumerCode,
+                        "/",
+                        "+"
+                      )}`,
+                      search: `?workflow=WNS&tenantId=${
+                        data?.WaterConnection?.[0]?.tenantId || data?.SewerageConnections?.[0]?.tenantId
+                      }&ConsumerName=${
+                        data?.WaterConnection?.[0]?.connectionHolders?.map((owner) => owner.name).join(",") ||
+                        data?.SewerageConnections?.[0]?.connectionHolders?.map((owner) => owner.name).join(",") ||
+                        PTData?.Properties?.[0]?.owners?.map((owner) => owner.name).join(",")
+                      }&isDisoconnectFlow=${applicationNobyData?.includes("DC") ? true : false}&consumerCode=${
+                        paymentDetails?.data?.Bill?.[0]?.consumerCode
+                      }`,
+                      state: { fromApplicationDetails: true },
+                    });
                   }}
-                >
-                  <SubmitBar label={t("MAKE_PAYMENT")} />
-                </Link>
+                />
+              </div>
               ) : null}
               {(!data?.WaterConnection?.[0]?.applicationType.includes("DISCONNECT") &&
                 data?.WaterConnection?.[0]?.applicationStatus.includes("PENDING_FOR_CITIZEN_ACTION")) ||

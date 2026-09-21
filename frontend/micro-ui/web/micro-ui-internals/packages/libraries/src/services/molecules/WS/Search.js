@@ -994,7 +994,7 @@ export const WSSearch = {
       connectionHolderDetails,
       propertyDetails,
       propertyWaterConnectionUseDetails,
-      ...(isMutationApp ? [] : [bankDetails]),
+      // ...(isMutationApp ? [] : [bankDetails]),
       documentDetails,
     ];
 

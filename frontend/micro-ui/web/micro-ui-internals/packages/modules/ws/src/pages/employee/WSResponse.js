@@ -123,40 +123,68 @@ const WSResponse = (props) => {
         </div>
         <div>
           {waterApplicationData?.applicationData?.applicationStatus === "PENDING_FOR_PAYMENT" ? (
-            <Link
-              to={{
-                pathname: `/digit-ui/employee/payment/collect/${
-                  (waterApplicationData?.applicationData?.applicationNo?.includes("DC") ? "WS" : "WS.ONE_TIME_FEE")
-                }/${
-                  waterApplicationData?.applicationData?.applicationNo?.includes("DC") 
-                    ? func.stringReplaceAll(waterApplicationData?.applicationData?.connectionNo, "/", "+")
-                    : func.stringReplaceAll(waterApplicationData?.applicationData?.applicationNo, "/", "+")
-                }/${waterApplicationData?.applicationData?.tenantId}?workflow=WNS&tenantId=${waterApplicationData?.applicationData?.tenantId}&ConsumerName=${waterApplicationData?.applicationData?.connectionHolders?.map((owner) => owner.name).join(",") || waterApplicationData?.propertyDetails?.owners?.map((owner) => owner.name).join(",")}&isDisconnectFlow=${waterApplicationData?.applicationData?.applicationNo?.includes("DC") ? true : false}`,
-                state: {},
-              }}
-            >
-              <div style={{ marginTop: "10px" }}>
-                <SubmitBar label={t("MAKE_PAYMENT")} />
-              </div>
-            </Link>
+            <div style={{ marginTop: "10px" }}>
+              <SubmitBar 
+                label={t("MAKE_PAYMENT")} 
+                onSubmit={() => {
+                  let isEmployee = window.location.href.includes("/employee");
+                  let businessService = waterApplicationData?.applicationData?.applicationNo?.includes("DC") ? "WS" : "WS.ONE_TIME_FEE";
+                  let consumerCodeOriginal = waterApplicationData?.applicationData?.applicationNo?.includes("DC") 
+                    ? waterApplicationData?.applicationData?.connectionNo 
+                    : waterApplicationData?.applicationData?.applicationNo;
+                  let consumerCode = func.stringReplaceAll(consumerCodeOriginal, "/", "+");
+                  let tenantId = waterApplicationData?.applicationData?.tenantId;
+                  let consumerName = waterApplicationData?.applicationData?.connectionHolders?.map((owner) => owner.name).join(",") || waterApplicationData?.propertyDetails?.owners?.map((owner) => owner.name).join(",");
+                  let isDisconnectFlow = waterApplicationData?.applicationData?.applicationNo?.includes("DC") ? true : false;
+                  
+                  if (isEmployee) {
+                    history.push({
+                      pathname: `/digit-ui/employee/payment/collect/${businessService}/${encodeURIComponent(consumerCodeOriginal)}/${tenantId}`,
+                      search: `?tenantId=${tenantId}&consumerCode=${consumerCodeOriginal}&ISWSAPP&applicationNumber=${consumerCodeOriginal}`,
+                      state: {},
+                    });
+                  } else {
+                    history.push({
+                      pathname: `/digit-ui/citizen/payment/my-bills/${businessService}/${consumerCode}`,
+                      search: `?workflow=WNS&tenantId=${tenantId}&ConsumerName=${consumerName}&isDisoconnectFlow=${isDisconnectFlow}&consumerCode=${consumerCodeOriginal}`,
+                      state: {},
+                    });
+                  }
+                }}
+              />
+            </div>
           ) : null}
           {sewerageApplicationData?.applicationData?.applicationStatus === "PENDING_FOR_PAYMENT" ? (
-            <Link
-              to={{
-                pathname: `/digit-ui/employee/payment/collect/${
-                  (sewerageApplicationData?.applicationData?.applicationNo?.includes("DC") ? "SW" : "SW.ONE_TIME_FEE")
-                }/${
-                  sewerageApplicationData?.applicationData?.applicationNo?.includes("DC") 
-                    ? func.stringReplaceAll(sewerageApplicationData?.applicationData?.connectionNo, "/", "+")
-                    : func.stringReplaceAll(sewerageApplicationData?.applicationData?.applicationNo, "/", "+")
-                }/${sewerageApplicationData?.applicationData?.tenantId}?workflow=WNS&tenantId=${sewerageApplicationData?.applicationData?.tenantId}&ConsumerName=${sewerageApplicationData?.applicationData?.connectionHolders?.map((owner) => owner.name).join(",") || sewerageApplicationData?.propertyDetails?.owners?.map((owner) => owner.name).join(",")}&isDisconnectFlow=${sewerageApplicationData?.applicationData?.applicationNo?.includes("DC") ? true : false}`,
-                state: {},
-              }}
-            >
-              <div style={{ marginTop: "10px", marginLeft: "10px" }}>
-                <SubmitBar label={t("MAKE_PAYMENT")} />
-              </div>
-            </Link>
+            <div style={{ marginTop: "10px", marginLeft: "10px" }}>
+              <SubmitBar 
+                label={t("MAKE_PAYMENT")} 
+                onSubmit={() => {
+                  let isEmployee = window.location.href.includes("/employee");
+                  let businessService = sewerageApplicationData?.applicationData?.applicationNo?.includes("DC") ? "SW" : "SW.ONE_TIME_FEE";
+                  let consumerCodeOriginal = sewerageApplicationData?.applicationData?.applicationNo?.includes("DC") 
+                    ? sewerageApplicationData?.applicationData?.connectionNo 
+                    : sewerageApplicationData?.applicationData?.applicationNo;
+                  let consumerCode = func.stringReplaceAll(consumerCodeOriginal, "/", "+");
+                  let tenantId = sewerageApplicationData?.applicationData?.tenantId;
+                  let consumerName = sewerageApplicationData?.applicationData?.connectionHolders?.map((owner) => owner.name).join(",") || sewerageApplicationData?.propertyDetails?.owners?.map((owner) => owner.name).join(",");
+                  let isDisconnectFlow = sewerageApplicationData?.applicationData?.applicationNo?.includes("DC") ? true : false;
+                  
+                  if (isEmployee) {
+                    history.push({
+                      pathname: `/digit-ui/employee/payment/collect/${businessService}/${encodeURIComponent(consumerCodeOriginal)}/${tenantId}`,
+                      search: `?tenantId=${tenantId}&consumerCode=${consumerCodeOriginal}&ISWSAPP&applicationNumber=${consumerCodeOriginal}`,
+                      state: {},
+                    });
+                  } else {
+                    history.push({
+                      pathname: `/digit-ui/citizen/payment/my-bills/${businessService}/${consumerCode}`,
+                      search: `?workflow=WNS&tenantId=${tenantId}&ConsumerName=${consumerName}&isDisoconnectFlow=${isDisconnectFlow}&consumerCode=${consumerCodeOriginal}`,
+                      state: {},
+                    });
+                  }
+                }}
+              />
+            </div>
           ) : null}
         </div>
         <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>

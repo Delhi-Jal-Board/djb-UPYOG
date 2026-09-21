@@ -1,5 +1,5 @@
-import React from "react";
-import { Header, Table, Card, Loader } from "@djb25/digit-ui-react-components";
+import React, { useState } from "react";
+import { Table, Card, Loader, SearchField, TextInput, SearchForm, SubmitBar } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 
@@ -7,18 +7,35 @@ const WSZROVerification = () => {
   const { t } = useTranslation();
   const tenantId = Digit.ULBService.getCurrentTenantId();
 
-  // Call the ZRO verification search API using the standard Digit hook approach
+  const [connectionNo, setConnectionNo] = useState("");
+  const [filters, setFilters] = useState({
+    status: "PENDING",
+    offset: 0,
+    limit: 20,
+  });
+
   const { isLoading, data } = Digit.Hooks.ws.useWSZROVerification({
     tenantId,
-    filters: {
-      status: "PENDING",
-      offset: 0,
-      limit: 20,
-    },
+    filters,
     config: {
       select: (res) => res?.cases || [],
     },
   });
+
+  const onSubmit = (e) => {
+    if (e) e.preventDefault();
+    const newFilters = { status: "PENDING", offset: 0, limit: 20 };
+    if (connectionNo?.trim()) {
+      newFilters.connectionNo = connectionNo.trim();
+    }
+    setFilters(newFilters);
+  };
+
+  const clearSearch = () => {
+    setConnectionNo("");
+    setFilters({ status: "PENDING", offset: 0, limit: 20 });
+  };
+
   const columns = React.useMemo(
     () => [
       {
@@ -71,21 +88,49 @@ const WSZROVerification = () => {
     [t]
   );
 
-  if (isLoading) {
-    return <Loader />;
-  }
-
   return (
     <React.Fragment>
-      <Table
-        t={t}
-        data={data || []}
-        totalRecords={data?.length || 0}
-        isLoading={isLoading}
-        isPaginationRequired={true}
-        csvExportData={data}
-        columns={columns}
-      />
+      <Card>
+        <SearchForm 
+          onSubmit={onSubmit} 
+          handleSubmit={(fn) => fn} 
+          className="formcomposer-section-grid"
+        >
+          <SearchField>
+            <label>{t("WS_CONNECTION_NO_LABEL")}</label>
+            <TextInput
+              name="connectionNo"
+              value={connectionNo}
+              onChange={(e) => setConnectionNo(e.target.value)}
+            />
+          </SearchField>
+
+          <SearchField className="ws-submit">
+            <SubmitBar label={t("ES_COMMON_SEARCH")} submit={true} className="submit-bar generic-button" />
+            <button
+              type="button"
+              className="clear-search generic-button"
+              onClick={clearSearch}
+            >
+              {t("ES_COMMON_CLEAR_SEARCH")}
+            </button>
+          </SearchField>
+        </SearchForm>
+      </Card>
+
+      {isLoading ? (
+        <Loader />
+      ) : (
+        <Table
+          t={t}
+          data={data || []}
+          totalRecords={data?.length || 0}
+          isLoading={isLoading}
+          isPaginationRequired={true}
+          csvExportData={data}
+          columns={columns}
+        />
+      )}
     </React.Fragment>
   );
 };

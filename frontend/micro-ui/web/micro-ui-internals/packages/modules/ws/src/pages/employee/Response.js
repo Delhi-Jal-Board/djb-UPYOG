@@ -1,12 +1,13 @@
 import { ActionBar, Banner, Card, CardText, Loader, SubmitBar } from "@djb25/digit-ui-react-components"
 import React, { useEffect } from "react"
 import { useTranslation } from "react-i18next"
-import { Link, useLocation } from "react-router-dom"
+import { Link, useLocation, useHistory } from "react-router-dom"
 import getPDFData from "../../utils/getWsAckDataForBillAmendPdf";
 
 const Response = () => {
     const tenantId = Digit.ULBService.getCurrentTenantId();
     const { state } = useLocation()
+    const history = useHistory()
     const { t } = useTranslation()
     const connNumber = state?.Amendment?.consumerCode
     let serviceType = "WATER";
@@ -53,9 +54,11 @@ const Response = () => {
               {t("WS_PRINT_APPLICATION_LABEL")}
             </div>)}
             <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
-                <Link to={`/digit-ui/employee`} style={{ marginRight: "1rem" }}>
-                <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
-                </Link> 
+                <SubmitBar 
+                  label={t("CORE_COMMON_GO_TO_HOME")} 
+                  onSubmit={() => history.push(`/digit-ui/employee`)}
+                  style={{ marginRight: "1rem" }}
+                />
             </ActionBar>
         </Card>}
     </div>

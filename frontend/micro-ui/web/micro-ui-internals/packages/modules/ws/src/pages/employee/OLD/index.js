@@ -29,7 +29,7 @@ const OLDApplication = () => {
     { label: "WS_PROPERTY_AND_WATER_CONNECTION_USE_DETAILS" },
     { label: "WS_DJB_EMPLOYEE" },
     // ...(isCitizen ? [] : [{ label: "WS_DJB_EMPLOYEE" }]),
-    { label: "WS_BANK_DETAILS" },
+    // { label: "WS_BANK_DETAILS" },
     { label: "WS_DOCUMENTS" },
     { label: "WS_DECLARATION" },
   ].map((step, index) => ({
@@ -66,7 +66,7 @@ const OLDApplication = () => {
     if (requestedPropertyId !== initialPropertyId.current || (requestedPropertyId && requestedPropertyId !== verifiedPropertyId.current)) {
       clearSessionFormData();
       sessionStorage.removeItem("WS_OTP_VERIFIED_PROPERTY_ID");
-      history.replace("/digit-ui/employee/ws/info");
+      history.replace(window.location.href.includes("/employee") ? "/digit-ui/employee/ws/info" : "/digit-ui/citizen/ws/info");
     }
   }, [clearSessionFormData, history, requestedPropertyId]);
 
@@ -95,7 +95,7 @@ const OLDApplication = () => {
           "WSDivyangjan",
           "WSActivationPlumberDetails",
           "WSRoadCuttingDetails",
-          "WSBankDetails",
+          // "WSBankDetails",
           "WSDocumentsEmployee",
           "WSDeclaration",
         ];
@@ -147,19 +147,20 @@ const OLDApplication = () => {
                 },
               ],
             });
-          } else if (compName === "WSBankDetails") {
-            reorderedBody.push({
-              // head: "WS_BANK_DETAILS",
-              isCreateConnection: true,
-              body: [
-                {
-                  type: "component",
-                  key: "bankDetails",
-                  component: "WSBankDetails",
-                  withoutLabel: true,
-                },
-              ],
-            });
+            // } else if (compName === "WSBankDetails") {
+            //   reorderedBody.push({
+            //     // head: "WS_BANK_DETAILS",
+            //     isCreateConnection: true,
+            //     body: [
+            //       {
+            //         type: "component",
+            //         key: "bankDetails",
+            //         component: "WSBankDetails",
+            //         withoutLabel: true,
+            //       },
+            //     ],
+            //   });
+            // }
           } else if (compName === "WSDeclaration") {
             reorderedBody.push({
               // head: "WS_DECLARATION_UNDERTAKING",

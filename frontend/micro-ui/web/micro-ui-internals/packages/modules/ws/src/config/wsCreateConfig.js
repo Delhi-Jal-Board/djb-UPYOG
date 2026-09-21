@@ -125,8 +125,8 @@ export const newConfig = [
         route: "property-water-details",
         component: "WSPropertyWaterConnection",
         key: "waterConnection",
-        nextStep: "bank-details",
-        WATER: "bank-details",
+        nextStep: "disability-details",
+        WATER: "disability-details",
         hideInEmployee: true,
         texts: {
           header: "WS_PROPERTY_ADDRESS_DETAILS",
@@ -134,7 +134,7 @@ export const newConfig = [
           submitBarLabel: "CS_COMMON_NEXT",
         },
       },
-      {
+      /*{
         route: "bank-details",
         component: "WSBankDetails",
         key: "bankDetails",
@@ -147,7 +147,7 @@ export const newConfig = [
           cardText: "",
           submitBarLabel: "CS_COMMON_NEXT",
         },
-      },
+      },*/
       {
         route: "disability-details",
         component: "WSDivyangjan",
