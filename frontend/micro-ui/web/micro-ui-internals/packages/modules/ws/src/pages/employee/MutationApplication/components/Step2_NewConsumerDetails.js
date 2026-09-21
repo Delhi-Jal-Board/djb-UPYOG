@@ -32,7 +32,9 @@ const Step2_NewConsumerDetails = ({ t, onNext, onBack, defaultValues }) => {
     name: "reasonForNameChange"
   });
 
-  const isOtherReason = selectedReason?.code === "OTHER" || selectedReason === "OTHER";
+  const isDevolutionOrInheritance = selectedReason?.code === "DEVOLUTION_INHERITANCE" || selectedReason === "DEVOLUTION_INHERITANCE" || String(selectedReason?.code || "").toUpperCase().includes("DEVOLUTION") || String(selectedReason || "").toUpperCase().includes("DEVOLUTION");
+  console.log("selectedReason in Step2:", selectedReason);
+  console.log("isDevolutionOrInheritance:", isDevolutionOrInheritance);
 
   const genderOptions = [
     { code: "MALE", i18nKey: "Male" },
@@ -43,7 +45,7 @@ const Step2_NewConsumerDetails = ({ t, onNext, onBack, defaultValues }) => {
   const reasonOptions = [
     { code: "SALE_PURCHASE", i18nKey: "Purchase of Property" },
     { code: "DEVOLUTION_INHERITANCE", i18nKey: "Devolution/Inheritance" },
-    { code: "OTHER", i18nKey: "Other Reason(Gift Deed, Lease Agreement, etc)" }
+    { code: "OTHER", i18nKey: "Other Reason(Registered Sale Deed/Convayed Deed/Transfer Deed, Registered GPA, Possession Letter/Allotment Letter)" }
   ];
 
   const relationshipOptions = [
@@ -204,7 +206,8 @@ const Step2_NewConsumerDetails = ({ t, onNext, onBack, defaultValues }) => {
                   select={(val) => { 
                     props.onChange(val); 
                     setTouched(p => ({...p, reasonForNameChange: true})); 
-                    if (val?.code !== "OTHER" && val !== "OTHER") {
+                    const isDev = val?.code === "DEVOLUTION_INHERITANCE" || val === "DEVOLUTION_INHERITANCE" || String(val?.code || "").toUpperCase().includes("DEVOLUTION") || String(val || "").toUpperCase().includes("DEVOLUTION");
+                    if (!isDev) {
                       setValue("relationshipWithExistingConsumer", null);
                     }
                   }}
@@ -218,11 +221,11 @@ const Step2_NewConsumerDetails = ({ t, onNext, onBack, defaultValues }) => {
           </div>
 
           <div>
-            <CardLabel style={{ fontWeight: "bold", color: isOtherReason ? "inherit" : "#999" }}>Relationship with Existing Consumer {isOtherReason && mandatoryIndicator}</CardLabel>
+            <CardLabel style={{ fontWeight: "bold", color: isDevolutionOrInheritance ? "inherit" : "#999" }}>Relationship with Existing Consumer {isDevolutionOrInheritance && mandatoryIndicator}</CardLabel>
             <Controller
               control={control}
               name="relationshipWithExistingConsumer"
-              rules={{ required: isOtherReason ? "Relationship is required when 'Other Reason' is selected" : false }}
+              rules={{ required: isDevolutionOrInheritance ? "Relationship is required when 'Devolution/Inheritance' is selected" : false }}
               render={(props) => (
                 <Dropdown
                   selected={props.value}
@@ -231,13 +234,13 @@ const Step2_NewConsumerDetails = ({ t, onNext, onBack, defaultValues }) => {
                   optionKey="i18nKey"
                   t={t}
                   placeholder="Select relationship"
-                  disable={!isOtherReason}
+                  disable={!isDevolutionOrInheritance}
                 />
               )}
             />
-            {!isOtherReason && (
+            {!isDevolutionOrInheritance && (
               <span style={{ fontSize: "11px", color: "#999", marginTop: "4px", display: "block" }}>
-                Enabled only when "Other Reason" is selected above
+                Enabled only when "Devolution/Inheritance" is selected above
               </span>
             )}
             {errors?.relationshipWithExistingConsumer && <CardLabelError style={errorStyle}>{errors?.relationshipWithExistingConsumer?.message}</CardLabelError>}

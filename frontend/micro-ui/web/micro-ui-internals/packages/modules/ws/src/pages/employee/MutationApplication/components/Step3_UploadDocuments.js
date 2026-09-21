@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Card, CardHeader, CardLabel, Dropdown, UploadFile, Toast, TextInput } from "@djb25/digit-ui-react-components";
+import { Card, CardHeader, CardLabel, Dropdown, UploadFile, Toast, TextInput, CheckBox } from "@djb25/digit-ui-react-components";
 import UploadFileDigiLocker from "../../../../../../pt/src/utils/UploadFile";
 
 const Step3_UploadDocuments = ({ t, onNext, onBack, defaultValues }) => {
@@ -16,6 +16,8 @@ const Step3_UploadDocuments = ({ t, onNext, onBack, defaultValues }) => {
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
   const [digiLockerUpload, setDigilockerUpload] = useState(false);
   const [isDocumentUidLocked, setIsDocumentUidLocked] = useState(false);
+  const [showDocumentNumber, setShowDocumentNumber] = useState(false);
+  const [isDeclarationChecked, setIsDeclarationChecked] = useState(defaultValues?.isDeclarationChecked || false);
 
   const identityOptions = [
     { code: "AADHAAR", i18nKey: "Aadhaar Card" },
@@ -184,11 +186,13 @@ const Step3_UploadDocuments = ({ t, onNext, onBack, defaultValues }) => {
       if (!identityProofType) newErrors.identityType = "Please select a document type";
       if (!identityProofFile) newErrors.identityFile = "Please upload your identity proof document";
       if (!mutationDocFile) newErrors.mutationFile = "Please upload the reason-based supporting document";
+      if (!isDeclarationChecked) newErrors.declaration = "You must accept the declaration before proceeding";
       const docError = validateDocumentNumber(documentNumber, identityProofType);
       if (docError) newErrors.documentNumber = docError;
       setFieldErrors(newErrors);
     }
   }, [identityProofType, documentNumber, identityProofFile, mutationDocFile, hasAttemptedSubmit]);
+  }, [identityProofType, documentNumber, identityProofFile, mutationDocFile, isDeclarationChecked, hasAttemptedSubmit]);
 
   const onProceed = () => {
     setHasAttemptedSubmit(true);
@@ -199,6 +203,7 @@ const Step3_UploadDocuments = ({ t, onNext, onBack, defaultValues }) => {
     if (docError) newErrors.documentNumber = docError;
     if (!identityProofFile) newErrors.identityFile = "Please upload your identity proof document";
     if (!mutationDocFile) newErrors.mutationFile = "Please upload the reason-based supporting document";
+    if (!isDeclarationChecked) newErrors.declaration = "You must accept the declaration before proceeding";
 
     setFieldErrors(newErrors);
 
@@ -213,6 +218,8 @@ const Step3_UploadDocuments = ({ t, onNext, onBack, defaultValues }) => {
       documentNumber: documentNumber.trim(),
       identityProofDocumentId: identityProofFile,
       saleDeedDocumentId: mutationDocFile
+      saleDeedDocumentId: mutationDocFile,
+      isDeclarationChecked
     });
   };
 
@@ -255,7 +262,7 @@ const Step3_UploadDocuments = ({ t, onNext, onBack, defaultValues }) => {
         
         {/* Address / Identity Proof */}
         <div>
-          <CardLabel style={{ fontWeight: "bold" }}>1. Address / Identity Proof {mandatoryIndicator}</CardLabel>
+          <CardLabel style={{ fontWeight: "bold" }}>1. Identity Proof {mandatoryIndicator}</CardLabel>
           <Dropdown
             selected={identityProofType}
             option={identityOptions}
@@ -277,28 +284,52 @@ const Step3_UploadDocuments = ({ t, onNext, onBack, defaultValues }) => {
           {fieldErrors.identityType && <div style={errorTextStyle}>{fieldErrors.identityType}</div>}
 
           <CardLabel style={{ fontWeight: "bold", marginTop: "8px" }}>Document Number {mandatoryIndicator}</CardLabel>
-          <TextInput 
-            value={documentNumber} 
-            onChange={(e) => { 
-              if (!isDocumentUidLocked) {
-                setDocumentNumber(e.target.value); 
-                setFieldErrors(prev => ({ ...prev, documentNumber: null })); 
-              }
-            }}
-            onBlur={() => {
-              if (hasAttemptedSubmit) {
-                const err = validateDocumentNumber(documentNumber, identityProofType);
-                if (err) setFieldErrors(prev => ({ ...prev, documentNumber: err }));
-              }
-            }}
-            placeholder={identityProofType?.code === "AADHAAR" ? "Enter 12-digit Aadhaar number" : identityProofType?.code === "PAN" ? "Enter PAN (e.g. ABCDE1234F)" : "Enter Document Number"} 
-            disabled={isDocumentUidLocked}
-            style={{ 
-              marginBottom: "4px", 
-              ...(fieldErrors.documentNumber ? { border: "1px solid #d32f2f" } : {}),
-              ...(isDocumentUidLocked ? { backgroundColor: "#f0f0f0", cursor: "not-allowed", color: "#555" } : {})
-            }}
-          />
+          <div style={{ display: "flex", alignItems: "flex-start", gap: "8px", marginBottom: "4px" }}>
+            <div style={{ flex: 1 }}>
+              <TextInput 
+                type={showDocumentNumber ? "text" : "password"}
+                value={documentNumber} 
+                onChange={(e) => { 
+                  if (!isDocumentUidLocked) {
+                    setDocumentNumber(e.target.value); 
+                    setFieldErrors(prev => ({ ...prev, documentNumber: null })); 
+                  }
+                }}
+                onBlur={() => {
+                  if (hasAttemptedSubmit) {
+                    const err = validateDocumentNumber(documentNumber, identityProofType);
+                    if (err) setFieldErrors(prev => ({ ...prev, documentNumber: err }));
+                  }
+                }}
+                placeholder={identityProofType?.code === "AADHAAR" ? "Enter 12-digit Aadhaar number" : identityProofType?.code === "PAN" ? "Enter PAN (e.g. ABCDE1234F)" : "Enter Document Number"} 
+                disabled={isDocumentUidLocked}
+                style={{ 
+                  marginBottom: "0", 
+                  ...(fieldErrors.documentNumber ? { border: "1px solid #d32f2f" } : {}),
+                  ...(isDocumentUidLocked ? { backgroundColor: "#f0f0f0", cursor: "not-allowed", color: "#555" } : {})
+                }}
+              />
+            </div>
+            <button 
+              type="button" 
+              onClick={() => setShowDocumentNumber(!showDocumentNumber)}
+              style={{
+                padding: "8px 16px",
+                backgroundColor: "#f4f9fc",
+                border: "1px solid #ccc",
+                borderRadius: "4px",
+                cursor: "pointer",
+                fontWeight: "500",
+                fontSize: "14px",
+                height: "40px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center"
+              }}
+            >
+              {showDocumentNumber ? "Hide" : "View"}
+            </button>
+          </div>
           {fieldErrors.documentNumber && <div style={errorTextStyle}>{fieldErrors.documentNumber}</div>}
           {identityProofType?.code === "AADHAAR" && !fieldErrors.documentNumber && (
             <span style={{ fontSize: "11px", color: "#999" }}>Format: 12-digit numeric (e.g. 123456789012)</span>
@@ -391,6 +422,23 @@ const Step3_UploadDocuments = ({ t, onNext, onBack, defaultValues }) => {
           )}
         </div>
       </div>
+
+      {/* Declaration Checkbox */}
+      <div style={{ marginTop: "24px", padding: "16px", backgroundColor: fieldErrors.declaration ? "#fef2f2" : "#f8f9fa", borderRadius: "8px", border: fieldErrors.declaration ? "1px solid #d32f2f" : "1px solid #e9ecef" }}>
+        <CheckBox
+          label="I declare that the documents uploaded by me are genuine, valid, and accurate to the best of my knowledge."
+          onChange={(e) => {
+            setIsDeclarationChecked(e.target.checked);
+            if (e.target.checked) {
+              setFieldErrors(prev => ({ ...prev, declaration: null }));
+            }
+          }}
+          checked={isDeclarationChecked}
+          style={isMobileView ? { fontSize: "12px", alignItems: "flex-start" } : { alignItems: "center" }}
+        />
+        {fieldErrors.declaration && <div style={{...errorTextStyle, marginLeft: "28px"}}>{fieldErrors.declaration}</div>}
+      </div>
+
 
       <div style={{ display: "flex", flexDirection: isMobileView ? "column" : "row", justifyContent: "space-between", alignItems: isMobileView ? "stretch" : "center", marginTop: isMobileView ? "24px" : "32px", gap: "12px" }}>
         {!isMobileView && (
