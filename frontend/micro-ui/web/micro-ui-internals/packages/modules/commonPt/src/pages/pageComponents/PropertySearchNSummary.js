@@ -49,11 +49,13 @@ const PropertySearchNSummary = ({ config, onSelect, userType, formData, setError
   const [selectedProperty, setSelectedProperty] = useState(formData?.cpt?.details || null);
 
   const searchFilters =
-    isCitizen && isWsApplication
+    searchPropertyId
+      ? { propertyIds: searchPropertyId }
+      : isCitizen && isWsApplication
       ? { mobileNumber: userMobileNumber }
       : searchMobileNumber
       ? { mobileNumber: searchMobileNumber }
-      : { propertyIds: searchPropertyId };
+      : {};
 
   const { isLoading, isError, error, data: propertyDetails } = Digit.Hooks.pt.usePropertySearch(
     { filters: searchFilters, tenantId: tenantId },
@@ -61,9 +63,11 @@ const PropertySearchNSummary = ({ config, onSelect, userType, formData, setError
       filters: searchFilters,
       tenantId: tenantId,
       enabled:
-        (isCitizen && isWsApplication && userMobileNumber) ||
-        (!isCitizen && (searchPropertyId || searchMobileNumber)) ||
-        (isCitizen && !isWsApplication && (searchPropertyId || searchMobileNumber))
+        searchPropertyId
+          ? true
+          : (isCitizen && isWsApplication && userMobileNumber) ||
+            (!isCitizen && (searchPropertyId || searchMobileNumber)) ||
+            (isCitizen && !isWsApplication && (searchPropertyId || searchMobileNumber))
           ? true
           : false,
       privacy: Digit.Utils.getPrivacyObject(),

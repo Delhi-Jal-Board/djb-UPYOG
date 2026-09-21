@@ -276,6 +276,15 @@ export const createPayloadOfWS = async (data) => {
       status: "ACTIVE",
     });
   }
+  if (connectionDetail?.orgDeptDocument) {
+    let documentType = "OWNER.ORGANIZATION_DOCUMENT";
+    allDocuments.push({
+      documentType: documentType,
+      fileStoreId: connectionDetail?.orgDeptDocument?.fileStoreId || connectionDetail?.orgDeptDocument,
+      documentUid: "",
+      status: "ACTIVE",
+    });
+  }
   let payload = {
     water: !!isWater,
     sewerage: !!isSewerage,
@@ -463,6 +472,24 @@ export const getAllDocumentsForUpdate = (data) => {
       status: "ACTIVE",
     });
   }
+  
+  const connectionDetailsArray = Array.isArray(data?.ConnectionDetails)
+    ? data.ConnectionDetails
+    : data?.ConnectionDetails
+      ? Object.values(data.ConnectionDetails).filter((i) => typeof i === "object")
+      : [];
+  const connectionDetail = connectionDetailsArray?.[0] || data?.ConnectionDetails || {};
+
+  if (connectionDetail?.orgDeptDocument) {
+    let documentType = "OWNER.ORGANIZATION_DOCUMENT";
+    allDocuments.push({
+      documentType: documentType,
+      fileStoreId: connectionDetail?.orgDeptDocument?.fileStoreId || connectionDetail?.orgDeptDocument,
+      documentUid: "",
+      status: "ACTIVE",
+    });
+  }
+
   return allDocuments;
 };
 

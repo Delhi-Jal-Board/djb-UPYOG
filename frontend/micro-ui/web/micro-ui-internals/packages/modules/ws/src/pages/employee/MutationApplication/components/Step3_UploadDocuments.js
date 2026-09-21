@@ -191,7 +191,6 @@ const Step3_UploadDocuments = ({ t, onNext, onBack, defaultValues }) => {
       if (docError) newErrors.documentNumber = docError;
       setFieldErrors(newErrors);
     }
-  }, [identityProofType, documentNumber, identityProofFile, mutationDocFile, hasAttemptedSubmit]);
   }, [identityProofType, documentNumber, identityProofFile, mutationDocFile, isDeclarationChecked, hasAttemptedSubmit]);
 
   const onProceed = () => {
@@ -217,7 +216,6 @@ const Step3_UploadDocuments = ({ t, onNext, onBack, defaultValues }) => {
       identityProofType,
       documentNumber: documentNumber.trim(),
       identityProofDocumentId: identityProofFile,
-      saleDeedDocumentId: mutationDocFile
       saleDeedDocumentId: mutationDocFile,
       isDeclarationChecked
     });

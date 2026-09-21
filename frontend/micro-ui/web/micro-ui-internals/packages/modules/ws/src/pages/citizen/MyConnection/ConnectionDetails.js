@@ -696,7 +696,7 @@ const ConnectionDetails = () => {
             <CardText>{t("WS_PROPERTY_OWNER_SAME_AS_CONN_HOLDERS")}</CardText>
           )}
 
-          <CardHeader styles={{ fontSize: "28px" }}>{t("WS_COMMON_BANK_DETAILS")}</CardHeader>
+          {/* <CardHeader styles={{ fontSize: "28px" }}>{t("WS_COMMON_BANK_DETAILS")}</CardHeader>
           <StatusTable>
             <Row className="border-none" label={t("WS_BANK_NAME")} text={state?.additionalDetails?.bankName || "NA"} />
             <Row className="border-none" label={t("WS_BANK_BRANCH_NAME")} text={state?.additionalDetails?.bankBranchName || "NA"} />
@@ -708,7 +708,7 @@ const ConnectionDetails = () => {
             <Row className="border-none" label={t("WS_BANK_IFSC_CODE")} text={state?.additionalDetails?.ifscCode || "NA"} />
           </StatusTable>
 
-          <CardHeader styles={{ fontSize: "28px" }}>{t("WS_COMMON_BANK_DETAILS")}</CardHeader>
+          <CardHeader styles={{ fontSize: "28px" }}>{t("WS_COMMON_BANK_DETAILS")}</CardHeader> */}
 
           {state?.documents &&
             state?.documents.map((doc, index) => (

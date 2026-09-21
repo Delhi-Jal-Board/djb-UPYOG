@@ -81,6 +81,7 @@ const WSInfoPage = () => {
   ];
 
   const proceedToNext = () => {
+    sessionStorage.removeItem("Digit.PT_CREATE_EMP_WS_NEW_FORM");
     const isEmployee = window.location.href.includes("/employee");
     const baseUrl = isEmployee ? "/digit-ui/employee/ws" : "/digit-ui/citizen/ws";
     if (hasProperty?.code === "YES" && selectedProperty) {
@@ -497,13 +498,13 @@ const WSInfoPage = () => {
             <li>{t("WS_EMPLOYEE_DESIGNATION")}</li>
           </ul>
 
-          <CardSubHeader style={{ marginTop: "0", marginBottom: "0" }}>{t("WS_BANK_DETAILS")}</CardSubHeader>
+          {/*<CardSubHeader style={{ marginTop: "0", marginBottom: "0" }}>{t("WS_BANK_DETAILS")}</CardSubHeader>
           <ul style={{ listStyleType: "disc", marginLeft: "20px", marginBottom: "24px", lineHeight: "2" }}>
             <li>{t("WS_NAME_OF_BANK")}</li>
             <li>{t("WS_NAME_OF_BRANCH")}</li>
             <li>{t("WS_IFSC_CODE")}</li>
             <li>{t("WS_BANK_ACCOUNT_NO")}</li>
-          </ul>
+          </ul>*/}
 
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "0", marginBottom: "16px" }}>
             <CardSubHeader style={{ marginTop: "0", marginBottom: "0" }}>{t("WS_DOCUMENTS")}</CardSubHeader>

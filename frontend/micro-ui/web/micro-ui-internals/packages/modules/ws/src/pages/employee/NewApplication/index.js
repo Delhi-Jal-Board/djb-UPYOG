@@ -941,7 +941,7 @@ const NewApplication = () => {
     ...(isGovernmentEmployee ? [{ sectionId: "governmentEmployee", route: "government-employee", actions: "For Government Employee" }] : []),
     { sectionId: "propertyAddress", route: "property-address", actions: "Property Address" },
     { sectionId: "useDetails", route: "use-details", actions: "Property & Connection Use Details" },
-    { sectionId: "bankDetails", route: "bank-details", actions: "Bank Details" },
+    /*{ sectionId: "bankDetails", route: "bank-details", actions: "Bank Details" },*/
     { sectionId: "documents", route: "documents", actions: "Documents to be Attached" },
     { sectionId: "declaration", route: "declaration", actions: "Declaration/Undertaking" },
     { sectionId: "Review", route: "review", actions: "Review Application" },
@@ -2470,7 +2470,7 @@ const NewApplication = () => {
                 ) : null}
               </SectionCard>
 
-              <SectionCard
+              {/*<SectionCard
                 description="Refund or payment-linked bank account details."
                 isOpen={collapsedSections.bank}
                 onToggle={toggleSection}
@@ -2522,7 +2522,7 @@ const NewApplication = () => {
                     name="bankDetails.bankAccountNumber"
                   />
                 </FieldBlock>
-              </SectionCard>
+              </SectionCard>*/}
 
               <SectionCard
                 description="Documents to be attached. Maximum allowed file size is 5 MB."
@@ -2958,7 +2958,7 @@ const NewApplication = () => {
                 <PreviewItem label="Water Connection Usage Type" value={formValues?.useDetails?.WaterConnectionUsageType} />
               </SectionCard>
 
-              <SectionCard
+              {/*<SectionCard
                 description="Banking information as entered in the form."
                 isOpen={collapsedSections.bank}
                 onToggle={toggleSection}
@@ -2970,7 +2970,7 @@ const NewApplication = () => {
                 <PreviewItem label="Name of the Branch" value={formValues?.bankDetails?.branchName} />
                 <PreviewItem label="IFSC Code" value={formValues?.bankDetails?.ifscCode} />
                 <PreviewItem label="Bank Account No." value={formValues?.bankDetails?.bankAccountNumber} />
-              </SectionCard>
+              </SectionCard>*/}
 
               <SectionCard
                 description="Uploaded supporting documents."

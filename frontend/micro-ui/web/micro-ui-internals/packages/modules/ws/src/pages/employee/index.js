@@ -471,8 +471,13 @@ const BILLSBreadCrumbs = ({ location, showPrint }) => {
     {
       path: "/digit-ui/employee/ws/zro-application",
       label: t("WS_ZRO_VERIFICATION"),
-      show: location.pathname.includes("/ws/zro-application") ? true : false,
-      //isclickable : false,
+      show: location.pathname.includes("/ws/zro-application") || location.pathname.includes("/ws/zro-verification-details") ? true : false,
+      isclickable: location.pathname.includes("/ws/zro-verification-details") ? true : false,
+    },
+    {
+      path: "/digit-ui/employee/ws/zro-verification-details",
+      label: t("WS_APPLICATION_DETAILS_HEADER"),
+      show: location.pathname.includes("/ws/zro-verification-details") ? true : false,
     },
   ];
 

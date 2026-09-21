@@ -68,21 +68,22 @@ const WSApplication = ({ application }) => {
         <SubmitBar label={t("WS_VIEW_DETAILS_LABEL")} />
       </Link>
       {application?.applicationStatus === "PENDING_FOR_PAYMENT" ? (
-        <Link
-          to={{
-            pathname: `/digit-ui/citizen/payment/my-bills/${businessService
-              }/${application?.applicationNo?.includes("DC") ? (stringReplaceAll(application?.connectionNo, "/", "+") || stringReplaceAll(application?.connectionNo, "/", "+")) :
-                (stringReplaceAll(application?.applicationNo, "/", "+") ||
-                  stringReplaceAll(application?.applicationNo, "/", "+"))
-              }`,
-            search: `?workflow=WNS&tenantId=${application?.tenantId}&ConsumerName=${application?.connectionHolders?.map((owner) => owner.name).join(",") || application?.connectionHolders?.map((owner) => owner.name).join(",") || PTData?.Properties?.[0]?.owners?.map((owner) => owner.name).join(",")}&isDisoconnectFlow=${application?.applicationNo?.includes("DC") ? true : false}&consumerCode=${application?.applicationNo?.includes("DC") ? application?.connectionNo : application?.applicationNo}`,
-            state: {},
-          }}
-        >
           <div style={{ marginTop: "10px" }}>
-            <SubmitBar label={t("MAKE_PAYMENT")} />
+            <SubmitBar 
+              label={t("MAKE_PAYMENT")} 
+              onSubmit={() => {
+                history.push({
+                  pathname: `/digit-ui/citizen/payment/my-bills/${businessService
+                    }/${application?.applicationNo?.includes("DC") ? (stringReplaceAll(application?.connectionNo, "/", "+") || stringReplaceAll(application?.connectionNo, "/", "+")) :
+                      (stringReplaceAll(application?.applicationNo, "/", "+") ||
+                        stringReplaceAll(application?.applicationNo, "/", "+"))
+                    }`,
+                  search: `?workflow=WNS&tenantId=${application?.tenantId}&ConsumerName=${application?.connectionHolders?.map((owner) => owner.name).join(",") || application?.connectionHolders?.map((owner) => owner.name).join(",") || PTData?.Properties?.[0]?.owners?.map((owner) => owner.name).join(",")}&isDisoconnectFlow=${application?.applicationNo?.includes("DC") ? true : false}&consumerCode=${application?.applicationNo?.includes("DC") ? application?.connectionNo : application?.applicationNo}`,
+                  state: {},
+                });
+              }}
+            />
           </div>
-        </Link>
       ) : null}
     </Card>
   );

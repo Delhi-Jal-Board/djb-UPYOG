@@ -350,13 +350,13 @@ const CheckPage = ({ onSubmit, value }) => {
         <Row label={t("WS_DIVYANGJAN")} text={`${disability?.isDivyangjan ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}`} />
       </StatusTable>
 
-      <CardSubHeader>{t("WS_BANK_DETAILS")}</CardSubHeader>
+      {/*<CardSubHeader>{t("WS_BANK_DETAILS")}</CardSubHeader>
       <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
         <Row label={t("WS_NAME_OF_BANK")} text={`${t(checkForNA(bankDetails?.bankName))}`} actionButton={<ActionButton onClick={onEdit} />} />
         <Row label={t("WS_NAME_OF_BRANCH")} text={`${t(checkForNA(bankDetails?.bankBranchName || bankDetails?.branchName))}`} />
         <Row label={t("WS_IFSC_CODE")} text={`${t(checkForNA(bankDetails?.ifscCode))}`} />
         <Row label={t("WS_BANK_ACCOUNT_NO")} text={`${t(checkForNA(bankDetails?.bankAccountNumber || bankDetails?.accountNumber))}`} />
-      </StatusTable>
+      </StatusTable>*/}
       {/* <Card style={{ paddingRight: "16px" }}>
         <div style={{ position: "relative" }}>
           <CardHeader styles={{ fontSize: "28px" }}>{t("WS_COMMON_CONNECTION_DETAIL")}</CardHeader>
