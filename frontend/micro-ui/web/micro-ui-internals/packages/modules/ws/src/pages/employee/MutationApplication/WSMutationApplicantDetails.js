@@ -10,6 +10,9 @@ const WSMutationApplicantDetails = ({ t, config, onSelect, formData, formState, 
 
   const formValue = watch();
   const { errors } = localFormState;
+  
+  const selectedReason = formValue?.reasonForNameChange;
+  const isDevolutionOrInheritance = selectedReason?.code === "DEVOLUTION_INHERITANCE" || selectedReason === "DEVOLUTION_INHERITANCE" || String(selectedReason?.code || "").toUpperCase().includes("DEVOLUTION") || String(selectedReason || "").toUpperCase().includes("DEVOLUTION");
 
   const reasonOptions = [
     { code: "SALE_PURCHASE", i18nKey: "Sale / Purchase of Property" },
@@ -143,12 +146,12 @@ const WSMutationApplicantDetails = ({ t, config, onSelect, formData, formState, 
 
         <div>
           <LabelFieldPair style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "4px" }}>
-            <CardLabel style={{ margin: 0, fontWeight: "bold" }}>RELATIONSHIP WITH EXISTING CONSUMER*</CardLabel>
+            <CardLabel style={{ margin: 0, fontWeight: "bold", color: isDevolutionOrInheritance ? "inherit" : "#999" }}>RELATIONSHIP WITH EXISTING CONSUMER{isDevolutionOrInheritance ? "*" : ""}</CardLabel>
             <div className="field" style={{ width: "100%" }}>
               <Controller
                 control={control}
                 name="relationshipWithExistingConsumer"
-                rules={{ required: "Required field" }}
+                rules={{ required: isDevolutionOrInheritance ? "Required field" : false }}
                 render={(props) => (
                   <Dropdown
                     selected={props.value}
@@ -159,6 +162,7 @@ const WSMutationApplicantDetails = ({ t, config, onSelect, formData, formState, 
                     optionKey="i18nKey"
                     t={t}
                     placeholder="Select relationship"
+                    disable={!isDevolutionOrInheritance}
                   />
                 )}
               />
@@ -172,7 +176,7 @@ const WSMutationApplicantDetails = ({ t, config, onSelect, formData, formState, 
       <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
         <div>
           <LabelFieldPair style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "4px" }}>
-            <CardLabel style={{ margin: 0, fontWeight: "bold" }}>REASON FOR NAME CHANGE*</CardLabel>
+            <CardLabel style={{ margin: 0, fontWeight: "bold" }}>REASON FOR NAME CHANGEEEE*</CardLabel>
             <div className="field" style={{ width: "100%" }}>
               <Controller
                 control={control}
@@ -184,6 +188,10 @@ const WSMutationApplicantDetails = ({ t, config, onSelect, formData, formState, 
                     option={reasonOptions}
                     select={(e) => {
                       props.onChange(e);
+                      const isDev = e?.code === "DEVOLUTION_INHERITANCE" || e === "DEVOLUTION_INHERITANCE" || String(e?.code || "").toUpperCase().includes("DEVOLUTION") || String(e || "").toUpperCase().includes("DEVOLUTION");
+                      if (!isDev) {
+                        setLocalValue("relationshipWithExistingConsumer", null);
+                      }
                     }}
                     optionKey="i18nKey"
                     t={t}

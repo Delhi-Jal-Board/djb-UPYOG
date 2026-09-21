@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardHeader, CheckBox, ActionBar, SubmitBar } from "@djb25/digit-ui-react-components";
 
-const Step4_Preview = ({ t, formData, applicationDetails, resolvedServiceType, onBack, onSubmit, isLoading }) => {
+const Step4_Preview = ({ t, formData, applicationDetails, resolvedServiceType, onBack, onSubmit, isLoading, isEditFlow }) => {
   const [agreed, setAgreed] = useState(false);
   const [fee, setFee] = useState(0);
   const [taxHeads, setTaxHeads] = useState([]);
@@ -124,14 +124,16 @@ const Step4_Preview = ({ t, formData, applicationDetails, resolvedServiceType, o
       </div>
 
       {/* Existing Owner */}
-      <div style={{ ...sectionStyle, borderLeft: "4px solid #f29c1f" }}>
-        <h3 style={{ fontSize: isMobileView ? "13px" : "15px", fontWeight: "bold", color: "#f29c1f", marginBottom: "12px" }}>Existing / Previous Owner Details (Masked)</h3>
-        <div style={{ display: "grid", gridTemplateColumns: isMobileView ? "1fr" : "repeat(auto-fill, minmax(150px, 1fr))", gap: isMobileView ? "12px" : "16px", marginBottom: "12px" }}>
-          {infoItem("Registered Name:", oldName)}
-          {infoItem("Registered Phone:", oldPhone)}
+      {!isEditFlow && (
+        <div style={{ ...sectionStyle, borderLeft: "4px solid #f29c1f" }}>
+          <h3 style={{ fontSize: isMobileView ? "13px" : "15px", fontWeight: "bold", color: "#f29c1f", marginBottom: "12px" }}>Existing / Previous Owner Details (Masked)</h3>
+          <div style={{ display: "grid", gridTemplateColumns: isMobileView ? "1fr" : "repeat(auto-fill, minmax(150px, 1fr))", gap: isMobileView ? "12px" : "16px", marginBottom: "12px" }}>
+            {infoItem("Registered Name:", oldName)}
+            {infoItem("Registered Phone:", oldPhone)}
+          </div>
+          {infoItem("Registered Address:", oldAddress)}
         </div>
-        {infoItem("Registered Address:", oldAddress)}
-      </div>
+      )}
 
       {/* New Owner */}
       <div style={{ ...sectionStyle, borderLeft: "4px solid #00497e" }}>
