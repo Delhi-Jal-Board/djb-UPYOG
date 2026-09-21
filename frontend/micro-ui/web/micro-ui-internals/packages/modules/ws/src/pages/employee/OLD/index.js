@@ -91,7 +91,7 @@ const OLDApplication = () => {
           "WSConnectionHolderDetails",
           "WSPropertyLocationDetails",
           "PropertyWaterConnection",
-          ...(isCitizen ? [] : ["WSDjbEmployee"]),
+          "WSDjbEmployee",
           "WSDivyangjan",
           "WSActivationPlumberDetails",
           "WSRoadCuttingDetails",
