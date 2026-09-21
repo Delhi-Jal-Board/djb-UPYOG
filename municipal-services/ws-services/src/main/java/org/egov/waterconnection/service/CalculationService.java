@@ -70,8 +70,7 @@ public class CalculationService {
 		String action = request.getWaterConnection().getProcessInstance().getAction();
 
 		if(WCConstants.SUBMIT_APPLICATION_CONST.equalsIgnoreCase(action)
-				&& !(request.isReconnectRequest() || request.getWaterConnection().getApplicationType().equalsIgnoreCase(WCConstants.WATER_RECONNECTION))
-				&& !(request.isDisconnectRequest() || request.getWaterConnection().getApplicationType().equalsIgnoreCase(WCConstants.DISCONNECT_WATER_CONNECTION))) {
+				&& !(request.isReconnectRequest() || request.getWaterConnection().getApplicationType().equalsIgnoreCase(WCConstants.WATER_RECONNECTION))) {
 
 			triggerCalculation(request, property, action);
 		}

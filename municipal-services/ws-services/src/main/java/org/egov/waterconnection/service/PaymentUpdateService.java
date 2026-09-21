@@ -97,6 +97,7 @@ public class PaymentUpdateService {
 			for (PaymentDetail paymentDetail : paymentRequest.getPayment().getPaymentDetails()) {
 				if (WCConstants.WATER_SERVICE_BUSINESS_ID.equals(paymentDetail.getBusinessService()) ||
 						paymentDetail.getBusinessService().equalsIgnoreCase(config.getReceiptBusinessservice()) || 
+						paymentDetail.getBusinessService().equalsIgnoreCase(config.getReceiptDisconnectionBusinessservice()) ||
 						paymentDetail.getBusinessService().equalsIgnoreCase(config.getReconnectBusinessServiceName()) ||
 						paymentDetail.getBusinessService().equalsIgnoreCase(config.getMutationWSBusinessServiceName()) ||
 						paymentDetail.getBusinessService().equalsIgnoreCase(config.getMutationFeeBusinessServiceName())) {
@@ -159,9 +160,14 @@ public class PaymentUpdateService {
 					repo.updateWaterConnection(waterConnectionRequest, true);
 					log.info("Mutation payment successful. Moving to " + WCConstants.PENDING_APPROVAL_FOR_MUTATION_STATUS_CODE);
 
-				} 
-				
-				else if ("PENDING_FOR_PAYMENT".equalsIgnoreCase(statusBeforePayment)) {
+				} else if (paymentDetail.getBusinessService().equalsIgnoreCase(config.getReceiptDisconnectionBusinessservice()) ||
+						WCConstants.DISCONNECT_WATER_CONNECTION.equalsIgnoreCase(connection.getApplicationType())) {
+
+					waterConnectionRequest.getWaterConnection().setApplicationStatus(WCConstants.PENDING_APPROVAL_FOR_DISCONNECTION);
+					repo.updateWaterConnection(waterConnectionRequest, false);
+					log.info("Disconnection payment successful. Moving to " + WCConstants.PENDING_APPROVAL_FOR_DISCONNECTION);
+
+				} else if ("PENDING_FOR_PAYMENT".equalsIgnoreCase(statusBeforePayment)) {
 
 					waterConnectionRequest.getWaterConnection().setApplicationStatus("PENDING_FOR_DOCUMENT_VERIFICATION");
 					repo.updateWaterConnection(waterConnectionRequest, true);
