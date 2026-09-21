@@ -390,4 +390,10 @@ public class PropertyConfiguration {
     @Value("${persister.update.property.audit.oldData.topic}")
     private String updatePropertyAuditEncTopic;
 
+    // WS Service Config
+    @Value("${egov.ws.host:http://localhost:8090}")
+    private String wsHost;
+
+    @Value("${egov.ws.search.endpoint:/ws-services/wc/_search}")
+    private String wsSearchEndpoint;
 }
