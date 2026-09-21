@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -22,6 +23,7 @@ import org.egov.pt.models.PropertyCriteria;
 import org.egov.pt.models.Unit;
 import org.egov.pt.models.enums.CreationReason;
 import org.egov.pt.models.enums.Status;
+import org.egov.pt.repository.ServiceRequestRepository;
 import org.egov.pt.models.workflow.BusinessService;
 import org.egov.pt.models.workflow.ProcessInstance;
 import org.egov.pt.models.workflow.State;
@@ -32,6 +34,7 @@ import org.egov.pt.util.EncryptionDecryptionUtil;
 import  org.egov.pt.util.PTConstants;
 import org.egov.pt.util.PropertyUtil;
 import org.egov.pt.web.contracts.PropertyRequest;
+import org.egov.pt.web.contracts.RequestInfoWrapper;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -74,6 +77,9 @@ public class PropertyValidator {
 
 	@Autowired
 	EncryptionDecryptionUtil encryptionDecryptionUtil;
+
+	@Autowired
+	private ServiceRequestRepository serviceRequestRepository;
 
     /**
      * Validate the masterData and ctizenInfo of the given propertyRequest
@@ -263,6 +269,51 @@ public class PropertyValidator {
 
 		if (!errorMap.isEmpty())
 			throw new CustomException(errorMap);
+
+		validateWaterConnectionPreExistence(request);
+	}
+
+	/**
+	 * Validates that no applicable New Water Connection application already exists for the property.
+	 * If exists, rejects the property update request.
+	 *
+	 * @param request The PropertyRequest for update
+	 */
+	public void validateWaterConnectionPreExistence(PropertyRequest request) {
+		Property property = request.getProperty();
+		if (property == null || StringUtils.isEmpty(property.getPropertyId()) || StringUtils.isEmpty(property.getTenantId()))
+			return;
+
+		StringBuilder uri = new StringBuilder(configs.getWsHost())
+				.append(configs.getWsSearchEndpoint())
+				.append("?tenantId=").append(property.getTenantId())
+				.append("&propertyIds=").append(property.getPropertyId())
+				.append("&searchType=APPLICATION");
+
+		try {
+			Optional<Object> response = serviceRequestRepository.fetchResult(uri,
+					RequestInfoWrapper.builder().requestInfo(request.getRequestInfo()).build());
+			if (response.isPresent()) {
+				Map<String, Object> responseMap = (Map<String, Object>) response.get();
+				List<Map<String, Object>> connections = (List<Map<String, Object>>) responseMap.get("WaterConnection");
+				if (!CollectionUtils.isEmpty(connections)) {
+					for (Map<String, Object> conn : connections) {
+						String appType = (String) conn.get("applicationType");
+						String appStatus = (String) conn.get("applicationStatus");
+						boolean isNewConn = appType == null || "NEW_WATER_CONNECTION".equalsIgnoreCase(appType);
+						boolean isTerminated = "REJECTED".equalsIgnoreCase(appStatus) || "CANCELLED".equalsIgnoreCase(appStatus);
+						if (isNewConn && !isTerminated) {
+							throw new CustomException("EG_PT_WATER_CONNECTION_EXISTS",
+									"Property cannot be updated because a New Water Connection application already exists for this property.");
+						}
+					}
+				}
+			}
+		} catch (CustomException ce) {
+			throw ce;
+		} catch (Exception e) {
+			log.error("Error checking water connection for property {}: {}", property.getPropertyId(), e.getMessage());
+		}
 	}
 
     /**
