@@ -792,7 +792,7 @@ export const createPayloadOfWSDisconnection = async (data, storeData, service) =
       status: storeData?.applicationData?.status,
       connectionNo: storeData?.applicationData?.connectionNo,
       connectionHolders: storeData?.applicationData?.connectionHolders,
-      applicationType: "NEW_WATER_CONNECTION",
+      applicationType: "DISCONNECT_WATER_CONNECTION",
       dateEffectiveFrom: convertDateToEpoch(data?.date),
       isdisconnection: true,
       isDisconnectionTemporary: data?.type?.value?.code === "Temporary" || data?.type?.value?.code === "TEMPORARY" ? true : false,
@@ -818,6 +818,7 @@ export const createPayloadOfWSDisconnection = async (data, storeData, service) =
       waterSource: storeData.applicationData.waterSource || null,
       processInstance: {
         ...storeData?.applicationData?.processInstance,
+        businessService: "DisconnectWSConnection",
         action: "INITIATE",
       },
       channel: user?.toUpperCase() === "CITIZEN" ? "CITIZEN" : "CFC_COUNTER",
@@ -839,7 +840,7 @@ export const createPayloadOfWSDisconnection = async (data, storeData, service) =
       status: storeData?.applicationData?.status,
       connectionNo: storeData?.applicationData?.connectionNo,
       connectionHolders: storeData?.applicationData?.connectionHolders,
-      applicationType: "NEW_WATER_CONNECTION",
+      applicationType: "DISCONNECT_SEWERAGE_CONNECTION",
       dateEffectiveFrom: convertDateToEpoch(data?.date),
       isdisconnection: true,
       isDisconnectionTemporary: data?.type?.value?.code === "Temporary" ? true : false,
@@ -867,6 +868,7 @@ export const createPayloadOfWSDisconnection = async (data, storeData, service) =
       waterSource: storeData.applicationData.waterSource || null,
       processInstance: {
         ...storeData?.applicationData?.processInstance,
+        businessService: "DisconnectSWConnection",
         action: "INITIATE",
       },
       channel: user?.toUpperCase() === "CITIZEN" ? "CITIZEN" : "CFC_COUNTER",
@@ -1327,6 +1329,9 @@ export const getBusinessService = (data, applicationDetails) => {
   const appType = data?.applicationType || applicationDetails?.applicationData?.applicationType || applicationDetails?.applicationType;
   if (appType?.includes("MUTATION") || data?.serviceType?.includes("MUTATION") || data?.businessService === "WS.MUTATION") {
     return data?.service === "SEWERAGE" || data?.serviceType === "SEWERAGE" ? "SW.MUTATION" : "WS.MUTATION";
+  }
+  if (appType?.includes("DISCONNECT") || data?.serviceType?.includes("DISCONNECT") || data?.businessService === "WS.DISCONNECTION") {
+    return data?.service === "SEWERAGE" || data?.serviceType === "SEWERAGE" ? "SW.DISCONNECTION" : "WS.DISCONNECTION";
   }
   if (data?.service == "WATER") return "WS.ONE_TIME_FEE";
   else return "SW.ONE_TIME_FEE";

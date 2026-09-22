@@ -79,12 +79,14 @@ const GetDisconnectionDetails = () => {
     if (workflowDetails?.data?.nextActions) workflowDetails.data.nextActions = [];
   }
 
+  const applicationNo = applicationDetails?.applicationData?.applicationNo || applicationDetails?.applicationNo || applicationNumber;
+
   workflowDetails?.data?.nextActions?.forEach((action) => {
     if (action?.action === "PAY") {
       action.redirectionUrll = {
-        pathname: `${serviceType == "WATER" ? "WS" : "SW"}/${applicationDetails?.applicationData?.connectionNo}/${applicationDetails?.tenantId}?tenantId=${applicationDetails?.tenantId
-          }&ISWSAPP&applicationNumber=${applicationDetails?.applicationData?.connectionNo}&IsDisconnectionFlow=${true}`,
-        state: applicationDetails?.tenantId,
+        pathname: `${serviceType == "WATER" ? "WS.DISCONNECTION" : "SW.DISCONNECTION"}/${applicationNo}/${applicationDetails?.tenantId || tenantId}?tenantId=${applicationDetails?.tenantId || tenantId
+          }&ISWSAPP&applicationNumber=${applicationNo}&IsDisconnectionFlow=${true}`,
+        state: applicationDetails?.tenantId || tenantId,
       };
     }
   });
@@ -92,9 +94,9 @@ const GetDisconnectionDetails = () => {
   workflowDetails?.data?.actionState?.nextActions?.forEach((action) => {
     if (action?.action === "PAY") {
       action.redirectionUrll = {
-        pathname: `${serviceType == "WATER" ? "WS" : "SW"}/${applicationDetails?.applicationData?.connectionNo}/${applicationDetails?.tenantId}?tenantId=${applicationDetails?.tenantId
-          }&ISWSAPP&applicationNumber=${applicationDetails?.applicationData?.connectionNo}&IsDisconnectionFlow=${true}`,
-        state: applicationDetails?.tenantId,
+        pathname: `${serviceType == "WATER" ? "WS.DISCONNECTION" : "SW.DISCONNECTION"}/${applicationNo}/${applicationDetails?.tenantId || tenantId}?tenantId=${applicationDetails?.tenantId || tenantId
+          }&ISWSAPP&applicationNumber=${applicationNo}&IsDisconnectionFlow=${true}`,
+        state: applicationDetails?.tenantId || tenantId,
       };
     }
   });
