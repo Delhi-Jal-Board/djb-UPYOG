@@ -60,7 +60,7 @@ const checkExistStatus = async (processInstances) => {
 };
 
 const checkFeeEstimateVisible = async (wsDatas) => {
-  const dataDetails = wsDatas?.[0]?.applicationType?.includes("NEW") || wsDatas?.[0]?.applicationType?.includes("MUTATION");
+  const dataDetails = wsDatas?.[0]?.applicationType?.includes("NEW") || wsDatas?.[0]?.applicationType?.includes("MUTATION") || wsDatas?.[0]?.applicationType?.includes("DISCONNECT");
   return dataDetails;
 };
 
@@ -75,8 +75,8 @@ export const WSSearch = {
     return response;
   },
 
-  searchBills: async (tenantId, consumercodes) => {
-    const response = await Digit.PaymentService.searchBill(tenantId, { consumerCode: consumercodes, Service: "WS.ONE_TIME_FEE" });
+  searchBills: async (tenantId, consumercodes, service = "WS.ONE_TIME_FEE") => {
+    const response = await Digit.PaymentService.searchBill(tenantId, { consumerCode: consumercodes, Service: service });
     return response;
   },
 
@@ -181,7 +181,16 @@ export const WSSearch = {
 
     const properties = await WSSearch.property(tenantId, propertyfilter);
 
-    const billData = await WSSearch.searchBills(tenantId, consumercodes);
+    let billData;
+    // Handle bill search for disconnection applications with dedicated business service
+    if (wsData?.[0]?.applicationType?.includes("DISCONNECT")) {
+      const cleanConsumerCodes = consumercodes.endsWith(",") ? consumercodes.slice(0, -1) : consumercodes;
+      const billService = serviceType == "WATER" ? "WS.DISCONNECTION" : "SW.DISCONNECTION";
+      billData = await WSSearch.searchBills(tenantId, cleanConsumerCodes, billService);
+    } else {
+      // Retain original bill search flow for new connection, mutation, and other application types
+      billData = await WSSearch.searchBills(tenantId, consumercodes);
+    }
 
     if (filters?.applicationNumber) businessIds = filters?.applicationNumber;
 
@@ -219,8 +228,11 @@ export const WSSearch = {
     };
 
     tenantId = wsData?.[0]?.tenantId ? wsData?.[0]?.tenantId : tenantId;
-    const serviceTypeOfData =
-      serviceType == "WATER"
+    // Set dedicated disconnection business service for disconnection flow; retain existing logic for other services
+    const isDisconnection = wsData?.[0]?.applicationType?.includes("DISCONNECT");
+    const serviceTypeOfData = isDisconnection
+      ? (serviceType == "WATER" ? "WS.DISCONNECTION" : "SW.DISCONNECTION")
+      : (serviceType == "WATER"
         ? workflowDetails?.ProcessInstances[0]?.businessService === "WSReconnection"
           ? "WSReconnection"
           : wsData?.[0]?.applicationType?.includes("MUTATION")
@@ -230,7 +242,7 @@ export const WSSearch = {
           ? "SWReconnection"
           : wsData?.[0]?.applicationType?.includes("MUTATION")
             ? "SW.MUTATION"
-            : "SW.ONE_TIME_FEE";
+            : "SW.ONE_TIME_FEE");
     const collectionNumber = filters?.applicationNumber;
 
     let fetchBillData = {},
@@ -2666,8 +2678,8 @@ export const WSSearch = {
     const workflowDetails = await WSSearch.workflowDataDetails(tenantId, businessIds);
 
     tenantId = wsData?.[0]?.tenantId ? wsData?.[0]?.tenantId : tenantId;
-    const serviceTypeOfData = serviceType == "WATER" ? "WS" : "SW";
-    const collectionNumber = wsData?.[0]?.connectionNo;
+    const serviceTypeOfData = serviceType == "WATER" ? "WS.DISCONNECTION" : "SW.DISCONNECTION";
+    const collectionNumber = filters?.applicationNumber || wsData?.[0]?.applicationNo || wsData?.[0]?.connectionNo;
 
     const fetchBillData = await WSSearch.fetchBillData({ tenantId, serviceTypeOfData, collectionNumber });
 

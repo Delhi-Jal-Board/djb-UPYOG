@@ -58,11 +58,8 @@ const WSApplicationDetails = () => {
   };
   Digit.Hooks.useClickOutside(menuRef, closeModal, showOptions);
 
-  // const fetchBillParams = { consumerCode: data?.WaterConnection?.[0]?.connectionNo };
   const fetchBillParams = {
-    consumerCode: applicationNobyData?.includes("DC")
-      ? data?.WaterConnection?.[0]?.connectionNo || data?.SewerageConnections?.[0]?.connectionNo
-      : data?.WaterConnection?.[0]?.applicationNo || data?.SewerageConnections?.[0]?.applicationNo,
+    consumerCode: data?.WaterConnection?.[0]?.applicationNo || data?.SewerageConnections?.[0]?.applicationNo,
   };
 
   const { data: generatePdfKey } = Digit.Hooks.useCommonMDMS(tenantId, "common-masters", "ReceiptKey", {
@@ -76,12 +73,12 @@ const WSApplicationDetails = () => {
     {
       businessService: applicationNobyData?.includes("SW")
         ? applicationNobyData?.includes("DC")
-          ? "SW"
+          ? "SW.DISCONNECTION"
           : isMutation
           ? "SW.MUTATION"
           : "SW.ONE_TIME_FEE"
         : applicationNobyData?.includes("DC")
-        ? "WS"
+        ? "WS.DISCONNECTION"
         : isMutation
         ? "WS.MUTATION"
         : "WS.ONE_TIME_FEE",
