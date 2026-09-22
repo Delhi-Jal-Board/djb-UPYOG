@@ -15,7 +15,7 @@ import {
 } from "@djb25/digit-ui-react-components";
 import React, { useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 //import PropertyDocument from "../../pageComponents/PropertyDocument";
 import WSWFApplicationTimeline from "../../pageComponents/WSWFApplicationTimeline";
 import WSDocument from "../../pageComponents/WSDocument";
@@ -35,6 +35,7 @@ const checkForNA = (value) => {
 
 const WSApplicationDetails = () => {
   const { t } = useTranslation();
+  const history = useHistory();
   const menuRef = useRef();
   const user = Digit.UserService.getUser();
   const userMobileNumber = user?.info?.userName?.match(/^[0-9]{10}$/) ? user?.info?.userName : user?.info?.mobileNumber;
@@ -127,8 +128,7 @@ const WSApplicationDetails = () => {
     applicationStatus !== "PENDING_APPROVAL_FOR_MUTATION" &&
     applicationStatus !== "PENDING_FOR_PAYMENT" &&
     applicationStatus !== "PENDING_FOR_FINAL_PAYMENT" &&
-    applicationStatus !== "PENDING_FOR_ADDITIONAL_PAYMENT" &&
-    applicationStatus !== "PENDING_FOR_CITIZEN_ACTION"
+    applicationStatus !== "PENDING_FOR_ADDITIONAL_PAYMENT"
       ? true
       : false;
 
@@ -1057,30 +1057,30 @@ const WSApplicationDetails = () => {
               data?.SewerageConnections?.[0]?.applicationStatus === "PENDING_FOR_PAYMENT" ||
               data?.SewerageConnections?.[0]?.applicationStatus === "PENDING_FOR_FINAL_PAYMENT" ||
               data?.SewerageConnections?.[0]?.applicationStatus === "PENDING_FOR_ADDITIONAL_PAYMENT" ? (
-              <div style={{ marginTop: "10px" }}>
-                <SubmitBar 
-                  label={t("MAKE_PAYMENT")} 
-                  onSubmit={() => {
-                    history.push({
-                      pathname: `/digit-ui/citizen/payment/my-bills/${paymentDetails?.data?.Bill?.[0]?.businessService}/${stringReplaceAll(
-                        paymentDetails?.data?.Bill?.[0]?.consumerCode,
-                        "/",
-                        "+"
-                      )}`,
-                      search: `?workflow=WNS&tenantId=${
-                        data?.WaterConnection?.[0]?.tenantId || data?.SewerageConnections?.[0]?.tenantId
-                      }&ConsumerName=${
-                        data?.WaterConnection?.[0]?.connectionHolders?.map((owner) => owner.name).join(",") ||
-                        data?.SewerageConnections?.[0]?.connectionHolders?.map((owner) => owner.name).join(",") ||
-                        PTData?.Properties?.[0]?.owners?.map((owner) => owner.name).join(",")
-                      }&isDisoconnectFlow=${applicationNobyData?.includes("DC") ? true : false}&consumerCode=${
-                        paymentDetails?.data?.Bill?.[0]?.consumerCode
-                      }`,
-                      state: { fromApplicationDetails: true },
-                    });
-                  }}
-                />
-              </div>
+                <div style={{ marginTop: "10px" }}>
+                  <SubmitBar
+                    label={t("MAKE_PAYMENT")}
+                    onSubmit={() => {
+                      history.push({
+                        pathname: `/digit-ui/citizen/payment/my-bills/${paymentDetails?.data?.Bill?.[0]?.businessService}/${stringReplaceAll(
+                          paymentDetails?.data?.Bill?.[0]?.consumerCode,
+                          "/",
+                          "+"
+                        )}`,
+                        search: `?workflow=WNS&tenantId=${
+                          data?.WaterConnection?.[0]?.tenantId || data?.SewerageConnections?.[0]?.tenantId
+                        }&ConsumerName=${
+                          data?.WaterConnection?.[0]?.connectionHolders?.map((owner) => owner.name).join(",") ||
+                          data?.SewerageConnections?.[0]?.connectionHolders?.map((owner) => owner.name).join(",") ||
+                          PTData?.Properties?.[0]?.owners?.map((owner) => owner.name).join(",")
+                        }&isDisoconnectFlow=${applicationNobyData?.includes("DC") ? true : false}&consumerCode=${
+                          paymentDetails?.data?.Bill?.[0]?.consumerCode
+                        }`,
+                        state: { fromApplicationDetails: true },
+                      });
+                    }}
+                  />
+                </div>
               ) : null}
               {(!data?.WaterConnection?.[0]?.applicationType.includes("DISCONNECT") &&
                 data?.WaterConnection?.[0]?.applicationStatus.includes("PENDING_FOR_CITIZEN_ACTION")) ||
