@@ -399,6 +399,18 @@ const BILLSBreadCrumbs = ({ location, showPrint }) => {
       show: location.pathname.includes("/new-disconnection/docsrequired") ? true : false,
     },
     {
+      path: `/digit-ui/employee/ws/new-disconnection/k-number`,
+      label: `${t("WS_NEW_DISCONNECTION_DOCS_REQUIRED")} / K Number Verification`,
+      show: location.pathname.includes("/new-disconnection/k-number") ? true : false,
+      isBack: true,
+    },
+    {
+      path: `/digit-ui/employee/ws/new-disconnection/consumer-details`,
+      label: `${t("WS_NEW_DISCONNECTION_DOCS_REQUIRED")} / Consumer Details`,
+      show: location.pathname.includes("/new-disconnection/consumer-details") ? true : false,
+      isBack: true,
+    },
+    {
       path: `/digit-ui/employee/ws/new-disconnection/application-form`,
       label: isMobile
         ? `${t("WS_NEW_DISCONNECTION_DOCS_REQUIRED")} / ${t("WS_NEW_DISCONNECTION_APPLICATION")}`
@@ -632,6 +644,8 @@ const App = ({ path }) => {
     window.location.href.includes("/employee/ws/modify-details") ||
     window.location.href.includes("/employee/ws/ws-response") ||
     window.location.href.includes("/employee/ws/new-disconnection/application-form") ||
+    window.location.href.includes("/employee/ws/new-disconnection/k-number") ||
+    window.location.href.includes("/employee/ws/new-disconnection/consumer-details") ||
     window.location.href.includes("/employee/ws/ws-disconnection-response") ||
     window.location.href.includes("/employee/ws/consumption-details") ||
     window.location.href.includes("/employee/ws/edit-disconnection-application") ||

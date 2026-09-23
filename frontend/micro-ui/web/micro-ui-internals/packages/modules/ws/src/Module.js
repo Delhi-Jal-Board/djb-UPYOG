@@ -26,6 +26,8 @@ import WSActivationSupportingDocuments from "./pageComponents/WSActivationSuppor
 import WSDocumentsEmployee from "./pageComponents/WSDocumentsEmployee";
 import WSEditConnectionDetails from "./pageComponents/WSEditConnectionDetails";
 import WSDisconnectionDocsRequired from "./pageComponents/WSDisconnectionDocsRequired";
+import WSDisconnectionKNumber from "./pageComponents/WSDisconnectionKNumber";
+import WSDisconnectionConsumerDetails from "./pageComponents/WSDisconnectionConsumerDetails";
 import WSDisconnectionForm from "./pageComponents/WSDisconnectionForm";
 import WSRestorationForm from "./pageComponents/WSRestorationForm";
 import WSDisconnectionDocumentsForm from "./pageComponents/WSDisconnectionDocumentsForm";
@@ -202,6 +204,8 @@ const componentsToRegister = {
   WSDocumentsEmployee,
   WSEditConnectionDetails,
   WSDisconnectionDocsRequired,
+  WSDisconnectionKNumber,
+  WSDisconnectionConsumerDetails,
   WSDisconnectionForm,
   WSRestorationForm,
   WSDisconnectionDocumentsForm,

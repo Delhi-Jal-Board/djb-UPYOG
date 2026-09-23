@@ -20,9 +20,10 @@ import {
   ActionBar,
   Dropdown,
   InfoIcon,
+  Card,
 } from "@djb25/digit-ui-react-components";
 import React, { useEffect, useState } from "react";
-import { useHistory, useRouteMatch } from "react-router-dom";
+import { useHistory, useLocation, useRouteMatch } from "react-router-dom";
 import DisconnectTimeline from "../components/DisconnectTimeline";
 import { stringReplaceAll, createPayloadOfWSDisconnection, updatePayloadOfWSDisconnection, convertDateToEpoch } from "../utils";
 import { addDays, format } from "date-fns";
@@ -33,7 +34,17 @@ const WSDisconnectionForm = ({ t, config, onSelect, userType }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
 
   const isMobile = window.Digit.Utils.browser.isMobile();
-  const applicationData = Digit.SessionStorage.get("WS_DISCONNECTION");
+  const storedApplicationData = Digit.SessionStorage.get("WS_DISCONNECTION") || {};
+  const location = useLocation();
+  const applicationData = {
+    ...storedApplicationData,
+    applicationData: location.state?.connection || storedApplicationData.applicationData || {},
+  };
+  const serviceType =
+    applicationData?.serviceType ||
+    applicationData?.applicationData?.serviceType ||
+    applicationData?.applicationData?.additionalDetails?.serviceType?.code ||
+    (applicationData?.applicationData?.sewerage ? "SEWERAGE" : "WATER");
   const history = useHistory();
   const match = useRouteMatch();
 
@@ -161,7 +172,7 @@ const WSDisconnectionForm = ({ t, config, onSelect, userType }) => {
         setError(null);
       }, 3000);
     } else {
-      const payload = await createPayloadOfWSDisconnection(data, applicationData, applicationData?.applicationData?.serviceType);
+      const payload = await createPayloadOfWSDisconnection(data, applicationData, serviceType);
       if (payload?.WaterConnection?.water) {
         if (waterMutation) {
           setIsEnableLoader(true);
@@ -379,168 +390,234 @@ const WSDisconnectionForm = ({ t, config, onSelect, userType }) => {
       </React.Fragment>
     );
   }
-  return (
-    <div>
-      {/* <Header styles={{fontSize: "32px", marginLeft: "18px"}}>{t("WS_WATER_AND_SEWERAGE_DISCONNECTION")}</Header> */}
-      <FormStep config={config} onSelect={handleEmployeeSubmit} onSkip={onSkip} t={t}>
-        <CardSectionHeader>{t("CS_TITLE_APPLICATION_DETAILS")}</CardSectionHeader>
-        <StatusTable>
-          <Row
-            key={t("PDF_STATIC_LABEL_CONSUMER_NUMBER_LABEL")}
-            label={`${t("PDF_STATIC_LABEL_CONSUMER_NUMBER_LABEL")}`}
-            text={applicationData?.applicationData?.connectionNo}
-            className="border-none"
-          />
-        </StatusTable>
-        <CardSectionHeader>
-          {t("WS_DISCONNECTION_TYPE") + "*"}
-          <div className={`tooltip`} style={{ marginLeft: "8px" }}>
-            <InfoIcon />
-            <span
-              className="tooltiptext"
-              style={{
-                whiteSpace: Digit.Utils.browser.isMobile() ? "unset" : "nowrap",
-                fontSize: "medium",
-                width: Digit.Utils.browser.isMobile() && window.location.href.includes("/employee") ? "200px" : "",
-              }}
-            >
-              {`${t(`WS_DISCONNECTION_PERMANENT_TOOLTIP`)}`}
-              <br />
-              <br />
-              {`${t(`WS_DISCONNECTION_TEMPORARY_TOOLTIP`)}`}
-            </span>
-          </div>
-        </CardSectionHeader>
-        <RadioButtons
-          t={t}
-          options={disconnectionTypeList}
-          optionsKey="i18nKey"
-          value={disconnectionData.type?.value?.code}
-          selectedOption={disconnectionData.type?.value}
-          isMandatory={false}
-          onSelect={(val) => filedChange({ code: "type", value: val })}
-          labelKey="WS_DISCONNECTION_TYPE"
-          style={{ display: "flex", gap: "0px 3rem" }}
-          inputStyle={isMobile ? { marginLeft: "unset" } : {}}
-        />
 
-        <LabelFieldPair>
-          <CardLabel style={{ marginTop: "-5px", fontWeight: "700", display: "inline" }} className="card-label-smaller">
-            {t("WS_DISCONNECTION_PROPOSED_DATE") + "*"}
-            <div className={`tooltip`} style={{ position: "absolute", marginLeft: "4px" }}>
-              <InfoIcon />
-              <span
-                className="tooltiptext"
-                style={{
-                  whiteSpace: Digit.Utils.browser.isMobile() ? "unset" : "nowrap",
-                  fontSize: "medium",
-                }}
-              >
-                {t("SHOULD_BE_DATE") + " " + slaData?.slaDays + " " + t("DAYS_OF_APPLICATION_DATE")}
-              </span>
-            </div>
-          </CardLabel>
-          <div className="field">
-            <DatePicker
-              date={disconnectionData?.date}
-              onChange={(date) => {
-                setDisconnectionData({ ...disconnectionData, date: date });
-              }}
-            ></DatePicker>
+  const isMobileForm = window.Digit.Utils.browser.isMobile();
+  
+  const sectionStyle = {
+    padding: isMobileForm ? "12px" : "20px",
+    backgroundColor: "#f9f9f9",
+    borderRadius: "8px",
+    borderLeft: "4px solid #00497e",
+    marginBottom: "24px",
+    width: "100%",
+  };
+
+  const headerFlexStyle = {
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    marginBottom: "16px",
+  };
+
+  const numberBadgeStyle = {
+    width: "32px",
+    height: "32px",
+    borderRadius: "50%",
+    backgroundColor: "#00497e",
+    color: "#fff",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontWeight: "bold",
+    fontSize: "14px",
+    flexShrink: 0,
+  };
+
+  const fieldStyle = {
+    display: "flex",
+    flexDirection: isMobileForm ? "column" : "row",
+    alignItems: isMobileForm ? "flex-start" : "center",
+    justifyContent: "space-between",
+    gap: "10px",
+    width: "100%",
+    marginBottom: "16px",
+  };
+
+  const labelStyle = {
+    fontWeight: "700",
+    color: "#0B0C0C",
+    fontSize: "16px",
+    margin: 0,
+    display: "flex",
+    alignItems: "center",
+    width: isMobileForm ? "100%" : "30%",
+  };
+
+  const inputWrapperStyle = {
+    width: isMobileForm ? "100%" : "65%",
+  };
+
+  return (
+    <div style={{ width: "100%" }}>
+      <Card style={{ padding: isMobileForm ? "12px" : "24px" }}>
+        {/* 1. Application Details */}
+        <div style={sectionStyle}>
+          <div style={headerFlexStyle}>
+            <div style={numberBadgeStyle}>1</div>
+            <CardSectionHeader style={{ margin: 0 }}>{t("CS_TITLE_APPLICATION_DETAILS")}</CardSectionHeader>
           </div>
-        </LabelFieldPair>
-        {disconnectionData.type?.value?.code === "Temporary" ? (
-          <LabelFieldPair>
-            <CardLabel style={{ marginTop: "-5px", fontWeight: "700", display: "inline" }} className="card-label-smaller">
-              {t("WS_DISCONNECTION_PROPOSED_END_DATE") + "*"}
-              <div className={`tooltip`} style={{ position: "absolute", marginLeft: "4px" }}>
+          <StatusTable>
+            <Row
+              key={t("PDF_STATIC_LABEL_CONSUMER_NUMBER_LABEL")}
+              label={t("PDF_STATIC_LABEL_CONSUMER_NUMBER_LABEL")}
+              text={applicationData?.applicationData?.connectionNo}
+              className="border-none"
+            />
+          </StatusTable>
+        </div>
+
+        {/* 2. Disconnection Type */}
+        <div style={sectionStyle}>
+          <div style={headerFlexStyle}>
+            <div style={numberBadgeStyle}>2</div>
+            <CardSectionHeader style={{ margin: 0 }}>
+              {t("WS_DISCONNECTION_TYPE")} *
+              <div className="tooltip" style={{ marginLeft: "8px", position: "relative", top: "2px", display: "inline-block" }}>
                 <InfoIcon />
-                <span
-                  className="tooltiptext"
-                  style={{
-                    whiteSpace: Digit.Utils.browser.isMobile() ? "unset" : "nowrap",
-                    fontSize: "medium",
-                  }}
-                >
-                  {t("SHOULD_BE_DATE") + " " + " " + t("DAYS_OF_APPLICATION_END_DATE")}
+                <span className="tooltiptext" style={{ whiteSpace: isMobileForm ? "unset" : "nowrap", fontSize: "medium", width: isMobileForm ? "250px" : "400px" }}>
+                  {t("WS_DISCONNECTION_PERMANENT_TOOLTIP")}
+                  <br /><br />
+                  {t("WS_DISCONNECTION_TEMPORARY_TOOLTIP")}
                 </span>
               </div>
-            </CardLabel>
-            <div className="field">
-              <DatePicker
-                date={disconnectionData?.endDate}
-                onChange={(date) => {
-                  setDisconnectionData({ ...disconnectionData, endDate: date });
-                }}
-              ></DatePicker>
-            </div>
-          </LabelFieldPair>
-        ) : (
-          ""
-        )}
-        <LabelFieldPair>
-          <CardLabel style={{ marginTop: "-5px", fontWeight: "700", display: "inline" }} className="card-label-smaller">
-            {t("WS_DISCONNECTION_REASON") + "*"}
-          </CardLabel>
-          <div className="field">
-            <Dropdown
-              option={disconnectionReasonList}
-              isMandatory={false}
-              optionKey="i18nKey"
+            </CardSectionHeader>
+          </div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "16px", paddingLeft: isMobileForm ? "0" : "42px" }}>
+            <RadioButtons
               t={t}
-              name={"reason"}
-              value={disconnectionData.reason?.value?.code}
-              selectedOption={disconnectionData.reason?.value}
-              select={(e) => filedChange({ code: "reason", value: e })}
-              labelKey="WS_DISCONNECTION_REASON"
+              options={disconnectionTypeList}
+              optionsKey="i18nKey"
+              value={disconnectionData.type?.value?.code}
+              selectedOption={disconnectionData.type?.value}
+              isMandatory={false}
+              onSelect={(val) => filedChange({ code: "type", value: val })}
+              labelKey="WS_DISCONNECTION_TYPE"
+              style={{ display: "flex", flexWrap: "wrap", gap: "1rem", margin: 0 }}
+              inputStyle={isMobileForm ? { marginLeft: "unset" } : {}}
             />
           </div>
-        </LabelFieldPair>
-        <CardSectionHeader style={{ marginBottom: "8px" }}>{t("WS_DISCONNECTION_DOCUMENTS") + "*"}</CardSectionHeader>
-        {wsDocs?.DisconnectionDocuments?.map((document, index) => {
-          return (
-            <SelectDocument
-              key={index}
-              document={document}
-              t={t}
-              error={docError}
-              setError={setDocError}
-              setDocuments={setDocuments}
-              documents={documents}
-              setCheckRequiredFields={setCheckRequiredFields}
-            />
-          );
-        })}
+        </div>
+
+        {/* 3. Proposed Date */}
+        <div style={sectionStyle}>
+          <div style={headerFlexStyle}>
+            <div style={numberBadgeStyle}>3</div>
+            <CardSectionHeader style={{ margin: 0 }}>{t("WS_DISCONNECTION_PROPOSED_DATE")}</CardSectionHeader>
+          </div>
+          <div style={{ paddingLeft: isMobileForm ? "0" : "42px" }}>
+            <div style={fieldStyle}>
+              <h4 style={labelStyle}>
+                {t("WS_DISCONNECTION_PROPOSED_DATE")} *
+                <div className="tooltip" style={{ marginLeft: "8px", position: "relative", top: "2px" }}>
+                  <InfoIcon />
+                  <span className="tooltiptext" style={{ whiteSpace: isMobileForm ? "unset" : "nowrap", fontSize: "medium", width: isMobileForm ? "200px" : "300px" }}>
+                    {t("SHOULD_BE_DATE") + " " + slaData?.slaDays + " " + t("DAYS_OF_APPLICATION_DATE")}
+                  </span>
+                </div>
+              </h4>
+              <div style={inputWrapperStyle}>
+                <DatePicker date={disconnectionData?.date} onChange={(date) => setDisconnectionData({ ...disconnectionData, date: date })} />
+              </div>
+            </div>
+
+            {disconnectionData.type?.value?.code === "Temporary" && (
+              <div style={fieldStyle}>
+                <h4 style={labelStyle}>
+                  {t("WS_DISCONNECTION_PROPOSED_END_DATE")} *
+                  <div className="tooltip" style={{ marginLeft: "8px", position: "relative", top: "2px" }}>
+                    <InfoIcon />
+                    <span className="tooltiptext" style={{ whiteSpace: isMobileForm ? "unset" : "nowrap", fontSize: "medium", width: isMobileForm ? "200px" : "300px" }}>
+                      {t("SHOULD_BE_DATE") + " " + t("DAYS_OF_APPLICATION_END_DATE")}
+                    </span>
+                  </div>
+                </h4>
+                <div style={inputWrapperStyle}>
+                  <DatePicker date={disconnectionData?.endDate} onChange={(date) => setDisconnectionData({ ...disconnectionData, endDate: date })} />
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* 4. Reason */}
+        <div style={sectionStyle}>
+          <div style={headerFlexStyle}>
+            <div style={numberBadgeStyle}>4</div>
+            <CardSectionHeader style={{ margin: 0 }}>{t("WS_DISCONNECTION_REASON")} *</CardSectionHeader>
+          </div>
+          <div style={{ paddingLeft: isMobileForm ? "0" : "42px" }}>
+            <div style={fieldStyle}>
+              <h4 style={labelStyle}>{t("WS_DISCONNECTION_REASON")} *</h4>
+              <div style={inputWrapperStyle}>
+                <Dropdown
+                  option={disconnectionReasonList}
+                  isMandatory={false}
+                  optionKey="i18nKey"
+                  t={t}
+                  name="reason"
+                  value={disconnectionData.reason?.value?.code}
+                  selectedOption={disconnectionData.reason?.value}
+                  select={(e) => filedChange({ code: "reason", value: e })}
+                  labelKey="WS_DISCONNECTION_REASON"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 5. Documents */}
+        <div style={sectionStyle}>
+          <div style={headerFlexStyle}>
+            <div style={numberBadgeStyle}>5</div>
+            <CardSectionHeader style={{ margin: 0 }}>{t("WS_DISCONNECTION_DOCUMENTS")} *</CardSectionHeader>
+          </div>
+          <div style={{ paddingLeft: isMobileForm ? "0" : "42px" }}>
+            {wsDocs?.DisconnectionDocuments?.map((document, index) => (
+              <SelectDocument
+                key={index}
+                document={document}
+                t={t}
+                error={docError}
+                setError={setDocError}
+                setDocuments={setDocuments}
+                documents={documents}
+                setCheckRequiredFields={setCheckRequiredFields}
+                isMobileForm={isMobileForm}
+              />
+            ))}
+          </div>
+        </div>
+
         {docError && (
-          <Toast
-            error={docError?.key === "error" ? true : false}
-            label={t(docError?.message)}
-            warning={docError?.warning}
-            onClose={() => setDocError(null)}
-          />
+          <Toast error={docError?.key === "error"} label={t(docError?.message)} warning={docError?.warning} onClose={() => setDocError(null)} />
         )}
         {error && (
-          <Toast error={error?.key === "error" ? true : false} label={t(error?.message)} warning={error?.warning} onClose={() => setError(null)} />
+          <Toast error={error?.key === "error"} label={t(error?.message)} warning={error?.warning} onClose={() => setError(null)} />
         )}
-      </FormStep>
-      <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
-        {
+
+        {/* Actions */}
+        <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
           <SubmitBar
             label={t("ACTION_TEST_SUBMIT")}
             onSubmit={() => onSubmit(disconnectionData)}
+            disabled={
+              wsDocsLoading ||
+              documents.length < 2 ||
+              !disconnectionData?.reason?.value?.code || 
+              !disconnectionData?.date || 
+              !disconnectionData?.type?.value?.code ||
+              (disconnectionData?.type?.value?.code === "Temporary" && !disconnectionData?.endDate)
+            }
             style={{ margin: "10px 10px 0px 0px" }}
-            // disabled={
-            //   wsDocsLoading || documents.length < 2 || disconnectionData?.reason?.value === "" || disconnectionData?.reason === "" || disconnectionData?.date === "" || disconnectionData?.type === ""
-            //   ? true
-            //   : false}
           />
-        }
-      </ActionBar>
+        </ActionBar>
+      </Card>
     </div>
   );
 };
 
-function SelectDocument({ t, key, document: doc, setDocuments, error, setError, documents, setCheckRequiredFields }) {
+
+function SelectDocument({ t, key, document: doc, setDocuments, error, setError, documents, setCheckRequiredFields, isMobileForm }) {
   const filteredDocument = documents?.filter((item) => item?.documentType?.includes(doc?.code))[0];
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [selectedDocument, setSelectedDocument] = useState(
@@ -581,7 +658,7 @@ function SelectDocument({ t, key, document: doc, setDocuments, error, setError, 
   useEffect(() => {
     (async () => {
       if (file) {
-        setError(null); // only clear error when a new file is being processed
+        setError(null);
         if (file.size >= 5242880) {
           setError({ key: "error", message: "CS_MAXIMUM_UPLOAD_SIZE_EXCEEDED" });
         } else {
@@ -601,22 +678,45 @@ function SelectDocument({ t, key, document: doc, setDocuments, error, setError, 
     })();
   }, [file]);
 
+  const fieldStyle = {
+    display: "flex",
+    flexDirection: isMobileForm ? "column" : "row",
+    alignItems: isMobileForm ? "flex-start" : "flex-start",
+    justifyContent: "space-between",
+    gap: "10px",
+    width: "100%",
+    marginBottom: "16px",
+  };
+
+  const labelStyle = {
+    fontWeight: "700",
+    color: "#0B0C0C",
+    fontSize: "16px",
+    margin: 0,
+    display: "flex",
+    alignItems: "center",
+    width: isMobileForm ? "100%" : "30%",
+  };
+
+  const inputWrapperStyle = {
+    width: isMobileForm ? "100%" : "65%",
+  };
+
   return (
     <div style={{ marginBottom: "24px" }}>
-      <LabelFieldPair>
-        <CardLabel style={{ marginTop: "-5px", fontWeight: "700", display: "inline" }} className="card-label-smaller">
-          {t(doc?.i18nKey) + "*"}
-        </CardLabel>
-        <div className="field">
-          <Dropdown
-            t={t}
-            isMandatory={false}
-            option={doc?.dropdownData}
-            selected={selectedDocument}
-            optionKey="i18nKey"
-            select={handleSelectDocument}
-          />
-
+      <div style={fieldStyle}>
+        <h4 style={labelStyle}>{t(doc?.i18nKey)} *</h4>
+        <div style={inputWrapperStyle}>
+          <div style={{ marginBottom: "8px" }}>
+            <Dropdown
+              t={t}
+              isMandatory={false}
+              option={doc?.dropdownData}
+              selected={selectedDocument}
+              optionKey="i18nKey"
+              select={handleSelectDocument}
+            />
+          </div>
           <UploadFile
             id={`noc-doc-1-${key}`}
             extraStyleName={"propertyCreate"}
@@ -629,7 +729,7 @@ function SelectDocument({ t, key, document: doc, setDocuments, error, setError, 
             message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`ES_NO_FILE_SELECTED_LABEL`)}
           />
         </div>
-      </LabelFieldPair>
+      </div>
     </div>
   );
 }
