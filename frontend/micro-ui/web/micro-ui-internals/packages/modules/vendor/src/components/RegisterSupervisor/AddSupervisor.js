@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { FormComposer, Toast, VerticalTimeline } from "@djb25/digit-ui-react-components";
 import { useQueryClient } from "react-query";
@@ -19,6 +19,10 @@ const AddSupervisor = ({ parentUrl, heading }) => {
   const [showToast, setShowToast] = useState(null);
   const queryClient = useQueryClient();
   const [canSubmit, setCanSubmit] = useState(false);
+  const [mobileExists, setMobileExists] = useState(false);
+  const mobileExistsRef = useRef(false);
+  const isCheckingMobileRef = useRef(false);
+  const lastCheckedMobile = useRef("");
 
   const { mutateAsync } = Digit.Hooks.fsm.useSupervisorCreate(tenantId);
   const history = useHistory();
@@ -61,7 +65,40 @@ const AddSupervisor = ({ parentUrl, heading }) => {
     return age >= 18;
   };
 
-  const onFormValueChange = (setValue, formData) => {
+  const onFormValueChange = async (setValue, formData) => {
+    const mobile = formData?.mobileNumber ? `${formData.mobileNumber}`.trim() : "";
+
+    if (mobile.length === 10 && /^[6-9]\d{9}$/.test(mobile)) {
+      if (lastCheckedMobile.current !== mobile) {
+        lastCheckedMobile.current = mobile;
+        isCheckingMobileRef.current = true;
+        setCanSubmit(false);
+        try {
+          const tenant = Digit.ULBService.getStateId() || "dl";
+          const res = await Digit.UserService.userSearch(tenant, { mobileNumber: mobile }, {});
+          const exists = Boolean(res?.user && res.user.length > 0);
+          mobileExistsRef.current = exists;
+          setMobileExists(exists);
+          if (exists) {
+            setShowToast({
+              key: "error",
+              action: t("ES_USER_ALREADY_EXISTS_WITH_MOBILE", "User already exists with this mobile number"),
+            });
+            setCanSubmit(false);
+            return;
+          }
+        } catch (err) {
+          console.error("Error checking mobile number:", err);
+        } finally {
+          isCheckingMobileRef.current = false;
+        }
+      }
+    } else {
+      lastCheckedMobile.current = "";
+      mobileExistsRef.current = false;
+      if (mobileExists) setMobileExists(false);
+    }
+
     const requiredFields = [
       formData?.fullName,
       formData?.mobileNumber,
@@ -71,7 +108,12 @@ const AddSupervisor = ({ parentUrl, heading }) => {
       formData?.correspondenceAddress,
     ];
 
-    const isBasicDetailsFilled = requiredFields.every(Boolean) && formData?.zoneIds?.length > 0 && isValidAge(formData?.dob);
+    const isBasicDetailsFilled =
+      requiredFields.every(Boolean) &&
+      (Array.isArray(formData?.zoneIds) ? formData?.zoneIds?.length > 0 : Boolean(formData?.zoneIds)) &&
+      isValidAge(formData?.dob) &&
+      !mobileExistsRef.current &&
+      !isCheckingMobileRef.current;
 
     setCanSubmit(isBasicDetailsFilled);
   };
@@ -81,6 +123,33 @@ const AddSupervisor = ({ parentUrl, heading }) => {
   };
 
   const onSubmit = async (data) => {
+    const mobile = data?.mobileNumber ? `${data.mobileNumber}`.trim() : "";
+
+    if (mobileExistsRef.current) {
+      setShowToast({
+        key: "error",
+        action: t("ES_USER_ALREADY_EXISTS_WITH_MOBILE", "User already exists with this mobile number"),
+      });
+      return;
+    }
+
+    try {
+      const tenant = Digit.ULBService.getStateId() || "dl";
+      const res = await Digit.UserService.userSearch(tenant, { mobileNumber: mobile }, {});
+      if (res?.user && res.user.length > 0) {
+        mobileExistsRef.current = true;
+        setMobileExists(true);
+        setShowToast({
+          key: "error",
+          action: t("ES_USER_ALREADY_EXISTS_WITH_MOBILE", "User already exists with this mobile number"),
+        });
+        setCanSubmit(false);
+        return;
+      }
+    } catch (err) {
+      console.error("Error verifying mobile number on submit:", err);
+    }
+
     const isVendor = userInfo?.roles?.some((role) => role.code === "EKYC_VENDOR");
     const assignedZone = Array.isArray(data?.zoneIds) ? data?.zoneIds?.map((ele) => ele.code).join(",") || "" : data?.zoneIds;
     const formData = {
