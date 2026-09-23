@@ -12,6 +12,7 @@ const WSCard = () => {
   const [totalCount, setTotalCount] = useState(0);
   sessionStorage.removeItem("Digit.PT_CREATE_EMP_WS_NEW_FORM");
   sessionStorage.removeItem("IsDetailsExists");
+  sessionStorage.removeItem("Digit.WS_DISCONNECTION");
 
   const filterFormDefaultValues = {
     businessService: ["NewWS1", "ModifyWSConnection", "DisconnectWSConnection", "mutationWSConnection"],
@@ -139,6 +140,22 @@ const WSCard = () => {
           "SW_CLERK",
         ],
       },
+      {
+        label: t("WS_DISCONNECTION"),
+        link: `/digit-ui/employee/ws/new-disconnection`,
+        roles: [
+          "WS_CEMP",
+          "WS_APPROVER",
+          "WS_FIELD_INSPECTOR",
+          "WS_DOC_VERIFIER",
+          "WS_CLERK",
+          "SW_CEMP",
+          "SW_APPROVER",
+          "SW_FIELD_INSPECTOR",
+          "SW_DOC_VERIFIER",
+          "SW_CLERK",
+        ],
+      }
     ].filter((link) => (link.roles ? checkForEmployee(link.roles) : true)),
   };
   return <EmployeeModuleCard {...propsForModuleCard} />;

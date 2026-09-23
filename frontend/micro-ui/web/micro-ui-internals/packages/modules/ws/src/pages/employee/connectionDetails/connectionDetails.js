@@ -181,7 +181,8 @@ const GetConnectionDetails = () => {
       console.log("due", due, applicationDetails);
       if (billData[0]?.status === "ACTIVE" || applicationDetails?.fetchBillsData?.length <= 0 || due == "0" || due < 0) {
         Digit.SessionStorage.set("WS_DISCONNECTION", applicationDetails);
-        history.push(`${pathname}`);
+        const connectionNumber = applicationDetails?.applicationData?.connectionNo || applicationNumber;
+        history.push(`${pathname}?from=connection-details&connectionNumber=${encodeURIComponent(connectionNumber)}`);
       } else {
         setshowModal(true);
       }

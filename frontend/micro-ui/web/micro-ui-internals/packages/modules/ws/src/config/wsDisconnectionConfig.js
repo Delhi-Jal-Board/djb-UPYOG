@@ -8,7 +8,24 @@ export const newConfig = [
         key: "data",
         type: "component",
         withoutLabel: true,
-        nextStep: "application-form"
+        // nextStep: "application-form"
+        nextStep: "k-number",
+      },
+      {
+        route: "k-number",
+        component: "WSDisconnectionKNumber",
+        key: "WSDisconnectionKNumber",
+        type: "component",
+        withoutLabel: true,
+        nextStep: "consumer-details",
+      },
+      {
+        route: "consumer-details",
+        component: "WSDisconnectionConsumerDetails",
+        key: "WSDisconnectionConsumerDetails",
+        type: "component",
+        withoutLabel: true,
+        nextStep: "application-form",
       },
       {
         route: "application-form",
