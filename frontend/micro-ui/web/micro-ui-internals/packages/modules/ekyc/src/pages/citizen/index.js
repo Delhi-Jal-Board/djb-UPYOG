@@ -169,7 +169,7 @@ const CitizenApp = () => {
             )}
           />
           <PrivateRoute
-            path={[`${path}/vendor-dashboard/:vendorId`, `${path}/vendor-dashboard`]}
+            path={`${path}/vendor-dashboard/:vendorId?`}
             component={() => (
               <LayoutWrapper layoutClass="normal">
                 <VendorDetailsCard />
