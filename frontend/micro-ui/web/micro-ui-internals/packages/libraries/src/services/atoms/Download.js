@@ -1,7 +1,7 @@
 import ReactDOM from "react-dom";
 import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
-import XLSX from "xlsx";
+// import jsPDF from "jspdf";
+import XLSX from "xlsx-js-style";
 import domtoimage from "dom-to-image";
 
 const changeClasses=(class1,class2)=>{
@@ -50,12 +50,59 @@ const Download = {
   },
 
   Excel: (data, filename) => {
-    const file = filename.substring(0,30);
+    const file = filename.substring(0, 30);
+
     const wb = XLSX.utils.book_new();
-    let ws = null;
-    ws = XLSX.utils.json_to_sheet(data)
+    const ws = XLSX.utils.json_to_sheet(data);
+
+    // Header styling
+    const headers = Object.keys(data[0] || {});
+
+    headers.forEach((_, index) => {
+      const cellAddress = XLSX.utils.encode_cell({
+        r: 0,
+        c: index,
+      });
+
+      if (ws[cellAddress]) {
+        ws[cellAddress].s = {
+          fill: {
+            fgColor: {
+              rgb: "FFF2CC",
+            },
+          },
+          font: {
+            bold: true,
+            color: {
+              rgb: "000000",
+            },
+          },
+          alignment: {
+            horizontal: "center",
+            vertical: "center",
+          },
+        };
+      }
+    });
+
+    // Auto-fit column widths based on content
+    ws["!cols"] = headers.map((header, index) => {
+      const maxLength = Math.max(
+        header.length,
+        ...data.map((row) => {
+          const value = row[header];
+          return value == null ? 0 : String(value).length;
+        })
+      );
+
+      return {
+        wch: Math.min(maxLength + 2, 50),
+      };
+    });
+
     wb.SheetNames.push(file);
     wb.Sheets[file] = ws;
+
     XLSX.writeFile(wb, `${file}.xlsx`);
   },
 

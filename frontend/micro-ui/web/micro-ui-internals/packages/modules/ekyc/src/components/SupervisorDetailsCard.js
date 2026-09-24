@@ -1,18 +1,23 @@
-import React, { useMemo, useState, useRef, useEffect } from "react";
-import { Card, Loader, Table } from "@djb25/digit-ui-react-components";
+import React, { Fragment, useMemo, useState } from "react";
+import { Card, Loader, Table, MdDownloadIcon } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useParams, useHistory } from "react-router-dom";
-import { downloadSupervisorPDF } from "../utils/reportDownloader";
-import { getEkycExcelData } from "../utils/ekycExcelData";
 import { FaUsers, FaCheckCircle, FaClock, FaChartLine } from "react-icons/fa";
+import { getEkycExcelData } from "../utils/ekycExcelData";
+import EkycFilterModal from "./EkycFilterModal";
 
 const SupervisorDetailsCard = () => {
   const { t } = useTranslation();
   const history = useHistory();
   const tenantId = Digit.ULBService.getCurrentTenantId() || "dl.djb";
-  const { id: supervisorId } = useParams();
+  const { id: supervisorId, vendorId } = useParams();
   const loggedInUser = Digit.SessionStorage.get("User")?.info;
   const [ekycDownloadLoading, setEkycDownloadLoading] = useState(false);
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [pageSize, setPageSize] = useState(20);
+
+  const [ekycStatus, setEkycStatus] = useState("ALL");
 
   // Fetch all supervisors to get details if assignment progress fails
   const { data: supervisorSearchResponse, isLoading: isSupervisorSearchLoading } = Digit.Hooks.fsm.useSupervisorSearch(
@@ -33,12 +38,22 @@ const SupervisorDetailsCard = () => {
 
   // Fetch assignment progress with hierarchy (supervisor and surveyor details)
   const { isLoading: isProgressLoading, data: progressData } = Digit.Hooks.ekyc.useEkycAssignmentProgress(
-    { vendorId: targetVendorId },
+    { vendorId: vendorId || targetVendorId },
     {
       enabled: !!tenantId,
       keepPreviousData: true,
     }
   );
+
+  const userRoles = Digit.UserService.getUser()?.info?.roles;
+
+  const isSupervisor = userRoles?.some((role) => role.code === "EKYC_SUPERVISOR");
+
+  const currentSupervisor = isSupervisor
+    ? progressData?.supervisorReport[0] || []
+    : progressData?.supervisorReport?.find((ele) => ele.supervisorId === supervisorId);
+
+  const surveyorsData = currentSupervisor?.surveyors || [];
 
   // Fetch all surveyors to get details of connected surveyors if assignment progress fails
   const { data: surveyorSearchResponse, isLoading: isSurveyorSearchLoading } = Digit.Hooks.fsm.useSurveyorSearch(
@@ -218,12 +233,12 @@ const SupervisorDetailsCard = () => {
     return null;
   }, [progressData, supervisorSearchResponse, surveyorSearchResponse, supervisorId, loggedInUser]);
 
-  const fullName = supervisor?.supervisorName || "N/A";
-  const mobileNumber = supervisor?.mobileNo || "N/A";
+  const fullName = currentSupervisor?.supervisorName || "N/A";
+  const mobileNumber = currentSupervisor?.mobileNo || "N/A";
   const email = supervisor?.email || (supervisor?.supervisorId === loggedInUser?.uuid ? loggedInUser?.emailId : null) || "N/A";
   const gender = supervisor?.gender || (supervisor?.supervisorId === loggedInUser?.uuid ? loggedInUser?.gender : null) || "N/A";
   const status = supervisor?.status || "N/A";
-  const assignedZone = supervisor?.assignedZoneId || "N/A";
+  const assignedZone = t(currentSupervisor?.assignedZoneId) || "N/A";
 
   const vendorName = useMemo(() => {
     if (!vendorSearchResponse || !supervisor) return "N/A";
@@ -240,20 +255,7 @@ const SupervisorDetailsCard = () => {
     return supervisor?.surveyors || [];
   }, [supervisor]);
 
-  const [currentPage, setCurrentPage] = useState(0);
-  const [pageSize, setPageSize] = useState(20);
-
-  const userRoles = Digit.UserService.getUser()?.info?.roles;
-
-  const isSupervisor = userRoles?.some((role) => role.code === "EKYC_SUPERVISOR");
-  
-  const currentSupervisor = isSupervisor
-    ? progressData?.supervisorReport[0] || []
-    : progressData?.supervisorReport?.find((ele) => ele.supervisorId === supervisorId);
-    
-  const surveyorsData = currentSupervisor?.surveyors || [];
-
-   const cards = useMemo(
+  const cards = useMemo(
     () => [
       {
         label: "TOTAL_EKYC_APPLICATIONS",
@@ -344,136 +346,7 @@ const SupervisorDetailsCard = () => {
   );
 
   // Report Download logic
-  const [showReportMenu, setShowReportMenu] = useState(false);
   const [customDate, setCustomDate] = useState({ from: "", to: "" });
-  const [showCustomPicker, setShowCustomPicker] = useState(false);
-  const [reportLoading, setReportLoading] = useState(false);
-  const reportMenuRef = useRef(null);
-
-  useEffect(() => {
-    const handler = (e) => {
-      if (reportMenuRef.current && !reportMenuRef.current.contains(e.target)) {
-        setShowReportMenu(false);
-        setShowCustomPicker(false);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
-
-  const handleDownload = () => {
-    setReportLoading(true);
-    try {
-      const rowsWithStats = surveyors.map((s) => ({
-        name: s.surveyorName,
-        mobileNo: s.mobileNo,
-        status: s.status,
-        total: s.totalKnos,
-        completed: s.submittedKnos,
-        pending: s.pendingKnos,
-        progress: `${s.progressPercent}%`,
-      }));
-
-      const totalKnos = supervisor?.totalKnos || 0;
-      const completedKnos = supervisor?.submittedKnos || 0;
-
-      downloadSupervisorPDF({
-        rows: rowsWithStats,
-        supervisorName: fullName,
-        vendorName,
-        mobileNumber,
-        email,
-        dashboardInfo: {
-          total: totalKnos,
-          completed: completedKnos,
-          pending: totalKnos - completedKnos,
-          submittedCount: completedKnos,
-        },
-        t,
-      });
-    } catch (err) {
-      console.error("Failed to generate supervisor report:", err);
-    } finally {
-      setReportLoading(false);
-    }
-  };
-
-  const handlePresetDownload = async (filter) => {
-    const range = getDateRange(filter);
-    if (!range) return;
-    setShowReportMenu(false);
-    setShowCustomPicker(false);
-    await handleDownloadEkycData(range.from.getTime(), range.to.getTime());
-  };
-
-  const handleCustomDownload = async () => {
-    if (!customDate.from || !customDate.to) {
-      alert(t("SELECT_DATE_RANGE") || "Please select both From and To dates.");
-      return;
-    }
-    const from = new Date(customDate.from);
-    from.setHours(0, 0, 0, 0);
-    const to = new Date(customDate.to);
-    to.setHours(23, 59, 59, 999);
-    setShowReportMenu(false);
-    setShowCustomPicker(false);
-    await handleDownloadEkycData(from.getTime(), to.getTime());
-  };
-
-  const handleDownloadEkycData = async (fromDate, toDate) => {
-    if (!surveyors || surveyors.length === 0) {
-      alert(t("NO_SURVEYORS_ASSIGNED") || "No surveyors assigned to this supervisor.");
-      return;
-    }
-
-    setEkycDownloadLoading(true);
-    try {
-      const response = await Digit.EkycService.application_list({
-        tenantId: tenantId || "dl.djb",
-        offset: 0,
-        limit: 10000,
-        supervisorId: supervisor?.supervisorId || supervisorId,
-        reportDownload: true,
-        ...(fromDate && { fromDate }),
-        ...(toDate && { toDate }),
-      });
-
-      const consumerList = response?.consumerList || [];
-
-      if (consumerList.length === 0) {
-        alert(t("NO_DATA_FOUND") || "No data found for download.");
-        return;
-      }
-
-      const excelData = getEkycExcelData(consumerList, t);
-      const cleanFileName = `eKYC_Data_Supervisor_${fullName.replace(/[^a-zA-Z0-9]/g, "_")}`;
-      Digit.Download.Excel(excelData, cleanFileName);
-    } catch (error) {
-      console.error("Error downloading eKYC Excel:", error);
-    } finally {
-      setEkycDownloadLoading(false);
-    }
-  };
-
-  const getDateRange = (filter) => {
-    const now = new Date();
-    const start = new Date(now);
-    if (filter === "today") {
-      start.setHours(0, 0, 0, 0);
-      return { from: start, to: now };
-    }
-    if (filter === "week") {
-      start.setDate(now.getDate() - now.getDay());
-      start.setHours(0, 0, 0, 0);
-      return { from: start, to: now };
-    }
-    if (filter === "month") {
-      start.setDate(1);
-      start.setHours(0, 0, 0, 0);
-      return { from: start, to: now };
-    }
-    return null;
-  };
 
   const StatCard = ({ title, value, type, isLoading, icon }) => (
     <div className={`stat-card ${type}`}>
@@ -506,201 +379,173 @@ const SupervisorDetailsCard = () => {
     );
   }
 
+  const handleDownloadEkycData = async (fromDate, toDate) => {
+    setEkycDownloadLoading(true);
+    try {
+      const response = await Digit.EkycService.application_list({
+        tenantId: tenantId,
+        offset: 0,
+        limit: 10000,
+        // Vendor-specific filter
+        vendorId: targetVendorId,
+        ekycStatus: ekycStatus,
+        reportDownload: true,
+        ...(fromDate && { fromDate }),
+        ...(toDate && { toDate }),
+      });
+
+      const consumerList = response?.consumerList || [];
+
+      if (!consumerList || consumerList.length === 0) {
+        alert(t("NO_EKYC_DATA_FOUND") || "No eKYC data found to download.");
+        return;
+      }
+
+      consumerList.forEach((item) => {
+        if (item.assignedTime) {
+          item.assignedTime = new Date(item.assignedTime).toLocaleDateString("en-GB");
+        }
+
+        if (item.submittedAt) {
+          item.submittedAt = new Date(item.submittedAt).toLocaleDateString("en-GB");
+        }
+      });
+      const excelData = getEkycExcelData(consumerList, t);
+      const cleanFileName = `eKYC_Data_${vendorName.replace(/[^a-zA-Z0-9]/g, "_")}`;
+      Digit.Download.Excel(excelData, cleanFileName);
+    } catch (error) {
+      console.error("Failed to download eKYC data:", error);
+      alert(t("EKYC_DOWNLOAD_FAILED") || "Failed to download eKYC data. Please try again.");
+    } finally {
+      setEkycDownloadLoading(false);
+    }
+  };
+
+  const handleApplyFilters = async () => {
+    setShowFilterModal(false);
+    await handleDownloadEkycData(customDate.startDate.getTime(), customDate.endDate.getTime());
+  };
+
   return (
-    <Card className="surveyor-dashboard">
-      {/* Header + Download Report */}
-      <div className="ekyc-dashboard-section">
-        <div className="ekyc-dashboard-header">
-          <div className="avatar">{fullName?.charAt(0)?.toUpperCase()}</div>
+    <Fragment>
+      <Card className="surveyor-dashboard">
+        {/* Header + Download Report */}
+        <div className="ekyc-dashboard-section">
+          <div className="ekyc-details-wrapper">
+            <div className="details-top-row">
+              <div className="detail-item first-row">
+                <div className="ekyc-dashboard-header">
+                  <div className="header-content">
+                    <h2 className="name">{fullName}</h2>
+                    <div className="designation">({t("FIELD_SUPERVISOR") || "Field Supervisor"})</div>
+                  </div>
+                </div>
 
-          <div className="header-content">
-            <h2 className="name">{fullName}</h2>
-            <div className="designation">{t("FIELD_SUPERVISOR") || "Field Supervisor"}</div>
-          </div>
-        </div>
-
-        {/* Download Report — far right */}
-        <div className="report-download">
-          <button className="download-btn" disabled={reportLoading} onClick={handleDownload}>
-            {reportLoading ? t("DOWNLOADING") || "Downloading..." : t("DOWNLOAD_REPORT") || "Download Report"}
-          </button>
-        </div>
-      </div>
-
-      {/* Stats */}
-      <div className="stats-wrapper">
-        {cards.map((card, idx) => (
-          <StatCard key={idx} title={t(card.label)} value={card.count} type={card.type} isLoading={isProgressLoading} icon={card.icon} />
-        ))}
-      </div>
-
-      {/* Details */}
-      <div className="ekyc-dashboard-section">
-        <div className="ekyc-details-wrapper">
-          {/* Top Row: Mobile, Email, and Download eKYC Data */}
-          <div className="details-top-row">
-            <div className="detail-item">
-              <span className="label">{t("MOBILE")}</span>
-              <span className="value">{mobileNumber}</span>
-            </div>
-
-            <div className="detail-item">
-              <span className="label">{t("EMAIL")}</span>
-              <span className="value">{email}</span>
-            </div>
-
-            <div className="download-card">
-              <div>
-                <h4>{t("DOWNLOAD_EKYC_DATA") || "Download eKYC Data"}</h4>
-                <p>
-                  {t("DOWNLOAD_EKYC_DATA_DESC") || "Export the complete eKYC verification records for your assigned jurisdiction into Excel format."}
-                </p>
-              </div>
-              <div className="report-download" ref={reportMenuRef}>
-                <button
-                  className="download-excel-btn"
-                  disabled={ekycDownloadLoading}
-                  onClick={() => {
-                    setShowReportMenu((p) => !p);
-                    setShowCustomPicker(false);
-                  }}
-                >
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
+                <div className="report-download relative">
+                  <button
+                    disabled={ekycDownloadLoading}
+                    className={`download-btn relative ${ekycDownloadLoading ? "disabled" : ""}`}
+                    onClick={() => setShowFilterModal(true)}
                   >
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                    <polyline points="7 10 12 15 17 10" />
-                    <line x1="12" y1="15" x2="12" y2="3" />
-                  </svg>
-                  {ekycDownloadLoading ? t("DOWNLOADING") || "Downloading..." : t("DOWNLOAD_EXCEL") || "Download Excel"}
-                </button>
+                    <MdDownloadIcon />
+                    {ekycDownloadLoading ? t("DOWNLOADING") || "Downloading" : t("DOWNLOAD_REPORT") || "Download Report"}
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div className="details-grid-row">
+              <div className="detail-item">
+                <span className="label">{t("VENDOR_NAME") || "Vendor Name"}</span>
+                <span className="value">{vendorName}</span>
+              </div>
+              <div className="detail-item">
+                <span className="label">{t("MOBILE")}</span>
+                <span className="value">{mobileNumber}</span>
+              </div>
 
-                {showReportMenu && (
-                  <div className="report-menu">
-                    {[
-                      { label: t("TODAY") || "Today", key: "today" },
-                      { label: t("THIS_WEEK") || "This Week", key: "week" },
-                      { label: t("THIS_MONTH") || "This Month", key: "month" },
-                    ].map(({ label, key }) => (
-                      <div key={key} className="menu-item" onClick={() => handlePresetDownload(key)}>
-                        {label}
-                      </div>
-                    ))}
+              <div className="detail-item">
+                <span className="label">{t("EMAIL")}</span>
+                <span className="value">{email}</span>
+              </div>
+            </div>
 
-                    <div className="custom-date-trigger" onClick={() => setShowCustomPicker((p) => !p)}>
-                      {t("CUSTOM_DATE") || "Custom Date"}
-                    </div>
+            {/* Bottom Row: Remaining Details */}
+            <div className="details-grid-row">
+              <div className="detail-item">
+                <span className="label">{t("ASSIGNED_ZONE") || "Assigned Zone"}</span>
+                <span className="value">
+                  {assignedZone && assignedZone !== "N/A" ? t(assignedZone.trim().toUpperCase()) || assignedZone : assignedZone}
+                </span>
+              </div>
 
-                    {showCustomPicker && (
-                      <div className="custom-picker">
-                        <div className="date-inputs">
-                          <label>
-                            <span>From</span>
-                            <input type="date" value={customDate.from} onChange={(e) => setCustomDate({ ...customDate, from: e.target.value })} />
-                          </label>
-                          <label>
-                            <span>To</span>
-                            <input type="date" value={customDate.to} onChange={(e) => setCustomDate({ ...customDate, to: e.target.value })} />
-                          </label>
-                        </div>
-                        <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
-                          <button
-                            className="picker-cancel-btn"
-                            onClick={() => {
-                              setShowCustomPicker(false);
-                              setCustomDate({ from: "", to: "" });
-                            }}
-                          >
-                            {t("CANCEL") || "Cancel"}
-                          </button>
-                          <button className="picker-apply-btn" onClick={handleCustomDownload}>
-                            {t("APPLY") || "Apply"}
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
+              <div className="detail-item">
+                <span className="label">{t("GENDER")}</span>
+                <span className="value">{t(gender) || gender}</span>
+              </div>
+
+              <div className="detail-item">
+                <span className="label">{t("STATUS")}</span>
+                <span className="value">{status}</span>
               </div>
             </div>
           </div>
-
-          {/* Bottom Row: Remaining Details */}
-          <div className="details-grid-row">
-            <div className="detail-item">
-              <span className="label">{t("GENDER")}</span>
-              <span className="value">{t(gender) || gender}</span>
-            </div>
-
-            <div className="detail-item">
-              <span className="label">{t("STATUS")}</span>
-              <span className="value">{status}</span>
-            </div>
-
-            <div className="detail-item">
-              <span className="label">{t("ASSIGNED_ZONE") || "Assigned Zone"}</span>
-              <span className="value">
-                {assignedZone && assignedZone !== "N/A" ? (
-                  <div className="selected-zones" style={{ marginTop: "4px" }}>
-                    <span className="selected-zone-chip">{t(assignedZone.trim().toUpperCase()) || assignedZone}</span>
-                  </div>
-                ) : (
-                  assignedZone
-                )}
-              </span>
-            </div>
-
-            <div className="detail-item">
-              <span className="label">{t("VENDOR_NAME") || "Vendor Name"}</span>
-              <span className="value">{vendorName}</span>
-            </div>
-          </div>
         </div>
-      </div>
 
-      <div>
-        <Table
+        {/* Stats */}
+        <div className="stats-wrapper">
+          {cards.map((card, idx) => (
+            <StatCard key={idx} title={t(card.label)} value={card.count} type={card.type} isLoading={isProgressLoading} icon={card.icon} />
+          ))}
+        </div>
+
+        <div>
+          <Table
+            t={t}
+            tableTitle={t("CONNECTED_SURVEYORS") || "Connected Surveyors"}
+            tableClass="ekycTable"
+            isTableScrollable={true}
+            data={surveyorsData}
+            columns={surveyorColumns}
+            isLoading={isProgressLoading}
+            totalRecords={surveyors.length}
+            currentPage={currentPage}
+            pageSizeLimit={pageSize}
+            isPaginationRequired={true}
+            onNextPage={() => {
+              if (currentPage < Math.ceil(surveyors.length / pageSize) - 1) {
+                setCurrentPage((prev) => prev + 1);
+              }
+            }}
+            onPrevPage={() => {
+              if (currentPage > 0) {
+                setCurrentPage((prev) => prev - 1);
+              }
+            }}
+            onFirstPage={() => {
+              setCurrentPage(0);
+            }}
+            onLastPage={() => {
+              setCurrentPage(Math.max(Math.ceil(surveyors.length / pageSize) - 1, 0));
+            }}
+            onPageSizeChange={(e) => {
+              setPageSize(Number(e.target.value));
+              setCurrentPage(0);
+            }}
+          />
+        </div>
+      </Card>
+      {showFilterModal && (
+        <EkycFilterModal
           t={t}
-          tableTitle={t("CONNECTED_SURVEYORS") || "Connected Surveyors"}
-          tableClass="ekycTable"
-          isTableScrollable={true}
-          data={surveyorsData}
-          columns={surveyorColumns}
-          isLoading={isProgressLoading}
-          totalRecords={surveyors.length}
-          currentPage={currentPage}
-          pageSizeLimit={pageSize}
-          isPaginationRequired={true}
-          onNextPage={() => {
-            if (currentPage < Math.ceil(surveyors.length / pageSize) - 1) {
-              setCurrentPage((prev) => prev + 1);
-            }
-          }}
-          onPrevPage={() => {
-            if (currentPage > 0) {
-              setCurrentPage((prev) => prev - 1);
-            }
-          }}
-          onFirstPage={() => {
-            setCurrentPage(0);
-          }}
-          onLastPage={() => {
-            setCurrentPage(Math.max(Math.ceil(surveyors.length / pageSize) - 1, 0));
-          }}
-          onPageSizeChange={(e) => {
-            setPageSize(Number(e.target.value));
-            setCurrentPage(0);
-          }}
+          onClose={() => setShowFilterModal(false)}
+          onApply={handleApplyFilters}
+          customDate={customDate}
+          setCustomDate={setCustomDate}
+          ekycStatus={ekycStatus}
+          setEkycStatus={setEkycStatus}
         />
-      </div>
-    </Card>
+      )}
+    </Fragment>
   );
 };
 

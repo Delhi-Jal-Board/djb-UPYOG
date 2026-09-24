@@ -1,15 +1,15 @@
-import React, { useMemo, useState, useRef, useEffect } from "react";
+import React, { useMemo, useState, Fragment } from "react";
 // import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, PieChart, Pie, Cell, Legend } from "recharts";
 
-import { Card, SubmitBar, ActionBar, Menu, Loader, Table } from "@djb25/digit-ui-react-components";
+import { Card, SubmitBar, ActionBar, Menu, Loader, Table,MdDownloadIcon } from "@djb25/digit-ui-react-components";
 
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
 
 import AssignEkycModal from "./AssignEkycModal";
-import { downloadSurveyorPDF } from "../utils/reportDownloader";
 import { getEkycExcelData } from "../utils/ekycExcelData";
 import { FaUsers, FaCheckCircle, FaClock, FaChartLine } from "react-icons/fa";
+import EkycFilterModal from "./EkycFilterModal";
 
 const SurveyorDetailsCard = () => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -17,6 +17,8 @@ const SurveyorDetailsCard = () => {
   const [showModal, setShowModal] = useState(null);
   const [showOptions, setShowOptions] = useState(false);
   const [ekycDownloadLoading, setEkycDownloadLoading] = useState(false);
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [ekycStatus, setEkycStatus] = useState("ALL");
 
   const { id: surveyorId } = useParams();
   const ownerIds = Digit.SessionStorage.get("User")?.info?.uuid;
@@ -78,8 +80,6 @@ const SurveyorDetailsCard = () => {
     return mappedSupervisor?.name || mappedSupervisor?.owner?.name || surveyor.supervisorId || "N/A";
   }, [supervisorSearchResponse, surveyor?.supervisorId, surveyor?.supervisorName]);
   const fullName = surveyor?.owner?.name || surveyor?.name || "N/A";
-  const employeeId = surveyor?.employeeId || surveyor?.owner?.uuid || surveyor?.id;
-  const mobileNumber = surveyor?.owner?.mobileNumber || surveyor?.mobileNo || "N/A";
 
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize, setPageSize] = useState(20);
@@ -147,24 +147,9 @@ const SurveyorDetailsCard = () => {
     [t]
   );
 
-  // ─── Download Report hooks (must be before any early returns) ───────
-
-  const [showReportMenu, setShowReportMenu] = useState(false);
   const [customDate, setCustomDate] = useState({ from: "", to: "" });
-  const [showCustomPicker, setShowCustomPicker] = useState(false);
-  const [reportLoading, setReportLoading] = useState(false);
-  const reportMenuRef = useRef(null);
 
-  useEffect(() => {
-    const handler = (e) => {
-      if (reportMenuRef.current && !reportMenuRef.current.contains(e.target)) {
-        setShowReportMenu(false);
-        setShowCustomPicker(false);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
+
 
   const isPageLoading = isLoading || isVendorLoading || isSupervisorSearchLoading;
 
@@ -179,80 +164,6 @@ const SurveyorDetailsCard = () => {
       </Card>
     );
   }
-
-  const getDateRange = (filter) => {
-    const now = new Date();
-    const start = new Date(now);
-    if (filter === "today") {
-      start.setHours(0, 0, 0, 0);
-      return { from: start, to: now };
-    }
-    if (filter === "week") {
-      start.setDate(now.getDate() - now.getDay());
-      start.setHours(0, 0, 0, 0);
-      return { from: start, to: now };
-    }
-    if (filter === "month") {
-      start.setDate(1);
-      start.setHours(0, 0, 0, 0);
-      return { from: start, to: now };
-    }
-    return null;
-  };
-
-  const handleDownload = async () => {
-    setReportLoading(true);
-    try {
-      const response = await Digit.EkycService.dashboard(
-        {},
-        {
-          tenantId: "dl.djb",
-          offset: 0,
-          limit: 1000,
-          surveyorId: surveyor?.owner?.uuid,
-        }
-      );
-
-      const rows = response?.dashboardInfo?.consumerList || [];
-
-      downloadSurveyorPDF({
-        rows: rows,
-        surveyorName: fullName,
-        vendorName,
-        supervisorName,
-        employeeId,
-        mobileNumber,
-        dashboardInfo: response?.dashboardInfo || {},
-        t,
-      });
-    } catch (err) {
-      console.error("Failed to fetch dashboard data for report download:", err);
-    } finally {
-      setReportLoading(false);
-    }
-  };
-
-  const handlePresetDownload = async (filter) => {
-    const range = getDateRange(filter);
-    if (!range) return;
-    setShowReportMenu(false);
-    setShowCustomPicker(false);
-    await handleDownloadEkycData(range.from.getTime(), range.to.getTime());
-  };
-
-  const handleCustomDownload = async () => {
-    if (!customDate.from || !customDate.to) {
-      alert(t("SELECT_DATE_RANGE") || "Please select both From and To dates.");
-      return;
-    }
-    const from = new Date(customDate.from);
-    from.setHours(0, 0, 0, 0);
-    const to = new Date(customDate.to);
-    to.setHours(23, 59, 59, 999);
-    setShowReportMenu(false);
-    setShowCustomPicker(false);
-    await handleDownloadEkycData(from.getTime(), to.getTime());
-  };
 
   const StatCard = ({ title, value, type, isLoading, icon }) => (
     <div className={`stat-card ${type}`}>
@@ -278,214 +189,87 @@ const SurveyorDetailsCard = () => {
     setShowModal(option.action);
   };
 
-  const handleDownloadEkycData = async (fromDate, toDate) => {
+  const closeModal = async () => {
+    setShowModal(null);
+  };
+
+    const handleDownloadEkycData = async (fromDate, toDate) => {
     setEkycDownloadLoading(true);
     try {
       const response = await Digit.EkycService.application_list({
-        tenantId: tenantId || "dl.djb",
+        tenantId: tenantId,
         offset: 0,
         limit: 10000,
+        // Vendor-specific filter
         surveyorId: surveyor?.owner?.uuid,
+        ekycStatus: ekycStatus,
         reportDownload: true,
         ...(fromDate && { fromDate }),
         ...(toDate && { toDate }),
       });
 
       const consumerList = response?.consumerList || [];
-      if (consumerList.length === 0) {
-        alert(t("NO_DATA_FOUND") || "No data found for download.");
+
+      if (!consumerList || consumerList.length === 0) {
+        alert(t("NO_EKYC_DATA_FOUND") || "No eKYC data found to download.");
         return;
       }
 
+      consumerList.forEach((item) => {
+        if (item.assignedTime) {
+          item.assignedTime = new Date(item.assignedTime).toLocaleDateString("en-GB");
+        }
+
+        if (item.submittedAt) {
+          item.submittedAt = new Date(item.submittedAt).toLocaleDateString("en-GB");
+        }
+      });
       const excelData = getEkycExcelData(consumerList, t);
-      const cleanFileName = `eKYC_Data_${fullName.replace(/[^a-zA-Z0-9]/g, "_")}`;
+      const cleanFileName = `eKYC_Data_${vendorName.replace(/[^a-zA-Z0-9]/g, "_")}`;
       Digit.Download.Excel(excelData, cleanFileName);
     } catch (error) {
-      console.error("Error downloading eKYC Excel:", error);
+      console.error("Failed to download eKYC data:", error);
+      alert(t("EKYC_DOWNLOAD_FAILED") || "Failed to download eKYC data. Please try again.");
     } finally {
       setEkycDownloadLoading(false);
     }
   };
 
-  const closeModal = async () => {
-    setShowModal(null);
+   const handleApplyFilters = async () => {
+    setShowFilterModal(false);
+    await handleDownloadEkycData(customDate.startDate.getTime(), customDate.endDate.getTime());
   };
 
   return (
+    <Fragment>
     <Card className="surveyor-dashboard">
-      {/* Header + Download Report */}
-
-      {/* Charts */}
-      {/* <div className="charts-wrapper"> */}
-      {/* Weekly Chart */}
-      {/* <div className="chart-card">
-          <h3 className="chart-title">{t("WEEKLY_SURVEY_PROGRESS")}</h3>
-
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={weeklyData}>
-              <CartesianGrid strokeDasharray="3 3" />
-
-              <XAxis dataKey="day" />
-
-              <YAxis />
-
-              <Tooltip />
-
-              <Bar dataKey="completed" fill="#0B2559" radius={[6, 6, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div> */}
-
-      {/* Pie Chart */}
-      {/* <div className="chart-card">
-          <h3 className="chart-title">{t("CASE_DISTRIBUTION")}</h3>
-
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie data={statusData} dataKey="value" nameKey="name" outerRadius={90} label>
-                {statusData.map((entry, index) => (
-                  <Cell key={index} fill={entry.color} />
-                ))}
-              </Pie>
-
-              <Tooltip />
-
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
-        </div> */}
-      {/* </div> */}
-
       {/* Details */}
       <div className="ekyc-dashboard-section">
         <div className="ekyc-details-wrapper">
-          {/* Top Row: Mobile, Email, and Download eKYC Data */}
           <div className="details-top-row">
-          <div className="detail-item first-row">
-            <div className="ekyc-dashboard-header">
-              <div className="header-content">
-                <h2 className="name">{fullName}</h2>
-                <div className="designation">({surveyor?.description || t("FIELD_SURVEYOR")})</div>
-                {/* <div className="employee-id">
-              {t("EMPLOYEE_ID")}: {employeeId}
-            </div> */}
+            <div className="detail-item first-row">
+              <div className="ekyc-dashboard-header">
+                <div className="header-content">
+                  <h2 className="name">{fullName}</h2>
+                  <div className="designation">({surveyor?.description || t("FIELD_SURVEYOR")})</div>
+                  {/* <div className="employee-id">{t("EMPLOYEE_ID")}: {employeeId}</div> */}
+                </div>
               </div>
-            </div>
 
-            {/* Download Report — far right */}
-            <div className="report-download">
-              <button className="download-btn" disabled={reportLoading} onClick={handleDownload}>
-                {reportLoading ? t("DOWNLOADING") || "Downloading..." : t("DOWNLOAD_REPORT") || "Download Report"}
-              </button>
-            </div>
-          </div>
-          </div>
-          <div className="details-top-row">
-            <div className="detail-item">
-              <span className="label">{t("MOBILE")}</span>
-              <span className="value">{surveyor?.owner?.mobileNumber || surveyor?.mobileNo || "N/A"}</span>
-            </div>
-
-            <div className="detail-item">
-              <span className="label">{t("EMAIL")}</span>
-              <span className="value">{surveyor?.owner?.emailId || "N/A"}</span>
-            </div>
-
-            <div className="download-card">
-              <div>
-                <h4>{t("DOWNLOAD_EKYC_DATA") || "Download eKYC Data"}</h4>
-                <p>
-                  {t("DOWNLOAD_EKYC_DATA_DESC") || "Export the complete eKYC verification records for your assigned jurisdiction into Excel format."}
-                </p>
-              </div>
-              <div className="report-download" ref={reportMenuRef}>
-                <button
-                  className="download-excel-btn"
-                  disabled={ekycDownloadLoading}
-                  onClick={() => {
-                    setShowReportMenu((p) => !p);
-                    setShowCustomPicker(false);
-                  }}
-                >
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
+              {/* Download Report — far right */}
+              <div className="report-download relative">
+                  <button
+                    disabled={ekycDownloadLoading}
+                    className={`download-btn relative ${ekycDownloadLoading ? "disabled" : ""}`}
+                    onClick={() => setShowFilterModal(true)}
                   >
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                    <polyline points="7 10 12 15 17 10" />
-                    <line x1="12" y1="15" x2="12" y2="3" />
-                  </svg>
-                  {ekycDownloadLoading ? t("DOWNLOADING") || "Downloading..." : t("DOWNLOAD_EXCEL") || "Download Excel"}
-                </button>
-
-                {showReportMenu && (
-                  <div className="report-menu">
-                    {[
-                      { label: t("TODAY") || "Today", key: "today" },
-                      { label: t("THIS_WEEK") || "This Week", key: "week" },
-                      { label: t("THIS_MONTH") || "This Month", key: "month" },
-                    ].map(({ label, key }) => (
-                      <div key={key} className="menu-item" onClick={() => handlePresetDownload(key)}>
-                        {label}
-                      </div>
-                    ))}
-
-                    <div className="custom-date-trigger" onClick={() => setShowCustomPicker((p) => !p)}>
-                      {t("CUSTOM_DATE") || "Custom Date"}
-                    </div>
-
-                    {showCustomPicker && (
-                      <div className="custom-picker">
-                        <div className="date-inputs">
-                          <label>
-                            <span>From</span>
-                            <input type="date" value={customDate.from} onChange={(e) => setCustomDate({ ...customDate, from: e.target.value })} />
-                          </label>
-                          <label>
-                            <span>To</span>
-                            <input type="date" value={customDate.to} onChange={(e) => setCustomDate({ ...customDate, to: e.target.value })} />
-                          </label>
-                        </div>
-                        <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
-                          <button
-                            className="picker-cancel-btn"
-                            onClick={() => {
-                              setShowCustomPicker(false);
-                              setCustomDate({ from: "", to: "" });
-                            }}
-                          >
-                            {t("CANCEL") || "Cancel"}
-                          </button>
-                          <button className="picker-apply-btn" onClick={handleCustomDownload}>
-                            {t("APPLY") || "Apply"}
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
+                    <MdDownloadIcon />
+                    {ekycDownloadLoading ? t("DOWNLOADING") || "Downloading" : t("DOWNLOAD_REPORT") || "Download Report"}
+                  </button>
+                </div>
             </div>
           </div>
-
-          {/* Bottom Row: Remaining Details */}
           <div className="details-grid-row">
-            <div className="detail-item">
-              <span className="label">{t("GENDER")}</span>
-              <span className="value">{surveyor?.owner?.gender || "N/A"}</span>
-            </div>
-
-            <div className="detail-item">
-              <span className="label">{t("STATUS")}</span>
-              <span className="value">{surveyor?.status || "N/A"}</span>
-            </div>
-
             <div className="detail-item">
               <span className="label">{t("VENDOR_NAME") || "Vendor Name"}</span>
               <span className="value">{vendorName}</span>
@@ -494,6 +278,29 @@ const SurveyorDetailsCard = () => {
             <div className="detail-item">
               <span className="label">{t("SUPERVISOR_NAME") || "Supervisor Name"}</span>
               <span className="value">{supervisorName}</span>
+            </div>
+
+            <div className="detail-item">
+              <span className="label">{t("MOBILE")}</span>
+              <span className="value">{surveyor?.owner?.mobileNumber || surveyor?.mobileNo || "N/A"}</span>
+            </div>
+          </div>
+
+          {/* Bottom Row: Remaining Details */}
+          <div className="details-grid-row">
+            <div className="detail-item">
+              <span className="label">{t("EMAIL")}</span>
+              <span className="value">{surveyor?.owner?.emailId || "N/A"}</span>
+            </div>
+            
+            <div className="detail-item">
+              <span className="label">{t("GENDER")}</span>
+              <span className="value">{surveyor?.owner?.gender || "N/A"}</span>
+            </div>
+
+            <div className="detail-item">
+              <span className="label">{t("STATUS")}</span>
+              <span className="value">{surveyor?.status || "N/A"}</span>
             </div>
           </div>
         </div>
@@ -593,6 +400,18 @@ const SurveyorDetailsCard = () => {
         <AssignEkycModal surveyor={surveyor} isReassign={showModal === "EKYC_REASSIGN"} closeModal={closeModal} refetchDashboard={refetchDashboard} />
       )}
     </Card>
+    {showFilterModal && (
+        <EkycFilterModal
+          t={t}
+          onClose={() => setShowFilterModal(false)}
+          onApply={handleApplyFilters}
+          customDate={customDate}
+          setCustomDate={setCustomDate}
+          ekycStatus={ekycStatus}
+          setEkycStatus={setEkycStatus}
+        />
+      )}
+    </Fragment>
   );
 };
 

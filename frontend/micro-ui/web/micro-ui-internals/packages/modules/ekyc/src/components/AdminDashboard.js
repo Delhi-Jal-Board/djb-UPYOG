@@ -22,7 +22,7 @@ const VendorCardSkeleton = () => {
       </div>
 
       {/* Progress */}
-      <div className="progress-section">
+      <div>
         <div className="skeleton skeleton-progress-bar" />
 
         <div className="progress-label">
@@ -142,14 +142,7 @@ const AdminDashboard = () => {
                   {/* Header */}
                   <div className="vendor-card-header">
                     <div className="vendor-title">
-                      <div className="vendor-icon">
-                        <span>{vendor.vendorName?.[0]?.toUpperCase()}</span>
-                      </div>
-
-                      <div>
                         <h4>{vendor.vendorName}</h4>
-                        <span className="vendor-subtitle">{t("EKYC_VENDOR") || "eKYC Vendor"}</span>
-                      </div>
                     </div>
 
                     <div className="kno-count-badge">
@@ -159,7 +152,7 @@ const AdminDashboard = () => {
                   </div>
 
                   {/* Progress */}
-                  <div className="progress-section">
+                  <div>
                     <div className="progress-bar-container">
                       <div className="progress-bar-fill" style={{ width: `${vendor.progressPercent}%` }} />
                     </div>

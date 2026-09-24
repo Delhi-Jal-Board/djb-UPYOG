@@ -860,3 +860,169 @@ input[type="number"] {
     display: none;
   }
 }
+
+.ekyc-report-filter {
+  .header-wrap{
+    padding: 8px !important;
+  }
+}
+
+.ekyc-report-filter--date-open {
+  
+  .popup-module-content {
+    min-height: 350px;
+  }
+}
+
+.ekyc-filter-modal {
+  min-width: 450px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Close button */
+.ekyc-filter-modal-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 4px;
+  border: none;
+  border-radius: 50px;
+
+  background: transparent;
+  color: #9ca3af;
+
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 1;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.ekyc-filter-modal-close:hover {
+  background: #f3f4f6;
+  color: #4b5563;
+}
+
+.ekyc-filter-modal-close:focus-visible {
+  outline: 2px solid #94a3b8;
+  outline-offset: 2px;
+}
+
+/* Section */
+.ekyc-filter-modal-section {
+  width: 100%;
+}
+
+/* Section header */
+.ekyc-filter-modal-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+/* Label */
+.ekyc-filter-modal-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #0f172a;
+
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Hint */
+.ekyc-filter-modal-hint {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+/* Status options */
+.ekyc-filter-modal-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Status option */
+.ekyc-filter-modal-option {
+  padding: 6px;
+
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+
+  background: #ffffff;
+  color: #374151;
+
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 8px;
+
+  cursor: pointer;
+  outline: none;
+  white-space: nowrap;
+
+  transition: all 0.15s ease;
+}
+
+.ekyc-filter-modal-option:hover {
+  border-color: #d1d5db;
+  background: #f9fafb;
+}
+
+.ekyc-filter-modal-option:focus-visible {
+  outline: 2px solid #94a3b8;
+  outline-offset: 2px;
+}
+
+/* Selected option */
+.ekyc-filter-modal-option-selected {
+  border-color: #0f172a;
+  background: #0f172a;
+  color: #ffffff;
+}
+
+.ekyc-filter-modal-option-selected:hover {
+  border-color: #0f172a;
+  background: #0f172a;
+  color: #ffffff;
+}
+
+/* Divider */
+.ekyc-filter-modal-divider {
+  width: 100%;
+  height: 2px;
+  background: #f1f5f9;
+}
+
+/* Modal action bar */
+.popup-module-action-bar {
+  border-top: 1px solid #f1f5f9;
+  padding: 16px 24px;
+  background: #ffffff;
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .ekyc-filter-modal {
+    min-width: unset;
+    width: 100%;
+    padding: 4px 0;
+  }
+
+  .ekyc-filter-modal-options {
+    gap: 6px;
+  }
+
+  .ekyc-filter-modal-option {
+    padding: 7px 12px;
+    font-size: 12px;
+  }
+}
