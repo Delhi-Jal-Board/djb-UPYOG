@@ -426,7 +426,7 @@
   }
 
   .header-wrap {
-    @apply flex;
+    @apply flex items-center;
 
     .header-start {
       margin-right: auto;

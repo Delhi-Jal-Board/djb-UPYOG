@@ -96,3 +96,17 @@
     display: none;
   }
 }
+
+.rdrDefinedRangesWrapper{
+  width: 120px;
+  flex: 1;
+}
+
+.rdrDateRangePickerWrapper{
+  width: inherit;
+  margin-bottom: 16px;
+}
+
+.rdrDateDisplay{
+  margin: 0.5rem;
+}

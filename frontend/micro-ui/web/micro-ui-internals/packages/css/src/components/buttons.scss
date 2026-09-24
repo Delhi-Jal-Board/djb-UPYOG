@@ -1,9 +1,16 @@
 .selector-button-primary {
-  @apply h-8 bg-primary-main text-center border-b-2 border-input-border border-solid outline-none px-lg;
+  @apply h-8 text-center border-b-2 border-input-border border-solid outline-none px-lg;
+  background-color: #065297 !important;
+
+  &:hover {
+    background-color: #176cb6 !important;
+  }
 
   &:focus {
     @apply outline-none;
   }
+
+
 
   h2 {
     @apply font-rc font-medium text-legend text-white;
