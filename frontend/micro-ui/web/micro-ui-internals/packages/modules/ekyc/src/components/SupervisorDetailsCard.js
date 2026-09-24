@@ -255,7 +255,6 @@ const SupervisorDetailsCard = () => {
     return supervisor?.surveyors || [];
   }, [supervisor]);
 
-  console.log(progressData, currentSupervisor);
   const cards = useMemo(
     () => [
       {

@@ -17,7 +17,7 @@ const EkycFilterModal = ({ t, onApply, onClose,customDate, setCustomDate,ekycSta
   return (
     <div className={`ekyc-report-filter ${isDatePickerOpen ? "ekyc-report-filter--date-open" : ""}`}>
       <Modal
-        headerBarMain="eKYC Filters"
+        headerBarMain="Download eKYC Report"
         headerBarEnd={
           <button type="button" onClick={onClose} aria-label="Close" className="ekyc-filter-modal-close">
             <CloseSvg height="24" width="24" />
