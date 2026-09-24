@@ -3,11 +3,8 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { Switch, useLocation } from "react-router-dom";
 import Dashboard from "../../components/Dashboard";
-// import CeoDashboard from "../../components/CeoDashboard.jsx";
 import VendorDetailsCard from "../../components/VendorDetailsCard.js";
 import Inbox from "./Inbox";
-// import Mapping from "./Mapping";
-// import Create from "./Create";
 import Review from "../../components/Review";
 import EKYCForm from "./EKYCForm";
 // import AssignEkyc from "../../components/AssignEkyc.js";
@@ -152,23 +149,6 @@ const EmployeeApp = ({ path }) => {
             />
 
             {/* <PrivateRoute
-              path={`${path}/create-kyc`}
-              component={() => (
-                <LayoutWrapper layoutClass="normal">
-                  <Create />
-                </LayoutWrapper>
-              )}
-            /> */}
-
-            {/* <PrivateRoute
-              path={`${path}/mapping`}
-              component={() => (
-                <LayoutWrapper layoutClass="normal">
-                  <Mapping />
-                </LayoutWrapper>
-              )}
-            /> */}
-            {/* <PrivateRoute
               path={`${path}/assign`}
               exact
               component={() => (
@@ -205,15 +185,6 @@ const EmployeeApp = ({ path }) => {
               )}
             />
 
-            {/* <PrivateRoute
-              path={`${path}/ceo-dashboard`}
-              component={() => (
-                <LayoutWrapper layoutClass="normal">
-                  <CeoDashboard />
-                </LayoutWrapper>
-              )}
-            /> */}
-
             <PrivateRoute
               path={`${path}/admin-dashboard`}
               component={() => (
@@ -233,7 +204,7 @@ const EmployeeApp = ({ path }) => {
             />
 
             <PrivateRoute
-              path={[`${path}/supervisor-dashboard/:id`, `${path}/supervisor-dashboard`]}
+              path={[`${path}/supervisor-dashboard/:id`, `${path}/supervisor-dashboard/:id/vendorId`, `${path}/supervisor-dashboard`]}
               component={() => (
                 <LayoutWrapper layoutClass="normal">
                   <SupervisorDetailsCard />
