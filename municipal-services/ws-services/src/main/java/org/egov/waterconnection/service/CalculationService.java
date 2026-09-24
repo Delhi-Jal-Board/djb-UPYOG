@@ -79,6 +79,7 @@ public class CalculationService {
 		else if (WCConstants.APPLY_MUTATION_CONST.equalsIgnoreCase(action) && waterServiceUtil.isMutationConnectionRequest(request)) {
 			triggerCalculation(request, property, action);
 		}
+		/*
 		else if (WCConstants.APPROVE_DISCONNECTION_CONST.equalsIgnoreCase(action)) {
 			CalculationCriteria criteria = CalculationCriteria.builder()
 					.applicationNo(request.getWaterConnection().getApplicationNo())
@@ -96,6 +97,7 @@ public class CalculationService {
 				throw new CustomException("WATER_CALCULATION_EXCEPTION", "Calculation response can not parsed!!!");
 			}
 		}
+		*/
 		else if (WCConstants.RECONNECT_DISCONNECTION_CONST.equalsIgnoreCase(action) && (request.isReconnectRequest() || request.getWaterConnection().getApplicationType().equalsIgnoreCase(WCConstants.WATER_RECONNECTION))) {
 			CalculationCriteria criteria = CalculationCriteria.builder()
 					.applicationNo(request.getWaterConnection().getApplicationNo())
