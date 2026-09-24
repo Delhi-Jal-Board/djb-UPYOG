@@ -204,7 +204,7 @@ const EmployeeApp = ({ path }) => {
             />
 
             <PrivateRoute
-              path={[`${path}/supervisor-dashboard/:id`, `${path}/supervisor-dashboard/:id/vendorId`, `${path}/supervisor-dashboard`]}
+              path={`${path}/supervisor-dashboard/:id/:vendorId?`}
               component={() => (
                 <LayoutWrapper layoutClass="normal">
                   <SupervisorDetailsCard />
@@ -213,7 +213,7 @@ const EmployeeApp = ({ path }) => {
             />
 
             <PrivateRoute
-              path={[`${path}/surveyor-dashboard/:id`, `${path}/surveyor-dashboard`]}
+              path={`${path}/surveyor-dashboard/:id?`}
               component={() => (
                 <LayoutWrapper layoutClass="normal">
                   <SurveyorDetailsCard />
