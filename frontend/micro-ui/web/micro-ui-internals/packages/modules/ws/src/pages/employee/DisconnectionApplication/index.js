@@ -1,7 +1,6 @@
-import { Loader } from "@djb25/digit-ui-react-components";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { useRouteMatch, Switch, Route, Redirect } from "react-router-dom";
+import { useRouteMatch, useLocation, Switch, Route, Redirect } from "react-router-dom";
 import { newConfig as newConfigWS } from "../../../config/wsDisconnectionConfig";
 
 const getPath = (path, params) => {
@@ -15,19 +14,18 @@ const getPath = (path, params) => {
 const DisconnectionApplication = () => {
   const { t } = useTranslation();
   const match = useRouteMatch();
-  const stateId = Digit.ULBService.getStateId();
-  let { data: newConfig, isLoading } = Digit.Hooks.ws.useWSConfigMDMS.WSDisconnectionConfig(stateId, {});
+  const location = useLocation();
 
+  // Always use the static config (same as citizen flow) so that locally added
+  // routes (k-number, consumer-details) are always registered as <Route>s
+  // regardless of what the MDMS server returns.
   let config = [];
-
-  if (!isLoading && newConfig.length > 0) {
-    newConfig.forEach((obj) => {
-      config = config.concat(obj.body.filter((a) => !a.hideInCitizen));
+  newConfigWS
+    .filter((e) => e.head === "NEW_DISCONNECTION")
+    .forEach((obj) => {
+      config = config.concat(obj.body.filter((a) => !a.hideInEmployee));
     });
-    config.indexRoute = "docsrequired";
-  } else {
-    return <Loader />
-  }
+  config.indexRoute = "docsrequired";
 
   
   return (
@@ -43,11 +41,10 @@ const DisconnectionApplication = () => {
       })}
     
       <Route>
-        <Redirect to={`${getPath(match.path, match.params)}/${config.indexRoute}`} />
+        <Redirect to={`${getPath(match.path, match.params)}/${config.indexRoute}${location.search}`} />
       </Route>
     </Switch>
   );
 };
 
 export default DisconnectionApplication;
-

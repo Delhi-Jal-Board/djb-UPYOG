@@ -814,8 +814,8 @@ export const createPayloadOfWSDisconnection = async (data, storeData, service) =
       noOfTaps: storeData?.applicationData?.noOfTaps,
       additionalDetails: storeData?.applicationData?.additionalDetails,
       tenantId: storeData?.applicationData?.tenantId,
-      connectionType: storeData.applicationData.connectionType || null,
-      waterSource: storeData.applicationData.waterSource || null,
+      connectionType: storeData?.applicationData?.connectionType || null,
+      waterSource: storeData?.applicationData?.waterSource || null,
       processInstance: {
         ...storeData?.applicationData?.processInstance,
         businessService: "DisconnectWSConnection",
@@ -826,10 +826,10 @@ export const createPayloadOfWSDisconnection = async (data, storeData, service) =
     disconnectRequest: true,
   };
 
-  if (storeData.applicationData.connectionType) {
-    if (storeData.applicationData.meterInstallationDate)
+  if (storeData?.applicationData?.connectionType) {
+    if (storeData?.applicationData?.meterInstallationDate)
       wsPayload.WaterConnection.meterInstallationDate = storeData.applicationData.meterInstallationDate;
-    if (storeData.applicationData.meterId) wsPayload.WaterConnection.meterId = storeData.applicationData.meterId;
+    if (storeData?.applicationData?.meterId) wsPayload.WaterConnection.meterId = storeData.applicationData.meterId;
   }
 
   let swPayload = {
@@ -865,7 +865,7 @@ export const createPayloadOfWSDisconnection = async (data, storeData, service) =
       tenantId: storeData?.applicationData?.tenantId,
       // connectionType: storeData.applicationData.connectionType || null,
       connectionType: "Non Metered",
-      waterSource: storeData.applicationData.waterSource || null,
+      waterSource: storeData?.applicationData?.waterSource || null,
       processInstance: {
         ...storeData?.applicationData?.processInstance,
         businessService: "DisconnectSWConnection",
