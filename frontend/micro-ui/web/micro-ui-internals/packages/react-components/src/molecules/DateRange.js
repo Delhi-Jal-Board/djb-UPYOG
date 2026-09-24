@@ -1,6 +1,6 @@
 import React, { Fragment, useEffect, useMemo, useRef, useState } from "react";
 
-import { Calender, LuCalendarIcon } from "../atoms/svgindex";
+import { LuCalendarIcon } from "../atoms/svgindex";
 import { DateRangePicker, createStaticRanges } from "react-date-range";
 import {
   format,
@@ -31,7 +31,7 @@ function isStartDateFocused(focusNumber) {
   return focusNumber === 0;
 }
 
-const DateRange = ({ values, onFilterChange, t, hideLabel = false }) => {
+const DateRange = ({ values, onFilterChange, t, hideLabel = false,onOpenChange }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [focusedRange, setFocusedRange] = useState([0, 0]);
   const today = new Date();
@@ -65,6 +65,24 @@ const DateRange = ({ values, onFilterChange, t, hideLabel = false }) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectionRange, isModalOpen]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
+        setIsModalOpen(false);
+
+        if (onOpenChange) {
+          onOpenChange(false);
+        }
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [onOpenChange]);
 
   const staticRanges = useMemo(() => {
     return createStaticRanges([
@@ -141,8 +159,18 @@ const DateRange = ({ values, onFilterChange, t, hideLabel = false }) => {
       setSelectionRange(selection);
     }
     if (isEndDateFocused(focusedRange[1])) {
-      setSelectionRange({ title, duration, startDate, endDate: addSeconds(addMinutes(addHours(endDate, 23), 59), 59) });
+      setSelectionRange({
+        title,
+        duration,
+        startDate,
+        endDate: addSeconds(addMinutes(addHours(endDate, 23), 59), 59),
+      });
+
       setIsModalOpen(false);
+
+      if (onOpenChange) {
+        onOpenChange(false);
+      }
     }
   };
 
@@ -152,7 +180,17 @@ const DateRange = ({ values, onFilterChange, t, hideLabel = false }) => {
       <div className="employee-select-wrap" ref={wrapperRef}>
         <div
           className="select"
-          onClick={() => setIsModalOpen((prevState) => !prevState)}
+          onClick={() => {
+            setIsModalOpen((prevState) => {
+              const nextState = !prevState;
+
+              if (onOpenChange) {
+                onOpenChange(nextState);
+              }
+
+              return nextState;
+            });
+          }}
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >
