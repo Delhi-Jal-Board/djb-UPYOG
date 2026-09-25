@@ -172,7 +172,7 @@ const WSDeclaration = ({ config, onSelect, userType, formData, setError, formSta
             </LabelFieldPair>
           </div>
 
-          <div>
+          {/* <div>
             <LabelFieldPair>
               <CardLabel>{t("WS_UPLOAD_SIGNATURE_FILE")}</CardLabel>
               <div className="field" style={{ display: "flex", gap: "10px", alignItems: "center" }}>
@@ -209,10 +209,10 @@ const WSDeclaration = ({ config, onSelect, userType, formData, setError, formSta
                 )}
               </div>
             </LabelFieldPair>
-          </div>
+          </div> */}
         </div>
       </CollapsibleCardPage>
-      {showDocModal && (
+      {/* {showDocModal && (
         <Modal
           open={showDocModal}
           headerBarMain={t("WS_VIEW_DOCUMENT") || "View Document"}
@@ -241,7 +241,7 @@ const WSDeclaration = ({ config, onSelect, userType, formData, setError, formSta
             )}
           </div>
         </Modal>
-      )}
+      )} */}
     </React.Fragment>
   );
 };

@@ -231,6 +231,7 @@ const PropertyOwnerDetails = ({ t, config, onSelect, userType, formData, formSta
                           disable={isUpdateProperty || isEditProperty}
                           labelStyle={{ border: "1px solid #000", borderRight: "none" }}
                           onBlur={onBlur}
+                          placeholder={t("PT_FORM3_MOBILE_NUMBER")}
                         />
                       )}
                     />
@@ -281,6 +282,7 @@ const PropertyOwnerDetails = ({ t, config, onSelect, userType, formData, formSta
                           }}
                           disable={isUpdateProperty || isEditProperty}
                           onBlur={onBlur}
+                          placeholder={t("PT_OWNER_NAME")}
                         />
                       )}
                     />
@@ -315,6 +317,7 @@ const PropertyOwnerDetails = ({ t, config, onSelect, userType, formData, formSta
                           disabled={isUpdateProperty || isEditProperty}
                           isDropDown={window.location.href.includes("/employee") ? true : false}
                           onBlur={onBlur}
+                          placeholder={t("PT_FORM3_GENDER")}
                         />
                       )}
                     />
@@ -351,6 +354,7 @@ const PropertyOwnerDetails = ({ t, config, onSelect, userType, formData, formSta
                           }}
                           disable={isUpdateProperty || isEditProperty}
                           onBlur={onBlur}
+                          placeholder={t("PT_FORM3_FATHER_HUSBAND_NAME")}
                         />
                       )}
                     />

@@ -159,8 +159,6 @@ const ViewBreakup = ({ wsAdditionalDetails, workflowDetails, print, download }) 
         { label: t("WS_PROPERTY_TYPE"), value: propertyDetail.propertyType, isText: true },
         { label: t("WS_PLOT_AREA"), value: propertyDetail.landArea, unit: " (sq. meter.)" },
         { label: t("WS_BUILT_UP_AREA"), value: propertyDetail.superBuiltUpArea, unit: " (sq. meter.)" },
-        isValidValue(propertyDetail.farArea) ? { label: t("WS_FAR_AREA"), value: propertyDetail.farArea, isText: true } : null,
-        isValidValue(propertyDetail.coveredArea) ? { label: t("WS_COVERED_AREA"), value: propertyDetail.coveredArea, isText: true } : null,
         isValidValue(propertyDetail.numberOfDwellingUnits)
           ? { label: t("WS_NUMBER_OF_DWELLING_UNITS"), value: propertyDetail.numberOfDwellingUnits, isText: true }
           : null,

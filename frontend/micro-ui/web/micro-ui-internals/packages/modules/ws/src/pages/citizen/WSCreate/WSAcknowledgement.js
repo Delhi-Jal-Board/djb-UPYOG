@@ -55,7 +55,7 @@ const WSAcknowledgement = ({ data, onSuccess, clearParams }) => {
   const SWmutation = Digit.Hooks.ws.useWSUpdateAPI(
    "SEWERAGE"
   );
-  let isEdit = window.location.href.includes("/edit-application/") || window.location.href.includes("/modify-connection/");
+  let isEdit = window.location.href.includes("/edit-application") || window.location.href.includes("/modify-connection");
  
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
@@ -161,7 +161,7 @@ const WSAcknowledgement = ({ data, onSuccess, clearParams }) => {
           onClick={handleDownloadPdf}
         />)} */}
       {/* {mutation2?.data?.Licenses[0]?.status === "PENDINGPAYMENT" && <Link to={{
-        pathname: `/digit-ui/citizen/payment/collect/${mutation2.data.Licenses[0].businessService}/${mutation2.data.Licenses[0].applicationNumber}`,
+        pathname: `/digit-ui/${window.location.pathname.includes("employee") ? "employee" : "citizen"}/payment/collect/${mutation2.data.Licenses[0].businessService}/${mutation2.data.Licenses[0].applicationNumber}`,
         state: { tenantId: mutation2.data.Licenses[0].tenantId },
       }}>
         <SubmitBar label={t("COMMON_MAKE_PAYMENT")} />
@@ -195,7 +195,7 @@ const WSAcknowledgement = ({ data, onSuccess, clearParams }) => {
       onClick={handleDownloadPdfSewerage}
     />}
       <Link to={{
-        pathname: `/digit-ui/citizen`,
+        pathname: `/digit-ui/${window.location.pathname.includes("employee") ? "employee" : "citizen"}`,
       }}>
         <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
       </Link>

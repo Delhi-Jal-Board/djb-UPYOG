@@ -614,14 +614,14 @@ const App = ({ path }) => {
   const WSApplicationDetailsBillAmendment = Digit?.ComponentRegistryService?.getComponent("WSApplicationDetailsBillAmendment");
   const WSSearch = Digit?.ComponentRegistryService?.getComponent("WSSearch");
   const WSSearchWater = Digit?.ComponentRegistryService?.getComponent("WSSearchWater");
-  const WSEditApplication = Digit?.ComponentRegistryService?.getComponent("WSEditApplication");
+  const WSEditApplication = Digit?.ComponentRegistryService?.getComponent("WSCitizenEditApplication");
   const WSConsumptionDetails = Digit?.ComponentRegistryService?.getComponent("WSConsumptionDetails");
   const WSModifyApplication = Digit?.ComponentRegistryService?.getComponent("WSModifyApplication");
   const WSEditModifyApplication = Digit?.ComponentRegistryService?.getComponent("WSEditModifyApplication");
   const WSMutationApplication = Digit?.ComponentRegistryService?.getComponent("WSMutationApplication");
   const WSDisconnectionApplication = Digit?.ComponentRegistryService?.getComponent("WSDisconnectionApplication");
   const WSRestorationApplication = Digit?.ComponentRegistryService?.getComponent("WSRestorationApplication");
-  const WSEditApplicationByConfig = Digit?.ComponentRegistryService?.getComponent("WSEditApplicationByConfig");
+  const WSEditApplicationByConfig = Digit?.ComponentRegistryService?.getComponent("WSCitizenEditApplication");
   const WSBillIAmendMentInbox = Digit?.ComponentRegistryService?.getComponent("WSBillIAmendMentInbox");
   const WSGetDisconnectionDetails = Digit?.ComponentRegistryService?.getComponent("WSGetDisconnectionDetails");
   const WSModifyApplicationDetails = Digit?.ComponentRegistryService?.getComponent("WSModifyApplicationDetails");

@@ -1,4 +1,16 @@
-import { CardLabel, LabelFieldPair, TextInput, CheckBox, Dropdown, DatePicker, CollapsibleCardPage, FormStep, UploadFile } from "@djb25/digit-ui-react-components";
+import {
+  CardLabel,
+  LabelFieldPair,
+  TextInput,
+  CheckBox,
+  Dropdown,
+  DatePicker,
+  CollapsibleCardPage,
+  FormStep,
+  UploadFile,
+  ViewsIcon,
+  RemoveIcon,
+} from "@djb25/digit-ui-react-components";
 import _ from "lodash";
 import React, { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
@@ -9,7 +21,8 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
   const { t } = useTranslation();
   const { control, watch, setValue, formState: localFormState } = useForm({
     defaultValues: {
-      isDjbEmployee: String(formData?.djbEmployee?.isDjbEmployee) === "true" || String(formData?.additionalDetails?.isDjbEmployee) === "true" || false,
+      isDjbEmployee:
+        String(formData?.djbEmployee?.isDjbEmployee) === "true" || String(formData?.additionalDetails?.isDjbEmployee) === "true" || false,
       employeeId: formData?.djbEmployee?.employeeId || formData?.additionalDetails?.employeeId || "",
       dor: formData?.djbEmployee?.dor || formData?.additionalDetails?.dor || "",
       designation: formData?.djbEmployee?.designation || formData?.additionalDetails?.designation || "",
@@ -35,6 +48,25 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
   const [file, setFile] = useState(null);
   const [uploadedFile, setUploadedFile] = useState(() => formData?.djbEmployee?.document || formData?.additionalDetails?.document || null);
   const [errorUpload, setErrorUpload] = useState(null);
+
+  const handleView = async (fileStoreId, tenantId) => {
+    try {
+      const response = await Digit.UploadServices.Filefetch([fileStoreId], tenantId);
+      const url = response?.data?.fileStoreIds?.[0]?.url;
+      if (url) {
+        const differentFormats = url?.split(",") || [];
+        let fileURL = "";
+        differentFormats.map((link) => {
+          if (!link.includes("large") && !link.includes("medium") && !link.includes("small")) {
+            fileURL = link;
+          }
+        });
+        window.open(fileURL || differentFormats[0], "_blank");
+      }
+    } catch (error) {
+      console.error("Error fetching file URL:", error);
+    }
+  };
 
   useEffect(() => {
     (async () => {
@@ -104,19 +136,19 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
         <div className="formcomposer-section-grid">
           <div>
             <LabelFieldPair>
-              <CardLabel>{t("WS_EMPLOYEE_ID") + " *"}</CardLabel>
+              <CardLabel>{t("WS_EMPLOYEE_ID")}</CardLabel>
               <Controller
                 control={control}
                 name="employeeId"
                 rules={{ required: isDjbEmployee ? t("CORE_COMMON_REQUIRED_ERRMSG") : false }}
-                render={(props) => <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} onBlur={props.onBlur} />}
+                render={(props) => <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} onBlur={props.onBlur} placeholder={t("WS_EMPLOYEE_ID")} />}
               />
             </LabelFieldPair>
           </div>
 
           <div>
             <LabelFieldPair>
-              <CardLabel>{t("WS_DATE_OF_RETIREMENT") + " *"}</CardLabel>
+              <CardLabel>{t("WS_DATE_OF_RETIREMENT")}</CardLabel>
               <div className="field">
                 <Controller
                   control={control}
@@ -130,13 +162,13 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
 
           <div>
             <LabelFieldPair>
-              <CardLabel>{t("WS_EMPLOYEE_DESIGNATION") + " *"}</CardLabel>
+              <CardLabel>{t("WS_EMPLOYEE_DESIGNATION")}</CardLabel>
               <div className="field">
                 <Controller
                   control={control}
                   name="designation"
                   rules={{ required: isDjbEmployee ? t("CORE_COMMON_REQUIRED_ERRMSG") : false }}
-                  render={(props) => <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} onBlur={props.onBlur} />}
+                  render={(props) => <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} onBlur={props.onBlur} placeholder={t("WS_EMPLOYEE_DESIGNATION")} />}
                 />
               </div>
             </LabelFieldPair>
@@ -144,7 +176,7 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
 
           <div>
             <LabelFieldPair>
-              <CardLabel>{t("WS_UPLOAD_EMPLOYEE_ID_DOC") + " *"}</CardLabel>
+              <CardLabel>{t("WS_UPLOAD_EMPLOYEE_ID_DOC")}</CardLabel>
               <div className="field">
                 <Controller
                   control={control}
@@ -154,9 +186,10 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
                     <UploadFile
                       id={"employee-doc"}
                       extraStyleName={"propertyCreate"}
+                      placeholder={t("WS_UPLOAD_EMPLOYEE_ID_DOC")}
                       accept="image/*, .pdf, .png, .jpeg, .jpg"
                       onUpload={(e) => {
-                         selectfile(e);
+                        selectfile(e);
                       }}
                       onDelete={() => {
                         setUploadedFile(null);
@@ -164,10 +197,48 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
                         props.onChange("");
                       }}
                       message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`ES_NO_FILE_SELECTED_LABEL`)}
-                      error={errorUpload}
-                    />
+                      error={errorUpload} uploadedFiles={uploadedFile && !file ? [[file?.name || t("WS_UPLOAD_EMPLOYEE_ID_DOC"), { fileStoreId: uploadedFile }]] : undefined} />
                   )}
                 />
+                {uploadedFile && (
+                  <div
+                    style={{
+                      marginTop: "16px",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "16px",
+                      background: "#F3F4F6",
+                      padding: "8px 16px",
+                      borderRadius: "8px",
+                      width: "fit-content",
+                      border: "1px solid #E5E7EB",
+                    }}
+                  >
+                    <span style={{ fontSize: "14px", color: "#374151", fontWeight: "600" }}>{file?.name || t("WS_UPLOAD_EMPLOYEE_ID_DOC")}</span>
+                    <div style={{ display: "flex", gap: "10px" }}>
+                      <button
+                        type="button"
+                        onClick={() => handleView(uploadedFile, tenantId)}
+                        title={t("WS_VIEW_DOCUMENT") || "View Document"}
+                        style={{ border: "none", background: "transparent", color: "#00497e", cursor: "pointer", padding: 0 }}
+                      >
+                        <ViewsIcon />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setUploadedFile(null);
+                          setFile(null);
+                          setValue("document", "");
+                        }}
+                        title="Remove Document"
+                        style={{ border: "none", background: "transparent", color: "#d32f2f", cursor: "pointer", padding: 0, fontSize: "18px" }}
+                      >
+                        <RemoveIcon />
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </LabelFieldPair>
           </div>
@@ -181,9 +252,7 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
       <div>
         <Timeline currentStep={2} />
         <FormStep t={t} config={config} onSelect={goNext} onSkip={onSkip} isDisabled={Object.keys(localFormState.errors).length > 0}>
-          <div style={{ marginTop: "-30px", marginBottom: "-30px" }}>
-            {FormContent}
-          </div>
+          <div style={{ marginTop: "-30px", marginBottom: "-30px" }}>{FormContent}</div>
         </FormStep>
       </div>
     );

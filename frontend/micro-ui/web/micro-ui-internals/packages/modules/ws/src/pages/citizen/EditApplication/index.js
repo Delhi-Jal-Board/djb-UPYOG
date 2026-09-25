@@ -129,6 +129,7 @@ const getEditDetails = (waterResult, sewerageresult, t) => {
       employeeId: waterResult?.additionalDetails?.employeeId || "",
       designation: waterResult?.additionalDetails?.designation || "",
       dor: waterResult?.additionalDetails?.dor || waterResult?.additionalDetails?.dorDate || "",
+      document: waterResult?.additionalDetails?.document || "",
     };
   } else if (sewerageresult) {
     sewerageresult.ConnectionHolderDetails = sewerageresult?.connectionHolders
@@ -234,6 +235,7 @@ const getEditDetails = (waterResult, sewerageresult, t) => {
       employeeId: sewerageresult?.additionalDetails?.employeeId || "",
       designation: sewerageresult?.additionalDetails?.designation || "",
       dor: sewerageresult?.additionalDetails?.dor || sewerageresult?.additionalDetails?.dorDate || "",
+      document: sewerageresult?.additionalDetails?.document || "",
     };
   }
 
@@ -245,10 +247,13 @@ const EditApplication = ({ parentRoute }) => {
   const queryClient = useQueryClient();
   let match = useRouteMatch();
   const { t } = useTranslation();
-  let { tenantId } = useParams();
+  let { tenantId: tenantIdFromUrl } = useParams();
+  const searchParams = new URLSearchParams(useLocation().search);
+  const applicationNumberParam = searchParams.get("applicationNumber");
+  let tenantId = tenantIdFromUrl || searchParams.get("tenantId") || Digit.ULBService.getCurrentTenantId();
   const { pathname, state } = useLocation();
   const history = useHistory();
-  let applicationNumber = state?.id || sessionStorage.getItem("ApplicationNoState");
+  let applicationNumber = applicationNumberParam || state?.id || sessionStorage.getItem("ApplicationNoState");
   let config = [];
   let waterapplication = {};
   let sewerageapplication = {};
@@ -278,7 +283,7 @@ const EditApplication = ({ parentRoute }) => {
     { tenantId, filters: { ...filter1, isInternalCall: true }, BusinessService: "SW", t },
     { enabled: applicationNumber && applicationNumber.includes("SW") ? true : false }
   );
-  let isModifyEdit = window.location.href.includes("/modify-connection/") || window.location.href.includes("/edit-application/");
+  let isModifyEdit = window.location.href.includes("/modify-connection") || window.location.href.includes("/edit-application");
 
   useEffect(() => {
     waterapplication = Waterresult;
@@ -286,8 +291,8 @@ const EditApplication = ({ parentRoute }) => {
     if (
       ((Waterresult && waterapplication) || (Sewarageresult && sewerageapplication)) &&
       (!(Object.keys(params).length > 0) ||
-        (waterapplication && params?.applicationNo !== waterapplication?.applicationNo) ||
-        (sewerageapplication && params?.applicationNo !== sewerageapplication?.applicationNo))
+        (waterapplication && (params?.applicationNo !== waterapplication?.applicationNo || !params?.DocumentsRequired)) ||
+        (sewerageapplication && (params?.applicationNo !== sewerageapplication?.applicationNo || !params?.DocumentsRequired)))
     ) {
       waterapplication = Waterresult;
       sewerageapplication = Sewarageresult;
@@ -375,7 +380,7 @@ const EditApplication = ({ parentRoute }) => {
     (((Waterresult && Object.keys(Waterresult).length > 0) || !Sewarageresult) && Waterresult?.isLoading) ||
     Sewarageresult?.isLoading ||
     configLoading ||
-    Object.keys(params).length === 0 // Ensure params are populated before rendering to prevent empty initial states
+    Object.keys(params).length === 0 || !params?.DocumentsRequired // Ensure params are hydrated
   ) {
     return <Loader />;
   }

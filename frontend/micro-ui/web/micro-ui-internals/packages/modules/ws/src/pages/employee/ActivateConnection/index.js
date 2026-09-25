@@ -207,9 +207,11 @@ const ActivateConnection = () => {
       if (formDetails?.connectionDetails?.[0]?.noOfWaterClosets) formData.noOfWaterClosets = formDetails?.connectionDetails?.[0]?.noOfWaterClosets;
       if (formDetails?.connectionDetails?.[0]?.noOfToilets) formData.noOfToilets = formDetails?.connectionDetails?.[0]?.noOfToilets;
 
-      if (formDetails?.plumberDetails?.[0]?.detailsProvidedBy?.code)
+      if (formDetails?.plumberDetails?.[0]?.detailsProvidedBy?.code) {
+        if (!formData.additionalDetails) formData.additionalDetails = {};
         formData.additionalDetails.detailsProvidedBy = formDetails?.plumberDetails?.[0]?.detailsProvidedBy?.code;
-      if (!formData?.plumberInfo?.[0] && formDetails?.plumberDetails?.detailsProvidedBy?.code == "ULB") formData.plumberInfo = [{}];
+      }
+      if (!formData?.plumberInfo || !formData?.plumberInfo?.[0]) formData.plumberInfo = [{}];
       if (formDetails?.plumberDetails?.[0]?.plumberName) formData.plumberInfo[0].name = formDetails?.plumberDetails?.[0]?.plumberName;
       if (formDetails?.plumberDetails?.[0]?.plumberLicenseNo) formData.plumberInfo[0].licenseNo = formDetails?.plumberDetails?.[0]?.plumberLicenseNo;
       if (formDetails?.plumberDetails?.[0]?.plumberMobileNo) formData.plumberInfo[0].mobileNumber = formDetails?.plumberDetails?.[0]?.plumberMobileNo;

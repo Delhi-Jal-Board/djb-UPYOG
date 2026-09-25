@@ -804,22 +804,22 @@ export const WSSearch = {
                   ? t(`WS_APPLICATION_TYPE_${wsDataDetails?.applicationType}`)
                   : t("NA"),
             },
-            {
+            /* {
               title: "WS_CATEGORY_TYPE",
               value: wsDataDetails?.additionalDetails?.categoryType?.code
                 ? t(`WS_CATEGORY_${wsDataDetails?.additionalDetails?.categoryType?.code}`)
                 : wsDataDetails?.additionalDetails?.categoryType
                   ? t(`WS_CATEGORY_${wsDataDetails?.additionalDetails?.categoryType}`)
                   : t("NA"),
-            },
-            {
+            }, */
+            /* {
               title: "WS_SERV_DETAIL_CONN_TYPE",
               value: connType
                 ? connType === "Temporary" || connType === "Permanent"
                   ? t(`WS_CONNECTION_${stringReplaceAll(connType, " ", "_")}`)
                   : t(`WS_SERVICES_MASTERS_WATERSOURCE_${stringReplaceAll(connType?.toUpperCase(), " ", "_")}`)
                 : t("NA"),
-            },
+            }, */
           ];
 
           if (isTemp) {
@@ -837,14 +837,14 @@ export const WSSearch = {
             });
           }
 
-          fields.push({
+          /* fields.push({
             title: "WS_WATER_DEMAND_TYPE",
             value: wsDataDetails?.additionalDetails?.waterDemandType?.code
               ? t(`WS_WATER_DEMAND_${wsDataDetails?.additionalDetails?.waterDemandType?.code}`)
               : wsDataDetails?.additionalDetails?.waterDemandType
                 ? t(`WS_WATER_DEMAND_${wsDataDetails?.additionalDetails?.waterDemandType}`)
                 : t("NA"),
-          });
+          }); */
 
           fields.push({
             title: "WS_APPLICANT_TYPE",
@@ -855,10 +855,10 @@ export const WSSearch = {
                 : t("NA"),
           });
 
-          fields.push({
+          /* fields.push({
             title: isNonDomestic ? "WS_NON_DOMESTIC_TYPE" : "WS_DOMESTIC_TYPE",
             value: domesticType ? t(`WS_DOMESTIC_TYPE_${domesticType}`) : t("NA"),
-          });
+          }); */
 
           if (isOrg) {
             fields.push({
@@ -1010,7 +1010,7 @@ export const WSSearch = {
       documentDetails,
     ];
 
-    if (wsDataDetails?.applicationStatus === "PENDING_FOR_FIELD_INSPECTION") {
+    if (wsDataDetails?.applicationStatus === "PENDING_FOR_FIELD_INSPECTION" || wsDataDetails?.applicationStatus === "PENDING_FOR_CITIZEN_ACTION") {
       const dueVerificationDetails = {
         title: " ",
         asSectionHeader: false,

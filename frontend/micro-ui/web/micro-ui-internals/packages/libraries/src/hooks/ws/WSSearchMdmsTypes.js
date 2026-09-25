@@ -39,7 +39,13 @@ const WSSearchMdmsTypes = {
       {
         select: (data) => {
           const wsDocsData = type ? type : "Documents";
+          if (data?.["ws-services-masters"]?.[wsDocsData]) {
+            data["ws-services-masters"][wsDocsData] = data["ws-services-masters"][wsDocsData].filter(doc => doc?.active !== false && doc?.active !== "false");
+          }
           data?.["ws-services-masters"]?.[wsDocsData]?.forEach((type) => {
+            if (type.dropdownData) {
+              type.dropdownData = type.dropdownData.filter(val => val?.active !== false && val?.active !== "false");
+            }
             type.code = type.code;
             type.i18nKey = type.code ? type.code.replaceAll(".", "_") : "";
             type.dropdownData?.forEach((value) => {
@@ -77,7 +83,13 @@ const WSSearchMdmsTypes = {
       {
         select: (data) => {
           const wsDocsData = type ? type : "NewWSDocuments";
+          if (data?.["ws-services-masters"]?.[wsDocsData]) {
+            data["ws-services-masters"][wsDocsData] = data["ws-services-masters"][wsDocsData].filter(doc => doc?.active !== false && doc?.active !== "false");
+          }
           data?.["ws-services-masters"]?.[wsDocsData]?.forEach((type) => {
+            if (type.dropdownData) {
+              type.dropdownData = type.dropdownData.filter(val => val?.active !== false && val?.active !== "false");
+            }
             type.code = type.code;
             type.i18nKey = type.code ? type.code.replaceAll(".", "_") : "";
             type.dropdownData?.forEach((value) => {

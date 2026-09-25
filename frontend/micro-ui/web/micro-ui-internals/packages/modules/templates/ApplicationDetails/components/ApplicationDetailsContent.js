@@ -568,6 +568,7 @@ function ApplicationDetailsContent({
               "PENDING_FOR_FINAL_PAYMENT",
               "CONNECTION_ACTIVATED",
               "PENDING_FOR_CONNECTION_ACTIVATION",
+              "PENDING_FOR_CITIZEN_ACTION",
             ].includes(applicationData?.applicationStatus) && <DueVerification applicationData={applicationData} />}
           {detail?.additionalDetails?.taxHeadEstimatesCalculation && (
             <PropertyEstimates taxHeadEstimatesCalculation={detail?.additionalDetails?.taxHeadEstimatesCalculation} />

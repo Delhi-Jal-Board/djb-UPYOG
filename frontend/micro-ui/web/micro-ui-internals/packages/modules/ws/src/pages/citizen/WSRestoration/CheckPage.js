@@ -16,7 +16,7 @@ const CheckPage = () => {
   const value = Digit.SessionStorage.get("WS_DISCONNECTION");
   const [documents, setDocuments] = useState(value.WSDisconnectionForm.documents || []);
   let routeLink = `/digit-ui/citizen/ws/restoration-application`;
-  // if(window.location.href.includes("/edit-application/"))
+  // if(window.location.href.includes("/edit-application"))
   // routeLink=`/digit-ui/citizen/ws/edit-disconnect-application`
   const [error, setError] = useState(null);
   function routeTo(jumpTo) {

@@ -29,7 +29,7 @@ const WSCreate = () => {
 
   const stateId = Digit.ULBService.getStateId();
   let { data: newConfig } = Digit.Hooks.ws.useWSConfigMDMS.getFormConfig(stateId, []);
-  let isModifyEdit = window.location.href.includes("/modify-connection/") || window.location.href.includes("/edit-application/")
+  let isModifyEdit = window.location.href.includes("/modify-connection") || window.location.href.includes("/edit-application")
 
   const goNext = (skipStep) => {
     const currentPath = pathname.split("/").pop();

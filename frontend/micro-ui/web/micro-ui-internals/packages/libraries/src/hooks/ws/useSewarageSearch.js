@@ -18,7 +18,7 @@ const getDate = (epochdate) => {
   
 const combineResponse = (WaterConnections, properties, billData, t) => {
     if(WaterConnections && properties){
-    if(window.location.href.includes("/edit-application/") || window.location.href.includes("/modify-connection/"))
+    if(window.location.href.includes("/edit-application") || window.location.href.includes("/modify-connection"))
     return {
       ...WaterConnections?.[0],
       property : {...properties?.[0]},

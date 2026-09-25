@@ -284,7 +284,7 @@ const WSInfoPage = () => {
                           setOtp("");
                           setIsMobileVerified(false);
                         }}
-                        placeholder={t("WS_ENTER_MOBILE_NUMBER") || "Enter mobile number"}
+                        placeholder={t("CORE_COMMON_PHONE_NUMBER_PLACEHOLDER") || "Enter mobile number"}
                         maxLength={10}
                         disabled={isMobileVerified}
                       />
@@ -440,11 +440,11 @@ const WSInfoPage = () => {
           <CardSubHeader style={{ marginTop: "0", marginBottom: "0" }}>{t("WS_COMMON_CONNECTION_DETAIL")}</CardSubHeader>
           <ul style={{ listStyleType: "disc", marginLeft: "20px", marginBottom: "24px", lineHeight: "2" }}>
             <li>{t("WS_SERVICE_TYPE")}</li>
-            <li>{t("WS_CONNECTION_TYPE")}</li>
-            <li>{t("WS_WATER_DEMAND_TYPE")}</li>
+            {/* <li>{t("WS_CONNECTION_TYPE")}</li> */}
+            {/* <li>{t("WS_WATER_DEMAND_TYPE")}</li> */}
             <li>{t("WS_APPLICANT_TYPE")}</li>
             <li>{t("WS_DIVYANGJAN")}</li>
-            <li>{t("WS_DOMESTIC_TYPE")}</li>
+            {/* <li>{t("WS_DOMESTIC_TYPE")}</li> */}
           </ul>
 
           <CardSubHeader style={{ marginTop: "0", marginBottom: "0" }}>{t("WS_COMMON_CONNECTION_HOLDER_DETAILS_HEADER")}</CardSubHeader>
@@ -453,14 +453,14 @@ const WSInfoPage = () => {
             <li>{t("WS_OWN_DETAIL_MIDDLE_NAME")}</li>
             <li>{t("WS_OWN_DETAIL_LAST_NAME")}</li>
             <li>{t("WS_CONN_HOLDER_OWN_DETAIL_GENDER_LABEL")}</li>
-            <li>{t("WS_OWN_DETAIL_GUARDIAN_LABEL")}</li>
+            {/* <li>{t("WS_OWN_DETAIL_GUARDIAN_LABEL")}</li> */}
             <li>{t("CORE_COMMON_MOBILE_NUMBER")}</li>
             <li>{t("WS_EMAIL_ID")}</li>
           </ul>
 
           <CardSubHeader style={{ marginTop: "0", marginBottom: "0" }}>{t("PT_LOCATION_DETAILS")}</CardSubHeader>
           <ul style={{ listStyleType: "disc", marginLeft: "20px", marginBottom: "24px", lineHeight: "2" }}>
-            <li>{t("WS_ZRO_LOCATION")}</li>
+            {/* <li>{t("WS_ZRO_LOCATION")}</li> */}
             <li>{t("COMMON_ADDRESS_TYPE")}</li>
             <li>{t("CITY")}</li>
             <li>{t("PINCODE")}</li>
@@ -516,7 +516,7 @@ const WSInfoPage = () => {
             <li>{t("WS_DOC_PLUMBER_REPORT")}</li>
             <li>{t("WS_DOC_BUILDING_PLAN")}</li>
             <li>{t("WS_DOC_PROPERTY_TAX_RECEIPT")}</li>
-            <li>{t("WS_DOC_APPLICANT_PHOTOGRAPH")}</li>
+            {/* <li>{t("WS_DOC_APPLICANT_PHOTOGRAPH")}</li> */}
           </ul>
         </div>
 

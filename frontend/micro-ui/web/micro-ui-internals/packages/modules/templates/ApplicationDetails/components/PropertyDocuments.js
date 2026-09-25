@@ -31,7 +31,7 @@ function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false, 
       !applicationStatus || 
       applicationStatus === "PENDING_FOR_DOCUMENT_VERIFICATION" || 
       applicationStatus === "PENDING_APPROVAL_FOR_MUTATION" ||
-      applicationStatus === "PENDING_FOR_ZRO_APPROVAL";
+      applicationStatus === "PENDING_FOR_ZRO_APPROVAL" || applicationStatus === "PENDING_FOR_CITIZEN_ACTION";
     const finalVerified = isDocVerifState ? allChecked : true;
 
     window.isDocumentsVerified = finalVerified;
@@ -66,7 +66,8 @@ function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false, 
     "PENDING_FOR_DOCUMENT_VERIFICATION",
     "PENDING_APPROVAL_FOR_MUTATION",
     "PENDING_FOR_ZRO_APPROVAL",
-    "PENDING_FOR_CONNECTION_ACTIVATION"
+    "PENDING_FOR_CONNECTION_ACTIVATION",
+    "PENDING_FOR_CITIZEN_ACTION"
   ].includes(applicationStatus);
 
   const getDocSubType = (documentType) => {
