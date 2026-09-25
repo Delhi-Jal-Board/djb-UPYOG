@@ -22,7 +22,7 @@ const WSDocumentDetails = ({ t, config, onSelect, userType, formData, setError: 
 
   useEffect(() => {
     let count = 0;
-    wsDocs?.Documents.map((doc) => {
+    wsDocs?.Documents?.filter(doc => doc.code !== "OWNER.APPLICANTPHOTO")?.map((doc) => {
       let isRequired = false;
       documents.map((data) => {
         if (doc.required && data?.documentType.includes(doc.code)) isRequired = true;
@@ -81,7 +81,7 @@ const WSDocumentDetails = ({ t, config, onSelect, userType, formData, setError: 
       {!wsDocsLoading ? (
         <FormStep t={t} config={config} onSelect={handleSubmit} onSkip={onSkip} isDisabled={enableSubmit} onAdd={onAdd}>
           {nocDownloadSection}
-          {wsDocs?.Documents?.map((document, index) => {
+          {wsDocs?.Documents?.filter(doc => doc.code !== "OWNER.APPLICANTPHOTO")?.map((document, index) => {
             return (
               <SelectDocument
                 key={index}

@@ -71,7 +71,7 @@ const PropertyDetails = ({ t, config, onSelect, userType, formData }) => {
     return `/digit-ui/citizen/ws/create-application/search-property`
     else if(window.location.href.includes("/renew-trade/"))
     return `/digit-ui/citizen/tl/tradelicence/renew-trade/${formData?.applicationNumber}/${formData?.tenantId}/know-your-property`
-    else if(window.location.href.includes("/edit-application/"))
+    else if(window.location.href.includes("/edit-application"))
     return `/digit-ui/citizen/tl/tradelicence/edit-application/${formData?.applicationNumber}/${formData?.tenantId}/know-your-property`
     else
     return `/digit-ui/citizen/tl/tradelicence/new-application/know-your-property`

@@ -44,6 +44,13 @@ const PTAcknowledgement = ({ onSuccess, onSelect, formData, redirectUrl, userTyp
     data = formData?.cptNewProperty?.property;
   }
   const propertyFromState = location?.state?.property || (onSelect && formData?.cptNewProperty?.property ? formData?.cptNewProperty?.property : null);
+  const errorMsg = location?.state?.errorMsg || sessionStorage.getItem("PT_ERROR_MSG");
+  const isErrorState = location?.state?.isError || !!errorMsg;
+  useEffect(() => {
+    return () => {
+      sessionStorage.removeItem("PT_ERROR_MSG");
+    };
+  }, []);
 
   let createNUpdate = false;
   let { data: mdmsConfig, isLoading } = Digit.Hooks.pt.useMDMS(stateId, "PropertyTax", "PTWorkflow");
@@ -69,7 +76,7 @@ const PTAcknowledgement = ({ onSuccess, onSelect, formData, redirectUrl, userTyp
   const { tenants } = storeData || {};
 
   useEffect(() => {
-    if (propertyFromState) return; // Skip if already created
+    if (propertyFromState || isErrorState || !data) return; // Skip if already created or error passed or data missing
     try {
       let tenant = userType === "employee" ? tenantId : data?.locationDet?.city?.code;
       data.tenantId = tenant;
@@ -154,8 +161,10 @@ const PTAcknowledgement = ({ onSuccess, onSelect, formData, redirectUrl, userTyp
     }
   }, [mutation.isSuccess]);
 
-  const isMutationLoading = propertyFromState ? false : (mutation.isLoading || mutation.isIdle);
-  const isMutationSuccess = propertyFromState ? true : mutation.isSuccess;
+  const isMutationError = mutation.isError || mutation.data instanceof Error || mutation.data?.isAxiosError || mutation.data?.response?.status >= 400 || mutation.data?.Errors?.length > 0;
+  
+  const isMutationLoading = propertyFromState || isErrorState || !data ? false : (mutation.isLoading || mutation.isIdle);
+  const isMutationSuccess = propertyFromState ? true : (isErrorState || isMutationError ? false : mutation.isSuccess);
   const responseData = propertyFromState ? { Properties: [propertyFromState] } : mutation.data;
 
   const onNext = () => {
@@ -188,7 +197,7 @@ const PTAcknowledgement = ({ onSuccess, onSelect, formData, redirectUrl, userTyp
       <Card>
         <BannerPicker t={t} data={responseData} isSuccess={isMutationSuccess} isLoading={isMutationLoading} />
       {isMutationSuccess && <CardText>{window.location.href.includes("employee") ? t("CS_CREATE_PROPERTY_SUCCESS_EMP_RESPONSE") : t("CS_CREATE_PROPERTY_SUCCESS_CITIZEN_RESPONSE")}</CardText>}
-      {!isMutationSuccess && <CardText>{t("CS_FILE_PROPERTY_FAILED_RESPONSE")}</CardText>}
+      {!isMutationSuccess && <CardText>{isErrorState && errorMsg ? errorMsg : (mutation.data?.response?.data?.Errors?.[0]?.message || mutation.data?.message || t("CS_FILE_PROPERTY_FAILED_RESPONSE"))}</CardText>}
 
       <StatusTable>
         {isMutationSuccess && (
@@ -202,6 +211,14 @@ const PTAcknowledgement = ({ onSuccess, onSelect, formData, redirectUrl, userTyp
         )}
       </StatusTable>
       {/* {mutation.isSuccess && !onSelect && <SubmitBar label={t("PT_DOWNLOAD_ACK_FORM")} onSubmit={null} />} */}
+      {(!isMutationSuccess && isErrorState) && (
+        <SubmitBar
+          label={t("CORE_COMMON_GO_TO_HOME")}
+          onSubmit={() => {
+            history.push(window.location.href.includes("/employee/") ? "/digit-ui/employee" : "/digit-ui/citizen/commonpt/property/citizen-search");
+          }}
+        />
+      )}
       {isMutationSuccess &&
         (window.location.href.includes("/citizen/") || window.location.href.includes("/employee/")) &&
         (onSelect ? (

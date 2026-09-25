@@ -302,7 +302,7 @@ export const createPayloadOfWS = async (data) => {
           watsAppMobileNumber: connectionHolder?.watsAppMobileNumber || "",
           isWatsappSameAsMobile: connectionHolder?.isWatsappSameAsMobile || false,
           ownerType: connectionHolder?.ownerType?.code || connectionHolder?.ownerType || "",
-          relationship: connectionHolder?.relationship?.code || connectionHolder?.relationship || "OTHERS",
+          relationship: connectionHolder?.relationship?.code || connectionHolder?.relationship || "OTHER",
           sameAsPropertyAddress: connectionHolder?.sameAsOwnerDetails || connectionHolder?.sameAsPropertyAddress || false,
         },
       ]
@@ -316,7 +316,7 @@ export const createPayloadOfWS = async (data) => {
           watsAppMobileNumber: data?.contact?.watsAppMobileNumber || "",
           isWatsappSameAsMobile: data?.contact?.isWatsappSameAsMobile || false,
           ownerType: data?.applicationSelection?.categoryType?.code || "",
-          relationship: "OTHERS",
+          relationship: "OTHER",
           sameAsPropertyAddress: true,
           emailId: data?.contact?.emailId || "",
         },
@@ -387,7 +387,12 @@ export const createPayloadOfWS = async (data) => {
         data?.applicationSelection?.connectionType?.code ||
         connectionDetailsObject?.connectionType?.code ||
         connectionDetailsObject?.connectionType ||
-        "Metered",
+        "Permanent",
+      waterDemandType:
+        data?.applicationSelection?.waterDemandType ||
+        connectionDetailsObject?.waterDemandType ||
+        useDetailsObject?.waterDemandType ||
+        { code: "NON_BULK", i18nKey: "WS_WATER_DEMAND_NON_BULK" },
       categoryType: useDetailsObject?.categoryType?.code || useDetailsObject?.categoryType || data?.applicationSelection?.categoryType?.code || connectionHolder?.ownerType?.code || connectionHolder?.ownerType,
       noOfFloors: useDetailsObject?.noOfFloors?.code || useDetailsObject?.noOfFloors,
       subCategory: data?.applicationSelection?.subCategory?.code,
@@ -444,7 +449,12 @@ export const updatePayloadOfWS = async (data, type) => {
         ? sessionStorage.getItem("WS_PROPERTY_INOF")
         : "null"
     ),
-    connectionType: type === "WATER" ? data?.connectionType : "Non Metered",
+    connectionType: type === "WATER" ? data?.connectionType || "Permanent" : "Non Metered",
+    additionalDetails: {
+      ...data?.additionalDetails,
+      connectionType: data?.additionalDetails?.connectionType || "Permanent",
+      waterDemandType: data?.additionalDetails?.waterDemandType || { code: "NON_BULK", i18nKey: "WS_WATER_DEMAND_NON_BULK" },
+    },
   };
   /* use customiseCreateFormData hook to make some chnages to the water object */
   payload = Digit?.Customizations?.WS?.customiseUpdatePayloadOfWS
@@ -456,21 +466,49 @@ export const updatePayloadOfWS = async (data, type) => {
 
 export const getAllDocumentsForUpdate = (data) => {
   let allDocuments = Array.isArray(data?.documents?.documents) ? [...data.documents.documents] : (Array.isArray(data?.documents) ? [...data.documents] : []);
+  
   if (data?.djbEmployee?.document) {
-    allDocuments.push({
-      documentType: "OWNER.DJB_EMPLOYEE_ID",
-      fileStoreId: data?.djbEmployee?.document?.fileStoreId || data?.djbEmployee?.document,
-      documentUid: "",
-      status: "ACTIVE",
-    });
+    const isDjbEmp = String(data?.djbEmployee?.isDjbEmployee) === "true";
+    let existingIndex = allDocuments.findIndex(doc => doc.documentType === "OWNER.DJB_EMPLOYEE_ID");
+    
+    if (isDjbEmp) {
+      if (existingIndex !== -1) {
+        allDocuments[existingIndex] = {
+          ...allDocuments[existingIndex],
+          fileStoreId: data?.djbEmployee?.document?.fileStoreId || data?.djbEmployee?.document,
+          status: "ACTIVE"
+        };
+      } else {
+        allDocuments.push({
+          documentType: "OWNER.DJB_EMPLOYEE_ID",
+          fileStoreId: data?.djbEmployee?.document?.fileStoreId || data?.djbEmployee?.document,
+          documentUid: "",
+          status: "ACTIVE",
+        });
+      }
+    } else {
+      if (existingIndex !== -1) {
+        allDocuments[existingIndex].status = "INACTIVE";
+      }
+    }
   }
+
   if (data?.governmentEmployee?.organizationDocument) {
-    allDocuments.push({
-      documentType: "OWNER.GOVERNMENT_EMPLOYEE_ID",
-      fileStoreId: data?.governmentEmployee?.organizationDocument?.fileStoreId || data?.governmentEmployee?.organizationDocument,
-      documentUid: "",
-      status: "ACTIVE",
-    });
+    let existingIndex = allDocuments.findIndex(doc => doc.documentType === "OWNER.GOVERNMENT_EMPLOYEE_ID");
+    if (existingIndex !== -1) {
+      allDocuments[existingIndex] = {
+        ...allDocuments[existingIndex],
+        fileStoreId: data?.governmentEmployee?.organizationDocument?.fileStoreId || data?.governmentEmployee?.organizationDocument,
+        status: "ACTIVE"
+      };
+    } else {
+      allDocuments.push({
+        documentType: "OWNER.GOVERNMENT_EMPLOYEE_ID",
+        fileStoreId: data?.governmentEmployee?.organizationDocument?.fileStoreId || data?.governmentEmployee?.organizationDocument,
+        documentUid: "",
+        status: "ACTIVE",
+      });
+    }
   }
   
   const connectionDetailsArray = Array.isArray(data?.ConnectionDetails)
@@ -482,12 +520,21 @@ export const getAllDocumentsForUpdate = (data) => {
 
   if (connectionDetail?.orgDeptDocument) {
     let documentType = "OWNER.ORGANIZATION_DOCUMENT";
-    allDocuments.push({
-      documentType: documentType,
-      fileStoreId: connectionDetail?.orgDeptDocument?.fileStoreId || connectionDetail?.orgDeptDocument,
-      documentUid: "",
-      status: "ACTIVE",
-    });
+    let existingIndex = allDocuments.findIndex(doc => doc.documentType === documentType);
+    if (existingIndex !== -1) {
+      allDocuments[existingIndex] = {
+        ...allDocuments[existingIndex],
+        fileStoreId: connectionDetail?.orgDeptDocument?.fileStoreId || connectionDetail?.orgDeptDocument,
+        status: "ACTIVE"
+      };
+    } else {
+      allDocuments.push({
+        documentType: documentType,
+        fileStoreId: connectionDetail?.orgDeptDocument?.fileStoreId || connectionDetail?.orgDeptDocument,
+        documentUid: "",
+        status: "ACTIVE",
+      });
+    }
   }
 
   return allDocuments;

@@ -2578,36 +2578,15 @@ const NewApplication = () => {
                         padding: "4px 12px",
                         borderRadius: "20px",
                         width: "fit-content",
-                        border: "1px solid #E5E7EB",
                       }}
                     >
-                      <CardText style={{ margin: 0, fontSize: "14px", color: "#374151", fontWeight: "500" }}>
-                        {watch("documents.applicantPhoto").fileName}
-                      </CardText>
-                      <div
-                        onClick={() => clearUploadedFile("documents.applicantPhoto", (val) => setValue("documents.applicantPhoto", val))}
-                        style={{ cursor: "pointer", display: "flex", alignItems: "center", color: "#6B7280" }}
-                        title="Remove Photo"
-                      >
-                        <svg
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="3"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <line x1="18" y1="6" x2="6" y2="18" />
-                          <line x1="6" y1="6" x2="18" y2="18" />
-                        </svg>
-                      </div>
+                      <span style={{ fontSize: "14px", fontWeight: "500", color: "#0B0C0C" }}>
+                        {watch("documents.applicantPhoto")?.fileName || "Applicant_Photo.jpg"}
+                      </span>
                     </div>
                   )}
                 </FieldBlock>
 
-                {/* Proof of Identity Row */}
                 <FieldBlock error={getFieldError("documents.proofOfIdentity")} label="Proof of Identity *" required>
                   <Controller
                     control={control}

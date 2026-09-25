@@ -968,7 +968,9 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
         )}
 
         <LabelFieldPair>
-          <CardLabel>{`${t("HOUSE_NO")}`}</CardLabel>
+          <CardLabel>
+            {`${t("HOUSE_NO")}`} <span className="check-page-link-button">*</span>
+          </CardLabel>
           <TextInput
             t={t}
             type={"text"}

@@ -27,7 +27,7 @@ const CheckPage = ({ onSubmit, value }) => {
   let isMobile = window.Digit.Utils.browser.isMobile();
   const { ConnectionHolderDetails, plumberPreference, serviceName, waterConectionDetails, sewerageConnectionDetails, documents, cpt } = value;
   let routeLink = `/digit-ui/citizen/ws/create-application`;
-  if (window.location.href.includes("/edit-application/")) routeLink = `/digit-ui/citizen/ws/edit-application/${value?.tenantId}`;
+  if (window.location.href.includes("/edit-application")) routeLink = `/digit-ui/citizen/ws/edit-application/${value?.tenantId}`;
 
   function routeTo(jumpTo) {
     location.href = jumpTo;

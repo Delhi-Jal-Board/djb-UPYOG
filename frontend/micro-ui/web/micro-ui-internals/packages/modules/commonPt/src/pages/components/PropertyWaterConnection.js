@@ -5,7 +5,10 @@ import _ from "lodash";
 
 const NUMBER_PATTERN = /^\d+$/;
 const DECIMAL_PATTERN = /^\d+(\.\d{1,2})?$/;
-const normalizeCode = (value) => String(value || "").replace(/[._\s-]/g, "").toUpperCase();
+const normalizeCode = (value) =>
+  String(value || "")
+    .replace(/[._\s-]/g, "")
+    .toUpperCase();
 const getCode = (value) => (typeof value === "object" ? value?.code || value?.value : value);
 
 const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, setError, clearErrors, ...props }) => {
@@ -56,7 +59,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
     setCategoryTypeList(categories);
   }, [wsServicesMastersData]);
 
-  const isPropertyFound = window.location.href.includes("ws/old-application") || window.location.href.includes("/edit-application/");
+  const isPropertyFound = window.location.href.includes("ws/old-application") || window.location.href.includes("/edit-application");
 
   useEffect(() => {
     if (props.register) {
@@ -202,14 +205,21 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
       const catType = getCode(additionalDetails.categoryType) || (String(usageCategory).includes("RESIDENTIAL") ? "DOMESTIC" : "NON_DOMESTIC");
 
       setValue("useDetails.categoryType", categoryTypeList?.find((o) => normalizeCode(o.code) === normalizeCode(catType)) || null);
-      
-      const propCategoryMatch = ptServicesMastersData?.PropertyTax?.PropertyCategory?.find((o) => normalizeCode(o.code) === normalizeCode(usageCategory));
+
+      const propCategoryMatch = ptServicesMastersData?.PropertyTax?.PropertyCategory?.find(
+        (o) => normalizeCode(o.code) === normalizeCode(usageCategory)
+      );
       setValue("useDetails.propertyCategory", propCategoryMatch ? { code: propCategoryMatch.code, name: propCategoryMatch.name } : null);
 
-      const propTypeMatch = ptServicesMastersData?.PropertyTax?.PropertyType?.find((o) => normalizeCode(o.code) === normalizeCode(getCode(additionalDetails.propertyType || details.propertyType)));
+      const propTypeMatch = ptServicesMastersData?.PropertyTax?.PropertyType?.find(
+        (o) => normalizeCode(o.code) === normalizeCode(getCode(additionalDetails.propertyType || details.propertyType))
+      );
       setValue("useDetails.propertyType", propTypeMatch ? { code: propTypeMatch.code, name: propTypeMatch.name } : null);
 
-      const usageTypeMatch = ptServicesMastersData?.PropertyTax?.PropertyNewUsageType?.find((o) => normalizeCode(o.code) === normalizeCode(getCode(additionalDetails.waterConnectionUsageType || additionalDetails.WaterConnectionUsageType)));
+      const usageTypeMatch = ptServicesMastersData?.PropertyTax?.PropertyNewUsageType?.find(
+        (o) =>
+          normalizeCode(o.code) === normalizeCode(getCode(additionalDetails.waterConnectionUsageType || additionalDetails.WaterConnectionUsageType))
+      );
       setValue("useDetails.WaterConnectionUsageType", usageTypeMatch ? { code: usageTypeMatch.code, name: usageTypeMatch.name } : null);
       setValue(
         "useDetails.noOfFloors",
@@ -217,7 +227,12 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
           const val1 = getCode(additionalDetails.numberOfFloors);
           const val2 = getCode(additionalDetails.noOfFloors);
           const val3 = details.noOfFloors?.toString();
-          return normalizeCode(o.code) === normalizeCode(val1) || normalizeCode(o.code) === normalizeCode(val2) || normalizeCode(o.code) === normalizeCode(val3) || (val3 && normalizeCode(o.code) === normalizeCode(`${val3}_FLOOR`));
+          return (
+            normalizeCode(o.code) === normalizeCode(val1) ||
+            normalizeCode(o.code) === normalizeCode(val2) ||
+            normalizeCode(o.code) === normalizeCode(val3) ||
+            (val3 && normalizeCode(o.code) === normalizeCode(`${val3}_FLOOR`))
+          );
         }) || null
       );
       setValue("useDetails.plotArea", additionalDetails.plotArea || details?.landArea?.toString() || "");
@@ -284,7 +299,9 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
     >
       <div className="formcomposer-section-grid">
         <LabelFieldPair>
-          <CardLabel>{`${t("WS_CATEGORY_TYPE")}*`}</CardLabel>
+          <CardLabel>
+            {`${t("WS_CATEGORY_TYPE")}`} <span className="check-page-link-button">*</span>
+          </CardLabel>
           <div className="form-field">
             <Controller
               control={control}
@@ -299,6 +316,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
                   t={t}
                   onBlur={props.onBlur}
                   disable={isPropertyFound}
+                  placeholder={t("WS_CATEGORY_TYPE")}
                 />
               )}
             />
@@ -306,7 +324,9 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
         </LabelFieldPair>
         {errors?.useDetails?.categoryType && <CardLabelError style={errorStyle}>{errors.useDetails.categoryType.message}</CardLabelError>}
         <LabelFieldPair>
-          <CardLabel>{`${t("WS_PROPERTY_CATEGORY")}*`}</CardLabel>
+          <CardLabel>
+            {`${t("WS_PROPERTY_CATEGORY")}`} <span className="check-page-link-button">*</span>
+          </CardLabel>
           <div className="form-field">
             <Controller
               control={control}
@@ -321,6 +341,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
                   t={t}
                   onBlur={props.onBlur}
                   disable={isPropertyFound}
+                  placeholder={t("WS_PROPERTY_CATEGORY")}
                 />
               )}
             />
@@ -329,7 +350,9 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
         {errors?.useDetails?.propertyCategory && <CardLabelError style={errorStyle}>{errors.useDetails.propertyCategory.message}</CardLabelError>}
 
         <LabelFieldPair>
-          <CardLabel>{`${t("WS_PROPERTY_TYPE")}*`}</CardLabel>
+          <CardLabel>
+            {`${t("WS_PROPERTY_TYPE")}`} <span className="check-page-link-button">*</span>
+          </CardLabel>
           <div className="form-field">
             <Controller
               control={control}
@@ -344,6 +367,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
                   t={t}
                   onBlur={props.onBlur}
                   disable={isPropertyFound}
+                  placeholder={t("WS_PROPERTY_TYPE")}
                 />
               )}
             />
@@ -352,7 +376,9 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
         {errors?.useDetails?.propertyType && <CardLabelError style={errorStyle}>{errors.useDetails.propertyType.message}</CardLabelError>}
 
         <LabelFieldPair>
-          <CardLabel>{`${t("WS_WATER_CONNECTION_USAGE_TYPE")}*`}</CardLabel>
+          <CardLabel>
+            {`${t("WS_WATER_CONNECTION_USAGE_TYPE")}`} <span className="check-page-link-button">*</span>
+          </CardLabel>
           <div className="form-field">
             <Controller
               control={control}
@@ -367,6 +393,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
                   t={t}
                   onBlur={props.onBlur}
                   disable={isPropertyFound}
+                  placeholder={t("WS_WATER_CONNECTION_USAGE_TYPE")}
                 />
               )}
             />
@@ -377,12 +404,14 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
         )}
 
         <LabelFieldPair>
-          <CardLabel>{`${t("WS_NUMBER_OF_FLOORS")}`}</CardLabel>
+          <CardLabel>
+            {`${t("WS_NUMBER_OF_FLOORS")}`} <span className="check-page-link-button">*</span>
+          </CardLabel>
           <div className="form-field">
             <Controller
               control={control}
               name="useDetails.noOfFloors"
-              // rules={{ required: t("REQUIRED_FIELD") }}
+              rules={{ required: t("REQUIRED_FIELD") }}
               render={(props) => (
                 <Dropdown
                   option={floorOptions}
@@ -392,6 +421,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
                   t={t}
                   onBlur={props.onBlur}
                   disable={isPropertyFound}
+                  placeholder={t("WS_NUMBER_OF_FLOORS")}
                 />
               )}
             />
@@ -400,22 +430,28 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
         {errors?.useDetails?.noOfFloors && <CardLabelError style={errorStyle}>{errors.useDetails.noOfFloors.message}</CardLabelError>}
 
         <LabelFieldPair>
-          <CardLabel>{`${t("WS_PLOT_AREA")}`}</CardLabel>
+          <CardLabel>
+            {`${t("WS_PLOT_AREA")}`} <span className="check-page-link-button">*</span>
+          </CardLabel>
           <div className="form-field">
             <TextInput
               t={t}
               inputRef={register({
                 pattern: { value: DECIMAL_PATTERN, message: t("ERR_INVALID_DECIMAL") },
               })}
+              rules={{ required: t("REQUIRED_FIELD") }}
               name="useDetails.plotArea"
               disabled={isPropertyFound}
+              placeholder={t("WS_PLOT_AREA")}
             />
           </div>
         </LabelFieldPair>
         {errors?.useDetails?.plotArea && <CardLabelError style={errorStyle}>{errors.useDetails.plotArea.message}</CardLabelError>}
         <div>
           <LabelFieldPair>
-            <CardLabel>{`${t("WS_BUILT_UP_AREA")}`}</CardLabel>
+            <CardLabel>
+              {`${t("WS_BUILT_UP_AREA")}`} <span className="check-page-link-button">*</span>
+            </CardLabel>
             <div className="form-field">
               <TextInput
                 t={t}
@@ -423,13 +459,15 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
                   pattern: { value: DECIMAL_PATTERN, message: t("ERR_INVALID_DECIMAL") },
                 })}
                 name="useDetails.builtUpArea"
+                rules={{ required: t("REQUIRED_FIELD") }}
                 disabled={isPropertyFound}
+                placeholder={t("WS_BUILT_UP_AREA")}
               />
             </div>
           </LabelFieldPair>
           {errors?.useDetails?.builtUpArea && <CardLabelError style={errorStyle}>{errors.useDetails.builtUpArea.message}</CardLabelError>}
         </div>
-        <div>
+        {/* <div>
           <LabelFieldPair>
             <CardLabel>{`${t("WS_FAR_AREA")}`}</CardLabel>
             <div className="form-field">
@@ -456,10 +494,12 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
                 {t("WS_FAR_AREA_IS_SMALLER_THAN_BUILT_UP_AREA")}
               </CardLabelError>
             )}
-        </div>
+        </div> */}
 
         <LabelFieldPair>
-          <CardLabel>{`${t("WS_SELECT_YEAR_OF_CONSTRUCTION")}*`}</CardLabel>
+          <CardLabel>
+            {`${t("WS_SELECT_YEAR_OF_CONSTRUCTION")}`} <span className="check-page-link-button">*</span>
+          </CardLabel>
           <div className="form-field">
             <Controller
               control={control}
@@ -474,6 +514,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
                   t={t}
                   onBlur={props.onBlur}
                   disable={isPropertyFound}
+                  placeholder={t("WS_SELECT_YEAR_OF_CONSTRUCTION")}
                 />
               )}
             />
@@ -493,6 +534,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
                 })}
                 name="useDetails.NumberofDwellingUnits"
                 disabled={isPropertyFound}
+                placeholder={t("WS_NUMBER_OF_DWELLING_UNITS")}
               />
             </div>
           </LabelFieldPair>
@@ -514,6 +556,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
                 })}
                 name="useDetails.NumberofRooms"
                 disabled={isPropertyFound}
+                placeholder={t("WS_NUMBER_OF_ROOMS")}
               />
             </div>
           </LabelFieldPair>
@@ -534,6 +577,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
                 })}
                 name="useDetails.numberOfBeds"
                 disabled={isPropertyFound}
+                placeholder={t("WS_NUMBER_OF_BEDS")}
               />
             </div>
           </LabelFieldPair>
@@ -553,6 +597,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
                 })}
                 name="useDetails.numberOfStudents"
                 disabled={isPropertyFound}
+                placeholder={t("WS_NUMBER_OF_STUDENTS")}
               />
             </div>
           </LabelFieldPair>
@@ -572,6 +617,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
                 })}
                 name="useDetails.servantQuarterArea"
                 disabled={isPropertyFound}
+                placeholder={t("WS_SERVENT_HOUSE")}
               />
             </div>
           </LabelFieldPair>

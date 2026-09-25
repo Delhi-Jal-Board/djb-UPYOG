@@ -128,33 +128,33 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
               )}`}
               actionButton={<ActionButton onClick={onEdit} />}
             />
-            <Row
+            {/* <Row
               label={t("WS_CONNECTION_TYPE")}
               text={`${t(
                 checkForNA(connectionDetails?.connectionType?.i18nKey || connectionDetails?.connectionType?.code || connectionDetails?.connectionType)
               )}`}
-            />
-            <Row
+            /> */}
+            {/* <Row
               label={t("WS_WATER_DEMAND_TYPE")}
               text={`${t(
                 checkForNA(
                   connectionDetails?.waterDemandType?.i18nKey || connectionDetails?.waterDemandType?.code || connectionDetails?.waterDemandType
                 )
               )}`}
-            />
+            /> */}
             <Row
               label={t("WS_APPLICANT_TYPE")}
               text={`${t(
                 checkForNA(connectionDetails?.applicantType?.i18nKey || connectionDetails?.applicantType?.code || connectionDetails?.applicantType)
               )}`}
             />
-            <Row
+            {/* <Row
               label={t("WS_SERVICE_TYPE")}
               text={`${t(
                 checkForNA(connectionDetails?.domesticType?.i18nKey || connectionDetails?.domesticType?.code || connectionDetails?.domesticType)
               )}`}
-            />
-            {connectionDetails?.domesticType?.code === "ORGANIZATION" && (
+            /> */}
+            {/* {connectionDetails?.domesticType?.code === "ORGANIZATION" && (
               <React.Fragment>
                 <Row
                   label={t("WS_DEPARTMENT_TYPE")}
@@ -180,7 +180,7 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
                   />
                 )}
               </React.Fragment>
-            )}
+            )} */}
           </StatusTable>
 
           <CardSubHeader>{t("WS_COMMON_CONNECTION_HOLDER_DETAILS_HEADER")}</CardSubHeader>
@@ -192,11 +192,11 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
               label={t("WS_CONN_HOLDER_OWN_DETAIL_GENDER_LABEL")}
               text={`${t(checkForNA(holderDetails?.gender?.i18nKey || holderDetails?.gender?.code || holderDetails?.gender))}`}
             />
-            <Row label={t("WS_OWN_DETAIL_GUARDIAN_LABEL")} text={`${t(checkForNA(holderDetails?.guardian))}`} />
-            <Row
+            {/* <Row label={t("WS_OWN_DETAIL_GUARDIAN_LABEL")} text={`${t(checkForNA(holderDetails?.guardian))}`} /> */}
+            {/* <Row
               label={t("WS_CONN_HOLDER_OWN_DETAIL_RELATION_LABEL")}
               text={`${t(checkForNA(holderDetails?.relationship?.i18nKey || holderDetails?.relationship?.code || holderDetails?.relationship))}`}
-            />
+            /> */}
             <Row label={t("CORE_COMMON_MOBILE_NUMBER")} text={`${t(checkForNA(holderDetails?.mobileNumber))}`} />
             <Row label={t("CORE_COMMON_WHATSAPP_MOBILE_NUMBER")} text={`${t(checkForNA(holderDetails?.watsAppMobileNumber))}`} />
             <Row label={t("WS_EMAIL_ID")} text={`${t(checkForNA(holderDetails?.emailId))}`} />
@@ -404,7 +404,7 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
               text={`${t(declaration?.submittedBy?.name || declaration?.submittedBy?.code || declaration?.submittedBy)}`}
               actionButton={<ActionButton onClick={onEdit} />}
             />
-            {(declaration?.signatureFileStoreId || declaration?.signatureFile) && (
+            {/* {(declaration?.signatureFileStoreId || declaration?.signatureFile) && (
               <React.Fragment>
                 <Row label={t("WS_UPLOAD_SIGNATURE_FILE")} text={declaration?.signatureFileName || declaration?.signatureFile?.name || "Document"} />
                 <Row
@@ -418,7 +418,7 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
                   }
                 />
               </React.Fragment>
-            )}
+            )} */}
             <Row label={t("WS_I_AGREE_TO_ALL_DECLARATIONS")} text={declaration?.agree ? t("Yes") : t("No")} />
           </StatusTable>
         </div>

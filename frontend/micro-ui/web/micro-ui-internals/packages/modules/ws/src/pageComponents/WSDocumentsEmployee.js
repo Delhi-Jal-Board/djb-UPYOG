@@ -87,7 +87,7 @@ const WSDocumentsEmployee = ({ t, config, onSelect, userType, formData, setError
 
   useEffect(() => {
     let count = 0;
-    wsDocs?.[wsDocsData]?.map((doc) => {
+    wsDocs?.[wsDocsData]?.filter(doc => doc.code !== "OWNER.APPLICANTPHOTO")?.map((doc) => {
       let isRequired = false;
       documents.map((data) => {
         if (doc.required && data?.documentType.includes(doc.code)) isRequired = true;
@@ -111,7 +111,7 @@ const WSDocumentsEmployee = ({ t, config, onSelect, userType, formData, setError
   if (window.location.href.includes("edit") && applicationDetailsData?.applicationData?.documents?.length > 0) {
     const documentsData = applicationDetailsData?.applicationData?.documents || [];
     documentsData?.map((documentData) => {
-      wsDocs?.[wsDocsData]?.forEach((docData) => {
+      wsDocs?.[wsDocsData]?.filter(doc => doc.code !== "OWNER.APPLICANTPHOTO")?.forEach((docData) => {
         const docType = docData?.code?.split(".")[1]
           ? docData?.code?.split(".")[0] + "." + docData?.code?.split(".")[1]
           : docData?.code?.split(".")[0];
@@ -133,7 +133,7 @@ const WSDocumentsEmployee = ({ t, config, onSelect, userType, formData, setError
 
   const innerContent = (
     <div className="formcomposer-section-grid ws-doc-upload">
-      {wsDocs?.[wsDocsData]?.map((document, index) => {
+      {wsDocs?.[wsDocsData]?.filter(doc => doc.code !== "OWNER.APPLICANTPHOTO")?.map((document, index) => {
         return (
           <SelectDocument
             key={index}
@@ -160,10 +160,19 @@ const WSDocumentsEmployee = ({ t, config, onSelect, userType, formData, setError
   const isTenant = formData?.ConnectionDetails?.[0]?.applicantType?.code === "TENANT";
 
   const nocDownloadSection = isTenant ? (
-    <div style={{ marginBottom: "20px", display: "flex", alignItems: "center", justifyContent: "space-between", backgroundColor: "#eaf3fa", padding: "16px", borderRadius: "8px", border: "1px solid #00497e" }}>
-      <div style={{ color: "#00497e", fontWeight: "bold" }}>
-        {t("WS_NOC_DOCUMENT_DOWNLOAD_DESC")}
-      </div>
+    <div
+      style={{
+        marginBottom: "20px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        backgroundColor: "#eaf3fa",
+        padding: "16px",
+        borderRadius: "8px",
+        border: "1px solid #00497e",
+      }}
+    >
+      <div style={{ color: "#00497e", fontWeight: "bold" }}>{t("WS_NOC_DOCUMENT_DOWNLOAD_DESC")}</div>
       <button
         type="button"
         onClick={(event) => {
@@ -382,12 +391,10 @@ function SelectDocument({
   useEffect(() => {
     if (selectedDocument?.code) {
       setDocuments((prev) => {
-        const filteredDocumentsByDocumentType = isOther
-          ? prev?.filter((item) => item?.fileStoreId !== filteredDocument?.fileStoreId)
-          : prev?.filter((item) => item?.documentType !== selectedDocument?.code);
+        const filteredDocumentsByDocumentType = prev?.filter((item) => item?.documentType !== selectedDocument?.code);
 
         if (uploadedFile?.length === 0 || uploadedFile === null) {
-          return filteredDocumentsByDocumentType;
+          return isOther ? prev : filteredDocumentsByDocumentType;
         }
 
         const filteredDocumentsByFileStoreId = filteredDocumentsByDocumentType?.filter((item) => item?.fileStoreId !== uploadedFile);
@@ -405,21 +412,24 @@ function SelectDocument({
             status: "ACTIVE",
           },
         ];
-      sessionStorage.setItem("DISCONNECTION_EDIT_DOCS", JSON.stringify(data));
+        sessionStorage.setItem("DISCONNECTION_EDIT_DOCS", JSON.stringify(data));
         return data;
       });
     }
 
     const err = validateDocumentNumber(documentUid, selectedDocument?.code, doc?.required, !!uploadedFile);
+    const hasOtherUploaded = isOther && documents?.some(item => item?.documentType?.includes(doc?.code));
 
     if (!isHidden) {
-      if ((!uploadedFile || !selectedDocument?.code || err) && doc?.required) {
+      if (err) {
         addError();
-      } else if (err) {
+      } else if ((!uploadedFile || !selectedDocument?.code) && doc?.required && !hasOtherUploaded) {
         addError();
       } else if (uploadedFile && selectedDocument?.code && !err) {
         removeError();
       } else if (!doc?.required && !err) {
+        removeError();
+      } else if (hasOtherUploaded) {
         removeError();
       }
     } else if (isHidden) {
@@ -481,7 +491,10 @@ function SelectDocument({
     >
       {doc?.hasDropdown ? (
         <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-          <CardLabel style={{ margin: 0 }}>{doc?.required ? `${t(doc?.i18nKey)}*` : `${t(doc?.i18nKey)}`}</CardLabel>
+          <CardLabel style={{ margin: 0 }}>
+            {t(doc?.i18nKey)}
+            {doc?.required && <span className="check-page-link-button">*</span>}
+          </CardLabel>{" "}
           <Dropdown
             id={`doc-${doc?.code}`}
             key={`doc-${doc?.code}`}
@@ -491,6 +504,7 @@ function SelectDocument({
             select={handleSelectDocument}
             optionKey="i18nKey"
             t={t}
+            placeholder={t("PT_MUTATION_SELECT_DOC_LABEL")}
           />
         </div>
       ) : null}
@@ -583,33 +597,10 @@ function SelectDocument({
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <CardLabel style={{ margin: 0 }}>
             {t(`${doc?.i18nKey?.replaceAll(".", "_")}_UPLOAD_DOCUMENT`)}
-            {doc?.required ? "*" : ""}
+            {doc?.required && <span className="check-page-link-button">*</span>}
           </CardLabel>
-          {isOther && (
-            <button
-              type="button"
-              onClick={() => {
-                setUploadedFile(null);
-                setFile(null);
-                setSelectedDocument(doc?.hasDropdown ? {} : doc);
-                setDocumentUid("");
-                setDocNumberError(null);
-              }}
-              style={{
-                border: "1px solid #00497e",
-                background: "#fff",
-                color: "#00497e",
-                borderRadius: "4px",
-                padding: "4px 10px",
-                cursor: "pointer",
-                fontWeight: "bold",
-              }}
-            >
-              + Add
-            </button>
-          )}
         </div>
-        <div className="field" style={{ display: "flex", gap: "20px", alignItems: "center", width: "100%" }}>
+        <div className="field" style={{ display: "flex", gap: "10px", alignItems: "flex-start", width: "100%" }}>
           <div style={{ flex: 1 }}>
             {digiLockerUpload ? (
               <UploadFileDigiLocker
@@ -633,11 +624,15 @@ function SelectDocument({
                     : undefined
                 }
                 removeTargetedFile={() => {
-                  setUploadedFile(null);
-                  setFile(null);
-                  setIsCameraFile(false);
-                  setIsDocumentUidLocked(false);
-                  setDocumentUid("");
+                  if (isOther && uploadedFile) {
+                    removeUploadedDocument(uploadedFile);
+                  } else {
+                    setUploadedFile(null);
+                    setFile(null);
+                    setIsCameraFile(false);
+                    setIsDocumentUidLocked(false);
+                    setDocumentUid("");
+                  }
                 }}
                 documentType={selectedDocument?.code}
                 onDocumentNumber={(num) => {
@@ -667,48 +662,103 @@ function SelectDocument({
                     : undefined
                 }
                 removeTargetedFile={() => {
-                  setUploadedFile(null);
-                  setFile(null);
-                  setIsCameraFile(false);
-                  setIsDocumentUidLocked(false);
-                  setDocumentUid("");
+                  if (isOther && uploadedFile) {
+                    removeUploadedDocument(uploadedFile);
+                  } else {
+                    setUploadedFile(null);
+                    setFile(null);
+                    setIsCameraFile(false);
+                    setIsDocumentUidLocked(false);
+                    setDocumentUid("");
+                  }
                 }}
               />
             )}
           </div>
+          {isOther && (
+            <button
+              type="button"
+              onClick={() => {
+                if (!uploadedFile) {
+                  setError(t("WS_PLEASE_UPLOAD_FILE_FIRST") || "Please upload a file first.");
+                  return;
+                }
+                if (doc?.hasDropdown && !selectedDocument?.code) {
+                  setError(t("WS_PLEASE_SELECT_DOCUMENT_TYPE") || "Please select a document type.");
+                  return;
+                }
+                if (docNumberError) {
+                  setError(docNumberError);
+                  return;
+                }
+                
+                // Auto-saved by useEffect
+                
+                setUploadedFile(null);
+                setFile(null);
+                setSelectedDocument(doc?.hasDropdown ? {} : doc);
+                setDocumentUid("");
+                setDocNumberError(null);
+                setIsDocumentUidLocked(false);
+              }}
+              style={{
+                border: "1px solid #00497e",
+                background: "#fff",
+                color: "#00497e",
+                borderRadius: "4px",
+                padding: "6px 12px",
+                cursor: "pointer",
+                fontWeight: "bold",
+                marginTop: "2px"
+              }}
+            >
+              + {t("NEW_DOCUMENT_TEXT") || "Add Document"}
+            </button>
+          )}
         </div>
-        {(isOther ? otherUploadedDocuments : uploadedFile ? [{ fileStoreId: uploadedFile, fileName: file?.name || filteredDocument?.fileName, documentNumber: documentUid }] : []).map(
-          (uploadedDocument, index) => (
-            <div key={uploadedDocument.fileStoreId || index} style={{ display: "flex", alignItems: "center", gap: "12px", marginTop: "4px", color: "#00497e" }}>
-              
-              <span style={{ fontWeight: "bold" }}>
-                {uploadedDocument.documentName || uploadedDocument.i18nKey || uploadedDocument.documentType || documentDisplayName
-                  ? t((uploadedDocument.documentName || uploadedDocument.i18nKey || uploadedDocument.documentType || documentDisplayName).replaceAll('.', '_'))
-                  : t("CS_COMMON_DOCUMENT")}{uploadedDocument.fileName ? ` - ${uploadedDocument.fileName}` : ""}
-              </span>
-              {uploadedDocument.documentNumber && <span>{uploadedDocument.documentNumber}</span>}
-              <button
-                type="button"
-                onClick={() => viewDocument(uploadedDocument.fileStoreId)}
-                title={t("WS_VIEW_DOCUMENT") || "View Document"}
-                style={{ border: "none", background: "transparent", color: "#00497e", cursor: "pointer", padding: 0 }}
-              >
-                <ViewsIcon />
-              </button>
-              <button
-                type="button"
-                onClick={() => removeUploadedDocument(uploadedDocument.fileStoreId)}
-                title="Remove Document"
-                style={{ border: "none", background: "transparent", color: "#d32f2f", cursor: "pointer", padding: 0, fontSize: "18px" }}
-              >
-                <RemoveIcon />
-              </button>
-            </div>
-          )
-        )}
+        {(isOther
+          ? otherUploadedDocuments
+          : uploadedFile
+          ? [{ fileStoreId: uploadedFile, fileName: file?.name || filteredDocument?.fileName, documentNumber: documentUid }]
+          : []
+        ).map((uploadedDocument, index) => (
+          <div
+            key={uploadedDocument.fileStoreId || index}
+            style={{ display: "flex", alignItems: "center", gap: "12px", marginTop: "4px", color: "#00497e" }}
+          >
+            <span style={{ fontWeight: "bold" }}>
+              {uploadedDocument.documentName || uploadedDocument.i18nKey || uploadedDocument.documentType || documentDisplayName
+                ? t(
+                    (uploadedDocument.documentName || uploadedDocument.i18nKey || uploadedDocument.documentType || documentDisplayName).replaceAll(
+                      ".",
+                      "_"
+                    )
+                  )
+                : t("CS_COMMON_DOCUMENT")}
+              {uploadedDocument.fileName ? ` - ${uploadedDocument.fileName}` : ""}
+            </span>
+            {uploadedDocument.documentNumber && <span>{uploadedDocument.documentNumber}</span>}
+            <button
+              type="button"
+              onClick={() => viewDocument(uploadedDocument.fileStoreId)}
+              title={t("WS_VIEW_DOCUMENT") || "View Document"}
+              style={{ border: "none", background: "transparent", color: "#00497e", cursor: "pointer", padding: 0 }}
+            >
+              <ViewsIcon />
+            </button>
+            <button
+              type="button"
+              onClick={() => removeUploadedDocument(uploadedDocument.fileStoreId)}
+              title="Remove Document"
+              style={{ border: "none", background: "transparent", color: "#d32f2f", cursor: "pointer", padding: 0, fontSize: "18px" }}
+            >
+              <RemoveIcon />
+            </button>
+          </div>
+        ))}
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "8px", gridColumn: "span 1" }}>
+      {/* <div style={{ display: "flex", flexDirection: "column", gap: "8px", gridColumn: "span 1" }}>
         <CardLabel style={{ margin: 0 }}>
           {doc?.code === "OWNER.APPLICANTPHOTO" ? t("WS_CLICK_APPLICANT_PHOTO") || "Click Applicant Photo" : "\u00A0"}
         </CardLabel>
@@ -741,10 +791,9 @@ function SelectDocument({
               {uploadedFile && !isUploading && <span style={{ color: "green", fontWeight: "bold", fontSize: "14px" }}>✔ Uploaded</span>}
             </div>
           )}
-
         </div>
-      </div>
-      {showCamera && <CameraCaptureModal onCapture={handleCapture} onClose={() => setShowCamera(false)} t={t} />}
+      </div> */}
+      {/* {showCamera && <CameraCaptureModal onCapture={handleCapture} onClose={() => setShowCamera(false)} t={t} />} */}
       {showDocModal && (
         <Modal
           open={showDocModal}
@@ -782,112 +831,112 @@ function SelectDocument({
 
 export default WSDocumentsEmployee;
 
-const CameraCaptureModal = ({ onCapture, onClose, t }) => {
-  const videoRef = useRef(null);
-  const canvasRef = useRef(null);
-  const [stream, setStream] = useState(null);
-  const [error, setError] = useState(null);
+// const CameraCaptureModal = ({ onCapture, onClose, t }) => {
+//   const videoRef = useRef(null);
+//   const canvasRef = useRef(null);
+//   const [stream, setStream] = useState(null);
+//   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const startCamera = async () => {
-      try {
-        const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
-        if (videoRef.current) {
-          videoRef.current.srcObject = mediaStream;
-        }
-        setStream(mediaStream);
-      } catch (err) {
-        setError(t("WS_CAMERA_ACCESS_ERROR") || "Camera Access Error");
-        console.error("Error accessing camera: ", err);
-      }
-    };
-    startCamera();
-    return () => {
-      if (stream) {
-        stream.getTracks().forEach((track) => track.stop());
-      }
-    };
-  }, []);
+//   useEffect(() => {
+//     const startCamera = async () => {
+//       try {
+//         const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
+//         if (videoRef.current) {
+//           videoRef.current.srcObject = mediaStream;
+//         }
+//         setStream(mediaStream);
+//       } catch (err) {
+//         setError(t("WS_CAMERA_ACCESS_ERROR") || "Camera Access Error");
+//         console.error("Error accessing camera: ", err);
+//       }
+//     };
+//     startCamera();
+//     return () => {
+//       if (stream) {
+//         stream.getTracks().forEach((track) => track.stop());
+//       }
+//     };
+//   }, []);
 
-  const capturePhoto = () => {
-    if (videoRef.current && canvasRef.current) {
-      const context = canvasRef.current.getContext("2d");
-      canvasRef.current.width = videoRef.current.videoWidth;
-      canvasRef.current.height = videoRef.current.videoHeight;
+//   const capturePhoto = () => {
+//     if (videoRef.current && canvasRef.current) {
+//       const context = canvasRef.current.getContext("2d");
+//       canvasRef.current.width = videoRef.current.videoWidth;
+//       canvasRef.current.height = videoRef.current.videoHeight;
 
-      // Mirror the canvas context horizontally so the captured photo matches the preview
-      context.translate(canvasRef.current.width, 0);
-      context.scale(-1, 1);
+//       // Mirror the canvas context horizontally so the captured photo matches the preview
+//       context.translate(canvasRef.current.width, 0);
+//       context.scale(-1, 1);
 
-      context.drawImage(videoRef.current, 0, 0, canvasRef.current.width, canvasRef.current.height);
-      canvasRef.current.toBlob((blob) => {
-        const file = new File([blob], "applicant_photo.jpg", { type: "image/jpeg" });
-        onCapture(file);
-      }, "image/jpeg");
-    }
-  };
+//       context.drawImage(videoRef.current, 0, 0, canvasRef.current.width, canvasRef.current.height);
+//       canvasRef.current.toBlob((blob) => {
+//         const file = new File([blob], "applicant_photo.jpg", { type: "image/jpeg" });
+//         onCapture(file);
+//       }, "image/jpeg");
+//     }
+//   };
 
-  return (
-    <div
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        width: "100%",
-        height: "100%",
-        backgroundColor: "rgba(0,0,0,0.8)",
-        zIndex: 9999,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      {error ? (
-        <div style={{ color: "white", marginBottom: "20px" }}>{error}</div>
-      ) : (
-        <video
-          ref={videoRef}
-          autoPlay
-          playsInline
-          style={{ maxWidth: "100%", maxHeight: "80%", backgroundColor: "black", transform: "scaleX(-1)" }}
-        />
-      )}
-      <canvas ref={canvasRef} style={{ display: "none" }} />
-      <div style={{ marginTop: "20px", display: "flex", gap: "20px" }}>
-        {!error && (
-          <button
-            type="button"
-            onClick={capturePhoto}
-            style={{
-              padding: "10px 20px",
-              background: "#00497e",
-              color: "white",
-              border: "none",
-              borderRadius: "4px",
-              cursor: "pointer",
-              fontWeight: "bold",
-            }}
-          >
-            {t("WS_CAPTURE_PHOTO") || "Capture"}
-          </button>
-        )}
-        <button
-          type="button"
-          onClick={onClose}
-          style={{
-            padding: "10px 20px",
-            background: "white",
-            color: "#00497e",
-            border: "1px solid #00497e",
-            borderRadius: "4px",
-            cursor: "pointer",
-            fontWeight: "bold",
-          }}
-        >
-          {t("CS_COMMON_CANCEL") || "Cancel"}
-        </button>
-      </div>
-    </div>
-  );
-};
+//   return (
+//     <div
+//       style={{
+//         position: "fixed",
+//         top: 0,
+//         left: 0,
+//         width: "100%",
+//         height: "100%",
+//         backgroundColor: "rgba(0,0,0,0.8)",
+//         zIndex: 9999,
+//         display: "flex",
+//         flexDirection: "column",
+//         alignItems: "center",
+//         justifyContent: "center",
+//       }}
+//     >
+//       {error ? (
+//         <div style={{ color: "white", marginBottom: "20px" }}>{error}</div>
+//       ) : (
+//         <video
+//           ref={videoRef}
+//           autoPlay
+//           playsInline
+//           style={{ maxWidth: "100%", maxHeight: "80%", backgroundColor: "black", transform: "scaleX(-1)" }}
+//         />
+//       )}
+//       <canvas ref={canvasRef} style={{ display: "none" }} />
+//       <div style={{ marginTop: "20px", display: "flex", gap: "20px" }}>
+//         {!error && (
+//           <button
+//             type="button"
+//             onClick={capturePhoto}
+//             style={{
+//               padding: "10px 20px",
+//               background: "#00497e",
+//               color: "white",
+//               border: "none",
+//               borderRadius: "4px",
+//               cursor: "pointer",
+//               fontWeight: "bold",
+//             }}
+//           >
+//             {t("WS_CAPTURE_PHOTO") || "Capture"}
+//           </button>
+//         )}
+//         <button
+//           type="button"
+//           onClick={onClose}
+//           style={{
+//             padding: "10px 20px",
+//             background: "white",
+//             color: "#00497e",
+//             border: "1px solid #00497e",
+//             borderRadius: "4px",
+//             cursor: "pointer",
+//             fontWeight: "bold",
+//           }}
+//         >
+//           {t("CS_COMMON_CANCEL") || "Cancel"}
+//         </button>
+//       </div>
+//     </div>
+//   );
+// };

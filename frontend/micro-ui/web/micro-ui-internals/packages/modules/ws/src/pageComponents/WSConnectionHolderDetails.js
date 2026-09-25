@@ -56,7 +56,9 @@ const WSConnectionHolderDetails = ({ config, onSelect, userType, formData, setEr
           emailId: userInfo?.emailId || "",
           gender: userInfo?.gender ? { code: userInfo?.gender, i18nKey: `COMMON_GENDER_${userInfo?.gender}`, value: userInfo?.gender } : "",
           guardian: userInfo?.fatherOrHusbandName || "",
-          relationship: userInfo?.relationship ? { code: userInfo?.relationship, name: userInfo?.relationship, i18nKey: `COMMON_MASTERS_OWNERTYPE_${userInfo?.relationship}` } : "",
+          relationship: userInfo?.relationship
+            ? { code: userInfo?.relationship, name: userInfo?.relationship, i18nKey: `COMMON_MASTERS_OWNERTYPE_${userInfo?.relationship}` }
+            : "",
         };
       }
       return [initData];
@@ -66,7 +68,6 @@ const WSConnectionHolderDetails = ({ config, onSelect, userType, formData, setEr
   const stateId = Digit.ULBService.getStateId();
   const [isErrors, setIsErrors] = useState(false);
 
-
   const { isLoading, data: genderTypeData } = Digit.Hooks.obps.useMDMS(stateId, "common-masters", ["GenderType"]);
 
   let menu = [];
@@ -74,8 +75,6 @@ const WSConnectionHolderDetails = ({ config, onSelect, userType, formData, setEr
     genderTypeData["common-masters"].GenderType.filter((data) => data.active).map((genderDetails) => {
       menu.push({ i18nKey: `COMMON_GENDER_${genderDetails.code}`, code: `${genderDetails.code}`, value: `${genderDetails.code}` });
     });
-
-
 
   const GuardianOptions = [
     { name: "HUSBAND", code: "HUSBAND", i18nKey: "COMMON_MASTERS_OWNERTYPE_HUSBAND" },
@@ -167,7 +166,9 @@ const WSConnectionHolderDetails = ({ config, onSelect, userType, formData, setEr
           emailId: userInfo?.emailId || "",
           gender: userInfo?.gender ? { code: userInfo?.gender, i18nKey: `COMMON_GENDER_${userInfo?.gender}`, value: userInfo?.gender } : "",
           guardian: userInfo?.fatherOrHusbandName || "",
-          relationship: userInfo?.relationship ? { code: userInfo?.relationship, name: userInfo?.relationship, i18nKey: `COMMON_MASTERS_OWNERTYPE_${userInfo?.relationship}` } : "",
+          relationship: userInfo?.relationship
+            ? { code: userInfo?.relationship, name: userInfo?.relationship, i18nKey: `COMMON_MASTERS_OWNERTYPE_${userInfo?.relationship}` }
+            : "",
         };
       }
       setConnectionHolderDetails([initData]);
@@ -207,7 +208,12 @@ const WSConnectionHolderDetails = ({ config, onSelect, userType, formData, setEr
         <Timeline currentStep={2} />
         <FormStep t={t} config={config} onSelect={goNext} onSkip={() => onSelect()}>
           {connectionHolderDetails.map((connectionHolderDetail, index) => (
-            <ConnectionDetails key={connectionHolderDetail.key || index} index={index} connectionHolderDetail={connectionHolderDetail} {...commonProps} />
+            <ConnectionDetails
+              key={connectionHolderDetail.key || index}
+              index={index}
+              connectionHolderDetail={connectionHolderDetail}
+              {...commonProps}
+            />
           ))}
         </FormStep>
       </div>
@@ -268,22 +274,40 @@ const ConnectionDetails = (_props) => {
   const [emailId, setEmailId] = useState(connectionHolderDetail?.emailId);
   const [watsAppMobileNumber, setWatsAppMobileNumber] = useState(connectionHolderDetail?.watsAppMobileNumber);
   const [isWatsappSameAsMobile, setIsWatsappSameAsMobile] = useState(connectionHolderDetail?.isWatsappSameAsMobile || false);
-  const formValue = React.useMemo(() => ({
-    name,
-    middleName,
-    lastName,
-    gender,
-    mobileNumber,
-    guardian,
-    relationship,
-    ownerType,
-    sameAsOwnerDetails,
-    address,
-    uuid,
-    emailId,
-    watsAppMobileNumber,
-    isWatsappSameAsMobile,
-  }), [name, middleName, lastName, gender, mobileNumber, guardian, relationship, ownerType, sameAsOwnerDetails, address, uuid, emailId, watsAppMobileNumber, isWatsappSameAsMobile]);
+  const formValue = React.useMemo(
+    () => ({
+      name,
+      middleName,
+      lastName,
+      gender,
+      mobileNumber,
+      guardian,
+      relationship,
+      ownerType,
+      sameAsOwnerDetails,
+      address,
+      uuid,
+      emailId,
+      watsAppMobileNumber,
+      isWatsappSameAsMobile,
+    }),
+    [
+      name,
+      middleName,
+      lastName,
+      gender,
+      mobileNumber,
+      guardian,
+      relationship,
+      ownerType,
+      sameAsOwnerDetails,
+      address,
+      uuid,
+      emailId,
+      watsAppMobileNumber,
+      isWatsappSameAsMobile,
+    ]
+  );
   const { errors } = localFormState;
   const isMobile = window.Digit.Utils.browser.isMobile();
   const isEmployee = window.location.href.includes("/employee");
@@ -368,10 +392,11 @@ const ConnectionDetails = (_props) => {
 
       return true;
     } else {
-      if (setError) setError("emailId", {
-        type: "manual",
-        message: "email id error",
-      });
+      if (setError)
+        setError("emailId", {
+          type: "manual",
+          message: "email id error",
+        });
 
       if (!formStateErros["ConnectionHolderDetails"]) {
         formStateErros["ConnectionHolderDetails"] = { type: {} };
@@ -423,7 +448,9 @@ const ConnectionDetails = (_props) => {
         <div className="formcomposer-section-grid">
           <div>
             <LabelFieldPair>
-              <CardLabel>{`${t("WS_OWN_DETAIL_NAME")}*`}</CardLabel>
+              <CardLabel>
+                {`${t("WS_OWN_DETAIL_NAME")}`} <span className="check-page-link-button">*</span>
+              </CardLabel>
               <Controller
                 control={control}
                 name="name"
@@ -446,6 +473,7 @@ const ConnectionDetails = (_props) => {
                       }}
                       labelStyle={{ marginTop: "unset" }}
                       onBlur={props.onBlur}
+                      placeholder={t("WS_OWN_DETAIL_NAME")}
                     />
                     {checkifPrivacyValid() && (
                       <div>
@@ -501,6 +529,7 @@ const ConnectionDetails = (_props) => {
                       }}
                       labelStyle={{ marginTop: "unset" }}
                       onBlur={props.onBlur}
+                      placeholder={t("WS_OWN_DETAIL_MIDDLE_NAME")}
                     />
                   </div>
                 )}
@@ -530,6 +559,7 @@ const ConnectionDetails = (_props) => {
                       }}
                       labelStyle={{ marginTop: "unset" }}
                       onBlur={props.onBlur}
+                      placeholder={t("WS_OWN_DETAIL_LAST_NAME")}
                     />
                   </div>
                 )}
@@ -541,7 +571,9 @@ const ConnectionDetails = (_props) => {
           </div>
           <div>
             <LabelFieldPair>
-              <CardLabel>{`${t("WS_CONN_HOLDER_OWN_DETAIL_GENDER_LABEL")}*`}</CardLabel>
+              <CardLabel>
+                {`${t("WS_CONN_HOLDER_OWN_DETAIL_GENDER_LABEL")}`} <span className="check-page-link-button">*</span>
+              </CardLabel>
               <div className="field">
                 <Controller
                   control={control}
@@ -564,6 +596,7 @@ const ConnectionDetails = (_props) => {
                         optionKey="i18nKey"
                         onBlur={props.onBlur}
                         t={t}
+                        placeholder={t("WS_CONN_HOLDER_OWN_DETAIL_GENDER_LABEL")}
                       />
                       {checkifPrivacyValid() && (
                         <div>
@@ -604,7 +637,7 @@ const ConnectionDetails = (_props) => {
             )}
           </div>
 
-          <div>
+          {/* <div>
             <LabelFieldPair>
               <CardLabel>{`${t("WS_OWN_DETAIL_GUARDIAN_LABEL")}*`}</CardLabel>
               <div className="field">
@@ -667,8 +700,8 @@ const ConnectionDetails = (_props) => {
             {localFormState.touched.guardian && errors?.guardian?.message && (
               <CardLabelError style={errorStyle}>{errors?.guardian?.message}</CardLabelError>
             )}
-          </div>
-          <div>
+          </div> */}
+          {/* <div>
             <LabelFieldPair>
               <CardLabel>{`${t("WS_CONN_HOLDER_OWN_DETAIL_RELATION_LABEL")}*`}</CardLabel>
               <div className="field">
@@ -731,10 +764,12 @@ const ConnectionDetails = (_props) => {
             {localFormState.touched.relationship && errors?.relationship?.message && (
               <CardLabelError style={errorStyle}>{errors?.relationship?.message}</CardLabelError>
             )}
-          </div>
+          </div> */}
           <div>
             <LabelFieldPair>
-              <CardLabel>{`${t("CORE_COMMON_MOBILE_NUMBER")}*`}</CardLabel>
+              <CardLabel>
+                {`${t("CORE_COMMON_MOBILE_NUMBER")}`} <span className="check-page-link-button">*</span>
+              </CardLabel>
               <div className="field">
                 <Controller
                   control={control}
@@ -768,6 +803,7 @@ const ConnectionDetails = (_props) => {
                           }}
                           onBlur={props.onBlur}
                           hideSpan={false}
+                          placeholder={t("CORE_COMMON_MOBILE_NUMBER")}
                         />
 
                         {checkifPrivacyValid() && (
@@ -840,6 +876,7 @@ const ConnectionDetails = (_props) => {
                           }}
                           onBlur={props.onBlur}
                           hideSpan={false}
+                          placeholder={t("CORE_COMMON_WHATSAPP_MOBILE_NUMBER")}
                           disable={isWatsappSameAsMobile}
                         />
 
@@ -936,6 +973,7 @@ const ConnectionDetails = (_props) => {
                         }}
                         labelStyle={{ marginTop: "unset" }}
                         onBlur={props.onBlur}
+                        placeholder={t("WS_EMAIL_ID")}
                       />
                       {checkifPrivacyValid() && (
                         <div>

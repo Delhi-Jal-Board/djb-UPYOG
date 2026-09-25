@@ -449,22 +449,22 @@ const WSApplicationDetails = () => {
                     )
                   )}`}
                 />
-                <Row
+                {/* <Row
                   label={t("WS_CONNECTION_TYPE")}
                   text={`${t(
                     checkForNA(
                       connectionDetails?.connectionType?.i18nKey || connectionDetails?.connectionType?.code || connectionDetails?.connectionType
                     )
                   )}`}
-                />
-                <Row
+                /> */}
+                {/* <Row
                   label={t("WS_WATER_DEMAND_TYPE")}
                   text={`${t(
                     checkForNA(
                       connectionDetails?.waterDemandType?.i18nKey || connectionDetails?.waterDemandType?.code || connectionDetails?.waterDemandType
                     )
                   )}`}
-                />
+                /> */}
                 <Row
                   label={t("WS_APPLICANT_TYPE")}
                   text={`${t(
@@ -474,12 +474,12 @@ const WSApplicationDetails = () => {
                   )}`}
                 />
                 <Row label={t("WS_DIVYANGJAN")} text={`${connectionDetails?.isDivyangjan ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}`} />
-                <Row
+                {/* <Row
                   label={t("WS_SERVICE_TYPE")}
                   text={`${t(
                     checkForNA(connectionDetails?.domesticType?.i18nKey || connectionDetails?.domesticType?.code || connectionDetails?.domesticType)
                   )}`}
-                />
+                /> */}
                 {connectionDetails?.domesticType?.code === "ORGANIZATION" && (
                   <React.Fragment>
                     <Row

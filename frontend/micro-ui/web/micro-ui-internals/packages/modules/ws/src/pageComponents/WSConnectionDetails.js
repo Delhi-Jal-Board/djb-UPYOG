@@ -36,7 +36,7 @@ const createConnectionDetails = () => ({
   categoryType: { code: "DOMESTIC", i18nKey: "WS_CATEGORY_DOMESTIC" },
   connectionType: { code: "Permanent", i18nKey: "WS_CONNECTION_Permanent" },
   temporaryType: { code: "Exhibition", i18nKey: "Exhibition" },
-  waterDemandType: { code: "BULK", i18nKey: "WS_WATER_DEMAND_BULK" },
+  waterDemandType: { code: "NON_BULK", i18nKey: "WS_WATER_DEMAND_NON_BULK" },
   applicantType: { code: "OWNER", i18nKey: "WS_APPLICANT_OWNER" },
   domesticType: { i18nKey: "WS_DOMESTIC_TYPE_DOMESTIC", code: "INDIVIDUAL" },
   departmentType: { i18nKey: "WS_DEPARTMENT_TYPE_GOVERNMENT", code: "GOVERNMENT" },
@@ -233,7 +233,7 @@ const ConnectionDetails = (_props) => {
         categoryType: connectionDetail?.categoryType || { code: "DOMESTIC", i18nKey: "WS_CATEGORY_DOMESTIC" },
         connectionType: connectionDetail?.connectionType || { code: "Permanent", i18nKey: "WS_CONNECTION_Permanent" },
         temporaryType: connectionDetail?.temporaryType || { code: "Exhibition", i18nKey: "Exhibition" },
-        waterDemandType: connectionDetail?.waterDemandType || { code: "BULK", i18nKey: "WS_WATER_DEMAND_BULK" },
+        waterDemandType: connectionDetail?.waterDemandType || { code: "NON_BULK", i18nKey: "WS_WATER_DEMAND_NON_BULK" },
         applicantType: connectionDetail?.applicantType || { code: "OWNER", i18nKey: "WS_APPLICANT_OWNER" },
         domesticType: connectionDetail?.domesticType || { i18nKey: "WS_DOMESTIC_TYPE_DOMESTIC", code: "INDIVIDUAL" },
         departmentType: connectionDetail?.departmentType || { i18nKey: "WS_DEPARTMENT_TYPE_GOVERNMENT", code: "GOVERNMENT" },
@@ -340,7 +340,10 @@ const ConnectionDetails = (_props) => {
     let isClear = true;
     connectionDetails &&
       Object.keys(connectionDetails?.[0])?.map((data) => {
-        if (connectionDetails[0]?.domesticType?.code === "INDIVIDUAL" && ["institutionName", "natureOfWork", "orgDeptDocument", "departmentType"].includes(data)) {
+        if (
+          connectionDetails[0]?.domesticType?.code === "INDIVIDUAL" &&
+          ["institutionName", "natureOfWork", "orgDeptDocument", "departmentType"].includes(data)
+        ) {
           return;
         }
         if (!connectionDetails[0][data] && connectionDetails[0][data] != false && isClear) isClear = false;
@@ -375,7 +378,10 @@ const ConnectionDetails = (_props) => {
     <CollapsibleCardPage title={t("WS_CONNECTION_DETAILS")} defaultOpen={true}>
       <div className="formcomposer-section-grid">
         <LabelFieldPair>
-          <CardLabel>{`${t("WS_SERVICE_TYPE")}*`}</CardLabel>
+          <CardLabel>
+            {`${t("WS_SERVICE_TYPE")}`}
+            <span className="check-page-link-button">*</span>
+          </CardLabel>
           <Controller
             control={control}
             name={"serviceType"}
@@ -390,6 +396,7 @@ const ConnectionDetails = (_props) => {
                 disabled={true}
                 onChange={() => {}}
                 style={{ backgroundColor: "#eee" }}
+                placeholder={t("WS_SERVICE_TYPE_PLACEHOLDER")}
               />
             )}
           />
@@ -419,7 +426,7 @@ const ConnectionDetails = (_props) => {
             )}
           />
         </LabelFieldPair> */}
-        <LabelFieldPair>
+        {/* <LabelFieldPair>
           <CardLabel>{`${t("WS_CONNECTION_TYPE")}*`}</CardLabel>
           <Controller
             control={control}
@@ -470,8 +477,8 @@ const ConnectionDetails = (_props) => {
               )}
             />
           </LabelFieldPair>
-        )}
-        <LabelFieldPair>
+        )} */}
+        {/* <LabelFieldPair>
           <CardLabel>{`${t("WS_WATER_DEMAND_TYPE")}*`}</CardLabel>
           <Controller
             control={control}
@@ -495,9 +502,12 @@ const ConnectionDetails = (_props) => {
               />
             )}
           />
-        </LabelFieldPair>
+        </LabelFieldPair> */}
         <LabelFieldPair>
-          <CardLabel>{`${t("WS_APPLICANT_TYPE")}*`}</CardLabel>
+          <CardLabel>
+            {`${t("WS_APPLICANT_TYPE")}`}
+            <span className="check-page-link-button">*</span>
+          </CardLabel>
           <Controller
             control={control}
             name={"applicantType"}
@@ -517,11 +527,12 @@ const ConnectionDetails = (_props) => {
                 optionKey="i18nKey"
                 onBlur={props.onBlur}
                 t={t}
+                placeholder={t("WS_APPLICANT_TYPE_PLACEHOLDER")}
               />
             )}
           />
         </LabelFieldPair>
-        <LabelFieldPair>
+        {/* <LabelFieldPair>
           <CardLabel>{`${formValue?.categoryType?.code === "NON_DOMESTIC" || formValue?.categoryType?.name === "Non-Domestic"
               ? t("WS_NON_DOMESTIC_TYPE")
               : t("WS_DOMESTIC_TYPE")
@@ -552,8 +563,8 @@ const ConnectionDetails = (_props) => {
               )}
             />
           </div>
-        </LabelFieldPair>
-        {formValue?.domesticType?.code === "ORGANIZATION" && (
+        </LabelFieldPair> */}
+        {/* {formValue?.domesticType?.code === "ORGANIZATION" && (
           <React.Fragment>
             <LabelFieldPair>
               <CardLabel>{`${t("WS_DEPARTMENT_TYPE")}*`}</CardLabel>
@@ -679,7 +690,7 @@ const ConnectionDetails = (_props) => {
             </LabelFieldPair>
             {fileUploadError && <div style={{ color: "red", fontSize: "12px", marginTop: "4px" }}>{fileUploadError}</div>}
           </React.Fragment>
-        )}
+        )} */}
       </div>
       {showDocModal && (
         <Modal

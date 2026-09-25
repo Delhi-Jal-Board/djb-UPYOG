@@ -46,6 +46,7 @@ const DueVerification = ({ applicationData }) => {
     "PENDING_FOR_FINAL_PAYMENT",
     "PENDING_FOR_CONNECTION_ACTIVATION",
     "CONNECTION_ACTIVATED",
+    "PENDING_FOR_CITIZEN_ACTION",
   ].includes(applicationData?.applicationStatus);
 
   const columns = useMemo(() => {

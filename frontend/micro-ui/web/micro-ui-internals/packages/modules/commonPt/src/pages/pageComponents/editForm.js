@@ -233,8 +233,13 @@ const EditPropertyForm = ({ config, onSelect, userType }) => {
 
     updateMutation.mutate(payload, {
       onSuccess: (data) => {
-        if (data?.Errors?.length > 0) {
-          setShowToast({ key: true, label: data.Errors[0]?.message || t("PT_COMMON_FAILED_TO_UPDATE_PROPERTY") });
+        const errors = data?.response?.data?.Errors || data?.Errors;
+        const isError = errors?.length > 0 || data instanceof Error || data?.isAxiosError || data?.response?.status >= 400;
+        
+        if (isError) {
+          const errorMsg = errors?.[0]?.message || data?.response?.data?.message || data?.message || t("PT_COMMON_FAILED_TO_UPDATE_PROPERTY");
+          sessionStorage.setItem("PT_ERROR_MSG", errorMsg);
+          history.push(`${match.url}/save-property`, { isError: true, errorMsg: errorMsg });
           return;
         }
         setShowToast({ key: false, label: t("CS_PROPERTY_UPDATE_APPLICATION_SUCCESS") });
@@ -247,10 +252,8 @@ const EditPropertyForm = ({ config, onSelect, userType }) => {
         }, 2000);
       },
       onError: (error) => {
-        setShowToast({
-          key: true,
-          label: error?.response?.data?.Errors?.[0]?.message || t("PT_COMMON_FAILED_TO_UPDATE_PROPERTY"),
-        });
+        sessionStorage.setItem("PT_ERROR_MSG", error?.response?.data?.Errors?.[0]?.message || t("PT_COMMON_FAILED_TO_UPDATE_PROPERTY"));
+        history.push(`${match.url}/save-property`, { isError: true, errorMsg: error?.response?.data?.Errors?.[0]?.message || t("PT_COMMON_FAILED_TO_UPDATE_PROPERTY") });
       },
     });
   };

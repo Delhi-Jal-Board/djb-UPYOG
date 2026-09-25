@@ -166,6 +166,7 @@ const Register = ({ stateCode }) => {
               handleNameSelect={handleNameSelect}
               handleResendOtp={handleResendOtp}
               params={params}
+              stateCode={stateCode}
             />
           </Route>
         </Switch>
@@ -177,7 +178,7 @@ const Register = ({ stateCode }) => {
 
 export default Register;
 
-function RegistrationFlow({ t, handleMobileNumberSelect, handleOtpSelect, handleNameSelect, params, handleResendOtp }) {
+function RegistrationFlow({ t, handleMobileNumberSelect, handleOtpSelect, handleNameSelect, params, handleResendOtp, stateCode }) {
   const location = useLocation();
   const [mobileNumber, setMobileNumber] = useState("");
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
@@ -187,6 +188,7 @@ function RegistrationFlow({ t, handleMobileNumberSelect, handleOtpSelect, handle
     fullName: "",
     dob: "",
     emailId: "",
+    gender: "",
   });
   const history = useHistory();
   const { path } = useRouteMatch();
@@ -245,8 +247,8 @@ function RegistrationFlow({ t, handleMobileNumberSelect, handleOtpSelect, handle
   };
 
   const handleComplete = () => {
-    if (profileData.fullName && profileData.dob) {
-      handleNameSelect({ otp: params.otp, mobileNumber: params.mobileNumber, name: profileData.fullName, dob: profileData.dob, emailId: profileData.emailId });
+    if (profileData.fullName && profileData.dob && profileData.gender) {
+      handleNameSelect({ otp: params.otp, mobileNumber: params.mobileNumber, name: profileData.fullName, dob: profileData.dob, emailId: profileData.emailId, gender: profileData.gender });
     }
   };
 
@@ -291,18 +293,7 @@ function RegistrationFlow({ t, handleMobileNumberSelect, handleOtpSelect, handle
         )}
 
         {/* STEP 3 */}
-        {currentStep === 3 && <SelectName profileData={profileData} setProfileData={setProfileData} handleComplete={handleComplete} />}
-
-        {/* PROGRESS BAR */}
-        {/* <div className="registration__progress">
-
-        profileData={profileData}
-        setProfileData={setProfileData}
-        handleComplete={handleComplete}
-          <div className="registration__progress-track">
-            <div className="registration__progress-bar" style={{ width: `${progress}%` }} />
-          </div>
-        </div> */}
+        {currentStep === 3 && <SelectName t={t} profileData={profileData} setProfileData={setProfileData} handleComplete={handleComplete} stateCode={stateCode} />}
       </div>
       {toast && <Toast warning={toast.type === "warning"} error={toast.type === "error"} label={toast.message} onClose={() => setToast(null)} />}
     </div>
