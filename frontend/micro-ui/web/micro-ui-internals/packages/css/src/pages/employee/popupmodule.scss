@@ -21,8 +21,18 @@
 
   .popup-module-action-bar {
     border-top: 1px solid rgba(15, 23, 42, 0.08);
-    padding-top: 12px;
+    padding: 4px 24px;
     @apply flex flex-wrap items-center flex-row justify-end gap-3;
+
+    .generic-button {
+      &:hover {
+        color: #fff !important;
+
+        h2 {
+          color: #fff !important;
+        }
+      }
+    }
   }
 
   .modal-form {
