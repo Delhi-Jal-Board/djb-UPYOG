@@ -50,6 +50,16 @@ const WSDisconnectionKNumber = ({ userType }) => {
         return;
       }
 
+      const propertyResponse = connection?.propertyId
+        ? await Digit.PTService.search({
+            tenantId: connection?.tenantId || tenantId,
+            filters: { propertyIds: connection.propertyId },
+            auth: true,
+          }).catch(() => null)
+        : null;
+      const property = propertyResponse?.Properties?.[0];
+      if (property) connection = { ...connection, property };
+
       const fetchedMobileNumber = connection?.connectionHolders?.[0]?.mobileNumber || connection?.mobileNumber;
 
       if (!fetchedMobileNumber || fetchedMobileNumber.length !== 10) {
@@ -64,7 +74,7 @@ const WSDisconnectionKNumber = ({ userType }) => {
           mobileNumber: fetchedMobileNumber,
           tenantId: "dl",
           type: "register",
-          userType: userType
+          userType: "EMPLOYEE"
         }
       };
       

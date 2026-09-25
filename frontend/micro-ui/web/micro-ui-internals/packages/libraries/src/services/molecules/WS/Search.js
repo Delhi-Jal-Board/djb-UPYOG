@@ -169,17 +169,34 @@ export const WSSearch = {
     const wsData = cloneDeep(serviceType == "WATER" ? response?.WaterConnection : response?.SewerageConnections);
 
     wsData?.forEach((item) => {
-      propertyids = propertyids + item?.propertyId + ",";
+      propertyids = propertyids + (item?.propertyId || "") + ",";
       consumercodes = consumercodes + item?.applicationNo + ",";
     });
 
-    let propertyfilter = { propertyIds: propertyids.substring(0, propertyids.length - 1) };
+    let actualPropertyIds = propertyids.substring(0, propertyids.length - 1);
 
-    if (propertyids !== "" && filters?.locality) propertyfilter.locality = filters?.locality;
+    if ((actualPropertyIds === "" || actualPropertyIds === "undefined") && wsData?.[0]?.connectionNo) {
+      try {
+        const parentConnResponse = await WSSearch.application(tenantId, { connectionNumber: wsData[0].connectionNo, searchType: "CONNECTION", isConnectionSearch: true }, serviceType);
+        const parentConn = serviceType === "WATER" ? parentConnResponse?.WaterConnection?.[0] : parentConnResponse?.SewerageConnections?.[0];
+        if (parentConn?.propertyId) {
+          actualPropertyIds = parentConn.propertyId;
+          wsData[0].propertyId = actualPropertyIds;
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
 
-    config = { enabled: propertyids !== "" ? true : false };
+    let propertyfilter = { propertyIds: actualPropertyIds };
+    if (actualPropertyIds !== "" && filters?.locality) propertyfilter.locality = filters?.locality;
 
-    const properties = await WSSearch.property(tenantId, propertyfilter);
+    config = { enabled: actualPropertyIds !== "" ? true : false };
+
+    let properties = null;
+    if (actualPropertyIds && actualPropertyIds !== "undefined" && actualPropertyIds !== "") {
+      properties = await WSSearch.property(tenantId, propertyfilter);
+    }
 
     let billData;
     // Handle bill search for disconnection applications with dedicated business service
@@ -1067,7 +1084,10 @@ export const WSSearch = {
     let propertyfilter = { propertyIds: propertyids.substring(0, propertyids.length - 1) };
     if (propertyids !== "" && filters?.locality) propertyfilter.locality = filters?.locality;
     config = { enabled: propertyids !== "" ? true : false };
-    const properties = await WSSearch.property(tenantId, propertyfilter);
+    let properties = null;
+    if (propertyfilter.propertyIds && propertyfilter.propertyIds !== "undefined" && propertyfilter.propertyIds !== "") {
+      properties = await WSSearch.property(tenantId, propertyfilter);
+    }
 
     let oldProperties;
     if (wsData?.[0]?.propertyId != wsOldDetails?.property) {
@@ -2115,7 +2135,10 @@ export const WSSearch = {
 
     config = { enabled: propertyids !== "" ? true : false };
 
-    const properties = await WSSearch.property(tenantId, propertyfilter);
+    let properties = null;
+    if (propertyfilter.propertyIds && propertyfilter.propertyIds !== "undefined" && propertyfilter.propertyIds !== "") {
+      properties = await WSSearch.property(tenantId, propertyfilter);
+    }
 
     const { Demands: BillDemandDetails } = await PaymentService.demandSearch(tenantId, filtersForWSSearch?.connectionNumber, billAmendSearchService);
     const billServiceTaxHeadMaster = await MdmsService.getWSTaxHeadMaster(tenantId, "WS");
@@ -2276,7 +2299,10 @@ export const WSSearch = {
 
     config = { enabled: propertyids !== "" ? true : false };
 
-    const properties = await WSSearch.property(tenantId, propertyfilter);
+    let properties = null;
+    if (propertyfilter.propertyIds && propertyfilter.propertyIds !== "undefined" && propertyfilter.propertyIds !== "") {
+      properties = await WSSearch.property(tenantId, propertyfilter);
+    }
 
     const wsResponseForWorkflow = await WSSearch.application(tenantId, { connectionNumber }, serviceType);
 
@@ -2671,7 +2697,10 @@ export const WSSearch = {
 
     config = { enabled: propertyids !== "" ? true : false };
 
-    const properties = await WSSearch.property(tenantId, propertyfilter);
+    let properties = null;
+    if (propertyfilter.propertyIds && propertyfilter.propertyIds !== "undefined" && propertyfilter.propertyIds !== "") {
+      properties = await WSSearch.property(tenantId, propertyfilter);
+    }
 
     if (filters?.applicationNumber) businessIds = filters?.applicationNumber;
 
