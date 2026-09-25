@@ -85,9 +85,11 @@ const ConnectionDetails = () => {
   };
   Digit.Hooks.useClickOutside(menuRef, closeModal, showOptions);
 
+  const propertyId = data?.WaterConnection?.[0]?.propertyId || data?.SewerageConnections?.[0]?.propertyId;
+  const propertyTenantId = data?.WaterConnection?.[0]?.tenantId || data?.SewerageConnections?.[0]?.tenantId || tenantId;
   const { isLoading: isPTLoading, isError: isPTError, error: PTerror, data: PTData } = Digit.Hooks.pt.usePropertySearch(
-    { filters: { propertyIds: data?.WaterConnection?.[0]?.propertyId } },
-    { filters: { propertyIds: data?.WaterConnection?.[0]?.propertyId }, privacy: Digit.Utils.getPrivacyObject() }
+    { filters: { propertyIds: propertyId }, tenantId: propertyTenantId },
+    { filters: { propertyIds: propertyId }, tenantId: propertyTenantId, enabled: !!propertyId, privacy: Digit.Utils.getPrivacyObject() }
   );
 
   const checkifPrivacyenabled =

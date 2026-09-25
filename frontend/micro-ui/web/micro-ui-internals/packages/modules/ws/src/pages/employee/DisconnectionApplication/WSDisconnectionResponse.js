@@ -19,7 +19,15 @@ const WSDisconnectionResponse = (props) => {
     PDFdata.then((res) => Digit.Utils.pdf.generatev1(res));
   };
   
+
+  const onMakePayment = () => {
+    const isWater = filters?.applicationNumber?.includes("WS");
+    const businessService = isWater ? "WS.DISCONNECTION" : "SW.DISCONNECTION";
+    history.push(`/digit-ui/employee/payment/collect/${businessService}/${filters?.applicationNumber}/${tenantId}?tenantId=${tenantId}&ISWSAPP&applicationNumber=${filters?.applicationNumber}&IsDisconnectionFlow=true`);
+  };
+
   const onSubmit = () => {
+
     history.push(`/digit-ui/employee`);
   }
 
@@ -45,8 +53,15 @@ const WSDisconnectionResponse = (props) => {
           </div>
         </div>
 
+        
         <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
           <SubmitBar
+            label={t("COMMON_MAKE_PAYMENT")}
+            onSubmit={onMakePayment}
+            style={{ margin: "10px 10px 0px 0px" }}
+          />
+          <SubmitBar
+
             label={t("CORE_COMMON_GO_TO_HOME")}
             onSubmit={onSubmit}
             style={{ margin: "10px 10px 0px 0px" }}
