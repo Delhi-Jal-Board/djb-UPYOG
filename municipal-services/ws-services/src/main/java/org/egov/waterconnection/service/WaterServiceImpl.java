@@ -1244,6 +1244,49 @@ public class WaterServiceImpl implements WaterService {
 					"Unable to verify dues for the selected K-Numbers.");
 		}
 	}
+	
+	
+	@Override
+	public void enrichDueVerificationWithBillAmount(List<WaterConnection> waterConnectionList,RequestInfo requestInfo) {
+
+	    if (CollectionUtils.isEmpty(waterConnectionList)) return;
+
+	    for (WaterConnection waterConnection : waterConnectionList) {
+
+	        if (waterConnection == null) continue;
+
+	        List<DueVerification> duesList = waterConnection.getDueVerification();
+
+	        if (CollectionUtils.isEmpty(duesList)) continue;
+
+	        String tenantId = waterConnection.getTenantId();
+
+	        for (DueVerification dueVerification : duesList) {
+
+	            if (dueVerification == null || StringUtils.isEmpty(dueVerification.getKno())) {
+	                continue;
+	            }
+	            String kno = dueVerification.getKno().trim();
+
+	            WaterConnection billConnection = new WaterConnection();
+	            billConnection.setConnectionNo(kno);
+	            billConnection.setTenantId(tenantId);
+	            billConnection.setPropertyId(waterConnection.getPropertyId());
+	            billConnection.setConnectionHolders(waterConnection.getConnectionHolders());
+
+	            DueVerification billDue = calculateDueForConnection(billConnection,tenantId,requestInfo,dueVerification.getApplicationNo());
+
+	            if (billDue == null) {
+	                continue;
+	            }
+
+	            dueVerification.setDueAmount(billDue.getDueAmount());
+	            dueVerification.setTotalAmount(billDue.getTotalAmount());
+	            log.info("Bill amount updated for KNO: {}, dueAmount: {}, totalAmount: {}",kno,billDue.getDueAmount(),billDue.getTotalAmount()
+	            );
+	        }
+	    }
+	}
 
 
 }
