@@ -17,6 +17,7 @@ public class OtpRequest {
     private String tenantId;
     private OtpRequestType type;
     private String userType;
+    private String name; // Added for dynamic template parameters (like eKYC Consumer name)
 
     public void validate() {
         if(isTenantIdAbsent()
@@ -48,6 +49,10 @@ public class OtpRequest {
 	
 	public boolean isLoginRequestType() {
     	return OtpRequestType.LOGIN.equals(getType());
+	}
+
+	public boolean isEkycRequestType() {
+    	return OtpRequestType.EKYC.equals(getType());
 	}
 
 	public boolean isInvalidType() {

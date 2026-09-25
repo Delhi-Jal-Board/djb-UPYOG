@@ -12,6 +12,7 @@ public class Sms {
     private Category category;
     private Long expiryTime;
     private String templateId;
+    private String[] users;
     public boolean isValid() {
         return isNotEmpty(mobileNumber) && isNotEmpty(message);
     }
