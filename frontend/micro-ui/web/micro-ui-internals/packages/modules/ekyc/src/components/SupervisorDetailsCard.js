@@ -1,8 +1,8 @@
-import React, { Fragment, useMemo, useState } from "react";
+import React, { Fragment, useState } from "react";
 import { Card, Loader, Table, MdDownloadIcon } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useParams, useHistory } from "react-router-dom";
-import { FaUsers, FaCheckCircle, FaClock, FaChartLine } from "react-icons/fa";
+import { FaUsers, FaCheckCircle, FaClock } from "react-icons/fa";
 import { getEkycExcelData } from "../utils/ekycExcelData";
 import EkycFilterModal from "./EkycFilterModal";
 
@@ -10,35 +10,24 @@ const SupervisorDetailsCard = () => {
   const { t } = useTranslation();
   const history = useHistory();
   const tenantId = Digit.ULBService.getCurrentTenantId() || "dl.djb";
-  const { id: supervisorId, vendorId } = useParams();
-  const loggedInUser = Digit.SessionStorage.get("User")?.info;
+  const { id: supervisorId } = useParams();
   const [ekycDownloadLoading, setEkycDownloadLoading] = useState(false);
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize, setPageSize] = useState(20);
-
+  const [customDate, setCustomDate] = useState({ from: "", to: "" });
   const [ekycStatus, setEkycStatus] = useState("ALL");
-
-  // Fetch all supervisors to get details if assignment progress fails
-  const { data: supervisorSearchResponse, isLoading: isSupervisorSearchLoading } = Digit.Hooks.fsm.useSupervisorSearch(
+  
+  const { data, isLoading: isSupervisorSearchLoading } = Digit.Hooks.fsm.useSupervisorSearch(
     tenantId,
-    { status: "ACTIVE" },
+    { status: "ACTIVE", ids: supervisorId },
     { enabled: !!tenantId, staleTime: 300000 }
   );
 
-  // Resolve vendorId of this supervisor if available
-  const targetVendorId = useMemo(() => {
-    const targetId = supervisorId || loggedInUser?.uuid;
-    if (!targetId || !supervisorSearchResponse?.supervisors) return null;
-    const matchedSup = supervisorSearchResponse.supervisors.find(
-      (s) => s.id?.toLowerCase() === targetId?.toLowerCase() || s.owner?.uuid?.toLowerCase() === targetId?.toLowerCase()
-    );
-    return matchedSup?.vendorId || null;
-  }, [supervisorId, loggedInUser, supervisorSearchResponse]);
+  const { supervisors: [supervisor] = [] } = data || {};
 
-  // Fetch assignment progress with hierarchy (supervisor and surveyor details)
   const { isLoading: isProgressLoading, data: progressData } = Digit.Hooks.ekyc.useEkycAssignmentProgress(
-    { vendorId: vendorId || targetVendorId },
+    { vendorId: supervisor?.vendorId, supervisorId: supervisorId || supervisor?.id },
     {
       enabled: !!tenantId,
       keepPreviousData: true,
@@ -55,298 +44,100 @@ const SupervisorDetailsCard = () => {
 
   const surveyorsData = currentSupervisor?.surveyors || [];
 
-  // Fetch all surveyors to get details of connected surveyors if assignment progress fails
-  const { data: surveyorSearchResponse, isLoading: isSurveyorSearchLoading } = Digit.Hooks.fsm.useSurveyorSearch(
-    tenantId,
-    { status: "ACTIVE" },
-    { enabled: !!tenantId, staleTime: 300000 }
-  );
-
-  // Fetch all vendors from DSO search
-  const { data: vendorSearchResponse, isLoading: isVendorSearchLoading } = Digit.Hooks.fsm.useDsoSearch(
-    tenantId,
-    { status: "ACTIVE" },
-    { enabled: !!tenantId, staleTime: 300000 }
-  );
-
-  const supervisor = useMemo(() => {
-    const targetOwnerOrId = supervisorId || loggedInUser?.uuid;
-    if (!targetOwnerOrId) return null;
-
-    // Step 0: resolve real supervisor entity id (handles self-login case
-    // where we only have the owner/auth uuid, not the supervisor record id)
-    let resolvedSupervisorId = supervisorId; // if URL already has entity id, trust it
-    if (!resolvedSupervisorId && supervisorSearchResponse?.supervisors && targetOwnerOrId) {
-      const selfSup = supervisorSearchResponse.supervisors.find(
-        (s) => s.owner?.uuid?.toLowerCase() === targetOwnerOrId?.toLowerCase() || s.id?.toLowerCase() === targetOwnerOrId?.toLowerCase()
-      );
-      resolvedSupervisorId = selfSup?.id;
-    }
-
-    const targetId = resolvedSupervisorId || targetOwnerOrId;
-
-    // 1. Find the supervisor profile from search response
-    let matchedSup = null;
-    if (supervisorSearchResponse?.supervisors) {
-      matchedSup = supervisorSearchResponse.supervisors.find(
-        (s) => s.id?.toLowerCase() === targetId?.toLowerCase() || s.owner?.uuid?.toLowerCase() === targetId?.toLowerCase()
-      );
-    }
-
-    // 2. Find progress report for this supervisor from progressData
-    let progressReport = null;
-    if (progressData?.supervisorReport && targetId) {
-      progressReport = progressData.supervisorReport.find(
-        (s) => s.supervisorId?.toLowerCase() === targetId?.toLowerCase() || s.id?.toLowerCase() === targetId?.toLowerCase()
-      );
-    }
-
-    // 3. If we found the supervisor in search response, enrich and return
-    if (matchedSup) {
-      const matchedSurveyors = surveyorSearchResponse?.surveyors
-        ? surveyorSearchResponse.surveyors
-            .filter((surv) => surv.supervisorId === (matchedSup.id || matchedSup.owner?.uuid))
-            .map((surv) => {
-              let realStats = null;
-              if (progressData?.supervisorReport) {
-                for (const report of progressData.supervisorReport) {
-                  if (
-                    report.supervisorId?.toLowerCase() !== matchedSup.id?.toLowerCase() &&
-                    report.id?.toLowerCase() !== matchedSup.id?.toLowerCase()
-                  )
-                    continue;
-                  const matchedSurv = report.surveyors?.find(
-                    (s) =>
-                      (s.surveyorId &&
-                        (s.surveyorId?.toLowerCase() === surv.id?.toLowerCase() ||
-                          s.surveyorId?.toLowerCase() === surv.owner?.uuid?.toLowerCase())) ||
-                      (s.id && (s.id?.toLowerCase() === surv.id?.toLowerCase() || s.id?.toLowerCase() === surv.owner?.uuid?.toLowerCase()))
-                  );
-                  if (matchedSurv) {
-                    realStats = matchedSurv;
-                    break;
-                  }
-                }
-              }
-
-              return {
-                surveyorId: surv.id || surv.owner?.uuid,
-                surveyorName: surv.name || surv.owner?.name || "N/A",
-                mobileNo: surv.owner?.mobileNumber || surv.mobileNo || "N/A",
-                email: surv.owner?.emailId || "N/A",
-                gender: surv.owner?.gender || "N/A",
-                status: surv.status || "ACTIVE",
-                totalKnos: realStats?.totalKnos || 0,
-                submittedKnos: realStats?.submittedKnos || 0,
-                pendingKnos: realStats?.pendingKnos || 0,
-                progressPercent: realStats?.progressPercent || 0,
-              };
-            })
-        : [];
-
-      const totalKnos = progressReport?.totalKnos || matchedSurveyors.reduce((acc, s) => acc + (s.totalKnos || 0), 0);
-      const submittedKnos = progressReport?.submittedKnos || matchedSurveyors.reduce((acc, s) => acc + (s.submittedKnos || 0), 0);
-      const pendingKnos = progressReport?.pendingKnos || matchedSurveyors.reduce((acc, s) => acc + (s.pendingKnos || 0), 0);
-      const progressPercent = progressReport ? progressReport.progressPercent : totalKnos > 0 ? Math.round((submittedKnos / totalKnos) * 100) : 0;
-
-      return {
-        supervisorId: matchedSup.id || matchedSup.owner?.uuid,
-        supervisorName: matchedSup.name || matchedSup.owner?.name || "N/A",
-        mobileNo: matchedSup.owner?.mobileNumber || matchedSup.mobileNo || "N/A",
-        email: matchedSup.owner?.emailId || matchedSup.owner?.email || matchedSup.email || matchedSup.emailId || "N/A",
-        gender: matchedSup.owner?.gender || matchedSup.gender || "N/A",
-        status: matchedSup.status || "ACTIVE",
-        assignedZoneId: matchedSup.assignedZoneId || "N/A",
-        vendorId: matchedSup.vendorId,
-        surveyors: matchedSurveyors,
-        totalKnos,
-        submittedKnos,
-        pendingKnos,
-        progressPercent,
-      };
-    }
-
-    // 4. Fallback: If not found in search response, but we have progressData report, return it and enrich with loggedInUser details
-    if (progressReport) {
-      const isSelf = targetId?.toLowerCase() === loggedInUser?.uuid?.toLowerCase();
-      const supervisorName = isSelf ? loggedInUser?.name || progressReport.supervisorName || "N/A" : progressReport.supervisorName || "N/A";
-      const mobileNo = isSelf ? loggedInUser?.mobileNumber || progressReport.mobileNo || "N/A" : progressReport.mobileNo || "N/A";
-
-      const matchedSupForFallback = supervisorSearchResponse?.supervisors?.find(
-        (s) =>
-          s.id?.toLowerCase() === (progressReport.supervisorId || progressReport.id)?.toLowerCase() ||
-          s.owner?.uuid?.toLowerCase() === (progressReport.supervisorId || progressReport.id)?.toLowerCase()
-      );
-
-      const email =
-        matchedSupForFallback?.owner?.emailId ||
-        matchedSupForFallback?.owner?.email ||
-        matchedSupForFallback?.email ||
-        (isSelf ? loggedInUser?.emailId : null) ||
-        progressReport.email ||
-        "N/A";
-      const gender =
-        matchedSupForFallback?.owner?.gender ||
-        matchedSupForFallback?.gender ||
-        (isSelf ? loggedInUser?.gender : null) ||
-        progressReport.gender ||
-        "N/A";
-
-      const surveyorsMapped = progressReport.surveyors
-        ? progressReport.surveyors.map((surv) => {
-            const matchedSurv = surveyorSearchResponse?.surveyors?.find(
-              (s) => s.id?.toLowerCase() === surv.surveyorId?.toLowerCase() || s.owner?.uuid?.toLowerCase() === surv.surveyorId?.toLowerCase()
-            );
-
-            return {
-              surveyorId: surv.surveyorId || surv.id,
-              surveyorName: matchedSurv?.name || matchedSurv?.owner?.name || surv.surveyorName || "N/A",
-              mobileNo: matchedSurv?.owner?.mobileNumber || matchedSurv?.mobileNo || surv.mobileNo || "N/A",
-              email: matchedSurv?.owner?.emailId || matchedSurv?.owner?.email || matchedSurv?.email || surv.email || "N/A",
-              gender: matchedSurv?.owner?.gender || matchedSurv?.gender || surv.gender || "N/A",
-              status: matchedSurv?.status || surv.status || "ACTIVE",
-              totalKnos: surv.totalKnos || 0,
-              submittedKnos: surv.submittedKnos || 0,
-              pendingKnos: surv.pendingKnos || 0,
-              progressPercent: surv.progressPercent || 0,
-            };
-          })
-        : [];
-
-      return {
-        supervisorId: progressReport.supervisorId || progressReport.id,
-        supervisorName,
-        mobileNo,
-        email,
-        gender,
-        status: progressReport.status || "ACTIVE",
-        assignedZoneId: progressReport.assignedZoneId || "N/A",
-        vendorId: progressReport.vendorId,
-        surveyors: surveyorsMapped,
-        totalKnos: progressReport.totalKnos || 0,
-        submittedKnos: progressReport.submittedKnos || 0,
-        pendingKnos: progressReport.pendingKnos || 0,
-        progressPercent: progressReport.progressPercent || 0,
-      };
-    }
-
-    return null;
-  }, [progressData, supervisorSearchResponse, surveyorSearchResponse, supervisorId, loggedInUser]);
-
   const fullName = currentSupervisor?.supervisorName || "N/A";
   const mobileNumber = currentSupervisor?.mobileNo || "N/A";
-  const email = supervisor?.email || (supervisor?.supervisorId === loggedInUser?.uuid ? loggedInUser?.emailId : null) || "N/A";
-  const gender = supervisor?.gender || (supervisor?.supervisorId === loggedInUser?.uuid ? loggedInUser?.gender : null) || "N/A";
+  const email = supervisor?.owner?.emailId;
+  const gender = supervisor?.owner?.gender;
   const status = supervisor?.status || "N/A";
   const assignedZone = t(currentSupervisor?.assignedZoneId) || "N/A";
 
-  const vendorName = useMemo(() => {
-    if (!vendorSearchResponse || !supervisor) return "N/A";
-    const targetVendorId = supervisor.vendorId;
-    if (!targetVendorId) return "N/A";
-    const matchedVendor = vendorSearchResponse.find(
-      (v) =>
-        v.dsoDetails?.id === targetVendorId || v.dsoDetails?.vendorId === targetVendorId || v.id === targetVendorId || v.vendorId === targetVendorId
-    );
-    return matchedVendor?.dsoDetails?.name || matchedVendor?.name || "N/A";
-  }, [vendorSearchResponse, supervisor]);
+  const vendorName = supervisor?.vendorName;
 
-  const surveyors = useMemo(() => {
-    return supervisor?.surveyors || [];
-  }, [supervisor]);
+  const surveyors = supervisor?.surveyors || [];
 
-  const cards = useMemo(
-    () => [
-      {
-        label: "TOTAL_EKYC_APPLICATIONS",
-        count: supervisor?.totalKnos || 0,
-        color: "#0B2559",
-        type: "today",
-        icon: <FaUsers />,
+  const cards = [
+    {
+      label: "TOTAL_EKYC_APPLICATIONS",
+      count: progressData?.totalAssignments || 0,
+      color: "#0B2559",
+      type: "today",
+      icon: <FaUsers />,
+    },
+    {
+      label: "EKYC_SUBMITTED_TITLE",
+      count: progressData?.submittedKnosInZones || 0,
+      color: "#10B981",
+      type: "month",
+      icon: <FaCheckCircle />,
+    },
+    {
+      label: "PENDING_APPLICATIONS",
+      count: progressData?.pendingKnosInZones || 0,
+      color: "#F59E0B",
+      type: "pending",
+      icon: <FaClock />,
+    },
+    // {
+    //   label: "OVERALL_PROGRESS",
+    //   count: `${supervisor?.progressPercent || 0}%`,
+    //   color: "#A855F7",
+    //   type: "progress",
+    //   icon: <FaChartLine />,
+    // },
+  ];
+  const surveyorColumns = [
+    {
+      Header: t("SURVEYOR_NAME") || "Surveyor Name",
+      accessor: (row) => row?.surveyorName || "N/A",
+      Cell: ({ row }) => {
+        const userType = Digit.SessionStorage.get("User")?.info?.type?.toLowerCase() || "citizen";
+        const targetPath = `/digit-ui/${userType}/ekyc/surveyor-dashboard/${row.original.surveyorId}`;
+        return (
+          <a
+            href={targetPath}
+            style={{ color: "#1D70B8", fontWeight: "600", textDecoration: "none" }}
+            onClick={(e) => {
+              e.preventDefault();
+              history.push(targetPath);
+            }}
+          >
+            {row.original?.surveyorName || "N/A"}
+          </a>
+        );
       },
-      {
-        label: "EKYC_SUBMITTED_TITLE",
-        count: supervisor?.submittedKnos || 0,
-        color: "#10B981",
-        type: "month",
-        icon: <FaCheckCircle />,
-      },
-      {
-        label: "PENDING_APPLICATIONS",
-        count: supervisor?.pendingKnos || 0,
-        color: "#F59E0B",
-        type: "pending",
-        icon: <FaClock />,
-      },
-      {
-        label: "OVERALL_PROGRESS",
-        count: `${supervisor?.progressPercent || 0}%`,
-        color: "#A855F7",
-        type: "progress",
-        icon: <FaChartLine />,
-      },
-    ],
-    [supervisor]
-  );
-  const surveyorColumns = useMemo(
-    () => [
-      {
-        Header: t("SURVEYOR_NAME") || "Surveyor Name",
-        accessor: (row) => row?.surveyorName || "N/A",
-        Cell: ({ row }) => {
-          const userType = Digit.SessionStorage.get("User")?.info?.type?.toLowerCase() || "citizen";
-          const targetPath = `/digit-ui/${userType}/ekyc/surveyor-dashboard/${row.original.surveyorId}`;
-          return (
-            <a
-              href={targetPath}
-              style={{ color: "#1D70B8", fontWeight: "600", textDecoration: "none" }}
-              onClick={(e) => {
-                e.preventDefault();
-                history.push(targetPath);
-              }}
-            >
-              {row.original?.surveyorName || "N/A"}
-            </a>
-          );
-        },
-      },
-      {
-        Header: t("MOBILE_NUMBER") || "Mobile Number",
-        accessor: (row) => row?.mobileNo || "N/A",
-        id: "mobileNumber",
-      },
-      {
-        Header: t("STATUS") || "Status",
-        accessor: () => "ACTIVE",
-        id: "status",
-        Cell: ({ value }) => <span className={`status-badge verified`}>{t(value) || value}</span>,
-      },
-      {
-        Header: t("TOTAL_EKYC_APPLICATIONS") || "Total eKYC Applications",
-        accessor: (row) => row?.totalKnos || 0,
-        id: "totalEkycApplications",
-      },
-      {
-        Header: t("EKYC_SUBMITTED") || "eKYC Completed",
-        accessor: (row) => row?.submittedKnos || 0,
-        id: "ekycCompleted",
-      },
-      {
-        Header: t("PENDING_APPLICATIONS") || "Pending Applications",
-        accessor: (row) => row?.pendingKnos || 0,
-        id: "pendingApplications",
-      },
-      {
-        Header: t("OVERALL_PROGRESS") || "Overall Progress",
-        accessor: (row) => `${row?.progressPercent || 0}%`,
-        id: "overallProgress",
-      },
-    ],
-    [t, history]
-  );
-
-  // Report Download logic
-  const [customDate, setCustomDate] = useState({ from: "", to: "" });
+    },
+    {
+      Header: t("MOBILE_NUMBER") || "Mobile Number",
+      accessor: (row) => row?.mobileNo || "N/A",
+      id: "mobileNumber",
+    },
+    {
+      Header: t("STATUS") || "Status",
+      accessor: () => "ACTIVE",
+      id: "status",
+      Cell: ({ value }) => <span className={`status-badge verified`}>{t(value) || value}</span>,
+    },
+    {
+      Header: t("TOTAL_EKYC_APPLICATIONS") || "Total eKYC Applications",
+      accessor: (row) => row?.totalKnos || 0,
+      id: "totalEkycApplications",
+    },
+    {
+      Header: t("EKYC_SUBMITTED") || "eKYC Completed",
+      accessor: (row) => row?.submittedKnos || 0,
+      id: "ekycCompleted",
+    },
+    {
+      Header: t("PENDING_APPLICATIONS") || "Pending Applications",
+      accessor: (row) => row?.pendingKnos || 0,
+      id: "pendingApplications",
+    },
+    {
+      Header: t("OVERALL_PROGRESS") || "Overall Progress",
+      accessor: (row) => `${row?.progressPercent || 0}%`,
+      id: "overallProgress",
+    },
+  ];
 
   const StatCard = ({ title, value, type, isLoading, icon }) => (
     <div className={`stat-card ${type}`}>
@@ -365,7 +156,7 @@ const SupervisorDetailsCard = () => {
     </div>
   );
 
-  const isPageLoading = isProgressLoading || isSupervisorSearchLoading || isSurveyorSearchLoading || isVendorSearchLoading;
+  const isPageLoading = isProgressLoading || isSupervisorSearchLoading;
 
   if (isPageLoading && !supervisor) {
     return <Loader />;
@@ -387,7 +178,7 @@ const SupervisorDetailsCard = () => {
         offset: 0,
         limit: 10000,
         // Vendor-specific filter
-        vendorId: targetVendorId,
+        vendorId: supervisor?.vendorId,
         ekycStatus: ekycStatus,
         reportDownload: true,
         ...(fromDate && { fromDate }),

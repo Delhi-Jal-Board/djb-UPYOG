@@ -107,7 +107,6 @@ const VendorDetailsCard = () => {
   const [ekycDownloadLoading, setEkycDownloadLoading] = useState(false);
 
   const handleDownloadEkycData = async (fromDate, toDate) => {
-    console.log(ekycStatus, fromDate, toDate);
     setEkycDownloadLoading(true);
     try {
       const response = await Digit.EkycService.application_list({
@@ -159,7 +158,6 @@ const VendorDetailsCard = () => {
       Header: t("SUPERVISOR_NAME") || "Supervisor Name",
       accessor: (row) => row?.original?.supervisorName || "N/A",
       Cell: ({ row }) => {
-        console.log(row)
         const userType = Digit.SessionStorage.get("User")?.info?.type?.toLowerCase() || "citizen";
         const targetPath = `/digit-ui/${userType}/ekyc/supervisor-dashboard/${row?.original?.supervisorId}/${row?.original?.vendorId}`;
 
