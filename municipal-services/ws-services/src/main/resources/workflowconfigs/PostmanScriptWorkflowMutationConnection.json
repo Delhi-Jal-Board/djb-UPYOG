@@ -1,0 +1,169 @@
+curl --location --request POST 'https://dev.digit.org/egov-workflow-v2/egov-wf/businessservice/_create' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "RequestInfo": {
+        "apiId": "Rainmaker",
+        "action": "",
+        "did": 1,
+        "key": "",
+        "msgId": "20170310130900|en_IN",
+        "requesterId": "",
+        "ts": 1513579888683,
+        "ver": ".01",
+        "authToken": "{{Auth_Token}}"
+    },
+    "BusinessServices": [
+        {
+            "tenantId": "dl",
+            "businessService": "mutationWSConnection",
+            "business": "ws-services",
+            "businessServiceSla": 432000000,
+            "states": [
+                {
+                    "sla": null,
+                    "state": null,
+                    "applicationStatus": null,
+                    "docUploadRequired": false,
+                    "isStartState": true,
+                    "isTerminateState": false,
+                    "isStateUpdatable": false,
+                    "actions": [
+                        {
+                            "action": "INITIATE",
+                            "nextState": "INITIATED",
+                            "roles": [
+                                "CITIZEN",
+                                "WS_CEMP"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "sla": null,
+                    "state": "INITIATED",
+                    "applicationStatus": "INITIATED",
+                    "docUploadRequired": false,
+                    "isStartState": false,
+                    "isTerminateState": false,
+                    "isStateUpdatable": true,
+                    "actions": [
+                        {
+                            "action": "APPLY_MUTATION",
+                            "nextState": "PENDING_FOR_PAYMENT",
+                            "roles": [
+                                "CITIZEN",
+                                "WS_CEMP"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "sla": 43200000,
+                    "state": "PENDING_FOR_PAYMENT",
+                    "applicationStatus": "PENDING_FOR_PAYMENT",
+                    "docUploadRequired": false,
+                    "isStartState": false,
+                    "isTerminateState": false,
+                    "isStateUpdatable": false,
+                    "actions": [
+                        {
+                            "action": "PAY",
+                            "nextState": "PENDING_APPROVAL_FOR_MUTATION",
+                            "roles": [
+                                "CITIZEN",
+                                "WS_CEMP"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "sla": 43200000,
+                    "state": "PENDING_APPROVAL_FOR_MUTATION",
+                    "applicationStatus": "PENDING_APPROVAL_FOR_MUTATION",
+                    "docUploadRequired": false,
+                    "isStartState": false,
+                    "isTerminateState": false,
+                    "isStateUpdatable": true,
+                    "actions": [
+                        {
+                            "action": "SEND_BACK_TO_CITIZEN",
+                            "nextState": "PENDING_FOR_CITIZEN_ACTION",
+                            "roles": [
+                                "WS_DEALING_CLERK"
+                            ]
+                        },
+                        {
+                            "action": "APPROVE_MUTATION",
+                            "nextState": "PENDING_FOR_MUTATION_ACTIVATION",
+                            "roles": [
+                                "WS_DEALING_CLERK"
+                            ]
+                        },
+                        {
+                            "action": "REJECT",
+                            "nextState": "REJECTED",
+                            "roles": [
+                                "WS_DEALING_CLERK"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "sla": null,
+                    "state": "PENDING_FOR_CITIZEN_ACTION",
+                    "applicationStatus": "PENDING_FOR_CITIZEN_ACTION",
+                    "docUploadRequired": false,
+                    "isStartState": false,
+                    "isTerminateState": false,
+                    "isStateUpdatable": true,
+                    "actions": [
+                        {
+                            "action": "RESUBMIT_APPLICATION",
+                            "nextState": "PENDING_APPROVAL_FOR_MUTATION",
+                            "roles": [
+                                "CITIZEN",
+                                "WS_CEMP"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "sla": null,
+                    "state": "PENDING_FOR_MUTATION_ACTIVATION",
+                    "applicationStatus": "PENDING_FOR_MUTATION_ACTIVATION",
+                    "docUploadRequired": false,
+                    "isStartState": false,
+                    "isTerminateState": false,
+                    "isStateUpdatable": true,
+                    "actions": [
+                        {
+                            "action": "ACTIVATE_MUTATION",
+                            "nextState": "CONNECTION_ACTIVATED",
+                            "roles": [
+                                "WS_CLERK"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "sla": null,
+                    "state": "CONNECTION_ACTIVATED",
+                    "applicationStatus": "CONNECTION_ACTIVATED",
+                    "docUploadRequired": false,
+                    "isStartState": false,
+                    "isTerminateState": true,
+                    "isStateUpdatable": false
+                },
+                {
+                    "sla": null,
+                    "state": "REJECTED",
+                    "applicationStatus": "REJECTED",
+                    "docUploadRequired": false,
+                    "isStartState": false,
+                    "isTerminateState": true,
+                    "isStateUpdatable": false
+                }
+            ]
+        }
+    ]
+}'
