@@ -18,4 +18,6 @@ public interface WaterService {
 	WaterConnectionResponse plainSearch(SearchCriteria criteria, RequestInfo requestInfo);
 
 	List<DueVerification> fetchDueVerification(DueVerificationRequest dueVerificationRequest);
+	
+	void enrichDueVerificationWithBillAmount(List<WaterConnection> waterConnectionList,RequestInfo requestInfo);
 }
