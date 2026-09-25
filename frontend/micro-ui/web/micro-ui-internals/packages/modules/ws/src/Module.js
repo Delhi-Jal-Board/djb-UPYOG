@@ -102,6 +102,7 @@ import SearchIntegrated from "./pages/employee/SearchIntegrated";
 import SearchWaterConnectionViewIntegrated from "./pages/employee/SearchWaterConnection/SearchWaterConnectionViewIntegrated";
 import BulkBillGeneration from "./pages/employee/BulkBillGeneration";
 import OLDApplication from "./pages/employee/OLD";
+import WSExecuteDisconnection from "./pages/employee/ExecuteDisconnection/WSExecuteDisconnection";
 
 export const WSModule = ({ stateCode, userType, tenants }) => {
   const tenantId = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code || Digit.ULBService.getCurrentTenantId();
@@ -162,6 +163,11 @@ export const WSLinks = ({ matchPath, userType }) => {
       link: `${matchPath}/mutation-application`,
       i18nKey: t("WS_APPLY_MUTATION"),
     },
+     {
+      link: `${matchPath}/disconnect-application`,
+      i18nKey: t("WS_DISCONNECTION"),
+    },
+
   ];
 
   return <CitizenHomeCard header={t("ACTION_TEST_WATER_AND_SEWERAGE")} links={links} Icon={() => <WSICon />} />;
@@ -277,6 +283,7 @@ const componentsToRegister = {
   WSBulkBillGeneration: BulkBillGeneration,
   WSOLDApplication: OLDApplication,
   WSDivyangjan: WSDivyangjan,
+  WSExecuteDisconnection: WSExecuteDisconnection,
 };
 
 export const initWSComponents = () => {

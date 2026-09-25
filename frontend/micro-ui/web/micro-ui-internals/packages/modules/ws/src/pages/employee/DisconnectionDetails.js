@@ -26,6 +26,31 @@ const GetDisconnectionDetails = () => {
   sessionStorage.setItem("disconnectionURL", JSON.stringify({ url: `${location?.pathname}${location.search}` }));
 
   let { isLoading, isError, data: applicationDetails, error } = Digit.Hooks.ws.useDisConnectionDetails(t, tenantId, applicationNumber, serviceType, { privacy: Digit.Utils.getPrivacyObject() });
+  const propertyId = applicationDetails?.applicationData?.propertyId;
+  const propertyTenantId = applicationDetails?.applicationData?.tenantId || tenantId;
+  const { data: propertySearchData, isLoading: isPropertyLoading } = Digit.Hooks.pt.usePropertySearch(
+    { filters: { propertyIds: propertyId }, tenantId: propertyTenantId },
+    { filters: { propertyIds: propertyId }, tenantId: propertyTenantId, enabled: !!propertyId, privacy: Digit.Utils.getPrivacyObject() }
+  );
+  const propertyDetails = propertySearchData?.Properties?.[0] || applicationDetails?.propertyDetails;
+  const detailsWithPropertyAddress = propertySearchData?.Properties?.[0]
+    ? {
+        ...applicationDetails,
+        propertyDetails,
+        applicationDetails: applicationDetails?.applicationDetails?.map((section) =>
+          section?.title === "WS_COMMON_PROPERTY_DETAILS"
+            ? {
+                ...section,
+                values: section.values?.map((value) =>
+                  value?.title === "WS_PROPERTY_ADDRESS_LABEL"
+                    ? { ...value, value: func.getAddress(propertyDetails?.address, t) || t("CS_NA") }
+                    : value
+                ),
+              }
+            : section
+        ),
+      }
+    : applicationDetails;
   const { isServicesMasterLoading, data: servicesMasterData } = Digit.Hooks.ws.useMDMS(stateCode, "ws-services-masters", ["WSEditApplicationByConfigUser"]);
   const appStatus = applicationDetails?.applicationData?.applicationStatus || "";
 
@@ -138,19 +163,47 @@ const GetDisconnectionDetails = () => {
     }
   });
 
+  workflowDetails?.data?.actionState?.nextActions?.forEach((action) => {
+    if (action?.action === "EXECUTE_DISCONNECTION") {
+      action.redirectionUrl = {
+        action: "EXECUTE_DISCONNECTION",
+        pathname: `/digit-ui/employee/ws/execute-disconnection`,
+        state: {
+          applicationData: applicationDetails?.applicationData,
+          action: action,
+          serviceType: serviceType,
+        },
+      };
+    }
+  });
+
+  workflowDetails?.data?.nextActions?.forEach((action) => {
+    if (action?.action === "EXECUTE_DISCONNECTION") {
+      action.redirectionUrl = {
+        action: "EXECUTE_DISCONNECTION",
+        pathname: `/digit-ui/employee/ws/execute-disconnection`,
+        state: {
+          applicationData: applicationDetails?.applicationData,
+          action: action,
+          serviceType: serviceType,
+        },
+      };
+    }
+  });
+
   const handleDownloadPdf = async () => {
     const tenantInfo = applicationDetails?.applicationData?.tenantId;
     let result = applicationDetails?.applicationData;
-    const PDFdata = getPDFData({ ...result }, { ...applicationDetails?.propertyDetails }, tenantInfo, t);
+    const PDFdata = getPDFData({ ...result }, { ...propertyDetails }, tenantInfo, t);
     PDFdata.then((ress) => Digit.Utils.pdf.generatev1(ress));
   };
 
   async function getDisconnectionNoticeSearch() {
     let key = "ws-waterdisconnectionnotice";
-    let details = { WaterConnection: [{ ...applicationDetails?.applicationData, property: applicationDetails.propertyDetails }] }
+    let details = { WaterConnection: [{ ...applicationDetails?.applicationData, property: propertyDetails }] }
     if (!applicationDetails?.applicationData?.applicationType?.includes("WATER")) {
       key = "ws-seweragedisconnectionnotice";
-      details = { SewerageConnection: [{ ...applicationDetails?.applicationData, property: applicationDetails.propertyDetails }] }
+      details = { SewerageConnection: [{ ...applicationDetails?.applicationData, property: propertyDetails }] }
     }
     let response = await Digit.WSService.WSDisconnectionNotice(applicationDetails?.applicationData?.tenantId, details, key);
     const fileStore = await Digit.PaymentService.printReciept(applicationDetails?.applicationData?.tenantId, { fileStoreIds: response.filestoreIds[0] });
@@ -210,9 +263,9 @@ const GetDisconnectionDetails = () => {
             />
           </div>
           <ApplicationDetailsTemplate
-            applicationDetails={applicationDetails}
-            isLoading={isLoading || isServicesMasterLoading}
-            isDataLoading={isLoading || isServicesMasterLoading}
+            applicationDetails={detailsWithPropertyAddress}
+            isLoading={isLoading || isPropertyLoading || isServicesMasterLoading}
+            isDataLoading={isLoading || isPropertyLoading || isServicesMasterLoading}
             applicationData={applicationDetails?.applicationData}
             mutate={mutate}
             workflowDetails={workflowDetails}

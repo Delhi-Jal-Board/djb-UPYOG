@@ -633,6 +633,7 @@ const App = ({ path }) => {
   const CPTCreateProperty = Digit?.ComponentRegistryService?.getComponent("CPTCreateProperty");
   const CPTAcknowledgement = Digit?.ComponentRegistryService?.getComponent("CPTAcknowledgement");
   const WSInfoPage = Digit?.ComponentRegistryService?.getComponent("WSInfoPage");
+  const WSExecuteDisconnection = Digit?.ComponentRegistryService?.getComponent("WSExecuteDisconnection");
 
   const locationCheck =
     window.location.href.includes("/employee/ws/new-application") ||
@@ -651,6 +652,7 @@ const App = ({ path }) => {
     window.location.href.includes("/employee/ws/edit-disconnection-application") ||
     window.location.href.includes("/employee/ws/config-by-disconnection-application") ||
     window.location.href.includes("/employee/ws/resubmit-disconnection-application") ||
+    window.location.href.includes("/employee/ws/execute-disconnection") ||
     window.location.href.includes("/employee/ws/water/bulk-bill");
 
   const locationCheckReqDocs =
@@ -769,6 +771,7 @@ const App = ({ path }) => {
               <PrivateRoute path={`${path}/water/calculation`} component={(props) => <WSCalculation {...props} parentRoute={path} />} />
               <PrivateRoute path={`${path}/zro-application`} component={() => <WSZROVerification />} />
               <PrivateRoute path={`${path}/zro-verification-details`} component={() => <WSZROVerificationDetails />} />
+              <PrivateRoute path={`${path}/execute-disconnection`} component={WSExecuteDisconnection} />
 
               {/* <Route path={`${path}/search`} component={SearchConnectionComponent} />
             <Route path={`${path}/search-results`} component={SearchResultsComponent} /> */}
