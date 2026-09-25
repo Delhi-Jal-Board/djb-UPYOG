@@ -2,7 +2,7 @@ import React, { Fragment, useState } from "react";
 import { Card, Loader, Table, MdDownloadIcon } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useParams, useHistory } from "react-router-dom";
-import { FaUsers, FaCheckCircle, FaClock } from "react-icons/fa";
+import { FaUsers, FaCheckCircle, FaClock, FaChartLine } from "react-icons/fa";
 import { getEkycExcelData } from "../utils/ekycExcelData";
 import EkycFilterModal from "./EkycFilterModal";
 
@@ -10,6 +10,7 @@ const SupervisorDetailsCard = () => {
   const { t } = useTranslation();
   const history = useHistory();
   const tenantId = Digit.ULBService.getCurrentTenantId() || "dl.djb";
+  const ownerIds = Digit.SessionStorage.get("User")?.info?.uuid;
   const { id: supervisorId } = useParams();
   const [ekycDownloadLoading, setEkycDownloadLoading] = useState(false);
   const [showFilterModal, setShowFilterModal] = useState(false);
@@ -17,10 +18,10 @@ const SupervisorDetailsCard = () => {
   const [pageSize, setPageSize] = useState(20);
   const [customDate, setCustomDate] = useState({ from: "", to: "" });
   const [ekycStatus, setEkycStatus] = useState("ALL");
-  
+
   const { data, isLoading: isSupervisorSearchLoading } = Digit.Hooks.fsm.useSupervisorSearch(
     tenantId,
-    { status: "ACTIVE", ids: supervisorId },
+    { status: "ACTIVE", ...(supervisorId ? { ids: supervisorId } : { ownerIds: ownerIds }) },
     { enabled: !!tenantId, staleTime: 300000 }
   );
 
@@ -29,7 +30,7 @@ const SupervisorDetailsCard = () => {
   const { isLoading: isProgressLoading, data: progressData } = Digit.Hooks.ekyc.useEkycAssignmentProgress(
     { vendorId: supervisor?.vendorId, supervisorId: supervisorId || supervisor?.id },
     {
-      enabled: !!tenantId,
+      enabled: !!tenantId && !!supervisor?.vendorId,
       keepPreviousData: true,
     }
   );
@@ -65,26 +66,27 @@ const SupervisorDetailsCard = () => {
     },
     {
       label: "EKYC_SUBMITTED_TITLE",
-      count: progressData?.submittedKnosInZones || 0,
+      count: progressData?.submittedKnos || 0,
       color: "#10B981",
       type: "month",
       icon: <FaCheckCircle />,
     },
     {
       label: "PENDING_APPLICATIONS",
-      count: progressData?.pendingKnosInZones || 0,
+      count: progressData?.pendingKnos || 0,
       color: "#F59E0B",
       type: "pending",
       icon: <FaClock />,
     },
-    // {
-    //   label: "OVERALL_PROGRESS",
-    //   count: `${supervisor?.progressPercent || 0}%`,
-    //   color: "#A855F7",
-    //   type: "progress",
-    //   icon: <FaChartLine />,
-    // },
+    {
+      label: "OVERALL_PROGRESS",
+      count: `${progressData?.overallProgressPercent || 0}%`,
+      color: "#A855F7",
+      type: "progress",
+      icon: <FaChartLine />,
+    },
   ];
+
   const surveyorColumns = [
     {
       Header: t("SURVEYOR_NAME") || "Surveyor Name",
@@ -221,63 +223,61 @@ const SupervisorDetailsCard = () => {
     <Fragment>
       <Card className="surveyor-dashboard">
         {/* Header + Download Report */}
-        <div className="ekyc-dashboard-section">
-          <div className="ekyc-details-wrapper">
-            <div className="details-top-row">
-              <div className="detail-item first-row">
-                <div className="ekyc-dashboard-header">
-                  <div className="header-content">
-                    <h2 className="name">{fullName}</h2>
-                    <div className="designation">({t("FIELD_SUPERVISOR") || "Field Supervisor"})</div>
-                  </div>
-                </div>
-
-                <div className="report-download relative">
-                  <button
-                    disabled={ekycDownloadLoading}
-                    className={`download-btn relative ${ekycDownloadLoading ? "disabled" : ""}`}
-                    onClick={() => setShowFilterModal(true)}
-                  >
-                    <MdDownloadIcon />
-                    {ekycDownloadLoading ? t("DOWNLOADING") || "Downloading" : t("DOWNLOAD_REPORT") || "Download Report"}
-                  </button>
+        <div className="ekyc-details-wrapper">
+          <div className="details-top-row">
+            <div className="detail-item first-row">
+              <div className="ekyc-dashboard-header">
+                <div className="header-content">
+                  <h2 className="name">{fullName}</h2>
+                  <div className="designation">({t("FIELD_SUPERVISOR") || "Field Supervisor"})</div>
                 </div>
               </div>
-            </div>
-            <div className="details-grid-row">
-              <div className="detail-item">
-                <span className="label">{t("VENDOR_NAME") || "Vendor Name"}</span>
-                <span className="value">{vendorName}</span>
-              </div>
-              <div className="detail-item">
-                <span className="label">{t("MOBILE")}</span>
-                <span className="value">{mobileNumber}</span>
-              </div>
 
-              <div className="detail-item">
-                <span className="label">{t("EMAIL")}</span>
-                <span className="value">{email}</span>
+              <div className="report-download relative">
+                <button
+                  disabled={ekycDownloadLoading}
+                  className={`download-btn relative ${ekycDownloadLoading ? "disabled" : ""}`}
+                  onClick={() => setShowFilterModal(true)}
+                >
+                  <MdDownloadIcon />
+                  {ekycDownloadLoading ? t("DOWNLOADING") || "Downloading" : t("DOWNLOAD_REPORT") || "Download Report"}
+                </button>
               </div>
             </div>
+          </div>
+          <div className="details-grid-row">
+            <div className="detail-item">
+              <span className="label">{t("VENDOR_NAME") || "Vendor Name"}</span>
+              <span className="value">{vendorName}</span>
+            </div>
+            <div className="detail-item">
+              <span className="label">{t("MOBILE")}</span>
+              <span className="value">{mobileNumber}</span>
+            </div>
 
-            {/* Bottom Row: Remaining Details */}
-            <div className="details-grid-row">
-              <div className="detail-item">
-                <span className="label">{t("ASSIGNED_ZONE") || "Assigned Zone"}</span>
-                <span className="value">
-                  {assignedZone && assignedZone !== "N/A" ? t(assignedZone.trim().toUpperCase()) || assignedZone : assignedZone}
-                </span>
-              </div>
+            <div className="detail-item">
+              <span className="label">{t("EMAIL")}</span>
+              <span className="value">{email}</span>
+            </div>
+          </div>
 
-              <div className="detail-item">
-                <span className="label">{t("GENDER")}</span>
-                <span className="value">{t(gender) || gender}</span>
-              </div>
+          {/* Bottom Row: Remaining Details */}
+          <div className="details-grid-row">
+            <div className="detail-item">
+              <span className="label">{t("ASSIGNED_ZONE") || "Assigned Zone"}</span>
+              <span className="value">
+                {assignedZone && assignedZone !== "N/A" ? t(assignedZone.trim().toUpperCase()) || assignedZone : assignedZone}
+              </span>
+            </div>
 
-              <div className="detail-item">
-                <span className="label">{t("STATUS")}</span>
-                <span className="value">{status}</span>
-              </div>
+            <div className="detail-item">
+              <span className="label">{t("GENDER")}</span>
+              <span className="value">{t(gender) || gender}</span>
+            </div>
+
+            <div className="detail-item">
+              <span className="label">{t("STATUS")}</span>
+              <span className="value">{status}</span>
             </div>
           </div>
         </div>

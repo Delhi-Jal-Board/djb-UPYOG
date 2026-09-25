@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useRef, useEffect, Fragment } from "react";
+import React, { useState, useRef, useEffect, Fragment } from "react";
 import { Card, Loader, Table, MdDownloadIcon, FaDatabase, FaFileAlt } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useParams, useHistory } from "react-router-dom";
@@ -44,9 +44,7 @@ const VendorDetailsCard = () => {
   const gender = vendor?.owner?.gender || "N/A";
   const ownerName = vendor?.owner?.name || "N/A";
   
-  const zoneIds = useMemo(() => {
-    return vendor?.zoneIds?.length ? vendor.zoneIds.filter(Boolean).map((zone) => String(zone).trim().toUpperCase()) : [];
-  }, [vendor]);
+  const zoneIds = vendor?.zoneIds?.length ? vendor.zoneIds.filter(Boolean).map((zone) => String(zone).trim().toUpperCase()) : [];
 
   // KPI stats calculation
   const cards = [
@@ -159,7 +157,7 @@ const VendorDetailsCard = () => {
       accessor: (row) => row?.original?.supervisorName || "N/A",
       Cell: ({ row }) => {
         const userType = Digit.SessionStorage.get("User")?.info?.type?.toLowerCase() || "citizen";
-        const targetPath = `/digit-ui/${userType}/ekyc/supervisor-dashboard/${row?.original?.supervisorId}/${row?.original?.vendorId}`;
+        const targetPath = `/digit-ui/${userType}/ekyc/supervisor-dashboard/${row?.original?.supervisorId}`;
 
         return (
           <a
@@ -262,74 +260,71 @@ const VendorDetailsCard = () => {
     <Fragment>
       <Card className="surveyor-dashboard">
         {/* Header + Download Report */}
-        <div className="ekyc-dashboard-section">
-          <div className="ekyc-details-wrapper">
-            <div className="details-top-row">
-              <div className="detail-item first-row">
-                <div className="ekyc-dashboard-header">
-                  <div className="header-content">
-                    <h2 className="name">{vendorName}</h2>
-                    <div className="designation">({t("VENDOR_AGENCY") || "Agency / Vendor"})</div>
-                  </div>
-                </div>
-
-                {/* Download Report — far right */}
-                <div className="report-download relative">
-                  <button
-                    disabled={ekycDownloadLoading}
-                    className={`download-btn relative ${ekycDownloadLoading ? "disabled" : ""}`}
-                    onClick={() => setShowFilterModal(true)}
-                  >
-                    <MdDownloadIcon />{ekycDownloadLoading ? t("DOWNLOADING") || "Downloading": t("DOWNLOAD_REPORT") || "Download Report"}
-                  </button>
+        <div className="ekyc-details-wrapper">
+          <div className="details-top-row">
+            <div className="detail-item first-row">
+              <div className="ekyc-dashboard-header">
+                <div className="header-content">
+                  <h2 className="name">{vendorName}</h2>
+                  <div className="designation">({t("VENDOR_AGENCY") || "Agency / Vendor"})</div>
                 </div>
               </div>
-            </div>
-            <div className="details-top-row">
-              <div className="detail-item">
-                <span className="label">{t("NAME")}</span>
-                <span className="value">{ownerName}</span>
-              </div>
-              <div className="detail-item">
-                <span className="label">{t("GENDER")}</span>
-                <span className="value">{gender}</span>
-              </div>
-              <div className="detail-item">
-                <span className="label">{t("MOBILE")}</span>
-                <span className="value">{mobileNumber}</span>
-              </div>
 
-              <div className="detail-item">
-                <span className="label">{t("EMAIL")}</span>
-                <span className="value">{email}</span>
+              {/* Download Report — far right */}
+              <div className="report-download relative">
+                <button
+                  disabled={ekycDownloadLoading}
+                  className={`download-btn relative ${ekycDownloadLoading ? "disabled" : ""}`}
+                  onClick={() => setShowFilterModal(true)}
+                >
+                  <MdDownloadIcon />
+                  {ekycDownloadLoading ? t("DOWNLOADING") || "Downloading" : t("DOWNLOAD_REPORT") || "Download Report"}
+                </button>
               </div>
             </div>
-
-            {/* Bottom Row: Assigned Zones Full Width */}
-            <div className="full-width-item">
-              <span className="label">{t("ASSIGNED_ZONES") || "Assigned Zones"}</span>
-              <span className="value">
-                {zoneIds.length > 0 ? (
-                  <div className="selected-zones" style={{ marginTop: "4px", width: "100%", display: "flex", flexWrap: "wrap", gap: "8px" }}>
-                    {zoneIds.map((zone) => (
-                      <span key={zone} className="selected-zone-chip">
-                        {t(zone) || zone}
-                      </span>
-                    ))}
-                  </div>
-                ) : (
-                  "N/A"
-                )}
-              </span>
+          </div>
+          <div className="details-top-row">
+            <div className="detail-item">
+              <span className="label">{t("NAME")}</span>
+              <span className="value">{ownerName}</span>
             </div>
+            <div className="detail-item">
+              <span className="label">{t("GENDER")}</span>
+              <span className="value">{gender}</span>
+            </div>
+            <div className="detail-item">
+              <span className="label">{t("MOBILE")}</span>
+              <span className="value">{mobileNumber}</span>
+            </div>
+
+            <div className="detail-item">
+              <span className="label">{t("EMAIL")}</span>
+              <span className="value">{email}</span>
+            </div>
+          </div>
+
+          {/* Bottom Row: Assigned Zones Full Width */}
+          <div className="full-width-item">
+            <span className="label">{t("ASSIGNED_ZONES") || "Assigned Zones"}</span>
+            <span className="value">
+              {zoneIds.length > 0 ? (
+                <div className="selected-zones" style={{ marginTop: "4px", width: "100%", display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                  {zoneIds.map((zone) => (
+                    <span key={zone} className="selected-zone-chip">
+                      {t(zone) || zone}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                "N/A"
+              )}
+            </span>
           </div>
         </div>
 
         {/* Stats */}
         <div className="stats-wrapper">
-          {cards.map((card, idx) => (
-            <StatCard key={idx} title={t(card.label)} value={card.count} type={card.type} isLoading={isPageLoading} icon={card.icon} />
-          ))}
+          {cards.map((card, idx) => <StatCard key={idx} title={t(card.label)} value={card.count} type={card.type} isLoading={isPageLoading} icon={card.icon} />)}
         </div>
 
         <div>
