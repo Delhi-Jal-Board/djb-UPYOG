@@ -24,6 +24,7 @@ public class OtpSMSRepository {
     private static final String LOCALIZATION_KEY_REGISTER_SMS = "sms.register.otp.msg";
     private static final String LOCALIZATION_KEY_LOGIN_SMS = "sms.login.otp.msg";
     private static final String LOCALIZATION_KEY_PWD_RESET_SMS = "sms.pwd.reset.otp.msg";
+    private static final String LOCALIZATION_KEY_EKYC_SMS = "sms.ekyc.otp.msg";
 
     @Value("${expiry.time.for.otp: 4000}")
     private long maxExecutionTime=2000L;
@@ -48,11 +49,23 @@ public class OtpSMSRepository {
     public void send(OtpRequest otpRequest, String otpNumber) {
 		Long currentTime = System.currentTimeMillis() + maxExecutionTime;
 		final String message = getMessage(otpNumber, otpRequest);
-        kafkaTemplate.send(smsTopic, new SMSRequest(otpRequest.getMobileNumber(), message, Category.OTP, currentTime));
+        
+        SMSRequest smsRequest = new SMSRequest(otpRequest.getMobileNumber(), message, Category.OTP, currentTime);
+        
+        if (otpRequest.isEkycRequestType()) {
+            String consumerName = otpRequest.getName() != null ? otpRequest.getName() : "Consumer";
+            smsRequest.setUsers(new String[]{"eKycOtpSend", consumerName});
+        }
+        
+        kafkaTemplate.send(smsTopic, smsRequest);
     }
 
     private String getMessage(String otpNumber, OtpRequest otpRequest) {
         final String messageFormat = getMessageFormat(otpRequest);
+        if (otpRequest.isEkycRequestType()) {
+            String consumerName = otpRequest.getName() != null ? otpRequest.getName() : "Consumer";
+            return format(messageFormat, consumerName, otpNumber);
+        }
         return format(messageFormat, otpNumber);
     }
 
@@ -64,6 +77,7 @@ public class OtpSMSRepository {
             localisedMsgs.put(LOCALIZATION_KEY_REGISTER_SMS, "Dear Citizen, Your OTP to complete your mSeva Registration is %s.");
             localisedMsgs.put(LOCALIZATION_KEY_LOGIN_SMS, "Dear Citizen, Your Login OTP is %s.");
             localisedMsgs.put(LOCALIZATION_KEY_PWD_RESET_SMS, "Dear Citizen, Your OTP for recovering password is %s.");
+            localisedMsgs.put(LOCALIZATION_KEY_EKYC_SMS, "Dear %s, Your confirmation number for DJB eKYC is %s. Please share this number only with the authorized DJB eKYC representative to complete the process. Thank you, Delhi Jal Board");
         }
         String message = null;
 
@@ -71,6 +85,8 @@ public class OtpSMSRepository {
             message = localisedMsgs.get(LOCALIZATION_KEY_REGISTER_SMS);
         else if (otpRequest.isLoginRequestType())
             message = localisedMsgs.get(LOCALIZATION_KEY_LOGIN_SMS);
+        else if (otpRequest.isEkycRequestType())
+            message = localisedMsgs.getOrDefault(LOCALIZATION_KEY_EKYC_SMS, "Dear %s, Your confirmation number for DJB eKYC is %s. Please share this number only with the authorized DJB eKYC representative to complete the process. Thank you, Delhi Jal Board");
         else
             message = localisedMsgs.get(LOCALIZATION_KEY_PWD_RESET_SMS);
 

@@ -32,8 +32,14 @@ public class WhatsAppService {
     @Autowired
     private RestTemplate restTemplate;
 
+    @Autowired
+    private org.springframework.core.env.Environment env;
+
     @Value("${whatsapp.url:}")
     private String whatsappUrl;
+
+    @Value("${whatsapp.template.default:djb_portal_otp_verification}")
+    private String defaultWhatsAppTemplate;
 
     @Value("${whatsapp.apikey:}")
     private String whatsappApikey;
@@ -181,7 +187,20 @@ public class WhatsAppService {
                     
                     requestBody.put("type", "template");
                     Map<String, Object> templateBody = new HashMap<>();
-                    templateBody.put("name", "djb_portal_otp_verification");
+                    String templateKey = null;
+                    String[] incomingTemplateParts = sms.getUsers();
+                    if (incomingTemplateParts != null && incomingTemplateParts.length > 0) {
+                        templateKey = incomingTemplateParts[0].trim();
+                    }
+
+                    String templateName = defaultWhatsAppTemplate;
+                    if (templateKey != null) {
+                        String mappedTemplate = env.getProperty("whatsapp.template.mapping." + templateKey);
+                        if (mappedTemplate != null && !mappedTemplate.trim().isEmpty()) {
+                            templateName = mappedTemplate.trim();
+                        }
+                    }
+                    templateBody.put("name", templateName);
                     
                     Map<String, Object> language = new HashMap<>();
                     language.put("code", "en");
@@ -189,25 +208,63 @@ public class WhatsAppService {
                       
                     java.util.List<Map<String, Object>> components = new java.util.ArrayList<>();
                     
-                    // Body component
-                    Map<String, Object> bodyComponent = new HashMap<>();
-                    bodyComponent.put("type", "body");
-                    Map<String, Object> bodyParam = new HashMap<>();
-                    bodyParam.put("type", "text");
-                    bodyParam.put("text", otp);
-                    bodyComponent.put("parameters", java.util.Collections.singletonList(bodyParam));
-                    components.add(bodyComponent);
-                    
-                    // Button component
-                    Map<String, Object> buttonComponent = new HashMap<>();
-                    buttonComponent.put("type", "button");
-                    buttonComponent.put("sub_type", "url");
-                    buttonComponent.put("index", "0");
-                    Map<String, Object> buttonParam = new HashMap<>();
-                    buttonParam.put("type", "text");
-                    buttonParam.put("text", otp);
-                    buttonComponent.put("parameters", java.util.Collections.singletonList(buttonParam));
-                    components.add(buttonComponent);
+                    String customParamsStr = null;
+                    if (templateKey != null) {
+                        customParamsStr = env.getProperty("whatsapp.template.params." + templateKey);
+                    }
+
+                    if (customParamsStr != null && !customParamsStr.isEmpty()) {
+                        Map<String, Object> bodyComponent = new HashMap<>();
+                        bodyComponent.put("type", "body");
+                        java.util.List<Map<String, Object>> paramsList = new java.util.ArrayList<>();
+                        
+                        String[] paramParts = customParamsStr.split("\\|");
+                        for (String part : paramParts) {
+                            Map<String, Object> param = new HashMap<>();
+                            param.put("type", "text");
+                            String val = part;
+                            
+                            // Replace {otp} case-insensitively
+                            if (val.toLowerCase().contains("{otp}")) {
+                                val = val.replaceAll("(?i)\\{otp\\}", otp != null ? otp : "");
+                            }
+                            
+                            // Replace positional {1}, {2}, etc.
+                            if (incomingTemplateParts != null && val.contains("{")) {
+                                for (int i = 1; i < incomingTemplateParts.length; i++) {
+                                    String token = "{" + i + "}";
+                                    if (val.contains(token)) {
+                                        val = val.replace(token, incomingTemplateParts[i]);
+                                    }
+                                }
+                            }
+                            
+                            param.put("text", val);
+                            paramsList.add(param);
+                        }
+                        bodyComponent.put("parameters", paramsList);
+                        components.add(bodyComponent);
+                    } else {
+                        // Body component (Default logic)
+                        Map<String, Object> bodyComponent = new HashMap<>();
+                        bodyComponent.put("type", "body");
+                        Map<String, Object> bodyParam = new HashMap<>();
+                        bodyParam.put("type", "text");
+                        bodyParam.put("text", otp);
+                        bodyComponent.put("parameters", java.util.Collections.singletonList(bodyParam));
+                        components.add(bodyComponent);
+                        
+                        // Button component
+                        Map<String, Object> buttonComponent = new HashMap<>();
+                        buttonComponent.put("type", "button");
+                        buttonComponent.put("sub_type", "url");
+                        buttonComponent.put("index", "0");
+                        Map<String, Object> buttonParam = new HashMap<>();
+                        buttonParam.put("type", "text");
+                        buttonParam.put("text", otp);
+                        buttonComponent.put("parameters", java.util.Collections.singletonList(buttonParam));
+                        components.add(buttonComponent);
+                    }
                     
                     templateBody.put("components", components);
                     requestBody.put("template", templateBody);

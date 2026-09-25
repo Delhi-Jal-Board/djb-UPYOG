@@ -15,10 +15,12 @@ public class Otp {
     private static final String USER_REGISTRATION = "register";
     private static final String PASSWORD_RESET = "passwordreset";
     private static final String USER_LOGIN = "login";
+    private static final String EKYC = "ekyc";
     private String mobileNumber;
     private String tenantId;
     private String type;
     private String userType;
+    private String name;
 
     @JsonIgnore
     public OtpRequestType getTypeOrDefault() {
@@ -32,6 +34,8 @@ public class Otp {
             return OtpRequestType.LOGIN;
         } else if (PASSWORD_RESET.equalsIgnoreCase(type)) {
             return OtpRequestType.PASSWORD_RESET;
+        } else if (EKYC.equalsIgnoreCase(type)) {
+            return OtpRequestType.EKYC;
         }
         return null;
     }

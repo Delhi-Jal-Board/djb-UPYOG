@@ -23,9 +23,7 @@ public class TestController {
                                   @RequestParam(value="category", required = true) Category category,
                                   @RequestParam(value="expirytime", required = true) Long expirytime){
 
-        //Sms sms = new Sms(number, sms, Category.OTP, expirytime);
-
-        Sms sms = new Sms(number, msg, category, expirytime, "123");
+        Sms sms = new Sms(number, msg, category, expirytime, "123", null);
 
         smsService.sendSMS(sms);
 
