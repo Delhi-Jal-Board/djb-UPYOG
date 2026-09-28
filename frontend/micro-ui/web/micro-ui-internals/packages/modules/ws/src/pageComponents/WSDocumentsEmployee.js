@@ -389,7 +389,7 @@ function SelectDocument({
   };
 
   useEffect(() => {
-    if (selectedDocument?.code) {
+    if (selectedDocument?.code && !isOther) {
       setDocuments((prev) => {
         const filteredDocumentsByDocumentType = prev?.filter((item) => item?.documentType !== selectedDocument?.code);
 
@@ -693,6 +693,24 @@ function SelectDocument({
                 }
                 
                 // Auto-saved by useEffect
+                setDocuments((prev) => {
+                  const data = [
+                    ...(prev || []),
+                    {
+                      documentType: selectedDocument?.code,
+                      fileStoreId: uploadedFile,
+                      fileName: file?.name || filteredDocument?.fileName || "",
+                      documentName: selectedDocument?.i18nKey || selectedDocument?.code || "",
+                      documentUid: documentUid,
+                      documentNumber: documentUid,
+                      i18nKey: selectedDocument?.code,
+                      id: selectedDocument?.id,
+                      status: "ACTIVE",
+                    },
+                  ];
+                  sessionStorage.setItem("DISCONNECTION_EDIT_DOCS", JSON.stringify(data));
+                  return data;
+                });
                 
                 setUploadedFile(null);
                 setFile(null);

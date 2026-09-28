@@ -26,7 +26,7 @@ const TOKEN = {
   accent: "linear-gradient(135deg,#7c3aed,#0284c7)",
 };
 
-const StatusPill = ({ label, isActive }) => (
+const StatusPill = ({ label, isGreen }) => (
   <span style={{
     display: "inline-block",
     fontSize: "10px",
@@ -35,9 +35,9 @@ const StatusPill = ({ label, isActive }) => (
     textTransform: "uppercase",
     padding: "2px 10px",
     borderRadius: "999px",
-    background: isActive ? "rgba(0,195,255,0.15)" : "rgba(0,230,118,0.12)",
-    color: isActive ? TOKEN.active : TOKEN.done,
-    border: `1px solid ${isActive ? TOKEN.active : TOKEN.done}`,
+    background: !isGreen ? "rgba(0,195,255,0.15)" : "rgba(0,230,118,0.12)",
+    color: !isGreen ? TOKEN.active : TOKEN.done,
+    border: `1px solid ${!isGreen ? TOKEN.active : TOKEN.done}`,
     lineHeight: "18px",
   }}>
     {label}
@@ -48,9 +48,12 @@ const StepCard = ({ checkpoint, index, isActive, t, getTimelineCaptions }) => {
   const [expanded, setExpanded] = useState(isActive); /* active=open, done=collapsed */
   const stateLabel = checkpoint.state ? t(`CS_${checkpoint.state}`) : "NA";
 
-  const dotColor = isActive ? TOKEN.active : TOKEN.done;
-  const glowColor = isActive ? "0 0 14px rgba(0,195,255,0.5)" : "0 0 10px rgba(0,230,118,0.35)";
-  const borderClr = isActive ? TOKEN.active : TOKEN.done;
+  const isTerminal = checkpoint?.state === "CONNECTION_ACTIVATED" || checkpoint?.applicationStatus === "CONNECTION_ACTIVATED" || checkpoint?.status === "ACTIVE" || checkpoint?.isTerminateState;
+  const isGreen = !isActive || isTerminal;
+
+  const dotColor = !isGreen ? TOKEN.active : TOKEN.done;
+  const glowColor = !isGreen ? "0 0 14px rgba(0,195,255,0.5)" : "0 0 10px rgba(0,230,118,0.35)";
+  const borderClr = !isGreen ? TOKEN.active : TOKEN.done;
 
   return (
     <div style={{ display: "flex", gap: "0", alignItems: "flex-start", position: "relative" }}>
@@ -63,7 +66,16 @@ const StepCard = ({ checkpoint, index, isActive, t, getTimelineCaptions }) => {
           border: `2px solid ${dotColor}`,
           zIndex: 1, flexShrink: 0,
           marginTop: "16px",
-        }} />
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}>
+          {isGreen && (
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          )}
+        </div>
         {/* line below dot – always render */}
         <div style={{
           width: "2px",
@@ -114,7 +126,7 @@ const StepCard = ({ checkpoint, index, isActive, t, getTimelineCaptions }) => {
             )}
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
-            <StatusPill label={isActive ? "Active" : "Done"} isActive={isActive} />
+            <StatusPill label={isActive ? "ACTIVE" : "DONE"} isGreen={isGreen} />
             <span style={{
               color: TOKEN.textMut, fontSize: "16px",
               transform: expanded ? "rotate(180deg)" : "rotate(0deg)",

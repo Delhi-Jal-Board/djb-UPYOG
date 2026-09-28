@@ -78,6 +78,7 @@ export const configWSApproverApplication = ({
       {
         body: [
           ...commentsField,
+          /*
           {
             label: t("WS_APPROVAL_CHECKLIST_BUTTON_UP_FILE"),
             populators: (
@@ -96,6 +97,7 @@ export const configWSApproverApplication = ({
               />
             ),
           },
+          */
         ],
       },
     ],

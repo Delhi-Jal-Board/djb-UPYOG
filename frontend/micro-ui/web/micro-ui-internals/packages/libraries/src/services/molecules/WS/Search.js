@@ -632,6 +632,7 @@ export const WSSearch = {
               },
             },
             ...(!isMutationApp ? [
+              /*
               {
                 title: "WS_OWN_DETAIL_GUARDIAN_LABEL",
                 value: wsDataDetails?.connectionHolders?.[0]?.fatherOrHusbandName,
@@ -672,6 +673,7 @@ export const WSSearch = {
                   },
                 },
               },
+              */
             ] : []),
             {
               title: "WS_EMAIL_ID",
@@ -1422,6 +1424,7 @@ export const WSSearch = {
                   ]
                   : null,
             },
+            /*
             {
               title: "WS_OWN_DETAIL_GUARDIAN_LABEL",
               value: wsDataDetails?.connectionHolders?.[0]?.fatherOrHusbandName,
@@ -1552,6 +1555,7 @@ export const WSSearch = {
                   ]
                   : null,
             },
+            */
 
             {
               title: "WS_OWNER_SPECIAL_CATEGORY",
