@@ -66,6 +66,7 @@ export const configWSDisConnectApplication = ({
               name: "comments",
             },
           },
+          /*
           {
             label: t("WS_APPROVAL_CHECKLIST_BUTTON_UP_FILE"),
             populators: (
@@ -84,6 +85,7 @@ export const configWSDisConnectApplication = ({
               />
             )
           },
+          */
         ],
       },
     ],

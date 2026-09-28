@@ -232,6 +232,30 @@ export const getPattern = (type) => {
 export const getFiles = async (filesArray, tenant) => {
   const response = await Digit.UploadServices.Filefetch(filesArray, tenant);
   response?.data?.fileStoreIds?.[0]?.url ? window.open(response?.data?.fileStoreIds?.[0]?.url) : null;
+  try {
+    const response = await Digit.UploadServices.Filefetch(filesArray, tenant);
+    // The response could be in response.data.fileStoreIds array OR a map like response.data[fileStoreId]
+    if (response?.data?.fileStoreIds?.[0]?.url) {
+      window.open(response.data.fileStoreIds[0].url);
+    } else if (response?.data?.[filesArray?.[0]]) {
+      // It's a map string format
+      let linkText = response.data[filesArray[0]];
+      let fileURL = "";
+      if (linkText && typeof linkText == "string") {
+        const linkList = linkText.split(",");
+        linkList.forEach((link) => {
+          if (!link.includes("large") && !link.includes("medium") && !link.includes("small")) {
+            fileURL = link;
+          }
+        });
+      }
+      if (fileURL) {
+        window.open(fileURL);
+      }
+    }
+  } catch (error) {
+    console.error("Error fetching file URL", error);
+  }
 };
 
 export const createPayloadOfWS = async (data) => {
@@ -621,6 +645,7 @@ export const convertToEditWSUpdate = (data) => {
       waterSourceSubSource: null,
       waterSubSource: (data?.isEditApplication ? data?.waterSubSource : waterResult?.waterSubSource) || null,
       property: data?.isEditApplication ? { ...data?.property } : { ...waterResult?.property },
+      dueVerification: data?.isEditApplication ? data?.dueVerification : waterResult?.dueVerification,
       water: data?.applicationType?.includes("WATER") ? true : false,
       sewerage: data?.applicationType?.includes("WATER") ? true : false,
       service: data?.isEditApplication ? data?.serviceName?.code : waterResult?.serviceName?.code,
@@ -743,6 +768,7 @@ export const convertToEditSWUpdate = (data) => {
       waterSourceSubSource: null,
       waterSubSource: (data?.isEditApplication ? data?.waterSubSource : SewerageResult?.waterSubSource) || null,
       property: data?.isEditApplication ? { ...data?.property } : { ...SewerageResult?.property },
+      dueVerification: data?.isEditApplication ? data?.dueVerification : SewerageResult?.dueVerification,
       water: data?.applicationType?.includes("WATER") ? true : false,
       sewerage: data?.applicationType?.includes("WATER") ? true : false,
       service: data?.isEditApplication ? data?.serviceName?.code : SewerageResult?.serviceName?.code,

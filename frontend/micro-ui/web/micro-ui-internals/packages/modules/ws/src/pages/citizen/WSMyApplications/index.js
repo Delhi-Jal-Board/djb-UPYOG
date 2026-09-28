@@ -29,17 +29,20 @@ export const WSMyApplications = () => {
 
   const { isLoading, isError, error, data } = Digit.Hooks.ws.useMyApplicationSearch({ filters: filter1 }, { filters: filter1 });
 
-  const { isLoading: isSWLoading, isError: isSWError, error: SWerror, data: SWdata } = Digit.Hooks.ws.useMyApplicationSearch({ filters: filter1, BusinessService: "SW" }, { filters: filter1 });
-  let applicationNoWS = data && data?.WaterConnection?.map((ob) => ob.applicationNo).join(",") || "";
-  let applicaionNoSW = SWdata && SWdata?.SewerageConnections?.map((ob) => ob.applicationNo).join(",") || ""
+  const { isLoading: isSWLoading, isError: isSWError, error: SWerror, data: SWdata } = Digit.Hooks.ws.useMyApplicationSearch(
+    { filters: filter1, BusinessService: "SW" },
+    { filters: filter1 }
+  );
+  let applicationNoWS = (data && data?.WaterConnection?.map((ob) => ob.applicationNo).join(",")) || "";
+  let applicaionNoSW = (SWdata && SWdata?.SewerageConnections?.map((ob) => ob.applicationNo).join(",")) || "";
   let applicationNos = applicationNoWS.concat(applicaionNoSW);
   let workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
     id: applicationNos,
     moduleCode: "WS,SW",
     config: {
-      enabled: !!applicationNos
-    }
+      enabled: !!applicationNos,
+    },
   });
   let propertyWS = (data && data?.WaterConnection?.map((ob) => ob?.propertyId).join(",")) || "";
   let propertySW = (SWdata && SWdata?.SewerageConnections?.map((ob) => ob?.propertyId).join(",")) || "";
@@ -80,8 +83,12 @@ export const WSMyApplications = () => {
         Header: t("WS_CONSUMER_NAME"),
         disableSortBy: true,
         Cell: ({ row }) => {
-          const names = row.original?.connectionHolders?.map((owner) => owner.name).join(",") ||
-            row.original?.property?.owners?.sort((a, b) => a?.additionalDetails?.ownerSequence - b?.additionalDetails?.ownerSequence).map((owner) => owner.name).join(",") ||
+          const names =
+            row.original?.connectionHolders?.map((owner) => owner.name).join(",") ||
+            row.original?.property?.owners
+              ?.sort((a, b) => a?.additionalDetails?.ownerSequence - b?.additionalDetails?.ownerSequence)
+              .map((owner) => owner.name)
+              .join(",") ||
             t("CS_NA");
           return GetCell(names);
         },
@@ -105,15 +112,24 @@ export const WSMyApplications = () => {
         },
       },
       {
+        Header: t("dueAmount"),
+        disableSortBy: true,
+        Cell: ({ row }) => {
+          const dueAmounts = (row.original?.dueVerification || [])
+            .map((item) => item?.dueAmount)
+            .filter((amount) => amount !== null && amount !== undefined && amount !== "");
+
+          return GetCell(dueAmounts.length > 0 ? dueAmounts.map((amount) => `₹${Number(amount).toLocaleString("en-IN")}`).join(", ") : t("CS_NA"));
+        },
+      },
+      {
         Header: t("WS_VIEW_DETAILS"),
         disableSortBy: true,
         Cell: ({ row }) => {
           const application = row.original;
           return (
             <span className="link">
-              <Link to={`/digit-ui/citizen/ws/connection/application/${encodeURI(application?.applicationNo)}`}>
-                {t("WS_VIEW_DETAILS_LABEL")}
-              </Link>
+              <Link to={`/digit-ui/citizen/ws/connection/application/${encodeURI(application?.applicationNo)}`}>{t("WS_VIEW_DETAILS_LABEL")}</Link>
             </span>
           );
         },
@@ -124,14 +140,33 @@ export const WSMyApplications = () => {
         Cell: ({ row }) => {
           const application = row.original;
           const isMutation = application?.applicationType?.includes("MUTATION");
-          const businessService = application?.applicationNo?.includes("SW") ? (application?.applicationNo?.includes("DC") ? "SW" : (isMutation ? "SW.MUTATION" : "SW.ONE_TIME_FEE")) : (application?.applicationNo?.includes("DC") ? "WS" : (isMutation ? "WS.MUTATION" : "WS.ONE_TIME_FEE"));
+          const businessService = application?.applicationNo?.includes("SW")
+            ? application?.applicationNo?.includes("DC")
+              ? "SW"
+              : isMutation
+              ? "SW.MUTATION"
+              : "SW.ONE_TIME_FEE"
+            : application?.applicationNo?.includes("DC")
+            ? "WS"
+            : isMutation
+            ? "WS.MUTATION"
+            : "WS.ONE_TIME_FEE";
 
           return application?.applicationStatus === "PENDING_FOR_PAYMENT" ? (
             <span className="link">
               <Link
                 to={{
-                  pathname: `/digit-ui/citizen/payment/my-bills/${businessService}/${application?.applicationNo?.includes("DC") ? (stringReplaceAll(application?.connectionNo, "/", "+") || stringReplaceAll(application?.connectionNo, "/", "+")) : (stringReplaceAll(application?.applicationNo, "/", "+") || stringReplaceAll(application?.applicationNo, "/", "+"))}`,
-                  search: `?workflow=WNS&tenantId=${application?.tenantId}&ConsumerName=${application?.connectionHolders?.map((owner) => owner.name).join(",") || application?.property?.owners?.map((owner) => owner.name).join(",")}&isDisoconnectFlow=${application?.applicationNo?.includes("DC") ? true : false}&consumerCode=${application?.applicationNo?.includes("DC") ? application?.connectionNo : application?.applicationNo}`,
+                  pathname: `/digit-ui/citizen/payment/my-bills/${businessService}/${
+                    application?.applicationNo?.includes("DC")
+                      ? stringReplaceAll(application?.connectionNo, "/", "+") || stringReplaceAll(application?.connectionNo, "/", "+")
+                      : stringReplaceAll(application?.applicationNo, "/", "+") || stringReplaceAll(application?.applicationNo, "/", "+")
+                  }`,
+                  search: `?workflow=WNS&tenantId=${application?.tenantId}&ConsumerName=${
+                    application?.connectionHolders?.map((owner) => owner.name).join(",") ||
+                    application?.property?.owners?.map((owner) => owner.name).join(",")
+                  }&isDisoconnectFlow=${application?.applicationNo?.includes("DC") ? true : false}&consumerCode=${
+                    application?.applicationNo?.includes("DC") ? application?.connectionNo : application?.applicationNo
+                  }`,
                   state: { fromMyApplications: true },
                 }}
               >
@@ -140,7 +175,7 @@ export const WSMyApplications = () => {
             </span>
           ) : null;
         },
-      }
+      },
     ];
   }, [t]);
 
@@ -163,8 +198,14 @@ export const WSMyApplications = () => {
   }
   let { WaterConnection: WSapplicationsList = [] } = data || {};
   let { SewerageConnections: SWapplicationsList = [] } = SWdata || {};
-  WSapplicationsList = WSapplicationsList?.map((ob) => { return ({ ...ob, "sla": workflowDetails?.data?.processInstances?.filter((pi) => pi.businessId == ob.applicationNo)[0]?.businesssServiceSla }) }) || [];
-  SWapplicationsList = SWapplicationsList?.map((ob) => { return ({ ...ob, "sla": workflowDetails?.data?.processInstances?.filter((pi) => pi.businessId == ob.applicationNo)[0]?.businesssServiceSla }) }) || [];
+  WSapplicationsList =
+    WSapplicationsList?.map((ob) => {
+      return { ...ob, sla: workflowDetails?.data?.processInstances?.filter((pi) => pi.businessId == ob.applicationNo)[0]?.businesssServiceSla };
+    }) || [];
+  SWapplicationsList =
+    SWapplicationsList?.map((ob) => {
+      return { ...ob, sla: workflowDetails?.data?.processInstances?.filter((pi) => pi.businessId == ob.applicationNo)[0]?.businesssServiceSla };
+    }) || [];
   WSapplicationsList = WSapplicationsList?.filter((ob) => ob?.applicationType !== "MODIFY_WATER_CONNECTION") || [];
   SWapplicationsList = SWapplicationsList?.filter((ob) => ob?.applicationType !== "MODIFY_SEWERAGE_CONNECTION") || [];
   let applicationsList = (WSapplicationsList || []).concat(SWapplicationsList || []);
@@ -174,9 +215,14 @@ export const WSMyApplications = () => {
       return { ...ob, property: PTdata?.Properties?.filter((pt) => pt?.propertyId === ob?.propertyId)[0] };
     });
 
-  const sortedApplications = applicationsList?.length > 0
-    ? applicationsList.sort((a, b) => (b.auditDetails?.createdTime || b.auditDetails?.lastModifiedTime || 0) - (a.auditDetails?.createdTime || a.auditDetails?.lastModifiedTime || 0))
-    : [];
+  const sortedApplications =
+    applicationsList?.length > 0
+      ? applicationsList.sort(
+          (a, b) =>
+            (b.auditDetails?.createdTime || b.auditDetails?.lastModifiedTime || 0) -
+            (a.auditDetails?.createdTime || a.auditDetails?.lastModifiedTime || 0)
+        )
+      : [];
 
   let filteredApplications = sortedApplications;
   if (searchParams) {
@@ -186,9 +232,7 @@ export const WSMyApplications = () => {
       );
     }
     if (searchParams.status && searchParams.status.code) {
-      filteredApplications = filteredApplications.filter((app) =>
-        app.applicationStatus === searchParams.status.code
-      );
+      filteredApplications = filteredApplications.filter((app) => app.applicationStatus === searchParams.status.code);
     }
   }
 
@@ -198,17 +242,15 @@ export const WSMyApplications = () => {
     return acc;
   }, {});
 
-  const action = Object.keys(statusCounts).map(status => ({
+  const action = Object.keys(statusCounts).map((status) => ({
     i18nKey: status === "UNKNOWN" ? "UNKNOWN" : `CS_${status}`,
-    code: status
+    code: status,
   }));
 
   const today = new Date();
   const fromDateFormatted = "";
-  const setShowToast = () => { };
+  const setShowToast = () => {};
   const previousPage = () => setPageOffset(0);
-
-
 
   return (
     <React.Fragment>
@@ -279,9 +321,7 @@ export const WSMyApplications = () => {
               >
                 {t(card.label)}
               </div>
-              <div style={{ fontSize: "24px", fontWeight: "700", color: card.color, marginTop: "8px" }}>
-                {String(card.count).padStart(2, "0")}
-              </div>
+              <div style={{ fontSize: "24px", fontWeight: "700", color: card.color, marginTop: "8px" }}>{String(card.count).padStart(2, "0")}</div>
             </div>
           ));
         })()}
@@ -364,4 +404,3 @@ export const WSMyApplications = () => {
     </React.Fragment>
   );
 };
-

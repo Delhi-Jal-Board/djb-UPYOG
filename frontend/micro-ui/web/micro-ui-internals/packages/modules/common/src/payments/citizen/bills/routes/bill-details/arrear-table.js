@@ -9,7 +9,7 @@ const styles = {
     boxShadow: "none",
   },
   table: {
-    minWidth: 700,
+    width: "100%",
     backgroundColor: "rgba(250, 250, 250, var(--bg-opacity))",
   },
   cell: {

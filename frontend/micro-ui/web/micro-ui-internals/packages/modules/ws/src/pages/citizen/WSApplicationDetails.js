@@ -572,7 +572,7 @@ const WSApplicationDetails = () => {
                         },
                       }}
                     />
-                    {!isMutation && (
+                    {/* {!isMutation && (
                       <React.Fragment>
                         <Row
                           label={t("WS_OWN_DETAIL_FATHER_OR_HUSBAND_NAME")}
@@ -629,8 +629,8 @@ const WSApplicationDetails = () => {
                           }}
                         />
                       </React.Fragment>
-                    )}
-                    <Row
+                    )} */}
+                    {/* <Row
                       label={t("WS_OWN_DETAIL_CROSADD")}
                       text={
                         data?.WaterConnection?.[0]?.connectionHolders?.[0]?.correspondenceAddress ||
@@ -656,7 +656,7 @@ const WSApplicationDetails = () => {
                           isArray: false,
                         },
                       }}
-                    />
+                    /> */}
                     {/* <Row
                       label={t("WS_OWN_DETAIL_SPECIAL_APPLICANT_LABEL")}
                       text={
@@ -977,7 +977,7 @@ const WSApplicationDetails = () => {
                         text={
                           <span
                             style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", color: "#f47738" }}
-                            onClick={() => getFiles([djbEmployee?.document], tenantId)}
+                            onClick={() => getFiles([djbEmployee?.document], tenantId?.split(".")[0])}
                           >
                             <GenericFileIcon /> {t("CS_COMMON_VIEW")}
                           </span>
@@ -987,6 +987,58 @@ const WSApplicationDetails = () => {
                   </React.Fragment>
                 )}
               </StatusTable>
+
+              {applicationData?.dueVerification?.length > 0 && (
+                <React.Fragment>
+                  <CardHeader styles={{ fontSize: "28px" }}>{t("WS_DUE_VERIFICATION_DETAILS")}</CardHeader>
+                  <div style={{ overflowX: "auto", marginTop: "10px", marginBottom: "30px" }}>
+                    <table style={{ width: "100%", textAlign: "left", borderCollapse: "collapse", border: "1px solid #e0e0e0" }}>
+                      <thead>
+                        <tr style={{ backgroundColor: "#f4f7fb", borderBottom: "2px solid #e0e0e0" }}>
+                          <th style={{ padding: "12px 8px", borderBottom: "1px solid #e0e0e0" }}>{t("K No.")}</th>
+                          <th style={{ padding: "12px 8px", borderBottom: "1px solid #e0e0e0" }}>{t("Full Name")}</th>
+                          <th style={{ padding: "12px 8px", borderBottom: "1px solid #e0e0e0" }}>{t("Full Address")}</th>
+                          <th style={{ padding: "12px 8px", borderBottom: "1px solid #e0e0e0" }}>{t("Due Amount")}</th>
+                          <th style={{ padding: "12px 8px", borderBottom: "1px solid #e0e0e0" }}>{t("Total Amount")}</th>
+                          <th style={{ padding: "12px 8px", borderBottom: "1px solid #e0e0e0" }}>{t("Remarks")}</th>
+                          <th style={{ padding: "12px 8px", borderBottom: "1px solid #e0e0e0" }}>{t("ABG_COMMON_TABLE_COL_ACTION")}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {applicationData.dueVerification.map((dueItem, index) => (
+                          <tr key={`due-${index}`} style={{ borderBottom: "1px solid #e0e0e0" }}>
+                            <td style={{ padding: "12px 8px" }}>{checkForNA(dueItem?.kno)}</td>
+                            <td style={{ padding: "12px 8px" }}>{checkForNA(dueItem?.fullName)}</td>
+                            <td style={{ padding: "12px 8px" }}>{checkForNA(dueItem?.fullAddress)}</td>
+                            <td style={{ padding: "12px 8px" }}>{checkForNA(dueItem?.dueAmount)}</td>
+                            <td style={{ padding: "12px 8px" }}>{checkForNA(dueItem?.totalAmount)}</td>
+                            <td style={{ padding: "12px 8px" }}>{checkForNA(dueItem?.remarks)}</td>
+                            <td style={{ padding: "12px 8px" }}>
+                              {Number(dueItem?.dueAmount) > 0 || Number(dueItem?.totalAmount) > 0 ? (
+                                <span className="link">
+                                  <Link
+                                    to={{
+                                      pathname: `/digit-ui/citizen/payment/my-bills/${
+                                        applicationData?.serviceType === "WATER" || applicationData?.applicationType?.includes("WATER") ? "WS" : "SW"
+                                      }/${dueItem?.kno?.replaceAll("/", "+")}`,
+                                      search: `?workflow=WNS&tenantId=${applicationData?.tenantId}&ConsumerName=${dueItem?.fullName}&consumerCode=${dueItem?.kno}`,
+                                      state: { fromApplicationDetails: true },
+                                    }}
+                                  >
+                                    {t("MAKE_PAYMENT")}
+                                  </Link>
+                                </span>
+                              ) : (
+                                <span style={{ color: "green", fontWeight: "bold" }}>{t("BILL_ALREADY_PAID")}</span>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </React.Fragment>
+              )}
 
               {/*!isMutation && (
                 <React.Fragment>

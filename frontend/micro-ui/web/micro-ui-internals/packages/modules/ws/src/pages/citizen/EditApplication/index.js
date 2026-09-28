@@ -1,8 +1,8 @@
-import { Loader, VerticalTimeline, SubmitBar } from "@djb25/digit-ui-react-components";
+import { Loader, VerticalTimeline, SubmitBar, CollapsibleCardPage } from "@djb25/digit-ui-react-components";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "react-query";
-import { Redirect, Route, Switch, useHistory, useLocation, useParams, useRouteMatch } from "react-router-dom";
+import { Redirect, Route, Switch, useHistory, useLocation, useParams, useRouteMatch, Link } from "react-router-dom";
 import { newConfig as newConfigWS } from "../../../config/wsCreateConfig";
 import { getCommencementDataFormat, stringReplaceAll } from "../../../utils/index";
 
@@ -18,61 +18,65 @@ const getEditDetails = (waterResult, sewerageresult, t) => {
   if (waterResult) {
     waterResult.ConnectionHolderDetails = waterResult?.connectionHolders
       ? [
-        {
-          ...waterResult?.connectionHolders?.[0],
-          address: waterResult?.connectionHolders?.[0]?.correspondenceAddress,
-          documentId: "",
-          documentType: "",
-          filestoreId: null,
-          gender: waterResult?.connectionHolders?.[0]?.gender
-            ? { code: waterResult?.connectionHolders?.[0]?.gender, i18nKey: `COMMON_GENDER_${waterResult?.connectionHolders?.[0]?.gender}` }
-            : null,
-          guardian: waterResult?.connectionHolders?.[0]?.fatherOrHusbandName,
-          isOwnerSame: waterResult?.connectionHolders?.length > 0 ? false : true,
-          mobileNumber: waterResult?.connectionHolders?.[0]?.mobileNumber,
-          isWatsappSameAsMobile: waterResult?.connectionHolders?.[0]?.mobileNumber && waterResult?.connectionHolders?.[0]?.mobileNumber === waterResult?.connectionHolders?.[0]?.watsAppMobileNumber ? true : false,
-          name: waterResult?.connectionHolders?.[0]?.name,
-          relationship: waterResult?.connectionHolders?.[0]?.relationship
-            ? {
-              code: waterResult?.connectionHolders?.[0]?.relationship,
-              i18nKey: `COMMON_MASTERS_OWNERTYPE_${waterResult?.connectionHolders?.[0]?.relationship}`,
-            }
-            : null,
-          specialCategoryType: waterResult?.connectionHolders?.[0]?.ownerType
-            ? {
-              code: waterResult?.connectionHolders?.[0]?.ownerType,
-              i18nKey: `PROPERTYTAX_OWNERTYPE_${waterResult?.connectionHolders?.[0]?.ownerType}`,
-            }
-            : "",
-        }
-      ]
+          {
+            ...waterResult?.connectionHolders?.[0],
+            address: waterResult?.connectionHolders?.[0]?.correspondenceAddress,
+            documentId: "",
+            documentType: "",
+            filestoreId: null,
+            gender: waterResult?.connectionHolders?.[0]?.gender
+              ? { code: waterResult?.connectionHolders?.[0]?.gender, i18nKey: `COMMON_GENDER_${waterResult?.connectionHolders?.[0]?.gender}` }
+              : null,
+            guardian: waterResult?.connectionHolders?.[0]?.fatherOrHusbandName,
+            isOwnerSame: waterResult?.connectionHolders?.length > 0 ? false : true,
+            mobileNumber: waterResult?.connectionHolders?.[0]?.mobileNumber,
+            isWatsappSameAsMobile:
+              waterResult?.connectionHolders?.[0]?.mobileNumber &&
+              waterResult?.connectionHolders?.[0]?.mobileNumber === waterResult?.connectionHolders?.[0]?.watsAppMobileNumber
+                ? true
+                : false,
+            name: waterResult?.connectionHolders?.[0]?.name,
+            relationship: waterResult?.connectionHolders?.[0]?.relationship
+              ? {
+                  code: waterResult?.connectionHolders?.[0]?.relationship,
+                  i18nKey: `COMMON_MASTERS_OWNERTYPE_${waterResult?.connectionHolders?.[0]?.relationship}`,
+                }
+              : null,
+            specialCategoryType: waterResult?.connectionHolders?.[0]?.ownerType
+              ? {
+                  code: waterResult?.connectionHolders?.[0]?.ownerType,
+                  i18nKey: `PROPERTYTAX_OWNERTYPE_${waterResult?.connectionHolders?.[0]?.ownerType}`,
+                }
+              : "",
+          },
+        ]
       : [
-        {
-          address: waterResult?.property?.owners?.[0]?.correspondenceAddress,
-          documentId: "",
-          documentType: "",
-          filestoreId: null,
-          gender: waterResult?.property?.owners?.[0]?.gender
-            ? { code: waterResult?.property?.owners?.[0]?.gender, i18nKey: `COMMON_GENDER_${waterResult?.property?.owners?.[0]?.gender}` }
-            : null,
-          guardian: waterResult?.property?.owners?.[0]?.fatherOrHusbandName,
-          isOwnerSame: waterResult?.connectionHolders ? false : true,
-          mobileNumber: waterResult?.property?.owners?.[0]?.mobileNumber,
-          name: waterResult?.property?.owners?.[0]?.name,
-          relationship: waterResult?.property?.owners?.[0]?.relationship
-            ? {
-              code: waterResult?.property?.owners?.[0]?.relationship,
-              i18nKey: `COMMON_MASTERS_OWNERTYPE_${waterResult?.property?.owners?.[0]?.relationship}`,
-            }
-            : null,
-          specialCategoryType: waterResult?.connectionHolders?.[0]?.ownerType
-            ? {
-              code: waterResult?.connectionHolders?.[0]?.ownerType,
-              i18nKey: `PROPERTYTAX_OWNERTYPE_${waterResult?.connectionHolders?.[0]?.ownerType}`,
-            }
-            : "",
-        }
-      ];
+          {
+            address: waterResult?.property?.owners?.[0]?.correspondenceAddress,
+            documentId: "",
+            documentType: "",
+            filestoreId: null,
+            gender: waterResult?.property?.owners?.[0]?.gender
+              ? { code: waterResult?.property?.owners?.[0]?.gender, i18nKey: `COMMON_GENDER_${waterResult?.property?.owners?.[0]?.gender}` }
+              : null,
+            guardian: waterResult?.property?.owners?.[0]?.fatherOrHusbandName,
+            isOwnerSame: waterResult?.connectionHolders ? false : true,
+            mobileNumber: waterResult?.property?.owners?.[0]?.mobileNumber,
+            name: waterResult?.property?.owners?.[0]?.name,
+            relationship: waterResult?.property?.owners?.[0]?.relationship
+              ? {
+                  code: waterResult?.property?.owners?.[0]?.relationship,
+                  i18nKey: `COMMON_MASTERS_OWNERTYPE_${waterResult?.property?.owners?.[0]?.relationship}`,
+                }
+              : null,
+            specialCategoryType: waterResult?.connectionHolders?.[0]?.ownerType
+              ? {
+                  code: waterResult?.connectionHolders?.[0]?.ownerType,
+                  i18nKey: `PROPERTYTAX_OWNERTYPE_${waterResult?.connectionHolders?.[0]?.ownerType}`,
+                }
+              : "",
+          },
+        ];
     waterResult.WaterConnectionResult = { WaterConnection: [{ ...waterResult }] };
     waterResult.cpt = { details: { ...waterResult?.property } };
     waterResult.cptId = { id: waterResult?.propertyId };
@@ -108,20 +112,24 @@ const getEditDetails = (waterResult, sewerageresult, t) => {
           : null,
         proposedPipeSize: waterResult?.proposedPipeSize
           ? {
-            code: waterResult?.proposedPipeSize,
-            i18nKey: `${waterResult?.proposedPipeSize} ${t("WS_INCHES_LABEL")}`,
-            size: waterResult?.proposedPipeSize,
-          }
+              code: waterResult?.proposedPipeSize,
+              i18nKey: `${waterResult?.proposedPipeSize} ${t("WS_INCHES_LABEL")}`,
+              size: waterResult?.proposedPipeSize,
+            }
           : null,
         proposedTaps: waterResult?.proposedTaps,
-      }
+      },
     ];
     waterResult.bankDetails = {
       bankName: waterResult?.additionalDetails?.bankName || "",
       bankBranchName: waterResult?.additionalDetails?.bankBranchName || waterResult?.additionalDetails?.branchName || "",
       ifscCode: waterResult?.additionalDetails?.ifscCode || "",
       accountNumber: waterResult?.additionalDetails?.bankAccountNumber || waterResult?.additionalDetails?.accountNumber || "",
-      confirmAccountNumber: waterResult?.additionalDetails?.confirmAccountNumber || waterResult?.additionalDetails?.bankAccountNumber || waterResult?.additionalDetails?.accountNumber || "",
+      confirmAccountNumber:
+        waterResult?.additionalDetails?.confirmAccountNumber ||
+        waterResult?.additionalDetails?.bankAccountNumber ||
+        waterResult?.additionalDetails?.accountNumber ||
+        "",
       accountHolderName: waterResult?.additionalDetails?.accountHolderName || waterResult?.additionalDetails?.ownerName || "",
     };
     waterResult.djbEmployee = {
@@ -134,61 +142,65 @@ const getEditDetails = (waterResult, sewerageresult, t) => {
   } else if (sewerageresult) {
     sewerageresult.ConnectionHolderDetails = sewerageresult?.connectionHolders
       ? [
-        {
-          ...sewerageresult?.connectionHolders?.[0],
-          address: sewerageresult?.connectionHolders?.[0]?.correspondenceAddress,
-          documentId: "",
-          documentType: "",
-          filestoreId: null,
-          gender: sewerageresult?.connectionHolders?.[0]?.gender
-            ? { code: sewerageresult?.connectionHolders?.[0]?.gender, i18nKey: `COMMON_GENDER_${sewerageresult?.connectionHolders?.[0]?.gender}` }
-            : null,
-          guardian: sewerageresult?.connectionHolders?.[0]?.fatherOrHusbandName,
-          isOwnerSame: sewerageresult?.connectionHolders?.length > 0 ? false : true,
-          mobileNumber: sewerageresult?.connectionHolders?.[0]?.mobileNumber,
-          isWatsappSameAsMobile: sewerageresult?.connectionHolders?.[0]?.mobileNumber && sewerageresult?.connectionHolders?.[0]?.mobileNumber === sewerageresult?.connectionHolders?.[0]?.watsAppMobileNumber ? true : false,
-          name: sewerageresult?.connectionHolders?.[0]?.name,
-          relationship: sewerageresult?.connectionHolders?.[0]?.relationship
-            ? {
-              code: sewerageresult?.connectionHolders?.[0]?.relationship,
-              i18nKey: `COMMON_MASTERS_OWNERTYPE_${sewerageresult?.connectionHolders?.[0]?.relationship}`,
-            }
-            : null,
-          specialCategoryType: sewerageresult?.connectionHolders?.[0]?.ownerType
-            ? {
-              code: sewerageresult?.connectionHolders?.[0]?.ownerType,
-              i18nKey: `PROPERTYTAX_OWNERTYPE_${sewerageresult?.connectionHolders?.[0]?.ownerType}`,
-            }
-            : "",
-        }
-      ]
+          {
+            ...sewerageresult?.connectionHolders?.[0],
+            address: sewerageresult?.connectionHolders?.[0]?.correspondenceAddress,
+            documentId: "",
+            documentType: "",
+            filestoreId: null,
+            gender: sewerageresult?.connectionHolders?.[0]?.gender
+              ? { code: sewerageresult?.connectionHolders?.[0]?.gender, i18nKey: `COMMON_GENDER_${sewerageresult?.connectionHolders?.[0]?.gender}` }
+              : null,
+            guardian: sewerageresult?.connectionHolders?.[0]?.fatherOrHusbandName,
+            isOwnerSame: sewerageresult?.connectionHolders?.length > 0 ? false : true,
+            mobileNumber: sewerageresult?.connectionHolders?.[0]?.mobileNumber,
+            isWatsappSameAsMobile:
+              sewerageresult?.connectionHolders?.[0]?.mobileNumber &&
+              sewerageresult?.connectionHolders?.[0]?.mobileNumber === sewerageresult?.connectionHolders?.[0]?.watsAppMobileNumber
+                ? true
+                : false,
+            name: sewerageresult?.connectionHolders?.[0]?.name,
+            relationship: sewerageresult?.connectionHolders?.[0]?.relationship
+              ? {
+                  code: sewerageresult?.connectionHolders?.[0]?.relationship,
+                  i18nKey: `COMMON_MASTERS_OWNERTYPE_${sewerageresult?.connectionHolders?.[0]?.relationship}`,
+                }
+              : null,
+            specialCategoryType: sewerageresult?.connectionHolders?.[0]?.ownerType
+              ? {
+                  code: sewerageresult?.connectionHolders?.[0]?.ownerType,
+                  i18nKey: `PROPERTYTAX_OWNERTYPE_${sewerageresult?.connectionHolders?.[0]?.ownerType}`,
+                }
+              : "",
+          },
+        ]
       : [
-        {
-          address: sewerageresult?.property?.owners?.[0]?.correspondenceAddress,
-          documentId: "",
-          documentType: "",
-          filestoreId: null,
-          gender: sewerageresult?.property?.owners?.[0]?.gender
-            ? { code: sewerageresult?.property?.owners?.[0]?.gender, i18nKey: `COMMON_GENDER_${sewerageresult?.property?.owners?.[0]?.gender}` }
-            : null,
-          guardian: sewerageresult?.property?.owners?.[0]?.fatherOrHusbandName,
-          isOwnerSame: sewerageresult?.connectionHolders ? false : true,
-          mobileNumber: sewerageresult?.property?.owners?.[0]?.mobileNumber,
-          name: sewerageresult?.property?.owners?.[0]?.name,
-          relationship: sewerageresult?.property?.owners?.[0]?.relationship
-            ? {
-              code: sewerageresult?.property?.owners?.[0]?.relationship,
-              i18nKey: `COMMON_MASTERS_OWNERTYPE_${sewerageresult?.property?.owners?.[0]?.relationship}`,
-            }
-            : null,
-          specialCategoryType: sewerageresult?.connectionHolders?.[0]?.ownerType
-            ? {
-              code: sewerageresult?.connectionHolders?.[0]?.ownerType,
-              i18nKey: `PROPERTYTAX_OWNERTYPE_${sewerageresult?.connectionHolders?.[0]?.ownerType}`,
-            }
-            : "",
-        }
-      ];
+          {
+            address: sewerageresult?.property?.owners?.[0]?.correspondenceAddress,
+            documentId: "",
+            documentType: "",
+            filestoreId: null,
+            gender: sewerageresult?.property?.owners?.[0]?.gender
+              ? { code: sewerageresult?.property?.owners?.[0]?.gender, i18nKey: `COMMON_GENDER_${sewerageresult?.property?.owners?.[0]?.gender}` }
+              : null,
+            guardian: sewerageresult?.property?.owners?.[0]?.fatherOrHusbandName,
+            isOwnerSame: sewerageresult?.connectionHolders ? false : true,
+            mobileNumber: sewerageresult?.property?.owners?.[0]?.mobileNumber,
+            name: sewerageresult?.property?.owners?.[0]?.name,
+            relationship: sewerageresult?.property?.owners?.[0]?.relationship
+              ? {
+                  code: sewerageresult?.property?.owners?.[0]?.relationship,
+                  i18nKey: `COMMON_MASTERS_OWNERTYPE_${sewerageresult?.property?.owners?.[0]?.relationship}`,
+                }
+              : null,
+            specialCategoryType: sewerageresult?.connectionHolders?.[0]?.ownerType
+              ? {
+                  code: sewerageresult?.connectionHolders?.[0]?.ownerType,
+                  i18nKey: `PROPERTYTAX_OWNERTYPE_${sewerageresult?.connectionHolders?.[0]?.ownerType}`,
+                }
+              : "",
+          },
+        ];
     sewerageresult.SewerageConnectionResult = { SewerageConnections: [{ ...sewerageresult }] };
     sewerageresult.cpt = { details: { ...sewerageresult?.property } };
     sewerageresult.cptId = { id: sewerageresult?.propertyId };
@@ -210,7 +222,10 @@ const getEditDetails = (waterResult, sewerageresult, t) => {
           ? { code: sewerageresult?.connectionType, i18nKey: `WS_CONNECTION_${sewerageresult?.connectionType}` }
           : { code: "Non Metered", i18nKey: "WS_CONNECTION_Non Metered" },
         waterDemandType: sewerageresult?.additionalDetails?.waterDemandType
-          ? { code: sewerageresult?.additionalDetails?.waterDemandType, i18nKey: `WS_WATER_DEMAND_${sewerageresult?.additionalDetails?.waterDemandType}` }
+          ? {
+              code: sewerageresult?.additionalDetails?.waterDemandType,
+              i18nKey: `WS_WATER_DEMAND_${sewerageresult?.additionalDetails?.waterDemandType}`,
+            }
           : null,
         applicantType: sewerageresult?.additionalDetails?.applicantType
           ? { code: sewerageresult?.additionalDetails?.applicantType, i18nKey: `WS_APPLICANT_${sewerageresult?.additionalDetails?.applicantType}` }
@@ -220,14 +235,18 @@ const getEditDetails = (waterResult, sewerageresult, t) => {
           : null,
         proposedToilets: sewerageresult?.proposedToilets,
         proposedWaterClosets: sewerageresult?.proposedWaterClosets,
-      }
+      },
     ];
     sewerageresult.bankDetails = {
       bankName: sewerageresult?.additionalDetails?.bankName || "",
       bankBranchName: sewerageresult?.additionalDetails?.bankBranchName || sewerageresult?.additionalDetails?.branchName || "",
       ifscCode: sewerageresult?.additionalDetails?.ifscCode || "",
       accountNumber: sewerageresult?.additionalDetails?.bankAccountNumber || sewerageresult?.additionalDetails?.accountNumber || "",
-      confirmAccountNumber: sewerageresult?.additionalDetails?.confirmAccountNumber || sewerageresult?.additionalDetails?.bankAccountNumber || sewerageresult?.additionalDetails?.accountNumber || "",
+      confirmAccountNumber:
+        sewerageresult?.additionalDetails?.confirmAccountNumber ||
+        sewerageresult?.additionalDetails?.bankAccountNumber ||
+        sewerageresult?.additionalDetails?.accountNumber ||
+        "",
       accountHolderName: sewerageresult?.additionalDetails?.accountHolderName || sewerageresult?.additionalDetails?.ownerName || "",
     };
     sewerageresult.djbEmployee = {
@@ -319,10 +338,12 @@ const EditApplication = ({ parentRoute }) => {
       sessionStorage.setItem("SewerageInitialObject", JSON.stringify({ ...sewerageapplication }));
       let EditDetails = getEditDetails(waterapplication, sewerageapplication, t);
       setParams({ ...params, ...EditDetails });
+    } else if (Object.keys(params).length > 0 && (Waterresult || Sewarageresult)) {
+      let currentApp = Waterresult || Sewarageresult;
+      if (currentApp && currentApp.dueVerification && JSON.stringify(currentApp.dueVerification) !== JSON.stringify(params.dueVerification)) {
+          setParams({ ...params, dueVerification: currentApp.dueVerification });
+      }
     }
-
-    //const setCustomEditState = Digit?.ComponentRegistryService?.getComponent("TLCitizenEditFormDataLoad");
-    //if (setCustomEditState) setCustomEditState({ data, setParams, params, licenseNo, tenantId });
   }, [Waterresult, Sewarageresult]);
 
   // Stepper navigation removed for long form implementation
@@ -341,7 +362,7 @@ const EditApplication = ({ parentRoute }) => {
     else if (key === "") setParams({ ...data });
     else setParams({ ...params, ...{ [key]: { ...params[key], ...data } } });
   };
-  const handleSkip = () => { };
+  const handleSkip = () => {};
   newConfig = newConfigWS; // Override MDMS config with local config to ensure property-location-details change takes effect
   newConfig?.forEach((obj) => {
     if (!obj.hideInCitizen) {
@@ -350,16 +371,45 @@ const EditApplication = ({ parentRoute }) => {
   });
 
   // Exclude property-details so it starts from connection-details as requested
-  const startIndex = config.findIndex(c => c.route === "connection-details");
+  const startIndex = config.findIndex((c) => c.route === "connection-details");
   if (startIndex !== -1) {
     config = config.slice(startIndex);
   }
 
   // Filter out informational/summary steps that are unnecessary in a long form
-  config = config.filter(c => c.route !== "docsrequired" && c.route !== "check");
+  config = config.filter((c) => c.route !== "docsrequired" && c.route !== "check");
+
+  // Reorder and modify steps for the specific layout requested
+  const desiredOrder = [
+    "connection-details",
+    "connection-holder",
+    "djb-employee-details",
+    "disability-details",
+    "property-location-details",
+    "property-water-details",
+    "due-verification-details",
+    "document-details",
+  ];
+
+  let sortedConfig = [];
+  desiredOrder.forEach((route) => {
+    const found = config.find((c) => c.route === route);
+    if (found) {
+      sortedConfig.push(found);
+    }
+  });
+
+  // Add any remaining steps that were not in desiredOrder
+  config.forEach((c) => {
+    if (!sortedConfig.find((sc) => sc.route === c.route)) {
+      sortedConfig.push(c);
+    }
+  });
+
+  config = sortedConfig;
 
   // Swap WSDocumentDetails with WSDocumentsEmployee for proper form integration
-  config.forEach(c => {
+  config.forEach((c) => {
     if (c.component === "WSDocumentDetails") {
       c.component = "WSDocumentsEmployee";
       c.key = "DocumentsRequired";
@@ -380,7 +430,8 @@ const EditApplication = ({ parentRoute }) => {
     (((Waterresult && Object.keys(Waterresult).length > 0) || !Sewarageresult) && Waterresult?.isLoading) ||
     Sewarageresult?.isLoading ||
     configLoading ||
-    Object.keys(params).length === 0 || !params?.DocumentsRequired // Ensure params are hydrated
+    Object.keys(params).length === 0 ||
+    !params?.DocumentsRequired // Ensure params are hydrated
   ) {
     return <Loader />;
   }

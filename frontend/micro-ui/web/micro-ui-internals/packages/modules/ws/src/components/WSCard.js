@@ -86,12 +86,12 @@ const WSCard = () => {
         link: `/digit-ui/employee/ws/water/inbox`,
         roles: ["WS_CEMP", "WS_APPROVER", "WS_FIELD_INSPECTOR", "WS_DOC_VERIFIER", "WS_CLERK"],
       },
-      {
-        count: isWSInboxLoading ? "-" : wsData?.totalCount,
-        label: t("SEWERAGE_INBOX"),
-        link: `/digit-ui/employee/ws/sewerage/inbox`,
-        roles: ["SW_CEMP", "SW_APPROVER", "SW_FIELD_INSPECTOR", "SW_DOC_VERIFIER", "SW_CLERK"],
-      },
+      // {
+      //   count: isWSInboxLoading ? "-" : wsData?.totalCount,
+      //   label: t("SEWERAGE_INBOX"),
+      //   link: `/digit-ui/employee/ws/sewerage/inbox`,
+      //   roles: ["SW_CEMP", "SW_APPROVER", "SW_FIELD_INSPECTOR", "SW_DOC_VERIFIER", "SW_CLERK"],
+      // },
       ...links,
       {
         label: t("WS_WATER_CONNECTION_SEARCH_LABEL"),
