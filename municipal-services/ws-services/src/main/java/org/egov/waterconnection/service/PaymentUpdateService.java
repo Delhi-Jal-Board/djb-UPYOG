@@ -740,19 +740,8 @@ public class PaymentUpdateService {
 
 		WaterConnection waterRequest = request.getWaterConnection();
 
-		waterRequest.getProcessInstance().setAction(WCConstants.ACTION_PAY);
-		waterRequest.getProcessInstance().setComment("Auto Payment for Zero Balance");
-
-		Role role = Role.builder().code("SYSTEM_PAYMENT").tenantId(property.getTenantId()).build();
-		Role cempRole = Role.builder().code("WS_CEMP").tenantId(property.getTenantId()).build();
-		requestInfo.getUserInfo().getRoles().add(role);
-		requestInfo.getUserInfo().getRoles().add(cempRole);
-
-		wfIntegrator.callWorkFlow(request, property);
-		waterRequest.setApplicationStatus("PENDING_FOR_CONNECTION_ACTIVATION");
-		enrichmentService.enrichFileStoreIds(request);
-		repo.updateWaterConnection(request, true);
-
+		// Action APPROVE_FOR_CONNECTION already transitioned workflow to PENDING_FOR_CONNECTION_ACTIVATION.
+		// Directly trigger ACTIVATE_CONNECTION with WS_CLERK role to auto-activate and generate K-Number.
 		waterRequest.getProcessInstance().setAction(WCConstants.ACTIVATE_CONNECTION_CONST);
 		waterRequest.getProcessInstance().setComment("Auto Activation for Zero Balance");
 
@@ -764,6 +753,6 @@ public class PaymentUpdateService {
 
 		waterRequest.setApplicationStatus("CONNECTION_ACTIVATED");
 		waterRequest.setStatus(Connection.StatusEnum.ACTIVE);
-		repo.updateWaterConnection(request, false);
+		repo.updateWaterConnection(request, true);
 	}
 }
