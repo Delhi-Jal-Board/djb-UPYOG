@@ -37,7 +37,7 @@ export const tableColumnConfig = (t, handleReview) => [
     Header: t("SURVEYOR_NAME"),
     accessor: "surveyorName",
     Cell: ({ row }) => {
-      const id = row.original?.id;
+      const id = row.original?.owner?.uuid;
       return (
         <span className="link" onClick={() => handleReview(id)}>
           {row.original?.surveyorName || row.original?.name || "NA"}
