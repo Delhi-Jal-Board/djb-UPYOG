@@ -21,8 +21,8 @@ import {
   Dropdown,
   InfoIcon
 } from "@djb25/digit-ui-react-components";
-import React, { useEffect, useState } from "react";
-import { useHistory, useRouteMatch } from "react-router-dom";
+import React, { useEffect, useState, Fragment } from "react";
+import { useHistory, useRouteMatch, useLocation } from "react-router-dom";
 import DisconnectTimeline from "../components/DisconnectTimeline";
 import { stringReplaceAll, createPayloadOfWSDisconnection, updatePayloadOfWSDisconnection, convertDateToEpoch ,updatePayloadOfWSRestoration,createPayloadOfWSReconnection} from "../utils";
 import { addDays, format } from "date-fns";
@@ -33,17 +33,23 @@ const WSRestorationForm = ({ t, config, onSelect, userType }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
 
   const isMobile = window.Digit.Utils.browser.isMobile();
-  const applicationData = Digit.SessionStorage.get("WS_DISCONNECTION");
+  const sessionData = Digit.SessionStorage.get("WS_DISCONNECTION") || {};
+  const [applicationData, setApplicationData] = useState(sessionData);
   const history = useHistory();
   const match = useRouteMatch();
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const connectionNumberFromQuery = queryParams.get("connectionNumber") || queryParams.get("applicationNumber") || "";
+  const [searchConnNo, setSearchConnNo] = useState(connectionNumberFromQuery || applicationData?.applicationData?.connectionNo || applicationData?.connectionNo || "");
+  const [isSearching, setIsSearching] = useState(false);
   
   const [disconnectionData, setDisconnectionData] = useState({
-      type: applicationData.WSDisconnectionForm ? applicationData.WSDisconnectionForm.type : "",
-      date: applicationData.WSDisconnectionForm ? applicationData.WSDisconnectionForm.date : "",
-      reason: applicationData.WSDisconnectionForm ?  applicationData.WSDisconnectionForm.reason : "",
-      documents: applicationData.WSDisconnectionForm ? applicationData.WSDisconnectionForm.documents : []
+      type: applicationData?.WSDisconnectionForm ? applicationData.WSDisconnectionForm.type : "",
+      date: applicationData?.WSDisconnectionForm ? applicationData.WSDisconnectionForm.date : "",
+      reason: applicationData?.WSDisconnectionForm ?  applicationData.WSDisconnectionForm.reason : "",
+      documents: applicationData?.WSDisconnectionForm ? applicationData.WSDisconnectionForm.documents : []
   });
-  const [documents, setDocuments] = useState(applicationData.WSDisconnectionForm ? applicationData.WSDisconnectionForm.documents : []);
+  const [documents, setDocuments] = useState(applicationData?.WSDisconnectionForm ? applicationData.WSDisconnectionForm.documents : []);
   const [error, setError] = useState(null);
   const [disconnectionTypeList, setDisconnectionTypeList] = useState([]);
   const [checkRequiredFields, setCheckRequiredFields] = useState(false);
@@ -89,6 +95,62 @@ const WSRestorationForm = ({ t, config, onSelect, userType }) => {
 
   const closeToastOfError = () => { setError(null); };
 
+  const fetchConnection = async (connNo) => {
+    const trimmed = (connNo || "").trim();
+    if (!trimmed) {
+      setError({ warning: true, message: "PLEASE_ENTER_CONNECTION_NUMBER" });
+      setTimeout(() => setError(null), 3000);
+      return;
+    }
+    setIsSearching(true);
+    try {
+      const searchParams = { connectionNumber: trimmed, searchType: "CONNECTION", isConnectionSearch: true };
+      let detectedService = "WATER";
+      let wsRes = await Digit.WSService.search({ tenantId, filters: searchParams, businessService: "WS" }).catch(() => null);
+      let conn = wsRes?.WaterConnection?.[0];
+      if (!conn) {
+        let swRes = await Digit.WSService.search({ tenantId, filters: searchParams, businessService: "SW" }).catch(() => null);
+        conn = swRes?.SewerageConnections?.[0];
+        if (conn) detectedService = "SEWERAGE";
+      }
+      if (!conn) {
+        setIsSearching(false);
+        setError({ key: "error", message: "CONNECTION_NOT_FOUND" });
+        setTimeout(() => setError(null), 4000);
+        return;
+      }
+      conn.serviceType = detectedService;
+      let propertyDetails = null;
+      if (conn?.propertyId) {
+        const ptRes = await Digit.PTService.search({
+          tenantId: conn?.tenantId || tenantId,
+          filters: { propertyIds: conn.propertyId },
+          auth: true,
+        }).catch(() => null);
+        propertyDetails = ptRes?.Properties?.[0];
+      }
+      const fullData = {
+        applicationData: conn,
+        propertyDetails,
+        connectionNo: conn.connectionNo,
+        serviceType: detectedService,
+      };
+      setApplicationData(fullData);
+      Digit.SessionStorage.set("WS_DISCONNECTION", fullData);
+      setIsSearching(false);
+    } catch (e) {
+      setIsSearching(false);
+      setError({ key: "error", message: e?.message || "Failed to search connection" });
+      setTimeout(() => setError(null), 4000);
+    }
+  };
+
+  useEffect(() => {
+    if (!applicationData?.applicationData?.connectionNo && connectionNumberFromQuery) {
+      fetchConnection(connectionNumberFromQuery);
+    }
+  }, [connectionNumberFromQuery]);
+
   useEffect(() => {
     const oldData = {...disconnectionData};
     oldData['documents'] = documents;
@@ -122,98 +184,102 @@ console.log("disconnectionTypes",disconnectionTypes)
   }
 
   const onSubmit = async (data) => {
-    const appDate= new Date();
-    const proposedDate= format(addDays(appDate, slaData?.slaDays), 'yyyy-MM-dd').toString();
+    const slaDays = (slaData?.slaDays && !isNaN(slaData?.slaDays)) ? Number(slaData?.slaDays) : 0;
+    const appDate = new Date();
+    const proposedDate = format(addDays(appDate, slaDays), 'yyyy-MM-dd').toString();
 
-    if( convertDateToEpoch(data?.date)  <= convertDateToEpoch(proposedDate)){
-      setError({key: "error", message: "PROPOSED_DISCONNECTION_INVALID_DATE"});
-      setTimeout(() => {
-        setError(false);
-      }, 3000);
+    const reasonText = (typeof disconnectionData?.reason === "string"
+      ? disconnectionData?.reason
+      : disconnectionData?.reason?.value || disconnectionData?.reason?.code || "").trim();
+
+    if (slaDays > 0 && data?.date && convertDateToEpoch(data?.date) < convertDateToEpoch(proposedDate)) {
+      setError({ key: "error", message: "PROPOSED_RESTORATION_INVALID_DATE" });
+      setTimeout(() => setError(null), 3000);
+      return;
     }
 
-    else if( disconnectionData?.reason?.value === "" || disconnectionData?.reason === "" || disconnectionData?.date === "" ){
+    if (!reasonText || !disconnectionData?.date) {
       setError({ warning: true, message: "PLEASE_FILL_MANDATORY_DETAILS" });
-      setTimeout(() => {
-        setError(false);
-      }, 3000);
+      setTimeout(() => setError(null), 3000);
+      return;
     }
 
-    else {
-      const payload = await createPayloadOfWSReconnection(data, applicationData, applicationData?.applicationData?.serviceType);
-      if(payload?.WaterConnection?.water){
-        payload.WaterConnection.isdisconnection = false;
-        payload.WaterConnection.isDisconnectionTemporary=true;
-        payload.WaterConnection["reconnectionReason"] = payload.WaterConnection.disconnectionReason;
-        payload.WaterConnection.disconnectionReason ="";
-        payload["reconnectRequest"] = true;
-        payload.disconnectRequest = false
-        if (waterMutation) {
-          setIsEnableLoader(true);
-          await waterMutation(payload, {
-            onError: (error, variables) => {
-              setIsEnableLoader(false);
-              setError({ key: "error", message: error?.response?.data?.Errors?.[0].message ? error?.response?.data?.Errors?.[0].message : error });
-              setTimeout(closeToastOfError, 5000);
-            },
-            onSuccess: async (data, variables) => {
-              let response = await updatePayloadOfWSRestoration(data?.WaterConnection?.[0], "WATER");
-              let waterConnectionUpdate = { WaterConnection: response };
-              waterConnectionUpdate = {...waterConnectionUpdate, disconnectRequest: false,reconnectRequest:true}
-              console.log("response")
-              await waterUpdateMutation(waterConnectionUpdate, {
-                onError: (error, variables) => {
-                  setIsEnableLoader(false);
-                  setError({ key: "error", message: error?.response?.data?.Errors?.[0].message ? error?.response?.data?.Errors?.[0].message : error });
-                  setTimeout(closeToastOfError, 5000);
-                },
-                onSuccess: (data, variables) => {
-                  Digit.SessionStorage.set("WS_DISCONNECTION", {...applicationData, DisconnectionResponse: data?.WaterConnection?.[0]});
-                  history.push(`/digit-ui/employee/ws/ws-restoration-response?applicationNumber=${data?.WaterConnection?.[0]?.applicationNo}`);                
-                },
-              })
-            },
-          });
-        }
-      }
-      else if(payload?.SewerageConnection?.sewerage){
-        payload.SewerageConnection.isdisconnection = false;
-        payload.SewerageConnection["reconnectionReason"] = payload.SewerageConnection.disconnectionReason;
-        payload.SewerageConnection.disconnectionReason ="";
-        payload.SewerageConnection.isDisconnectionTemporary=true;
-        payload["reconnectRequest"] = true;
-        payload.disconnectRequest = false
-        if (sewerageMutation) {
-          setIsEnableLoader(true);
-          await sewerageMutation(payload, {
+    const currentAppData = applicationData?.applicationData?.connectionNo ? applicationData : Digit.SessionStorage.get("WS_DISCONNECTION");
+    if (!currentAppData?.applicationData?.connectionNo) {
+      setError({ key: "error", message: "PLEASE_SEARCH_AND_SELECT_CONNECTION" });
+      setTimeout(() => setError(null), 3000);
+      return;
+    }
 
-            onError: (error, variables) => {
-              setIsEnableLoader(false);
-              setError({ key: "error", message: error?.response?.data?.Errors?.[0].message ? error?.response?.data?.Errors?.[0].message : error });
-              setTimeout(closeToastOfError, 5000);
-            },
-            onSuccess: async (data, variables) => {
-              let response = await updatePayloadOfWSRestoration(data?.SewerageConnections?.[0], "SEWERAGE");
-              let sewerageConnectionUpdate = { SewerageConnection: response };
-              sewerageConnectionUpdate = {...sewerageConnectionUpdate, disconnectRequest:false,reconnectRequest:true};
-              await sewerageUpdateMutation(sewerageConnectionUpdate, {
-                onError: (error, variables) => {
-                  setIsEnableLoader(false);
-                  setError({ key: "error", message: error?.response?.data?.Errors?.[0].message ? error?.response?.data?.Errors?.[0].message : error });
-                  setTimeout(closeToastOfError, 5000);
-                },
-                onSuccess: (data, variables) => {
-                  Digit.SessionStorage.set("WS_DISCONNECTION", {...applicationData, DisconnectionResponse: data?.SewerageConnections?.[0]});
-                  history.push(`/digit-ui/employee/ws/ws-restoration-response?applicationNumber=${data?.SewerageConnections?.[0]?.applicationNo}`);              
-                },
-              })
-            },
-          });
-        }
+    const payload = await createPayloadOfWSReconnection(data, currentAppData, currentAppData?.applicationData?.serviceType);
+    if (payload?.WaterConnection?.water) {
+      payload.WaterConnection.isdisconnection = false;
+      payload.WaterConnection.isDisconnectionTemporary = true;
+      payload.WaterConnection["reconnectionReason"] = reasonText;
+      payload.WaterConnection.disconnectionReason = "";
+      payload["reconnectRequest"] = true;
+      payload.disconnectRequest = false;
+      if (waterMutation) {
+        setIsEnableLoader(true);
+        await waterMutation(payload, {
+          onError: (error, variables) => {
+            setIsEnableLoader(false);
+            setError({ key: "error", message: error?.response?.data?.Errors?.[0]?.message ? error?.response?.data?.Errors?.[0]?.message : error?.message || "Failed to initiate reconnection" });
+            setTimeout(closeToastOfError, 5000);
+          },
+          onSuccess: async (createdData, variables) => {
+            let response = await updatePayloadOfWSRestoration(createdData?.WaterConnection?.[0], "WATER");
+            let waterConnectionUpdate = { WaterConnection: response, disconnectRequest: false, reconnectRequest: true };
+            await waterUpdateMutation(waterConnectionUpdate, {
+              onError: (error, variables) => {
+                setIsEnableLoader(false);
+                setError({ key: "error", message: error?.response?.data?.Errors?.[0]?.message ? error?.response?.data?.Errors?.[0]?.message : error?.message || "Failed to submit reconnection" });
+                setTimeout(closeToastOfError, 5000);
+              },
+              onSuccess: (updatedData, variables) => {
+                setIsEnableLoader(false);
+                Digit.SessionStorage.set("WS_DISCONNECTION", { ...currentAppData, DisconnectionResponse: updatedData?.WaterConnection?.[0] });
+                history.push(`/digit-ui/employee/ws/ws-restoration-response?applicationNumber=${updatedData?.WaterConnection?.[0]?.applicationNo}`);
+              },
+            });
+          },
+        });
+      }
+    } else if (payload?.SewerageConnection?.sewerage) {
+      payload.SewerageConnection.isdisconnection = false;
+      payload.SewerageConnection.isDisconnectionTemporary = true;
+      payload.SewerageConnection["reconnectionReason"] = reasonText;
+      payload.SewerageConnection.disconnectionReason = "";
+      payload["reconnectRequest"] = true;
+      payload.disconnectRequest = false;
+      if (sewerageMutation) {
+        setIsEnableLoader(true);
+        await sewerageMutation(payload, {
+          onError: (error, variables) => {
+            setIsEnableLoader(false);
+            setError({ key: "error", message: error?.response?.data?.Errors?.[0]?.message ? error?.response?.data?.Errors?.[0]?.message : error?.message || "Failed to initiate reconnection" });
+            setTimeout(closeToastOfError, 5000);
+          },
+          onSuccess: async (createdData, variables) => {
+            let response = await updatePayloadOfWSRestoration(createdData?.SewerageConnections?.[0], "SEWERAGE");
+            let sewerageConnectionUpdate = { SewerageConnection: response, disconnectRequest: false, reconnectRequest: true };
+            await sewerageUpdateMutation(sewerageConnectionUpdate, {
+              onError: (error, variables) => {
+                setIsEnableLoader(false);
+                setError({ key: "error", message: error?.response?.data?.Errors?.[0]?.message ? error?.response?.data?.Errors?.[0]?.message : error?.message || "Failed to submit reconnection" });
+                setTimeout(closeToastOfError, 5000);
+              },
+              onSuccess: (updatedData, variables) => {
+                setIsEnableLoader(false);
+                Digit.SessionStorage.set("WS_DISCONNECTION", { ...currentAppData, DisconnectionResponse: updatedData?.SewerageConnections?.[0] });
+                history.push(`/digit-ui/employee/ws/ws-restoration-response?applicationNumber=${updatedData?.SewerageConnections?.[0]?.applicationNo}`);
+              },
+            });
+          },
+        });
       }
     }
-  
-  } ;
+  };
 
   if (isMdmsLoading || wsDocsLoading || isEnableLoader || slaLoading) return <Loader />
 
@@ -256,7 +322,7 @@ if(userType === 'citizen') {
                   optionKey="i18nKey"
                   t={t}
                   name={"reason"}
-                  value={disconnectionData.reason?.value}
+                  value={disconnectionData.reason?.value || (typeof disconnectionData.reason === "string" ? disconnectionData.reason : "")}
                   onChange={(e) => filedChange({code:"reason" , value:e.target.value})}
                 />              
             </LabelFieldPair>
@@ -291,12 +357,37 @@ console.log("applicationData",applicationData)
           t={t}       
     >
       <div style={{padding:"10px",paddingTop:"20px",marginTop:"10px"}}>
-      <CardSectionHeader>{t("CS_TITLE_APPLICATION_DETAILS")}</CardSectionHeader>
-      <StatusTable>
-        <Row key={t("PDF_STATIC_LABEL_CONSUMER_NUMBER_LABEL")} label={`${t("PDF_STATIC_LABEL_CONSUMER_NUMBER_LABEL")}`} text={applicationData?.applicationData?.connectionNo} className="border-none" />
-        <Row key={t("PDF_STATIC_LABEL_TYPE_OF_SERVICE_LABEL")} label={`${t("PDF_STATIC_LABEL_TYPE_OF_SERVICE_LABEL")}`} text={applicationData?.applicationData?.serviceType} className="border-none" />
-        <Row key={t("PDF_STATIC_LABEL_PROPERTY_ID_LABEL")} label={`${t("PDF_STATIC_LABEL_PROPERTY_ID_LABEL")}`} text={applicationData?.applicationData?.propertyId} className="border-none" />
-      </StatusTable>        
+      {!applicationData?.applicationData?.connectionNo ? (
+        <div style={{ marginBottom: "20px" }}>
+          <CardSectionHeader>{t("WS_SEARCH_CONNECTION_LABEL") || "Search Disconnected Connection"}</CardSectionHeader>
+          <LabelFieldPair>
+            <CardLabel style={{ fontWeight: "700", marginTop: "10px" }}>{t("WS_CONSUMER_CODE_LABEL") || "Connection / K-Number"}</CardLabel>
+            <div className="field" style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+              <TextInput
+                t={t}
+                type={"text"}
+                value={searchConnNo}
+                onChange={(e) => setSearchConnNo(e.target.value)}
+                placeholder={t("ENTER_CONNECTION_NUMBER") || "Enter Connection Number / K-Number"}
+              />
+              <SubmitBar
+                label={isSearching ? t("SEARCHING") || "Searching..." : t("ES_COMMON_SEARCH") || "Search"}
+                onSubmit={() => fetchConnection(searchConnNo)}
+                disabled={isSearching || !searchConnNo?.trim()}
+              />
+            </div>
+          </LabelFieldPair>
+        </div>
+      ) : (
+        <React.Fragment>
+          <CardSectionHeader>{t("CS_TITLE_APPLICATION_DETAILS")}</CardSectionHeader>
+          <StatusTable>
+            <Row key={t("PDF_STATIC_LABEL_CONSUMER_NUMBER_LABEL")} label={`${t("PDF_STATIC_LABEL_CONSUMER_NUMBER_LABEL")}`} text={applicationData?.applicationData?.connectionNo} className="border-none" />
+            <Row key={t("PDF_STATIC_LABEL_TYPE_OF_SERVICE_LABEL")} label={`${t("PDF_STATIC_LABEL_TYPE_OF_SERVICE_LABEL")}`} text={applicationData?.applicationData?.serviceType} className="border-none" />
+            <Row key={t("PDF_STATIC_LABEL_PROPERTY_ID_LABEL")} label={`${t("PDF_STATIC_LABEL_PROPERTY_ID_LABEL")}`} text={applicationData?.applicationData?.propertyId} className="border-none" />
+          </StatusTable>
+        </React.Fragment>
+      )}        
      
           
           <LabelFieldPair>
@@ -308,7 +399,7 @@ console.log("applicationData",applicationData)
                     whiteSpace: Digit.Utils.browser.isMobile() ? "unset" : "nowrap",
                     fontSize: "medium",
                   }}>
-                    {t("SHOULD_BE_DATE")+ " " + slaData?.slaDays + " " + t("DAYS_OF_APPLICATION_DATE")}
+                    {t("SHOULD_BE_DATE")+ " " + (slaData?.slaDays || 0) + " " + t("DAYS_OF_APPLICATION_DATE")}
                   </span>
             </div>
           </CardLabel>
@@ -330,7 +421,7 @@ console.log("applicationData",applicationData)
                   optionKey="i18nKey"
                   t={t}
                   name={"reason"}
-                  value={disconnectionData.reason?.value}
+                  value={disconnectionData.reason?.value || (typeof disconnectionData.reason === "string" ? disconnectionData.reason : "")}
                   onChange={(e) => filedChange({code:"reason" , value:e.target.value})}
                 />  
                 </div>            
@@ -342,15 +433,7 @@ console.log("applicationData",applicationData)
     </FormStep>
     <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
           {
-            <SubmitBar
-              label={t("ACTION_TEST_SUBMIT")}
-              onSubmit={() => onSubmit(disconnectionData)}
-              style={{ margin: "10px 10px 0px 0px" }}
-              // disabled={
-              //   wsDocsLoading || documents.length < 2 || disconnectionData?.reason?.value === "" || disconnectionData?.reason === "" || disconnectionData?.date === "" || disconnectionData?.type === ""
-              //   ? true 
-              //   : false}
-            />}
+            <SubmitBar label={t("ACTION_TEST_SUBMIT")} onSubmit={() => onSubmit(disconnectionData)} style={{ margin: "10px 10px 0px 0px" }} disabled={!applicationData?.applicationData?.connectionNo || isSearching} />}
      </ActionBar>
     </div>
   );
