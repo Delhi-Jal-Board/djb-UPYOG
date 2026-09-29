@@ -28,9 +28,11 @@ const FilterFormFieldsComponent = ({
     totalModifyWSCount = 0,
     totalDisconnectionWSCount = 0,
     totalMutationWSCount = 0,
+    totalReconnectionWSCount = 0,
     totalnewSWCOunt = 0,
     totalModifySWCount = 0,
-    totalDisconnectionSWCount = 0;
+    totalDisconnectionSWCount = 0,
+    totalReconnectionSWCount = 0;
   const totalnewWS = statuses?.filter((e) => e.businessservice === "NewWS1")?.forEach((data) => (totalnewWSCount = totalnewWSCount + data?.count));
   const totalModifyWS = statuses
     ?.filter((e) => e.businessservice === "ModifyWSConnection")
@@ -41,6 +43,9 @@ const FilterFormFieldsComponent = ({
   const totalMutationWS = statuses
     ?.filter((e) => e.businessservice === "mutationWSConnection")
     ?.forEach((data) => (totalMutationWSCount = totalMutationWSCount + data?.count));
+  const totalReconnectionWS = statuses
+    ?.filter((e) => e.businessservice === "WSReconnection")
+    ?.forEach((data) => (totalReconnectionWSCount = totalReconnectionWSCount + data?.count));
   const totalnewSW = statuses?.filter((e) => e.businessservice === "NewSW1")?.forEach((data) => (totalnewSWCOunt = totalnewSWCOunt + data?.count));
   const totalModifySW = statuses
     ?.filter((e) => e.businessservice === "ModifySWConnection")
@@ -48,6 +53,9 @@ const FilterFormFieldsComponent = ({
   const totalDisconnectionSW = statuses
     ?.filter((e) => e.businessservice === "DisconnectSWConnection")
     ?.forEach((data) => (totalDisconnectionSWCount = totalDisconnectionSWCount + data?.count));
+  const totalReconnectionSW = statuses
+    ?.filter((e) => e.businessservice === "SWReconnection")
+    ?.forEach((data) => (totalReconnectionSWCount = totalReconnectionSWCount + data?.count));
 
   const applicationTypeStatuses = checkPathName
     ? [
@@ -67,6 +75,10 @@ const FilterFormFieldsComponent = ({
           code: "mutationWSConnection",
           name: `${t("CS_COMMON_INBOX_MUTATIONWSCONNECTION") || t("WS_MUTATION_CONNECTION") || "Water Mutation"} (${totalMutationWSCount})`,
         },
+        {
+          code: "WSReconnection",
+          name: `${t("CS_COMMON_INBOX_WSRECONNECTION") || t("WS_RECONNECTION") || "Water Reconnection"} (${totalReconnectionWSCount})`,
+        },
       ]
     : [
         {
@@ -80,6 +92,10 @@ const FilterFormFieldsComponent = ({
         {
           code: "DisconnectSWConnection",
           name: `${t("CS_COMMON_INBOX_DISCONNECTIONSW")} (${totalDisconnectionSWCount})`,
+        },
+        {
+          code: "SWReconnection",
+          name: `${t("CS_COMMON_INBOX_SWRECONNECTION") || t("SW_RECONNECTION") || "Sewerage Reconnection"} (${totalReconnectionSWCount})`,
         },
       ];
 

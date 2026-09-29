@@ -162,6 +162,15 @@ public class PaymentUpdateService {
 					repo.updateWaterConnection(waterConnectionRequest, false);
 					log.info("Disconnection payment successful. Moving to " + WCConstants.PENDING_APPROVAL_FOR_DISCONNECTION);
 
+				} else if (paymentDetail.getBusinessService().equalsIgnoreCase(config.getReceiptReconnectionBusinessservice()) ||
+						paymentDetail.getBusinessService().equalsIgnoreCase(config.getReconnectBusinessServiceName()) ||
+						WCConstants.WATER_RECONNECTION.equalsIgnoreCase(connection.getApplicationType()) ||
+						waterConnectionRequest.isReconnectRequest()) {
+
+					waterConnectionRequest.getWaterConnection().setApplicationStatus(WCConstants.PENDING_APPROVAL_FOR_RECONNECTION);
+					repo.updateWaterConnection(waterConnectionRequest, false);
+					log.info("Reconnection payment successful. Moving to " + WCConstants.PENDING_APPROVAL_FOR_RECONNECTION);
+
 				} else if ("PENDING_FOR_PAYMENT".equalsIgnoreCase(statusBeforePayment)) {
 
 					waterConnectionRequest.getWaterConnection().setApplicationStatus("PENDING_FOR_DOCUMENT_VERIFICATION");

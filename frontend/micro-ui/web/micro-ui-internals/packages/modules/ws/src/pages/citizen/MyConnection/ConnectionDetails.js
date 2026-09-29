@@ -241,7 +241,7 @@ const ConnectionDetails = () => {
     } else {
       if (paymentDetails?.data?.Bill?.length === 0) {
         console.log("Payment", paymentDetails);
-        let pathname = `/digit-ui/citizen/ws/restoration-application`;
+        let pathname = `/digit-ui/citizen/ws/restore-application/restoration-application`;
         Digit.SessionStorage.set("WS_DISCONNECTION", { ...state, serviceType: isSW ? "SEWERAGE" : "WATER" });
         history.push(`${pathname}`);
       } else if (paymentDetails?.data?.Bill?.[0]?.totalAmount < 0) {
@@ -728,19 +728,17 @@ const ConnectionDetails = () => {
                 }
               </div>
             ))}
-          {(state?.status !== "inactive" || state?.applicationStatus !== "Inactive" || state?.applicationStatus !== "INACTIVE") &&
-            !isDisconnectionDone ? (
+          {(state?.status?.toLowerCase() === "inactive" ||
+            state?.applicationStatus?.toLowerCase() === "inactive" ||
+            state?.applicationStatus === "DISCONNECTION_EXECUTED" ||
+            isDisconnectionDone) ? (
+            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "15px", width: "100%" }}>
+              <SubmitBar label={t("WS_RECONNECTION_BUTTON")} onSubmit={onActionSelectRestoration} />
+            </div>
+          ) : (
             <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "15px", width: "100%" }}>
               <SubmitBar label={t("WS_DISCONNECTION_BUTTON")} onSubmit={onActionSelect} />
             </div>
-          ) : (
-            state?.applicationStatus == "DISCONNECTION_EXECUTED" &&
-            state?.status == "Inactive" &&
-            state?.isDisconnectionTemporary && (
-              <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "15px", width: "100%" }}>
-                <SubmitBar label={t("WS_RECONNECTION_BUTTON")} onSubmit={onActionSelectRestoration} />
-              </div>
-            )
           )}
 
           {showModal ? (

@@ -9,7 +9,7 @@ const SearchFields = ({ register, control, reset, tenantId, t, businessService, 
   const applicationType = useWatch({ control, name: "applicationType" });
   let businessServices = [];
   let selectedService = "";
-  businessServices = ["NewWS1", "NewSW1", "ModifyWSConnection", "ModifySWConnection", "DisconnectWSConnection", "DisconnectSWConnection"];
+  businessServices = ["NewWS1", "NewSW1", "ModifyWSConnection", "ModifySWConnection", "DisconnectWSConnection", "DisconnectSWConnection", "WSReconnection", "SWReconnection"];
 
   if (applicationType && applicationType?.code === "NEW_WATER_CONNECTION") selectedService = "NewWS1";
   else if (applicationType && applicationType?.code === "NEW_SEWERAGE_CONNECTION") selectedService = "NewSW1";
@@ -17,6 +17,8 @@ const SearchFields = ({ register, control, reset, tenantId, t, businessService, 
   else if (applicationType && applicationType?.code === "MODIFY_SEWERAGE_CONNECTION") selectedService = "ModifySWConnection";
   else if (applicationType && applicationType?.code === "DISCONNECT_WATER_CONNECTION") selectedService = "DisconnectWSConnection";
   else if (applicationType && applicationType?.code === "DISCONNECT_SEWERAGE_CONNECTION") selectedService = "DisconnectSWConnection";
+  else if (applicationType && (applicationType?.code === "RECONNECT_WATER_CONNECTION" || applicationType?.code === "WATER_RECONNECTION")) selectedService = "WSReconnection";
+  else if (applicationType && (applicationType?.code === "RECONNECT_SEWERAGE_CONNECTION" || applicationType?.code === "SEWERAGE_RECONNECTION")) selectedService = "SWReconnection";
 
   const { data: statusData, isLoading } = Digit.Hooks.useApplicationStatusGeneral({ businessServices, tenantId }, {});
 

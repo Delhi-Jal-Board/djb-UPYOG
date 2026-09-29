@@ -69,9 +69,7 @@ public class CalculationService {
 	public void calculateFeeAndGenerateDemand(WaterConnectionRequest request, Property property) {
 		String action = request.getWaterConnection().getProcessInstance().getAction();
 
-		if(WCConstants.SUBMIT_APPLICATION_CONST.equalsIgnoreCase(action)
-				&& !(request.isReconnectRequest() || request.getWaterConnection().getApplicationType().equalsIgnoreCase(WCConstants.WATER_RECONNECTION))) {
-
+		if(WCConstants.SUBMIT_APPLICATION_CONST.equalsIgnoreCase(action)) {
 			triggerCalculation(request, property, action);
 		}
 
