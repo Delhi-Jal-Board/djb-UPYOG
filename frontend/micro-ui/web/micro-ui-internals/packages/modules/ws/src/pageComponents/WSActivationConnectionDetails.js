@@ -217,7 +217,7 @@ const ConnectionDetails = (_props) => {
     <React.Fragment>
       {!window.location.href.includes("by-config") && !window.location.href.includes("ws/modify-application") ? (
         <LabelFieldPair>
-          <CardLabel>{`${t("WS_ACK_COMMON_APP_NO_LABEL")}*`}</CardLabel>
+          <CardLabel>{t("WS_ACK_COMMON_APP_NO_LABEL")} <span style={{ color: "red" }}>*</span></CardLabel>
           <div className="field">
             <TextInput disabled={true} value={filters?.applicationNumber}></TextInput>
           </div>
@@ -226,7 +226,7 @@ const ConnectionDetails = (_props) => {
       {filters?.service === "WATER" ? (
         <React.Fragment>
           <LabelFieldPair>
-            <CardLabel>{`${t("WS_SERV_DETAIL_CONN_TYPE")}*`}</CardLabel>
+            <CardLabel>{t("WS_SERV_DETAIL_CONN_TYPE")} <span style={{ color: "red" }}>*</span></CardLabel>
             <Controller
               control={control}
               name={"connectionType"}
@@ -254,7 +254,7 @@ const ConnectionDetails = (_props) => {
             ) : null}
           </LabelFieldPair>
           <LabelFieldPair>
-            <CardLabel>{`${t("WS_SERV_DETAIL_WATER_SOURCE")}*`}</CardLabel>
+            <CardLabel>{t("WS_SERV_DETAIL_WATER_SOURCE")} <span style={{ color: "red" }}>*</span></CardLabel>
             <Controller
               control={control}
               name={"waterSource"}
@@ -292,7 +292,7 @@ const ConnectionDetails = (_props) => {
             ) : null}
           </LabelFieldPair>
           <LabelFieldPair>
-            <CardLabel>{`${t("WS_SERV_DETAIL_WATER_SUB_SOURCE")}*`}</CardLabel>
+            <CardLabel>{t("WS_SERV_DETAIL_WATER_SUB_SOURCE")} <span style={{ color: "red" }}>*</span></CardLabel>
             <Controller
               control={control}
               name={"sourceSubData"}
@@ -320,7 +320,7 @@ const ConnectionDetails = (_props) => {
             ) : null}
           </LabelFieldPair>
           <LabelFieldPair>
-            <CardLabel>{`${t("WS_PIPE_SIZE_IN_INCHES_LABEL")}*`}</CardLabel>
+            <CardLabel>{t("WS_PIPE_SIZE_IN_INCHES_LABEL")} <span style={{ color: "red" }}>*</span></CardLabel>
             <Controller
               control={control}
               name={"pipeSize"}
@@ -348,7 +348,7 @@ const ConnectionDetails = (_props) => {
             ) : null}
           </LabelFieldPair>
           <LabelFieldPair>
-            <CardLabel>{`${t("WS_SERV_DETAIL_NO_OF_TAPS")}*`}</CardLabel>
+            <CardLabel>{t("WS_SERV_DETAIL_NO_OF_TAPS")} <span style={{ color: "red" }}>*</span></CardLabel>
             <div className="field">
               <Controller
                 control={control}
@@ -384,7 +384,7 @@ const ConnectionDetails = (_props) => {
       ) : (
         <React.Fragment>
           <LabelFieldPair>
-            <CardLabel>{`${t("WS_NUMBER_WATER_CLOSETS_LABEL")}*`}</CardLabel>
+            <CardLabel>{t("WS_NUMBER_WATER_CLOSETS_LABEL")} <span style={{ color: "red" }}>*</span></CardLabel>
             <div className="field">
               <Controller
                 control={control}
@@ -417,7 +417,7 @@ const ConnectionDetails = (_props) => {
             ) : null}
           </LabelFieldPair>
           <LabelFieldPair>
-            <CardLabel>{`${t("WS_SERV_DETAIL_NO_OF_TOILETS")}*`}</CardLabel>
+            <CardLabel>{t("WS_SERV_DETAIL_NO_OF_TOILETS")} <span style={{ color: "red" }}>*</span></CardLabel>
             <div className="field">
               <Controller
                 control={control}

@@ -156,7 +156,7 @@ const ConnectionDetails = (_props) => {
       formData2?.connectionDetails?.[0]?.formDetails?.applicationData?.applicationType !== "WATER_RECONNECTION" ? (
         <React.Fragment>
           <LabelFieldPair>
-            <CardLabel>{`${t("WS_SERV_DETAIL_METER_ID")}*`}</CardLabel>
+            <CardLabel>{t("WS_SERV_DETAIL_METER_ID")} <span style={{ color: "red" }}>*</span></CardLabel>
             <div className="field">
               <Controller
                 control={control}
@@ -189,12 +189,12 @@ const ConnectionDetails = (_props) => {
             ) : null}
           </LabelFieldPair>
           <LabelFieldPair>
-            <CardLabel>{`${t("WS_ADDN_DETAIL_METER_INSTALL_DATE")}*`}</CardLabel>
+            <CardLabel>{t("WS_ADDN_DETAIL_METER_INSTALL_DATE")} <span style={{ color: "red" }}>*</span></CardLabel>
             <div className="field">
               <Controller
                 name="meterInstallationDate"
                 rules={{ required: t("REQUIRED_FIELD") }}
-                // isMandatory={true}
+                isMandatory={true}
                 defaultValue={activationDetail?.meterInstallationDate}
                 control={control}
                 render={(props) => <DatePicker date={props.value} name="meterInstallationDate" onChange={props.onChange} />}
@@ -205,7 +205,7 @@ const ConnectionDetails = (_props) => {
             ) : null}
           </LabelFieldPair>
           <LabelFieldPair>
-            <CardLabel>{`${t("WS_INITIAL_METER_READING_LABEL")}*`}</CardLabel>
+            <CardLabel>{t("WS_INITIAL_METER_READING_LABEL")} <span style={{ color: "red" }}>*</span></CardLabel>
             <div className="field">
               <Controller
                 type="number"
@@ -240,12 +240,12 @@ const ConnectionDetails = (_props) => {
         </React.Fragment>
       ) : null}
       <LabelFieldPair>
-        <CardLabel>{`${t("WS_SERV_DETAIL_CONN_EXECUTION_DATE")}*`}</CardLabel>
+        <CardLabel>{t("WS_SERV_DETAIL_CONN_EXECUTION_DATE")} <span style={{ color: "red" }}>*</span></CardLabel>
         <div className="field">
           <Controller
             name="connectionExecutionDate"
             rules={{ required: t("REQUIRED_FIELD") }}
-            // isMandatory={true}
+            isMandatory={true}
             defaultValue={activationDetail?.connectionExecutionDate}
             control={control}
             render={(props) => (
@@ -265,7 +265,7 @@ const ConnectionDetails = (_props) => {
       </LabelFieldPair>
       {window.location.href.includes("modify") || window.location.href.includes("mutation") ? (
         <LabelFieldPair>
-          <CardLabel>{`${t("WS_MODIFICATIONS_EFFECTIVE_FROM")}*`}</CardLabel>
+          <CardLabel>{t("WS_MODIFICATIONS_EFFECTIVE_FROM")} <span style={{ color: "red" }}>*</span></CardLabel>
           <div className="field">
             <Controller
               name="dateEffectiveFrom"

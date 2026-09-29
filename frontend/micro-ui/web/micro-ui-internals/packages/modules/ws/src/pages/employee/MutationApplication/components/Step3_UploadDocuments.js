@@ -22,7 +22,7 @@ const Step3_UploadDocuments = ({ t, onNext, onBack, defaultValues }) => {
   const identityOptions = [
     { code: "AADHAAR", i18nKey: "Aadhaar Card" },
     { code: "VOTER_ID", i18nKey: "Voter ID" },
-    { code: "PAN", i18nKey: "PAN Card" },
+    // { code: "PAN", i18nKey: "PAN Card" },
     { code: "OTHER", i18nKey: "Any other document configured by DJB" }
   ];
 
@@ -285,7 +285,7 @@ const Step3_UploadDocuments = ({ t, onNext, onBack, defaultValues }) => {
           <div style={{ display: "flex", alignItems: "flex-start", gap: "8px", marginBottom: "4px" }}>
             <div style={{ flex: 1 }}>
               <TextInput 
-                type={showDocumentNumber ? "text" : "password"}
+                type={"text"}
                 value={documentNumber} 
                 onChange={(e) => { 
                   if (!isDocumentUidLocked) {
@@ -303,6 +303,7 @@ const Step3_UploadDocuments = ({ t, onNext, onBack, defaultValues }) => {
                 disabled={isDocumentUidLocked}
                 style={{ 
                   marginBottom: "0", 
+                  WebkitTextSecurity: showDocumentNumber ? "none" : "disc",
                   ...(fieldErrors.documentNumber ? { border: "1px solid #d32f2f" } : {}),
                   ...(isDocumentUidLocked ? { backgroundColor: "#f0f0f0", cursor: "not-allowed", color: "#555" } : {})
                 }}
