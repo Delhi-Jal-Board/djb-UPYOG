@@ -4,14 +4,8 @@ import { useRouteMatch } from "react-router-dom";
 import { CitizenHomeCard, DocumentIcon, Loader } from "@djb25/digit-ui-react-components";
 import EKYCCard from "./components/EKYCCard";
 import Inbox from "./components/Dashboard";
-import DesktopInbox from "./components/DesktopInbox";
-import MobileInbox from "./components/MobileInbox";
-import Filter from "./components/Filter";
 import EmployeeApp from "./pages/employee";
 import CitizenApp from "./pages/citizen";
-import PropertyInfo from "./components/PropertyInfo";
-import MeterDetails from "./components/MeterDetails";
-import AadhaarVerification from "./components/AadhaarVerification";
 
 export const EkycModule = ({ stateCode, userType, tenants }) => {
   const { path, url } = useRouteMatch();
@@ -115,13 +109,7 @@ const componentsToRegister = {
   EKYCModule: EkycModule,
   EKYCCard,
   EKYCInbox: Inbox,
-  EKYCDesktopInbox: DesktopInbox,
-  EKYCMobileInbox: MobileInbox,
-  EKYC_INBOX_FILTER: (props) => <Filter {...props} />,
   EkycLinks,
-  AadhaarVerification,
-  PropertyInfo,
-  MeterDetails,
 };
 
 export const initEkycComponents = () => {

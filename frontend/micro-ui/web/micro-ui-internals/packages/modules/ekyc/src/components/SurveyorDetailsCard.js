@@ -28,7 +28,7 @@ const SurveyorDetailsCard = () => {
 
   const { data: surveyorSearch, isLoading: isLoadingId } = Digit.Hooks.fsm.useSurveyorSearch(
     tenantId,
-    { ownerIds: surveyorId || ownerIds },
+    {ownerIds: surveyorId || ownerIds },
     { enabled: !!tenantId && !!(surveyorId || ownerIds), staleTime: Infinity }
   );
 
@@ -37,7 +37,7 @@ const SurveyorDetailsCard = () => {
   const surveyor = surveyorSearch?.surveyors?.[0] || null;
 
   const { isLoading: isProgressLoading, data: progressData } = Digit.Hooks.ekyc.useEkycAssignmentProgress(
-    { vendorId: surveyor?.vendorId, surveyorId: surveyorId || surveyor?.id },
+    { ...(surveyorId?{vendorId: surveyor?.vendorId, surveyorId: surveyorId}:{}) },
     {
       enabled: !!tenantId && !!surveyor?.vendorId && !!(surveyorId || surveyor?.id),
       keepPreviousData: true,
@@ -75,7 +75,7 @@ const SurveyorDetailsCard = () => {
   const cards = [
     {
       label: "TOTAL_EKYC_APPLICATIONS",
-      count: progressData?.totalAssignments || 0,
+      count: progressData?.totalKnos || 0,
       color: "#0B2559",
       type: "today",
       icon: <FaUsers />,
