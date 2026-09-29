@@ -26,7 +26,21 @@ import React, { useEffect, useState } from "react";
 import { useHistory, useLocation, useRouteMatch } from "react-router-dom";
 import DisconnectTimeline from "../components/DisconnectTimeline";
 import { stringReplaceAll, createPayloadOfWSDisconnection, updatePayloadOfWSDisconnection, convertDateToEpoch } from "../utils";
-import { addDays, format } from "date-fns";
+import { addDays, addMonths, format } from "date-fns";
+
+const DISCONNECTION_REASONS = {
+  Permanent: [
+    { code: "PROPERTY_DEMOLITION_RECONSTRUCTION", i18nKey: "Property Demolition/Reconstruction" },
+    { code: "PERMANENT_RELOCATION_FROM_DELHI", i18nKey: "Permanent Relocation from Delhi" },
+    { code: "SHIFTING_TO_ALTERNATE_BORING_SOURCE", i18nKey: "Shifting to alternate boring source" },
+    { code: "PROPERTY_CLOSED_VACANT_LONG_TERM", i18nKey: "Property Closed/Vacant long term" },
+  ],
+  Temporary: [
+    { code: "TEMPORARY_RELOCATION_TRAVELLING_ABROAD", i18nKey: "Temporary relocation/Travelling abroad" },
+    { code: "MINOR_PROPERTY_RENOVATION_BUILDING_MAINTENANCE", i18nKey: "Minor property renovation/building maintenance" },
+    { code: "TEMPORARY_SHIFT_TO_ALTERNATIVE_WATER_SOURCE", i18nKey: "Temporary shift to alternative water source" },
+  ],
+};
 
 const WSDisconnectionForm = ({ t, config, onSelect, userType }) => {
   let validation = {};
@@ -54,6 +68,7 @@ const WSDisconnectionForm = ({ t, config, onSelect, userType }) => {
     endDate: applicationData.WSDisconnectionForm ? applicationData?.WSDisconnectionForm?.endDate || "" : "",
     reason: applicationData.WSDisconnectionForm ? applicationData.WSDisconnectionForm.reason : "",
     documents: applicationData.WSDisconnectionForm ? applicationData.WSDisconnectionForm.documents : [],
+    requestedPeriodMonths: applicationData.WSDisconnectionForm?.requestedPeriodMonths || 12,
   });
   const [documents, setDocuments] = useState(applicationData.WSDisconnectionForm ? applicationData.WSDisconnectionForm.documents : []);
   const [error, setError] = useState(null);
@@ -64,7 +79,6 @@ const WSDisconnectionForm = ({ t, config, onSelect, userType }) => {
   const [isEnableLoader, setIsEnableLoader] = useState(false);
 
   const { isMdmsLoading, data: mdmsData } = Digit.Hooks.ws.useMDMS(stateCode, "ws-services-masters", ["disconnectionType"]);
-  const { loading, data: disconnectionReason } = Digit.Hooks.ws.useMDMS(stateCode, "ws-services-masters", ["DisconnectionReason"]);
   const { isLoading: wsDocsLoading, data: wsDocs } = Digit.Hooks.ws.WSSearchMdmsTypes.useWSServicesMasters(stateCode, "DisconnectionDocuments");
   const { isLoading: slaLoading, data: slaData } = Digit.Hooks.ws.useDisconnectionWorkflow({ tenantId });
   const isReSubmit = window.location.href.includes("resubmit");
@@ -117,10 +131,10 @@ const WSDisconnectionForm = ({ t, config, onSelect, userType }) => {
     setDisconnectionTypeList(disconnectionTypes);
   }, [mdmsData]);
   useEffect(() => {
-    const disconnectionReasons = disconnectionReason?.["ws-services-masters"]?.DisconnectionReason || [];
-    disconnectionReasons?.forEach((data) => (data.i18nKey = `WS_DISCONNECTIONTYPE_${stringReplaceAll(data?.code?.toUpperCase(), " ", "_")}`));
-    setDisconnectionReasonList(disconnectionReasons);
-  }, [disconnectionReason]);
+    const selectedType = String(disconnectionData.type?.value?.code || "").toLowerCase();
+    const disconnectionType = selectedType === "temporary" ? "Temporary" : selectedType === "permanent" ? "Permanent" : "";
+    setDisconnectionReasonList(DISCONNECTION_REASONS[disconnectionType] || []);
+  }, [disconnectionData.type]);
 
   useEffect(() => {
     Digit.SessionStorage.set("WS_DISCONNECTION", { ...applicationData, WSDisconnectionForm: disconnectionData });
@@ -136,6 +150,13 @@ const WSDisconnectionForm = ({ t, config, onSelect, userType }) => {
   const filedChange = (val) => {
     const oldData = { ...disconnectionData };
     oldData[val.code] = val;
+    if (val.code === "type" && val.value?.code !== disconnectionData.type?.value?.code) {
+      oldData.reason = "";
+      if (String(val.value?.code || "").toLowerCase() === "temporary") {
+        oldData.date = oldData.date || format(addDays(new Date(), slaData?.slaDays || 0), "yyyy-MM-dd");
+        oldData.endDate = format(addMonths(new Date(oldData.date), oldData.requestedPeriodMonths || 12), "yyyy-MM-dd");
+      }
+    }
     setDisconnectionData(oldData);
   };
 
@@ -160,8 +181,8 @@ const WSDisconnectionForm = ({ t, config, onSelect, userType }) => {
         setError(null);
       }, 3000);
     } else if (
-      wsDocsLoading ||
-      documents.length < 2 ||
+      // wsDocsLoading ||
+      // documents.length < 2 ||
       disconnectionData?.reason?.value === "" ||
       disconnectionData?.reason === "" ||
       disconnectionData?.date === "" ||
@@ -278,7 +299,8 @@ const WSDisconnectionForm = ({ t, config, onSelect, userType }) => {
                 />
               </div>
             </LabelFieldPair>
-            <LabelFieldPair>
+          {disconnectionData.type?.value?.code !== "Temporary" && (
+  <LabelFieldPair>
               <CardLabel className="card-label-smaller">
                 {t("WS_DISCONNECTION_PROPOSED_DATE") + "*"}
                 <div className={`tooltip`} style={{ position: "absolute" }}>
@@ -299,36 +321,24 @@ const WSDisconnectionForm = ({ t, config, onSelect, userType }) => {
                 <DatePicker
                   date={disconnectionData?.date}
                   onChange={(date) => {
-                    setDisconnectionData({ ...disconnectionData, date: date });
+                    setDisconnectionData({ ...disconnectionData, date: date, endDate: disconnectionData.type?.value?.code === "Temporary" && date ? format(addMonths(new Date(date), disconnectionData.requestedPeriodMonths || 12), "yyyy-MM-dd") : disconnectionData.endDate });
                   }}
                 ></DatePicker>
               </div>
             </LabelFieldPair>
+            )}
             {disconnectionData.type?.value?.code === "Temporary" ? (
               <LabelFieldPair>
-                <CardLabel className="card-label-smaller">
-                  {t("WS_DISCONNECTION_PROPOSED_END_DATE") + "*"}
-                  <div className={`tooltip`} style={{ position: "absolute" }}>
-                    <InfoIcon />
-                    <span
-                      className="tooltiptext"
-                      style={{
-                        whiteSpace: Digit.Utils.browser.isMobile() ? "unset" : "nowrap",
-                        fontSize: "medium",
-                        width: Digit.Utils.browser.isMobile() ? "150px" : "unset",
-                      }}
-                    >
-                      {t("SHOULD_BE_DATE") + " " + " " + t("DAYS_OF_PROPOSED_DATE")}
-                    </span>
+                <div style={{ width: "100%" }}>
+                  <CardLabel className="card-label-smaller">REQUESTED PERIOD (IN MONTHS)</CardLabel>
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px", marginTop: "8px" }}>
+                    <TextInput type="number" min="1" max="24" value={disconnectionData.requestedPeriodMonths} onChange={(event) => { const months = Math.min(24, Math.max(1, Number(event.target.value))); setDisconnectionData({ ...disconnectionData, requestedPeriodMonths: months, endDate: disconnectionData.date ? format(addMonths(new Date(disconnectionData.date), months), "yyyy-MM-dd") : "" }); }} />
+                    <span style={{ fontWeight: 600, color: "#4f6380" }}>Months (Max 24 Months / 2 Years)</span>
                   </div>
-                </CardLabel>
-                <div className="field">
-                  <DatePicker
-                    date={disconnectionData?.endDate}
-                    onChange={(date) => {
-                      setDisconnectionData({ ...disconnectionData, endDate: date });
-                    }}
-                  ></DatePicker>
+                  <div style={{ marginTop: "12px", padding: "16px", border: "1px solid #f5c542", borderRadius: "16px", background: "#fffaf0", color: "#572b00", lineHeight: 1.5 }}>
+                    <strong>⚠️ DJB Regulatory Warning Alert:</strong>
+                    <div style={{ marginTop: "4px" }}>In case water connections remain disconnected beyond <strong>2 years (24 months)</strong>, the service line will be <strong>permanently disconnected</strong> from the main distribution lines, and re-opening will require standard new connection sanction fees.</div>
+                  </div>
                 </div>
               </LabelFieldPair>
             ) : (
@@ -371,7 +381,7 @@ const WSDisconnectionForm = ({ t, config, onSelect, userType }) => {
                       setError(false);
                     }, 3000);
                   } else {
-                    history.push(match.path.replace("application-form", "documents-upload"));
+                    history.push(match.path.replace("application-form", "check"));
                   }
                 }}
                 disabled={
@@ -502,9 +512,10 @@ const WSDisconnectionForm = ({ t, config, onSelect, userType }) => {
         <div style={sectionStyle}>
           <div style={headerFlexStyle}>
             <div style={numberBadgeStyle}>3</div>
-            <CardSectionHeader style={{ margin: 0 }}>{t("WS_DISCONNECTION_PROPOSED_DATE")}</CardSectionHeader>
+            <CardSectionHeader style={{ margin: 0 }}>{disconnectionData.type?.value?.code === "Temporary" ? "REQUESTED PERIOD (IN MONTHS)" : t("WS_DISCONNECTION_PROPOSED_DATE")}</CardSectionHeader>
           </div>
           <div style={{ paddingLeft: isMobileForm ? "0" : "42px" }}>
+{disconnectionData.type?.value?.code !== "Temporary" && (
             <div style={fieldStyle}>
               <h4 style={labelStyle}>
                 {t("WS_DISCONNECTION_PROPOSED_DATE")} *
@@ -516,23 +527,23 @@ const WSDisconnectionForm = ({ t, config, onSelect, userType }) => {
                 </div>
               </h4>
               <div style={inputWrapperStyle}>
-                <DatePicker date={disconnectionData?.date} onChange={(date) => setDisconnectionData({ ...disconnectionData, date: date })} />
+                <DatePicker date={disconnectionData?.date} onChange={(date) => setDisconnectionData({ ...disconnectionData, date: date, endDate: disconnectionData.type?.value?.code === "Temporary" && date ? format(addMonths(new Date(date), disconnectionData.requestedPeriodMonths || 12), "yyyy-MM-dd") : disconnectionData.endDate })} />
               </div>
             </div>
+          )}
 
             {disconnectionData.type?.value?.code === "Temporary" && (
               <div style={fieldStyle}>
-                <h4 style={labelStyle}>
-                  {t("WS_DISCONNECTION_PROPOSED_END_DATE")} *
-                  <div className="tooltip" style={{ marginLeft: "8px", position: "relative", top: "2px" }}>
-                    <InfoIcon />
-                    <span className="tooltiptext" style={{ whiteSpace: isMobileForm ? "unset" : "nowrap", fontSize: "medium", width: isMobileForm ? "200px" : "300px" }}>
-                      {t("SHOULD_BE_DATE") + " " + t("DAYS_OF_APPLICATION_END_DATE")}
-                    </span>
+                <div style={{ width: "100%" }}>
+                  <h4 style={labelStyle}>REQUESTED PERIOD (IN MONTHS)</h4>
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <TextInput type="number" min="1" max="24" value={disconnectionData.requestedPeriodMonths} onChange={(event) => { const months = Math.min(24, Math.max(1, Number(event.target.value))); setDisconnectionData({ ...disconnectionData, requestedPeriodMonths: months, endDate: disconnectionData.date ? format(addMonths(new Date(disconnectionData.date), months), "yyyy-MM-dd") : "" }); }} />
+                    <span style={{ fontWeight: 600, color: "#4f6380" }}>Months (Max 24 Months / 2 Years)</span>
                   </div>
-                </h4>
-                <div style={inputWrapperStyle}>
-                  <DatePicker date={disconnectionData?.endDate} onChange={(date) => setDisconnectionData({ ...disconnectionData, endDate: date })} />
+                  <div style={{ marginTop: "12px", padding: "16px", border: "1px solid #f5c542", borderRadius: "16px", background: "#fffaf0", color: "#572b00", lineHeight: 1.5 }}>
+                    <strong>⚠️ DJB Regulatory Warning Alert:</strong>
+                    <div style={{ marginTop: "4px" }}>In case water connections remain disconnected beyond <strong>2 years (24 months)</strong>, the service line will be <strong>permanently disconnected</strong> from the main distribution lines, and re-opening will require standard new connection sanction fees.</div>
+                  </div>
                 </div>
               </div>
             )}
@@ -566,7 +577,7 @@ const WSDisconnectionForm = ({ t, config, onSelect, userType }) => {
         </div>
 
         {/* 5. Documents */}
-        <div style={sectionStyle}>
+        {/* <div style={sectionStyle}>
           <div style={headerFlexStyle}>
             <div style={numberBadgeStyle}>5</div>
             <CardSectionHeader style={{ margin: 0 }}>{t("WS_DISCONNECTION_DOCUMENTS")} *</CardSectionHeader>
@@ -586,7 +597,7 @@ const WSDisconnectionForm = ({ t, config, onSelect, userType }) => {
               />
             ))}
           </div>
-        </div>
+        </div> */}
 
         {docError && (
           <Toast error={docError?.key === "error"} label={t(docError?.message)} warning={docError?.warning} onClose={() => setDocError(null)} />
@@ -601,8 +612,8 @@ const WSDisconnectionForm = ({ t, config, onSelect, userType }) => {
             label={t("ACTION_TEST_SUBMIT")}
             onSubmit={() => onSubmit(disconnectionData)}
             disabled={
-              wsDocsLoading ||
-              documents.length < 2 ||
+                // wsDocsLoading ||
+                // documents.length < 2 ||
               !disconnectionData?.reason?.value?.code || 
               !disconnectionData?.date || 
               !disconnectionData?.type?.value?.code ||

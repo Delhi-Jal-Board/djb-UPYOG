@@ -12,6 +12,7 @@ const WSExecuteDisconnection = () => {
   const serviceType = state?.serviceType || (applicationData?.applicationNo?.includes("WS") ? "WATER" : "SEWERAGE");
   const history = useHistory();
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const actionName = (action?.action || action || "execute disconnection").replace(/[ _-]+/g, " ").toLowerCase();
   const [payload, setPayload] = useState(null);
   const [isEnableLoader, setIsEnableLoader] = useState(false);
   const [showToast, setShowToast] = useState(null);
@@ -73,7 +74,7 @@ const WSExecuteDisconnection = () => {
           actionSaveOnSubmit={executeAction}
         >
           <div style={{ padding: "16px" }}>
-            <p style={{ fontSize: "16px" }}>Are you sure you want to execute disconnection?</p>
+            <p style={{ fontSize: "16px" }}>Are you sure you want to {actionName} ?</p>
           </div>
         </Modal>
       )}

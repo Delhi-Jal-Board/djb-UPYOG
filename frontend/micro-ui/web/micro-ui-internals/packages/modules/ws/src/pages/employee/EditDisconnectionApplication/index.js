@@ -37,8 +37,8 @@ const EditDisconnectionByConfig = () => {
 
   useEffect(() => {
     if (!isLoading && !isConfigLoading && newConfig && Array.isArray(newConfig)) {
-      // const config = newConfigLocal.find((conf) => conf.isDisonnectionEdit);
-      const config = newConfig.find((conf) => conf.isDisonnectionEdit);
+      //       const config = newConfigLocal.find((conf) => conf.isDisonnectionEdit);
+            const config = newConfigLocal.find((conf) => conf.isDisonnectionEdit);
       if (config) {
         config.head = "WS_WATER_SEWERAGE_DISCONNECTION_EDIT_LABEL";
         let bodyDetails = [];

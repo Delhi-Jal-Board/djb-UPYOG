@@ -284,6 +284,7 @@ function ApplicationDetailsContent({
   };
 
   const documentsDetailIndex = applicationDetails?.applicationDetails?.findIndex((detail) => detail?.additionalDetails?.documents);
+  const isDisconnectionExecuted = applicationData?.applicationStatus === "DISCONNECTION_EXECUTED" && applicationData?.applicationType?.includes("DISCONNECT");
 
   return (
     <Card className={"employeeCard-override"}>
@@ -539,8 +540,8 @@ function ApplicationDetailsContent({
           {detail?.additionalDetails?.subOccupancyTableDetails && (
             <SubOccupancyTable edcrDetails={detail?.additionalDetails} applicationData={applicationDetails?.applicationData} />
           )}
-          {detail?.additionalDetails?.documentsWithUrl && <DocumentsPreview documents={detail?.additionalDetails?.documentsWithUrl} />}
-          {detail?.additionalDetails?.documents && index === documentsDetailIndex && (
+          {!isDisconnectionExecuted && detail?.additionalDetails?.documentsWithUrl && <DocumentsPreview documents={detail?.additionalDetails?.documentsWithUrl} />}
+          {!isDisconnectionExecuted && detail?.additionalDetails?.documents && index === documentsDetailIndex && (
             <PropertyDocuments
               documents={detail?.additionalDetails?.documents}
               applicationStatus={
@@ -552,7 +553,7 @@ function ApplicationDetailsContent({
               }
             />
           )}
-          {detail?.additionalDetails?.documents &&
+          {!isDisconnectionExecuted && detail?.additionalDetails?.documents &&
             !applicationData?.applicationType?.includes("MUTATION") &&
             !businessService?.includes("MUTATION") &&
             [

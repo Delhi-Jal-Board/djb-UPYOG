@@ -121,6 +121,7 @@ const WSApplicationDetails = () => {
     }) || false;
 
   const applicationStatus = data?.WaterConnection?.[0]?.applicationStatus || data?.SewerageConnections?.[0]?.applicationStatus;
+  const isDisconnectionExecuted = applicationStatus === "DISCONNECTION_EXECUTED";
 
   const isPaid =
     applicationStatus &&
@@ -971,7 +972,7 @@ const WSApplicationDetails = () => {
                     <Row label={t("WS_EMPLOYEE_ID")} text={`${t(checkForNA(djbEmployee?.employeeId))}`} />
                     <Row label={t("WS_DATE_OF_RETIREMENT")} text={`${t(checkForNA(djbEmployee?.dor))}`} />
                     <Row label={t("WS_EMPLOYEE_DESIGNATION")} text={`${t(checkForNA(djbEmployee?.designation))}`} />
-                    {djbEmployee?.document && (
+                    {!isDisconnectionExecuted && djbEmployee?.document && (
                       <Row
                         label={t("WS_UPLOAD_EMPLOYEE_ID_DOC")}
                         text={
@@ -1051,7 +1052,9 @@ const WSApplicationDetails = () => {
                   </StatusTable>
                 </React.Fragment>
               )*/}
-              <CardHeader styles={{ fontSize: "28px" }}>{t("WS_COMMON_DOCUMENT_DETAILS")}</CardHeader>
+              {!isDisconnectionExecuted && (
+                <React.Fragment>
+                  <CardHeader styles={{ fontSize: "28px" }}>{t("WS_COMMON_DOCUMENT_DETAILS")}</CardHeader>
               {data?.WaterConnection?.[0]?.documents &&
                 data?.WaterConnection?.[0]?.documents
                   .reduce((acc, current) => {
@@ -1102,6 +1105,9 @@ const WSApplicationDetails = () => {
                       }
                     </div>
                   ))}
+
+                </React.Fragment>
+              )}
 
               {data?.WaterConnection?.[0]?.applicationStatus === "PENDING_FOR_PAYMENT" ||
               data?.WaterConnection?.[0]?.applicationStatus === "PENDING_FOR_FINAL_PAYMENT" ||

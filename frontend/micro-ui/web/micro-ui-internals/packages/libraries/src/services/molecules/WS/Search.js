@@ -3036,14 +3036,17 @@ export const WSSearch = {
       }
       : null;
 
+    const isDisconnectionApplication = wsApplicationType?.includes("DISCONNECT");
+    const filteredConnectionHolderDetails = isDisconnectionApplication
+      ? { ...connectionHolderDetails, values: connectionHolderDetails.values?.filter(({ title }) => !["WS_CONN_HOLDER_COMMON_FATHER_OR_HUSBAND_NAME", "WS_CONN_HOLDER_OWN_DETAIL_RELATION_LABEL", "WS_OWNER_SPECIAL_CATEGORY"].includes(title)) }
+      : connectionHolderDetails;
     details = [
       ...details,
       applicationHeaderDetails,
       propertyDetails,
-      connectionHolderDetails,
+      filteredConnectionHolderDetails,
       ...(djbEmployeeDetails ? [djbEmployeeDetails] : []),
-      plumberDetails,
-      documentDetails,
+      ...(isDisconnectionApplication ? [] : [plumberDetails, documentDetails]),
     ];
     wsDataDetails.serviceType = serviceDataType;
     //for unmasking of plumber mobilenumber in FI/DV edit disconnection

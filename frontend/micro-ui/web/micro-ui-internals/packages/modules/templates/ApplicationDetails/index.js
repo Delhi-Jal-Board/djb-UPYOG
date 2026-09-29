@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "react-query";
 
-import { Loader } from "@djb25/digit-ui-react-components";
+import { Loader, Modal } from "@djb25/digit-ui-react-components";
 
 import ActionModal from "./Modal";
 
@@ -29,6 +29,7 @@ const ApplicationDetails = (props) => {
   const [showModal, setShowModal] = useState(false);
   const [isEnableLoader, setIsEnableLoader] = useState(false);
   const [isWarningPop, setWarningPopUp] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
   const [approvalChecklist, setApprovalChecklist] = useState({});
 
   const {
@@ -154,7 +155,7 @@ const ApplicationDetails = (props) => {
     setWarningPopUp(false);
   };
 
-  const submitAction = async (data, nocData = false, isOBPS = {}) => {
+  const executeSubmitAction = async (data, nocData = false, isOBPS = {}) => {
     if (
       data?.Property?.workflow?.comment?.length == 0 ||
       data?.Licenses?.[0]?.comment?.length == 0 ||
@@ -241,6 +242,23 @@ const ApplicationDetails = (props) => {
     }
   };
 
+  const submitAction = async (data, nocData = false, isOBPS = {}) => {
+    if (moduleCode?.includes("WS")) {
+      setShowConfirmation({ data, nocData, isOBPS });
+      return;
+    }
+
+    return executeSubmitAction(data, nocData, isOBPS);
+  };
+
+  const actionName = selectedAction?.action?.replace(/[ _-]+/g, " ").toLowerCase() || "this action";
+
+  const confirmSubmitAction = () => {
+    const confirmationData = showConfirmation;
+    setShowConfirmation(false);
+    return executeSubmitAction(confirmationData.data, confirmationData.nocData, confirmationData.isOBPS);
+  };
+
   if (isLoading || isEnableLoader) {
     return <Loader />;
   }
@@ -284,6 +302,20 @@ const ApplicationDetails = (props) => {
               moduleCode={moduleCode}
               cardFormWrapperClassName={"modal-form"}
             />
+          ) : null}
+          {showConfirmation ? (
+            <Modal
+              headerBarMain={<h1 className="heading-m">Confirmation</h1>}
+              headerBarEnd={<div onClick={() => setShowConfirmation(false)} style={{ cursor: "pointer", fontSize: "16px", padding: "10px" }}>✕</div>}
+              actionCancelLabel="Cancel"
+              actionCancelOnSubmit={() => setShowConfirmation(false)}
+              actionSaveLabel="Yes"
+              actionSaveOnSubmit={confirmSubmitAction}
+            >
+              <div style={{ padding: "16px" }}>
+                <p style={{ fontSize: "16px" }}>Are you sure you want to {actionName} ?</p>
+              </div>
+            </Modal>
           ) : null}
           {isWarningPop ? (
             <ApplicationDetailsWarningPopup

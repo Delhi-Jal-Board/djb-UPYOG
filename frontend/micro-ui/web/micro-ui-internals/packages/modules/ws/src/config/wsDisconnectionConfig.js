@@ -3,15 +3,6 @@ export const newConfig = [
     head: "NEW_DISCONNECTION",
     body: [
       {
-        route: "docsrequired",
-        component: "WSDisconnectionDocsRequired",
-        key: "data",
-        type: "component",
-        withoutLabel: true,
-        // nextStep: "application-form"
-        nextStep: "k-number",
-      },
-      {
         route: "k-number",
         component: "WSDisconnectionKNumber",
         key: "WSDisconnectionKNumber",
@@ -33,17 +24,7 @@ export const newConfig = [
         key: "WSDisconnectionForm",
         type: "component",
         withoutLabel: true,
-        nextStep: "documents-upload",
-      },
-      {
-        route: "documents-upload",
-        component: "WSDisconnectionDocumentsForm",
-        key: "WSDisconnectionDocumentsForm",
-        type: "component",
-        isMandatory: true,
-        withoutLabel: true,
         nextStep: "check",
-        hideInEmployee: true,
       },
       {
         route: "check",
@@ -87,27 +68,6 @@ export const newConfig = [
           }
         ]
       },
-      {
-        head: "WS_COMMON_PLUMBER_DETAILS",
-        isDisonnectionEditByConfig: true,
-        body: [{
-          type: "component",
-          key: "plumberDetails",
-          component: "WSActivationPlumberDetails",
-          withoutLabel: true,
-        }]
-      },
-      {
-        head: "WS_COMMON_DOCS",
-        isDisonnectionEdit: true,
-        isDisonnectionEditByConfig: true,
-        body: [{
-          type: "component",
-          key: "DocumentsRequired",
-          component: "WSDocumentsEmployee",
-          withoutLabel: true
-        }]
-      }
     ]
   },
   {
@@ -119,17 +79,7 @@ export const newConfig = [
         key: "WSDisconnectionForm",
         type: "component",
         withoutLabel: true,
-        nextStep: "documents-upload",
-      },
-      {
-        route: "documents-upload",
-        component: "WSDisconnectionDocumentsForm",
-        key: "WSDisconnectionDocumentsForm",
-        type: "component",
-        isMandatory: true,
-        withoutLabel: true,
-        nextStep: "resubmit-check",
-        hideInEmployee: true,
+        nextStep: "check",
       },
       {
         route: "check",

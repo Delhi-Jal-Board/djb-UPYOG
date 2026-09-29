@@ -116,16 +116,16 @@ const FitterSandbox = ({ t, action, applicationData, submitAction, closeModal })
           </div>
           <div>
             <h2 style={{ fontSize: "16px", fontWeight: "700", color: "#3b1c1c", margin: 0, textTransform: "uppercase" }}>
-              FITTER SANDBOX MOBILE TERMINAL (DIGITAL VERIFICATION)
+             ENTER METER FITTER DETAILS
             </h2>
-            <p style={{ fontSize: "14px", color: "#6e5e5e", margin: "4px 0 0 0" }}>
+            {/* <p style={{ fontSize: "14px", color: "#6e5e5e", margin: "4px 0 0 0" }}>
               Simulate the physical field actions of Delhi Jal Board fitter {applicationData?.additionalDetails?.ownerName || "Amit Kumar"}.
-            </p>
+            </p> */}
           </div>
         </div>
-        <div style={{ backgroundColor: "#ffeded", color: "#d4351c", padding: "4px 12px", borderRadius: "4px", fontSize: "12px", fontWeight: "700" }}>
+        {/* <div style={{ backgroundColor: "#ffeded", color: "#d4351c", padding: "4px 12px", borderRadius: "4px", fontSize: "12px", fontWeight: "700" }}>
           FIELD SIMULATOR
-        </div>
+        </div> */}
       </div>
 
       {/* Cards Row */}

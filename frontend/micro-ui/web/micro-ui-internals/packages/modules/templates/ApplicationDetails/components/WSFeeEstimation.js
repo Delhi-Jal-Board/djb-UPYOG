@@ -62,6 +62,14 @@ const WSFeeEstimation = ({ wsAdditionalDetails, workflowDetails }) => {
   const [showToast, setShowToast] = useState(null);
   const [billDetails, setBillDetails] = useState(wsAdditionalDetails.additionalDetails.data ? wsAdditionalDetails.additionalDetails.data : {});
   const [values, setValues] = useState(wsAdditionalDetails.additionalDetails.values ? wsAdditionalDetails.additionalDetails.values : []);
+  const isDisconnectionExecuted = wsAdditionalDetails?.additionalDetails?.appDetails?.applicationStatus === "DISCONNECTION_EXECUTED";
+  const displayedValues = isDisconnectionExecuted ? values.filter((value) => value?.title === "WS_DISCONNECTION_FEE") : values;
+  const billRows = billDetails?.billDetails?.[0]?.billAccountDetails || billDetails?.taxHeadEstimates || [];
+  const disconnectionFee = billRows.find((row) => row?.taxHeadCode === "WS_DISCONNECTION_FEE");
+  const displayedTotalAmount = isDisconnectionExecuted
+    ? disconnectionFee?.amount ?? disconnectionFee?.estimateAmount ?? 0
+    : billDetails?.totalAmount;
+  const displayedIsPaid = isDisconnectionExecuted ? disconnectionFee?.status === "PAID" : isPaid;
 
   const stateCode = Digit.ULBService.getStateId();
   const { isMdmsLoading, data: mdmsRes } = Digit.Hooks.ws.useMDMS(stateCode, "BillingService", ["TaxHeadMaster"]);
@@ -214,7 +222,7 @@ const WSFeeEstimation = ({ wsAdditionalDetails, workflowDetails }) => {
         {values && (
           <StatusTable>
             <div>
-              {values?.map((value, index) => {
+              {displayedValues?.map((value, index) => {
                 return (
                   <Row className="border-none" key={`${value.title}`} label={`${t(`${value.title}`)}`} text={value?.value ? value?.value : ""} />
                 );
@@ -226,14 +234,14 @@ const WSFeeEstimation = ({ wsAdditionalDetails, workflowDetails }) => {
                 className="border-none"
                 key={`WS_COMMON_TOTAL_AMT`}
                 label={`${t(`WS_COMMON_TOTAL_AMT`)}`}
-                text={<span>&#8377;{billDetails?.totalAmount ? Number(billDetails?.totalAmount).toFixed(2) : "0.00"}</span>}
+                text={<span>&#8377;{displayedTotalAmount ? Number(displayedTotalAmount).toFixed(2) : "0.00"}</span>}
                 textStyle={{ fontSize: "24px", fontWeight: "700" }}
               />
               <Row
                 className="border-none"
                 key={`CS_INBOX_STATUS_FILTER`}
                 label={`${t(`CS_INBOX_STATUS_FILTER`)}`}
-                text={isPaid ? t("WS_COMMON_PAID_LABEL") : t("WS_COMMON_NOT_PAID")}
+                text={displayedIsPaid ? t("WS_COMMON_PAID_LABEL") : t("WS_COMMON_NOT_PAID")}
                 textStyle={!isPaid ? { color: "#D83A2F" } : { color: "#2E9E8F" }}
               />
             </div>

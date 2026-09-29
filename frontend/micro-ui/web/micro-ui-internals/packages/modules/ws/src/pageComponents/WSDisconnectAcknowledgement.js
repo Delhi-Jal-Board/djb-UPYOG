@@ -28,14 +28,13 @@ const WSDisconnectAcknowledgement = () => {
 
   const getPaymentUrl = () => {
     const appNo = disconnectionData?.DisconnectionResponse?.applicationNo;
-    const connNo = disconnectionData?.DisconnectionResponse?.connectionNo;
     const isWater = appNo?.includes("WS");
     const businessService = isWater ? "WS.DISCONNECTION" : "SW.DISCONNECTION";
-    const formattedConnNo = connNo ? connNo.split("/").join("+") : "";
+    const formattedApplicationNo = appNo ? appNo.split("/").join("+") : "";
     const tenantId = disconnectionData?.DisconnectionResponse?.tenantId;
     const ownerName = disconnectionData?.property?.owners?.map(o => o.name).join(",");
     
-    return `/digit-ui/citizen/payment/my-bills/${businessService}/${formattedConnNo}?workflow=WNS&tenantId=${tenantId}&ConsumerName=${ownerName}&isDisoconnectFlow=true&consumerCode=${appNo}`;
+    return `/digit-ui/citizen/payment/my-bills/${businessService}/${formattedApplicationNo}?workflow=WNS&tenantId=${tenantId}&ConsumerName=${ownerName}&isDisoconnectFlow=true&consumerCode=${appNo}`;
   };
 
 

@@ -47,6 +47,7 @@ const WSZROVerificationDetails = () => {
   const [toast, setToast] = useState(null);
   const [isSuccess, setIsSuccess] = useState(false);
   const [apiResponse, setApiResponse] = useState(null);
+  const [showConfirmation, setShowConfirmation] = useState(false);
 
   useEffect(() => {
     let timer;
@@ -59,6 +60,10 @@ const WSZROVerificationDetails = () => {
       if (timer) clearTimeout(timer);
     };
   }, [isSuccess, history]);
+
+  const requestActionConfirmation = () => {
+    setShowConfirmation(true);
+  };
 
   const caseDataFromState = location.state?.caseData;
   const searchParams = new URLSearchParams(location.search);
@@ -195,11 +200,29 @@ const WSZROVerificationDetails = () => {
           actionCancelLabel={t("CS_COMMON_CANCEL")}
           actionCancelOnSubmit={closeModal}
           actionSaveLabel={selectedAction === "VERIFY" ? t("WF_ZRO_VERIFY") : t("WF_ZRO_REJECT")}
-          actionSaveOnSubmit={submitAction}
+          actionSaveOnSubmit={requestActionConfirmation}
         >
           <div style={{ marginBottom: "16px" }}>
             <CardLabel>{t("WF_COMMON_COMMENTS")}</CardLabel>
             <TextArea name="comments" value={comments} onChange={(e) => setComments(e.target.value)} />
+          </div>
+        </Modal>
+      )}
+
+      {showConfirmation && (
+        <Modal
+          headerBarMain={<Heading label="Confirmation" />}
+          headerBarEnd={<CloseBtn onClick={() => setShowConfirmation(false)} />}
+          actionCancelLabel={t("CS_COMMON_CANCEL")}
+          actionCancelOnSubmit={() => setShowConfirmation(false)}
+          actionSaveLabel="Yes"
+          actionSaveOnSubmit={() => {
+            setShowConfirmation(false);
+            submitAction();
+          }}
+        >
+          <div style={{ padding: "16px" }}>
+            <p style={{ fontSize: "16px" }}>Are you sure you want to {selectedAction?.toLowerCase() || "this action"} ?</p>
           </div>
         </Modal>
       )}
