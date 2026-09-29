@@ -24,8 +24,9 @@ const WorkflowTimeline = ({ workflowDetails, hideTimeline, setHideTimeline }) =>
     return null;
   }
 
-  const getStatusClass = (index) => {
-    if (index === 0) return "current2";
+  const getStatusClass = (index, checkpoint) => {
+    const isTerminal = checkpoint?.state?.state === "CONNECTION_ACTIVATED" || checkpoint?.state?.applicationStatus === "CONNECTION_ACTIVATED" || checkpoint?.state?.status === "ACTIVE" || checkpoint?.state?.isTerminateState;
+    if (index === 0 && !isTerminal) return "current2";
     return "completed2";
   };
 
@@ -79,7 +80,7 @@ const WorkflowTimeline = ({ workflowDetails, hideTimeline, setHideTimeline }) =>
 
       <div className={hideTimeline ? "hidden-content" : "timeline-container2"}>
         {timeline.map((checkpoint, index) => {
-          const statusClass = getStatusClass(index);
+          const statusClass = getStatusClass(index, checkpoint);
           const showLine = index !== timeline.length - 1 && timeline.length > 1;
 
           const epochTime = checkpoint?.auditDetails?.lastModifiedTime || checkpoint?.auditDetails?.createdTime;
