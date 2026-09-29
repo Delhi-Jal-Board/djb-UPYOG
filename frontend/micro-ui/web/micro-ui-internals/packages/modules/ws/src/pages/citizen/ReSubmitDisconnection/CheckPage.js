@@ -1,12 +1,11 @@
 import {
   Card, CardHeader, CardSubHeader, CardText,
-  CitizenInfoLabel, LinkButton, Row, StatusTable, SubmitBar, EditIcon, Header, CardSectionHeader, Loader
+  CitizenInfoLabel, LinkButton, Row, StatusTable, SubmitBar, EditIcon, Header, Loader
 } from "@djb25/digit-ui-react-components";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory, useRouteMatch, Link } from "react-router-dom";
 import DisconnectTimeline from "../../../components/DisconnectTimeline";
-import WSDocument from "../../../pageComponents/WSDocument";
 import { convertDateToEpoch, convertEpochToDate, createPayloadOfWSReSubmitDisconnection, } from "../../../utils";
 
 const CheckPage = () => {
@@ -14,8 +13,7 @@ const CheckPage = () => {
   const history = useHistory();
   const match = useRouteMatch();
   const value = Digit.SessionStorage.get("WS_DISCONNECTION");
-  const [documents, setDocuments] = useState(value.WSDisconnectionForm.documents || []);
-  let routeLink = `/digit-ui/citizen/ws/resubmit-disconnect-application`;
+    let routeLink = `/digit-ui/citizen/ws/resubmit-disconnect-application`;
   if (window.location.href.includes("/resubmit"))
     routeLink = `/digit-ui/citizen/ws/resubmit-disconnect-application`
 
@@ -106,25 +104,6 @@ const CheckPage = () => {
           </Card>
 
           <Card style={{ paddingRight: "16px" }}>
-            <div style={{ display: "inline" }}>
-              <CardHeader styles={{ fontSize: "28px" }}>{t("WS_COMMON_DOCUMENT_DETAILS")}</CardHeader>
-              <LinkButton
-                label={<EditIcon style={{ marginTop: "-20px", float: "right", position: "relative", bottom: "32px" }} />}
-                style={{ width: "100px", display: "inline" }}
-                onClick={() => routeTo(`${routeLink}/documents-upload`)}
-              />
-            </div>
-            {documents && documents?.map((doc, index) => (
-              <div key={`doc-${index}`}>
-                {<div><CardSectionHeader>{t(doc?.documentType?.split('.').slice(0, 2).join('_'))}</CardSectionHeader>
-                  <StatusTable>
-                    {
-                      <WSDocument value={{ documents: value.WSDisconnectionForm }} Code={doc?.documentType} index={index} showFileName={true} />}
-                    {documents?.length != index + 1 ? <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} /> : null}
-                  </StatusTable>
-                </div>}
-              </div>
-            ))}
             <SubmitBar label={t("CS_COMMON_SUBMIT")} onSubmit={() => onSubmit(value?.WSDisconnectionForm)} />
           </Card>
         </div>

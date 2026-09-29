@@ -25,7 +25,7 @@ const WSDisconnection = () => {
   newConfig.filter((e) => e.head === "NEW_DISCONNECTION")?.forEach((obj) => {
     config = config.concat(obj.body.filter((a) => !a.hideInCitizen));
   });
-  config.indexRoute = "docsrequired";
+  config.indexRoute = "k-number";
 
   return (
     <Switch>
