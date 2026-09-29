@@ -44,6 +44,14 @@ const SurveyorDetailsCard = () => {
     }
   );
 
+  const userRoles = Digit.UserService.getUser()?.info?.roles;
+
+  const isSurveyor = userRoles?.some((role) => role.code === "EKYC_SURVEYOR");
+
+  const currentSurveyor = isSurveyor?progressData:progressData?.supervisorReport
+  ?.flatMap((supervisor) => supervisor?.surveyors || [])
+  ?.find((surveyor) => surveyor?.surveyorId === (surveyorId || ownerIds));
+
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize, setPageSize] = useState(20);
   const queryParams = {
@@ -75,28 +83,28 @@ const SurveyorDetailsCard = () => {
   const cards = [
     {
       label: "TOTAL_EKYC_APPLICATIONS",
-      count: progressData?.totalKnos || 0,
+      count: currentSurveyor?.totalKnos || 0,
       color: "#0B2559",
       type: "today",
       icon: <FaUsers />,
     },
     {
       label: "EKYC_SUBMITTED_TITLE",
-      count: progressData?.submittedKnos || 0,
+      count: currentSurveyor?.submittedKnos || 0,
       color: "#10B981",
       type: "month",
       icon: <FaCheckCircle />,
     },
     {
       label: "PENDING_APPLICATIONS",
-      count: progressData?.pendingKnos || 0,
+      count: currentSurveyor?.pendingKnos || 0,
       color: "#F59E0B",
       type: "pending",
       icon: <FaClock />,
     },
     {
       label: "OVERALL_PROGRESS",
-      count: `${progressData?.overallProgressPercent || 0}%`,
+      count: `${currentSurveyor?.overallProgressPercent || 0}%`,
       color: "#A855F7",
       type: "progress",
       icon: <FaChartLine />,
