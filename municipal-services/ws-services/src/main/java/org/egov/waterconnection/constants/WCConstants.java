@@ -343,6 +343,8 @@ public class WCConstants {
 
 	public static final String PENDING_APPROVAL_FOR_DISCONNECTION = "PENDING_APPROVAL_FOR_DISCONNECTION";
 
+	public static final String PENDING_APPROVAL_FOR_RECONNECTION = "PENDING_APPROVAL_FOR_RECONNECTION";
+
 	public static final String PENDING_FOR_DISCONNECTION_EXECUTION_STATUS_CODE= "PENDING_FOR_DISCONNECTION_EXECUTION";
 
 	public static final String DOCUMENT_ACCESS_AUDIT_MSG = "The documents for water connection application has been accessed";
