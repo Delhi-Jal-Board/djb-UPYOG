@@ -2,9 +2,6 @@ import React from "react";
 import { AppContainer, PrivateRoute, ModuleHeader, ArrowLeft, HomeIcon, LayoutWrapper } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { Switch, useLocation, useRouteMatch, Redirect, Route } from "react-router-dom";
-import AadhaarVerification from "../../components/AadhaarVerification";
-import PropertyInfo from "../../components/PropertyInfo";
-import MeterDetails from "../../components/MeterDetails";
 import Review from "../../components/Review";
 import Inbox from "./Inbox";
 import AssignEkyc from "../../components/AssignEkyc";
@@ -98,15 +95,6 @@ const CitizenApp = () => {
               </LayoutWrapper>
             )}
           />
-          <PrivateRoute
-            path={`${path}/aadhaar-verification`}
-            component={() => (
-              <LayoutWrapper layoutClass="normal">
-                <AadhaarVerification />
-              </LayoutWrapper>
-            )}
-          />
-
           {/* <PrivateRoute
           path={`${path}/address-details`}
           component={() => (
@@ -115,25 +103,6 @@ const CitizenApp = () => {
           </LayoutWrapper>
           )}
         /> */}
-
-          <PrivateRoute
-            path={`${path}/property-info`}
-            component={() => (
-              <LayoutWrapper layoutClass="normal">
-                <PropertyInfo />
-              </LayoutWrapper>
-            )}
-          />
-
-          <PrivateRoute
-            path={`${path}/meter-details`}
-            component={() => (
-              <LayoutWrapper layoutClass="normal">
-                <MeterDetails />
-              </LayoutWrapper>
-            )}
-          />
-
           <PrivateRoute
             path={`${path}/review`}
             component={() => (
