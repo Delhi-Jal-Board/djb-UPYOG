@@ -36,6 +36,8 @@ public class OtpService {
         otpRequest.validate();
         if (otpRequest.isRegistrationRequestType() || otpRequest.isLoginRequestType()) {
             sendOtpForUserRegistration(otpRequest);
+        } else if (otpRequest.isEkycRequestType()) {
+            sendOtpForEkyc(otpRequest);
         } else {
             sendOtpForPasswordReset(otpRequest);
         }
@@ -50,6 +52,11 @@ public class OtpService {
         else if (otpRequest.isLoginRequestType() && null == matchingUser)
             throw new UserNotExistingInSystemException();
 
+        final String otpNumber = otpRepository.fetchOtp(otpRequest);
+        otpSMSSender.send(otpRequest, otpNumber);
+    }
+
+    private void sendOtpForEkyc(OtpRequest otpRequest) {
         final String otpNumber = otpRepository.fetchOtp(otpRequest);
         otpSMSSender.send(otpRequest, otpNumber);
     }
