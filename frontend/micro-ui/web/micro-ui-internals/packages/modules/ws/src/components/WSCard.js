@@ -15,7 +15,7 @@ const WSCard = () => {
   sessionStorage.removeItem("Digit.WS_DISCONNECTION");
 
   const filterFormDefaultValues = {
-    businessService: ["NewWS1", "ModifyWSConnection", "DisconnectWSConnection", "mutationWSConnection"],
+    businessService: ["NewWS1", "ModifyWSConnection", "DisconnectWSConnection", "mutationWSConnection", "WSReconnection"],
     moduleName: "ws-services",
     locality: [],
     applicationStatus: [],
@@ -143,6 +143,22 @@ const WSCard = () => {
       {
         label: t("WS_DISCONNECTION"),
         link: `/digit-ui/employee/ws/new-disconnection`,
+        roles: [
+          "WS_CEMP",
+          "WS_APPROVER",
+          "WS_FIELD_INSPECTOR",
+          "WS_DOC_VERIFIER",
+          "WS_CLERK",
+          "SW_CEMP",
+          "SW_APPROVER",
+          "SW_FIELD_INSPECTOR",
+          "SW_DOC_VERIFIER",
+          "SW_CLERK",
+        ],
+      },
+      {
+        label: t("WS_RECONNECTION"),
+        link: `/digit-ui/employee/ws/new-restoration`,
         roles: [
           "WS_CEMP",
           "WS_APPROVER",

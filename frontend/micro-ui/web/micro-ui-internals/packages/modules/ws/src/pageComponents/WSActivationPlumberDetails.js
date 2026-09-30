@@ -149,7 +149,7 @@ const PlumberDetails = (_props) => {
   return (
     <React.Fragment>
       <LabelFieldPair>
-        <CardLabel>{`${t("WS_ADDN_DETAILS_PLUMBER_PROVIDED_BY")}*`}</CardLabel>
+        <CardLabel>{t("WS_ADDN_DETAILS_PLUMBER_PROVIDED_BY")} <span style={{ color: "red" }}>*</span></CardLabel>
         <Controller
           control={control}
           name={"detailsProvidedBy"}
@@ -192,7 +192,7 @@ const PlumberDetails = (_props) => {
       {!plumberDetail?.detailsProvidedBy?.code || plumberDetail?.detailsProvidedBy?.code == "ULB" ? (
         <React.Fragment>
           <LabelFieldPair>
-            <CardLabel>{`${t("WS_PLIMBER_LICENSE_NO_LABEL")}*`}</CardLabel>
+            <CardLabel>{t("WS_PLIMBER_LICENSE_NO_LABEL")} <span style={{ color: "red" }}>*</span></CardLabel>
             <div className="field">
               <Controller
                 control={control}
@@ -224,7 +224,7 @@ const PlumberDetails = (_props) => {
             ) : null}
           </LabelFieldPair>
           <LabelFieldPair>
-            <CardLabel>{`${t("WS_ADDN_DETAILS_PLUMBER_NAME_LABEL")}*`}</CardLabel>
+            <CardLabel>{t("WS_ADDN_DETAILS_PLUMBER_NAME_LABEL")} <span style={{ color: "red" }}>*</span></CardLabel>
             <div className="field">
               <Controller
                 control={control}
@@ -256,7 +256,7 @@ const PlumberDetails = (_props) => {
             ) : null}
           </LabelFieldPair>
           <LabelFieldPair>
-            <CardLabel>{`${t("WS_PLUMBER_MOBILE_NO_LABEL")}*`}</CardLabel>
+            <CardLabel>{t("WS_PLUMBER_MOBILE_NO_LABEL")} <span style={{ color: "red" }}>*</span></CardLabel>
             <div className="field">
               <Controller
                 control={control}

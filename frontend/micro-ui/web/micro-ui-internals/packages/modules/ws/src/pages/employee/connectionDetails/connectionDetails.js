@@ -197,9 +197,10 @@ const GetConnectionDetails = () => {
         label: "WORKFLOW_IN_PROGRESS",
       });
     } else {
-      if (billData[0]?.status === "ACTIVE" || applicationDetails?.fetchBillsData?.length <= 0 || due === "0") {
+      if (billData[0]?.status === "ACTIVE" || applicationDetails?.fetchBillsData?.length <= 0 || due === "0" || due == "0" || due < 0) {
         Digit.SessionStorage.set("WS_DISCONNECTION", applicationDetails);
-        history.push(`${pathname}`);
+        const connectionNumber = applicationDetails?.applicationData?.connectionNo || applicationNumber;
+        history.push(`${pathname}?from=connection-details&connectionNumber=${encodeURIComponent(connectionNumber)}`);
       } else {
         setshowModal(true);
       }
@@ -212,7 +213,7 @@ const GetConnectionDetails = () => {
       getBillAmendmentButton();
     } else if (action === "DISCONNECTION_BUTTON") {
       getDisconnectionButton();
-    } else if (action === "RESTORATION_BUTTON") {
+    } else if (action === "RESTORATION_BUTTON" || action === "RECONNECTION_BUTTON") {
       getRestorationButton();
     }
   }
@@ -220,6 +221,12 @@ const GetConnectionDetails = () => {
   //all options needs to be shown
   //const showAction = due !== "0" ? actionConfig : actionConfig.filter((item) => item !== "BILL_AMENDMENT_BUTTON");
   const checkApplicationStatusForDisconnection = applicationDetails?.applicationData?.status === "Active" ? true : false;
+  const isDisconnectedOrInactive =
+    !checkApplicationStatus ||
+    applicationDetails?.applicationData?.status?.toLowerCase() === "inactive" ||
+    applicationDetails?.applicationData?.applicationStatus === "DISCONNECTION_EXECUTED" ||
+    applicationDetails?.isDisconnectionDone ||
+    applicationDetails?.applicationData?.isDisconnectionTemporary;
   const showAction = checkApplicationStatusForDisconnection ? actionConfig : actionConfig.filter((item) => item !== "DISCONNECTION_BUTTON");
   const showActionRestoration = ["RESTORATION_BUTTON"];
 
@@ -318,9 +325,7 @@ const GetConnectionDetails = () => {
 
             <SubmitBar ref={actionMenuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
           </ActionBar>
-        ) : applicationDetails?.applicationData?.isDisconnectionTemporary &&
-          applicationDetails?.applicationData?.status !== "Active" &&
-          applicationDetails?.applicationData?.applicationStatus == "DISCONNECTION_EXECUTED" ? (
+        ) : isDisconnectedOrInactive ? (
           <ActionBar>
             {displayMenu ? <Menu options={showActionRestoration} localeKeyPrefix={"WS"} t={t} onSelect={onActionSelect} /> : null}
 

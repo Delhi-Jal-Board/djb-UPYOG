@@ -20,8 +20,8 @@ const WSInbox = ({ parentRoute }) => {
   };
   const filterFormDefaultValues = {
     businessService: checkPathName
-      ? ["NewWS1", "ModifyWSConnection", "DisconnectWSConnection", "mutationWSConnection"]
-      : ["NewSW1", "ModifySWConnection", "DisconnectSWConnection"],
+      ? ["NewWS1", "ModifyWSConnection", "DisconnectWSConnection", "mutationWSConnection", "WSReconnection"]
+      : ["NewSW1", "ModifySWConnection", "DisconnectSWConnection", "SWReconnection"],
     moduleName: checkPathName ? "ws-services" : "sw-services",
     locality: [],
     assignee: "ASSIGNED_TO_ALL",
