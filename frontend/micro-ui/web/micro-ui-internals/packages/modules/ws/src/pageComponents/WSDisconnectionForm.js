@@ -25,8 +25,19 @@ import {
 import React, { useEffect, useState } from "react";
 import { useHistory, useLocation, useRouteMatch } from "react-router-dom";
 import DisconnectTimeline from "../components/DisconnectTimeline";
-import { stringReplaceAll, createPayloadOfWSDisconnection, updatePayloadOfWSDisconnection, convertDateToEpoch } from "../utils";
+import { stringReplaceAll, createPayloadOfWSDisconnection, updatePayloadOfWSDisconnection } from "../utils";
 import { addDays, addMonths, format } from "date-fns";
+
+const INVALID_REQUESTED_PERIOD_MESSAGE = "Requested period must be between 1 and 24 months.";
+
+const parseFormDate = (date) => {
+  if (typeof date !== "string") return null;
+  const dateParts = date.split("-");
+  if (dateParts.length !== 3 || dateParts[0].length !== 4 || dateParts[1].length !== 2 || dateParts[2].length !== 2 || dateParts.some((part) => !Number.isInteger(Number(part)))) return null;
+  const [year, month, day] = date.split("-").map(Number);
+  const parsedDate = new Date(Date.UTC(year, month - 1, day));
+  return parsedDate.getUTCFullYear() === year && parsedDate.getUTCMonth() === month - 1 && parsedDate.getUTCDate() === day ? parsedDate.getTime() : null;
+};
 
 const DISCONNECTION_REASONS = {
   Permanent: [
@@ -114,6 +125,23 @@ const WSDisconnectionForm = ({ t, config, onSelect, userType }) => {
     mutate: sewerageUpdateMutation,
   } = Digit.Hooks.ws.useWSApplicationActions("SEWERAGE");
 
+  const getValidationError = (data) => {
+    const type = data?.type?.value?.code;
+    const requestedPeriod = Number(data?.requestedPeriodMonths);
+    const proposedDate = format(addDays(new Date(), slaData?.slaDays || 0), "yyyy-MM-dd");
+    const dateEpoch = parseFormDate(data?.date);
+    const proposedDateEpoch = parseFormDate(proposedDate);
+
+    if (!type || !data?.reason?.value?.code) return { warning: true, message: "PLEASE_FILL_MANDATORY_DETAILS" };
+    if (type === "Temporary" && (!Number.isInteger(requestedPeriod) || requestedPeriod < 1 || requestedPeriod > 24)) {
+      return { key: "error", message: INVALID_REQUESTED_PERIOD_MESSAGE };
+    }
+    if (type === "Permanent" && (!data?.date || !Number.isFinite(dateEpoch) || !Number.isFinite(proposedDateEpoch) || dateEpoch < proposedDateEpoch)) {
+      return { key: "error", message: "PROPOSED_DISCONNECTION_INVALID_DATE" };
+    }
+    return null;
+  };
+
   const closeToastOfError = () => {
     setError(null);
   };
@@ -152,46 +180,23 @@ const WSDisconnectionForm = ({ t, config, onSelect, userType }) => {
     oldData[val.code] = val;
     if (val.code === "type" && val.value?.code !== disconnectionData.type?.value?.code) {
       oldData.reason = "";
+      oldData.requestedPeriodMonths = 12;
       if (String(val.value?.code || "").toLowerCase() === "temporary") {
-        oldData.date = oldData.date || format(addDays(new Date(), slaData?.slaDays || 0), "yyyy-MM-dd");
-        oldData.endDate = format(addMonths(new Date(oldData.date), oldData.requestedPeriodMonths || 12), "yyyy-MM-dd");
+        oldData.date = format(addDays(new Date(), slaData?.slaDays || 0), "yyyy-MM-dd");
+        oldData.endDate = format(addMonths(new Date(oldData.date), oldData.requestedPeriodMonths), "yyyy-MM-dd");
+      } else {
+        oldData.date = "";
+        oldData.endDate = "";
       }
     }
     setDisconnectionData(oldData);
   };
 
   const onSubmit = async (data) => {
-    const appDate = new Date();
-    const slaDays = slaData?.slaDays || 0;
-    const proposedDate = format(addDays(appDate, slaDays), "yyyy-MM-dd").toString();
-
-    // Guard: date must be selected and must be a valid yyyy-MM-dd string
-    const selectedDateEpoch = data?.date ? convertDateToEpoch(data.date) : null;
-    const proposedDateEpoch = convertDateToEpoch(proposedDate);
-    const selectedDateIsInvalid = !data?.date || typeof selectedDateEpoch !== "number" || selectedDateEpoch < proposedDateEpoch;
-
-    if (selectedDateIsInvalid) {
-      setError({ key: "error", message: "PROPOSED_DISCONNECTION_INVALID_DATE" });
-      setTimeout(() => {
-        setError(null);
-      }, 3000);
-    } else if (data?.type?.value?.code === "Temporary" && convertDateToEpoch(data?.endDate) <= convertDateToEpoch(data?.date)) {
-      setError({ key: "error", message: "PROPOSED_DISCONNECTION_INVALID_END_DATE" });
-      setTimeout(() => {
-        setError(null);
-      }, 3000);
-    } else if (
-      // wsDocsLoading ||
-      // documents.length < 2 ||
-      disconnectionData?.reason?.value === "" ||
-      disconnectionData?.reason === "" ||
-      disconnectionData?.date === "" ||
-      disconnectionData?.type === ""
-    ) {
-      setError({ warning: true, message: "PLEASE_FILL_MANDATORY_DETAILS" });
-      setTimeout(() => {
-        setError(null);
-      }, 3000);
+    const validationError = getValidationError(data);
+    if (validationError) {
+      setError(validationError);
+      setTimeout(() => setError(null), 3000);
     } else {
       const payload = await createPayloadOfWSDisconnection(data, applicationData, serviceType);
       if (payload?.WaterConnection?.water) {
@@ -332,8 +337,8 @@ const WSDisconnectionForm = ({ t, config, onSelect, userType }) => {
                 <div style={{ width: "100%" }}>
                   <CardLabel className="card-label-smaller">REQUESTED PERIOD (IN MONTHS)</CardLabel>
                   <div style={{ display: "flex", alignItems: "center", gap: "10px", marginTop: "8px" }}>
-                    <TextInput type="number" min="1" max="24" value={disconnectionData.requestedPeriodMonths} onChange={(event) => { const months = Math.min(24, Math.max(1, Number(event.target.value))); setDisconnectionData({ ...disconnectionData, requestedPeriodMonths: months, endDate: disconnectionData.date ? format(addMonths(new Date(disconnectionData.date), months), "yyyy-MM-dd") : "" }); }} />
-                    <span style={{ fontWeight: 600, color: "#4f6380" }}>Months (Max 24 Months / 2 Years)</span>
+                    <TextInput type="number" value={disconnectionData.requestedPeriodMonths} onChange={(event) => { const months = event.target.value; setDisconnectionData({ ...disconnectionData, requestedPeriodMonths: months, endDate: disconnectionData.date && Number(months) > 0 ? format(addMonths(new Date(disconnectionData.date), Number(months)), "yyyy-MM-dd") : "" }); }} />
+                    <span style={{ fontWeight: 600, color: "#4f6380" }}>Months</span>
                   </div>
                   <div style={{ marginTop: "12px", padding: "16px", border: "1px solid #f5c542", borderRadius: "16px", background: "#fffaf0", color: "#572b00", lineHeight: 1.5 }}>
                     <strong>⚠️ DJB Regulatory Warning Alert:</strong>
@@ -352,6 +357,7 @@ const WSDisconnectionForm = ({ t, config, onSelect, userType }) => {
                   isMandatory={false}
                   optionKey="i18nKey"
                   t={t}
+                  key={disconnectionData.type?.value?.code || "disconnection-type"}
                   name={"reason"}
                   value={disconnectionData.reason?.value?.code}
                   selectedOption={disconnectionData.reason?.value}
@@ -364,34 +370,14 @@ const WSDisconnectionForm = ({ t, config, onSelect, userType }) => {
               <SubmitBar
                 label={t("CS_COMMON_NEXT")}
                 onSubmit={() => {
-                  const appDate = new Date();
-                  const proposedDate = format(addDays(appDate, slaData?.slaDays), "yyyy-MM-dd").toString();
-                  if (convertDateToEpoch(disconnectionData?.date) < convertDateToEpoch(proposedDate)) {
-                    setError({ key: "error", message: "PROPOSED_DISCONNECTION_INVALID_DATE" });
-                    setTimeout(() => {
-                      setError(false);
-                    }, 3000);
-                  } else if (
-                    disconnectionData?.type?.value?.code == "Temporary" &&
-                    parseInt(convertDateToEpoch(disconnectionData.endDate)) <= parseInt(convertDateToEpoch(disconnectionData?.date))
-                  ) {
-                    console.log("Temporary connection");
-                    setError({ key: "error", message: "PROPOSED_DISCONNECTION_INVALID_END_DATE" });
-                    setTimeout(() => {
-                      setError(false);
-                    }, 3000);
+                  const validationError = getValidationError(disconnectionData);
+                  if (validationError) {
+                    setError(validationError);
+                    setTimeout(() => setError(null), 3000);
                   } else {
                     history.push(match.path.replace("application-form", "check"));
                   }
                 }}
-                disabled={
-                  disconnectionData?.reason?.value === "" ||
-                  disconnectionData?.reason === "" ||
-                  disconnectionData?.date === "" ||
-                  disconnectionData?.type === ""
-                    ? true
-                    : false
-                }
               />
             </div>
             {error && <Toast error={error?.key === "error" ? true : false} label={t(error?.message)} onClose={() => setError(null)} />}
@@ -537,8 +523,8 @@ const WSDisconnectionForm = ({ t, config, onSelect, userType }) => {
                 <div style={{ width: "100%" }}>
                   <h4 style={labelStyle}>REQUESTED PERIOD (IN MONTHS)</h4>
                   <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                    <TextInput type="number" min="1" max="24" value={disconnectionData.requestedPeriodMonths} onChange={(event) => { const months = Math.min(24, Math.max(1, Number(event.target.value))); setDisconnectionData({ ...disconnectionData, requestedPeriodMonths: months, endDate: disconnectionData.date ? format(addMonths(new Date(disconnectionData.date), months), "yyyy-MM-dd") : "" }); }} />
-                    <span style={{ fontWeight: 600, color: "#4f6380" }}>Months (Max 24 Months / 2 Years)</span>
+                    <TextInput type="number" value={disconnectionData.requestedPeriodMonths} onChange={(event) => { const months = event.target.value; setDisconnectionData({ ...disconnectionData, requestedPeriodMonths: months, endDate: disconnectionData.date && Number(months) > 0 ? format(addMonths(new Date(disconnectionData.date), Number(months)), "yyyy-MM-dd") : "" }); }} />
+                    <span style={{ fontWeight: 600, color: "#4f6380" }}>Months</span>
                   </div>
                   <div style={{ marginTop: "12px", padding: "16px", border: "1px solid #f5c542", borderRadius: "16px", background: "#fffaf0", color: "#572b00", lineHeight: 1.5 }}>
                     <strong>⚠️ DJB Regulatory Warning Alert:</strong>
@@ -565,6 +551,7 @@ const WSDisconnectionForm = ({ t, config, onSelect, userType }) => {
                   isMandatory={false}
                   optionKey="i18nKey"
                   t={t}
+                  key={disconnectionData.type?.value?.code || "disconnection-type"}
                   name="reason"
                   value={disconnectionData.reason?.value?.code}
                   selectedOption={disconnectionData.reason?.value}
@@ -611,14 +598,6 @@ const WSDisconnectionForm = ({ t, config, onSelect, userType }) => {
           <SubmitBar
             label={t("ACTION_TEST_SUBMIT")}
             onSubmit={() => onSubmit(disconnectionData)}
-            disabled={
-                // wsDocsLoading ||
-                // documents.length < 2 ||
-              !disconnectionData?.reason?.value?.code || 
-              !disconnectionData?.date || 
-              !disconnectionData?.type?.value?.code ||
-              (disconnectionData?.type?.value?.code === "Temporary" && !disconnectionData?.endDate)
-            }
             style={{ margin: "10px 10px 0px 0px" }}
           />
         </ActionBar>

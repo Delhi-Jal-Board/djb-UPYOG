@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { Card, CardText, TextInput, Toast } from "@djb25/digit-ui-react-components";
 import { useHistory, useLocation, useRouteMatch } from "react-router-dom";
 
-const WSDisconnectionKNumber = ({ userType }) => {
+const WSDisconnectionKNumber = ({ userType, flow = "disconnection" }) => {
   const history = useHistory();
   const location = useLocation();
   const match = useRouteMatch();
@@ -16,13 +16,19 @@ const WSDisconnectionKNumber = ({ userType }) => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [showToast, setShowToast] = useState(null);
+  const searchInProgress = useRef(false);
 
+  const isReconnection = flow === "reconnection";
   const isMobileView = window.innerWidth < 768;
 
   const handleProceed = async () => {
+    if (searchInProgress.current) return;
+    searchInProgress.current = true;
+
     const connectionNumber = kNumber || connectionNumberFromQuery || stored?.applicationData?.connectionNo || stored?.connectionNo || "";
     const trimmed = connectionNumber.trim();
     if (!trimmed) {
+      searchInProgress.current = false;
       setShowToast({ key: "warning", message: "Please enter K Number / Connection ID" });
       return;
     }
@@ -32,21 +38,28 @@ const WSDisconnectionKNumber = ({ userType }) => {
       const tenantId = Digit.ULBService.getCurrentTenantId() || "dl";
       const params = { connectionNumber: trimmed, searchType: "CONNECTION", isConnectionSearch: true };
 
+      const isEligibleConnection = (candidate) => {
+        if (isReconnection) {
+          return ["DISCONNECTION_EXECUTED", "CONNECTION_DISCONNECTED"].includes(candidate?.applicationStatus) || candidate?.isdisconnection === true;
+        }
+        return ["CONNECTION_ACTIVATED", "ACTIVE", "Active"].includes(candidate?.applicationStatus) || ["ACTIVE", "Active"].includes(candidate?.status);
+      };
+
       let detectedServiceType = "WATER";
       const wsResponse = await Digit.WSService.search({ tenantId, filters: params, businessService: "WS" }).catch(() => null);
       const waterResponse = wsResponse?.data || wsResponse;
-      let connection = waterResponse?.WaterConnection?.find(c => c.applicationStatus === "CONNECTION_ACTIVATED");
+      let connection = waterResponse?.WaterConnection?.find(isEligibleConnection) || (!isReconnection ? waterResponse?.WaterConnection?.[0] : null);
 
       if (!connection) {
         const swResponse = await Digit.WSService.search({ tenantId, filters: params, businessService: "SW" }).catch(() => null);
         const sewerageResponse = swResponse?.data || swResponse;
-        connection = sewerageResponse?.SewerageConnections?.find(c => c.applicationStatus === "CONNECTION_ACTIVATED");
+        connection = sewerageResponse?.SewerageConnections?.find(isEligibleConnection) || (!isReconnection ? sewerageResponse?.SewerageConnections?.[0] : null);
         if (connection) detectedServiceType = "SEWERAGE";
       }
 
       if (!connection) {
         setIsLoading(false);
-        setShowToast({ key: "error", message: "Active connection not found for the given K Number" });
+        setShowToast({ key: "error", message: isReconnection ? "Disconnected connection not found for the given K Number" : "Active connection not found for the given K Number" });
         return;
       }
 
@@ -74,7 +87,7 @@ const WSDisconnectionKNumber = ({ userType }) => {
           mobileNumber: fetchedMobileNumber,
           tenantId: "dl",
           type: "register",
-          userType: "EMPLOYEE"
+          userType: Digit.UserService.getType().toUpperCase()
         }
       };
       
@@ -97,6 +110,8 @@ const WSDisconnectionKNumber = ({ userType }) => {
     } catch (err) {
       setIsLoading(false);
       setShowToast({ key: "error", message: err?.response?.data?.Errors?.[0]?.message || "Failed to search connection" });
+    } finally {
+      searchInProgress.current = false;
     }
   };
 
@@ -119,7 +134,7 @@ const WSDisconnectionKNumber = ({ userType }) => {
         </div>
 
         <CardText style={{ fontSize: isMobileView ? "13px" : "14px", marginBottom: "20px", color: "#6C6C6C" }}>
-          Please enter your K Number to verify and proceed with the disconnection application.
+          Please enter your K Number to verify and proceed with the {isReconnection ? "reconnection" : "disconnection"} application.
         </CardText>
 
         {/* Input Panel */}

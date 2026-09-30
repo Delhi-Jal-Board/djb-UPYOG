@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "react-query";
 import { useRouteMatch, useLocation, useHistory, Switch, Route, Redirect } from "react-router-dom";
@@ -26,6 +26,50 @@ const ReSubmitDisconnectionApplication = () => {
     config = config.concat(obj.body.filter((a) => !a.hideInCitizen));
   });
   config.indexRoute = "application-form";
+
+  const [isSearchComplete, setIsSearchComplete] = useState(false);
+  const searchStarted = useRef(false);
+
+  useEffect(() => {
+    if (searchStarted.current) return;
+    searchStarted.current = true;
+
+    const refreshConnectionData = async () => {
+      const storedData = Digit.SessionStorage.get("WS_DISCONNECTION") || {};
+      const storedConnection = storedData?.applicationData || {};
+      const connectionNumber = storedConnection?.connectionNo || storedData?.connectionNo;
+      if (!connectionNumber) {
+        setIsSearchComplete(true);
+        return;
+      }
+
+      const serviceType = storedData?.serviceType || (storedConnection?.sewerage ? "SEWERAGE" : "WATER");
+      const businessService = serviceType === "SEWERAGE" ? "SW" : "WS";
+      try {
+        const response = await Digit.WSService.search({
+          tenantId: storedConnection?.tenantId || Digit.ULBService.getCurrentTenantId(),
+          filters: { connectionNumber, searchType: "CONNECTION", isConnectionSearch: true },
+          businessService,
+        });
+        const result = response?.data || response;
+        const freshConnection = serviceType === "SEWERAGE" ? result?.SewerageConnections?.[0] : result?.WaterConnection?.[0];
+        if (freshConnection) {
+          Digit.SessionStorage.set("WS_DISCONNECTION", {
+            ...storedData,
+            serviceType,
+            connectionNo: freshConnection?.connectionNo || connectionNumber,
+            applicationData: { ...storedConnection, ...freshConnection },
+          });
+        }
+      } finally {
+        setIsSearchComplete(true);
+      }
+    };
+
+    refreshConnectionData().catch(() => setIsSearchComplete(true));
+  }, []);
+
+  if (!isSearchComplete) return null;
 
   return (
     <Switch>

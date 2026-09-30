@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Card, TextInput, Toast } from "@djb25/digit-ui-react-components";
 import { useHistory, useLocation, useRouteMatch } from "react-router-dom";
 
-const WSDisconnectionConsumerDetails = ({ userType }) => {
+const WSDisconnectionConsumerDetails = ({ userType, flow = "disconnection" }) => {
   const history = useHistory();
   const location = useLocation();
   const match = useRouteMatch();
@@ -13,6 +13,7 @@ const WSDisconnectionConsumerDetails = ({ userType }) => {
   const applicationData = Digit.SessionStorage.get("WS_DISCONNECTION") || {};
   const connection = location.state?.connection || applicationData?.applicationData || {};
 
+  const isReconnection = flow === "reconnection";
   const isMobileView = window.innerWidth < 768;
 
   // ---- Masking helpers ----
@@ -91,7 +92,7 @@ const WSDisconnectionConsumerDetails = ({ userType }) => {
       });
       setIsLoading(false);
       // Proceed to the application form
-      history.push(match.path.replace("consumer-details", "application-form"), { connection });
+      history.push(match.path.replace("consumer-details", isReconnection ? "new-restoration" : "application-form"), { connection });
     } catch (err) {
       setIsLoading(false);
       setShowToast({ key: "error", message: err?.response?.data?.Errors?.[0]?.message || err.message || "Failed to verify OTP" });
@@ -123,7 +124,7 @@ const WSDisconnectionConsumerDetails = ({ userType }) => {
         }}>
           <span style={{ fontSize: "18px", flexShrink: 0 }}>ℹ️</span>
           <span style={{ fontWeight: "500", fontSize: isMobileView ? "12px" : "13px", lineHeight: "1.5" }}>
-            Please verify the connection details below. The OTP has been sent to the registered mobile number on this connection.
+            Please verify the {isReconnection ? "disconnected" : "connection"} details below. The OTP has been sent to the registered mobile number on this connection.
           </span>
         </div>
 

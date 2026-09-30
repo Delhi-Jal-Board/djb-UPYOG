@@ -869,8 +869,8 @@ export const createPayloadOfWSDisconnection = async (data, storeData, service) =
       dateEffectiveFrom: convertDateToEpoch(data?.date),
       isdisconnection: true,
       isDisconnectionTemporary: data?.type?.value?.code === "Temporary" || data?.type?.value?.code === "TEMPORARY" ? true : false,
-      disconnectionReason: data?.reason.value?.code,
-      documents: data?.documents,
+      disconnectionReason: data?.reason?.value?.code || data?.reason?.value || data?.reason?.code || data?.reason || storeData?.applicationData?.disconnectionReason,
+      documents: data?.documents || storeData?.applicationData?.documents,
       water: true,
       sewerage: false,
       proposedTaps: storeData?.applicationData?.proposedTaps && Number(storeData?.applicationData?.proposedTaps),
@@ -901,8 +901,8 @@ export const createPayloadOfWSDisconnection = async (data, storeData, service) =
 
   if (storeData?.applicationData?.connectionType) {
     if (storeData?.applicationData?.meterInstallationDate)
-      wsPayload.WaterConnection.meterInstallationDate = storeData.applicationData.meterInstallationDate;
-    if (storeData?.applicationData?.meterId) wsPayload.WaterConnection.meterId = storeData.applicationData.meterId;
+      wsPayload.WaterConnection.meterInstallationDate = storeData?.applicationData?.meterInstallationDate;
+    if (storeData?.applicationData?.meterId) wsPayload.WaterConnection.meterId = storeData?.applicationData?.meterId;
   }
 
   let swPayload = {
@@ -917,8 +917,8 @@ export const createPayloadOfWSDisconnection = async (data, storeData, service) =
       dateEffectiveFrom: convertDateToEpoch(data?.date),
       isdisconnection: true,
       isDisconnectionTemporary: data?.type?.value?.code === "Temporary" ? true : false,
-      disconnectionReason: data?.reason.value?.code,
-      documents: data?.documents,
+      disconnectionReason: data?.reason?.value?.code || data?.reason?.value || data?.reason?.code || data?.reason || storeData?.applicationData?.disconnectionReason,
+      documents: data?.documents || storeData?.applicationData?.documents,
       water: false,
       sewerage: true,
       proposedWaterClosets: storeData?.applicationData?.proposedWaterClosets && Number(storeData?.applicationData?.proposedWaterClosets),
@@ -936,7 +936,7 @@ export const createPayloadOfWSDisconnection = async (data, storeData, service) =
       noOfToilets: storeData?.applicationData?.noOfToilets,
       additionalDetails: storeData?.applicationData?.additionalDetails,
       tenantId: storeData?.applicationData?.tenantId,
-      // connectionType: storeData.applicationData.connectionType || null,
+      // connectionType: storeData?.applicationData?.connectionType || null,
       connectionType: "Non Metered",
       waterSource: storeData?.applicationData?.waterSource || null,
       processInstance: {
@@ -949,9 +949,9 @@ export const createPayloadOfWSDisconnection = async (data, storeData, service) =
     disconnectRequest: true,
   };
 
-  // if (storeData.applicationData.connectionType) {
-  //   if (storeData.applicationData.meterInstallationDate) swPayload.SewerageConnection.meterInstallationDate = storeData.applicationData.meterInstallationDate;
-  //   if (storeData.applicationData.meterId) swPayload.SewerageConnection.meterId = storeData.applicationData.meterId;
+  // if (storeData?.applicationData?.connectionType) {
+  //   if (storeData?.applicationData?.meterInstallationDate) swPayload.SewerageConnection.meterInstallationDate = storeData?.applicationData?.meterInstallationDate;
+  //   if (storeData?.applicationData?.meterId) swPayload.SewerageConnection.meterId = storeData?.applicationData?.meterId;
   // }
 
   let returnObject = service === "WATER" ? wsPayload : swPayload;
@@ -1010,8 +1010,8 @@ export const createPayloadOfWSReconnection = async (data, storeData, service) =>
       noOfTaps: storeData?.applicationData?.noOfTaps,
       additionalDetails: storeData?.applicationData?.additionalDetails,
       tenantId: storeData?.applicationData?.tenantId,
-      connectionType: storeData.applicationData.connectionType || null,
-      waterSource: storeData.applicationData.waterSource || null,
+      connectionType: storeData?.applicationData?.connectionType || null,
+      waterSource: storeData?.applicationData?.waterSource || null,
       processInstance: {
         ...storeData?.applicationData?.processInstance,
         action: "INITIATE",
@@ -1022,10 +1022,10 @@ export const createPayloadOfWSReconnection = async (data, storeData, service) =>
     disconnectRequest: false,
   };
 
-  if (storeData.applicationData.connectionType) {
-    if (storeData.applicationData.meterInstallationDate)
-      wsPayload.WaterConnection.meterInstallationDate = storeData.applicationData.meterInstallationDate;
-    if (storeData.applicationData.meterId) wsPayload.WaterConnection.meterId = storeData.applicationData.meterId;
+  if (storeData?.applicationData?.connectionType) {
+    if (storeData?.applicationData?.meterInstallationDate)
+      wsPayload.WaterConnection.meterInstallationDate = storeData?.applicationData?.meterInstallationDate;
+    if (storeData?.applicationData?.meterId) wsPayload.WaterConnection.meterId = storeData?.applicationData?.meterId;
   }
 
   let swPayload = {
@@ -1060,9 +1060,9 @@ export const createPayloadOfWSReconnection = async (data, storeData, service) =>
       noOfToilets: storeData?.applicationData?.noOfToilets,
       additionalDetails: storeData?.applicationData?.additionalDetails,
       tenantId: storeData?.applicationData?.tenantId,
-      // connectionType: storeData.applicationData.connectionType || null,
+      // connectionType: storeData?.applicationData?.connectionType || null,
       connectionType: "Non Metered",
-      waterSource: storeData.applicationData.waterSource || null,
+      waterSource: storeData?.applicationData?.waterSource || null,
       processInstance: {
         ...storeData?.applicationData?.processInstance,
         action: "INITIATE",
@@ -1073,9 +1073,9 @@ export const createPayloadOfWSReconnection = async (data, storeData, service) =>
     disconnectRequest: false,
   };
 
-  // if (storeData.applicationData.connectionType) {
-  //   if (storeData.applicationData.meterInstallationDate) swPayload.SewerageConnection.meterInstallationDate = storeData.applicationData.meterInstallationDate;
-  //   if (storeData.applicationData.meterId) swPayload.SewerageConnection.meterId = storeData.applicationData.meterId;
+  // if (storeData?.applicationData?.connectionType) {
+  //   if (storeData?.applicationData?.meterInstallationDate) swPayload.SewerageConnection.meterInstallationDate = storeData?.applicationData?.meterInstallationDate;
+  //   if (storeData?.applicationData?.meterId) swPayload.SewerageConnection.meterId = storeData?.applicationData?.meterId;
   // }
 
   let returnObject = service === "WATER" ? wsPayload : swPayload;
@@ -1091,15 +1091,19 @@ export const createPayloadOfWSReSubmitDisconnection = async (data, storeData, se
   let wsPayload = {
     WaterConnection: {
       ...storeData?.applicationData,
+      applicationType: "DISCONNECT_WATER_CONNECTION",
+      applicationStatus: "RESUBMIT_APPLICATION",
       dateEffectiveFrom: convertDateToEpoch(data?.date),
+      isdisconnection: true,
       isDisconnectionTemporary: data?.type?.value?.code === "Temporary" ? true : false,
-      disconnectionReason: data?.reason.value?.code,
-      documents: data?.documents,
+      disconnectionReason: data?.reason?.value?.code || data?.reason?.value || data?.reason?.code || data?.reason || storeData?.applicationData?.disconnectionReason,
+      documents: data?.documents || storeData?.applicationData?.documents,
       water: true,
       sewerage: false,
       service: "Water",
       processInstance: {
         ...storeData?.applicationData?.processInstance,
+        businessService: "DisconnectWSConnection",
         action: "RESUBMIT_APPLICATION",
       },
       channel: user?.toUpperCase() === "CITIZEN" ? "CITIZEN" : "CFC_COUNTER",
@@ -1107,25 +1111,28 @@ export const createPayloadOfWSReSubmitDisconnection = async (data, storeData, se
     disconnectRequest: true,
   };
 
-  if (storeData.applicationData.connectionType) {
-    if (storeData.applicationData.meterInstallationDate)
-      wsPayload.WaterConnection.meterInstallationDate = storeData.applicationData.meterInstallationDate;
-    if (storeData.applicationData.meterId) wsPayload.WaterConnection.meterId = storeData.applicationData.meterId;
+  if (storeData?.applicationData?.connectionType) {
+    if (storeData?.applicationData?.meterInstallationDate)
+      wsPayload.WaterConnection.meterInstallationDate = storeData?.applicationData?.meterInstallationDate;
+    if (storeData?.applicationData?.meterId) wsPayload.WaterConnection.meterId = storeData?.applicationData?.meterId;
   }
 
   let swPayload = {
     SewerageConnection: {
       ...storeData?.applicationData,
+      applicationType: "DISCONNECT_SEWERAGE_CONNECTION",
+      applicationStatus: "RESUBMIT_APPLICATION",
       dateEffectiveFrom: convertDateToEpoch(data?.date),
       isdisconnection: true,
       isDisconnectionTemporary: data?.type?.value?.code === "Temporary" ? true : false,
-      disconnectionReason: data?.reason.value?.code,
-      documents: data?.documents,
+      disconnectionReason: data?.reason?.value?.code || data?.reason?.value || data?.reason?.code || data?.reason || storeData?.applicationData?.disconnectionReason,
+      documents: data?.documents || storeData?.applicationData?.documents,
       water: false,
       sewerage: true,
       service: "Sewerage",
       processInstance: {
         ...storeData?.applicationData?.processInstance,
+        businessService: "DisconnectSWConnection",
         action: "RESUBMIT_APPLICATION",
       },
       channel: user?.toUpperCase() === "CITIZEN" ? "CITIZEN" : "CFC_COUNTER",
@@ -1133,9 +1140,9 @@ export const createPayloadOfWSReSubmitDisconnection = async (data, storeData, se
     disconnectRequest: true,
   };
 
-  // if (storeData.applicationData.connectionType) {
-  //   if (storeData.applicationData.meterInstallationDate) swPayload.SewerageConnection.meterInstallationDate = storeData.applicationData.meterInstallationDate;
-  //   if (storeData.applicationData.meterId) swPayload.SewerageConnection.meterId = storeData.applicationData.meterId;
+  // if (storeData?.applicationData?.connectionType) {
+  //   if (storeData?.applicationData?.meterInstallationDate) swPayload.SewerageConnection.meterInstallationDate = storeData?.applicationData?.meterInstallationDate;
+  //   if (storeData?.applicationData?.meterId) swPayload.SewerageConnection.meterId = storeData?.applicationData?.meterId;
   // }
 
   let returnObject = service === "WATER" ? wsPayload : swPayload;
@@ -1165,18 +1172,13 @@ export const updatePayloadOfWSDisconnection = async (data, type) => {
   return payload;
 };
 export const updatePayloadOfWSRestoration = async (data, type) => {
-  let payload = {
-    ...data,
-    plumberInfo: data?.plumberInfo?.[0] ? [{ ...data?.plumberInfo?.[0], id: null }] : data?.plumberInfo,
-    applicationType: type === "WATER" ? "WATER_RECONNECTION" : "SEWERAGE_RECONNECTION",
-    processInstance: {
-      ...data?.processInstance,
-      businessService: type === "WATER" ? "WSReconnection" : "SWReconnection",
-      action: "SUBMIT_APPLICATION",
-    },
+  const payload = await updatePayloadOfWSDisconnection(data, type);
+  payload.applicationType = type === "WATER" ? "WATER_RECONNECTION" : "SEWERAGE_RECONNECTION";
+  payload.processInstance = {
+    ...payload.processInstance,
+    businessService: type === "WATER" ? "WSReconnection" : "SWReconnection",
+    action: "SUBMIT_APPLICATION",
   };
-  /* use customiseCreateFormData hook to make some chnages to the water object */
-
   return payload;
 };
 
