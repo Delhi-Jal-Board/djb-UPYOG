@@ -83,13 +83,17 @@ export const WSMyApplications = () => {
         Header: t("WS_CONSUMER_NAME"),
         disableSortBy: true,
         Cell: ({ row }) => {
+          const getFullName = (holder) => `${holder?.name || ""} ${holder?.middleName || ""} ${holder?.lastName || ""}`.replace(/\s+/g, " ").trim();
+
           const names =
-            row.original?.connectionHolders?.map((owner) => owner.name).join(",") ||
+            row.original?.connectionHolders?.map(getFullName).filter(Boolean).join(", ") ||
             row.original?.property?.owners
               ?.sort((a, b) => a?.additionalDetails?.ownerSequence - b?.additionalDetails?.ownerSequence)
-              .map((owner) => owner.name)
-              .join(",") ||
+              .map(getFullName)
+              .filter(Boolean)
+              .join(", ") ||
             t("CS_NA");
+
           return GetCell(names);
         },
       },

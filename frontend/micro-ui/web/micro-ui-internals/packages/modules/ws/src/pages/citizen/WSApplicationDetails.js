@@ -813,7 +813,13 @@ const WSApplicationDetails = () => {
                 /> */}
                 <Row
                   label={t("CORE_COMMON_PROFILE_CITY")}
-                  text={`${t(checkForNA(propertyAddress?.city?.name || propertyAddress?.city?.code || propertyAddress?.city))}`}
+                  text={`${t(
+                    checkForNA(
+                      (propertyAddress?.city?.name || propertyAddress?.city?.code || propertyAddress?.city) === "dl.djb"
+                        ? "Delhi"
+                        : propertyAddress?.city?.name || propertyAddress?.city?.code || propertyAddress?.city
+                    )
+                  )}`}
                 />
                 <Row label={t("PINCODE")} text={`${t(checkForNA(propertyAddress?.pincode || propertyAddress?.pinCode))}`} />
                 <Row
@@ -1016,21 +1022,20 @@ const WSApplicationDetails = () => {
                             <td style={{ padding: "12px 8px" }}>{checkForNA(dueItem?.totalAmount)}</td>
                             <td style={{ padding: "12px 8px" }}>{checkForNA(dueItem?.remarks)}</td>
                             <td style={{ padding: "12px 8px" }}>
-                              {Number(dueItem?.dueAmount) > 0 || Number(dueItem?.totalAmount) > 0 ? (
-                                <span className="link">
-                                  <Link
-                                    to={{
-                                      pathname: `/digit-ui/citizen/payment/my-bills/${
-                                        applicationData?.serviceType === "WATER" || applicationData?.applicationType?.includes("WATER") ? "WS" : "SW"
-                                      }/${dueItem?.kno?.replaceAll("/", "+")}`,
-                                      search: `?workflow=WNS&tenantId=${applicationData?.tenantId}&ConsumerName=${dueItem?.fullName}&consumerCode=${dueItem?.kno}`,
-                                      state: { fromApplicationDetails: true },
-                                    }}
-                                  >
-                                    {t("MAKE_PAYMENT")}
-                                  </Link>
-                                </span>
-                              ) : (
+                              {Number(dueItem?.dueAmount) > 0 || Number(dueItem?.totalAmount) > 0 ? // <span className="link">
+                              //   <Link
+                              //     to={{
+                              //       pathname: `/digit-ui/citizen/payment/collect/${
+                              //         applicationData?.serviceType === "WATER" || applicationData?.applicationType?.includes("WATER") ? "WS" : "SW"
+                              //       }/${dueItem?.kno?.replaceAll("/", "+")}`,
+                              //       search: `?workflow=WNS&tenantId=${applicationData?.tenantId}&ConsumerName=${dueItem?.fullName}&consumerCode=${dueItem?.kno}`,
+                              //       state: { fromApplicationDetails: true },
+                              //     }}
+                              //   >
+                              //     {t("MAKE_PAYMENT")}
+                              //   </Link>
+                              // </span>
+                              null : (
                                 <span style={{ color: "green", fontWeight: "bold" }}>{t("BILL_ALREADY_PAID")}</span>
                               )}
                             </td>
@@ -1056,57 +1061,58 @@ const WSApplicationDetails = () => {
               {!isDisconnectionExecuted && !isDisconnectionPaymentPending && (
                 <React.Fragment>
                   <CardHeader styles={{ fontSize: "28px" }}>{t("WS_COMMON_DOCUMENT_DETAILS")}</CardHeader>
-              {data?.WaterConnection?.[0]?.documents &&
-                data?.WaterConnection?.[0]?.documents
-                  .reduce((acc, current) => {
-                    const x = acc.find((item) => item.documentType === current.documentType);
-                    if (!x) {
-                      return acc.concat([current]);
-                    } else {
-                      return acc;
-                    }
-                  }, [])
-                  .map((doc, index, array) => (
-                    <div key={`doc-${index}`}>
-                      {
-                        <div>
-                          <CardSectionHeader>{t(doc?.documentType?.split(".").slice(0, 2).join("_"))}</CardSectionHeader>
-                          <StatusTable>
-                            {<WSDocument value={data?.WaterConnection?.[0]?.documents} Code={doc?.documentType} index={index} />}
-                            {array.length != index + 1 ? (
-                              <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
-                            ) : null}
-                          </StatusTable>
+                  {data?.WaterConnection?.[0]?.documents &&
+                    data?.WaterConnection?.[0]?.documents
+                      .reduce((acc, current) => {
+                        const x = acc.find((item) => item.documentType === current.documentType);
+                        if (!x) {
+                          return acc.concat([current]);
+                        } else {
+                          return acc;
+                        }
+                      }, [])
+                      .map((doc, index, array) => (
+                        <div key={`doc-${index}`}>
+                          {
+                            <div>
+                              <CardSectionHeader>{t(doc?.documentType?.split(".").slice(0, 2).join("_"))}</CardSectionHeader>
+                              <StatusTable>
+                                {<WSDocument value={data?.WaterConnection?.[0]?.documents} Code={doc?.documentType} index={index} />}
+                                {array.length != index + 1 ? (
+                                  <hr
+                                    style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }}
+                                  />
+                                ) : null}
+                              </StatusTable>
+                            </div>
+                          }
                         </div>
-                      }
-                    </div>
-                  ))}
-              {data?.SewerageConnections?.[0]?.documents &&
-                data?.SewerageConnections?.[0]?.documents
-                  .reduce((acc, current) => {
-                    const x = acc.find((item) => item.documentType === current.documentType);
-                    if (!x) {
-                      return acc.concat([current]);
-                    } else {
-                      return acc;
-                    }
-                  }, [])
-                  .map((doc, index, array) => (
-                    <div key={`doc-${index}`}>
-                      {
-                        <div>
-                          <CardSectionHeader>{t(doc?.documentType?.split(".").slice(0, 2).join("_"))}</CardSectionHeader>
-                          <StatusTable>
-                            {<WSDocument value={data?.SewerageConnections?.[0]?.documents} Code={doc?.documentType} index={index} />}
-                            {array.length != index + 1 ? (
-                              <hr style={{ color: "white", backgroundColor: "white", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
-                            ) : null}
-                          </StatusTable>
+                      ))}
+                  {data?.SewerageConnections?.[0]?.documents &&
+                    data?.SewerageConnections?.[0]?.documents
+                      .reduce((acc, current) => {
+                        const x = acc.find((item) => item.documentType === current.documentType);
+                        if (!x) {
+                          return acc.concat([current]);
+                        } else {
+                          return acc;
+                        }
+                      }, [])
+                      .map((doc, index, array) => (
+                        <div key={`doc-${index}`}>
+                          {
+                            <div>
+                              <CardSectionHeader>{t(doc?.documentType?.split(".").slice(0, 2).join("_"))}</CardSectionHeader>
+                              <StatusTable>
+                                {<WSDocument value={data?.SewerageConnections?.[0]?.documents} Code={doc?.documentType} index={index} />}
+                                {array.length != index + 1 ? (
+                                  <hr style={{ color: "white", backgroundColor: "white", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
+                                ) : null}
+                              </StatusTable>
+                            </div>
+                          }
                         </div>
-                      }
-                    </div>
-                  ))}
-
+                      ))}
                 </React.Fragment>
               )}
 
@@ -1121,7 +1127,7 @@ const WSApplicationDetails = () => {
                     label={t("MAKE_PAYMENT")}
                     onSubmit={() => {
                       history.push({
-                        pathname: `/digit-ui/citizen/payment/my-bills/${paymentDetails?.data?.Bill?.[0]?.businessService}/${stringReplaceAll(
+                        pathname: `/digit-ui/citizen/payment/collect/${paymentDetails?.data?.Bill?.[0]?.businessService}/${stringReplaceAll(
                           paymentDetails?.data?.Bill?.[0]?.consumerCode,
                           "/",
                           "+"

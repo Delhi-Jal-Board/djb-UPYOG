@@ -125,11 +125,13 @@ const SearchWaterConnection = ({ tenantId, onSubmit, data, count, resultOk, busi
         Header: t("WS_COMMON_TABLE_COL_OWN_NAME_LABEL"),
         disableSortBy: true,
         Cell: ({ row }) => {
-          return GetCell(
-            row?.original?.connectionHolders?.map((owner) => owner?.name).join(",")
-              ? row?.original?.connectionHolders?.map((owner) => owner?.name).join(",")
-              : `${row.original?.["ownerNames"] || "NA"}`
-          );
+          let fullName = row.original?.["ownerNames"] || "NA";
+          if (row?.original?.connectionHolders && row.original.connectionHolders.length > 0) {
+             fullName = row.original.connectionHolders.map(holder => {
+                 return `${holder?.name || ""} ${holder?.middleName || ""} ${holder?.lastName || ""}`.replace(/\s+/g, ' ').trim();
+             }).join(", ");
+          }
+          return GetCell(fullName || "NA");
         },
       },
       {

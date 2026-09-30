@@ -492,7 +492,7 @@ export const WSSearch = {
         //     propertyDataDetails?.address?.additionalDetails?.zroLocation ||
         //     t("NA"),
         // },
-        { title: "CITY", value: propertyDataDetails?.address?.city || t("NA") },
+        { title: "CITY", value: propertyDataDetails?.address?.city ? (propertyDataDetails.address.city === "dl.djb" ? "Delhi" : propertyDataDetails.address.city) : t("NA") },
         { title: "PINCODE", value: propertyDataDetails?.address?.pincode || t("NA") },
         {
           title: "LOCALITY",

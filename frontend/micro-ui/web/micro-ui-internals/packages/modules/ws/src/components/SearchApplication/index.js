@@ -185,7 +185,13 @@ const SearchApplication = ({ tenantId, onSubmit, data, count, resultOk, business
         Header: t("WS_COMMON_TABLE_COL_OWN_NAME_LABEL"),
         disableSortBy: true,
         accessor: (row) => {
-          return GetCell(row?.connectionHolders?.[0]?.name ? row?.connectionHolders?.[0]?.name : row?.ownerNames || "-");
+          let fullName = row?.ownerNames || "-";
+          if (row?.connectionHolders && row.connectionHolders.length > 0) {
+             fullName = row.connectionHolders.map(holder => {
+                 return `${holder?.name || ""} ${holder?.middleName || ""} ${holder?.lastName || ""}`.replace(/\s+/g, ' ').trim();
+             }).join(", ");
+          }
+          return GetCell(fullName || "-");
         },
       },
       {
