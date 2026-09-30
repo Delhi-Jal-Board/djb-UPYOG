@@ -431,6 +431,30 @@ const UploadFileDigiLocker = (props) => {
       <path d="M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12L19 6.41Z" fill="#0B0C0C" />
     </svg>
   );
+  
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 5242880) { // 5MB limit
+        setShowToast({ error: true, label: "File size should not exceed 5MB." });
+        inpRef.current.value = "";
+        return;
+      }
+      
+      const allowedTypes = ["application/pdf", "image/jpeg", "image/png", "image/jpg"];
+      const fileExtension = file.name.split('.').pop().toLowerCase();
+      const allowedExtensions = ["pdf", "jpeg", "png", "jpg"];
+
+      if (!allowedTypes.includes(file.type) && !allowedExtensions.includes(fileExtension)) {
+        setShowToast({ error: true, label: "Invalid file format. Only PDF, JPG, and PNG are allowed." });
+        inpRef.current.value = "";
+        return;
+      }
+
+      props.onUpload(e);
+    }
+  };
+
   const showHint = props?.showHint || false;
   return (
     <Fragment>
@@ -516,7 +540,7 @@ const UploadFileDigiLocker = (props) => {
           multiple={props.multiple}
           accept={props.accept}
           disabled={props.disabled}
-          onChange={(e) => props.onUpload(e)}
+          onChange={handleFileUpload}
           onClick={(event) => {
             const { target = {} } = event || {};
             target.value = "";

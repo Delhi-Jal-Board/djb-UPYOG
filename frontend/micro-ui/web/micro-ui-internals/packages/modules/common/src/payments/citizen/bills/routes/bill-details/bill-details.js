@@ -256,7 +256,7 @@ const BillDetails = ({ paymentRules, businessService }) => {
           ) : (
             <BillSumary billAccountDetails={getBillBreakDown()} total={getTotal()} businessService={businessService} arrears={Arrears} />
           )}
-          <ArrearSummary bill={bill} />
+         <ArrearSummary bill={bill} businessService={businessService} />
         </div>
 
         <div className="bill-payment-amount">

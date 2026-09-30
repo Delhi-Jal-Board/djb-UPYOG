@@ -174,41 +174,61 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
     return Array.isArray(boundary) ? boundary : [boundary];
   }, [egovLocationData]);
 
-  const { assemblyOptions, zoneOptions, wardOptions } = useMemo(() => {
+  const { assemblyOptions, zoneOptions, wardOptions, assemblyToZones, assemblyToWards } = useMemo(() => {
     const assemblies = new Map();
     const zones = new Map();
     const wards = new Map();
+    const asmToZones = {};
+    const asmToWards = {};
 
     const boundaries = Array.isArray(boundaryData) ? boundaryData : boundaryData ? [boundaryData] : [];
 
-    const traverse = (node) => {
+    const traverse = (node, currentAssembly = null) => {
       if (!node) return;
+      let newAssembly = currentAssembly;
+
+      if (node.label === "Assembly Constituency" || node.label === "ASSEMBLY_CONSTITUENCY") {
+        const code = node.localname || node.name || node.code;
+        const name = node.localname || node.name || code;
+        if (code) assemblies.set(code, { code, i18nKey: code, name: name });
+        newAssembly = code;
+        if (code && !asmToZones[code]) asmToZones[code] = new Set();
+        if (code && !asmToWards[code]) asmToWards[code] = new Set();
+      }
+
       if (node.label === "Zone" || node.label === "ZONE") {
         const code = node.localname || node.name || node.code;
         const name = node.localname || node.name || code;
         if (code) zones.set(code, { code, i18nKey: code, name: name });
+        if (code && newAssembly && asmToZones[newAssembly]) {
+          asmToZones[newAssembly].add(code);
+        }
       }
       if (node.label === "Ward" || node.label === "WARD" || node.label === "Block" || node.label === "BLOCK") {
         const code = node.localname || node.name || node.code;
         const name = node.localname || node.name || code;
         if (code) wards.set(code, { code, i18nKey: code, name: name });
+        if (code && newAssembly && asmToWards[newAssembly]) {
+          asmToWards[newAssembly].add(code);
+        }
       }
-      if (node.label === "Assembly Constituency" || node.label === "ASSEMBLY_CONSTITUENCY") {
-        const code = node.localname || node.name || node.code;
-        const name = node.localname || node.name || code;
-        if (code) assemblies.set(code, { code, i18nKey: code, name: name });
-      }
+
       if (node.children && node.children.length > 0) {
-        node.children.forEach(traverse);
+        node.children.forEach(child => traverse(child, newAssembly));
       }
     };
 
-    boundaries.forEach(traverse);
+    boundaries.forEach(root => traverse(root, null));
+
+    Object.keys(asmToZones).forEach(k => asmToZones[k] = Array.from(asmToZones[k]));
+    Object.keys(asmToWards).forEach(k => asmToWards[k] = Array.from(asmToWards[k]));
 
     return {
       assemblyOptions: Array.from(assemblies.values()),
       zoneOptions: Array.from(zones.values()),
       wardOptions: Array.from(wards.values()),
+      assemblyToZones: asmToZones,
+      assemblyToWards: asmToWards
     };
   }, [boundaryData]);
 
@@ -1214,7 +1234,11 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
                   (tempAssembly ? { code: tempAssembly, i18nKey: tempAssembly, name: tempAssembly } : null)
                 }
                 disable={disable}
-                select={(val) => setTempAssembly(val?.code || "")}
+                select={(val) => {
+                  setTempAssembly(val?.code || "");
+                  setTempZone("");
+                  setTempWard("");
+                }}
                 option={assemblyOptions}
                 optionCardStyles={{ overflowY: "auto", maxHeight: "300px" }}
                 optionKey="i18nKey"
@@ -1228,9 +1252,9 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
               <Dropdown
                 className="form-field"
                 selected={zoneOptions.find((z) => z.code === tempZone) || (tempZone ? { code: tempZone, i18nKey: tempZone, name: tempZone } : null)}
-                disable={disable}
+                disable={disable || !tempAssembly}
                 select={(val) => setTempZone(val?.code || "")}
-                option={zoneOptions}
+                option={tempAssembly && assemblyToZones[tempAssembly] ? zoneOptions.filter((z) => assemblyToZones[tempAssembly].includes(z.code)) : []}
                 optionCardStyles={{ overflowY: "auto", maxHeight: "300px" }}
                 optionKey="name"
                 t={t}
@@ -1243,9 +1267,9 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
               <Dropdown
                 className="form-field"
                 selected={wardOptions.find((w) => w.code === tempWard) || (tempWard ? { code: tempWard, i18nKey: tempWard, name: tempWard } : null)}
-                disable={disable}
+                disable={disable || !tempAssembly}
                 select={(val) => setTempWard(val?.code || "")}
-                option={wardOptions}
+                option={tempAssembly && assemblyToWards[tempAssembly] ? wardOptions.filter((w) => assemblyToWards[tempAssembly].includes(w.code)) : []}
                 optionCardStyles={{ overflowY: "auto", maxHeight: "300px" }}
                 optionKey="i18nKey"
                 t={t}

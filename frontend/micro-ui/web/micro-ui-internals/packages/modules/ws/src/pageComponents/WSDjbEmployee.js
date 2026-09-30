@@ -297,7 +297,7 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
                         <Link
                           to={{
                             pathname:
-                              userType === "CITIZEN"
+                              Digit.UserService.getUser()?.info?.type === "CITIZEN"
                                 ? `/digit-ui/citizen/payment/my-bills/${
                                     formData?.serviceName?.code === "WATER" || formData?.applicationType?.includes("WATER") ? "WS" : "SW"
                                   }/${dueItem?.kno?.replaceAll("/", "+")}`
@@ -306,7 +306,7 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
                                   }/${encodeURIComponent(dueItem?.kno || "")}/${tenantId}`,
 
                             search:
-                              userType === "CITIZEN"
+                              Digit.UserService.getUser()?.info?.type === "CITIZEN"
                                 ? `?workflow=WNS&tenantId=${encodeURIComponent(tenantId || "")}&ConsumerName=${encodeURIComponent(
                                     dueItem?.fullName || ""
                                   )}&consumerCode=${encodeURIComponent(dueItem?.kno || "")}`

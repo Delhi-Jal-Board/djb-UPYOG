@@ -24,12 +24,18 @@ const MutationApplication = () => {
   const history = useHistory();
   let filters = func.getQueryStringParams(location.search);
 
-  const currentStep = location.pathname.includes("/search-connection") ? 1
-    : location.pathname.includes("/existing-connection") ? 2
-    : location.pathname.includes("/consumer-details") ? 3
-    : location.pathname.includes("/document") ? 4
-    : location.pathname.includes("/preview") ? 5
-    : location.pathname.includes("/submission") ? 6
+  const currentStep = location.pathname.includes("/search-connection")
+    ? 1
+    : location.pathname.includes("/existing-connection")
+    ? 2
+    : location.pathname.includes("/consumer-details")
+    ? 3
+    : location.pathname.includes("/document")
+    ? 4
+    : location.pathname.includes("/preview")
+    ? 5
+    : location.pathname.includes("/submission")
+    ? 6
     : 1;
   const [formData, setFormData, clearFormData] = Digit.Hooks.useSessionStorage("MUTATION_APP_FORM_DATA", {});
   const [showToast, setShowToast] = useState(null);
@@ -51,7 +57,7 @@ const MutationApplication = () => {
 
   const [persistedEditParams, setPersistedEditParams] = Digit.Hooks.useSessionStorage("MUTATION_EDIT_PARAMS", {});
   const user = Digit.UserService.getUser();
-  
+
   const urlParams = new URLSearchParams(location.search);
   const urlAppNo = filters?.applicationNumber || urlParams.get("applicationNumber") || state?.id;
   const urlTenantId = filters?.tenantId || urlParams.get("tenantId") || state?.tenantId;
@@ -83,7 +89,7 @@ const MutationApplication = () => {
   const mobileNumber = user?.info?.userName?.match(/^[0-9]{10}$/) ? user?.info?.userName : user?.info?.mobileNumber;
 
   const hasStateData = !!details?.applicationData?.id;
-useEffect(() => {
+  useEffect(() => {
     // When a user clicks the sidebar link, they land on the base 'path' before redirecting to step 1.
     // This is the perfect time to wipe all stale session data so nothing bleeds into the new application.
     if (location.pathname === path) {
@@ -99,7 +105,7 @@ useEffect(() => {
   }, [location.pathname, path]);
   // Determine if we are editing an existing application
   const editApplicationNumber = details?.applicationNo || applicationNumber;
-console.log(editApplicationNumber, "editApplicationNumber");
+  console.log(editApplicationNumber, "editApplicationNumber");
   const { isLoading: isWorkflowLoading, data: workflowData } = useQuery(
     ["WORKFLOW_SEARCH", editApplicationNumber, tenantId],
     async () => {
@@ -108,15 +114,13 @@ console.log(editApplicationNumber, "editApplicationNumber");
     },
     { enabled: !!editApplicationNumber }
   );
-console.log(workflowData, "workflowData");
+  console.log(workflowData, "workflowData");
   const isEmployee = window.location.href.includes("/employee/");
-  
+
   // FIX: Airtight check ensuring we are truly in an Edit Flow and not a Create Flow
-  const isEditFlow = !!editApplicationNumber && (
-    !!urlAppNo || 
-    workflowData?.businessService === "mutationWSConnection" || 
-    workflowData?.action === "SEND_BACK_TO_CITIZEN"
-  );
+  const isEditFlow =
+    !!editApplicationNumber &&
+    (!!urlAppNo || workflowData?.businessService === "mutationWSConnection" || workflowData?.action === "SEND_BACK_TO_CITIZEN");
 
   // For searching details: use application number if editing, otherwise use authenticated K Number
   const querySearchParam = isEditFlow ? editApplicationNumber : authKNumber;
@@ -134,7 +138,7 @@ console.log(workflowData, "workflowData");
           }
         : {
             connectionNumber: querySearchParam,
-            searchType:'CONNECTION'
+            searchType: "CONNECTION",
           };
       // Remove undefined/null values
       Object.keys(params).forEach((k) => params[k] == null && delete params[k]);
@@ -142,15 +146,15 @@ console.log(workflowData, "workflowData");
       // Wrap in the same shape that useWSDetailsPage / applicationDetails produces
       let wsData;
       if (businessService === "WS") {
-        wsData = rawData?.WaterConnection?.find(c => c.applicationStatus === 'CONNECTION_ACTIVATED') || rawData?.WaterConnection?.[0];
+        wsData = rawData?.WaterConnection?.find((c) => c.applicationStatus === "CONNECTION_ACTIVATED") || rawData?.WaterConnection?.[0];
       } else {
-        wsData = rawData?.SewerageConnections?.find(c => c.applicationStatus === 'CONNECTION_ACTIVATED') || rawData?.SewerageConnections?.[0];
+        wsData = rawData?.SewerageConnections?.find((c) => c.applicationStatus === "CONNECTION_ACTIVATED") || rawData?.SewerageConnections?.[0];
       }
-     if (!wsData) return null;
+      if (!wsData) return null;
       return {
         applicationData: wsData,
-        WaterConnection: [wsData], 
-        SewerageConnections: [wsData], 
+        WaterConnection: [wsData],
+        SewerageConnections: [wsData],
         propertyDetails: null,
         processInstancesDetails: [],
       };
@@ -219,19 +223,20 @@ console.log(workflowData, "workflowData");
         const reasonOptions = [
           { code: "SALE_PURCHASE", i18nKey: "Purchase of Property" },
           { code: "DEVOLUTION_INHERITANCE", i18nKey: "Devolution/Inheritance" },
-          { code: "OTHER", i18nKey: "Other Reason(Gift Deed, Lease Agreement, etc)" }
+          { code: "OTHER", i18nKey: "Other Reason(Gift Deed, Lease Agreement, etc)" },
         ];
         const relationshipOptions = [
           { code: "BLOOD_RELATION", i18nKey: "Blood Relation (Son / Daughter / Spouse)" },
           { code: "LEGAL_HEIR", i18nKey: "Legal Heir" },
-          { code: "OTHER", i18nKey: "Other" }
+          { code: "OTHER", i18nKey: "Other" },
         ];
 
         const reasonCode = additionalDetails.reasonForNameChange;
-        const reasonObj = reasonOptions.find(o => o.code === reasonCode) || (reasonCode ? { code: reasonCode, i18nKey: reasonCode } : null);
+        const reasonObj = reasonOptions.find((o) => o.code === reasonCode) || (reasonCode ? { code: reasonCode, i18nKey: reasonCode } : null);
 
         const relationCode = additionalDetails.relationshipWithExistingConsumer;
-        const relationObj = relationshipOptions.find(o => o.code === relationCode) || (relationCode ? { code: relationCode, i18nKey: relationCode } : null);
+        const relationObj =
+          relationshipOptions.find((o) => o.code === relationCode) || (relationCode ? { code: relationCode, i18nKey: relationCode } : null);
 
         return {
           proposedNewConsumerName: primaryHolder.name || "",
@@ -243,7 +248,11 @@ console.log(workflowData, "workflowData");
 
           saleDeedDocumentId: additionalDetails.saleDeedDocumentId || mutationDoc?.fileStoreId || "",
           identityProofDocumentId: additionalDetails.identityProofDocumentId || identityDoc?.fileStoreId || "",
-          identityProofType: additionalDetails.identityProofDocumentName ? { code: additionalDetails.identityProofDocumentName, i18nKey: additionalDetails.identityProofDocumentName } : identityDoc?.documentType ? { code: identityDoc.documentType, i18nKey: identityDoc.documentType } : null,
+          identityProofType: additionalDetails.identityProofDocumentName
+            ? { code: additionalDetails.identityProofDocumentName, i18nKey: additionalDetails.identityProofDocumentName }
+            : identityDoc?.documentType
+            ? { code: identityDoc.documentType, i18nKey: identityDoc.documentType }
+            : null,
           documentNumber: additionalDetails.identityProofDocumentNumber || additionalDetails.identityProofNumber || identityDoc?.documentUid || "",
         };
       });
@@ -367,7 +376,7 @@ console.log(workflowData, "workflowData");
           ...convertAppData,
           id: applicationDetails?.applicationData?.id,
           applicationNo: editApplicationNumber,
-                      action: "RESUBMIT_APPLICATION",
+          action: "RESUBMIT_APPLICATION",
 
           processInstance: {
             ...applicationDetails?.applicationData?.processInstance,
@@ -380,31 +389,35 @@ console.log(workflowData, "workflowData");
           const activePayloadDocs = updatePayload.documents;
           let finalDocs = [];
 
-          activePayloadDocs.forEach(newDoc => {
-             const oldDoc = existingDocs.find(d => d.documentType === newDoc.documentType);
-             if (oldDoc) {
-                 if (oldDoc.fileStoreId === newDoc.fileStoreId) {
-                     finalDocs.push({ ...newDoc, id: oldDoc.id });
-                 } else {
-                     finalDocs.push(newDoc);
-                     finalDocs.push({ ...oldDoc, status: "INACTIVE" });
-                 }
-             } else {
-                 finalDocs.push(newDoc);
-             }
+          activePayloadDocs.forEach((newDoc) => {
+            const oldDoc = existingDocs.find((d) => d.documentType === newDoc.documentType);
+            if (oldDoc) {
+              if (oldDoc.fileStoreId === newDoc.fileStoreId) {
+                finalDocs.push({ ...newDoc, id: oldDoc.id });
+              } else {
+                finalDocs.push(newDoc);
+                finalDocs.push({ ...oldDoc, status: "INACTIVE" });
+              }
+            } else {
+              finalDocs.push(newDoc);
+            }
           });
 
-          existingDocs.forEach(oldDoc => {
-             if (!activePayloadDocs.find(d => d.documentType === oldDoc.documentType)) {
-                 finalDocs.push({ ...oldDoc, status: "INACTIVE" });
-             }
+          existingDocs.forEach((oldDoc) => {
+            if (!activePayloadDocs.find((d) => d.documentType === oldDoc.documentType)) {
+              finalDocs.push({ ...oldDoc, status: "INACTIVE" });
+            }
           });
 
           updatePayload.documents = finalDocs;
         }
 
         if (Digit?.Customizations?.WS?.customiseUpdatePayloadOfWS) {
-          updatePayload = Digit.Customizations.WS.customiseUpdatePayloadOfWS(applicationDetails?.applicationData || {}, updatePayload, resolvedServiceType);
+          updatePayload = Digit.Customizations.WS.customiseUpdatePayloadOfWS(
+            applicationDetails?.applicationData || {},
+            updatePayload,
+            resolvedServiceType
+          );
         }
 
         const updateMutation = resolvedServiceType === "WATER" ? waterUpdateMutation : sewerageUpdateMutation;
@@ -433,7 +446,7 @@ console.log(workflowData, "workflowData");
             }
 
             clearSessionFormData();
-                        clearFormData();
+            clearFormData();
             clearCompletedSteps();
             clearAuthKNumber();
             clearAuthMobileNumber();
@@ -488,10 +501,7 @@ console.log(workflowData, "workflowData");
               },
             };
 
-            const combinedExistingDocs = [
-              ...existingDocs,
-              ...(createdConnection?.documents || []),
-            ];
+            const combinedExistingDocs = [...existingDocs, ...(createdConnection?.documents || [])];
 
             if (updatePayload?.documents?.length > 0 && combinedExistingDocs.length > 0) {
               updatePayload.documents = func.mapExistingDocIdsToPayload(updatePayload.documents, combinedExistingDocs);
@@ -527,14 +537,16 @@ console.log(workflowData, "workflowData");
                 }
 
                 clearSessionFormData();
-                                clearFormData();
+                clearFormData();
                 clearCompletedSteps();
                 clearAuthKNumber();
                 clearAuthMobileNumber();
                 clearAuthServiceType();
                 clearAuthActiveConnection();
                 const newAppNo =
-                  resolvedServiceType === "WATER" ? updateData?.WaterConnection?.[0]?.applicationNo : updateData?.SewerageConnections?.[0]?.applicationNo;
+                  resolvedServiceType === "WATER"
+                    ? updateData?.WaterConnection?.[0]?.applicationNo
+                    : updateData?.SewerageConnections?.[0]?.applicationNo;
                 setGeneratedAppNo(newAppNo);
                 history.push(`${path}/submission`);
               },
@@ -585,7 +597,7 @@ console.log(workflowData, "workflowData");
         )}
 
         <div style={{ flex: "1", overflowY: "auto", minWidth: 0 }}>
-<Switch>
+          <Switch>
             <Route path={`${path}/search-connection`}>
               {isEditFlow ? (
                 <Redirect to={{ pathname: `${path}/consumer-details`, search: location.search, state: location.state }} />
@@ -626,28 +638,28 @@ console.log(workflowData, "workflowData");
             </Route>
 
             <Route path={`${path}/consumer-details`}>
-              <Step2_NewConsumerDetails 
-                t={t} 
-                defaultValues={formData} 
+              <Step2_NewConsumerDetails
+                t={t}
+                defaultValues={formData}
                 onNext={(data) => {
                   setFormData((prev) => ({ ...prev, ...data }));
                   setCompletedSteps((prev) => [...new Set([...prev, 3])]);
                   history.push(`${path}/document`);
-                }} 
-                onBack={() => history.push(`${path}/existing-connection`)} 
+                }}
+                onBack={() => history.push(`${path}/existing-connection`)}
               />
             </Route>
 
             <Route path={`${path}/document`}>
-              <Step3_UploadDocuments 
-                t={t} 
-                defaultValues={formData} 
+              <Step3_UploadDocuments
+                t={t}
+                defaultValues={formData}
                 onNext={(data) => {
                   setFormData((prev) => ({ ...prev, ...data }));
                   setCompletedSteps((prev) => [...new Set([...prev, 4])]);
                   history.push(`${path}/preview`);
-                }} 
-                onBack={() => history.push(`${path}/consumer-details`)} 
+                }}
+                onBack={() => history.push(`${path}/consumer-details`)}
               />
             </Route>
 
@@ -668,8 +680,14 @@ console.log(workflowData, "workflowData");
               <Step5_Submission t={t} applicationNumber={generatedAppNo} serviceType={resolvedServiceType} />
             </Route>
 
-          <Route exact path={path}>
-              <Redirect to={{ pathname: isEditFlow ? `${path}/consumer-details` : `${path}/search-connection`, search: location.search, state: location.state }} />
+            <Route exact path={path}>
+              <Redirect
+                to={{
+                  pathname: isEditFlow ? `${path}/consumer-details` : `${path}/search-connection`,
+                  search: location.search,
+                  state: location.state,
+                }}
+              />
             </Route>
           </Switch>
 
@@ -677,7 +695,7 @@ console.log(workflowData, "workflowData");
             <Toast
               error={showToast?.key === "error"}
               warning={showToast?.key === "warning"}
-              label={t(showToast?.message)}
+              label={showToast?.message}
               onClose={() => setShowToast(null)}
               isDleteBtn={true}
             />

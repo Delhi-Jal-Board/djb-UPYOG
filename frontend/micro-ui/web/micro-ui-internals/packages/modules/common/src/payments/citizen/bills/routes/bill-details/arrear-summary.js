@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import ArrearTable from "./arrear-table";
 
 const styles = {
-  buttonStyle: { display: "flex", justifyContent: "flex-end", color: "#a82227" },
+  buttonStyle: { display: "flex", justifyContent: "flex-end", color: "#a82227", marginTop: "10px", marginBottom: "10px", cursor: "pointer", fontWeight: "bold" },
   headerStyle: {
     marginTop: "10px",
     fontSize: "16px",
@@ -13,8 +13,68 @@ const styles = {
   },
 };
 
-const ArrearSummary = ({ bill = {} }) => {
+const thStyle = { textAlign: "left", borderBottom: "#D6D5D4 1px solid", padding: "16px 12px", whiteSpace: "break-spaces", fontSize: "14px", fontWeight: "bold" };
+const tdStyle = { textAlign: "left", borderBottom: "#D6D5D4 1px solid", padding: "8px 10px", wordBreak: "keep-all", fontSize: "14px" };
+
+const ArrearSummary = ({ bill = {}, businessService }) => {
   const { t } = useTranslation();
+  const [showArrear, setShowArrear] = useState(false);
+
+  const isWNS = businessService === "WS" || businessService === "SW";
+  const yearWiseBills = bill?.billDetails?.sort((a, b) => b.fromPeriod - a.fromPeriod);
+  
+  const getBillingPeriod = (_bill) => {
+    const { fromPeriod, toPeriod } = _bill;
+    let from = new Date(fromPeriod).toLocaleDateString();
+    let to = new Date(toPeriod).toLocaleDateString();
+    return from + "-" + to;
+  };
+
+  const renderArrearDetailsForWNS = () => {
+    return (
+      <div style={{ maxWidth: "100%", overflowX: "auto", backgroundColor: "#EEEEEE", marginTop: "10px" }}>
+        <table className="table-fixed-column-common-pay" style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr>
+              <th style={thStyle}>{t("CS_BILL_NO")}</th>
+              <th style={{ ...thStyle }}>{t("CS_PAYMENT_BILLING_PERIOD")}</th>
+              <th style={{ ...thStyle }}>{t("CS_BILL_DUEDATE")}</th>
+              {yearWiseBills
+                ?.filter((e, ind) => ind > 0)?.[0]
+                ?.billAccountDetails?.sort((a, b) => a.order - b.order)
+                ?.map((head, index) => (
+                  <th style={{ ...thStyle }} key={index}>
+                    {t(head.taxHeadCode)}
+                  </th>
+                ))}
+              <th style={thStyle}>{t("TOTAL_TAX")}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {yearWiseBills
+              ?.filter((e, ind) => ind > 0)
+              ?.map((year_bill, index) => {
+                const sorted_tax_heads = year_bill?.billAccountDetails?.sort((a, b) => a.order - b.order);
+                return (
+                  <tr key={index}>
+                    <td style={tdStyle}>{year_bill?.billNumber}</td>
+                    <td style={tdStyle}>{getBillingPeriod(year_bill)}</td>
+                    <td style={tdStyle}>{year_bill?.expiryDate && new Date(year_bill?.expiryDate).toLocaleDateString()}</td>
+                    {sorted_tax_heads?.map((e, i) => (
+                      <td style={tdStyle} key={i}>
+                        {e.amount}
+                      </td>
+                    ))}
+                    <td style={tdStyle}>{year_bill.amount}</td>
+                  </tr>
+                );
+              })}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
+
   const formatTaxHeaders = (billDetail = {}) => {
     let formattedFees = {};
     const { billAccountDetails = [] } = billDetail;
@@ -65,7 +125,25 @@ const ArrearSummary = ({ bill = {} }) => {
   keys = Object.keys(head);
   keys.sort((x, y) => head[x] - head[y]);
 
-  const [showArrear, setShowArrear] = useState(false);
+  if (isWNS) {
+    if (!yearWiseBills || yearWiseBills.length <= 1) {
+      return <span></span>;
+    }
+    return (
+      <React.Fragment>
+        {showArrear && renderArrearDetailsForWNS()}
+        <div style={styles.buttonStyle}>
+          <div
+            onClick={() => {
+              setShowArrear(!showArrear);
+            }}
+          >
+            {showArrear ? t("ES_COMMON_HIDE_DETAILS") : t("ES_COMMON_VIEW_DETAILS")}
+          </div>
+        </div>
+      </React.Fragment>
+    );
+  }
 
   if (arrears == 0 || arrears < 0) {
     return <span></span>;
