@@ -241,17 +241,17 @@ const ConnectionDetails = () => {
     } else {
       if (paymentDetails?.data?.Bill?.length === 0) {
         console.log("Payment", paymentDetails);
-        let pathname = `/digit-ui/citizen/ws/restore-application/restoration-application`;
+        let pathname = `/digit-ui/citizen/ws/restore-application/k-number`;
         Digit.SessionStorage.set("WS_DISCONNECTION", { ...state, serviceType: isSW ? "SEWERAGE" : "WATER" });
         history.push(`${pathname}`);
       } else if (paymentDetails?.data?.Bill?.[0]?.totalAmount < 0) {
-        let pathname = `/digit-ui/citizen/ws/restore-application/restoration-application`;
+        let pathname = `/digit-ui/citizen/ws/restore-application/k-number`;
         Digit.SessionStorage.set("WS_DISCONNECTION", { ...state, serviceType: isSW ? "SEWERAGE" : "WATER" });
         history.push(`${pathname}`);
       } else if (paymentDetails?.data?.Bill?.[0]?.totalAmount !== 0) {
         setshowModal(true);
       } else if (paymentDetails?.data?.Bill?.[0]?.totalAmount == 0) {
-        let pathname = `/digit-ui/citizen/ws/restore-application/restoration-application`;
+        let pathname = `/digit-ui/citizen/ws/restore-application/k-number`;
         Digit.SessionStorage.set("WS_DISCONNECTION", { ...state, serviceType: isSW ? "SEWERAGE" : "WATER" });
         history.push(`${pathname}`);
       }

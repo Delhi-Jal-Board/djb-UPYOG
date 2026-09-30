@@ -198,7 +198,7 @@ const GetConnectionDetails = () => {
       });
     } else {
       if (billData[0]?.status === "ACTIVE" || applicationDetails?.fetchBillsData?.length <= 0 || due === "0" || due == "0" || due < 0) {
-        Digit.SessionStorage.set("WS_DISCONNECTION", applicationDetails);
+        Digit.SessionStorage.set("WS_DISCONNECTION", { ...applicationDetails, serviceType });
         const connectionNumber = applicationDetails?.applicationData?.connectionNo || applicationNumber;
         history.push(`${pathname}?from=connection-details&connectionNumber=${encodeURIComponent(connectionNumber)}`);
       } else {

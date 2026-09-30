@@ -52,7 +52,7 @@ const Rebate_menu = [
   },
 ];
 
-const WSFeeEstimation = ({ wsAdditionalDetails, workflowDetails }) => {
+const WSFeeEstimation = ({ wsAdditionalDetails, workflowDetails, onlyDisconnectionFee = false }) => {
   const { t } = useTranslation();
   const [sessionFormData, setSessionFormData, clearSessionFormData] = Digit.Hooks.useSessionStorage("ADHOC_ADD_REBATE_DATA", {});
   const [sessionBillFormData, setSessionBillFormData, clearBillSessionFormData] = Digit.Hooks.useSessionStorage("ADHOC_BILL_ADD_REBATE_DATA", {});
@@ -63,10 +63,10 @@ const WSFeeEstimation = ({ wsAdditionalDetails, workflowDetails }) => {
   const [billDetails, setBillDetails] = useState(wsAdditionalDetails.additionalDetails.data ? wsAdditionalDetails.additionalDetails.data : {});
   const [values, setValues] = useState(wsAdditionalDetails.additionalDetails.values ? wsAdditionalDetails.additionalDetails.values : []);
   const isDisconnectionExecuted = wsAdditionalDetails?.additionalDetails?.appDetails?.applicationStatus === "DISCONNECTION_EXECUTED";
-  const displayedValues = isDisconnectionExecuted ? values.filter((value) => value?.title === "WS_DISCONNECTION_FEE") : values;
   const billRows = billDetails?.billDetails?.[0]?.billAccountDetails || billDetails?.taxHeadEstimates || [];
   const disconnectionFee = billRows.find((row) => row?.taxHeadCode === "WS_DISCONNECTION_FEE");
-  const displayedTotalAmount = isDisconnectionExecuted
+  const displayedValues = onlyDisconnectionFee || isDisconnectionExecuted ? values.filter((value) => value?.title === "WS_DISCONNECTION_FEE") : values;
+  const displayedTotalAmount = onlyDisconnectionFee || isDisconnectionExecuted
     ? disconnectionFee?.amount ?? disconnectionFee?.estimateAmount ?? 0
     : billDetails?.totalAmount;
   const displayedIsPaid = isDisconnectionExecuted ? disconnectionFee?.status === "PAID" : isPaid;

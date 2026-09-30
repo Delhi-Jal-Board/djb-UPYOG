@@ -167,6 +167,10 @@ export const WSLinks = ({ matchPath, userType }) => {
       link: `${matchPath}/disconnect-application`,
       i18nKey: t("WS_DISCONNECTION"),
     },
+    {
+      link: `${matchPath}/restore-application/k-number`,
+      i18nKey: t("WS_RECONNECTION") || "Apply Reconnection",
+    },
 
   ];
 

@@ -264,6 +264,7 @@ const WSApplicationDetails = () => {
   const isDisconnection =
     data?.WaterConnection?.[0].applicationType?.includes("DISCONNECT") || data?.SewerageConnections?.[0].applicationType?.includes("DISCONNECT");
   const appStatus = data?.WaterConnection?.[0]?.applicationStatus || data?.SewerageConnections?.[0]?.applicationStatus;
+  const isDisconnectionPaymentPending = isDisconnection && ["PENDING_FOR_PAYMENT", "PENDING_FOR_FINAL_PAYMENT", "PENDING_FOR_ADDITIONAL_PAYMENT", "PENDING_APPROVAL_FOR_DISCONNECTION"].includes(appStatus);
   switch (appStatus) {
     case "PENDING_FOR_DOCUMENT_VERIFICATION":
       if (
@@ -429,8 +430,8 @@ const WSApplicationDetails = () => {
                   <CardSectionHeader style={{ marginBottom: "16px", marginTop: "16px", fontSize: "24px" }}>
                     {t(feeEstimationSection.title)}
                   </CardSectionHeader>
-                  <WSFeeEstimation wsAdditionalDetails={feeEstimationSection} workflowDetails={null} />
-                  <ViewBreakup wsAdditionalDetails={feeEstimationSection} workflowDetails={null} />
+                  <WSFeeEstimation wsAdditionalDetails={feeEstimationSection} workflowDetails={null} onlyDisconnectionFee={isDisconnectionPaymentPending} />
+                  {!isDisconnectionPaymentPending && <ViewBreakup wsAdditionalDetails={feeEstimationSection} workflowDetails={null} />}
                 </React.Fragment>
               )}
 
@@ -1052,7 +1053,7 @@ const WSApplicationDetails = () => {
                   </StatusTable>
                 </React.Fragment>
               )*/}
-              {!isDisconnectionExecuted && (
+              {!isDisconnectionExecuted && !isDisconnectionPaymentPending && (
                 <React.Fragment>
                   <CardHeader styles={{ fontSize: "28px" }}>{t("WS_COMMON_DOCUMENT_DETAILS")}</CardHeader>
               {data?.WaterConnection?.[0]?.documents &&

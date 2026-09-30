@@ -22,47 +22,20 @@ const WSDisconnection = () => {
   let { data: newConfig, isLoading: configLoading } = Digit.Hooks.ws.useWSConfigMDMS.getFormConfig(stateId, {});
   newConfig = newConfig?.WSDisconnectionConfig ? newConfig?.WSDisconnectionConfig : newConfigWS;
   newConfig = newConfigWS;
-  newConfig.filter((e) => e.head === "NEW_DISCONNECTION")?.forEach((obj) => {
-    config = config.concat(obj.body.filter((a) => !a.hideInCitizen));
-  });
-  config.indexRoute = "restoration-application";
-
-let configNew = [{
-  "route": "restoration-application",
-  "component": "WSRestorationForm",
-  "key": "WSRestorationForm",
-  "type": "component",
-  "withoutLabel": true,
-  "nextStep": "check"
-},
-{
-  "route": "check",
-  "component": "WSRestorationCheckPage",
-  "key": "WSRestorationCheckPage",
-  "type": "component",
-  "isMandatory": true,
-  "withoutLabel": true,
-  "nextStep": "restoration-acknowledge",
-  "hideInEmployee": true
-},
-{
-  "route": "restoration-acknowledge",
-  "component": "WSRestorationAcknowledgement",
-  "key": "WSRestorationAcknowledgement",
-  "type": "component",
-  "isMandatory": true,
-  "withoutLabel": true,
-  "hideInEmployee": true
-}]
-console.log(configNew,config);
+  config = [
+    { route: "k-number", component: "WSDisconnectionKNumber", key: "WSDisconnectionKNumber" },
+    { route: "consumer-details", component: "WSDisconnectionConsumerDetails", key: "WSDisconnectionConsumerDetails" },
+    { route: "new-restoration", component: "WSRestorationForm", key: "WSRestorationForm" },
+  ];
+  config.indexRoute = "k-number";
   return (
     <Switch>
-      {configNew.map((routeObj, index) => {
+      {config.map((routeObj, index) => {
         const { component, texts, inputs, key, isSkipEnabled } = routeObj;
         const Component = typeof component === "string" ? Digit.ComponentRegistryService.getComponent(component) : component;
         return (
           <Route path={`${getPath(match.path, match.params)}/${routeObj.route}`} key={index}>
-            <Component config={{ texts, inputs, key, isSkipEnabled }} t={t} userType={"citizen"} />
+            <Component config={{ texts, inputs, key, isSkipEnabled }} t={t} userType={"citizen"} flow={"reconnection"} />
           </Route>
         );
       })}
