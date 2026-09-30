@@ -22,7 +22,9 @@ const GetConnectionDetails = () => {
   const connectionType = filters?.connectionType;
   const [showOptions, setShowOptions] = useState(false);
   const stateCode = Digit.ULBService.getStateId();
-  const actionConfig = ["MODIFY_CONNECTION_BUTTON", "BILL_AMENDMENT_BUTTON", "DISCONNECTION_BUTTON"];
+  // const actionConfig = ["MODIFY_CONNECTION_BUTTON", "BILL_AMENDMENT_BUTTON", "DISCONNECTION_BUTTON"];
+  const actionConfig = ["DISCONNECTION_BUTTON"];
+
   const { isLoading, isError, data: applicationDetails, error } = Digit.Hooks.ws.useConnectionDetail(t, tenantId, applicationNumber, serviceType, {
     privacy: Digit.Utils.getPrivacyObject(),
   });
@@ -207,11 +209,13 @@ const GetConnectionDetails = () => {
     }
   };
   function onActionSelect(action) {
-    if (action === "MODIFY_CONNECTION_BUTTON") {
-      getModifyConnectionButton();
-    } else if (action === "BILL_AMENDMENT_BUTTON") {
-      getBillAmendmentButton();
-    } else if (action === "DISCONNECTION_BUTTON") {
+    // if (action === "MODIFY_CONNECTION_BUTTON") {
+    //   getModifyConnectionButton();
+    // } else if (action === "BILL_AMENDMENT_BUTTON") {
+    //   getBillAmendmentButton();
+    // } else
+
+    if (action === "DISCONNECTION_BUTTON") {
       getDisconnectionButton();
     } else if (action === "RESTORATION_BUTTON" || action === "RECONNECTION_BUTTON") {
       getRestorationButton();
@@ -290,90 +294,90 @@ const GetConnectionDetails = () => {
   };
   return (
     <Fragment>
-        <div style={{ position: "relative", width: "100%", height: "100%", overflowY:"scroll" }}>
-          {dowloadOptions && dowloadOptions.length > 0 && (
-            <div style={{ position: "absolute", right: "24px", zIndex: 11 }}>
-              <MultiLink
-                className="multilinkWrapper employee-mulitlink-main-divNew"
-                onHeadClick={() => setShowOptions(!showOptions)}
-                displayOptions={showOptions}
-                options={dowloadOptions}
-                downloadBtnClassName={"employee-download-btn-className"}
-                optionsClassName={"employee-options-btn-className"}
-                ref={menuRef}
-              />
-            </div>
-          )}
-          <ApplicationDetailsTemplate
-            applicationDetails={applicationDetails}
-            isLoading={isLoading}
-            isDataLoading={isLoading}
-            applicationData={applicationDetails?.applicationData}
-            mutate={mutate}
-            businessService={applicationDetails?.processInstancesDetails?.[0]?.businessService}
-            moduleCode="WS"
-            showToast={showToast}
-            setShowToast={setShowToast}
-            closeToast={closeToast}
-            isInfoLabel={checkifPrivacyenabled}
-            labelComponent={<WSInfoLabel t={t} />}
-          />
-        </div>
-        {ifUserRoleExists("WS_CEMP") && checkApplicationStatus && !applicationDetails?.isDisconnectionDone ? (
-          <ActionBar>
-            {displayMenu ? <Menu options={showAction} localeKeyPrefix={"WS"} t={t} onSelect={onActionSelect} /> : null}
-
-            <SubmitBar ref={actionMenuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
-          </ActionBar>
-        ) : isDisconnectedOrInactive ? (
-          <ActionBar>
-            {displayMenu ? <Menu options={showActionRestoration} localeKeyPrefix={"WS"} t={t} onSelect={onActionSelect} /> : null}
-
-            <SubmitBar ref={actionMenuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
-          </ActionBar>
-        ) : (
-          <ActionBar>
-            {displayMenu ? <Menu options={showAction} localeKeyPrefix={"WS"} t={t} onSelect={onActionSelect} /> : null}
-
-            <SubmitBar ref={actionMenuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
-          </ActionBar>
+      <div style={{ position: "relative", width: "100%", height: "100%", overflowY: "scroll" }}>
+        {dowloadOptions && dowloadOptions.length > 0 && (
+          <div style={{ position: "absolute", right: "24px", zIndex: 11 }}>
+            <MultiLink
+              className="multilinkWrapper employee-mulitlink-main-divNew"
+              onHeadClick={() => setShowOptions(!showOptions)}
+              displayOptions={showOptions}
+              options={dowloadOptions}
+              downloadBtnClassName={"employee-download-btn-className"}
+              optionsClassName={"employee-options-btn-className"}
+              ref={menuRef}
+            />
+          </div>
         )}
+        <ApplicationDetailsTemplate
+          applicationDetails={applicationDetails}
+          isLoading={isLoading}
+          isDataLoading={isLoading}
+          applicationData={applicationDetails?.applicationData}
+          mutate={mutate}
+          businessService={applicationDetails?.processInstancesDetails?.[0]?.businessService}
+          moduleCode="WS"
+          showToast={showToast}
+          setShowToast={setShowToast}
+          closeToast={closeToast}
+          isInfoLabel={checkifPrivacyenabled}
+          labelComponent={<WSInfoLabel t={t} />}
+        />
+      </div>
+      {ifUserRoleExists("WS_CEMP") && checkApplicationStatus && !applicationDetails?.isDisconnectionDone ? (
+        <ActionBar>
+          {displayMenu ? <Menu options={showAction} localeKeyPrefix={"WS"} t={t} onSelect={onActionSelect} /> : null}
 
-        {showModal ? (
-          <Modal
-            open={showModal}
-            headerBarMain={<Heading label={t("WS_PENDING_DUES_LABEL")} />}
-            headerBarEnd={<CloseBtn onClick={() => setshowModal(false)} />}
-            center
-            formId="modal-action"
-            actionCancelOnSubmit={() => setshowModal(false)}
-            actionCancelLabel={t(`${"CS_COMMON_CANCEL"}`)}
-            actionSaveLabel={t(`${"WS_COMMON_COLLECT_LABEL"}`)}
-            actionSaveOnSubmit={() => {
-              history.push(
-                `/digit-ui/employee/payment/collect/${serviceType === "WATER" ? "WS" : "SW"}/${encodeURIComponent(
-                  applicationNumber
-                )}/${getTenantId}?tenantId=${getTenantId}&ISWSCON`
-              );
-              setshowModal(false);
-            }}
-            popupStyles={mobileView ? { width: "720px" } : {}}
-            style={
-              !mobileView
-                ? { minHeight: "45px", height: "auto", width: "107px", paddingLeft: "0px", paddingRight: "0px" }
-                : { minHeight: "45px", height: "auto", width: "44%" }
-            }
-            popupModuleMianStyles={mobileView ? { paddingLeft: "5px" } : {}}
-          >
-            <div className="modal-header-ws">{t("WS_CLEAR_DUES_DISCONNECTION_SUB_HEADER_LABEL")} </div>
-            <div className="modal-body-ws">
-              <span>
-                {t("WS_COMMON_TABLE_COL_AMT_DUE_LABEL")}: ₹{due ? due : applicationDetails?.fetchBillsData?.[0]?.totalAmount}
-              </span>
-            </div>
-          </Modal>
-        ) : null}
-        {showActionToast && <Toast error={showActionToast.key} label={t(`${showActionToast.label}`)} onClose={closeBillToast} />}
+          <SubmitBar ref={actionMenuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
+        </ActionBar>
+      ) : isDisconnectedOrInactive ? (
+        <ActionBar>
+          {displayMenu ? <Menu options={showActionRestoration} localeKeyPrefix={"WS"} t={t} onSelect={onActionSelect} /> : null}
+
+          <SubmitBar ref={actionMenuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
+        </ActionBar>
+      ) : (
+        <ActionBar>
+          {displayMenu ? <Menu options={showAction} localeKeyPrefix={"WS"} t={t} onSelect={onActionSelect} /> : null}
+
+          <SubmitBar ref={actionMenuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
+        </ActionBar>
+      )}
+
+      {showModal ? (
+        <Modal
+          open={showModal}
+          headerBarMain={<Heading label={t("WS_PENDING_DUES_LABEL")} />}
+          headerBarEnd={<CloseBtn onClick={() => setshowModal(false)} />}
+          center
+          formId="modal-action"
+          actionCancelOnSubmit={() => setshowModal(false)}
+          actionCancelLabel={t(`${"CS_COMMON_CANCEL"}`)}
+          actionSaveLabel={t(`${"WS_COMMON_COLLECT_LABEL"}`)}
+          actionSaveOnSubmit={() => {
+            history.push(
+              `/digit-ui/employee/payment/collect/${serviceType === "WATER" ? "WS" : "SW"}/${encodeURIComponent(
+                applicationNumber
+              )}/${getTenantId}?tenantId=${getTenantId}&ISWSCON`
+            );
+            setshowModal(false);
+          }}
+          popupStyles={mobileView ? { width: "720px" } : {}}
+          style={
+            !mobileView
+              ? { minHeight: "45px", height: "auto", width: "107px", paddingLeft: "0px", paddingRight: "0px" }
+              : { minHeight: "45px", height: "auto", width: "44%" }
+          }
+          popupModuleMianStyles={mobileView ? { paddingLeft: "5px" } : {}}
+        >
+          <div className="modal-header-ws">{t("WS_CLEAR_DUES_DISCONNECTION_SUB_HEADER_LABEL")} </div>
+          <div className="modal-body-ws">
+            <span>
+              {t("WS_COMMON_TABLE_COL_AMT_DUE_LABEL")}: ₹{due ? due : applicationDetails?.fetchBillsData?.[0]?.totalAmount}
+            </span>
+          </div>
+        </Modal>
+      ) : null}
+      {showActionToast && <Toast error={showActionToast.key} label={t(`${showActionToast.label}`)} onClose={closeBillToast} />}
     </Fragment>
   );
 };
