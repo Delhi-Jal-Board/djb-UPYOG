@@ -244,8 +244,11 @@ const ApplicationDetails = (props) => {
 
   const submitAction = async (data, nocData = false, isOBPS = {}) => {
     if (moduleCode?.includes("WS")) {
-      setShowConfirmation({ data, nocData, isOBPS });
-      return;
+      const actionStr = selectedAction?.action || "";
+      if (actionStr === "INITIATE" || actionStr === "EXECUTE_DISCONNECTION") {
+        setShowConfirmation({ data, nocData, isOBPS });
+        return;
+      }
     }
 
     return executeSubmitAction(data, nocData, isOBPS);
