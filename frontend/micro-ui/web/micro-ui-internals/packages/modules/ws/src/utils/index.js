@@ -1178,6 +1178,7 @@ export const updatePayloadOfWSRestoration = async (data, type) => {
     ...payload.processInstance,
     businessService: type === "WATER" ? "WSReconnection" : "SWReconnection",
     action: "SUBMIT_APPLICATION",
+    moduleName: "ws-services",
   };
   return payload;
 };
