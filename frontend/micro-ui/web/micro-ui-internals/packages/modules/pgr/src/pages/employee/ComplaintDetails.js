@@ -35,6 +35,7 @@ import { Close } from "../../Icons";
 import { useTranslation } from "react-i18next";
 import { isError, useQueryClient } from "react-query";
 import StarRated from "../../components/timelineInstances/StarRated";
+import TimeLine from "../../components/TimeLine";
 
 const MapView = (props) => {
   return (
@@ -223,6 +224,7 @@ export const ComplaintDetails = (props) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const { isLoading, complaintDetails, revalidate: revalidateComplaintDetails } = Digit.Hooks.pgr.useComplaintDetails({ tenantId, id });
   const workflowDetails = Digit.Hooks.useWorkflowDetails({ tenantId, id, moduleCode: "PGR", role: "EMPLOYEE" });
+  const { data: ComplainMaxIdleTime } = Digit.Hooks.pgr.useMDMS.ComplainClosingTime(tenantId?.split(".")[0]);
   const [imagesToShowBelowComplaintDetails, setImagesToShowBelowComplaintDetails] = useState([])
   
   // RAIN-5692 PGR : GRO is assigning complaint, Selecting employee and assign. Its not getting assigned.
@@ -249,7 +251,8 @@ export const ComplaintDetails = (props) => {
   const [assignResponse, setAssignResponse] = useState(null);
   const [loader, setLoader] = useState(false);
   const [rerender, setRerender] = useState(1);
-  const [viewTimeline, setViewTimeline]=useState(false);
+  const [viewTimeline, setViewTimeline] = useState(false);
+  const [hideTimeline, setHideTimeline] = useState(typeof window !== "undefined" ? window.innerWidth < 768 : false);
   const client = useQueryClient();
   function popupCall(option) {
     setDisplayMenu(false);
@@ -430,76 +433,109 @@ export const ComplaintDetails = (props) => {
     </>
   }
 
+  const getRowLabel = (key) => {
+    if (key === "CS_ADDCOMPLAINT_PRIORITY_LEVEL") return t("CS_PRIORITY_LEVEL") !== "CS_PRIORITY_LEVEL" ? t("CS_PRIORITY_LEVEL") : "Priority Level";
+    const translated = t(key);
+    if (translated === key) {
+      return key
+        .replace(/^(CS_ADDCOMPLAINT_|CS_COMPLAINT_|CS_|ES_)/, "")
+        .replace(/_/g, " ")
+        .toLowerCase()
+        .replace(/\b\w/g, (c) => c.toUpperCase());
+    }
+    return translated;
+  };
+
+  const getRowValue = (val) => {
+    if (val === undefined || val === null || val === "") return "N/A";
+    if (Array.isArray(val)) {
+      const items = val
+        .map((v) => {
+          if (typeof v === "object") return t(v?.code) || v?.code || "";
+          const translated = t(v);
+          if (translated === v && typeof v === "string" && v.startsWith("SERVICEDEFS.")) {
+            return v
+              .replace(/^SERVICEDEFS\./, "")
+              .replace(/_/g, " ")
+              .toLowerCase()
+              .replace(/\b\w/g, (c) => c.toUpperCase());
+          }
+          return translated || v;
+        })
+        .filter(Boolean);
+      return items.length > 0 ? items.join(", ") : "N/A";
+    }
+    const translatedVal = t(val);
+    if (translatedVal === val && typeof val === "string" && val.startsWith("SERVICEDEFS.")) {
+      return val
+        .replace(/^SERVICEDEFS\./, "")
+        .replace(/_/g, " ")
+        .toLowerCase()
+        .replace(/\b\w/g, (c) => c.toUpperCase());
+    }
+    if (translatedVal === val && typeof val === "string" && val.startsWith("CS_COMMON_")) {
+      return val
+        .replace(/^CS_COMMON_/, "")
+        .replace(/_/g, " ")
+        .toLowerCase()
+        .replace(/\b\w/g, (c) => c.toUpperCase());
+    }
+    return translatedVal || val;
+  };
+
   return (
     <React.Fragment>
-      <Card>
-        <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
-        <CardSubHeader>{t(`CS_HEADER_COMPLAINT_SUMMARY`)}</CardSubHeader>
-        <LinkButton label={t("VIEW_TIMELINE")} style={{marginLeft:'auto', color:"#A52A2A"}} onClick={handleViewTimeline}></LinkButton>
-        </div>
-        <CardLabel style={{fontWeight:"700"}}>{t(`CS_COMPLAINT_DETAILS_COMPLAINT_DETAILS`)}</CardLabel>
-        {isLoading ? (
-          <Loader />
-        ) : (
-          <StatusTable>
-            {complaintDetails &&
-              Object.keys(complaintDetails?.details).map((k, i, arr) => (
-                <Row
-                  key={k}
-                  label={t(k)}
-                  text={
-                    Array.isArray(complaintDetails?.details[k])
-                      ? complaintDetails?.details[k].map((val) => (typeof val === "object" ? t(val?.code) : t(val)))
-                      : t(complaintDetails?.details[k]) || "N/A"
-                  }
-                  last={arr.length - 1 === i}
-                />
-              ))}
+      <div className="employee-main-application-details" style={{ display: "flex", gap: "20px" }}>
 
-            {1 === 1 ? null : (
-              <MediaRow label="CS_COMPLAINT_DETAILS_GEOLOCATION">
-                <MapView onClick={zoomView} />
-              </MediaRow>
-            )}
-          </StatusTable>
-        )}
-        {imagesToShowBelowComplaintDetails?.thumbs ? (
-          <DisplayPhotos srcs={imagesToShowBelowComplaintDetails?.thumbs} onClick={(source, index) => zoomImageWrapper(source, index)} />
-        ) : null}
-        <BreakLine />
-        {workflowDetails?.isLoading && <Loader />}
-        {!workflowDetails?.isLoading && (
-          <React.Fragment>
-            <div id="timeline">
-            <CardSubHeader>{t(`CS_COMPLAINT_DETAILS_COMPLAINT_TIMELINE`)}</CardSubHeader>
 
-            {workflowDetails?.data?.timeline && workflowDetails?.data?.timeline?.length === 1 ? (
-              <CheckPoint isCompleted={true} label={t("CS_COMMON_" + workflowDetails?.data?.timeline[0]?.status)} />
+        {/* Right Column: Complaint Summary & Details */}
+        <div style={{ flex: "2 1 500px", minWidth: "300px" }}>
+          <Card>
+            <CardSubHeader style={{ marginBottom: "16px", fontSize: "20px", fontWeight: "700", color: "#0b2e5b" }}>
+              {t(`CS_HEADER_COMPLAINT_SUMMARY`) !== `CS_HEADER_COMPLAINT_SUMMARY` ? t(`CS_HEADER_COMPLAINT_SUMMARY`) : "Complaint Summary"}
+            </CardSubHeader>
+            <CardLabel style={{ fontWeight: "700", marginBottom: "12px", fontSize: "16px", color: "#0b2e5b" }}>
+              {t(`CS_COMPLAINT_DETAILS_COMPLAINT_DETAILS`) !== `CS_COMPLAINT_DETAILS_COMPLAINT_DETAILS`
+                ? t(`CS_COMPLAINT_DETAILS_COMPLAINT_DETAILS`)
+                : "Complaint Details"}
+            </CardLabel>
+            {isLoading ? (
+              <Loader />
             ) : (
-              <ConnectingCheckPoints>
-                {workflowDetails?.data?.timeline &&
-                  workflowDetails?.data?.timeline.slice(0,showAllTimeline? workflowDetails?.data.timeline.length:2).map((checkpoint, index, arr) => {
-                    return (
-                      <React.Fragment key={index}>
-                        <CheckPoint
-                          keyValue={index}
-                          isCompleted={index === 0}
-                          label={t("CS_COMMON_" + checkpoint.status)}
-                          customChild={getTimelineCaptions(checkpoint, index, arr)}
-                        />
-                      </React.Fragment>
-                    );
-                  })}
-              </ConnectingCheckPoints>
+              <StatusTable>
+                {complaintDetails &&
+                  Object.keys(complaintDetails?.details).map((k, i, arr) => (
+                    <Row
+                      key={k}
+                      label={getRowLabel(k)}
+                      text={getRowValue(complaintDetails?.details[k])}
+                      last={arr.length - 1 === i}
+                    />
+                  ))}
+              </StatusTable>
             )}
-            {workflowDetails?.data?.timeline?.length > 2 && (
-            <LinkButton label={showAllTimeline? t("COLLAPSE") : t("VIEW_TIMELINE")} onClick={toggleTimeline}>
-            </LinkButton>   
-            )}
-          </div>
-          </React.Fragment>
-        )}
-      </Card>
+            {imagesToShowBelowComplaintDetails?.thumbs ? (
+              <DisplayPhotos srcs={imagesToShowBelowComplaintDetails?.thumbs} onClick={(source, index) => zoomImageWrapper(source, index)} />
+            ) : null}
+          </Card>
+        </div>
+      </div>
+
+      {/* Complaint Timeline */}
+      {!workflowDetails?.isLoading && workflowDetails?.data && (
+        <Card id="timeline">
+          <TimeLine
+            data={workflowDetails.data}
+            serviceRequestId={id}
+            complaintWorkflow={complaintDetails?.workflow}
+            rating={complaintDetails?.audit?.rating}
+            zoomImage={zoomImage}
+            complaintDetails={complaintDetails}
+            ComplainMaxIdleTime={ComplainMaxIdleTime}
+          />
+        </Card>
+      )}
+
       {fullscreen ? (
         <PopUp>
           <div className="popup-module">
