@@ -1,97 +1,92 @@
 import React, { useState } from "react";
 import { Switch, Route, useRouteMatch, useLocation } from "react-router-dom";
-import { ActionBar, Menu, SubmitBar, BreadCrumb } from "@djb25/digit-ui-react-components";
+import {
+  AppContainer,
+  ModuleHeader,
+  ArrowLeft,
+  HomeIcon,
+  LayoutWrapper,
+} from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
-// import { ComplaintDetails } from "./ComplaintDetails";
-// import { CreateComplaint } from "./CreateComplaint";
-// import Inbox from "./Inbox";
 import { Employee } from "../../constants/Routes";
-// import Response from "./Response";
 
 const Complaint = () => {
-  const [displayMenu, setDisplayMenu] = useState(false);
-  const [popup, setPopup] = useState(false);
   const match = useRouteMatch();
   const { t } = useTranslation();
+  const location = useLocation();
 
-  const breadcrumConfig = {
-    home: {
-      content: t("CS_COMMON_HOME"),
-      path: Employee.Home,
-    },
-    inbox: {
-      content: t("CS_COMMON_INBOX"),
-      path: match.url + Employee.Inbox,
-    },
-    createComplaint: {
-      content: t("CS_PGR_CREATE_COMPLAINT"),
-      path: match.url + Employee.CreateComplaint,
-    },
-    complaintDetails: {
-      content: t("CS_PGR_COMPLAINT_DETAILS"),
-      path: match.url + Employee.ComplaintDetails + ":id",
-    },
-    response: {
-      content: t("CS_PGR_RESPONSE"),
-      path: match.url + Employee.Response,
-    },
-    editApplication: {
-      content: t("CS_PGR_EDIT_APPLICATION"),
-      path: match.url + Employee.EditApplication,
-    },    
+  /* ── Dynamic breadcrumbs — exact HRMS pattern ─── */
+  const getDynamicBreadcrumbs = () => {
+    const crumbs = [
+      { icon: HomeIcon, path: "/digit-ui/employee" },
+      {
+        label: t("CS_PGR_HEADER_COMPLAINT"),
+        path: "/digit-ui/employee/module/details?moduleName=PGR",
+      },
+    ];
+
+    const currentPath = location.pathname;
+
+    if (currentPath.includes("/inbox")) {
+      crumbs.push({ label: t("CS_COMMON_INBOX") });
+    } else if (currentPath.includes("/complaint/create")) {
+      crumbs.push({ label: t("CS_COMMON_INBOX"), path: `${match.url}/inbox` });
+      crumbs.push({ label: t("CS_PGR_CREATE_COMPLAINT") });
+    } else if (currentPath.includes("/complaint/details")) {
+      crumbs.push({ label: t("CS_COMMON_INBOX"), path: `${match.url}/inbox` });
+      crumbs.push({ label: t("CS_PGR_COMPLAINT_DETAILS") });
+    } else if (currentPath.includes("/response")) {
+      crumbs.push({ label: t("CS_COMMON_INBOX"), path: `${match.url}/inbox` });
+      crumbs.push({ label: t("CS_PGR_RESPONSE") });
+    } else if (currentPath.includes("/edit-complaint")) {
+      crumbs.push({ label: t("CS_COMMON_INBOX"), path: `${match.url}/inbox` });
+      crumbs.push({ label: t("CS_PGR_EDIT_APPLICATION") });
+    } else {
+      crumbs.push({ label: t("CS_PGR_HEADER_COMPLAINT") });
+    }
+
+    return crumbs;
   };
-  function popupCall(option) {
-    setDisplayMenu(false);
-    setPopup(true);
-  }
 
-  let location = useLocation().pathname;
-
-  const CreateComplaint = Digit?.ComponentRegistryService?.getComponent('PGRCreateComplaintEmp');
-  const ComplaintDetails = Digit?.ComponentRegistryService?.getComponent('PGRComplaintDetails');
-  const Inbox = Digit?.ComponentRegistryService?.getComponent('PGRInbox');
-  const Response = Digit?.ComponentRegistryService?.getComponent('PGRResponseEmp');
+  const CreateComplaint = Digit?.ComponentRegistryService?.getComponent("PGRCreateComplaintEmp");
+  const ComplaintDetails = Digit?.ComponentRegistryService?.getComponent("PGRComplaintDetails");
+  const Inbox = Digit?.ComponentRegistryService?.getComponent("PGRInbox");
+  const Response = Digit?.ComponentRegistryService?.getComponent("PGRResponseEmp");
   const EditApplication = Digit.ComponentRegistryService.getComponent("PGREditApplication");
+
   return (
-    <React.Fragment>
-      <div className="ground-container">
-        {!location.includes(Employee.Response) && (
-          <Switch>
-            <Route
-              path={match.url + Employee.CreateComplaint}
-              component={() => <BreadCrumb crumbs={[breadcrumConfig.home, breadcrumConfig.createComplaint]}></BreadCrumb>}
-            />
-            <Route
-              path={match.url + Employee.ComplaintDetails + ":id"}
-              component={() => <BreadCrumb crumbs={[breadcrumConfig.home, breadcrumConfig.inbox, breadcrumConfig.complaintDetails]}></BreadCrumb>}
-            />
-            <Route
-              path={match.url + Employee.Inbox}
-              component={() => <BreadCrumb crumbs={[breadcrumConfig.home, breadcrumConfig.inbox]}></BreadCrumb>}
-            />
-            <Route
-              path={match.url + Employee.Response}
-              component={<BreadCrumb crumbs={[breadcrumConfig.home, breadcrumConfig.response]}></BreadCrumb>}
-            />
-            <Route
-              path={match.url + Employee.EditApplication + ":id"}
-              component={<BreadCrumb crumbs={[breadcrumConfig.home, breadcrumConfig.editApplication]}></BreadCrumb>}
-            />
-          </Switch>
-        )}
-        <Switch>
-          <Route path={match.url + Employee.CreateComplaint} component={() => <CreateComplaint parentUrl={match.url} />} />
-          <Route path={match.url + Employee.ComplaintDetails + ":id*"} component={() => <ComplaintDetails />} />
+    <Switch>
+      <AppContainer>
+        <div className="ground-container employee-app-container form-container">
+          {/* Blue header bar — exact HRMS ModuleHeader */}
+          <ModuleHeader
+            leftContent={
+              <React.Fragment>
+                <ArrowLeft className="icon" />
+                Back
+              </React.Fragment>
+            }
+            onLeftClick={() => window.history.back()}
+            breadcrumbs={getDynamicBreadcrumbs()}
+          />
+
+          <Route
+            path={match.url + Employee.CreateComplaint}
+            component={() => <CreateComplaint parentUrl={match.url} />}
+          />
+          <Route
+            path={match.url + Employee.ComplaintDetails + ":id*"}
+            component={() => <ComplaintDetails />}
+          />
           <Route path={match.url + Employee.Inbox} component={Inbox} />
           <Route path={match.url + Employee.Response} component={Response} />
-          <Route path={match.url +Employee.EditApplication +":id*"} component={EditApplication} />
-        </Switch>
-      </div>
-      {/* <ActionBar>
-        {displayMenu ? <Menu options={["Assign Complaint", "Reject Complaint"]} onSelect={popupCall} /> : null}
-        <SubmitBar label="Take Action" onSubmit={() => setDisplayMenu(!displayMenu)} />
-      </ActionBar> */}
-    </React.Fragment>
+          <Route
+            path={match.url + Employee.EditApplication + ":id*"}
+            component={EditApplication}
+          />
+        </div>
+      </AppContainer>
+    </Switch>
   );
 };
 

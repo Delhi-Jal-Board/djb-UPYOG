@@ -261,7 +261,7 @@ const getAccessibleEmployeeModules = (modules) =>
  * ─────────────────────────────────────────────────────────────────────────── */
 export const EngagementPanel = ({ modules, t }) => {
   const [activeCode, setActiveCode] = React.useState("PGR");
-  const [isCollapsed, setIsCollapsed] = React.useState(true);
+  const [isCollapsed, setIsCollapsed] = React.useState(false);
 
   /* Build deduplicated chip list — collapse duplicate broadcast variants */
   const chips = React.useMemo(() => {
@@ -494,7 +494,7 @@ const EmployeeHome = ({ modules }) => {
   const greeting = getGreeting();
 
   const accessibleModules = getAccessibleEmployeeModules(modules);
-  // const engagementModules = accessibleModules.filter((mod) => engagementModuleCodes.includes(mod?.code));
+  const engagementModules = accessibleModules.filter((mod) => engagementModuleCodes.includes(mod?.code));
   const mainModules = accessibleModules.filter((mod) => !engagementModuleCodes.includes(mod?.code));
 
   return (
@@ -545,8 +545,8 @@ const EmployeeHome = ({ modules }) => {
           {/* Core services — unchanged carousel */}
           <ModuleCarousel modules={mainModules} title={t("Core Services")} className="core-carousel-section" />
 
-          {/* Engagement panel temporarily disabled. */}
-          {/* {engagementModules.length > 0 && <EngagementPanel modules={engagementModules} t={t} />} */}
+          {/* Engagement panel */}
+          {engagementModules.length > 0 && <EngagementPanel modules={engagementModules} t={t} />}
         </div>
       </div>
     </div>

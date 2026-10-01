@@ -162,12 +162,13 @@ const Filter = (props) => {
         <div className="filter-label">{lable}</div>
         {<Dropdown option={options} selected={selected} select={(value) => select(value, key)} optionKey={optionKey} />}
 
-        <div className="tag-container">
-          {pgrfilters[key].length > 0 &&
-            pgrfilters[key].map((value, index) => {
+        {pgrfilters[key].length > 0 && (
+          <div className="tag-container">
+            {pgrfilters[key].map((value, index) => {
               return <RemoveableTag key={index} text={`${value[optionKey].slice(0, 22)} ...`} onClick={() => onRemove(index, key)} />;
             })}
-        </div>
+          </div>
+        )}
       </div>
     );
   };

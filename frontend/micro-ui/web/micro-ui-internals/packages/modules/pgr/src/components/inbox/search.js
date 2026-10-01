@@ -49,9 +49,9 @@ const SearchComplaint = ({ onSearch, type, onClose, searchParams }) => {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmitInput)} style={{ marginLeft: "24px" }}>
+    <form onSubmit={handleSubmit(onSubmitInput)}>
       <React.Fragment>
-        <div className="search-container" style={{ width: "auto" }}>
+        <div className="search-container">
           <div className="search-complaint-container">
             {type === "mobile" && (
               <div className="complaint-header">
@@ -61,40 +61,45 @@ const SearchComplaint = ({ onSearch, type, onClose, searchParams }) => {
                 </span>
               </div>
             )}
-            <div className="complaint-input-container" style={{display:"grid"}}>
-              <span className="complaint-input">
-                <Label>{t("CS_COMMON_COMPLAINT_NO")}.</Label>
-                <TextInput
-                  name="serviceRequestId"
-                  value={complaintNo}
-                  onChange={setComplaint}
-                  inputRef={register({
-                    pattern: /(?!^$)([^\s])/,
-                  })}
-                  style={{ marginBottom: "8px" }}
-                ></TextInput>
-              </span>
-              <span className="mobile-input">
-                <Label>{t("CS_COMMON_MOBILE_NO")}.</Label>
-                <TextInput
-                  name="mobileNumber"
-                  value={mobileNo}
-                  onChange={setMobile}
-                  inputRef={register({
-                    pattern: /^[6-9]\d{9}$/,
-                  })}
-                ></TextInput>
-              </span>
+            <div className="complaint-input-container for-pt" style={{ width: "100%", display: "grid" }}>
+              <div className="input-fields">
+                <span className="mobile-input">
+                  <Label>{t("CS_COMMON_COMPLAINT_NO")}.</Label>
+                  <TextInput
+                    name="serviceRequestId"
+                    value={complaintNo}
+                    onChange={setComplaint}
+                    inputRef={register({
+                      pattern: /(?!^$)([^\s])/,
+                    })}
+                  />
+                </span>
+              </div>
+              <div className="input-fields">
+                <span className="mobile-input">
+                  <Label>{t("CS_COMMON_MOBILE_NO")}.</Label>
+                  <TextInput
+                    name="mobileNumber"
+                    value={mobileNo}
+                    onChange={setMobile}
+                    inputRef={register({
+                      pattern: /^[6-9]\d{9}$/,
+                    })}
+                  />
+                </span>
+              </div>
               {type === "desktop" && (
-                <SubmitBar
-                  style={{ marginTop: 32, marginLeft: "16px", width: "calc( 100% - 16px )" }}
-                  label={t("ES_COMMON_SEARCH")}
-                  submit={true}
-                  disabled={Object.keys(errors).filter((i) => errors[i]).length}
-                />
+                <div className="search-submit-wrapper">
+                  <SubmitBar
+                    className="submit-bar-search"
+                    label={t("ES_COMMON_SEARCH")}
+                    submit={true}
+                    disabled={!!Object.keys(errors).filter((i) => errors[i]).length}
+                  />
+                  <div style={{ paddingTop: "8px", textAlign: "center" }}>{clearAll()}</div>
+                </div>
               )}
             </div>
-            {type === "desktop" && <span className="clear-search">{clearAll()}</span>}
           </div>
         </div>
         {type === "mobile" && (
@@ -108,3 +113,4 @@ const SearchComplaint = ({ onSearch, type, onClose, searchParams }) => {
 };
 
 export default SearchComplaint;
+

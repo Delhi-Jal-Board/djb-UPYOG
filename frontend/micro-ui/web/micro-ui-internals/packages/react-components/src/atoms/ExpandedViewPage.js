@@ -9,7 +9,6 @@ import ModuleLinksView from "./ModuleLinksView";
 const engagementModuleCodes = [
   "ENGAGEMENT",
   "Engagement",
-  "PGR",
   "Events",
   "Documents",
   "Public Message broadcast",

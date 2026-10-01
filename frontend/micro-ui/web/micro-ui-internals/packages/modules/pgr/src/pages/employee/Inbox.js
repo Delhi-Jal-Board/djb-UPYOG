@@ -56,8 +56,8 @@ const Inbox = () => {
       );
     } else {
       return (
-        <div>
-          <Header>{t("ES_COMMON_INBOX")}</Header>
+        <div className="employee-form-content">
+          {/* <Header>{t("ES_COMMON_INBOX")}</Header> */}
           <DesktopInbox
             data={complaints}
             isLoading={isLoading}
