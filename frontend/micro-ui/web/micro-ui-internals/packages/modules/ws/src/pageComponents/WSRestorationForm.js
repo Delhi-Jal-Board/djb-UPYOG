@@ -386,6 +386,10 @@ if (flow === "reconnection") {
       }
     };
     const handleProceedToDemand = async () => {
+      if (!ownershipDocument) {
+        setError({ key: "error", message: "Please upload property ownership proof." });
+        return;
+      }
       setEstimateLoading(true);
       try {
         const serviceType = String(connection?.serviceType || connection?.service || "WATER").toUpperCase() === "SEWERAGE" ? "SEWERAGE" : "WATER";
@@ -412,12 +416,14 @@ if (flow === "reconnection") {
         };
         const estimateResponse = await Digit.WSService.wsCalculationEstimate(estimatePayload, serviceType === "WATER" ? "WS" : "SW");
         const taxHeadEstimates = estimateResponse?.Calculation?.[0]?.taxHeadEstimates || [];
-        const reconnectionFee = taxHeadEstimates.find((item) => {
+        const allowedFees = ["WS_RECONNECTION_FEE", "SW_RECONNECTION_FEE", "WS_DISCONNECTION_FEE", "SW_DISCONNECTION_FEE"];
+        const validFees = taxHeadEstimates.filter((item) => {
           const code = String(item?.taxHeadCode || "").toUpperCase();
-          return code === "WS_RECONNECTION_FEE" || code === "SW_RECONNECTION_FEE" || code === "WS_REOPENING_FEE" || code === "SW_REOPENING_FEE";
+          return allowedFees.includes(code);
         });
-        if (!reconnectionFee) throw new Error("Reconnection fee was not returned by the estimate service");
-        setEstimateData({ Calculation: [{ ...estimateResponse.Calculation[0], taxHeadEstimates: [reconnectionFee], totalAmount: Number(reconnectionFee?.estimateAmount ?? reconnectionFee?.amount ?? 0) }] });
+        if (validFees.length === 0) throw new Error("Reconnection fee was not returned by the estimate service");
+        const totalAmt = validFees.reduce((acc, curr) => acc + Number(curr?.estimateAmount ?? curr?.amount ?? 0), 0);
+        setEstimateData({ Calculation: [{ ...estimateResponse.Calculation[0], taxHeadEstimates: validFees, totalAmount: totalAmt }] });
         setShowDemandClearance(true);
         Digit.SessionStorage.set("WS_DISCONNECTION", { ...applicationData, reconnectionValidation: { isAltered, isModified, dwellingUnits, extendedArea, ownershipProofFileStoreId: ownershipDocument?.fileStoreId } });
       } catch (estimateError) {
@@ -458,12 +464,24 @@ if (flow === "reconnection") {
         // Preserve documents returned by the search API so the create request keeps the complete connection data.
         const existingDocuments = Array.isArray(submittedConnection?.documents) ? submittedConnection.documents : [];
         const ownershipProof = ownershipDocument
-          ? [{ fileStoreId: ownershipDocument.fileStoreId, documentUid: ownershipDocument.fileStoreId, documentType: "PROPERTY_OWNERSHIP_PROOF" }]
+          ? [{ fileStoreId: ownershipDocument.fileStoreId, documentUid: ownershipDocument.fileStoreId, documentType: "PROPERTY_OWNERSHIP_PROOF", status: "ACTIVE", id: null }]
           : [];
         const docs = [...existingDocuments, ...ownershipProof];
         const reconnectionValidation = latestApplicationData?.reconnectionValidation || {};
 
         // Build payload directly from `connection` (raw Search API data) so no fields are lost
+        const baseAdditionalDetails = {
+          ...submittedConnection?.additionalDetails,
+          ...reconnectionValidation,
+          isAltered: reconnectionValidation.isAltered ?? isAltered,
+          isModified: reconnectionValidation.isModified ?? isModified,
+          ownershipProofFileStoreId: reconnectionValidation.ownershipProofFileStoreId || ownershipDocument?.fileStoreId,
+        };
+        const finalDwellingUnits = reconnectionValidation.dwellingUnits ?? dwellingUnits;
+        if (finalDwellingUnits) baseAdditionalDetails.dwellingUnits = finalDwellingUnits;
+        const finalExtendedArea = reconnectionValidation.extendedArea ?? extendedArea;
+        if (finalExtendedArea) baseAdditionalDetails.extendedArea = finalExtendedArea;
+
         const createPayload = {
           [connectionKey]: {
             ...submittedConnection,
@@ -479,15 +497,7 @@ if (flow === "reconnection") {
             water: serviceType === "WATER",
             sewerage: serviceType === "SEWERAGE",
             service: serviceType === "WATER" ? "Water" : "Sewerage",
-            additionalDetails: {
-              ...submittedConnection?.additionalDetails,
-              ...reconnectionValidation,
-              isAltered: reconnectionValidation.isAltered ?? isAltered,
-              isModified: reconnectionValidation.isModified ?? isModified,
-              dwellingUnits: reconnectionValidation.dwellingUnits ?? dwellingUnits,
-              extendedArea: reconnectionValidation.extendedArea ?? extendedArea,
-              ownershipProofFileStoreId: reconnectionValidation.ownershipProofFileStoreId || ownershipDocument?.fileStoreId,
-            },
+            additionalDetails: baseAdditionalDetails,
             processInstance: {
               ...connection?.processInstance,
               action: "INITIATE",

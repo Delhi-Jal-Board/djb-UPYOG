@@ -64,8 +64,8 @@ const WSFeeEstimation = ({ wsAdditionalDetails, workflowDetails, onlyDisconnecti
   const [values, setValues] = useState(wsAdditionalDetails.additionalDetails.values ? wsAdditionalDetails.additionalDetails.values : []);
   const isDisconnectionExecuted = wsAdditionalDetails?.additionalDetails?.appDetails?.applicationStatus === "DISCONNECTION_EXECUTED";
   const billRows = billDetails?.billDetails?.[0]?.billAccountDetails || billDetails?.taxHeadEstimates || [];
-  const disconnectionFee = billRows.find((row) => row?.taxHeadCode === "WS_DISCONNECTION_FEE");
-  const displayedValues = onlyDisconnectionFee || isDisconnectionExecuted ? values.filter((value) => value?.title === "WS_DISCONNECTION_FEE") : values;
+  const disconnectionFee = billRows.find((row) => row?.taxHeadCode === "WS_DISCONNECTION_FEE" || row?.taxHeadCode === "SW_DISCONNECTION_FEE");
+  const displayedValues = onlyDisconnectionFee || isDisconnectionExecuted ? values.filter((value) => value?.title === "WS_DISCONNECTION_FEE" || value?.title === "SW_DISCONNECTION_FEE") : values;
   const displayedTotalAmount = onlyDisconnectionFee || isDisconnectionExecuted
     ? disconnectionFee?.amount ?? disconnectionFee?.estimateAmount ?? 0
     : billDetails?.totalAmount;
