@@ -370,6 +370,8 @@ const MutationApplication = () => {
       // Replaced by custom document mapping logic below
 
       convertAppData.applicationType = resolvedServiceType === "WATER" ? "MUTATION_WATER_CONNECTION" : "MUTATION_SEWERAGE_CONNECTION";
+      delete convertAppData.dueVerification;
+
 
       if (isEditFlow) {
         let updatePayload = {
