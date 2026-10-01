@@ -25,7 +25,7 @@ const useWSInbox = ({ tenantId, filters, config = {} }) => {
     if (applicationType && applicationType.length > 0) {
       businessService = applicationType;
     } else {
-      businessService = ["NewWS1", "ModifyWSConnection", "DisconnectWSConnection", "mutationWSConnection"];
+      businessService = ["NewWS1", "ModifyWSConnection", "DisconnectWSConnection", "mutationWSConnection","WSReconnection"];
     }
   }
   if (window.location.href.includes("sewerage/inbox")) {
