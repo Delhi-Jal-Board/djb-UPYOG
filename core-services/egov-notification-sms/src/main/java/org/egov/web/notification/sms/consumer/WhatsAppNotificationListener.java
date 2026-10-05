@@ -27,7 +27,7 @@ public class WhatsAppNotificationListener {
     @Value("${whatsapp.enabled:false}")
     private Boolean whatsappEnabled;
 
-    @KafkaListener(topics = "${kafka.topics.notification.whatsapp.name}")
+    @KafkaListener(topics = "${kafka.topics.notification.whatsapp.name}", concurrency = "10")
     public void process(HashMap<String, Object> consumerRecord) {
         RequestContext.setId(UUID.randomUUID().toString());
         WhatsAppRequest request = null;
