@@ -430,36 +430,8 @@ public class WaterServiceImpl implements WaterService {
 
 		//call calculator service to generate the demand for one time fee
 		calculationService.calculateFeeAndGenerateDemand(waterConnectionRequest, property);
-		String currentAction = waterConnectionRequest.getWaterConnection().getProcessInstance().getAction();
-		log.info("[WS-AUTO-ACTIVATE] ===== UPDATE WATER CONNECTION START =====");
-		log.info("[WS-AUTO-ACTIVATE] ApplicationNo: {}, ApplicationType: {}, CurrentAction: {}",
-				waterConnectionRequest.getWaterConnection().getApplicationNo(),
-				waterConnectionRequest.getWaterConnection().getApplicationType(),
-				currentAction);
 		//Call workflow
-		boolean isNoPayment = false;
-		if ("APPROVE_FOR_CONNECTION".equalsIgnoreCase(currentAction)) {
-			log.info("[WS-AUTO-ACTIVATE] Action is APPROVE_FOR_CONNECTION — checking if extra payment is due...");
-
-			isNoPayment = calculationService.fetchBillForApplication(
-					waterConnectionRequest.getWaterConnection().getTenantId(),
-					waterConnectionRequest.getWaterConnection().getApplicationNo(),
-					waterConnectionRequest.getRequestInfo()
-			);
-			log.info("[WS-AUTO-ACTIVATE] fetchBillForApplication result: isNoPayment = {} (true = no extra payment, false = extra payment due)",
-					isNoPayment);
-
-			if (isNoPayment) {
-				log.info("[WS-AUTO-ACTIVATE] NO extra payment due — setting comment to WS_NO_PAYMENT, will auto-activate after workflow transition");
-				waterConnectionRequest.getWaterConnection().getProcessInstance().setComment(WORKFLOW_NO_PAYMENT_CODE);
-			} else {
-				log.info("[WS-AUTO-ACTIVATE] EXTRA payment is due — citizen must pay. Application will move to PENDING_FOR_FINAL_PAYMENT");
-			}
-		}
-		log.info("[WS-AUTO-ACTIVATE] Calling workflow transition with action: {}", currentAction);
 		wfIntegrator.callWorkFlow(waterConnectionRequest, property);
-		log.info("[WS-AUTO-ACTIVATE] After workflow transition, applicationStatus = {}",
-				waterConnectionRequest.getWaterConnection().getApplicationStatus());
 		waterDaoImpl.pushForEditNotification(waterConnectionRequest, isStateUpdatable);
 		enrichmentService.enrichFileStoreIds(waterConnectionRequest);
 		enrichmentService.postStatusEnrichment(waterConnectionRequest);
@@ -473,15 +445,6 @@ public class WaterServiceImpl implements WaterService {
 		if (!StringUtils.isEmpty(waterConnectionRequest.getWaterConnection().getTenantId()))
 			criteria.setTenantId(waterConnectionRequest.getWaterConnection().getTenantId());
 		enrichmentService.enrichProcessInstance(Arrays.asList(waterConnectionRequest.getWaterConnection()), criteria, waterConnectionRequest.getRequestInfo());
-
-		if("APPROVE_FOR_CONNECTION".equalsIgnoreCase(currentAction) && isNoPayment){
-			log.info("[WS-AUTO-ACTIVATE] Triggering noPaymentWorkflow() for auto K-number generation and auto-activation...");
-			paymentUpdateService.noPaymentWorkflow(waterConnectionRequest, property, waterConnectionRequest.getRequestInfo());
-			log.info("[WS-AUTO-ACTIVATE] noPaymentWorkflow() completed. ConnectionNo (K-Number): {}, Status: {}",
-					waterConnectionRequest.getWaterConnection().getConnectionNo(),
-					waterConnectionRequest.getWaterConnection().getApplicationStatus());
-		}
-		log.info("[WS-AUTO-ACTIVATE] ===== UPDATE WATER CONNECTION END =====");
 
 		waterConnectionRequest.setWaterConnection(decryptConnectionDetails(waterConnectionRequest.getWaterConnection(), waterConnectionRequest.getRequestInfo()));
 
