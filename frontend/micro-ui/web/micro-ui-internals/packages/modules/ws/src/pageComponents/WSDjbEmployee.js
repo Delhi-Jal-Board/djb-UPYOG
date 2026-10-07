@@ -10,6 +10,7 @@ import {
   UploadFile,
   ViewsIcon,
   RemoveIcon,
+  RadioButtons
 } from "@djb25/digit-ui-react-components";
 import _ from "lodash";
 import React, { useEffect, useState } from "react";
@@ -20,7 +21,7 @@ import Timeline from "../components/Timeline";
 
 const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formState, clearErrors }) => {
   const { t } = useTranslation();
-  const { control, watch, setValue, formState: localFormState } = useForm({
+  const { control, watch, setValue, formState: localFormState, trigger } = useForm({
     defaultValues: {
       isDjbEmployee:
         String(formData?.djbEmployee?.isDjbEmployee) === "true" || String(formData?.additionalDetails?.isDjbEmployee) === "true" || false,
@@ -33,6 +34,10 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
 
   const formValue = watch();
   const isDjbEmployee = watch("isDjbEmployee");
+
+  useEffect(() => {
+    trigger();
+  }, [isDjbEmployee]);
 
   useEffect(() => {
     const isEmp = String(formData?.djbEmployee?.isDjbEmployee) === "true" || String(formData?.additionalDetails?.isDjbEmployee) === "true";
@@ -124,20 +129,38 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
   const onSkip = () => onSelect();
 
   const FormContent = (
-    <CollapsibleCardPage title={t("WS_DJB_EMPLOYEE")} defaultOpen={true}>
-      <div style={{ width: "max-content" }}>
-        <Controller
-          control={control}
-          name="isDjbEmployee"
-          render={(props) => <CheckBox label={t("WS_DJB_EMPLOYEE")} checked={props.value} onChange={(e) => props.onChange(e.target.checked)} />}
-        />
+    <CollapsibleCardPage title={t("Are you a DJB Employee?")} defaultOpen={true}>
+      <div className="formcomposer-section-grid">
+        <LabelFieldPair>
+          <CardLabel>{t("Are you a DJB Employee?")}</CardLabel>
+          <div className="field">
+            <Controller
+              control={control}
+              name="isDjbEmployee"
+              render={(props) => (
+                <RadioButtons
+                  className="form-field"
+                  style={{ display: "flex", gap: "2rem", alignItems: "center" }}
+                  options={[
+                    { i18nKey: "CORE_COMMON_YES", code: true },
+                    { i18nKey: "CORE_COMMON_NO", code: false },
+                  ]}
+                  optionsKey="i18nKey"
+                  selectedOption={props.value ? { i18nKey: "CORE_COMMON_YES", code: true } : { i18nKey: "CORE_COMMON_NO", code: false }}
+                  onSelect={(e) => props.onChange(e.code)}
+                  t={t}
+                />
+              )}
+            />
+          </div>
+        </LabelFieldPair>
       </div>
 
       {isDjbEmployee && (
         <div className="formcomposer-section-grid">
           <div>
             <LabelFieldPair>
-              <CardLabel>{t("WS_EMPLOYEE_ID")}</CardLabel>
+              <CardLabel>{t("Employee ID")} *</CardLabel>
               <Controller
                 control={control}
                 name="employeeId"
@@ -147,7 +170,7 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
                     value={props.value}
                     onChange={(e) => props.onChange(e.target.value)}
                     onBlur={props.onBlur}
-                    placeholder={t("WS_EMPLOYEE_ID")}
+                    placeholder={t("Employee ID")}
                   />
                 )}
               />
@@ -156,7 +179,7 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
 
           <div>
             <LabelFieldPair>
-              <CardLabel>{t("WS_DATE_OF_RETIREMENT")}</CardLabel>
+              <CardLabel>{t("Date of Retirement")} *</CardLabel>
               <div className="field">
                 <Controller
                   control={control}
@@ -170,7 +193,7 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
 
           <div>
             <LabelFieldPair>
-              <CardLabel>{t("WS_EMPLOYEE_DESIGNATION")}</CardLabel>
+              <CardLabel>{t("Employee Designation")} *</CardLabel>
               <div className="field">
                 <Controller
                   control={control}
@@ -181,7 +204,7 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
                       value={props.value}
                       onChange={(e) => props.onChange(e.target.value)}
                       onBlur={props.onBlur}
-                      placeholder={t("WS_EMPLOYEE_DESIGNATION")}
+                      placeholder={t("Employee Designation")}
                     />
                   )}
                 />
@@ -191,7 +214,7 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
 
           <div>
             <LabelFieldPair>
-              <CardLabel>{t("WS_UPLOAD_EMPLOYEE_ID_DOC")}</CardLabel>
+              <CardLabel>{t("Upload Employee ID Document")} *</CardLabel>
               <div className="field">
                 <Controller
                   control={control}
@@ -201,7 +224,7 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
                     <UploadFile
                       id={"employee-doc"}
                       extraStyleName={"propertyCreate"}
-                      placeholder={t("WS_UPLOAD_EMPLOYEE_ID_DOC")}
+                      placeholder={t("Upload Employee ID Document")}
                       accept="image/*, .pdf, .png, .jpeg, .jpg"
                       onUpload={(e) => {
                         selectfile(e);
@@ -214,7 +237,7 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
                       message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`ES_NO_FILE_SELECTED_LABEL`)}
                       error={errorUpload}
                       uploadedFiles={
-                        uploadedFile && !file ? [[file?.name || t("WS_UPLOAD_EMPLOYEE_ID_DOC"), { fileStoreId: uploadedFile }]] : undefined
+                        uploadedFile && !file ? [[file?.name || t("Upload Employee ID Document"), { fileStoreId: uploadedFile }]] : undefined
                       }
                     />
                   )}
@@ -233,12 +256,12 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
                       border: "1px solid #E5E7EB",
                     }}
                   >
-                    <span style={{ fontSize: "14px", color: "#374151", fontWeight: "600" }}>{file?.name || t("WS_UPLOAD_EMPLOYEE_ID_DOC")}</span>
+                    <span style={{ fontSize: "14px", color: "#374151", fontWeight: "600" }}>{file?.name || t("Upload Employee ID Document")}</span>
                     <div style={{ display: "flex", gap: "10px" }}>
                       <button
                         type="button"
                         onClick={() => handleView(uploadedFile, tenantId)}
-                        title={t("WS_VIEW_DOCUMENT") || "View Document"}
+                        title={t("View Document") || "View Document"}
                         style={{ border: "none", background: "transparent", color: "#00497e", cursor: "pointer", padding: 0 }}
                       >
                         <ViewsIcon />
@@ -268,7 +291,7 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
 
   const DueVerificationContent =
     formData?.dueVerification?.length > 0 ? (
-      <CollapsibleCardPage title={t("WS_DUE_VERIFICATION_DETAILS")} defaultOpen={true}>
+      <CollapsibleCardPage title={t("Due Verification Details")} defaultOpen={true}>
         <div style={{ overflowX: "auto", marginTop: "10px", marginBottom: "30px", width: "100%" }}>
           <table style={{ width: "100%", textAlign: "left", borderCollapse: "collapse", border: "1px solid #e0e0e0" }}>
             <thead>

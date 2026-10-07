@@ -206,7 +206,7 @@ const App = ({ path }) => {
             />
             <div className="employee-form">
               <div className="employee-form-content">
-                <PrivateRoute path={`${path}/create-application`} component={WSCreate} />
+                <PrivateRoute path={`${path}/create-application`} component={WSInfoPage} />
                 <PrivateRoute path={`${path}/disconnect-application`} component={WSDisconnection} />
                 <PrivateRoute path={`${path}/restore-application`} component={WSRestoration} />
                 <PrivateRoute path={`${path}/disconnect-acknowledge`} component={WSDisconnectAcknowledgement} />

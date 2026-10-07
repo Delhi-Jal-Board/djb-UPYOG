@@ -403,6 +403,8 @@ export const createPayloadOfWS = async (data) => {
       ...data?.bankDetails,
       ...data?.declarationData,
       ...data?.declaration,
+      completeAddress: connectionDetailsObject?.completeAddress || "",
+      addressType: connectionDetailsObject?.addressType?.code || connectionDetailsObject?.addressType || "",
       zro: data?.zro?.code || data?.zro,
       locality: data?.propertyAddress?.locality?.code || data?.cpt?.details?.address?.locality?.code,
       detailsProvidedBy: data?.plumberDetails?.[0]?.detailsProvidedBy?.code || data?.plumberDetails?.[0]?.detailsProvidedBy || "",
