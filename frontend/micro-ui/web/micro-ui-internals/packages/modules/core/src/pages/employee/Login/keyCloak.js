@@ -162,7 +162,7 @@ export const initKeycloak = async () => {
   _kc = new Keycloak({
     url: `${portalUrl}/keycloak`,
     realm: "DL",
-    clientId: "local-upyog",
+    clientId: "upyog",
   });
 
   try {
