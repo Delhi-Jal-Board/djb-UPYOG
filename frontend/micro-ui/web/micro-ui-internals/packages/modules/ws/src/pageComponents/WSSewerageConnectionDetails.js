@@ -75,6 +75,8 @@ const WSSewerageConnectionDetails = ({ t, config, userType, onSelect, formData }
                     "initialMeterReading": null,
                     "detailsProvidedBy": "",
                     "locality": formData?.cpt?.details?.address?.locality?.code,
+              "completeAddress": formData?.ConnectionDetails?.[0]?.completeAddress || "",
+              "addressType": formData?.ConnectionDetails?.[0]?.addressType?.code || formData?.ConnectionDetails?.[0]?.addressType || "",
                 },
                 "tenantId": formData?.cpt?.details?.tenantId,
                 "processInstance": {
@@ -146,6 +148,8 @@ const WSSewerageConnectionDetails = ({ t, config, userType, onSelect, formData }
                       "initialMeterReading": null,
                       "detailsProvidedBy": "",
                       "locality": formData?.cpt?.details?.address?.locality?.code,
+              "completeAddress": formData?.ConnectionDetails?.[0]?.completeAddress || "",
+              "addressType": formData?.ConnectionDetails?.[0]?.addressType?.code || formData?.ConnectionDetails?.[0]?.addressType || "",
                   },
                   "tenantId": formData?.cpt?.details?.tenantId,
                   "processInstance": {
@@ -201,6 +205,8 @@ const WSSewerageConnectionDetails = ({ t, config, userType, onSelect, formData }
                     "initialMeterReading": null,
                     "detailsProvidedBy": "",
                     "locality": formData?.cpt?.details?.address?.locality?.code,
+              "completeAddress": formData?.ConnectionDetails?.[0]?.completeAddress || "",
+              "addressType": formData?.ConnectionDetails?.[0]?.addressType?.code || formData?.ConnectionDetails?.[0]?.addressType || "",
                 },
                 "tenantId": formData?.cpt?.details?.tenantId,
                 "processInstance": {
