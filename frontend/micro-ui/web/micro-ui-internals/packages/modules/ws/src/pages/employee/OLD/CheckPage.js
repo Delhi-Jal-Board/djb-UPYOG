@@ -309,6 +309,9 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
             />
             <Row label={t("WS_PLOT_AREA")} text={`${t(checkForNA(useDetails?.plotArea))}`} />
             <Row label={t("WS_BUILT_UP_AREA")} text={`${t(checkForNA(useDetails?.builtUpArea))}`} />
+            {useDetails?.heightOfTheBuilding && (
+              <Row label={t("WS_HEIGHT_OF_THE_BUILDING(meters)")} text={`${t(checkForNA(useDetails?.heightOfTheBuilding))}`} />
+            )}
             <Row
               label={t("WS_SELECT_YEAR_OF_CONSTRUCTION")}
               text={`${t(
@@ -338,10 +341,10 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
                   text={`${djbEmployee?.isDjbEmployee ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}`}
                   actionButton={<ActionButton onClick={onEdit} />}
                 />
-                {djbEmployee?.isDjbEmployee && (
+                {(djbEmployee?.isDjbEmployee || djbEmployee?.employeeId || djbEmployee?.designation || djbEmployee?.document) && (
                   <React.Fragment>
                     <Row label={t("WS_EMPLOYEE_ID")} text={`${t(checkForNA(djbEmployee?.employeeId))}`} />
-                    <Row label={t("WS_DATE_OF_RETIREMENT")} text={`${t(checkForNA(djbEmployee?.dor))}`} />
+                    {/* <Row label={t("WS_DATE_OF_RETIREMENT")} text={`${t(checkForNA(djbEmployee?.dor))}`} /> */}
                     <Row label={t("WS_EMPLOYEE_DESIGNATION")} text={`${t(checkForNA(djbEmployee?.designation))}`} />
                     {djbEmployee?.document && (
                       <Row

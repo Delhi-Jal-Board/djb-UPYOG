@@ -2058,6 +2058,7 @@ export const WSCalculationPayload = (data, tenantId) => {
     landArea: useDetails?.plotArea ? Number(useDetails.plotArea) : 0,
     builtUpArea: useDetails?.builtUpArea ? Number(useDetails.builtUpArea) : 0,
     farArea: useDetails?.farArea ? Number(useDetails.farArea) : 0,
+    heightOfTheBuilding: useDetails?.heightOfTheBuilding ? Number(useDetails.heightOfTheBuilding) : 0,
     numberOfFloors: useDetails?.noOfFloors?.code ? Number(useDetails.noOfFloors.code) : 0,
     numberOfStudents: useDetails?.numberOfStudents ? Number(useDetails.numberOfStudents) : 0,
     numberOfBeds: useDetails?.numberOfBeds ? Number(useDetails.numberOfBeds) : 0,

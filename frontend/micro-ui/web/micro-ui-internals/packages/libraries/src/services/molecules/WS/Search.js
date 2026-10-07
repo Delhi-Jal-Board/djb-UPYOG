@@ -548,6 +548,7 @@ export const WSSearch = {
         { title: "WS_NUMBER_OF_FLOORS", value: propertyDataDetails?.noOfFloors || propertyDataDetails?.additionalDetails?.noOfFloors || t("NA") },
         { title: "WS_PLOT_AREA", value: propertyDataDetails?.additionalDetails?.plotArea || t("NA") },
         { title: "WS_BUILT_UP_AREA", value: propertyDataDetails?.additionalDetails?.builtUpArea || t("NA") },
+        { title: "WS_HEIGHT_OF_THE_BUILDING(meters)", value: propertyDataDetails?.additionalDetails?.heightOfTheBuilding || propertyDataDetails?.heightOfTheBuilding || t("NA") },
         { title: "WS_SELECT_YEAR_OF_CONSTRUCTION", value: propertyDataDetails?.additionalDetails?.yearOfConstruction || t("NA") },
         { title: "WS_NUMBER_OF_DWELLING_UNITS", value: propertyDataDetails?.additionalDetails?.numberOfDwellingUnits || t("NA") },
         { title: "WS_NUMBER_OF_ROOMS", value: propertyDataDetails?.additionalDetails?.numberOfRooms || t("NA") },

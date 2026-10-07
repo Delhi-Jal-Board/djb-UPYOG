@@ -21,10 +21,14 @@ import Timeline from "../components/Timeline";
 
 const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formState, clearErrors }) => {
   const { t } = useTranslation();
-  const { control, watch, setValue, formState: localFormState, trigger } = useForm({
+  const { control, watch, setValue, formState: localFormState, trigger, clearErrors: localClearErrors } = useForm({
     defaultValues: {
       isDjbEmployee:
-        String(formData?.djbEmployee?.isDjbEmployee) === "true" || String(formData?.additionalDetails?.isDjbEmployee) === "true" || false,
+        String(formData?.djbEmployee?.isDjbEmployee) === "true" ||
+        formData?.djbEmployee?.isDjbEmployee === true ||
+        String(formData?.additionalDetails?.isDjbEmployee) === "true" ||
+        formData?.additionalDetails?.isDjbEmployee === true ||
+        false,
       employeeId: formData?.djbEmployee?.employeeId || formData?.additionalDetails?.employeeId || "",
       dor: formData?.djbEmployee?.dor || formData?.additionalDetails?.dor || "",
       designation: formData?.djbEmployee?.designation || formData?.additionalDetails?.designation || "",
@@ -36,13 +40,22 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
   const isDjbEmployee = watch("isDjbEmployee");
 
   useEffect(() => {
-    trigger();
+    if (!isDjbEmployee) {
+      localClearErrors();
+      if (clearErrors) clearErrors(config?.key);
+    } else {
+      trigger(["employeeId", "designation", "document"]);
+    }
   }, [isDjbEmployee]);
 
   useEffect(() => {
-    const isEmp = String(formData?.djbEmployee?.isDjbEmployee) === "true" || String(formData?.additionalDetails?.isDjbEmployee) === "true";
-    if (isEmp !== undefined && isEmp !== null) {
-      setValue("isDjbEmployee", isEmp);
+    const isEmp =
+      String(formData?.djbEmployee?.isDjbEmployee) === "true" ||
+      formData?.djbEmployee?.isDjbEmployee === true ||
+      String(formData?.additionalDetails?.isDjbEmployee) === "true" ||
+      formData?.additionalDetails?.isDjbEmployee === true;
+    if (formData?.djbEmployee !== undefined || formData?.additionalDetails?.isDjbEmployee !== undefined) {
+      setValue("isDjbEmployee", !!isEmp);
       setValue("employeeId", formData?.djbEmployee?.employeeId || formData?.additionalDetails?.employeeId || "");
       setValue("dor", formData?.djbEmployee?.dor || formData?.additionalDetails?.dor || "");
       setValue("designation", formData?.djbEmployee?.designation || formData?.additionalDetails?.designation || "");
@@ -86,7 +99,7 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
             const response = await Digit.UploadServices.Filestorage("WS", file, tenantId?.split(".")[0]);
             if (response?.data?.files?.length > 0) {
               setUploadedFile(response?.data?.files[0]?.fileStoreId);
-              setValue("document", response?.data?.files[0]?.fileStoreId);
+              setValue("document", response?.data?.files[0]?.fileStoreId, { shouldValidate: true });
             } else {
               setErrorUpload({ key: "error", message: "CS_FILE_UPLOAD_ERROR" });
             }
@@ -115,12 +128,18 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
   }, [formValue, userType]);
 
   useEffect(() => {
-    if (Object.keys(localFormState.errors).length && !_.isEqual(formState?.errors?.[config.key]?.type || {}, localFormState.errors)) {
-      if (setError) setError(config.key, { type: localFormState.errors });
-    } else if (!Object.keys(localFormState.errors).length && formState?.errors?.[config.key]) {
-      if (clearErrors) clearErrors(config.key);
+    if (isDjbEmployee) {
+      if (Object.keys(localFormState.errors).length && !_.isEqual(formState?.errors?.[config?.key]?.type || {}, localFormState.errors)) {
+        if (setError) setError(config?.key, { type: localFormState.errors });
+      } else if (!Object.keys(localFormState.errors).length && formState?.errors?.[config?.key]) {
+        if (clearErrors) clearErrors(config?.key);
+      }
+    } else {
+      if (formState?.errors?.[config?.key] && clearErrors) {
+        clearErrors(config?.key);
+      }
     }
-  }, [localFormState.errors]);
+  }, [localFormState.errors, isDjbEmployee]);
 
   const goNext = () => {
     onSelect(config.key, formValue);
@@ -156,136 +175,147 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
         </LabelFieldPair>
       </div>
 
-      {isDjbEmployee && (
-        <div className="formcomposer-section-grid">
-          <div>
-            <LabelFieldPair>
-              <CardLabel>{t("Employee ID")} *</CardLabel>
+      <div className="formcomposer-section-grid">
+        <div>
+          <LabelFieldPair>
+            <CardLabel>
+              {t("Employee ID")}
+              {isDjbEmployee && <span className="check-page-link-button"> *</span>}
+            </CardLabel>
+            <Controller
+              control={control}
+              name="employeeId"
+              rules={{ required: isDjbEmployee ? t("CORE_COMMON_REQUIRED_ERRMSG") : false }}
+              render={(props) => (
+                <TextInput
+                  value={props.value}
+                  onChange={(e) => props.onChange(e.target.value)}
+                  onBlur={props.onBlur}
+                  placeholder={t("Employee ID")}
+                />
+              )}
+            />
+          </LabelFieldPair>
+        </div>
+
+        {/* <div>
+          <LabelFieldPair>
+            <CardLabel>
+              {t("Date of Retirement")}
+              {isDjbEmployee && <span className="check-page-link-button"> *</span>}
+            </CardLabel>
+            <div className="field">
               <Controller
                 control={control}
-                name="employeeId"
+                name="dor"
+                rules={{ required: isDjbEmployee ? t("CORE_COMMON_REQUIRED_ERRMSG") : false }}
+                render={(props) => <DatePicker date={props.value} onChange={(date) => props.onChange(date)} />}
+              />
+            </div>
+          </LabelFieldPair>
+        </div> */}
+
+        <div>
+          <LabelFieldPair>
+            <CardLabel>
+              {t("Employee Designation")}
+              {isDjbEmployee && <span className="check-page-link-button"> *</span>}
+            </CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name="designation"
                 rules={{ required: isDjbEmployee ? t("CORE_COMMON_REQUIRED_ERRMSG") : false }}
                 render={(props) => (
                   <TextInput
                     value={props.value}
                     onChange={(e) => props.onChange(e.target.value)}
                     onBlur={props.onBlur}
-                    placeholder={t("Employee ID")}
+                    placeholder={t("Employee Designation")}
                   />
                 )}
               />
-            </LabelFieldPair>
-          </div>
+            </div>
+          </LabelFieldPair>
+        </div>
 
-          <div>
-            <LabelFieldPair>
-              <CardLabel>{t("Date of Retirement")} *</CardLabel>
-              <div className="field">
-                <Controller
-                  control={control}
-                  name="dor"
-                  rules={{ required: isDjbEmployee ? t("CORE_COMMON_REQUIRED_ERRMSG") : false }}
-                  render={(props) => <DatePicker date={props.value} onChange={(date) => props.onChange(date)} />}
-                />
-              </div>
-            </LabelFieldPair>
-          </div>
-
-          <div>
-            <LabelFieldPair>
-              <CardLabel>{t("Employee Designation")} *</CardLabel>
-              <div className="field">
-                <Controller
-                  control={control}
-                  name="designation"
-                  rules={{ required: isDjbEmployee ? t("CORE_COMMON_REQUIRED_ERRMSG") : false }}
-                  render={(props) => (
-                    <TextInput
-                      value={props.value}
-                      onChange={(e) => props.onChange(e.target.value)}
-                      onBlur={props.onBlur}
-                      placeholder={t("Employee Designation")}
-                    />
-                  )}
-                />
-              </div>
-            </LabelFieldPair>
-          </div>
-
-          <div>
-            <LabelFieldPair>
-              <CardLabel>{t("Upload Employee ID Document")} *</CardLabel>
-              <div className="field">
-                <Controller
-                  control={control}
-                  name="document"
-                  rules={{ required: isDjbEmployee ? t("CORE_COMMON_REQUIRED_ERRMSG") : false }}
-                  render={(props) => (
-                    <UploadFile
-                      id={"employee-doc"}
-                      extraStyleName={"propertyCreate"}
-                      placeholder={t("Upload Employee ID Document")}
-                      accept="image/*, .pdf, .png, .jpeg, .jpg"
-                      onUpload={(e) => {
-                        selectfile(e);
-                      }}
-                      onDelete={() => {
+        <div>
+          <LabelFieldPair>
+            <CardLabel>
+              {t("Upload Employee ID Document")}
+              {isDjbEmployee && <span className="check-page-link-button"> *</span>}
+            </CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name="document"
+                rules={{ required: isDjbEmployee ? t("CORE_COMMON_REQUIRED_ERRMSG") : false }}
+                render={(props) => (
+                  <UploadFile
+                    id={"employee-doc"}
+                    extraStyleName={"propertyCreate"}
+                    placeholder={t("Upload Employee ID Document")}
+                    accept="image/*, .pdf, .png, .jpeg, .jpg"
+                    onUpload={(e) => {
+                      selectfile(e);
+                    }}
+                    onDelete={() => {
+                      setUploadedFile(null);
+                      setFile(null);
+                      props.onChange("");
+                      setValue("document", "", { shouldValidate: true });
+                    }}
+                    message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`ES_NO_FILE_SELECTED_LABEL`)}
+                    error={errorUpload}
+                    uploadedFiles={
+                      uploadedFile && !file ? [[file?.name || t("Upload Employee ID Document"), { fileStoreId: uploadedFile }]] : undefined
+                    }
+                  />
+                )}
+              />
+              {uploadedFile && (
+                <div
+                  style={{
+                    marginTop: "16px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "16px",
+                    background: "#F3F4F6",
+                    padding: "8px 16px",
+                    borderRadius: "8px",
+                    width: "fit-content",
+                    border: "1px solid #E5E7EB",
+                  }}
+                >
+                  <span style={{ fontSize: "14px", color: "#374151", fontWeight: "600" }}>{file?.name || t("Upload Employee ID Document")}</span>
+                  <div style={{ display: "flex", gap: "10px" }}>
+                    <button
+                      type="button"
+                      onClick={() => handleView(uploadedFile, tenantId)}
+                      title={t("View Document") || "View Document"}
+                      style={{ border: "none", background: "transparent", color: "#00497e", cursor: "pointer", padding: 0 }}
+                    >
+                      <ViewsIcon />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
                         setUploadedFile(null);
                         setFile(null);
-                        props.onChange("");
+                        setValue("document", "", { shouldValidate: true });
                       }}
-                      message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`ES_NO_FILE_SELECTED_LABEL`)}
-                      error={errorUpload}
-                      uploadedFiles={
-                        uploadedFile && !file ? [[file?.name || t("Upload Employee ID Document"), { fileStoreId: uploadedFile }]] : undefined
-                      }
-                    />
-                  )}
-                />
-                {uploadedFile && (
-                  <div
-                    style={{
-                      marginTop: "16px",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "16px",
-                      background: "#F3F4F6",
-                      padding: "8px 16px",
-                      borderRadius: "8px",
-                      width: "fit-content",
-                      border: "1px solid #E5E7EB",
-                    }}
-                  >
-                    <span style={{ fontSize: "14px", color: "#374151", fontWeight: "600" }}>{file?.name || t("Upload Employee ID Document")}</span>
-                    <div style={{ display: "flex", gap: "10px" }}>
-                      <button
-                        type="button"
-                        onClick={() => handleView(uploadedFile, tenantId)}
-                        title={t("View Document") || "View Document"}
-                        style={{ border: "none", background: "transparent", color: "#00497e", cursor: "pointer", padding: 0 }}
-                      >
-                        <ViewsIcon />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setUploadedFile(null);
-                          setFile(null);
-                          setValue("document", "");
-                        }}
-                        title="Remove Document"
-                        style={{ border: "none", background: "transparent", color: "#d32f2f", cursor: "pointer", padding: 0, fontSize: "18px" }}
-                      >
-                        <RemoveIcon />
-                      </button>
-                    </div>
+                      title="Remove Document"
+                      style={{ border: "none", background: "transparent", color: "#d32f2f", cursor: "pointer", padding: 0, fontSize: "18px" }}
+                    >
+                      <RemoveIcon />
+                    </button>
                   </div>
-                )}
-              </div>
-            </LabelFieldPair>
-          </div>
+                </div>
+              )}
+            </div>
+          </LabelFieldPair>
         </div>
-      )}
+      </div>
     </CollapsibleCardPage>
   );
 
@@ -321,18 +351,16 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
                           to={{
                             pathname:
                               Digit.UserService.getUser()?.info?.type === "CITIZEN"
-                                ? `/digit-ui/citizen/payment/my-bills/${
-                                    formData?.serviceName?.code === "WATER" || formData?.applicationType?.includes("WATER") ? "WS" : "SW"
-                                  }/${dueItem?.kno?.replaceAll("/", "+")}`
-                                : `/digit-ui/employee/payment/collect/${
-                                    formData?.serviceName?.code === "WATER" || formData?.applicationType?.includes("WATER") ? "WS" : "SW"
-                                  }/${encodeURIComponent(dueItem?.kno || "")}/${tenantId}`,
+                                ? `/digit-ui/citizen/payment/my-bills/${formData?.serviceName?.code === "WATER" || formData?.applicationType?.includes("WATER") ? "WS" : "SW"
+                                }/${dueItem?.kno?.replaceAll("/", "+")}`
+                                : `/digit-ui/employee/payment/collect/${formData?.serviceName?.code === "WATER" || formData?.applicationType?.includes("WATER") ? "WS" : "SW"
+                                }/${encodeURIComponent(dueItem?.kno || "")}/${tenantId}`,
 
                             search:
                               Digit.UserService.getUser()?.info?.type === "CITIZEN"
                                 ? `?workflow=WNS&tenantId=${encodeURIComponent(tenantId || "")}&ConsumerName=${encodeURIComponent(
-                                    dueItem?.fullName || ""
-                                  )}&consumerCode=${encodeURIComponent(dueItem?.kno || "")}`
+                                  dueItem?.fullName || ""
+                                )}&consumerCode=${encodeURIComponent(dueItem?.kno || "")}`
                                 : `?tenantId=${encodeURIComponent(tenantId || "")}&ISWSCON=true`,
 
                             state: {

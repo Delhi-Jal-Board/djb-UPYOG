@@ -28,6 +28,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
         plotArea: "",
         builtUpArea: "",
         farArea: "",
+        heightOfTheBuilding: "",
         SelectYearofConstruction: null,
         NumberofDwellingUnits: "",
         NumberofRooms: "",
@@ -237,6 +238,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
       );
       setValue("useDetails.plotArea", additionalDetails.plotArea || details?.landArea?.toString() || "");
       setValue("useDetails.builtUpArea", additionalDetails.builtUpArea || details?.superBuiltUpArea?.toString() || "");
+      setValue("useDetails.heightOfTheBuilding", additionalDetails.heightOfTheBuilding || details?.heightOfTheBuilding?.toString() || "");
       setValue("useDetails.SelectYearofConstruction", yearOptions?.find((o) => o.value === additionalDetails.yearOfConstruction) || null);
       setValue(
         "useDetails.NumberofDwellingUnits",
@@ -256,6 +258,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
       setValue("useDetails.plotArea", "");
       setValue("useDetails.builtUpArea", "");
       setValue("useDetails.farArea", "");
+      setValue("useDetails.heightOfTheBuilding", "");
       setValue("useDetails.SelectYearofConstruction", null);
       setValue("useDetails.NumberofDwellingUnits", "");
       setValue("useDetails.NumberofRooms", "");
@@ -456,6 +459,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
               <TextInput
                 t={t}
                 inputRef={register({
+                  required: t("REQUIRED_FIELD"),
                   pattern: { value: DECIMAL_PATTERN, message: t("ERR_INVALID_DECIMAL") },
                 })}
                 name="useDetails.builtUpArea"
@@ -495,16 +499,32 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
               </CardLabelError>
             )}
         </div> */}
-
+        <LabelFieldPair>
+          <CardLabel>{`${t("WS_HEIGHT_OF_THE_BUILDING(meters)")}`}<span className="check-page-link-button"> *</span></CardLabel>
+          <div className="form-field">
+            <TextInput
+              t={t}
+              inputRef={register({
+                required: t("REQUIRED_FIELD"),
+                pattern: { value: DECIMAL_PATTERN, message: t("ERR_INVALID_DECIMAL") },
+              })}
+              name="useDetails.heightOfTheBuilding"
+              rules={{ required: t("REQUIRED_FIELD") }}
+              disabled={isPropertyFound}
+              placeholder={t("WS_HEIGHT_OF_THE_BUILDING")}
+            />
+          </div>
+          {errors?.useDetails?.heightOfTheBuilding && <CardLabelError style={errorStyle}>{errors.useDetails.heightOfTheBuilding.message}</CardLabelError>}
+        </LabelFieldPair>
         <LabelFieldPair>
           <CardLabel>
-            {`${t("WS_SELECT_YEAR_OF_CONSTRUCTION")}`} <span className="check-page-link-button">*</span>
+            {`${t("WS_SELECT_YEAR_OF_CONSTRUCTION")}`}
           </CardLabel>
           <div className="form-field">
             <Controller
               control={control}
               name="useDetails.SelectYearofConstruction"
-              rules={{ required: t("REQUIRED_FIELD") }}
+              // rules={{ required: t("REQUIRED_FIELD") }}
               render={(props) => (
                 <Dropdown
                   option={yearOptions}
@@ -546,7 +566,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
 
         {isHotelRestaurantProperty ? (
           <LabelFieldPair>
-            <CardLabel>{`${t("WS_NUMBER_OF_ROOMS")}*`}</CardLabel>
+            <CardLabel>{`${t("WS_NUMBER_OF_ROOMS")}`}<span className="check-page-link-button"> *</span></CardLabel>
             <div className="form-field">
               <TextInput
                 t={t}
@@ -567,7 +587,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
 
         {isHospitalProperty ? (
           <LabelFieldPair>
-            <CardLabel>{`${t("WS_NUMBER_OF_BEDS")}*`}</CardLabel>
+            <CardLabel>{`${t("WS_NUMBER_OF_BEDS")}`}<span className="check-page-link-button"> *</span></CardLabel>
             <div className="form-field">
               <TextInput
                 t={t}
