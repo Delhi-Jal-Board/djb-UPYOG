@@ -1244,7 +1244,7 @@ public class WaterServiceImpl implements WaterService {
 	            }
 
 	            dueVerification.setDueAmount(billDue.getDueAmount());
-	            dueVerification.setTotalAmount(billDue.getTotalAmount());
+//	            dueVerification.setTotalAmount(billDue.getTotalAmount());
 	            log.info("Bill amount updated for KNO: {}, dueAmount: {}, totalAmount: {}",kno,billDue.getDueAmount(),billDue.getTotalAmount()
 	            );
 	        }
