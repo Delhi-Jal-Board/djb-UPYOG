@@ -194,6 +194,7 @@ export const setPropertyDetailsLW = (data) => {
     numberOfBeds: useDetails?.numberOfBeds,
     numberOfStudents: useDetails?.numberOfStudents,
     servantQuarterArea: useDetails?.servantQuarterArea,
+    heightOfTheBuilding: useDetails?.heightOfTheBuilding,
   };
 
   data.propertyDetails = propertyDetails;
@@ -254,6 +255,7 @@ export const convertToPropertyLightWeight = (data = {}) => {
         servantQuarterArea: data.waterConnection?.useDetails?.servantQuarterArea || data.useDetails?.servantQuarterArea,
         numberOfStudents: data.waterConnection?.useDetails?.numberOfStudents || data.useDetails?.numberOfStudents,
         numberOfBeds: data.waterConnection?.useDetails?.numberOfBeds || data.useDetails?.numberOfBeds,
+        heightOfTheBuilding: data.waterConnection?.useDetails?.heightOfTheBuilding || data.useDetails?.heightOfTheBuilding,
         owners: [
           ...(data.owners || []).map((owner, index) => ({
             ...owner,
@@ -338,6 +340,7 @@ export const convertToUpdatePropertyLightWeight = (data = {}) => {
         numberOfServantQuarters: data.waterConnection?.useDetails?.servantQuarterArea || data.useDetails?.servantQuarterArea,
         numberOfStudents: data.waterConnection?.useDetails?.numberOfStudents || data.useDetails?.numberOfStudents,
         numberOfBeds: data.waterConnection?.useDetails?.numberOfBeds || data.useDetails?.numberOfBeds,
+        heightOfTheBuilding: data.waterConnection?.useDetails?.heightOfTheBuilding || data.useDetails?.heightOfTheBuilding,
         owners: [
           ...data.owners.map((owner, index) => ({
             ...owner,

@@ -43,6 +43,7 @@ const mapPropertyToFormData = (property = {}) => {
       : null,
     plotArea: String(addDet.plotArea || property.landArea || ""),
     builtUpArea: String(addDet.builtUpArea || property.superBuiltUpArea || ""),
+    heightOfTheBuilding: String(addDet.heightOfTheBuilding || property.heightOfTheBuilding || ""),
     farArea: String(addDet.farArea || property.farArea || ""),
     SelectYearofConstruction: addDet.yearOfConstruction
       ? { value: String(addDet.yearOfConstruction), label: String(addDet.yearOfConstruction) }
@@ -190,6 +191,7 @@ const EditPropertyForm = ({ config, onSelect, userType }) => {
         ownershipCategory: rawProperty.ownershipCategory || "INDIVIDUAL.SINGLEOWNER",
         landArea: parseFloat(useDetails?.plotArea) || rawProperty.landArea || 0,
         superBuiltUpArea: parseFloat(useDetails?.builtUpArea) || rawProperty.superBuiltUpArea || 0,
+        heightOfTheBuilding: useDetails?.heightOfTheBuilding || rawProperty.heightOfTheBuilding || "",
         noOfFloors: noOfFloorsInt,
         farArea: useDetails?.farArea || rawProperty.farArea || "",
 
@@ -224,6 +226,7 @@ const EditPropertyForm = ({ config, onSelect, userType }) => {
           numberOfBeds: useDetails?.numberOfBeds || rawProperty.additionalDetails?.numberOfBeds || "",
           numberOfStudents: useDetails?.numberOfStudents || rawProperty.additionalDetails?.numberOfStudents || "",
           numberOfRooms: useDetails?.NumberofRooms || rawProperty.additionalDetails?.numberOfRooms || "",
+          heightOfTheBuilding: useDetails?.heightOfTheBuilding || rawProperty.additionalDetails?.heightOfTheBuilding || "",
           owners: additionalOwners,
         },
       },

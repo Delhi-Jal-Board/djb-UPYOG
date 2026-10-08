@@ -299,6 +299,9 @@ const CheckPage = ({ onSubmit, value }) => {
         />
         <Row label={t("WS_PLOT_AREA")} text={`${t(checkForNA(useDetails?.plotArea))}`} />
         <Row label={t("WS_BUILT_UP_AREA")} text={`${t(checkForNA(useDetails?.builtUpArea))}`} />
+        {useDetails?.heightOfTheBuilding && (
+          <Row label={t("WS_HEIGHT_OF_THE_BUILDING(meters)")} text={`${t(checkForNA(useDetails?.heightOfTheBuilding))}`} />
+        )}
         <Row
           label={t("WS_SELECT_YEAR_OF_CONSTRUCTION")}
           text={`${t(
