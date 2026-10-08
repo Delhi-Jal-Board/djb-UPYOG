@@ -42,6 +42,12 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
   useEffect(() => {
     if (!isDjbEmployee) {
       localClearErrors();
+      setValue("employeeId", "");
+      setValue("dor", "");
+      setValue("designation", "");
+      setValue("document", "");
+      setUploadedFile(null);
+      setFile(null);
       if (clearErrors) clearErrors(config?.key);
     } else {
       trigger(["employeeId", "designation", "document"]);
@@ -175,7 +181,8 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
         </LabelFieldPair>
       </div>
 
-      <div className="formcomposer-section-grid">
+      {isDjbEmployee && (
+        <div className="formcomposer-section-grid">
         <div>
           <LabelFieldPair>
             <CardLabel>
@@ -318,6 +325,7 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
           </LabelFieldPair>
         </div>
       </div>
+      )}
     </CollapsibleCardPage>
   );
 
@@ -394,7 +402,6 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
             {FormContent}
             {DueVerificationContent ? <div style={{ marginTop: "24px" }}>{DueVerificationContent}</div> : null}
           </div>
-          <div style={{ marginTop: "-30px", marginBottom: "-30px" }}>{FormContent}</div>
         </FormStep>
       </div>
     );
@@ -406,7 +413,6 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
       {DueVerificationContent ? <div style={{ marginTop: "24px" }}>{DueVerificationContent}</div> : null}
     </React.Fragment>
   );
-  return <React.Fragment>{FormContent}</React.Fragment>;
 };
 
 export default WSDjbEmployee;
