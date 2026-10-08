@@ -255,38 +255,30 @@ const OLDApplication = () => {
     if (!_.isEqual(sessionFormData, cleanedFormData)) {
       setSessionFormData(cleanedFormData);
     }
-    // Always update errors to avoid stale validation states blocking submit
+    // Always update errors to ensure validation state is in sync
     sessionStorage.setItem("FORMSTATE_ERRORS", JSON.stringify(formState?.errors || {}));
 
     const hasErrors = Object.keys(formState?.errors || {}).length > 0;
-    const hasProperty = updatedFormData?.cpt?.details?.propertyId || sessionStorage.getItem("WS_OTP_VERIFIED_PROPERTY_ID") || propertyId || propertyDetails?.Properties?.[0]?.propertyId;
-    console.log("Form Validation Debug:", {
-      errors: formState?.errors,
-      hasErrors,
-      cpt: updatedFormData?.cpt,
-      verifiedPropId: sessionStorage.getItem("WS_OTP_VERIFIED_PROPERTY_ID"),
-      hasProperty,
-      canSubmit: (!hasErrors && !!hasProperty)
-    });
-    
+    const hasProperty =
+      updatedFormData?.cpt?.details?.propertyId ||
+      sessionStorage.getItem("WS_OTP_VERIFIED_PROPERTY_ID") ||
+      propertyId ||
+      propertyDetails?.Properties?.[0]?.propertyId;
+
     // Enable submit if no form errors AND property is selected
     setSubmitValve(!hasErrors && !!hasProperty);
   };
 
   const onFormSubmit = (data) => {
-    const errorsStr = sessionStorage.getItem("FORMSTATE_ERRORS");
-    const currentErrors = errorsStr ? JSON.parse(errorsStr) : {};
-    const hasErrors = Object.keys(currentErrors).length > 0;
-    const hasProperty = data?.cpt?.details?.propertyId || sessionStorage.getItem("WS_OTP_VERIFIED_PROPERTY_ID") || propertyId || propertyDetails?.Properties?.[0]?.propertyId;
+    const hasProperty =
+      data?.cpt?.details?.propertyId ||
+      sessionStorage.getItem("WS_OTP_VERIFIED_PROPERTY_ID") ||
+      propertyId ||
+      propertyDetails?.Properties?.[0]?.propertyId;
 
     if (!hasProperty) {
       console.warn("[WS] onSubmit EXIT: invalid property", { cpt: data?.cpt, propertyDetails });
       setShowToast({ key: "error", message: "ERR_INVALID_PROPERTY_ID" });
-      return;
-    }
-
-    if (hasErrors) {
-      setShowToast({ key: "error", message: "Please fill all mandatory fields correctly." });
       return;
     }
 
@@ -602,7 +594,11 @@ const OLDApplication = () => {
       <React.Fragment>
         <div className="employee-form-section-wrapper">
           <VerticalTimeline config={timelineConfig} currentActiveIndex={9} showFinalStep={false} />
-          <CheckPage data={sessionFormData} onSubmit={(finalData) => processSubmission(finalData || sessionFormData)} onEdit={() => setShowCheckPage(false)} />
+          <CheckPage
+            data={sessionFormData}
+            onSubmit={(finalData) => processSubmission(finalData || sessionFormData)}
+            onEdit={() => setShowCheckPage(false)}
+          />
         </div>
       </React.Fragment>
     );
@@ -616,6 +612,7 @@ const OLDApplication = () => {
           config={config.body}
           userType={"employee"}
           onFormValueChange={onFormValueChange}
+          isDisabled={!canSubmit}
           label={
             creatingWaterApplicationLoading ||
             creatingSewerageApplicationLoading ||
@@ -629,7 +626,6 @@ const OLDApplication = () => {
           noCard={true}
           noBreakLine={true}
           cardFormWrapperClassName="new-application-card"
-          
         />
         {showToast && (
           <Toast

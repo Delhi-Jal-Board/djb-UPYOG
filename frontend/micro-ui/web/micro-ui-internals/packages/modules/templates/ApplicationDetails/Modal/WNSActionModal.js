@@ -232,6 +232,7 @@ const ActionModal = ({
         infrastructureChargesApplicable: approvalChecklist?.infrastructureChargesApplicable === true,
         rainWaterHarvesting: approvalChecklist?.rainWaterHarvesting === true,
         bulkConnectionVerification: approvalChecklist?.bulkConnectionVerification === true,
+        CompletelySatisfied: approvalChecklist?.isFullySatisfied,
       };
     }
     if (data?.date && applicationData?.applicationType?.includes("DISCONNECT")) {

@@ -291,7 +291,7 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
                   <div style={{ display: "flex", gap: "10px" }}>
                     <button
                       type="button"
-                      onClick={() => handleView(uploadedFile, tenantId)}
+                      onClick={() => handleView(uploadedFile, tenantId?.split(".")[0])}
                       title={t("View Document") || "View Document"}
                       style={{ border: "none", background: "transparent", color: "#00497e", cursor: "pointer", padding: 0 }}
                     >
@@ -303,6 +303,8 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
                         setUploadedFile(null);
                         setFile(null);
                         setValue("document", "", { shouldValidate: true });
+                          const fileInput = document.getElementById("employee-doc");
+                          if (fileInput) fileInput.value = "";
                       }}
                       title="Remove Document"
                       style={{ border: "none", background: "transparent", color: "#d32f2f", cursor: "pointer", padding: 0, fontSize: "18px" }}

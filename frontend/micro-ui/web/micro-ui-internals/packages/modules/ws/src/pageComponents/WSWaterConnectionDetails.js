@@ -129,7 +129,7 @@ const WSWaterConnectionDetails = ({ t, config, userType, onSelect, formData }) =
     <div>
       {userType === "citizen" && <Timeline currentStep={2} />}
       {!wsServiceCalculationLoading ? (
-        <FormStep t={t} config={config} onSelect={handleSubmit} onSkip={onSkip} isDisabled={!proposedTaps || !proposedPipeSize || isDisableForNext} onAdd={onAdd}>
+        <FormStep t={t} config={config} onSelect={handleSubmit} onSkip={onSkip} isDisabled={!proposedTaps || !proposedPipeSize || isDisableForNext || showToast} onAdd={onAdd}>
           <CardLabel>{t("WS_NO_OF_TAPS_PROPOSED")}*</CardLabel>
           <TextInput
             isMandatory={false}

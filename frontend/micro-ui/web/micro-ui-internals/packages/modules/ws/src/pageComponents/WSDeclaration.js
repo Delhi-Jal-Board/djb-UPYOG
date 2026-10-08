@@ -41,7 +41,7 @@ const WSDeclaration = ({ config, onSelect, userType, formData, setError, formSta
       const points = [...wsServicesMastersData["ws-services-masters"].Declaration];
       points.push({
         code: "WS_SEWERAGE_DISPOSAL_DECLARATION",
-        description: "I declare that sewerage disposal facility is available at the premises and undertake to comply with all applicable DJB rules."
+        description: "I declare that sewerage disposal facility is available at the premises and undertake to comply with all applicable DJB rules.",
       });
       setDeclarationPoints(points);
     }
@@ -156,7 +156,7 @@ const WSDeclaration = ({ config, onSelect, userType, formData, setError, formSta
           />
         </div>
 
-        <div className="formcomposer-section-grid">
+        {/* <div className="formcomposer-section-grid">
           <div>
             <LabelFieldPair>
               <CardLabel>{t("WS_SUBMITTED_BY")}</CardLabel>
@@ -172,7 +172,7 @@ const WSDeclaration = ({ config, onSelect, userType, formData, setError, formSta
             </LabelFieldPair>
           </div>
 
-          {/* <div>
+          <div>
             <LabelFieldPair>
               <CardLabel>{t("WS_UPLOAD_SIGNATURE_FILE")}</CardLabel>
               <div className="field" style={{ display: "flex", gap: "10px", alignItems: "center" }}>
@@ -209,8 +209,8 @@ const WSDeclaration = ({ config, onSelect, userType, formData, setError, formSta
                 )}
               </div>
             </LabelFieldPair>
-          </div> */}
-        </div>
+          </div>
+        </div> */}
       </CollapsibleCardPage>
       {/* {showDocModal && (
         <Modal

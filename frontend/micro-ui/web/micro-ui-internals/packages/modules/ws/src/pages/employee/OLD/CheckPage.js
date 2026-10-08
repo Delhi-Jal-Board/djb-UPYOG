@@ -47,9 +47,7 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
   const [docFileUrl, setDocFileUrl] = useState("");
   const [docFileType, setDocFileType] = useState("");
   const [declarationData, setDeclarationData] = useState(data?.declarationData || {});
-  const [formState, setFormState] = useState(
-    JSON.parse(sessionStorage.getItem("FORMSTATE_ERRORS")) || {}
-  );
+  const [formState, setFormState] = useState(JSON.parse(sessionStorage.getItem("FORMSTATE_ERRORS")) || {});
   const isCitizen = Digit.UserService.getType()?.toUpperCase() === "CITIZEN";
 
   const handleViewDocument = async (fileStoreId) => {
@@ -223,7 +221,10 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
               label={t("COMMON_ADDRESS_TYPE")}
               text={`${t(checkForNA(propertyAddress?.addressType?.i18nKey || propertyAddress?.addressType?.code || propertyAddress?.addressType))}`}
             />
-            <Row label={t("CORE_COMMON_PROFILE_CITY")} text={`${t(checkForNA(propertyAddress?.city?.name || propertyAddress?.city?.code || propertyAddress?.city))}`} />
+            <Row
+              label={t("CORE_COMMON_PROFILE_CITY")}
+              text={`${t(checkForNA(propertyAddress?.city?.name || propertyAddress?.city?.code || propertyAddress?.city))}`}
+            />
             <Row label={t("PINCODE")} text={`${t(checkForNA(propertyAddress?.pincode || propertyAddress?.pinCode))}`} />
             <Row
               label={t("LOCALITY")}
@@ -269,7 +270,10 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
               )}`}
             />
 
-            <Row label={t("COMMON_CURRENT_ASSEMBLY")} text={`${t(checkForNA(propertyAddress?.actualAssembly || additionalDetails?.actualAssembly))}`} />
+            <Row
+              label={t("COMMON_CURRENT_ASSEMBLY")}
+              text={`${t(checkForNA(propertyAddress?.actualAssembly || additionalDetails?.actualAssembly))}`}
+            />
             <Row label={t("COMMON_CURRENT_WARD")} text={`${t(checkForNA(propertyAddress?.actualWard || additionalDetails?.actualWard))}`} />
             <Row label={t("COMMON_CURRENT_ZONE")} text={`${t(checkForNA(propertyAddress?.actualZone || additionalDetails?.actualZone))}`} />
             <Row label={t("LANDMARK")} text={`${t(checkForNA(propertyAddress?.landmark))}`} />
@@ -333,36 +337,36 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
           </StatusTable>
 
           {/* {!isCitizen && ( */}
-            <React.Fragment>
-              <CardSubHeader>{t("WS_DJB_EMPLOYEE")}</CardSubHeader>
-              <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
-                <Row
-                  label={t("WS_DJB_EMPLOYEE")}
-                  text={`${djbEmployee?.isDjbEmployee ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}`}
-                  actionButton={<ActionButton onClick={onEdit} />}
-                />
-                {(djbEmployee?.isDjbEmployee || djbEmployee?.employeeId || djbEmployee?.designation || djbEmployee?.document) && (
-                  <React.Fragment>
-                    <Row label={t("WS_EMPLOYEE_ID")} text={`${t(checkForNA(djbEmployee?.employeeId))}`} />
-                    {/* <Row label={t("WS_DATE_OF_RETIREMENT")} text={`${t(checkForNA(djbEmployee?.dor))}`} /> */}
-                    <Row label={t("WS_EMPLOYEE_DESIGNATION")} text={`${t(checkForNA(djbEmployee?.designation))}`} />
-                    {djbEmployee?.document && (
-                      <Row
-                        label={t("WS_UPLOAD_EMPLOYEE_ID_DOC")}
-                        text={
-                          <span
-                            style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", color: "#f47738" }}
-                            onClick={() => openFilePDF(djbEmployee?.document)}
-                          >
-                            <GenericFileIcon /> {t("CS_COMMON_VIEW")}
-                          </span>
-                        }
-                      />
-                    )}
-                  </React.Fragment>
-                )}
-              </StatusTable>
-            </React.Fragment>
+          <React.Fragment>
+            <CardSubHeader>{t("WS_DJB_EMPLOYEE")}</CardSubHeader>
+            <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
+              <Row
+                label={t("WS_DJB_EMPLOYEE")}
+                text={`${djbEmployee?.isDjbEmployee ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}`}
+                actionButton={<ActionButton onClick={onEdit} />}
+              />
+              {(djbEmployee?.isDjbEmployee || djbEmployee?.employeeId || djbEmployee?.designation || djbEmployee?.document) && (
+                <React.Fragment>
+                  <Row label={t("WS_EMPLOYEE_ID")} text={`${t(checkForNA(djbEmployee?.employeeId))}`} />
+                  {/* <Row label={t("WS_DATE_OF_RETIREMENT")} text={`${t(checkForNA(djbEmployee?.dor))}`} /> */}
+                  <Row label={t("WS_EMPLOYEE_DESIGNATION")} text={`${t(checkForNA(djbEmployee?.designation))}`} />
+                  {djbEmployee?.document && (
+                    <Row
+                      label={t("WS_UPLOAD_EMPLOYEE_ID_DOC")}
+                      text={
+                        <span
+                          style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", color: "#f47738" }}
+                          onClick={() => openFilePDF(djbEmployee?.document)}
+                        >
+                          <GenericFileIcon /> {t("CS_COMMON_VIEW")}
+                        </span>
+                      }
+                    />
+                  )}
+                </React.Fragment>
+              )}
+            </StatusTable>
+          </React.Fragment>
           {/* )} */}
 
           <CardSubHeader>Divyangjan/Person with Disability?</CardSubHeader>
@@ -411,12 +415,13 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
         </div>
 
         <ActionBar>
- <SubmitBar 
-            label={t("CS_COMMON_SUBMIT")} 
-            onSubmit={() => onSubmit({ ...data, declarationData })} 
-            style={{ width: "150px" }} 
+          <SubmitBar
+            label={t("CS_COMMON_SUBMIT")}
+            onSubmit={() => onSubmit({ ...data, declarationData })}
+            style={{ width: "150px" }}
             disabled={!declarationData?.agree}
-          />        </ActionBar>
+          />{" "}
+        </ActionBar>
       </Card>
       {showDocModal && (
         <Modal

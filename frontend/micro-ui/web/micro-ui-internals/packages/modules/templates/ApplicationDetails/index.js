@@ -342,6 +342,7 @@ const ApplicationDetails = (props) => {
             MenuStyle={MenuStyle}
             applicationDetails={applicationDetails}
             isApprovalChecklistValid={approvalChecklistValid}
+            approvalChecklist={approvalChecklist}
           />
         </React.Fragment>
       ) : (
