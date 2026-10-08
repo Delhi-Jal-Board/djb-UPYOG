@@ -1,4 +1,4 @@
-import { CheckBox, CollapsibleCardPage, FormStep } from "@djb25/digit-ui-react-components";
+import { RadioButtons, LabelFieldPair, CardLabel, CollapsibleCardPage, FormStep } from "@djb25/digit-ui-react-components";
 import React, { useEffect, useRef } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -26,19 +26,31 @@ const WSDivyangjan = ({ config, onSelect, userType, formData }) => {
     }
   }, [config.key, formValue.isDivyangjan, userType]);
   const content = (
-    <CollapsibleCardPage title="Divyangjan/Person with Disability?" defaultOpen={true}>
-      <div style={{ width: "max-content" }}>
-        <Controller
-          control={control}
-          name="isDivyangjan"
-          render={(props) => (
-            <CheckBox
-              label="Divyangjan/Person with Disability?"
-              checked={!!props.value}
-              onChange={(event) => props.onChange(event.target.checked)}
+    <CollapsibleCardPage title={t("Are you a Divyangjan/Person with Disability?")} defaultOpen={true}>
+      <div className="formcomposer-section-grid">
+        <LabelFieldPair>
+          <CardLabel>{t("Are you a Divyangjan/Person with Disability?")}</CardLabel>
+          <div className="field">
+            <Controller
+              control={control}
+              name="isDivyangjan"
+              render={(props) => (
+                <RadioButtons
+                  className="form-field"
+                  style={{ display: "flex", gap: "2rem", alignItems: "center" }}
+                  options={[
+                    { i18nKey: "CORE_COMMON_YES", code: true },
+                    { i18nKey: "CORE_COMMON_NO", code: false },
+                  ]}
+                  optionsKey="i18nKey"
+                  selectedOption={props.value ? { i18nKey: "CORE_COMMON_YES", code: true } : { i18nKey: "CORE_COMMON_NO", code: false }}
+                  onSelect={(e) => props.onChange(e.code)}
+                  t={t}
+                />
+              )}
             />
-          )}
-        />
+          </div>
+        </LabelFieldPair>
       </div>
     </CollapsibleCardPage>
   );

@@ -10,7 +10,7 @@ const OLDApplication = () => {
   const { t } = useTranslation();
   const history = useHistory();
   const location = useLocation();
-  // const [canSubmit, setSubmitValve] = useState(false);
+  const [canSubmit, setSubmitValve] = useState(false);
   const [isEnableLoader, setIsEnableLoader] = useState(false);
   const [showToast, setShowToast] = useState(null);
   // const [appDetails, setAppDetails] = useState({});
@@ -25,6 +25,7 @@ const OLDApplication = () => {
     { label: "WS_COMMON_PROPERTY_DETAILS" },
     { label: "WS_COMMON_CONNECTION_DETAIL" },
     { label: "WS_COMMON_CONNECTION_HOLDER_DETAILS_HEADER" },
+    { label: "Are you a Divyangjan/Person with Disability?" },
     { label: "WS_DJB_EMPLOYEE" },
     { label: "PT_LOCATION_DETAILS" },
     { label: "WS_PROPERTY_AND_WATER_CONNECTION_USE_DETAILS" },
@@ -89,15 +90,14 @@ const OLDApplication = () => {
           "CPTPropertySearchNSummary",
           "WSConnectionDetails",
           "WSConnectionHolderDetails",
-          "WSDjbEmployee",
           "WSDivyangjan",
+          "WSDjbEmployee",
           "WSPropertyLocationDetails",
           "PropertyWaterConnection",
           "WSActivationPlumberDetails",
           "WSRoadCuttingDetails",
           // "WSBankDetails",
           "WSDocumentsEmployee",
-          "WSDeclaration",
         ];
 
         // Manually reorder sections
@@ -258,19 +258,38 @@ const OLDApplication = () => {
     // Always update errors to avoid stale validation states blocking submit
     sessionStorage.setItem("FORMSTATE_ERRORS", JSON.stringify(formState?.errors || {}));
 
-    // if (
-    //   Object.keys(formState.errors).length > 0 &&
-    //   Object.keys(formState.errors).length === 1 &&
-    //   formState?.errors?.["ConnectionHolderDetails"]?.type &&
-    //   Object.keys(formState?.errors?.["ConnectionHolderDetails"]?.type)?.length === 1 &&
-    //   formState.errors["ConnectionHolderDetails"] &&
-    //   Object.values(formState.errors["ConnectionHolderDetails"].type).filter((ob) => ob.type === "required" && ob?.ref?.value !== "").length > 0
-    // )
-    //   setSubmitValve(true);
-    // else setSubmitValve(!Object.keys(formState.errors).length);
+    const hasErrors = Object.keys(formState?.errors || {}).length > 0;
+    const hasProperty = updatedFormData?.cpt?.details?.propertyId || sessionStorage.getItem("WS_OTP_VERIFIED_PROPERTY_ID") || propertyId || propertyDetails?.Properties?.[0]?.propertyId;
+    console.log("Form Validation Debug:", {
+      errors: formState?.errors,
+      hasErrors,
+      cpt: updatedFormData?.cpt,
+      verifiedPropId: sessionStorage.getItem("WS_OTP_VERIFIED_PROPERTY_ID"),
+      hasProperty,
+      canSubmit: (!hasErrors && !!hasProperty)
+    });
+    
+    // Enable submit if no form errors AND property is selected
+    setSubmitValve(!hasErrors && !!hasProperty);
   };
 
   const onFormSubmit = (data) => {
+    const errorsStr = sessionStorage.getItem("FORMSTATE_ERRORS");
+    const currentErrors = errorsStr ? JSON.parse(errorsStr) : {};
+    const hasErrors = Object.keys(currentErrors).length > 0;
+    const hasProperty = data?.cpt?.details?.propertyId || sessionStorage.getItem("WS_OTP_VERIFIED_PROPERTY_ID") || propertyId || propertyDetails?.Properties?.[0]?.propertyId;
+
+    if (!hasProperty) {
+      console.warn("[WS] onSubmit EXIT: invalid property", { cpt: data?.cpt, propertyDetails });
+      setShowToast({ key: "error", message: "ERR_INVALID_PROPERTY_ID" });
+      return;
+    }
+
+    if (hasErrors) {
+      setShowToast({ key: "error", message: "Please fill all mandatory fields correctly." });
+      return;
+    }
+
     // FIX 3: Proper property validation with clear logging
     if (!data?.cpt?.id && !propertyDetails?.Properties?.[0]) {
       if (!data?.cpt?.details || !propertyDetails) {
@@ -583,7 +602,7 @@ const OLDApplication = () => {
       <React.Fragment>
         <div className="employee-form-section-wrapper">
           <VerticalTimeline config={timelineConfig} currentActiveIndex={9} showFinalStep={false} />
-          <CheckPage data={sessionFormData} onSubmit={() => processSubmission(sessionFormData)} onEdit={() => setShowCheckPage(false)} />
+          <CheckPage data={sessionFormData} onSubmit={(finalData) => processSubmission(finalData || sessionFormData)} onEdit={() => setShowCheckPage(false)} />
         </div>
       </React.Fragment>
     );
@@ -610,7 +629,7 @@ const OLDApplication = () => {
           noCard={true}
           noBreakLine={true}
           cardFormWrapperClassName="new-application-card"
-          isDisabled={!sessionFormData?.declarationData?.agree}
+          
         />
         {showToast && (
           <Toast

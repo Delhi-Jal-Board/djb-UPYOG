@@ -14,6 +14,7 @@ import {
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { checkForNA } from "../../../utils";
+import WSDeclaration from "../../../pageComponents/WSDeclaration";
 
 const ActionButton = ({ onClick }) => {
   return (
@@ -45,6 +46,7 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
   const [showDocModal, setShowDocModal] = useState(false);
   const [docFileUrl, setDocFileUrl] = useState("");
   const [docFileType, setDocFileType] = useState("");
+  const [declarationData, setDeclarationData] = useState(data?.declarationData || {});
   const [formState, setFormState] = useState(
     JSON.parse(sessionStorage.getItem("FORMSTATE_ERRORS")) || {}
   );
@@ -307,6 +309,9 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
             />
             <Row label={t("WS_PLOT_AREA")} text={`${t(checkForNA(useDetails?.plotArea))}`} />
             <Row label={t("WS_BUILT_UP_AREA")} text={`${t(checkForNA(useDetails?.builtUpArea))}`} />
+            {useDetails?.heightOfTheBuilding && (
+              <Row label={t("WS_HEIGHT_OF_THE_BUILDING(meters)")} text={`${t(checkForNA(useDetails?.heightOfTheBuilding))}`} />
+            )}
             <Row
               label={t("WS_SELECT_YEAR_OF_CONSTRUCTION")}
               text={`${t(
@@ -336,10 +341,10 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
                   text={`${djbEmployee?.isDjbEmployee ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}`}
                   actionButton={<ActionButton onClick={onEdit} />}
                 />
-                {djbEmployee?.isDjbEmployee && (
+                {(djbEmployee?.isDjbEmployee || djbEmployee?.employeeId || djbEmployee?.designation || djbEmployee?.document) && (
                   <React.Fragment>
                     <Row label={t("WS_EMPLOYEE_ID")} text={`${t(checkForNA(djbEmployee?.employeeId))}`} />
-                    <Row label={t("WS_DATE_OF_RETIREMENT")} text={`${t(checkForNA(djbEmployee?.dor))}`} />
+                    {/* <Row label={t("WS_DATE_OF_RETIREMENT")} text={`${t(checkForNA(djbEmployee?.dor))}`} /> */}
                     <Row label={t("WS_EMPLOYEE_DESIGNATION")} text={`${t(checkForNA(djbEmployee?.designation))}`} />
                     {djbEmployee?.document && (
                       <Row
@@ -397,35 +402,21 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
             ))}
           </StatusTable>
 
-          <CardSubHeader>{t("WS_DECLARATION")}</CardSubHeader>
-          <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
-            <Row
-              label={t("WS_SUBMITTED_BY")}
-              text={`${t(declaration?.submittedBy?.name || declaration?.submittedBy?.code || declaration?.submittedBy)}`}
-              actionButton={<ActionButton onClick={onEdit} />}
-            />
-            {/* {(declaration?.signatureFileStoreId || declaration?.signatureFile) && (
-              <React.Fragment>
-                <Row label={t("WS_UPLOAD_SIGNATURE_FILE")} text={declaration?.signatureFileName || declaration?.signatureFile?.name || "Document"} />
-                <Row
-                  text={
-                    <span
-                      style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", color: "#f47738" }}
-                      onClick={() => handleViewDocument(declaration?.signatureFileStoreId || declaration?.signatureFile)}
-                    >
-                      <GenericFileIcon /> {t("CS_COMMON_VIEW")}
-                    </span>
-                  }
-                />
-              </React.Fragment>
-            )} */}
-            <Row label={t("WS_I_AGREE_TO_ALL_DECLARATIONS")} text={declaration?.agree ? t("Yes") : t("No")} />
-          </StatusTable>
+          <WSDeclaration
+            config={{ key: "declarationData" }}
+            onSelect={(key, val) => setDeclarationData(val)}
+            formData={{ declarationData: declarationData }}
+            userType="employee"
+          />
         </div>
 
         <ActionBar>
-          <SubmitBar label={t("CS_COMMON_SUBMIT")} onSubmit={onSubmit} style={{ width: "150px" }} />
-        </ActionBar>
+ <SubmitBar 
+            label={t("CS_COMMON_SUBMIT")} 
+            onSubmit={() => onSubmit({ ...data, declarationData })} 
+            style={{ width: "150px" }} 
+            disabled={!declarationData?.agree}
+          />        </ActionBar>
       </Card>
       {showDocModal && (
         <Modal
