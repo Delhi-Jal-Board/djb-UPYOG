@@ -21,7 +21,7 @@ const WSActivationPageDetails = ({ config, onSelect, userType, formData, setErro
       ? useState(formData?.activationDetails ? [formData?.activationDetails?.[0]] : [createActivationDetails()])
       : useState(formData?.activationDetails || [createActivationDetails()]);
   const [focusIndex, setFocusIndex] = useState({ index: -1, type: "" });
-  const [isErrors, setIsErrors] = useState(false);
+  const [isErrors, setIsErrors] = useState(true);
 
   useEffect(() => {
     const data = activationDetails.map((e) => {
@@ -114,10 +114,10 @@ const ConnectionDetails = (_props) => {
         Object.keys(formValue).map((data) => {
           if (!formValue[data] && isErrorsFound) {
             isErrorsFound = false;
-            setIsErrors(false);
+            setIsErrors(true);
           }
         });
-        if (isErrorsFound) setIsErrors(true);
+        if (isErrorsFound) setIsErrors(false);
         let ob = [{ ...formValue }];
         setActivationDetails(ob);
         trigger();

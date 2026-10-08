@@ -34,7 +34,7 @@ const createConnectionDetails = () => ({
 
   serviceType: { code: "WATER", i18nKey: "WS_APPLICATION_TYPE_WATER" },
   categoryType: { code: "DOMESTIC", i18nKey: "WS_CATEGORY_DOMESTIC" },
-  connectionType: { code: "Permanent", i18nKey: "WS_CONNECTION_Permanent" },
+  connectionType: { code: "Metered", i18nKey: "WS_CONNECTIONTYPE_METERED", name: "Metered" },
   temporaryType: { code: "Exhibition", i18nKey: "Exhibition" },
   waterDemandType: { code: "NON_BULK", i18nKey: "WS_WATER_DEMAND_NON_BULK" },
   applicantType: { code: "OWNER", i18nKey: "WS_APPLICANT_OWNER" },
@@ -54,7 +54,7 @@ const WSConnectionDetails = ({ config, onSelect, userType, formData, setError, f
   const [focusIndex, setFocusIndex] = useState({ index: -1, type: "" });
   const stateCode = Digit.ULBService.getStateId();
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  const [isErrors, setIsErrors] = useState(false);
+  const [isErrors, setIsErrors] = useState(true);
   const [waterSewarageSelection, setWaterSewarageSelection] = useState({ water: true, sewerage: false });
 
   const [applicationTypeList, setApplicationTypeList] = useState([]);
@@ -233,7 +233,7 @@ const ConnectionDetails = (_props) => {
       defaultValues: {
         serviceType: connectionDetail?.serviceType || { code: "WATER", i18nKey: "WS_APPLICATION_TYPE_WATER" },
         categoryType: connectionDetail?.categoryType || { code: "DOMESTIC", i18nKey: "WS_CATEGORY_DOMESTIC" },
-        connectionType: connectionDetail?.connectionType || { code: "Permanent", i18nKey: "WS_CONNECTION_Permanent" },
+        connectionType: connectionDetail?.connectionType || { code: "Metered", i18nKey: "WS_CONNECTIONTYPE_METERED", name: "Metered" },
         temporaryType: connectionDetail?.temporaryType || { code: "Exhibition", i18nKey: "Exhibition" },
         waterDemandType: connectionDetail?.waterDemandType || { code: "NON_BULK", i18nKey: "WS_WATER_DEMAND_NON_BULK" },
         applicantType: connectionDetail?.applicantType || { code: "OWNER", i18nKey: "WS_APPLICANT_OWNER" },
@@ -332,10 +332,10 @@ const ConnectionDetails = (_props) => {
         Object.keys(formValue).map((data) => {
           if (!formValue[data] && isErrorsFound) {
             isErrorsFound = false;
-            setIsErrors(false);
+            setIsErrors(true);
           }
         });
-        if (isErrorsFound) setIsErrors(true);
+        if (isErrorsFound) setIsErrors(false);
         let ob = [{ ...connectionDetail, ...formValue }];
         setConnectionDetails(ob);
         trigger();
@@ -539,8 +539,8 @@ const ConnectionDetails = (_props) => {
             )}
           />
         </LabelFieldPair>
-{window.location.href.includes("/citizen") && (
-            <React.Fragment>
+        {window.location.href.includes("/citizen") && (
+          <React.Fragment>
             <LabelFieldPair>
               <CardLabel>
                 {t("Address Type")}

@@ -262,14 +262,14 @@ const WSApplicationDetails = () => {
     },
   ];
   const isDisconnection =
-    data?.WaterConnection?.[0].applicationType?.includes("DISCONNECT") || data?.SewerageConnections?.[0].applicationType?.includes("DISCONNECT");
+    data?.WaterConnection?.[0]?.applicationType?.includes("DISCONNECT") || data?.SewerageConnections?.[0]?.applicationType?.includes("DISCONNECT");
   const appStatus = data?.WaterConnection?.[0]?.applicationStatus || data?.SewerageConnections?.[0]?.applicationStatus;
   const isDisconnectionPaymentPending = isDisconnection && ["PENDING_FOR_PAYMENT", "PENDING_FOR_FINAL_PAYMENT", "PENDING_FOR_ADDITIONAL_PAYMENT", "PENDING_APPROVAL_FOR_DISCONNECTION"].includes(appStatus);
   switch (appStatus) {
     case "PENDING_FOR_DOCUMENT_VERIFICATION":
       if (
-        data?.WaterConnection?.[0].applicationType?.includes("DISCONNECT") ||
-        data?.SewerageConnections?.[0].applicationType?.includes("DISCONNECT")
+        data?.WaterConnection?.[0]?.applicationType?.includes("DISCONNECT") ||
+        data?.SewerageConnections?.[0]?.applicationType?.includes("DISCONNECT")
       ) {
         downloadOptions = disconnectionNoticeNApplicationFormOptions;
       } else {
@@ -301,8 +301,8 @@ const WSApplicationDetails = () => {
     case "DISCONNECTION_EXECUTED":
     case "PENDING_FOR_PAYMENT":
       if (
-        data?.WaterConnection?.[0].applicationType?.includes("DISCONNECT") ||
-        data?.SewerageConnections?.[0].applicationType?.includes("DISCONNECT")
+        data?.WaterConnection?.[0]?.applicationType?.includes("DISCONNECT") ||
+        data?.SewerageConnections?.[0]?.applicationType?.includes("DISCONNECT")
       ) {
         downloadOptions = disconnectionNoticeNApplicationFormOptions;
       } else {
@@ -363,8 +363,8 @@ const WSApplicationDetails = () => {
                   text={data?.WaterConnection?.[0]?.applicationNo || data?.SewerageConnections?.[0]?.applicationNo}
                   textStyle={{}}
                 />
-                {(data?.WaterConnection?.[0].applicationType?.includes("DISCONNECT") ||
-                  data?.SewerageConnections?.[0].applicationType?.includes("DISCONNECT")) && (
+                {(data?.WaterConnection?.[0]?.applicationType?.includes("DISCONNECT") ||
+                  data?.SewerageConnections?.[0]?.applicationType?.includes("DISCONNECT")) && (
                   <Row
                     label={t("WS_MYCONNECTIONS_CONSUMER_NO")}
                     text={data?.WaterConnection?.[0]?.connectionNo || data?.SewerageConnections?.[0]?.connectionNo}
@@ -386,8 +386,8 @@ const WSApplicationDetails = () => {
               }
               textStyle={{ whiteSpace: "pre" }}
             /> */}
-                {(data?.WaterConnection?.[0].applicationType?.includes("DISCONNECT") ||
-                  data?.SewerageConnections?.[0].applicationType?.includes("DISCONNECT")) && (
+                {(data?.WaterConnection?.[0]?.applicationType?.includes("DISCONNECT") ||
+                  data?.SewerageConnections?.[0]?.applicationType?.includes("DISCONNECT")) && (
                   <Row
                     label={t("WS_DISCONNECTION_PROPOSED_DATE")}
                     text={
@@ -398,8 +398,8 @@ const WSApplicationDetails = () => {
                     textStyle={{ wordBreak: "break-word" }}
                   />
                 )}
-                {(data?.WaterConnection?.[0].applicationType?.includes("DISCONNECT") ||
-                  data?.SewerageConnections?.[0].applicationType?.includes("DISCONNECT")) && (
+                {(data?.WaterConnection?.[0]?.applicationType?.includes("DISCONNECT") ||
+                  data?.SewerageConnections?.[0]?.applicationType?.includes("DISCONNECT")) && (
                   <Row
                     label={t("WS_DISCONNECTION_EXECUTED_DATE")}
                     text={
@@ -410,8 +410,8 @@ const WSApplicationDetails = () => {
                     textStyle={{ wordBreak: "break-word" }}
                   />
                 )}
-                {(data?.WaterConnection?.[0].applicationType?.includes("DISCONNECT") ||
-                  data?.SewerageConnections?.[0].applicationType?.includes("DISCONNECT")) && (
+                {(data?.WaterConnection?.[0]?.applicationType?.includes("DISCONNECT") ||
+                  data?.SewerageConnections?.[0]?.applicationType?.includes("DISCONNECT")) && (
                   <Row
                     label={t("WS_DISCONNECTION_REASON")}
                     text={
@@ -1147,9 +1147,9 @@ const WSApplicationDetails = () => {
                   />
                 </div>
               ) : null}
-              {(!data?.WaterConnection?.[0]?.applicationType.includes("DISCONNECT") &&
+              {(!data?.WaterConnection?.[0]?.applicationType?.includes("DISCONNECT") &&
                 data?.WaterConnection?.[0]?.applicationStatus.includes("PENDING_FOR_CITIZEN_ACTION")) ||
-              (!data?.SewerageConnections?.[0]?.applicationType.includes("DISCONNECT") &&
+              (!data?.SewerageConnections?.[0]?.applicationType?.includes("DISCONNECT") &&
                 data?.SewerageConnections?.[0]?.applicationStatus.includes("PENDING_FOR_CITIZEN_ACTION")) ? (
                 <Link
                   to={{
@@ -1169,9 +1169,9 @@ const WSApplicationDetails = () => {
                   <SubmitBar label={t("COMMON_EDIT")} />
                 </Link>
               ) : null}
-              {(data?.WaterConnection?.[0]?.applicationType.includes("DISCONNECT") &&
+              {(data?.WaterConnection?.[0]?.applicationType?.includes("DISCONNECT") &&
                 data?.WaterConnection?.[0]?.applicationStatus.includes("PENDING_FOR_CITIZEN_ACTION")) ||
-              (data?.SewerageConnections?.[0]?.applicationType.includes("DISCONNECT") &&
+              (data?.SewerageConnections?.[0]?.applicationType?.includes("DISCONNECT") &&
                 data?.SewerageConnections?.[0]?.applicationStatus.includes("PENDING_FOR_CITIZEN_ACTION")) ? (
                 <Link
                   to={{

@@ -39,7 +39,7 @@ const WSEditConnectionDetails = ({ config, onSelect, userType, formData, setErro
   );
   const [focusIndex, setFocusIndex] = useState({ index: -1, type: "" });
   const stateCode = Digit.ULBService.getStateId();
-  const [isErrors, setIsErrors] = useState(false);
+  const [isErrors, setIsErrors] = useState(true);
   const [waterSewarageSelection, setWaterSewarageSelection] = useState({ water: true, sewerage: false });
 
   const [pipeSizeList, setPipesizeList] = useState([]);
@@ -154,10 +154,10 @@ const ConnectionDetails = (_props) => {
         Object.keys(formValue).map((data) => {
           if (!formValue[data] && isErrorsFound) {
             isErrorsFound = false;
-            setIsErrors(false);
+            setIsErrors(true);
           }
         });
-        if (isErrorsFound) setIsErrors(true);
+        if (isErrorsFound) setIsErrors(false);
         let ob = [{ ...formValue }];
         setConnectionDetails(ob);
         trigger();

@@ -66,7 +66,7 @@ const WSConnectionHolderDetails = ({ config, onSelect, userType, formData, setEr
   });
   const [focusIndex, setFocusIndex] = useState({ index: -1, type: "" });
   const stateId = Digit.ULBService.getStateId();
-  const [isErrors, setIsErrors] = useState(false);
+  const [isErrors, setIsErrors] = useState(true);
 
   const { isLoading, data: genderTypeData } = Digit.Hooks.obps.useMDMS(stateId, "common-masters", ["GenderType"]);
 
@@ -330,10 +330,10 @@ const ConnectionDetails = (_props) => {
         Object.keys(formValue).map((data) => {
           if (!formValue[data] && isErrorsFound) {
             isErrorsFound = false;
-            setIsErrors(false);
+            setIsErrors(true);
           }
         });
-        if (isErrorsFound) setIsErrors(true);
+        if (isErrorsFound) setIsErrors(false);
         let ob = [{ ...formValue }];
         setConnectionHolderDetails(ob);
         trigger();
@@ -846,7 +846,10 @@ const ConnectionDetails = (_props) => {
           </div>
           <div>
             <LabelFieldPair>
-              <CardLabel>{`${t("CORE_COMMON_WHATSAPP_MOBILE_NUMBER")}`}</CardLabel>
+              <CardLabel>
+                {`${t("CORE_COMMON_WHATSAPP_MOBILE_NUMBER")}`}
+                <span className="check-page-link-button">*</span>
+              </CardLabel>
               <div className="field">
                 <Controller
                   control={control}

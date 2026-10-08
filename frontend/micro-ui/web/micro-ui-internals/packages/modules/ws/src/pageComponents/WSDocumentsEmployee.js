@@ -267,7 +267,7 @@ function SelectDocument({
 
   const validateDocumentNumber = (value, docTypeCode, isReq, hasFile) => {
     if (!isReq && !hasFile && (!value || !value.trim())) return null;
-    if (!value || !value.trim()) return t("WS_DOCUMENT_NUMBER_REQUIRED") || "Document number is required";
+    if (!value || !value.trim()) return null;
     const trimmed = value.trim();
     const upperCode = (docTypeCode || "").toUpperCase();
 
@@ -363,6 +363,18 @@ function SelectDocument({
   const { dropdownData } = doc;
   const { dropdownFilter, enabledActions, filterCondition } = doc?.additionalDetails || {};
   var dropDownData = dropdownData;
+
+  const applicantTypeVal = formData?.applicationSelection?.applicantType 
+    || formData?.applicationSelection?.[0]?.applicantType 
+    || formData?.ConnectionDetails?.applicantType 
+    || formData?.ConnectionDetails?.[0]?.applicantType;
+    
+  const applicantTypeCode = typeof applicantTypeVal === "object" ? applicantTypeVal?.code : applicantTypeVal;
+
+  if (isOther && applicantTypeCode === "TENANT") {
+    dropDownData = dropDownData?.filter((d) => d.code === "OWNER.OTHERDOCUMENTS.NOC_FROM_OWNER" || d.code?.includes("NOC_FROM_OWNER"));
+  }
+
   const [isHidden, setHidden] = useState(false);
   const documentDisplayName = selectedDocument?.i18nKey || selectedDocument?.name || selectedDocument?.code || doc?.i18nKey || doc?.name || doc?.code;
 
@@ -417,19 +429,21 @@ function SelectDocument({
       });
     }
 
-    const err = validateDocumentNumber(documentUid, selectedDocument?.code, doc?.required, !!uploadedFile);
     const hasOtherUploaded = isOther && documents?.some(item => item?.documentType?.includes(doc?.code));
+    const isCompletelyEmpty = !uploadedFile && (!documentUid || !documentUid.trim()) && !selectedDocument?.code;
+    const isPartiallyFilled = (!isCompletelyEmpty) && !(uploadedFile && selectedDocument?.code);
+    
+    const effectiveRequired = (doc?.required && !hasOtherUploaded) || isPartiallyFilled;
+    const err = validateDocumentNumber(documentUid, selectedDocument?.code, effectiveRequired, !!uploadedFile);
 
     if (!isHidden) {
       if (err) {
         addError();
+      } else if (isPartiallyFilled) {
+        addError();
       } else if ((!uploadedFile || !selectedDocument?.code) && doc?.required && !hasOtherUploaded) {
         addError();
-      } else if (uploadedFile && selectedDocument?.code && !err) {
-        removeError();
-      } else if (!doc?.required && !err) {
-        removeError();
-      } else if (hasOtherUploaded) {
+      } else {
         removeError();
       }
     } else if (isHidden) {

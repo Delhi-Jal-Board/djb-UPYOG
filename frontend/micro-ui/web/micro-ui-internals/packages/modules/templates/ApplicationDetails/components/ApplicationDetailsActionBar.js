@@ -59,6 +59,15 @@ function ApplicationDetailsActionBar({
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     });
 
+  const completelySatisfied = applicationDetails?.applicationData?.additionalDetails?.CompletelySatisfied;
+  if (completelySatisfied !== undefined) {
+    if (completelySatisfied === true) {
+      actions = actions?.filter((e) => e.action !== "SEND_BACK_TO_CITIZEN_DIRECT");
+    } else if (completelySatisfied === false) {
+      actions = actions?.filter((e) => e.action !== "SEND_BACK_TO_CITIZEN");
+    }
+  }
+
   const closeMenu = () => {
     setDisplayMenu(false);
   };

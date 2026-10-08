@@ -11,7 +11,7 @@ import { useLocation } from "react-router-dom";
 const createConnectionDetails = (service) =>
   service == "WATER"
     ? {
-        connectionType: "",
+        connectionType: { code: "Metered", i18nKey: "WS_CONNECTIONTYPE_METERED", name: "Metered" },
         noOfTaps: "",
         waterSource: "",
         pipeSize: "",
@@ -27,13 +27,22 @@ const WSActivationConnectionDetails = ({ config, onSelect, userType, formData, s
   const { t } = useTranslation();
   const { pathname } = useLocation();
   const filters = func.getQueryStringParams(location.search);
-  const [connectionDetails, setConnectionDetails] = window.location.href.includes("modify")
-    ? useState(formData?.connectionDetails ? [formData?.connectionDetails?.[0]] : [createConnectionDetails(filters?.service?.toUpperCase())])
-    : useState(formData?.connectionDetails || [createConnectionDetails(filters?.service?.toUpperCase())]);
+  const [connectionDetails, setConnectionDetails] = useState(() => {
+    let details = window.location.href.includes("modify")
+      ? (formData?.connectionDetails ? [formData?.connectionDetails?.[0]] : [createConnectionDetails(filters?.service?.toUpperCase())])
+      : (formData?.connectionDetails || [createConnectionDetails(filters?.service?.toUpperCase())]);
+    if (filters?.service?.toUpperCase() === "WATER" && details.length > 0) {
+      details = details.map(d => ({
+        ...d,
+        connectionType: { code: "Metered", i18nKey: "WS_CONNECTIONTYPE_METERED", name: "Metered" }
+      }));
+    }
+    return details;
+  });
   const [focusIndex, setFocusIndex] = useState({ index: -1, type: "" });
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateCode = Digit.ULBService.getStateId();
-  const [isErrors, setIsErrors] = useState(false);
+  const [isErrors, setIsErrors] = useState(true);
 
   const [pipeSizeList, setPipesizeList] = useState([]);
   const [connectionTypeList, setConnectionTypeList] = useState([]);
@@ -187,13 +196,13 @@ const ConnectionDetails = (_props) => {
         Object.keys(formValue).map((data) => {
           if (!formValue[data] && isErrorsFound) {
             isErrorsFound = false;
-            setIsErrors(false);
+            setIsErrors(true);
           }
           // if (data != "key" && formValue[data] != undefined && formValue[data] != "" && formValue[data] != null && !isErrors) {
           //     setIsErrors(true);
           // }
         });
-        if (isErrorsFound) setIsErrors(true);
+        if (isErrorsFound) setIsErrors(false);
         let ob = [{ ...formValue }];
         // let mcollectFormValue = JSON.parse(sessionStorage.getItem("mcollectFormData"));
         // mcollectFormValue = { ...mcollectFormValue, ...ob[0] }
@@ -237,7 +246,7 @@ const ConnectionDetails = (_props) => {
                 <Dropdown
                   className="form-field"
                   selected={getValues("connectionType")}
-                  disable={false}
+                  disable={true}
                   option={connectionTypeList}
                   errorStyle={localFormState.touched.connectionType && errors?.connectionType?.message ? true : false}
                   select={(e) => {
@@ -253,7 +262,7 @@ const ConnectionDetails = (_props) => {
               <CardLabelError style={errorStyle}> {errors?.connectionType?.message}</CardLabelError>
             ) : null}
           </LabelFieldPair>
-          <LabelFieldPair>
+          {/* <LabelFieldPair>
             <CardLabel>{t("WS_SERV_DETAIL_WATER_SOURCE")} <span style={{ color: "red" }}>*</span></CardLabel>
             <Controller
               control={control}
@@ -379,7 +388,7 @@ const ConnectionDetails = (_props) => {
             {localFormState.touched.noOfTaps && errors?.noOfTaps?.message ? (
               <CardLabelError style={errorStyle}> {errors?.noOfTaps?.message}</CardLabelError>
             ) : null}
-          </LabelFieldPair>
+          </LabelFieldPair> */}
         </React.Fragment>
       ) : (
         <React.Fragment>

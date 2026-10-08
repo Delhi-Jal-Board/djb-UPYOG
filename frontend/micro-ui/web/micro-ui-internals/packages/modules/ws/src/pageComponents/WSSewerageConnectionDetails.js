@@ -256,7 +256,7 @@ const WSSewerageConnectionDetails = ({ t, config, userType, onSelect, formData }
                 config={config}
                 onSelect={handleSubmit}
                 onSkip={onSkip}
-                isDisabled={!proposedWaterClosets || !proposedToilets || isDisableForNext}
+                isDisabled={!proposedWaterClosets || !proposedToilets || isDisableForNext || showToast}
                 onAdd={onAdd}
             >
                 <CardLabel>{t("WS_NO_OF_WATER_CLOSETS")}*</CardLabel>
