@@ -64,9 +64,20 @@ public class SmsNotificationListener {
     }
 
     @KafkaListener(
-            topics = "${kafka.topics.notification.sms.name}"
+            topics = "${kafka.topics.notification.sms.name:egov.core.notification.sms}"
     )
     public void process(HashMap<String, Object> consumerRecord) {
+        processMessage(consumerRecord);
+    }
+
+    @KafkaListener(
+            topics = "${kafka.topics.notification.sms.otp.name:egov.core.notification.sms.otp}"
+    )
+    public void processOtp(HashMap<String, Object> consumerRecord) {
+        processMessage(consumerRecord);
+    }
+
+    private void processMessage(HashMap<String, Object> consumerRecord) {
         RequestContext.setId(UUID.randomUUID().toString());
         SMSRequest request = null;
         try {
