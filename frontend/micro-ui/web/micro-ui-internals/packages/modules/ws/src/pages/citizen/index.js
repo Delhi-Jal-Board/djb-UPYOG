@@ -189,6 +189,8 @@ const App = ({ path }) => {
   const WSOLDApplication = Digit?.ComponentRegistryService?.getComponent("WSOLDApplication");
   const WSInfoPage = Digit?.ComponentRegistryService?.getComponent("WSInfoPage");
   const WSMutationApplication = Digit?.ComponentRegistryService?.getComponent("WSMutationApplication");
+  const WSExecuteDisconnection = Digit?.ComponentRegistryService?.getComponent("WSExecuteDisconnection");
+  const WSActivateConnection = Digit?.ComponentRegistryService?.getComponent("WSActivateConnection");
   return (
     <React.Fragment>
       <Switch>
@@ -208,6 +210,8 @@ const App = ({ path }) => {
               <div className="employee-form-content">
                 <PrivateRoute path={`${path}/create-application`} component={WSInfoPage} />
                 <PrivateRoute path={`${path}/disconnect-application`} component={WSDisconnection} />
+                <PrivateRoute path={`${path}/execute-disconnection`} component={WSExecuteDisconnection} />
+                <PrivateRoute path={`${path}/activate-connection`} component={WSActivateConnection} />
                 <PrivateRoute path={`${path}/restore-application`} component={WSRestoration} />
                 <PrivateRoute path={`${path}/disconnect-acknowledge`} component={WSDisconnectAcknowledgement} />
                 <PrivateRoute path={`${path}/restoration-acknowledge`} component={WSRestorationAcknowledgement} />

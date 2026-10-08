@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { UploadFile, TextInput, Toast, ButtonSelector } from "@djb25/digit-ui-react-components";
+import { UploadFile, TextInput, Toast, ButtonSelector, ActionBar, SubmitBar } from "@djb25/digit-ui-react-components";
 
 const FitterSandbox = ({ t, action, applicationData, submitAction, closeModal }) => {
   const [beforeImage, setBeforeImage] = useState(null);
@@ -97,10 +97,31 @@ const FitterSandbox = ({ t, action, applicationData, submitAction, closeModal })
     };
     
     // Ensure we trigger disconnectRequest
-    if (payload?.serviceType === "WATER") {
+    const isWater = payload?.serviceType?.toUpperCase() === "WATER" || payload?.service?.toUpperCase() === "WATER" || payload?.applicationType?.includes("WATER");
+    if (isWater) {
       submitAction({ WaterConnection: payload, disconnectRequest: true });
     } else {
       submitAction({ SewerageConnection: payload, disconnectRequest: true });
+    }
+  };
+
+  const handleView = async (fileStoreId) => {
+    if (!fileStoreId) return;
+    try {
+      const response = await Digit.UploadServices.Filefetch([fileStoreId], Digit.ULBService.getCurrentTenantId());
+      const url = response?.data?.fileStoreIds?.[0]?.url;
+      if (url) {
+        const differentFormats = url?.split(",") || [];
+        let fileURL = "";
+        differentFormats.map((link) => {
+          if (!link.includes("large") && !link.includes("medium") && !link.includes("small")) {
+            fileURL = link;
+          }
+        });
+        window.open(fileURL || differentFormats[0], "_blank");
+      }
+    } catch (err) {
+      console.error("Error fetching file URL:", err);
     }
   };
 
@@ -116,7 +137,7 @@ const FitterSandbox = ({ t, action, applicationData, submitAction, closeModal })
           </div>
           <div>
             <h2 style={{ fontSize: "16px", fontWeight: "700", color: "#3b1c1c", margin: 0, textTransform: "uppercase" }}>
-             ENTER METER FITTER DETAILS
+             ENTER METER DETAILS
             </h2>
             {/* <p style={{ fontSize: "14px", color: "#6e5e5e", margin: "4px 0 0 0" }}>
               Simulate the physical field actions of Delhi Jal Board fitter {applicationData?.additionalDetails?.ownerName || "Amit Kumar"}.
@@ -149,6 +170,13 @@ const FitterSandbox = ({ t, action, applicationData, submitAction, closeModal })
             message={beforeImage ? `1 File Uploaded` : `Upload`}
             showHintBelow={false}
           />
+          {beforeImage && (
+            <div style={{ marginTop: "12px" }}>
+              <span style={{ color: "#f47738", cursor: "pointer", fontSize: "14px", fontWeight: "600", textDecoration: "underline" }} onClick={() => handleView(beforeImage)}>
+                View Document
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Meter Reading */}
@@ -185,6 +213,27 @@ const FitterSandbox = ({ t, action, applicationData, submitAction, closeModal })
             message={afterImage ? `1 File Uploaded` : `Upload`}
             showHintBelow={false}
           />
+          {afterImage && (
+            <div style={{ marginTop: "12px" }}>
+              <span style={{ color: "#f47738", cursor: "pointer", fontSize: "14px", fontWeight: "600", textDecoration: "underline" }} onClick={() => handleView(afterImage)}>
+                View Document
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Meter Reading Warning */}
+      <div style={{ marginBottom: "24px", padding: "12px 16px", backgroundColor: "#fffaf0", color: "#572b00", border: "1px solid #f5c542", borderRadius: "8px", fontSize: "13px", display: "flex", alignItems: "flex-start", gap: "10px", lineHeight: "1.5" }}>
+        <div style={{ marginTop: "2px" }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d48806" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+            <line x1="12" y1="9" x2="12" y2="13"></line>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+        </div>
+        <div>
+          <strong>Important Note:</strong> If any mismatch or discrepancy is found in the final meter reading, the final decision and subsequent actions will be taken strictly at the DJB level.
         </div>
       </div>
 
@@ -195,19 +244,9 @@ const FitterSandbox = ({ t, action, applicationData, submitAction, closeModal })
       </div>
 
       {/* Submit Button */}
-      <ButtonSelector
-        label={
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#28a745" strokeWidth="2">
-              <polyline points="20 6 9 17 4 12"></polyline>
-            </svg>
-            <span style={{ color: "#6a7b8c" }}>Submit</span>
-          </div>
-        }
-        onSubmit={handleSubmit}
-        style={{ width: "100%", backgroundColor: "#e9ecef", border: "none", borderRadius: "8px", fontWeight: "700" }}
-        textStyles={{ width: "100%" }}
-      />
+      <ActionBar>
+        <SubmitBar label={t("CS_COMMON_SUBMIT")} onSubmit={handleSubmit} />
+      </ActionBar>
       
       {error && <Toast error={true} label={error} onClose={() => setError(null)} />}
     </div>

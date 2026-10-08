@@ -166,7 +166,7 @@ export const useDemandSearch = ({ consumerCode, businessService, tenantId }, con
 
 export const useAssetQrCode = ({ tenantId, ...params }, config = {}) => {     
   return useQuery(
-    ["assets_Reciept_Search", { tenantId, params },config],
+    ["assets_Reciept_Search", tenantId, params],
     () => Digit.PaymentService.useAssetQrCodeService(tenantId, params),
     {
       refetchOnMount: false,
@@ -177,7 +177,7 @@ export const useAssetQrCode = ({ tenantId, ...params }, config = {}) => {
 
 export const useRecieptSearch = ({ tenantId, businessService, ...params }, config = {}) => {
   return useQuery(
-    ["reciept_search", { tenantId, businessService, params },config],
+    ["reciept_search", tenantId, businessService, params],
     () => Digit.PaymentService.recieptSearch(tenantId, businessService, params),
     {
       refetchOnMount: false,
@@ -187,7 +187,7 @@ export const useRecieptSearch = ({ tenantId, businessService, ...params }, confi
 };
 export const useRecieptSearchNew = ({ tenantId, ...params }, config = {}) => {
   return useQuery(
-    ["obps_Reciept_Search", { tenantId, params },config],
+    ["obps_Reciept_Search", tenantId, params],
     () => Digit.PaymentService.recieptSearchNew(tenantId, params),
     {
       refetchOnMount: false,

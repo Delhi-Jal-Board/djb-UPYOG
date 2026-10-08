@@ -956,7 +956,7 @@ export const createPayloadOfWSDisconnection = async (data, storeData, service) =
   //   if (storeData?.applicationData?.meterId) swPayload.SewerageConnection.meterId = storeData?.applicationData?.meterId;
   // }
 
-  let returnObject = service === "WATER" ? wsPayload : swPayload;
+  let returnObject = service?.toUpperCase() === "WATER" ? wsPayload : swPayload;
   /* use customiseCreateFormData hook to make some chnages to the water object */
   returnObject = Digit?.Customizations?.WS?.customiseCreatePayloadOfWSDisconnection
     ? Digit?.Customizations?.WS?.customiseCreatePayloadOfWSDisconnection(data, returnObject, service)
@@ -1080,7 +1080,7 @@ export const createPayloadOfWSReconnection = async (data, storeData, service) =>
   //   if (storeData?.applicationData?.meterId) swPayload.SewerageConnection.meterId = storeData?.applicationData?.meterId;
   // }
 
-  let returnObject = service === "WATER" ? wsPayload : swPayload;
+  let returnObject = service?.toUpperCase() === "WATER" ? wsPayload : swPayload;
   /* use customiseCreateFormData hook to make some chnages to the water object */
   // returnObject = Digit?.Customizations?.WS?.customiseCreatePayloadOfWSDisconnection
   //   ? Digit?.Customizations?.WS?.customiseCreatePayloadOfWSDisconnection(data, returnObject, service)
@@ -1147,7 +1147,7 @@ export const createPayloadOfWSReSubmitDisconnection = async (data, storeData, se
   //   if (storeData?.applicationData?.meterId) swPayload.SewerageConnection.meterId = storeData?.applicationData?.meterId;
   // }
 
-  let returnObject = service === "WATER" ? wsPayload : swPayload;
+  let returnObject = service?.toUpperCase() === "WATER" ? wsPayload : swPayload;
   /* use customiseCreateFormData hook to make some chnages to the water object */
   returnObject = Digit?.Customizations?.WS?.customiseCreatePayloadOfWSReSubmitDisconnection
     ? Digit?.Customizations?.WS?.customiseCreatePayloadOfWSReSubmitDisconnection(data, returnObject, service)
