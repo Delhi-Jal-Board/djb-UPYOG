@@ -14,6 +14,7 @@ import {
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { checkForNA } from "../../../utils";
+import WSDeclaration from "../../../pageComponents/WSDeclaration";
 
 const ActionButton = ({ onClick }) => {
   return (
@@ -45,9 +46,8 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
   const [showDocModal, setShowDocModal] = useState(false);
   const [docFileUrl, setDocFileUrl] = useState("");
   const [docFileType, setDocFileType] = useState("");
-  const [formState, setFormState] = useState(
-    JSON.parse(sessionStorage.getItem("FORMSTATE_ERRORS")) || {}
-  );
+  const [declarationData, setDeclarationData] = useState(data?.declarationData || {});
+  const [formState, setFormState] = useState(JSON.parse(sessionStorage.getItem("FORMSTATE_ERRORS")) || {});
   const isCitizen = Digit.UserService.getType()?.toUpperCase() === "CITIZEN";
 
   const handleViewDocument = async (fileStoreId) => {
@@ -221,7 +221,10 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
               label={t("COMMON_ADDRESS_TYPE")}
               text={`${t(checkForNA(propertyAddress?.addressType?.i18nKey || propertyAddress?.addressType?.code || propertyAddress?.addressType))}`}
             />
-            <Row label={t("CORE_COMMON_PROFILE_CITY")} text={`${t(checkForNA(propertyAddress?.city?.name || propertyAddress?.city?.code || propertyAddress?.city))}`} />
+            <Row
+              label={t("CORE_COMMON_PROFILE_CITY")}
+              text={`${t(checkForNA(propertyAddress?.city?.name || propertyAddress?.city?.code || propertyAddress?.city))}`}
+            />
             <Row label={t("PINCODE")} text={`${t(checkForNA(propertyAddress?.pincode || propertyAddress?.pinCode))}`} />
             <Row
               label={t("LOCALITY")}
@@ -267,7 +270,10 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
               )}`}
             />
 
-            <Row label={t("COMMON_CURRENT_ASSEMBLY")} text={`${t(checkForNA(propertyAddress?.actualAssembly || additionalDetails?.actualAssembly))}`} />
+            <Row
+              label={t("COMMON_CURRENT_ASSEMBLY")}
+              text={`${t(checkForNA(propertyAddress?.actualAssembly || additionalDetails?.actualAssembly))}`}
+            />
             <Row label={t("COMMON_CURRENT_WARD")} text={`${t(checkForNA(propertyAddress?.actualWard || additionalDetails?.actualWard))}`} />
             <Row label={t("COMMON_CURRENT_ZONE")} text={`${t(checkForNA(propertyAddress?.actualZone || additionalDetails?.actualZone))}`} />
             <Row label={t("LANDMARK")} text={`${t(checkForNA(propertyAddress?.landmark))}`} />
@@ -307,6 +313,9 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
             />
             <Row label={t("WS_PLOT_AREA")} text={`${t(checkForNA(useDetails?.plotArea))}`} />
             <Row label={t("WS_BUILT_UP_AREA")} text={`${t(checkForNA(useDetails?.builtUpArea))}`} />
+            {useDetails?.heightOfTheBuilding && (
+              <Row label={t("WS_HEIGHT_OF_THE_BUILDING(meters)")} text={`${t(checkForNA(useDetails?.heightOfTheBuilding))}`} />
+            )}
             <Row
               label={t("WS_SELECT_YEAR_OF_CONSTRUCTION")}
               text={`${t(
@@ -328,36 +337,36 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
           </StatusTable>
 
           {/* {!isCitizen && ( */}
-            <React.Fragment>
-              <CardSubHeader>{t("WS_DJB_EMPLOYEE")}</CardSubHeader>
-              <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
-                <Row
-                  label={t("WS_DJB_EMPLOYEE")}
-                  text={`${djbEmployee?.isDjbEmployee ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}`}
-                  actionButton={<ActionButton onClick={onEdit} />}
-                />
-                {djbEmployee?.isDjbEmployee && (
-                  <React.Fragment>
-                    <Row label={t("WS_EMPLOYEE_ID")} text={`${t(checkForNA(djbEmployee?.employeeId))}`} />
-                    <Row label={t("WS_DATE_OF_RETIREMENT")} text={`${t(checkForNA(djbEmployee?.dor))}`} />
-                    <Row label={t("WS_EMPLOYEE_DESIGNATION")} text={`${t(checkForNA(djbEmployee?.designation))}`} />
-                    {djbEmployee?.document && (
-                      <Row
-                        label={t("WS_UPLOAD_EMPLOYEE_ID_DOC")}
-                        text={
-                          <span
-                            style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", color: "#f47738" }}
-                            onClick={() => openFilePDF(djbEmployee?.document)}
-                          >
-                            <GenericFileIcon /> {t("CS_COMMON_VIEW")}
-                          </span>
-                        }
-                      />
-                    )}
-                  </React.Fragment>
-                )}
-              </StatusTable>
-            </React.Fragment>
+          <React.Fragment>
+            <CardSubHeader>{t("WS_DJB_EMPLOYEE")}</CardSubHeader>
+            <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
+              <Row
+                label={t("WS_DJB_EMPLOYEE")}
+                text={`${djbEmployee?.isDjbEmployee ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}`}
+                actionButton={<ActionButton onClick={onEdit} />}
+              />
+              {(djbEmployee?.isDjbEmployee || djbEmployee?.employeeId || djbEmployee?.designation || djbEmployee?.document) && (
+                <React.Fragment>
+                  <Row label={t("WS_EMPLOYEE_ID")} text={`${t(checkForNA(djbEmployee?.employeeId))}`} />
+                  {/* <Row label={t("WS_DATE_OF_RETIREMENT")} text={`${t(checkForNA(djbEmployee?.dor))}`} /> */}
+                  <Row label={t("WS_EMPLOYEE_DESIGNATION")} text={`${t(checkForNA(djbEmployee?.designation))}`} />
+                  {djbEmployee?.document && (
+                    <Row
+                      label={t("WS_UPLOAD_EMPLOYEE_ID_DOC")}
+                      text={
+                        <span
+                          style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", color: "#f47738" }}
+                          onClick={() => openFilePDF(djbEmployee?.document)}
+                        >
+                          <GenericFileIcon /> {t("CS_COMMON_VIEW")}
+                        </span>
+                      }
+                    />
+                  )}
+                </React.Fragment>
+              )}
+            </StatusTable>
+          </React.Fragment>
           {/* )} */}
 
           <CardSubHeader>Divyangjan/Person with Disability?</CardSubHeader>
@@ -397,34 +406,21 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
             ))}
           </StatusTable>
 
-          <CardSubHeader>{t("WS_DECLARATION")}</CardSubHeader>
-          <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
-            <Row
-              label={t("WS_SUBMITTED_BY")}
-              text={`${t(declaration?.submittedBy?.name || declaration?.submittedBy?.code || declaration?.submittedBy)}`}
-              actionButton={<ActionButton onClick={onEdit} />}
-            />
-            {/* {(declaration?.signatureFileStoreId || declaration?.signatureFile) && (
-              <React.Fragment>
-                <Row label={t("WS_UPLOAD_SIGNATURE_FILE")} text={declaration?.signatureFileName || declaration?.signatureFile?.name || "Document"} />
-                <Row
-                  text={
-                    <span
-                      style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", color: "#f47738" }}
-                      onClick={() => handleViewDocument(declaration?.signatureFileStoreId || declaration?.signatureFile)}
-                    >
-                      <GenericFileIcon /> {t("CS_COMMON_VIEW")}
-                    </span>
-                  }
-                />
-              </React.Fragment>
-            )} */}
-            <Row label={t("WS_I_AGREE_TO_ALL_DECLARATIONS")} text={declaration?.agree ? t("Yes") : t("No")} />
-          </StatusTable>
+          <WSDeclaration
+            config={{ key: "declarationData" }}
+            onSelect={(key, val) => setDeclarationData(val)}
+            formData={{ declarationData: declarationData }}
+            userType="employee"
+          />
         </div>
 
         <ActionBar>
-          <SubmitBar label={t("CS_COMMON_SUBMIT")} onSubmit={onSubmit} style={{ width: "150px" }} />
+          <SubmitBar
+            label={t("CS_COMMON_SUBMIT")}
+            onSubmit={() => onSubmit({ ...data, declarationData })}
+            style={{ width: "150px" }}
+            disabled={!declarationData?.agree}
+          />{" "}
         </ActionBar>
       </Card>
       {showDocModal && (

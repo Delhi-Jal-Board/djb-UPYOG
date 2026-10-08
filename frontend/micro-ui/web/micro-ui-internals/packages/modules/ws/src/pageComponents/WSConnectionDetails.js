@@ -34,7 +34,7 @@ const createConnectionDetails = () => ({
 
   serviceType: { code: "WATER", i18nKey: "WS_APPLICATION_TYPE_WATER" },
   categoryType: { code: "DOMESTIC", i18nKey: "WS_CATEGORY_DOMESTIC" },
-  connectionType: { code: "Permanent", i18nKey: "WS_CONNECTION_Permanent" },
+  connectionType: { code: "Metered", i18nKey: "WS_CONNECTIONTYPE_METERED", name: "Metered" },
   temporaryType: { code: "Exhibition", i18nKey: "Exhibition" },
   waterDemandType: { code: "NON_BULK", i18nKey: "WS_WATER_DEMAND_NON_BULK" },
   applicantType: { code: "OWNER", i18nKey: "WS_APPLICANT_OWNER" },
@@ -54,7 +54,7 @@ const WSConnectionDetails = ({ config, onSelect, userType, formData, setError, f
   const [focusIndex, setFocusIndex] = useState({ index: -1, type: "" });
   const stateCode = Digit.ULBService.getStateId();
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  const [isErrors, setIsErrors] = useState(false);
+  const [isErrors, setIsErrors] = useState(true);
   const [waterSewarageSelection, setWaterSewarageSelection] = useState({ water: true, sewerage: false });
 
   const [applicationTypeList, setApplicationTypeList] = useState([]);
@@ -162,6 +162,7 @@ const WSConnectionDetails = ({ config, onSelect, userType, formData, setError, f
     temporaryTypeList,
     institutionTypeList,
     formData,
+    userType,
   };
 
   const goNext = () => {
@@ -224,6 +225,7 @@ const ConnectionDetails = (_props) => {
     temporaryTypeList,
     institutionTypeList,
     formData,
+    userType,
   } = _props;
 
   const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue, trigger, getValues } = useForm(
@@ -231,7 +233,7 @@ const ConnectionDetails = (_props) => {
       defaultValues: {
         serviceType: connectionDetail?.serviceType || { code: "WATER", i18nKey: "WS_APPLICATION_TYPE_WATER" },
         categoryType: connectionDetail?.categoryType || { code: "DOMESTIC", i18nKey: "WS_CATEGORY_DOMESTIC" },
-        connectionType: connectionDetail?.connectionType || { code: "Permanent", i18nKey: "WS_CONNECTION_Permanent" },
+        connectionType: connectionDetail?.connectionType || { code: "Metered", i18nKey: "WS_CONNECTIONTYPE_METERED", name: "Metered" },
         temporaryType: connectionDetail?.temporaryType || { code: "Exhibition", i18nKey: "Exhibition" },
         waterDemandType: connectionDetail?.waterDemandType || { code: "NON_BULK", i18nKey: "WS_WATER_DEMAND_NON_BULK" },
         applicantType: connectionDetail?.applicantType || { code: "OWNER", i18nKey: "WS_APPLICANT_OWNER" },
@@ -241,11 +243,16 @@ const ConnectionDetails = (_props) => {
         natureOfWork: connectionDetail?.natureOfWork || "",
         orgDeptDocument: connectionDetail?.orgDeptDocument || "",
         orgDeptDocumentName: connectionDetail?.orgDeptDocumentName || "",
+        addressType: connectionDetail?.addressType || "",
+        completeAddress: connectionDetail?.completeAddress || "",
       },
     }
   );
   const formValue = watch();
   const { errors } = localFormState;
+
+  const userInfo = JSON.parse(window.localStorage.getItem("Citizen.user-info") || "{}");
+  const addresses = userInfo?.addresses || [];
 
   const [uploadedFile, setUploadedFile] = useState(connectionDetail?.orgDeptDocument || null);
   const [file, setFile] = useState(null);
@@ -325,10 +332,10 @@ const ConnectionDetails = (_props) => {
         Object.keys(formValue).map((data) => {
           if (!formValue[data] && isErrorsFound) {
             isErrorsFound = false;
-            setIsErrors(false);
+            setIsErrors(true);
           }
         });
-        if (isErrorsFound) setIsErrors(true);
+        if (isErrorsFound) setIsErrors(false);
         let ob = [{ ...connectionDetail, ...formValue }];
         setConnectionDetails(ob);
         trigger();
@@ -375,11 +382,11 @@ const ConnectionDetails = (_props) => {
   const isMobile = window.Digit.Utils.browser.isMobile();
   const isEmployee = window.location.href.includes("/employee");
   return (
-    <CollapsibleCardPage title={t("WS_CONNECTION_DETAILS")} defaultOpen={true}>
+    <CollapsibleCardPage title={t("Connection Details")} defaultOpen={true}>
       <div className="formcomposer-section-grid">
         <LabelFieldPair>
           <CardLabel>
-            {`${t("WS_SERVICE_TYPE")}`}
+            {`${t("Service Type")}`}
             <span className="check-page-link-button">*</span>
           </CardLabel>
           <Controller
@@ -396,13 +403,13 @@ const ConnectionDetails = (_props) => {
                 disabled={true}
                 onChange={() => {}}
                 style={{ backgroundColor: "#eee" }}
-                placeholder={t("WS_SERVICE_TYPE_PLACEHOLDER")}
+                placeholder={t("Select Service Type")}
               />
             )}
           />
         </LabelFieldPair>
         {/* <LabelFieldPair>
-          <CardLabel>{`${t("WS_CATEGORY_TYPE")}*`}</CardLabel>
+          <CardLabel>{`${t("Category Type")}*`}</CardLabel>
           <Controller
             control={control}
             name={"categoryType"}
@@ -427,7 +434,7 @@ const ConnectionDetails = (_props) => {
           />
         </LabelFieldPair> */}
         {/* <LabelFieldPair>
-          <CardLabel>{`${t("WS_CONNECTION_TYPE")}*`}</CardLabel>
+          <CardLabel>{`${t("Connection Type")}*`}</CardLabel>
           <Controller
             control={control}
             name={"connectionType"}
@@ -453,7 +460,7 @@ const ConnectionDetails = (_props) => {
         </LabelFieldPair>
         {formValue?.connectionType?.code === "Temporary" && (
           <LabelFieldPair>
-            <CardLabel>{`${t("WS_TEMPORARY_TYPE")}*`}</CardLabel>
+            <CardLabel>{`${t("Temporary Type")}*`}</CardLabel>
             <Controller
               control={control}
               name={"temporaryType"}
@@ -479,7 +486,7 @@ const ConnectionDetails = (_props) => {
           </LabelFieldPair>
         )} */}
         {/* <LabelFieldPair>
-          <CardLabel>{`${t("WS_WATER_DEMAND_TYPE")}*`}</CardLabel>
+          <CardLabel>{`${t("Water Demand Type")}*`}</CardLabel>
           <Controller
             control={control}
             name={"waterDemandType"}
@@ -505,7 +512,7 @@ const ConnectionDetails = (_props) => {
         </LabelFieldPair> */}
         <LabelFieldPair>
           <CardLabel>
-            {`${t("WS_APPLICANT_TYPE")}`}
+            {`${t("Applicant Type")}`}
             <span className="check-page-link-button">*</span>
           </CardLabel>
           <Controller
@@ -527,15 +534,76 @@ const ConnectionDetails = (_props) => {
                 optionKey="i18nKey"
                 onBlur={props.onBlur}
                 t={t}
-                placeholder={t("WS_APPLICANT_TYPE_PLACEHOLDER")}
+                placeholder={t("Select Applicant Type")}
               />
             )}
           />
         </LabelFieldPair>
+        {window.location.href.includes("/citizen") && (
+          <React.Fragment>
+            <LabelFieldPair>
+              <CardLabel>
+                {t("Address Type")}
+                <span className="check-page-link-button">*</span>
+              </CardLabel>
+              <Controller
+                control={control}
+                name={"addressType"}
+                defaultValue={connectionDetail?.addressType || ""}
+                rules={{ required: t("REQUIRED_FIELD") }}
+                isMandatory={true}
+                render={(props) => (
+                  <Dropdown
+                    className="form-field"
+                    selected={getValues("addressType")}
+                    disable={false}
+                    option={[
+                      { i18nKey: "Permanent", code: "PERMANENT" },
+                      { i18nKey: "Correspondence", code: "CORRESPONDENCE" },
+                    ]}
+                    errorStyle={localFormState.touched.addressType && errors?.addressType?.message ? true : false}
+                    select={(e) => {
+                      props.onChange(e);
+                      const selectedAddress = addresses.find((a) => a.type === e.code) || {};
+                      const formattedAddress = [selectedAddress.houseNumber, selectedAddress.address, selectedAddress.city, selectedAddress.pinCode]
+                        .filter(Boolean)
+                        .join(", ");
+                      setValue("completeAddress", formattedAddress);
+                    }}
+                    optionKey="i18nKey"
+                    onBlur={props.onBlur}
+                    t={t}
+                    placeholder={t("Select Address Type")}
+                  />
+                )}
+              />
+            </LabelFieldPair>
+            <LabelFieldPair>
+              <CardLabel>{t("Complete Address")}</CardLabel>
+              <Controller
+                control={control}
+                name={"completeAddress"}
+                defaultValue={connectionDetail?.completeAddress || ""}
+                render={(props) => (
+                  <div className="field">
+                    <TextInput
+                      className="form-field"
+                      value={getValues("completeAddress")}
+                      disable={true}
+                      disabled={true}
+                      onChange={() => {}}
+                      style={{ backgroundColor: "#eee" }}
+                    />
+                  </div>
+                )}
+              />
+            </LabelFieldPair>
+          </React.Fragment>
+        )}
         {/* <LabelFieldPair>
           <CardLabel>{`${formValue?.categoryType?.code === "NON_DOMESTIC" || formValue?.categoryType?.name === "Non-Domestic"
-              ? t("WS_NON_DOMESTIC_TYPE")
-              : t("WS_DOMESTIC_TYPE")
+              ? t("Non-Domestic Type")
+              : t("Domestic Type")
             }*`}</CardLabel>
           <div className="field">
             <Controller
@@ -567,7 +635,7 @@ const ConnectionDetails = (_props) => {
         {/* {formValue?.domesticType?.code === "ORGANIZATION" && (
           <React.Fragment>
             <LabelFieldPair>
-              <CardLabel>{`${t("WS_DEPARTMENT_TYPE")}*`}</CardLabel>
+              <CardLabel>{`${t("Department Type")}*`}</CardLabel>
               <div className="field">
                 <Controller
                   control={control}
@@ -596,10 +664,10 @@ const ConnectionDetails = (_props) => {
               </div>
             </LabelFieldPair>
             <div style={{ color: "#3257F2", fontWeight: "700", fontSize: "1.5rem", gridColumn: "span 2" }}>
-              {t("WS_DEPARTMENT_ORGANIZATION_DETAILS")}
+              {t("Department/Organization Details")}
             </div>
             <LabelFieldPair>
-              <CardLabel>{`${t("WS_ORGANIZATION_DEPARTMENT_NAME")}*`}</CardLabel>
+              <CardLabel>{`${t("Organization/Department Name")}*`}</CardLabel>
               <div className="field">
                 <Controller
                   control={control}
@@ -610,7 +678,7 @@ const ConnectionDetails = (_props) => {
                   render={(props) => (
                     <TextInput
                       value={props.value}
-                      placeholder={t("WS_ORGANIZATION_DEPARTMENT_NAME_PLACEHOLDER")}
+                      placeholder={t("Enter Organization/Department Name")}
                       autoFocus={focusIndex.index === connectionDetail?.key && focusIndex.type === "institutionName"}
                       errorStyle={localFormState.touched.institutionName && errors?.institutionName?.message ? true : false}
                       onChange={(e) => {
@@ -624,7 +692,7 @@ const ConnectionDetails = (_props) => {
               </div>
             </LabelFieldPair>
             <LabelFieldPair>
-              <CardLabel>{`${t("WS_NATURE_OF_WORK")}*`}</CardLabel>
+              <CardLabel>{`${t("Nature of Work")}*`}</CardLabel>
               <div className="field">
                 <Controller
                   control={control}
@@ -635,7 +703,7 @@ const ConnectionDetails = (_props) => {
                   render={(props) => (
                     <TextInput
                       value={props.value}
-                      placeholder={t("WS_NATURE_OF_WORK_PLACEHOLDER")}
+                      placeholder={t("Enter Nature of Work")}
                       autoFocus={focusIndex.index === connectionDetail?.key && focusIndex.type === "natureOfWork"}
                       errorStyle={localFormState.touched.natureOfWork && errors?.natureOfWork?.message ? true : false}
                       onChange={(e) => {
@@ -649,7 +717,7 @@ const ConnectionDetails = (_props) => {
               </div>
             </LabelFieldPair>
             <LabelFieldPair>
-              <CardLabel>{`${t("WS_ORG_DEPT_DOCUMENT")}*`}</CardLabel>
+              <CardLabel>{`${t("Organization/Department Document")}*`}</CardLabel>
               <div className="field" style={{ display: "flex", gap: "10px", alignItems: "center" }}>
                 <div style={{ flex: 1 }}>
                   <Controller
@@ -667,7 +735,7 @@ const ConnectionDetails = (_props) => {
                           setFile(null);
                           props.onChange(null);
                         }}
-                        message={uploadedFile ? `1 ${t("WS_ACTION_FILEUPLOADED")}` : t("WS_ACTION_NO_FILEUPLOADED")}
+                        message={uploadedFile ? `1 ${t("File Uploaded Successfully")}` : t("No File Uploaded")}
                         accept="image/*, .pdf"
                         uploadedFiles={
                           uploadedFile && !file ? [[connectionDetail?.orgDeptDocumentName || "Document", { fileStoreId: uploadedFile }]] : undefined
@@ -695,7 +763,7 @@ const ConnectionDetails = (_props) => {
       {showDocModal && (
         <Modal
           open={showDocModal}
-          headerBarMain={t("WS_VIEW_DOCUMENT") || "View Document"}
+          headerBarMain={t("View Document") || "View Document"}
           headerBarEnd={
             <div className="icon-bg-secondary" onClick={() => setShowDocModal(false)} style={{ cursor: "pointer", padding: "5px" }}>
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FFFFFF" width="24" height="24">

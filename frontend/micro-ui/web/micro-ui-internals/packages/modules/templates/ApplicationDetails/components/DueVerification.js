@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { TextInput, Table, AddIcon, Toast, Dropdown, SearchIconSvg } from "@djb25/digit-ui-react-components";
+import { TextInput, Table, AddIcon, Toast, Dropdown, SearchIconSvg, RadioButtons, CardLabel } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 
 const DueVerification = ({ applicationData }) => {
@@ -8,6 +8,34 @@ const DueVerification = ({ applicationData }) => {
   const [remarks, setRemarks] = useState("");
   const [tableData, setTableData] = useState([]);
   const [isManualSearch, setIsManualSearch] = useState(false);
+  const [selectedRadio, setSelectedRadio] = useState({ code: 1, name: "Search K No" });
+  const [manualForm, setManualForm] = useState({ kno: "", fullName: "", address: "", dueAmount: "", remarks: "" });
+
+  const handleManualAdd = () => {
+    if (!manualForm.kno || !manualForm.fullName || !manualForm.address || !manualForm.dueAmount) {
+      setShowToast({ isError: true, message: t("Please fill all mandatory fields.") });
+      return;
+    }
+    if (tableData.some((item) => item.kno === manualForm.kno)) {
+      setShowToast({ isError: true, message: t("CS_DUPLICATE_KNO") || "K No. already exists in the table." });
+      return;
+    }
+    const newEntry = {
+      kno: manualForm.kno,
+      fullName: manualForm.fullName,
+      fullAddress: manualForm.address,
+      dueAmount: manualForm.dueAmount,
+      totalAmount: manualForm.dueAmount,
+      remarks: manualForm.remarks,
+    };
+    const newTableData = [...tableData, newEntry];
+    setTableData(newTableData);
+    if (applicationData) {
+      applicationData.dueVerification = newTableData;
+    }
+    setManualForm({ kno: "", fullName: "", address: "", dueAmount: "", remarks: "" });
+  };
+
 
   const handleRemarkChange = React.useCallback(
     (index, value) => {
@@ -208,7 +236,23 @@ const DueVerification = ({ applicationData }) => {
         <div style={{ marginBottom: "20px" }}>
                 <h2 style={{ fontSize: "24px", fontWeight: "bold", marginBottom: "16px" }}>{t("Due Verification")}</h2>
 
-          <div style={{ display: "flex", alignItems: "flex-end", gap: "20px" }}>
+          
+          <div style={{ marginBottom: "20px" }}>
+            <RadioButtons
+              options={[
+                { code: 1, name: "Search K No" },
+                { code: 2, name: "Manual Entry" },
+              ]}
+              optionsKey="name"
+              selectedOption={selectedRadio}
+              onSelect={(val) => setSelectedRadio(val)}
+              style={{ display: "flex", gap: "20px" }}
+            />
+          </div>
+
+          {selectedRadio?.code === 1 && (
+            <div style={{ display: "flex", alignItems: "flex-end", gap: "20px" }}>
+
             <div style={{ flex: 1 }}>
               <span style={{ fontSize: "16px", color: "#0B0C0C", marginBottom: "8px", display: "inline-block" }}>
                 {t("K No.(Existing KNo of same property)")} <span style={{ color: "red" }}>*</span>
@@ -246,7 +290,40 @@ const DueVerification = ({ applicationData }) => {
               </button>
             </div>
           </div>
+          )}
           
+          {selectedRadio?.code === 2 && (
+            <React.Fragment>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+                <div>
+                  <CardLabel>K No.</CardLabel>
+                  <TextInput value={manualForm.kno} onChange={(e) => setManualForm({...manualForm, kno: e.target.value})} />
+                </div>
+                <div>
+                  <CardLabel>Full Name</CardLabel>
+                  <TextInput value={manualForm.fullName} onChange={(e) => setManualForm({...manualForm, fullName: e.target.value})} />
+                </div>
+                <div>
+                  <CardLabel>Address</CardLabel>
+                  <TextInput value={manualForm.address} onChange={(e) => setManualForm({...manualForm, address: e.target.value})} />
+                </div>
+                <div>
+                  <CardLabel>Due Amount</CardLabel>
+                  <TextInput type="number" value={manualForm.dueAmount} onChange={(e) => setManualForm({...manualForm, dueAmount: e.target.value})} />
+                </div>
+                <div style={{ gridColumn: "span 1" }}>
+                  <CardLabel>Remarks</CardLabel>
+                  <TextInput value={manualForm.remarks} onChange={(e) => setManualForm({...manualForm, remarks: e.target.value})} />
+                </div>
+              </div>
+              <div style={{ marginTop: "16px", textAlign: "right" }}>
+                <button type="button" onClick={handleManualAdd} style={{ background: "#00497e", padding: "8px 24px", borderRadius: "4px", border: "none", cursor: "pointer", color: "white" }}>
+                  Add
+                </button>
+              </div>
+            </React.Fragment>
+          )}
+
           {/* Toggle Button Row */}
           {isZROApproval && zroDropdownOptions && zroDropdownOptions.length > 0 && (
             <div style={{ marginTop: "8px" }}>
@@ -257,7 +334,7 @@ const DueVerification = ({ applicationData }) => {
                   style={{
                     background: "none",
                     border: "none",
-                    color: "#f47738",
+                    color: "#00497e",
                     cursor: "pointer",
                     textDecoration: "underline",
                     padding: "0"
@@ -272,7 +349,7 @@ const DueVerification = ({ applicationData }) => {
                   style={{
                     background: "none",
                     border: "none",
-                    color: "#f47738",
+                    color: "#00497e",
                     cursor: "pointer",
                     textDecoration: "underline",
                     padding: "0"

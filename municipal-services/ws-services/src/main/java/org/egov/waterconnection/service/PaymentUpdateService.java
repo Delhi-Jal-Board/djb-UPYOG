@@ -172,11 +172,11 @@ public class PaymentUpdateService {
 					log.info("Reconnection payment successful. Moving to " + WCConstants.PENDING_APPROVAL_FOR_RECONNECTION);
 
 				} else if ("PENDING_FOR_PAYMENT".equalsIgnoreCase(statusBeforePayment)) {
-
-					waterConnectionRequest.getWaterConnection().setApplicationStatus("PENDING_FOR_DOCUMENT_VERIFICATION");
+                    // The workflow transition for action 'PAY' in NewWS1 dynamically sets the applicationStatus 
+					// (e.g., PENDING_FOR_EE_APPROVAL) inside wfIntegrator.callWorkFlow(). 
+				    // Removed hardcoded 'PENDING_FOR_DOCUMENT_VERIFICATION' override so that the status returned by the workflow engine is preserved. 
 					repo.updateWaterConnection(waterConnectionRequest, true);
-					log.info("First payment successful. Moving to PENDING_FOR_DOCUMENT_VERIFICATION");
-
+                   log.info("First payment successful. Moving to " + waterConnectionRequest.getWaterConnection().getApplicationStatus());   
 				} else if ("PENDING_FOR_FINAL_PAYMENT".equalsIgnoreCase(statusBeforePayment) || "PENDING_FOR_ADDITIONAL_PAYMENT".equalsIgnoreCase(statusBeforePayment)) {
 
 					waterConnectionRequest.getWaterConnection().setApplicationStatus("PENDING_FOR_CONNECTION_ACTIVATION");

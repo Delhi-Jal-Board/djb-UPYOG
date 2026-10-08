@@ -27,7 +27,7 @@ const WSDisconnectionAppDetails = ({ config, onSelect, userType, formData, setEr
   const { t } = useTranslation();
   const [disConnectionDetails, setDisConnectionDetails] = useState(formData?.disConnectionDetails || [createDisConnectionAppDetails()]);
   const [focusIndex, setFocusIndex] = useState({ index: -1, type: "" });
-  const [isErrors, setIsErrors] = useState(false);
+  const [isErrors, setIsErrors] = useState(true);
   const [disconnectionTypeList, setDisconnectionTypeList] = useState([]);
   const stateCode = Digit.ULBService.getStateId();
   const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -122,10 +122,10 @@ const PlumberDetails = (_props) => {
         Object.keys(formValue).map((data) => {
           if (!formValue[data] && isErrorsFound) {
             isErrorsFound = false;
-            setIsErrors(false);
+            setIsErrors(true);
           }
         });
-        if (isErrorsFound) setIsErrors(true);
+        if (isErrorsFound) setIsErrors(false);
         let ob = [{ ...formValue }];
         setDisConnectionDetails(ob);
         trigger();

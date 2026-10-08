@@ -87,7 +87,9 @@ const WSWaterConnectionDetails = ({ t, config, userType, onSelect, formData }) =
           "additionalDetails": {
               "initialMeterReading": null,
               "detailsProvidedBy": "",
-              "locality": formData?.cpt?.details?.address?.locality?.code
+              "locality": formData?.cpt?.details?.address?.locality?.code,
+              "completeAddress": formData?.ConnectionDetails?.[0]?.completeAddress || "",
+              "addressType": formData?.ConnectionDetails?.[0]?.addressType?.code || formData?.ConnectionDetails?.[0]?.addressType || ""
           },
           "tenantId": formData?.cpt?.details?.tenantId,
           "processInstance": {
@@ -127,7 +129,7 @@ const WSWaterConnectionDetails = ({ t, config, userType, onSelect, formData }) =
     <div>
       {userType === "citizen" && <Timeline currentStep={2} />}
       {!wsServiceCalculationLoading ? (
-        <FormStep t={t} config={config} onSelect={handleSubmit} onSkip={onSkip} isDisabled={!proposedTaps || !proposedPipeSize || isDisableForNext} onAdd={onAdd}>
+        <FormStep t={t} config={config} onSelect={handleSubmit} onSkip={onSkip} isDisabled={!proposedTaps || !proposedPipeSize || isDisableForNext || showToast} onAdd={onAdd}>
           <CardLabel>{t("WS_NO_OF_TAPS_PROPOSED")}*</CardLabel>
           <TextInput
             isMandatory={false}

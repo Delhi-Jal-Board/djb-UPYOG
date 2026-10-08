@@ -978,6 +978,11 @@ export const convertEpochToDate = (dateEpoch) => {
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} style={{marginTop:"15px"}} />
         </Link>
       )}
+      {(business_service?.includes("WS") || business_service?.includes("SW")) && (
+        <Link to={`/digit-ui/citizen/ws/my-applications`}>
+          <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} style={{marginTop:"15px"}} />
+        </Link>
+      )}
     </Card>
   );
 };

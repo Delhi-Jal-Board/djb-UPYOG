@@ -18,7 +18,7 @@ const WSActivationPlumberDetails = ({ config, onSelect, userType, formData, setE
   const filters = func.getQueryStringParams(location.search);
   const [plumberDetails, setPlumberDetails] = useState(formData?.plumberDetails?.length > 0 ? formData?.plumberDetails : [createPlumberDetails()]);
   const [focusIndex, setFocusIndex] = useState({ index: -1, type: "" });
-  const [isErrors, setIsErrors] = useState(false);
+  const [isErrors, setIsErrors] = useState(true);
 
   const options = [
     { i18nKey: "WS_PLUMBER_ULB", code: "ULB" },
@@ -126,10 +126,10 @@ const PlumberDetails = (_props) => {
         Object.keys(formValue).map((data) => {
           if (!formValue[data] && isErrorsFound) {
             isErrorsFound = false;
-            setIsErrors(false);
+            setIsErrors(true);
           }
         });
-        if (isErrorsFound) setIsErrors(true);
+        if (isErrorsFound) setIsErrors(false);
         let ob = [{ ...formValue }];
         setPlumberDetails(ob);
         trigger();

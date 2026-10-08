@@ -118,6 +118,21 @@ const CreatePropertyForm = ({ config, onSelect, value, userType, redirectUrl }) 
       return;
     }
 
+    const useDetails = formValue?.waterConnection?.useDetails || formValue?.useDetails;
+    if (
+      !useDetails?.categoryType ||
+      !useDetails?.propertyCategory ||
+      !useDetails?.propertyType ||
+      !useDetails?.WaterConnectionUsageType ||
+      !useDetails?.noOfFloors ||
+      !useDetails?.plotArea ||
+      !useDetails?.builtUpArea ||
+      !useDetails?.heightOfTheBuilding
+    ) {
+      setShowToast({ key: true, label: t("Please fill all the mandatory fields") });
+      return;
+    }
+
     let ownersArray = owners && owners.length > 0 ? owners : formValue?.owners;
     // Inject logged in user details if ownersArray is empty
     if (!ownersArray || ownersArray.length === 0) {

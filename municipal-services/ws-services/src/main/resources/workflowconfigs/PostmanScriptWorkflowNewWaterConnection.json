@@ -111,15 +111,15 @@ curl --location --request POST 'https://dev.digit.org/egov-workflow-v2/egov-wf/b
                             ]
                         },
                         {
-                            "action": "SEND_BACK_FOR_EE_APPROVAL",
-                            "nextState": "PENDING_FOR_EE_APPROVAL",
+                            "action": "SEND_BACK_TO_CITIZEN",
+                            "nextState": "PENDING_FOR_CITIZEN_ACTION",
                             "roles": [
                                 "WS_APPROVER"
                             ]
                         },
                         {
-                            "action": "SEND_BACK_TO_CITIZEN",
-                            "nextState": "PENDING_FOR_CITIZEN_ACTION",
+                            "action": "SEND_BACK_TO_CITIZEN_DIRECT",
+                            "nextState": "PENDING_FOR_CITIZEN_ACTION_BY_ZRO",
                             "roles": [
                                 "WS_APPROVER"
                             ]
@@ -154,6 +154,25 @@ curl --location --request POST 'https://dev.digit.org/egov-workflow-v2/egov-wf/b
                 },
                 {
                     "sla": null,
+                    "state": "PENDING_FOR_CITIZEN_ACTION_BY_ZRO",
+                    "applicationStatus": "PENDING_FOR_CITIZEN_ACTION",
+                    "docUploadRequired": false,
+                    "isStartState": false,
+                    "isTerminateState": false,
+                    "isStateUpdatable": true,
+                    "actions": [
+                        {
+                            "action": "RESUBMIT_APPLICATION",
+                            "nextState": "PENDING_FOR_ZRO_APPROVAL",
+                            "roles": [
+                                "CITIZEN",
+                                "WS_CEMP"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "sla": null,
                     "state": "PENDING_FOR_CONNECTION_ACTIVATION",
                     "applicationStatus": "PENDING_FOR_CONNECTION_ACTIVATION",
                     "docUploadRequired": false,
@@ -165,7 +184,7 @@ curl --location --request POST 'https://dev.digit.org/egov-workflow-v2/egov-wf/b
                             "action": "ACTIVATE_CONNECTION",
                             "nextState": "CONNECTION_ACTIVATED",
                             "roles": [
-                                "WS_CLERK"
+                                "CITIZEN"
                             ]
                         }
                     ]

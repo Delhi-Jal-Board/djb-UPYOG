@@ -14,6 +14,7 @@
     "packages/modules/dss",
     "packages/modules/engagement",
     "packages/modules/asset"
+   
   ],
   "license": "MIT",
   "private": true,
