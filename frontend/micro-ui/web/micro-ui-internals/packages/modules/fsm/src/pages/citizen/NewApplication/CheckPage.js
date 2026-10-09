@@ -45,14 +45,14 @@ const CheckPage = ({ onSubmit, value }) => {
     if (address?.gramPanchayat?.code === "OTH1") {
       return `${address?.doorNo?.trim() ? `${address?.doorNo?.trim()}, ` : ""} ${address?.street?.trim() ? `${address?.street?.trim()}, ` : ""}${
         address?.propertyLocation?.code === "WITHIN_ULB_LIMITS" ? t(address?.locality?.i18nkey) : address?.newGramPanchayat
-      },${t(address?.village?.code)}, ${t(address?.city.code)}`;
+      },${t(address?.village?.code)}, ${t(address?.city?.code || address?.city || "")}`;
     } else if (address?.propertyLocation?.code === "WITHIN_ULB_LIMITS") {
       console.log("trueee", `${t(address?.locality?.code)}`);
       return `${t(address?.locality?.code)}`;
     } else {
       return `${address?.doorNo?.trim() ? `${address?.doorNo?.trim()}, ` : ""} ${address?.street?.trim() ? `${address?.street?.trim()}, ` : ""}${
         address?.propertyLocation?.code === "WITHIN_ULB_LIMITS" ? t(address?.locality?.i18nkey) : address?.gramPanchayat?.i18nkey
-      },${t(address?.village?.code)}, ${t(address?.city.code)}`;
+      },${t(address?.village?.code)}, ${t(address?.city?.code || address?.city || "")}`;
     }
   };
   return (
@@ -121,7 +121,7 @@ const CheckPage = ({ onSubmit, value }) => {
           {pitType && (
             <Row
               label={t("CS_CHECK_PIT_TYPE")}
-              text={t(pitType.i18nKey)}
+              text={t(pitType?.i18nKey)}
               actionButton={<ActionButton jumpTo="/digit-ui/citizen/fsm/new-application/pit-type" />}
             />
           )}

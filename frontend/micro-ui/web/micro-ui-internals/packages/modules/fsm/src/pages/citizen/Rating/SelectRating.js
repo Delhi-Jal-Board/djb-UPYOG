@@ -25,10 +25,10 @@ const SelectRating = ({ parentRoute }) => {
   }, []);
 
   function handleSubmit(data) {
-    const { rating, comments, SAFETY_GEARS_USED } = data;
-    if (rating === 0 || SAFETY_GEARS_USED.length === 0) {
+    const { rating, comments, SAFETY_GEARS_USED } = data || {};
+    if (rating === 0 || !SAFETY_GEARS_USED || SAFETY_GEARS_USED?.length === 0) {
       rating === 0 ? setRatingError(true) : setRatingError(false);
-      SAFETY_GEARS_USED.length === 0 ? setCheckError(true) : setCheckError(false);
+      (!SAFETY_GEARS_USED || SAFETY_GEARS_USED?.length === 0) ? setCheckError(true) : setCheckError(false);
       return;
     }
     const allAnswers = { ...data, ...answers };

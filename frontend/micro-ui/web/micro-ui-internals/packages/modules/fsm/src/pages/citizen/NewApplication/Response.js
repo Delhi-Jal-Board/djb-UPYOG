@@ -35,9 +35,9 @@ const Response = ({ data, onSuccess }) => {
   const [zeroPay, setZeroPay] = useState(null);
 
   const Data = mutation?.data || successData;
-  const localityCode = Data?.fsm?.[0].address?.locality?.code;
-  const slumCode = Data?.fsm?.[0].address?.slumName;
-  const slum = Digit.Hooks.fsm.useSlum(Data?.fsm?.[0].address?.tenantId, slumCode, localityCode, {
+  const localityCode = Data?.fsm?.[0]?.address?.locality?.code;
+  const slumCode = Data?.fsm?.[0]?.address?.slumName;
+  const slum = Digit.Hooks.fsm.useSlum(Data?.fsm?.[0]?.address?.tenantId, slumCode, localityCode, {
     enabled: slumCode ? true : false,
     retry: slumCode ? true : false,
   });
@@ -156,9 +156,10 @@ const Response = ({ data, onSuccess }) => {
   }, []);
 
   const handleDownloadPdf = () => {
-    const { fsm } = Data;
-    const [applicationDetails, ...rest] = fsm;
-    const tenantInfo = tenants.find((tenant) => tenant.code === applicationDetails.tenantId);
+    const { fsm } = Data || {};
+    const [applicationDetails, ...rest] = fsm || [];
+    if (!applicationDetails) return;
+    const tenantInfo = tenants?.find((tenant) => tenant.code === applicationDetails?.tenantId);
 
     const data = getPDFData({ ...applicationDetails, slum }, tenantInfo, t);
     Digit.Utils.pdf.generate(data);

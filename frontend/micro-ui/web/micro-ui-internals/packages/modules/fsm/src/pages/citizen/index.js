@@ -3,18 +3,25 @@ import { BackButton, PrivateRoute, LayoutWrapper } from "@djb25/digit-ui-react-c
 import { useTranslation } from "react-i18next";
 import { Redirect, Switch, useLocation } from "react-router-dom";
 
+import NewApplicationCitizenComp from "./NewApplication/index";
+import { MyApplications as MyApplicationsComp } from "./MyApplications";
+import ApplicationDetailsComp from "./ApplicationDetails";
+import SelectRatingComp from "./Rating/SelectRating";
+import RateViewComp from "./Rating/RateView";
+import ResponseComp from "../Response";
+
 const CitizenApp = ({ path }) => {
   const location = useLocation();
   const { t } = useTranslation();
   // let isCommonPTPropertyScreen = window.location.href.includes("/ws/create-application/property-details");
   // let isAcknowledgement = window.location.href.includes("/acknowledgement") || window.location.href.includes("/disconnect-acknowledge");
-  const NewApplicationCitizen = Digit.ComponentRegistryService.getComponent("FSMNewApplicationCitizen");
-  const MyApplications = Digit.ComponentRegistryService.getComponent("FSMMyApplications");
+  const NewApplicationCitizen = Digit.ComponentRegistryService.getComponent("FSMNewApplicationCitizen") || NewApplicationCitizenComp;
+  const MyApplications = Digit.ComponentRegistryService.getComponent("FSMMyApplications") || MyApplicationsComp;
   const EmployeeApplicationDetails = Digit.ComponentRegistryService.getComponent("FSMEmployeeApplicationDetails");
-  const ApplicationDetails = Digit.ComponentRegistryService.getComponent("FSMCitizenApplicationDetails");
-  const SelectRating = Digit.ComponentRegistryService.getComponent("FSMSelectRating");
-  const RateView = Digit.ComponentRegistryService.getComponent("FSMRateView");
-  const Response = Digit.ComponentRegistryService.getComponent("FSMResponse");
+  const ApplicationDetails = Digit.ComponentRegistryService.getComponent("FSMCitizenApplicationDetails") || ApplicationDetailsComp;
+  const SelectRating = Digit.ComponentRegistryService.getComponent("FSMSelectRating") || SelectRatingComp;
+  const RateView = Digit.ComponentRegistryService.getComponent("FSMRateView") || RateViewComp;
+  const Response = Digit.ComponentRegistryService.getComponent("FSMResponse") || ResponseComp;
   const DsoDashboard = Digit.ComponentRegistryService.getComponent("FSMDsoDashboard");
   const Inbox = Digit.ComponentRegistryService.getComponent("FSMEmpInbox");
   const EditVendor = Digit.ComponentRegistryService.getComponent("EditVendor");
@@ -44,23 +51,22 @@ const CitizenApp = ({ path }) => {
           <PrivateRoute path={`${path}/my-applications`} component={MyApplications} />
           <PrivateRoute
             path={`${path}/dso-application-details/:id`}
-            component={() => <EmployeeApplicationDetails parentRoute={path} userType="DSO" />}
+            component={() => (EmployeeApplicationDetails ? <EmployeeApplicationDetails parentRoute={path} userType="DSO" /> : null)}
           />
           <PrivateRoute path={`${path}/application-details/:id`} component={() => <ApplicationDetails parentRoute={path} />} />
           <PrivateRoute path={`${path}/rate/:id`} component={() => <SelectRating parentRoute={path} />} />
           <PrivateRoute path={`${path}/rate-view/:id`} component={() => <RateView parentRoute={path} />} />
           <PrivateRoute path={`${path}/response`} component={(props) => <Response parentRoute={path} {...props} />} />
-          <PrivateRoute path={`${path}/dso-dashboard`} component={() => <DsoDashboard parentRoute={path} />} />
-          <PrivateRoute path={`${path}/dso-dashboard`} component={() => <DsoDashboard parentRoute={path} />} />
+          <PrivateRoute path={`${path}/dso-dashboard`} component={() => (DsoDashboard ? <DsoDashboard parentRoute={path} /> : null)} />
           <PrivateRoute
             path={`${path}/registry/modify-vendor/:id`}
             component={(props) => (
               <LayoutWrapper layoutClass="action">
-                <EditVendor {...props} />
+                {EditVendor ? <EditVendor {...props} /> : null}
               </LayoutWrapper>
             )}
           />
-          {/* <Redirect to={`/digit-ui/citizen`} /> */}
+          <Redirect to="/digit-ui/citizen" />
         </Switch>
       </div>
     </React.Fragment>
