@@ -9,7 +9,7 @@ import MobileInbox from "../../components/MobileInbox";
 const Inbox = ({ parentRoute, isSearch = false, isInbox = false }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const userInfo = Digit.UserService.getUser();
-  const userRoles = userInfo.info.roles;
+  const userRoles = userInfo?.info?.roles || [];
 
   const DSO = Digit.UserService.hasAccess(["FSM_DSO"]) || false;
   const isFSTPOperator = Digit.UserService.hasAccess("FSM_EMP_FSTPO") || false;
@@ -59,9 +59,9 @@ const Inbox = ({ parentRoute, isSearch = false, isInbox = false }) => {
   );
 
   const inboxTotalCount = DSO
-    ? applications?.statuses.filter((e) => e.applicationstatus === "DSO_INPROGRESS")[0]?.count +
-      applications?.statuses.filter((e) => e.applicationstatus === "PENDING_DSO_APPROVAL")[0]?.count
-    : applications?.totalCount;
+    ? (applications?.statuses?.filter((e) => e.applicationstatus === "DSO_INPROGRESS")?.[0]?.count || 0) +
+      (applications?.statuses?.filter((e) => e.applicationstatus === "PENDING_DSO_APPROVAL")?.[0]?.count || 0)
+    : applications?.totalCount || 0;
   const {
     isLoading: isSearchLoading,
     isIdle: isSearchIdle,
@@ -163,7 +163,7 @@ const Inbox = ({ parentRoute, isSearch = false, isInbox = false }) => {
         },
       ];
     }
-    if (userRoles.find((role) => role.code === "FSM_EMP_FSTPO")) {
+    if (userRoles?.find((role) => (role?.code || role) === "FSM_EMP_FSTPO")) {
       return [
         {
           label: t("ES_SEARCH_APPLICATION_APPLICATION_NO"),
@@ -223,13 +223,7 @@ const Inbox = ({ parentRoute, isSearch = false, isInbox = false }) => {
       );
     } else {
       return (
-        <div>
-          {!isSearch && (
-            <Header>
-              {t("ES_COMMON_INBOX")}
-              {Number(inboxTotalCount) ? <p className="inbox-count">{Number(inboxTotalCount)}</p> : null}
-            </Header>
-          )}
+        <div className="employee-form-content">
           <DesktopInbox
             data={isInbox ? applications : data}
             isLoading={isInbox ? isLoading || isIdle : isSearchLoading}

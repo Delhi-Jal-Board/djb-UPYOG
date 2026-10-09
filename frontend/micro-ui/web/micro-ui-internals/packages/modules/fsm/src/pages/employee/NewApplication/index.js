@@ -513,29 +513,23 @@ export const NewApplication = ({ parentUrl, heading }) => {
   ]
   console.log(conf, "confffffffff")
   return (
-    <React.Fragment>
-      <div style={{ marginLeft: "15px" }}>
-        <Header>{t("ES_TITLE_NEW_DESULDGING_APPLICATION")}</Header>
-      </div>
-      <FormComposer
-        isDisabled={!canSubmit}
-        label={t("ES_COMMON_APPLICATION_SUBMIT")}
-        config={conf
-          .filter((i) => !i.hideInEmployee)
-          .map((config) => {
-            return {
-              ...config,
-              body: config.body.filter((a) => !a.hideInEmployee),
-            };
-          })}
-        fieldStyle={{ marginRight: 0 }}
-        formCardStyle={true}
-        onSubmit={onSubmit}
-        defaultValues={defaultValues}
-        onFormValueChange={onFormValueChange}
-        noBreakLine={true}
-        fms_inline
-      />
-    </React.Fragment>
+    <FormComposer
+      heading={heading || t("ES_TITLE_NEW_DESULDGING_APPLICATION")}
+      isDisabled={!canSubmit}
+      label={t("ES_COMMON_APPLICATION_SUBMIT")}
+      config={conf
+        .filter((i) => !i.hideInEmployee)
+        .map((config) => {
+          return {
+            ...config,
+            body: config.body.filter((a) => !a.hideInEmployee),
+          };
+        })}
+      fieldStyle={{ marginRight: 0 }}
+      onSubmit={onSubmit}
+      defaultValues={defaultValues}
+      onFormValueChange={onFormValueChange}
+      noBreakLine={true}
+    />
   );
 };

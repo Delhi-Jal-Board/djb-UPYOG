@@ -9,7 +9,7 @@ const StatusCount = ({ status, fsmfilters, onAssignmentChange, statusMap }) => {
   return (
     <CheckBox
       onChange={(e) => onAssignmentChange(e, status)}
-      checked={fsmfilters?.applicationStatus.filter((e) => e.name === status.name).length !== 0 ? true : false}
+      checked={fsmfilters?.applicationStatus?.filter((e) => e.name === status.name)?.length ? true : false}
       label={`${t(status.name)} (${count || 0})`}
     />
   );

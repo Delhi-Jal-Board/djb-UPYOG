@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { BreadCrumb, PrivateRoute, ModuleHeader, ArrowLeft, HomeIcon, LayoutWrapper } from "@djb25/digit-ui-react-components";
+import { AppContainer, BreadCrumb, PrivateRoute, ModuleHeader, ArrowLeft, HomeIcon, LayoutWrapper } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { Switch, useLocation } from "react-router-dom";
 import FstpAddVehicle from "./FstpAddVehicle";
@@ -203,27 +203,54 @@ const EmployeeApp = ({ path, url, userType }) => {
 
     let crumbs = [
       { icon: HomeIcon, path: "/digit-ui/employee" },
-      { label: t("TITLE_FSM"), path: `/digit-ui/employee/fsm/inbox` },
+      { label: t("ES_TITLE_FAECAL_SLUDGE_MGMT"), path: `/digit-ui/employee/fsm/inbox` },
     ];
 
-    if (pathname.includes("/registry/new-vendor")) {
+    if (pathname.includes("/inbox")) {
+      crumbs.push({ label: t("ES_COMMON_INBOX") });
+    } else if (pathname.includes("/new-application")) {
+      crumbs.push({ label: t("ES_COMMON_INBOX"), path: `${path}/inbox` });
+      crumbs.push({ label: t("ES_TITLE_NEW_DESULDGING_APPLICATION") });
+    } else if (pathname.includes("/modify-application")) {
+      crumbs.push({ label: t("ES_COMMON_INBOX"), path: `${path}/inbox` });
+      crumbs.push({ label: t("ES_TITLE_MODIFY_DESULDGING_APPLICATION") });
+    } else if (pathname.includes("/application-details") || pathname.includes("/dso-application-details")) {
+      crumbs.push({ label: t("ES_COMMON_INBOX"), path: `${path}/inbox` });
+      crumbs.push({ label: t("CS_FSM_APPLICATION_DETAIL_TITLE") });
+    } else if (pathname.includes("/registry/new-vendor")) {
+      crumbs.push({ label: t("ES_TITLE_FSM_REGISTRY"), path: `${path}/registry?selectedTabs=VENDOR` });
       crumbs.push({ label: t("ES_FSM_REGISTRY_TITLE_NEW_VENDOR") });
     } else if (pathname.includes("/search-vendor")) {
+      crumbs.push({ label: t("ES_TITLE_FSM_REGISTRY"), path: `${path}/registry?selectedTabs=VENDOR` });
       crumbs.push({ label: t("SEARCH_VENDOR") });
     } else if (pathname.includes("/registry/new-driver")) {
+      crumbs.push({ label: t("ES_TITLE_FSM_REGISTRY"), path: `${path}/registry?selectedTabs=DRIVER` });
       crumbs.push({ label: t("ES_FSM_REGISTRY_TITLE_NEW_DRIVER") });
-    } else if (pathname.includes("/registry/vendor-details") || pathname.includes("/registry/modify-vendor/")) {
+    } else if (pathname.includes("/registry/vendor-details") || pathname.includes("/registry/modify-vendor")) {
+      crumbs.push({ label: t("ES_TITLE_FSM_REGISTRY"), path: `${path}/registry?selectedTabs=VENDOR` });
       crumbs.push({ label: t("VENDOR_VENDOR_DETAILS") });
-    } else if (pathname.includes("/registry/vehicle-details") || pathname.includes("/registry/modify-vehicle/")) {
+    } else if (pathname.includes("/registry/vehicle-details") || pathname.includes("/registry/modify-vehicle")) {
+      crumbs.push({ label: t("ES_TITLE_FSM_REGISTRY"), path: `${path}/registry?selectedTabs=VEHICLE` });
       crumbs.push({ label: t("VENDOR_VEHICLE_DETAILS") });
     } else if (pathname.includes("/registry/new-vehicle")) {
+      crumbs.push({ label: t("ES_TITLE_FSM_REGISTRY"), path: `${path}/registry?selectedTabs=VEHICLE` });
       crumbs.push({ label: t("ES_FSM_REGISTRY_TITLE_NEW_VEHICLE") });
-    } else if (pathname.includes("/registry/driver-details") || pathname.includes("/registry/modify-driver/")) {
+    } else if (pathname.includes("/registry/driver-details") || pathname.includes("/registry/modify-driver")) {
+      crumbs.push({ label: t("ES_TITLE_FSM_REGISTRY"), path: `${path}/registry?selectedTabs=DRIVER` });
       crumbs.push({ label: t("VENDOR_DRIVER_DETAILS") });
     } else if (pathname.includes("/registry/additionaldetails")) {
+      crumbs.push({ label: t("ES_TITLE_FSM_REGISTRY"), path: `${path}/registry?selectedTabs=VENDOR` });
       crumbs.push({ label: t("VENDOR_ADDITIONAL_DETAILS") });
-    } else if (pathname.includes("/registry/modify-vendor/:id")) {
-      crumbs.push({ label: t("ES_TITLE_VENDOR_EDIT") });
+    } else if (pathname.includes("/registry")) {
+      crumbs.push({ label: t("ES_TITLE_FSM_REGISTRY") });
+    } else if (pathname.includes("/fstp-add-vehicle")) {
+      crumbs.push({ label: t("ES_COMMON_FSTP_OPERATION"), path: `${path}/fstp-operations` });
+      crumbs.push({ label: t("ES_FSM_ADD_NEW_BUTTON") });
+    } else if (pathname.includes("/fstp-inbox")) {
+      crumbs.push({ label: t("ES_COMMON_FSTP_OPERATION"), path: `${path}/fstp-operations` });
+      crumbs.push({ label: t("ES_TITLE_VEHICLE_LOG") });
+    } else if (pathname.includes("/fstp-operations")) {
+      crumbs.push({ label: t("ES_COMMON_FSTP_OPERATION") });
     }
 
     return crumbs;
@@ -233,7 +260,7 @@ const EmployeeApp = ({ path, url, userType }) => {
   //   window.location.href.includes("/employee/fsm/new-application") || window.location.href.includes("/employee/fsm/modify-application");
   return (
     <Switch>
-      <React.Fragment>
+      <AppContainer>
         <div className="ground-container employee-app-container form-container">
           <ModuleHeader
             leftContent={
@@ -260,47 +287,39 @@ const EmployeeApp = ({ path, url, userType }) => {
           <PrivateRoute
             exact
             path={`${path}/`}
-            component={
+            component={() => (
               <LayoutWrapper layoutClass="normal">
                 <FSMLinks matchPath={path} userType={userType} />
               </LayoutWrapper>
-            }
+            )}
           />
 
           <PrivateRoute
             path={`${path}/inbox`}
-            component={(props) => (
-              <LayoutWrapper layoutClass="normal">
-                <Inbox {...props} parentRoute={path} isInbox={true} />
-              </LayoutWrapper>
-            )}
+            component={(props) => <Inbox {...props} parentRoute={path} isInbox={true} />}
           />
 
           <PrivateRoute
             path={`${path}/fstp-inbox`}
-            component={(props) => (
-              <LayoutWrapper layoutClass="normal">
-                <FstpInbox {...props} parentRoute={path} />
+            component={(props) => <FstpInbox {...props} parentRoute={path} />}
+          />
+
+          <PrivateRoute
+            path={`${path}/new-application`}
+            component={() => (
+              <LayoutWrapper layoutClass="action">
+                <NewApplication parentUrl={url} />
               </LayoutWrapper>
             )}
           />
 
           <PrivateRoute
-            path={`${path}/new-application`}
-            component={
-              <LayoutWrapper layoutClass="normal">
-                <NewApplication parentUrl={url} />
-              </LayoutWrapper>
-            }
-          />
-
-          <PrivateRoute
             path={`${path}/modify-application/:id`}
-            component={
-              <LayoutWrapper layoutClass="normal">
+            component={() => (
+              <LayoutWrapper layoutClass="action">
                 <EditApplication />
               </LayoutWrapper>
-            }
+            )}
           />
 
           <PrivateRoute
@@ -369,11 +388,7 @@ const EmployeeApp = ({ path, url, userType }) => {
           <PrivateRoute
             exact
             path={`${path}/registry`}
-            component={(props) => (
-              <LayoutWrapper layoutClass="normal">
-                <FSMRegistry {...props} parentRoute={path} />
-              </LayoutWrapper>
-            )}
+            component={(props) => <FSMRegistry {...props} parentRoute={path} />}
           />
 
           <PrivateRoute
@@ -461,21 +476,17 @@ const EmployeeApp = ({ path, url, userType }) => {
           <PrivateRoute
             exact
             path={`${path}/fstp-operations`}
-            component={
-              <LayoutWrapper layoutClass="normal">
-                <FstpOperations />
-              </LayoutWrapper>
-            }
+            component={(props) => <FstpOperations {...props} parentRoute={path} />}
           />
 
           <PrivateRoute
             exact
             path={`${path}/fstp-add-vehicle`}
-            component={
+            component={() => (
               <LayoutWrapper layoutClass="normal">
                 <FstpAddVehicle />
               </LayoutWrapper>
-            }
+            )}
           />
 
           <PrivateRoute
@@ -508,7 +519,7 @@ const EmployeeApp = ({ path, url, userType }) => {
             )}
           />
         </div>
-      </React.Fragment>
+      </AppContainer>
     </Switch>
   );
 };

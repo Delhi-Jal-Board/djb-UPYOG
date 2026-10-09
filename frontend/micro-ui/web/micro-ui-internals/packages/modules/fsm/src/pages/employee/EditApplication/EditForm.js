@@ -558,30 +558,24 @@ const EditForm = ({ tenantId, applicationData, channelMenu, vehicleMenu, sanitat
     }
   ]
   return (
-    // <>
-    //   <div style={{ marginLeft: "15px" }}>
-    //     <Header>{t("ES_TITLE_MODIFY_DESULDGING_APPLICATION")}</Header>
-    //   </div>
-      <FormComposer
-        isDisabled={!canSubmit}
-        label={applicationData?.applicationStatus != "CREATED" ? t("ES_FSM_APPLICATION_SCHEDULE") : t("ES_FSM_APPLICATION_UPDATE")}
-        config={conf
-          .filter((i) => !i.hideInEmployee)
-          .map((config) => {
-            return {
-              ...config,
-              body: config.body.filter((a) => !a.hideInEmployee),
-            };
-          })}
-        fieldStyle={{ marginRight: 0 }}
-        // formCardStyle={true}
-        onSubmit={onSubmit}
-        defaultValues={defaultValues}
-        onFormValueChange={onFormValueChange}
-        // noBreakLine={true}
-        // fms_inline
-      />
-    // </>
+    <FormComposer
+      heading={t("ES_TITLE_MODIFY_DESULDGING_APPLICATION")}
+      isDisabled={!canSubmit}
+      label={applicationData?.applicationStatus != "CREATED" ? t("ES_FSM_APPLICATION_SCHEDULE") : t("ES_FSM_APPLICATION_UPDATE")}
+      config={conf
+        .filter((i) => !i.hideInEmployee)
+        .map((config) => {
+          return {
+            ...config,
+            body: config.body.filter((a) => !a.hideInEmployee),
+          };
+        })}
+      fieldStyle={{ marginRight: 0 }}
+      onSubmit={onSubmit}
+      defaultValues={defaultValues}
+      onFormValueChange={onFormValueChange}
+      noBreakLine={true}
+    />
   );
 };
 

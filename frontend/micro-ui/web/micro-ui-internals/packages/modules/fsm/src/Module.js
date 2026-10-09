@@ -85,7 +85,7 @@ const FSMLinks = ({ matchPath, userType }) => {
 
   useEffect(
     () =>
-      userType === "employee" &&
+      // userType === "employee" &&
       Digit.LocalizationService.getLocale({
         modules: [`rainmaker-${Digit.ULBService.getCurrentTenantId()}`],
         locale: Digit.StoreData.getCurrentLanguage(),
@@ -93,7 +93,6 @@ const FSMLinks = ({ matchPath, userType }) => {
       }),
     []
   );
-
   const roleBasedLoginRoutes = [
     {
       role: "FSM_DSO",
@@ -154,6 +153,21 @@ const FSMLinks = ({ matchPath, userType }) => {
                 </span>
                 <span className="link">
                   <Link to={`${matchPath}/new-application/`}>{t("ES_TITLE_NEW_DESULDGING_APPLICATION")}</Link>
+                </span>
+                <span className="link">
+                  <Link to={`${matchPath}/search`}>{t("ES_TITILE_SEARCH_APPLICATION")}</Link>
+                </span>
+                <span className="link">
+                  <Link to={`${matchPath}/registry?selectedTabs=VENDOR`}>{t("ES_TITLE_FSM_REGISTRY")}</Link>
+                </span>
+                <span className="link">
+                  <Link to={`${matchPath}/fstp-operations`}>{t("ES_COMMON_FSTP_OPERATION")}</Link>
+                </span>
+                <span className="link">
+                  <Link to={`${matchPath}/fstp-inbox`}>{t("ES_TITLE_VEHICLE_LOG")}</Link>
+                </span>
+                <span className="link">
+                  <Link to={`${matchPath}/fstp-add-vehicle`}>{t("ES_FSM_ADD_NEW_BUTTON")}</Link>
                 </span>
               </div>
             </div>
@@ -223,6 +237,15 @@ const componentsToRegister = {
   ConfirmationBox,
   SelectLocalityOrGramPanchayat,
 };
+
+export const FSMComponents = {
+  ...componentsToRegister,
+  FSMCard,
+  FSMModule,
+  FSMLinks,
+};
+
+export { FSMModule, FSMLinks, FSMCard };
 
 export const initFSMComponents = () => {
   Object.entries(componentsToRegister).forEach(([key, value]) => {

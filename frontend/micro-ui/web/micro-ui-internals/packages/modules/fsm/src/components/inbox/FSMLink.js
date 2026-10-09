@@ -10,28 +10,43 @@ const FSMLink = ({ parentRoute, isMobile, data }) => {
     {
       text: t("ES_TITLE_NEW_DESULDGING_APPLICATION"),
       link: "/digit-ui/employee/fsm/new-application",
-      roles: ["FSM_CREATOR_EMP"],
     },
-    // { text: t("ES_TITLE_REPORTS"), link: "/employee" },
     {
       text: t("ES_TITILE_SEARCH_APPLICATION"),
       link: `${parentRoute}/search`,
     },
     {
+      text: t("ES_TITLE_FSM_REGISTRY"),
+      link: `/digit-ui/employee/fsm/registry?selectedTabs=VENDOR`,
+    },
+    {
+      text: t("ES_COMMON_FSTP_OPERATION"),
+      link: `/digit-ui/employee/fsm/fstp-operations`,
+    },
+    {
+      text: t("ES_TITLE_VEHICLE_LOG"),
+      link: `/digit-ui/employee/fsm/fstp-inbox`,
+    },
+    {
+      text: t("ES_FSM_ADD_NEW_BUTTON"),
+      link: `/digit-ui/employee/fsm/fstp-add-vehicle`,
+    },
+    {
       text: t("ES_TITLE_REPORTS"),
       link: `/employee/report/fsm/FSMDailyDesludingReport`,
-      roles: ["FSM_ADMIN"],
+      hyperlink: true,
+    },
+    {
+      text: t("ES_FSM_VIEW_REPORTS_BUTTON"),
+      link: `/employee/report/fsm/FSMFSTPPlantWithVehicleLogReport`,
       hyperlink: true,
     },
   ];
 
   const [links, setLinks] = useState([]);
 
-  const { roles: userRoles } = Digit.UserService.getUser().info;
-
   useEffect(() => {
-    let linksToShow = allLinks.filter(({ roles }) => roles?.some((e) => userRoles?.map(({ code }) => code).includes(e)) || !roles?.length);
-    setLinks(linksToShow);
+    setLinks(allLinks);
   }, []);
 
   // useEffect(() => {
@@ -52,7 +67,7 @@ const FSMLink = ({ parentRoute, isMobile, data }) => {
   );
 
   return (
-    <Card className="employeeCard inboxLinksFSM">
+    <Card className="employeeCard filter inboxLinks">
       <div className="complaint-links-container">
         {GetLogo()}
         <div className="body">

@@ -2,7 +2,6 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { Card, Loader } from "@djb25/digit-ui-react-components";
-import FSMLink from "./inbox/FSMLink";
 import ApplicationTable from "./inbox/ApplicationTable";
 import Filter from "./inbox/Filter";
 import SearchApplication from "./inbox/search";
@@ -14,9 +13,34 @@ const DesktopInbox = (props) => {
   const FSTP = Digit.UserService.hasAccess("FSM_EMP_FSTPO") || false;
 
   const GetSlaCell = (value) => {
-    if (value === "-") return <span className="sla-cell-success">-</span>;
+    if (value === undefined || value === null || value === "" || value === "-") return <span className="cell-text">—</span>;
     if (isNaN(value)) return <span className="sla-cell-success">0</span>;
-    return value < 0 ? <span className="sla-cell-error">{value}</span> : <span className="sla-cell-success">{value}</span>;
+    const daysText = t("CS_DAYS") !== "CS_DAYS" ? t("CS_DAYS") : "Days";
+    const valNum = Number(value);
+    return valNum < 0 ? (
+      <span className="sla-cell-error">{value} {daysText}</span>
+    ) : (
+
+      <span className="sla-cell-success">{value} {daysText}</span>
+    );
+  };
+
+  const GetStatusCell = (status, rawStatus = "") => {
+    const textStr = (status || "").toString();
+    const rawStr = (rawStatus || "").toString();
+    const combined = `${textStr} ${rawStr}`.toUpperCase();
+
+    const isError =
+      combined.includes("REJECT") ||
+      combined.includes("CANCEL") ||
+      combined.includes("CLOSED") ||
+      combined.includes("INACTIVE");
+
+    return isError ? (
+      <span className="sla-cell-error">{textStr}</span>
+    ) : (
+      <span className="sla-cell-success">{textStr}</span>
+    );
   };
 
   function goTo(id) {
@@ -77,7 +101,7 @@ const DesktopInbox = (props) => {
         {
           Header: t("ES_INBOX_STATUS"),
           accessor: (row) => {
-            return GetCell(t(`CS_COMMON_FSM_${row.applicationStatus}`));
+            return GetStatusCell(t(`CS_COMMON_FSM_${row.applicationStatus}`), row.applicationStatus);
           },
           disableSortBy: true,
         },
@@ -231,8 +255,9 @@ const DesktopInbox = (props) => {
             Header: t("ES_INBOX_APPLICATION_DATE"),
             accessor: "createdTime",
             Cell: ({ row }) => {
+              const dt = row.original?.createdTime ? new Date(row.original.createdTime) : null;
               return GetCell(
-                `${row.original.createdTime.getDate()}/${row.original.createdTime.getMonth() + 1}/${row.original.createdTime.getFullYear()}`
+                dt && !isNaN(dt) ? `${dt.getDate()}/${dt.getMonth() + 1}/${dt.getFullYear()}` : "—"
               );
             },
           },
@@ -241,14 +266,11 @@ const DesktopInbox = (props) => {
             Cell: ({ row }) => {
               return GetCell(t(Digit.Utils.locale.getRevenueLocalityCode(row.original["locality"], row.original["tenantId"])));
             },
-            // Cell: (row) => {
-            //   return GetCell(t(`CS_COMMON_${row.row.original["status"]}`));
-            // },
           },
           {
             Header: t("ES_INBOX_STATUS"),
-            Cell: (row) => {
-              return GetCell(t(`CS_COMMON_FSM_${row.row.original["status"]}`));
+            Cell: ({ row }) => {
+              return GetStatusCell(t(`CS_COMMON_FSM_${row.original["status"]}`), row.original["status"]);
             },
           },
           {
@@ -289,12 +311,14 @@ const DesktopInbox = (props) => {
         getCellProps={(cellInfo) => {
           return {
             style: {
-              minWidth: cellInfo.column.Header === t("ES_INBOX_APPLICATION_NO") ? "240px" : "",
-              padding: "20px 18px",
-              fontSize: "16px",
-              // borderTop: "1px solid grey",
-              // textAlign: "left",
-              // verticalAlign: "middle",
+              maxWidth:
+                cellInfo.column.Header === t("CS_FILE_DESLUDGING_APPLICATION_NO") ||
+                cellInfo.column.Header === t("ES_INBOX_APPLICATION_NO")
+                  ? "240px"
+                  : "",
+              minWidth: "140px",
+              padding: "16px 18px",
+              fontSize: "14px",
             },
           };
         }}
@@ -313,31 +337,32 @@ const DesktopInbox = (props) => {
   }
 
   return (
-    <div className="inbox-container">
-      {props.userRole !== "FSM_EMP_FSTPO" && !props.isSearch && (
-        <div className="filters-container">
-          {props.userRole !== "FSM_EMP_FSTPO_REQUEST" ? <FSMLink parentRoute={props.parentRoute} /> : null}
-          <div style={props.userRole !== "FSM_EMP_FSTPO_REQUEST" ? { marginTop: "24px" } : {}}>
-            <Filter
-              searchParams={props.searchParams}
-              paginationParms={props.paginationParms}
-              applications={props.data}
-              onFilterChange={props.onFilterChange}
-              type="desktop"
-            />
+    <div className="app-container">
+      <div className="inbox-container">
+        {props.userRole !== "FSM_EMP_FSTPO" && !props.isSearch && (
+          <div className="filters-container">
+            <div>
+              <Filter
+                searchParams={props.searchParams}
+                paginationParms={props.paginationParms}
+                applications={props.data}
+                onFilterChange={props.onFilterChange}
+                type="desktop"
+              />
+            </div>
           </div>
-        </div>
-      )}
-      <div style={{ flex: 1, marginLeft: "24px" }}>
-        <SearchApplication
-          onSearch={props.onSearch}
-          type="desktop"
-          searchFields={props.searchFields}
-          isInboxPage={!props?.isSearch}
-          searchParams={props.searchParams}
-        />
-        <div className="result" style={{ marginLeft: FSTP ? "" : !props?.isSearch ? "24px" : "", flex: 1 }}>
-          {result}
+        )}
+        <div className="form-search-wrapper employee-form-content">
+          <SearchApplication
+            onSearch={props.onSearch}
+            type="desktop"
+            searchFields={props.searchFields}
+            isInboxPage={!props?.isSearch}
+            searchParams={props.searchParams}
+          />
+          <div className="result" style={{ flex: 1 }}>
+            {result}
+          </div>
         </div>
       </div>
     </div>

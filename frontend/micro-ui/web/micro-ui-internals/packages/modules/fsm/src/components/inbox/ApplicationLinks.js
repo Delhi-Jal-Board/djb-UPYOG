@@ -10,36 +10,41 @@ const ApplicationLinks = ({ linkPrefix }) => {
     {
       text: t("ES_TITLE_NEW_DESULDGING_APPLICATION"),
       link: "/digit-ui/employee/fsm/new-application",
-      accessTo: ["FSM_CREATOR_EMP"],
     },
-    // { text: t("ES_TITLE_REPORTS"), link: "/employee" },
-    // { text: t("ES_TITLE_DASHBOARD"), link: "/employee" },
     {
       text: t("ES_TITILE_SEARCH_APPLICATION"),
       link: `${linkPrefix}/search`,
+    },
+    {
+      text: t("ES_TITLE_FSM_REGISTRY"),
+      link: `/digit-ui/employee/fsm/registry?selectedTabs=VENDOR`,
+    },
+    {
+      text: t("ES_COMMON_FSTP_OPERATION"),
+      link: `/digit-ui/employee/fsm/fstp-operations`,
+    },
+    {
+      text: t("ES_TITLE_VEHICLE_LOG"),
+      link: `/digit-ui/employee/fsm/fstp-inbox`,
+    },
+    {
+      text: t("ES_FSM_ADD_NEW_BUTTON"),
+      link: `/digit-ui/employee/fsm/fstp-add-vehicle`,
+    },
+    {
+      text: t("ES_TITLE_REPORTS"),
+      link: `/employee/report/fsm/FSMDailyDesludingReport`,
+    },
+    {
+      text: t("ES_FSM_VIEW_REPORTS_BUTTON"),
+      link: `/employee/report/fsm/FSMFSTPPlantWithVehicleLogReport`,
     },
   ];
 
   const [links, setLinks] = useState([]);
 
-  const { roles } = Digit.UserService.getUser().info;
-
-  const hasAccess = (accessTo) => {
-    return roles.filter((role) => accessTo.includes(role.code)).length;
-  };
-
   useEffect(() => {
-    let linksToShow = [];
-    allLinks.forEach((link) => {
-      if (link.accessTo) {
-        if (hasAccess(link.accessTo)) {
-          linksToShow.push(link);
-        }
-      } else {
-        linksToShow.push(link);
-      }
-    });
-    setLinks(linksToShow);
+    setLinks(allLinks);
   }, []);
 
   // useEffect(() => {

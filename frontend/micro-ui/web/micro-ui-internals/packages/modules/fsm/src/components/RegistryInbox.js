@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useHistory } from "react-router-dom";
 import { Card, Dropdown, Loader, Menu, SubmitBar, Toast } from "@djb25/digit-ui-react-components";
-import FSMLink from "./inbox/FSMLink";
 import ApplicationTable from "./inbox/ApplicationTable";
 import Filter from "./inbox/Filter";
 import { ToggleSwitch } from "@djb25/digit-ui-react-components";
@@ -571,8 +570,8 @@ const RegisryInbox = (props) => {
           return {
             style: {
               minWidth: cellInfo.column.Header === t("ES_INBOX_APPLICATION_NO") ? "240px" : "",
-              padding: cellInfo.column.Header === t("ES_FSM_REGISTRY_INBOX_VENDOR_NAME") ? "10px 18px" : "20px 18px",
-              fontSize: "16px",
+              padding: "16px 18px",
+              fontSize: "14px",
             },
           };
         }}
@@ -590,33 +589,21 @@ const RegisryInbox = (props) => {
   }
 
   return (
-    <div className="inbox-container">
-      {props.userRole !== "FSM_EMP_FSTPO" && props.userRole !== "FSM_ADMIN" && !props.isSearch && (
-        <div className="filters-container">
-          <FSMLink parentRoute={props.parentRoute} />
-          <div style={{ marginTop: "24px" }}>
-            <Filter
-              searchParams={props.searchParams}
-              paginationParms={props.paginationParms}
-              applications={props.data}
-              onFilterChange={props.onFilterChange}
-              type="desktop"
-            />
+    <div className="app-container">
+      <div className="inbox-container">
+        <div className="form-search-wrapper employee-form-content">
+          <RegistrySearch
+            onSearch={props.onSearch}
+            type="desktop"
+            searchFields={props.searchFields}
+            isInboxPage={!props?.isSearch}
+            searchParams={props.searchParams}
+            onTabChange={props.onTabChange}
+            selectedTab={props.selectedTab}
+          />
+          <div className="result" style={{ flex: 1 }}>
+            {result}
           </div>
-        </div>
-      )}
-      <div style={{ flex: 1, marginLeft: props.userRole === "FSM_ADMIN" ? "" : "24px" }}>
-        <RegistrySearch
-          onSearch={props.onSearch}
-          type="desktop"
-          searchFields={props.searchFields}
-          isInboxPage={!props?.isSearch}
-          searchParams={props.searchParams}
-          onTabChange={props.onTabChange}
-          selectedTab={props.selectedTab}
-        />
-        <div className="result" style={{ marginLeft: FSTP || props.userRole === "FSM_ADMIN" ? "" : !props?.isSearch ? "24px" : "", flex: 1 }}>
-          {result}
         </div>
       </div>
       {showToast && (
