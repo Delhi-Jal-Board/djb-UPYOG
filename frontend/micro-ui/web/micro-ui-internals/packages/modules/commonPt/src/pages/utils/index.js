@@ -31,6 +31,7 @@ export const setAddressDetailsLW = (data) => {
     actualWard: address?.actualWard || address?.actualWard?.name || address?.actualWard,
     actualAssembly: address?.actualAssembly || address?.actualAssembly?.name || address?.actualAssembly,
     actualZone: address?.actualZone || address?.actualZone?.name || address?.actualZone,
+    colonyMcdCategory: address?.colonyMcdCategory,
   };
 
   data.address = propAddress;
