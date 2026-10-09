@@ -494,6 +494,7 @@ export const WSSearch = {
         // },
         { title: "CITY", value: propertyDataDetails?.address?.city ? (propertyDataDetails.address.city === "dl.djb" ? "Delhi" : propertyDataDetails.address.city) : t("NA") },
         { title: "PINCODE", value: propertyDataDetails?.address?.pincode || t("NA") },
+        { title: "COMMON_COLONY_MCD_CATEGORY", value: propertyDataDetails?.address?.colonyMcdCategory || t("NA") },
         {
           title: "LOCALITY",
           value: propertyDataDetails?.address?.locality?.name || propertyDataDetails?.address?.locality?.code || t("NA"),
