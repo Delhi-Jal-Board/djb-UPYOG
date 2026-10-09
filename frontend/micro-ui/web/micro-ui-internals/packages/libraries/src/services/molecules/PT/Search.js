@@ -33,6 +33,7 @@ export const PTSearch = {
         // { title: "COMMON_ADDRESS_TYPE", value: property?.address?.addressType || "NA" },
         { title: "PT_PROPERTY_ADDRESS_CITY", value: property?.address?.city ? (property.address.city === "dl.djb" ? "Delhi" : property.address.city) : "NA" },
         { title: "PT_PROPERTY_ADDRESS_PINCODE", value: property?.address?.pincode || "NA" },
+        { title: "COMMON_COLONY_MCD_CATEGORY", value: property?.address?.colonyMcdCategory || "NA" },
         {
           title: "PT_PROPERTY_ADDRESS_MOHALLA",
           value: `${property?.tenantId?.toUpperCase()?.split(".")?.join("_")}_REVENUE_${property?.address?.locality?.code}`,
@@ -213,6 +214,7 @@ export const PTSearch = {
           // { title: "COMMON_ADDRESS_TYPE", value: response?.address?.addressType || "NA" },
           { title: "PT_PROPERTY_ADDRESS_CITY", value: response?.address?.city ? (response.address.city === "dl.djb" ? "Delhi" : response.address.city) : "NA" },
           { title: "PT_PROPERTY_ADDRESS_PINCODE", value: response?.address?.pincode || "NA" },
+          { title: "COMMON_COLONY_MCD_CATEGORY", value: response?.address?.colonyMcdCategory || "NA" },
           {
             title: "PT_PROPERTY_ADDRESS_MOHALLA",
             value: `${response?.tenantId?.toUpperCase()?.split(".")?.join("_")}_REVENUE_${response?.address?.locality?.code}`,

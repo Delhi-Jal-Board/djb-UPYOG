@@ -11,7 +11,7 @@ import _ from "lodash";
 const ActivateConnection = () => {
   const { t } = useTranslation();
   let { state } = useLocation();
-  state = state ? JSON.parse(state) : {};
+  state = state ? (typeof state === "string" ? JSON.parse(state) : state) : {};
   const history = useHistory();
   let filters = func.getQueryStringParams(location.search);
   const [canSubmit, setSubmitValve] = useState(false);
@@ -30,8 +30,8 @@ const ActivateConnection = () => {
   let { isLoading: isappdetailsLoading, isError, data: applicationDetails, error } = Digit.Hooks.ws.useWSDetailsPage(
     t,
     tenantId,
-    details?.applicationNo,
-    details?.serviceType,
+    details?.applicationNo || filters?.applicationNumber,
+    details?.serviceType || filters?.service,
     { privacy: Digit.Utils.getPrivacyObject() }
   );
   details = cloneDeep(applicationDetails);
@@ -149,8 +149,14 @@ const ActivateConnection = () => {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (isAppDetailsPage)
-        window.location.href = `${window.location.origin}/digit-ui/employee/ws/application-details?applicationNumber=${filters?.applicationNumber}&service=${filters?.service}`;
+      if (isAppDetailsPage) {
+        const isCitizen = Digit.UserService.getUser()?.info?.type === "CITIZEN";
+        if (isCitizen) {
+          window.location.href = `${window.location.origin}/digit-ui/citizen/ws/connection/application/${filters?.applicationNumber}`;
+        } else {
+          window.location.href = `${window.location.origin}/digit-ui/employee/ws/application-details?applicationNumber=${filters?.applicationNumber}&service=${filters?.service}`;
+        }
+      }
     }, 3000);
     return () => clearTimeout(timer);
   }, [isAppDetailsPage]);
@@ -251,10 +257,10 @@ const ActivateConnection = () => {
         filters?.service == "WATER"
           ? formData?.applicationType === "WATER_RECONNECTION"
             ? { WaterConnection: formData, reconnectRequest: true, disconnectRequest: false }
-            : { WaterConnection: formData }
+            : { WaterConnection: formData, reconnectRequest: false, disconnectRequest: false }
           : formData?.applicationType === "SEWERAGE_RECONNECTION"
           ? { SewerageConnection: formData, reconnectRequest: true, disconnectRequest: false }
-          : { SewerageConnection: formData };
+          : { SewerageConnection: formData, reconnectRequest: false, disconnectRequest: false };
 
       if (mutate) {
         // setIsEnableLoader(true);

@@ -109,6 +109,9 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
   const [actualAssembly, setActualAssembly] = useState(
     formData?.actualAssembly || formData?.address?.actualAssembly || formData?.infodetails?.existingDataSet?.address?.actualAssembly || ""
   );
+  const [colonyMcdCategory, setColonyMcdCategory] = useState(
+    formData?.colonyMcdCategory || formData?.address?.colonyMcdCategory || formData?.infodetails?.existingDataSet?.address?.colonyMcdCategory || ""
+  );
   const [actualZone, setActualZone] = useState(
     formData?.actualZone || formData?.address?.actualZone || formData?.infodetails?.existingDataSet?.address?.actualZone || ""
   );
@@ -214,21 +217,21 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
       }
 
       if (node.children && node.children.length > 0) {
-        node.children.forEach(child => traverse(child, newAssembly));
+        node.children.forEach((child) => traverse(child, newAssembly));
       }
     };
 
-    boundaries.forEach(root => traverse(root, null));
+    boundaries.forEach((root) => traverse(root, null));
 
-    Object.keys(asmToZones).forEach(k => asmToZones[k] = Array.from(asmToZones[k]));
-    Object.keys(asmToWards).forEach(k => asmToWards[k] = Array.from(asmToWards[k]));
+    Object.keys(asmToZones).forEach((k) => (asmToZones[k] = Array.from(asmToZones[k])));
+    Object.keys(asmToWards).forEach((k) => (asmToWards[k] = Array.from(asmToWards[k])));
 
     return {
       assemblyOptions: Array.from(assemblies.values()),
       zoneOptions: Array.from(zones.values()),
       wardOptions: Array.from(wards.values()),
       assemblyToZones: asmToZones,
-      assemblyToWards: asmToWards
+      assemblyToWards: asmToWards,
     };
   }, [boundaryData]);
 
@@ -262,6 +265,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
           zone: currentZone,
           ward: currentWard,
           assembly: currentAssembly,
+          colonyMcdCategory: node.colonyMcdCategory || node.category || "",
         });
       }
       // Always traverse down in case there are nested boundaries underneath
@@ -456,6 +460,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
       if ((addressData.actualAssembly || "") !== actualAssembly) setActualAssembly(addressData.actualAssembly || "");
       if ((addressData.actualZone || "") !== actualZone) setActualZone(addressData.actualZone || "");
       if ((addressData.actualWard || "") !== actualWard) setActualWard(addressData.actualWard || "");
+      if ((addressData.colonyMcdCategory || "") !== colonyMcdCategory) setColonyMcdCategory(addressData.colonyMcdCategory || "");
 
       if (addressData.doorImageId) {
         if (addressData.doorImage !== doorImage) setDoorImage(addressData.doorImage);
@@ -507,6 +512,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
       actualAssembly,
       actualZone,
       actualWard,
+      colonyMcdCategory,
       ...(config?.doorImage ? { doorImage, doorImageId } : {}),
     };
 
@@ -563,6 +569,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
       actualAssembly,
       actualZone,
       actualWard,
+      colonyMcdCategory,
       ...(isEkyc ? { doorImage, doorImageId } : {}),
     };
 
@@ -608,6 +615,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
     actualAssembly,
     actualZone,
     actualWard,
+    colonyMcdCategory,
     config?.key,
     onSelect,
   ]);
@@ -634,6 +642,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
       setActualAssembly(selectedAddress.actualAssembly);
       setActualZone(selectedAddress.actualZone);
       setActualWard(selectedAddress.actualWard);
+      setColonyMcdCategory(selectedAddress.colonyMcdCategory);
       if (config?.doorImage) {
         setDoorImage(selectedAddress.doorImage);
         setDoorImageId(selectedAddress.doorImageId);
@@ -674,6 +683,23 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
       }
     );
   };
+
+  useEffect(() => {
+    if (pincode && pincode.length === 6) {
+      const matchingLoc = structuredLocalityData?.find((loc) => {
+        if (!loc?.pincode) return false;
+        const pins = Array.isArray(loc.pincode) ? loc.pincode : [loc.pincode];
+        return pins.some((p) => p && p.toString() === pincode);
+      });
+      if (matchingLoc && (matchingLoc.colonyMcdCategory || matchingLoc.category)) {
+        setColonyMcdCategory(matchingLoc.colonyMcdCategory || matchingLoc.category);
+      } else if (!locality) {
+        setColonyMcdCategory("");
+      }
+    } else if (!locality) {
+      setColonyMcdCategory("");
+    }
+  }, [pincode, structuredLocalityData]);
 
   return (
     <React.Fragment>
@@ -793,8 +819,6 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
                   setAssembly("");
                   setZone("");
                   setBlock("");
-                  setLatitude("");
-                  setLongitude("");
                   setAddressLine1("");
                   // setAddressLine2("");
                 }
@@ -869,6 +893,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
                     setBlock(val.ward);
                   }
                   if (val?.subAreaName) setSubLocality(val.subAreaName);
+                  if (val?.colonyMcdCategory || val?.category) setColonyMcdCategory(val.colonyMcdCategory || val.category);
                 }}
                 option={filteredLocalities}
                 optionCardStyles={{ overflowY: "auto", maxHeight: "300px" }}
@@ -903,6 +928,20 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
               type: "text",
               title: t("SUB_LOCALITY_ERROR_MESSAGE"),
             }}
+          />
+        </LabelFieldPair>
+        <LabelFieldPair>
+          <CardLabel>{`${t("COMMON_COLONY_MCD_CATEGORY")}`}</CardLabel>
+          <TextInput
+            t={t}
+            type={"text"}
+            isMandatory={false}
+            name="colonyMcdCategory"
+            value={colonyMcdCategory}
+            style={{ width: "100%" }}
+            placeholder={"Enter Category"}
+            onChange={(e) => setColonyMcdCategory(e.target.value)}
+            disabled={disable}
           />
         </LabelFieldPair>
         <LabelFieldPair>
@@ -1254,7 +1293,9 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
                 selected={zoneOptions.find((z) => z.code === tempZone) || (tempZone ? { code: tempZone, i18nKey: tempZone, name: tempZone } : null)}
                 disable={disable || !tempAssembly}
                 select={(val) => setTempZone(val?.code || "")}
-                option={tempAssembly && assemblyToZones[tempAssembly] ? zoneOptions.filter((z) => assemblyToZones[tempAssembly].includes(z.code)) : []}
+                option={
+                  tempAssembly && assemblyToZones[tempAssembly] ? zoneOptions.filter((z) => assemblyToZones[tempAssembly].includes(z.code)) : []
+                }
                 optionCardStyles={{ overflowY: "auto", maxHeight: "300px" }}
                 optionKey="name"
                 t={t}
@@ -1269,7 +1310,9 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
                 selected={wardOptions.find((w) => w.code === tempWard) || (tempWard ? { code: tempWard, i18nKey: tempWard, name: tempWard } : null)}
                 disable={disable || !tempAssembly}
                 select={(val) => setTempWard(val?.code || "")}
-                option={tempAssembly && assemblyToWards[tempAssembly] ? wardOptions.filter((w) => assemblyToWards[tempAssembly].includes(w.code)) : []}
+                option={
+                  tempAssembly && assemblyToWards[tempAssembly] ? wardOptions.filter((w) => assemblyToWards[tempAssembly].includes(w.code)) : []
+                }
                 optionCardStyles={{ overflowY: "auto", maxHeight: "300px" }}
                 optionKey="i18nKey"
                 t={t}
