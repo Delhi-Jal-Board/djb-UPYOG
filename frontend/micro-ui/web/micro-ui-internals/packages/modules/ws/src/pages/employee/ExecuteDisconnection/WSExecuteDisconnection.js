@@ -43,7 +43,12 @@ const WSExecuteDisconnection = () => {
           setIsEnableLoader(false);
           setShowToast({ key: false, message: "Disconnection Executed Successfully" });
           setTimeout(() => {
-            history.push(`/digit-ui/employee/ws/application-details?applicationNumber=${applicationData?.applicationNo}&service=${serviceType}`);
+            const isCitizen = Digit.UserService.getUser()?.info?.type === "CITIZEN";
+            if (isCitizen) {
+              history.push(`/digit-ui/citizen/ws/connection/application/${applicationData?.applicationNo}`);
+            } else {
+              history.push(`/digit-ui/employee/ws/application-details?applicationNumber=${applicationData?.applicationNo}&service=${serviceType}`);
+            }
           }, 3000);
         },
       });

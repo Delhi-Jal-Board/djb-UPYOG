@@ -247,7 +247,7 @@ const ActionModal = ({
       applicationData?.processInstance?.businessService == "DisconnectSWConnection" ||
       window.location.href.includes("disconnection")
     ) {
-      applicationData?.serviceType == "WATER"
+      applicationData?.serviceType?.toUpperCase() == "WATER" || applicationData?.applicationType?.includes("WATER")
         ? submitAction({ WaterConnection: applicationData, disconnectRequest: true })
         : submitAction({ SewerageConnection: applicationData, disconnectRequest: true });
     } else if (applicationData?.applicationType == "SEWERAGE_RECONNECTION") {
@@ -270,7 +270,7 @@ const ActionModal = ({
       if (parsedAdhocRebateData?.value?.adhocRebateReason)
         applicationData.additionalDetails.adhocRebateReason = parsedAdhocRebateData?.value?.adhocRebateReason || "";
 
-      applicationData?.serviceType == "WATER"
+      applicationData?.serviceType?.toUpperCase() == "WATER" || applicationData?.applicationType?.includes("WATER")
         ? submitAction({ WaterConnection: applicationData, disconnectRequest: false, reconnectRequest: false })
         : submitAction({ SewerageConnection: applicationData, disconnectRequest: false, reconnectRequest: false });
     }

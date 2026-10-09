@@ -58,7 +58,8 @@ const CheckPage = () => {
   const closeToastOfError = () => { setShowToast(null); };
 
   const onSubmit = async (data) => {
-    const payload = await createPayloadOfWSDisconnection(data, { applicationData: value?.applicationData || value }, value?.serviceType || value?.applicationData?.serviceType);
+    const serviceType = value?.serviceType || value?.applicationData?.serviceType || value?.applicationData?.additionalDetails?.serviceType?.code || (value?.applicationData?.sewerage ? "SEWERAGE" : "WATER");
+    const payload = await createPayloadOfWSDisconnection(data, { applicationData: value?.applicationData || value }, serviceType);
     if (payload?.WaterConnection?.water) {
       if (waterMutation) {
         setIsEnableLoader(true);
@@ -124,7 +125,7 @@ const CheckPage = () => {
   return (
     <React.Fragment>
       <div className="employee-form-section-wrapper">
-        <DisconnectTimeline currentStep={3} />
+        {/* <DisconnectTimeline currentStep={3} /> */}
         <div style={{ width: "100%" }}>
           {/* <Header styles={{ fontSize: "32px" }}>{t("WS_COMMON_SUMMARY")}</Header> */}
           <Card>

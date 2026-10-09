@@ -146,12 +146,12 @@ export const WSMyApplications = () => {
           const isMutation = application?.applicationType?.includes("MUTATION");
           const businessService = application?.applicationNo?.includes("SW")
             ? application?.applicationNo?.includes("DC")
-              ? "SW"
+              ? "SW.DISCONNECTION"
               : isMutation
               ? "SW.MUTATION"
               : "SW.ONE_TIME_FEE"
             : application?.applicationNo?.includes("DC")
-            ? "WS"
+            ? "WS.DISCONNECTION"
             : isMutation
             ? "WS.MUTATION"
             : "WS.ONE_TIME_FEE";
@@ -160,17 +160,11 @@ export const WSMyApplications = () => {
             <span className="link">
               <Link
                 to={{
-                  pathname: `/digit-ui/citizen/payment/my-bills/${businessService}/${
-                    application?.applicationNo?.includes("DC")
-                      ? stringReplaceAll(application?.connectionNo, "/", "+") || stringReplaceAll(application?.connectionNo, "/", "+")
-                      : stringReplaceAll(application?.applicationNo, "/", "+") || stringReplaceAll(application?.applicationNo, "/", "+")
-                  }`,
+                  pathname: `/digit-ui/citizen/payment/my-bills/${businessService}/${stringReplaceAll(application?.applicationNo, "/", "+") || stringReplaceAll(application?.applicationNo, "/", "+")}`,
                   search: `?workflow=WNS&tenantId=${application?.tenantId}&ConsumerName=${
                     application?.connectionHolders?.map((owner) => owner.name).join(",") ||
                     application?.property?.owners?.map((owner) => owner.name).join(",")
-                  }&isDisoconnectFlow=${application?.applicationNo?.includes("DC") ? true : false}&consumerCode=${
-                    application?.applicationNo?.includes("DC") ? application?.connectionNo : application?.applicationNo
-                  }`,
+                  }&isDisoconnectFlow=${application?.applicationNo?.includes("DC") ? true : false}&consumerCode=${application?.applicationNo}`,
                   state: { fromMyApplications: true },
                 }}
               >

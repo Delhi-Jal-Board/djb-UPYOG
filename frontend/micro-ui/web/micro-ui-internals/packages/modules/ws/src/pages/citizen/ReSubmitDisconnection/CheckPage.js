@@ -41,7 +41,8 @@ const CheckPage = () => {
   const closeToastOfError = () => { setShowToast(null); };
 
   const onSubmit = async (data) => {
-    const payload = await createPayloadOfWSReSubmitDisconnection(data, value, value.serviceType);
+    const serviceType = value?.serviceType || value?.applicationData?.serviceType || value?.applicationData?.additionalDetails?.serviceType?.code || (value?.applicationData?.sewerage ? "SEWERAGE" : "WATER");
+    const payload = await createPayloadOfWSReSubmitDisconnection(data, value, serviceType);
     if (payload?.WaterConnection?.water) {
       if (waterUpdateMutation) {
         setIsEnableLoader(true);

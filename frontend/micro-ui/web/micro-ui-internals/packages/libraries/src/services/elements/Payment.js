@@ -52,14 +52,14 @@ export const PaymentService = {
   getReciept: (tenantId, businessservice, filters = {}) =>
     Request({
       url:
-        businessservice && businessservice !== "BPAREG" || businessservice && businessservice !== "TL"
+        (businessservice && businessservice !== "BPAREG" && businessservice !== "TL" && !businessservice.includes("WS") && !businessservice.includes("SW"))
           ? `${Urls.payment.print_reciept}/${businessservice}/_search`
           : `${Urls.payment.print_reciept}/_search`,
       useCache: false,
       method: "POST",
       auth: true,
       userService: true,
-      params: { tenantId, ...filters },
+      params: { tenantId, businessServices: businessservice, ...filters },
     }),
 
   generatePdf: (tenantId, data = {}, key) =>
@@ -118,17 +118,17 @@ export const PaymentService = {
   recieptSearch: (tenantId, businessService, params) =>
     Request({
       url:
-        businessService === "BPAREG" && !params?.isEmployee /* || businessService.includes("BPA.") && !params?.isEmployee ) */
+        (businessService === "BPAREG" && !params?.isEmployee) || businessService?.includes("WS") || businessService?.includes("SW")
           ? Urls.payment.obps_Reciept_Search
           : Urls.payment.reciept_search,
       urlParams:
-        businessService === "BPAREG" && !params?.isEmployee /* || businessService.includes("BPA.") && !params?.isEmployee) */
+        (businessService === "BPAREG" && !params?.isEmployee) || businessService?.includes("WS") || businessService?.includes("SW")
           ? {}
           : { buisnessService: businessService },
       method: "POST",
       // do not change this directly add a param if needed
       auth: true,
-      params: { tenantId, ...params },
+      params: { tenantId, businessServices: businessService, ...params },
     }),
     recieptSearchNew: (tenantId, params) =>
     Request({

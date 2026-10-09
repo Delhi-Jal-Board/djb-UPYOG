@@ -264,7 +264,7 @@ const WSApplicationDetails = () => {
   const isDisconnection =
     data?.WaterConnection?.[0]?.applicationType?.includes("DISCONNECT") || data?.SewerageConnections?.[0]?.applicationType?.includes("DISCONNECT");
   const appStatus = data?.WaterConnection?.[0]?.applicationStatus || data?.SewerageConnections?.[0]?.applicationStatus;
-  const isDisconnectionPaymentPending = isDisconnection && ["PENDING_FOR_PAYMENT", "PENDING_FOR_FINAL_PAYMENT", "PENDING_FOR_ADDITIONAL_PAYMENT", "PENDING_APPROVAL_FOR_DISCONNECTION"].includes(appStatus);
+  const isDisconnectionPaymentPending = isDisconnection && ["PENDING_FOR_PAYMENT", "PENDING_FOR_FINAL_PAYMENT", "PENDING_FOR_ADDITIONAL_PAYMENT", "PENDING_APPROVAL_FOR_DISCONNECTION", "PENDING_FOR_DISCONNECTION_EXECUTION"].includes(appStatus);
   switch (appStatus) {
     case "PENDING_FOR_DOCUMENT_VERIFICATION":
       if (
@@ -322,10 +322,37 @@ const WSApplicationDetails = () => {
   sessionStorage.setItem("ApplicationNoState", applicationNobyData);
   return (
     <React.Fragment>
-      <div className={"employee-main-application-details"}>
+      <style>{`
+        .ws-app-details-container {
+          display: flex;
+          flex-direction: column;
+          gap: 24px;
+        }
+        @media (min-width: 768px) {
+          .ws-app-details-container {
+            flex-direction: row;
+          }
+          .ws-app-details-left {
+            flex: 0 0 320px;
+            max-width: 350px;
+            min-width: 280px;
+          }
+          .ws-app-details-right {
+            flex: 1;
+            min-width: 0;
+          }
+        }
+        /* Enhance Card styling */
+        .ws-app-details-container .digit-card, .ws-app-details-container .modern-card {
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+          border-radius: 12px;
+          border: 1px solid #edf2f7;
+        }
+      `}</style>
+      <div className="ws-app-details-container">
         {/* Left Column: Workflow Timeline */}
-        <div className={`workflow-timeline-wrapper no-scrollbar`} style={{ flex: "0 0 300px", maxWidth: "350px", minWidth: "240px" }}>
-          <Card>
+        <div className="ws-app-details-left workflow-timeline-wrapper no-scrollbar">
+          <Card className="modern-card">
             <div id="timeline">
               <WSWFApplicationTimeline
                 application={data?.WaterConnection?.[0] || data?.SewerageConnections?.[0]}
@@ -337,8 +364,8 @@ const WSApplicationDetails = () => {
         </div>
 
         {/* Right Column: Application Details */}
-        <div style={{ flex: "1 1 0%", minWidth: 0 }}>
-          <Card>
+        <div className="ws-app-details-right">
+          <Card className="modern-card">
             <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
               {/* <Header>{t("WS_APPLICATION_DETAILS_HEADER")}</Header> */}
               <div style={{ zIndex: "10", display: "flex", flexDirection: "row-reverse", alignItems: "center", marginTop: "-25px" }}>
@@ -1248,6 +1275,37 @@ const WSApplicationDetails = () => {
                           }
                     )}
                   />
+                </Link>
+              ) : null}
+              {(data?.WaterConnection?.[0]?.applicationType.includes("DISCONNECT") &&
+                data?.WaterConnection?.[0]?.applicationStatus.includes("PENDING_FOR_DISCONNECTION_EXECUTION")) ||
+              (data?.SewerageConnections?.[0]?.applicationType.includes("DISCONNECT") &&
+                data?.SewerageConnections?.[0]?.applicationStatus.includes("PENDING_FOR_DISCONNECTION_EXECUTION")) ? (
+                <Link
+                  to={{
+                    pathname: `/digit-ui/citizen/ws/execute-disconnection`,
+                    state: { 
+                      applicationData: data?.WaterConnection?.[0] || data?.SewerageConnections?.[0], 
+                      action: { action: "EXECUTE_DISCONNECTION" },
+                      serviceType: data?.WaterConnection?.[0] ? "WATER" : "SEWERAGE"
+                    },
+                  }}
+                >
+                  <SubmitBar label={t("WS_EXECUTE_DISCONNECTION")} />
+                </Link>
+              ) : null}
+              {(data?.WaterConnection?.[0]?.applicationStatus.includes("PENDING_FOR_CONNECTION_ACTIVATION")) ||
+              (data?.SewerageConnections?.[0]?.applicationStatus.includes("PENDING_FOR_CONNECTION_ACTIVATION")) ? (
+                <Link
+                  to={{
+                    pathname: `/digit-ui/citizen/ws/activate-connection`,
+                    search: `?applicationNumber=${data?.WaterConnection?.[0]?.applicationNo || data?.SewerageConnections?.[0]?.applicationNo}&service=${data?.WaterConnection?.[0] ? "WATER" : "SEWERAGE"}&action=ACTIVATE_CONNECTION`,
+                    state: { 
+                      applicationData: data?.WaterConnection?.[0] || data?.SewerageConnections?.[0]
+                    },
+                  }}
+                >
+                  <SubmitBar label={t("WS_ACTIVATE_CONNECTION")} />
                 </Link>
               ) : null}
             </div>

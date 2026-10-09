@@ -1,13 +1,13 @@
 import { Card, KeyNote, SubmitBar, Loader } from "@djb25/digit-ui-react-components";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import { getAddress } from "../../../utils/index";
 import _ from "lodash";
 import { stringReplaceAll, convertEpochToDate } from "../../../utils";
 
 const WSApplication = ({ application }) => {
-
+  const history = useHistory();
   const { t } = useTranslation();
   const user = Digit.UserService.getUser();
   const userMobileNumber = user?.info?.userName?.match(/^[0-9]{10}$/) ? user?.info?.userName : user?.info?.mobileNumber;
@@ -73,12 +73,8 @@ const WSApplication = ({ application }) => {
               label={t("MAKE_PAYMENT")} 
               onSubmit={() => {
                 history.push({
-                  pathname: `/digit-ui/citizen/payment/my-bills/${businessService
-                    }/${application?.applicationNo?.includes("DC") ? (stringReplaceAll(application?.connectionNo, "/", "+") || stringReplaceAll(application?.connectionNo, "/", "+")) :
-                      (stringReplaceAll(application?.applicationNo, "/", "+") ||
-                        stringReplaceAll(application?.applicationNo, "/", "+"))
-                    }`,
-                  search: `?workflow=WNS&tenantId=${application?.tenantId}&ConsumerName=${application?.connectionHolders?.map((owner) => owner.name).join(",") || application?.connectionHolders?.map((owner) => owner.name).join(",") || PTData?.Properties?.[0]?.owners?.map((owner) => owner.name).join(",")}&isDisoconnectFlow=${application?.applicationNo?.includes("DC") ? true : false}&consumerCode=${application?.applicationNo?.includes("DC") ? application?.connectionNo : application?.applicationNo}`,
+                  pathname: `/digit-ui/citizen/payment/my-bills/${businessService}/${stringReplaceAll(application?.applicationNo, "/", "+") || stringReplaceAll(application?.applicationNo, "/", "+")}`,
+                  search: `?workflow=WNS&tenantId=${application?.tenantId}&ConsumerName=${application?.connectionHolders?.map((owner) => owner.name).join(",") || application?.connectionHolders?.map((owner) => owner.name).join(",") || PTData?.Properties?.[0]?.owners?.map((owner) => owner.name).join(",")}&isDisoconnectFlow=${application?.applicationNo?.includes("DC") ? true : false}&consumerCode=${application?.applicationNo}`,
                   state: {},
                 });
               }}
