@@ -43,7 +43,13 @@ const SelectPaymentType = (props) => {
   const isLoggedIn = Digit.UserService.getUser()
 
 
-  const { data, isLoading } = state?.bill ? { isLoading: false } : Digit.Hooks.useFetchPayment({ tenantId, businessService, consumerCode });
+  const { data, isLoading } = state?.bill
+    ? { isLoading: false }
+    : Digit.Hooks.useFetchPayment({
+        tenantId,
+        businessService,
+        consumerCode: wrkflow === "WNS" ? stringReplaceAll(consumerCode, "+", "/") : consumerCode,
+      });
 
   let Useruuid = data?.Bill?.[0]?.userId || "";
   let requestCriteria = [
@@ -119,7 +125,7 @@ const SelectPaymentType = (props) => {
 
   useEffect(() => {
     if (!bill && data) {
-      let requiredBill = data?.Bill?.filter((e) => e.consumerCode == consumerCode)[0];
+      let requiredBill = data?.Bill?.filter((e) => e.consumerCode == (wrkflow === "WNS" ? stringReplaceAll(consumerCode, "+", "/") : consumerCode))[0];
       setBill(requiredBill);
     }
   }, [isLoading]);

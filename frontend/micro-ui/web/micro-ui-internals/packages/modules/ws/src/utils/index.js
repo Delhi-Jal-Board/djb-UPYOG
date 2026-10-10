@@ -1405,6 +1405,9 @@ export const checkForEmployee = (roles) => {
 
 export const getBusinessService = (data, applicationDetails) => {
   const appType = data?.applicationType || applicationDetails?.applicationData?.applicationType || applicationDetails?.applicationType;
+  if (appType?.includes("RECONNECT") || data?.serviceType?.includes("RECONNECT") || data?.businessService?.includes("Reconnection")) {
+    return data?.service === "SEWERAGE" || data?.serviceType === "SEWERAGE" ? "SWReconnection" : "WSReconnection";
+  }
   if (appType?.includes("MUTATION") || data?.serviceType?.includes("MUTATION") || data?.businessService === "WS.MUTATION") {
     return data?.service === "SEWERAGE" || data?.serviceType === "SEWERAGE" ? "SW.MUTATION" : "WS.MUTATION";
   }

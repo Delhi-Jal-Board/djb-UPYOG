@@ -25,7 +25,8 @@ const ActivateConnection = () => {
   const stateId = Digit.ULBService.getStateId();
   let tenantId = Digit.ULBService.getCurrentTenantId() || Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code;
   let { data: newConfig, isLoading } = Digit.Hooks.ws.useWSConfigMDMS.WSActivationConfig(stateId, {});
-  let details = cloneDeep(state?.data);
+  const initialAppData = cloneDeep(state?.data || state?.applicationData || (state?.applicationNo ? state : undefined));
+  let details = initialAppData;
   let { isLoading: isappdetailsLoading, isError, data: applicationDetails, error } = Digit.Hooks.ws.useWSDetailsPage(
     t,
     tenantId,
@@ -34,7 +35,7 @@ const ActivateConnection = () => {
     { privacy: Digit.Utils.getPrivacyObject() }
   );
   details = cloneDeep(applicationDetails);
-  state = { data: { ...applicationDetails?.applicationData } };
+  state = { data: { ...(initialAppData || {}), ...(applicationDetails?.applicationData || {}) } };
   const {
     isLoading: updatingApplication,
     isError: updateApplicationError,
@@ -106,21 +107,20 @@ const ActivateConnection = () => {
     state?.data?.additionalDetails?.connectionType?.toUpperCase() === "METERED" ||
     state?.data?.additionalDetails?.connectionType?.toUpperCase() === "PERMANENT";
 
-  const activationDetails =
-    isMeteredConn && state?.data?.applicationType !== "WATER_RECONNECTION"
-      ? [
-          {
-            meterId: state?.data?.meterId || "",
-            meterInstallationDate: state?.data?.meterInstallationDate ? convertEpochToDates(state?.data?.meterInstallationDate) : null,
-            meterInitialReading: state?.data?.additionalDetails?.initialMeterReading || "",
-            connectionExecutionDate: state?.data?.connectionExecutionDate ? convertEpochToDates(state?.data?.connectionExecutionDate) : null,
-          },
-        ]
-      : [
-          {
-            connectionExecutionDate: state?.data?.connectionExecutionDate ? convertEpochToDates(state?.data?.connectionExecutionDate) : null,
-          },
-        ];
+  const activationDetails = isMeteredConn
+    ? [
+        {
+          meterId: state?.data?.meterId || "",
+          meterInstallationDate: state?.data?.meterInstallationDate ? convertEpochToDates(state?.data?.meterInstallationDate) : null,
+          meterInitialReading: state?.data?.additionalDetails?.initialMeterReading || "",
+          connectionExecutionDate: state?.data?.connectionExecutionDate ? convertEpochToDates(state?.data?.connectionExecutionDate) : null,
+        },
+      ]
+    : [
+        {
+          connectionExecutionDate: state?.data?.connectionExecutionDate ? convertEpochToDates(state?.data?.connectionExecutionDate) : null,
+        },
+      ];
 
   const defaultValues = {
     formDetails: details,
@@ -129,10 +129,10 @@ const ActivateConnection = () => {
     activationDetails: activationDetails,
   };
   useEffect(() => {
-    if (!isappdetailsLoading) {
-      setAppDetails(details);
+    if (!isappdetailsLoading && details?.applicationData) {
+      setAppDetails(details.applicationData);
     }
-  }, []);
+  }, [isappdetailsLoading, applicationDetails]);
 
   useEffect(() => {
     const configsToUse = (!isLoading && newConfig && Array.isArray(newConfig) && newConfig.length > 0) ? newConfig : newConfigLocal;
@@ -220,7 +220,13 @@ const ActivateConnection = () => {
       }, 3000);
     } else {
       const formDetails = cloneDeep(data);
-      const formData = Object.keys(appDetails)?.length > 0 ? { ...appDetails } : { ...details?.applicationData };
+      const baseAppData =
+        appDetails?.applicationData ||
+        (appDetails?.applicationNo ? appDetails : null) ||
+        details?.applicationData ||
+        initialAppData ||
+        {};
+      const formData = cloneDeep(baseAppData);
 
       if (formDetails?.connectionDetails?.[0]?.connectionType?.code)
         formData.connectionType = formDetails?.connectionDetails?.[0]?.connectionType?.code;
@@ -278,6 +284,9 @@ const ActivateConnection = () => {
       };
 
       const isWater = filters?.service ? filters.service.toUpperCase() === "WATER" : (formData?.serviceType === "WATER" || !formData?.serviceType);
+      const isReconnection =
+        formData?.applicationType?.includes("RECONNECT") ||
+        formData?.applicationNo?.includes("RC");
 
       if (isWater) {
         formData.waterSource = "GROUND.WELL";
@@ -292,10 +301,10 @@ const ActivateConnection = () => {
 
       const reqDetails =
         isWater
-          ? formData?.applicationType === "WATER_RECONNECTION"
+          ? isReconnection
             ? { WaterConnection: formData, reconnectRequest: true, disconnectRequest: false }
             : { WaterConnection: formData, reconnectRequest: false, disconnectRequest: false }
-          : formData?.applicationType === "SEWERAGE_RECONNECTION"
+          : isReconnection
           ? { SewerageConnection: formData, reconnectRequest: true, disconnectRequest: false }
           : { SewerageConnection: formData, reconnectRequest: false, disconnectRequest: false };
 

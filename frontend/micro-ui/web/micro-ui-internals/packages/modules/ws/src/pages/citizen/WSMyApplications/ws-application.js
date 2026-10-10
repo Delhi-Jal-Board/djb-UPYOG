@@ -31,7 +31,23 @@ const WSApplication = ({ application }) => {
     { filters: { propertyIds: application?.propertyId }, privacy: Digit.Utils.getPrivacyObject() }
   );
   const isMutation = application?.applicationType?.includes("MUTATION");
-  const businessService = application?.applicationNo?.includes("SW") ? (application?.applicationNo?.includes("DC") ? "SW.DISCONNECTION" : (isMutation ? "SW.MUTATION" : "SW.ONE_TIME_FEE")) : (application?.applicationNo?.includes("DC") ? "WS.DISCONNECTION" : (isMutation ? "WS.MUTATION" : "WS.ONE_TIME_FEE"));
+  const isReconnection = application?.applicationType?.includes("RECONNECT") || application?.applicationNo?.includes("RC");
+  const businessService =
+    application?.applicationNo?.includes("SW") || application?.serviceType === "SEWERAGE"
+      ? application?.applicationNo?.includes("DC") || application?.applicationType?.includes("DISCONNECT")
+        ? "SW.DISCONNECTION"
+        : isReconnection
+        ? "SWReconnection"
+        : isMutation
+        ? "SW.MUTATION"
+        : "SW.ONE_TIME_FEE"
+      : application?.applicationNo?.includes("DC") || application?.applicationType?.includes("DISCONNECT")
+      ? "WS.DISCONNECTION"
+      : isReconnection
+      ? "WSReconnection"
+      : isMutation
+      ? "WS.MUTATION"
+      : "WS.ONE_TIME_FEE";
   const fetchBillParams = { consumerCode: application?.applicationNo };
   if (isLoading) {
     return <Loader />;

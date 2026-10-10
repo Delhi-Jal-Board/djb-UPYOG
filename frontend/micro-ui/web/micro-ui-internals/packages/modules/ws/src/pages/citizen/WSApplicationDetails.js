@@ -69,17 +69,25 @@ const WSApplicationDetails = () => {
   });
   const isMutation =
     data?.WaterConnection?.[0]?.applicationType?.includes("MUTATION") || data?.SewerageConnections?.[0]?.applicationType?.includes("MUTATION");
+  const isReconnection =
+    data?.WaterConnection?.[0]?.applicationType?.includes("RECONNECT") ||
+    data?.SewerageConnections?.[0]?.applicationType?.includes("RECONNECT") ||
+    applicationNobyData?.includes("RC");
 
   const paymentDetails = Digit.Hooks.useFetchBillsForBuissnessService(
     {
       businessService: applicationNobyData?.includes("SW")
         ? applicationNobyData?.includes("DC")
           ? "SW.DISCONNECTION"
+          : isReconnection
+          ? "SWReconnection"
           : isMutation
           ? "SW.MUTATION"
           : "SW.ONE_TIME_FEE"
         : applicationNobyData?.includes("DC")
         ? "WS.DISCONNECTION"
+        : isReconnection
+        ? "WSReconnection"
         : isMutation
         ? "WS.MUTATION"
         : "WS.ONE_TIME_FEE",
@@ -198,7 +206,17 @@ const WSApplicationDetails = () => {
     const tenantId = Digit.ULBService.getCurrentTenantId();
     const state = Digit.ULBService.getStateId();
 
-    let key = data?.WaterConnection?.[0] ? (isMutation ? "WS.MUTATION" : "WS.ONE_TIME_FEE") : isMutation ? "SW.MUTATION" : "SW.ONE_TIME_FEE";
+    let key = data?.WaterConnection?.[0]
+      ? isReconnection
+        ? "WSReconnection"
+        : isMutation
+        ? "WS.MUTATION"
+        : "WS.ONE_TIME_FEE"
+      : isReconnection
+      ? "SWReconnection"
+      : isMutation
+      ? "SW.MUTATION"
+      : "SW.ONE_TIME_FEE";
     const payments = await Digit.PaymentService.getReciept(tenantId, key, {
       consumerCodes: data?.WaterConnection?.[0] ? data?.WaterConnection?.[0]?.applicationNo : data?.SewerageConnections?.[0]?.applicationNo,
     });
@@ -262,9 +280,26 @@ const WSApplicationDetails = () => {
     },
   ];
   const isDisconnection =
-    data?.WaterConnection?.[0]?.applicationType?.includes("DISCONNECT") || data?.SewerageConnections?.[0]?.applicationType?.includes("DISCONNECT");
-  const appStatus = data?.WaterConnection?.[0]?.applicationStatus || data?.SewerageConnections?.[0]?.applicationStatus;
-  const isDisconnectionPaymentPending = isDisconnection && ["PENDING_FOR_PAYMENT", "PENDING_FOR_FINAL_PAYMENT", "PENDING_FOR_ADDITIONAL_PAYMENT", "PENDING_APPROVAL_FOR_DISCONNECTION", "PENDING_FOR_DISCONNECTION_EXECUTION"].includes(appStatus);
+    data?.WaterConnection?.[0]?.applicationType?.includes("DISCONNECT") ||
+    data?.SewerageConnections?.[0]?.applicationType?.includes("DISCONNECT") ||
+    applicationNobyData?.includes("DC");
+  const appStatus =
+    data?.WaterConnection?.[0]?.applicationStatus ||
+    data?.SewerageConnections?.[0]?.applicationStatus ||
+    appDetailsData?.applicationStatus ||
+    appDetailsData?.applicationData?.applicationStatus;
+  const isDisconnectionPaymentPending =
+    isDisconnection &&
+    [
+      "PENDING_FOR_PAYMENT",
+      "PENDING_FOR_FINAL_PAYMENT",
+      "PENDING_FOR_ADDITIONAL_PAYMENT",
+      "PENDING_APPROVAL_FOR_DISCONNECTION",
+      "PENDING_FOR_DISCONNECTION_EXECUTION",
+    ].includes(appStatus);
+  const isReconnectionFeeOnly =
+    isReconnection &&
+    ["PENDING_FOR_PAYMENT", "PENDING_APPROVAL_FOR_RECONNECTION", "PENDING_FOR_RECONNECTION_EXECUTION", "CONNECTION_ACTIVATED"].includes(appStatus);
   switch (appStatus) {
     case "PENDING_FOR_DOCUMENT_VERIFICATION":
       if (
@@ -457,8 +492,15 @@ const WSApplicationDetails = () => {
                   <CardSectionHeader style={{ marginBottom: "16px", marginTop: "16px", fontSize: "24px" }}>
                     {t(feeEstimationSection.title)}
                   </CardSectionHeader>
-                  <WSFeeEstimation wsAdditionalDetails={feeEstimationSection} workflowDetails={null} onlyDisconnectionFee={isDisconnectionPaymentPending} />
-                  {!isDisconnectionPaymentPending && <ViewBreakup wsAdditionalDetails={feeEstimationSection} workflowDetails={null} />}
+                  <WSFeeEstimation
+                    wsAdditionalDetails={feeEstimationSection}
+                    workflowDetails={null}
+                    onlyDisconnectionFee={isDisconnectionPaymentPending || isDisconnectionExecuted}
+                    onlyReconnectionFee={isReconnectionFeeOnly}
+                  />
+                  {!isDisconnectionPaymentPending && !isDisconnectionExecuted && !isReconnectionFeeOnly && (
+                    <ViewBreakup wsAdditionalDetails={feeEstimationSection} workflowDetails={null} />
+                  )}
                 </React.Fragment>
               )}
 
@@ -1297,8 +1339,10 @@ const WSApplicationDetails = () => {
                   <SubmitBar label={t("WS_EXECUTE_DISCONNECTION")} />
                 </Link>
               ) : null}
-              {(data?.WaterConnection?.[0]?.applicationStatus.includes("PENDING_FOR_CONNECTION_ACTIVATION")) ||
-              (data?.SewerageConnections?.[0]?.applicationStatus.includes("PENDING_FOR_CONNECTION_ACTIVATION")) ? (
+              {data?.WaterConnection?.[0]?.applicationStatus?.includes("PENDING_FOR_CONNECTION_ACTIVATION") ||
+              data?.SewerageConnections?.[0]?.applicationStatus?.includes("PENDING_FOR_CONNECTION_ACTIVATION") ||
+              data?.WaterConnection?.[0]?.applicationStatus?.includes("PENDING_FOR_RECONNECTION_EXECUTION") ||
+              data?.SewerageConnections?.[0]?.applicationStatus?.includes("PENDING_FOR_RECONNECTION_EXECUTION") ? (
                 <Link
                   to={{
                     pathname: `/digit-ui/citizen/ws/activate-connection`,
