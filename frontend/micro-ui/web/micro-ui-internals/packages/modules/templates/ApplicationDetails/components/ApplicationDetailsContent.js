@@ -581,8 +581,31 @@ function ApplicationDetailsContent({
               <span className="add-details-link hover-button">{detail?.additionalDetails?.redirectUrl?.title}</span>
             </Link>
           )}
-          {detail?.additionalDetails?.estimationDetails && <WSFeeEstimation wsAdditionalDetails={detail} workflowDetails={workflowDetails} />}
-          {detail?.additionalDetails?.estimationDetails && <ViewBreakup wsAdditionalDetails={detail} workflowDetails={workflowDetails} />}
+          {detail?.additionalDetails?.estimationDetails && (
+            <WSFeeEstimation
+              wsAdditionalDetails={detail}
+              workflowDetails={workflowDetails}
+              onlyReconnectionFee={
+                detail?.additionalDetails?.onlyReconnectionFee ||
+                ((applicationData?.applicationType?.includes("RECONNECT") ||
+                  businessService?.includes("Reconnection") ||
+                  applicationData?.applicationNo?.includes("RC")) &&
+                  ["PENDING_FOR_PAYMENT", "PENDING_APPROVAL_FOR_RECONNECTION", "PENDING_FOR_RECONNECTION_EXECUTION", "CONNECTION_ACTIVATED"].includes(
+                    applicationData?.applicationStatus
+                  ))
+              }
+            />
+          )}
+          {detail?.additionalDetails?.estimationDetails &&
+            !detail?.additionalDetails?.onlyReconnectionFee &&
+            !(
+              (applicationData?.applicationType?.includes("RECONNECT") ||
+                businessService?.includes("Reconnection") ||
+                applicationData?.applicationNo?.includes("RC")) &&
+              ["PENDING_FOR_PAYMENT", "PENDING_APPROVAL_FOR_RECONNECTION", "PENDING_FOR_RECONNECTION_EXECUTION", "CONNECTION_ACTIVATED"].includes(
+                applicationData?.applicationStatus
+              )
+            ) && <ViewBreakup wsAdditionalDetails={detail} workflowDetails={workflowDetails} />}
         </React.Fragment>
       ))}
       {showApprovalChecklist && (
