@@ -47,6 +47,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
     "NoOfFloors",
     "PropertyNewUsageType",
     "PropertyToUsageMapping",
+    "PropertyType2",
   ]);
 
   const { data: wsServicesMastersData } = Digit.Hooks.ws.useMDMS(tenantId, "ws-services-masters", ["WsCategoryType"]);
@@ -56,8 +57,15 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
 
   useEffect(() => {
     const categories = wsServicesMastersData?.["ws-services-masters"]?.WsCategoryType || [];
-    categories.forEach((data) => (data.i18nKey = data.i18nKey || `WS_CATEGORY_${data.code}`));
-    setCategoryTypeList(categories);
+    if (categories.length > 0) {
+      categories.forEach((data) => (data.i18nKey = data.i18nKey || `WS_CATEGORY_${data.code}`));
+      setCategoryTypeList(categories);
+    } else {
+      setCategoryTypeList([
+        { code: "DOMESTIC", name: "Domestic", i18nKey: "WS_CATEGORY_DOMESTIC" },
+        { code: "NON_DOMESTIC", name: "Non-Domestic", i18nKey: "WS_CATEGORY_NON_DOMESTIC" },
+      ]);
+    }
   }, [wsServicesMastersData]);
 
   const isPropertyFound = window.location.href.includes("ws/old-application") || window.location.href.includes("/edit-application");
@@ -104,77 +112,91 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
   }, []);
 
   const categoryOptions = useMemo(() => {
-    if (!watchCategoryType?.code) return [];
     let options = ptServicesMastersData?.PropertyTax?.PropertyCategory?.filter((item) => item.active) || [];
-    options = options.filter((item) => normalizeCode(item.type) === normalizeCode(watchCategoryType.code));
     return options.map((item) => ({
       code: item.code,
       name: item.name,
     }));
-  }, [ptServicesMastersData, watchCategoryType]);
-
-  useEffect(() => {
-    if (watchCategoryType && watchPropertyCategory && ptServicesMastersData?.PropertyTax?.PropertyCategory) {
-      const isCategoryValid = categoryOptions.some((opt) => opt.code === watchPropertyCategory.code);
-      if (!isCategoryValid) {
-        setValue("useDetails.propertyCategory", null);
-      }
-    }
-  }, [watchCategoryType, categoryOptions, setValue, watchPropertyCategory, ptServicesMastersData]);
+  }, [ptServicesMastersData]);
 
   const propertyTypeOptions = useMemo(() => {
-    if (!watchPropertyCategory?.code) return [];
-    let options = ptServicesMastersData?.PropertyTax?.PropertyType?.filter((item) => item.active) || [];
-    let mapping = ptServicesMastersData?.PropertyTax?.PropertyToUsageMapping || [];
-
-    if (mapping.length > 0) {
-      options = options.filter((item) => mapping.some((m) => m.propertyTypeCode === item.code));
-    }
-
-    if (watchPropertyCategory?.code?.toUpperCase() !== "MIXED") {
-      options = options.filter((item) => normalizeCode(item.type) === normalizeCode(watchPropertyCategory.code));
-    }
-    return options.map((item) => ({
-      code: item.code,
-      name: item.name,
-    }));
-  }, [ptServicesMastersData, watchPropertyCategory]);
-
-  useEffect(() => {
-    if (watchPropertyCategory && watchPropertyType && ptServicesMastersData?.PropertyTax?.PropertyType) {
-      const isTypeValid = propertyTypeOptions.some((opt) => opt.code === watchPropertyType.code);
-      if (!isTypeValid) {
-        setValue("useDetails.propertyType", null);
-      }
-    }
-  }, [watchPropertyCategory, propertyTypeOptions, setValue, watchPropertyType, ptServicesMastersData]);
+    const list = ptServicesMastersData?.PropertyTax?.PropertyType2 || ptServicesMastersData?.PropertyTax?.PropertyType || [];
+    return list
+      .filter((item) => item.active)
+      .map((item) => ({
+        ...item,
+        code: item.code,
+        name: item.name,
+      }));
+  }, [ptServicesMastersData]);
 
   const usageTypeOptions = useMemo(() => {
-    if (!watchPropertyType?.code) return [];
-    let options = ptServicesMastersData?.PropertyTax?.PropertyNewUsageType?.filter((item) => item.active) || [];
-    let mapping = ptServicesMastersData?.PropertyTax?.PropertyToUsageMapping || [];
-
-    const selectedMapping = mapping.find((m) => m.propertyTypeCode === watchPropertyType.code);
-    if (selectedMapping && selectedMapping.allowedUsages) {
-      options = options.filter((item) => selectedMapping.allowedUsages.includes(item.code));
-    } else {
-      options = [];
-    }
-
-    return options.map((item) => ({
-      code: item.code,
-      name: item.name,
+    const list = ptServicesMastersData?.PropertyTax?.PropertyType2 || [];
+    const uniqueTypes = [...new Set(list.map((item) => item.waterConnectionUsageType).filter(Boolean))];
+    const typesToMap = uniqueTypes.length > 0 ? uniqueTypes : ["Normal", "Bulk"];
+    return typesToMap.map((type) => ({
+      code: type,
+      name: type,
+      value: type,
     }));
-  }, [ptServicesMastersData, watchPropertyCategory, watchPropertyType]);
+  }, [ptServicesMastersData]);
+
+  const prevPropertyTypeCode = React.useRef(null);
 
   useEffect(() => {
-    if (watchPropertyType && watchWaterConnectionUsageType && ptServicesMastersData?.PropertyTax?.PropertyNewUsageType) {
-      const isUsageTypeValid = usageTypeOptions.some((opt) => opt.code === watchWaterConnectionUsageType.code);
-      if (!isUsageTypeValid) {
-        setValue("useDetails.WaterConnectionUsageType", null);
+    if (!watchPropertyType?.code) {
+      prevPropertyTypeCode.current = null;
+      return;
+    }
+
+    const isNewType = prevPropertyTypeCode.current !== watchPropertyType.code;
+    prevPropertyTypeCode.current = watchPropertyType.code;
+
+    const propertyType2List = ptServicesMastersData?.PropertyTax?.PropertyType2 || [];
+    const matched = propertyType2List.find(
+      (item) => normalizeCode(item.code) === normalizeCode(watchPropertyType.code)
+    );
+
+    if (matched && isNewType) {
+      // 1. Category Type
+      if (matched.categoryType && matched.categoryType.length > 0 && categoryTypeList.length > 0) {
+        const catTarget = matched.categoryType[0];
+        const foundCat = categoryTypeList.find(
+          (c) => normalizeCode(c.code) === normalizeCode(catTarget) || normalizeCode(c.name) === normalizeCode(catTarget)
+        );
+        if (foundCat) {
+          setValue("useDetails.categoryType", foundCat);
+        }
+      }
+
+      // 2. Property Category
+      if (matched.propertyCategory && categoryOptions.length > 0) {
+        const foundPropCat = categoryOptions.find(
+          (c) => normalizeCode(c.code) === normalizeCode(matched.propertyCategory) || normalizeCode(c.name) === normalizeCode(matched.propertyCategory)
+        );
+        if (foundPropCat) {
+          setValue("useDetails.propertyCategory", foundPropCat);
+        }
+      }
+
+      // 3. Water Connection Usage Type
+      if (matched.waterConnectionUsageType && matched.waterConnectionUsageType.length > 0) {
+        const foundUsage = usageTypeOptions.find(
+          (u) => normalizeCode(u.code) === normalizeCode(matched.waterConnectionUsageType) || normalizeCode(u.name) === normalizeCode(matched.waterConnectionUsageType)
+        );
+        if (foundUsage) {
+          setValue("useDetails.WaterConnectionUsageType", foundUsage);
+        }
       }
     }
-  }, [watchPropertyType, usageTypeOptions, setValue, watchWaterConnectionUsageType, ptServicesMastersData]);
+  }, [
+    watchPropertyType?.code,
+    ptServicesMastersData,
+    categoryTypeList,
+    categoryOptions,
+    usageTypeOptions,
+    setValue,
+  ]);
 
   const floorOptions = useMemo(() => {
     return ptServicesMastersData?.PropertyTax?.NoOfFloors?.filter((item) => item.active).map((item) => ({
@@ -212,16 +234,16 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
       );
       setValue("useDetails.propertyCategory", propCategoryMatch ? { code: propCategoryMatch.code, name: propCategoryMatch.name } : null);
 
-      const propTypeMatch = ptServicesMastersData?.PropertyTax?.PropertyType?.find(
+      const propTypeMatch = (ptServicesMastersData?.PropertyTax?.PropertyType2 || ptServicesMastersData?.PropertyTax?.PropertyType)?.find(
         (o) => normalizeCode(o.code) === normalizeCode(getCode(additionalDetails.propertyType || details.propertyType))
       );
       setValue("useDetails.propertyType", propTypeMatch ? { code: propTypeMatch.code, name: propTypeMatch.name } : null);
 
-      const usageTypeMatch = ptServicesMastersData?.PropertyTax?.PropertyNewUsageType?.find(
-        (o) =>
-          normalizeCode(o.code) === normalizeCode(getCode(additionalDetails.waterConnectionUsageType || additionalDetails.WaterConnectionUsageType))
+      const usageVal = getCode(additionalDetails.waterConnectionUsageType || additionalDetails.WaterConnectionUsageType);
+      const usageTypeMatch = usageTypeOptions.find(
+        (o) => normalizeCode(o.code) === normalizeCode(usageVal) || normalizeCode(o.name) === normalizeCode(usageVal)
       );
-      setValue("useDetails.WaterConnectionUsageType", usageTypeMatch ? { code: usageTypeMatch.code, name: usageTypeMatch.name } : null);
+      setValue("useDetails.WaterConnectionUsageType", usageTypeMatch || null);
       setValue(
         "useDetails.noOfFloors",
         floorOptions?.find((o) => {
@@ -303,6 +325,31 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
       <div className="formcomposer-section-grid">
         <LabelFieldPair>
           <CardLabel>
+            {`${t("WS_PROPERTY_TYPE")}`} <span className="check-page-link-button">*</span>
+          </CardLabel>
+          <div className="form-field">
+            <Controller
+              control={control}
+              name="useDetails.propertyType"
+              rules={{ required: t("REQUIRED_FIELD") }}
+              render={(props) => (
+                <Dropdown
+                  option={propertyTypeOptions}
+                  optionKey="name"
+                  selected={props.value}
+                  select={props.onChange}
+                  t={t}
+                  onBlur={props.onBlur}
+                  disable={isPropertyFound}
+                  placeholder={t("WS_PROPERTY_TYPE")}
+                />
+              )}
+            />
+          </div>
+        </LabelFieldPair>
+        {errors?.useDetails?.propertyType && <CardLabelError style={errorStyle}>{errors.useDetails.propertyType.message}</CardLabelError>}
+        <LabelFieldPair>
+          <CardLabel>
             {`${t("WS_CATEGORY_TYPE")}`} <span className="check-page-link-button">*</span>
           </CardLabel>
           <div className="form-field">
@@ -351,32 +398,6 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
           </div>
         </LabelFieldPair>
         {errors?.useDetails?.propertyCategory && <CardLabelError style={errorStyle}>{errors.useDetails.propertyCategory.message}</CardLabelError>}
-
-        <LabelFieldPair>
-          <CardLabel>
-            {`${t("WS_PROPERTY_TYPE")}`} <span className="check-page-link-button">*</span>
-          </CardLabel>
-          <div className="form-field">
-            <Controller
-              control={control}
-              name="useDetails.propertyType"
-              rules={{ required: t("REQUIRED_FIELD") }}
-              render={(props) => (
-                <Dropdown
-                  option={propertyTypeOptions}
-                  optionKey="name"
-                  selected={props.value}
-                  select={props.onChange}
-                  t={t}
-                  onBlur={props.onBlur}
-                  disable={isPropertyFound}
-                  placeholder={t("WS_PROPERTY_TYPE")}
-                />
-              )}
-            />
-          </div>
-        </LabelFieldPair>
-        {errors?.useDetails?.propertyType && <CardLabelError style={errorStyle}>{errors.useDetails.propertyType.message}</CardLabelError>}
 
         <LabelFieldPair>
           <CardLabel>
