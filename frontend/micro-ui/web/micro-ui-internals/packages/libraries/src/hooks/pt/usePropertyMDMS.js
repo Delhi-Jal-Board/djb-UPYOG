@@ -53,6 +53,10 @@ const usePropertyMDMS = (tenantId, moduleCode, type, config = {}) => {
     return useQuery("PT_PROPERTY_TO_USAGE_MAPPING", () => MdmsService.getPropertyToUsageMapping(tenantId, moduleCode), config);
   };
 
+  const PropertyType2 = () => {
+    return useQuery("PT_PROPERTY_TYPE2", () => MdmsService.getPropertyTypeVersion2(tenantId, moduleCode), config);
+  };
+
   const _default = () => {
     return useQuery([tenantId, moduleCode, type], () => MdmsService.getMultipleTypes(tenantId, moduleCode, type), config);
   };
@@ -88,6 +92,8 @@ const usePropertyMDMS = (tenantId, moduleCode, type, config = {}) => {
       return usePropertyNewType();
     case "PropertyToUsageMapping":
       return PropertyToUsageMapping();
+    case "PropertyType2":
+      return PropertyType2();
     default:
       return _default();
   }
