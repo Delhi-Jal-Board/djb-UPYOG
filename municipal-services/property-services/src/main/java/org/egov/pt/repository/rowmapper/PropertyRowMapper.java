@@ -357,6 +357,7 @@ public class PropertyRowMapper implements ResultSetExtractor<List<Property>> {
 		.addressLine1(rs.getString("address_line_1"))
 		.assembly(rs.getString("assembly"))
 		.block(rs.getString("block"))
+		.colonyMcdCategory(rs.getString("colony_mcd_category"))
 		.geoLocation(geoLocation)
 		.locality(locality)
 		.tenantId(tenanId)
