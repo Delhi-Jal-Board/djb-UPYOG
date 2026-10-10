@@ -1,10 +1,10 @@
 import React, { Fragment, useState } from "react";
-import { Card, Loader, Table, MdDownloadIcon } from "@djb25/digit-ui-react-components";
+import { Card, Loader, Table, MdDownloadIcon, Toast, DateRange } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useParams, useHistory } from "react-router-dom";
 import { FaUsers, FaCheckCircle, FaClock, FaChartLine } from "react-icons/fa";
-import { getEkycExcelData } from "../utils/ekycExcelData";
 import EkycFilterModal from "./EkycFilterModal";
+import { downloadEkycReport } from "../utils/ekycExcelData"
 
 const SupervisorDetailsCard = () => {
   const { t } = useTranslation();
@@ -18,6 +18,28 @@ const SupervisorDetailsCard = () => {
   const [pageSize, setPageSize] = useState(20);
   const [customDate, setCustomDate] = useState({ from: "", to: "" });
   const [ekycStatus, setEkycStatus] = useState("ALL");
+  const [toast, setToast] = useState({
+    show: false,
+    label: "",
+    error: false,
+  });
+  const [filterDate,setFilterDate] = useState({ from: "", to: "" });
+
+  const showToast = ({ label, error = false }) => {
+    setToast({
+      show: true,
+      label,
+      error,
+    });
+  };
+
+  const hideToast = () => {
+    setToast({
+      show: false,
+      label: "",
+      error: false,
+    });
+  };
 
   const { data, isLoading: isSupervisorSearchLoading } = Digit.Hooks.fsm.useSupervisorSearch(
     tenantId,
@@ -28,7 +50,7 @@ const SupervisorDetailsCard = () => {
   const { supervisors: [supervisor] = [] } = data || {};
 
   const { isLoading: isProgressLoading, data: progressData } = Digit.Hooks.ekyc.useEkycAssignmentProgress(
-    { vendorId: supervisor?.vendorId, supervisorId: supervisorId || supervisor?.id },
+    { vendorId: supervisor?.vendorId, supervisorId: supervisorId || supervisor?.id, fromDate: filterDate?.startDate?.getTime(), toDate: filterDate?.endDate?.getTime() },
     {
       enabled: !!tenantId && !!supervisor?.vendorId,
       keepPreviousData: true,
@@ -172,51 +194,18 @@ const SupervisorDetailsCard = () => {
     );
   }
 
-  const handleDownloadEkycData = async (fromDate, toDate) => {
-    setEkycDownloadLoading(true);
-    try {
-      const response = await Digit.EkycService.application_list({
-        tenantId: tenantId,
-        offset: 0,
-        limit: 10000,
-        // Vendor-specific filter
-        vendorId: supervisor?.vendorId,
-        ekycStatus: ekycStatus,
-        reportDownload: true,
-        ...(fromDate && { fromDate }),
-        ...(toDate && { toDate }),
-      });
-
-      const consumerList = response?.consumerList || [];
-
-      if (!consumerList || consumerList.length === 0) {
-        alert(t("NO_EKYC_DATA_FOUND") || "No eKYC data found to download.");
-        return;
-      }
-
-      consumerList.forEach((item) => {
-        if (item.assignedTime) {
-          item.assignedTime = new Date(item.assignedTime).toLocaleDateString("en-GB");
-        }
-
-        if (item.submittedAt) {
-          item.submittedAt = new Date(item.submittedAt).toLocaleDateString("en-GB");
-        }
-      });
-      const excelData = getEkycExcelData(consumerList, t);
-      const cleanFileName = `eKYC_Data_${vendorName.replace(/[^a-zA-Z0-9]/g, "_")}`;
-      Digit.Download.Excel(excelData, cleanFileName);
-    } catch (error) {
-      console.error("Failed to download eKYC data:", error);
-      alert(t("EKYC_DOWNLOAD_FAILED") || "Failed to download eKYC data. Please try again.");
-    } finally {
-      setEkycDownloadLoading(false);
-    }
-  };
-
   const handleApplyFilters = async () => {
     setShowFilterModal(false);
-    await handleDownloadEkycData(customDate.startDate.getTime(), customDate.endDate.getTime());
+    downloadEkycReport({
+      tenantId,
+      ekycStatus,
+      fromDate: customDate?.startDate?.getTime(),
+      toDate: customDate?.endDate?.getTime(),
+      fileName: `eKYC_Data_${fullName.replace(/[^a-zA-Z0-9]/g, "_")}`,
+      t,
+      setLoading: setEkycDownloadLoading,
+      showToast,
+    });
   };
 
   return (
@@ -234,6 +223,15 @@ const SupervisorDetailsCard = () => {
               </div>
 
               <div className="report-download relative">
+                <DateRange
+                  values={filterDate}
+                  t={t}
+                  hideLabel
+                  onFilterChange={(data) => {
+                    setFilterDate(data.range);
+                  }}
+                  emptyInitialDate={true}
+                />
                 <button
                   disabled={ekycDownloadLoading}
                   className={`download-btn relative ${ekycDownloadLoading ? "disabled" : ""}`}
@@ -336,6 +334,7 @@ const SupervisorDetailsCard = () => {
           setEkycStatus={setEkycStatus}
         />
       )}
+      {toast.show && <Toast label={toast.label} error={toast.error} isDleteBtn duration={5000} onClose={hideToast} />}
     </Fragment>
   );
 };

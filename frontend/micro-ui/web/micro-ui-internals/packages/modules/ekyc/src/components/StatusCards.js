@@ -1,33 +1,26 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import * as Chartjs from "chart.js/auto";
-import { FaChartBar, MdDownloadIcon } from "@djb25/digit-ui-react-components";
-import { getEkycExcelData } from "../utils/ekycExcelData";
+import { FaChartBar, MdDownloadIcon, Toast, DateRange } from "@djb25/digit-ui-react-components";
+import EkycFilterModal from "./EkycFilterModal";
+import { downloadEkycReport } from "../utils/ekycExcelData"
 
 const getChartConstructor = () => {
   const C = Chartjs.Chart || Chartjs.default || Chartjs;
   return C;
 };
 
-const StatusCards = ({ countData }) => {
+const StatusCards = ({ countData, customDate, setCustomDate }) => {
   const { t } = useTranslation();
   const [ekycDownloadLoading, setEkycDownloadLoading] = useState(false);
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [ekycStatus, setEkycStatus] = useState("ALL");
 
-  const [showReportMenu, setShowReportMenu] = useState(false);
-  const [customDate, setCustomDate] = useState({ from: "", to: "" });
-  const [showCustomPicker, setShowCustomPicker] = useState(false);
-  const reportMenuRef = useRef(null);
-
-  useEffect(() => {
-    const handler = (e) => {
-      if (reportMenuRef.current && !reportMenuRef.current.contains(e.target)) {
-        setShowReportMenu(false);
-        setShowCustomPicker(false);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
+  const [toast, setToast] = useState({
+    show: false,
+    label: "",
+    error: false,
+  });
 
   let tenantId = Digit.ULBService.getCurrentTenantId();
   if (!tenantId || tenantId === "dl") {
@@ -36,74 +29,20 @@ const StatusCards = ({ countData }) => {
   const loggedInUser = Digit.SessionStorage.get("User")?.info;
   const fullName = loggedInUser?.name || "Admin";
 
-  const handleDownloadEkycData = async (fromDate, toDate) => {
-    setEkycDownloadLoading(true);
-    try {
-      const response = await Digit.EkycService.application_list({
-        tenantId: tenantId,
-        offset: 0,
-        limit: 10000,
-        reportDownload: true,
-        ...(fromDate && { fromDate }),
-        ...(toDate && { toDate }),
-      });
-
-      const consumerList = response?.consumerList || [];
-      if (consumerList.length === 0) {
-        alert(t("NO_DATA_FOUND") || "No data found for download.");
-        return;
-      }
-
-      const excelData = getEkycExcelData(consumerList, t);
-      const cleanFileName = `eKYC_All_Data_Admin_${fullName.replace(/[^a-zA-Z0-9]/g, "_")}`;
-      Digit.Download.Excel(excelData, cleanFileName);
-    } catch (error) {
-      console.error("Error downloading eKYC Excel:", error);
-    } finally {
-      setEkycDownloadLoading(false);
-    }
+  const showToast = ({ label, error = false }) => {
+    setToast({
+      show: true,
+      label,
+      error,
+    });
   };
 
-  const getDateRange = (filter) => {
-    const now = new Date();
-    const start = new Date(now);
-    if (filter === "today") {
-      start.setHours(0, 0, 0, 0);
-      return { from: start, to: now };
-    }
-    if (filter === "week") {
-      start.setDate(now.getDate() - now.getDay());
-      start.setHours(0, 0, 0, 0);
-      return { from: start, to: now };
-    }
-    if (filter === "month") {
-      start.setDate(1);
-      start.setHours(0, 0, 0, 0);
-      return { from: start, to: now };
-    }
-    return null;
-  };
-
-  const handlePresetDownload = async (filter) => {
-    const range = getDateRange(filter);
-    if (!range) return;
-    setShowReportMenu(false);
-    setShowCustomPicker(false);
-    await handleDownloadEkycData(range.from.getTime(), range.to.getTime());
-  };
-
-  const handleCustomDownload = async () => {
-    if (!customDate.from || !customDate.to) {
-      alert(t("SELECT_DATE_RANGE") || "Please select both From and To dates.");
-      return;
-    }
-    const from = new Date(customDate.from);
-    from.setHours(0, 0, 0, 0);
-    const to = new Date(customDate.to);
-    to.setHours(23, 59, 59, 999);
-    setShowReportMenu(false);
-    setShowCustomPicker(false);
-    await handleDownloadEkycData(from.getTime(), to.getTime());
+  const hideToast = () => {
+    setToast({
+      show: false,
+      label: "",
+      error: false,
+    });
   };
 
   const chartRef1 = useRef(null);
@@ -184,82 +123,50 @@ const StatusCards = ({ countData }) => {
     },
   ];
 
+  const handleApplyFilters = async () => {
+    setShowFilterModal(false);
+
+    downloadEkycReport({
+      tenantId,
+      ekycStatus,
+      fromDate: customDate?.startDate?.getTime(),
+      toDate: customDate?.endDate?.getTime(),
+      fileName: `eKYC_All_Data_Admin_${fullName.replace(/[^a-zA-Z0-9]/g, "_")}`,
+      t,
+      setLoading: setEkycDownloadLoading,
+      showToast,
+    });
+  };
+
   return (
     <div className="ekyc-employee-container">
       <div className="status-panel">
         <div className="status-cards-header">
           <div className="status-card-title">
-            <FaChartBar size={32} color="#fff" backgroundColor="#065297" style={{ paddingInline: "4px", borderRadius: "4px  " }} />
+            <FaChartBar size={32} color="#fff" backgroundColor="#065297" style={{ paddingInline: "4px", borderRadius: "4px" }} />
 
             <h1 className="status-cards-h1">{t("EKYC_DASHBOARD_TITLE") || "eKYC Verification Dashboard"}</h1>
           </div>
-          <div className="report-download" ref={reportMenuRef}>
-            <button
-              className="total-applications-card download-btn"
-              disabled={ekycDownloadLoading}
-              onClick={() => {
-                setShowReportMenu((p) => !p);
-                setShowCustomPicker(false);
+
+          <div className="report-download relative">
+            <DateRange
+              values={customDate}
+              t={t}
+              hideLabel
+              onFilterChange={(data) => {
+                setCustomDate(data.range);
               }}
+              emptyInitialDate={true}
+            />
+            <button
+              className={`download-btn relative ${ekycDownloadLoading ? "disabled" : ""}`}
+              disabled={ekycDownloadLoading}
+              onClick={() => setShowFilterModal(true)}
             >
-              {t("DOWNLOAD_REPORT") || "Download Report"}
-
               <MdDownloadIcon />
+
+              {ekycDownloadLoading ? t("DOWNLOADING") || "Downloading" : t("DOWNLOAD_REPORT") || "Download Report"}
             </button>
-
-            {showReportMenu && (
-              <div className="report-menu">
-                {[
-                  { label: t("TODAY") || "Today", key: "today" },
-                  { label: t("THIS_WEEK") || "This Week", key: "week" },
-                  { label: t("THIS_MONTH") || "This Month", key: "month" },
-                ].map(({ label, key }) => (
-                  <div key={key} className="menu-item" onClick={() => handlePresetDownload(key)}>
-                    {label}
-                  </div>
-                ))}
-
-                <div className="custom-date-trigger" onClick={() => setShowCustomPicker((p) => !p)}>
-                  {t("CUSTOM_DATE") || "Custom Date"}
-                </div>
-
-                {showCustomPicker && (
-                  <div className="custom-picker">
-                    <div className="date-inputs">
-                      <label>
-                        <span>From</span>
-                        <input type="date" value={customDate.from} onChange={(e) => setCustomDate({ ...customDate, from: e.target.value })} />
-                      </label>
-                      <label>
-                        <span>To</span>
-                        <input type="date" value={customDate.to} onChange={(e) => setCustomDate({ ...customDate, to: e.target.value })} />
-                      </label>
-                    </div>
-                    <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
-                      <button
-                        className="picker-cancel-btn"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setShowCustomPicker(false);
-                          setCustomDate({ from: "", to: "" });
-                        }}
-                      >
-                        {t("CANCEL") || "Cancel"}
-                      </button>
-                      <button
-                        className="picker-apply-btn"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleCustomDownload();
-                        }}
-                      >
-                        {t("APPLY") || "Apply"}
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
           </div>
         </div>
 
@@ -290,6 +197,20 @@ const StatusCards = ({ countData }) => {
           </div>
         </div>
       </div>
+
+      {showFilterModal && (
+        <EkycFilterModal
+          t={t}
+          onClose={() => setShowFilterModal(false)}
+          onApply={handleApplyFilters}
+          customDate={customDate}
+          setCustomDate={setCustomDate}
+          ekycStatus={ekycStatus}
+          setEkycStatus={setEkycStatus}
+        />
+      )}
+
+      {toast.show && <Toast label={toast.label} error={toast.error} isDleteBtn duration={5000} onClose={hideToast} />}
     </div>
   );
 };

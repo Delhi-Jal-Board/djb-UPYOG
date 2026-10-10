@@ -1,10 +1,10 @@
-import React, { useState, useRef, useEffect, Fragment } from "react";
-import { Card, Loader, Table, MdDownloadIcon, FaDatabase, FaFileAlt } from "@djb25/digit-ui-react-components";
+import React, { useState, Fragment } from "react";
+import { Card, Loader, Table, Toast, MdDownloadIcon, FaDatabase, FaFileAlt,DateRange } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useParams, useHistory } from "react-router-dom";
 import { FaBuilding, FaUser, FaClock, FaChartLine } from "react-icons/fa";
-import { getEkycExcelData } from "../utils/ekycExcelData";
 import EkycFilterModal from "./EkycFilterModal";
+import { downloadEkycReport } from "../utils/ekycExcelData"
 
 const VendorDetailsCard = () => {
   const { t } = useTranslation();
@@ -12,10 +12,20 @@ const VendorDetailsCard = () => {
   const tenantId = Digit.ULBService.getCurrentTenantId() || "dl.djb";
   const { vendorId } = useParams();
   const loggedInUser = Digit.SessionStorage.get("User")?.info;
-
   const targetVendorId = vendorId || loggedInUser?.uuid;
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [ekycStatus, setEkycStatus] = useState("ALL");
+  const [currentPage, setCurrentPage] = useState(0);
+  const [pageSize, setPageSize] = useState(20);
+  const [ekycDownloadLoading, setEkycDownloadLoading] = useState(false);
+  const [customDate, setCustomDate] = useState("");
+  const [filterDate,setFilterDate] = useState({ from: "", to: "" });
+
+  const [toast, setToast] = useState({
+    show: false,
+    label: "",
+    error: false,
+  });
 
   const { data: { vendor: [vendor] = [] } = {}, isLoading: isVendorSearchLoading } = Digit.Hooks.fsm.useVendorSearch({
     tenantId,
@@ -31,7 +41,7 @@ const VendorDetailsCard = () => {
 
   // Fetch assignment progress with hierarchy (supervisor and surveyor details) for target vendor
   const { isLoading: isProgressLoading, data: progressData } = Digit.Hooks.ekyc.useEkycAssignmentProgress(
-    { vendorId: targetVendorId },
+    { vendorId: targetVendorId, fromDate: filterDate?.startDate?.getTime(), toDate: filterDate?.endDate?.getTime() },
     {
       enabled: !!tenantId,
       keepPreviousData: true,
@@ -99,56 +109,18 @@ const VendorDetailsCard = () => {
     },
   ];
 
-  const [currentPage, setCurrentPage] = useState(0);
-  const [pageSize, setPageSize] = useState(20);
-
-  const [ekycDownloadLoading, setEkycDownloadLoading] = useState(false);
-
-  const handleDownloadEkycData = async (fromDate, toDate) => {
-    setEkycDownloadLoading(true);
-    try {
-      const response = await Digit.EkycService.application_list({
-        tenantId: tenantId,
-        offset: 0,
-        limit: 10000,
-        // Vendor-specific filter
-        vendorId: targetVendorId,
-        ekycStatus: ekycStatus,
-        reportDownload: true,
-        ...(fromDate && { fromDate }),
-        ...(toDate && { toDate }),
-      });
-
-      const consumerList = response?.consumerList || [];
-
-      if (!consumerList || consumerList.length === 0) {
-        alert(t("NO_EKYC_DATA_FOUND") || "No eKYC data found to download.");
-        return;
-      }
-
-      consumerList.forEach((item) => {
-        if (item.assignedTime) {
-          item.assignedTime = new Date(item.assignedTime).toLocaleDateString("en-GB");
-        }
-
-        if (item.submittedAt) {
-          item.submittedAt = new Date(item.submittedAt).toLocaleDateString("en-GB");
-        }
-      });
-      const excelData = getEkycExcelData(consumerList, t);
-      const cleanFileName = `eKYC_Data_${vendorName.replace(/[^a-zA-Z0-9]/g, "_")}`;
-      Digit.Download.Excel(excelData, cleanFileName);
-    } catch (error) {
-      console.error("Failed to download eKYC data:", error);
-      alert(t("EKYC_DOWNLOAD_FAILED") || "Failed to download eKYC data. Please try again.");
-    } finally {
-      setEkycDownloadLoading(false);
-    }
-  };
-
   const handleApplyFilters = async () => {
     setShowFilterModal(false);
-    await handleDownloadEkycData(customDate.startDate.getTime(), customDate.endDate.getTime());
+    downloadEkycReport({
+      tenantId,
+      ekycStatus,
+      fromDate: customDate?.startDate?.getTime(),
+      toDate: customDate?.endDate?.getTime(),
+      fileName: `eKYC_Data_${vendorName.replace(/[^a-zA-Z0-9]/g, "_")}`,
+      t,
+      setLoading: setEkycDownloadLoading,
+      showToast,
+    });
   };
 
   const supervisorColumns = [
@@ -212,19 +184,6 @@ const VendorDetailsCard = () => {
     },
   ];
 
-  // Report Download logic
-  const [customDate, setCustomDate] = useState("");
-  const reportMenuRef = useRef(null);
-
-  useEffect(() => {
-    const handler = (e) => {
-      if (reportMenuRef.current && !reportMenuRef.current.contains(e.target)) {
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
-
   const StatCard = ({ title, value, type, isLoading, icon }) => (
     <div className={`stat-card ${type}`}>
       {isLoading ? (
@@ -256,6 +215,22 @@ const VendorDetailsCard = () => {
     );
   }
 
+  const showToast = ({ label, error = false }) => {
+    setToast({
+      show: true,
+      label,
+      error,
+    });
+  };
+
+  const hideToast = () => {
+    setToast({
+      show: false,
+      label: "",
+      error: false,
+    });
+  };
+
   return (
     <Fragment>
       <Card className="surveyor-dashboard">
@@ -272,6 +247,15 @@ const VendorDetailsCard = () => {
 
               {/* Download Report — far right */}
               <div className="report-download relative">
+                <DateRange
+                  values={filterDate}
+                  t={t}
+                  hideLabel
+                  onFilterChange={(data) => {
+                    setFilterDate(data.range);
+                  }}
+                  emptyInitialDate={true}
+                />
                 <button
                   disabled={ekycDownloadLoading}
                   className={`download-btn relative ${ekycDownloadLoading ? "disabled" : ""}`}
@@ -324,7 +308,9 @@ const VendorDetailsCard = () => {
 
         {/* Stats */}
         <div className="stats-wrapper">
-          {cards.map((card, idx) => <StatCard key={idx} title={t(card.label)} value={card.count} type={card.type} isLoading={isPageLoading} icon={card.icon} />)}
+          {cards.map((card, idx) => (
+            <StatCard key={idx} title={t(card.label)} value={card.count} type={card.type} isLoading={isPageLoading} icon={card.icon} />
+          ))}
         </div>
 
         <div>
@@ -333,7 +319,7 @@ const VendorDetailsCard = () => {
             tableTitle={t("CONNECTED_SUPERVISORS") || "Connected Supervisors"}
             tableClass="ekycTable"
             isTableScrollable={true}
-            data={progressData?.supervisorReport}
+            data={progressData?.supervisorReport || []}
             columns={supervisorColumns}
             isLoading={isProgressLoading}
             totalRecords={progressData?.supervisorReport?.length}
@@ -370,6 +356,7 @@ const VendorDetailsCard = () => {
           setEkycStatus={setEkycStatus}
         />
       )}
+      {toast.show && <Toast label={toast.label} error={toast.error} isDleteBtn duration={5000} onClose={hideToast} />}
     </Fragment>
   );
 };
