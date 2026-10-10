@@ -500,7 +500,10 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
             )}
         </div> */}
         <LabelFieldPair>
-          <CardLabel>{`${t("WS_HEIGHT_OF_THE_BUILDING(meters)")}`}<span className="check-page-link-button"> *</span></CardLabel>
+          <CardLabel>
+            {`${t("WS_HEIGHT_OF_THE_BUILDING(meters)")}`}
+            <span className="check-page-link-button"> *</span>
+          </CardLabel>
           <div className="form-field">
             <TextInput
               t={t}
@@ -514,12 +517,12 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
               placeholder={t("WS_HEIGHT_OF_THE_BUILDING")}
             />
           </div>
-          {errors?.useDetails?.heightOfTheBuilding && <CardLabelError style={errorStyle}>{errors.useDetails.heightOfTheBuilding.message}</CardLabelError>}
+          {errors?.useDetails?.heightOfTheBuilding && (
+            <CardLabelError style={errorStyle}>{errors.useDetails.heightOfTheBuilding.message}</CardLabelError>
+          )}
         </LabelFieldPair>
         <LabelFieldPair>
-          <CardLabel>
-            {`${t("WS_SELECT_YEAR_OF_CONSTRUCTION")}`}
-          </CardLabel>
+          <CardLabel>{`${t("WS_SELECT_YEAR_OF_CONSTRUCTION")}`}</CardLabel>
           <div className="form-field">
             <Controller
               control={control}
@@ -545,15 +548,20 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
         )}
         {isDwellingUnit ? (
           <LabelFieldPair>
-            <CardLabel>{`${t("WS_NUMBER_OF_DWELLING_UNITS")}`}</CardLabel>
+            <CardLabel>
+              {`${t("WS_NUMBER_OF_DWELLING_UNITS")}`}
+              <span className="check-page-link-button"> *</span>
+            </CardLabel>
             <div className="form-field">
               <TextInput
                 t={t}
                 inputRef={register({
                   pattern: { value: NUMBER_PATTERN, message: t("ERR_INVALID_NUMBER") },
+                  required: t("REQUIRED_FIELD"),
                 })}
                 name="useDetails.NumberofDwellingUnits"
                 disabled={isPropertyFound}
+                rules={{ required: t("REQUIRED_FIELD") }}
                 placeholder={t("WS_NUMBER_OF_DWELLING_UNITS")}
               />
             </div>
@@ -566,7 +574,10 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
 
         {isHotelRestaurantProperty ? (
           <LabelFieldPair>
-            <CardLabel>{`${t("WS_NUMBER_OF_ROOMS")}`}<span className="check-page-link-button"> *</span></CardLabel>
+            <CardLabel>
+              {`${t("WS_NUMBER_OF_ROOMS")}`}
+              <span className="check-page-link-button"> *</span>
+            </CardLabel>
             <div className="form-field">
               <TextInput
                 t={t}
@@ -587,7 +598,10 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
 
         {isHospitalProperty ? (
           <LabelFieldPair>
-            <CardLabel>{`${t("WS_NUMBER_OF_BEDS")}`}<span className="check-page-link-button"> *</span></CardLabel>
+            <CardLabel>
+              {`${t("WS_NUMBER_OF_BEDS")}`}
+              <span className="check-page-link-button"> *</span>
+            </CardLabel>
             <div className="form-field">
               <TextInput
                 t={t}
@@ -626,7 +640,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
           <CardLabelError style={errorStyle}>{errors.useDetails.numberOfStudents.message}</CardLabelError>
         )}
 
-        {isServentHouse ? (
+        {/* {isServentHouse ? (
           <LabelFieldPair>
             <CardLabel>{`${t("WS_SERVENT_HOUSE")}`}</CardLabel>
             <div className="form-field">
@@ -644,7 +658,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
         ) : null}
         {isServentHouse && errors?.useDetails?.servantQuarterArea && (
           <CardLabelError style={errorStyle}>{errors.useDetails.servantQuarterArea.message}</CardLabelError>
-        )}
+        )} */}
       </div>
     </CollapsibleCardPage>
   );

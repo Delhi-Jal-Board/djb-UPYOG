@@ -543,7 +543,7 @@ const ConnectionDetails = (_props) => {
           <React.Fragment>
             <LabelFieldPair>
               <CardLabel>
-                {t("Address Type")}
+                {t("WS_Billing_Address_Type")}
                 <span className="check-page-link-button">*</span>
               </CardLabel>
               <Controller

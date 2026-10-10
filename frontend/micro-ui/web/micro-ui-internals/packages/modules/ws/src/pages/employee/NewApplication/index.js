@@ -897,6 +897,21 @@ const NewApplication = () => {
   const isDjbEmployee = watch("djbEmployee.isDjbEmployee");
   const isGovernmentEmployee = watch("governmentEmployee.isGovernmentEmployee");
   const selectedPropertyType = watch("useDetails.propertyType");
+  const dwellingPropertyTypes = [
+    "Apartment",
+    "DDAFlats",
+    "GovtFlats",
+    "Bungalows",
+    "FlatOrApartment",
+    "GroupHousingSociety",
+    "JJSLUMS",
+    "IndividualHouse",
+    "BuiltUp.GroupHousingSociety",
+    "BuiltUp.JJSLUMS",
+    "BuiltUp.IndividualHouse",
+  ];
+  const isDwellingUnit = dwellingPropertyTypes.includes(selectedPropertyType?.code);
+
   const selectedLocality = watch("propertyAddress.locality");
   const selectedSubLocality = watch("propertyAddress.subLocality");
   const pCode = watch("propertyAddress.pinCode");
@@ -2140,14 +2155,7 @@ const NewApplication = () => {
                       />
                     </FieldBlock>
 
-                    <FieldBlock error={getFieldError("djbEmployee.retirementDate")} label={t("WS_DATE_OF_RETIREMENT")} required={isDjbEmployee}>
-                      <Controller
-                        control={control}
-                        name="djbEmployee.retirementDate"
-                        rules={{ required: isDjbEmployee ? "Date of Retirement is required." : false }}
-                        render={(props) => <DatePicker date={props.value} onChange={props.onChange} />}
-                      />
-                    </FieldBlock>
+                    
 
                     <FieldBlock
                       error={getFieldError("djbEmployee.officeNameAndAddress")}
@@ -2435,16 +2443,18 @@ const NewApplication = () => {
                   />
                 </FieldBlock>
 
+                {isDwellingUnit ? (
                 <FieldBlock error={getFieldError("useDetails.NumberofDwellingUnits")} label={t("WS_NUMBER_OF_DWELLING_UNITS")} required>
                   <TextInput
                     errorStyle={!!getFieldError("useDetails.NumberofDwellingUnits")}
                     inputRef={register({
                       pattern: { value: DECIMAL_PATTERN, message: "Enter a valid numeric value." },
-                      required: "Built Up Area is required.",
+                      required: "Number of Dwelling Units is required.",
                     })}
                     name="useDetails.NumberofDwellingUnits"
                   />
                 </FieldBlock>
+) : null}
                 <FieldBlock error={getFieldError("useDetails.NumberofRooms")} label={t("WS_NUMBER_OF_ROOMS")} required>
                   <TextInput
                     errorStyle={!!getFieldError("useDetails.NumberofRooms")}
@@ -2680,7 +2690,7 @@ const NewApplication = () => {
                     control={control}
                     name="documents.otherDocument"
                     render={(props) => (
-                      <Dropdown option={OTHER_DOCUMENTS_OPTIONS} optionKey="name" selected={props.value} select={props.onChange} t={t} />
+                      <Dropdown option={selectedApplicantType?.code === "TENANT" ? OTHER_DOCUMENTS_OPTIONS : OTHER_DOCUMENTS_OPTIONS.filter(opt => opt.code !== "NOC_FROM_OWNER")} optionKey="name" selected={props.value} select={props.onChange} t={t} />
                     )}
                   />
                 </FieldBlock>
@@ -2863,7 +2873,6 @@ const NewApplication = () => {
                 {formValues?.djbEmployee?.isDjbEmployee ? (
                   <React.Fragment>
                     <PreviewItem label="Employee ID" value={formValues?.djbEmployee?.employeeId} />
-                    <PreviewItem label="Date of Retirement" value={formValues?.djbEmployee?.retirementDate} />
                     <PreviewItem isFullWidth label="Office Name & Address" value={formValues?.djbEmployee?.officeNameAndAddress} />
                   </React.Fragment>
                 ) : null}
@@ -2928,7 +2937,9 @@ const NewApplication = () => {
                 <PreviewItem label="Plot Area (Sq. m.)" value={formValues?.useDetails?.plotArea} />
                 <PreviewItem label="Built-up Area (Sq. m.)" value={formValues?.useDetails?.builtUpArea} />
                 <PreviewItem label="Number of Floors" value={formValues?.useDetails?.noOfFloors} />
-                <PreviewItem label="Number of Dwelling Units" value={formValues?.useDetails?.NumberofDwellingUnits} />
+                {dwellingPropertyTypes.includes(formValues?.useDetails?.propertyType?.code) ? (
+                  <PreviewItem label="Number of Dwelling Units" value={formValues?.useDetails?.NumberofDwellingUnits} />
+                ) : null}
                 {formValues?.useDetails?.propertyType?.code === "HOSPITAL" ||
                   formValues?.useDetails?.propertyType?.code === "HOSPITAL_NURSING_HOME" ? (
                   <PreviewItem label="No. of Beds" value={formValues?.useDetails?.hospitalBeds} />

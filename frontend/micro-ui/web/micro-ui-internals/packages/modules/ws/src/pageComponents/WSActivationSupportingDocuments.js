@@ -64,7 +64,10 @@ const WSActivationSupportingDocuments = ({ t, config, userType, formData, onSele
   return (
     <div>
       <LabelFieldPair>
-        <CardLabel>{t(`WF_APPROVAL_UPLOAD_HEAD`)}:</CardLabel>
+        <CardLabel>
+          {t(`WF_APPROVAL_UPLOAD_HEAD`)}
+          <span className="check-page-link-button"> *</span>:
+        </CardLabel>
         <div className="field">
           <UploadFile
             // id={id}
@@ -80,6 +83,7 @@ const WSActivationSupportingDocuments = ({ t, config, userType, formData, onSele
             buttonType="button"
             accept="image/*, .pdf, .png, .jpeg, .jpg"
             iserror={error}
+            isMandatory={true}
           />
         </div>
       </LabelFieldPair>

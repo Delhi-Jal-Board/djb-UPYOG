@@ -316,7 +316,9 @@ const CheckPage = ({ onSubmit, value }) => {
             )
           )}`}
         />
-        <Row label={t("WS_NUMBER_OF_DWELLING_UNITS")} text={`${t(checkForNA(useDetails?.NumberofDwellingUnits || useDetails?.noOfDwellingUnits))}`} />
+        {["Apartment","DDAFlats","GovtFlats","Bungalows","FlatOrApartment","GroupHousingSociety","JJSLUMS","IndividualHouse","BuiltUp.GroupHousingSociety","BuiltUp.JJSLUMS","BuiltUp.IndividualHouse"].includes(useDetails?.propertyType?.code || useDetails?.propertyType) ? (
+          <Row label={t("WS_NUMBER_OF_DWELLING_UNITS")} text={`${t(checkForNA(useDetails?.NumberofDwellingUnits || useDetails?.noOfDwellingUnits))}`} />
+        ) : null}
       </StatusTable>
 
       <CardSubHeader>{t("WS_DJB_EMPLOYEE")}</CardSubHeader>
@@ -329,7 +331,6 @@ const CheckPage = ({ onSubmit, value }) => {
         {djbEmployee?.isDjbEmployee && (
           <React.Fragment>
             <Row label={t("WS_EMPLOYEE_ID")} text={`${t(checkForNA(djbEmployee?.employeeId))}`} />
-            <Row label={t("WS_DATE_OF_RETIREMENT")} text={`${t(checkForNA(djbEmployee?.dor))}`} />
             <Row label={t("WS_EMPLOYEE_DESIGNATION")} text={`${t(checkForNA(djbEmployee?.designation))}`} />
             {djbEmployee?.document && (
               <Row

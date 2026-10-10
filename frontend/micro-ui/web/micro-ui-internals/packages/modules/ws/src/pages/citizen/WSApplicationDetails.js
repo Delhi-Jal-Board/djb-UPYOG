@@ -857,6 +857,7 @@ const WSApplicationDetails = () => {
                   label={t("SubLocality")}
                   text={`${t(checkForNA(propertyAddress?.subLocality?.name || propertyAddress?.subLocality?.code || propertyAddress?.subLocality))}`}
                 />
+                <Row label={t("COMMON_COLONY_MCD_CATEGORY")} text={`${t(checkForNA(propertyAddress?.colonyMcdCategory))}`} />
                 <Row label={t("STREET_NAME")} text={`${t(checkForNA(propertyAddress?.streetName || propertyAddress?.street))}`} />
                 <Row label={t("ADDRESS_LINE1")} text={`${t(checkForNA(propertyAddress?.addressLine1 || propertyAddress?.street))}`} />
                 <Row label={t("ADDRESS_LINE2")} text={`${t(checkForNA(propertyAddress?.addressLine2))}`} />
@@ -978,6 +979,7 @@ const WSApplicationDetails = () => {
                 />
                 <Row label={t("WS_PLOT_AREA")} text={`${t(checkForNA(useDetails?.plotArea))}`} />
                 <Row label={t("WS_BUILT_UP_AREA")} text={`${t(checkForNA(useDetails?.builtUpArea))}`} />
+                <Row label={t("WS_HEIGHT_OF_THE_BUILDING")} text={`${t(checkForNA(useDetails?.heightOfTheBuilding))}`} />
                 <Row
                   label={t("WS_SELECT_YEAR_OF_CONSTRUCTION")}
                   text={`${t(
@@ -992,10 +994,12 @@ const WSApplicationDetails = () => {
                     )
                   )}`}
                 />
+                {["Apartment","DDAFlats","GovtFlats","Bungalows","FlatOrApartment","GroupHousingSociety","JJSLUMS","IndividualHouse","BuiltUp.GroupHousingSociety","BuiltUp.JJSLUMS","BuiltUp.IndividualHouse"].includes(useDetails?.propertyType?.code || useDetails?.propertyType) ? (
                 <Row
                   label={t("WS_NUMBER_OF_DWELLING_UNITS")}
                   text={`${t(checkForNA(useDetails?.NumberofDwellingUnits || useDetails?.noOfDwellingUnits))}`}
                 />
+              ) : null}
               </StatusTable>
 
               <CardHeader styles={{ fontSize: "28px" }}>{t("WS_DJB_EMPLOYEE")}</CardHeader>
@@ -1004,7 +1008,6 @@ const WSApplicationDetails = () => {
                 {djbEmployee?.isDjbEmployee && (
                   <React.Fragment>
                     <Row label={t("WS_EMPLOYEE_ID")} text={`${t(checkForNA(djbEmployee?.employeeId))}`} />
-                    <Row label={t("WS_DATE_OF_RETIREMENT")} text={`${t(checkForNA(djbEmployee?.dor))}`} />
                     <Row label={t("WS_EMPLOYEE_DESIGNATION")} text={`${t(checkForNA(djbEmployee?.designation))}`} />
                     {!isDisconnectionExecuted && djbEmployee?.document && (
                       <Row
