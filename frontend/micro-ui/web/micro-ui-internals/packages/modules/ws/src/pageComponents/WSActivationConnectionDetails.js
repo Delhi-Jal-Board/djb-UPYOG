@@ -12,11 +12,13 @@ const createConnectionDetails = (service) =>
   service == "WATER"
     ? {
         connectionType: { code: "Metered", i18nKey: "WS_CONNECTIONTYPE_METERED", name: "Metered" },
-        noOfTaps: "",
-        waterSource: "",
-        pipeSize: "",
+        noOfTaps: 0,
+        waterSource: "GROUND.WELL",
+        pipeSize: 0,
         waterSubSource: "",
         sourceSubData: "",
+        proposedPipeSize: 0,
+        proposedTaps: 0,
       }
     : {
         noOfWaterClosets: "",
@@ -26,7 +28,7 @@ const createConnectionDetails = (service) =>
 const WSActivationConnectionDetails = ({ config, onSelect, userType, formData, setError, formState, clearErrors }) => {
   const { t } = useTranslation();
   const { pathname } = useLocation();
-  const filters = func.getQueryStringParams(location.search);
+  const filters = func.getQueryStringParams(window.location.search);
   const [connectionDetails, setConnectionDetails] = useState(() => {
     let details = window.location.href.includes("modify")
       ? (formData?.connectionDetails ? [formData?.connectionDetails?.[0]] : [createConnectionDetails(filters?.service?.toUpperCase())])

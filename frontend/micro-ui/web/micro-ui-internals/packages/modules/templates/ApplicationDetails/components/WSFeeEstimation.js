@@ -14,6 +14,7 @@ import {
   BreakLine,
 } from "@djb25/digit-ui-react-components";
 import cloneDeep from "lodash/cloneDeep";
+import _ from "lodash";
 
 const Penality_menu = [
   {
@@ -56,7 +57,39 @@ const WSFeeEstimation = ({ wsAdditionalDetails, workflowDetails, onlyDisconnecti
   const { t } = useTranslation();
   const [sessionFormData, setSessionFormData, clearSessionFormData] = Digit.Hooks.useSessionStorage("ADHOC_ADD_REBATE_DATA", {});
   const [sessionBillFormData, setSessionBillFormData, clearBillSessionFormData] = Digit.Hooks.useSessionStorage("ADHOC_BILL_ADD_REBATE_DATA", {});
-  const isPaid = wsAdditionalDetails?.additionalDetails?.isPaid ? true : false;
+  const appStatus =
+    wsAdditionalDetails?.additionalDetails?.appDetails?.applicationStatus ||
+    wsAdditionalDetails?.additionalDetails?.data?.applicationStatus ||
+    workflowDetails?.data?.processInstances?.[0]?.state?.applicationStatus ||
+    workflowDetails?.data?.processInstances?.[0]?.state?.state;
+
+  const timeline = workflowDetails?.data?.processInstances || workflowDetails?.ProcessInstances;
+  const hasPaymentInTimeline = Array.isArray(timeline) && timeline.some(
+    (step) =>
+      step?.action === "PAY" ||
+      step?.state?.state === "PENDING_FOR_PAYMENT" ||
+      step?.state?.applicationStatus === "PENDING_FOR_PAYMENT"
+  );
+  const isPostPaymentState =
+    hasPaymentInTimeline &&
+    appStatus !== "PENDING_FOR_PAYMENT" &&
+    appStatus !== "INITIATED" &&
+    appStatus !== "PENDING_FOR_DOCUMENT_VERIFICATION" &&
+    appStatus !== "PENDING_FOR_CITIZEN_ACTION" &&
+    appStatus !== "PENDING_FOR_FIELD_INSPECTION";
+
+  const isWorkflowPaid =
+    appStatus &&
+    appStatus !== "INITIATED" &&
+    appStatus !== "PENDING_FOR_DOCUMENT_VERIFICATION" &&
+    appStatus !== "PENDING_FOR_CITIZEN_ACTION" &&
+    appStatus !== "PENDING_FOR_FIELD_INSPECTION" &&
+    appStatus !== "PENDING_FOR_PAYMENT" &&
+    appStatus !== "PENDING_FOR_FINAL_PAYMENT" &&
+    appStatus !== "PENDING_FOR_ADDITIONAL_PAYMENT" &&
+    appStatus !== "PENDING_APPROVAL_FOR_MUTATION";
+
+  const isPaid = wsAdditionalDetails?.additionalDetails?.isPaid || isWorkflowPaid || isPostPaymentState ? true : false;
   const [popup, showPopUp] = useState(false);
   const [fields, setFields] = useState(sessionFormData ? sessionFormData : {});
   const [showToast, setShowToast] = useState(null);
@@ -242,7 +275,7 @@ const WSFeeEstimation = ({ wsAdditionalDetails, workflowDetails, onlyDisconnecti
                 key={`CS_INBOX_STATUS_FILTER`}
                 label={`${t(`CS_INBOX_STATUS_FILTER`)}`}
                 text={displayedIsPaid ? t("WS_COMMON_PAID_LABEL") : t("WS_COMMON_NOT_PAID")}
-                textStyle={!isPaid ? { color: "#D83A2F" } : { color: "#2E9E8F" }}
+                textStyle={!displayedIsPaid ? { color: "#D83A2F" } : { color: "#2E9E8F" }}
               />
             </div>
           </StatusTable>

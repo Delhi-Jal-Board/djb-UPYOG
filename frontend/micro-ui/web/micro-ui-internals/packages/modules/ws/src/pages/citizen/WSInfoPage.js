@@ -1001,17 +1001,17 @@ const WSInfoPage = () => {
         `}</style>
 
         {/* 1. Header & Guidance Banner */}
-        <div className="ws-info-header-card">
+        {/* <div className="ws-info-header-card"> */}
           <div className="ws-header-badge-row">
-            <span className="ws-service-tag">{t("Water & Sewerage Services")}</span>
+            <span className="ws-service-tag">{t("Apply For New Connection")}</span>
             <span className="ws-portal-tag">{isEmployee ? t("Employee Portal") : t("Citizen Services")}</span>
           </div>
-          <h1 className="ws-page-title">{t("Apply For New Connection")}</h1>
-          <p className="ws-page-subtitle">
+          {/* <h1 className="ws-page-title">{t("Apply For New Connection")}</h1> */}
+          {/* <p className="ws-page-subtitle">
             {t("Submit an application for a new domestic, commercial, or industrial water/sewerage connection with Delhi Jal Board.")}
-          </p>
+          </p> */}
 
-          <div className="ws-guidance-box">
+          {/* <div className="ws-guidance-box">
             <div className="ws-guidance-icon-wrap">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1a67a3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="10"></circle>
@@ -1047,8 +1047,8 @@ const WSInfoPage = () => {
                 </div>
               </div>
             </div>
-          </div>
-        </div>
+          </div> */}
+        {/* </div> */}
 
         {/* 2. Step 1: Property Verification Card */}
         <div className="ws-card">
@@ -1390,7 +1390,6 @@ const WSInfoPage = () => {
                   </div>
                   <div className="ws-tag-grid">
                     <span className="ws-tag-item">{t("Employee ID")}</span>
-                    <span className="ws-tag-item">{t("Date of Retirement")}</span>
                     <span className="ws-tag-item">{t("Employee Designation")}</span>
                   </div>
                 </div>

@@ -82,10 +82,19 @@ const WSDocumentDetails = ({ t, config, onSelect, userType, formData, setError: 
         <FormStep t={t} config={config} onSelect={handleSubmit} onSkip={onSkip} isDisabled={enableSubmit} onAdd={onAdd}>
           {nocDownloadSection}
           {wsDocs?.Documents?.filter(doc => doc.code !== "OWNER.APPLICANTPHOTO")?.map((document, index) => {
+            let modifiedDocument = { ...document };
+            if (!isTenant && modifiedDocument.dropdownData) {
+              modifiedDocument.dropdownData = modifiedDocument.dropdownData.filter((opt) => {
+                const code = opt.code || "";
+                const isNocOwner = code.includes("NOC_FROM_OWNER") || code === "NOC from Owner";
+                return !isNocOwner;
+              });
+            }
+
             return (
               <SelectDocument
                 key={index}
-                document={document}
+                document={modifiedDocument}
                 t={t}
                 error={error}
                 setError={setError}

@@ -26,7 +26,7 @@ export const newConfig = [
         body: [{
           type: "component",
           key: "activationDetails",
-          component: "WSActivationPageDetails",
+          component: "WSActivationDetails",
           withoutLabel: true,
         }]
       },

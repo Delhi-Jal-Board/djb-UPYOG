@@ -279,6 +279,21 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
     return localities;
   }, [boundaryData, locationTenantId]);
 
+  const mcdCategoryOptions = useMemo(() => {
+    if (!structuredLocalityData || structuredLocalityData.length === 0) return [];
+    const categories = new Set();
+    structuredLocalityData.forEach((loc) => {
+      const cat = loc.colonyMcdCategory || loc.category;
+      if (cat) categories.add(cat);
+    });
+    ["A", "B", "C", "D", "E", "F", "G", "H"].forEach(cat => categories.add(cat));
+    return Array.from(categories).sort().map((cat) => ({
+      code: cat,
+      name: cat,
+      i18nKey: cat
+    }));
+  }, [structuredLocalityData]);
+
   const fetchedPincodes = useMemo(() => {
     const pinSet = new Set();
 
@@ -932,16 +947,15 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
         </LabelFieldPair>
         <LabelFieldPair>
           <CardLabel>{`${t("COMMON_COLONY_MCD_CATEGORY")}`}</CardLabel>
-          <TextInput
+          <Dropdown
+            className="form-field"
             t={t}
-            type={"text"}
-            isMandatory={false}
-            name="colonyMcdCategory"
-            value={colonyMcdCategory}
-            style={{ width: "100%" }}
-            placeholder={"Enter Category"}
-            onChange={(e) => setColonyMcdCategory(e.target.value)}
-            disabled={disable}
+            option={mcdCategoryOptions}
+            selected={mcdCategoryOptions?.find((opt) => opt.code === colonyMcdCategory) || null}
+            select={(val) => setColonyMcdCategory(val.code)}
+            optionKey="name"
+            disable={disable}
+            placeholder={t("Select Colony Category")}
           />
         </LabelFieldPair>
         <LabelFieldPair>

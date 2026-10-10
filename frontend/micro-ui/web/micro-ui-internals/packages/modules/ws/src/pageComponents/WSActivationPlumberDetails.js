@@ -162,6 +162,7 @@ const PlumberDetails = (_props) => {
               selected={getValues("detailsProvidedBy")}
               disable={false}
               option={options}
+              placeholder={`${t(`WS_ADDN_DETAILS_PLUMBER_PROVIDED_BY_PLACEHOLDER`)}`}
               errorStyle={localFormState.touched.detailsProvidedBy && errors?.detailsProvidedBy?.message ? true : false}
               select={(e) => {
                 if (e.code == "ULB") {
@@ -215,6 +216,7 @@ const PlumberDetails = (_props) => {
                     }}
                     labelStyle={{ marginTop: "unset" }}
                     onBlur={props.onBlur}
+                    placeholder={`${t(`WS_PLIMBER_LICENSE_NO_PLACEHOLDER`)}`}
                   />
                 )}
               />
@@ -247,6 +249,7 @@ const PlumberDetails = (_props) => {
                     }}
                     labelStyle={{ marginTop: "unset" }}
                     onBlur={props.onBlur}
+                    placeholder={`${t(`WS_ADDN_DETAILS_PLUMBER_NAME_PLACEHOLDER`)}`}
                   />
                 )}
               />
@@ -285,6 +288,7 @@ const PlumberDetails = (_props) => {
                       }}
                       labelStyle={{ marginTop: "unset" }}
                       onBlur={props.onBlur}
+                      placeholder={`${t(`WS_PLUMBER_MOBILE_NO_PLACEHOLDER`)}`}
                     />
                     <div style={isMobile && isEmployee ? {} : { marginRight: "-50px", marginLeft: "10px" }}>
                       <WrapUnMaskComponent

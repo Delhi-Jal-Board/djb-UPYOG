@@ -47,6 +47,11 @@ const removeDuplicateOtherDocuments = (documentList = []) => {
 
 const WSDocumentsEmployee = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
+  const isTenant = 
+    formData?.ConnectionDetails?.[0]?.applicantType?.code === "TENANT" || 
+    formData?.applicationSelection?.applicantType?.code === "TENANT" || 
+    formData?.connectionHolders?.[0]?.applicantType === "TENANT" ||
+    formData?.connectionHolders?.[0]?.applicantType?.code === "TENANT";
   const [documents, setDocuments] = useState(() =>
     removeDuplicateOtherDocuments(
       userType === "citizen" ? formData?.documents?.documents || formData?.documents || [] : formData?.DocumentsRequired?.documents || []
@@ -131,13 +136,22 @@ const WSDocumentsEmployee = ({ t, config, onSelect, userType, formData, setError
     });
   }
 
+
+
   const innerContent = (
     <div className="formcomposer-section-grid ws-doc-upload">
       {wsDocs?.[wsDocsData]?.filter(doc => doc.code !== "OWNER.APPLICANTPHOTO")?.map((document, index) => {
+        let modifiedDocument = { ...document };
+        if (!isTenant && modifiedDocument.dropdownData) {
+          modifiedDocument.dropdownData = modifiedDocument.dropdownData.filter(opt => {
+            const code = opt.code || "";
+            return !(code.includes("NOC_FROM_OWNER") || code === "NOC from Owner");
+          });
+        }
         return (
           <SelectDocument
             key={index}
-            document={document}
+            document={modifiedDocument}
             action={action}
             t={t}
             id={`pt-document-${index}`}
@@ -157,7 +171,6 @@ const WSDocumentsEmployee = ({ t, config, onSelect, userType, formData, setError
     </div>
   );
 
-  const isTenant = formData?.ConnectionDetails?.[0]?.applicantType?.code === "TENANT";
 
   const nocDownloadSection = isTenant ? (
     <div
@@ -235,7 +248,8 @@ function SelectDocument({
   isOtherDocument: isOther = false,
 }) {
   const fileRef = useRef();
-  const otherUploadedDocuments = isOther ? documents?.filter((item) => item?.documentType?.includes(doc?.code)) || [] : [];
+  const pendingId = useRef(Date.now());
+  const otherUploadedDocuments = isOther ? documents?.filter((item) => item?.documentType?.includes(doc?.code) && item?.tempId !== pendingId.current) || [] : [];
   const filteredDocument = isOther ? null : documents?.filter((item) => item?.documentType?.includes(doc?.code))[0];
   const [selectedDocument, setSelectedDocument] = useState(() => {
     if (filteredDocument && doc?.dropdownData) {
@@ -371,8 +385,8 @@ function SelectDocument({
     
   const applicantTypeCode = typeof applicantTypeVal === "object" ? applicantTypeVal?.code : applicantTypeVal;
 
-  if (isOther && applicantTypeCode === "TENANT") {
-    dropDownData = dropDownData?.filter((d) => d.code === "OWNER.OTHERDOCUMENTS.NOC_FROM_OWNER" || d.code?.includes("NOC_FROM_OWNER"));
+  if (isOther && applicantTypeCode !== "TENANT") {
+    dropDownData = dropDownData?.filter((d) => d.code !== "OWNER.OTHERDOCUMENTS.NOC_FROM_OWNER" && !d.code?.includes("NOC_FROM_OWNER"));
   }
 
   const [isHidden, setHidden] = useState(false);
@@ -401,12 +415,17 @@ function SelectDocument({
   };
 
   useEffect(() => {
-    if (selectedDocument?.code && !isOther) {
+    if (selectedDocument?.code) {
       setDocuments((prev) => {
-        const filteredDocumentsByDocumentType = prev?.filter((item) => item?.documentType !== selectedDocument?.code);
+        let filteredDocumentsByDocumentType = prev || [];
+        if (!isOther) {
+          filteredDocumentsByDocumentType = filteredDocumentsByDocumentType.filter((item) => item?.documentType !== selectedDocument?.code);
+        } else {
+          filteredDocumentsByDocumentType = filteredDocumentsByDocumentType.filter((item) => item?.tempId !== pendingId.current);
+        }
 
         if (uploadedFile?.length === 0 || uploadedFile === null) {
-          return isOther ? prev : filteredDocumentsByDocumentType;
+          return filteredDocumentsByDocumentType;
         }
 
         const filteredDocumentsByFileStoreId = filteredDocumentsByDocumentType?.filter((item) => item?.fileStoreId !== uploadedFile);
@@ -422,6 +441,7 @@ function SelectDocument({
             i18nKey: selectedDocument?.code,
             id: selectedDocument?.id,
             status: "ACTIVE",
+            tempId: isOther ? pendingId.current : undefined,
           },
         ];
         sessionStorage.setItem("DISCONNECTION_EDIT_DOCS", JSON.stringify(data));
@@ -706,25 +726,7 @@ function SelectDocument({
                   return;
                 }
                 
-                // Auto-saved by useEffect
-                setDocuments((prev) => {
-                  const data = [
-                    ...(prev || []),
-                    {
-                      documentType: selectedDocument?.code,
-                      fileStoreId: uploadedFile,
-                      fileName: file?.name || filteredDocument?.fileName || "",
-                      documentName: selectedDocument?.i18nKey || selectedDocument?.code || "",
-                      documentUid: documentUid,
-                      documentNumber: documentUid,
-                      i18nKey: selectedDocument?.code,
-                      id: selectedDocument?.id,
-                      status: "ACTIVE",
-                    },
-                  ];
-                  sessionStorage.setItem("DISCONNECTION_EDIT_DOCS", JSON.stringify(data));
-                  return data;
-                });
+                pendingId.current = Date.now();
                 
                 setUploadedFile(null);
                 setFile(null);

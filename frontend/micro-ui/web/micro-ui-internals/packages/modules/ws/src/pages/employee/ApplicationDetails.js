@@ -17,7 +17,7 @@ const ApplicationDetails = () => {
   const [showToast, setShowToast] = useState(null);
   const [showWaringToast, setShowWaringToast] = useState(null);
   const [showOptions, setShowOptions] = useState(false);
-  let filters = func.getQueryStringParams(location.search);
+  let filters = func.getQueryStringParams(window.location.search);
 
   const applicationNumber = filters?.applicationNumber;
   const serviceType = filters?.service;
@@ -149,6 +149,23 @@ const ApplicationDetails = () => {
   };
   let dowloadOptions = [],
     appStatus = applicationDetails?.applicationData?.applicationStatus || "";
+
+  const isFeePaid =
+    reciept_data?.Payments?.length > 0 ||
+    (appStatus &&
+      appStatus !== "INITIATED" &&
+      appStatus !== "PENDING_FOR_DOCUMENT_VERIFICATION" &&
+      appStatus !== "PENDING_FOR_CITIZEN_ACTION" &&
+      appStatus !== "PENDING_FOR_FIELD_INSPECTION" &&
+      appStatus !== "PENDING_FOR_PAYMENT" &&
+      appStatus !== "PENDING_FOR_FINAL_PAYMENT" &&
+      appStatus !== "PENDING_FOR_ADDITIONAL_PAYMENT" &&
+      appStatus !== "PENDING_APPROVAL_FOR_MUTATION");
+
+  const feeEstimationSection = applicationDetails?.applicationDetails?.find((section) => section?.title === "WS_TASK_DETAILS_FEE_ESTIMATE");
+  if (feeEstimationSection?.additionalDetails && isFeePaid) {
+    feeEstimationSection.additionalDetails.isPaid = true;
+  }
 
   if (
     workflowDetails?.data &&

@@ -230,8 +230,6 @@ export const getPattern = (type) => {
 };
 
 export const getFiles = async (filesArray, tenant) => {
-  const response = await Digit.UploadServices.Filefetch(filesArray, tenant);
-  response?.data?.fileStoreIds?.[0]?.url ? window.open(response?.data?.fileStoreIds?.[0]?.url) : null;
   try {
     const response = await Digit.UploadServices.Filefetch(filesArray, tenant);
     // The response could be in response.data.fileStoreIds array OR a map like response.data[fileStoreId]
@@ -475,7 +473,7 @@ export const updatePayloadOfWS = async (data, type) => {
         ? sessionStorage.getItem("WS_PROPERTY_INOF")
         : "null"
     ),
-    connectionType: type === "WATER" ? data?.connectionType || "Permanent" : "Non Metered",
+    connectionType: type === "WATER" ? (data?.connectionType === "Permanent" ? "Metered" : (data?.connectionType || "Metered")) : "Non Metered",
     additionalDetails: {
       ...data?.additionalDetails,
       connectionType: data?.additionalDetails?.connectionType || "Permanent",

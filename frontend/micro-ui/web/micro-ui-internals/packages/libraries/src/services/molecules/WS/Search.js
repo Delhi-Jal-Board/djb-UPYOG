@@ -304,9 +304,16 @@ export const WSSearch = {
       fetchBillData.Bill[0].totalAmount = fee + charge + taxAmount;
     }
 
+    if (isVisible) {
+      try {
+        colletionData = await WSSearch.colletionData({ tenantId, serviceTypeOfData, collectionNumber });
+      } catch (e) {
+        console.error("Error fetching collection data in WSSearch", e);
+      }
+    }
+
     if (fetchBillData?.Bill?.length == 0) {
       if (isVisible) {
-        colletionData = await WSSearch.colletionData({ tenantId, serviceTypeOfData, collectionNumber });
         if (colletionData?.Payments?.length > 0) {
           const colletionDataDetails = cloneDeep(colletionData);
           const stateCode = Digit.ULBService.getStateId();
@@ -438,6 +445,18 @@ export const WSSearch = {
         { title: "WS_TAX_HEADER", value: <span>&#8377;{fetchBillData?.Bill?.[0]?.taxAmount || 0}</span> },
       ];
 
+    const appStatus = wsDataDetails?.applicationStatus;
+    const isWorkflowPaid =
+      appStatus &&
+      appStatus !== "INITIATED" &&
+      appStatus !== "PENDING_FOR_DOCUMENT_VERIFICATION" &&
+      appStatus !== "PENDING_FOR_CITIZEN_ACTION" &&
+      appStatus !== "PENDING_FOR_FIELD_INSPECTION" &&
+      appStatus !== "PENDING_FOR_PAYMENT" &&
+      appStatus !== "PENDING_FOR_FINAL_PAYMENT" &&
+      appStatus !== "PENDING_FOR_ADDITIONAL_PAYMENT" &&
+      appStatus !== "PENDING_APPROVAL_FOR_MUTATION";
+
     const feeEstimation = {
       title: "WS_TASK_DETAILS_FEE_ESTIMATE",
       asSectionHeader: true,
@@ -447,7 +466,7 @@ export const WSSearch = {
         appDetails: { ...wtrSewDetails, property: propertyDataDetails, service: serviceDataType },
         isAdhocRebate: isAdhocRebate,
         isVisible: isVisible,
-        isPaid: colletionData?.Payments?.length > 0 ? true : false,
+        isPaid: colletionData?.Payments?.length > 0 || isWorkflowPaid ? true : false,
         isViewBreakup: isVisible,
         values: feeValues,
       },
@@ -551,10 +570,29 @@ export const WSSearch = {
         { title: "WS_BUILT_UP_AREA", value: propertyDataDetails?.additionalDetails?.builtUpArea || t("NA") },
         { title: "WS_HEIGHT_OF_THE_BUILDING(meters)", value: propertyDataDetails?.additionalDetails?.heightOfTheBuilding || propertyDataDetails?.heightOfTheBuilding || t("NA") },
         { title: "WS_SELECT_YEAR_OF_CONSTRUCTION", value: propertyDataDetails?.additionalDetails?.yearOfConstruction || t("NA") },
-        { title: "WS_NUMBER_OF_DWELLING_UNITS", value: propertyDataDetails?.additionalDetails?.numberOfDwellingUnits || t("NA") },
         { title: "WS_NUMBER_OF_ROOMS", value: propertyDataDetails?.additionalDetails?.numberOfRooms || t("NA") },
       ],
     };
+    const dwellingPropertyTypes = [
+      "Apartment",
+      "DDAFlats",
+      "GovtFlats",
+      "Bungalows",
+      "FlatOrApartment",
+      "GroupHousingSociety",
+      "JJSLUMS",
+      "IndividualHouse",
+      "BuiltUp.GroupHousingSociety",
+      "BuiltUp.JJSLUMS",
+      "BuiltUp.IndividualHouse",
+    ];
+    if (dwellingPropertyTypes.includes(propertyDataDetails?.additionalDetails?.propertyType)) {
+      propertyWaterConnectionUseDetails.values.push({
+        title: "WS_NUMBER_OF_DWELLING_UNITS",
+        value: propertyDataDetails?.additionalDetails?.numberOfDwellingUnits || propertyDataDetails?.additionalDetails?.noOfDwellingUnits || propertyDataDetails?.additionalDetails?.NumberofDwellingUnits || t("NA"),
+      });
+    }
+
     if (
       propertyDataDetails?.additionalDetails?.propertyType === "HOSPITAL_NURSING_HOME" ||
       propertyDataDetails?.additionalDetails?.propertyType === "HospitalNursingHome"
@@ -993,7 +1031,6 @@ export const WSSearch = {
         asSectionHeader: true,
         values: [
           { title: "WS_EMPLOYEE_ID", value: wsDataDetails?.additionalDetails?.employeeId || t("NA") },
-          { title: "WS_DATE_OF_RETIREMENT", value: wsDataDetails?.additionalDetails?.dor || t("NA") },
           { title: "WS_EMPLOYEE_DESIGNATION", value: wsDataDetails?.additionalDetails?.designation || t("NA") },
         ],
       }
@@ -2065,7 +2102,6 @@ export const WSSearch = {
         asSectionHeader: true,
         values: [
           { title: "WS_EMPLOYEE_ID", value: wsDataDetails?.additionalDetails?.employeeId || t("NA") },
-          { title: "WS_DATE_OF_RETIREMENT", value: wsDataDetails?.additionalDetails?.dor || t("NA") },
           { title: "WS_EMPLOYEE_DESIGNATION", value: wsDataDetails?.additionalDetails?.designation || t("NA") },
         ],
       }
@@ -2633,7 +2669,6 @@ export const WSSearch = {
         asSectionHeader: true,
         values: [
           { title: "WS_EMPLOYEE_ID", value: wsDataDetails?.additionalDetails?.employeeId || t("NA") },
-          { title: "WS_DATE_OF_RETIREMENT", value: wsDataDetails?.additionalDetails?.dor || t("NA") },
           { title: "WS_EMPLOYEE_DESIGNATION", value: wsDataDetails?.additionalDetails?.designation || t("NA") },
         ],
       }
@@ -3032,7 +3067,6 @@ export const WSSearch = {
         asSectionHeader: true,
         values: [
           { title: "WS_EMPLOYEE_ID", value: wsDataDetails?.additionalDetails?.employeeId || t("NA") },
-          { title: "WS_DATE_OF_RETIREMENT", value: wsDataDetails?.additionalDetails?.dor || t("NA") },
           { title: "WS_EMPLOYEE_DESIGNATION", value: wsDataDetails?.additionalDetails?.designation || t("NA") },
         ],
       }

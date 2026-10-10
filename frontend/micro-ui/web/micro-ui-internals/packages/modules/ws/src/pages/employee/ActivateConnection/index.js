@@ -10,8 +10,8 @@ import _ from "lodash";
 
 const ActivateConnection = () => {
   const { t } = useTranslation();
-  let { state } = useLocation();
-  state = state ? (typeof state === "string" ? JSON.parse(state) : state) : {};
+  const location = useLocation();
+  let state = location?.state ? (typeof location.state === "string" ? JSON.parse(location.state) : location.state) : {};
   const history = useHistory();
   let filters = func.getQueryStringParams(location.search);
   const [canSubmit, setSubmitValve] = useState(false);
@@ -23,8 +23,7 @@ const ActivateConnection = () => {
   const [config, setConfig] = React.useState({ body: [] });
 
   const stateId = Digit.ULBService.getStateId();
-  let tenantId = Digit.ULBService.getCurrentTenantId();
-  tenantId ? tenantId : Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code;
+  let tenantId = Digit.ULBService.getCurrentTenantId() || Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code;
   let { data: newConfig, isLoading } = Digit.Hooks.ws.useWSConfigMDMS.WSActivationConfig(stateId, {});
   let details = cloneDeep(state?.data);
   let { isLoading: isappdetailsLoading, isError, data: applicationDetails, error } = Digit.Hooks.ws.useWSDetailsPage(
@@ -50,22 +49,21 @@ const ActivateConnection = () => {
   const connectionDetails =
     filters?.service === "WATER"
       ? {
-          connectionType: state?.data?.connectionType
+          connectionType: {
+            code: "Metered",
+            i18nKey: "WS_CONNECTIONTYPE_METERED",
+            name: "Metered",
+          },
+          waterSource: state?.data?.waterSource || "GROUND.WELL"
             ? {
-                code: state?.data?.connectionType,
-                i18nKey: `WS_CONNECTIONTYPE_${stringReplaceAll(state?.data?.connectionType?.toUpperCase(), " ", "_")}`,
+                code: state?.data?.waterSource || "GROUND.WELL",
+                i18nKey: `WS_SERVICES_MASTERS_WATERSOURCE_${stringReplaceAll((state?.data?.waterSource || "GROUND.WELL")?.split(".")[0]?.toUpperCase(), " ", "_")}`,
               }
             : "",
-          waterSource: state?.data?.waterSource
+          sourceSubData: state?.data?.waterSource || "GROUND.WELL"
             ? {
-                code: state?.data?.waterSource,
-                i18nKey: `WS_SERVICES_MASTERS_WATERSOURCE_${stringReplaceAll(state?.data?.waterSource?.split(".")[0]?.toUpperCase(), " ", "_")}`,
-              }
-            : "",
-          sourceSubData: state?.data?.waterSource
-            ? {
-                code: state?.data?.waterSource,
-                i18nKey: `WS_SERVICES_MASTERS_WATERSOURCE_${waterSourceSubDataWithCma}`,
+                code: state?.data?.waterSource || "GROUND.WELL",
+                i18nKey: `WS_SERVICES_MASTERS_WATERSOURCE_${waterSourceSubDataWithCma || "GROUND_WELL"}`,
               }
             : "",
           pipeSize: state?.data?.pipeSize
@@ -73,8 +71,10 @@ const ActivateConnection = () => {
                 code: state?.data?.pipeSize,
                 i18nKey: state?.data?.pipeSize,
               }
-            : "",
-          noOfTaps: state?.data?.noOfTaps || "",
+            : 0,
+          noOfTaps: state?.data?.noOfTaps !== undefined && state?.data?.noOfTaps !== "" ? state?.data?.noOfTaps : 0,
+          proposedPipeSize: 0,
+          proposedTaps: 0,
           formDetails: details,
         }
       : {
@@ -99,8 +99,15 @@ const ActivateConnection = () => {
     },
   ];
 
+  const isMeteredConn =
+    !state?.data?.connectionType ||
+    state?.data?.connectionType?.toUpperCase() === "METERED" ||
+    state?.data?.connectionType?.toUpperCase() === "PERMANENT" ||
+    state?.data?.additionalDetails?.connectionType?.toUpperCase() === "METERED" ||
+    state?.data?.additionalDetails?.connectionType?.toUpperCase() === "PERMANENT";
+
   const activationDetails =
-    state?.data?.connectionType?.toUpperCase() === "METERED" && state?.data?.applicationType !== "WATER_RECONNECTION"
+    isMeteredConn && state?.data?.applicationType !== "WATER_RECONNECTION"
       ? [
           {
             meterId: state?.data?.meterId || "",
@@ -128,13 +135,24 @@ const ActivateConnection = () => {
   }, []);
 
   useEffect(() => {
-    if (!isLoading && newConfig && Array.isArray(newConfig)) {
-      const configObj = newConfig.find((conf) => conf.hideInCitizen);
+    const configsToUse = (!isLoading && newConfig && Array.isArray(newConfig) && newConfig.length > 0) ? newConfig : newConfigLocal;
+    if (configsToUse && Array.isArray(configsToUse)) {
+      const isCitizen = Digit.UserService.getUser()?.info?.type === "CITIZEN" || window.location.href.includes("/citizen");
+      const configObj = configsToUse.find((conf) => conf.hideInCitizen) || configsToUse[0];
       if (configObj && configObj.body) {
         let flattenedBody = [];
         configObj.body.forEach((section) => {
           if (section.body && Array.isArray(section.body)) {
-            flattenedBody = [...flattenedBody, ...section.body];
+            const mappedSectionBody = section.body.map((item) => {
+              if (item.key === "activationDetails" && (isCitizen || item.component === "WSActivationPageDetails")) {
+                return {
+                  ...item,
+                  component: "WSActivationDetails",
+                };
+              }
+              return item;
+            });
+            flattenedBody = [...flattenedBody, ...mappedSectionBody];
           }
         });
         setConfig([
@@ -145,7 +163,7 @@ const ActivateConnection = () => {
         ]);
       }
     }
-  }, [newConfig]);
+  }, [newConfig, isLoading]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -222,45 +240,80 @@ const ActivateConnection = () => {
       if (formDetails?.plumberDetails?.[0]?.plumberLicenseNo) formData.plumberInfo[0].licenseNo = formDetails?.plumberDetails?.[0]?.plumberLicenseNo;
       if (formDetails?.plumberDetails?.[0]?.plumberMobileNo) formData.plumberInfo[0].mobileNumber = formDetails?.plumberDetails?.[0]?.plumberMobileNo;
 
-      if (formDetails?.activationDetails?.[0]?.meterId) formData.meterId = formDetails?.activationDetails?.[0]?.meterId;
-      if (formDetails?.activationDetails?.[0]?.meterInstallationDate)
-        formData.meterInstallationDate = await getConvertedDate(formDetails?.activationDetails?.[0]?.meterInstallationDate);
-      if (formDetails?.activationDetails?.[0]?.meterInitialReading)
-        formData.additionalDetails.initialMeterReading = formDetails?.activationDetails?.[0]?.meterInitialReading;
-      if (formDetails?.activationDetails?.[0]?.connectionExecutionDate)
-        formData.connectionExecutionDate = await getConvertedDate(formDetails?.activationDetails?.[0]?.connectionExecutionDate);
+      const actObj = Array.isArray(formDetails?.activationDetails)
+        ? formDetails?.activationDetails?.[0]
+        : formDetails?.activationDetails;
+      if (actObj?.meterId) formData.meterId = actObj?.meterId;
+      if (actObj?.meterInstallationDate)
+        formData.meterInstallationDate = await getConvertedDate(actObj?.meterInstallationDate);
+      if (!formData.additionalDetails) formData.additionalDetails = {};
+      formData.additionalDetails.initialMeterReading =
+        actObj?.meterInitialReading !== undefined && actObj?.meterInitialReading !== ""
+          ? actObj.meterInitialReading
+          : "0";
+      if (actObj?.connectionExecutionDate)
+        formData.connectionExecutionDate = await getConvertedDate(actObj?.connectionExecutionDate);
 
       formData.comment = formDetails?.comments?.comments || "";
       formData.action = filters?.action;
-      (formData.wfDocuments = data?.supportingDocuments?.[0]?.fileStoreId
+      formData.wfDocuments = data?.supportingDocuments?.[0]?.fileStoreId
         ? [
             {
               documentType: "Document - 1",
               fileStoreId: data?.supportingDocuments?.[0]?.fileStoreId,
             },
           ]
-        : []),
-        (formData.processInstance = {
-          action: filters?.action,
-          comment: formDetails?.comments?.comments || "",
-          documents: data?.supportingDocuments?.[0]?.fileStoreId
-            ? [
-                {
-                  documentType: "Document - 1",
-                  fileStoreId: data?.supportingDocuments?.[0]?.fileStoreId,
-                },
-              ]
-            : [],
-        });
+        : [];
+      formData.processInstance = {
+        action: filters?.action,
+        comment: formDetails?.comments?.comments || "",
+        documents: data?.supportingDocuments?.[0]?.fileStoreId
+          ? [
+              {
+                documentType: "Document - 1",
+                fileStoreId: data?.supportingDocuments?.[0]?.fileStoreId,
+              },
+            ]
+          : [],
+      };
+
+      const isWater = filters?.service ? filters.service.toUpperCase() === "WATER" : (formData?.serviceType === "WATER" || !formData?.serviceType);
+
+      if (isWater) {
+        formData.waterSource = "GROUND.WELL";
+        formData.proposedPipeSize = 0;
+        formData.proposedTaps = 0;
+        formData.pipeSize = 0;
+        formData.noOfTaps = 0;
+        formData.connectionType = "Metered";
+        if (!formData.additionalDetails) formData.additionalDetails = {};
+        formData.additionalDetails.connectionType = "Permanent";
+      }
 
       const reqDetails =
-        filters?.service == "WATER"
+        isWater
           ? formData?.applicationType === "WATER_RECONNECTION"
             ? { WaterConnection: formData, reconnectRequest: true, disconnectRequest: false }
             : { WaterConnection: formData, reconnectRequest: false, disconnectRequest: false }
           : formData?.applicationType === "SEWERAGE_RECONNECTION"
           ? { SewerageConnection: formData, reconnectRequest: true, disconnectRequest: false }
           : { SewerageConnection: formData, reconnectRequest: false, disconnectRequest: false };
+
+      if (reqDetails?.WaterConnection) {
+        reqDetails.WaterConnection.waterSource = "GROUND.WELL";
+        reqDetails.WaterConnection.proposedPipeSize = 0;
+        reqDetails.WaterConnection.proposedTaps = 0;
+        reqDetails.WaterConnection.pipeSize = 0;
+        reqDetails.WaterConnection.noOfTaps = 0;
+        reqDetails.WaterConnection.connectionType = "Metered";
+        if (!reqDetails.WaterConnection.additionalDetails) reqDetails.WaterConnection.additionalDetails = {};
+        reqDetails.WaterConnection.additionalDetails.connectionType = "Permanent";
+      }
+
+      if (reqDetails?.SewerageConnection) {
+        if (!reqDetails.SewerageConnection.additionalDetails) reqDetails.SewerageConnection.additionalDetails = {};
+        reqDetails.SewerageConnection.additionalDetails.connectionType = "Permanent";
+      }
 
       if (mutate) {
         // setIsEnableLoader(true);
@@ -300,7 +353,7 @@ const ActivateConnection = () => {
               body: config.body,
             };
           })}
-          userType={"employee"}
+          // userType={"employee"}
           defaultValues={defaultValues}
           onSubmit={onSubmit}
           label={t("WF_EMPLOYEE_NEWSW1_ACTIVATE_CONNECTION")}
