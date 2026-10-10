@@ -272,7 +272,7 @@ const AssignEkycModal = ({ surveyor, isReassign, closeModal, refetchDashboard, t
         return;
       }
 
-      if (response?.skipped && response.skipped.length > 0) {
+      if (response?.skipped && !response?.assignments?.length && response.skipped.length > 0) {
         const reason = response.skipped[0]?.reason || "";
         handleAssignmentError(reason, variables);
         return;
