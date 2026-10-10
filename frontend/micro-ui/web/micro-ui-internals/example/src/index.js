@@ -7,7 +7,7 @@ import { PGRReducers } from "@djb25/digit-ui-module-pgr";
 import { PTModule, PTLinks, PTComponents } from "@djb25/digit-ui-module-pt";
 import { MCollectModule, MCollectLinks } from "@djb25/digit-ui-module-mcollect";
 // import { TLModule, TLLinks } from "@djb25/digit-ui-module-tl";
-import { initFSMComponents } from "@djb25/digit-ui-module-fsm";
+import { FSMModule, FSMLinks, FSMComponents, FSMCard, initFSMComponents } from "@djb25/digit-ui-module-fsm";
 import { initPGRComponents } from "@djb25/digit-ui-module-pgr";
 import { initFinanceComponents } from "@djb25/digit-ui-module-finance";
 import { initDSSComponents } from "@djb25/digit-ui-module-dss";
@@ -86,7 +86,7 @@ const enabledModules = [
   "CommonPT",
   "NDSS",
   "Bills",
-  // "SW",
+  "SW",
   "BillAmendment",
   "FireNoc",
   "Birth",
@@ -185,6 +185,9 @@ const initDigitUI = () => {
     CommonPTModule,
     CommonPTLinks,
     ...CommonPTComponents,
+    FSMModule,
+    FSMLinks,
+    ...FSMComponents,
   });
 
   initFSMComponents();

@@ -195,14 +195,19 @@ const EmployeeModuleCard = ({ Icon, moduleName, kpis = [], links = [], className
       onDetailsClick();
       return;
     }
+    const cleanLinks = (links || []).map((link) => {
+      const { icon, ...rest } = link || {};
+      return rest;
+    });
+
     Digit.SessionStorage.set("MODULE_DETAILS", {
       moduleName,
-      links,
+      links: cleanLinks,
     });
 
     history.push(`/digit-ui/employee/module/details`, {
       moduleName,
-      links,
+      links: cleanLinks,
     });
   }, [history, moduleName, links, onDetailsClick]);
 
@@ -301,7 +306,11 @@ const ModuleCardFullWidth = ({ Icon, moduleName, kpis = [], links = [], classNam
   const history = useHistory();
 
   const handleDetailsClick = () => {
-    history.push("/digit-ui/employee/module/details", { moduleName, links });
+    const cleanLinks = (links || []).map((link) => {
+      const { icon, ...rest } = link || {};
+      return rest;
+    });
+    history.push("/digit-ui/employee/module/details", { moduleName, links: cleanLinks });
   };
 
   const iconColorClass = getIconColorClass(moduleName, kpis, links);

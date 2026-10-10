@@ -116,7 +116,7 @@ const SearchApplication = ({ onSearch, type, onClose, isFstpOperator, searchFiel
     <form onSubmit={handleSubmit(onSubmitInput)}>
       <React.Fragment>
         {!checkInboxLocation ? <Header styles={mobileView ? { marginTop: "10px" } : {}}>{t("ACTION_TEST_SEARCH_FSM_APPLICATION")}</Header> : ""}
-        <div className="search-container" style={{ width: "auto", marginLeft: FSTP ? "" : isInboxPage ? "24px" : "revert" }}>
+        <div className="search-container">
           <div className="search-complaint-container">
             {(type === "mobile" || mobileView) && (
               <div className="complaint-header">
@@ -142,10 +142,14 @@ const SearchApplication = ({ onSearch, type, onClose, isFstpOperator, searchFiel
                   {getFields(input)}{" "}
                 </span>
               ))}
-              {type === "desktop" && !mobileView && <SubmitBar className="submit-bar-search" label={t("ES_COMMON_SEARCH")} submit />}
+              {type === "desktop" && !mobileView && (
+                <div className="search-submit-wrapper" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end" }}>
+                  <SubmitBar className="submit-bar-search" label={t("ES_COMMON_SEARCH")} submit />
+                  <div style={{ paddingTop: "8px", textAlign: "center" }}>{clearAll()}</div>
+                </div>
+              )}
             </div>
             {error ? <CardLabelError className="search-error-label">{t("ES_SEARCH_APPLICATION_ERROR")}</CardLabelError> : null}
-            {type === "desktop" && !mobileView && <span className="clear-search">{clearAll()}</span>}
           </div>
         </div>
         {(type === "mobile" || mobileView) && (

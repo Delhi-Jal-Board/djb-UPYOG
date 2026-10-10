@@ -5,7 +5,7 @@ import { useParams, useHistory, useLocation } from "react-router-dom";
 
 import RegisryInbox from "../../../components/RegistryInbox";
 
-const FSMRegistry = () => {
+const FSMRegistry = (props) => {
   const { t } = useTranslation();
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [searchParams, setSearchParams] = useState({});
@@ -19,7 +19,7 @@ const FSMRegistry = () => {
   const history = useHistory();
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
-  const selectedTabs = queryParams.get("selectedTabs");
+  const selectedTabs = queryParams.get("selectedTabs") || "VENDOR";
   const [loaded, setLoaded] = useState(false);
 
   const userInfo = Digit.UserService.getUser();
@@ -231,10 +231,13 @@ const FSMRegistry = () => {
     refetchVendor();
   }, []);
 
+  const isMobile = window.Digit?.Utils?.browser?.isMobile();
+
   return (
-    <div>
-      <Header>{t("ES_FSM_REGISTRY")}</Header>
+    <div className="employee-form-content">
+      {isMobile && <Header>{t("ES_FSM_REGISTRY")}</Header>}
       <RegisryInbox
+        parentRoute={props?.parentRoute || "/digit-ui/employee/fsm"}
         data={{ table: tableData }}
         isLoading={isLoading || isVendorLoading}
         onSort={handleSort}

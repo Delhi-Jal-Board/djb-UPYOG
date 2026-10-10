@@ -41,20 +41,17 @@ const FstpAddVehicle = ({ onSelect }) => {
   const isMobile = window.Digit.Utils.browser.isMobile();
 
   return (
-    <React.Fragment>
-      <div style={!isMobile ? { marginLeft: "20px" } : {}}>
-        <Header>{t("ES_FSM_ADD_VEHICLE_LOG")}</Header>
-      </div>
+    <div className="employee-form-content">
+      <Header>{t("ES_FSM_ADD_VEHICLE_LOG")}</Header>
       <FormStep
         config={inputs}
         onChange={onChange}
         onSelect={onSubmit}
         t={t}
         isDisabled={!vehicleNumber}
-        cardStyle={{ margin: "10px" }}
         textInputStyle={{ maxWidth: "540px" }}
-      ></FormStep>
-    </React.Fragment>
+      />
+    </div>
   );
 };
 

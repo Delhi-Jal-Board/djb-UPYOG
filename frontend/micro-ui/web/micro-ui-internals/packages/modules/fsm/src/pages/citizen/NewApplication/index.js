@@ -65,9 +65,13 @@ const FileComplaint = ({ parentRoute }) => {
     return <Loader />;
   }
 
-  commonFields.forEach((obj) => {
-    config = config.concat(obj.body.filter((a) => !a.hideInCitizen));
-  });
+  if (Array.isArray(commonFields)) {
+    commonFields.forEach((obj) => {
+      if (obj && Array.isArray(obj.body)) {
+        config = config.concat(obj.body.filter((a) => !a.hideInCitizen));
+      }
+    });
+  }
 
   let newConfig = [
     {
@@ -397,6 +401,7 @@ const FileComplaint = ({ parentRoute }) => {
       {configs.map((routeObj, index) => {
         const { component, texts, inputs, key } = routeObj;
         const Component = typeof component === "string" ? Digit.ComponentRegistryService.getComponent(component) : component;
+        if (!Component) return null;
         return (
           <Route path={`${match.path}/${routeObj.route}`} key={index}>
             <Component config={{ texts, inputs, key }} onSelect={handleSelect} onSkip={handleSkip} t={t} formData={params} />

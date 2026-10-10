@@ -130,7 +130,7 @@ const pgrAccess = () => {
 
 const fsmAccess = () => {
   const userInfo = Digit.UserService.getUser();
-  const userRoles = userInfo?.info?.roles?.map((roleData) => roleData?.code);
+  const userRoles = userInfo?.info?.roles?.map((roleData) => (roleData?.code || roleData)?.toUpperCase());
   const fsmRoles = [
     "FSM_CREATOR_EMP",
     "FSM_EDITOR_EMP",
@@ -142,11 +142,17 @@ const fsmAccess = () => {
     "FSM_DRIVER",
     "FSM_EMP_FSTPO",
     "FSM_COLLECTOR",
+    "FSM_CEMP",
+    "FSM_EMPLOYEE",
+    "CEMP",
+    "EMPLOYEE",
+    "SUPERUSER",
+    "ADMIN",
   ];
 
-  const FSM_ACCESS = userRoles?.filter((role) => fsmRoles?.includes(role));
+  const FSM_ACCESS = userRoles?.filter((role) => fsmRoles?.includes(role) || role?.includes("FSM"));
 
-  return FSM_ACCESS?.length > 0;
+  return FSM_ACCESS?.length > 0 || userInfo?.info?.type === "EMPLOYEE";
 };
 
 const NOCAccess = () => {

@@ -22,26 +22,26 @@ const Filter = ({ searchParams, paginationParms, onFilterChange, onSearch, remov
   const { data: roleStatuses, isFetched: isRoleStatusFetched } = Digit.Hooks.fsm.useMDMS(state, "DIGIT-UI", "RoleStatusMapping");
 
   const userInfo = Digit.UserService.getUser();
-  const userRoles = userInfo.info.roles.map((roleData) => roleData.code);
+  const userRoles = userInfo?.info?.roles?.map((roleData) => roleData?.code || roleData) || [];
 
-  const userRoleDetails = roleStatuses?.filter((roleDetails) => userRoles.filter((role) => role === roleDetails.userRole)[0]);
+  const userRoleDetails = roleStatuses?.filter((roleDetails) => userRoles?.filter((role) => role === roleDetails.userRole)?.[0]);
 
   const mergedRoleDetails = userRoleDetails?.reduce(
     (merged, details) => ({
       fixed: details?.fixed && merged?.fixed,
-      statuses: [...merged?.statuses, ...details?.statuses].filter((item, pos, self) => self.indexOf(item) == pos),
+      statuses: [...(merged?.statuses || []), ...(details?.statuses || [])].filter((item, pos, self) => self.indexOf(item) == pos),
       zeroCheck: details?.zeroCheck || merged?.zeroCheck,
     }),
     { statuses: [] }
   );
 
   const selectLocality = (d) => {
-    isFstpOperator ? onFilterChange({ locality: [d] }) : onFilterChange({ locality: [...searchParams?.locality, d] });
+    isFstpOperator ? onFilterChange({ locality: [d] }) : onFilterChange({ locality: [...(searchParams?.locality || []), d] });
   };
 
   const onStatusChange = (e, type) => {
-    if (e.target.checked) onFilterChange({ applicationStatus: [...searchParams?.applicationStatus, type] });
-    else onFilterChange({ applicationStatus: searchParams?.applicationStatus.filter((option) => type.name !== option.name) });
+    if (e.target.checked) onFilterChange({ applicationStatus: [...(searchParams?.applicationStatus || []), type] });
+    else onFilterChange({ applicationStatus: searchParams?.applicationStatus?.filter((option) => type.name !== option.name) || [] });
   };
 
   const clearAll = () => {
@@ -86,13 +86,13 @@ const Filter = ({ searchParams, paginationParms, onFilterChange, onSearch, remov
                 {/* <Dropdown option={localities} keepNull={true} selected={null} select={selectLocality} optionKey={"name"} /> */}
                 <Localities selectLocality={selectLocality} tenantId={tenantId} boundaryType="revenue" />
                 <div className="tag-container">
-                  {searchParams?.locality.map((locality, index) => {
+                  {searchParams?.locality?.map((locality, index) => {
                     return (
                       <RemoveableTag
                         key={index}
                         text={locality.i18nkey}
                         onClick={() => {
-                          onFilterChange({ locality: searchParams?.locality.filter((loc) => loc.code !== locality.code) });
+                          onFilterChange({ locality: searchParams?.locality?.filter((loc) => loc.code !== locality.code) || [] });
                         }}
                       />
                     );

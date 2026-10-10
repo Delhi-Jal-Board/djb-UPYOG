@@ -1,7 +1,7 @@
 import React from "react";
 
 import { initPGRComponents, PGRReducers } from "@djb25/digit-ui-module-pgr";
-import { initFSMComponents } from "@djb25/digit-ui-module-fsm";
+import { FSMModule, FSMLinks, FSMComponents, FSMCard, initFSMComponents } from "@djb25/digit-ui-module-fsm";
 import { FinanceModule } from "@djb25/digit-ui-module-finance";
 import {
   PTModule,
@@ -165,6 +165,9 @@ window.Digit.ComponentRegistryService.setupRegistry({
   CommonPTModule,
   CommonPTLinks,
   ...CommonPTComponents,
+  FSMModule,
+  FSMLinks,
+  ...FSMComponents,
 });
 
 initPGRComponents();

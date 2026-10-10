@@ -11,7 +11,8 @@ import {
   WhatsNewCard,
   CHBIcon,
   PTIcon,
-  CollectionIcon
+  CollectionIcon,
+  CitizenTruck
 } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useHistory, useLocation } from "react-router-dom";
@@ -162,6 +163,12 @@ const Home = () => {
       description: t("Apply for new water connection"),
       Icon: <DropIcon className="fill-path-primary-main" />,
       onClick: () => handleCardClick("/digit-ui/citizen/ws-home"),
+    },
+    {
+      name: t("CS_HOME_FSM_SERVICES") !== "CS_HOME_FSM_SERVICES" ? t("CS_HOME_FSM_SERVICES") : t("ES_TITLE_FAECAL_SLUDGE_MGMT") !== "ES_TITLE_FAECAL_SLUDGE_MGMT" ? t("ES_TITLE_FAECAL_SLUDGE_MGMT") : "Septic Tank Cleaning (FSM)",
+      description: t("CS_HOME_FSM_DESC") !== "CS_HOME_FSM_DESC" ? t("CS_HOME_FSM_DESC") : "Apply for septic tank desludging services",
+      Icon: <CitizenTruck className="fill-path-primary-main" />,
+      onClick: () => handleCardClick("/digit-ui/citizen/fsm-home"),
     },
     ...(Digit.UserService.hasAccess(["WT_VENDOR", "EKYC_VENDOR", "EKYC_SUPERVISOR"])
       ? [

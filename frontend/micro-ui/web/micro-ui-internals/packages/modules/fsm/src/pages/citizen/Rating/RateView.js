@@ -25,13 +25,13 @@ const RateView = (props) => {
       <KeyNote keyValue={t("CS_FSM_YOU_RATED")}>
         <Rating currentRating={data?.timeline[0]?.rating} />
       </KeyNote>
-      {application.additionalDetails.CheckList.map((checklist) => (
+      {application?.additionalDetails?.CheckList?.map((checklist) => (
         <KeyNote
           keyValue={t(checklist.code)}
           note={checklist.value
-            .split(",")
-            .map((val) => t(val))
-            .join(", ")}
+            ?.split(",")
+            ?.map((val) => t(val))
+            ?.join(", ")}
         />
       ))}
       <KeyNote keyValue={t("CS_COMMON_COMMENTS")} note={data?.timeline[0]?.wfComment?.[0] || "N/A"} />

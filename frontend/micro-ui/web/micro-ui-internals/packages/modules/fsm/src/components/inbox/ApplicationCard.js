@@ -33,14 +33,14 @@ export const ApplicationCard = ({
   const { data: roleStatuses, isFetched: isRoleStatusFetched } = Digit.Hooks.fsm.useMDMS(state, "DIGIT-UI", "RoleStatusMapping");
 
   const userInfo = Digit.UserService.getUser();
-  const userRoles = userInfo.info.roles.map((roleData) => roleData.code);
+  const userRoles = userInfo?.info?.roles?.map((roleData) => roleData?.code || roleData) || [];
 
-  const userRoleDetails = roleStatuses?.filter((roleDetails) => userRoles.filter((role) => role === roleDetails.userRole)[0]);
+  const userRoleDetails = roleStatuses?.filter((roleDetails) => userRoles?.filter((role) => role === roleDetails.userRole)?.[0]);
 
   const mergedRoleDetails = userRoleDetails?.reduce(
     (merged, details) => ({
       fixed: details?.fixed && merged?.fixed,
-      statuses: [...merged?.statuses, ...details?.statuses].filter((item, pos, self) => self.indexOf(item) == pos),
+      statuses: [...(merged?.statuses || []), ...(details?.statuses || [])].filter((item, pos, self) => self.indexOf(item) == pos),
       zeroCheck: details?.zeroCheck || merged?.zeroCheck,
     }),
     { statuses: [] }

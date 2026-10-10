@@ -54,9 +54,9 @@ const SearchApplication = ({ onSearch, type, onClose, onTabChange, isFstpOperato
   }
 
   const clearAll = (mobileView) => {
-    const mobileViewStyles = mobileView ? { margin: 0, display: "inline" } : { marginTop: "40px", marginLeft: "16px" };
+    const mobileViewStyles = mobileView ? { margin: 0 } : {};
     return (
-      <LinkLabel style={{ ...mobileViewStyles }} onClick={clearSearch}>
+      <LinkLabel style={{ display: "inline", ...mobileViewStyles }} onClick={clearSearch}>
         {t("ES_COMMON_CLEAR_SEARCH")}
       </LinkLabel>
     );
@@ -147,6 +147,7 @@ const SearchApplication = ({ onSearch, type, onClose, onTabChange, isFstpOperato
           <div className="search-tabs-container">
             <div>
               <button
+                type="button"
                 className={selectedTab === "VENDOR" ? "search-tab-head-selected" : "search-tab-head"}
                 onClick={() => {
                   clearSearch({});
@@ -156,6 +157,7 @@ const SearchApplication = ({ onSearch, type, onClose, onTabChange, isFstpOperato
                 {t("ES_FSM_REGISTRY_INBOX_TAB_VENDOR")}
               </button>
               <button
+                type="button"
                 className={selectedTab === "VEHICLE" ? "search-tab-head-selected" : "search-tab-head"}
                 onClick={() => {
                   clearSearch({});
@@ -165,6 +167,7 @@ const SearchApplication = ({ onSearch, type, onClose, onTabChange, isFstpOperato
                 {t("ES_FSM_REGISTRY_INBOX_TAB_VEHICLE")}
               </button>
               <button
+                type="button"
                 className={selectedTab === "DRIVER" ? "search-tab-head-selected" : "search-tab-head"}
                 onClick={() => {
                   clearSearch({});
@@ -189,17 +192,19 @@ const SearchApplication = ({ onSearch, type, onClose, onTabChange, isFstpOperato
           <form onSubmit={handleSubmit(onSubmitInput)}>
             <div
               className={FSTP ? "complaint-input-container for-pt for-search" : "complaint-input-container"}
-              style={{ width: "100%", gridTemplateColumns: "33.33% 66.66% 0%" }}
+              style={{ width: "100%", display: "flex", flexWrap: "wrap", alignItems: "flex-end", gap: "16px" }}
             >
               {searchFields?.map((input, index) => (
-                <span key={index} className={index === 0 ? "complaint-input" : "mobile-input"}>
-                  <Label>{input.label}</Label>
+                <span key={index} className={index === 0 ? "complaint-input" : "mobile-input"} style={{ minWidth: "260px" }}>
+                  <Label>
+                    {input.label} {input.labelChildren && input.labelChildren}
+                  </Label>
                   {getFields(input)}{" "}
                 </span>
               ))}
-              <div style={{ display: "flex" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "4px" }}>
                 {type === "desktop" && !mobileView && <SubmitBar className="submit-bar-search" label={t("ES_COMMON_SEARCH")} submit />}
-                {type === "desktop" && !mobileView && <span className="clear-search">{clearAll()}</span>}
+                {type === "desktop" && !mobileView && <span className="clear-search">{clearAll(mobileView)}</span>}
               </div>
             </div>
             {error ? <CardLabelError className="search-error-label">{t("ES_SEARCH_APPLICATION_ERROR")}</CardLabelError> : null}

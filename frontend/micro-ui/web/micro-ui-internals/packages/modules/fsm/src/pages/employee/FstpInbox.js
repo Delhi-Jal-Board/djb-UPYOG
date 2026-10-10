@@ -140,10 +140,7 @@ const FstpInbox = () => {
     );
   } else {
     return (
-      <React.Fragment>
-        <div style={{ marginLeft: "20px" }}>
-          <Header>{t("ES_COMMON_INBOX")}</Header>
-        </div>
+      <div className="employee-form-content">
         <DesktopInbox
           data={{ table: vehicleLog }}
           isLoading={isLoading}
@@ -161,7 +158,7 @@ const FstpInbox = () => {
           onPageSizeChange={handlePageSizeChange}
           totalRecords={totalCount || 0}
         />
-      </React.Fragment>
+      </div>
     );
   }
   // }
