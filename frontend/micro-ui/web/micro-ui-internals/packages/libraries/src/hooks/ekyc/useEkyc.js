@@ -42,10 +42,10 @@ export const useGetFloorCount = (tenantId, config = {}) => {
 };
 
 export const useEkycSurveyorDashboard = (data, params, config = {}) => {
-  const { tenantId, offset, limit, status, surveyorId, ekycStatus } = params;
+  const { tenantId, offset, limit, status, surveyorId, ekycStatus, mrkey, address, consumerName, kno } = params;
 
   return useQuery(
-    ["useEkycSurveyorDashboard", tenantId, offset, limit, status, surveyorId, ekycStatus],
+    ["useEkycSurveyorDashboard", tenantId, offset, limit, status, surveyorId, ekycStatus, mrkey, address, consumerName, kno],
     () =>
       Digit.EkycService.dashboard(data, {
         tenantId,
@@ -54,6 +54,10 @@ export const useEkycSurveyorDashboard = (data, params, config = {}) => {
         status,
         surveyorId,
         ekycStatus,
+        mrkey,
+        address,
+        consumerName,
+        kno,
       }),
     {
       staleTime: 15000, // Cache for 15 seconds by default

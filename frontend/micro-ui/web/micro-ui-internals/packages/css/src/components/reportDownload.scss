@@ -1,6 +1,52 @@
 .report-download {
   position: relative;
   flex-shrink: 0;
+  display: flex;
+  gap: 8px;
+
+  .employee-select-wrap {
+    min-width: 200px;
+
+  .select {
+    border: #065297;
+    background: #065297;
+    border-radius: 8px;
+
+    input[type="text"] {
+    color: #fff;
+    font-weight: 600;
+    font-size: .875rem;
+    }
+
+    svg {
+      top: 50%;
+      transform: translateY(-50%);
+      margin-top: 0;
+      color: #fff !important;
+      stroke: #fff;
+    }
+  }
+
+  .rdrDateRangePickerWrapper{
+    width: fit-content !important;
+    position: fixed;
+    
+  }
+
+  .rdrDefinedRangesWrapper{
+    width: fit-content;
+    min-width: 80px;
+  }
+
+  .rdrStaticRangeLabel {
+    padding: 4px 8px;
+    width: fit-content;
+  }
+
+  .rdrMonth{
+    width: inherit;
+  }
+  }
 
   .download-btn {
     background: #065297 !important;
@@ -11,7 +57,7 @@
     cursor: pointer;
     font-weight: 600;
     font-size: 0.875rem;
-    display: flex;
+    display: flex !important;
     align-items: center;
     gap: 8px;
   }

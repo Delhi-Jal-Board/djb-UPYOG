@@ -16,6 +16,7 @@ import {
   FastForward,
 } from "./svgindex";
 import { Loader } from "./Loader";
+import Dropdown from "./Dropdown";
 
 const getSearchableText = (obj) => {
   if (obj === null || obj === undefined) return "";
@@ -217,9 +218,12 @@ const Table = ({
   isLoading,
   isTableScrollable = false,
   isStickyHeader = false,
+  searchParams,
+  searchParamOptions,
+  searchParamsPlaceholder
 }) => {
+  const [selectedSearchParam, setSelectedSearchParam] = useState(searchParamOptions?.[0]?.value || "");
   const [internalSearch, setInternalSearch] = useState("");
-  const [searchFocused, setSearchFocused] = useState(false);
   const [isCsvExporting, setIsCsvExporting] = useState(false);
   const tableData = Array.isArray(data) ? data : [];
   const tableColumns = Array.isArray(columns) ? columns : [];
@@ -327,15 +331,15 @@ const Table = ({
       const exportSource =
         typeof getCSVExportData === "function"
           ? await getCSVExportData({
-            currentPage,
-            pageIndex,
-            pageSize,
-            pageSizeLimit,
-            manualPagination,
-            sortBy,
-            globalFilter,
-            totalRecords,
-          })
+              currentPage,
+              pageIndex,
+              pageSize,
+              pageSizeLimit,
+              manualPagination,
+              sortBy,
+              globalFilter,
+              totalRecords,
+            })
           : csvExportData ?? (manualPagination ? [] : tableData);
 
       const exportRows = normalizeExportRows(exportSource);
@@ -376,39 +380,63 @@ const Table = ({
         </div>
 
         {/* Right: internal search box + tableTopComponent */}
-        <div className="search-box-wrapper">
-          <div className="table-search-box">
-            <span className={`icon ${searchFocused ? "accent" : "textMuted"}`}>
-              <IconSearch />
-            </span>
-            <input
-              className={`search-input ${searchFocused ? "shadow" : ""}`}
-              placeholder={t ? t("CS_COMMON_SEARCH") : "Search table…"}
-              value={internalSearch}
-              onChange={(e) => setInternalSearch(e.target.value)}
-              onFocus={() => setSearchFocused(true)}
-              onBlur={() => setSearchFocused(false)}
+        <div className="flex-roww flex-gap-2">
+          {searchParamOptions?.length > 0 && (
+            <Dropdown
+              option={searchParamOptions}
+              optionKey="label"
+              selected={selectedSearchParam}
+              select={(option) => {
+                setSelectedSearchParam(option);
+                setInternalSearch("");
+
+                if (searchParams) {
+                  searchParams({
+                    key: option.value,
+                    value: "",
+                  });
+                }
+              }}
+              t={(value) => value}
+              className="table-search-dropdown"
+              placeholder={searchParamsPlaceholder || "Select Filter"}
             />
-            {internalSearch && (
-              <button onClick={() => setInternalSearch("")} className="close-button">
-                <IconClose />
+          )}
+          <div className="search-box-wrapper">
+            <div className="table-search-box">
+              <span className="icon">
+                <IconSearch />
+              </span>
+              <input
+                className="search-input"
+                placeholder={t ? t("CS_COMMON_SEARCH") : "Search table…"}
+                value={internalSearch}
+                onChange={(e) => {
+                  if (searchParams) searchParams({ key: selectedSearchParam?.value, value: e.target.value });
+                  setInternalSearch(e.target.value);
+                }}
+              />
+              {internalSearch && (
+                <button onClick={() => setInternalSearch("")} className="close-button">
+                  <IconClose />
+                </button>
+              )}
+            </div>
+            {isCsvExportEnabled && (
+              <button
+                className={`export-button ${isCsvExporting ? "exporting" : "normal"}`}
+                onClick={handleCsvExport}
+                disabled={isCsvExporting}
+                title={isCsvExporting ? "Export in progress" : "Download CSV"}
+              >
+                <span className="download-icon">
+                  <IconDownload />
+                </span>
+                <span>{isCsvExporting ? "Exporting..." : csvExportButtonLabel || "Download CSV"}</span>
               </button>
             )}
+            {tableTopComponent || null}
           </div>
-          {isCsvExportEnabled && (
-            <button
-              className={`export-button ${isCsvExporting ? "exporting" : "normal"}`}
-              onClick={handleCsvExport}
-              disabled={isCsvExporting}
-              title={isCsvExporting ? "Export in progress" : "Download CSV"}
-            >
-              <span className="download-icon">
-                <IconDownload />
-              </span>
-              <span>{isCsvExporting ? "Exporting..." : csvExportButtonLabel || "Download CSV"}</span>
-            </button>
-          )}
-          {tableTopComponent || null}
         </div>
       </div>
 

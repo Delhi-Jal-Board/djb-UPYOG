@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Card } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
@@ -67,12 +67,15 @@ const VendorPerformanceSkeleton = () => {
 const AdminDashboard = () => {
   const { t } = useTranslation();
   const history = useHistory();
+  const [customDate, setCustomDate] = useState({ from: "", to: "" });
 
   // Fetch assignment progress with hierarchy (supervisor and surveyor details)
   const { data: progressData, isLoading: isProgressLoading } = Digit.Hooks.ekyc.useEkycAssignmentProgress(
     {
       tenantId: "dl.djb",
       allVendorsDetailed: true,
+      fromDate: customDate?.startDate?.getTime(),
+      toDate: customDate?.endDate?.getTime(),
     },
     {
       enabled: true,
@@ -82,7 +85,7 @@ const AdminDashboard = () => {
 
   return (
     <Card className="surveyor-dashboard">
-      <Dashboard isProgressLoading={isProgressLoading} progressData={progressData} />
+      <Dashboard isProgressLoading={isProgressLoading} progressData={progressData} customDate={customDate} setCustomDate={setCustomDate} />
       <div className="admin-performance-section">
         <h3 className="section-title">{t("EKYC_VENDORS_PERFORMANCE") || "eKYC Vendors Performance"}</h3>
 

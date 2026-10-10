@@ -109,6 +109,35 @@
       }
     }
 
+    .table-search-dropdown{
+      min-width: 160px;
+      .select-active {
+        border-radius: 40px;
+        padding: 0;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        svg {
+          margin-top: 0;
+        }
+      }
+      .select {
+        border-radius: 40px;
+        padding: 0;
+        height: 32px;
+        display: flex;
+        align-items: center;
+
+        input[type="text"] {
+          padding: 0 8px;
+          width: ;
+        }
+        svg {
+          margin-top: 0;
+        }
+      }
+    }
+
     .search-box-wrapper {
       display: flex;
       align-items: center;
@@ -118,25 +147,23 @@
       border-radius: 40px;
       padding: 0px 12px;
 
+      &:focus-within {
+        border-color: #007bff;
+        box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+      }
+
       .table-search-box {
         position: relative;
         display: flex;
         align-items: center !important;
         .icon {
           position: absolute;
-          left: 9px;
           line-height: 0;
           pointer-events: none;
         }
-        .icon.accent {
-          color: #5282e6;
-        }
-        .icon.textMuted {
-          color: #94a3b8;
-        }
         .search-input {
           border-radius: 6px;
-          padding: 6px 10px 6px 30px;
+          padding: 6px 10px 6px 20px;
           font-size: 0.8125rem;
           font-family: DM Sans, Segoe UI, ui-sans-serif, sans-serif;
           color: #0f172a;
@@ -145,9 +172,7 @@
           width: 200px;
           transition: border-color 0.15s, box-shadow 0.15s;
         }
-        .search-input.shadow {
-          box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-        }
+        
         .close-button {
           position: absolute;
           right: 7px;
@@ -159,6 +184,9 @@
           color: #94a3b8;
           display: flex;
           align-items: center;
+          top: 50%;
+          transform: translateY(-50%);
+          margin-bottom: 0;
         }
         .export-button {
           display: flex !important;

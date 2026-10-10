@@ -1,15 +1,11 @@
 import React, { useState, Fragment } from "react";
-// import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, PieChart, Pie, Cell, Legend } from "recharts";
-
-import { Card, SubmitBar, ActionBar, Menu, Loader, Table, MdDownloadIcon } from "@djb25/digit-ui-react-components";
-
+import { Card, SubmitBar, ActionBar, Menu, Loader, Table, Toast, MdDownloadIcon } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
-
 import AssignEkycModal from "./AssignEkycModal";
-import { getEkycExcelData } from "../utils/ekycExcelData";
 import { FaUsers, FaCheckCircle, FaClock, FaChartLine } from "react-icons/fa";
 import EkycFilterModal from "./EkycFilterModal";
+import { downloadEkycReport } from "../utils/ekycExcelData"
 
 const SurveyorDetailsCard = () => {
   const tenantId = Digit.ULBService.getCurrentTenantId() || "dl.djb";
@@ -20,6 +16,11 @@ const SurveyorDetailsCard = () => {
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [ekycStatus, setEkycStatus] = useState("ALL");
   const [customDate, setCustomDate] = useState({ from: "", to: "" });
+  const [toast, setToast] = useState({
+    show: false,
+    label: "",
+    error: false,
+  });
 
   const { id: surveyorId } = useParams();
   const ownerIds = Digit.SessionStorage.get("User")?.info?.uuid;
@@ -54,11 +55,20 @@ const SurveyorDetailsCard = () => {
 
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize, setPageSize] = useState(20);
+  const [filterParams, setFilterParams] = useState("")
+
+  const hasValidFilter =
+    filterParams &&
+    Object.keys(filterParams).length > 0 &&
+    Object.keys(filterParams)[0] &&
+    String(Object.values(filterParams)[0] ?? "").trim() !== "";
+
   const queryParams = {
     tenantId: "dl.djb",
     offset: currentPage * pageSize,
     limit: pageSize,
     surveyorId: surveyor?.owner?.uuid,
+    ...(hasValidFilter ? filterParams : {}),
   };
 
   const { isFetching: isDashboardLoading, data: dashboardData = {}, refetch: refetchDashboard } = Digit.Hooks.ekyc.useEkycSurveyorDashboard(
@@ -120,6 +130,11 @@ const SurveyorDetailsCard = () => {
       Header: t("CONSUMER_NAME") || "Consumer Name",
       accessor: (row) => toTitleCase(`${row.firstName || ""} ${row.middleName || ""} ${row.lastName || ""}`.trim()),
       id: "consumerName",
+    },
+    {
+      Header: t("MR_KEY") || "MR Key",
+      accessor: (row) => toTitleCase(row.mrkey),
+      id: "mrkey",
     },
     {
       Header: t("ZONE") || "Zone",
@@ -188,52 +203,59 @@ const SurveyorDetailsCard = () => {
     setShowModal(null);
   };
 
-  const handleDownloadEkycData = async (fromDate, toDate) => {
-    setEkycDownloadLoading(true);
-    try {
-      const response = await Digit.EkycService.application_list({
-        tenantId: tenantId,
-        offset: 0,
-        limit: 10000,
-        // Vendor-specific filter
-        surveyorId: surveyor?.owner?.uuid,
-        ekycStatus: ekycStatus,
-        reportDownload: true,
-        ...(fromDate && { fromDate }),
-        ...(toDate && { toDate }),
-      });
-
-      const consumerList = response?.consumerList || [];
-
-      if (!consumerList || consumerList.length === 0) {
-        alert(t("NO_EKYC_DATA_FOUND") || "No eKYC data found to download.");
-        return;
-      }
-
-      consumerList.forEach((item) => {
-        if (item.assignedTime) {
-          item.assignedTime = new Date(item.assignedTime).toLocaleDateString("en-GB");
-        }
-
-        if (item.submittedAt) {
-          item.submittedAt = new Date(item.submittedAt).toLocaleDateString("en-GB");
-        }
-      });
-      const excelData = getEkycExcelData(consumerList, t);
-      const cleanFileName = `eKYC_Data_${surveyor?.vendorName.replace(/[^a-zA-Z0-9]/g, "_")}`;
-      Digit.Download.Excel(excelData, cleanFileName);
-    } catch (error) {
-      console.error("Failed to download eKYC data:", error);
-      alert(t("EKYC_DOWNLOAD_FAILED") || "Failed to download eKYC data. Please try again.");
-    } finally {
-      setEkycDownloadLoading(false);
-    }
-  };
-
   const handleApplyFilters = async () => {
     setShowFilterModal(false);
-    await handleDownloadEkycData(customDate.startDate.getTime(), customDate.endDate.getTime());
+    downloadEkycReport({
+      tenantId,
+      ekycStatus,
+      fromDate: customDate?.startDate?.getTime(),
+      toDate: customDate?.endDate?.getTime(),
+      fileName: `eKYC_Data_${surveyor?.vendorName.replace(/[^a-zA-Z0-9]/g, "_")}`,
+      t,
+      setLoading: setEkycDownloadLoading,
+      showToast,
+    });
   };
+
+  const searchParams = ({key, value}) => {
+    console.log(key, value);
+    setFilterParams({ [key]: value });
+  };
+
+  const showToast = ({ label, error = false }) => {
+    setToast({
+      show: true,
+      label,
+      error,
+    });
+  };
+
+  const hideToast = () => {
+    setToast({
+      show: false,
+      label: "",
+      error: false,
+    });
+  };
+
+  const searchParamOptions = [
+    {
+      label: "MR Key",
+      value: "mrkey",
+    },
+    // {
+    //   label: "Address",
+    //   value: "address",
+    // },
+    {
+      label: "Consumer Name",
+      value: "consumerName",
+    },
+    {
+      label: "KNO",
+      value: "kno",
+    },
+  ];
 
   return (
     <Fragment>
@@ -245,7 +267,7 @@ const SurveyorDetailsCard = () => {
                 <div className="ekyc-dashboard-header">
                   <div className="header-content">
                     <h2 className="name">{surveyor?.name}</h2>
-                    <div className="designation">({surveyor?.description || t("FIELD_SURVEYOR")})</div>
+                    <div className="designation">({t("FIELD_SURVEYOR") || "Field Surveyor"})</div>
                   </div>
                 </div>
 
@@ -340,6 +362,9 @@ const SurveyorDetailsCard = () => {
               setPageSize(Number(e.target.value));
               setCurrentPage(0);
             }}
+            searchParams={searchParams}
+            searchParamsPlaceholder={"Select Filters"}
+            searchParamOptions={searchParamOptions}
           />
         </div>
         {roles.includes("EKYC_SUPERVISOR") && (
@@ -381,6 +406,7 @@ const SurveyorDetailsCard = () => {
           setEkycStatus={setEkycStatus}
         />
       )}
+      {toast.show && <Toast label={toast.label} error={toast.error} isDleteBtn duration={5000} onClose={hideToast} />}
     </Fragment>
   );
 };
