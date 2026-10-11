@@ -257,6 +257,13 @@ export const convertToPropertyLightWeight = (data = {}) => {
         numberOfStudents: data.waterConnection?.useDetails?.numberOfStudents || data.useDetails?.numberOfStudents,
         numberOfBeds: data.waterConnection?.useDetails?.numberOfBeds || data.useDetails?.numberOfBeds,
         heightOfTheBuilding: data.waterConnection?.useDetails?.heightOfTheBuilding || data.useDetails?.heightOfTheBuilding,
+        questions:
+          data.waterConnection?.useDetails?.questions ||
+          data.useDetails?.questions ||
+          data.waterConnection?.questions ||
+          data.waterConnection?.useDetails?.questionAnswers ||
+          data.useDetails?.questionAnswers ||
+          [],
         owners: [
           ...(data.owners || []).map((owner, index) => ({
             ...owner,
@@ -342,6 +349,13 @@ export const convertToUpdatePropertyLightWeight = (data = {}) => {
         numberOfStudents: data.waterConnection?.useDetails?.numberOfStudents || data.useDetails?.numberOfStudents,
         numberOfBeds: data.waterConnection?.useDetails?.numberOfBeds || data.useDetails?.numberOfBeds,
         heightOfTheBuilding: data.waterConnection?.useDetails?.heightOfTheBuilding || data.useDetails?.heightOfTheBuilding,
+        questions:
+          data.waterConnection?.useDetails?.questions ||
+          data.useDetails?.questions ||
+          data.waterConnection?.questions ||
+          data.waterConnection?.useDetails?.questionAnswers ||
+          data.useDetails?.questionAnswers ||
+          [],
         owners: [
           ...data.owners.map((owner, index) => ({
             ...owner,

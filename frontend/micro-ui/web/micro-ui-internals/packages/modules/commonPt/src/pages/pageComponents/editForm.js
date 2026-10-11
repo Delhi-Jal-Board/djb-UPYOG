@@ -53,6 +53,7 @@ const mapPropertyToFormData = (property = {}) => {
     numberOfBeds: String(addDet.numberOfBeds || ""),
     numberOfStudents: String(addDet.numberOfStudents || ""),
     servantQuarterArea: String(addDet.numberOfServantQuarters || addDet.servantQuarterArea || ""),
+    questions: addDet.questions || addDet.questionAnswers || addDet.propertyQuestions || [],
   };
 
   return {
@@ -227,6 +228,7 @@ const EditPropertyForm = ({ config, onSelect, userType }) => {
           numberOfStudents: useDetails?.numberOfStudents || rawProperty.additionalDetails?.numberOfStudents || "",
           numberOfRooms: useDetails?.NumberofRooms || rawProperty.additionalDetails?.numberOfRooms || "",
           heightOfTheBuilding: useDetails?.heightOfTheBuilding || rawProperty.additionalDetails?.heightOfTheBuilding || "",
+          questions: useDetails?.questions || useDetails?.questionAnswers || rawProperty.additionalDetails?.questions || rawProperty.additionalDetails?.questionAnswers || [],
           owners: additionalOwners,
         },
       },
