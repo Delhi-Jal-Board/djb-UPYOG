@@ -353,6 +353,7 @@ public class PropertyValidator {
 		List<String> masterNames = new ArrayList<>(
 				Arrays.asList(
 				PTConstants.MDMS_PT_PROPERTYTYPE,
+				PTConstants.MDMS_PT_PROPERTYTYPE2,
 				PTConstants.MDMS_PT_OWNERSHIPCATEGORY,
 				PTConstants.MDMS_PT_OWNERTYPE,
 				PTConstants.MDMS_PT_USAGECATEGORY,
@@ -369,7 +370,12 @@ public class PropertyValidator {
 				"$.*.code", PTConstants.JSONPATH_CODES, request.getRequestInfo());
 		
 		if (null != codes) {
-			validateMDMSData(masterNames, codes);
+			// PropertyType2 was introduced for the updated property-type catalogue.
+			// Keep it optional for tenants that have not migrated yet, but use it
+			// for validation whenever it is populated.
+			List<String> requiredMasterNames = new ArrayList<>(masterNames);
+			requiredMasterNames.remove(PTConstants.MDMS_PT_PROPERTYTYPE2);
+			validateMDMSData(requiredMasterNames, codes);
 			validateCodes(property, codes, errorMap);
 		} else {
 			errorMap.put("MASTER_FETCH_FAILED", "Couldn't fetch master data for validation");
@@ -434,26 +440,36 @@ public class PropertyValidator {
      */
     private static Map<String,String> validateCodes(Property property, Map<String,List<String>> codes, Map<String,String> errorMap){
     	
-		if (property.getPropertyType() != null && !codes.get(PTConstants.MDMS_PT_PROPERTYTYPE).contains(property.getPropertyType())) {
-			errorMap.put("Invalid PROPERTYTYPE", "The PropertyType '" + property.getPropertyType() + "' does not exists");
+		List<String> propertyTypeCodes;
+		if (codes.containsKey(PTConstants.MDMS_PT_PROPERTYTYPE2)) {
+			propertyTypeCodes = codes.get(PTConstants.MDMS_PT_PROPERTYTYPE2);
+		} else {
+			propertyTypeCodes = codes.get(PTConstants.MDMS_PT_PROPERTYTYPE);
 		}
+		if (property.getPropertyType() != null
+				&& (CollectionUtils.isEmpty(propertyTypeCodes)
+						|| !propertyTypeCodes.contains(property.getPropertyType()))) {
+			errorMap.put("Invalid PROPERTYTYPE", "The PropertyType '" + property.getPropertyType()
+					+ "' does not exist in the active PropertyType2/PropertyType MDMS master");
+		}
+
 
 		if (property.getOwnershipCategory() != null && !codes.get(PTConstants.MDMS_PT_OWNERSHIPCATEGORY).contains(property.getOwnershipCategory())) {
 			errorMap.put("Invalid OWNERSHIPCATEGORY", "The OwnershipCategory '" + property.getOwnershipCategory() + "' does not exists");
 		}
 
-		if (property.getUsageCategory() != null && !codes.get(PTConstants.MDMS_PT_PROPERTY_CATEGORY).contains(property.getUsageCategory())) {
-			errorMap.put("Invalid USageCategory", "The USageCategory '" + property.getUsageCategory() + "' does not exists");
-		}
+//		if (property.getUsageCategory() != null && !codes.get(PTConstants.MDMS_PT_PROPERTY_CATEGORY).contains(property.getUsageCategory())) {
+//			errorMap.put("Invalid USageCategory", "The USageCategory '" + property.getUsageCategory() + "' does not exists");
+//		}
 		
 		if (!CollectionUtils.isEmpty(property.getUnits()))
 			for (Unit unit : property.getUnits()) {
 
-				if (ObjectUtils.isEmpty(unit.getUsageCategory()) || unit.getUsageCategory() != null
-						&& !codes.get(PTConstants.MDMS_PT_USAGECATEGORY).contains(unit.getUsageCategory())) {
-					errorMap.put("INVALID USAGE CATEGORY ", "The Usage CATEGORY '" + unit.getUsageCategory()
-							+ "' does not exists for unit of index : " + property.getUnits().indexOf(unit));
-				}
+//				if (ObjectUtils.isEmpty(unit.getUsageCategory()) || unit.getUsageCategory() != null
+//						&& !codes.get(PTConstants.MDMS_PT_USAGECATEGORY).contains(unit.getUsageCategory())) {
+//					errorMap.put("INVALID USAGE CATEGORY ", "The Usage CATEGORY '" + unit.getUsageCategory()
+//							+ "' does not exists for unit of index : " + property.getUnits().indexOf(unit));
+//				}
 
 				String constructionType = unit.getConstructionDetail().getConstructionType();
 				
