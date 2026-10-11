@@ -100,4 +100,7 @@ public class Address {
 	@JsonProperty("assembly")
 	private String assembly;
 
+	@JsonProperty("colonyMcdCategory")
+	private String colonyMcdCategory;
+
 }

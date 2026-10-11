@@ -96,4 +96,7 @@ public class Address {
 
 	@JsonProperty("houseNo")
 	private String houseNo;
+
+	@JsonProperty("colonyMcdCategory")
+	private String colonyMcdCategory;
 }
