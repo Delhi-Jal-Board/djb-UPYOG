@@ -110,6 +110,7 @@ public class PropertyValidator {
 		validateMasterData(request, errorMap);
 		validateMobileNumber(request, errorMap);
 		validateFields(request, errorMap);
+		validateColonyMcdCategory(request, errorMap);
 		if (!CollectionUtils.isEmpty(units))
 			validateUnits(request, errorMap);
 		
@@ -261,6 +262,7 @@ public class PropertyValidator {
 		
 		property.getAddress().setId(propertyFromSearch.getAddress().getId());
         validateMasterData(request, errorMap);
+        validateColonyMcdCategory(request, errorMap);
 
 		if (propertyFromSearch.getStatus().equals(Status.INWORKFLOW) && (property.getAcknowldgementNumber() == null
 				|| (property.getAcknowldgementNumber() != null && !propertyFromSearch.getAcknowldgementNumber()
@@ -313,6 +315,27 @@ public class PropertyValidator {
 			throw ce;
 		} catch (Exception e) {
 			log.error("Error checking water connection for property {}: {}", property.getPropertyId(), e.getMessage());
+		}
+	}
+
+	/**
+	 * Validates colony MCD category. Allowed values are from A to H.
+	 *
+	 * @param request PropertyRequest
+	 * @param errorMap Error map to populate
+	 */
+	public void validateColonyMcdCategory(PropertyRequest request, Map<String, String> errorMap) {
+		Property property = request.getProperty();
+		if (property != null && property.getAddress() != null) {
+			String colonyCategory = property.getAddress().getColonyMcdCategory();
+			if (!StringUtils.isEmpty(colonyCategory)) {
+				String trimmed = colonyCategory.trim().toUpperCase();
+				if (!trimmed.matches("^[A-H]$")) {
+					errorMap.put("EG_PT_INVALID_COLONY_CATEGORY", "Invalid colony category");
+				} else {
+					property.getAddress().setColonyMcdCategory(trimmed);
+				}
+			}
 		}
 	}
 
