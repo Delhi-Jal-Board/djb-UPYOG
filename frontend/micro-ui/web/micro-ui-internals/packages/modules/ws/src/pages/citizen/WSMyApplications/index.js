@@ -144,14 +144,19 @@ export const WSMyApplications = () => {
         Cell: ({ row }) => {
           const application = row.original;
           const isMutation = application?.applicationType?.includes("MUTATION");
-          const businessService = application?.applicationNo?.includes("SW")
-            ? application?.applicationNo?.includes("DC")
+          const isReconnection = application?.applicationType?.includes("RECONNECT") || application?.applicationNo?.includes("RC");
+          const businessService = application?.applicationNo?.includes("SW") || application?.serviceType === "SEWERAGE"
+            ? application?.applicationNo?.includes("DC") || application?.applicationType?.includes("DISCONNECT")
               ? "SW.DISCONNECTION"
+              : isReconnection
+              ? "SWReconnection"
               : isMutation
               ? "SW.MUTATION"
               : "SW.ONE_TIME_FEE"
-            : application?.applicationNo?.includes("DC")
+            : application?.applicationNo?.includes("DC") || application?.applicationType?.includes("DISCONNECT")
             ? "WS.DISCONNECTION"
+            : isReconnection
+            ? "WSReconnection"
             : isMutation
             ? "WS.MUTATION"
             : "WS.ONE_TIME_FEE";

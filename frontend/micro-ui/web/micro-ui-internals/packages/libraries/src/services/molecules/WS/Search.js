@@ -60,7 +60,11 @@ const checkExistStatus = async (processInstances) => {
 };
 
 const checkFeeEstimateVisible = async (wsDatas) => {
-  const dataDetails = wsDatas?.[0]?.applicationType?.includes("NEW") || wsDatas?.[0]?.applicationType?.includes("MUTATION") || wsDatas?.[0]?.applicationType?.includes("DISCONNECT");
+  const dataDetails =
+    wsDatas?.[0]?.applicationType?.includes("NEW") ||
+    wsDatas?.[0]?.applicationType?.includes("MUTATION") ||
+    wsDatas?.[0]?.applicationType?.includes("DISCONNECT") ||
+    wsDatas?.[0]?.applicationType?.includes("RECONNECT");
   return dataDetails;
 };
 
@@ -445,7 +449,37 @@ export const WSSearch = {
         { title: "WS_TAX_HEADER", value: <span>&#8377;{fetchBillData?.Bill?.[0]?.taxAmount || 0}</span> },
       ];
 
-    const appStatus = wsDataDetails?.applicationStatus;
+    const appStatus =
+      wsDataDetails?.applicationStatus ||
+      workFlowDataDetails?.ProcessInstances?.[0]?.state?.applicationStatus ||
+      workFlowDataDetails?.ProcessInstances?.[0]?.state?.state;
+    const isReconnectionApp =
+      wsDataDetails?.applicationType?.includes("RECONNECT") ||
+      workFlowDataDetails?.ProcessInstances?.[0]?.businessService?.includes("Reconnection") ||
+      wsDataDetails?.applicationNo?.includes("RC");
+    const isReconnectionFeeOnlyStatus =
+      isReconnectionApp &&
+      ["PENDING_FOR_PAYMENT", "PENDING_APPROVAL_FOR_RECONNECTION", "PENDING_FOR_RECONNECTION_EXECUTION", "CONNECTION_ACTIVATED"].includes(appStatus);
+    const isDisconnectionApp =
+      wsDataDetails?.applicationType?.includes("DISCONNECT") ||
+      workFlowDataDetails?.ProcessInstances?.[0]?.businessService?.includes("Disconnect") ||
+      wsDataDetails?.applicationNo?.includes("DC");
+    const isDisconnectionFeeOnlyStatus =
+      isDisconnectionApp &&
+      [
+        "PENDING_FOR_PAYMENT",
+        "PENDING_FOR_FINAL_PAYMENT",
+        "PENDING_FOR_ADDITIONAL_PAYMENT",
+        "PENDING_APPROVAL_FOR_DISCONNECTION",
+        "PENDING_FOR_DISCONNECTION_EXECUTION",
+        "DISCONNECTION_EXECUTED",
+      ].includes(appStatus);
+    const filteredFeeValues = isReconnectionFeeOnlyStatus
+      ? feeValues.filter((bill) => bill?.title === "WS_REOPENING_FEE" || bill?.title === "SW_REOPENING_FEE")
+      : isDisconnectionFeeOnlyStatus
+      ? feeValues.filter((bill) => bill?.title === "WS_DISCONNECTION_FEE" || bill?.title === "SW_DISCONNECTION_FEE")
+      : feeValues;
+
     const isWorkflowPaid =
       appStatus &&
       appStatus !== "INITIATED" &&
@@ -467,8 +501,10 @@ export const WSSearch = {
         isAdhocRebate: isAdhocRebate,
         isVisible: isVisible,
         isPaid: colletionData?.Payments?.length > 0 || isWorkflowPaid ? true : false,
-        isViewBreakup: isVisible,
-        values: feeValues,
+        isViewBreakup: isVisible && !isReconnectionFeeOnlyStatus && !isDisconnectionFeeOnlyStatus,
+        onlyReconnectionFee: isReconnectionFeeOnlyStatus,
+        onlyDisconnectionFee: isDisconnectionFeeOnlyStatus,
+        values: filteredFeeValues,
       },
     };
 

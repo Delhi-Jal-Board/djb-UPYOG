@@ -56,10 +56,13 @@ const WSRestorationForm = ({ t, config, onSelect, userType, flow }) => {
   const [checkRequiredFields, setCheckRequiredFields] = useState(false);
   const [isEnableLoader, setIsEnableLoader] = useState(false);
   const [ownershipDocument, setOwnershipDocument] = useState(null);
-  const [isAltered, setIsAltered] = useState(false);
+  const [isAltered, setIsAltered] = useState(applicationData?.reconnectionValidation?.isAltered ?? false);
   const [isModified, setIsModified] = useState(false);
-  const [dwellingUnits, setDwellingUnits] = useState("");
-  const [extendedArea, setExtendedArea] = useState("");
+  const [dwellingUnits, setDwellingUnits] = useState(applicationData?.reconnectionValidation?.dwellingUnits ?? "");
+  const [extendedArea, setExtendedArea] = useState(applicationData?.reconnectionValidation?.extendedArea ?? "");
+  const [additionalArea, setAdditionalArea] = useState(applicationData?.reconnectionValidation?.additionalArea ?? "");
+  const [additionalPlotArea, setAdditionalPlotArea] = useState(applicationData?.reconnectionValidation?.additionalPlotArea ?? "");
+  const [buildingHeight, setBuildingHeight] = useState(applicationData?.reconnectionValidation?.buildingHeight ?? "");
   const [showDemandClearance, setShowDemandClearance] = useState(false);
   const [estimateData, setEstimateData] = useState(null);
   const [estimateLoading, setEstimateLoading] = useState(false);
@@ -363,12 +366,24 @@ if (flow === "reconnection") {
     const holder = connection?.connectionHolders?.[0] || {};
     const address = connection?.property?.address || connection?.address || {};
     const addressText = [address?.houseNo || address?.doorNo, address?.buildingName, address?.street, address?.locality?.name, address?.city].filter(Boolean).join(", ") || "NA";
-    const originalArea = Number(connection?.property?.landArea || connection?.property?.plotArea || 150) || 150;
-    const areaAdded = Number(extendedArea) || 0;
-    const totalArea = originalArea + areaAdded;
+    const propertyObj = connection?.property || applicationData?.propertyDetails || {};
+    const originalPlotArea = Number(propertyObj?.additionalDetails?.plotArea || propertyObj?.landArea || propertyObj?.plotArea || connection?.additionalDetails?.plotArea || 150) || 150;
+    const originalBuiltUpArea = Number(propertyObj?.additionalDetails?.builtUpArea || propertyObj?.superBuiltUpArea || connection?.additionalDetails?.builtUpArea || originalPlotArea) || originalPlotArea;
+    const originalBuildingHeight = Number(propertyObj?.additionalDetails?.heightOfTheBuilding || propertyObj?.heightOfTheBuilding || connection?.additionalDetails?.buildingHeight || 0) || 0;
+    const addedAreaNum = isAltered ? (Number(additionalArea) || 0) : 0;
+    const addedPlotAreaNum = isAltered ? (Number(additionalPlotArea) || 0) : 0;
+    const heightNum = isAltered ? (Number(buildingHeight) || originalBuildingHeight) : originalBuildingHeight;
+    const totalPlotArea = originalPlotArea + addedPlotAreaNum;
+    const totalArea = originalBuiltUpArea + addedAreaNum;
     const estimateRows = estimateData?.Calculation?.[0]?.taxHeadEstimates || [];
     const estimateTotal = estimateRows.reduce((total, item) => total + Number(item?.estimateAmount ?? item?.amount ?? 0), 0);
     const formatEstimateLabel = (code) => String(code || "Demand charge").replace(/^WS_/, "").replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+    const handleNumericChange = (setter) => (e) => {
+      const val = e.target.value;
+      if (val === "" || /^\d*\.?\d*$/.test(val)) {
+        setter(val);
+      }
+    };
     const handleOwnershipUpload = async (event) => {
       const file = event?.target?.files?.[0];
       if (!file) return;
@@ -387,14 +402,45 @@ if (flow === "reconnection") {
       }
     };
     const handleProceedToDemand = () => {
-      if (!ownershipDocument) {
-        setError({ key: "error", message: "Please upload property ownership proof." });
-        return;
+      if (isAltered) {
+        const trimmedAddArea = String(additionalArea ?? "").trim();
+        const trimmedAddPlotArea = String(additionalPlotArea ?? "").trim();
+        const trimmedHeight = String(buildingHeight ?? "").trim();
+        if (trimmedAddArea === "" || isNaN(Number(trimmedAddArea)) || Number(trimmedAddArea) < 0) {
+          setError({ key: "error", message: "Please enter a valid Additional Area (Sq. M.)." });
+          return;
+        }
+        if (trimmedAddPlotArea === "" || isNaN(Number(trimmedAddPlotArea)) || Number(trimmedAddPlotArea) < 0) {
+          setError({ key: "error", message: "Please enter a valid Additional Plot Area (Sq. M.)." });
+          return;
+        }
+        if (Number(trimmedAddArea) <= 0 && Number(trimmedAddPlotArea) <= 0) {
+          setError({ key: "error", message: "Additional Area or Additional Plot Area must be greater than 0 for an extended connection." });
+          return;
+        }
+        if (trimmedHeight !== "" && (isNaN(Number(trimmedHeight)) || Number(trimmedHeight) <= 0 || Number(trimmedHeight) > 200)) {
+          setError({ key: "error", message: "Please enter a valid Building Height (in meters) greater than 0." });
+          return;
+        }
+        if (!ownershipDocument) {
+          setError({ key: "error", message: "Please upload property ownership proof." });
+          return;
+        }
       }
       const staticFee = { taxHeadCode: "WS_RECONNECTION_FEE", estimateAmount: 250, amount: 250 };
       setEstimateData({ Calculation: [{ taxHeadEstimates: [staticFee], totalAmount: 250 }] });
       setShowDemandClearance(true);
-      Digit.SessionStorage.set("WS_DISCONNECTION", { ...applicationData, reconnectionValidation: { isAltered, isModified, dwellingUnits, extendedArea, ownershipProofFileStoreId: ownershipDocument?.fileStoreId } });
+      Digit.SessionStorage.set("WS_DISCONNECTION", {
+        ...applicationData,
+        reconnectionValidation: {
+          isAltered,
+          additionalArea: isAltered ? String(additionalArea).trim() : "",
+          additionalPlotArea: isAltered ? String(additionalPlotArea).trim() : "",
+          buildingHeight: isAltered ? String(buildingHeight).trim() : "",
+          extendedArea: isAltered ? String(additionalArea).trim() : "",
+          ownershipProofFileStoreId: isAltered ? ownershipDocument?.fileStoreId : undefined,
+        },
+      });
     };
     const executeMutation = (mutation, payload) => new Promise((resolve, reject) => mutation(payload, { onSuccess: resolve, onError: reject }));
     const handleSubmitReconnection = async () => {
@@ -427,24 +473,45 @@ if (flow === "reconnection") {
 
         // Preserve documents returned by the search API so the create request keeps the complete connection data.
         const existingDocuments = Array.isArray(submittedConnection?.documents) ? submittedConnection.documents : [];
-        const ownershipProof = ownershipDocument
+        const reconnectionValidation = latestApplicationData?.reconnectionValidation || {};
+        const effectiveIsAltered = reconnectionValidation.isAltered ?? isAltered;
+        const ownershipProof = effectiveIsAltered && ownershipDocument
           ? [{ fileStoreId: ownershipDocument.fileStoreId, documentUid: ownershipDocument.fileStoreId, documentType: "PROPERTY_OWNERSHIP_PROOF", status: "ACTIVE", id: null }]
           : [];
         const docs = [...existingDocuments, ...ownershipProof];
-        const reconnectionValidation = latestApplicationData?.reconnectionValidation || {};
 
         // Build payload directly from `connection` (raw Search API data) so no fields are lost
         const baseAdditionalDetails = {
           ...submittedConnection?.additionalDetails,
           ...reconnectionValidation,
-          isAltered: reconnectionValidation.isAltered ?? isAltered,
-          isModified: reconnectionValidation.isModified ?? isModified,
-          ownershipProofFileStoreId: reconnectionValidation.ownershipProofFileStoreId || ownershipDocument?.fileStoreId,
+          isAltered: effectiveIsAltered,
         };
-        const finalDwellingUnits = reconnectionValidation.dwellingUnits ?? dwellingUnits;
-        if (finalDwellingUnits) baseAdditionalDetails.dwellingUnits = finalDwellingUnits;
-        const finalExtendedArea = reconnectionValidation.extendedArea ?? extendedArea;
-        if (finalExtendedArea) baseAdditionalDetails.extendedArea = finalExtendedArea;
+        const finalOwnershipProofId = effectiveIsAltered
+          ? (reconnectionValidation.ownershipProofFileStoreId || ownershipDocument?.fileStoreId)
+          : undefined;
+        if (finalOwnershipProofId) {
+          baseAdditionalDetails.ownershipProofFileStoreId = finalOwnershipProofId;
+        } else {
+          delete baseAdditionalDetails.ownershipProofFileStoreId;
+        }
+        const finalAdditionalArea = effectiveIsAltered ? String(reconnectionValidation.additionalArea ?? additionalArea ?? "").trim() : "";
+        const finalAdditionalPlotArea = effectiveIsAltered ? String(reconnectionValidation.additionalPlotArea ?? additionalPlotArea ?? "").trim() : "";
+        const finalBuildingHeight = effectiveIsAltered ? String(reconnectionValidation.buildingHeight ?? buildingHeight ?? "").trim() : "";
+        if (effectiveIsAltered) {
+          baseAdditionalDetails.additionalArea = finalAdditionalArea;
+          baseAdditionalDetails.additionalPlotArea = finalAdditionalPlotArea;
+          if (finalBuildingHeight) {
+            baseAdditionalDetails.buildingHeight = finalBuildingHeight;
+          } else {
+            delete baseAdditionalDetails.buildingHeight;
+          }
+          baseAdditionalDetails.extendedArea = finalAdditionalArea;
+        } else {
+          delete baseAdditionalDetails.additionalArea;
+          delete baseAdditionalDetails.additionalPlotArea;
+          delete baseAdditionalDetails.buildingHeight;
+          delete baseAdditionalDetails.extendedArea;
+        }
 
         const createPayload = {
           [connectionKey]: {
@@ -504,13 +571,110 @@ if (flow === "reconnection") {
       </div>);
     }
     const choiceStyle = (selected) => ({ flex: 1, padding: "12px 16px", borderRadius: "14px", border: selected ? "1px solid linear-gradient(135deg,#1f5fa8,#0b2e5b)" : "1px solid #d5deea", background: selected ? "linear-gradient(135deg,#1f5fa8,#0b2e5b)" : "#fff", color: selected ? "#fff" : "#172b4d", fontWeight: 700, cursor: "pointer" });
+    const inputStyle = { width: "100%", padding: "12px", border: "1px solid #d5deea", borderRadius: "14px", boxSizing: "border-box", background: "#fff", color: "#172b4d", fontSize: "14px" };
+    const fieldLabelStyle = { display: "block", fontWeight: 600, fontSize: "13px", color: "#344563", marginBottom: "6px" };
     return (<div style={{ padding: "24px", color: "#172b4d" }}>
       <Header styles={{ fontSize: "24px", margin: "0 0 24px" }}>Ownership &amp; Disconnection Validation</Header>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "28px", marginBottom: "28px" }}>
-        {/* <div style={{ background: "#f7f9fc", border: "1px solid #dce5f0", borderRadius: "20px", padding: "26px" }}><h3 style={{ color: "#8498b5", fontSize: "13px", letterSpacing: "1px", marginTop: 0 }}>INACTIVE CONNECTION RECORD FOUND</h3>{[["Original Applicant", holder?.name || "NA"],["Registered Phone", holder?.mobileNumber ? "******" + holder.mobileNumber.slice(-4) : "NA"],["Meter Serial No", connection?.meterId || connection?.additionalDetails?.meterId || "NA"],["Disconnection Logged on", connection?.disconnectionDate || connection?.dateEffectiveFrom || "NA"],["Outstanding Arrears", "₹0 (Fully Settled)"],["Address", addressText]].map(([label, value]) => <div key={label} style={{ display: "flex", justifyContent: "space-between", gap: "18px", padding: "12px 0", borderBottom: "1px solid #e5ebf3" }}><span style={{ color: "#8097b8" }}>{label}:</span><strong style={{ textAlign: "right" }}>{value}</strong></div>)}<div style={{ border: "1px solid #3548f5", borderRadius: "16px", padding: "14px", marginTop: "18px", color: "#2336c8", fontSize: "13px", lineHeight: 1.8 }}><strong>VALIDATION AUDIT CHECKED:</strong><br />✓ State check: <b>DISCONNECTED</b> (Sanctioned for Reactivation).<br />✓ Bill status check: <b>CLEAR</b> (No outstanding billing dues found).</div></div> */}
-        <div style={{ border: "1px solid #dce5f0", borderRadius: "20px", padding: "26px" }}><h3 style={{ color: "#8498b5", fontSize: "13px", letterSpacing: "1px", marginTop: 0 }}>RECONNECTION AUTHORIZATION DOCUMENTS</h3><label style={{ fontWeight: 700, display: "block", margin: "28px 0 8px" }}>Upload Property Ownership Proof (Registry / Sale Deed)</label><UploadFile id="reconnection-ownership-proof" buttonType="button" onUpload={handleOwnershipUpload} onDelete={() => setOwnershipDocument(null)} message={ownershipDocument?.fileName || "Drag & drop your file here or click to browse (PDF, JPEG, JPG — Max 5MB)"} /></div>
+      {isAltered && (
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "28px", marginBottom: "28px" }}>
+          {/* <div style={{ background: "#f7f9fc", border: "1px solid #dce5f0", borderRadius: "20px", padding: "26px" }}><h3 style={{ color: "#8498b5", fontSize: "13px", letterSpacing: "1px", marginTop: 0 }}>INACTIVE CONNECTION RECORD FOUND</h3>{[["Original Applicant", holder?.name || "NA"],["Registered Phone", holder?.mobileNumber ? "******" + holder.mobileNumber.slice(-4) : "NA"],["Meter Serial No", connection?.meterId || connection?.additionalDetails?.meterId || "NA"],["Disconnection Logged on", connection?.disconnectionDate || connection?.dateEffectiveFrom || "NA"],["Outstanding Arrears", "₹0 (Fully Settled)"],["Address", addressText]].map(([label, value]) => <div key={label} style={{ display: "flex", justifyContent: "space-between", gap: "18px", padding: "12px 0", borderBottom: "1px solid #e5ebf3" }}><span style={{ color: "#8097b8" }}>{label}:</span><strong style={{ textAlign: "right" }}>{value}</strong></div>)}<div style={{ border: "1px solid #3548f5", borderRadius: "16px", padding: "14px", marginTop: "18px", color: "#2336c8", fontSize: "13px", lineHeight: 1.8 }}><strong>VALIDATION AUDIT CHECKED:</strong><br />✓ State check: <b>DISCONNECTED</b> (Sanctioned for Reactivation).<br />✓ Bill status check: <b>CLEAR</b> (No outstanding billing dues found).</div></div> */}
+          <div style={{ border: "1px solid #dce5f0", borderRadius: "20px", padding: "26px" }}><h3 style={{ color: "#8498b5", fontSize: "13px", letterSpacing: "1px", marginTop: 0 }}>RECONNECTION AUTHORIZATION DOCUMENTS</h3><label style={{ fontWeight: 700, display: "block", margin: "28px 0 8px" }}>Upload Property Ownership Proof (Registry / Sale Deed) <span style={{ color: "#d4351c" }}>*</span></label><UploadFile id="reconnection-ownership-proof" buttonType="button" onUpload={handleOwnershipUpload} onDelete={() => setOwnershipDocument(null)} message={ownershipDocument?.fileName || "Drag & drop your file here or click to browse (PDF, JPEG, JPG — Max 5MB)"} /></div>
+        </div>
+      )}
+      <div style={{ background: "#f7f9fc", border: "1px solid #dce5f0", borderRadius: "20px", padding: "26px" }}>
+        <h3 style={{ margin: 0, fontSize: "16px" }}>ⓘ PROPERTY ALTERATION &amp; EXTENSION ASSESSMENT</h3>
+        <p style={{ color: "#597294", marginTop: "6px" }}>Under Delhi Jal Board bylaws, please declare if there are any physical structural alterations, area extensions, dwelling unit additions, or changes to the original building plan/usage made during disconnection.</p>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "28px" }}>
+          <div>
+            <label style={{ display: "block", fontWeight: 700, margin: "12px 0" }}>HAS THE PROPERTY BEEN PHYSICALLY ALTERED OR EXTENDED?</label>
+            <div style={{ display: "flex", gap: "10px" }}>
+              <button type="button" style={choiceStyle(isAltered)} onClick={() => setIsAltered(true)}>Yes, Altered/Extended</button>
+              <button
+                type="button"
+                style={choiceStyle(!isAltered)}
+                onClick={() => {
+                  setIsAltered(false);
+                  setOwnershipDocument(null);
+                  setAdditionalArea("");
+                  setAdditionalPlotArea("");
+                  setBuildingHeight("");
+                  setDwellingUnits("");
+                  setExtendedArea("");
+                }}
+              >
+                No, Unchanged
+              </button>
+            </div>
+          </div>
+        </div>
+        {isAltered && (
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)", gap: "18px", marginTop: "18px" }}>
+            <div>
+              <label style={fieldLabelStyle}>Additional Built-up Area (Sq. M.) <span style={{ color: "#d4351c" }}>*</span></label>
+              <input
+                type="text"
+                inputMode="decimal"
+                style={inputStyle}
+                placeholder="Enter additional built-up area (e.g. 50)"
+                value={additionalArea}
+                onChange={handleNumericChange(setAdditionalArea)}
+              />
+            </div>
+            <div>
+              <label style={fieldLabelStyle}>Additional Plot Area (Sq. M.) <span style={{ color: "#d4351c" }}>*</span></label>
+              <input
+                type="text"
+                inputMode="decimal"
+                style={inputStyle}
+                placeholder="Enter additional plot area (e.g. 0 or 30)"
+                value={additionalPlotArea}
+                onChange={handleNumericChange(setAdditionalPlotArea)}
+              />
+            </div>
+            <div>
+              <label style={fieldLabelStyle}>Building Height (Meters)</label>
+              <input
+                type="text"
+                inputMode="decimal"
+                style={inputStyle}
+                placeholder="Enter building height in meters (e.g. 12)"
+                value={buildingHeight}
+                onChange={handleNumericChange(setBuildingHeight)}
+              />
+            </div>
+          </div>
+        )}
+        <div style={{ background: "#f0f2ff", border: "1px solid #d7dcff", borderRadius: "16px", padding: "18px", marginTop: "20px" }}>
+          <strong style={{ color: "#2d31c9" }}>ASSESSMENT BREAKDOWN:</strong>
+          <div style={{ display: "flex", justifyContent: "space-between", margin: "14px 0", gap: "18px", flexWrap: "wrap" }}>
+            <span>Original Plot Size: <b>{originalPlotArea} Sq. M.</b></span>
+            {/* <span>Additional Plot Area: <b>+{addedPlotAreaNum} Sq. M.</b></span>
+            <span>New Total Plot Area: <b>{totalPlotArea} Sq. M.</b></span>
+            <span>Built Plot Area: <b>+{addedAreaNum} Sq. M.</b></span>
+            <span>New Total Area: <b>{totalArea} Sq. M.</b></span>
+            {(isAltered || heightNum > 0) && <span>Building Height: <b>{heightNum || 0} m</b></span>} */}
+          </div>
+          <div style={{ borderTop: "1px solid #dce1ff", paddingTop: "12px", color: "#597294", lineHeight: 1.8 }}>
+            {totalPlotArea <= 200
+              ? `✓ Total Plot Area (${totalPlotArea} Sq. M.) is under 200 Sq. M.: Exempt from IFC.`
+              : `⚠ Total Plot Area (${totalPlotArea} Sq. M.) exceeds 200 Sq. M.: Subject to Infrastructure Charges (IFC).`}
+            <br />
+            {isAltered ? (
+              <React.Fragment>
+                ✓ Extension declared: +{addedAreaNum} Sq. M. additional area, +{addedPlotAreaNum} Sq. M. additional plot area.<br />
+                {heightNum > 15
+                  ? `⚠ Building Height (${heightNum} m) exceeds 15m (High-Rise norms applicable).`
+                  : `✓ Building Height (${heightNum || 0} m) is within standard residential height norms (≤ 15m).`}
+              </React.Fragment>
+            ) : (
+              <React.Fragment>
+                ✓ No physical alteration or area extension declared.<br />
+                ✓ Original building parameters retained without modification.
+              </React.Fragment>
+            )}
+          </div>
+        </div>
       </div>
-      <div style={{ background: "#f7f9fc", border: "1px solid #dce5f0", borderRadius: "20px", padding: "26px" }}><h3 style={{ margin: 0, fontSize: "16px" }}>ⓘ PROPERTY ALTERATION &amp; EXTENSION ASSESSMENT</h3><p style={{ color: "#597294", marginTop: "6px" }}>Under Delhi Jal Board bylaws, please declare if there are any physical structural alterations, area extensions, dwelling unit additions, or changes to the original building plan/usage made during disconnection.</p><div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "28px" }}><div><label style={{ display: "block", fontWeight: 700, margin: "12px 0" }}>1. HAS THE PROPERTY BEEN PHYSICALLY ALTERED OR EXTENDED?</label><div style={{ display: "flex", gap: "10px" }}><button type="button" style={choiceStyle(isAltered)} onClick={() => setIsAltered(true)}>Yes, Altered/Extended</button><button type="button" style={choiceStyle(!isAltered)} onClick={() => setIsAltered(false)}>No, Unchanged</button></div>{isAltered && <input style={{ width: "100%", padding: "12px", marginTop: "14px", border: "1px solid #d5deea", borderRadius: "14px", boxSizing: "border-box" }} placeholder="New dwelling units added (e.g. 1)" value={dwellingUnits} onChange={(e) => setDwellingUnits(e.target.value)} />}</div><div><label style={{ display: "block", fontWeight: 700, margin: "12px 0" }}>2. ANY MODIFICATION TO ORIGINAL BUILDING PLAN OR USAGE?</label><div style={{ display: "flex", gap: "10px" }}><button type="button" style={choiceStyle(isModified)} onClick={() => setIsModified(true)}>Yes, Modified Plan/Usage</button><button type="button" style={choiceStyle(!isModified)} onClick={() => setIsModified(false)}>No, Unmodified</button></div>{isModified && <input style={{ width: "100%", padding: "12px", marginTop: "14px", border: "1px solid #d5deea", borderRadius: "14px", boxSizing: "border-box" }} placeholder="Area extended (Sq. M.) (e.g. 60)" value={extendedArea} onChange={(e) => setExtendedArea(e.target.value)} />}</div></div><div style={{ background: "#f0f2ff", border: "1px solid #d7dcff", borderRadius: "16px", padding: "18px", marginTop: "20px" }}><strong style={{ color: "#2d31c9" }}>ASSESSMENT BREAKDOWN:</strong><div style={{ display: "flex", justifyContent: "space-between", margin: "14px 0", gap: "18px" }}><span>Original Plot Size: <b>{originalArea} Sq. M.</b></span><span>Extended Area: <b>+{areaAdded} Sq. M.</b></span><span>New Total Area: <b>{totalArea} Sq. M.</b></span></div><div style={{ borderTop: "1px solid #dce1ff", paddingTop: "12px", color: "#597294", lineHeight: 1.8 }}>✓ Total Area ({totalArea} Sq. M.) is under 200 Sq. M.: Exempt from IFC.<br />✓ No additional dwelling units registered.<br />✓ No building plan or usage modifications declared.</div></div></div>
       <ActionBar style={{ display: "flex", justifyContent: "space-between", marginTop: "28px", borderTop: "1px solid #e5ebf3", paddingTop: "20px" }}><SubmitBar label="← Back" onSubmit={() => history.goBack()} /><SubmitBar label="Proceed to Demand Note →" onSubmit={handleProceedToDemand} disabled={estimateLoading} /></ActionBar>
       {error && <Toast error={error?.key === "error" ? true : false} label={t(error?.message)} onClose={() => setError(null)} />}
     </div>);

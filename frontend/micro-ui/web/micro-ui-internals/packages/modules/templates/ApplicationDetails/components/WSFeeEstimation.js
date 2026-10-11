@@ -53,7 +53,7 @@ const Rebate_menu = [
   },
 ];
 
-const WSFeeEstimation = ({ wsAdditionalDetails, workflowDetails, onlyDisconnectionFee = false }) => {
+const WSFeeEstimation = ({ wsAdditionalDetails, workflowDetails, onlyDisconnectionFee = false, onlyReconnectionFee = false }) => {
   const { t } = useTranslation();
   const [sessionFormData, setSessionFormData, clearSessionFormData] = Digit.Hooks.useSessionStorage("ADHOC_ADD_REBATE_DATA", {});
   const [sessionBillFormData, setSessionBillFormData, clearBillSessionFormData] = Digit.Hooks.useSessionStorage("ADHOC_BILL_ADD_REBATE_DATA", {});
@@ -96,13 +96,57 @@ const WSFeeEstimation = ({ wsAdditionalDetails, workflowDetails, onlyDisconnecti
   const [billDetails, setBillDetails] = useState(wsAdditionalDetails.additionalDetails.data ? wsAdditionalDetails.additionalDetails.data : {});
   const [values, setValues] = useState(wsAdditionalDetails.additionalDetails.values ? wsAdditionalDetails.additionalDetails.values : []);
   const isDisconnectionExecuted = wsAdditionalDetails?.additionalDetails?.appDetails?.applicationStatus === "DISCONNECTION_EXECUTED";
+  const appType =
+    wsAdditionalDetails?.additionalDetails?.appDetails?.applicationType ||
+    wsAdditionalDetails?.additionalDetails?.data?.applicationType ||
+    "";
+  const appNo =
+    wsAdditionalDetails?.additionalDetails?.appDetails?.applicationNo ||
+    wsAdditionalDetails?.additionalDetails?.data?.applicationNo ||
+    "";
+  const wfBusinessService =
+    workflowDetails?.data?.processInstances?.[0]?.businessService ||
+    workflowDetails?.ProcessInstances?.[0]?.businessService ||
+    "";
+  const isDisconnection =
+    appType?.includes("DISCONNECT") || wfBusinessService?.includes("Disconnect") || appNo?.includes("DC");
+  const isDisconnectionFeeOnly =
+    onlyDisconnectionFee ||
+    isDisconnectionExecuted ||
+    wsAdditionalDetails?.additionalDetails?.onlyDisconnectionFee ||
+    (isDisconnection &&
+      [
+        "PENDING_FOR_PAYMENT",
+        "PENDING_FOR_FINAL_PAYMENT",
+        "PENDING_FOR_ADDITIONAL_PAYMENT",
+        "PENDING_APPROVAL_FOR_DISCONNECTION",
+        "PENDING_FOR_DISCONNECTION_EXECUTION",
+        "DISCONNECTION_EXECUTED",
+      ].includes(appStatus));
+  const isReconnection =
+    appType?.includes("RECONNECT") || wfBusinessService?.includes("Reconnection") || appNo?.includes("RC");
+  const isReconnectionFeeOnly =
+    onlyReconnectionFee ||
+    wsAdditionalDetails?.additionalDetails?.onlyReconnectionFee ||
+    (isReconnection &&
+      ["PENDING_FOR_PAYMENT", "PENDING_APPROVAL_FOR_RECONNECTION", "PENDING_FOR_RECONNECTION_EXECUTION", "CONNECTION_ACTIVATED"].includes(appStatus));
+
   const billRows = billDetails?.billDetails?.[0]?.billAccountDetails || billDetails?.taxHeadEstimates || [];
   const disconnectionFee = billRows.find((row) => row?.taxHeadCode === "WS_DISCONNECTION_FEE" || row?.taxHeadCode === "SW_DISCONNECTION_FEE");
-  const displayedValues = onlyDisconnectionFee || isDisconnectionExecuted ? values.filter((value) => value?.title === "WS_DISCONNECTION_FEE" || value?.title === "SW_DISCONNECTION_FEE") : values;
-  const displayedTotalAmount = onlyDisconnectionFee || isDisconnectionExecuted
-    ? disconnectionFee?.amount ?? disconnectionFee?.estimateAmount ?? 0
-    : billDetails?.totalAmount;
-  const displayedIsPaid = isDisconnectionExecuted ? disconnectionFee?.status === "PAID" : isPaid;
+  const reopeningFee = billRows.find((row) => row?.taxHeadCode === "WS_REOPENING_FEE" || row?.taxHeadCode === "SW_REOPENING_FEE");
+  const displayedValues =
+    isDisconnectionFeeOnly
+      ? values.filter((value) => value?.title === "WS_DISCONNECTION_FEE" || value?.title === "SW_DISCONNECTION_FEE")
+      : isReconnectionFeeOnly
+      ? values.filter((value) => value?.title === "WS_REOPENING_FEE" || value?.title === "SW_REOPENING_FEE")
+      : values;
+  const displayedTotalAmount =
+    isDisconnectionFeeOnly
+      ? disconnectionFee?.amount ?? disconnectionFee?.estimateAmount ?? 0
+      : isReconnectionFeeOnly
+      ? reopeningFee?.amount ?? reopeningFee?.estimateAmount ?? 0
+      : billDetails?.totalAmount;
+  const displayedIsPaid = isDisconnectionExecuted ? disconnectionFee?.status === "PAID" || isPaid : isPaid;
 
   const stateCode = Digit.ULBService.getStateId();
   const { isMdmsLoading, data: mdmsRes } = Digit.Hooks.ws.useMDMS(stateCode, "BillingService", ["TaxHeadMaster"]);

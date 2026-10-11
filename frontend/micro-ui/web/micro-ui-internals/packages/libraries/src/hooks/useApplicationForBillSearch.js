@@ -157,8 +157,12 @@ export const useApplicationsForBusinessServiceSearch = ({ tenantId, businessServ
   if (window.location.href.includes("request-service.mobile_toilet")) {
     _key = "mt"
   } 
-
-
+  if (_key === "wsreconnection") {
+    _key = "ws";
+  }
+  if (_key === "swreconnection") {
+    _key = "sw";
+  }
 
   /* key from application ie being used as consumer code in bill */
   const { searchFn, key, label } = refObj(tenantId, filters)[_key] || {};

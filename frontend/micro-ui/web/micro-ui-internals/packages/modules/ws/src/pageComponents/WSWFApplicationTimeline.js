@@ -228,8 +228,17 @@ const WSWFApplicationTimeline = (props) => {
   };
 
   const isMutation = props.application?.applicationType?.includes("MUTATION");
-  const payBusinessService = isMutation
-    ? (props.application?.serviceType === "SEWERAGE" || props.application?.service === "SEWERAGE" ? "SW.MUTATION" : "WS.MUTATION")
+  const isReconnection = props.application?.applicationType?.includes("RECONNECT") || props.id?.includes("RC");
+  const isSewerageService =
+    props.application?.serviceType === "SEWERAGE" || props.application?.service === "SEWERAGE" || props.id?.includes("SW");
+  const payBusinessService = isReconnection
+    ? isSewerageService
+      ? "SWReconnection"
+      : "WSReconnection"
+    : isMutation
+    ? isSewerageService
+      ? "SW.MUTATION"
+      : "WS.MUTATION"
     : businessService;
 
   const showNextActions = (nextActions) => {
