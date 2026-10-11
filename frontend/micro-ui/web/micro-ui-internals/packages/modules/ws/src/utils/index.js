@@ -276,7 +276,7 @@ export const createPayloadOfWS = async (data) => {
   const isSewerage = serviceType?.includes("SEWERAGE") || serviceType === "BOTH" || connectionDetail?.sewerage;
 
   const connectionDetailsObject = connectionDetail;
-  const useDetailsObject = data?.useDetails || connectionDetailsObject || {};
+  const useDetailsObject = data?.waterConnection?.useDetails || data?.useDetails || connectionDetailsObject || {};
   const connectionHolder = data?.ConnectionHolderDetails?.[0] || data?.ConnectionHolderDetails;
 
 
@@ -2067,10 +2067,11 @@ export const WSCalculationPayload = (data, tenantId) => {
     is12ABCertificate: useDetails?.is12ABCertificate ? true : false,
   };
 
-  // Optional fields based on form data that might be present
   if (useDetails?.NumberofRooms) payload.numberOfRooms = Number(useDetails.NumberofRooms);
   if (useDetails?.NumberofDwellingUnits) payload.numberOfDwellingUnits = Number(useDetails.NumberofDwellingUnits);
   if (useDetails?.servantQuarterArea) payload.servantQuarterArea = Number(useDetails.servantQuarterArea);
+  const questionsList = useDetails?.questions || useDetails?.questionAnswers || useDetails?.propertyQuestions;
+  if (questionsList) payload.questions = questionsList;
 
   return payload;
 };

@@ -35,11 +35,12 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
         numberOfBeds: "",
         numberOfStudents: "",
         servantQuarterArea: "",
+        questions: [],
       },
     },
   });
 
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const tenantId = Digit.ULBService.getStateId?.() || Digit.ULBService.getCurrentTenantId();
 
   const { data: ptServicesMastersData } = Digit.Hooks.pt.usePropertyMDMS(tenantId, "PropertyTax", [
     "PropertyCategory",
@@ -49,6 +50,13 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
     "PropertyToUsageMapping",
     "PropertyType2",
   ]);
+
+  useEffect(() => {
+    console.log("[PropertyWaterConnection] tenantId used for MDMS:", tenantId);
+    console.log("[PropertyWaterConnection] MDMS raw response (ptServicesMastersData):", ptServicesMastersData);
+    console.log("[PropertyWaterConnection] MDMS PropertyTax.PropertyType2:", ptServicesMastersData?.PropertyTax?.PropertyType2);
+    console.log("[PropertyWaterConnection] MDMS PropertyTax.PropertyType:", ptServicesMastersData?.PropertyTax?.PropertyType);
+  }, [tenantId, ptServicesMastersData]);
 
   const { data: wsServicesMastersData } = Digit.Hooks.ws.useMDMS(tenantId, "ws-services-masters", ["WsCategoryType"]);
 
@@ -119,19 +127,28 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
     }));
   }, [ptServicesMastersData]);
 
+  const propertyType2List = useMemo(() => {
+    const fromMdms = ptServicesMastersData?.PropertyTax?.PropertyType2;
+    if (Array.isArray(fromMdms) && fromMdms.length > 0) {
+      return fromMdms;
+    }
+    return [];
+  }, [ptServicesMastersData]);
+
   const propertyTypeOptions = useMemo(() => {
-    const list = ptServicesMastersData?.PropertyTax?.PropertyType2 || ptServicesMastersData?.PropertyTax?.PropertyType || [];
+    const list = propertyType2List?.length > 0 ? propertyType2List : (ptServicesMastersData?.PropertyTax?.PropertyType || []);
     return list
-      .filter((item) => item.active)
+      .filter((item) => item.active !== false)
       .map((item) => ({
         ...item,
         code: item.code,
-        name: item.name,
+        name: item.name || item.code,
+        i18nKey: item.i18nKey || item.code,
       }));
-  }, [ptServicesMastersData]);
+  }, [propertyType2List, ptServicesMastersData]);
 
   const usageTypeOptions = useMemo(() => {
-    const list = ptServicesMastersData?.PropertyTax?.PropertyType2 || [];
+    const list = propertyType2List?.length > 0 ? propertyType2List : (ptServicesMastersData?.PropertyTax?.PropertyType || []);
     const uniqueTypes = [...new Set(list.map((item) => item.waterConnectionUsageType).filter(Boolean))];
     const typesToMap = uniqueTypes.length > 0 ? uniqueTypes : ["Normal", "Bulk"];
     return typesToMap.map((type) => ({
@@ -139,7 +156,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
       name: type,
       value: type,
     }));
-  }, [ptServicesMastersData]);
+  }, [propertyType2List, ptServicesMastersData]);
 
   const prevPropertyTypeCode = React.useRef(null);
 
@@ -152,15 +169,15 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
     const isNewType = prevPropertyTypeCode.current !== watchPropertyType.code;
     prevPropertyTypeCode.current = watchPropertyType.code;
 
-    const propertyType2List = ptServicesMastersData?.PropertyTax?.PropertyType2 || [];
-    const matched = propertyType2List.find(
+    const list = propertyType2List?.length > 0 ? propertyType2List : (ptServicesMastersData?.PropertyTax?.PropertyType || []);
+    const matched = list.find(
       (item) => normalizeCode(item.code) === normalizeCode(watchPropertyType.code)
     );
 
     if (matched && isNewType) {
       // 1. Category Type
-      if (matched.categoryType && matched.categoryType.length > 0 && categoryTypeList.length > 0) {
-        const catTarget = matched.categoryType[0];
+      if (matched.categoryType && categoryTypeList.length > 0) {
+        const catTarget = Array.isArray(matched.categoryType) ? matched.categoryType[0] : matched.categoryType;
         const foundCat = categoryTypeList.find(
           (c) => normalizeCode(c.code) === normalizeCode(catTarget) || normalizeCode(c.name) === normalizeCode(catTarget)
         );
@@ -180,7 +197,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
       }
 
       // 3. Water Connection Usage Type
-      if (matched.waterConnectionUsageType && matched.waterConnectionUsageType.length > 0) {
+      if (matched.waterConnectionUsageType && usageTypeOptions.length > 0) {
         const foundUsage = usageTypeOptions.find(
           (u) => normalizeCode(u.code) === normalizeCode(matched.waterConnectionUsageType) || normalizeCode(u.name) === normalizeCode(matched.waterConnectionUsageType)
         );
@@ -191,6 +208,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
     }
   }, [
     watchPropertyType?.code,
+    propertyType2List,
     ptServicesMastersData,
     categoryTypeList,
     categoryOptions,
@@ -205,13 +223,90 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
     }));
   }, [ptServicesMastersData]);
 
+  const activeQuestions = useMemo(() => {
+    if (!watchPropertyType?.code) return [];
+    let qList = watchPropertyType?.questions;
+    if (!qList || !Array.isArray(qList)) {
+      const list = propertyType2List?.length > 0 ? propertyType2List : (ptServicesMastersData?.PropertyTax?.PropertyType || []);
+      const matched = list.find(
+        (item) => normalizeCode(item.code) === normalizeCode(watchPropertyType.code)
+      );
+      qList = matched?.questions;
+    }
+    if (!qList || !Array.isArray(qList)) return [];
+    return qList
+      .map((q) => (typeof q === "object" ? q?.question || q?.title || q?.name || "" : String(q || "")))
+      .map((q) => q.trim())
+      .filter((q) => q.length > 0);
+  }, [watchPropertyType, propertyType2List, ptServicesMastersData]);
+
+  useEffect(() => {
+    if (watchPropertyType?.code) {
+      const list = propertyType2List?.length > 0 ? propertyType2List : (ptServicesMastersData?.PropertyTax?.PropertyType || []);
+      const matched = list.find(
+        (item) => normalizeCode(item.code) === normalizeCode(watchPropertyType.code)
+      );
+      console.log("[PropertyWaterConnection] Selected propertyType:", watchPropertyType);
+      console.log("[PropertyWaterConnection] Matched item in MDMS list:", matched);
+      console.log("[PropertyWaterConnection] Matched questions in MDMS:", matched?.questions);
+      console.log("[PropertyWaterConnection] Active questions to display:", activeQuestions);
+    }
+  }, [watchPropertyType, propertyType2List, ptServicesMastersData, activeQuestions]);
+
+  const [questionAnswers, setQuestionAnswers] = useState(() => {
+    const existing =
+      formData?.[config?.key]?.useDetails?.questionAnswers ||
+      formData?.[config?.key]?.useDetails?.questions ||
+      formData?.[config?.key]?.questionAnswers ||
+      [];
+    return Array.isArray(existing) ? existing : [];
+  });
+
+  const prevActiveQuestions = React.useRef(null);
+  useEffect(() => {
+    if (!_.isEqual(prevActiveQuestions.current, activeQuestions)) {
+      prevActiveQuestions.current = _.cloneDeep(activeQuestions);
+      if (activeQuestions.length > 0) {
+        setQuestionAnswers((prev) => {
+          return activeQuestions.map((q) => {
+            const found = prev?.find?.((item) => item.question === q);
+            return { question: q, answer: found ? found.answer : "" };
+          });
+        });
+      } else {
+        setQuestionAnswers([]);
+      }
+    }
+  }, [activeQuestions]);
+
+  const handleAnswerChange = (index, questionText, val) => {
+    setQuestionAnswers((prev) => {
+      const updated = [...prev];
+      updated[index] = { question: questionText, answer: val };
+      return updated;
+    });
+  };
+
+  useEffect(() => {
+    setValue("useDetails.questions", questionAnswers);
+    console.log("[PropertyWaterConnection] Current questions:", questionAnswers);
+  }, [questionAnswers, setValue]);
+
   const lastSentValue = React.useRef(null);
   useEffect(() => {
-    if (!_.isEqual(lastSentValue.current, formValue)) {
-      lastSentValue.current = _.cloneDeep(formValue);
-      onSelect(config.key, formValue);
+    const payloadToSend = {
+      ...formValue,
+      questions: questionAnswers,
+      useDetails: {
+        ...formValue?.useDetails,
+        questions: questionAnswers,
+      },
+    };
+    if (!_.isEqual(lastSentValue.current, payloadToSend)) {
+      lastSentValue.current = _.cloneDeep(payloadToSend);
+      onSelect(config.key, payloadToSend);
     }
-  }, [formValue, config.key, onSelect]);
+  }, [formValue, questionAnswers, config.key, onSelect]);
 
   useEffect(() => {
     if (propertyDetailsInitialized.current || !formData?.cpt?.details) return;
@@ -234,7 +329,8 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
       );
       setValue("useDetails.propertyCategory", propCategoryMatch ? { code: propCategoryMatch.code, name: propCategoryMatch.name } : null);
 
-      const propTypeMatch = (ptServicesMastersData?.PropertyTax?.PropertyType2 || ptServicesMastersData?.PropertyTax?.PropertyType)?.find(
+      const propTypeList = propertyType2List?.length > 0 ? propertyType2List : (ptServicesMastersData?.PropertyTax?.PropertyType || []);
+      const propTypeMatch = propTypeList.find(
         (o) => normalizeCode(o.code) === normalizeCode(getCode(additionalDetails.propertyType || details.propertyType))
       );
       setValue("useDetails.propertyType", propTypeMatch ? { code: propTypeMatch.code, name: propTypeMatch.name } : null);
@@ -271,6 +367,15 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
       setValue("useDetails.servantQuarterArea", additionalDetails.servantQuarterArea || details?.servantQuarterArea?.toString() || "");
       setValue("useDetails.numberOfBeds", additionalDetails.numberOfBeds || details?.numberOfBeds?.toString() || "");
       setValue("useDetails.numberOfStudents", additionalDetails.numberOfStudents || details?.numberOfStudents?.toString() || "");
+      const savedQAs =
+        additionalDetails.questions ||
+        additionalDetails.questionAnswers ||
+        additionalDetails.propertyQuestions ||
+        [];
+      if (Array.isArray(savedQAs) && savedQAs.length > 0) {
+        setQuestionAnswers(savedQAs);
+        setValue("useDetails.questions", savedQAs);
+      }
     } else if (formData?.cpt === null) {
       setValue("useDetails.categoryType", null);
       setValue("useDetails.propertyCategory", null);
@@ -287,6 +392,8 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
       setValue("useDetails.numberOfBeds", "");
       setValue("useDetails.numberOfStudents", "");
       setValue("useDetails.servantQuarterArea", "");
+      setQuestionAnswers([]);
+      setValue("useDetails.questions", []);
     }
     propertyDetailsInitialized.current = true;
   }, [
@@ -426,6 +533,27 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
         {errors?.useDetails?.WaterConnectionUsageType && (
           <CardLabelError style={errorStyle}>{errors.useDetails.WaterConnectionUsageType.message}</CardLabelError>
         )}
+
+        {activeQuestions && activeQuestions.length > 0 && activeQuestions.map((questionText, index) => {
+          const rawQ = String(questionText || "").trim();
+          const label = rawQ.toLowerCase().startsWith("question") ? rawQ : `Question : ${rawQ}`;
+          return (
+            <LabelFieldPair key={`question_${index}_${rawQ}`}>
+              <CardLabel style={{ whiteSpace: "normal", wordBreak: "break-word" }}>
+                {label}
+              </CardLabel>
+              <div className="form-field">
+                <TextInput
+                  name={`useDetails.question_${index}`}
+                  value={questionAnswers[index]?.answer !== undefined ? questionAnswers[index].answer : ""}
+                  disabled={isPropertyFound}
+                  placeholder="Enter Answer"
+                  onChange={(e) => handleAnswerChange(index, questionText, e.target.value)}
+                />
+              </div>
+            </LabelFieldPair>
+          );
+        })}
 
         <LabelFieldPair>
           <CardLabel>
