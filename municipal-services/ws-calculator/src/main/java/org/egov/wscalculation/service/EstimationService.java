@@ -1259,6 +1259,7 @@ public class EstimationService {
 			reconnectionCharge = new BigDecimal("250.00");
 			taxHeadCode = WSCalculationConstant.WS_RECONNECTION_CHARGE;
 			log.warn("[WS-RECONNECTION-ESTIMATE] No amount found in FeeSlab, defaulted to 250.00");
+		}
 		
 		List<TaxHeadEstimate> estimates = new ArrayList<>();
 
