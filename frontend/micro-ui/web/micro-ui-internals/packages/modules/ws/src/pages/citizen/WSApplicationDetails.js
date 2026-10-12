@@ -12,6 +12,7 @@ import {
   CardHeader,
   SubmitBar,
   GenericFileIcon,
+  Modal,
 } from "@djb25/digit-ui-react-components";
 import React, { useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
@@ -43,6 +44,64 @@ const WSApplicationDetails = () => {
   // const stateCode = Digit.ULBService.getStateId();
   const [showOptions, setShowOptions] = useState(false);
   const [viewTimeline, setViewTimeline] = useState(false);
+  const [showDocModal, setShowDocModal] = useState(false);
+  const [docFileUrl, setDocFileUrl] = useState(null);
+  const [docFileType, setDocFileType] = useState("image");
+
+  const handleViewEmployeeDoc = async (fileStoreId) => {
+    if (!fileStoreId) return;
+    try {
+      const response = await Digit.UploadServices.Filefetch([fileStoreId], tenantId?.split(".")[0] || Digit.ULBService.getStateId());
+      let rawUrl = response?.data?.fileStoreIds?.[0]?.url || (response?.data?.[fileStoreId]) || "";
+      let fileURL = "";
+      if (rawUrl && typeof rawUrl === "string") {
+        const linkList = rawUrl.split(",");
+        linkList.forEach((link) => {
+          const trimmed = link ? link.trim() : "";
+          if (trimmed && !trimmed.includes("large") && !trimmed.includes("medium") && !trimmed.includes("small")) {
+            fileURL = trimmed;
+          }
+        });
+        if (!fileURL && linkList[0]) {
+          fileURL = linkList[0].trim();
+        }
+      }
+      if (fileURL) {
+        setDocFileUrl(fileURL);
+        const lowerUrl = fileURL.toLowerCase();
+        if (lowerUrl.includes(".pdf")) {
+          setDocFileType("pdf");
+        } else {
+          setDocFileType("image");
+        }
+        setShowDocModal(true);
+        return;
+      }
+    } catch (e) {
+      console.warn("Filefetch failed, falling back to FileFetchbyid", e);
+    }
+
+    try {
+      const res = await Digit.UploadServices.FileFetchbyid(fileStoreId, Digit.ULBService.getStateId());
+      if (res?.data) {
+        const blob =
+          res.data instanceof Blob
+            ? res.data
+            : new Blob([res.data], { type: res.headers?.["content-type"] || res.headers?.["Content-Type"] || "image/jpeg" });
+        const fileURL = URL.createObjectURL(blob);
+        setDocFileUrl(fileURL);
+        const contentType = res.headers?.["content-type"] || res.headers?.["Content-Type"] || "";
+        if (contentType.toLowerCase().includes("pdf")) {
+          setDocFileType("pdf");
+        } else {
+          setDocFileType("image");
+        }
+        setShowDocModal(true);
+      }
+    } catch (err) {
+      console.error("Failed to fetch file URL via FileFetchbyid", err);
+    }
+  };
   const applicationNobyData = window.location.href.includes("SW_")
     ? window.location.href.substring(window.location.href.indexOf("SW_"))
     : window.location.href.substring(window.location.href.indexOf("WS_"));
@@ -544,6 +603,37 @@ const WSApplicationDetails = () => {
                     )
                   )}`}
                 />
+                <Row
+                  label={t("WS_Billing_Address_Type")}
+                  text={`${t(
+                    checkForNA(
+                      connectionDetails?.addressType?.i18nKey ||
+                        connectionDetails?.addressType?.name ||
+                        (typeof connectionDetails?.addressType?.code === "string"
+                          ? connectionDetails.addressType.code === "PERMANENT"
+                            ? "Permanent"
+                            : connectionDetails.addressType.code === "CORRESPONDENCE"
+                            ? "Correspondence"
+                            : connectionDetails.addressType.code
+                          : null) ||
+                        (typeof connectionDetails?.addressType === "string"
+                          ? connectionDetails.addressType === "PERMANENT"
+                            ? "Permanent"
+                            : connectionDetails.addressType === "CORRESPONDENCE"
+                            ? "Correspondence"
+                            : connectionDetails.addressType
+                          : null) ||
+                        applicationData?.additionalDetails?.addressType
+                    )
+                  )}`}
+                />
+                <Row
+                  label={t("Complete Address")}
+                  text={`${checkForNA(
+                    connectionDetails?.completeAddress ||
+                      applicationData?.additionalDetails?.completeAddress
+                  )}`}
+                />
                 <Row label={t("WS_DIVYANGJAN")} text={`${connectionDetails?.isDivyangjan ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}`} />
                 {/* <Row
                   label={t("WS_SERVICE_TYPE")}
@@ -1036,12 +1126,41 @@ const WSApplicationDetails = () => {
                     )
                   )}`}
                 />
-                {["Apartment","DDAFlats","GovtFlats","Bungalows","FlatOrApartment","GroupHousingSociety","JJSLUMS","IndividualHouse","BuiltUp.GroupHousingSociety","BuiltUp.JJSLUMS","BuiltUp.IndividualHouse"].includes(useDetails?.propertyType?.code || useDetails?.propertyType) ? (
+                {(String(
+                  useDetails?.propertyCategory?.code ||
+                    useDetails?.propertyCategory?.name ||
+                    useDetails?.propertyCategory ||
+                    applicationData?.additionalDetails?.propertyCategory?.code ||
+                    applicationData?.additionalDetails?.propertyCategory ||
+                    applicationData?.property?.propertyType?.propertyCategory ||
+                    applicationData?.property?.usageCategory ||
+                    ""
+                ).toUpperCase().includes("RESIDENTIAL")) ? (
                 <Row
                   label={t("WS_NUMBER_OF_DWELLING_UNITS")}
                   text={`${t(checkForNA(useDetails?.NumberofDwellingUnits || useDetails?.noOfDwellingUnits))}`}
                 />
               ) : null}
+              {(Array.isArray(
+                useDetails?.questions ||
+                  useDetails?.questionAnswers ||
+                  applicationData?.additionalDetails?.questions ||
+                  applicationData?.additionalDetails?.questionAnswers ||
+                  applicationData?.property?.additionalDetails?.questions
+              )
+                ? useDetails?.questions ||
+                  useDetails?.questionAnswers ||
+                  applicationData?.additionalDetails?.questions ||
+                  applicationData?.additionalDetails?.questionAnswers ||
+                  applicationData?.property?.additionalDetails?.questions
+                : []
+              ).map((q, idx) => {
+                const qText = typeof q === "object" ? q?.question || q?.questionText || q?.title || `Question ${idx + 1}` : `Question ${idx + 1}`;
+                const aText = typeof q === "object" ? (typeof q?.answer === "object" ? (q?.answer?.name || q?.answer?.value || q?.answer?.code) : q?.answer) : q;
+                const trimmedQ = String(qText || "").trim();
+                const displayLabel = trimmedQ.toLowerCase().startsWith("question") ? trimmedQ : `${trimmedQ}`;
+                return <Row key={`question_${idx}`} label={displayLabel} text={`${t(checkForNA(aText))}`} />;
+              })}
               </StatusTable>
 
               <CardHeader styles={{ fontSize: "28px" }}>{t("WS_DJB_EMPLOYEE")}</CardHeader>
@@ -1057,7 +1176,7 @@ const WSApplicationDetails = () => {
                         text={
                           <span
                             style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", color: "#f47738" }}
-                            onClick={() => getFiles([djbEmployee?.document], tenantId?.split(".")[0])}
+                            onClick={() => handleViewEmployeeDoc(djbEmployee?.document)}
                           >
                             <GenericFileIcon /> {t("CS_COMMON_VIEW")}
                           </span>
@@ -1359,6 +1478,38 @@ const WSApplicationDetails = () => {
           </Card>
         </div>
       </div>
+      {showDocModal && (
+        <Modal
+          open={showDocModal}
+          headerBarMain={t("WS_VIEW_DOCUMENT") || "View Document"}
+          headerBarEnd={
+            <div onClick={() => setShowDocModal(false)} style={{ cursor: "pointer", padding: "5px" }}>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#505A5F" width="24" height="24">
+                <path d="M0 0h24v24H0V0z" fill="none" />
+                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+              </svg>
+            </div>
+          }
+          actionCancelOnSubmit={() => setShowDocModal(false)}
+          actionCancelLabel={t("CS_COMMON_CLOSE") || "Close"}
+          actionSaveOnSubmit={() => window.open(docFileUrl, "_blank")}
+          actionSaveLabel={t("CS_COMMON_OPEN_IN_NEW_TAB") || "Open Full"}
+          hideSubmit={!docFileUrl}
+          width="800px"
+        >
+          <div style={{ display: "flex", justifyContent: "center", alignItems: "center", padding: "20px", minHeight: "300px" }}>
+            {docFileType === "pdf" ? (
+              <iframe src={docFileUrl} title="Document Preview" width="100%" height="500px" style={{ border: "none" }} />
+            ) : (
+              <img
+                src={docFileUrl}
+                alt="Document Preview"
+                style={{ maxWidth: "100%", maxHeight: "500px", objectFit: "contain", borderRadius: "4px" }}
+              />
+            )}
+          </div>
+        </Modal>
+      )}
     </React.Fragment>
   );
 };

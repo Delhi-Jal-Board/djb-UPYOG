@@ -150,12 +150,63 @@ const ApplicationDetails = () => {
   let dowloadOptions = [],
     appStatus = applicationDetails?.applicationData?.applicationStatus || "";
 
+  const timeline =
+    workflowDetails?.data?.processInstances ||
+    workflowDetails?.ProcessInstances ||
+    applicationDetails?.processInstancesDetails ||
+    [];
+
+  const allTimelineSteps = workflowDetails?.data?.timeline || [];
+
+  const isSendBackToCitizen =
+    (Array.isArray(timeline) &&
+      timeline.some(
+        (step) =>
+          step?.action === "SEND_BACK_TO_CITIZEN" ||
+          step?.action === "SEND_BACK_TO_CITIZEN_DIRECT"
+      )) ||
+    (Array.isArray(allTimelineSteps) &&
+      allTimelineSteps.some(
+        (step) =>
+          step?.performedAction === "SEND_BACK_TO_CITIZEN" ||
+          step?.performedAction === "SEND_BACK_TO_CITIZEN_DIRECT"
+      ));
+
+  const hasPaymentInTimeline =
+    (Array.isArray(timeline) &&
+      timeline.some(
+        (step) =>
+          step?.action === "PAY" ||
+          step?.state?.state === "PENDING_FOR_PAYMENT" ||
+          step?.state?.applicationStatus === "PENDING_FOR_PAYMENT" ||
+          step?.state?.state === "PENDING_FOR_ZRO_APPROVAL" ||
+          step?.state?.state === "PENDING_FOR_EE_APPROVAL" ||
+          step?.state?.applicationStatus === "PENDING_FOR_ZRO_APPROVAL" ||
+          step?.state?.applicationStatus === "PENDING_FOR_EE_APPROVAL"
+      )) ||
+    (Array.isArray(allTimelineSteps) &&
+      allTimelineSteps.some(
+        (step) =>
+          step?.performedAction === "PAY" ||
+          step?.state === "PENDING_FOR_PAYMENT" ||
+          step?.status === "PENDING_FOR_PAYMENT" ||
+          step?.state === "PENDING_FOR_ZRO_APPROVAL" ||
+          step?.state === "PENDING_FOR_EE_APPROVAL" ||
+          step?.status === "PENDING_FOR_ZRO_APPROVAL" ||
+          step?.status === "PENDING_FOR_EE_APPROVAL"
+      ));
+
+  const isCitizenActionPostPayment =
+    (appStatus === "PENDING_FOR_CITIZEN_ACTION" || appStatus === "PENDING FOR CITIZEN ACTION") &&
+    (isSendBackToCitizen || hasPaymentInTimeline);
+
   const isFeePaid =
     reciept_data?.Payments?.length > 0 ||
+    isCitizenActionPostPayment ||
     (appStatus &&
       appStatus !== "INITIATED" &&
       appStatus !== "PENDING_FOR_DOCUMENT_VERIFICATION" &&
-      appStatus !== "PENDING_FOR_CITIZEN_ACTION" &&
+      (appStatus !== "PENDING_FOR_CITIZEN_ACTION" || isCitizenActionPostPayment) &&
       appStatus !== "PENDING_FOR_FIELD_INSPECTION" &&
       appStatus !== "PENDING_FOR_PAYMENT" &&
       appStatus !== "PENDING_FOR_FINAL_PAYMENT" &&

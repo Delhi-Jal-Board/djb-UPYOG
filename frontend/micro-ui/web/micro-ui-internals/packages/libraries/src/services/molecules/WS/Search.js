@@ -480,11 +480,41 @@ export const WSSearch = {
       ? feeValues.filter((bill) => bill?.title === "WS_DISCONNECTION_FEE" || bill?.title === "SW_DISCONNECTION_FEE")
       : feeValues;
 
+    const timeline =
+      workFlowDataDetails?.ProcessInstances ||
+      workflowDetails?.ProcessInstances ||
+      [];
+
+    const isSendBackToCitizen =
+      Array.isArray(timeline) &&
+      timeline.some(
+        (step) =>
+          step?.action === "SEND_BACK_TO_CITIZEN" ||
+          step?.action === "SEND_BACK_TO_CITIZEN_DIRECT"
+      );
+
+    const hasPaymentInTimeline =
+      Array.isArray(timeline) &&
+      timeline.some(
+        (step) =>
+          step?.action === "PAY" ||
+          step?.state?.state === "PENDING_FOR_PAYMENT" ||
+          step?.state?.applicationStatus === "PENDING_FOR_PAYMENT" ||
+          step?.state?.state === "PENDING_FOR_ZRO_APPROVAL" ||
+          step?.state?.state === "PENDING_FOR_EE_APPROVAL" ||
+          step?.state?.applicationStatus === "PENDING_FOR_ZRO_APPROVAL" ||
+          step?.state?.applicationStatus === "PENDING_FOR_EE_APPROVAL"
+      );
+
+    const isCitizenActionPostPayment =
+      (appStatus === "PENDING_FOR_CITIZEN_ACTION" || appStatus === "PENDING FOR CITIZEN ACTION") &&
+      (isSendBackToCitizen || hasPaymentInTimeline);
+
     const isWorkflowPaid =
       appStatus &&
       appStatus !== "INITIATED" &&
       appStatus !== "PENDING_FOR_DOCUMENT_VERIFICATION" &&
-      appStatus !== "PENDING_FOR_CITIZEN_ACTION" &&
+      (appStatus !== "PENDING_FOR_CITIZEN_ACTION" || isCitizenActionPostPayment) &&
       appStatus !== "PENDING_FOR_FIELD_INSPECTION" &&
       appStatus !== "PENDING_FOR_PAYMENT" &&
       appStatus !== "PENDING_FOR_FINAL_PAYMENT" &&
@@ -500,7 +530,7 @@ export const WSSearch = {
         appDetails: { ...wtrSewDetails, property: propertyDataDetails, service: serviceDataType },
         isAdhocRebate: isAdhocRebate,
         isVisible: isVisible,
-        isPaid: colletionData?.Payments?.length > 0 || isWorkflowPaid ? true : false,
+        isPaid: colletionData?.Payments?.length > 0 || isWorkflowPaid || isCitizenActionPostPayment ? true : false,
         isViewBreakup: isVisible && !isReconnectionFeeOnlyStatus && !isDisconnectionFeeOnlyStatus,
         onlyReconnectionFee: isReconnectionFeeOnlyStatus,
         onlyDisconnectionFee: isDisconnectionFeeOnlyStatus,
@@ -622,7 +652,17 @@ export const WSSearch = {
       "BuiltUp.JJSLUMS",
       "BuiltUp.IndividualHouse",
     ];
-    if (dwellingPropertyTypes.includes(propertyDataDetails?.additionalDetails?.propertyType)) {
+    const isPropResidential =
+      String(
+        propertyDataDetails?.additionalDetails?.propertyCategory?.code ||
+          propertyDataDetails?.additionalDetails?.propertyCategory?.name ||
+          propertyDataDetails?.additionalDetails?.propertyCategory ||
+          propertyDataDetails?.propertyCategory ||
+          propertyDataDetails?.usageCategory ||
+          propertyDataDetails?.propertyType ||
+          ""
+      ).toUpperCase().includes("RESIDENTIAL");
+    if (isPropResidential) {
       propertyWaterConnectionUseDetails.values.push({
         title: "WS_NUMBER_OF_DWELLING_UNITS",
         value: propertyDataDetails?.additionalDetails?.numberOfDwellingUnits || propertyDataDetails?.additionalDetails?.noOfDwellingUnits || propertyDataDetails?.additionalDetails?.NumberofDwellingUnits || t("NA"),
@@ -636,6 +676,34 @@ export const WSSearch = {
       propertyWaterConnectionUseDetails.values.push({
         title: "WS_NUMBER_OF_BEDS",
         value: propertyDataDetails?.additionalDetails?.hospitalBeds || t("NA"),
+      });
+    }
+
+    const rawQuestions =
+      propertyDataDetails?.additionalDetails?.questions ||
+      propertyDataDetails?.additionalDetails?.questionAnswers ||
+      propertyDataDetails?.additionalDetails?.propertyQuestions ||
+      propertyDataDetails?.questions ||
+      wsDataDetails?.additionalDetails?.questions ||
+      wsDataDetails?.additionalDetails?.questionAnswers ||
+      [];
+    if (Array.isArray(rawQuestions) && rawQuestions.length > 0) {
+      rawQuestions.forEach((item, index) => {
+        if (!item) return;
+        let qText = typeof item === "object" ? item.question || item.questionText || item.title || item.name || `Question ${index + 1}` : `Question ${index + 1}`;
+        let aText = "";
+        const rawAns = typeof item === "object" ? (item.answer !== undefined ? item.answer : item.value !== undefined ? item.value : "") : item;
+        if (typeof rawAns === "object" && rawAns !== null) {
+          aText = rawAns.name || rawAns.value || rawAns.code || JSON.stringify(rawAns);
+        } else {
+          aText = String(rawAns !== null && rawAns !== undefined ? rawAns : "");
+        }
+        const trimmedQ = String(qText || "").trim();
+        const displayLabel = trimmedQ.toLowerCase().startsWith("question") ? trimmedQ : `Question : ${trimmedQ}`;
+        propertyWaterConnectionUseDetails.values.push({
+          title: displayLabel,
+          value: aText.trim() ? aText : t("NA"),
+        });
       });
     }
 
@@ -949,6 +1017,29 @@ export const WSSearch = {
                 ? t(`WS_APPLICANT_${wsDataDetails?.additionalDetails?.applicantType}`)
                 : t("NA"),
           });
+
+          const rawAddressType =
+            wsDataDetails?.additionalDetails?.addressType ||
+            wsDataDetails?.ConnectionDetails?.[0]?.addressType ||
+            wsDataDetails?.addressType;
+          if (rawAddressType) {
+            const addrType = String(rawAddressType?.code || rawAddressType).toUpperCase();
+            fields.push({
+              title: "WS_Billing_Address_Type",
+              value: addrType === "PERMANENT" ? "Permanent" : addrType === "CORRESPONDENCE" ? "Correspondence" : t(addrType) || t("NA"),
+            });
+          }
+
+          const rawCompleteAddress =
+            wsDataDetails?.additionalDetails?.completeAddress ||
+            wsDataDetails?.ConnectionDetails?.[0]?.completeAddress ||
+            wsDataDetails?.completeAddress;
+          if (rawCompleteAddress) {
+            fields.push({
+              title: "Complete Address",
+              value: rawCompleteAddress,
+            });
+          }
 
           /* fields.push({
             title: isNonDomestic ? "WS_NON_DOMESTIC_TYPE" : "WS_DOMESTIC_TYPE",

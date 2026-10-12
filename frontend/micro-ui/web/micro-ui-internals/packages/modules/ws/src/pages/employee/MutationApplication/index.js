@@ -105,7 +105,6 @@ const MutationApplication = () => {
   }, [location.pathname, path]);
   // Determine if we are editing an existing application
   const editApplicationNumber = details?.applicationNo || applicationNumber;
-  console.log(editApplicationNumber, "editApplicationNumber");
   const { isLoading: isWorkflowLoading, data: workflowData } = useQuery(
     ["WORKFLOW_SEARCH", editApplicationNumber, tenantId],
     async () => {
@@ -114,7 +113,6 @@ const MutationApplication = () => {
     },
     { enabled: !!editApplicationNumber }
   );
-  console.log(workflowData, "workflowData");
   const isEmployee = window.location.href.includes("/employee/");
 
   // FIX: Airtight check ensuring we are truly in an Edit Flow and not a Create Flow

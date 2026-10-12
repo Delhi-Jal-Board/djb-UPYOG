@@ -33,8 +33,6 @@ const Step2_NewConsumerDetails = ({ t, onNext, onBack, defaultValues }) => {
   });
 
   const isDevolutionOrInheritance = selectedReason?.code === "DEVOLUTION_INHERITANCE" || selectedReason === "DEVOLUTION_INHERITANCE" || String(selectedReason?.code || "").toUpperCase().includes("DEVOLUTION") || String(selectedReason || "").toUpperCase().includes("DEVOLUTION");
-  console.log("selectedReason in Step2:", selectedReason);
-  console.log("isDevolutionOrInheritance:", isDevolutionOrInheritance);
 
   const genderOptions = [
     { code: "MALE", i18nKey: "Male" },

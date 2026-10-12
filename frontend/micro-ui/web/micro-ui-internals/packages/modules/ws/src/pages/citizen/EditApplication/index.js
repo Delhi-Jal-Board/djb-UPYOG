@@ -93,6 +93,27 @@ const getEditDetails = (waterResult, sewerageresult, t) => {
       },
       proposedTaps: waterResult?.proposedTaps,
     };
+    const rawAddressType =
+      waterResult?.additionalDetails?.addressType ||
+      waterResult?.ConnectionDetails?.[0]?.addressType ||
+      waterResult?.addressType;
+    const addressTypeObj =
+      typeof rawAddressType === "object" && rawAddressType?.code
+        ? rawAddressType
+        : String(rawAddressType).toUpperCase() === "PERMANENT"
+        ? { i18nKey: "Permanent", code: "PERMANENT" }
+        : String(rawAddressType).toUpperCase() === "CORRESPONDENCE"
+        ? { i18nKey: "Correspondence", code: "CORRESPONDENCE" }
+        : rawAddressType
+        ? { i18nKey: rawAddressType, code: rawAddressType }
+        : null;
+
+    const completeAddressStr =
+      waterResult?.additionalDetails?.completeAddress ||
+      waterResult?.ConnectionDetails?.[0]?.completeAddress ||
+      waterResult?.completeAddress ||
+      "";
+
     waterResult.ConnectionDetails = [
       {
         water: true,
@@ -110,6 +131,8 @@ const getEditDetails = (waterResult, sewerageresult, t) => {
         categoryType: waterResult?.additionalDetails?.categoryType
           ? { code: waterResult?.additionalDetails?.categoryType, i18nKey: `WS_CATEGORY_${waterResult?.additionalDetails?.categoryType}` }
           : null,
+        addressType: addressTypeObj,
+        completeAddress: completeAddressStr,
         proposedPipeSize: waterResult?.proposedPipeSize
           ? {
               code: waterResult?.proposedPipeSize,
@@ -120,6 +143,8 @@ const getEditDetails = (waterResult, sewerageresult, t) => {
         proposedTaps: waterResult?.proposedTaps,
       },
     ];
+    waterResult.addressType = addressTypeObj;
+    waterResult.completeAddress = completeAddressStr;
     waterResult.bankDetails = {
       bankName: waterResult?.additionalDetails?.bankName || "",
       bankBranchName: waterResult?.additionalDetails?.bankBranchName || waterResult?.additionalDetails?.branchName || "",
@@ -213,6 +238,27 @@ const getEditDetails = (waterResult, sewerageresult, t) => {
       proposedToilets: sewerageresult?.proposedToilets,
       proposedWaterClosets: sewerageresult?.proposedWaterClosets,
     };
+    const rawAddressTypeSewerage =
+      sewerageresult?.additionalDetails?.addressType ||
+      sewerageresult?.ConnectionDetails?.[0]?.addressType ||
+      sewerageresult?.addressType;
+    const addressTypeObjSewerage =
+      typeof rawAddressTypeSewerage === "object" && rawAddressTypeSewerage?.code
+        ? rawAddressTypeSewerage
+        : String(rawAddressTypeSewerage).toUpperCase() === "PERMANENT"
+        ? { i18nKey: "Permanent", code: "PERMANENT" }
+        : String(rawAddressTypeSewerage).toUpperCase() === "CORRESPONDENCE"
+        ? { i18nKey: "Correspondence", code: "CORRESPONDENCE" }
+        : rawAddressTypeSewerage
+        ? { i18nKey: rawAddressTypeSewerage, code: rawAddressTypeSewerage }
+        : null;
+
+    const completeAddressStrSewerage =
+      sewerageresult?.additionalDetails?.completeAddress ||
+      sewerageresult?.ConnectionDetails?.[0]?.completeAddress ||
+      sewerageresult?.completeAddress ||
+      "";
+
     sewerageresult.ConnectionDetails = [
       {
         water: false,
@@ -233,10 +279,14 @@ const getEditDetails = (waterResult, sewerageresult, t) => {
         categoryType: sewerageresult?.additionalDetails?.categoryType
           ? { code: sewerageresult?.additionalDetails?.categoryType, i18nKey: `WS_CATEGORY_${sewerageresult?.additionalDetails?.categoryType}` }
           : null,
+        addressType: addressTypeObjSewerage,
+        completeAddress: completeAddressStrSewerage,
         proposedToilets: sewerageresult?.proposedToilets,
         proposedWaterClosets: sewerageresult?.proposedWaterClosets,
       },
     ];
+    sewerageresult.addressType = addressTypeObjSewerage;
+    sewerageresult.completeAddress = completeAddressStrSewerage;
     sewerageresult.bankDetails = {
       bankName: sewerageresult?.additionalDetails?.bankName || "",
       bankBranchName: sewerageresult?.additionalDetails?.bankBranchName || sewerageresult?.additionalDetails?.branchName || "",
@@ -310,8 +360,8 @@ const EditApplication = ({ parentRoute }) => {
     if (
       ((Waterresult && waterapplication) || (Sewarageresult && sewerageapplication)) &&
       (!(Object.keys(params).length > 0) ||
-        (waterapplication && (params?.applicationNo !== waterapplication?.applicationNo || !params?.DocumentsRequired)) ||
-        (sewerageapplication && (params?.applicationNo !== sewerageapplication?.applicationNo || !params?.DocumentsRequired)))
+        (waterapplication && (params?.applicationNo !== waterapplication?.applicationNo || !params?.DocumentsRequired || !params?.ConnectionDetails?.[0]?.addressType)) ||
+        (sewerageapplication && (params?.applicationNo !== sewerageapplication?.applicationNo || !params?.DocumentsRequired || !params?.ConnectionDetails?.[0]?.addressType)))
     ) {
       waterapplication = Waterresult;
       sewerageapplication = Sewarageresult;
@@ -340,8 +390,49 @@ const EditApplication = ({ parentRoute }) => {
       setParams({ ...params, ...EditDetails });
     } else if (Object.keys(params).length > 0 && (Waterresult || Sewarageresult)) {
       let currentApp = Waterresult || Sewarageresult;
-      if (currentApp && currentApp.dueVerification && JSON.stringify(currentApp.dueVerification) !== JSON.stringify(params.dueVerification)) {
-          setParams({ ...params, dueVerification: currentApp.dueVerification });
+      const addrType = currentApp?.additionalDetails?.addressType || currentApp?.ConnectionDetails?.[0]?.addressType || currentApp?.addressType;
+      const compAddr = currentApp?.additionalDetails?.completeAddress || currentApp?.ConnectionDetails?.[0]?.completeAddress || currentApp?.completeAddress;
+      const needsAddressSync =
+        (!params?.ConnectionDetails?.[0]?.addressType && addrType) ||
+        (!params?.ConnectionDetails?.[0]?.completeAddress && compAddr);
+      const needsDueSync =
+        currentApp && currentApp.dueVerification && JSON.stringify(currentApp.dueVerification) !== JSON.stringify(params.dueVerification);
+
+      if (needsAddressSync || needsDueSync) {
+        let updatedParams = { ...params };
+        if (needsAddressSync) {
+          const addrTypeObj =
+            typeof addrType === "object" && addrType?.code
+              ? addrType
+              : String(addrType).toUpperCase() === "PERMANENT"
+              ? { i18nKey: "Permanent", code: "PERMANENT" }
+              : String(addrType).toUpperCase() === "CORRESPONDENCE"
+              ? { i18nKey: "Correspondence", code: "CORRESPONDENCE" }
+              : addrType
+              ? { i18nKey: addrType, code: addrType }
+              : null;
+          const updatedConnDetails = params?.ConnectionDetails
+            ? [
+                {
+                  ...params.ConnectionDetails[0],
+                  addressType: params.ConnectionDetails[0]?.addressType || addrTypeObj,
+                  completeAddress: params.ConnectionDetails[0]?.completeAddress || compAddr || "",
+                },
+              ]
+            : [
+                {
+                  addressType: addrTypeObj,
+                  completeAddress: compAddr || "",
+                },
+              ];
+          updatedParams.ConnectionDetails = updatedConnDetails;
+          updatedParams.addressType = updatedParams.addressType || addrTypeObj;
+          updatedParams.completeAddress = updatedParams.completeAddress || compAddr || "";
+        }
+        if (needsDueSync) {
+          updatedParams.dueVerification = currentApp.dueVerification;
+        }
+        setParams(updatedParams);
       }
     }
   }, [Waterresult, Sewarageresult]);
@@ -360,6 +451,7 @@ const EditApplication = ({ parentRoute }) => {
   const handleSelect = (key, data, skipStep, isFromCreateApi) => {
     if (isFromCreateApi) setParams(data);
     else if (key === "") setParams({ ...data });
+    else if (Array.isArray(data)) setParams({ ...params, [key]: data });
     else setParams({ ...params, ...{ [key]: { ...params[key], ...data } } });
   };
   const handleSkip = () => {};

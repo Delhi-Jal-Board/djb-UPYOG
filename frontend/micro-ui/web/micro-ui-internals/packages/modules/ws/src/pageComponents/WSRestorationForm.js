@@ -174,7 +174,6 @@ const WSRestorationForm = ({ t, config, onSelect, userType, flow }) => {
   useEffect(() => {
     const disconnectionTypes = mdmsData?.["ws-services-masters"]?.disconnectionType || []; 
     disconnectionTypes?.forEach(data => data.i18nKey = `WS_DISCONNECTIONTYPE_${stringReplaceAll(data?.code?.toUpperCase(), " ", "_")}`);
-console.log("disconnectionTypes",disconnectionTypes)
     setDisconnectionTypeList(disconnectionTypes);
   }, [mdmsData]);
 
@@ -679,7 +678,6 @@ if (flow === "reconnection") {
       {error && <Toast error={error?.key === "error" ? true : false} label={t(error?.message)} onClose={() => setError(null)} />}
     </div>);
   }
-  console.log("applicationData",applicationData)
   return (
     <div style={{ margin: "16px" }}>
     <Header styles={{fontSize: "32px", marginLeft: "18px"}}>{t("WS_WATER_AND_SEWERAGE_RESTORATION")}</Header>

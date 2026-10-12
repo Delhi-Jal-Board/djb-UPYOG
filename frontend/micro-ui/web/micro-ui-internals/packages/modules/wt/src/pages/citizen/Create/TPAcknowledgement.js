@@ -41,7 +41,6 @@ const rowContainerStyle = {
 };
 
 const BannerPicker = (props) => {
-  console.log("BannerPicker",props);
   return (
     <Banner
       message={GetActionMessage(props)}

@@ -182,7 +182,6 @@ const GetConnectionDetails = () => {
         label: "WORKFLOW_IN_PROGRESS",
       });
     } else {
-      console.log("due", due, applicationDetails);
       if (billData[0]?.status === "ACTIVE" || applicationDetails?.fetchBillsData?.length <= 0 || due == "0" || due < 0) {
         Digit.SessionStorage.set("WS_DISCONNECTION", applicationDetails);
         const connectionNumber = applicationDetails?.applicationData?.connectionNo || applicationNumber;

@@ -148,6 +148,37 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
                 checkForNA(connectionDetails?.applicantType?.i18nKey || connectionDetails?.applicantType?.code || connectionDetails?.applicantType)
               )}`}
             />
+            <Row
+              label={t("WS_Billing_Address_Type")}
+              text={`${t(
+                checkForNA(
+                  connectionDetails?.addressType?.i18nKey ||
+                    connectionDetails?.addressType?.name ||
+                    (typeof connectionDetails?.addressType?.code === "string"
+                      ? connectionDetails.addressType.code === "PERMANENT"
+                        ? "Permanent"
+                        : connectionDetails.addressType.code === "CORRESPONDENCE"
+                        ? "Correspondence"
+                        : connectionDetails.addressType.code
+                      : null) ||
+                    (typeof connectionDetails?.addressType === "string"
+                      ? connectionDetails.addressType === "PERMANENT"
+                        ? "Permanent"
+                        : connectionDetails.addressType === "CORRESPONDENCE"
+                        ? "Correspondence"
+                        : connectionDetails.addressType
+                      : null) ||
+                    data?.additionalDetails?.addressType
+                )
+              )}`}
+            />
+            <Row
+              label={t("Complete Address")}
+              text={`${checkForNA(
+                connectionDetails?.completeAddress ||
+                  data?.additionalDetails?.completeAddress
+              )}`}
+            />
             {/* <Row
               label={t("WS_SERVICE_TYPE")}
               text={`${t(
@@ -330,12 +361,31 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
                 )
               )}`}
             />
-            {["Apartment","DDAFlats","GovtFlats","Bungalows","FlatOrApartment","GroupHousingSociety","JJSLUMS","IndividualHouse","BuiltUp.GroupHousingSociety","BuiltUp.JJSLUMS","BuiltUp.IndividualHouse"].includes(useDetails?.propertyType?.code || useDetails?.propertyType) ? (
-            <Row
-              label={t("WS_NUMBER_OF_DWELLING_UNITS")}
-              text={`${t(checkForNA(useDetails?.NumberofDwellingUnits || useDetails?.noOfDwellingUnits))}`}
-            />
-          ) : null}
+            {(String(
+              useDetails?.propertyCategory?.code ||
+                useDetails?.propertyCategory?.name ||
+                useDetails?.propertyCategory ||
+                cpt?.additionalDetails?.propertyCategory?.code ||
+                cpt?.additionalDetails?.propertyCategory ||
+                cpt?.propertyType?.propertyCategory ||
+                cpt?.usageCategory ||
+                ""
+            ).toUpperCase().includes("RESIDENTIAL")) ? (
+              <Row
+                label={t("WS_NUMBER_OF_DWELLING_UNITS")}
+                text={`${t(checkForNA(useDetails?.NumberofDwellingUnits || useDetails?.noOfDwellingUnits))}`}
+              />
+            ) : null}
+            {(Array.isArray(useDetails?.questions || cpt?.additionalDetails?.questions)
+              ? (useDetails?.questions || cpt?.additionalDetails?.questions)
+              : []
+            ).map((q, idx) => {
+              const qText = typeof q === "object" ? q?.question || q?.questionText || q?.title || `Question ${idx + 1}` : `Question ${idx + 1}`;
+              const aText = typeof q === "object" ? (typeof q?.answer === "object" ? (q?.answer?.name || q?.answer?.value || q?.answer?.code) : q?.answer) : q;
+              const trimmedQ = String(qText || "").trim();
+              const displayLabel = trimmedQ.toLowerCase().startsWith("question") ? trimmedQ : `${trimmedQ}`;
+              return <Row key={`question_${idx}`} label={displayLabel} text={`${t(checkForNA(aText))}`} />;
+            })}
           </StatusTable>
 
           {/* {!isCitizen && ( */}
