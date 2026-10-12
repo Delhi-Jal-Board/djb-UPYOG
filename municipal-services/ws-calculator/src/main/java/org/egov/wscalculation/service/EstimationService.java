@@ -1156,15 +1156,117 @@ public class EstimationService {
 		
 		JSONObject feeObj = mapper.convertValue(feeSlab.get(0), JSONObject.class);
 		BigDecimal reconnectionCharge = BigDecimal.ZERO;
-		
-		if (feeObj.get(WSCalculationConstant.RECONNECTION_FEE_CONST) != null) {
-			reconnectionCharge = new BigDecimal(feeObj.getAsNumber(WSCalculationConstant.RECONNECTION_FEE_CONST).toString());
+
+		String taxHeadCode = WSCalculationConstant.WS_RECONNECTION_CHARGE;
+
+		String requestConnectionCategory = null;
+		if (criteria.getWaterConnection() != null) {
+			requestConnectionCategory = criteria.getWaterConnection().getConnectionCategory();
+			if ((requestConnectionCategory == null || requestConnectionCategory.trim().isEmpty()) && criteria.getWaterConnection().getAdditionalDetails() != null) {
+				try {
+					JSONObject additionalDetails = mapper.convertValue(criteria.getWaterConnection().getAdditionalDetails(), JSONObject.class);
+					if (additionalDetails != null) {
+						requestConnectionCategory = additionalDetails.getAsString("categoryType");
+					}
+				} catch (Exception e) {
+					log.error("[WS-RECONNECTION-ESTIMATE] Error reading categoryType from additionalDetails", e);
+				}
+			}
+		}
+		requestConnectionCategory = normalizeConnectionCategory(requestConnectionCategory);
+
+		log.info("[WS-RECONNECTION-ESTIMATE] Searching FeeSlab for reconnection, connectionCategory={}", requestConnectionCategory);
+
+		for (Object obj : feeSlab) {
+			try {
+				JSONObject fee = mapper.convertValue(obj, JSONObject.class);
+				Boolean isActive = (Boolean) fee.get("isActive");
+				if (Boolean.FALSE.equals(isActive)) {
+					continue;
+				}
+
+				String feeComponent = fee.getAsString(WSCalculationConstant.FEE_COMPONENT);
+				if (!"REOPENING_FEE".equalsIgnoreCase(feeComponent) && !"reopeningFee".equalsIgnoreCase(feeComponent)
+						&& !"RECONNECTION_FEE".equalsIgnoreCase(feeComponent) && !"reconnectionFee".equalsIgnoreCase(feeComponent)) {
+					continue;
+				}
+
+				String mdmsConnectionCategory = fee.getAsString(WSCalculationConstant.CONNECTION_CATEGORY);
+				if (mdmsConnectionCategory != null && requestConnectionCategory != null
+						&& !mdmsConnectionCategory.equalsIgnoreCase(requestConnectionCategory)) {
+					continue;
+				}
+
+				BigDecimal amount = BigDecimal.ZERO;
+				if (fee.get(WSCalculationConstant.AMOUNT) != null) {
+					amount = new BigDecimal(fee.getAsNumber(WSCalculationConstant.AMOUNT).toString());
+				}
+
+				if (amount.compareTo(BigDecimal.ZERO) > 0) {
+					reconnectionCharge = amount;
+					String mdmsTaxHead = fee.getAsString(WSCalculationConstant.TAX_HEAD_CODE);
+					if (mdmsTaxHead != null && !"WS_REOPENING_FEE".equalsIgnoreCase(mdmsTaxHead)) {
+						taxHeadCode = mdmsTaxHead;
+					} else {
+						taxHeadCode = WSCalculationConstant.WS_RECONNECTION_CHARGE;
+					}
+					log.info("[WS-RECONNECTION-ESTIMATE] Matched Reconnection Fee: amount={}, taxHeadCode={}, category={}",
+							amount, taxHeadCode, mdmsConnectionCategory);
+					break;
+				}
+			} catch (Exception e) {
+				log.error("[WS-RECONNECTION-ESTIMATE] Error parsing fee slab", e);
+			}
+		}
+
+		// Fallback: If category didn't match, check any active REOPENING_FEE slab
+		if (reconnectionCharge.compareTo(BigDecimal.ZERO) == 0) {
+			for (Object obj : feeSlab) {
+				try {
+					JSONObject fee = mapper.convertValue(obj, JSONObject.class);
+					Boolean isActive = (Boolean) fee.get("isActive");
+					if (Boolean.FALSE.equals(isActive)) {
+						continue;
+					}
+
+					String feeComponent = fee.getAsString(WSCalculationConstant.FEE_COMPONENT);
+					if ("REOPENING_FEE".equalsIgnoreCase(feeComponent) || "reopeningFee".equalsIgnoreCase(feeComponent)
+							|| "RECONNECTION_FEE".equalsIgnoreCase(feeComponent) || "reconnectionFee".equalsIgnoreCase(feeComponent)) {
+						if (fee.get(WSCalculationConstant.AMOUNT) != null) {
+							BigDecimal amount = new BigDecimal(fee.getAsNumber(WSCalculationConstant.AMOUNT).toString());
+							if (amount.compareTo(BigDecimal.ZERO) > 0) {
+								reconnectionCharge = amount;
+								String mdmsTaxHead = fee.getAsString(WSCalculationConstant.TAX_HEAD_CODE);
+								if (mdmsTaxHead != null && !"WS_REOPENING_FEE".equalsIgnoreCase(mdmsTaxHead)) {
+									taxHeadCode = mdmsTaxHead;
+								} else {
+									taxHeadCode = WSCalculationConstant.WS_RECONNECTION_CHARGE;
+								}
+								log.info("[WS-RECONNECTION-ESTIMATE] Fallback matched Reconnection Fee: amount={}, taxHeadCode={}",
+										amount, taxHeadCode);
+								break;
+							}
+						}
+					}
+				} catch (Exception e) {
+					log.error("[WS-RECONNECTION-ESTIMATE] Error parsing fallback fee slab", e);
+				}
+			}
+		}
+
+		// Final safety net: if MDMS returned 0 for reopening, use 250 default
+		if (reconnectionCharge.compareTo(BigDecimal.ZERO) == 0) {
+			reconnectionCharge = new BigDecimal("250.00");
+			taxHeadCode = WSCalculationConstant.WS_RECONNECTION_CHARGE;
+			log.warn("[WS-RECONNECTION-ESTIMATE] No amount found in FeeSlab, defaulted to 250.00");
 		}
 		
 		List<TaxHeadEstimate> estimates = new ArrayList<>();
 
-		estimates.add(TaxHeadEstimate.builder().taxHeadCode(WSCalculationConstant.WS_RECONNECTION_CHARGE)
-				.estimateAmount(reconnectionCharge).build());
+		estimates.add(TaxHeadEstimate.builder()
+		.taxHeadCode(taxHeadCode)
+		.estimateAmount(reconnectionCharge.setScale(2, RoundingMode.HALF_UP))
+		.build());
 		return estimates;
 
 	}
