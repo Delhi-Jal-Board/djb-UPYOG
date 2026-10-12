@@ -1,0 +1,2 @@
+ALTER TABLE eg_pt_property ADD COLUMN IF NOT EXISTS zro_location CHARACTER VARYING (64);
+
