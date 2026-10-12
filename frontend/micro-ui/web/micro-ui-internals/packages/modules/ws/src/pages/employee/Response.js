@@ -9,10 +9,10 @@ const Response = () => {
     const { state } = useLocation()
     const history = useHistory()
     const { t } = useTranslation()
-    const connNumber = state?.Amendment?.consumerCode
+    const connNumber = String(state?.Amendment?.consumerCode || "");
     let serviceType = "WATER";
     if (connNumber.includes("SW"))
-        serviceType = "SEWERAGE"
+        serviceType = "SEWERAGE";
     const {mutate, isSuccess, isError, isLoading,data} = Digit.Hooks.ws.useCreateBillAmendment()
 
     const getAckPdf = async (amendment, tenantId, t, tableData, app) => {

@@ -84,7 +84,20 @@ const WSCard = () => {
         count: isWSInboxLoading ? "-" : wsData?.totalCount,
         label: t("WATER_INBOX"),
         link: `/digit-ui/employee/ws/water/inbox`,
-        roles: ["WS_CEMP", "WS_APPROVER", "WS_FIELD_INSPECTOR", "WS_DOC_VERIFIER", "WS_CLERK"],
+        roles: ["WS_CEMP", "WS_APPROVER", "EE", "WS_DEALING_CLERK", "WS_CLERK"],
+      },
+      {
+        label: t("WS_BILL_AMENDMENT_INBOX", "Bill Amendment Inbox"),
+        link: `/digit-ui/employee/ws/water/bill-amendment/inbox`,
+        roles: [
+          "WS_CEMP",
+          "WS_APPROVER",
+          "EE",
+          "WS_DEALING_CLERK",
+          "WS_CLERK",
+          "WS_FIELD_INSPECTOR",
+          "WS_DOC_VERIFIER",
+        ],
       },
       // {
       //   count: isWSInboxLoading ? "-" : wsData?.totalCount,
