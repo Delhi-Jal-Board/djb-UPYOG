@@ -45,9 +45,18 @@ const ApplicationBillAmendment = () => {
     tenantId: stateId,
   });
 
-  const servicev1 = connectionNumber.includes("WS") ? "WS" : "SW";
+  const servicev1 = "WS";
   const billSearchFilters = { tenantId, consumerCode: connectionNumber, service: servicev1 };
   const { data: preBillSearchData, isLoading: isBillSearchLoading } = Digit.Hooks.usePaymentSearch(tenantId, billSearchFilters);
+
+  const editFormData = state?.data?.applicationDetails?.amendment?.additionalDetails?.editForm;
+  useEffect(() => {
+    if (editFormData?.[`${servicev1}_REDUCED_AMOUNT`]?.VALUE) {
+      setischeckedReduce(true);
+    } else if (editFormData?.[`${servicev1}_ADDITIONAL_AMOUNT`]?.VALUE) {
+      setischeckedAddition(true);
+    }
+  }, [editFormData, servicev1]);
 
   const { data, isFetched } = Digit.Hooks.fsm.useMDMS(stateId, "DIGIT-UI", "WSTaxHeadMaster");
   const availableBillAmendmentTaxHeads = data?.BillingService?.TaxHeadMaster?.filter((w) => w.IsBillamend);
@@ -62,6 +71,7 @@ const ApplicationBillAmendment = () => {
     control,
     watch,
     setValue,
+    clearErrors,
     unregister,
     handleSubmit,
     formState: { errors, ...rest },
@@ -69,7 +79,10 @@ const ApplicationBillAmendment = () => {
     reset,
     ...methods
   } = useForm({
+    mode: "onChange",
     defaultValues: {
+      WS_REDUCED_AMOUNT: { VALUE: false },
+      WS_ADDITIONAL_AMOUNT: { VALUE: false },
       ...state?.data?.applicationDetails?.amendment?.additionalDetails?.editForm
     },
   });
@@ -88,8 +101,6 @@ const ApplicationBillAmendment = () => {
   const amendmentReason = watch("amendmentReason");
   const WS_REDUCED_AMOUNT = watch("WS_REDUCED_AMOUNT");
   const WS_ADDITIONAL_AMOUNT = watch("WS_ADDITIONAL_AMOUNT");
-  const SW_REDUCED_AMOUNT = watch("SW_REDUCED_AMOUNT");
-  const SW_ADDITIONAL_AMOUNT = watch("SW_ADDITIONAL_AMOUNT");
   const history = useHistory();
   const uploadFile = async (data, fname, props) => {
     setUploadError("")
@@ -166,11 +177,8 @@ const ApplicationBillAmendment = () => {
   };
 
   const getDemandDetailsComparingUpdates = (d) => {
-    let actionPerformed;
     const action = (d?.[`${servicev1}_REDUCED_AMOUNT`]?.VALUE !== undefined && d?.[`${servicev1}_REDUCED_AMOUNT`]?.VALUE) || ((d?.[`${servicev1}_ADDITIONAL_AMOUNT`]?.VALUE !==undefined) && !(d?.[`${servicev1}_ADDITIONAL_AMOUNT`]?.VALUE)) ? "rebate" : "penalty";
-    if (servicev1 === "WS")
-      actionPerformed = JSON.parse(JSON.stringify(d?.WS_REDUCED_AMOUNT?.VALUE ? d?.WS_REDUCED_AMOUNT : d?.WS_ADDITIONAL_AMOUNT));
-    else actionPerformed = JSON.parse(JSON.stringify(d?.SW_REDUCED_AMOUNT?.VALUE ? d?.SW_REDUCED_AMOUNT : d?.SW_ADDITIONAL_AMOUNT));
+    let actionPerformed = JSON.parse(JSON.stringify(d?.WS_REDUCED_AMOUNT?.VALUE ? d?.WS_REDUCED_AMOUNT : d?.WS_ADDITIONAL_AMOUNT));
     delete actionPerformed?.VALUE;
     const actionPerformedInArray = Object.entries(actionPerformed);
     if (d?.[`${servicev1}_REBATE`]) {
@@ -196,10 +204,7 @@ const ApplicationBillAmendment = () => {
       originalDemand[el.taxHeadCode] = el.amount
     })
 
-    let actionPerformed;
-    if (servicev1 === "WS")
-      actionPerformed = JSON.parse(JSON.stringify(d?.WS_REDUCED_AMOUNT?.VALUE ? d?.WS_REDUCED_AMOUNT : d?.WS_ADDITIONAL_AMOUNT));
-    else actionPerformed = JSON.parse(JSON.stringify(d?.SW_REDUCED_AMOUNT?.VALUE ? d?.SW_REDUCED_AMOUNT : d?.SW_ADDITIONAL_AMOUNT));
+    let actionPerformed = JSON.parse(JSON.stringify(d?.WS_REDUCED_AMOUNT?.VALUE ? d?.WS_REDUCED_AMOUNT : d?.WS_ADDITIONAL_AMOUNT));
     delete actionPerformed?.VALUE;
     actionPerformed[`${servicev1}_${action}`] = d?.[`${servicev1}_${action}`] ? d?.[`${servicev1}_${action}`] : 0;
 
@@ -263,8 +268,8 @@ const ApplicationBillAmendment = () => {
         businessId: state?.data?.applicationDetails?.amendment?.amendmentId,
         action: "RE-SUBMIT",
         tenantId: tenantId,
-        businessService: state?.data?.applicationDetails?.applicationData?.serviceType === "WATER" ? "WS.AMENDMENT":"SW.AMENDMENT",
-        moduleName: state?.data?.applicationDetails?.applicationData?.serviceType === "WATER" ? "WS":"SW",
+        businessService: "WS.AMENDMENT",
+        moduleName: "WS",
       }
       const AmendmentUpdate = { ...state?.data?.applicationDetails?.applicationData?.billAmendmentDetails, workflow, ...data?.Amendment }
       mutate({ AmendmentUpdate }, {
@@ -277,7 +282,7 @@ const ApplicationBillAmendment = () => {
           //setIsEnableLoader(false);
           if (data?.Amendments?.length > 0) {
             if (variables?.AmendmentUpdate?.workflow?.action.includes("RE-SUBMIT")) {
-              setShowToast({ key: "success", label: t("ES_MODIFYSWCONNECTION_RE_SUBMIT_UPDATE_SUCCESS") })
+              setShowToast({ key: "success", label: t("ES_MODIFYWSCONNECTION_RE_SUBMIT_UPDATE_SUCCESS") })
             }
             //now goto application details page
 
@@ -318,8 +323,12 @@ const ApplicationBillAmendment = () => {
   });
   billSearchData = billSearchData?.filter((ob) => !(ob?.taxHeadCode?.includes("ADHOC")));
 
+  const onFormError = (formErrors) => {
+    console.warn("Bill Amendment form errors:", formErrors);
+  };
+
   return (
-    <form onSubmit={handleSubmit(onFormSubmit)}>
+    <form onSubmit={handleSubmit(onFormSubmit, onFormError)}>
       <div style={{marginLeft:"20px"}}><Header>{state?.data?.action ? t("WS_APP_FOR_WATER_AND_SEWERAGE_EDIT_LABEL") : t("WS_BILL_AMENDMENT_BUTTON")}</Header></div>
       <Card>
         <LabelFieldPair style={{marginBottom:"20px"}}>
@@ -342,36 +351,48 @@ const ApplicationBillAmendment = () => {
                     name={`${servicev1}_REDUCED_AMOUNT.VALUE`}
                     key={`${servicev1}_REDUCED_AMOUNT.VALUE`}
                     control={control}
+                    defaultValue={false}
                     rules={{
                       validate: (value) => {
-                        return !!value || (servicev1 === "WS" ? !!WS_ADDITIONAL_AMOUNT?.VALUE : !!SW_ADDITIONAL_AMOUNT?.VALUE);
+                        return !!value || ischeckedAddition || !!getValues(`${servicev1}_ADDITIONAL_AMOUNT.VALUE`);
                       },
                     }}
-                    render={(props) => {
+                    render={({ value, onChange }) => {
                       return (
-                        <div style={{paddingTop:"20px"}}>
-                        <CheckBox
-                          style={{ "marginLeft": "35px" }}
-                          label={t(`${servicev1}_REDUCED_AMOUNT`)}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              props.onChange(true);
-                              setischeckedReduce(true);
-                              setischeckedAddition(false);
-                              setOtherTextFieldsAndActionToNull(`${servicev1}_ADDITIONAL_AMOUNT`, false);
-                            } else {
-                              setischeckedReduce(false);
-                              props.onChange(false);
+                        <div
+                          style={{ paddingTop: "20px", marginLeft: "35px", cursor: "pointer" }}
+                          onClick={(e) => {
+                            if (e.target.tagName !== "INPUT") {
+                              const nextVal = !value;
+                              onChange(nextVal);
+                              setischeckedReduce(nextVal);
+                              if (nextVal) {
+                                setischeckedAddition(false);
+                                setValue(`${servicev1}_ADDITIONAL_AMOUNT.VALUE`, false);
+                                setOtherTextFieldsAndActionToNull(`${servicev1}_ADDITIONAL_AMOUNT`, false);
+                              }
                             }
                           }}
-                          disable={isEdit && (state?.data?.applicationDetails?.amendment?.additionalDetails?.editForm?.["WS_REDUCED_AMOUNT"]?.["VALUE"] == false || state?.data?.applicationDetails?.amendment?.additionalDetails?.editForm?.["SW_REDUCED_AMOUNT"]?.["VALUE"] == false) ? true : false}
-                          checked={props?.value}
-                        />
+                        >
+                          <CheckBox
+                            label={t(`${servicev1}_REDUCED_AMOUNT`)}
+                            checked={!!value}
+                            onChange={(e) => {
+                              const isChecked = e.target.checked;
+                              onChange(isChecked);
+                              setischeckedReduce(isChecked);
+                              if (isChecked) {
+                                setischeckedAddition(false);
+                                setValue(`${servicev1}_ADDITIONAL_AMOUNT.VALUE`, false);
+                                setOtherTextFieldsAndActionToNull(`${servicev1}_ADDITIONAL_AMOUNT`, false);
+                              }
+                            }}
+                          />
                         </div>
                       );
                     }}
                   />
-                  {errors?.WS_REDUCED_AMOUNT?.VALUE && ischeckedReduce == true ? <CardLabelError>{t("WS_REQUIRED_FIELD")}</CardLabelError> : null}
+                  {errors?.WS_REDUCED_AMOUNT?.VALUE && !ischeckedAddition && !ischeckedReduce ? <CardLabelError style={{ marginLeft: "35px" }}>{t("WS_REQUIRED_FIELD")}</CardLabelError> : null}
                 </>
               </th>
               <th>
@@ -380,37 +401,48 @@ const ApplicationBillAmendment = () => {
                     name={`${servicev1}_ADDITIONAL_AMOUNT.VALUE`}
                     key={`${servicev1}_ADDITIONAL_AMOUNT.VALUE`}
                     control={control}
+                    defaultValue={false}
                     rules={{
                       validate: (value) => {
-                        return !!value || (servicev1 === "WS" ? !!WS_REDUCED_AMOUNT?.VALUE : !!SW_REDUCED_AMOUNT?.VALUE);
+                        return !!value || ischeckedReduce || !!getValues(`${servicev1}_REDUCED_AMOUNT.VALUE`);
                       },
                     }}
-                    render={(props) => {
+                    render={({ value, onChange }) => {
                       return (
-                        <div style={{paddingTop:"17px"}}>
-                        <CheckBox
-                          style={{ "marginLeft": "35px" }}
-                          // className="form-field"
-                          label={t(`${servicev1}_ADDITIONAL_AMOUNT`)}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              props.onChange(true);
-                              setischeckedAddition(true);
-                              setischeckedReduce(false);
-                              setOtherTextFieldsAndActionToNull(`${servicev1}_REDUCED_AMOUNT`, false);
-                            } else {
-                              setischeckedAddition(false);
-                              props.onChange(false);
+                        <div
+                          style={{ paddingTop: "17px", marginLeft: "35px", cursor: "pointer" }}
+                          onClick={(e) => {
+                            if (e.target.tagName !== "INPUT") {
+                              const nextVal = !value;
+                              onChange(nextVal);
+                              setischeckedAddition(nextVal);
+                              if (nextVal) {
+                                setischeckedReduce(false);
+                                setValue(`${servicev1}_REDUCED_AMOUNT.VALUE`, false);
+                                setOtherTextFieldsAndActionToNull(`${servicev1}_REDUCED_AMOUNT`, false);
+                              }
                             }
                           }}
-                          disable={isEdit && (state?.data?.applicationDetails?.amendment?.additionalDetails?.editForm?.["WS_ADDITIONAL_AMOUNT"]?.["VALUE"] == false || state?.data?.applicationDetails?.amendment?.additionalDetails?.editForm?.["WS_ADDITIONAL_AMOUNT"]?.["VALUE"] == false) ? true : false}
-                          checked={props?.value}
-                        />
+                        >
+                          <CheckBox
+                            label={t(`${servicev1}_ADDITIONAL_AMOUNT`)}
+                            checked={!!value}
+                            onChange={(e) => {
+                              const isChecked = e.target.checked;
+                              onChange(isChecked);
+                              setischeckedAddition(isChecked);
+                              if (isChecked) {
+                                setischeckedReduce(false);
+                                setValue(`${servicev1}_REDUCED_AMOUNT.VALUE`, false);
+                                setOtherTextFieldsAndActionToNull(`${servicev1}_REDUCED_AMOUNT`, false);
+                              }
+                            }}
+                          />
                         </div>
                       );
                     }}
                   />
-                  {errors?.WS_ADDITIONAL_AMOUNT?.VALUE && ischeckedAddition == true ? <CardLabelError>{t("WS_REQUIRED_FIELD")}</CardLabelError> : null}
+                  {errors?.WS_ADDITIONAL_AMOUNT?.VALUE && !ischeckedReduce && !ischeckedAddition ? <CardLabelError style={{ marginLeft: "35px" }}>{t("WS_REQUIRED_FIELD")}</CardLabelError> : null}
                 </>
               </th>
             </tr>
@@ -422,7 +454,7 @@ const ApplicationBillAmendment = () => {
                 <td style={{ paddingRight: "60px", paddingLeft:"150px" }}>
                   <>
                     <TextInput
-                      disabled={servicev1 === "WS" ? !WS_REDUCED_AMOUNT?.VALUE : !SW_REDUCED_AMOUNT?.VALUE}
+                      disabled={!ischeckedReduce}
                       type={"number"}
                       name={`${servicev1}_REDUCED_AMOUNT.${node.taxHeadCode}`}
                       inputRef={register({
@@ -438,14 +470,12 @@ const ApplicationBillAmendment = () => {
                     />
                   </>
                 </td>
-                {servicev1 === "WS"
-                      ? errors?.WS_REDUCED_AMOUNT?.[node.taxHeadCode] && <CardLabelError style={{marginBottom:"-20px", marginTop:"-30px", marginLeft:"150px"}}>{errors?.WS_REDUCED_AMOUNT?.[node.taxHeadCode]?.message}</CardLabelError>
-                      : errors?.SW_REDUCED_AMOUNT?.[node.taxHeadCode] && <CardLabelError style={{marginBottom:"-20px", marginTop:"-30px", marginLeft:"150px"}}>{errors?.SW_REDUCED_AMOUNT?.[node.taxHeadCode].message}</CardLabelError>}
+                {errors?.WS_REDUCED_AMOUNT?.[node.taxHeadCode] && <CardLabelError style={{marginBottom:"-20px", marginTop:"-30px", marginLeft:"150px"}}>{errors?.WS_REDUCED_AMOUNT?.[node.taxHeadCode]?.message}</CardLabelError>}
                   </div>    
                 <td style={{ paddingRight: "60px" }}>
                   <>
                     <TextInput
-                      disabled={servicev1 === "WS" ? !WS_ADDITIONAL_AMOUNT?.VALUE : !SW_ADDITIONAL_AMOUNT?.VALUE}
+                      disabled={!ischeckedAddition}
                       type={"number"}
                       name={`${servicev1}_ADDITIONAL_AMOUNT.${node.taxHeadCode}`}
                       //inputRef={register()}
@@ -457,11 +487,7 @@ const ApplicationBillAmendment = () => {
                       })}
                     />
                   </>
-                  {servicev1 === "WS"
-                      ? errors?.WS_ADDITIONAL_AMOUNT?.[node.taxHeadCode]  && <CardLabelError style={{ marginTop:"-19px"}}>{errors?.WS_ADDITIONAL_AMOUNT?.[node.taxHeadCode]?.message}</CardLabelError>
-                      : errors?.SW_ADDITIONAL_AMOUNT?.[node.taxHeadCode]  && (
-                          <CardLabelError style={{ marginTop:"-19px"}}>{errors?.SW_ADDITIONAL_AMOUNT?.[node.taxHeadCode]?.message}</CardLabelError>
-                        )}
+                  {errors?.WS_ADDITIONAL_AMOUNT?.[node.taxHeadCode] && <CardLabelError style={{ marginTop:"-19px"}}>{errors?.WS_ADDITIONAL_AMOUNT?.[node.taxHeadCode]?.message}</CardLabelError>}
                 
                 </td>
               </tr>
@@ -485,7 +511,7 @@ const ApplicationBillAmendment = () => {
               <td style={{ paddingRight: "60px", paddingLeft:"150px" }}>
                 <>
                   <TextInput
-                    disabled={servicev1 === "WS" ? !WS_REDUCED_AMOUNT?.VALUE : !SW_REDUCED_AMOUNT?.VALUE}
+                    disabled={!ischeckedReduce}
                     name={`${servicev1}_REBATE`}
                     inputRef={register()}
                   />
@@ -494,7 +520,7 @@ const ApplicationBillAmendment = () => {
               <td style={{ paddingRight: "60px" }}>
                 <>
                   <TextInput
-                    disabled={servicev1 === "WS" ? !WS_ADDITIONAL_AMOUNT?.VALUE : !SW_ADDITIONAL_AMOUNT?.VALUE}
+                    disabled={!ischeckedAddition}
                     name={`${servicev1}_PENALTY`}
                     inputRef={register()}
                   />
@@ -613,34 +639,9 @@ const ApplicationBillAmendment = () => {
       <ActionBar>
         <SubmitBar 
           submit={true} 
-          label={state?.data?.action ? t("WF_CITIZEN_NEWSW1_RESUBMIT_APPLICATION") : t("WS_COMMON_BUTTON_SUBMIT")} 
-          disabled={
-            (servicev1 == "WS" && ischeckedReduce && 
-            ((getValues().WS_REDUCED_AMOUNT.WS_CHARGE == "" || getValues().WS_REDUCED_AMOUNT.WS_CHARGE == null) 
-            && (getValues().WS_REDUCED_AMOUNT.WS_TIME_PENALTY  == "" || getValues().WS_REDUCED_AMOUNT.WS_TIME_PENALTY  == null) 
-            && (getValues().WS_REDUCED_AMOUNT.WS_TIME_INTEREST  == "" || getValues().WS_REDUCED_AMOUNT.WS_TIME_INTEREST  == null) 
-            && (getValues().WS_REDUCED_AMOUNT.WS_WATER_CESS == "" || getValues().WS_REDUCED_AMOUNT.WS_WATER_CESS == null))) 
-            || 
-            (servicev1 == "SW" && ischeckedReduce && 
-            ((getValues().SW_REDUCED_AMOUNT.SW_CHARGE == "" || getValues().SW_REDUCED_AMOUNT.SW_CHARGE == null) 
-            && (getValues().SW_REDUCED_AMOUNT.SW_TIME_PENALTY  == "" || getValues().SW_REDUCED_AMOUNT.SW_TIME_PENALTY == null)
-            && (getValues().SW_REDUCED_AMOUNT.SW_TIME_INTEREST  == "" || getValues().SW_REDUCED_AMOUNT.SW_TIME_INTEREST  == null) 
-            && (getValues().SW_REDUCED_AMOUNT.SW_SEWERAGE_CESS == "" || getValues().SW_REDUCED_AMOUNT.SW_SEWERAGE_CESS  == null)))
-            || 
-            (servicev1 == "WS" && ischeckedAddition && 
-            ((getValues().WS_ADDITIONAL_AMOUNT.WS_CHARGE == "" || getValues().WS_ADDITIONAL_AMOUNT.WS_CHARGE == null) 
-            && (getValues().WS_ADDITIONAL_AMOUNT.WS_TIME_PENALTY  == "" || getValues().WS_ADDITIONAL_AMOUNT.WS_TIME_PENALTY  == null) 
-            && (getValues().WS_ADDITIONAL_AMOUNT.WS_TIME_INTEREST  == "" || getValues().WS_ADDITIONAL_AMOUNT.WS_TIME_INTEREST  == null)  
-            && (getValues().WS_ADDITIONAL_AMOUNT.WS_WATER_CESS == "" || getValues().WS_ADDITIONAL_AMOUNT.WS_WATER_CESS == null)))
-            || 
-            (servicev1 == "SW" && ischeckedAddition && 
-            ((getValues().SW_ADDITIONAL_AMOUNT.SW_CHARGE == "" || getValues().SW_ADDITIONAL_AMOUNT.SW_CHARGE == null) 
-            && (getValues().SW_ADDITIONAL_AMOUNT.SW_TIME_PENALTY  == "" || getValues().SW_ADDITIONAL_AMOUNT.SW_TIME_PENALTY  == null) 
-            && (getValues().SW_ADDITIONAL_AMOUNT.SW_TIME_INTEREST  == "" || getValues().SW_ADDITIONAL_AMOUNT.SW_TIME_INTEREST  == null) 
-            && (getValues().SW_ADDITIONAL_AMOUNT.SW_SEWERAGE_CESS == "" || getValues().SW_ADDITIONAL_AMOUNT.SW_SEWERAGE_CESS == null)))
-          }
-          //UM-4354:: Above code is used To disable the button when reduced amount or additional amount is selected and none of the fields have any value
-          />
+          label={state?.data?.action ? t("WF_CITIZEN_NEWWS1_RESUBMIT_APPLICATION") : t("WS_COMMON_BUTTON_SUBMIT")} 
+          onSubmit={handleSubmit(onFormSubmit, onFormError)}
+        />
       </ActionBar>
     </form>
   );
