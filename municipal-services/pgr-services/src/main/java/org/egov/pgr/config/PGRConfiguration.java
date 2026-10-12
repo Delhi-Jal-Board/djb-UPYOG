@@ -120,11 +120,11 @@ public class PGRConfiguration {
     private Integer maxLimit;
 
 
-    //MDMS
-    @Value("${mdms.v2.host}")
+    //MDMS (v1)
+    @Value("${egov.mdms.host:${mdms.v1.host:${mdms.v2.host:http://egov-mdms-service:8080}}}")
     private String mdmsHost;
 
-    @Value("${mdms.v2.search.endpoint}")
+    @Value("${egov.mdms.search.endpoint:${mdms.v2.search.endpoint:/egov-mdms-service/v1/_search}}")
     private String mdmsEndPoint;
 
     //HRMS
