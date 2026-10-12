@@ -95,7 +95,16 @@ public class MDMSUtils {
      * @return url for mdms search endpoint
      */
     public StringBuilder getMdmsSearchUrl() {
-        return new StringBuilder().append(config.getMdmsHost()).append(config.getMdmsEndPoint());
+        String host = config.getMdmsHost();
+        String endpoint = config.getMdmsEndPoint();
+        if (host != null && endpoint != null) {
+            if (host.endsWith("/") && endpoint.startsWith("/")) {
+                return new StringBuilder(host.substring(0, host.length() - 1)).append(endpoint);
+            } else if (!host.endsWith("/") && !endpoint.startsWith("/")) {
+                return new StringBuilder(host).append("/").append(endpoint);
+            }
+        }
+        return new StringBuilder().append(host).append(endpoint);
     }
 
 }
