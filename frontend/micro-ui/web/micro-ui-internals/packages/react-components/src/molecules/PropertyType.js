@@ -30,7 +30,6 @@ const PropertyType = ({ selectLocality, keepNull, selected, optionCardStyles, st
         if (arr.length == 2) return {code: item?.code, name:item?.code, i18nKey: "PROPERTYTAX_BILLING_SLAB_" + arr[1],label:"PropertyType"};
         else return {  code: item?.code , name:item?.code, i18nKey: "PROPERTYTAX_BILLING_SLAB_" + item?.code,label:"PropertyType" };
       });
-      console.log("catMenu", catMenu)
     return catMenu;
   };
 

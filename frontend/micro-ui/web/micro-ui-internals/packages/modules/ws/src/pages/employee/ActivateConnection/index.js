@@ -150,6 +150,13 @@ const ActivateConnection = () => {
                   component: "WSActivationDetails",
                 };
               }
+              if (item.key === "supportingDocuments") {
+                return {
+                  ...item,
+                  isMandatory: true,
+                  validation: { required: true },
+                };
+              }
               return item;
             });
             flattenedBody = [...flattenedBody, ...mappedSectionBody];
@@ -180,6 +187,11 @@ const ActivateConnection = () => {
   }, [isAppDetailsPage]);
 
   const onFormValueChange = (setValue, formData, formState) => {
+    const hasDoc = !!(
+      formData?.supportingDocuments?.[0]?.fileStoreId ||
+      formData?.supportingDocuments?.fileStoreId ||
+      (Array.isArray(formData?.supportingDocuments) && formData?.supportingDocuments?.[0]?.fileStoreId)
+    );
     if (
       Object.keys(formState.errors).length > 0 &&
       Object.keys(formState.errors).length == 1 &&
@@ -187,8 +199,8 @@ const ActivateConnection = () => {
       Object.values(formState.errors["owners"].type).filter((ob) => ob.type === "required").length == 0 &&
       Object.getPrototypeOf(formState.errors) === Object.prototype
     )
-      setSubmitValve(true);
-    else setSubmitValve(!Object.keys(formState.errors).length);
+      setSubmitValve(hasDoc);
+    else setSubmitValve(!Object.keys(formState.errors).length && hasDoc);
   };
 
   const getConvertedDate = async (dateOfTime) => {
@@ -213,11 +225,16 @@ const ActivateConnection = () => {
   };
 
   const onSubmit = async (data) => {
-    if (!canSubmit) {
+    const docFileStoreId =
+      data?.supportingDocuments?.[0]?.fileStoreId ||
+      data?.supportingDocuments?.fileStoreId ||
+      (Array.isArray(data?.supportingDocuments) && data?.supportingDocuments?.[0]?.fileStoreId);
+    if (!canSubmit || !docFileStoreId) {
       setShowToast({ warning: true, message: "PLEASE_FILL_MANDATORY_DETAILS" });
       setTimeout(() => {
         setShowToast(false);
       }, 3000);
+      return;
     } else {
       const formDetails = cloneDeep(data);
       const baseAppData =
@@ -262,22 +279,22 @@ const ActivateConnection = () => {
 
       formData.comment = formDetails?.comments?.comments || "";
       formData.action = filters?.action;
-      formData.wfDocuments = data?.supportingDocuments?.[0]?.fileStoreId
+      formData.wfDocuments = docFileStoreId
         ? [
             {
               documentType: "Document - 1",
-              fileStoreId: data?.supportingDocuments?.[0]?.fileStoreId,
+              fileStoreId: docFileStoreId,
             },
           ]
         : [];
       formData.processInstance = {
         action: filters?.action,
         comment: formDetails?.comments?.comments || "",
-        documents: data?.supportingDocuments?.[0]?.fileStoreId
+        documents: docFileStoreId
           ? [
               {
                 documentType: "Document - 1",
-                fileStoreId: data?.supportingDocuments?.[0]?.fileStoreId,
+                fileStoreId: docFileStoreId,
               },
             ]
           : [],

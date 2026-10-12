@@ -558,8 +558,6 @@ export default function LiveTrackingSystem() {
   }, [vendorOptions]);
   useEffect(() => {
     if (vendorOptions?.length && Object.keys(drivers).length) {
-      console.log("=== VENDOR DEBUG ===");
-      console.log("Vendor[0] vehicles:", vendorOptions[0]?.vehicles);
       console.log("Vendor[0] drivers:", vendorOptions[0]?.drivers?.map(d => ({
         id: d.id,
         mobile: d.owner?.mobileNumber,

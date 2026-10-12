@@ -12,8 +12,6 @@ const ulbCamel = (ulb) => ulb.toLowerCase().split(" ").map(capitalize).join(" ")
  * @returns {Object} - An object containing formatted acknowledgement data including applicant details, address details, and other metadata.
  */
 const getWTAcknowledgementData = async (booking, tenantInfo, t) => {
-    console.log("booking", booking);
-    console.log("tenantInfo", tenantInfo);
   return {
     t: t,
     tenantId: tenantInfo?.code,

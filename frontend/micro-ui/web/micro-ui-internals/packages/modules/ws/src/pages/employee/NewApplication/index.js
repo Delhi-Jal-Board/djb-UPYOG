@@ -68,6 +68,7 @@ const WATER_CONNECTION_USED_BY_OPTIONS = [
 ];
 
 const PROPERTY_CATEGORY_OPTIONS = [
+  createOption("RESIDENTIAL", "Residential"),
   createOption("COMMERCIAL", "Commercial"),
   createOption("INDUSTRIAL", "Industrial"),
   createOption("INSTITUTIONAL", "Institutional"),
@@ -897,20 +898,19 @@ const NewApplication = () => {
   const isDjbEmployee = watch("djbEmployee.isDjbEmployee");
   const isGovernmentEmployee = watch("governmentEmployee.isGovernmentEmployee");
   const selectedPropertyType = watch("useDetails.propertyType");
-  const dwellingPropertyTypes = [
-    "Apartment",
-    "DDAFlats",
-    "GovtFlats",
-    "Bungalows",
-    "FlatOrApartment",
-    "GroupHousingSociety",
-    "JJSLUMS",
-    "IndividualHouse",
-    "BuiltUp.GroupHousingSociety",
-    "BuiltUp.JJSLUMS",
-    "BuiltUp.IndividualHouse",
-  ];
-  const isDwellingUnit = dwellingPropertyTypes.includes(selectedPropertyType?.code);
+  const selectedPropertyCategory = watch("useDetails.propertyCategory");
+  const isResidential =
+    String(selectedPropertyCategory?.code || selectedPropertyCategory?.name || selectedPropertyCategory || "")
+      .toUpperCase()
+      .includes("RESIDENTIAL");
+  const isDwellingUnit = isResidential;
+
+  useEffect(() => {
+    if (!isDwellingUnit) {
+      setValue("useDetails.NumberofDwellingUnits", "");
+      clearErrors("useDetails.NumberofDwellingUnits");
+    }
+  }, [isDwellingUnit]);
 
   const selectedLocality = watch("propertyAddress.locality");
   const selectedSubLocality = watch("propertyAddress.subLocality");
@@ -2937,7 +2937,7 @@ const NewApplication = () => {
                 <PreviewItem label="Plot Area (Sq. m.)" value={formValues?.useDetails?.plotArea} />
                 <PreviewItem label="Built-up Area (Sq. m.)" value={formValues?.useDetails?.builtUpArea} />
                 <PreviewItem label="Number of Floors" value={formValues?.useDetails?.noOfFloors} />
-                {dwellingPropertyTypes.includes(formValues?.useDetails?.propertyType?.code) ? (
+                {String(formValues?.useDetails?.propertyCategory?.code || formValues?.useDetails?.propertyCategory?.name || formValues?.useDetails?.propertyCategory || "").toUpperCase().includes("RESIDENTIAL") ? (
                   <PreviewItem label="Number of Dwelling Units" value={formValues?.useDetails?.NumberofDwellingUnits} />
                 ) : null}
                 {formValues?.useDetails?.propertyType?.code === "HOSPITAL" ||

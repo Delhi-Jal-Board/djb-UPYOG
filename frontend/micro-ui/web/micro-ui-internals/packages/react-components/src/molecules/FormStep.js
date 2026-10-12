@@ -76,7 +76,6 @@ const FormStep = ({
         </React.Fragment>
       );
     if (input.type === "date") {
-      console.log("datedatedate");
       return (
         <React.Fragment key={index}>
           <CardLabel>

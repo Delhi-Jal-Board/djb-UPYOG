@@ -19,8 +19,6 @@ import { APPLICATION_PATH } from "../utils";
 import CollapsibleCardPage from "./CollapseCard";
 
 const WTSearchApplication = ({ tenantId, isLoading, t, onSubmit, data, count, setShowToast, moduleCode, isFixedPoint }) => {
-  console.log("WTSearchApplication Rendered", { moduleCode, isFixedPoint });
-
   const isMobile = window.Digit.Utils.browser.isMobile();
   const user = Digit.UserService.getUser().info;
   const [showImageModal, setShowImageModal] = useState(false);

@@ -22,8 +22,7 @@ const GetConnectionDetails = () => {
   const connectionType = filters?.connectionType;
   const [showOptions, setShowOptions] = useState(false);
   const stateCode = Digit.ULBService.getStateId();
-  // const actionConfig = ["MODIFY_CONNECTION_BUTTON", "BILL_AMENDMENT_BUTTON", "DISCONNECTION_BUTTON"];
-  const actionConfig = ["DISCONNECTION_BUTTON"];
+  const actionConfig = ["BILL_AMENDMENT_BUTTON", "DISCONNECTION_BUTTON"];
 
   const { isLoading, isError, data: applicationDetails, error } = Digit.Hooks.ws.useConnectionDetail(t, tenantId, applicationNumber, serviceType, {
     privacy: Digit.Utils.getPrivacyObject(),
@@ -34,8 +33,8 @@ const GetConnectionDetails = () => {
   Digit.SessionStorage.del("PT_CREATE_EMP_WS_NEW_FORM");
 
   const { isLoading: isLoadingDemand, data: demandData } = Digit.Hooks.useDemandSearch(
-    { consumerCode: applicationDetails?.applicationData?.connectionNo, businessService: serviceType === "WATER" ? "WS" : "SW", tenantId },
-    { enabled: !!applicationDetails?.applicationData?.applicationNo }
+    { consumerCode: applicationDetails?.applicationData?.connectionNo || applicationNumber, businessService: serviceType === "WATER" ? "WS" : "SW", tenantId },
+    { enabled: !!(applicationDetails?.applicationData?.connectionNo || applicationNumber) }
   );
 
   const [showModal, setshowModal] = useState(false);
@@ -155,8 +154,11 @@ const GetConnectionDetails = () => {
       return;
     }
 
+    const finalTenantId = getTenantId || tenantId || applicationDetails?.applicationData?.tenantId;
+    const connNo = applicationDetails?.applicationData?.connectionNo || applicationNumber;
+    const finalServiceType = serviceType || (connNo?.includes("SW") ? "SEWERAGE" : "WATER");
     history.push(
-      `/digit-ui/employee/ws/required-documents?connectionNumber=${applicationDetails?.applicationData?.connectionNo}&tenantId=${getTenantId}&service=${serviceType}`,
+      `/digit-ui/employee/ws/required-documents?connectionNumber=${connNo}&tenantId=${finalTenantId}&service=${finalServiceType}`,
       JSON.stringify({ data: applicationDetails })
     );
   };
@@ -180,7 +182,6 @@ const GetConnectionDetails = () => {
         label: "WORKFLOW_IN_PROGRESS",
       });
     } else {
-      console.log("due", due, applicationDetails);
       if (billData[0]?.status === "ACTIVE" || applicationDetails?.fetchBillsData?.length <= 0 || due == "0" || due < 0) {
         Digit.SessionStorage.set("WS_DISCONNECTION", applicationDetails);
         const connectionNumber = applicationDetails?.applicationData?.connectionNo || applicationNumber;
@@ -209,13 +210,9 @@ const GetConnectionDetails = () => {
     }
   };
   function onActionSelect(action) {
-    // if (action === "MODIFY_CONNECTION_BUTTON") {
-    //   getModifyConnectionButton();
-    // } else if (action === "BILL_AMENDMENT_BUTTON") {
-    //   getBillAmendmentButton();
-    // } else
-
-    if (action === "DISCONNECTION_BUTTON") {
+    if (action === "BILL_AMENDMENT_BUTTON") {
+      getBillAmendmentButton();
+    } else if (action === "DISCONNECTION_BUTTON") {
       getDisconnectionButton();
     } else if (action === "RESTORATION_BUTTON" || action === "RECONNECTION_BUTTON") {
       getRestorationButton();

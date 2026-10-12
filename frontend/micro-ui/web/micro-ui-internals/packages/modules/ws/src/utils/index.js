@@ -231,25 +231,35 @@ export const getPattern = (type) => {
 
 export const getFiles = async (filesArray, tenant) => {
   try {
+    if (!filesArray || filesArray.length === 0) return;
+    const targetFile = filesArray[0];
+    if (targetFile && typeof targetFile === "object") {
+      if (targetFile instanceof File || targetFile?.type) {
+        window.open(URL.createObjectURL(targetFile), "_blank");
+        return;
+      }
+      if (targetFile?.fileStoreId) {
+        filesArray = [targetFile.fileStoreId];
+      }
+    }
     const response = await Digit.UploadServices.Filefetch(filesArray, tenant);
-    // The response could be in response.data.fileStoreIds array OR a map like response.data[fileStoreId]
-    if (response?.data?.fileStoreIds?.[0]?.url) {
-      window.open(response.data.fileStoreIds[0].url);
-    } else if (response?.data?.[filesArray?.[0]]) {
-      // It's a map string format
-      let linkText = response.data[filesArray[0]];
-      let fileURL = "";
-      if (linkText && typeof linkText == "string") {
-        const linkList = linkText.split(",");
-        linkList.forEach((link) => {
-          if (!link.includes("large") && !link.includes("medium") && !link.includes("small")) {
-            fileURL = link;
-          }
-        });
+    let rawUrl = response?.data?.fileStoreIds?.[0]?.url || (filesArray?.[0] ? response?.data?.[filesArray[0]] : "") || "";
+    let fileURL = "";
+    if (rawUrl && typeof rawUrl === "string") {
+      const linkList = rawUrl.split(",");
+      linkList.forEach((link) => {
+        const trimmed = link ? link.trim() : "";
+        if (trimmed && !trimmed.includes("large") && !trimmed.includes("medium") && !trimmed.includes("small")) {
+          fileURL = trimmed;
+        }
+      });
+      if (!fileURL && linkList[0]) {
+        fileURL = linkList[0].trim();
       }
-      if (fileURL) {
-        window.open(fileURL);
-      }
+    }
+    if (fileURL) {
+      window.open(fileURL, "_blank");
+      return fileURL;
     }
   } catch (error) {
     console.error("Error fetching file URL", error);
@@ -600,7 +610,18 @@ export const convertToEditWSUpdate = (data) => {
       connectionExecutionDate: (data?.isEditApplication ? data?.connectionExecutionDate : waterResult?.connectionExecutionDate) || null,
       connectionCategory: null,
       connectionType: (data?.isEditApplication ? data?.connectionType : waterResult?.connectionType) || null,
-      additionalDetails: data?.isEditApplication ? { ...data?.additionalDetails } : { ...waterResult?.additionalDetails },
+      additionalDetails: {
+        ...(data?.isEditApplication ? data?.additionalDetails : waterResult?.additionalDetails),
+        addressType:
+          data?.ConnectionDetails?.[0]?.addressType?.code ||
+          data?.ConnectionDetails?.[0]?.addressType ||
+          (data?.isEditApplication ? data?.additionalDetails?.addressType : waterResult?.additionalDetails?.addressType) ||
+          "",
+        completeAddress:
+          data?.ConnectionDetails?.[0]?.completeAddress ||
+          (data?.isEditApplication ? data?.additionalDetails?.completeAddress : waterResult?.additionalDetails?.completeAddress) ||
+          "",
+      },
       auditDetails: data?.isEditApplication ? data?.auditDetails : waterResult?.auditDetails,
       processInstance: data?.isEditApplication
         ? {
@@ -723,7 +744,18 @@ export const convertToEditSWUpdate = (data) => {
       connectionExecutionDate: (data?.isEditApplication ? data?.connectionExecutionDate : SewerageResult?.connectionExecutionDate) || null,
       connectionCategory: null,
       connectionType: (data?.isEditApplication ? data?.connectionType : SewerageResult?.connectionType) || null,
-      additionalDetails: data?.isEditApplication ? { ...data?.additionalDetails } : { ...SewerageResult?.additionalDetails },
+      additionalDetails: {
+        ...(data?.isEditApplication ? data?.additionalDetails : SewerageResult?.additionalDetails),
+        addressType:
+          data?.ConnectionDetails?.[0]?.addressType?.code ||
+          data?.ConnectionDetails?.[0]?.addressType ||
+          (data?.isEditApplication ? data?.additionalDetails?.addressType : SewerageResult?.additionalDetails?.addressType) ||
+          "",
+        completeAddress:
+          data?.ConnectionDetails?.[0]?.completeAddress ||
+          (data?.isEditApplication ? data?.additionalDetails?.completeAddress : SewerageResult?.additionalDetails?.completeAddress) ||
+          "",
+      },
       auditDetails: data?.isEditApplication ? data?.auditDetails : SewerageResult?.auditDetails,
       processInstance: data?.isEditApplication
         ? {

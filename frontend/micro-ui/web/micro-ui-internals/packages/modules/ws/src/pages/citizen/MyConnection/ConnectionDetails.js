@@ -228,8 +228,6 @@ const ConnectionDetails = () => {
     }
   };
   const getRestorationButton = () => {
-    console.log("getRestorationButton", data, !data?.checkWorkFlow);
-    console.log("Payment", paymentDetails);
     if (!data?.checkWorkFlow) {
       setshowActionToast({
         key: "error",
@@ -240,7 +238,6 @@ const ConnectionDetails = () => {
       }, 5000);
     } else {
       if (paymentDetails?.data?.Bill?.length === 0) {
-        console.log("Payment", paymentDetails);
         let pathname = `/digit-ui/citizen/ws/restore-application/k-number`;
         Digit.SessionStorage.set("WS_DISCONNECTION", { ...state, serviceType: isSW ? "SEWERAGE" : "WATER" });
         history.push(`${pathname}`);
@@ -491,8 +488,20 @@ const ConnectionDetails = () => {
             <Row className="border-none" label={t("WS_PLOT_AREA")} text={state?.additionalDetails?.plotArea || "NA"} />
             <Row className="border-none" label={t("WS_BUILT_UP_AREA")} text={state?.additionalDetails?.builtUpArea || "NA"} />
             <Row className="border-none" label={t("WS_NO_OF_FLOORS")} text={state?.additionalDetails?.noOfFloors || "NA"} />
-            <Row className="border-none" label={t("WS_NO_OF_DWELLING_UNITS")} text={state?.additionalDetails?.NumberofDwellingUnits || "NA"} />
+            {String(state?.additionalDetails?.propertyCategory?.code || state?.additionalDetails?.propertyCategory?.name || state?.additionalDetails?.propertyCategory || "").toUpperCase().includes("RESIDENTIAL") && (
+              <Row className="border-none" label={t("WS_NO_OF_DWELLING_UNITS")} text={state?.additionalDetails?.NumberofDwellingUnits || "NA"} />
+            )}
             <Row className="border-none" label={t("WS_LOCALITY")} text={state?.additionalDetails?.locality || "NA"} />
+            {(Array.isArray(state?.additionalDetails?.questions || state?.additionalDetails?.questionAnswers)
+              ? state?.additionalDetails?.questions || state?.additionalDetails?.questionAnswers
+              : []
+            ).map((q, idx) => {
+              const qText = typeof q === "object" ? q?.question || q?.questionText || q?.title || `Question ${idx + 1}` : `Question ${idx + 1}`;
+              const aText = typeof q === "object" ? (typeof q?.answer === "object" ? (q?.answer?.name || q?.answer?.value || q?.answer?.code) : q?.answer) : q;
+              const trimmedQ = String(qText || "").trim();
+              const displayLabel = trimmedQ.toLowerCase().startsWith("question") ? trimmedQ : `${trimmedQ}`;
+              return <Row key={`question_${idx}`} className="border-none" label={displayLabel} text={`${t(checkForNA(aText))}`} />;
+            })}
 
             <Link to={`/digit-ui/citizen/commonpt/view-property?propertyId=${state?.propertyId}&tenantId=${state?.tenantId}`}>
               <LinkButton style={{ textAlign: "left", marginBottom: "10px", marginTop: "5px" }} label={t("WS_VIEW_PROPERTY")} />

@@ -22,7 +22,6 @@ import getMTAcknowledgementData from "../../utils/getMTAcknowledgementData";
 */
 
 const GetActionMessage = (props) => {
-  console.log("GetActionMessage",props);
     const { t } = useTranslation();
     if (props.isSuccess) {
       return t("MT_SUBMIT_SUCCESSFULL");
@@ -42,7 +41,6 @@ const rowContainerStyle = {
 };
 
 const BannerPicker = (props) => {
-  console.log("BannerPicker",props);
   return (
     <Banner
       message={GetActionMessage(props)}
