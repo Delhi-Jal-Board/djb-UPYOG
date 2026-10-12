@@ -21,6 +21,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
   } = useForm({
     defaultValues: formData?.[config.key] || {
       useDetails: {
+        categoryType: null,
         propertyCategory: null,
         propertyType: null,
         WaterConnectionUsageType: null,
@@ -50,13 +51,6 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
     "PropertyToUsageMapping",
     "PropertyType2",
   ]);
-
-  useEffect(() => {
-    console.log("[PropertyWaterConnection] tenantId used for MDMS:", tenantId);
-    console.log("[PropertyWaterConnection] MDMS raw response (ptServicesMastersData):", ptServicesMastersData);
-    console.log("[PropertyWaterConnection] MDMS PropertyTax.PropertyType2:", ptServicesMastersData?.PropertyTax?.PropertyType2);
-    console.log("[PropertyWaterConnection] MDMS PropertyTax.PropertyType:", ptServicesMastersData?.PropertyTax?.PropertyType);
-  }, [tenantId, ptServicesMastersData]);
 
   const { data: wsServicesMastersData } = Digit.Hooks.ws.useMDMS(tenantId, "ws-services-masters", ["WsCategoryType"]);
 
@@ -106,9 +100,22 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
     "IndividualHouse",
   ];
 
-  const isDwellingUnit = dwellingPropertyTypes.includes(watchPropertyType?.code);
+  const isResidential =
+    normalizeCode(watchPropertyCategory?.code || watchPropertyCategory?.name || watchPropertyCategory) === "RESIDENTIAL" ||
+    normalizeCode(watchPropertyType?.propertyCategory) === "RESIDENTIAL";
 
-  const isServentHouse = dwellingPropertyTypes.includes(watchPropertyType?.code);
+  const isDwellingUnit = isResidential;
+
+  const isServentHouse = isDwellingUnit;
+
+  useEffect(() => {
+    if (!isDwellingUnit) {
+      setValue("useDetails.NumberofDwellingUnits", "");
+      if (clearErrors) {
+        clearErrors("useDetails.NumberofDwellingUnits");
+      }
+    }
+  }, [isDwellingUnit]);
 
   const yearOptions = useMemo(() => {
     const currentYear = new Date().getFullYear();
@@ -119,14 +126,6 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
     return years;
   }, []);
 
-  const categoryOptions = useMemo(() => {
-    let options = ptServicesMastersData?.PropertyTax?.PropertyCategory?.filter((item) => item.active) || [];
-    return options.map((item) => ({
-      code: item.code,
-      name: item.name,
-    }));
-  }, [ptServicesMastersData]);
-
   const propertyType2List = useMemo(() => {
     const fromMdms = ptServicesMastersData?.PropertyTax?.PropertyType2;
     if (Array.isArray(fromMdms) && fromMdms.length > 0) {
@@ -134,6 +133,16 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
     }
     return [];
   }, [ptServicesMastersData]);
+
+  const categoryOptions = useMemo(() => {
+    const list = propertyType2List?.length > 0 ? propertyType2List : (ptServicesMastersData?.PropertyTax?.PropertyType || []);
+    const uniqueCats = [...new Set(list.map((item) => item.propertyCategory).filter(Boolean))];
+    return uniqueCats.map((cat) => ({
+      code: cat,
+      name: cat,
+      i18nKey: cat,
+    }));
+  }, [propertyType2List, ptServicesMastersData]);
 
   const propertyTypeOptions = useMemo(() => {
     const list = propertyType2List?.length > 0 ? propertyType2List : (ptServicesMastersData?.PropertyTax?.PropertyType || []);
@@ -158,6 +167,131 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
     }));
   }, [propertyType2List, ptServicesMastersData]);
 
+  const availableCategoryOptions = useMemo(() => {
+    const propType = watchPropertyType?.code ? watchPropertyType : null;
+    if (!propType) {
+      return categoryTypeList;
+    }
+
+    const list = propertyType2List?.length > 0 ? propertyType2List : (ptServicesMastersData?.PropertyTax?.PropertyType || []);
+    const matched = list.find((item) => normalizeCode(item.code) === normalizeCode(propType.code)) || propType;
+
+    let rawCats = matched?.categoryType;
+    if (!rawCats) return categoryTypeList;
+    if (!Array.isArray(rawCats)) rawCats = [rawCats];
+    rawCats = rawCats
+      .map((c) => (typeof c === "object" ? c?.name || c?.code || c?.value || "" : String(c || "")))
+      .map((c) => c.trim())
+      .filter(Boolean);
+
+    if (rawCats.length === 0) return categoryTypeList;
+
+    const normalizedAllowed = rawCats.map((c) => normalizeCode(c));
+
+    const matchedOptions = categoryTypeList.filter(
+      (item) => normalizedAllowed.includes(normalizeCode(item.code)) || normalizedAllowed.includes(normalizeCode(item.name))
+    );
+
+    if (matchedOptions.length > 0) {
+      return matchedOptions;
+    }
+
+    return rawCats.map((catStr) => {
+      const isDomestic = normalizeCode(catStr) === "DOMESTIC";
+      const isNonDomestic = normalizeCode(catStr) === "NONDOMESTIC";
+      const code = isDomestic ? "DOMESTIC" : isNonDomestic ? "NON_DOMESTIC" : String(catStr).toUpperCase();
+      const name = isDomestic ? "Domestic" : isNonDomestic ? "Non-Domestic" : String(catStr);
+      return {
+        code,
+        name,
+        i18nKey: t && t(`WS_CATEGORY_${code}`) !== `WS_CATEGORY_${code}` ? `WS_CATEGORY_${code}` : name,
+      };
+    });
+  }, [watchPropertyType, propertyType2List, ptServicesMastersData, categoryTypeList, t]);
+
+  const autoFillFromPropertyType = React.useCallback(
+    (propTypeItem) => {
+      if (!propTypeItem?.code) return;
+
+      const list = propertyType2List?.length > 0 ? propertyType2List : (ptServicesMastersData?.PropertyTax?.PropertyType || []);
+      const matched = list.find(
+        (item) => normalizeCode(item.code) === normalizeCode(propTypeItem.code)
+      ) || propTypeItem;
+
+      console.log("[PropertyWaterConnection] Property Type selected:", matched?.code);
+      console.log("[PropertyWaterConnection] Matched item from MDMS:", matched);
+
+      // 1. Category Type
+      if (matched?.categoryType) {
+        let rawCats = matched.categoryType;
+        if (!Array.isArray(rawCats)) rawCats = [rawCats];
+        rawCats = rawCats
+          .map((c) => (typeof c === "object" ? c?.name || c?.code || c?.value || "" : String(c || "")))
+          .map((c) => c.trim())
+          .filter(Boolean);
+
+        const hasDomestic = rawCats.some((c) => normalizeCode(c) === "DOMESTIC");
+        const hasNonDomestic = rawCats.some((c) => normalizeCode(c) === "NONDOMESTIC");
+
+        let targetCat = null;
+        if (hasDomestic) {
+          // If Domestic is available (whether alone or with Non-Domestic), Domestic show ho
+          targetCat = categoryTypeList.find((c) => normalizeCode(c.code) === "DOMESTIC" || normalizeCode(c.name) === "DOMESTIC") || {
+            code: "DOMESTIC",
+            name: "Domestic",
+            i18nKey: t && t("WS_CATEGORY_DOMESTIC") !== "WS_CATEGORY_DOMESTIC" ? "WS_CATEGORY_DOMESTIC" : "Domestic",
+          };
+        } else if (hasNonDomestic) {
+          // Only Non-Domestic available
+          targetCat = categoryTypeList.find((c) => normalizeCode(c.code) === "NONDOMESTIC" || normalizeCode(c.name) === "NONDOMESTIC") || {
+            code: "NON_DOMESTIC",
+            name: "Non-Domestic",
+            i18nKey: t && t("WS_CATEGORY_NON_DOMESTIC") !== "WS_CATEGORY_NON_DOMESTIC" ? "WS_CATEGORY_NON_DOMESTIC" : "Non-Domestic",
+          };
+        } else if (rawCats.length > 0) {
+          const firstNorm = normalizeCode(rawCats[0]);
+          targetCat = categoryTypeList.find((c) => normalizeCode(c.code) === firstNorm || normalizeCode(c.name) === firstNorm) || {
+            code: rawCats[0].toUpperCase(),
+            name: rawCats[0],
+            i18nKey: t && t(`WS_CATEGORY_${rawCats[0]}`) !== `WS_CATEGORY_${rawCats[0]}` ? `WS_CATEGORY_${rawCats[0]}` : rawCats[0],
+          };
+        }
+
+        if (targetCat) {
+          setValue("useDetails.categoryType", targetCat, { shouldValidate: true, shouldDirty: true });
+          if (clearErrors) clearErrors("useDetails.categoryType");
+        }
+      }
+
+      // 2. Property Category
+      if (matched?.propertyCategory) {
+        const foundPropCat = categoryOptions.find(
+          (c) => normalizeCode(c.code) === normalizeCode(matched.propertyCategory) || normalizeCode(c.name) === normalizeCode(matched.propertyCategory)
+        ) || {
+          code: matched.propertyCategory,
+          name: matched.propertyCategory,
+          i18nKey: matched.propertyCategory,
+        };
+        setValue("useDetails.propertyCategory", foundPropCat, { shouldValidate: true, shouldDirty: true });
+        if (clearErrors) clearErrors("useDetails.propertyCategory");
+      }
+
+      // 3. Water Connection Usage Type
+      if (matched?.waterConnectionUsageType) {
+        const foundUsage = usageTypeOptions.find(
+          (u) => normalizeCode(u.code) === normalizeCode(matched.waterConnectionUsageType) || normalizeCode(u.name) === normalizeCode(matched.waterConnectionUsageType)
+        ) || {
+          code: matched.waterConnectionUsageType,
+          name: matched.waterConnectionUsageType,
+          value: matched.waterConnectionUsageType,
+        };
+        setValue("useDetails.WaterConnectionUsageType", foundUsage, { shouldValidate: true, shouldDirty: true });
+        if (clearErrors) clearErrors("useDetails.WaterConnectionUsageType");
+      }
+    },
+    [propertyType2List, ptServicesMastersData, categoryTypeList, categoryOptions, usageTypeOptions, setValue, clearErrors, t]
+  );
+
   const prevPropertyTypeCode = React.useRef(null);
 
   useEffect(() => {
@@ -167,53 +301,13 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
     }
 
     const isNewType = prevPropertyTypeCode.current !== watchPropertyType.code;
-    prevPropertyTypeCode.current = watchPropertyType.code;
-
-    const list = propertyType2List?.length > 0 ? propertyType2List : (ptServicesMastersData?.PropertyTax?.PropertyType || []);
-    const matched = list.find(
-      (item) => normalizeCode(item.code) === normalizeCode(watchPropertyType.code)
-    );
-
-    if (matched && isNewType) {
-      // 1. Category Type
-      if (matched.categoryType && categoryTypeList.length > 0) {
-        const catTarget = Array.isArray(matched.categoryType) ? matched.categoryType[0] : matched.categoryType;
-        const foundCat = categoryTypeList.find(
-          (c) => normalizeCode(c.code) === normalizeCode(catTarget) || normalizeCode(c.name) === normalizeCode(catTarget)
-        );
-        if (foundCat) {
-          setValue("useDetails.categoryType", foundCat);
-        }
-      }
-
-      // 2. Property Category
-      if (matched.propertyCategory && categoryOptions.length > 0) {
-        const foundPropCat = categoryOptions.find(
-          (c) => normalizeCode(c.code) === normalizeCode(matched.propertyCategory) || normalizeCode(c.name) === normalizeCode(matched.propertyCategory)
-        );
-        if (foundPropCat) {
-          setValue("useDetails.propertyCategory", foundPropCat);
-        }
-      }
-
-      // 3. Water Connection Usage Type
-      if (matched.waterConnectionUsageType && usageTypeOptions.length > 0) {
-        const foundUsage = usageTypeOptions.find(
-          (u) => normalizeCode(u.code) === normalizeCode(matched.waterConnectionUsageType) || normalizeCode(u.name) === normalizeCode(matched.waterConnectionUsageType)
-        );
-        if (foundUsage) {
-          setValue("useDetails.WaterConnectionUsageType", foundUsage);
-        }
-      }
+    if (isNewType) {
+      prevPropertyTypeCode.current = watchPropertyType.code;
+      autoFillFromPropertyType(watchPropertyType);
     }
   }, [
     watchPropertyType?.code,
-    propertyType2List,
-    ptServicesMastersData,
-    categoryTypeList,
-    categoryOptions,
-    usageTypeOptions,
-    setValue,
+    autoFillFromPropertyType,
   ]);
 
   const floorOptions = useMemo(() => {
@@ -240,18 +334,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
       .filter((q) => q.length > 0);
   }, [watchPropertyType, propertyType2List, ptServicesMastersData]);
 
-  useEffect(() => {
-    if (watchPropertyType?.code) {
-      const list = propertyType2List?.length > 0 ? propertyType2List : (ptServicesMastersData?.PropertyTax?.PropertyType || []);
-      const matched = list.find(
-        (item) => normalizeCode(item.code) === normalizeCode(watchPropertyType.code)
-      );
-      console.log("[PropertyWaterConnection] Selected propertyType:", watchPropertyType);
-      console.log("[PropertyWaterConnection] Matched item in MDMS list:", matched);
-      console.log("[PropertyWaterConnection] Matched questions in MDMS:", matched?.questions);
-      console.log("[PropertyWaterConnection] Active questions to display:", activeQuestions);
-    }
-  }, [watchPropertyType, propertyType2List, ptServicesMastersData, activeQuestions]);
+
 
   const [questionAnswers, setQuestionAnswers] = useState(() => {
     const existing =
@@ -287,9 +370,12 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
     });
   };
 
+  const prevQuestionsRef = React.useRef(null);
   useEffect(() => {
-    setValue("useDetails.questions", questionAnswers);
-    console.log("[PropertyWaterConnection] Current questions:", questionAnswers);
+    if (!_.isEqual(prevQuestionsRef.current, questionAnswers)) {
+      prevQuestionsRef.current = _.cloneDeep(questionAnswers);
+      setValue("useDetails.questions", questionAnswers);
+    }
   }, [questionAnswers, setValue]);
 
   const lastSentValue = React.useRef(null);
@@ -324,16 +410,28 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
 
       setValue("useDetails.categoryType", categoryTypeList?.find((o) => normalizeCode(o.code) === normalizeCode(catType)) || null);
 
-      const propCategoryMatch = ptServicesMastersData?.PropertyTax?.PropertyCategory?.find(
-        (o) => normalizeCode(o.code) === normalizeCode(usageCategory)
+      const propCategoryMatch =
+        categoryOptions?.find(
+          (o) => normalizeCode(o.code) === normalizeCode(usageCategory) || normalizeCode(o.name) === normalizeCode(usageCategory)
+        ) ||
+        ptServicesMastersData?.PropertyTax?.PropertyCategory?.find(
+          (o) => normalizeCode(o.code) === normalizeCode(usageCategory)
+        );
+      setValue(
+        "useDetails.propertyCategory",
+        propCategoryMatch
+          ? { code: propCategoryMatch.code, name: propCategoryMatch.name }
+          : usageCategory
+          ? { code: usageCategory, name: usageCategory }
+          : null
       );
-      setValue("useDetails.propertyCategory", propCategoryMatch ? { code: propCategoryMatch.code, name: propCategoryMatch.name } : null);
 
       const propTypeList = propertyType2List?.length > 0 ? propertyType2List : (ptServicesMastersData?.PropertyTax?.PropertyType || []);
       const propTypeMatch = propTypeList.find(
         (o) => normalizeCode(o.code) === normalizeCode(getCode(additionalDetails.propertyType || details.propertyType))
       );
       setValue("useDetails.propertyType", propTypeMatch ? { code: propTypeMatch.code, name: propTypeMatch.name } : null);
+      prevPropertyTypeCode.current = propTypeMatch?.code || null;
 
       const usageVal = getCode(additionalDetails.waterConnectionUsageType || additionalDetails.WaterConnectionUsageType);
       const usageTypeMatch = usageTypeOptions.find(
@@ -444,7 +542,11 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
                   option={propertyTypeOptions}
                   optionKey="name"
                   selected={props.value}
-                  select={props.onChange}
+                  select={(selected) => {
+                    props.onChange(selected);
+                    prevPropertyTypeCode.current = selected?.code;
+                    autoFillFromPropertyType(selected);
+                  }}
                   t={t}
                   onBlur={props.onBlur}
                   disable={isPropertyFound}
@@ -466,7 +568,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
               rules={{ required: t("REQUIRED_FIELD") }}
               render={(props) => (
                 <Dropdown
-                  option={categoryTypeList}
+                  option={availableCategoryOptions}
                   optionKey="i18nKey"
                   selected={props.value}
                   select={props.onChange}
@@ -706,7 +808,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
                 t={t}
                 inputRef={register({
                   pattern: { value: NUMBER_PATTERN, message: t("ERR_INVALID_NUMBER") },
-                  required: t("REQUIRED_FIELD"),
+                  required: isDwellingUnit ? t("REQUIRED_FIELD") : false,
                 })}
                 name="useDetails.NumberofDwellingUnits"
                 disabled={isPropertyFound}

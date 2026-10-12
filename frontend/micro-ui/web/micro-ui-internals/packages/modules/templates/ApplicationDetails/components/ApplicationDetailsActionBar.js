@@ -23,7 +23,6 @@ function ApplicationDetailsActionBar({
       return !window.isDocumentsVerified;
     }
     return false;
-
   });
 
   React.useEffect(() => {
@@ -60,11 +59,12 @@ function ApplicationDetailsActionBar({
     });
 
   const completelySatisfied = applicationDetails?.applicationData?.additionalDetails?.CompletelySatisfied;
+
   if (completelySatisfied !== undefined) {
     if (completelySatisfied === true) {
-      actions = actions?.filter((e) => e.action !== "SEND_BACK_TO_CITIZEN_DIRECT");
-    } else if (completelySatisfied === false) {
       actions = actions?.filter((e) => e.action !== "SEND_BACK_TO_CITIZEN");
+    } else if (completelySatisfied === false) {
+      actions = actions?.filter((e) => e.action !== "SEND_BACK_TO_CITIZEN_DIRECT");
     }
   }
 
@@ -104,21 +104,21 @@ function ApplicationDetailsActionBar({
           {businessService === "ewst" ? (
             modified === uuid || modified == null ? (
               <SubmitBar
-    ref={menuRef}
-    label={t("WF_TAKE_ACTION")}
-    onSubmit={() => setDisplayMenu(!displayMenu)}
-    disabled={isSubmitDisabled || !isApprovalChecklistValid}
-  />
+                ref={menuRef}
+                label={t("WF_TAKE_ACTION")}
+                onSubmit={() => setDisplayMenu(!displayMenu)}
+                disabled={isSubmitDisabled || !isApprovalChecklistValid}
+              />
             ) : (
               <CardLabel style={{ color: "red", font: "30px", fontWeight: "bold" }}>{`${t("EW_ALERT_ANOTHER_VENDOR")}`}</CardLabel>
             )
           ) : (
             <SubmitBar
-    ref={menuRef}
-    label={t("WF_TAKE_ACTION")}
-    onSubmit={() => setDisplayMenu(!displayMenu)}
-    disabled={isSubmitDisabled || !isApprovalChecklistValid}
-  />
+              ref={menuRef}
+              label={t("WF_TAKE_ACTION")}
+              onSubmit={() => setDisplayMenu(!displayMenu)}
+              disabled={isSubmitDisabled || !isApprovalChecklistValid}
+            />
           )}
           {/* <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} /> */}
         </ActionBar>

@@ -46,6 +46,8 @@ export const newConfig = [
           key: "supportingDocuments",
           component: "WSActivationSupportingDocuments",
           withoutLabel: true,
+          isMandatory: true,
+          validation: { required: true },
         }]
       }
     ]

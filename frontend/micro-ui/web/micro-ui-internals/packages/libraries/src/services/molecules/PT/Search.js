@@ -1,6 +1,45 @@
 import { getPropertySubtypeLocale, getPropertyTypeLocale } from "../../../utils/pt";
 import { PTService } from "../../elements/PT";
 
+const formatPropertyQuestions = (propertyObj) => {
+  const rawQuestions =
+    propertyObj?.additionalDetails?.questions ||
+    propertyObj?.additionalDetails?.questionAnswers ||
+    propertyObj?.additionalDetails?.propertyQuestions ||
+    propertyObj?.questions ||
+    [];
+
+  if (!Array.isArray(rawQuestions) || rawQuestions.length === 0) return [];
+
+  return rawQuestions
+    .filter((item) => item !== null && item !== undefined)
+    .map((item, index) => {
+      let qText = "";
+      let aText = "";
+
+      if (typeof item === "object") {
+        qText = item.question || item.questionText || item.title || item.name || `Question ${index + 1}`;
+        const rawAns = item.answer !== undefined ? item.answer : item.value !== undefined ? item.value : "";
+        if (typeof rawAns === "object" && rawAns !== null) {
+          aText = rawAns.name || rawAns.value || rawAns.code || JSON.stringify(rawAns);
+        } else {
+          aText = String(rawAns !== null && rawAns !== undefined ? rawAns : "");
+        }
+      } else {
+        qText = `Question ${index + 1}`;
+        aText = String(item);
+      }
+
+      const trimmedQ = String(qText || "").trim();
+      const displayLabel = trimmedQ.toLowerCase().startsWith("question") ? trimmedQ : `Question : ${trimmedQ}`;
+
+      return {
+        title: displayLabel,
+        value: aText.trim() ? aText : "NA",
+      };
+    });
+};
+
 export const PTSearch = {
   all: async (tenantId, filters = {}) => {
     const response = await PTService.search({ tenantId, filters });
@@ -68,6 +107,15 @@ export const PTSearch = {
         { title: "LANDMARK", value: property?.address?.landmark || "NA" },
       ],
     };
+    const propCategoryCode =
+      property?.additionalDetails?.propertyCategory?.code ||
+      property?.additionalDetails?.propertyCategory?.name ||
+      property?.additionalDetails?.propertyCategory ||
+      property?.propertyType?.propertyCategory ||
+      property?.usageCategory ||
+      property?.propertyType;
+    const isPropResidential = String(propCategoryCode || "").toUpperCase().includes("RESIDENTIAL");
+
     const assessmentDetails = {
       title: "PT_ASSESMENT_INFO_SUB_HEADER",
       values: [
@@ -75,13 +123,15 @@ export const PTSearch = {
         { title: "WS_PROPERTY_CATEGORY", value: property?.additionalDetails?.propertyCategory?.name || property?.additionalDetails?.propertyCategory?.code || property?.additionalDetails?.propertyCategory || "NA" },
         { title: "PT_ASSESMENT_INFO_TYPE_OF_BUILDING", value: getPropertyTypeLocale(property?.propertyType) || "NA" },
         { title: "WS_WATER_CONNECTION_USAGE_TYPE", value: property?.additionalDetails?.waterConnectionUsageType?.name || property?.additionalDetails?.waterConnectionUsageType?.code || property?.additionalDetails?.waterConnectionUsageType || "NA" },
-        { title: "PT_ASSESMENT_INFO_USAGE_TYPE", value: getPropertySubtypeLocale(property?.usageCategory) || "NA" },
         { title: "PT_ASSESMENT_INFO_NO_OF_FLOOR", value: property?.noOfFloors || "NA" },
         { title: "PT_ASSESMENT_INFO_PLOT_SIZE", value: property?.landArea || property?.additionalDetails?.plotArea || "NA" },
         { title: "WS_BUILT_UP_AREA", value: property?.additionalDetails?.builtUpArea || property?.buildUpArea || property?.superBuiltUpArea || "NA" },
         { title: "WS_HEIGHT_OF_THE_BUILDING(meters)", value: property?.additionalDetails?.heightOfTheBuilding || property?.heightOfTheBuilding || "NA" },
         { title: "WS_SELECT_YEAR_OF_CONSTRUCTION", value: property?.additionalDetails?.yearOfConstruction || property?.additionalDetails?.constructionYear?.code || property?.additionalDetails?.constructionYear || property?.additionalDetails?.SelectYearofConstruction?.code || "NA" },
-        { title: "WS_NUMBER_OF_DWELLING_UNITS", value: property?.additionalDetails?.numberOfDwellingUnits || property?.additionalDetails?.noOfDwellingUnits || property?.additionalDetails?.NumberofDwellingUnits || "NA" },
+        ...(isPropResidential
+          ? [{ title: "WS_NUMBER_OF_DWELLING_UNITS", value: property?.additionalDetails?.numberOfDwellingUnits || property?.additionalDetails?.noOfDwellingUnits || property?.additionalDetails?.NumberofDwellingUnits || "NA" }]
+          : []),
+        ...formatPropertyQuestions(property),
       ],
     };
     const propertyDetail = {
@@ -258,13 +308,23 @@ export const PTSearch = {
           { title: "WS_PROPERTY_CATEGORY", value: response?.additionalDetails?.propertyCategory?.name || response?.additionalDetails?.propertyCategory?.code || response?.additionalDetails?.propertyCategory || "NA" },
           { title: "PT_ASSESMENT_INFO_TYPE_OF_BUILDING", value: getPropertyTypeLocale(response?.propertyType) || "NA" },
           { title: "WS_WATER_CONNECTION_USAGE_TYPE", value: response?.additionalDetails?.waterConnectionUsageType?.name || response?.additionalDetails?.waterConnectionUsageType?.code || response?.additionalDetails?.waterConnectionUsageType || "NA" },
-          { title: "PT_ASSESMENT_INFO_USAGE_TYPE", value: response?.usageCategory ? getPropertySubtypeLocale(response?.usageCategory) : `N/A` },
           { title: "PT_ASSESMENT_INFO_NO_OF_FLOOR", value: response?.noOfFloors || "NA" },
           { title: "PT_ASSESMENT_INFO_PLOT_SIZE", value: response?.landArea || response?.additionalDetails?.plotArea || "NA" },
           { title: "WS_BUILT_UP_AREA", value: response?.additionalDetails?.builtUpArea || response?.buildUpArea || response?.superBuiltUpArea || "NA" },
           { title: "WS_HEIGHT_OF_THE_BUILDING(meters)", value: response?.additionalDetails?.heightOfTheBuilding || response?.heightOfTheBuilding || "NA" },
           { title: "WS_SELECT_YEAR_OF_CONSTRUCTION", value: response?.additionalDetails?.yearOfConstruction || response?.additionalDetails?.constructionYear?.code || response?.additionalDetails?.constructionYear || response?.additionalDetails?.SelectYearofConstruction?.code || "NA" },
-          { title: "WS_NUMBER_OF_DWELLING_UNITS", value: response?.additionalDetails?.numberOfDwellingUnits || response?.additionalDetails?.noOfDwellingUnits || response?.additionalDetails?.NumberofDwellingUnits || "NA" },
+          ...((String(
+            response?.additionalDetails?.propertyCategory?.code ||
+              response?.additionalDetails?.propertyCategory?.name ||
+              response?.additionalDetails?.propertyCategory ||
+              response?.propertyType?.propertyCategory ||
+              response?.usageCategory ||
+              response?.propertyType ||
+              ""
+          ).toUpperCase().includes("RESIDENTIAL"))
+            ? [{ title: "WS_NUMBER_OF_DWELLING_UNITS", value: response?.additionalDetails?.numberOfDwellingUnits || response?.additionalDetails?.noOfDwellingUnits || response?.additionalDetails?.NumberofDwellingUnits || "NA" }]
+            : []),
+          ...formatPropertyQuestions(response),
         ],
         additionalDetails: {
           floors: response?.units

@@ -27,7 +27,6 @@ const matchesAny = (candidate, values = []) => {
 };
 
 const WTEditApplicationModal = ({ t, applicationData, closeModal }) => {
-  console.log("Application Data in Edit Modal:", applicationData);
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
   const [formData, setFormData] = useState({

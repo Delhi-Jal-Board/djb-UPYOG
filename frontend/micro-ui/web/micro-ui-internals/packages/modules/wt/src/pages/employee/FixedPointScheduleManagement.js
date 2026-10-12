@@ -81,10 +81,6 @@ const FixedPointScheduleManagement = ({ ...props }) => {
     ];
   }, [fixedPointData, allSchedulesData, t]);
 
-  console.log(fixedPoints, "fixedPoints");
-
-  console.log(fixedPointData, "fixedPointData");
-
   const { mutate: createSchedule } = Digit.Hooks.wt.useCreateFixedPointSchedule(tenantId);
   const { mutate: updateSchedule } = Digit.Hooks.wt.useUpdateFixedPointSchedule(tenantId);
 
@@ -540,7 +536,6 @@ const FixedPointScheduleManagement = ({ ...props }) => {
               : null
           }
           onSubmit={(formData) => {
-            console.log(formData, 'dsdsdsdsdsdsds')
             // 1. Process Days Array
             const formDataDay = formData?.day;
             let daysArr = [];
