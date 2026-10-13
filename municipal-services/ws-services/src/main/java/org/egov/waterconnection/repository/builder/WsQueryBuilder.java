@@ -262,7 +262,7 @@ public class WsQueryBuilder {
 		if (!CollectionUtils.isEmpty(connectionNumbers)) {
 			addClauseIfRequired(preparedStatement, query);
 			List <String> patterns = connectionNumbers.stream().filter(connNo -> connNo!=null && !connNo.isEmpty()).map(connNo-> "%" + connNo.toLowerCase() + "%").collect(Collectors.toList());
-			String condition = patterns.stream().map(p-> "LOWER(conn.connectionno) LIKE ?").collect(Collectors.joining("OR"," (", ") "));
+			String condition = patterns.stream().map(p-> "LOWER(conn.connectionno) LIKE ?").collect(Collectors.joining(" OR "," (", ") "));
 			query.append(condition);
 			preparedStatement.addAll(patterns);
 		}
@@ -277,7 +277,7 @@ public class WsQueryBuilder {
 		if (!CollectionUtils.isEmpty(applicationNumbers)) {
 			addClauseIfRequired(preparedStatement, query);
 			List <String> patterns = applicationNumbers.stream().filter(appNo -> appNo!=null && !appNo.isEmpty()).map(appNo-> "%" + appNo.toLowerCase() + "%").collect(Collectors.toList());
-			String condition = patterns.stream().map(p-> "LOWER(conn.applicationno) LIKE ?").collect(Collectors.joining("OR"," (", ") "));
+			String condition = patterns.stream().map(p-> "LOWER(conn.applicationno) LIKE ?").collect(Collectors.joining(" OR "," (", ") "));
 			query.append(condition);
 			preparedStatement.addAll(patterns);
 		}
