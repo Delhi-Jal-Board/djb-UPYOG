@@ -82,14 +82,10 @@ export const downloadEkycReport = async ({ tenantId, ekycStatus, fromDate, toDat
       return;
     }
 
-    consumerList.forEach((item) => {
-      if (item.assignedTime) {
-        item.assignedTime = new Date(item.assignedTime).toLocaleDateString("en-GB");
-      }
-
-      if (item.submittedAt) {
-        item.submittedAt = new Date(item.submittedAt).toLocaleDateString("en-GB");
-      }
+    ["assignedTime", "submittedAt", "lastVisitTime"].forEach((key) => {
+      consumerList.forEach((item) => {
+        if (item[key]) item[key] = new Date(item[key]).toLocaleDateString("en-GB");
+      });
     });
 
     const excelData = getEkycExcelData(consumerList, t);

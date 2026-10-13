@@ -157,6 +157,7 @@ const StatusCards = ({ countData, customDate, setCustomDate }) => {
                 setCustomDate(data.range);
               }}
               emptyInitialDate={true}
+              placeholder="Select Date Filter"
             />
             <button
               className={`download-btn relative ${ekycDownloadLoading ? "disabled" : ""}`}
