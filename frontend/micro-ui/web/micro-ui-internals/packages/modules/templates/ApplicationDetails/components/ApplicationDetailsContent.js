@@ -124,7 +124,17 @@ function ApplicationDetailsContent({
     return `${day}/${month}/${year}`;
   };
   const getTimelineCaptions = (checkpoint, index = 0, timeline) => {
-    if (checkpoint.state === "OPEN" || (checkpoint.status === "INITIATED" && !window.location.href.includes("/obps/"))) {
+    let actualIndex = 0;
+    let actualTimeline = [];
+    if (Array.isArray(index)) {
+      actualTimeline = index;
+      actualIndex = 0;
+    } else {
+      actualIndex = typeof index === "number" ? index : 0;
+      actualTimeline = Array.isArray(timeline) ? timeline : [];
+    }
+
+    if (checkpoint?.state === "OPEN" || (checkpoint?.status === "INITIATED" && !window.location.href.includes("/obps/"))) {
       const caption = {
         date: convertEpochToDateDMY(applicationData?.auditDetails?.createdTime),
         source: applicationData?.channel || "",
@@ -144,12 +154,12 @@ function ApplicationDetailsContent({
           isArray: false,
           d: (res) => {
             let resultstring = "";
-            resultstring = `+91 ${_.get(res, `ProcessInstances[${index}].assignes[0].mobileNumber`)}`;
+            resultstring = `+91 ${_.get(res, `ProcessInstances[${actualIndex}].assignes[0].mobileNumber`)}`;
             return resultstring;
           },
         },
       };
-      const previousCheckpoint = timeline[index - 1];
+      const previousCheckpoint = actualTimeline?.[actualIndex - 1];
       const caption = {
         date: checkpoint?.auditDetails?.lastModified,
         name: checkpoint?.assignes?.[0]?.name,
@@ -630,7 +640,7 @@ function ApplicationDetailsContent({
                   <CheckPoint
                     isCompleted={true}
                     label={t(`${timelineStatusPrefix}${workflowDetails?.data?.timeline[0]?.state}`)}
-                    customChild={getTimelineCaptions(workflowDetails?.data?.timeline[0], workflowDetails?.data?.timeline)}
+                    customChild={getTimelineCaptions(workflowDetails?.data?.timeline[0], 0, workflowDetails?.data?.timeline)}
                   />
                 ) : (
                   <ConnectingCheckPoints>

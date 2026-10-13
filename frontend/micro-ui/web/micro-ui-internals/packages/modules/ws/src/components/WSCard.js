@@ -99,6 +99,19 @@ const WSCard = () => {
           "WS_DOC_VERIFIER",
         ],
       },
+      {
+        label: t("WS_BILL_AMENDMENT_APPLICATION_SEARCH", "Search Bill Amendment Application"),
+        link: `/digit-ui/employee/ws/water/bill-amendment/search-application`,
+        roles: [
+          "WS_CEMP",
+          "WS_APPROVER",
+          "EE",
+          "WS_DEALING_CLERK",
+          "WS_CLERK",
+          "WS_FIELD_INSPECTOR",
+          "WS_DOC_VERIFIER",
+        ],
+      },
       // {
       //   count: isWSInboxLoading ? "-" : wsData?.totalCount,
       //   label: t("SEWERAGE_INBOX"),

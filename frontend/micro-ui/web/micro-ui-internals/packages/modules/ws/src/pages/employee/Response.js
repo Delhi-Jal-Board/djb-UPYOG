@@ -54,6 +54,13 @@ const Response = () => {
               {t("WS_PRINT_APPLICATION_LABEL")}
             </div>)}
             <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
+                {data?.Amendments?.[0]?.amendmentId && (
+                  <SubmitBar 
+                    label={t("CS_TITLE_GENERATE_NOTE")} 
+                    onSubmit={() => history.push(`/digit-ui/employee/ws/generate-note-bill-amendment?applicationNumber=${data?.Amendments?.[0]?.amendmentId}`)}
+                    style={{ marginRight: "1rem" }}
+                  />
+                )}
                 <SubmitBar 
                   label={t("CORE_COMMON_GO_TO_HOME")} 
                   onSubmit={() => history.push(`/digit-ui/employee`)}

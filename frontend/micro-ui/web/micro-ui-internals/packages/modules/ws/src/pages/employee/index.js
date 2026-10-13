@@ -242,6 +242,11 @@ const BILLSBreadCrumbs = ({ location, showPrint }) => {
       show: location.pathname.includes("/water/bill-amendment/inbox") ? true : false,
     },
     {
+      path: "/digit-ui/employee/ws/water/bill-amendment/search-application",
+      label: t("WS_BILL_AMENDMENT_SEARCH_APPLICATION", "Search Bill Amendment"),
+      show: location.pathname.includes("/bill-amendment/search-application") ? true : false,
+    },
+    {
       path: "/digit-ui/employee/ws/sewerage/bill-amendment/inbox",
       label: t("ES_COMMON_BILL_AMEND_SEWERAGE_INBOX_LABEL"),
       show: location.pathname.includes("/sewerage/bill-amendment/inbox") ? true : false,
@@ -634,6 +639,7 @@ const App = ({ path }) => {
   const CPTAcknowledgement = Digit?.ComponentRegistryService?.getComponent("CPTAcknowledgement");
   const WSInfoPage = Digit?.ComponentRegistryService?.getComponent("WSInfoPage");
   const WSExecuteDisconnection = Digit?.ComponentRegistryService?.getComponent("WSExecuteDisconnection");
+  const WSSearchBillAmendment = Digit?.ComponentRegistryService?.getComponent("WSSearchBillAmendment");
 
   const locationCheck =
     window.location.href.includes("/employee/ws/new-application") ||
@@ -721,6 +727,7 @@ const App = ({ path }) => {
               <PrivateRoute path={`${path}/response-bill-amend`} component={() => <ResponseBillAmend {...{ path }} />} />
               <PrivateRoute path={`${path}/required-documents`} component={() => <WSRequiredDocuments {...{ path }} />} />
               <PrivateRoute path={`${path}/activate-connection`} component={WSActivateConnection} />
+              <PrivateRoute path={`${path}/water/bill-amendment/search-application`} component={(props) => <WSSearchBillAmendment {...props} parentRoute={path} />} />
               <PrivateRoute path={`${path}/water/search-application`} component={(props) => <WSSearch {...props} parentRoute={path} />} />
               <PrivateRoute path={`${path}/sewerage/search-application`} component={(props) => <WSSearch {...props} parentRoute={path} />} />
               <PrivateRoute path={`${path}/ws-response`} component={WSResponse} />

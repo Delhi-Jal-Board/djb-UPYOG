@@ -49,6 +49,7 @@ import BulkBillSearch from "./components/SearchWaterConnection/BulkBillSearch";
 import WSCard from "./components/WSCard";
 import SWCard from "./components/SWCard";
 import BillIAmendMentInbox from "./components/BillIAmendMentInbox";
+import SearchBillAmendment from "./components/SearchBillAmendment";
 
 //Citizen Components
 import WSCreate from "./pages/citizen/WSCreate";
@@ -235,6 +236,7 @@ const componentsToRegister = {
   WSCard,
   SWCard,
   WSBillIAmendMentInbox: BillIAmendMentInbox,
+  WSSearchBillAmendment: SearchBillAmendment,
 
   //Citizen Components
   WSCreate: WSCreate,
