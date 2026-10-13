@@ -31,7 +31,7 @@ function isStartDateFocused(focusNumber) {
   return focusNumber === 0;
 }
 
-const DateRange = ({ values, onFilterChange, t, hideLabel = false, onOpenChange, emptyInitialDate = false, placeholder }) => {
+const DateRange = ({ values, onFilterChange, t, hideLabel = false, onOpenChange, emptyInitialDate = false, placeholder = "" }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [focusedRange, setFocusedRange] = useState([0, 0]);
 
@@ -208,7 +208,7 @@ const DateRange = ({ values, onFilterChange, t, hideLabel = false, onOpenChange,
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >
-          <input placeholder={placeholder || t("Select date range")} className="employee-select-wrap--elipses" type="text" value={values?.title ? values.title : ""} readOnly />
+          <input placeholder={t(placeholder) || t("Select date range")} className="employee-select-wrap--elipses" type="text" value={values?.title ? values.title : ""} readOnly />
 
           <LuCalendarIcon hoverColor="#a1a1aa" color="#d1d1d1" className="cursorPointer" isHovered={isHovered} />
         </div>
