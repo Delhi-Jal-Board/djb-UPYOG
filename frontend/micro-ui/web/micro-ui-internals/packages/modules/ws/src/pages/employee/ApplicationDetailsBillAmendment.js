@@ -5,24 +5,27 @@ import ApplicationDetailsTemplate from "../../../../templates/ApplicationDetails
 import getPDFData from "../../utils/getWsAckDataForBillAmendPdf";
 
 const ApplicationDetailsBillAmendment = () => {
-  const { applicationNumber } = Digit.Hooks.useQueryParams();
+  const queryParams = Digit.Hooks.useQueryParams();
+  const applicationNumber = queryParams?.applicationNumber || queryParams?.applicationNo;
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const { t } = useTranslation();
   let serviceType = "WATER";
-  if (applicationNumber.includes("SW")) serviceType = "SEWERAGE";
+  if (applicationNumber?.includes("SW")) serviceType = "SEWERAGE";
   const [showToast, setShowToast] = useState(false);
   const { isLoading, isError, data: applicationDetails, error } = Digit.Hooks.ws.useWSApplicationDetailsBillAmendment(
     t,
     tenantId,
     applicationNumber,
-    serviceType
+    serviceType,
+    { enabled: !!applicationNumber }
   );
 
+  const businessService = applicationDetails?.processInstancesDetails?.[0]?.businessService || (serviceType === "WATER" ? "WS.AMENDMENT" : "SW.AMENDMENT");
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId,
     id: applicationNumber,
-    moduleCode: applicationDetails?.processInstancesDetails?.[0]?.businessService,
-    config: { enabled: applicationDetails?.processInstancesDetails?.[0]?.businessService ? true : false },
+    moduleCode: businessService,
+    config: { enabled: !!applicationNumber },
   });
 
   workflowDetails?.data?.actionState?.nextActions?.forEach((action) => {
@@ -115,12 +118,12 @@ const ApplicationDetailsBillAmendment = () => {
           applicationData={applicationDetails?.applicationData}
           mutate={mutate}
           workflowDetails={workflowDetails}
-          businessService={applicationDetails?.processInstancesDetails?.[0]?.businessService} // businessService
+          businessService={businessService}
           moduleCode="WS"
           showToast={showToast}
           setShowToast={setShowToast}
           closeToast={() => setShowToast(null)}
-          timelineStatusPrefix={`WF_${applicationDetails?.processInstancesDetails?.[0]?.businessService?.toUpperCase()}_`}
+          timelineStatusPrefix={`WF_${businessService?.toUpperCase()}_`}
         />
       </div>
       {showToast ? (
