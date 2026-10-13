@@ -236,6 +236,7 @@ const SupervisorDetailsCard = () => {
                   disabled={ekycDownloadLoading}
                   className={`download-btn relative ${ekycDownloadLoading ? "disabled" : ""}`}
                   onClick={() => setShowFilterModal(true)}
+                  placeholder="Select Date Filter"
                 >
                   <MdDownloadIcon />
                   {ekycDownloadLoading ? t("DOWNLOADING") || "Downloading" : t("DOWNLOAD_REPORT") || "Download Report"}
