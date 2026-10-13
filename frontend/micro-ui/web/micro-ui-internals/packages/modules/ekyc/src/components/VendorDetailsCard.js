@@ -255,6 +255,7 @@ const VendorDetailsCard = () => {
                     setFilterDate(data.range);
                   }}
                   emptyInitialDate={true}
+                  placeholder="Select Date Filter"
                 />
                 <button
                   disabled={ekycDownloadLoading}
