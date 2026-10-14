@@ -82,9 +82,17 @@ const ApplicationDetails = (props) => {
       if (seededKeyRef.current !== seedKey) {
         seededKeyRef.current = seedKey;
         const initialChecklist = getWSApprovalChecklistFields(applicationData).reduce((values, field) => {
-          values[field.name] = applicationData?.additionalDetails?.[field.name] === true;
+          if (typeof applicationData?.additionalDetails?.[field.name] === "boolean") {
+            values[field.name] = applicationData?.additionalDetails?.[field.name];
+          }
+          if (applicationData?.additionalDetails?.[`${field.name}Remarks`]) {
+            values[`${field.name}Remarks`] = applicationData?.additionalDetails?.[`${field.name}Remarks`];
+          }
           return values;
         }, {});
+        if (typeof applicationData?.additionalDetails?.CompletelySatisfied === "boolean") {
+          initialChecklist.isFullySatisfied = applicationData?.additionalDetails?.CompletelySatisfied;
+        }
         setApprovalChecklist(initialChecklist);
       }
     } else {

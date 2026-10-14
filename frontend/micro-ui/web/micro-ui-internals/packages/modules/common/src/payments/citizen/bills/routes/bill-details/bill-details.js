@@ -61,6 +61,13 @@ const BillDetails = ({ paymentRules, businessService }) => {
       ?.reduce((total, current, index) => (index === 0 ? total : total + current.amount), 0) || 0;
 
   const { key, label } = Digit.Hooks.useApplicationsForBusinessServiceSearch({ businessService }, { enabled: false });
+  const isNewConnection =
+    businessService?.includes("ONE_TIME_FEE") ||
+    bill?.businessService?.includes("ONE_TIME_FEE") ||
+    pathname?.includes("ONE_TIME_FEE") ||
+    window?.location?.href?.includes("ONE_TIME_FEE") ||
+    bill?.billDetails?.[0]?.billAccountDetails?.some((head) => head?.taxHeadCode?.includes("ONE_TIME_FEE"));
+
   const getBillingPeriod = () => {
     const { fromPeriod, toPeriod } = billDetails;
     if (fromPeriod && toPeriod) {
@@ -212,7 +219,7 @@ const BillDetails = ({ paymentRules, businessService }) => {
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginBottom: "20px" }}>
               <KeyNote keyValue={t(label)} note={stringReplaceAll(consumerCode, "+", "/")} />
               {billDetails?.currentBillNo && <KeyNote keyValue={t("CS_BILL_NO")} note={billDetails?.currentBillNo} />}
-              <KeyNote keyValue={t("CS_PAYMENT_BILLING_PERIOD")} note={getBillingPeriod()} />
+              {!isNewConnection && <KeyNote keyValue={t("CS_PAYMENT_BILLING_PERIOD")} note={getBillingPeriod()} />}
               <KeyNote keyValue={t("WS_CONSUMER_NAME")} note={ConsumerName} />
             </div>
           ) : (
@@ -239,7 +246,7 @@ const BillDetails = ({ paymentRules, businessService }) => {
                   </CardSubHeader>
                 )}
               </div>
-              {businessService !== "PT.MUTATION" && businessService !== "FSM.TRIP_CHARGES" && (
+              {businessService !== "PT.MUTATION" && businessService !== "FSM.TRIP_CHARGES" && !isNewConnection && (
                 <KeyNote keyValue={t("CS_PAYMENT_BILLING_PERIOD")} note={getBillingPeriod()} />
               )}
             </div>

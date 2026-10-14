@@ -226,13 +226,25 @@ const ActionModal = ({
       },
     };
     if (showApprovalChecklist) {
+      const remarksPayload = {};
+      Object.keys(approvalChecklist || {}).forEach((key) => {
+        if (key.endsWith("Remarks")) {
+          remarksPayload[key] = approvalChecklist[key];
+        }
+      });
+
       applicationData.additionalDetails = {
         ...applicationData?.additionalDetails,
         waterPipelineFacility: approvalChecklist?.waterPipelineFacility === true,
+        waterPipelineFacilityRemarks: approvalChecklist?.waterPipelineFacilityRemarks || "",
         infrastructureChargesApplicable: approvalChecklist?.infrastructureChargesApplicable === true,
+        infrastructureChargesApplicableRemarks: approvalChecklist?.infrastructureChargesApplicableRemarks || "",
         rainWaterHarvesting: approvalChecklist?.rainWaterHarvesting === true,
+        rainWaterHarvestingRemarks: approvalChecklist?.rainWaterHarvestingRemarks || "",
         bulkConnectionVerification: approvalChecklist?.bulkConnectionVerification === true,
+        bulkConnectionVerificationRemarks: approvalChecklist?.bulkConnectionVerificationRemarks || "",
         CompletelySatisfied: approvalChecklist?.isFullySatisfied,
+        ...remarksPayload,
       };
     }
     if (data?.date && applicationData?.applicationType?.includes("DISCONNECT")) {

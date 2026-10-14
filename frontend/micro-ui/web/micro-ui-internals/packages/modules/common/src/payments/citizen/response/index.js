@@ -57,8 +57,11 @@ export const convertEpochToDate = (dateEpoch) => {
   //   { enabled: allowFetchBill, retry: false, staleTime: Infinity, refetchOnWindowFocus: false }
   // );
   const mutation = Digit.Hooks.chb.useChbCreateAPI(tenantId, false);
-  const AdvertisementCreateApi = Digit.Hooks.ads.useADSCreateAPI(tenantId, false);
-  const newTenantId=business_service.includes("WS.ONE_TIME_FEE" || "SW.ONE_TIME_FEE")?Digit.ULBService.getStateId():tenantId;
+  const isNewConnection =
+    business_service?.includes("ONE_TIME_FEE") ||
+    paymentData?.paymentDetails?.[0]?.bill?.businessService?.includes("ONE_TIME_FEE") ||
+    window?.location?.href?.includes("ONE_TIME_FEE");
+  const newTenantId = (business_service?.includes("WS.ONE_TIME_FEE") || business_service?.includes("SW.ONE_TIME_FEE") || isNewConnection) ? Digit.ULBService.getStateId() : tenantId;
   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
     {
       tenantId,
@@ -766,7 +769,7 @@ export const convertEpochToDate = (dateEpoch) => {
       <StatusTable>
         <Row rowContainerStyle={rowContainerStyle} last label={t(label)} text={applicationNo} />
         {/** TODO : move this key and value into the hook based on business Service */}
-        {(business_service === "PT" || workflw) && (
+        {(business_service === "PT" || workflw) && !isNewConnection && (
           <Row
             rowContainerStyle={rowContainerStyle}
             last
