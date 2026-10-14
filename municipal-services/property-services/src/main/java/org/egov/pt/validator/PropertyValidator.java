@@ -303,10 +303,10 @@ public class PropertyValidator {
 						String appType = (String) conn.get("applicationType");
 						String appStatus = (String) conn.get("applicationStatus");
 						boolean isNewConn = appType == null || "NEW_WATER_CONNECTION".equalsIgnoreCase(appType);
-						boolean isTerminated = "REJECTED".equalsIgnoreCase(appStatus) || "CANCELLED".equalsIgnoreCase(appStatus);
-						if (isNewConn && !isTerminated) {
+						boolean isActivated = "CONNECTION_ACTIVATED".equalsIgnoreCase(appStatus) || "APPROVED".equalsIgnoreCase(appStatus);
+						if (isNewConn && isActivated) {
 							throw new CustomException("EG_PT_WATER_CONNECTION_EXISTS",
-									"Property cannot be updated because a New Water Connection application already exists for this property.");
+									"Property cannot be updated because a New Water Connection is already activated for this property.");
 						}
 					}
 				}
