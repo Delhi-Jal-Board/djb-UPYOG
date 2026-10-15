@@ -89,16 +89,11 @@ const WSConnectionHolderDetails = ({ config, onSelect, userType, formData, setEr
       const data = connectionHolderDetails.map((e) => {
         return e;
       });
-      onSelect(config?.key, data);
+      if (!_.isEqual(formData?.[config?.key], data)) {
+        onSelect(config?.key, data);
+      }
     }
-  }, [connectionHolderDetails]);
-
-  useEffect(() => {
-    if (userType === "employee") {
-      //onSelect(config.key, { ...formData[config.key], ...connectionHolderDetails });
-      onSelect(config.key, [{ ...formData[config.key]?.[0], ...connectionHolderDetails?.[0] }]);
-    }
-  }, [connectionHolderDetails]);
+  }, [connectionHolderDetails, config?.key]);
 
   function ispagereloadingenabled(eyeclick) {
     if (

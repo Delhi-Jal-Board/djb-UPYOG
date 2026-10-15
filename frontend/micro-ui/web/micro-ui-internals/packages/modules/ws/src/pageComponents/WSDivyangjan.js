@@ -22,9 +22,13 @@ const WSDivyangjan = ({ config, onSelect, userType, formData }) => {
 
   useEffect(() => {
     if (userType === "employee") {
-      onSelectRef.current(config.key, { isDivyangjan: !!formValue.isDivyangjan });
+      const currentVal = formData?.[config.key]?.isDivyangjan;
+      const newVal = !!formValue.isDivyangjan;
+      if (currentVal !== newVal) {
+        onSelectRef.current(config.key, { isDivyangjan: newVal });
+      }
     }
-  }, [config.key, formValue.isDivyangjan, userType]);
+  }, [config.key, formValue.isDivyangjan, userType, formData?.[config.key]?.isDivyangjan]);
   const content = (
     <CollapsibleCardPage title={t("Are you a Divyangjan/Person with Disability?")} defaultOpen={true}>
       <div className="formcomposer-section-grid">

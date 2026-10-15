@@ -84,17 +84,17 @@ const WSCard = () => {
         count: isWSInboxLoading ? "-" : wsData?.totalCount,
         label: t("WATER_INBOX"),
         link: `/digit-ui/employee/ws/water/inbox`,
-        roles: ["WS_CEMP", "WS_APPROVER", "EE", "WS_DEALING_CLERK", "WS_CLERK"],
+        roles: ["WS_CEMP", "WS_ZRO", "EE"],
       },
       {
         label: t("WS_BILL_AMENDMENT_INBOX", "Bill Amendment Inbox"),
         link: `/digit-ui/employee/ws/water/bill-amendment/inbox`,
-        roles: ["WS_CEMP", "WS_APPROVER", "EE", "WS_DEALING_CLERK", "WS_CLERK", "WS_FIELD_INSPECTOR", "WS_DOC_VERIFIER"],
+        roles: ["WS_CEMP", "WS_ZRO", "EE"],
       },
       {
         label: t("WS_BILL_AMENDMENT_APPLICATION_SEARCH", "Search Bill Amendment Application"),
         link: `/digit-ui/employee/ws/water/bill-amendment/search-application`,
-        roles: ["WS_CEMP", "WS_APPROVER", "EE", "WS_DEALING_CLERK", "WS_CLERK", "WS_FIELD_INSPECTOR", "WS_DOC_VERIFIER"],
+        roles: ["WS_CEMP", "WS_ZRO", "EE"],
       },
       // {
       //   count: isWSInboxLoading ? "-" : wsData?.totalCount,
@@ -106,12 +106,12 @@ const WSCard = () => {
       {
         label: t("WS_WATER_CONNECTION_SEARCH_LABEL"),
         link: `/digit-ui/employee/ws/water/search-connection`,
-        roles: ["WS_CEMP", "WS_APPROVER", "WS_FIELD_INSPECTOR", "WS_DOC_VERIFIER", "WS_CLERK"],
+        roles: ["WS_CEMP", "WS_ZRO", "EE"],
       },
       {
         label: t("WS_WATER_APPLICATION_SEARCH"),
         link: `/digit-ui/employee/ws/water/search-application`,
-        roles: ["WS_CEMP", "WS_APPROVER", "WS_FIELD_INSPECTOR", "WS_DOC_VERIFIER", "WS_CLERK"],
+        roles: ["WS_CEMP", "WS_ZRO", "EE"],
       },
       {
         label: t("WS_CALCULATION"),

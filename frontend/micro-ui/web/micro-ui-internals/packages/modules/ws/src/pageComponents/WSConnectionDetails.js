@@ -139,11 +139,7 @@ const WSConnectionDetails = ({ config, onSelect, userType, formData, setError, f
     if (formData?.ConnectionDetails?.length > 0) {
       const incoming = formData.ConnectionDetails[0];
       const current = connectionDetails?.[0];
-      if (
-        (!current?.addressType && incoming?.addressType) ||
-        (!current?.completeAddress && incoming?.completeAddress) ||
-        !_.isEqual(current, incoming)
-      ) {
+      if (!_.isEqual(current, incoming)) {
         setConnectionDetails([incoming]);
       }
     }
@@ -223,16 +219,13 @@ const WSConnectionDetails = ({ config, onSelect, userType, formData, setError, f
   }, [commonMastersData]);
 
   useEffect(() => {
-    if (userType === "employee") {
-      onSelect(config.key, connectionDetails);
-    }
     if (connectionDetails?.[0]?.water) setWaterSewarageSelection({ water: true, sewerage: false });
 
     if (connectionDetails?.[0]?.sewerage) setWaterSewarageSelection({ water: false, sewerage: true });
   }, [connectionDetails]);
 
   useEffect(() => {
-    if (!formData?.ConnectionDetails) {
+    if (!formData?.ConnectionDetails && connectionDetails?.length === 0) {
       setConnectionDetails([createConnectionDetails()]);
     }
   }, [formData?.ConnectionDetails]);
