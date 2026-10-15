@@ -28,7 +28,7 @@
     "@djb25/digit-ui-module-receipts": "1.0.0",
     "@djb25/digit-ui-react-components": "1.0.0",
     "@djb25/digit-ui-module-pgr": "1.0.4",
-    "@djb25/digit-ui-module-vendor": "1.0.88",
+    "@djb25/digit-ui-module-vendor": "1.0.89",
     "@djb25/digit-ui-module-wt": "1.0.83",
     "@djb25/digit-ui-module-asset": "1.0.7",
     "@djb25/digit-ui-module-ws": "1.0.107",
