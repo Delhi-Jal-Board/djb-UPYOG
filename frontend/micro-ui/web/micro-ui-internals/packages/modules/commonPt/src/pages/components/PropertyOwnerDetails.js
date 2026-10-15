@@ -31,12 +31,26 @@ const PropertyOwnerDetails = ({ t, config, onSelect, userType, formData, formSta
   let index = 0; // mutationScreen ? ownerIndex : window.location.href.charAt(window.location.href.length - 1);
   const [ownershipCategory, setOwnerCategory] = React.useState(formData?.ownershipCategory || "");
   let validation = {};
+
+  const userInfo = Digit.UserService.getUser()?.info;
+  const isCitizen = userType === "citizen" || window.location.href.includes("/citizen");
+  const initOwner =
+    (formData?.owners && Array.isArray(formData.owners) && formData.owners[index]) ||
+    (formData?.owners && !Array.isArray(formData.owners) ? formData.owners : null);
+  const initialName = initOwner?.name || (isCitizen ? userInfo?.name || "" : "");
+  const initialMobile = initOwner?.mobileNumber || (isCitizen ? userInfo?.mobileNumber || "" : "");
+  const initialGender =
+    initOwner?.gender ||
+    (isCitizen && userInfo?.gender
+      ? { code: userInfo.gender.toUpperCase(), value: userInfo.gender.toUpperCase(), name: userInfo.gender, i18nKey: `PT_COMMON_GENDER_${userInfo.gender.toUpperCase()}` }
+      : undefined);
+
   const [ownerDetails, setOwnerDetails] = React.useState([
     {
       ...(formData.owners && formData.owners[index]),
-      name: (formData.owners && formData.owners[index] && formData.owners[index].name) || formData?.owners?.name || "",
-      gender: (formData.owners && formData.owners[index] && formData.owners[index].gender) || formData?.owners?.gender,
-      mobileNumber: (formData.owners && formData.owners[index] && formData.owners[index].mobileNumber) || formData?.owners?.mobileNumber || "",
+      name: initialName,
+      gender: initialGender,
+      mobileNumber: initialMobile,
       fatherOrHusbandName:
         (formData.owners && formData.owners[index] && formData.owners[index].fatherOrHusbandName) || formData?.owners?.fatherOrHusbandName || "NA",
       relationship: (formData.owners && formData.owners[index] && formData.owners[index].relationship) || formData?.owners?.relationship || { code: "FATHER", name: "Father", i18nKey: "PT_RELATION_FATHER" },
@@ -64,6 +78,13 @@ const PropertyOwnerDetails = ({ t, config, onSelect, userType, formData, formSta
     Menu.map((genderDetails) => {
       menu.push({ i18nKey: `PT_COMMON_GENDER_${genderDetails.code}`, code: `${genderDetails.code}`, value: `${genderDetails.code}` });
     });
+  if (!menu || menu.length === 0) {
+    menu = [
+      { i18nKey: "PT_COMMON_GENDER_MALE", code: "MALE", value: "MALE" },
+      { i18nKey: "PT_COMMON_GENDER_FEMALE", code: "FEMALE", value: "FEMALE" },
+      { i18nKey: "PT_COMMON_GENDER_TRANSGENDER", code: "TRANSGENDER", value: "TRANSGENDER" },
+    ];
+  }
 
   // const { data: dropdownData } = Digit.Hooks.tl.useTradeLicenseMDMS(stateId, "common-masters", "TLOwnerTypeWithSubtypes", { userType });
 
@@ -314,7 +335,7 @@ const PropertyOwnerDetails = ({ t, config, onSelect, userType, formData, formSta
                           }}
                           t={t}
                           disabled={isUpdateProperty || isEditProperty}
-                          isDropDown={window.location.href.includes("/employee") ? true : false}
+                          isDropDown={true}
                           onBlur={onBlur}
                           placeholder={t("PT_FORM3_GENDER")}
                         />

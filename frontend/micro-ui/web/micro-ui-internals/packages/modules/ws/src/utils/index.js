@@ -501,11 +501,11 @@ export const updatePayloadOfWS = async (data, type) => {
 export const getAllDocumentsForUpdate = (data) => {
   let allDocuments = Array.isArray(data?.documents?.documents) ? [...data.documents.documents] : (Array.isArray(data?.documents) ? [...data.documents] : []);
   
-  if (data?.djbEmployee?.document) {
-    const isDjbEmp = String(data?.djbEmployee?.isDjbEmployee) === "true";
+  if (data?.djbEmployee) {
+    const isDjbEmp = String(data?.djbEmployee?.isDjbEmployee) === "true" || data?.djbEmployee?.isDjbEmployee === true;
     let existingIndex = allDocuments.findIndex(doc => doc.documentType === "OWNER.DJB_EMPLOYEE_ID");
     
-    if (isDjbEmp) {
+    if (isDjbEmp && data?.djbEmployee?.document) {
       if (existingIndex !== -1) {
         allDocuments[existingIndex] = {
           ...allDocuments[existingIndex],
@@ -579,6 +579,39 @@ export const convertToWSUpdate = (data) => {
     WaterConnection: {
       ...data?.WaterConnectionResult?.WaterConnection?.[0],
       documents: getAllDocumentsForUpdate(data),
+      additionalDetails: {
+        ...(data?.WaterConnectionResult?.WaterConnection?.[0]?.additionalDetails || {}),
+        ...(data?.additionalDetails || {}),
+        ...(data?.djbEmployee !== undefined
+          ? {
+              ...data?.djbEmployee,
+              isDjbEmployee: String(data?.djbEmployee?.isDjbEmployee) === "true" || data?.djbEmployee?.isDjbEmployee === true,
+              employeeId:
+                String(data?.djbEmployee?.isDjbEmployee) === "true" || data?.djbEmployee?.isDjbEmployee === true
+                  ? data?.djbEmployee?.employeeId || ""
+                  : "",
+              designation:
+                String(data?.djbEmployee?.isDjbEmployee) === "true" || data?.djbEmployee?.isDjbEmployee === true
+                  ? data?.djbEmployee?.designation || ""
+                  : "",
+              dor:
+                String(data?.djbEmployee?.isDjbEmployee) === "true" || data?.djbEmployee?.isDjbEmployee === true
+                  ? data?.djbEmployee?.dor || ""
+                  : "",
+              document:
+                String(data?.djbEmployee?.isDjbEmployee) === "true" || data?.djbEmployee?.isDjbEmployee === true
+                  ? data?.djbEmployee?.document?.fileStoreId || data?.djbEmployee?.document || ""
+                  : "",
+            }
+          : {}),
+        ...(data?.disability !== undefined
+          ? {
+              ...data?.disability,
+              isDivyangjan: !!data?.disability?.isDivyangjan,
+            }
+          : {}),
+        ...(data?.bankDetails !== undefined ? data?.bankDetails : {}),
+      },
       processInstance: {
         action: "SUBMIT_APPLICATION",
       },
@@ -611,7 +644,12 @@ export const convertToEditWSUpdate = (data) => {
       connectionCategory: null,
       connectionType: (data?.isEditApplication ? data?.connectionType : waterResult?.connectionType) || null,
       additionalDetails: {
+        ...(waterResult?.additionalDetails || {}),
         ...(data?.isEditApplication ? data?.additionalDetails : waterResult?.additionalDetails),
+        CompletelySatisfied:
+          data?.additionalDetails?.CompletelySatisfied !== undefined
+            ? data?.additionalDetails?.CompletelySatisfied
+            : waterResult?.additionalDetails?.CompletelySatisfied,
         addressType:
           data?.ConnectionDetails?.[0]?.addressType?.code ||
           data?.ConnectionDetails?.[0]?.addressType ||
@@ -621,6 +659,35 @@ export const convertToEditWSUpdate = (data) => {
           data?.ConnectionDetails?.[0]?.completeAddress ||
           (data?.isEditApplication ? data?.additionalDetails?.completeAddress : waterResult?.additionalDetails?.completeAddress) ||
           "",
+        ...(data?.djbEmployee !== undefined
+          ? {
+              ...data?.djbEmployee,
+              isDjbEmployee: String(data?.djbEmployee?.isDjbEmployee) === "true" || data?.djbEmployee?.isDjbEmployee === true,
+              employeeId:
+                String(data?.djbEmployee?.isDjbEmployee) === "true" || data?.djbEmployee?.isDjbEmployee === true
+                  ? data?.djbEmployee?.employeeId || ""
+                  : "",
+              designation:
+                String(data?.djbEmployee?.isDjbEmployee) === "true" || data?.djbEmployee?.isDjbEmployee === true
+                  ? data?.djbEmployee?.designation || ""
+                  : "",
+              dor:
+                String(data?.djbEmployee?.isDjbEmployee) === "true" || data?.djbEmployee?.isDjbEmployee === true
+                  ? data?.djbEmployee?.dor || ""
+                  : "",
+              document:
+                String(data?.djbEmployee?.isDjbEmployee) === "true" || data?.djbEmployee?.isDjbEmployee === true
+                  ? data?.djbEmployee?.document?.fileStoreId || data?.djbEmployee?.document || ""
+                  : "",
+            }
+          : {}),
+        ...(data?.disability !== undefined
+          ? {
+              ...data?.disability,
+              isDivyangjan: !!data?.disability?.isDivyangjan,
+            }
+          : {}),
+        ...(data?.bankDetails !== undefined ? data?.bankDetails : {}),
       },
       auditDetails: data?.isEditApplication ? data?.auditDetails : waterResult?.auditDetails,
       processInstance: data?.isEditApplication
@@ -745,7 +812,12 @@ export const convertToEditSWUpdate = (data) => {
       connectionCategory: null,
       connectionType: (data?.isEditApplication ? data?.connectionType : SewerageResult?.connectionType) || null,
       additionalDetails: {
+        ...(SewerageResult?.additionalDetails || {}),
         ...(data?.isEditApplication ? data?.additionalDetails : SewerageResult?.additionalDetails),
+        CompletelySatisfied:
+          data?.additionalDetails?.CompletelySatisfied !== undefined
+            ? data?.additionalDetails?.CompletelySatisfied
+            : SewerageResult?.additionalDetails?.CompletelySatisfied,
         addressType:
           data?.ConnectionDetails?.[0]?.addressType?.code ||
           data?.ConnectionDetails?.[0]?.addressType ||
@@ -755,6 +827,35 @@ export const convertToEditSWUpdate = (data) => {
           data?.ConnectionDetails?.[0]?.completeAddress ||
           (data?.isEditApplication ? data?.additionalDetails?.completeAddress : SewerageResult?.additionalDetails?.completeAddress) ||
           "",
+        ...(data?.djbEmployee !== undefined
+          ? {
+              ...data?.djbEmployee,
+              isDjbEmployee: String(data?.djbEmployee?.isDjbEmployee) === "true" || data?.djbEmployee?.isDjbEmployee === true,
+              employeeId:
+                String(data?.djbEmployee?.isDjbEmployee) === "true" || data?.djbEmployee?.isDjbEmployee === true
+                  ? data?.djbEmployee?.employeeId || ""
+                  : "",
+              designation:
+                String(data?.djbEmployee?.isDjbEmployee) === "true" || data?.djbEmployee?.isDjbEmployee === true
+                  ? data?.djbEmployee?.designation || ""
+                  : "",
+              dor:
+                String(data?.djbEmployee?.isDjbEmployee) === "true" || data?.djbEmployee?.isDjbEmployee === true
+                  ? data?.djbEmployee?.dor || ""
+                  : "",
+              document:
+                String(data?.djbEmployee?.isDjbEmployee) === "true" || data?.djbEmployee?.isDjbEmployee === true
+                  ? data?.djbEmployee?.document?.fileStoreId || data?.djbEmployee?.document || ""
+                  : "",
+            }
+          : {}),
+        ...(data?.disability !== undefined
+          ? {
+              ...data?.disability,
+              isDivyangjan: !!data?.disability?.isDivyangjan,
+            }
+          : {}),
+        ...(data?.bankDetails !== undefined ? data?.bankDetails : {}),
       },
       auditDetails: data?.isEditApplication ? data?.auditDetails : SewerageResult?.auditDetails,
       processInstance: data?.isEditApplication
@@ -863,6 +964,39 @@ export const convertToSWUpdate = (data) => {
       ...data?.SewerageConnectionResult?.SewerageConnections?.[0],
       connectionType: "Non Metered",
       documents: getAllDocumentsForUpdate(data),
+      additionalDetails: {
+        ...(data?.SewerageConnectionResult?.SewerageConnections?.[0]?.additionalDetails || {}),
+        ...(data?.additionalDetails || {}),
+        ...(data?.djbEmployee !== undefined
+          ? {
+              ...data?.djbEmployee,
+              isDjbEmployee: String(data?.djbEmployee?.isDjbEmployee) === "true" || data?.djbEmployee?.isDjbEmployee === true,
+              employeeId:
+                String(data?.djbEmployee?.isDjbEmployee) === "true" || data?.djbEmployee?.isDjbEmployee === true
+                  ? data?.djbEmployee?.employeeId || ""
+                  : "",
+              designation:
+                String(data?.djbEmployee?.isDjbEmployee) === "true" || data?.djbEmployee?.isDjbEmployee === true
+                  ? data?.djbEmployee?.designation || ""
+                  : "",
+              dor:
+                String(data?.djbEmployee?.isDjbEmployee) === "true" || data?.djbEmployee?.isDjbEmployee === true
+                  ? data?.djbEmployee?.dor || ""
+                  : "",
+              document:
+                String(data?.djbEmployee?.isDjbEmployee) === "true" || data?.djbEmployee?.isDjbEmployee === true
+                  ? data?.djbEmployee?.document?.fileStoreId || data?.djbEmployee?.document || ""
+                  : "",
+            }
+          : {}),
+        ...(data?.disability !== undefined
+          ? {
+              ...data?.disability,
+              isDivyangjan: !!data?.disability?.isDivyangjan,
+            }
+          : {}),
+        ...(data?.bankDetails !== undefined ? data?.bankDetails : {}),
+      },
       processInstance: {
         action: "SUBMIT_APPLICATION",
       },

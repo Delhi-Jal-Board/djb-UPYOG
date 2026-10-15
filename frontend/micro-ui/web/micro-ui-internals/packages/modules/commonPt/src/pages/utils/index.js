@@ -32,6 +32,7 @@ export const setAddressDetailsLW = (data) => {
     actualAssembly: address?.actualAssembly || address?.actualAssembly?.name || address?.actualAssembly,
     actualZone: address?.actualZone || address?.actualZone?.name || address?.actualZone,
     colonyMcdCategory: address?.colonyMcdCategory,
+    noOfFloors: address?.noOfFloors?.code || address?.noOfFloors?.name || (typeof address?.noOfFloors === "string" ? address?.noOfFloors : undefined),
   };
 
   data.address = propAddress;
@@ -178,18 +179,27 @@ const getUsageTypeLW = (data) => {
 export const setPropertyDetailsLW = (data) => {
   let propertyDetails = {};
 
-  const { waterConnection, useDetails: topUseDetails } = data;
+  const { waterConnection, useDetails: topUseDetails, locationDet, propertyAddress } = data;
   const useDetails = waterConnection?.useDetails || topUseDetails;
+  const address =
+    (Array.isArray(locationDet) ? locationDet[0] : locationDet) || (Array.isArray(propertyAddress) ? propertyAddress[0] : propertyAddress);
+
+  const rawFloors = address?.noOfFloors || useDetails?.noOfFloors;
+  const floorsCode = typeof rawFloors === "object" ? rawFloors?.code : rawFloors;
+  let parsedFloors = 1;
+  if (floorsCode === "BASEMENT") {
+    parsedFloors = 0;
+  } else if (floorsCode) {
+    const p = parseInt(String(floorsCode).split("_")[0]);
+    parsedFloors = isNaN(p) ? 1 : p;
+  }
 
   propertyDetails = {
     propertyType: useDetails?.propertyType?.code || useDetails?.propertyType,
     usageCategory: useDetails?.propertyCategory?.code || useDetails?.propertyCategory,
     landArea: parseFloat(useDetails?.plotArea),
     superBuiltUpArea: parseFloat(useDetails?.builtUpArea),
-    noOfFloors:
-      useDetails?.noOfFloors?.code === "BASEMENT"
-        ? 0
-        : parseInt(useDetails?.noOfFloors?.code?.split("_")?.[0] || useDetails?.noOfFloors?.split?.("_")?.[0]) || 1,
+    noOfFloors: parsedFloors,
     farArea: useDetails?.farArea,
     numberOfRooms: useDetails?.NumberofRooms,
     numberOfBeds: useDetails?.numberOfBeds,
@@ -249,7 +259,11 @@ export const convertToPropertyLightWeight = (data = {}) => {
         yearOfConstruction: data.waterConnection?.useDetails?.SelectYearofConstruction?.value || data.useDetails?.SelectYearofConstruction?.value,
         numberOfDwellingUnits: data.waterConnection?.useDetails?.NumberofDwellingUnits || data.useDetails?.NumberofDwellingUnits,
         numberOfRooms: data.waterConnection?.useDetails?.NumberofRooms || data.useDetails?.NumberofRooms,
-        numberOfFloors: data.waterConnection?.useDetails?.noOfFloors?.code || data.useDetails?.noOfFloors?.code || 1,
+        numberOfFloors:
+          (typeof (data.address?.noOfFloors || data.locationDet?.noOfFloors || data.propertyAddress?.noOfFloors || data.waterConnection?.useDetails?.noOfFloors || data.useDetails?.noOfFloors) === "object"
+            ? (data.address?.noOfFloors?.code || data.locationDet?.noOfFloors?.code || data.propertyAddress?.noOfFloors?.code || data.waterConnection?.useDetails?.noOfFloors?.code || data.useDetails?.noOfFloors?.code)
+            : (data.address?.noOfFloors || data.locationDet?.noOfFloors || data.propertyAddress?.noOfFloors || data.waterConnection?.useDetails?.noOfFloors || data.useDetails?.noOfFloors)) || 1,
+        noOfFloors: noOfFloors,
         plotArea: data.waterConnection?.useDetails?.plotArea || data.useDetails?.plotArea,
         builtUpArea: data.waterConnection?.useDetails?.builtUpArea || data.useDetails?.builtUpArea,
         farArea: data.waterConnection?.useDetails?.farArea || data.useDetails?.farArea,
@@ -340,8 +354,11 @@ export const convertToUpdatePropertyLightWeight = (data = {}) => {
         waterConnectionUsageType: data.waterConnection?.useDetails?.WaterConnectionUsageType?.code || data.useDetails?.WaterConnectionUsageType?.code,
         yearOfConstruction: data.waterConnection?.useDetails?.SelectYearofConstruction?.value || data.useDetails?.SelectYearofConstruction?.value,
         numberOfDwellingUnits: data.waterConnection?.useDetails?.NumberofDwellingUnits || data.useDetails?.NumberofDwellingUnits,
-        numberOfRooms: data.waterConnection?.useDetails?.NumberofRooms || data.useDetails?.NumberofRooms,
-        numberOfFloors: data.waterConnection?.useDetails?.noOfFloors?.code || data.useDetails?.noOfFloors?.code || 1,
+        numberOfFloors:
+          (typeof (data.address?.noOfFloors || data.locationDet?.noOfFloors || data.propertyAddress?.noOfFloors || data.waterConnection?.useDetails?.noOfFloors || data.useDetails?.noOfFloors) === "object"
+            ? (data.address?.noOfFloors?.code || data.locationDet?.noOfFloors?.code || data.propertyAddress?.noOfFloors?.code || data.waterConnection?.useDetails?.noOfFloors?.code || data.useDetails?.noOfFloors?.code)
+            : (data.address?.noOfFloors || data.locationDet?.noOfFloors || data.propertyAddress?.noOfFloors || data.waterConnection?.useDetails?.noOfFloors || data.useDetails?.noOfFloors)) || 1,
+        noOfFloors: noOfFloors,
         plotArea: data.waterConnection?.useDetails?.plotArea || data.useDetails?.plotArea,
         builtUpArea: data.waterConnection?.useDetails?.builtUpArea || data.useDetails?.builtUpArea,
         farArea: data.waterConnection?.useDetails?.farArea || data.useDetails?.farArea,

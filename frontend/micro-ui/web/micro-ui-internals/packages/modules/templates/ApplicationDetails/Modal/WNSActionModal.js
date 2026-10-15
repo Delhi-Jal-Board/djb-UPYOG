@@ -225,7 +225,17 @@ const ActionModal = ({
           : [],
       },
     };
-    if (showApprovalChecklist) {
+    if (showApprovalChecklist || action?.action === "SEND_BACK_TO_CITIZEN_DIRECT" || action?.action === "SEND_BACK_TO_CITIZEN") {
+      const isDirect = action?.action === "SEND_BACK_TO_CITIZEN_DIRECT";
+      const isSendBack = action?.action === "SEND_BACK_TO_CITIZEN";
+      const resolvedCompletelySatisfied = isDirect
+        ? true
+        : isSendBack
+        ? false
+        : approvalChecklist?.isFullySatisfied !== undefined
+        ? approvalChecklist.isFullySatisfied
+        : applicationData?.additionalDetails?.CompletelySatisfied;
+
       const remarksPayload = {};
       Object.keys(approvalChecklist || {}).forEach((key) => {
         if (key.endsWith("Remarks")) {
@@ -235,15 +245,19 @@ const ActionModal = ({
 
       applicationData.additionalDetails = {
         ...applicationData?.additionalDetails,
-        waterPipelineFacility: approvalChecklist?.waterPipelineFacility === true,
-        waterPipelineFacilityRemarks: approvalChecklist?.waterPipelineFacilityRemarks || "",
+        ...(showApprovalChecklist
+          ? {
+              waterPipelineFacility: approvalChecklist?.waterPipelineFacility === true,
+              waterPipelineFacilityRemarks: approvalChecklist?.waterPipelineFacilityRemarks || "",
         infrastructureChargesApplicable: approvalChecklist?.infrastructureChargesApplicable === true,
-        infrastructureChargesApplicableRemarks: approvalChecklist?.infrastructureChargesApplicableRemarks || "",
+              infrastructureChargesApplicableRemarks: approvalChecklist?.infrastructureChargesApplicableRemarks || "",
         rainWaterHarvesting: approvalChecklist?.rainWaterHarvesting === true,
-        rainWaterHarvestingRemarks: approvalChecklist?.rainWaterHarvestingRemarks || "",
+              rainWaterHarvestingRemarks: approvalChecklist?.rainWaterHarvestingRemarks || "",
         bulkConnectionVerification: approvalChecklist?.bulkConnectionVerification === true,
+            }
+          : {}),
         bulkConnectionVerificationRemarks: approvalChecklist?.bulkConnectionVerificationRemarks || "",
-        CompletelySatisfied: approvalChecklist?.isFullySatisfied,
+        CompletelySatisfied: resolvedCompletelySatisfied,
         ...remarksPayload,
       };
     }

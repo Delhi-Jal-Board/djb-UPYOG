@@ -38,6 +38,7 @@ const WSDivyangjan = ({ config, onSelect, userType, formData }) => {
                 <RadioButtons
                   className="form-field"
                   style={{ display: "flex", gap: "2rem", alignItems: "center" }}
+                  name="isDivyangjanRadio"
                   options={[
                     { i18nKey: "CORE_COMMON_YES", code: true },
                     { i18nKey: "CORE_COMMON_NO", code: false },

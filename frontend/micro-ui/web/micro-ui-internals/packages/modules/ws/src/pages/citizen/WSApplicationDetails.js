@@ -627,13 +627,31 @@ const WSApplicationDetails = () => {
                     )
                   )}`}
                 />
-                <Row
-                  label={t("Complete Address")}
-                  text={`${checkForNA(
+                {(() => {
+                  const addrTypeStr =
+                    (typeof connectionDetails?.addressType === "string"
+                      ? connectionDetails.addressType
+                      : connectionDetails?.addressType?.code || connectionDetails?.addressType?.name) ||
+                    applicationData?.additionalDetails?.addressType ||
+                    "";
+                  const compAddrStr =
                     connectionDetails?.completeAddress ||
-                      applicationData?.additionalDetails?.completeAddress
-                  )}`}
-                />
+                    applicationData?.additionalDetails?.completeAddress ||
+                    "";
+                  if (
+                    compAddrStr &&
+                    compAddrStr !== addrTypeStr &&
+                    ["PERMANENT", "CORRESPONDENCE", "Permanent", "Correspondence"].includes(addrTypeStr)
+                  ) {
+                    return (
+                      <Row
+                        label={t("Complete Address")}
+                        text={`${checkForNA(compAddrStr)}`}
+                      />
+                    );
+                  }
+                  return null;
+                })()}
                 <Row label={t("WS_DIVYANGJAN")} text={`${connectionDetails?.isDivyangjan ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}`} />
                 {/* <Row
                   label={t("WS_SERVICE_TYPE")}

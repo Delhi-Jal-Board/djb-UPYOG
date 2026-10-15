@@ -258,7 +258,23 @@ const OLDApplication = () => {
     // Always update errors to ensure validation state is in sync
     sessionStorage.setItem("FORMSTATE_ERRORS", JSON.stringify(formState?.errors || {}));
 
-    const hasErrors = Object.keys(formState?.errors || {}).length > 0;
+    const djbData = updatedFormData?.djbEmployee || updatedFormData?.additionalDetails;
+    const isDjbEmp =
+      djbData?.isDjbEmployee === true ||
+      String(djbData?.isDjbEmployee) === "true";
+    const isDjbEmpInvalid =
+      isDjbEmp &&
+      (!djbData?.employeeId ||
+        !String(djbData?.employeeId).trim() ||
+        !djbData?.designation ||
+        !String(djbData?.designation).trim() ||
+        !(
+          djbData?.document?.fileStoreId ||
+          (typeof djbData?.document === "string" && djbData?.document.trim()) ||
+          djbData?.document
+        ));
+
+    const hasErrors = Object.keys(formState?.errors || {}).length > 0 || isDjbEmpInvalid;
     const hasProperty =
       updatedFormData?.cpt?.details?.propertyId ||
       sessionStorage.getItem("WS_OTP_VERIFIED_PROPERTY_ID") ||
@@ -289,6 +305,27 @@ const OLDApplication = () => {
         setShowToast({ key: "error", message: "ERR_INVALID_PROPERTY_ID" });
         return;
       }
+    }
+
+    const djbData = data?.djbEmployee || data?.additionalDetails;
+    const isDjbEmp =
+      djbData?.isDjbEmployee === true ||
+      String(djbData?.isDjbEmployee) === "true";
+    const isDjbEmpInvalid =
+      isDjbEmp &&
+      (!djbData?.employeeId ||
+        !String(djbData?.employeeId).trim() ||
+        !djbData?.designation ||
+        !String(djbData?.designation).trim() ||
+        !(
+          djbData?.document?.fileStoreId ||
+          (typeof djbData?.document === "string" && djbData?.document.trim()) ||
+          djbData?.document
+        ));
+
+    if (isDjbEmpInvalid) {
+      setShowToast({ key: "error", message: "ERR_FILL_ALL_MANDATORY_FIELDS" });
+      return;
     }
 
     // Validation passed, show CheckPage

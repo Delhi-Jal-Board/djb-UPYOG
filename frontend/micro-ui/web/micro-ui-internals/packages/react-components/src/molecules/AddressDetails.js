@@ -19,13 +19,29 @@ const allOptions = [
 ];
 
 const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, disable, ...props }) => {
-  const { showZRO: configShowZRO, mappedZROLocation: configMappedZROLocation, hideNextButton: configHideNextButton } = config || {};
+  const { showZRO: configShowZRO, mappedZROLocation: configMappedZROLocation, hideNextButton: configHideNextButton, showNoOfFloors: configShowNoOfFloors, showAddressType: configShowAddressType, hideAddressType: configHideAddressType } = config || {};
   const showZRO = props.showZRO !== undefined ? props.showZRO : configShowZRO;
   const mappedZROLocation = props.mappedZROLocation !== undefined ? props.mappedZROLocation : configMappedZROLocation;
   const hideNextButton = props.hideNextButton !== undefined ? props.hideNextButton : configHideNextButton;
+  const showNoOfFloors = props.showNoOfFloors !== undefined ? props.showNoOfFloors : configShowNoOfFloors;
+  const hideAddressType = props.hideAddressType !== undefined ? props.hideAddressType : configHideAddressType;
+  const showAddressType = hideAddressType ? false : (props.showAddressType !== undefined ? props.showAddressType : (configShowAddressType !== undefined ? configShowAddressType : true));
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const { data: zroLocationsData } = Digit.Hooks.ws.useWSConfigMDMS.ZROLocation(tenantId, { enabled: !!showZRO && !mappedZROLocation });
+  const { data: ptServicesMastersData } = Digit.Hooks.pt?.usePropertyMDMS?.(tenantId, "PropertyTax", ["NoOfFloors"]) || {};
+
+  const floorOptions = useMemo(() => {
+    if (props.floorOptions) return props.floorOptions;
+    const fromMdms = ptServicesMastersData?.PropertyTax?.NoOfFloors;
+    if (Array.isArray(fromMdms) && fromMdms.length > 0) {
+      return fromMdms.filter((item) => item.active !== false).map((item) => ({
+        code: item.code,
+        name: item.name,
+      }));
+    }
+    return [];
+  }, [props.floorOptions, ptServicesMastersData]);
 
   const _mappedZROLocation = useMemo(() => {
     if (mappedZROLocation) return mappedZROLocation;
@@ -122,6 +138,30 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
   const [tempZone, setTempZone] = useState("");
   const [tempWard, setTempWard] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [noOfFloors, setNoOfFloors] = useState(
+    formData?.noOfFloors || formData?.address?.noOfFloors || ""
+  );
+
+  useEffect(() => {
+    const val = formData?.noOfFloors || formData?.address?.noOfFloors;
+    if (val !== undefined && val !== null && val !== "") {
+      setNoOfFloors(val);
+    }
+  }, [formData?.noOfFloors, formData?.address?.noOfFloors]);
+
+  const selectedFloor = useMemo(() => {
+    if (!noOfFloors) return null;
+    if (typeof noOfFloors === "object" && noOfFloors.name) return noOfFloors;
+    const codeToMatch = typeof noOfFloors === "object" ? noOfFloors.code : noOfFloors;
+    return (
+      floorOptions.find(
+        (f) =>
+          String(f.code).toUpperCase() === String(codeToMatch).toUpperCase() ||
+          String(f.code).toUpperCase() === `${String(codeToMatch).toUpperCase()}_FLOOR` ||
+          String(f.name).toUpperCase() === String(codeToMatch).toUpperCase()
+      ) || (typeof noOfFloors === "object" ? noOfFloors : { code: noOfFloors, name: noOfFloors })
+    );
+  }, [noOfFloors, floorOptions]);
 
   const {
     control,
@@ -528,6 +568,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
       actualZone,
       actualWard,
       colonyMcdCategory,
+      ...(showNoOfFloors ? { noOfFloors } : {}),
       ...(config?.doorImage ? { doorImage, doorImageId } : {}),
     };
 
@@ -585,6 +626,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
       actualZone,
       actualWard,
       colonyMcdCategory,
+      ...(showNoOfFloors ? { noOfFloors } : {}),
       ...(isEkyc ? { doorImage, doorImageId } : {}),
     };
 
@@ -631,6 +673,8 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
     actualZone,
     actualWard,
     colonyMcdCategory,
+    noOfFloors,
+    showNoOfFloors,
     config?.key,
     onSelect,
   ]);
@@ -776,23 +820,25 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
             </div>
           </LabelFieldPair>
         )}
-        <LabelFieldPair>
-          <CardLabel>
-            {`${t("COMMON_ADDRESS_TYPE")}`} <span className="check-page-link-button">*</span>
-          </CardLabel>
-          <Dropdown
-            className="form-field"
-            selected={addressType}
-            select={setAddressType}
-            disable={disable || isEdit}
-            option={availableAddressTypeOptions}
-            optionCardStyles={{ overflowY: "auto", maxHeight: "300px" }}
-            optionKey="i18nKey"
-            t={t}
-            style={{ width: "100%" }}
-            placeholder={"Select Address Type"}
-          />
-        </LabelFieldPair>
+        {showAddressType && (
+          <LabelFieldPair>
+            <CardLabel>
+              {`${t("COMMON_ADDRESS_TYPE")}`} <span className="check-page-link-button">*</span>
+            </CardLabel>
+            <Dropdown
+              className="form-field"
+              selected={addressType}
+              select={setAddressType}
+              disable={disable || isEdit}
+              option={availableAddressTypeOptions}
+              optionCardStyles={{ overflowY: "auto", maxHeight: "300px" }}
+              optionKey="i18nKey"
+              t={t}
+              style={{ width: "100%" }}
+              placeholder={"Select Address Type"}
+            />
+          </LabelFieldPair>
+        )}
         {!config?.doorImage && (
           <LabelFieldPair>
             <CardLabel>
@@ -1203,6 +1249,24 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
             }}
           />
         </LabelFieldPair>
+        {showNoOfFloors && (
+          <LabelFieldPair>
+            <CardLabel>
+              {`${t("WS_NUMBER_OF_FLOORS")}`} <span className="check-page-link-button">*</span>
+            </CardLabel>
+            <div className="form-field" style={{ width: "100%" }}>
+              <Dropdown
+                option={floorOptions}
+                optionKey="name"
+                selected={selectedFloor}
+                select={(val) => setNoOfFloors(val)}
+                t={t}
+                disable={disable}
+                placeholder={t("WS_NUMBER_OF_FLOORS")}
+              />
+            </div>
+          </LabelFieldPair>
+        )}
         {props?.showMapActualLocation && (
           <React.Fragment>
             <div>

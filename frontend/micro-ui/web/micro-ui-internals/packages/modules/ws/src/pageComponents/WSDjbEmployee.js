@@ -2,15 +2,13 @@ import {
   CardLabel,
   LabelFieldPair,
   TextInput,
-  CheckBox,
-  Dropdown,
-  DatePicker,
   CollapsibleCardPage,
   FormStep,
   UploadFile,
   ViewsIcon,
   RemoveIcon,
-  RadioButtons
+  RadioButtons,
+  CardLabelError,
 } from "@djb25/digit-ui-react-components";
 import _ from "lodash";
 import React, { useEffect, useState } from "react";
@@ -21,25 +19,113 @@ import Timeline from "../components/Timeline";
 
 const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formState, clearErrors }) => {
   const { t } = useTranslation();
+
+  const getInitialValues = () => {
+    const djb = formData?.djbEmployee;
+    const add = formData?.additionalDetails;
+
+    const isEmp =
+      djb?.isDjbEmployee !== undefined
+        ? String(djb?.isDjbEmployee) === "true" || djb?.isDjbEmployee === true
+        : add?.isDjbEmployee !== undefined
+        ? String(add?.isDjbEmployee) === "true" || add?.isDjbEmployee === true
+        : false;
+
+    const empId =
+      djb?.employeeId !== undefined
+        ? djb?.employeeId
+        : add?.employeeId !== undefined
+        ? add?.employeeId
+        : "";
+
+    const dorVal =
+      djb?.dor !== undefined
+        ? djb?.dor
+        : add?.dor !== undefined
+        ? add?.dor
+        : "";
+
+    const desig =
+      djb?.designation !== undefined
+        ? djb?.designation
+        : add?.designation !== undefined
+        ? add?.designation
+        : "";
+
+    const doc =
+      djb?.document !== undefined
+        ? (djb?.document?.fileStoreId || djb?.document || "")
+        : add?.document !== undefined
+        ? (add?.document?.fileStoreId || add?.document || "")
+        : "";
+
+    return {
+      isDjbEmployee: !!isEmp,
+      employeeId: empId || "",
+      dor: dorVal || "",
+      designation: desig || "",
+      document: doc || "",
+    };
+  };
+
+  const initialVals = getInitialValues();
+
   const { control, watch, setValue, formState: localFormState, trigger, clearErrors: localClearErrors } = useForm({
-    defaultValues: {
-      isDjbEmployee:
-        String(formData?.djbEmployee?.isDjbEmployee) === "true" ||
-        formData?.djbEmployee?.isDjbEmployee === true ||
-        String(formData?.additionalDetails?.isDjbEmployee) === "true" ||
-        formData?.additionalDetails?.isDjbEmployee === true ||
-        false,
-      employeeId: formData?.djbEmployee?.employeeId || formData?.additionalDetails?.employeeId || "",
-      dor: formData?.djbEmployee?.dor || formData?.additionalDetails?.dor || "",
-      designation: formData?.djbEmployee?.designation || formData?.additionalDetails?.designation || "",
-      document: formData?.djbEmployee?.document || formData?.additionalDetails?.document || "",
-    },
+    defaultValues: initialVals,
+    mode: "all",
   });
 
   const formValue = watch();
-  const isDjbEmployee = watch("isDjbEmployee");
+  const isDjbEmployee = formValue?.isDjbEmployee === true || String(formValue?.isDjbEmployee) === "true";
+
+  const hasData = !!(formData?.djbEmployee !== undefined || formData?.additionalDetails?.isDjbEmployee !== undefined);
+  const isInitializedRef = React.useRef(hasData);
+
+  const getValidationErrors = (values, docFile) => {
+    const errs = {};
+    const isEmp = values?.isDjbEmployee === true || String(values?.isDjbEmployee) === "true";
+    if (isEmp) {
+      if (!values?.employeeId || !String(values?.employeeId).trim()) {
+        errs.employeeId = t("CORE_COMMON_REQUIRED_ERRMSG");
+      }
+      if (!values?.designation || !String(values?.designation).trim()) {
+        errs.designation = t("CORE_COMMON_REQUIRED_ERRMSG");
+      }
+      const hasDoc =
+        values?.document?.fileStoreId ||
+        (typeof values?.document === "string" && values?.document.trim()) ||
+        values?.document ||
+        docFile;
+      if (!hasDoc) {
+        errs.document = t("CORE_COMMON_REQUIRED_ERRMSG");
+      }
+    }
+    return errs;
+  };
 
   useEffect(() => {
+    if (!isInitializedRef.current && (formData?.djbEmployee !== undefined || formData?.additionalDetails?.isDjbEmployee !== undefined)) {
+      const vals = getInitialValues();
+      setValue("isDjbEmployee", vals.isDjbEmployee);
+      setValue("employeeId", vals.employeeId);
+      setValue("dor", vals.dor);
+      setValue("designation", vals.designation);
+      setValue("document", vals.document);
+      setUploadedFile(vals.document || null);
+      isInitializedRef.current = true;
+    }
+  }, [formData?.djbEmployee, formData?.additionalDetails]);
+
+  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const [file, setFile] = useState(null);
+  const [uploadedFile, setUploadedFile] = useState(() => initialVals.document || null);
+  const [errorUpload, setErrorUpload] = useState(null);
+
+  const djbErrors = getValidationErrors(formValue, uploadedFile);
+  const hasDjbErrors = Object.keys(djbErrors).length > 0;
+
+  useEffect(() => {
+    const configKey = config?.key || "djbEmployee";
     if (!isDjbEmployee) {
       localClearErrors();
       setValue("employeeId", "");
@@ -48,35 +134,23 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
       setValue("document", "");
       setUploadedFile(null);
       setFile(null);
-      if (clearErrors) clearErrors(config?.key);
+      if (clearErrors) clearErrors(configKey);
     } else {
-      trigger(["employeeId", "designation", "document"]);
+      setTimeout(() => {
+        trigger(["employeeId", "designation", "document"]);
+      }, 50);
+      const errs = getValidationErrors(formValue, uploadedFile);
+      if (Object.keys(errs).length > 0 && setError) {
+        setError(configKey, { type: "required", message: "CORE_COMMON_REQUIRED_ERRMSG" });
+      }
     }
   }, [isDjbEmployee]);
 
-  useEffect(() => {
-    const isEmp =
-      String(formData?.djbEmployee?.isDjbEmployee) === "true" ||
-      formData?.djbEmployee?.isDjbEmployee === true ||
-      String(formData?.additionalDetails?.isDjbEmployee) === "true" ||
-      formData?.additionalDetails?.isDjbEmployee === true;
-    if (formData?.djbEmployee !== undefined || formData?.additionalDetails?.isDjbEmployee !== undefined) {
-      setValue("isDjbEmployee", !!isEmp);
-      setValue("employeeId", formData?.djbEmployee?.employeeId || formData?.additionalDetails?.employeeId || "");
-      setValue("dor", formData?.djbEmployee?.dor || formData?.additionalDetails?.dor || "");
-      setValue("designation", formData?.djbEmployee?.designation || formData?.additionalDetails?.designation || "");
-      setValue("document", formData?.djbEmployee?.document || formData?.additionalDetails?.document || "");
-    }
-  }, [formData?.djbEmployee, formData?.additionalDetails, setValue]);
-
-  const tenantId = Digit.ULBService.getCurrentTenantId();
-  const [file, setFile] = useState(null);
-  const [uploadedFile, setUploadedFile] = useState(() => formData?.djbEmployee?.document || formData?.additionalDetails?.document || null);
-  const [errorUpload, setErrorUpload] = useState(null);
-
   const handleView = async (fileStoreId, tenantId) => {
     try {
-      const response = await Digit.UploadServices.Filefetch([fileStoreId], tenantId);
+      const id = typeof fileStoreId === "object" ? fileStoreId?.fileStoreId : fileStoreId;
+      if (!id) return;
+      const response = await Digit.UploadServices.Filefetch([id], tenantId);
       const url = response?.data?.fileStoreIds?.[0]?.url;
       if (url) {
         const differentFormats = url?.split(",") || [];
@@ -104,8 +178,9 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
             setUploadedFile(null);
             const response = await Digit.UploadServices.Filestorage("WS", file, tenantId?.split(".")[0]);
             if (response?.data?.files?.length > 0) {
-              setUploadedFile(response?.data?.files[0]?.fileStoreId);
-              setValue("document", response?.data?.files[0]?.fileStoreId, { shouldValidate: true });
+              const fileId = response?.data?.files[0]?.fileStoreId;
+              setUploadedFile(fileId);
+              setValue("document", fileId, { shouldValidate: true });
             } else {
               setErrorUpload({ key: "error", message: "CS_FILE_UPLOAD_ERROR" });
             }
@@ -122,36 +197,53 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
   }
 
   useEffect(() => {
-    if (userType === "employee") {
+    const isEmployeeMode =
+      userType === "employee" ||
+      window.location.href.includes("edit-application") ||
+      window.location.href.includes("modify-connection") ||
+      window.location.href.includes("old-application");
+
+    if (isEmployeeMode) {
       const isDifferent = !_.isEqual(formData?.djbEmployee, formValue);
       if (isDifferent) {
+        const isImmediate =
+          formData?.djbEmployee?.isDjbEmployee !== formValue?.isDjbEmployee ||
+          formData?.djbEmployee?.document !== formValue?.document;
+        const delay = isImmediate ? 0 : 100;
         const timer = setTimeout(() => {
-          onSelect(config?.key, { ...formValue });
-        }, 200);
+          onSelect(config?.key || "djbEmployee", { ...formValue });
+        }, delay);
         return () => clearTimeout(timer);
       }
     }
   }, [formValue, userType]);
 
   useEffect(() => {
-    if (isDjbEmployee) {
-      if (Object.keys(localFormState.errors).length && !_.isEqual(formState?.errors?.[config?.key]?.type || {}, localFormState.errors)) {
-        if (setError) setError(config?.key, { type: localFormState.errors });
-      } else if (!Object.keys(localFormState.errors).length && formState?.errors?.[config?.key]) {
-        if (clearErrors) clearErrors(config?.key);
-      }
+    const configKey = config?.key || "djbEmployee";
+    if (hasDjbErrors) {
+      if (setError) setError(configKey, { type: "required", message: "CORE_COMMON_REQUIRED_ERRMSG" });
     } else {
-      if (formState?.errors?.[config?.key] && clearErrors) {
-        clearErrors(config?.key);
+      if (formState?.errors?.[configKey] && clearErrors) {
+        clearErrors(configKey);
       }
     }
-  }, [localFormState.errors, isDjbEmployee]);
+  }, [
+    hasDjbErrors,
+    formValue?.isDjbEmployee,
+    formValue?.employeeId,
+    formValue?.designation,
+    formValue?.document,
+    uploadedFile,
+    config?.key,
+  ]);
 
   const goNext = () => {
     onSelect(config.key, formValue);
   };
 
   const onSkip = () => onSelect();
+
+  const errorStyle = { width: "100%", marginLeft: "0px", fontSize: "12px", marginTop: "4px" };
 
   const FormContent = (
     <CollapsibleCardPage title={t("Are you a DJB Employee?")} defaultOpen={true}>
@@ -166,6 +258,7 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
                 <RadioButtons
                   className="form-field"
                   style={{ display: "flex", gap: "2rem", alignItems: "center" }}
+                  name="isDjbEmployeeRadio"
                   options={[
                     { i18nKey: "CORE_COMMON_YES", code: true },
                     { i18nKey: "CORE_COMMON_NO", code: false },
@@ -189,19 +282,30 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
               {t("Employee ID")}
               {isDjbEmployee && <span className="check-page-link-button"> *</span>}
             </CardLabel>
-            <Controller
-              control={control}
-              name="employeeId"
-              rules={{ required: isDjbEmployee ? t("CORE_COMMON_REQUIRED_ERRMSG") : false }}
-              render={(props) => (
-                <TextInput
-                  value={props.value}
-                  onChange={(e) => props.onChange(e.target.value)}
-                  onBlur={props.onBlur}
-                  placeholder={t("Employee ID")}
-                />
+            <div className="field" style={{ width: "100%" }}>
+              <Controller
+                control={control}
+                name="employeeId"
+                rules={{ required: isDjbEmployee ? t("CORE_COMMON_REQUIRED_ERRMSG") : false }}
+                render={(props) => (
+                  <TextInput
+                    value={props.value}
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
+                      trigger("employeeId");
+                    }}
+                    onBlur={(e) => {
+                      props.onBlur(e);
+                      trigger("employeeId");
+                    }}
+                    placeholder={t("Employee ID")}
+                  />
+                )}
+              />
+              {localFormState?.touched?.employeeId && !formValue?.employeeId?.trim?.() && (
+                <CardLabelError style={errorStyle}>{t("CORE_COMMON_REQUIRED_ERRMSG")}</CardLabelError>
               )}
-            />
+            </div>
           </LabelFieldPair>
         </div>
 
@@ -228,7 +332,7 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
               {t("Employee Designation")}
               {isDjbEmployee && <span className="check-page-link-button"> *</span>}
             </CardLabel>
-            <div className="field">
+            <div className="field" style={{ width: "100%" }}>
               <Controller
                 control={control}
                 name="designation"
@@ -236,12 +340,21 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
                 render={(props) => (
                   <TextInput
                     value={props.value}
-                    onChange={(e) => props.onChange(e.target.value)}
-                    onBlur={props.onBlur}
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
+                      trigger("designation");
+                    }}
+                    onBlur={(e) => {
+                      props.onBlur(e);
+                      trigger("designation");
+                    }}
                     placeholder={t("Employee Designation")}
                   />
                 )}
               />
+              {localFormState?.touched?.designation && !formValue?.designation?.trim?.() && (
+                <CardLabelError style={errorStyle}>{t("CORE_COMMON_REQUIRED_ERRMSG")}</CardLabelError>
+              )}
             </div>
           </LabelFieldPair>
         </div>
@@ -252,7 +365,7 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
               {t("Upload Employee ID Document")}
               {isDjbEmployee && <span className="check-page-link-button"> *</span>}
             </CardLabel>
-            <div className="field">
+            <div className="field" style={{ width: "100%" }}>
               <Controller
                 control={control}
                 name="document"
@@ -271,6 +384,7 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
                       setFile(null);
                       props.onChange("");
                       setValue("document", "", { shouldValidate: true });
+                      trigger("document");
                     }}
                     message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`ES_NO_FILE_SELECTED_LABEL`)}
                     error={errorUpload}
@@ -310,8 +424,9 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
                         setUploadedFile(null);
                         setFile(null);
                         setValue("document", "", { shouldValidate: true });
-                          const fileInput = document.getElementById("employee-doc");
-                          if (fileInput) fileInput.value = "";
+                        const fileInput = document.getElementById("employee-doc");
+                        if (fileInput) fileInput.value = "";
+                        trigger("document");
                       }}
                       title="Remove Document"
                       style={{ border: "none", background: "transparent", color: "#d32f2f", cursor: "pointer", padding: 0, fontSize: "18px" }}
@@ -397,7 +512,7 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
     return (
       <div>
         <Timeline currentStep={2} />
-        <FormStep t={t} config={config} onSelect={goNext} onSkip={onSkip} isDisabled={Object.keys(localFormState.errors).length > 0}>
+        <FormStep t={t} config={config} onSelect={goNext} onSkip={onSkip} isDisabled={hasDjbErrors}>
           <div style={{ marginTop: "-30px", marginBottom: "-30px" }}>
             {FormContent}
             {DueVerificationContent ? <div style={{ marginTop: "24px" }}>{DueVerificationContent}</div> : null}

@@ -25,7 +25,6 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
         propertyCategory: null,
         propertyType: null,
         WaterConnectionUsageType: null,
-        noOfFloors: null,
         plotArea: "",
         builtUpArea: "",
         farArea: "",
@@ -135,7 +134,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
   }, [ptServicesMastersData]);
 
   const categoryOptions = useMemo(() => {
-    const list = propertyType2List?.length > 0 ? propertyType2List : (ptServicesMastersData?.PropertyTax?.PropertyType || []);
+    const list = propertyType2List?.length > 0 ? propertyType2List : ptServicesMastersData?.PropertyTax?.PropertyType || [];
     const uniqueCats = [...new Set(list.map((item) => item.propertyCategory).filter(Boolean))];
     return uniqueCats.map((cat) => ({
       code: cat,
@@ -145,7 +144,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
   }, [propertyType2List, ptServicesMastersData]);
 
   const propertyTypeOptions = useMemo(() => {
-    const list = propertyType2List?.length > 0 ? propertyType2List : (ptServicesMastersData?.PropertyTax?.PropertyType || []);
+    const list = propertyType2List?.length > 0 ? propertyType2List : ptServicesMastersData?.PropertyTax?.PropertyType || [];
     return list
       .filter((item) => item.active !== false)
       .map((item) => ({
@@ -157,7 +156,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
   }, [propertyType2List, ptServicesMastersData]);
 
   const usageTypeOptions = useMemo(() => {
-    const list = propertyType2List?.length > 0 ? propertyType2List : (ptServicesMastersData?.PropertyTax?.PropertyType || []);
+    const list = propertyType2List?.length > 0 ? propertyType2List : ptServicesMastersData?.PropertyTax?.PropertyType || [];
     const uniqueTypes = [...new Set(list.map((item) => item.waterConnectionUsageType).filter(Boolean))];
     const typesToMap = uniqueTypes.length > 0 ? uniqueTypes : ["Normal", "Bulk"];
     return typesToMap.map((type) => ({
@@ -173,7 +172,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
       return categoryTypeList;
     }
 
-    const list = propertyType2List?.length > 0 ? propertyType2List : (ptServicesMastersData?.PropertyTax?.PropertyType || []);
+    const list = propertyType2List?.length > 0 ? propertyType2List : ptServicesMastersData?.PropertyTax?.PropertyType || [];
     const matched = list.find((item) => normalizeCode(item.code) === normalizeCode(propType.code)) || propType;
 
     let rawCats = matched?.categoryType;
@@ -213,10 +212,8 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
     (propTypeItem) => {
       if (!propTypeItem?.code) return;
 
-      const list = propertyType2List?.length > 0 ? propertyType2List : (ptServicesMastersData?.PropertyTax?.PropertyType || []);
-      const matched = list.find(
-        (item) => normalizeCode(item.code) === normalizeCode(propTypeItem.code)
-      ) || propTypeItem;
+      const list = propertyType2List?.length > 0 ? propertyType2List : ptServicesMastersData?.PropertyTax?.PropertyType || [];
+      const matched = list.find((item) => normalizeCode(item.code) === normalizeCode(propTypeItem.code)) || propTypeItem;
 
       console.log("[PropertyWaterConnection] Property Type selected:", matched?.code);
       console.log("[PropertyWaterConnection] Matched item from MDMS:", matched);
@@ -266,7 +263,8 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
       // 2. Property Category
       if (matched?.propertyCategory) {
         const foundPropCat = categoryOptions.find(
-          (c) => normalizeCode(c.code) === normalizeCode(matched.propertyCategory) || normalizeCode(c.name) === normalizeCode(matched.propertyCategory)
+          (c) =>
+            normalizeCode(c.code) === normalizeCode(matched.propertyCategory) || normalizeCode(c.name) === normalizeCode(matched.propertyCategory)
         ) || {
           code: matched.propertyCategory,
           name: matched.propertyCategory,
@@ -279,7 +277,9 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
       // 3. Water Connection Usage Type
       if (matched?.waterConnectionUsageType) {
         const foundUsage = usageTypeOptions.find(
-          (u) => normalizeCode(u.code) === normalizeCode(matched.waterConnectionUsageType) || normalizeCode(u.name) === normalizeCode(matched.waterConnectionUsageType)
+          (u) =>
+            normalizeCode(u.code) === normalizeCode(matched.waterConnectionUsageType) ||
+            normalizeCode(u.name) === normalizeCode(matched.waterConnectionUsageType)
         ) || {
           code: matched.waterConnectionUsageType,
           name: matched.waterConnectionUsageType,
@@ -305,26 +305,14 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
       prevPropertyTypeCode.current = watchPropertyType.code;
       autoFillFromPropertyType(watchPropertyType);
     }
-  }, [
-    watchPropertyType?.code,
-    autoFillFromPropertyType,
-  ]);
-
-  const floorOptions = useMemo(() => {
-    return ptServicesMastersData?.PropertyTax?.NoOfFloors?.filter((item) => item.active).map((item) => ({
-      code: item.code,
-      name: item.name,
-    }));
-  }, [ptServicesMastersData]);
+  }, [watchPropertyType?.code, autoFillFromPropertyType]);
 
   const activeQuestions = useMemo(() => {
     if (!watchPropertyType?.code) return [];
     let qList = watchPropertyType?.questions;
     if (!qList || !Array.isArray(qList)) {
-      const list = propertyType2List?.length > 0 ? propertyType2List : (ptServicesMastersData?.PropertyTax?.PropertyType || []);
-      const matched = list.find(
-        (item) => normalizeCode(item.code) === normalizeCode(watchPropertyType.code)
-      );
+      const list = propertyType2List?.length > 0 ? propertyType2List : ptServicesMastersData?.PropertyTax?.PropertyType || [];
+      const matched = list.find((item) => normalizeCode(item.code) === normalizeCode(watchPropertyType.code));
       qList = matched?.questions;
     }
     if (!qList || !Array.isArray(qList)) return [];
@@ -333,8 +321,6 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
       .map((q) => q.trim())
       .filter((q) => q.length > 0);
   }, [watchPropertyType, propertyType2List, ptServicesMastersData]);
-
-
 
   const [questionAnswers, setQuestionAnswers] = useState(() => {
     const existing =
@@ -413,10 +399,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
       const propCategoryMatch =
         categoryOptions?.find(
           (o) => normalizeCode(o.code) === normalizeCode(usageCategory) || normalizeCode(o.name) === normalizeCode(usageCategory)
-        ) ||
-        ptServicesMastersData?.PropertyTax?.PropertyCategory?.find(
-          (o) => normalizeCode(o.code) === normalizeCode(usageCategory)
-        );
+        ) || ptServicesMastersData?.PropertyTax?.PropertyCategory?.find((o) => normalizeCode(o.code) === normalizeCode(usageCategory));
       setValue(
         "useDetails.propertyCategory",
         propCategoryMatch
@@ -426,7 +409,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
           : null
       );
 
-      const propTypeList = propertyType2List?.length > 0 ? propertyType2List : (ptServicesMastersData?.PropertyTax?.PropertyType || []);
+      const propTypeList = propertyType2List?.length > 0 ? propertyType2List : ptServicesMastersData?.PropertyTax?.PropertyType || [];
       const propTypeMatch = propTypeList.find(
         (o) => normalizeCode(o.code) === normalizeCode(getCode(additionalDetails.propertyType || details.propertyType))
       );
@@ -438,20 +421,6 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
         (o) => normalizeCode(o.code) === normalizeCode(usageVal) || normalizeCode(o.name) === normalizeCode(usageVal)
       );
       setValue("useDetails.WaterConnectionUsageType", usageTypeMatch || null);
-      setValue(
-        "useDetails.noOfFloors",
-        floorOptions?.find((o) => {
-          const val1 = getCode(additionalDetails.numberOfFloors);
-          const val2 = getCode(additionalDetails.noOfFloors);
-          const val3 = details.noOfFloors?.toString();
-          return (
-            normalizeCode(o.code) === normalizeCode(val1) ||
-            normalizeCode(o.code) === normalizeCode(val2) ||
-            normalizeCode(o.code) === normalizeCode(val3) ||
-            (val3 && normalizeCode(o.code) === normalizeCode(`${val3}_FLOOR`))
-          );
-        }) || null
-      );
       setValue("useDetails.plotArea", additionalDetails.plotArea || details?.landArea?.toString() || "");
       setValue("useDetails.builtUpArea", additionalDetails.builtUpArea || details?.superBuiltUpArea?.toString() || "");
       setValue("useDetails.heightOfTheBuilding", additionalDetails.heightOfTheBuilding || details?.heightOfTheBuilding?.toString() || "");
@@ -465,11 +434,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
       setValue("useDetails.servantQuarterArea", additionalDetails.servantQuarterArea || details?.servantQuarterArea?.toString() || "");
       setValue("useDetails.numberOfBeds", additionalDetails.numberOfBeds || details?.numberOfBeds?.toString() || "");
       setValue("useDetails.numberOfStudents", additionalDetails.numberOfStudents || details?.numberOfStudents?.toString() || "");
-      const savedQAs =
-        additionalDetails.questions ||
-        additionalDetails.questionAnswers ||
-        additionalDetails.propertyQuestions ||
-        [];
+      const savedQAs = additionalDetails.questions || additionalDetails.questionAnswers || additionalDetails.propertyQuestions || [];
       if (Array.isArray(savedQAs) && savedQAs.length > 0) {
         setQuestionAnswers(savedQAs);
         setValue("useDetails.questions", savedQAs);
@@ -479,7 +444,6 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
       setValue("useDetails.propertyCategory", null);
       setValue("useDetails.propertyType", null);
       setValue("useDetails.WaterConnectionUsageType", null);
-      setValue("useDetails.noOfFloors", null);
       setValue("useDetails.plotArea", "");
       setValue("useDetails.builtUpArea", "");
       setValue("useDetails.farArea", "");
@@ -500,7 +464,6 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
     categoryOptions,
     propertyTypeOptions,
     usageTypeOptions,
-    floorOptions,
     yearOptions,
     categoryTypeList,
     setValue,
@@ -599,7 +562,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
                   select={props.onChange}
                   t={t}
                   onBlur={props.onBlur}
-                  disable={isPropertyFound}
+                  disable={true}
                   placeholder={t("WS_PROPERTY_CATEGORY")}
                 />
               )}
@@ -625,7 +588,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
                   select={props.onChange}
                   t={t}
                   onBlur={props.onBlur}
-                  disable={isPropertyFound}
+                  disable={true}
                   placeholder={t("WS_WATER_CONNECTION_USAGE_TYPE")}
                 />
               )}
@@ -636,52 +599,26 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
           <CardLabelError style={errorStyle}>{errors.useDetails.WaterConnectionUsageType.message}</CardLabelError>
         )}
 
-        {activeQuestions && activeQuestions.length > 0 && activeQuestions.map((questionText, index) => {
-          const rawQ = String(questionText || "").trim();
-          const label = rawQ.toLowerCase().startsWith("question") ? rawQ : `Question : ${rawQ}`;
-          return (
-            <LabelFieldPair key={`question_${index}_${rawQ}`}>
-              <CardLabel style={{ whiteSpace: "normal", wordBreak: "break-word" }}>
-                {label}
-              </CardLabel>
-              <div className="form-field">
-                <TextInput
-                  name={`useDetails.question_${index}`}
-                  value={questionAnswers[index]?.answer !== undefined ? questionAnswers[index].answer : ""}
-                  disabled={isPropertyFound}
-                  placeholder="Enter Answer"
-                  onChange={(e) => handleAnswerChange(index, questionText, e.target.value)}
-                />
-              </div>
-            </LabelFieldPair>
-          );
-        })}
-
-        <LabelFieldPair>
-          <CardLabel>
-            {`${t("WS_NUMBER_OF_FLOORS")}`} <span className="check-page-link-button">*</span>
-          </CardLabel>
-          <div className="form-field">
-            <Controller
-              control={control}
-              name="useDetails.noOfFloors"
-              rules={{ required: t("REQUIRED_FIELD") }}
-              render={(props) => (
-                <Dropdown
-                  option={floorOptions}
-                  optionKey="name"
-                  selected={props.value}
-                  select={props.onChange}
-                  t={t}
-                  onBlur={props.onBlur}
-                  disable={isPropertyFound}
-                  placeholder={t("WS_NUMBER_OF_FLOORS")}
-                />
-              )}
-            />
-          </div>
-        </LabelFieldPair>
-        {errors?.useDetails?.noOfFloors && <CardLabelError style={errorStyle}>{errors.useDetails.noOfFloors.message}</CardLabelError>}
+        {activeQuestions &&
+          activeQuestions.length > 0 &&
+          activeQuestions.map((questionText, index) => {
+            const rawQ = String(questionText || "").trim();
+            const label = rawQ.toLowerCase().startsWith("question") ? rawQ : `Question : ${rawQ}`;
+            return (
+              <LabelFieldPair key={`question_${index}_${rawQ}`}>
+                <CardLabel style={{ whiteSpace: "normal", wordBreak: "break-word" }}>{label}</CardLabel>
+                <div className="form-field">
+                  <TextInput
+                    name={`useDetails.question_${index}`}
+                    value={questionAnswers[index]?.answer !== undefined ? questionAnswers[index].answer : ""}
+                    disabled={isPropertyFound}
+                    placeholder="Enter Answer"
+                    onChange={(e) => handleAnswerChange(index, questionText, e.target.value)}
+                  />
+                </div>
+              </LabelFieldPair>
+            );
+          })}
 
         <LabelFieldPair>
           <CardLabel>
