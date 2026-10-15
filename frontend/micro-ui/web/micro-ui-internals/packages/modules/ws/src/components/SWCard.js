@@ -49,11 +49,11 @@ const SWCard = () => {
   }, [swData]);
 
   let links = [
-    {
-      label: t("WS_APPLY_NEW_CONNECTION_HOME_CARD_LABEL"),
-      link: `/digit-ui/employee/ws/create-application`,
-      roles: ["WS_CEMP", "SW_CEMP"],
-    },
+    // {
+    //   label: t("WS_APPLY_NEW_CONNECTION_HOME_CARD_LABEL"),
+    //   link: `/digit-ui/employee/ws/create-application`,
+    //   roles: ["WS_CEMP", "SW_CEMP"],
+    // },
   ];
 
   links = links.filter((link) => (link.roles ? checkForEmployee(link.roles) : true));

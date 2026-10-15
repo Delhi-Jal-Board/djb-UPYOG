@@ -36,6 +36,8 @@ const Login = () => {
 
         // Redirect if keycloak missing
         if (!kc) {
+          sessionStorage.clear();
+          localStorage.clear();
           const isEmployee = window.location.pathname.includes("employee");
 
           const redirectPath = isEmployee ? "/digit-ui/employee/user/login" : "/digit-ui/citizen";
@@ -48,6 +50,8 @@ const Login = () => {
 
         // Login if not authenticated
         if (!kc.authenticated) {
+          sessionStorage.clear();
+          localStorage.clear();
           kc.login({
             redirectUri: window.location.origin + "/digit-ui/employee",
           });

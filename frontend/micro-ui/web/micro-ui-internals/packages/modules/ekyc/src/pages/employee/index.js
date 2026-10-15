@@ -17,6 +17,7 @@ import { ekycRoutes } from "../../config/Routes";
 const EmployeeApp = ({ path }) => {
   const { t } = useTranslation();
   const location = useLocation();
+  const roles = Digit.SessionStorage.get("User")?.info?.roles.map((ele) => ele.code);
 
   sessionStorage.removeItem("revalidateddone");
 
@@ -161,7 +162,7 @@ const EmployeeApp = ({ path }) => {
               path={`${path}/assign/surveyor-details/:id`}
               exact
               component={() => (
-                <LayoutWrapper layoutClass="action">
+                <LayoutWrapper layoutClass={roles.includes("EKYC_SUPERVISOR") ? "action" : "normal"}>
                   <SurveyorDetailsCard />
                 </LayoutWrapper>
               )}
