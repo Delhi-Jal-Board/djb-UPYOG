@@ -743,7 +743,6 @@ const getMeterStatusTypeList = (tenantId) => ({
       masterDetails: [
         {
           name: "MeterStatus",
-          filter: `$.*.name`
         },
       ],
     },

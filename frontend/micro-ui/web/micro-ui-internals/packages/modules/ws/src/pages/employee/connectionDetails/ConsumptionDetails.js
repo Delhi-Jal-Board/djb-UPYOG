@@ -10,10 +10,11 @@ import {
   Row,
   StatusTable,
   SubmitBar,
+  Table,
   Toast,
   VerticalTimeline,
 } from "@djb25/digit-ui-react-components";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import * as func from "../../../utils";
 
@@ -207,18 +208,25 @@ const ConsumptionDetails = ({ view }) => {
       });
     }
   };
-  let optionsList = mdmsMeterStatus?.MdmsRes?.["ws-services-calculation"]?.MeterStatus?.map((status) => ({
-    code: status,
-    i18nKey: `WS_SERVICES_CALCULATION_METERSTATUS_${Digit.Utils.locale.getTransformedLocale(status)}`,
-  }));
+  let optionsList = mdmsMeterStatus?.MdmsRes?.["ws-services-calculation"]?.MeterStatus
+    ?.filter((status) => (typeof status === "object" ? status?.active === true || status?.active === "true" : true))
+    ?.map((status) => {
+      const statusCode = typeof status === "object" ? status.name || status.code : status;
+      return {
+        code: statusCode,
+        i18nKey: `WS_SERVICES_CALCULATION_METERSTATUS_${Digit.Utils.locale.getTransformedLocale(statusCode)}`,
+      };
+    });
 
-  const ReadingQualityCodeList = DJBReadingQualityCode?.MdmsRes?.["ws-services-calculation"]?.DJBReadingQualityCode?.map((status) => {
-    const statusCode = typeof status === "object" ? status.code : status;
-    return {
-      code: statusCode,
-      i18nKey: `WS_SERVICES_CALCULATION_DJBREADINGQUALITYCODE_${Digit.Utils.locale.getTransformedLocale(statusCode)}`,
-    };
-  });
+  const ReadingQualityCodeList = DJBReadingQualityCode?.MdmsRes?.["ws-services-calculation"]?.DJBReadingQualityCode
+    ?.filter((status) => (typeof status === "object" ? status?.active === true || status?.active === "true" : true))
+    ?.map((status) => {
+      const statusCode = typeof status === "object" ? status.code : status;
+      return {
+        code: statusCode,
+        i18nKey: `WS_SERVICES_CALCULATION_DJBREADINGQUALITYCODE_${Digit.Utils.locale.getTransformedLocale(statusCode)}`,
+      };
+    });
 
   const onFormValueChange = (setValue, formData, formState) => {
     if (selectMeterStatus?.code === "Working") {
@@ -400,10 +408,106 @@ const ConsumptionDetails = ({ view }) => {
   };
 
   const consumption = (currentReading, lastReading) => {
-    if (currentReading && lastReading) {
+    if (
+      currentReading !== null &&
+      currentReading !== undefined &&
+      lastReading !== null &&
+      lastReading !== undefined &&
+      currentReading !== "" &&
+      lastReading !== ""
+    ) {
       return Number(currentReading - lastReading);
     } else return t("NA");
   };
+
+  const columns = useMemo(
+    () => [
+      {
+        Header: t("WS_MYCONNECTIONS_CONSUMER_NO"),
+        accessor: "connectionNo",
+        disableSortBy: true,
+        Cell: ({ row }) => <span>{row.original?.connectionNo || t("NA")}</span>,
+      },
+      {
+        Header: t("WS_VIEW_BILL_BILLING_PERIOD_LABEL"),
+        accessor: "billingPeriod",
+        disableSortBy: true,
+        Cell: ({ row }) => <span>{row.original?.billingPeriod || t("NA")}</span>,
+      },
+      {
+        Header: t("WS_CONSUMPTION_DETAILS_METER_STATUS_LABEL"),
+        accessor: "meterStatus",
+        disableSortBy: true,
+        Cell: ({ row }) => <span>{row.original?.meterStatus || t("NA")}</span>,
+      },
+      {
+        Header: t("WS_READING_QUALITY_CODE"),
+        accessor: "readingQualityCode",
+        disableSortBy: true,
+        Cell: ({ row }) => <span>{row.original?.readingQualityCode || t("NA")}</span>,
+      },
+      {
+        Header: t("WS_CONSUMPTION_DETAILS_LAST_READING_LABEL"),
+        accessor: "lastReading",
+        disableSortBy: true,
+        Cell: ({ row }) => (
+          <span>{row.original?.lastReading !== undefined && row.original?.lastReading !== null ? row.original?.lastReading : t("NA")}</span>
+        ),
+      },
+      {
+        Header: t("WS_CONSUMPTION_DETAILS_LAST_READING_DATE_LABEL"),
+        accessor: "lastReadingDate",
+        disableSortBy: true,
+        Cell: ({ row }) => (
+          <span>{row.original?.lastReadingDate ? Digit.DateUtils.ConvertEpochToDate(row.original?.lastReadingDate) : t("NA")}</span>
+        ),
+      },
+      {
+        Header: t("WS_SERV_DETAIL_CUR_METER_READ"),
+        accessor: "currentReading",
+        disableSortBy: true,
+        Cell: ({ row }) => (
+          <span>{row.original?.currentReading !== undefined && row.original?.currentReading !== null ? row.original?.currentReading : t("NA")}</span>
+        ),
+      },
+      {
+        Header: t("WS_CONSUMPTION_DETAILS_CURRENT_READING_DATE_LABEL"),
+        accessor: "currentReadingDate",
+        disableSortBy: true,
+        Cell: ({ row }) => (
+          <span>{row.original?.currentReadingDate ? Digit.DateUtils.ConvertEpochToDate(row.original?.currentReadingDate) : t("NA")}</span>
+        ),
+      },
+      {
+        Header: t("WS_CONSUMPTION_DETAILS_CONSUMPTION_LABEL"),
+        id: "consumption",
+        disableSortBy: true,
+        Cell: ({ row }) => <span>{consumption(row.original?.currentReading, row.original?.lastReading)}</span>,
+      },
+      {
+        Header: t("WS_COMMON_TABLE_COL_ACTION_LABEL"),
+        id: "action",
+        disableSortBy: true,
+        Cell: ({ row }) => (
+          <SubmitBar
+            style={{
+              backgroundColor: "#0A4275",
+              color: "#FFFFFF",
+              minWidth: "auto",
+              padding: "6px 14px",
+              fontSize: "12px",
+              height: "auto",
+              margin: "0px",
+              whiteSpace: "nowrap",
+            }}
+            label={t("VIEW_METER_READING_DETAILS")}
+            onSubmit={() => handleViewMeterReadingDetails(row.original)}
+          />
+        ),
+      },
+    ],
+    [t]
+  );
 
   if (isLoading || isConnectionDetailsLoading) {
     return <Loader />;
@@ -411,77 +515,34 @@ const ConsumptionDetails = ({ view }) => {
   let { meterReadings } = response || {};
   return (
     <React.Fragment>
-      <div className="employee-form-section-wrapper">
-        <VerticalTimeline config={[{ timeLine: [{ actions: "WS_VIEW_CONSUMPTION", currentStep: 1 }] }]} showFinalStep={false} />
+      {/* <div className="employee-form-section-wrapper">
+        <VerticalTimeline config={[{ timeLine: [{ actions: "WS_VIEW_CONSUMPTION", currentStep: 1 }] }]} showFinalStep={false} /> */}
 
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "16px" }}>
-          {meterReadings?.length > 0 &&
-            meterReadings.map((application, index) => (
-              <div key={index}>
-                <Card>
-                  <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "16px", marginTop: "8px", marginRight: "8px" }}>
-                    <SubmitBar label={t("VIEW_METER_READING_DETAILS")} onSubmit={() => handleViewMeterReadingDetails(application)} />
-                  </div>
-                  <StatusTable>
-                    <Row
-                      key={t("WS_MYCONNECTIONS_CONSUMER_NO")}
-                      label={`${t("WS_MYCONNECTIONS_CONSUMER_NO")}`}
-                      text={application?.connectionNo || t("NA")}
-                      className="border-none"
-                    />
-                    <Row
-                      key={t("WS_VIEW_BILL_BILLING_PERIOD_LABEL")}
-                      label={`${t("WS_VIEW_BILL_BILLING_PERIOD_LABEL")}`}
-                      text={application?.billingPeriod || t("NA")}
-                      className="border-none"
-                    />
-                    <Row
-                      key={t("WS_CONSUMPTION_DETAILS_METER_STATUS_LABEL")}
-                      label={`${t("WS_CONSUMPTION_DETAILS_METER_STATUS_LABEL")}`}
-                      text={application?.meterStatus || t("NA")}
-                      className="border-none"
-                    />
-                    <Row
-                      key={t("WS_READING_QUALITY_CODE")}
-                      label={`${t("WS_READING_QUALITY_CODE")}`}
-                      text={application?.readingQualityCode || t("NA")}
-                      className="border-none"
-                    />
-                    <Row
-                      key={t("WS_CONSUMPTION_DETAILS_LAST_READING_LABEL")}
-                      label={`${t("WS_CONSUMPTION_DETAILS_LAST_READING_LABEL")}`}
-                      text={application?.lastReading || t("NA")}
-                      className="border-none"
-                    />
-                    <Row
-                      key={t("WS_CONSUMPTION_DETAILS_LAST_READING_DATE_LABEL")}
-                      label={`${t("WS_CONSUMPTION_DETAILS_LAST_READING_DATE_LABEL")}`}
-                      text={application?.lastReadingDate ? Digit.DateUtils.ConvertEpochToDate(application?.lastReadingDate) : t("NA")}
-                      className="border-none"
-                    />
-                    <Row
-                      key={t("WS_SERV_DETAIL_CUR_METER_READ")}
-                      label={`${t("WS_SERV_DETAIL_CUR_METER_READ")}`}
-                      text={application?.currentReading || t("NA")}
-                      className="border-none"
-                    />
-                    <Row
-                      key={t("WS_CONSUMPTION_DETAILS_CURRENT_READING_DATE_LABEL")}
-                      label={`${t("WS_CONSUMPTION_DETAILS_CURRENT_READING_DATE_LABEL")}`}
-                      text={application?.currentReadingDate ? Digit.DateUtils.ConvertEpochToDate(application?.currentReadingDate) : t("NA")}
-                      className="border-none"
-                    />
-                    <Row
-                      key={t("WS_CONSUMPTION_DETAILS_CONSUMPTION_LABEL")}
-                      label={`${t("WS_CONSUMPTION_DETAILS_CONSUMPTION_LABEL")}`}
-                      text={consumption(application?.currentReading, application?.lastReading)}
-                      className="border-none"
-                    />
-                  </StatusTable>
-                </Card>
-              </div>
-            ))}
-          {!meterReadings?.length > 0 && <p style={{ marginLeft: "16px", marginTop: "16px" }}>{t("WS_NO_CONSUMPTION_FOUND")}</p>}
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "16px", minWidth: 0, overflowX: "auto" }}>
+          {meterReadings?.length > 0 ? (
+            <Table
+              t={t}
+              data={meterReadings}
+              columns={columns}
+              totalRecords={meterReadings?.length}
+              manualPagination={false}
+              isPaginationRequired={true}
+              pageSizeLimit={10}
+              disableSort={true}
+              autoSort={false}
+              getCellProps={() => ({
+                style: {
+                  whiteSpace: "nowrap",
+                  padding: "16px 14px",
+                  fontSize: "14px",
+                },
+              })}
+            />
+          ) : (
+            <Card>
+              <p style={{ marginLeft: "16px", marginTop: "16px" }}>{t("WS_NO_CONSUMPTION_FOUND")}</p>
+            </Card>
+          )}
         </div>
         {isLoading || meterStatusLoading || billingPeriodLoading || !isUserAllowedToAddMeterReading ? null : (
           <div>
@@ -492,7 +553,7 @@ const ConsumptionDetails = ({ view }) => {
             )}
           </div>
         )}
-      </div>
+      {/* </div> */}
       {openModal && (
         <Modal
           headerBarMain={<Heading label={t(config.label.heading)} />}
