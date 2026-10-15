@@ -31,8 +31,10 @@ const WSActivationPlumberDetails = ({ config, onSelect, userType, formData, setE
       plumberDetails.map((e) => {
         return e;
       });
-    onSelect(config?.key, data);
-  }, [plumberDetails, formData?.connectionDetails?.[0]?.connectionType]);
+    if (data && !_.isEqual(formData?.[config?.key], data)) {
+      onSelect(config?.key, data);
+    }
+  }, [plumberDetails, formData?.connectionDetails?.[0]?.connectionType, config?.key]);
 
   const commonProps = {
     focusIndex,

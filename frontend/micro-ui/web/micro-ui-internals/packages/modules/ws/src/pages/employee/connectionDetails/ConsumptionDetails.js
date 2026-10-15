@@ -434,12 +434,12 @@ const ConsumptionDetails = ({ view }) => {
         disableSortBy: true,
         Cell: ({ row }) => <span>{row.original?.billingPeriod || t("NA")}</span>,
       },
-      {
-        Header: t("WS_CONSUMPTION_DETAILS_METER_STATUS_LABEL"),
-        accessor: "meterStatus",
-        disableSortBy: true,
-        Cell: ({ row }) => <span>{row.original?.meterStatus || t("NA")}</span>,
-      },
+      // {
+      //   Header: t("WS_CONSUMPTION_DETAILS_METER_STATUS_LABEL"),
+      //   accessor: "meterStatus",
+      //   disableSortBy: true,
+      //   Cell: ({ row }) => <span>{row.original?.meterStatus || t("NA")}</span>,
+      // },
       {
         Header: t("WS_READING_QUALITY_CODE"),
         accessor: "readingQualityCode",

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import _ from "lodash";
 import {
   CardLabel,
   LabelFieldPair,
@@ -79,7 +80,10 @@ const WSDocumentsEmployee = ({ t, config, onSelect, userType, formData, setError
       let documentStep = { ...formData?.documents, documents: documents };
       onSelect(config.key, documentStep);
     } else {
-      onSelect(config.key, { documents: removeDuplicateOtherDocuments(documents) });
+      const docPayload = { documents: removeDuplicateOtherDocuments(documents) };
+      if (!_.isEqual(formData?.[config.key], docPayload)) {
+        onSelect(config.key, docPayload);
+      }
     }
   };
 
