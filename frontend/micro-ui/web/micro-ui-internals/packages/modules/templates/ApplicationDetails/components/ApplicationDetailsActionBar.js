@@ -13,7 +13,10 @@ function ApplicationDetailsActionBar({
   MenuStyle = {},
   isAction,
   applicationDetails,
+  applicationData,
   isApprovalChecklistValid = false,
+  approvalChecklist = {},
+  showApprovalChecklist,
 }) {
   const { t } = useTranslation();
   let user = Digit.UserService.getUser();
@@ -58,7 +61,14 @@ function ApplicationDetailsActionBar({
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     });
 
-  const completelySatisfied = applicationDetails?.applicationData?.additionalDetails?.CompletelySatisfied;
+  const completelySatisfied =
+    approvalChecklist?.isFullySatisfied !== undefined
+      ? approvalChecklist?.isFullySatisfied
+      : showApprovalChecklist
+      ? undefined
+      : applicationDetails?.applicationData?.additionalDetails?.CompletelySatisfied !== undefined
+      ? applicationDetails?.applicationData?.additionalDetails?.CompletelySatisfied
+      : applicationData?.additionalDetails?.CompletelySatisfied;
 
   if (completelySatisfied !== undefined) {
     if (completelySatisfied === true) {

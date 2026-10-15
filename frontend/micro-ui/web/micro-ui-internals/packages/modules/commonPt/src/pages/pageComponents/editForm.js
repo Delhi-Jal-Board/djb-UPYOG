@@ -59,6 +59,12 @@ const mapPropertyToFormData = (property = {}) => {
   return {
     // PropertyLocationDetails reads from formData.cpt.details to populate address fields
     cpt: { details: property },
+    locationDet: {
+      ...property.address,
+      noOfFloors: numberOfFloors
+        ? { code: String(numberOfFloors), i18nKey: `PT_NO_OF_FLOORS_${numberOfFloors}` }
+        : null,
+    },
     // waterConnection is read by PropertyWaterConnection via formData[config.key]
     waterConnection: { useDetails },
     // Keep raw property for submit
@@ -133,12 +139,14 @@ const EditPropertyForm = ({ config, onSelect, userType }) => {
 
     // Parse noOfFloors code → integer
     // "GROUND_FLOOR" → 0, "1_FLOOR" → 1, "2_FLOORS" → 2, etc.
-    const floorsCode = useDetails?.noOfFloors?.code || "";
+    const loc = currentFormValue?.locationDet || {};
+    const rawFloors = loc?.noOfFloors || useDetails?.noOfFloors;
+    const floorsCode = typeof rawFloors === "object" ? rawFloors?.code : rawFloors || "";
     let noOfFloorsInt = 1;
     if (floorsCode === "BASEMENT") {
       noOfFloorsInt = 0;
     } else {
-      const parsed = parseInt(floorsCode?.split("_")?.[0]);
+      const parsed = parseInt(String(floorsCode)?.split("_")?.[0]);
       noOfFloorsInt = isNaN(parsed) ? 1 : parsed;
     }
 
@@ -219,7 +227,7 @@ const EditPropertyForm = ({ config, onSelect, userType }) => {
           waterConnectionUsageType: useDetails?.WaterConnectionUsageType?.code || rawProperty.additionalDetails?.waterConnectionUsageType || "",
           yearOfConstruction: useDetails?.SelectYearofConstruction?.value || rawProperty.additionalDetails?.yearOfConstruction || "",
           numberOfDwellingUnits: useDetails?.NumberofDwellingUnits || rawProperty.additionalDetails?.numberOfDwellingUnits || "",
-          numberOfFloors: useDetails?.noOfFloors?.code || rawProperty.additionalDetails?.numberOfFloors || "",
+          numberOfFloors: floorsCode || rawProperty.additionalDetails?.numberOfFloors || "",
           plotArea: useDetails?.plotArea || rawProperty.additionalDetails?.plotArea || "",
           builtUpArea: useDetails?.builtUpArea || rawProperty.additionalDetails?.builtUpArea || "",
           farArea: useDetails?.farArea || rawProperty.additionalDetails?.farArea || "",

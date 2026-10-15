@@ -355,16 +355,36 @@ const EditApplication = ({ parentRoute }) => {
   let isModifyEdit = window.location.href.includes("/modify-connection") || window.location.href.includes("/edit-application");
 
   useEffect(() => {
+    if (window.location.href.includes("/acknowledgement")) {
+      return;
+    }
     waterapplication = Waterresult;
     sewerageapplication = Sewarageresult;
+    const currentApp = waterapplication || sewerageapplication;
+    const currentAppNo = currentApp?.applicationNo;
+    const isAppLoaded = !!currentAppNo;
+    const isDifferentApp = params?.applicationNo && currentAppNo && params?.applicationNo !== currentAppNo;
+    const isNotHydrated = !(Object.keys(params).length > 0) || !params?.DocumentsRequired;
+
+    const isSatisfiedChanged =
+      currentApp?.additionalDetails?.CompletelySatisfied !== undefined &&
+      params?.additionalDetails?.CompletelySatisfied !== undefined &&
+      params?.additionalDetails?.CompletelySatisfied !== currentApp?.additionalDetails?.CompletelySatisfied;
+
+    const isAuditChanged =
+      currentApp?.auditDetails?.lastModifiedTime &&
+      params?.auditDetails?.lastModifiedTime &&
+      params?.auditDetails?.lastModifiedTime !== currentApp?.auditDetails?.lastModifiedTime;
+
+    const isStatusChanged =
+      currentApp?.applicationStatus &&
+      params?.applicationStatus &&
+      params?.applicationStatus !== currentApp?.applicationStatus;
+
     if (
-      ((Waterresult && waterapplication) || (Sewarageresult && sewerageapplication)) &&
-      (!(Object.keys(params).length > 0) ||
-        (waterapplication && (params?.applicationNo !== waterapplication?.applicationNo || !params?.DocumentsRequired || !params?.ConnectionDetails?.[0]?.addressType)) ||
-        (sewerageapplication && (params?.applicationNo !== sewerageapplication?.applicationNo || !params?.DocumentsRequired || !params?.ConnectionDetails?.[0]?.addressType)))
+      isAppLoaded &&
+      (isNotHydrated || isDifferentApp || isSatisfiedChanged || isAuditChanged || isStatusChanged)
     ) {
-      waterapplication = Waterresult;
-      sewerageapplication = Sewarageresult;
       if (window.location.href.includes("edit-application")) {
         if (waterapplication) {
           waterapplication.isEditApplication = true;
@@ -387,9 +407,8 @@ const EditApplication = ({ parentRoute }) => {
       sessionStorage.setItem("WaterInitialObject", JSON.stringify({ ...waterapplication }));
       sessionStorage.setItem("SewerageInitialObject", JSON.stringify({ ...sewerageapplication }));
       let EditDetails = getEditDetails(waterapplication, sewerageapplication, t);
-      setParams({ ...params, ...EditDetails });
-    } else if (Object.keys(params).length > 0 && (Waterresult || Sewarageresult)) {
-      let currentApp = Waterresult || Sewarageresult;
+      setParams(EditDetails);
+    } else if (Object.keys(params).length > 0 && currentApp) {
       const addrType = currentApp?.additionalDetails?.addressType || currentApp?.ConnectionDetails?.[0]?.addressType || currentApp?.addressType;
       const compAddr = currentApp?.additionalDetails?.completeAddress || currentApp?.ConnectionDetails?.[0]?.completeAddress || currentApp?.completeAddress;
       const needsAddressSync =
@@ -398,41 +417,65 @@ const EditApplication = ({ parentRoute }) => {
       const needsDueSync =
         currentApp && currentApp.dueVerification && JSON.stringify(currentApp.dueVerification) !== JSON.stringify(params.dueVerification);
 
-      if (needsAddressSync || needsDueSync) {
-        let updatedParams = { ...params };
-        if (needsAddressSync) {
-          const addrTypeObj =
-            typeof addrType === "object" && addrType?.code
-              ? addrType
-              : String(addrType).toUpperCase() === "PERMANENT"
-              ? { i18nKey: "Permanent", code: "PERMANENT" }
-              : String(addrType).toUpperCase() === "CORRESPONDENCE"
-              ? { i18nKey: "Correspondence", code: "CORRESPONDENCE" }
-              : addrType
-              ? { i18nKey: addrType, code: addrType }
-              : null;
-          const updatedConnDetails = params?.ConnectionDetails
-            ? [
-                {
-                  ...params.ConnectionDetails[0],
-                  addressType: params.ConnectionDetails[0]?.addressType || addrTypeObj,
-                  completeAddress: params.ConnectionDetails[0]?.completeAddress || compAddr || "",
-                },
-              ]
-            : [
-                {
-                  addressType: addrTypeObj,
-                  completeAddress: compAddr || "",
-                },
-              ];
-          updatedParams.ConnectionDetails = updatedConnDetails;
-          updatedParams.addressType = updatedParams.addressType || addrTypeObj;
-          updatedParams.completeAddress = updatedParams.completeAddress || compAddr || "";
-        }
-        if (needsDueSync) {
-          updatedParams.dueVerification = currentApp.dueVerification;
-        }
-        setParams(updatedParams);
+      const backendSatisfied = currentApp?.additionalDetails?.CompletelySatisfied;
+      const needsSatisfiedSync =
+        backendSatisfied !== undefined && params?.additionalDetails?.CompletelySatisfied !== backendSatisfied;
+
+      if (needsAddressSync || needsDueSync || needsSatisfiedSync) {
+        setParams((prevParams) => {
+          let updatedParams = { ...prevParams };
+          if (needsAddressSync) {
+            const addrTypeObj =
+              typeof addrType === "object" && addrType?.code
+                ? addrType
+                : String(addrType).toUpperCase() === "PERMANENT"
+                ? { i18nKey: "Permanent", code: "PERMANENT" }
+                : String(addrType).toUpperCase() === "CORRESPONDENCE"
+                ? { i18nKey: "Correspondence", code: "CORRESPONDENCE" }
+                : addrType
+                ? { i18nKey: addrType, code: addrType }
+                : null;
+            const updatedConnDetails = prevParams?.ConnectionDetails
+              ? [
+                  {
+                    ...prevParams.ConnectionDetails[0],
+                    addressType: prevParams.ConnectionDetails[0]?.addressType || addrTypeObj,
+                    completeAddress: prevParams.ConnectionDetails[0]?.completeAddress || compAddr || "",
+                  },
+                ]
+              : [
+                  {
+                    addressType: addrTypeObj,
+                    completeAddress: compAddr || "",
+                  },
+                ];
+            updatedParams.ConnectionDetails = updatedConnDetails;
+            updatedParams.addressType = updatedParams.addressType || addrTypeObj;
+            updatedParams.completeAddress = updatedParams.completeAddress || compAddr || "";
+          }
+          if (needsDueSync) {
+            updatedParams.dueVerification = currentApp.dueVerification;
+          }
+          if (needsSatisfiedSync) {
+            updatedParams.additionalDetails = {
+              ...updatedParams.additionalDetails,
+              CompletelySatisfied: backendSatisfied,
+            };
+            if (updatedParams?.WaterConnectionResult?.WaterConnection?.[0]) {
+              updatedParams.WaterConnectionResult.WaterConnection[0].additionalDetails = {
+                ...updatedParams.WaterConnectionResult.WaterConnection[0]?.additionalDetails,
+                CompletelySatisfied: backendSatisfied,
+              };
+            }
+            if (updatedParams?.SewerageConnectionResult?.SewerageConnections?.[0]) {
+              updatedParams.SewerageConnectionResult.SewerageConnections[0].additionalDetails = {
+                ...updatedParams.SewerageConnectionResult.SewerageConnections[0]?.additionalDetails,
+                CompletelySatisfied: backendSatisfied,
+              };
+            }
+          }
+          return updatedParams;
+        });
       }
     }
   }, [Waterresult, Sewarageresult]);
@@ -440,19 +483,72 @@ const EditApplication = ({ parentRoute }) => {
   // Stepper navigation removed for long form implementation
   const onSuccess = () => {
     queryClient.invalidateQueries("WS_CREATE");
+    sessionStorage.removeItem("WS_EDIT_APPLICATION_V5");
+    sessionStorage.removeItem("WaterInitialObject");
+    sessionStorage.removeItem("SewerageInitialObject");
   };
   const createApplication = async () => {
     if (params?.DocumentsRequired?.documents) {
       params.documents = { documents: params.DocumentsRequired.documents };
+    }
+    const currentApp = Waterresult || Sewarageresult;
+    const backendSatisfied = currentApp?.additionalDetails?.CompletelySatisfied;
+    if (backendSatisfied !== undefined) {
+      params.additionalDetails = {
+        ...params.additionalDetails,
+        CompletelySatisfied: backendSatisfied,
+      };
+      if (params?.WaterConnectionResult?.WaterConnection?.[0]) {
+        params.WaterConnectionResult.WaterConnection[0].additionalDetails = {
+          ...params.WaterConnectionResult.WaterConnection[0]?.additionalDetails,
+          CompletelySatisfied: backendSatisfied,
+        };
+      }
+      if (params?.SewerageConnectionResult?.SewerageConnections?.[0]) {
+        params.SewerageConnectionResult.SewerageConnections[0].additionalDetails = {
+          ...params.SewerageConnectionResult.SewerageConnections[0]?.additionalDetails,
+          CompletelySatisfied: backendSatisfied,
+        };
+      }
     }
     history.push(`${getPath(match.path, match.params)}/acknowledgement`);
   };
 
   const handleSelect = (key, data, skipStep, isFromCreateApi) => {
     if (isFromCreateApi) setParams(data);
-    else if (key === "") setParams({ ...data });
-    else if (Array.isArray(data)) setParams({ ...params, [key]: data });
-    else setParams({ ...params, ...{ [key]: { ...params[key], ...data } } });
+    else if (key === "") setParams((prev) => ({ ...prev, ...data }));
+    else if (Array.isArray(data)) setParams((prev) => ({ ...prev, [key]: data }));
+    else if (key === "djbEmployee") {
+      setParams((prev) => {
+        const isEmp = String(data?.isDjbEmployee) === "true" || data?.isDjbEmployee === true;
+        return {
+          ...prev,
+          djbEmployee: {
+            ...prev?.djbEmployee,
+            ...data,
+            isDjbEmployee: isEmp,
+            employeeId: isEmp ? (data?.employeeId ?? "") : "",
+            designation: isEmp ? (data?.designation ?? "") : "",
+            dor: isEmp ? (data?.dor ?? "") : "",
+            document: isEmp ? (data?.document?.fileStoreId || data?.document || "") : "",
+          },
+          additionalDetails: {
+            ...prev?.additionalDetails,
+            ...data,
+            isDjbEmployee: isEmp,
+            employeeId: isEmp ? (data?.employeeId ?? "") : "",
+            designation: isEmp ? (data?.designation ?? "") : "",
+            dor: isEmp ? (data?.dor ?? "") : "",
+            document: isEmp ? (data?.document?.fileStoreId || data?.document || "") : "",
+          },
+        };
+      });
+    } else {
+      setParams((prev) => ({
+        ...prev,
+        [key]: { ...prev?.[key], ...data },
+      }));
+    }
   };
   const handleSkip = () => {};
   newConfig = newConfigWS; // Override MDMS config with local config to ensure property-location-details change takes effect
@@ -557,8 +653,9 @@ const EditApplication = ({ parentRoute }) => {
                 const { component, texts, inputs, key, isSkipEnabled } = routeObj;
                 const Component = typeof component === "string" ? Digit.ComponentRegistryService.getComponent(component) : component;
                 return (
-                  <div id={`step-${index}`} key={index}>
+                  <div id={`step-${index}`} key={routeObj.route || index}>
                     <Component
+                      key={routeObj.route || index}
                       config={{ texts, inputs, key, isSkipEnabled }}
                       onSelect={handleSelect}
                       onSkip={handleSkip}

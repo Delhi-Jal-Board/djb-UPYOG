@@ -69,35 +69,46 @@ const WSAcknowledgement = ({ data, onSuccess, clearParams }) => {
 
   })
 
+  const mutationTriggeredRef = React.useRef(false);
+  const swMutationTriggeredRef = React.useRef(false);
+
+  const handleSuccess = (res) => {
+    sessionStorage.removeItem("WS_EDIT_APPLICATION_V5");
+    sessionStorage.removeItem("WaterInitialObject");
+    sessionStorage.removeItem("SewerageInitialObject");
+    if (onSuccess) onSuccess(res);
+  };
+
   useEffect(() => {
+    if (mutationTriggeredRef.current) return;
     try {
-        let tenantId;
-     if(data?.serviceName?.code === "WATER" || data?.serviceName?.code === "BOTH"){
+      let tenantId;
+      if (data?.serviceName?.code === "WATER" || data?.serviceName?.code === "BOTH") {
+        mutationTriggeredRef.current = true;
         tenantId = data?.cpt?.details?.tenantId || tenantId;
         let formdata = isEdit ? convertToEditWSUpdate(data) : convertToWSUpdate(data);
-       const formdataNew = {...formdata,disconnectRequest:false, reconnectRequest:false}
+        const formdataNew = { ...formdata, disconnectRequest: false, reconnectRequest: false };
         WSmutation.mutate(formdataNew, {
-          onSuccess,
-        })
-    }
-     
+          onSuccess: handleSuccess,
+        });
+      }
     } catch (err) {
+      console.error("Error executing WS mutation", err);
     }
   }, [data]);
 
   useEffect(() => {
-
-    if(data?.serviceName?.code === "SEWERAGE" || (data?.serviceName?.code === "BOTH" && WSmutation.isSuccess))
-      {
-        let tenantId = data?.cpt?.details?.tenantId || tenantId;
-        let formdata = isEdit ? convertToEditSWUpdate(data) : convertToSWUpdate(data);
-        const formdataNew = {...formdata,disconnectRequest:false, reconnectRequest:false}
-        SWmutation.mutate(formdataNew, {
-          onSuccess,
-        })
-      }
-    
-  },[data,WSmutation.isSuccess])
+    if (swMutationTriggeredRef.current) return;
+    if (data?.serviceName?.code === "SEWERAGE" || (data?.serviceName?.code === "BOTH" && WSmutation.isSuccess)) {
+      swMutationTriggeredRef.current = true;
+      let tenantId = data?.cpt?.details?.tenantId || tenantId;
+      let formdata = isEdit ? convertToEditSWUpdate(data) : convertToSWUpdate(data);
+      const formdataNew = { ...formdata, disconnectRequest: false, reconnectRequest: false };
+      SWmutation.mutate(formdataNew, {
+        onSuccess: handleSuccess,
+      });
+    }
+  }, [data, WSmutation.isSuccess]);
 
   const handleDownloadPdfWater = () => {
     const WSmutationdata =  WSmutation?.data?.WaterConnection?.[0];

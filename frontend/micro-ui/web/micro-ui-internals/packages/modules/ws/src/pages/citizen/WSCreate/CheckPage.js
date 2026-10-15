@@ -146,13 +146,31 @@ const CheckPage = ({ onSubmit, value }) => {
                 )
               )}`}
             />
-            <Row
-              label={t("Complete Address")}
-              text={`${checkForNA(
+            {(() => {
+              const addrTypeStr =
+                (typeof connectionDetails?.addressType === "string"
+                  ? connectionDetails.addressType
+                  : connectionDetails?.addressType?.code || connectionDetails?.addressType?.name) ||
+                data?.additionalDetails?.addressType ||
+                "";
+              const compAddrStr =
                 connectionDetails?.completeAddress ||
-                  data?.additionalDetails?.completeAddress
-              )}`}
-            />
+                data?.additionalDetails?.completeAddress ||
+                "";
+              if (
+                compAddrStr &&
+                compAddrStr !== addrTypeStr &&
+                ["PERMANENT", "CORRESPONDENCE", "Permanent", "Correspondence"].includes(addrTypeStr)
+              ) {
+                return (
+                  <Row
+                    label={t("Complete Address")}
+                    text={`${checkForNA(compAddrStr)}`}
+                  />
+                );
+              }
+              return null;
+            })()}
             <Row
               label={t("WS_SERVICE_TYPE")}
               text={`${t(

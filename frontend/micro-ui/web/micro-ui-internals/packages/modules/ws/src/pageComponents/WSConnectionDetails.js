@@ -47,12 +47,93 @@ const createConnectionDetails = () => ({
   completeAddress: "",
 });
 
+const getCptAddress = (formData) => {
+  if (formData?.cpt?.details?.address) return formData.cpt.details.address;
+  if (formData?.property?.address) return formData.property.address;
+  if (formData?.propertyAddress) return formData.propertyAddress;
+  try {
+    const sessionPt = JSON.parse(sessionStorage.getItem("Digit_FSM_PT") || "{}");
+    if (sessionPt?.address) return sessionPt.address;
+  } catch (e) {}
+  return null;
+};
+
+const getPropertyAddressString = (address, t) => {
+  if (!address) return "";
+  if (typeof address === "string") return address;
+
+  const parts = [];
+  if (address?.doorNo) parts.push(address.doorNo);
+  if (address?.buildingName) parts.push(address.buildingName);
+  if (address?.street) parts.push(address.street);
+  if (address?.landmark) parts.push(address.landmark);
+
+  const tenantId = address?.tenantId || Digit.ULBService.getCurrentTenantId();
+  const localityCode = address?.locality?.code || (typeof address?.locality === "string" ? address?.locality : null);
+
+  let localityText = "";
+  if (localityCode && Digit.Utils?.pt?.getMohallaLocale) {
+    const locLocale = Digit.Utils.pt.getMohallaLocale(localityCode, tenantId);
+    localityText = t ? t(locLocale) : locLocale;
+  }
+  if (!localityText || localityText === localityCode) {
+    localityText = address?.locality?.name || address?.locality?.code || "";
+  }
+  if (localityText) parts.push(localityText);
+
+  let cityText = "";
+  if (tenantId && Digit.Utils?.pt?.getCityLocale) {
+    const cityLocale = Digit.Utils.pt.getCityLocale(tenantId);
+    cityText = t ? t(cityLocale) : cityLocale;
+  }
+  if (!cityText || cityText === tenantId) {
+    cityText = address?.city || tenantId || "";
+  }
+  if (cityText) parts.push(cityText);
+
+  if (address?.pincode) {
+    parts.push(address.pincode);
+  }
+
+  return parts.filter(Boolean).join(", ");
+};
+
+const getCleanAddressValue = (val) => {
+  if (!val) return "";
+  if (typeof val === "object") {
+    const code = val.code || val.name || val.i18nKey || "";
+    if (code.toUpperCase() === "PERMANENT" || code.toUpperCase() === "CORRESPONDENCE") return "";
+    return code;
+  }
+  const str = String(val).trim();
+  if (str.toUpperCase() === "PERMANENT" || str.toUpperCase() === "CORRESPONDENCE") return "";
+  return str;
+};
+
 const WSConnectionDetails = ({ config, onSelect, userType, formData, setError, formState, clearErrors }) => {
   const { t } = useTranslation();
   const { pathname } = useLocation();
-  const [connectionDetails, setConnectionDetails] = useState(
-    formData?.ConnectionDetails?.length > 0 ? [formData?.ConnectionDetails?.[0]] : [createConnectionDetails()]
-  );
+  const cptAddrTop = getCptAddress(formData);
+  const formattedPropertyAddressTop = getPropertyAddressString(cptAddrTop, t);
+
+  const [connectionDetails, setConnectionDetails] = useState(() => {
+    if (formData?.ConnectionDetails?.length > 0) {
+      const initial = { ...formData.ConnectionDetails[0] };
+      if (!initial.addressType && formattedPropertyAddressTop) {
+        initial.addressType = formattedPropertyAddressTop;
+      }
+      if (!initial.completeAddress && formattedPropertyAddressTop) {
+        initial.completeAddress = formattedPropertyAddressTop;
+      }
+      return [initial];
+    }
+    const def = createConnectionDetails();
+    if (formattedPropertyAddressTop) {
+      def.addressType = formattedPropertyAddressTop;
+      def.completeAddress = formattedPropertyAddressTop;
+    }
+    return [def];
+  });
 
   useEffect(() => {
     if (formData?.ConnectionDetails?.length > 0) {
@@ -254,84 +335,36 @@ const ConnectionDetails = (_props) => {
     userType,
   } = _props;
 
-  const userInfo = JSON.parse(window.localStorage.getItem("Citizen.user-info") || window.localStorage.getItem("user-info") || "{}");
-  let addresses = userInfo?.addresses || [];
+  const cptAddr = getCptAddress(formData);
+  const formattedPropertyAddress = getPropertyAddressString(cptAddr, t);
 
-  if (!addresses || addresses.length === 0) {
-    const owner = formData?.cpt?.details?.owners?.[0];
-    const cptAddress = formData?.cpt?.details?.address;
-    const formattedPropertyAddress = cptAddress
-      ? [
-          cptAddress?.doorNo,
-          cptAddress?.buildingName,
-          cptAddress?.street,
-          cptAddress?.landmark,
-          cptAddress?.locality?.name || cptAddress?.locality?.code,
-          cptAddress?.city,
-          cptAddress?.pincode,
-        ]
-          .filter(Boolean)
-          .join(", ")
-      : "";
+  const rawAddressType =
+    connectionDetail?.addressType ||
+    formData?.ConnectionDetails?.[0]?.addressType ||
+    formData?.additionalDetails?.addressType ||
+    formData?.additionalDetails?.ConnectionDetails?.[0]?.addressType ||
+    formData?.addressType;
 
-    const ownerPermAddress =
-      owner?.permanentAddress && owner?.permanentAddress !== "NA" ? owner.permanentAddress : formattedPropertyAddress;
-    const ownerCorrAddress =
-      owner?.correspondenceAddress && owner?.correspondenceAddress !== "NA"
-        ? owner.correspondenceAddress
-        : ownerPermAddress || formattedPropertyAddress;
-
-    if (ownerPermAddress || ownerCorrAddress) {
-      addresses = [
-        { type: "PERMANENT", address: ownerPermAddress },
-        { type: "CORRESPONDENCE", address: ownerCorrAddress },
-      ];
-    }
-  }
-
-  const getAddressTypeObj = (val) => {
-    if (!val) return null;
-    if (typeof val === "object") {
-      const code = (val.code || val.i18nKey || "").toUpperCase();
-      if (code === "CORRESPONDENCE") {
-        return { i18nKey: "Correspondence", code: "CORRESPONDENCE" };
-      }
-      return { i18nKey: "Permanent", code: "PERMANENT" };
-    }
-    const str = String(val).toUpperCase();
-    if (str === "CORRESPONDENCE") {
-      return { i18nKey: "Correspondence", code: "CORRESPONDENCE" };
-    }
-    if (str === "PERMANENT") {
-      return { i18nKey: "Permanent", code: "PERMANENT" };
-    }
-    return { i18nKey: val, code: val };
-  };
-
-  const initialAddressType =
-    getAddressTypeObj(
-      connectionDetail?.addressType ||
-      formData?.ConnectionDetails?.[0]?.addressType ||
-      formData?.additionalDetails?.addressType ||
-      formData?.additionalDetails?.ConnectionDetails?.[0]?.addressType ||
-      formData?.addressType
-    ) || "";
-
-  let initialCompleteAddress =
+  const rawCompleteAddress =
     connectionDetail?.completeAddress ||
     formData?.ConnectionDetails?.[0]?.completeAddress ||
     formData?.additionalDetails?.completeAddress ||
     formData?.additionalDetails?.ConnectionDetails?.[0]?.completeAddress ||
-    formData?.completeAddress ||
-    "";
+    formData?.completeAddress;
 
-  if (!initialCompleteAddress && initialAddressType?.code && addresses?.length > 0) {
-    const matchedAddr = addresses.find((a) => a.type === initialAddressType.code) || {};
-    initialCompleteAddress =
-      matchedAddr.houseNumber || matchedAddr.city || matchedAddr.pinCode
-        ? [matchedAddr.houseNumber, matchedAddr.address, matchedAddr.city, matchedAddr.pinCode].filter(Boolean).join(", ")
-        : matchedAddr.address || "";
-  }
+  const owner = formData?.cpt?.details?.owners?.[0];
+  const ownerPermAddress =
+    owner?.permanentAddress && owner?.permanentAddress !== "NA" ? owner.permanentAddress : "";
+  const ownerCorrAddress =
+    owner?.correspondenceAddress && owner?.correspondenceAddress !== "NA" ? owner.correspondenceAddress : "";
+
+  const initialAddressValue =
+    getCleanAddressValue(rawAddressType) ||
+    getCleanAddressValue(rawCompleteAddress) ||
+    formattedPropertyAddress ||
+    ownerCorrAddress ||
+    ownerPermAddress ||
+    "";
 
   const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue, trigger, getValues } = useForm(
     {
@@ -348,56 +381,54 @@ const ConnectionDetails = (_props) => {
         natureOfWork: connectionDetail?.natureOfWork || "",
         orgDeptDocument: connectionDetail?.orgDeptDocument || "",
         orgDeptDocumentName: connectionDetail?.orgDeptDocumentName || "",
-        addressType: initialAddressType || "",
-        completeAddress: initialCompleteAddress || "",
+        addressType: initialAddressValue || "",
+        completeAddress: initialAddressValue || "",
       },
     }
   );
   const formValue = watch();
   const { errors } = localFormState;
 
-  useEffect(() => {
-    const rawAddrType =
-      connectionDetail?.addressType ||
-      formData?.ConnectionDetails?.[0]?.addressType ||
-      formData?.additionalDetails?.addressType ||
-      formData?.additionalDetails?.ConnectionDetails?.[0]?.addressType ||
-      formData?.addressType;
+  const prevPropertyIdRef = React.useRef(formData?.cpt?.details?.propertyId);
+  const prevPropAddrRef = React.useRef(formattedPropertyAddress);
+  const isAddressUserEditedRef = React.useRef(false);
 
-    const formattedAddrType = getAddressTypeObj(rawAddrType);
-    if (formattedAddrType) {
-      const currentVal = getValues("addressType");
-      if (!currentVal || (typeof currentVal === "object" && currentVal?.code !== formattedAddrType.code) || (typeof currentVal === "string" && currentVal !== formattedAddrType.code)) {
-        setValue("addressType", formattedAddrType);
-      }
+  useEffect(() => {
+    const currentPropertyId = formData?.cpt?.details?.propertyId;
+    const isNewPropertySelected = Boolean(
+      currentPropertyId && prevPropertyIdRef.current && currentPropertyId !== prevPropertyIdRef.current
+    );
+
+    if (isNewPropertySelected) {
+      prevPropertyIdRef.current = currentPropertyId;
+      isAddressUserEditedRef.current = false;
+    } else if (currentPropertyId && !prevPropertyIdRef.current) {
+      prevPropertyIdRef.current = currentPropertyId;
     }
 
-    const savedAddr =
-      connectionDetail?.completeAddress ||
-      formData?.ConnectionDetails?.[0]?.completeAddress ||
-      formData?.additionalDetails?.completeAddress ||
-      formData?.additionalDetails?.ConnectionDetails?.[0]?.completeAddress ||
-      formData?.completeAddress;
+    if (isAddressUserEditedRef.current) {
+      return;
+    }
 
-    const currentAddr = getValues("completeAddress");
-    if (savedAddr && (!currentAddr || currentAddr !== savedAddr)) {
-      setValue("completeAddress", savedAddr);
-    } else if (!currentAddr && formattedAddrType && addresses?.length > 0) {
-      const matched = addresses.find((a) => a.type === formattedAddrType.code) || {};
-      const fallback =
-        matched.houseNumber || matched.city || matched.pinCode
-          ? [matched.houseNumber, matched.address, matched.city, matched.pinCode].filter(Boolean).join(", ")
-          : matched.address || "";
-      if (fallback) {
-        setValue("completeAddress", fallback);
-      }
+    const currentCptAddr = getCptAddress(formData);
+    const newFormattedAddr = getPropertyAddressString(currentCptAddr, t);
+
+    const currentVal = getValues("addressType");
+    const isValOldType =
+      typeof currentVal === "object" || currentVal === "PERMANENT" || currentVal === "CORRESPONDENCE";
+
+    if (
+      newFormattedAddr &&
+      (isNewPropertySelected || isValOldType || currentVal === undefined || currentVal === null || currentVal === prevPropAddrRef.current)
+    ) {
+      setValue("addressType", newFormattedAddr, { shouldValidate: true });
+      setValue("completeAddress", newFormattedAddr);
+      prevPropAddrRef.current = newFormattedAddr;
     }
   }, [
-    connectionDetail?.addressType,
-    connectionDetail?.completeAddress,
-    formData?.ConnectionDetails,
-    formData?.additionalDetails,
-    addresses?.length,
+    formData?.cpt?.details?.propertyId,
+    formData?.cpt?.details?.address,
+    formData?.property?.address,
   ]);
 
   const [uploadedFile, setUploadedFile] = useState(connectionDetail?.orgDeptDocument || null);
@@ -691,71 +722,37 @@ const ConnectionDetails = (_props) => {
             )}
           />
         </LabelFieldPair>
-        <React.Fragment>
-          <LabelFieldPair>
-            <CardLabel>
-              {t("WS_Billing_Address_Type")}
-              <span className="check-page-link-button">*</span>
-            </CardLabel>
+        <LabelFieldPair>
+          <CardLabel>
+            {t("WS_Billing_Address_Type")}
+            <span className="check-page-link-button">*</span>
+          </CardLabel>
+          <div className="field">
             <Controller
               control={control}
               name={"addressType"}
-              defaultValue={initialAddressType || ""}
+              defaultValue={initialAddressValue || ""}
               rules={{ required: t("REQUIRED_FIELD") }}
               isMandatory={true}
               render={(props) => (
-                <Dropdown
+                <TextInput
                   className="form-field"
-                  selected={props.value || getValues("addressType") || initialAddressType}
+                  value={props.value ?? getValues("addressType") ?? ""}
                   disable={false}
-                  option={[
-                    { i18nKey: "Permanent", code: "PERMANENT" },
-                    { i18nKey: "Correspondence", code: "CORRESPONDENCE" },
-                  ]}
+                  disabled={false}
                   errorStyle={localFormState.touched.addressType && errors?.addressType?.message ? true : false}
-                  select={(e) => {
-                    props.onChange(e);
-                    const selectedAddress = addresses.find((a) => a.type === e.code) || {};
-                    const formattedAddress =
-                      selectedAddress.houseNumber || selectedAddress.city || selectedAddress.pinCode
-                        ? [selectedAddress.houseNumber, selectedAddress.address, selectedAddress.city, selectedAddress.pinCode]
-                            .filter(Boolean)
-                            .join(", ")
-                        : selectedAddress.address || "";
-                    setValue("completeAddress", formattedAddress);
+                  onChange={(e) => {
+                    isAddressUserEditedRef.current = true;
+                    props.onChange(e.target.value);
+                    setValue("completeAddress", e.target.value);
                   }}
-                  optionKey="i18nKey"
                   onBlur={props.onBlur}
-                  t={t}
-                  placeholder={t("Select Address Type")}
+                  placeholder={t("WS_Billing_Address_Type")}
                 />
               )}
             />
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel>{t("Complete Address")}</CardLabel>
-            <Controller
-              control={control}
-              name={"completeAddress"}
-              defaultValue={initialCompleteAddress || ""}
-              render={(props) => (
-                <div className="field">
-                  <TextInput
-                    className="form-field"
-                    value={props.value ?? getValues("completeAddress") ?? initialCompleteAddress ?? ""}
-                    disable={addresses.length > 0}
-                    disabled={addresses.length > 0}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
-                      setValue("completeAddress", e.target.value);
-                    }}
-                    style={addresses.length > 0 ? { backgroundColor: "#eee" } : {}}
-                  />
-                </div>
-              )}
-            />
-          </LabelFieldPair>
-        </React.Fragment>
+          </div>
+        </LabelFieldPair>
         {/* <LabelFieldPair>
           <CardLabel>{`${formValue?.categoryType?.code === "NON_DOMESTIC" || formValue?.categoryType?.name === "Non-Domestic"
               ? t("Non-Domestic Type")

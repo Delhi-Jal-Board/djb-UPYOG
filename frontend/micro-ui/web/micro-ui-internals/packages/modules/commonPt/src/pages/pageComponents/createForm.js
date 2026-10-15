@@ -38,8 +38,9 @@ const CreatePropertyForm = ({ config, onSelect, value, userType, redirectUrl }) 
       const useDetails = location.state?.useDetails;
       const propertyAddress = location.state?.propertyAddress;
 
+      let ownerData = [];
       if (applicant && contact) {
-        setOwners([
+        ownerData = [
           {
             name: `${applicant.firstName}${applicant.middleName ? ` ${applicant.middleName}` : ""}${applicant.lastName ? ` ${applicant.lastName}` : ""
               }`,
@@ -50,7 +51,8 @@ const CreatePropertyForm = ({ config, onSelect, value, userType, redirectUrl }) 
             ownerType: { code: "NONE", name: "None" },
             ownershipCategory: "INDIVIDUAL.SINGLEOWNER",
           },
-        ]);
+        ];
+        setOwners(ownerData);
       }
 
       if (propertyAddress || useDetails) {
@@ -61,10 +63,12 @@ const CreatePropertyForm = ({ config, onSelect, value, userType, redirectUrl }) 
             houseDoorNo: propertyAddress?.houseNo || propertyAddress?.houseDoorNo,
             buildingColonyName: propertyAddress?.street || propertyAddress?.buildingColonyName,
             landmarkName: propertyAddress?.landmark || propertyAddress?.landmarkName,
+            noOfFloors: propertyAddress?.noOfFloors || propertyAddress?.numberOfFloors || useDetails?.noOfFloors,
           },
           waterConnection: {
             useDetails: useDetails,
           },
+          ...(ownerData.length > 0 ? { owners: ownerData } : {}),
         };
         setFormValue(initialFormValue);
       }
@@ -98,14 +102,8 @@ const CreatePropertyForm = ({ config, onSelect, value, userType, redirectUrl }) 
   }, [showToast]);
 
   const currentConfig = React.useMemo(() => {
-    const isEmployee = userType === "employee" || window.location.href.includes("/employee/");
-    return newConfig.filter((step) => {
-      if (step.head === "PT_OWNERSHIP_DETAILS" && !isEmployee) {
-        return false;
-      }
-      return true;
-    });
-  }, [userType]);
+    return newConfig;
+  }, []);
 
   if (isLoading) {
     return <Loader />;
@@ -113,7 +111,7 @@ const CreatePropertyForm = ({ config, onSelect, value, userType, redirectUrl }) 
 
   const onSubmit = async () => {
     const loc = formValue?.locationDet;
-    if (!loc?.addressType || !loc?.city || !loc?.pincode || !loc?.locality || !loc?.addressLine1 || !loc?.houseNo) {
+    if (/*!loc?.addressType ||*/ !loc?.city || !loc?.pincode || !loc?.locality || !loc?.addressLine1 || !loc?.houseNo || !loc?.noOfFloors) {
       setShowToast({ key: true, label: t("Please fill all the mandatory fields") });
       return;
     }
@@ -124,7 +122,6 @@ const CreatePropertyForm = ({ config, onSelect, value, userType, redirectUrl }) 
       !useDetails?.propertyCategory ||
       !useDetails?.propertyType ||
       !useDetails?.WaterConnectionUsageType ||
-      !useDetails?.noOfFloors ||
       !useDetails?.plotArea ||
       !useDetails?.builtUpArea ||
       !useDetails?.heightOfTheBuilding
@@ -133,9 +130,9 @@ const CreatePropertyForm = ({ config, onSelect, value, userType, redirectUrl }) 
       return;
     }
 
-    let ownersArray = owners && owners.length > 0 ? owners : formValue?.owners;
+    let ownersArray = formValue?.owners && formValue?.owners.length > 0 ? formValue.owners : (owners && owners.length > 0 ? owners : null);
     // Inject logged in user details if ownersArray is empty
-    if (!ownersArray || ownersArray.length === 0) {
+    if (!ownersArray || ownersArray.length === 0 || !ownersArray[0]?.name) {
       const userInfo = Digit.UserService.getUser()?.info;
       ownersArray = [
         {
@@ -148,6 +145,17 @@ const CreatePropertyForm = ({ config, onSelect, value, userType, redirectUrl }) 
           ownershipCategory: "INDIVIDUAL.SINGLEOWNER",
         }
       ];
+    }
+
+    const firstOwner = ownersArray?.[0];
+    if (!firstOwner?.name || !firstOwner?.mobileNumber || !firstOwner?.gender) {
+      setShowToast({ key: true, label: t("Please fill all the mandatory fields") });
+      return;
+    }
+
+    if (firstOwner?.mobileNumber && !/^[6-9]\d{9}$/.test(firstOwner.mobileNumber)) {
+      setShowToast({ key: true, label: t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID") });
+      return;
     }
 
     if (

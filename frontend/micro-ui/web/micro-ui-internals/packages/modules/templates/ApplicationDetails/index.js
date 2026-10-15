@@ -303,7 +303,7 @@ const ApplicationDetails = (props) => {
               state={state}
               id={applicationNumber}
               applicationDetails={applicationDetails}
-              applicationData={applicationDetails?.applicationData}
+              applicationData={applicationDetails?.applicationData || applicationData}
               closeModal={closeModal}
               submitAction={submitAction}
               actionData={workflowDetails?.data?.timeline}
@@ -349,8 +349,10 @@ const ApplicationDetails = (props) => {
             ActionBarStyle={ActionBarStyle}
             MenuStyle={MenuStyle}
             applicationDetails={applicationDetails}
+            applicationData={applicationDetails?.applicationData || applicationData}
             isApprovalChecklistValid={approvalChecklistValid}
             approvalChecklist={approvalChecklist}
+            showApprovalChecklist={showApprovalChecklist}
           />
         </React.Fragment>
       ) : (

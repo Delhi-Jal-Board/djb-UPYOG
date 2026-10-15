@@ -16,7 +16,7 @@ const PropertyLocationDetails = ({
 }) => {
   const { t } = useTranslation();
   const [formData, setFormData] = useState({
-    addressType: address?.addressType || "",
+    // addressType: address?.addressType || "",
     pincode: address?.pinCode || "",
     city: address?.city || "",
     locality: address?.locality || "",
@@ -36,6 +36,7 @@ const PropertyLocationDetails = ({
     actualAssembly: address?.actualAssembly || "",
     actualWard: address?.actualWard || "",
     actualZone: address?.actualZone || "",
+    noOfFloors: address?.noOfFloors || "",
   });
 
   const isPropertyFound = window.location.href.includes("ws/old-application") || window.location.href.includes("/edit-property/") || window.location.href.includes("/edit-application");
@@ -67,6 +68,7 @@ const PropertyLocationDetails = ({
       const zroCode = addressData.zroLocation || additionalDetails.zroLocation || addressData.additionalDetails?.zroLocation || "";
       // Convert to dropdown-compatible object so AddressDetails Dropdown can match it
       const zroValue = zroCode ? { code: zroCode, name: zroCode, i18nKey: zroCode } : "";
+      const rawNoOfFloors = details.noOfFloors || additionalDetails.numberOfFloors || additionalDetails.noOfFloors || addressData.noOfFloors || "";
 
       setFormData({
         pincode: addressData.pincode || "",
@@ -90,6 +92,7 @@ const PropertyLocationDetails = ({
         actualAssembly: addressData.actualAssembly || additionalDetails.actualAssembly || addressData.additionalDetails?.actualAssembly || "",
         actualWard: addressData.actualWard || additionalDetails.actualWard || addressData.additionalDetails?.actualWard || "",
         actualZone: addressData.actualZone || additionalDetails.actualZone || addressData.additionalDetails?.actualZone || "",
+        noOfFloors: rawNoOfFloors,
         address: {
           ...addressData,
           city: addressData.city || "",
@@ -110,11 +113,12 @@ const PropertyLocationDetails = ({
           actualWard: addressData.actualWard || additionalDetails.actualWard || addressData.additionalDetails?.actualWard || "",
           actualZone: addressData.actualZone || additionalDetails.actualZone || addressData.additionalDetails?.actualZone || "",
           actualAssembly: addressData.actualAssembly || additionalDetails.actualAssembly || addressData.additionalDetails?.actualAssembly || "",
+          noOfFloors: rawNoOfFloors,
         },
       });
     } else if (formDataProp?.cpt === null) {
       const clearedData = {
-        addressType: "",
+        // addressType: "",
         pincode: "",
         city: "",
         locality: "",
@@ -135,6 +139,7 @@ const PropertyLocationDetails = ({
         actualZone: "",
         actualAssembly: "",
         zro: "",
+        noOfFloors: "",
         address: {},
       };
       setFormData(clearedData);
@@ -153,7 +158,10 @@ const PropertyLocationDetails = ({
       config={{ isCollapsible: true, ...config }}
       isEdit={isEdit}
       // showZRO={hideZRO ? false : true}
+      // showAddressType={false} (Address Type commented out in property create)
+      showAddressType={false}
       showMapActualLocation={true}
+      showNoOfFloors={true}
       disable={isPropertyFound}
       hideNextButton={true}
       isVendor={props.isVendor}
