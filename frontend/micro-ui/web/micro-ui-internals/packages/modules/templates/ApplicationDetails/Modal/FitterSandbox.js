@@ -75,8 +75,12 @@ const FitterSandbox = ({ t, action, applicationData, submitAction, closeModal })
       }
     ];
 
-    payload.connectionExecutionDate = Date.now();
-    payload.disconnectionExecutionDate = Date.now();
+    const currentDate = Date.now();
+    const actionToExecute = action?.action || (typeof action === "string" ? action : "EXECUTE_DISCONNECTION");
+
+    payload.connectionExecutionDate = currentDate;
+    payload.disconnectionExecutionDate = currentDate;
+    payload.action = actionToExecute;
     payload.wfDocuments = docArray;
     
     // Append to existing documents array
@@ -85,13 +89,18 @@ const FitterSandbox = ({ t, action, applicationData, submitAction, closeModal })
     payload.additionalDetails = {
       ...payload.additionalDetails,
       finalMeterReading: meterReading,
+      disconnectionExecutionDate: currentDate,
       disconnectionGpsLocation: gpsLocation.replace(/<[^>]*>?/gm, ""), // strip HTML
       disconnectionTimestamp: timestamp.replace(/<[^>]*>?/gm, "")
     };
+
+    if (Array.isArray(payload.disConnectionDetails) && payload.disConnectionDetails.length > 0) {
+      payload.disConnectionDetails[0].disconnectionExecutionDate = currentDate;
+    }
     
     payload.processInstance = {
       ...payload.processInstance,
-      action: action?.action,
+      action: actionToExecute,
       comment: `Meter Reading: ${meterReading} m3`,
       documents: docArray
     };

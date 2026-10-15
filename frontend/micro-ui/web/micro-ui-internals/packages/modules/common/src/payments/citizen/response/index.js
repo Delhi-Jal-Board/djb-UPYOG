@@ -57,6 +57,8 @@ export const convertEpochToDate = (dateEpoch) => {
   //   { enabled: allowFetchBill, retry: false, staleTime: Infinity, refetchOnWindowFocus: false }
   // );
   const mutation = Digit.Hooks.chb.useChbCreateAPI(tenantId, false);
+  const payments = data?.payments;
+  const paymentData = payments?.Payments?.[0];
   const isNewConnection =
     business_service?.includes("ONE_TIME_FEE") ||
     paymentData?.paymentDetails?.[0]?.bill?.businessService?.includes("ONE_TIME_FEE") ||
@@ -66,7 +68,7 @@ export const convertEpochToDate = (dateEpoch) => {
     {
       tenantId,
       businessService: business_service,
-      receiptNumbers: data?.payments?.Payments?.[0]?.paymentDetails[0].receiptNumber,
+      receiptNumbers: paymentData?.paymentDetails?.[0]?.receiptNumber,
     },
     {
       retry: false,
@@ -86,8 +88,6 @@ export const convertEpochToDate = (dateEpoch) => {
     staleTime: Infinity,
     refetchOnWindowFocus: false,
   });
-
-  const payments = data?.payments;
 
   useEffect(() => {
     return () => {
@@ -142,7 +142,6 @@ export const convertEpochToDate = (dateEpoch) => {
     );
   }
 
-  const paymentData = data?.payments?.Payments[0];
   const amount = reciept_data?.paymentDetails?.[0]?.totalAmountPaid;
   const transactionDate = paymentData?.transactionDate;
   const printCertificate = async () => {
@@ -762,7 +761,7 @@ export const convertEpochToDate = (dateEpoch) => {
         }
         message={t("CS_COMMON_PAYMENT_COMPLETE")}
         info={t("CS_COMMON_RECIEPT_NO")}
-        applicationNumber={paymentData?.paymentDetails[0].receiptNumber}
+        applicationNumber={paymentData?.paymentDetails?.[0]?.receiptNumber}
         successful={true}
       />
       <CardText></CardText>
@@ -774,7 +773,7 @@ export const convertEpochToDate = (dateEpoch) => {
             rowContainerStyle={rowContainerStyle}
             last
             label={t("CS_PAYMENT_BILLING_PERIOD")}
-            text={getBillingPeriod(paymentData?.paymentDetails[0]?.bill?.billDetails[0])}
+            text={getBillingPeriod(paymentData?.paymentDetails?.[0]?.bill?.billDetails?.[0])}
           />
         )}
 
