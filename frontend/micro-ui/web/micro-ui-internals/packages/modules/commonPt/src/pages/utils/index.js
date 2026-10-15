@@ -7,30 +7,109 @@ export const setAddressDetailsLW = (data) => {
 
   if (!address) return data;
 
+  const latVal =
+    address?.latitude !== undefined && address?.latitude !== null && address?.latitude !== ""
+      ? address.latitude
+      : address?.Latitude !== undefined && address?.Latitude !== null && address?.Latitude !== ""
+      ? address.Latitude
+      : address?.geoLocation?.latitude !== undefined && address?.geoLocation?.latitude !== null && address?.geoLocation?.latitude !== ""
+      ? address.geoLocation.latitude
+      : address?.locality?.latitude !== undefined && address?.locality?.latitude !== null && address?.locality?.latitude !== ""
+      ? address.locality.latitude
+      : undefined;
+
+  const lngVal =
+    address?.longitude !== undefined && address?.longitude !== null && address?.longitude !== ""
+      ? address.longitude
+      : address?.Longitude !== undefined && address?.Longitude !== null && address?.Longitude !== ""
+      ? address.Longitude
+      : address?.geoLocation?.longitude !== undefined && address?.geoLocation?.longitude !== null && address?.geoLocation?.longitude !== ""
+      ? address.geoLocation.longitude
+      : address?.locality?.longitude !== undefined && address?.locality?.longitude !== null && address?.locality?.longitude !== ""
+      ? address.locality.longitude
+      : undefined;
+
+  const lat = latVal !== undefined ? (typeof latVal === "number" ? latVal : parseFloat(latVal) || latVal) : undefined;
+  const lng = lngVal !== undefined ? (typeof lngVal === "number" ? lngVal : parseFloat(lngVal) || lngVal) : undefined;
+
+  const resolveCodeOrName = (val) => {
+    if (!val) return "";
+    if (typeof val === "string") return val.trim();
+    if (typeof val === "object") {
+      return (val.code || val.name || val.i18nKey || "").trim();
+    }
+    return String(val);
+  };
+
+  const actualWard =
+    resolveCodeOrName(address?.actualWard) ||
+    resolveCodeOrName(address?.block) ||
+    resolveCodeOrName(address?.ward) ||
+    resolveCodeOrName(address?.locality?.ward) ||
+    "";
+
+  const actualAssembly =
+    resolveCodeOrName(address?.actualAssembly) ||
+    resolveCodeOrName(address?.assembly) ||
+    resolveCodeOrName(address?.Assembly) ||
+    resolveCodeOrName(address?.locality?.assembly) ||
+    "";
+
+  const actualZone =
+    resolveCodeOrName(address?.actualZone) ||
+    resolveCodeOrName(address?.zone) ||
+    resolveCodeOrName(address?.locality?.zone) ||
+    "";
+
+  const assembly =
+    resolveCodeOrName(address?.assembly) ||
+    resolveCodeOrName(address?.Assembly) ||
+    resolveCodeOrName(address?.locality?.assembly) ||
+    actualAssembly ||
+    "";
+
+  const block =
+    resolveCodeOrName(address?.block) ||
+    resolveCodeOrName(address?.ward) ||
+    resolveCodeOrName(address?.locality?.ward) ||
+    actualWard ||
+    "";
+
+  const zone =
+    resolveCodeOrName(address?.zone) ||
+    resolveCodeOrName(address?.locality?.zone) ||
+    actualZone ||
+    "";
+
   let propAddress = {
     city: address?.city?.code || address?.city?.name || address?.city,
     houseNo: address?.houseNo || address?.houseDoorNo || address?.doorNo,
     street: address?.street || address?.buildingColonyName || address?.streetName,
     landmark: address?.landmark || address?.landmarkName,
     pincode: address?.pincode || address?.pinCode,
-    latitude: address?.latitude || address?.Latitude,
-    longitude: address?.longitude || address?.Longitude,
+    latitude: lat,
+    longitude: lng,
+    geoLocation: (lat !== undefined || lng !== undefined) ? {
+      latitude: lat,
+      longitude: lng,
+    } : (address?.geoLocation || {}),
     locality: {
       code: address?.locality?.code || address?.locality?.name || address?.locality,
-      latitude: address?.locality?.latitude ? address?.locality?.latitude : (address?.latitude || address?.Latitude),
-      longitude: address?.locality?.longitude ? address?.locality?.longitude : (address?.longitude || address?.Longitude),
+      name: address?.locality?.name,
+      latitude: address?.locality?.latitude ? address?.locality?.latitude : lat,
+      longitude: address?.locality?.longitude ? address?.locality?.longitude : lng,
     },
     addressLine1: address?.addressLine1,
     addressLine2: address?.addressLine2,
-    assembly: address?.assembly || address?.Assembly,
-    block: address?.block,
-    zone: address?.zone,
-    zroLocation: address?.zro?.code || address?.zro || address?.zone,
-    addressType: address?.addressType?.code || address?.addressType,
-    subLocality: address?.subLocality || address?.subLocality?.name || address?.subLocality,
-    actualWard: address?.actualWard || address?.actualWard?.name || address?.actualWard,
-    actualAssembly: address?.actualAssembly || address?.actualAssembly?.name || address?.actualAssembly,
-    actualZone: address?.actualZone || address?.actualZone?.name || address?.actualZone,
+    assembly: assembly,
+    block: block,
+    zone: zone,
+    zroLocation: resolveCodeOrName(address?.zro) || resolveCodeOrName(address?.zroLocation) || zone,
+    addressType: resolveCodeOrName(address?.addressType),
+    subLocality: resolveCodeOrName(address?.subLocality),
+    actualWard: actualWard,
+    actualAssembly: actualAssembly,
+    actualZone: actualZone,
     colonyMcdCategory: address?.colonyMcdCategory,
     noOfFloors: address?.noOfFloors?.code || address?.noOfFloors?.name || (typeof address?.noOfFloors === "string" ? address?.noOfFloors : undefined),
   };
@@ -271,6 +350,15 @@ export const convertToPropertyLightWeight = (data = {}) => {
         numberOfStudents: data.waterConnection?.useDetails?.numberOfStudents || data.useDetails?.numberOfStudents,
         numberOfBeds: data.waterConnection?.useDetails?.numberOfBeds || data.useDetails?.numberOfBeds,
         heightOfTheBuilding: data.waterConnection?.useDetails?.heightOfTheBuilding || data.useDetails?.heightOfTheBuilding,
+        latitude: data.address?.latitude,
+        longitude: data.address?.longitude,
+        geoLocation: data.address?.geoLocation,
+        actualWard: data.address?.actualWard,
+        actualAssembly: data.address?.actualAssembly,
+        actualZone: data.address?.actualZone,
+        assembly: data.address?.assembly,
+        block: data.address?.block,
+        zone: data.address?.zone,
         questions:
           data.waterConnection?.useDetails?.questions ||
           data.useDetails?.questions ||
@@ -366,6 +454,15 @@ export const convertToUpdatePropertyLightWeight = (data = {}) => {
         numberOfStudents: data.waterConnection?.useDetails?.numberOfStudents || data.useDetails?.numberOfStudents,
         numberOfBeds: data.waterConnection?.useDetails?.numberOfBeds || data.useDetails?.numberOfBeds,
         heightOfTheBuilding: data.waterConnection?.useDetails?.heightOfTheBuilding || data.useDetails?.heightOfTheBuilding,
+        latitude: data.address?.latitude,
+        longitude: data.address?.longitude,
+        geoLocation: data.address?.geoLocation,
+        actualWard: data.address?.actualWard,
+        actualAssembly: data.address?.actualAssembly,
+        actualZone: data.address?.actualZone,
+        assembly: data.address?.assembly,
+        block: data.address?.block,
+        zone: data.address?.zone,
         questions:
           data.waterConnection?.useDetails?.questions ||
           data.useDetails?.questions ||
