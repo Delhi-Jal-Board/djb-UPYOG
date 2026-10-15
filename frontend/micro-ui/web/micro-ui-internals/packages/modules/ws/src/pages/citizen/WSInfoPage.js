@@ -1494,7 +1494,7 @@ const WSInfoPage = () => {
                   onClick={handleDigiLockerLogin}
                 >
                   <span>🔐</span>
-                  <span>{t("Login with DigiLocker")}</span>
+                  <span>{t("DigiLocker Consent")}</span>
                 </button>
               </div>
             </div>
