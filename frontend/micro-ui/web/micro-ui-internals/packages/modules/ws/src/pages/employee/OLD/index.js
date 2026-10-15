@@ -1,10 +1,12 @@
 import { FormComposer, Loader, Toast, VerticalTimeline } from "@djb25/digit-ui-react-components";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useHistory } from "react-router-dom";
 import _ from "lodash";
+import cloneDeep from "lodash/cloneDeep";
 import { createPayloadOfWS, updatePayloadOfWS } from "../../../utils";
 import CheckPage from "./CheckPage";
+import { newConfig as newConfigLocal } from "../../../config/wsCreateConfig";
 
 const OLDApplication = () => {
   const { t } = useTranslation();
@@ -15,7 +17,6 @@ const OLDApplication = () => {
   const [showToast, setShowToast] = useState(null);
   // const [appDetails, setAppDetails] = useState({});
   // const [waterAndSewerageBoth, setWaterAndSewerageBoth] = useState(null);
-  const [config, setConfig] = useState({ body: [] });
   // const [currentStep, setCurrentStep] = useState(1);
   const [showCheckPage, setShowCheckPage] = useState(false);
 
@@ -45,7 +46,8 @@ const OLDApplication = () => {
   }
 
   const stateId = Digit.ULBService.getStateId();
-  let { data: newConfig, isLoading } = Digit.Hooks.ws.useWSConfigMDMS.WSCreateConfig(stateId, {});
+  const mdmsOptions = useMemo(() => ({}), []);
+  let { data: newConfig, isLoading } = Digit.Hooks.ws.useWSConfigMDMS.WSCreateConfig(stateId, mdmsOptions);
 
   const requestedPropertyId = new URLSearchParams(location.search).get("propertyId");
   const [propertyId, setPropertyId] = useState(requestedPropertyId);
@@ -53,6 +55,14 @@ const OLDApplication = () => {
   const verifiedPropertyId = useRef(sessionStorage.getItem("WS_OTP_VERIFIED_PROPERTY_ID"));
 
   const [sessionFormData, setSessionFormData, clearSessionFormData] = Digit.Hooks.useSessionStorage("PT_CREATE_EMP_WS_NEW_FORM", {});
+  const formDataRef = useRef(sessionFormData || {});
+  const sessionSaveTimeoutRef = useRef(null);
+
+  const defaultValues = useMemo(() => {
+    return sessionFormData && Object.keys(sessionFormData).length > 0
+      ? sessionFormData
+      : Digit.SessionStorage.get("PT_CREATE_EMP_WS_NEW_FORM") || {};
+  }, []);
 
   const { data: propertyDetails } = Digit.Hooks.pt.usePropertySearch(
     { filters: { propertyIds: propertyId }, tenantId: tenantId },
@@ -76,154 +86,124 @@ const OLDApplication = () => {
     sessionStorage.removeItem("FORMSTATE_ERRORS");
   }, []);
 
-  useEffect(() => {
-    if (!isLoading && newConfig) {
-      const config = newConfig.find((conf) => conf.hideInCitizen && conf.isCreate);
-      if (config) {
-        // config.head = "WS_APP_FOR_WATER_AND_SEWERAGE_LABEL";
+  const config = useMemo(() => {
+    const rawConfigs = newConfig && Array.isArray(newConfig) && newConfig.length > 0 ? newConfig : newConfigLocal;
+    const foundConfig = rawConfigs?.find((conf) => conf.hideInCitizen && conf.isCreate);
+    if (!foundConfig) return { body: [] };
+    const configCopy = cloneDeep(foundConfig);
+    const allCreateSections = configCopy?.body?.filter((section) => section?.isCreateConnection) || [];
 
-        // Filter sections that are for creation
-        const allCreateSections = config?.body?.filter((section) => section?.isCreateConnection) || [];
+    const desiredComponentOrder = [
+      "CPTPropertySearchNSummary",
+      "WSConnectionDetails",
+      "WSConnectionHolderDetails",
+      "WSDivyangjan",
+      "WSDjbEmployee",
+      "WSPropertyLocationDetails",
+      "PropertyWaterConnection",
+      "WSActivationPlumberDetails",
+      "WSRoadCuttingDetails",
+      // "WSBankDetails",
+      "WSDocumentsEmployee",
+    ];
 
-        // Define the desired order based on the component inside the section
-        const desiredComponentOrder = [
-          "CPTPropertySearchNSummary",
-          "WSConnectionDetails",
-          "WSConnectionHolderDetails",
-          "WSDivyangjan",
-          "WSDjbEmployee",
-          "WSPropertyLocationDetails",
-          "PropertyWaterConnection",
-          "WSActivationPlumberDetails",
-          "WSRoadCuttingDetails",
-          // "WSBankDetails",
-          "WSDocumentsEmployee",
-        ];
-
-        // Manually reorder sections
-        const reorderedBody = [];
-        desiredComponentOrder.forEach((compName) => {
-          const section = allCreateSections.find((s) => {
-            const bodyComp = s.body?.[0]?.component;
-            return bodyComp === compName || (compName === "WSConnectionDetails" && bodyComp === "WSConnectionDetails");
-          });
-          if (section) {
-            // Override headers to match primary form if needed
-            // if (compName === "CPTPropertySearchNSummary");
-            if (compName === "WSConnectionHolderDetails");
-            if (compName === "WSConnectionDetails");
-            if (compName === "WSDocumentsEmployee");
-
-            reorderedBody.push(section);
-          } else if (compName === "WSPropertyLocationDetails") {
-            reorderedBody.push({
-              // head: "WS_PROPERTY_LOCATION_DETAILS",
-              isCreateConnection: true,
-              body: [
-                {
-                  type: "component",
-                  key: "propertyAddress",
-                  component: "WSPropertyLocationDetails",
-                  withoutLabel: true,
-                  isAutomaticFill: true,
-                  texts: {
-                    header: `${t("PT_LOCATION_DETAILS_AUTOMATIC_FILL_BY_PROPERTY")}`,
-                  },
-                  defaultOpen: false,
-                },
-              ],
-            });
-          } else if (compName === "PropertyWaterConnection") {
-            reorderedBody.push({
-              // head: "WS_PROPERTY_AND_WATER_CONNECTION_USE_DETAILS",
-              isCreateConnection: true,
-              body: [
-                {
-                  type: "component",
-                  key: "useDetails",
-                  component: "PropertyWaterConnection",
-                  withoutLabel: true,
-                  isAutomaticFill: true,
-                },
-              ],
-            });
-            // } else if (compName === "WSBankDetails") {
-            //   reorderedBody.push({
-            //     // head: "WS_BANK_DETAILS",
-            //     isCreateConnection: true,
-            //     body: [
-            //       {
-            //         type: "component",
-            //         key: "bankDetails",
-            //         component: "WSBankDetails",
-            //         withoutLabel: true,
-            //       },
-            //     ],
-            //   });
-            // }
-          } else if (compName === "WSDeclaration") {
-            reorderedBody.push({
-              // head: "WS_DECLARATION_UNDERTAKING",
-              isCreateConnection: true,
-              body: [
-                {
-                  type: "component",
-                  key: "declarationData",
-                  component: "WSDeclaration",
-                  withoutLabel: true,
-                },
-              ],
-            });
-          } else if (compName === "WSDjbEmployee") {
-            reorderedBody.push({
-              // head: "WS_DJB_EMPLOYEE",
-              isCreateConnection: true,
-              body: [
-                {
-                  type: "component",
-                  key: "djbEmployee",
-                  component: "WSDjbEmployee",
-                  withoutLabel: true,
-                },
-              ],
-            });
-          } else if (compName === "WSDivyangjan") {
-            reorderedBody.push({
-              isCreateConnection: true,
-              body: [
-                {
-                  type: "component",
-                  key: "disability",
-                  component: "WSDivyangjan",
-                  withoutLabel: true,
-                  texts: {
-                    header: "Divyangjan/Person with Disability?",
-                  },
-                },
-              ],
-            });
-          } else {
-            // console.warn(`[WS] section for component ${compName} not found in allCreateSections`);
-          }
+    const reorderedBody = [];
+    desiredComponentOrder.forEach((compName) => {
+      const section = allCreateSections.find((s) => {
+        const bodyComp = s.body?.[0]?.component;
+        return bodyComp === compName || (compName === "WSConnectionDetails" && bodyComp === "WSConnectionDetails");
+      });
+      if (section) {
+        reorderedBody.push(section);
+      } else if (compName === "WSPropertyLocationDetails") {
+        reorderedBody.push({
+          isCreateConnection: true,
+          body: [
+            {
+              type: "component",
+              key: "propertyAddress",
+              component: "WSPropertyLocationDetails",
+              withoutLabel: true,
+              isAutomaticFill: true,
+              texts: {
+                header: `${t("PT_LOCATION_DETAILS_AUTOMATIC_FILL_BY_PROPERTY")}`,
+              },
+              defaultOpen: false,
+            },
+          ],
         });
-
-        // Add any remaining sections that were not in desiredComponentOrder
-        allCreateSections.forEach((section) => {
-          const bodyComp = section.body?.[0]?.component;
-          if (bodyComp !== "CPTPropertySearchNSummary" && !reorderedBody.find((r) => r.body?.[0]?.component === bodyComp)) {
-            reorderedBody.push(section);
-          }
+      } else if (compName === "PropertyWaterConnection") {
+        reorderedBody.push({
+          isCreateConnection: true,
+          body: [
+            {
+              type: "component",
+              key: "useDetails",
+              component: "PropertyWaterConnection",
+              withoutLabel: true,
+              isAutomaticFill: true,
+            },
+          ],
         });
-
-        config.body = reorderedBody;
-        setConfig(config);
+      } else if (compName === "WSDeclaration") {
+        reorderedBody.push({
+          isCreateConnection: true,
+          body: [
+            {
+              type: "component",
+              key: "declarationData",
+              component: "WSDeclaration",
+              withoutLabel: true,
+            },
+          ],
+        });
+      } else if (compName === "WSDjbEmployee") {
+        reorderedBody.push({
+          isCreateConnection: true,
+          body: [
+            {
+              type: "component",
+              key: "djbEmployee",
+              component: "WSDjbEmployee",
+              withoutLabel: true,
+            },
+          ],
+        });
+      } else if (compName === "WSDivyangjan") {
+        reorderedBody.push({
+          isCreateConnection: true,
+          body: [
+            {
+              type: "component",
+              key: "disability",
+              component: "WSDivyangjan",
+              withoutLabel: true,
+              texts: {
+                header: "Divyangjan/Person with Disability?",
+              },
+            },
+          ],
+        });
       }
-    }
-  }, [newConfig, isLoading]);
+    });
+
+    allCreateSections.forEach((section) => {
+      const bodyComp = section.body?.[0]?.component;
+      if (bodyComp !== "CPTPropertySearchNSummary" && !reorderedBody.find((r) => r.body?.[0]?.component === bodyComp)) {
+        reorderedBody.push(section);
+      }
+    });
+
+    configCopy.body = reorderedBody;
+    return configCopy;
+  }, [newConfig, t]);
 
   useEffect(() => {
-    !propertyId && sessionFormData?.cpt?.details?.propertyId && setPropertyId(sessionFormData?.cpt?.details?.propertyId);
-  }, [sessionFormData?.cpt]);
+    const cptId = sessionFormData?.cpt?.details?.propertyId || Digit.SessionStorage.get("PT_CREATE_EMP_WS_NEW_FORM")?.cpt?.details?.propertyId;
+    if (!propertyId && cptId) {
+      setPropertyId(cptId);
+    }
+  }, [sessionFormData?.cpt, propertyId]);
 
   const {
     isLoading: creatingWaterApplicationLoading,
@@ -250,15 +230,24 @@ const OLDApplication = () => {
   } = Digit.Hooks.ws.useWSApplicationActions("SEWERAGE");
 
   const onFormValueChange = (setValue, formData, formState) => {
-    const updatedFormData = { ...sessionFormData, ...formData };
-    const cleanedFormData = JSON.parse(JSON.stringify(updatedFormData));
-    if (!_.isEqual(sessionFormData, cleanedFormData)) {
-      setSessionFormData(cleanedFormData);
+    formDataRef.current = { ...formDataRef.current, ...formData };
+
+    if (sessionSaveTimeoutRef.current) {
+      clearTimeout(sessionSaveTimeoutRef.current);
     }
+    sessionSaveTimeoutRef.current = setTimeout(() => {
+      Digit.SessionStorage.set("PT_CREATE_EMP_WS_NEW_FORM", formDataRef.current);
+    }, 300);
+
     // Always update errors to ensure validation state is in sync
     sessionStorage.setItem("FORMSTATE_ERRORS", JSON.stringify(formState?.errors || {}));
 
-    const djbData = updatedFormData?.djbEmployee || updatedFormData?.additionalDetails;
+    const cptPropId = formData?.cpt?.details?.propertyId;
+    if (!propertyId && cptPropId) {
+      setPropertyId(cptPropId);
+    }
+
+    const djbData = formDataRef.current?.djbEmployee || formDataRef.current?.additionalDetails;
     const isDjbEmp =
       djbData?.isDjbEmployee === true ||
       String(djbData?.isDjbEmployee) === "true";
@@ -276,38 +265,43 @@ const OLDApplication = () => {
 
     const hasErrors = Object.keys(formState?.errors || {}).length > 0 || isDjbEmpInvalid;
     const hasProperty =
-      updatedFormData?.cpt?.details?.propertyId ||
+      formDataRef.current?.cpt?.details?.propertyId ||
       sessionStorage.getItem("WS_OTP_VERIFIED_PROPERTY_ID") ||
       propertyId ||
       propertyDetails?.Properties?.[0]?.propertyId;
 
     // Enable submit if no form errors AND property is selected
-    setSubmitValve(!hasErrors && !!hasProperty);
+    const canSubmitNow = !hasErrors && !!hasProperty;
+    setSubmitValve((prev) => (prev !== canSubmitNow ? canSubmitNow : prev));
   };
 
   const onFormSubmit = (data) => {
+    const combinedData = { ...formDataRef.current, ...data };
+    formDataRef.current = combinedData;
+    Digit.SessionStorage.set("PT_CREATE_EMP_WS_NEW_FORM", combinedData);
+
     const hasProperty =
-      data?.cpt?.details?.propertyId ||
+      combinedData?.cpt?.details?.propertyId ||
       sessionStorage.getItem("WS_OTP_VERIFIED_PROPERTY_ID") ||
       propertyId ||
       propertyDetails?.Properties?.[0]?.propertyId;
 
     if (!hasProperty) {
-      console.warn("[WS] onSubmit EXIT: invalid property", { cpt: data?.cpt, propertyDetails });
+      console.warn("[WS] onSubmit EXIT: invalid property", { cpt: combinedData?.cpt, propertyDetails });
       setShowToast({ key: "error", message: "ERR_INVALID_PROPERTY_ID" });
       return;
     }
 
     // FIX 3: Proper property validation with clear logging
-    if (!data?.cpt?.id && !propertyDetails?.Properties?.[0]) {
-      if (!data?.cpt?.details || !propertyDetails) {
-        console.warn("[WS] onSubmit EXIT: invalid property", { cpt: data?.cpt, propertyDetails });
+    if (!combinedData?.cpt?.id && !propertyDetails?.Properties?.[0]) {
+      if (!combinedData?.cpt?.details || !propertyDetails) {
+        console.warn("[WS] onSubmit EXIT: invalid property", { cpt: combinedData?.cpt, propertyDetails });
         setShowToast({ key: "error", message: "ERR_INVALID_PROPERTY_ID" });
         return;
       }
     }
 
-    const djbData = data?.djbEmployee || data?.additionalDetails;
+    const djbData = combinedData?.djbEmployee || combinedData?.additionalDetails;
     const isDjbEmp =
       djbData?.isDjbEmployee === true ||
       String(djbData?.isDjbEmployee) === "true";
@@ -632,8 +626,8 @@ const OLDApplication = () => {
         <div className="employee-form-section-wrapper">
           <VerticalTimeline config={timelineConfig} currentActiveIndex={9} showFinalStep={false} />
           <CheckPage
-            data={sessionFormData}
-            onSubmit={(finalData) => processSubmission(finalData || sessionFormData)}
+            data={formDataRef.current || sessionFormData}
+            onSubmit={(finalData) => processSubmission(finalData || formDataRef.current || sessionFormData)}
             onEdit={() => setShowCheckPage(false)}
           />
         </div>
@@ -659,7 +653,7 @@ const OLDApplication = () => {
               : t("CS_COMMON_NEXT")
           }
           onSubmit={onFormSubmit}
-          defaultValues={sessionFormData}
+          defaultValues={defaultValues}
           noCard={true}
           noBreakLine={true}
           cardFormWrapperClassName="new-application-card"

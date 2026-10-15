@@ -46,8 +46,10 @@ const WSRoadCuttingDetails = ({ config, onSelect, userType, formData, setError, 
   };
 
   useEffect(() => {
-    onSelect(config?.key, roadCuttingDetails);
-  }, [roadCuttingDetails]);
+    if (!_.isEqual(formData?.[config?.key], roadCuttingDetails)) {
+      onSelect(config?.key, roadCuttingDetails);
+    }
+  }, [roadCuttingDetails, config?.key]);
 
   const commonProps = {
     focusIndex,

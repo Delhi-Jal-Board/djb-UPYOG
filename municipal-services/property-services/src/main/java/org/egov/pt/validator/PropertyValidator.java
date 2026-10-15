@@ -299,14 +299,32 @@ public class PropertyValidator {
 				Map<String, Object> responseMap = (Map<String, Object>) response.get();
 				List<Map<String, Object>> connections = (List<Map<String, Object>>) responseMap.get("WaterConnection");
 				if (!CollectionUtils.isEmpty(connections)) {
+					boolean isCitizen = request.getRequestInfo() != null
+							&& request.getRequestInfo().getUserInfo() != null
+							&& "CITIZEN".equalsIgnoreCase(request.getRequestInfo().getUserInfo().getType());
+
 					for (Map<String, Object> conn : connections) {
 						String appType = (String) conn.get("applicationType");
 						String appStatus = (String) conn.get("applicationStatus");
+						if (StringUtils.isEmpty(appStatus)) {
+							appStatus = (String) conn.get("status");
+						}
 						boolean isNewConn = appType == null || "NEW_WATER_CONNECTION".equalsIgnoreCase(appType);
 						boolean isActivated = "CONNECTION_ACTIVATED".equalsIgnoreCase(appStatus) || "APPROVED".equalsIgnoreCase(appStatus);
 						if (isNewConn && isActivated) {
 							throw new CustomException("EG_PT_WATER_CONNECTION_EXISTS",
 									"Property cannot be updated because a New Water Connection is already activated for this property.");
+						}
+
+						boolean isSentBackToCitizen = appStatus != null
+								&& (appStatus.equalsIgnoreCase("PENDING_FOR_CITIZEN_ACTION")
+								|| appStatus.equalsIgnoreCase("SEND_BACK_TO_CITIZEN")
+								|| appStatus.toUpperCase().contains("CITIZEN_ACTION")
+								|| appStatus.toUpperCase().contains("SEND_BACK_TO_CITIZEN"));
+
+						if (isNewConn && isSentBackToCitizen && !isCitizen) {
+							throw new CustomException("EG_PT_CITIZEN_ONLY_UPDATE",
+									"Only citizen can update property when water connection application is sent back to citizen.");
 						}
 					}
 				}
