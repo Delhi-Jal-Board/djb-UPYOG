@@ -124,7 +124,7 @@ const CitizenApp = () => {
             path={`${path}/assign/surveyor-details/:id`}
             exact
             component={() => (
-              <LayoutWrapper layoutClass="action">
+              <LayoutWrapper layoutClass={roles.includes("EKYC_SUPERVISOR") ? "action" : "normal"}>
                 <SurveyorDetailsCard />
               </LayoutWrapper>
             )}
