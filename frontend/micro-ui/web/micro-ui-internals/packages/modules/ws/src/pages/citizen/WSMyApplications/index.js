@@ -107,6 +107,31 @@ export const WSMyApplications = () => {
         disableSortBy: true,
         Cell: ({ row }) => GetCell(t(`CS_${row.original?.applicationStatus}`) || t("CS_NA")),
       },
+      // {
+      //   Header: t("WS_APPLICATION_CREATED_TIME"),
+      //   disableSortBy: true,
+      //   Cell: ({ row }) => GetCell(row.original?.auditDetails.createdTime || t("CS_NA")),
+      // },
+      {
+        Header: t("WS_APPLICATION_CREATED_TIME"),
+        disableSortBy: true,
+        Cell: ({ row }) => {
+          const createdTime = row.original?.auditDetails?.createdTime;
+
+          return GetCell(
+            createdTime
+              ? new Date(createdTime).toLocaleString("en-IN", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: true,
+              })
+              : t("CS_NA")
+          );
+        },
+      },
       {
         Header: t("WS_SLA"),
         disableSortBy: true,
@@ -149,27 +174,26 @@ export const WSMyApplications = () => {
             ? application?.applicationNo?.includes("DC") || application?.applicationType?.includes("DISCONNECT")
               ? "SW.DISCONNECTION"
               : isReconnection
-              ? "SWReconnection"
-              : isMutation
-              ? "SW.MUTATION"
-              : "SW.ONE_TIME_FEE"
+                ? "SWReconnection"
+                : isMutation
+                  ? "SW.MUTATION"
+                  : "SW.ONE_TIME_FEE"
             : application?.applicationNo?.includes("DC") || application?.applicationType?.includes("DISCONNECT")
-            ? "WS.DISCONNECTION"
-            : isReconnection
-            ? "WSReconnection"
-            : isMutation
-            ? "WS.MUTATION"
-            : "WS.ONE_TIME_FEE";
+              ? "WS.DISCONNECTION"
+              : isReconnection
+                ? "WSReconnection"
+                : isMutation
+                  ? "WS.MUTATION"
+                  : "WS.ONE_TIME_FEE";
 
           return application?.applicationStatus === "PENDING_FOR_PAYMENT" ? (
             <span className="link">
               <Link
                 to={{
                   pathname: `/digit-ui/citizen/payment/my-bills/${businessService}/${stringReplaceAll(application?.applicationNo, "/", "+") || stringReplaceAll(application?.applicationNo, "/", "+")}`,
-                  search: `?workflow=WNS&tenantId=${application?.tenantId}&ConsumerName=${
-                    application?.connectionHolders?.map((owner) => owner.name).join(",") ||
+                  search: `?workflow=WNS&tenantId=${application?.tenantId}&ConsumerName=${application?.connectionHolders?.map((owner) => owner.name).join(",") ||
                     application?.property?.owners?.map((owner) => owner.name).join(",")
-                  }&isDisoconnectFlow=${application?.applicationNo?.includes("DC") ? true : false}&consumerCode=${application?.applicationNo}`,
+                    }&isDisoconnectFlow=${application?.applicationNo?.includes("DC") ? true : false}&consumerCode=${application?.applicationNo}`,
                   state: { fromMyApplications: true },
                 }}
               >
@@ -221,10 +245,10 @@ export const WSMyApplications = () => {
   const sortedApplications =
     applicationsList?.length > 0
       ? applicationsList.sort(
-          (a, b) =>
-            (b.auditDetails?.createdTime || b.auditDetails?.lastModifiedTime || 0) -
-            (a.auditDetails?.createdTime || a.auditDetails?.lastModifiedTime || 0)
-        )
+        (a, b) =>
+          (b.auditDetails?.createdTime || b.auditDetails?.lastModifiedTime || 0) -
+          (a.auditDetails?.createdTime || a.auditDetails?.lastModifiedTime || 0)
+      )
       : [];
 
   let filteredApplications = sortedApplications;
@@ -252,7 +276,7 @@ export const WSMyApplications = () => {
 
   const today = new Date();
   const fromDateFormatted = "";
-  const setShowToast = () => {};
+  const setShowToast = () => { };
   const previousPage = () => setPageOffset(0);
 
   return (

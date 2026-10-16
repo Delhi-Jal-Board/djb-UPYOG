@@ -326,6 +326,7 @@ const jsPdfGeneratorv1 = async ({
   // const emailLeftMargin = getEmailLeftMargin(email);
 
   const pdfBackground = await getPdfBackground();
+  const headerContent = await createHeader(headerDetails, logo, tenantId);
   const dd = {
     background: [
       {
@@ -343,7 +344,7 @@ const jsPdfGeneratorv1 = async ({
       };
     },
     content: [
-      ...createHeader(headerDetails, logo, tenantId),
+      ...headerContent,
       // {
       //   text: heading,
       //   font: "Hind",
@@ -414,13 +415,14 @@ const jsPdfGeneratorForModifyPDF = async ({ tenantId, bodyDetails, headerDetails
   //we are expecting the bodyDetails to be array of objects where each obj will be a table
   //format of each obj {title:[array of str],values:[array of obj]}
 
+  const headerContent = await createHeader(headerDetails, logo, tenantId);
   const dd = {
     pageMargins: [40, 40, 40, 30],
     header: {},
     defaultStyle: {
       font: "Hind",
     },
-    content: [...createHeader(headerDetails, logo, tenantId), ...createBodyContent(bodyDetails)],
+    content: [...headerContent, ...createBodyContent(bodyDetails)],
   };
 
   pdfMake.vfs = Fonts;
@@ -445,13 +447,14 @@ const jsPdfGeneratorForModifyPDF = async ({ tenantId, bodyDetails, headerDetails
  */
 
 const generateBillAmendPDF = async ({ tenantId, bodyDetails, headerDetails, logo, t }) => {
+  const headerContent = await createHeaderBillAmend(headerDetails, logo, tenantId, t);
   const dd = {
     pageMargins: [40, 40, 40, 30],
     header: {},
     defaultStyle: {
       font: "Hind",
     },
-    content: [...createHeaderBillAmend(headerDetails, logo, tenantId, t), ...createBodyContentBillAmend(bodyDetails, t)],
+    content: [...headerContent, ...createBodyContentBillAmend(bodyDetails, t)],
   };
 
   pdfMake.vfs = Fonts;

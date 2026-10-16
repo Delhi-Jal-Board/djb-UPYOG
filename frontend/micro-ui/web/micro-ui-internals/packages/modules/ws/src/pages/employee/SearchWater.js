@@ -40,7 +40,7 @@ const SearchWater = ({ path }) => {
     enabled: !!(payload && Object.keys(payload).length > 0),
   };
 
-  let result = Digit.Hooks.ws.useSearchWS({ tenantId, filters: payload, config, bussinessService: businessServ, t, shortAddress: true });
+  let result = Digit.Hooks.ws.useSearchWS({ tenantId, filters: payload, config, bussinessService: businessServ, t, shortAddress: false });
 
   const isMobile = window.Digit.Utils.browser.isMobile();
 

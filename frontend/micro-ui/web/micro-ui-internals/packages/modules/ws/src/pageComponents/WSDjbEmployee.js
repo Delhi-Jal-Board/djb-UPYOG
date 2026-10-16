@@ -171,8 +171,9 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
     (async () => {
       setErrorUpload(null);
       if (file) {
-        if (file.size >= 5242880) {
-          setErrorUpload({ key: "error", message: "CS_MAXIMUM_UPLOAD_SIZE_EXCEEDED" });
+        if (file.size > 5242880) {
+          setErrorUpload({ key: "error", message: t("CS_MAXIMUM_UPLOAD_SIZE_EXCEEDED") || "File size should not exceed 5MB" });
+          setFile(null);
         } else {
           try {
             setUploadedFile(null);
@@ -182,10 +183,10 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
               setUploadedFile(fileId);
               setValue("document", fileId, { shouldValidate: true });
             } else {
-              setErrorUpload({ key: "error", message: "CS_FILE_UPLOAD_ERROR" });
+              setErrorUpload({ key: "error", message: t("CS_FILE_UPLOAD_ERROR") || "File Upload Error" });
             }
           } catch (err) {
-            setErrorUpload({ key: "error", message: "CS_FILE_UPLOAD_ERROR" });
+            setErrorUpload({ key: "error", message: t("CS_FILE_UPLOAD_ERROR") || "File Upload Error" });
           }
         }
       }
@@ -193,7 +194,15 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
   }, [file]);
 
   function selectfile(e) {
-    setFile(e.target.files[0]);
+    const selected = e?.target?.files?.[0];
+    if (selected) {
+      if (selected.size > 5242880) {
+        setErrorUpload({ key: "error", message: t("CS_MAXIMUM_UPLOAD_SIZE_EXCEEDED") || "File size should not exceed 5MB" });
+        if (e?.target) e.target.value = "";
+        return;
+      }
+      setFile(selected);
+    }
   }
 
   useEffect(() => {
@@ -361,10 +370,15 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
 
         <div>
           <LabelFieldPair>
-            <CardLabel>
-              {t("Upload Employee ID Document")}
-              {isDjbEmployee && <span className="check-page-link-button"> *</span>}
-            </CardLabel>
+            <div>
+              <CardLabel>
+                {t("Upload Employee ID Document")}
+                {isDjbEmployee && <span className="check-page-link-button"> *</span>}
+              </CardLabel>
+              <div style={{ fontSize: "12px", color: "#666", marginTop: "-2px", marginBottom: "4px" }}>
+                {t("WS_DOCUMENT_MAX_SIZE_MESSAGE") || "Allowed formats: PDF, JPG, PNG | Max file size: 5MB"}
+              </div>
+            </div>
             <div className="field" style={{ width: "100%" }}>
               <Controller
                 control={control}
