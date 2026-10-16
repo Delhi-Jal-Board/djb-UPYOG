@@ -68,8 +68,7 @@ public class MeterServicesImpl implements MeterService {
 		}
 		enrichmentService.enrichMeterReadingRequest(meterConnectionRequest.getRequestInfo(),meterConnectionRequest.getMeterReading());
 
-		if (meterConnectionRequest.getMeterReading().getGenerateDemand()
-				&& "dl.djb".equalsIgnoreCase(meterConnectionRequest.getMeterReading().getTenantId())) {
+		if (meterConnectionRequest.getMeterReading().getGenerateDemand() && "dl.djb".equalsIgnoreCase(meterConnectionRequest.getMeterReading().getTenantId())) {
 			djbShadowMeterBillingService.prepareBillingCycleReservation(
 						meterConnectionRequest.getMeterReading(),
 						meterConnectionRequest.getRequestInfo());
