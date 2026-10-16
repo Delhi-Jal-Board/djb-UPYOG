@@ -1,21 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useHistory, useRouteMatch, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import {
-  Card,
-  CardHeader,
-  CardText,
-  CardSubHeader,
-  SubmitBar,
-  RadioButtons,
-  Dropdown,
-  Loader,
-  CitizenInfoLabel,
-  Label,
-  TextInput,
-  Toast,
-  OTPInput,
-} from "@djb25/digit-ui-react-components";
+import { RadioButtons, Dropdown, Loader, Label, TextInput, Toast, OTPInput } from "@djb25/digit-ui-react-components";
 
 const getMaskedPhone = (phone) => {
   if (!phone || phone.length < 10) return "NA";
@@ -100,7 +86,7 @@ const WSInfoPage = () => {
     }
     setIsOtpSending(true);
     try {
-      const userType = Digit.UserService.getType() ? Digit.UserService.getType().toUpperCase() : (isEmployee ? "EMPLOYEE" : "CITIZEN");
+      const userType = Digit.UserService.getType() ? Digit.UserService.getType().toUpperCase() : isEmployee ? "EMPLOYEE" : "CITIZEN";
       const payload = {
         otp: {
           mobileNumber: mobileNumberToSearch,
@@ -232,7 +218,6 @@ const WSInfoPage = () => {
       displayName: `${prop.propertyId} - ${getAddress(prop.address, t)}`,
     })) || [];
 
-
   const handleDigiLockerLogin = async (e) => {
     if (e && e.preventDefault) e.preventDefault();
     try {
@@ -259,7 +244,6 @@ const WSInfoPage = () => {
       <div className="ws-info-container">
         <style>{`
           .ws-info-container {
-            margin: 0 auto;
             padding: 8px 4px 32px 4px;
             color: #0b0c0c;
             box-sizing: border-box;
@@ -280,27 +264,27 @@ const WSInfoPage = () => {
             flex-wrap: wrap;
             gap: 10px;
             align-items: center;
-            margin-bottom: 12px;
+            margin-bottom: 20px;
           }
           .ws-service-tag {
-            background: #e8f3fa;
-            color: #0b4d82;
-            font-size: 12px;
+            background: #e0f2fe;
+            color: #0369a1;
+            font-size: 11.5px;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            padding: 4px 12px;
-            border-radius: 14px;
-            border: 1px solid #c9e0f5;
+            padding: 5px 14px;
+            border-radius: 20px;
+            border: 1px solid #bae6fd;
           }
           .ws-portal-tag {
-            background: #f4f5f7;
-            color: #505a5f;
-            font-size: 12px;
+            background: #f1f5f9;
+            color: #475569;
+            font-size: 11.5px;
             font-weight: 600;
-            padding: 4px 12px;
-            border-radius: 14px;
-            border: 1px solid #e1e4e8;
+            padding: 5px 14px;
+            border-radius: 20px;
+            border: 1px solid #e2e8f0;
           }
           .ws-page-title {
             font-size: 26px;
@@ -363,57 +347,61 @@ const WSInfoPage = () => {
           }
           .ws-card {
             background: #ffffff;
-            border: 1px solid #dce4ec;
+            border: 1px solid #e2e8f0;
             border-radius: 12px;
-            padding: 24px;
-            margin-bottom: 24px;
-            box-shadow: 0 2px 10px rgba(11, 77, 130, 0.04);
+            padding: 24px 28px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
           }
           .ws-step-header {
             display: flex;
             align-items: flex-start;
-            gap: 14px;
-            margin-bottom: 18px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid #eef2f5;
+            gap: 16px;
+            margin-bottom: 20px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid #f1f5f9;
           }
           .ws-step-num-badge {
-            background: #1a67a3;
+            background: linear-gradient(135deg, #1a67a3 0%, #0c4a79 100%);
             color: #ffffff;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 700;
-            width: 32px;
-            height: 32px;
+            width: 34px;
+            height: 34px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
-            box-shadow: 0 2px 4px rgba(26, 103, 163, 0.25);
+            box-shadow: 0 2px 6px rgba(26, 103, 163, 0.25);
           }
           .ws-step-title {
-            font-size: 19px;
+            font-size: 18px;
             font-weight: 700;
-            color: #0b0c0c;
+            color: #0f172a;
             margin: 0 0 4px 0;
           }
           .ws-step-subtitle {
-            font-size: 14px;
-            color: #505a5f;
+            font-size: 13.5px;
+            color: #475569;
             margin: 0;
             line-height: 1.5;
           }
           .ws-question-container {
             background: #f8fafc;
             border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 18px 20px;
+            border-radius: 10px;
+            padding: 18px 22px;
             margin-bottom: 20px;
+            transition: border-color 0.2s ease;
+          }
+          .ws-question-container:hover {
+            border-color: #cbd5e1;
           }
           .ws-question-label {
-            font-size: 15.5px;
+            font-size: 15px;
             font-weight: 700;
-            color: #0b0c0c;
+            color: #0f172a;
             display: block;
             margin-bottom: 12px;
           }
@@ -791,39 +779,67 @@ const WSInfoPage = () => {
             white-space: nowrap;
           }
           .ws-digilocker-box {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            flex-wrap: wrap;
             background: linear-gradient(135deg, #f0f7ff 0%, #e0f2fe 100%);
             border: 1px solid #bae6fd;
-            border-radius: 10px;
-            padding: 18px;
-            margin-top: 16px;
+            border-radius: 12px;
+            padding: 18px 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(3, 105, 161, 0.06);
           }
-          .ws-digilocker-header {
+          .ws-digilocker-content {
             display: flex;
-            gap: 12px;
-            align-items: flex-start;
-            margin-bottom: 14px;
+            align-items: center;
+            gap: 14px;
+            flex: 1;
+            min-width: 280px;
           }
           .ws-dl-icon-circle {
-            width: 36px;
-            height: 36px;
+            width: 44px;
+            height: 44px;
             background: #ffffff;
+            border: 1px solid #bae6fd;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            box-shadow: 0 2px 4px rgba(3, 105, 161, 0.1);
+          }
+          .ws-dl-info {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+          }
+          .ws-dl-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
           }
           .ws-dl-title {
-            font-size: 15px;
+            font-size: 15.5px;
             font-weight: 700;
             color: #0369a1;
-            margin-bottom: 2px;
+            margin: 0;
+          }
+          .ws-dl-pill {
+            background: #0284c7;
+            color: #ffffff;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            padding: 2px 8px;
+            border-radius: 10px;
           }
           .ws-dl-sub {
-            font-size: 12.5px;
+            font-size: 13px;
             color: #334155;
             line-height: 1.45;
+            margin: 0;
           }
           .ws-btn {
             display: inline-flex;
@@ -865,10 +881,26 @@ const WSInfoPage = () => {
           .ws-btn-digilocker {
             background: #003366;
             color: #ffffff;
-            width: 100%;
+            width: auto;
+            padding: 11px 22px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            white-space: nowrap;
+            box-shadow: 0 2px 6px rgba(0, 51, 102, 0.2);
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+            border: none;
           }
           .ws-btn-digilocker:hover {
             background: #002244;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(0, 51, 102, 0.3);
           }
           .ws-btn:disabled {
             opacity: 0.55;
@@ -876,11 +908,11 @@ const WSInfoPage = () => {
           }
           .ws-action-card {
             background: #ffffff;
-            border: 1px solid #dce4ec;
+            border: 1px solid #e2e8f0;
             border-radius: 12px;
             padding: 18px 24px;
             margin-top: 10px;
-            box-shadow: 0 4px 12px rgba(11, 77, 130, 0.08);
+            box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
           }
           .ws-action-content {
             display: flex;
@@ -891,34 +923,75 @@ const WSInfoPage = () => {
           }
           .ws-action-hint {
             flex: 1;
-            min-width: 250px;
+            min-width: 280px;
           }
-          .ws-hint-text {
-            font-size: 14px;
-            font-weight: 600;
+          .ws-hint-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13.5px;
+            font-weight: 500;
+            padding: 9px 16px;
+            border-radius: 8px;
+            line-height: 1.4;
           }
           .ws-hint-warning {
-            color: #b45309;
+            background: #fffbeb;
+            color: #92400e;
+            border: 1px solid #fde68a;
+          }
+          .ws-hint-warning svg {
+            color: #d97706;
+            flex-shrink: 0;
+          }
+          .ws-hint-info {
+            background: #eff6ff;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
+          }
+          .ws-hint-info svg {
+            color: #2563eb;
+            flex-shrink: 0;
           }
           .ws-hint-success {
-            color: #047857;
+            background: #f0fdf4;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+          }
+          .ws-hint-success svg {
+            color: #16a34a;
+            flex-shrink: 0;
           }
           .ws-btn-next {
-            background: #00703c;
-            color: #ffffff;
-            font-size: 15px;
-            padding: 12px 28px;
-            border-radius: 6px;
-            box-shadow: 0 2px 4px rgba(0, 112, 60, 0.2);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 26px;
+            font-size: 14.5px;
+            font-weight: 600;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s ease;
           }
-          .ws-btn-next:hover:not(:disabled) {
-            background: #005a30;
+          .ws-btn-next:not(:disabled) {
+            background: linear-gradient(135deg, #1a67a3 0%, #0d4a75 100%);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(26, 103, 163, 0.25);
+          }
+          .ws-btn-next:not(:disabled):hover {
+            background: linear-gradient(135deg, #155587 0%, #09375a 100%);
+            box-shadow: 0 6px 16px rgba(26, 103, 163, 0.35);
+            transform: translateY(-1px);
           }
           .ws-btn-disabled {
-            background: #94a3b8 !important;
-            color: #f1f5f9 !important;
+            background: #e2e8f0 !important;
+            color: #94a3b8 !important;
             cursor: not-allowed !important;
             box-shadow: none !important;
+            border: 1px solid #cbd5e1 !important;
+            transform: none !important;
           }
           @media (max-width: 900px) {
             .ws-checklist-grid {
@@ -1002,16 +1075,16 @@ const WSInfoPage = () => {
 
         {/* 1. Header & Guidance Banner */}
         {/* <div className="ws-info-header-card"> */}
-          <div className="ws-header-badge-row">
-            <span className="ws-service-tag">{t("Apply For New Connection")}</span>
-            <span className="ws-portal-tag">{isEmployee ? t("Employee Portal") : t("Citizen Services")}</span>
-          </div>
-          {/* <h1 className="ws-page-title">{t("Apply For New Connection")}</h1> */}
-          {/* <p className="ws-page-subtitle">
+        <div className="ws-header-badge-row">
+          <span className="ws-service-tag">{t("Apply For New Connection")}</span>
+          <span className="ws-portal-tag">{isEmployee ? t("Employee Portal") : t("Citizen Services")}</span>
+        </div>
+        {/* <h1 className="ws-page-title">{t("Apply For New Connection")}</h1> */}
+        {/* <p className="ws-page-subtitle">
             {t("Submit an application for a new domestic, commercial, or industrial water/sewerage connection with Delhi Jal Board.")}
           </p> */}
 
-          {/* <div className="ws-guidance-box">
+        {/* <div className="ws-guidance-box">
             <div className="ws-guidance-icon-wrap">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1a67a3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="10"></circle>
@@ -1057,7 +1130,9 @@ const WSInfoPage = () => {
             <div>
               <h2 className="ws-step-title">{t("Property Verification & Linking")}</h2>
               <p className="ws-step-subtitle">
-                {t("A registered Property ID is required to apply for a water/sewerage connection. Linking your property enables automatic address verification and autofills premises details.")}
+                {t(
+                  "A registered Property ID is required to apply for a water/sewerage connection. Linking your property enables automatic address verification and autofills premises details."
+                )}
               </p>
             </div>
           </div>
@@ -1116,12 +1191,7 @@ const WSInfoPage = () => {
                       />
                     </div>
                     {searchMobileNumber?.length === 10 && !isMobileVerified && !showOtpVerification && (
-                      <button
-                        type="button"
-                        className="ws-btn ws-btn-outline"
-                        onClick={handleSendOtp}
-                        disabled={isOtpSending}
-                      >
+                      <button type="button" className="ws-btn ws-btn-outline" onClick={handleSendOtp} disabled={isOtpSending}>
                         {isOtpSending ? t("Sending...") : t("Send OTP")}
                       </button>
                     )}
@@ -1133,7 +1203,9 @@ const WSInfoPage = () => {
                 <div className="ws-field-col">
                   <Label>{t("Select Existing Property")}</Label>
                   {isLoading ? (
-                    <div style={{ padding: "12px 0" }}><Loader /></div>
+                    <div style={{ padding: "12px 0" }}>
+                      <Loader />
+                    </div>
                   ) : (
                     <div>
                       <Dropdown
@@ -1182,20 +1254,10 @@ const WSInfoPage = () => {
                   <div className="ws-otp-input-row">
                     <OTPInput style={{ marginBottom: "0px" }} length={6} onChange={setOtp} value={otp} />
                     <div className="ws-otp-actions">
-                      <button
-                        type="button"
-                        className="ws-btn ws-btn-primary"
-                        onClick={handleVerifyOtp}
-                        disabled={otp.length < 6 || isOtpVerifying}
-                      >
+                      <button type="button" className="ws-btn ws-btn-primary" onClick={handleVerifyOtp} disabled={otp.length < 6 || isOtpVerifying}>
                         {isOtpVerifying ? t("Verifying...") : t("Verify OTP")}
                       </button>
-                      <button
-                        type="button"
-                        className="ws-btn ws-btn-secondary"
-                        onClick={handleSendOtp}
-                        disabled={timeLeft > 0 || isOtpSending}
-                      >
+                      <button type="button" className="ws-btn ws-btn-secondary" onClick={handleSendOtp} disabled={timeLeft > 0 || isOtpSending}>
                         {timeLeft > 0 ? `${t("Resend OTP")} (${timeLeft < 10 ? `0${timeLeft}` : timeLeft}s)` : t("Resend OTP")}
                       </button>
                     </div>
@@ -1238,7 +1300,9 @@ const WSInfoPage = () => {
                   <div className="ws-no-prop-icon">⚠️</div>
                   <div className="ws-no-prop-content">
                     <strong>{t("No Registered Property Found")}</strong>
-                    <p>{t("No property is currently registered with this mobile number. You need a registered property to apply for a connection.")}</p>
+                    <p>
+                      {t("No property is currently registered with this mobile number. You need a registered property to apply for a connection.")}
+                    </p>
                     <button className="ws-btn ws-btn-primary" type="button" onClick={handleCreateProperty}>
                       {t("Register New Property")}
                     </button>
@@ -1255,7 +1319,11 @@ const WSInfoPage = () => {
                 <div className="ws-notice-icon-circle">ℹ️</div>
                 <div>
                   <h4>{t("Property Registration is Mandatory")}</h4>
-                  <p>{t("To apply for a new water or sewerage connection with Delhi Jal Board, your premises must first be registered with a Property ID. Please click below to register your property.")}</p>
+                  <p>
+                    {t(
+                      "To apply for a new water or sewerage connection with Delhi Jal Board, your premises must first be registered with a Property ID. Please click below to register your property."
+                    )}
+                  </p>
                 </div>
               </div>
               <button className="ws-btn ws-btn-primary" type="button" onClick={handleCreateProperty}>
@@ -1265,262 +1333,68 @@ const WSInfoPage = () => {
           )}
         </div>
 
-        {/* 3. Checklist & Requirements Section */}
-        <div className="ws-card">
-          <div className="ws-checklist-header">
-            <div className="ws-checklist-title-row">
-              <span className="ws-section-badge">{t("Application Checklist")}</span>
-              <h2 className="ws-checklist-title">{t("What You Will Need During The Application")}</h2>
+        {/* DigiLocker Fast-Track Banner */}
+        <div className="ws-digilocker-box">
+          <div className="ws-digilocker-content">
+            <div className="ws-dl-icon-circle">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#003366" strokeWidth="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              </svg>
             </div>
-
-            {/* Clear Explanatory Callout Box directly resolving user confusion */}
-            <div className="ws-confused-user-explainer">
-              <div className="ws-explainer-icon">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <path d="M12 16v-4"></path>
-                  <path d="M12 8h.01"></path>
-                </svg>
+            <div className="ws-dl-info">
+              <div className="ws-dl-title-wrap">
+                <span className="ws-dl-title">{t("Fast-Track with DigiLocker")}</span>
+                <span className="ws-dl-pill">{t("RECOMMENDED")}</span>
               </div>
-              <div>
-                {/* <strong className="ws-explainer-title">{t("Why are these items listed here?")}</strong> */}
-                <p className="ws-explainer-desc">
-                  {t("The items below outline the exact information you will enter and the supporting documents you will upload in the upcoming application screens. You do NOT need to fill them in on this screen—this checklist helps you gather all details and keep scanned copies ready in advance for a fast, hassle-free submission.")}
-                </p>
-              </div>
+              <p className="ws-dl-sub">
+                {t("Fetch your verified Aadhaar, Electricity Bill, and Identity documents directly without manual upload.")}
+              </p>
             </div>
           </div>
-
-          {/* Responsive 2-Column Grid: Information vs Documents */}
-          <div className="ws-checklist-grid">
-            {/* Left Column: Information to be Entered */}
-            <div className="ws-checklist-column">
-              <div className="ws-col-header">
-                <div className="ws-col-icon-wrap" style={{ background: "#e0f2fe", color: "#0369a1" }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="ws-col-title">{t("1. Information You Will Fill In")}</h3>
-                  <p className="ws-col-subtitle">{t("Fields asked across the application stages")}</p>
-                </div>
-              </div>
-
-              <div className="ws-group-cards-list">
-                {/* Connection Details Group */}
-                <div className="ws-group-card">
-                  <div className="ws-group-title">
-                    <span>💧</span>
-                    <span>{t("Connection Details")}</span>
-                  </div>
-                  <div className="ws-tag-grid">
-                    <span className="ws-tag-item">{t("Request Type")}</span>
-                    <span className="ws-tag-item">{t("Applicant Type")}</span>
-                    <span className="ws-tag-item">{t("Is Divyangjan / Person with Disability?")}</span>
-                  </div>
-                </div>
-
-                {/* Connection Holder Details Group */}
-                <div className="ws-group-card">
-                  <div className="ws-group-title">
-                    <span>👤</span>
-                    <span>{t("Connection Holder Details")}</span>
-                  </div>
-                  <div className="ws-tag-grid">
-                    <span className="ws-tag-item">{t("Name")}</span>
-                    <span className="ws-tag-item">{t("Middle Name")}</span>
-                    <span className="ws-tag-item">{t("Last Name")}</span>
-                    <span className="ws-tag-item">{t("Gender")}</span>
-                    <span className="ws-tag-item">{t("Mobile Number")}</span>
-                    <span className="ws-tag-item">{t("Email ID")}</span>
-                  </div>
-                </div>
-
-                {/* Property Address Group */}
-                <div className="ws-group-card">
-                  <div className="ws-group-title">
-                    <span>📍</span>
-                    <span>{t("Property Address & Location")}</span>
-                  </div>
-                  <div className="ws-tag-grid">
-                    <span className="ws-tag-item">{t("Address Type")}</span>
-                    <span className="ws-tag-item">{t("City")}</span>
-                    <span className="ws-tag-item">{t("Pincode")}</span>
-                    <span className="ws-tag-item">{t("Locality")}</span>
-                    <span className="ws-tag-item">{t("Sub-Locality")}</span>
-                    <span className="ws-tag-item">{t("Street Name / Gali")}</span>
-                    <span className="ws-tag-item">{t("Address Line 1")}</span>
-                    <span className="ws-tag-item">{t("Address Line 2")}</span>
-                    <span className="ws-tag-item">{t("House No.")}</span>
-                    <span className="ws-tag-item">{t("Latitude")}</span>
-                    <span className="ws-tag-item">{t("Longitude")}</span>
-                    <span className="ws-tag-item">{t("Assembly")}</span>
-                    <span className="ws-tag-item">{t("Ward")}</span>
-                    <span className="ws-tag-item">{t("Zone")}</span>
-                    <span className="ws-tag-item">{t("Landmark")}</span>
-                  </div>
-                </div>
-
-                {/* Property Usage Details Group */}
-                <div className="ws-group-card">
-                  <div className="ws-group-title">
-                    <span>🏢</span>
-                    <span>{t("Property & Connection Usage")}</span>
-                  </div>
-                  <div className="ws-tag-grid">
-                    <span className="ws-tag-item">{t("Category Type")}</span>
-                    <span className="ws-tag-item">{t("Property Category")}</span>
-                    <span className="ws-tag-item">{t("Property Type")}</span>
-                    <span className="ws-tag-item">{t("Water Usage Type")}</span>
-                    <span className="ws-tag-item">{t("Number of Floors")}</span>
-                    <span className="ws-tag-item">{t("Plot Area")}</span>
-                    <span className="ws-tag-item">{t("Built-up Area")}</span>
-                    <span className="ws-tag-item">{t("Year of Construction")}</span>
-                    <span className="ws-tag-item">{t("Dwelling Units")}</span>
-                  </div>
-                </div>
-
-                {/* DJB Employee Details Group */}
-                <div className="ws-group-card">
-                  <div className="ws-group-title">
-                    <span>🏛️</span>
-                    <span>{t("DJB Employee Details (if applicable)")}</span>
-                  </div>
-                  <div className="ws-tag-grid">
-                    <span className="ws-tag-item">{t("Employee ID")}</span>
-                    <span className="ws-tag-item">{t("Employee Designation")}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Column: Documents to Upload & DigiLocker */}
-            <div className="ws-checklist-column">
-              <div className="ws-col-header">
-                <div className="ws-col-icon-wrap" style={{ background: "#fef3c7", color: "#b45309" }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                    <polyline points="14 2 14 8 20 8"></polyline>
-                    <line x1="16" y1="13" x2="8" y2="13"></line>
-                    <line x1="16" y1="17" x2="8" y2="17"></line>
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="ws-col-title">{t("2. Documents to Upload")}</h3>
-                  <p className="ws-col-subtitle">{t("Keep clear scanned files ready (PDF/JPG/PNG, ≤ 5MB)")}</p>
-                </div>
-              </div>
-
-              <div className="ws-docs-cards-list">
-                {/* Document 1: Identity Proof */}
-                <div className="ws-doc-item-card">
-                  <div className="ws-doc-badge">🪪</div>
-                  <div className="ws-doc-info">
-                    <div className="ws-doc-name">{t("Proof of Identity")}</div>
-                    <div className="ws-doc-desc">{t("Aadhaar Card, Voter ID, PAN Card, or Passport")}</div>
-                  </div>
-                  <span className="ws-req-pill">{t("Mandatory")}</span>
-                </div>
-
-                {/* Document 2: Address / Ownership Proof */}
-                <div className="ws-doc-item-card">
-                  <div className="ws-doc-badge">🏠</div>
-                  <div className="ws-doc-info">
-                    <div className="ws-doc-name">{t("Proof of Address / Ownership")}</div>
-                    <div className="ws-doc-desc">{t("Registered Sale Deed, Conveyance Deed, or Allotment Letter")}</div>
-                  </div>
-                  <span className="ws-req-pill">{t("Mandatory")}</span>
-                </div>
-
-                {/* Document 3: Electricity Bill */}
-                <div className="ws-doc-item-card">
-                  <div className="ws-doc-badge">⚡</div>
-                  <div className="ws-doc-info">
-                    <div className="ws-doc-name">{t("Electricity Bill")}</div>
-                    <div className="ws-doc-desc">{t("Latest paid electricity bill of the premises")}</div>
-                  </div>
-                  <span className="ws-req-pill">{t("Mandatory")}</span>
-                </div>
-
-                {/* Document 4: Plumber Report */}
-                <div className="ws-doc-item-card">
-                  <div className="ws-doc-badge">🔧</div>
-                  <div className="ws-doc-info">
-                    <div className="ws-doc-name">{t("Plumber Report")}</div>
-                    <div className="ws-doc-desc">{t("Completion certificate from a licensed plumber")}</div>
-                  </div>
-                  <span className="ws-opt-pill">{t("As Applicable")}</span>
-                </div>
-
-                {/* Document 5: Building Plan */}
-                <div className="ws-doc-item-card">
-                  <div className="ws-doc-badge">📐</div>
-                  <div className="ws-doc-info">
-                    <div className="ws-doc-name">{t("Building Plan")}</div>
-                    <div className="ws-doc-desc">{t("Sanctioned / approved layout plan of the structure")}</div>
-                  </div>
-                  <span className="ws-opt-pill">{t("As Applicable")}</span>
-                </div>
-
-                {/* Document 6: Property Tax Receipt */}
-                <div className="ws-doc-item-card">
-                  <div className="ws-doc-badge">🧾</div>
-                  <div className="ws-doc-info">
-                    <div className="ws-doc-name">{t("Property Tax Receipt")}</div>
-                    <div className="ws-doc-desc">{t("Latest property tax receipt / assessment notice")}</div>
-                  </div>
-                  <span className="ws-opt-pill">{t("As Applicable")}</span>
-                </div>
-              </div>
-
-              {/* DigiLocker Fast-Track Box */}
-              <div className="ws-digilocker-box">
-                <div className="ws-digilocker-header">
-                  <div className="ws-dl-icon-circle">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#003366" strokeWidth="2">
-                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                    </svg>
-                  </div>
-                  <div>
-                    <div className="ws-dl-title">{t("Fast-Track with DigiLocker")}</div>
-                    <div className="ws-dl-sub">{t("Fetch your verified Aadhaar, Electricity Bill, and Identity documents directly without manual upload.")}</div>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  className="ws-btn ws-btn-digilocker"
-                  onClick={handleDigiLockerLogin}
-                >
-                  <span>🔐</span>
-                  <span>{t("DigiLocker Consent")}</span>
-                </button>
-              </div>
-            </div>
-          </div>
+          <button type="button" className="ws-btn ws-btn-digilocker" onClick={handleDigiLockerLogin}>
+            <span>🔐</span>
+            <span>{t("DigiLocker Consent")}</span>
+          </button>
         </div>
 
-        {/* 4. Bottom Action Card */}
+        {/* Bottom Action Card */}
         <div className="ws-action-card">
           <div className="ws-action-content">
             <div className="ws-action-hint">
               {!hasProperty ? (
-                <span className="ws-hint-text ws-hint-warning">
-                  ⚠️ {t("Please select whether you have an existing property in Step 1 to continue.")}
-                </span>
+                <div className="ws-hint-badge ws-hint-warning">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                  </svg>
+                  <span>{t("Please select whether you have an existing property in Step 1 to continue.")}</span>
+                </div>
               ) : hasProperty?.code === "YES" && !selectedProperty ? (
-                <span className="ws-hint-text ws-hint-warning">
-                  ⚠️ {t("Please verify your mobile number and select a property from the dropdown to proceed.")}
-                </span>
+                <div className="ws-hint-badge ws-hint-warning">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                  </svg>
+                  <span>{t("Please verify your mobile number and select a property from the dropdown to proceed.")}</span>
+                </div>
               ) : hasProperty?.code === "NO" ? (
-                <span className="ws-hint-text ws-hint-warning">
-                  ℹ️ {t("Please register your property using the button in Step 1 before applying.")}
-                </span>
+                <div className="ws-hint-badge ws-hint-info">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                  </svg>
+                  <span>{t("Please register your property using the button in Step 1 before applying.")}</span>
+                </div>
               ) : (
-                <span className="ws-hint-text ws-hint-success">
-                  ✓ {t("All prerequisites verified! You are ready to start the application form.")}
-                </span>
+                <div className="ws-hint-badge ws-hint-success">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                  <span>{t("All prerequisites verified! You are ready to start the application form.")}</span>
+                </div>
               )}
             </div>
 

@@ -707,7 +707,7 @@ const SearchProperty = ({ config: propsConfig, onSelect, redirectToUrl }) => {
                     ? "/digit-ui/citizen/tl/tradelicence/new-application/create-property"
                     : window.location.href.includes("/fsm/")
                       ? "/digit-ui/citizen/fsm/new-application/create-property"
-                      : "/digit-ui/citizen/commonpt/property/new-application"
+                      : `/digit-ui/citizen/commonpt/property/new-application${redirectToUrl ? `?redirectToUrl=${encodeURIComponent(redirectToUrl)}` : ""}`
               }
               style={{ padding: "8px 24px", textDecoration: "none", borderRadius: "2px" }}
             >
