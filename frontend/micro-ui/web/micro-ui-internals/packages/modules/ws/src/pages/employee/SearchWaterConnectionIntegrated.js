@@ -1,9 +1,11 @@
 import React, { Fragment, useEffect, useCallback, useMemo } from "react";
-import { SearchForm, Table, Card, Loader, Header } from "@djb25/digit-ui-react-components";
+import { SearchForm, Table, Card, Loader, Header, WrapUnMaskComponent } from "@djb25/digit-ui-react-components";
 import { useForm, Controller } from "react-hook-form";
 import SearchFields from "../../components/SearchWaterConnection/SearchFields2";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
+import _ from "lodash";
+import { formatPropertyAddress } from "../../utils";
 
 
 const SearchWaterConnectionIntegrated = ({ tenantId, onSubmit, data, count, resultOk, businessService, isLoading }) => {
@@ -165,7 +167,61 @@ const SearchWaterConnectionIntegrated = ({ tenantId, onSubmit, data, count, resu
         Header: t("WS_COMMON_TABLE_COL_ADDRESS"),
         disableSortBy: true,
         Cell: ({ row }) => {
-          return GetCell(`${row.original?.["address"] || "NA"}`);
+          const property = row.original?.property;
+          const propertyAddress = row.original?.propertyAddress || property?.address;
+          const formattedAddress =
+            formatPropertyAddress(propertyAddress, t) ||
+            row.original?.["address"] ||
+            t("CS_NA");
+
+          const ownerUuid = property?.owners?.[0]?.uuid;
+          const propId = row.original?.propertyId || property?.propertyId;
+
+          if (ownerUuid && propId) {
+            const privacy = {
+              uuid: ownerUuid,
+              fieldName: [
+                "houseNo",
+                "buildingName",
+                "street",
+                "landmark",
+                "locality",
+                "subLocality",
+                "block",
+                "zone",
+                "pincode",
+              ],
+              model: "Property",
+              hide: !propertyAddress,
+              showValue: true,
+              loadData: {
+                serviceName: "/property-services/property/_search",
+                requestBody: {},
+                requestParam: {
+                  tenantId: tenantId,
+                  propertyIds: propId,
+                },
+                jsonPath: "Properties[0].address.street",
+                isArray: false,
+                d: (res) =>
+                  formatPropertyAddress(
+                    _.get(res, "Properties[0].address", {}),
+                    t
+                  ),
+              },
+            };
+            return (
+              <span className="cell-text">
+                <WrapUnMaskComponent
+                  value={formattedAddress}
+                  iseyevisible={String(formattedAddress)?.includes("*")}
+                  privacy={privacy}
+                />
+              </span>
+            );
+          }
+
+          return GetCell(formattedAddress);
         },
       },
       {

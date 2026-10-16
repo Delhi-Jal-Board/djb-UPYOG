@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { useQuery } from "react-query";
 import { WSService } from "../../services/elements/WS";
 import { PTService } from "../../services/elements/PT";
+import { formatPropertyAddress } from "../../utils/pt";
+
 /*
  * Feature :: Privacy
  * Task 6502 to show only locality info without door no and street names
@@ -37,8 +39,10 @@ const combineResponse = (WaterConnections, SewerageConnections, businessService,
     Properties?.map((property) => {
       if (row?.propertyId === property?.propertyId) {
         row["owner"] = property?.owners?.map((ob) => ob?.name).join(",");
-        row["address"] = getAddress(property?.address, t, shortAddress);
+        row["address"] = formatPropertyAddress(property?.address, t) || getAddress(property?.address, t, shortAddress);
         row["ownerNames"] = getOwnerNames(property);
+        row["property"] = property;
+        row["propertyAddress"] = property?.address;
       }
     });
   });

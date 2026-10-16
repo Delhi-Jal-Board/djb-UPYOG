@@ -212,11 +212,31 @@ const WSDocumentsEmployee = ({ t, config, onSelect, userType, formData, setError
     </div>
   ) : null;
 
+  const uploadInfoBanner = (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "10px",
+        marginBottom: "16px",
+        padding: "10px 14px",
+        backgroundColor: "#e8f4fd",
+        borderLeft: "4px solid #00497e",
+        borderRadius: "4px",
+      }}
+    >
+      <span style={{ fontSize: "14px", color: "#00497e", fontWeight: "600" }}>
+        ℹ️ {t("WS_DOCUMENT_UPLOAD_INSTRUCTION") || "Maximum upload size: 5MB per document. Supported formats: PDF, JPG, PNG."}
+      </span>
+    </div>
+  );
+
   if (userType === "citizen") {
     return (
       <div>
         <Timeline currentStep={3} />
         <FormStep t={t} config={config} onSelect={goNext} onSkip={() => onSelect()} isDisabled={enableSubmit}>
+          {uploadInfoBanner}
           {nocDownloadSection}
           {innerContent}
           {error && <Toast label={error} onClose={() => setError(null)} error />}
@@ -227,6 +247,7 @@ const WSDocumentsEmployee = ({ t, config, onSelect, userType, formData, setError
 
   return (
     <CollapsibleCardPage title={t("WS_DOCUMENTS")} defaultOpen={true}>
+      {uploadInfoBanner}
       {nocDownloadSection}
       {innerContent}
       {error && <Toast label={error} onClose={() => setError(null)} error />}
@@ -371,10 +392,14 @@ function SelectDocument({
   }, []);
 
   function selectfile(e, newFile) {
-    if (newFile) {
-      setFile(newFile);
-    } else {
-      setFile(e.target.files[0]);
+    const selectedFile = newFile || e?.target?.files?.[0];
+    if (selectedFile) {
+      if (selectedFile.size > 5242880) {
+        setError(t("CS_MAXIMUM_UPLOAD_SIZE_EXCEEDED") || "File size should not exceed 5MB");
+        if (e?.target) e.target.value = "";
+        return;
+      }
+      setFile(selectedFile);
     }
     setIsCameraFile(false);
   }
@@ -487,8 +512,9 @@ function SelectDocument({
           const documentName = translatedDocumentName === documentNameKey ? documentNameKey.replaceAll("_", " ") : translatedDocumentName;
           setError(`Document "${documentName}" has already been uploaded.`);
           setFile(null);
-        } else if (file.size >= 5242880) {
-          setError(t("CS_MAXIMUM_UPLOAD_SIZE_EXCEEDED"));
+        } else if (file.size > 5242880) {
+          setError(t("CS_MAXIMUM_UPLOAD_SIZE_EXCEEDED") || "File size should not exceed 5MB");
+          setFile(null);
         } else if (doc?.code === "OWNER.APPLICANTPHOTO" && !file.type.match(/image\/(jpeg|png)/i) && !file.name.match(/\.(jpg|jpeg|png)$/i)) {
           setError(t("WS_ONLY_JPG_PNG_ALLOWED") || "Only JPG and PNG files are allowed for Applicant Photo");
           setFile(null);
@@ -637,6 +663,9 @@ function SelectDocument({
             {t(`${doc?.i18nKey?.replaceAll(".", "_")}_UPLOAD_DOCUMENT`)}
             {doc?.required && <span className="check-page-link-button">*</span>}
           </CardLabel>
+        </div>
+        <div style={{ fontSize: "12px", color: "#666", marginTop: "-2px", marginBottom: "4px" }}>
+          {t("WS_DOCUMENT_MAX_SIZE_MESSAGE") || "Allowed formats: PDF, JPG, PNG | Max file size: 5MB"}
         </div>
         <div className="field" style={{ display: "flex", gap: "10px", alignItems: "flex-start", width: "100%" }}>
           <div style={{ flex: 1 }}>

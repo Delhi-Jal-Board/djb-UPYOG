@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { CloseSvg, SearchForm, Table, Card, SearchAction, PopUp, DetailsCard, Loader, Toast } from "@djb25/digit-ui-react-components";
 
 import SearchFormFields from "./SearchFields";
+import { formatPropertyAddress } from "../../utils";
 
 const MobileSearchWater = ({ Controller, register, control, t, reset, previousPage, handleSubmit, tenantId, data, onSubmit }) => {
   function activateModal(state, action) {
@@ -115,7 +116,10 @@ const MobileSearchWater = ({ Controller, register, control, t, reset, previousPa
       [t("WS_COMMON_TABLE_COL_OWN_NAME_LABEL")]: data?.owner || t(`${"WS_NA"}`),
       [t("WS_COMMON_TABLE_COL_STATUS_LABEL")]: t(`WS_${data?.status?.toUpperCase()}`),
       [t("WS_COMMON_TABLE_COL_AMT_DUE_LABEL")]: data?.due || t(`${"WS_NA"}`),
-      [t("WS_COMMON_TABLE_COL_ADDRESS")]: data?.address || t(`${"WS_NA"}`),
+      [t("WS_COMMON_TABLE_COL_ADDRESS")]:
+        formatPropertyAddress(data?.property?.address || data?.propertyAddress, t) ||
+        data?.address ||
+        t(`${"WS_NA"}`),
       [t("WS_COMMON_TABLE_COL_DUE_DATE_LABEL")]: data?.status?.toUpperCase() === "INACTIVE" ? t(`${"WS_NA"}`) : data?.dueDate ? convertEpochToDate(data?.dueDate) : t(`${"WS_NA"}`),
       [t("WS_COMMON_TABLE_COL_ACTION_LABEL")]: data?.due ? getActionItems(data?.status, data) : t(`${"WS_NA"}`),
     }));

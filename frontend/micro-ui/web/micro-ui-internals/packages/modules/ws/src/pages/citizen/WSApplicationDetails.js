@@ -25,7 +25,7 @@ import getDisconnectPDFData from "../../utils/getWSDisconnectionApplicationForm"
 import { convertEpochToDateDMY, getFiles } from "../../utils";
 import { stringReplaceAll, convertEpochToDate } from "../../utils";
 import WSInfoLabel from "../../pageComponents/WSInfoLabel";
-import { getAddress } from "../../utils";
+import { getAddress, formatPropertyAddress } from "../../utils";
 import _ from "lodash";
 import WSFeeEstimation from "../../../../templates/ApplicationDetails/components/WSFeeEstimation";
 import ViewBreakup from "../../../../templates/ApplicationDetails/components/ViewBreakup";
@@ -338,48 +338,12 @@ const WSApplicationDetails = () => {
       onClick: () => getDisconnectionNoticeSearch(),
     },
   ];
+
   const isDisconnection =
     data?.WaterConnection?.[0]?.applicationType?.includes("DISCONNECT") ||
     data?.SewerageConnections?.[0]?.applicationType?.includes("DISCONNECT") ||
     applicationNobyData?.includes("DC");
 
-  const toTitleCase = (value) => {
-    if (!value || typeof value !== "string") return value;
-
-    return value
-      .replace(/([a-z])([A-Z])/g, "$1 $2")
-      .toLowerCase()
-      .replace(/\b\w/g, (char) => char.toUpperCase())
-      .trim();
-  };
-
-  const formatPropertyAddress = (address) => {
-    if (!address) return "";
-
-    const parts = [
-      address.houseNo ? `H.No. ${address.houseNo}` : null,
-      address.buildingName,
-      address.street,
-      address.landmark,
-      address.locality?.name || address.subLocality,
-      address.block,
-      address.zone,
-      address.pincode ? `PIN: ${address.pincode}` : null,
-    ];
-
-    return parts
-      .map((value, index) => {
-        if (!value || !String(value).trim()) return null;
-
-        // Keep H.No. and PIN labels unchanged.
-        if (index === 0 || index === 7) return value;
-
-        return toTitleCase(value);
-      })
-      .filter(Boolean)
-      .filter((value, index, array) => array.indexOf(value) === index)
-      .join(", ");
-  };
   const appStatus =
     data?.WaterConnection?.[0]?.applicationStatus ||
     data?.SewerageConnections?.[0]?.applicationStatus ||
