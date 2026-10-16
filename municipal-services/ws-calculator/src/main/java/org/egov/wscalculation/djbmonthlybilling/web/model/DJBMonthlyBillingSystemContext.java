@@ -12,12 +12,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * Read-only, display-oriented context assembled from records already held by
- * UPYOG/WS. It does not contain imported spreadsheet data and is never persisted.
- * The DJB-facing projection exposes only useful business fields. Missing optional
- * metadata is omitted; this response does not emit legacy-field diagnostic arrays.
- */
 @Data
 @Builder
 @NoArgsConstructor
@@ -224,11 +218,7 @@ public class DJBMonthlyBillingSystemContext {
         private Long lastModifiedTime;
     }
 
-    /**
-     * DJB-register-oriented projection of fields available from existing UPYOG
-     * records. This is a response DTO only: it does not import or persist the
-     * legacy Excel workbook.
-     */
+
     @Data
     @Builder
     @NoArgsConstructor
@@ -272,12 +262,9 @@ public class DJBMonthlyBillingSystemContext {
     @AllArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class TariffClassification {
-        /** Canonical DJB business group: Domestic or Non-Domestic. */
         private String propertyUsageType;
-        /** Original value from the current UPYOG statement/property, retained for traceability. */
         @JsonIgnore
         private String sourcePropertyUsageType;
-        /** Existing UPYOG/MDMS tariff key; COMMERCIAL is an internal alias for DJB Non-Domestic. */
         @JsonIgnore
         private String upyogTariffCategory;
         private String djbCategoryCode;
@@ -295,9 +282,7 @@ public class DJBMonthlyBillingSystemContext {
     @AllArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class MeterRegister {
-        /** Physical serial number, only when explicitly stored by the system. */
         private String meterNumber;
-        /** Manufacturer/model designation, only when explicitly stored by the system. */
         private String meterModel;
     }
 
