@@ -67,15 +67,15 @@ const VendorPerformanceSkeleton = () => {
 const AdminDashboard = () => {
   const { t } = useTranslation();
   const history = useHistory();
-  const [customDate, setCustomDate] = useState({ from: "", to: "" });
+  const [filterDate,setFilterDate] = useState({ from: "", to: "" });
 
   // Fetch assignment progress with hierarchy (supervisor and surveyor details)
   const { data: progressData, isLoading: isProgressLoading } = Digit.Hooks.ekyc.useEkycAssignmentProgress(
     {
       tenantId: "dl.djb",
       allVendorsDetailed: true,
-      fromDate: customDate?.startDate?.getTime(),
-      toDate: customDate?.endDate?.getTime(),
+      fromDate: filterDate?.startDate?.getTime(),
+      toDate: filterDate?.endDate?.getTime(),
     },
     {
       enabled: true,
@@ -85,7 +85,7 @@ const AdminDashboard = () => {
 
   return (
     <Card className="surveyor-dashboard">
-      <Dashboard isProgressLoading={isProgressLoading} progressData={progressData} customDate={customDate} setCustomDate={setCustomDate} />
+      <Dashboard isProgressLoading={isProgressLoading} progressData={progressData} filterDate={filterDate} setFilterDate={setFilterDate} />
       <div className="admin-performance-section">
         <h3 className="section-title">{t("EKYC_VENDORS_PERFORMANCE") || "eKYC Vendors Performance"}</h3>
 
@@ -182,7 +182,7 @@ const AdminDashboard = () => {
                       <span className="stat-value">{vendor.totalAssignments}</span>
                       <span className="stat-label">{t("TOTAL_EKYC_APPLICATIONS") || "Total KNOs"}</span>
                     </div>
-                  </div>
+                  </div>  
 
                   {/* Status */}
                   <div className="knos-summary">
