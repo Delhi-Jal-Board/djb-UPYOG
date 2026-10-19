@@ -131,16 +131,33 @@ const ConsumptionDetails = ({ view }) => {
 
   const popUp = () => {
     setOpenModal(true);
-    setMeterDetails(response?.meterReadings[0]);
-    setSelectMeterStatus({
-      code: response?.meterReadings[0]?.meterStatus,
-      i18nKey: `WS_SERVICES_CALCULATION_METERSTATUS_${Digit.Utils.locale.getTransformedLocale(response?.meterReadings[0]?.meterStatus)}`,
-    });
-    setBillingPeriod(`${getDate(meterDetails?.currentReadingDate)} - ${getDate(convertDateToEpoch(Digit.Utils.date.getDate()))}`);
+    const firstReading = response?.meterReadings?.[0];
+    setMeterDetails(firstReading);
+    const initialStatus = firstReading?.meterStatus
+      ? {
+          code: firstReading?.meterStatus,
+          i18nKey: `WS_SERVICES_CALCULATION_METERSTATUS_${Digit.Utils.locale.getTransformedLocale(firstReading?.meterStatus)}`,
+        }
+      : "";
+    setSelectMeterStatus(initialStatus);
+    setBillingPeriod(`${getDate(firstReading?.currentReadingDate)} - ${getDate(convertDateToEpoch(Digit.Utils.date.getDate()))}`);
+    if ((initialStatus?.code || "").toLowerCase() === "working") {
+      const okOption = ReadingQualityCodeList?.find((item) => (item?.code || "").toLowerCase() === "ok");
+      setSelectReadingQualityCode(
+        okOption || {
+          code: "OK",
+          i18nKey: `WS_SERVICES_CALCULATION_DJBREADINGQUALITYCODE_${Digit.Utils.locale.getTransformedLocale("OK")}`,
+        }
+      );
+    } else {
+      setSelectReadingQualityCode("");
+    }
   };
 
   const closeModal = () => {
     setOpenModal(false);
+    setSelectMeterStatus("");
+    setSelectReadingQualityCode("");
   };
   const closeToast = () => {
     setShowToast(false);
@@ -151,7 +168,13 @@ const ConsumptionDetails = ({ view }) => {
     let fromDate = parseInt(meterDetails?.currentReadingDate);
     let selectedDate = parseInt(convertDateToEpoch(data?.currentReadingDate));
     let toDate = parseInt(convertDateToEpoch(Digit.Utils.date.getDate()));
-    if (selectMeterStatus?.code === "Working") {
+    if (!selectReadingQualityCode?.code) {
+      setShowToast({ key: "error", message: t("ERR_READING_QUALITY_CODE_REQUIRED") });
+      setError(t("ERR_READING_QUALITY_CODE_REQUIRED"));
+      setTimeout(closeToast, 5000);
+      return;
+    }
+    if (isWorkingMeter) {
       if (!data?.currentReading || data?.currentReading == null || data?.currentReading === "") {
         setShowToast({ key: "error", message: t("ERR_CURRENT_READING_REQUIRED") });
         setError(t("ERR_CURRENT_READING_REQUIRED"));
@@ -208,28 +231,64 @@ const ConsumptionDetails = ({ view }) => {
       });
     }
   };
-  let optionsList = mdmsMeterStatus?.MdmsRes?.["ws-services-calculation"]?.MeterStatus
-    ?.filter((status) => (typeof status === "object" ? status?.active === true || status?.active === "true" : true))
-    ?.map((status) => {
-      const statusCode = typeof status === "object" ? status.name || status.code : status;
-      return {
-        code: statusCode,
-        i18nKey: `WS_SERVICES_CALCULATION_METERSTATUS_${Digit.Utils.locale.getTransformedLocale(statusCode)}`,
-      };
-    });
+  const isWorkingMeter = (selectMeterStatus?.code || "").toLowerCase() === "working";
 
-  const ReadingQualityCodeList = DJBReadingQualityCode?.MdmsRes?.["ws-services-calculation"]?.DJBReadingQualityCode
-    ?.filter((status) => (typeof status === "object" ? status?.active === true || status?.active === "true" : true))
-    ?.map((status) => {
-      const statusCode = typeof status === "object" ? status.code : status;
-      return {
-        code: statusCode,
-        i18nKey: `WS_SERVICES_CALCULATION_DJBREADINGQUALITYCODE_${Digit.Utils.locale.getTransformedLocale(statusCode)}`,
-      };
-    });
+  const optionsList = useMemo(() => {
+    return (
+      mdmsMeterStatus?.MdmsRes?.["ws-services-calculation"]?.MeterStatus
+        ?.filter((status) => (typeof status === "object" ? status?.active === true || status?.active === "true" : true))
+        ?.map((status) => {
+          const statusCode = typeof status === "object" ? status.name || status.code : status;
+          return {
+            code: statusCode,
+            i18nKey: `WS_SERVICES_CALCULATION_METERSTATUS_${Digit.Utils.locale.getTransformedLocale(statusCode)}`,
+          };
+        }) || []
+    );
+  }, [mdmsMeterStatus]);
+
+  const ReadingQualityCodeList = useMemo(() => {
+    return (
+      DJBReadingQualityCode?.MdmsRes?.["ws-services-calculation"]?.DJBReadingQualityCode
+        ?.filter((status) => (typeof status === "object" ? status?.active === true || status?.active === "true" : true))
+        ?.map((status) => {
+          const statusCode = typeof status === "object" ? status.code || status.name : status;
+          return {
+            code: statusCode,
+            i18nKey: `WS_SERVICES_CALCULATION_DJBREADINGQUALITYCODE_${Digit.Utils.locale.getTransformedLocale(statusCode)}`,
+          };
+        }) || []
+    );
+  }, [DJBReadingQualityCode]);
+
+  const filteredReadingQualityCodeList = useMemo(() => {
+    if (!ReadingQualityCodeList || ReadingQualityCodeList.length === 0) return [];
+    if (isWorkingMeter) {
+      return ReadingQualityCodeList.filter((item) => (item?.code || "").toLowerCase() === "ok");
+    }
+    if (selectMeterStatus?.code) {
+      return ReadingQualityCodeList.filter((item) => (item?.code || "").toLowerCase() !== "ok");
+    }
+    return ReadingQualityCodeList;
+  }, [ReadingQualityCodeList, isWorkingMeter, selectMeterStatus?.code]);
+
+  useEffect(() => {
+    if (!openModal) return;
+
+    if (isWorkingMeter) {
+      const okOption = ReadingQualityCodeList?.find((item) => (item?.code || "").toLowerCase() === "ok");
+      if (okOption && (selectReadingQualityCode?.code || "").toLowerCase() !== "ok") {
+        setSelectReadingQualityCode(okOption);
+      }
+    } else if (selectMeterStatus?.code) {
+      if ((selectReadingQualityCode?.code || "").toLowerCase() === "ok") {
+        setSelectReadingQualityCode("");
+      }
+    }
+  }, [openModal, isWorkingMeter, selectMeterStatus?.code, ReadingQualityCodeList]);
 
   const onFormValueChange = (setValue, formData, formState) => {
-    if (selectMeterStatus?.code === "Working") {
+    if (isWorkingMeter) {
       setCurrentReading(formData?.currentReading);
       setBillingPeriod(`${getDate(meterDetails?.currentReadingDate)} - ${getDate(formData?.currentReadingDate)}`);
       if (parseInt(currentMeterReading) < parseInt(details?.[0]?.lastReading)) {
@@ -287,6 +346,17 @@ const ConsumptionDetails = ({ view }) => {
                 select={(e) => {
                   setSelectMeterStatus(e);
                   setConsumption("");
+                  if ((e?.code || "").toLowerCase() === "working") {
+                    const okOption = ReadingQualityCodeList?.find((item) => (item?.code || "").toLowerCase() === "ok");
+                    setSelectReadingQualityCode(
+                      okOption || {
+                        code: "OK",
+                        i18nKey: `WS_SERVICES_CALCULATION_DJBREADINGQUALITYCODE_${Digit.Utils.locale.getTransformedLocale("OK")}`,
+                      }
+                    );
+                  } else {
+                    setSelectReadingQualityCode("");
+                  }
                 }}
                 selected={selectMeterStatus}
                 t={t}
@@ -319,23 +389,23 @@ const ConsumptionDetails = ({ view }) => {
           },
           {
             label: t("WS_CONSUMPTION_DETAILS_CURRENT_READING_LABEL"),
-            isMandatory: selectMeterStatus.code === "Working" ? true : false,
-            disable: selectMeterStatus.code === "Working" ? false : true,
+            isMandatory: isWorkingMeter ? true : false,
+            disable: isWorkingMeter ? false : true,
             type: "number",
             populators: {
               name: "currentReading",
-              ...(tempObj = selectMeterStatus.code === "Working" ? {} : { value: "" }),
+              ...(tempObj = isWorkingMeter ? {} : { value: "" }),
             },
           },
           {
             label: t("WS_CONSUMPTION_DETAILS_CURRENT_READING_DATE_LABEL"),
-            isMandatory: selectMeterStatus.code === "Working" ? true : false,
-            disable: selectMeterStatus.code === "Working" ? false : true,
+            isMandatory: isWorkingMeter ? true : false,
+            disable: isWorkingMeter ? false : true,
             type: "custom",
             populators: {
               name: "currentReadingDate",
               validation: {
-                required: selectMeterStatus.code === "Working" ? true : false,
+                required: isWorkingMeter ? true : false,
               },
               customProps: {},
               defaultValue: Digit.Utils.date.getDate(),
@@ -344,7 +414,7 @@ const ConsumptionDetails = ({ view }) => {
                   onChange={props.onChange}
                   date={props.value}
                   {...customProps}
-                  disabled={selectMeterStatus.code === "Working" ? false : true}
+                  disabled={isWorkingMeter ? false : true}
                 />
               ),
             },
@@ -355,7 +425,7 @@ const ConsumptionDetails = ({ view }) => {
             type: "dropdown",
             populators: (
               <Dropdown
-                option={ReadingQualityCodeList}
+                option={filteredReadingQualityCodeList}
                 autoComplete="off"
                 optionKey="i18nKey"
                 id="readingQualityCode"
@@ -371,10 +441,10 @@ const ConsumptionDetails = ({ view }) => {
             label: t("WS_SERV_DETAIL_CONSUMP"),
             isMandatory: false,
             type: "number",
-            disable: selectMeterStatus.code === "Working" ? true : false,
+            disable: isWorkingMeter ? true : false,
             populators: {
               ...(tempObj1 =
-                selectMeterStatus.code === "Working"
+                isWorkingMeter
                   ? {
                       name: "consumption",
                       value: selectedConsumtion,

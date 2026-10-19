@@ -19,7 +19,7 @@ const CreateProperty = ({ parentRoute, onSelect }) => {
   let { data: commonFields, isLoading } = Digit.Hooks.pt.useMDMS(stateId, "PropertyTax", "CommonFieldsConfig");
 
   const search = useLocation().search;
-  const redirectUrl = new URLSearchParams(search).get('redirectUrl');
+  const redirectUrl = new URLSearchParams(search).get('redirectToUrl') || new URLSearchParams(search).get('redirectUrl');
 
   const createProperty = async (key, data) => {
     history.push({
@@ -42,7 +42,7 @@ const CreateProperty = ({ parentRoute, onSelect }) => {
     <Switch>
       <Route exact path={`${match.path}`}>
         <LayoutWrapper layoutClass="action">
-          <CreatePropertyForm onSelect={createProperty} value={params} userType={"citizen"} />
+          <CreatePropertyForm onSelect={createProperty} value={params} userType={"citizen"} redirectUrl={redirectUrl} />
         </LayoutWrapper>
       </Route>
       <Route exact path={`${match.path}/save-property`}>

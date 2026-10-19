@@ -173,19 +173,30 @@ const PTAcknowledgement = ({ onSuccess, onSelect, formData, redirectUrl, userTyp
       sessionStorage.setItem("Digit_FSM_PT",JSON.stringify(responseData?.Properties?.[0]))
       
       const queryParams = new URLSearchParams(location.search);
-      const redirectUrlFromQuery = queryParams.get("redirectToUrl");
-      const finalRedirectUrl = (redirectUrl && redirectUrl !== "undefined") ? redirectUrl : (redirectUrlFromQuery && redirectUrlFromQuery !== "undefined" ? redirectUrlFromQuery : null);
+      const redirectUrlFromQuery = queryParams.get("redirectToUrl") || queryParams.get("redirectUrl");
+      const fallbackUrl = window.location.href.includes("/employee/") ? "/digit-ui/employee/ws/info" : "/digit-ui/citizen/ws/info";
+      const finalRedirectUrl = (redirectUrl && redirectUrl !== "undefined") ? redirectUrl : (redirectUrlFromQuery && redirectUrlFromQuery !== "undefined" ? redirectUrlFromQuery : fallbackUrl);
       
       if (finalRedirectUrl) {
-        history.push(
-          `${finalRedirectUrl}?propertyId=${responseData?.Properties[0]?.propertyId}&tenantId=${responseData?.Properties[0]?.tenantId}`,
-          { ...location?.state?.prevState }
-        );
+        const targetUrl = finalRedirectUrl.includes("ws/info")
+          ? (window.location.href.includes("/employee/") ? "/digit-ui/employee/ws/info" : "/digit-ui/citizen/ws/info")
+          : `${finalRedirectUrl}${finalRedirectUrl.includes("?") ? "&" : "?"}propertyId=${responseData?.Properties[0]?.propertyId}&tenantId=${responseData?.Properties[0]?.tenantId}`;
+        history.push(targetUrl, {
+          property: responseData?.Properties?.[0],
+          propertyId: responseData?.Properties?.[0]?.propertyId,
+          ...location?.state?.prevState,
+        });
         return;
       }
 
       if (onSelect) {
         onSelect("cpt", { details: responseData?.Properties?.[0] });
+      } else {
+        history.push(fallbackUrl, {
+          property: responseData?.Properties?.[0],
+          propertyId: responseData?.Properties?.[0]?.propertyId,
+          ...location?.state?.prevState,
+        });
       }
     }
   };
@@ -228,15 +239,24 @@ const PTAcknowledgement = ({ onSuccess, onSelect, formData, redirectUrl, userTyp
             label={t("CS_COMMON_PROCEED")}
             onSubmit={() => {
               const queryParams = new URLSearchParams(location.search);
-              const redirectUrlFromQuery = queryParams.get("redirectToUrl");
-              const finalRedirectUrl = (redirectUrl && redirectUrl !== "undefined") ? redirectUrl : (redirectUrlFromQuery && redirectUrlFromQuery !== "undefined" ? redirectUrlFromQuery : null);
+              const redirectUrlFromQuery = queryParams.get("redirectToUrl") || queryParams.get("redirectUrl");
+              const fallbackUrl = window.location.href.includes("/employee/") ? "/digit-ui/employee/ws/info" : "/digit-ui/citizen/ws/info";
+              const finalRedirectUrl = (redirectUrl && redirectUrl !== "undefined") ? redirectUrl : (redirectUrlFromQuery && redirectUrlFromQuery !== "undefined" ? redirectUrlFromQuery : fallbackUrl);
               if (finalRedirectUrl) {
-                history.push(
-                  `${finalRedirectUrl}?propertyId=${responseData?.Properties[0]?.propertyId}&tenantId=${responseData?.Properties[0]?.tenantId}`,
-                  { ...location?.state?.prevState }
-                );
+                const targetUrl = finalRedirectUrl.includes("ws/info")
+                  ? (window.location.href.includes("/employee/") ? "/digit-ui/employee/ws/info" : "/digit-ui/citizen/ws/info")
+                  : `${finalRedirectUrl}${finalRedirectUrl.includes("?") ? "&" : "?"}propertyId=${responseData?.Properties[0]?.propertyId}&tenantId=${responseData?.Properties[0]?.tenantId}`;
+                history.push(targetUrl, {
+                  property: responseData?.Properties?.[0],
+                  propertyId: responseData?.Properties?.[0]?.propertyId,
+                  ...location?.state?.prevState,
+                });
               } else {
-                history.push(window.location.href.includes("/employee/") ? "/digit-ui/employee" : "/digit-ui/citizen");
+                history.push(fallbackUrl, {
+                  property: responseData?.Properties?.[0],
+                  propertyId: responseData?.Properties?.[0]?.propertyId,
+                  ...location?.state?.prevState,
+                });
               }
             }}
           />
