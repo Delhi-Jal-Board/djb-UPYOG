@@ -795,6 +795,11 @@
     gap: 28px;
     align-items: center;
     margin-top: 22px;
+    
+    @media (max-width: 767px) {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
   }
 
   /* Chart */
@@ -868,6 +873,10 @@
     font-size: 12px;
     font-weight: 500;
     color: #64748b;
+
+    @media (max-width: 767px) {
+      font-size: 10px;
+    }
   }
 
   .status-box-value {
@@ -998,7 +1007,6 @@
   }
 
   @media (max-width: 768px) {
-    padding: 16px;
     border-radius: 12px;
 
     .status-cards-header {
