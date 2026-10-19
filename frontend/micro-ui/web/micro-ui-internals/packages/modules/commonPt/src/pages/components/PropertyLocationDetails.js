@@ -18,7 +18,7 @@ const PropertyLocationDetails = ({
   const initialAddress = address || formDataProp?.locationDet || formDataProp?.address || props?.props?.value || {};
   const [formData, setFormData] = useState({
     noOfFloors: address?.noOfFloors || "",
-    addressType: initialAddress?.addressType || "",
+    // addressType: initialAddress?.addressType || "",
     pincode: initialAddress?.pincode || initialAddress?.pinCode || "",
     city: initialAddress?.city || "",
     locality: initialAddress?.locality || "",
