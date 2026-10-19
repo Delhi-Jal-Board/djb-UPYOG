@@ -10,11 +10,12 @@ const getChartConstructor = () => {
   return C;
 };
 
-const StatusCards = ({ countData, customDate, setCustomDate }) => {
+const StatusCards = ({ countData, filterDate, setFilterDate }) => {
   const { t } = useTranslation();
   const [ekycDownloadLoading, setEkycDownloadLoading] = useState(false);
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [ekycStatus, setEkycStatus] = useState("ALL");
+  const [customDate, setCustomDate] = useState("");
 
   const [toast, setToast] = useState({
     show: false,
@@ -150,11 +151,11 @@ const StatusCards = ({ countData, customDate, setCustomDate }) => {
 
           <div className="report-download relative">
             <DateRange
-              values={customDate}
+              values={filterDate}
               t={t}
               hideLabel
               onFilterChange={(data) => {
-                setCustomDate(data.range);
+                setFilterDate(data.range);
               }}
               emptyInitialDate={true}
               placeholder="Select Date Filter"

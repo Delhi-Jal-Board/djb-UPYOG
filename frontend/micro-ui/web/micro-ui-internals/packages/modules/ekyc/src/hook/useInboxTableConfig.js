@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Header } from "@djb25/digit-ui-react-components";
 
 const useInboxTableConfig = ({
   parentRoute,

@@ -1,7 +1,7 @@
 import React from "react";
 import StatusCards from "./StatusCards";
 
-const Dashboard = ({ progressData, isProgressLoading, customDate, setCustomDate }) => {
+const Dashboard = ({ progressData, isProgressLoading, filterDate, setFilterDate }) => {
   const countData = {
     total: progressData?.totalKnosInSystem || 0,
     completed: progressData?.completedKnosInZones || 0,
@@ -13,7 +13,7 @@ const Dashboard = ({ progressData, isProgressLoading, customDate, setCustomDate 
     overallProgressPercent: progressData?.overallProgressPercent || 0,
   };
 
-  return isProgressLoading ? <EkycDashboardSkeleton /> : <StatusCards countData={countData} customDate={customDate} setCustomDate={setCustomDate} />;
+  return isProgressLoading ? <EkycDashboardSkeleton /> : <StatusCards countData={countData} filterDate={filterDate} setFilterDate={setFilterDate} />;
 };
 
 export default Dashboard;
