@@ -105,22 +105,53 @@ const SelectPaymentType = (props) => {
   }, [ccfData]);
 
   const onLinkClick = (e) => {
-    setMdmsConfig(e.target.id)
-}
+    setMdmsConfig(e.target.id);
+  };
 
   const checkLabels = () => {
-    return <span>
-      {isCCFEnabled?.checkBoxLabels?.map((data, index) => {
-        return <span>
-          {/* {index == 0 && "CCF"} */}
-          {data?.linkPrefix && <span>{t(`${data?.linkPrefix}_`)}</span>}
-          {data?.link && <span id={data?.linkId} onClick={(e) => { onLinkClick(e) }} style={{ color: "#a82227", cursor: "pointer" }}>{t(`${data?.link}_`)}</span>}
-          {data?.linkPostfix && <span>{t(`${data?.linkPostfix}_`)}</span>}
-          {(index == isCCFEnabled?.checkBoxLabels?.length - 1) && t("LABEL")}
-        </span>
-      })}
-    </span>
-  }
+    return (
+      <span>
+        {isCCFEnabled?.checkBoxLabels?.map((data, index) => {
+          const combinedKey = `${data?.linkPrefix}_${data?.link}_LABEL`;
+          const isCombinedLocalized = t(combinedKey) !== combinedKey;
+
+          if (isCombinedLocalized) {
+            return (
+              <span key={index}>
+                <span
+                  id={data?.linkId}
+                  onClick={(e) => {
+                    onLinkClick(e);
+                  }}
+                  style={{ color: "#a82227", cursor: "pointer" }}
+                >
+                  {t(combinedKey)}
+                </span>
+              </span>
+            );
+          }
+
+          return (
+            <span key={index}>
+              {data?.linkPrefix && <span>{t(data?.linkPrefix)} </span>}
+              {data?.link && (
+                <span
+                  id={data?.linkId}
+                  onClick={(e) => {
+                    onLinkClick(e);
+                  }}
+                  style={{ color: "#a82227", cursor: "pointer" }}
+                >
+                  {t(data?.link)}
+                </span>
+              )}
+              {data?.linkPostfix && <span> {t(data?.linkPostfix)}</span>}
+            </span>
+          );
+        })}
+      </span>
+    );
+  };
   
 
   useEffect(() => {
