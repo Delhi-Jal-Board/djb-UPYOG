@@ -32,8 +32,7 @@ curl --location --request POST 'https://dev.digit.org/egov-workflow-v2/egov-wf/b
 							"action": "INITIATE",
 							"nextState": "INITIATED",
 							"roles": [
-								"CITIZEN",
-								"WS_CEMP"
+								"CITIZEN"
 							]
 						}
 					]
@@ -51,8 +50,8 @@ curl --location --request POST 'https://dev.digit.org/egov-workflow-v2/egov-wf/b
 							"action": "SUBMIT_APPLICATION",
 							"nextState": "PENDING_FOR_PAYMENT",
 							"roles": [
-								"CITIZEN",
-								"WS_CEMP"
+								"CITIZEN"
+								
 							]
 						}
 					]
@@ -70,8 +69,8 @@ curl --location --request POST 'https://dev.digit.org/egov-workflow-v2/egov-wf/b
 							"action": "PAY",
 							"nextState": "PENDING_APPROVAL_FOR_DISCONNECTION",
 							"roles": [
-								"CITIZEN",
-								"WS_CEMP"
+								"CITIZEN"
+								
 							]
 						}
 					]
@@ -89,21 +88,21 @@ curl --location --request POST 'https://dev.digit.org/egov-workflow-v2/egov-wf/b
 							"action": "APPROVE_FOR_DISCONNECTION",
 							"nextState": "PENDING_FOR_DISCONNECTION_EXECUTION",
 							"roles": [
-								"WS_APPROVER"
+								"WS_ZRO"
 							]
 						},
 						{
 							"action": "SEND_BACK_TO_CITIZEN",
 							"nextState": "PENDING_FOR_CITIZEN_ACTION",
 							"roles": [
-								"WS_APPROVER"
+								"WS_ZRO"
 							]
 						},
 						{
 							"action": "REJECT",
 							"nextState": "REJECTED",
 							"roles": [
-								"WS_APPROVER"
+								"WS_ZRO"
 							]
 						}
 					]
@@ -121,8 +120,8 @@ curl --location --request POST 'https://dev.digit.org/egov-workflow-v2/egov-wf/b
 							"action": "RESUBMIT_APPLICATION",
 							"nextState": "PENDING_APPROVAL_FOR_DISCONNECTION",
 							"roles": [
-								"CITIZEN",
-								"WS_CEMP"
+								"CITIZEN"
+								
 							]
 						}
 					]
@@ -140,7 +139,7 @@ curl --location --request POST 'https://dev.digit.org/egov-workflow-v2/egov-wf/b
 							"action": "EXECUTE_DISCONNECTION",
 							"nextState": "DISCONNECTION_EXECUTED",
 							"roles": [
-								"WS_CLERK"
+								"CITIZEN"
 							]
 						}
 					]

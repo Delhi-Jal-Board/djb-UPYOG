@@ -31,7 +31,7 @@ curl --location --request POST 'https://dev.digit.org/egov-workflow-v2/egov-wf/b
                         {
                             "action": "INITIATE",
                             "nextState": "INITIATED",
-                            "roles": ["CITIZEN", "WS_CEMP"]
+                            "roles": ["CITIZEN"]
                         }
                     ]
                 },
@@ -47,7 +47,7 @@ curl --location --request POST 'https://dev.digit.org/egov-workflow-v2/egov-wf/b
                         {
                             "action": "SUBMIT_APPLICATION",
                             "nextState": "PENDING_FOR_PAYMENT",
-                            "roles": ["CITIZEN", "WS_CEMP"]
+                            "roles": ["CITIZEN"]
                         }
                     ]
                 },
@@ -63,7 +63,7 @@ curl --location --request POST 'https://dev.digit.org/egov-workflow-v2/egov-wf/b
                         {
                             "action": "PAY",
                             "nextState": "PENDING_APPROVAL_FOR_RECONNECTION",
-                            "roles": ["CITIZEN", "WS_CEMP"]
+                            "roles": ["CITIZEN"]
                         }
                     ]
                 },
@@ -79,17 +79,17 @@ curl --location --request POST 'https://dev.digit.org/egov-workflow-v2/egov-wf/b
                         {
                             "action": "APPROVE_FOR_CONNECTION",
                             "nextState": "PENDING_FOR_RECONNECTION_EXECUTION",
-                            "roles": ["WS_APPROVER"]
+                            "roles": ["WS_ZRO"]
                         },
                         {
                             "action": "SEND_BACK_TO_CITIZEN",
                             "nextState": "PENDING_FOR_CITIZEN_ACTION",
-                            "roles": ["WS_APPROVER"]
+                            "roles": ["WS_ZRO"]
                         },
                         {
                             "action": "REJECT",
                             "nextState": "REJECTED",
-                            "roles": ["WS_APPROVER"]
+                            "roles": ["WS_ZRO"]
                         }
                     ]
                 },
@@ -105,7 +105,7 @@ curl --location --request POST 'https://dev.digit.org/egov-workflow-v2/egov-wf/b
                         {
                             "action": "RESUBMIT_APPLICATION",
                             "nextState": "PENDING_APPROVAL_FOR_RECONNECTION",
-                            "roles": ["CITIZEN", "WS_CEMP"]
+                            "roles": ["CITIZEN"]
                         }
                     ]
                 },
@@ -121,7 +121,7 @@ curl --location --request POST 'https://dev.digit.org/egov-workflow-v2/egov-wf/b
                         {
                             "action": "ACTIVATE_CONNECTION",
                             "nextState": "CONNECTION_ACTIVATED",
-                            "roles": ["WS_CLERK"]
+                            "roles": ["CITIZEN"]
                         }
                     ]
                 },
