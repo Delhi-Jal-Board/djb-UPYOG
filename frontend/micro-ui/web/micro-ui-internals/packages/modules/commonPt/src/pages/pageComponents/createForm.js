@@ -59,11 +59,32 @@ const CreatePropertyForm = ({ config, onSelect, value, userType, redirectUrl }) 
         const initialFormValue = {
           locationDet: {
             cityCode: propertyAddress?.cityCode || propertyAddress?.city,
+            city: propertyAddress?.city,
             locality: propertyAddress?.locality,
             houseDoorNo: propertyAddress?.houseNo || propertyAddress?.houseDoorNo,
+            houseNo: propertyAddress?.houseNo || propertyAddress?.houseDoorNo,
             buildingColonyName: propertyAddress?.street || propertyAddress?.buildingColonyName,
+            street: propertyAddress?.street || propertyAddress?.buildingColonyName,
+            streetName: propertyAddress?.streetName || propertyAddress?.street,
             landmarkName: propertyAddress?.landmark || propertyAddress?.landmarkName,
             noOfFloors: propertyAddress?.noOfFloors || propertyAddress?.numberOfFloors || useDetails?.noOfFloors,
+            landmark: propertyAddress?.landmark || propertyAddress?.landmarkName,
+            pincode: propertyAddress?.pincode || propertyAddress?.pinCode,
+            latitude: propertyAddress?.latitude || propertyAddress?.geoLocation?.latitude || "",
+            longitude: propertyAddress?.longitude || propertyAddress?.geoLocation?.longitude || "",
+            geoLocation: propertyAddress?.geoLocation,
+            addressLine1: propertyAddress?.addressLine1 || propertyAddress?.address,
+            addressLine2: propertyAddress?.addressLine2 || propertyAddress?.address2,
+            addressType: propertyAddress?.addressType,
+            actualWard: propertyAddress?.actualWard || propertyAddress?.block || propertyAddress?.ward || "",
+            actualAssembly: propertyAddress?.actualAssembly || propertyAddress?.assembly || "",
+            actualZone: propertyAddress?.actualZone || propertyAddress?.zone || "",
+            assembly: propertyAddress?.assembly || "",
+            block: propertyAddress?.block || propertyAddress?.ward || "",
+            zone: propertyAddress?.zone || "",
+            zroLocation: propertyAddress?.zroLocation || propertyAddress?.zro?.code || propertyAddress?.zro || "",
+            subLocality: propertyAddress?.subLocality || "",
+            colonyMcdCategory: propertyAddress?.colonyMcdCategory || "",
           },
           waterConnection: {
             useDetails: useDetails,
@@ -109,14 +130,26 @@ const CreatePropertyForm = ({ config, onSelect, value, userType, redirectUrl }) 
     return <Loader />;
   }
 
-  const onSubmit = async () => {
-    const loc = formValue?.locationDet;
-    if (/*!loc?.addressType ||*/ !loc?.city || !loc?.pincode || !loc?.locality || !loc?.addressLine1 || !loc?.houseNo || !loc?.noOfFloors) {
+  const onSubmit = async (formDataOnSubmit) => {
+    const currentFormValue = {
+      ...formValue,
+      ...(formDataOnSubmit || {}),
+      locationDet: {
+        ...(formValue?.locationDet || {}),
+        ...(formDataOnSubmit?.locationDet || {}),
+      },
+      waterConnection: {
+        ...(formValue?.waterConnection || {}),
+        ...(formDataOnSubmit?.waterConnection || {}),
+      },
+    };
+    const loc = currentFormValue?.locationDet;
+    if (!loc?.addressType || !loc?.city || !loc?.pincode || !loc?.locality || !loc?.addressLine1 || !loc?.houseNo) {
       setShowToast({ key: true, label: t("Please fill all the mandatory fields") });
       return;
     }
 
-    const useDetails = formValue?.waterConnection?.useDetails || formValue?.useDetails;
+    const useDetails = currentFormValue?.waterConnection?.useDetails || currentFormValue?.useDetails;
     if (
       !useDetails?.categoryType ||
       !useDetails?.propertyCategory ||
@@ -130,7 +163,8 @@ const CreatePropertyForm = ({ config, onSelect, value, userType, redirectUrl }) 
       return;
     }
 
-    let ownersArray = formValue?.owners && formValue?.owners.length > 0 ? formValue.owners : (owners && owners.length > 0 ? owners : null);
+
+    let ownersArray = owners && owners.length > 0 ? owners : currentFormValue?.owners;
     // Inject logged in user details if ownersArray is empty
     if (!ownersArray || ownersArray.length === 0 || !ownersArray[0]?.name) {
       const userInfo = Digit.UserService.getUser()?.info;
@@ -159,13 +193,13 @@ const CreatePropertyForm = ({ config, onSelect, value, userType, redirectUrl }) 
     }
 
     if (
-      (formValue?.owners?.ownershipCategory?.includes("MULTIPLEOWNERS") ||
-        formValue?.owners?.[0]?.ownershipCategory?.code?.includes("MULTIPLEOWNERS")) &&
-      formValue?.owners?.length == 1
+      (currentFormValue?.owners?.ownershipCategory?.includes("MULTIPLEOWNERS") ||
+        currentFormValue?.owners?.[0]?.ownershipCategory?.code?.includes("MULTIPLEOWNERS")) &&
+      currentFormValue?.owners?.length == 1
     ) {
       setShowToast({ key: true, label: "PT_COMMON_ONE_MORE_OWNER_INFROMATION_REQUIRED" });
     } else {
-      const payload = convertToPropertyLightWeight({ ...formValue, owners: ownersArray });
+      const payload = convertToPropertyLightWeight({ ...currentFormValue, owners: ownersArray });
       payload.Property.tenantId = tenantId;
 
       mutation.mutate(payload, {

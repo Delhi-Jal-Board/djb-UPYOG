@@ -236,7 +236,12 @@ const PlumberDetails = (_props) => {
                 defaultValue={plumberDetail?.plumberName}
                 // rules={{ required: t("REQUIRED_FIELD") }}
                 rules={{
-                  validate: (e) => ((e && getPattern("Name").test(e)) || !e ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG")),
+                  validate: (e) =>
+                    !e || !e.trim()
+                      ? t("REQUIRED_FIELD")
+                      : /^[a-zA-Z\s]{1,50}$/.test(e)
+                      ? true
+                      : t("WS_NAME_ERROR_MESSAGE") || t("PT_NAME_ERROR_MESSAGE") || "Only alphabets are allowed",
                   required: t("REQUIRED_FIELD"),
                 }}
                 isMandatory={true}
@@ -246,7 +251,9 @@ const PlumberDetails = (_props) => {
                     autoFocus={focusIndex.index === plumberDetail?.key && focusIndex.type === "plumberName"}
                     errorStyle={localFormState.touched.plumberName && errors?.plumberName?.message ? true : false}
                     onChange={(e) => {
-                      props.onChange(e.target.value);
+                      const val = e.target.value;
+                      const cleanVal = val.replace(/[^a-zA-Z\s]/g, "").slice(0, 50);
+                      props.onChange(cleanVal);
                       setFocusIndex({ index: plumberDetail?.key, type: "plumberName" });
                     }}
                     labelStyle={{ marginTop: "unset" }}
@@ -267,10 +274,13 @@ const PlumberDetails = (_props) => {
                 control={control}
                 name="plumberMobileNo"
                 defaultValue={plumberDetail?.plumberMobileNo}
-                // rules={{ required: t("REQUIRED_FIELD") }}
                 rules={{
-                  validate: (e) =>
-                    (e && getPattern("MobileNoWithPrivacy").test(e)) || !e || e.includes("*") ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG"),
+                  validate: (e) => {
+                    if (!e || !e.trim()) return t("REQUIRED_FIELD");
+                    if (e.includes("*")) return true;
+                    if (/^[6-9]\d{9}$/.test(e)) return true;
+                    return t("CORE_COMMON_PHONENO_INVALID") || "Please enter a valid 10-digit mobile number";
+                  },
                   required: t("REQUIRED_FIELD"),
                 }}
                 type="mobileNumber"
@@ -282,10 +292,14 @@ const PlumberDetails = (_props) => {
                       style={{ background: "#FAFAFA", padding: "0px 35px" }}
                       type="mobileNumber"
                       value={props.value}
+                      maxlength={10}
+                      maxLength={10}
                       autoFocus={focusIndex.index === plumberDetail?.key && focusIndex.type === "plumberMobileNo"}
                       errorStyle={localFormState.touched.plumberMobileNo && errors?.plumberMobileNo?.message ? true : false}
                       onChange={(e) => {
-                        props.onChange(e.target.value);
+                        const val = e.target.value;
+                        const cleanVal = val && val.includes("*") ? val : (val || "").replace(/[^0-9]/g, "").slice(0, 10);
+                        props.onChange(cleanVal);
                         setFocusIndex({ index: plumberDetail?.key, type: "plumberMobileNo" });
                       }}
                       labelStyle={{ marginTop: "unset" }}

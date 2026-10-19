@@ -451,7 +451,12 @@ const ConnectionDetails = (_props) => {
                 name="name"
                 defaultValue={connectionHolderDetail?.name}
                 rules={{
-                  validate: (e) => ((e && getPattern("Name").test(e)) || !e ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG")),
+                  validate: (e) =>
+                    !e || !e.trim()
+                      ? t("REQUIRED_FIELD")
+                      : e.includes("*") || /^[a-zA-Z\s]{1,50}$/.test(e)
+                      ? true
+                      : t("WS_NAME_ERROR_MESSAGE") || t("PT_NAME_ERROR_MESSAGE") || "Only alphabets are allowed",
                   required: t("REQUIRED_FIELD"),
                 }}
                 isMandatory={true}
@@ -462,8 +467,10 @@ const ConnectionDetails = (_props) => {
                       autoFocus={focusIndex.index === connectionHolderDetail?.key && focusIndex.type === "name"}
                       errorStyle={localFormState.touched.name && errors?.name?.message ? true : false}
                       onChange={(e) => {
-                        setName(e.target.value);
-                        props.onChange(e.target.value);
+                        const val = e.target.value;
+                        const cleanVal = val && val.includes("*") ? val : val.replace(/[^a-zA-Z\s]/g, "").slice(0, 50);
+                        setName(cleanVal);
+                        props.onChange(cleanVal);
                         setFocusIndex({ index: connectionHolderDetail?.key, type: "name" });
                       }}
                       labelStyle={{ marginTop: "unset" }}
@@ -511,6 +518,12 @@ const ConnectionDetails = (_props) => {
                 control={control}
                 name="middleName"
                 defaultValue={connectionHolderDetail?.middleName}
+                rules={{
+                  validate: (e) =>
+                    !e || !e.trim() || /^[a-zA-Z\s]{1,50}$/.test(e)
+                      ? true
+                      : t("WS_NAME_ERROR_MESSAGE") || t("PT_NAME_ERROR_MESSAGE") || "Only alphabets are allowed",
+                }}
                 render={(props) => (
                   <div>
                     <TextInput
@@ -518,8 +531,10 @@ const ConnectionDetails = (_props) => {
                       autoFocus={focusIndex.index === connectionHolderDetail?.key && focusIndex.type === "middleName"}
                       errorStyle={localFormState.touched.middleName && errors?.middleName?.message ? true : false}
                       onChange={(e) => {
-                        setMiddleName(e.target.value);
-                        props.onChange(e.target.value);
+                        const val = e.target.value;
+                        const cleanVal = val.replace(/[^a-zA-Z\s]/g, "").slice(0, 50);
+                        setMiddleName(cleanVal);
+                        props.onChange(cleanVal);
                         setFocusIndex({ index: connectionHolderDetail?.key, type: "middleName" });
                       }}
                       labelStyle={{ marginTop: "unset" }}
@@ -541,6 +556,12 @@ const ConnectionDetails = (_props) => {
                 control={control}
                 name="lastName"
                 defaultValue={connectionHolderDetail?.lastName}
+                rules={{
+                  validate: (e) =>
+                    !e || !e.trim() || /^[a-zA-Z\s]{1,50}$/.test(e)
+                      ? true
+                      : t("WS_NAME_ERROR_MESSAGE") || t("PT_NAME_ERROR_MESSAGE") || "Only alphabets are allowed",
+                }}
                 render={(props) => (
                   <div>
                     <TextInput
@@ -548,8 +569,10 @@ const ConnectionDetails = (_props) => {
                       autoFocus={focusIndex.index === connectionHolderDetail?.key && focusIndex.type === "lastName"}
                       errorStyle={localFormState.touched.lastName && errors?.lastName?.message ? true : false}
                       onChange={(e) => {
-                        setLastName(e.target.value);
-                        props.onChange(e.target.value);
+                        const val = e.target.value;
+                        const cleanVal = val.replace(/[^a-zA-Z\s]/g, "").slice(0, 50);
+                        setLastName(cleanVal);
+                        props.onChange(cleanVal);
                         setFocusIndex({ index: connectionHolderDetail?.key, type: "lastName" });
                       }}
                       labelStyle={{ marginTop: "unset" }}
@@ -771,8 +794,12 @@ const ConnectionDetails = (_props) => {
                   name="mobileNumber"
                   defaultValue={connectionHolderDetail?.mobileNumber}
                   rules={{
-                    validate: (e) =>
-                      (e && getPattern("MobileNoWithPrivacy").test(e)) || !e || e.includes("*") ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG"),
+                    validate: (e) => {
+                      if (!e || !e.trim()) return t("REQUIRED_FIELD");
+                      if (e.includes("*")) return true;
+                      if (/^[6-9]\d{9}$/.test(e)) return true;
+                      return t("CORE_COMMON_PHONENO_INVALID") || "Please enter a valid 10-digit mobile number";
+                    },
                     required: t("REQUIRED_FIELD"),
                   }}
                   //type="number"
@@ -785,15 +812,18 @@ const ConnectionDetails = (_props) => {
                         <MobileNumber
                           name="mobileNumber"
                           value={mobileValue || ""}
+                          maxlength={10}
+                          maxLength={10}
                           autoFocus={focusIndex.index === connectionHolderDetail?.key && focusIndex.type === "mobileNumber"}
                           errorStyle={localFormState.touched.mobileNumber && errors?.mobileNumber?.message}
                           onChange={(val) => {
-                            setMobileNumber(val);
-                            props.onChange(val);
+                            const cleanVal = val && val.includes("*") ? val : (val || "").replace(/[^0-9]/g, "").slice(0, 10);
+                            setMobileNumber(cleanVal);
+                            props.onChange(cleanVal);
                             setFocusIndex({ index: connectionHolderDetail?.key, type: "mobileNumber" });
                             if (isWatsappSameAsMobile) {
-                              setWatsAppMobileNumber(val);
-                              setValue("watsAppMobileNumber", val);
+                              setWatsAppMobileNumber(cleanVal);
+                              setValue("watsAppMobileNumber", cleanVal, { shouldValidate: true });
                             }
                           }}
                           onBlur={props.onBlur}
@@ -851,8 +881,12 @@ const ConnectionDetails = (_props) => {
                   name="watsAppMobileNumber"
                   defaultValue={connectionHolderDetail?.watsAppMobileNumber}
                   rules={{
-                    validate: (e) =>
-                      (e && getPattern("MobileNoWithPrivacy").test(e)) || !e || e.includes("*") ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG"),
+                    validate: (e) => {
+                      if (!e || !e.trim()) return t("REQUIRED_FIELD");
+                      if (e.includes("*")) return true;
+                      if (/^[6-9]\d{9}$/.test(e)) return true;
+                      return t("CORE_COMMON_PHONENO_INVALID") || "Please enter a valid 10-digit mobile number";
+                    },
                     required: t("REQUIRED_FIELD"),
                   }}
                   //type="number"
@@ -865,11 +899,14 @@ const ConnectionDetails = (_props) => {
                         <MobileNumber
                           name="watsAppMobileNumber"
                           value={watsAppmobileValue || ""}
+                          maxlength={10}
+                          maxLength={10}
                           autoFocus={focusIndex.index === connectionHolderDetail?.key && focusIndex.type === "watsAppMobileNumber"}
                           errorStyle={localFormState.touched.watsAppMobileNumber && errors?.watsAppMobileNumber?.message}
                           onChange={(val) => {
-                            setWatsAppMobileNumber(val);
-                            props.onChange(val);
+                            const cleanVal = val && val.includes("*") ? val : (val || "").replace(/[^0-9]/g, "").slice(0, 10);
+                            setWatsAppMobileNumber(cleanVal);
+                            props.onChange(cleanVal);
                             setFocusIndex({ index: connectionHolderDetail?.key, type: "watsAppMobileNumber" });
                           }}
                           onBlur={props.onBlur}
@@ -926,11 +963,12 @@ const ConnectionDetails = (_props) => {
                           props.onChange(e.target.checked);
                           setFocusIndex({ index: connectionHolderDetail?.key, type: "isWatsappSameAsMobile" });
                           if (e.target.checked) {
-                            setWatsAppMobileNumber(mobileNumber);
-                            setValue("watsAppMobileNumber", mobileNumber);
+                            const currentMobile = getValues("mobileNumber") || mobileNumber;
+                            setWatsAppMobileNumber(currentMobile);
+                            setValue("watsAppMobileNumber", currentMobile, { shouldValidate: true });
                           } else {
                             setWatsAppMobileNumber("");
-                            setValue("watsAppMobileNumber", "");
+                            setValue("watsAppMobileNumber", "", { shouldValidate: true });
                           }
                         }}
                         checked={isWatsappSameAsMobile}

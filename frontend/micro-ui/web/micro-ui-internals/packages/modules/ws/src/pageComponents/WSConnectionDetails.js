@@ -434,8 +434,9 @@ const ConnectionDetails = (_props) => {
   const handleSelectFile = (e) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
-      if (selectedFile.size >= 5242880) {
-        setFileUploadError(t("CS_MAXIMUM_UPLOAD_SIZE_EXCEEDED") || "Maximum file size exceeded (5MB)");
+      if (selectedFile.size > 5242880) {
+        setFileUploadError(t("CS_MAXIMUM_UPLOAD_SIZE_EXCEEDED") || "File size should not exceed 5MB");
+        if (e.target) e.target.value = "";
       } else {
         setFile(selectedFile);
         setFileUploadError(null);
@@ -863,7 +864,12 @@ const ConnectionDetails = (_props) => {
               </div>
             </LabelFieldPair>
             <LabelFieldPair>
-              <CardLabel>{`${t("Organization/Department Document")}*`}</CardLabel>
+              <div>
+                <CardLabel>{`${t("Organization/Department Document")}*`}</CardLabel>
+                <div style={{ fontSize: "12px", color: "#666", marginTop: "-2px", marginBottom: "4px" }}>
+                  {t("WS_DOCUMENT_MAX_SIZE_MESSAGE") || "Allowed formats: PDF, JPG, PNG | Max file size: 5MB"}
+                </div>
+              </div>
               <div className="field" style={{ display: "flex", gap: "10px", alignItems: "center" }}>
                 <div style={{ flex: 1 }}>
                   <Controller

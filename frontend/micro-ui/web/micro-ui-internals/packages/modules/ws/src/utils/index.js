@@ -108,6 +108,17 @@ export const getAddress = (address, t) => {
     }${address?.pincode ? `, ${address.pincode}` : " "}`;
 };
 
+export const toTitleCase = (value) => {
+  return Digit?.Utils?.pt?.toTitleCase ? Digit.Utils.pt.toTitleCase(value) : value;
+};
+
+export const formatPropertyAddress = (address, t) => {
+  if (Digit?.Utils?.pt?.formatPropertyAddress) {
+    return Digit.Utils.pt.formatPropertyAddress(address, t) || getAddress(address, t);
+  }
+  return getAddress(address, t);
+};
+
 export const convertDateToEpoch = (dateString, dayStartOrEnd = "dayend") => {
   //example input format : "2018-10-02"
   try {
@@ -160,12 +171,11 @@ export const getPattern = (type) => {
     case "WSOnlyNumbers":
       return /^[0-9]*$/i;
     case "Name":
-    case "Name":
-      return /^[^{0-9}^\$\"<>?\\~!@#$%^()+={}\[\]*,/_:;]{1,50}$/i;
+      return /^[a-zA-Z\s]{1,50}$/;
     case "MobileNo":
-      return /^[6789][0-9]{9}$/i;
+      return /^[6-9][0-9]{9}$/;
     case "MobileNoWithPrivacy":
-      return /^[6789][*]{7}[0-9]{2}|[6789][0-9]{9}$/i;
+      return /^([6-9][*]{7}[0-9]{2}|[6-9][0-9]{9})$/;
     case "Amount":
       return /^[0-9]{0,8}$/i;
     case "NonZeroAmount":

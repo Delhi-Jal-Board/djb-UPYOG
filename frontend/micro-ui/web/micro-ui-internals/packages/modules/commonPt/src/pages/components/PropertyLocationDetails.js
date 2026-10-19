@@ -15,28 +15,31 @@ const PropertyLocationDetails = ({
   ...props
 }) => {
   const { t } = useTranslation();
+  const initialAddress = address || formDataProp?.locationDet || formDataProp?.address || props?.props?.value || {};
   const [formData, setFormData] = useState({
-    // addressType: address?.addressType || "",
-    pincode: address?.pinCode || "",
-    city: address?.city || "",
-    locality: address?.locality || "",
-    streetName: address?.streetName || "",
-    houseNo: address?.houseNumber || "",
-    houseName: address?.houseName || "",
-    landmark: address?.landmark || "",
-    addressLine1: address?.address || "",
-    addressLine2: address?.address2 || "",
-    latitude: address?.latitude || "",
-    longitude: address?.longitude || "",
-    assembly: address?.assembly || "",
-    block: address?.block || "",
-    zone: address?.zone || "",
-    zroLocation: address?.zroLocation || "",
-    subLocality: address?.subLocality || "",
-    actualAssembly: address?.actualAssembly || "",
-    actualWard: address?.actualWard || "",
-    actualZone: address?.actualZone || "",
     noOfFloors: address?.noOfFloors || "",
+    // addressType: initialAddress?.addressType || "",
+    pincode: initialAddress?.pincode || initialAddress?.pinCode || "",
+    city: initialAddress?.city || "",
+    locality: initialAddress?.locality || "",
+    streetName: initialAddress?.streetName || initialAddress?.street || "",
+    houseNo: initialAddress?.houseNo || initialAddress?.houseNumber || initialAddress?.houseDoorNo || "",
+    houseName: initialAddress?.houseName || "",
+    landmark: initialAddress?.landmark || initialAddress?.landmarkName || "",
+    addressLine1: initialAddress?.addressLine1 || initialAddress?.address || "",
+    addressLine2: initialAddress?.addressLine2 || initialAddress?.address2 || "",
+    latitude: initialAddress?.latitude || initialAddress?.geoLocation?.latitude || "",
+    longitude: initialAddress?.longitude || initialAddress?.geoLocation?.longitude || "",
+    assembly: initialAddress?.assembly || "",
+    block: initialAddress?.block || "",
+    zone: initialAddress?.zone || "",
+    zroLocation: initialAddress?.zroLocation || initialAddress?.zro?.code || initialAddress?.zro || "",
+    subLocality: initialAddress?.subLocality || "",
+    actualAssembly: initialAddress?.actualAssembly || initialAddress?.assembly || "",
+    actualWard: initialAddress?.actualWard || initialAddress?.block || initialAddress?.ward || "",
+    actualZone: initialAddress?.actualZone || initialAddress?.zone || "",
+    colonyMcdCategory: initialAddress?.colonyMcdCategory || "",
+
   });
 
   const isPropertyFound = window.location.href.includes("ws/old-application") || window.location.href.includes("/edit-property/") || window.location.href.includes("/edit-application");
@@ -89,10 +92,11 @@ const PropertyLocationDetails = ({
         // Address lines from API
         addressLine1: addressData.addressLine1 || "",
         addressLine2: addressData.addressLine2 || "",
-        actualAssembly: addressData.actualAssembly || additionalDetails.actualAssembly || addressData.additionalDetails?.actualAssembly || "",
-        actualWard: addressData.actualWard || additionalDetails.actualWard || addressData.additionalDetails?.actualWard || "",
-        actualZone: addressData.actualZone || additionalDetails.actualZone || addressData.additionalDetails?.actualZone || "",
         noOfFloors: rawNoOfFloors,
+
+        actualAssembly: addressData.actualAssembly || additionalDetails.actualAssembly || addressData.additionalDetails?.actualAssembly || additionalDetails.assembly || addressData.assembly || "",
+        actualWard: addressData.actualWard || additionalDetails.actualWard || addressData.additionalDetails?.actualWard || additionalDetails.block || addressData.block || addressData.ward || "",
+        actualZone: addressData.actualZone || additionalDetails.actualZone || addressData.additionalDetails?.actualZone || additionalDetails.zone || addressData.zone || "",
         address: {
           ...addressData,
           city: addressData.city || "",
@@ -110,10 +114,11 @@ const PropertyLocationDetails = ({
           subLocality: addressData.subLocality || "",
           addressLine1: addressData.addressLine1 || "",
           addressLine2: addressData.addressLine2 || "",
-          actualWard: addressData.actualWard || additionalDetails.actualWard || addressData.additionalDetails?.actualWard || "",
-          actualZone: addressData.actualZone || additionalDetails.actualZone || addressData.additionalDetails?.actualZone || "",
-          actualAssembly: addressData.actualAssembly || additionalDetails.actualAssembly || addressData.additionalDetails?.actualAssembly || "",
           noOfFloors: rawNoOfFloors,
+          actualWard: addressData.actualWard || additionalDetails.actualWard || addressData.additionalDetails?.actualWard || additionalDetails.block || addressData.block || addressData.ward || "",
+          actualZone: addressData.actualZone || additionalDetails.actualZone || addressData.additionalDetails?.actualZone || additionalDetails.zone || addressData.zone || "",
+          actualAssembly: addressData.actualAssembly || additionalDetails.actualAssembly || addressData.additionalDetails?.actualAssembly || additionalDetails.assembly || addressData.assembly || "",
+
         },
       });
     } else if (formDataProp?.cpt === null) {
@@ -153,7 +158,12 @@ const PropertyLocationDetails = ({
       formData={formData}
       onSelect={(key, data) => {
         setFormData((prev) => ({ ...prev, ...data }));
-        onSelect(key, data);
+        if (props?.props?.onChange) {
+          props.props.onChange(data);
+        }
+        if (typeof onSelect === "function") {
+          onSelect(key, data, { shouldDirty: true, shouldValidate: true });
+        }
       }}
       config={{ isCollapsible: true, ...config }}
       isEdit={isEdit}
