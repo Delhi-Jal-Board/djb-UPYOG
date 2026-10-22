@@ -68,6 +68,16 @@ const SearchApplication = ({ tenantId, onSubmit, data, count, resultOk, business
 
   //need to get from workflow
   const GetCell = (value) => <span className="cell-text">{value}</span>;
+
+  const sortedData = useMemo(() => {
+    if (!Array.isArray(data)) return data;
+    return [...data].sort(
+      (a, b) =>
+        (b?.auditDetails?.createdTime || b?.auditDetails?.lastModifiedTime || 0) -
+        (a?.auditDetails?.createdTime || a?.auditDetails?.lastModifiedTime || 0)
+    );
+  }, [data]);
+
   const columns = useMemo(
     () => [
       {
@@ -298,7 +308,7 @@ const SearchApplication = ({ tenantId, onSubmit, data, count, resultOk, business
       ) : resultOk ? (
         <Table
           t={t}
-          data={data}
+          data={sortedData}
           totalRecords={count}
           columns={columns}
           getCellProps={(cellInfo) => {
@@ -317,6 +327,7 @@ const SearchApplication = ({ tenantId, onSubmit, data, count, resultOk, business
           pageSizeLimit={getValues("limit")}
           onSort={onSort}
           disableSort={false}
+          autoSort={false}
           sortParams={[{ id: getValues("sortBy"), desc: getValues("sortOrder") === "DESC" ? true : false }]}
         />
       ) : null}
