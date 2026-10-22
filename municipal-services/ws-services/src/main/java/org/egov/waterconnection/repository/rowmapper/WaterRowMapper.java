@@ -229,6 +229,11 @@ public class WaterRowMapper implements ResultSetExtractor<List<WaterConnection>>
 			}
 		}
 
+		Boolean isActive = rs.getBoolean("dv_isactive");
+		if (rs.wasNull()) {
+			isActive = true;
+		}
+
 		DueVerification dv = DueVerification.builder()
 				.kno(kno)
 				.fullName(rs.getString("dv_fullname"))
@@ -236,6 +241,7 @@ public class WaterRowMapper implements ResultSetExtractor<List<WaterConnection>>
 				.dueAmount(rs.getString("dv_dueamount"))
 				.totalAmount(rs.getString("dv_totalamount"))
 				.remarks(rs.getString("dv_remarks"))
+				.isActive(isActive)
 				.build();
 
 		if (waterConnection.getDueVerification() == null)
