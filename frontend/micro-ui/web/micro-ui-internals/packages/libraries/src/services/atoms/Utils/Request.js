@@ -110,6 +110,7 @@ export const Request = async ({
   multipartData = {},
   reqTimestamp = false,
   plainAccessRequest = null,
+  paramsSerializer,
 }) => {
   const token = window.keycloak?.token;
   if (method.toUpperCase() === "POST") {
@@ -183,6 +184,25 @@ export const Request = async ({
     })
     .join("/");
 
+  const defaultParamsSerializer = (paramObj) => {
+    return Object.entries(paramObj)
+      .filter(([_, val]) => val !== undefined && val !== null)
+      .map(([key, val]) => {
+        if (Array.isArray(val)) {
+          return val.map((v) => `${encodeURIComponent(key)}=${encodeURIComponent(v).replace(/%2F/g, "/")}`).join("&");
+        }
+        return `${encodeURIComponent(key)}=${encodeURIComponent(val).replace(/%2F/g, "/")}`;
+      })
+      .filter(Boolean)
+      .join("&");
+  };
+
+  const finalParamsSerializer =
+    paramsSerializer ||
+    (url.includes("/billing-service/amendment") || (params && Object.values(params).some((val) => typeof val === "string" && val.includes("/")))
+      ? defaultParamsSerializer
+      : undefined);
+
   if (multipartFormData) {
     const multipartFormDataRes = await Axios({
       method,
@@ -190,6 +210,7 @@ export const Request = async ({
       data: multipartData.data,
       params,
       headers: { "Content-Type": "multipart/form-data", "auth-token": token || null },
+      ...(finalParamsSerializer ? { paramsSerializer: finalParamsSerializer } : {}),
     });
     return multipartFormDataRes;
   }
@@ -214,8 +235,23 @@ export const Request = async ({
     // If the API responds with 2xx → execution continues normally.
     // If API returns 4xx/5xx → Axios throws error → control goes to catch block.
     res = userDownload
-      ? await Axios({ method, url: _url, data, params, headers, responseType: "arraybuffer" })
-      : await Axios({ method, url: _url, data, params, headers });
+      ? await Axios({
+          method,
+          url: _url,
+          data,
+          params,
+          headers,
+          responseType: "arraybuffer",
+          ...(finalParamsSerializer ? { paramsSerializer: finalParamsSerializer } : {}),
+        })
+      : await Axios({
+          method,
+          url: _url,
+          data,
+          params,
+          headers,
+          ...(finalParamsSerializer ? { paramsSerializer: finalParamsSerializer } : {}),
+        });
   } catch (error) {
     // ❌ CATCH BLOCK:
     // Handles all failed API responses (400, 401, 500, network errors, etc.)

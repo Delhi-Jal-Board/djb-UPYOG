@@ -35,6 +35,18 @@ export const PaymentService = {
       auth: true,
       userService: true,
       params: { tenantId, ...filters },
+      paramsSerializer: (params) => {
+        return Object.entries(params)
+          .filter(([_, val]) => val !== undefined && val !== null)
+          .map(([key, val]) => {
+            if (Array.isArray(val)) {
+              return val.map((v) => `${encodeURIComponent(key)}=${encodeURIComponent(v).replace(/%2F/g, "/")}`).join("&");
+            }
+            return `${encodeURIComponent(key)}=${encodeURIComponent(val).replace(/%2F/g, "/")}`;
+          })
+          .filter(Boolean)
+          .join("&");
+      },
     });
   },
   createReciept: (tenantId, details = {}) =>

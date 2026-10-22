@@ -255,6 +255,35 @@ const ConnectionDetails = () => {
     }
   };
 
+  const getBillAmendmentButton = async () => {
+    const connNo = state?.connectionNo || applicationNobyData;
+    const finalTenantId = tenantId || state?.tenantId || "dl.djb";
+    const finalServiceType = serviceType || (connNo?.includes("SW") ? "SEWERAGE" : "WATER");
+    const businessService = finalServiceType === "WATER" ? "WS" : "SW";
+
+    try {
+      const res = await Digit.PaymentService.searchAmendment(finalTenantId, { consumerCode: connNo, businessService });
+      const inWorkflow = res?.Amendments?.some((item) => item?.status === "INWORKFLOW");
+      if (inWorkflow) {
+        setshowActionToast({
+          key: "error",
+          label: "WORKFLOW_IN_PROGRESS",
+        });
+        setTimeout(() => {
+          closeBillToast();
+        }, 5000);
+        return;
+      }
+    } catch (e) {
+      console.error("Error searching amendment", e);
+    }
+
+    history.push(
+      `/digit-ui/citizen/ws/bill-amendment?connectionNumber=${connNo}&tenantId=${finalTenantId}&service=${finalServiceType}`,
+      JSON.stringify({ data: { ...state, applicationData: state } })
+    );
+  };
+
   function onActionSelect() {
     getDisconnectionButton();
   }
@@ -745,7 +774,8 @@ const ConnectionDetails = () => {
               <SubmitBar label={t("WS_RECONNECTION_BUTTON")} onSubmit={onActionSelectRestoration} />
             </div>
           ) : (
-            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "15px", width: "100%" }}>
+            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "15px", width: "100%", gap: "12px" }}>
+              <SubmitBar label={t("WS_BILL_AMENDMENT_BUTTON")} onSubmit={getBillAmendmentButton} />
               <SubmitBar label={t("WS_DISCONNECTION_BUTTON")} onSubmit={onActionSelect} />
             </div>
           )}
@@ -792,3 +822,4 @@ const ConnectionDetails = () => {
 };
 
 export default ConnectionDetails;
+

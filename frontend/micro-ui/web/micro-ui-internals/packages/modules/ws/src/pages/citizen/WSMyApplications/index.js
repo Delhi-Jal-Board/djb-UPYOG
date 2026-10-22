@@ -1,6 +1,6 @@
 import { Loader, SearchForm, Table, SearchField, Dropdown, TextInput, DatePicker, SubmitBar } from "@djb25/digit-ui-react-components";
 import { useForm, Controller } from "react-hook-form";
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import WSApplication from "./ws-application";
@@ -52,6 +52,33 @@ export const WSMyApplications = () => {
     { filters: { mobileNumber: userMobileNumber }, enabled: userMobileNumber ? true : false }
   );
 
+  const [billAmendments, setBillAmendments] = useState([]);
+  const [isBillAmendLoading, setIsBillAmendLoading] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchBillAmendments = async () => {
+      if (!userMobileNumber) return;
+      setIsBillAmendLoading(true);
+      try {
+        const res = await Digit.PaymentService.searchAmendment(tenantId, { mobileNumber: userMobileNumber });
+        if (isMounted) {
+          setBillAmendments(res?.Amendments || []);
+        }
+      } catch (err) {
+        console.warn("Could not fetch bill amendments in My Applications", err);
+      } finally {
+        if (isMounted) {
+          setIsBillAmendLoading(false);
+        }
+      }
+    };
+    fetchBillAmendments();
+    return () => {
+      isMounted = false;
+    };
+  }, [tenantId, userMobileNumber]);
+
   const [pageOffset, setPageOffset] = useState(0);
   const [pageSize, setPageSize] = useState(10);
   const [searchParams, setSearchParams] = useState(null);
@@ -65,10 +92,14 @@ export const WSMyApplications = () => {
         Header: t("WS_MYCONNECTIONS_APPLICATION_NO"),
         disableSortBy: true,
         Cell: ({ row }) => {
+          const app = row.original;
+          const link = app?.isBillAmendment
+            ? `/digit-ui/citizen/ws/bill-amendment/application-details?applicationNumber=${encodeURI(app?.applicationNo)}`
+            : `/digit-ui/citizen/ws/connection/application/${encodeURI(app?.applicationNo)}`;
           return (
             <span className="link">
-              <Link to={`/digit-ui/citizen/ws/connection/application/${encodeURI(row.original?.applicationNo)}`}>
-                {row.original?.applicationNo || "NA"}
+              <Link to={link}>
+                {app?.applicationNo || "NA"}
               </Link>
             </span>
           );
@@ -77,12 +108,22 @@ export const WSMyApplications = () => {
       {
         Header: t("WS_SERVICE_NAME"),
         disableSortBy: true,
-        Cell: ({ row }) => GetCell(t(`WS_APPLICATION_TYPE_${row.original?.applicationType}`)),
+        Cell: ({ row }) => {
+          const app = row.original;
+          if (app?.isBillAmendment) {
+            return GetCell(t(`WS_APPLICATION_TYPE_${app?.applicationType}`, app?.serviceType === "SEWERAGE" ? "Sewerage Bill Amendment" : "Water Bill Amendment"));
+          }
+          return GetCell(t(`WS_APPLICATION_TYPE_${app?.applicationType}`));
+        },
       },
       {
         Header: t("WS_CONSUMER_NAME"),
         disableSortBy: true,
         Cell: ({ row }) => {
+          const app = row.original;
+          if (app?.isBillAmendment && app?.connectionNo) {
+            return GetCell(app?.connectionNo);
+          }
           const getFullName = (holder) => `${holder?.name || ""} ${holder?.middleName || ""} ${holder?.lastName || ""}`.replace(/\s+/g, " ").trim();
 
           const names =
@@ -105,7 +146,7 @@ export const WSMyApplications = () => {
       {
         Header: t("WS_STATUS"),
         disableSortBy: true,
-        Cell: ({ row }) => GetCell(t(`CS_${row.original?.applicationStatus}`) || t("CS_NA")),
+        Cell: ({ row }) => GetCell(t(`CS_${row.original?.applicationStatus}`, row.original?.applicationStatus) || t("CS_NA")),
       },
       // {
       //   Header: t("WS_APPLICATION_CREATED_TIME"),
@@ -156,9 +197,12 @@ export const WSMyApplications = () => {
         disableSortBy: true,
         Cell: ({ row }) => {
           const application = row.original;
+          const link = application?.isBillAmendment
+            ? `/digit-ui/citizen/ws/bill-amendment/application-details?applicationNumber=${encodeURI(application?.applicationNo)}`
+            : `/digit-ui/citizen/ws/connection/application/${encodeURI(application?.applicationNo)}`;
           return (
             <span className="link">
-              <Link to={`/digit-ui/citizen/ws/connection/application/${encodeURI(application?.applicationNo)}`}>{t("WS_VIEW_DETAILS_LABEL")}</Link>
+              <Link to={link}>{t("WS_VIEW_DETAILS_LABEL")}</Link>
             </span>
           );
         },
@@ -220,7 +264,7 @@ export const WSMyApplications = () => {
     setPageOffset(0);
   };
 
-  if (isLoading || isSWLoading || PTisLoading) {
+  if (isLoading || isSWLoading || PTisLoading || isBillAmendLoading) {
     return <Loader />;
   }
   let { WaterConnection: WSapplicationsList = [] } = data || {};
@@ -235,7 +279,24 @@ export const WSMyApplications = () => {
     }) || [];
   WSapplicationsList = WSapplicationsList?.filter((ob) => ob?.applicationType !== "MODIFY_WATER_CONNECTION") || [];
   SWapplicationsList = SWapplicationsList?.filter((ob) => ob?.applicationType !== "MODIFY_SEWERAGE_CONNECTION") || [];
-  let applicationsList = (WSapplicationsList || []).concat(SWapplicationsList || []);
+
+  const billAmendApplications = (billAmendments || []).map((amendment) => {
+    const isSW = amendment?.businessService === "SW" || amendment?.consumerCode?.includes("SW") || amendment?.amendmentId?.includes("SW");
+    return {
+      applicationNo: amendment?.amendmentId,
+      connectionNo: amendment?.consumerCode,
+      applicationType: isSW ? "SW_BILL_AMENDMENT" : "WS_BILL_AMENDMENT",
+      applicationStatus: amendment?.status,
+      isBillAmendment: true,
+      tenantId: amendment?.tenantId || tenantId,
+      serviceType: isSW ? "SEWERAGE" : "WATER",
+      auditDetails: amendment?.auditDetails || {},
+      sla: null,
+      propertyId: t("CS_NA"),
+    };
+  });
+
+  let applicationsList = (WSapplicationsList || []).concat(SWapplicationsList || []).concat(billAmendApplications || []);
   applicationsList =
     applicationsList &&
     applicationsList.map((ob) => {

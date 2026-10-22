@@ -7,7 +7,8 @@ import getPDFData from "../../utils/getWsAckDataForBillAmendPdf";
 const ApplicationDetailsBillAmendment = () => {
   const queryParams = Digit.Hooks.useQueryParams();
   const applicationNumber = queryParams?.applicationNumber || queryParams?.applicationNo;
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const isEmployee = window.location.href.includes("/employee");
+  const tenantId = Digit.ULBService.getCurrentTenantId() || "dl.djb";
   const { t } = useTranslation();
   let serviceType = "WATER";
   if (applicationNumber?.includes("SW")) serviceType = "SEWERAGE";
@@ -30,7 +31,9 @@ const ApplicationDetailsBillAmendment = () => {
 
   workflowDetails?.data?.actionState?.nextActions?.forEach((action) => {
     if (action?.action === "RE-SUBMIT") {
-      let pathName = `/digit-ui/employee/ws/bill-amendment?connectionNumber=${applicationDetails?.applicationData?.connectionNo}&tenantId=${tenantId}&isEdit=true`;
+      let pathName = isEmployee
+        ? `/digit-ui/employee/ws/bill-amendment?connectionNumber=${applicationDetails?.applicationData?.connectionNo}&tenantId=${tenantId}&isEdit=true`
+        : `/digit-ui/citizen/ws/bill-amendment?connectionNumber=${applicationDetails?.applicationData?.connectionNo}&tenantId=${tenantId}&isEdit=true`;
       action.redirectionUrll = {
         action: "RE-SUBMIT-APPLICATION",
         pathname: pathName,
@@ -99,7 +102,9 @@ const ApplicationDetailsBillAmendment = () => {
     <Fragment>
       <div className={"employee-main-application-details"}>
         <div className={"employee-application-details"} style={{ marginBottom: "15px" }}>
-          <Header styles={{ marginLeft: "0px", paddingTop: "10px", fontSize: "32px" }}>{t("CS_TITLE_GENERATE_NOTE")}</Header>
+          <Header styles={{ marginLeft: "0px", paddingTop: "10px", fontSize: "32px" }}>
+            {isEmployee ? t("CS_TITLE_GENERATE_NOTE") : t("WS_BILL_AMEND_APP_DETAILS", "Bill Amendment Application Details")}
+          </Header>
           {dowloadOptions && dowloadOptions.length > 0 && (
             <MultiLink
               className="multilinkWrapper employee-mulitlink-main-div"

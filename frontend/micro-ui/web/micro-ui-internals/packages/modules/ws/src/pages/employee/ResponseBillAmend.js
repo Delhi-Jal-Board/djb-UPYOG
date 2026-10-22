@@ -20,7 +20,7 @@ const ResponseBillAmend = () => {
             <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
                 <SubmitBar 
                     label={t("CORE_COMMON_GO_TO_HOME")} 
-                    onSubmit={() => history.push(`/digit-ui/employee`)}
+                    onSubmit={() => history.push(window.location.href.includes("/employee") ? `/digit-ui/employee` : `/digit-ui/citizen`)}
                     style={{ marginRight: "1rem" }}
                 />
             </ActionBar>
