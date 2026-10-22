@@ -466,7 +466,16 @@
 }
 
 .moduleLinkHomePageModuleLinks {
-  @apply mt-lg px-md;
+  @apply mt-lg px-md pb-md;
+
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+
+  @media (max-width: 780px) {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
 
   .CitizenHomeCard {
     background: rgba(255, 255, 255, 0.72) !important;
@@ -531,6 +540,6 @@
 
   .moduleLinkHomePageModuleLinks {
     width: 100%;
-    padding: 0 2rem;
+    padding: 0 2rem 2rem;
   }
 }
