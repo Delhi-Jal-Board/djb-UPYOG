@@ -55,20 +55,20 @@ export const getEkycExcelData = (consumerList = [], t = (key) => key) => {
   });
 };
 
-export const downloadEkycReport = async ({ tenantId, ekycStatus, fromDate, toDate, vendorId, surveyorId, fileName, t, setLoading, showToast }) => {
+export const downloadEkycReport = async ({ tenantId, ekycStatus, fromDate, toDate, vendorId, supervisorId, surveyorId, fileName, t, setLoading, showToast }) => {
   setLoading(true);
 
   try {
     const response = await Digit.EkycService.application_list({
       tenantId,
       offset: 0,
-      limit: 10000,
       reportDownload: true,
       ekycStatus,
       ...(fromDate && { fromDate }),
       ...(toDate && { toDate }),
       ...(vendorId && { vendorId }),
       ...(surveyorId && { surveyorId }),
+      ...(supervisorId && { supervisorId }),
     });
 
     const consumerList = response?.consumerList || [];

@@ -27,8 +27,6 @@ const StatusCards = ({ countData, filterDate, setFilterDate }) => {
   if (!tenantId || tenantId === "dl") {
     tenantId = "dl.djb";
   }
-  const loggedInUser = Digit.SessionStorage.get("User")?.info;
-  const fullName = loggedInUser?.name || "Admin";
 
   const showToast = ({ label, error = false }) => {
     setToast({
@@ -132,7 +130,7 @@ const StatusCards = ({ countData, filterDate, setFilterDate }) => {
       ekycStatus,
       fromDate: customDate?.startDate?.getTime(),
       toDate: customDate?.endDate?.getTime(),
-      fileName: `eKYC_All_Data_Admin_${fullName.replace(/[^a-zA-Z0-9]/g, "_")}`,
+      fileName: `eKYC_${ekycStatus}_Report`,
       t,
       setLoading: setEkycDownloadLoading,
       showToast,
