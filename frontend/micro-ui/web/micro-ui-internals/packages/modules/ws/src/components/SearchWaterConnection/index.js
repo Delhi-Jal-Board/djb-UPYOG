@@ -481,6 +481,7 @@ const SearchWaterConnection = ({ tenantId, onSubmit, data, count, resultOk, busi
             pageSizeLimit={getValues("limit")}
             onSort={onSort}
             disableSort={false}
+            autoSort={false}
             sortParams={[{ id: getValues("sortBy"), desc: getValues("sortOrder") === "DESC" ? true : false }]}
           />
         ) : null}
@@ -508,6 +509,7 @@ const SearchWaterConnection = ({ tenantId, onSubmit, data, count, resultOk, busi
               pageSizeLimit={getValues("limit")}
               onSort={onSort}
               disableSort={false}
+              autoSort={false}
               sortParams={[{ id: getValues("sortBy"), desc: getValues("sortOrder") === "DESC" ? true : false }]}
             />
           ) : (
