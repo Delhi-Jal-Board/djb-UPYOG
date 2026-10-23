@@ -1,5 +1,7 @@
 package org.egov.demand.service;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -62,6 +64,7 @@ public class AmendmentService {
 	 */
 	public List<Amendment> search(AmendmentCriteria amendmentCriteria, RequestInfo requestInfo) {
 
+		decodeAmendmentCriteria(amendmentCriteria);
 		amendmentValidator.validateAmendmentCriteriaForSearch(amendmentCriteria);
 		if (!StringUtils.isEmpty(amendmentCriteria.getMobileNumber())) {
 
@@ -207,6 +210,46 @@ public class AmendmentService {
 					.build()
 					);
 		}
+	}
+
+	/**
+	 * Decodes URL-encoded parameters in amendment criteria (e.g., consumerCode and amendmentId with %2F slashes).
+	 *
+	 * @param criteria AmendmentCriteria to decode
+	 */
+	private void decodeAmendmentCriteria(AmendmentCriteria criteria) {
+		if (criteria == null) {
+			return;
+		}
+
+		if (!CollectionUtils.isEmpty(criteria.getConsumerCode())) {
+			Set<String> decodedCodes = criteria.getConsumerCode().stream()
+					.map(this::decodeUrlParam)
+					.collect(Collectors.toSet());
+			criteria.setConsumerCode(decodedCodes);
+		}
+
+		if (!StringUtils.isEmpty(criteria.getAmendmentId())) {
+			criteria.setAmendmentId(decodeUrlParam(criteria.getAmendmentId()));
+		}
+	}
+
+	/**
+	 * Safe URL decoder: Only decodes if the string contains '%'.
+	 * Falls back safely to the original value in case of any malformed characters.
+	 *
+	 * @param value String to decode
+	 * @return Decoded string or original value
+	 */
+	private String decodeUrlParam(String value) {
+		try {
+			if (!StringUtils.isEmpty(value) && value.contains("%")) {
+				return URLDecoder.decode(value, StandardCharsets.UTF_8.name());
+			}
+		} catch (Exception e) {
+			// In case of malformed input, fall back safely to original string
+		}
+		return value;
 	}
 
 }
