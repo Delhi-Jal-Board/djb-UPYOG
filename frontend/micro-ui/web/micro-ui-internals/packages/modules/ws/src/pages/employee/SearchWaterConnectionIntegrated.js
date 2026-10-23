@@ -317,6 +317,7 @@ const SearchWaterConnectionIntegrated = ({ tenantId, onSubmit, data, count, resu
           pageSizeLimit={getValues("limit")}
           onSort={onSort}
           disableSort={false}
+          autoSort={false}
           sortParams={[{ id: getValues("sortBy"), desc: getValues("sortOrder") === "DESC" ? true : false }]}
         />
         <button className="submit-bar" type="button" onClick={downloadIntegratedBill} style={{fontFamily:"sans-serif", color:"white","fontSize":"19px",marginTop:"10px",float:"right"}}>{t("WS_DOWNLOAD_BILL")}</button>

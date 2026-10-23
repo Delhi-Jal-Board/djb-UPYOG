@@ -483,6 +483,7 @@ export const WSMyApplications = () => {
               onPrevPage={() => setPageOffset(pageOffset - pageSize)}
               pageSizeLimit={pageSize}
               disableSort={true}
+              autoSort={false}
             />
           )
         ) : (
