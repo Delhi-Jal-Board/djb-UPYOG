@@ -235,12 +235,19 @@ public class WaterServiceImpl implements WaterService {
 	}
 
 	private void validateDisconnectionRequest(WaterConnectionRequest waterConnectionRequest) {
-		if (!waterConnectionRequest.getWaterConnection().getStatus().toString().equalsIgnoreCase(WCConstants.ACTIVE)) {
+		if (waterConnectionRequest.getWaterConnection().getStatus() == null ||
+				!waterConnectionRequest.getWaterConnection().getStatus().toString().equalsIgnoreCase(WCConstants.ACTIVE)) {
 			throw new CustomException("INVALID_REQUEST",
 					"Water connection must be active for disconnection request");
 		}
 
 		List<WaterConnection> previousConnectionsList = getAllWaterApplications(waterConnectionRequest);
+		if (CollectionUtils.isEmpty(previousConnectionsList)) {
+			throw new CustomException("INVALID_CONNECTION_NO",
+					"Water connection not found for connection number: "
+							+ waterConnectionRequest.getWaterConnection().getConnectionNo());
+		}
+
 		swapConnHolders(waterConnectionRequest,previousConnectionsList);
 
 		//Swap masked Plumber info with unmasked plumberInfo from previous applications
@@ -251,6 +258,20 @@ public class WaterServiceImpl implements WaterService {
 			if(!(connection.getApplicationStatus().equalsIgnoreCase(WCConstants.STATUS_APPROVED) ||  connection.getApplicationStatus().equalsIgnoreCase(WCConstants.DISCONNECTION_FINAL_STATE) || connection.getApplicationStatus().equalsIgnoreCase(WCConstants.MODIFIED_FINAL_STATE))) {
 				throw new CustomException("INVALID_REQUEST",
 						"No application should be in progress while applying for disconnection");
+			}
+		}
+
+		String action = waterConnectionRequest.getWaterConnection().getProcessInstance() != null
+				? waterConnectionRequest.getWaterConnection().getProcessInstance().getAction()
+				: null;
+		if (action == null || WCConstants.ACTION_INITIATE.equalsIgnoreCase(action)) {
+			boolean hasPendingDues = calculationService.hasPendingWaterDues(waterConnectionRequest.getWaterConnection().getTenantId(),
+					waterConnectionRequest.getWaterConnection().getConnectionNo(),
+					waterConnectionRequest.getRequestInfo());
+			if (hasPendingDues) {
+				throw new CustomException("PENDING_WATER_DUES",
+						"Disconnection cannot be initiated because there are pending water bills for connection number: "
+								+ waterConnectionRequest.getWaterConnection().getConnectionNo());
 			}
 		}
 
