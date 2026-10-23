@@ -47,4 +47,11 @@ public class DueVerification {
     @JsonProperty("applicationNo")
     private String applicationNo;
 
+    @JsonProperty("isActive")
+    @Builder.Default
+    private Boolean isActive = true;
+
+    @JsonProperty("excludedKnos")
+    private java.util.List<String> excludedKnos;
+
 }

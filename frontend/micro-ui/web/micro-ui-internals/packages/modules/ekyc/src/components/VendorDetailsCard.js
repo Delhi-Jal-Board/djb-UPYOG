@@ -116,10 +116,11 @@ const VendorDetailsCard = () => {
       ekycStatus,
       fromDate: customDate?.startDate?.getTime(),
       toDate: customDate?.endDate?.getTime(),
-      fileName: `eKYC_Data_${vendorName.replace(/[^a-zA-Z0-9]/g, "_")}`,
+      fileName: `eKYC_${ekycStatus}_${vendorName.replace(/[^a-zA-Z0-9]/g, "_")}_Report`,
       t,
       setLoading: setEkycDownloadLoading,
       showToast,
+      vendorId: vendorId
     });
   };
 

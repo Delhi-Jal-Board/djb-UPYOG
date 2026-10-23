@@ -210,10 +210,11 @@ const SurveyorDetailsCard = () => {
       ekycStatus,
       fromDate: customDate?.startDate?.getTime(),
       toDate: customDate?.endDate?.getTime(),
-      fileName: `eKYC_Data_${surveyor?.vendorName.replace(/[^a-zA-Z0-9]/g, "_")}`,
+      fileName: `eKYC_${ekycStatus}_${surveyor?.name.replace(/[^a-zA-Z0-9]/g, "_")}_Report`,
       t,
       setLoading: setEkycDownloadLoading,
       showToast,
+      surveyorId:surveyorId
     });
   };
 

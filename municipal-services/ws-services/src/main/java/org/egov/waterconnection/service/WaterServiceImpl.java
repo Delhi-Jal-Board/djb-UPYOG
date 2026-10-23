@@ -874,12 +874,53 @@ public class WaterServiceImpl implements WaterService {
 			throw new CustomException("INVALID_REQUEST", "Either kno or applicationNo is mandatory.");
 		}
 
+		Set<String> excludedKnos = new HashSet<>();
+		if (!CollectionUtils.isEmpty(searchDv.getExcludedKnos())) {
+			for (String k : searchDv.getExcludedKnos()) {
+				if (!StringUtils.isEmpty(k)) {
+					excludedKnos.add(k.trim());
+				}
+			}
+		}
+		if (Boolean.FALSE.equals(searchDv.getIsActive()) && !StringUtils.isEmpty(searchDv.getKno())) {
+			excludedKnos.add(searchDv.getKno().trim());
+		}
+
 		List<WaterConnection> connections;
 
 		if (hasKno) {
+			String requestedKno = searchDv.getKno().trim();
+
+			// If applicationNo is also supplied, check if application has saved excludedKnos in additionalDetails
+			if (hasApplicationNo) {
+				String appNo = searchDv.getApplicationNo().trim();
+				SearchCriteria appCriteria = SearchCriteria.builder()
+						.tenantId(tenantId)
+						.applicationNumber(Collections.singleton(appNo))
+						.build();
+				List<WaterConnection> appMatches = safeSearch(appCriteria, requestInfo, "APPLICATION_SEARCH_FAILED");
+				if (!CollectionUtils.isEmpty(appMatches)) {
+					if (appMatches.get(0).getAdditionalDetails() != null) {
+						extractExcludedKnosFromAdditionalDetails(appMatches.get(0).getAdditionalDetails(), excludedKnos);
+					}
+					if (!CollectionUtils.isEmpty(appMatches.get(0).getDueVerification())) {
+						for (DueVerification existingDv : appMatches.get(0).getDueVerification()) {
+							if (existingDv != null && Boolean.FALSE.equals(existingDv.getIsActive()) && !StringUtils.isEmpty(existingDv.getKno())) {
+								excludedKnos.add(existingDv.getKno().trim());
+							}
+						}
+					}
+				}
+			}
+
+			if (excludedKnos.contains(requestedKno)) {
+				log.info("KNO: {} is excluded/crossed for application: {}, returning empty result.", requestedKno, searchDv.getApplicationNo());
+				return Collections.emptyList();
+			}
+
 			// existing single-KNO flow (unchanged behavior)
 			SearchCriteria criteria = SearchCriteria.builder()
-					.connectionNumber(Collections.singleton(searchDv.getKno().trim()))
+					.connectionNumber(Collections.singleton(requestedKno))
 					.tenantId(tenantId)
 					.applicationStatus(Collections.singleton(WCConstants.STATUS_APPROVED))
 					.status("Active")
@@ -891,11 +932,14 @@ public class WaterServiceImpl implements WaterService {
 						"No active Water Connection found with connection number: " + searchDv.getKno());
 			}
 			List<DueVerification> single = new ArrayList<>();
-			single.add(calculateDueForConnection(connections.get(0), tenantId, requestInfo,null));
+			DueVerification dv = calculateDueForConnection(connections.get(0), tenantId, requestInfo, searchDv.getApplicationNo());
+			if (dv != null) {
+				dv.setExcludedKnos(new ArrayList<>(excludedKnos));
+				single.add(dv);
+			}
 			return single;
 		}
 
-		// ---- applicationNo flow: applicationNo -> propertyId -> all connections on that property ----
 		// ---- applicationNo flow: applicationNo -> propertyId -> all connections on that property ----
 		String applicationNo = searchDv.getApplicationNo().trim();
 
@@ -915,6 +959,17 @@ public class WaterServiceImpl implements WaterService {
 			throw new CustomException(
 					"APPLICATION_NOT_FOUND",
 					"No application/property found for applicationNo: " + applicationNo);
+		}
+
+		if (appMatches.get(0).getAdditionalDetails() != null) {
+			extractExcludedKnosFromAdditionalDetails(appMatches.get(0).getAdditionalDetails(), excludedKnos);
+		}
+		if (!CollectionUtils.isEmpty(appMatches.get(0).getDueVerification())) {
+			for (DueVerification existingDv : appMatches.get(0).getDueVerification()) {
+				if (existingDv != null && Boolean.FALSE.equals(existingDv.getIsActive()) && !StringUtils.isEmpty(existingDv.getKno())) {
+					excludedKnos.add(existingDv.getKno().trim());
+				}
+			}
 		}
 
 		String propertyId = appMatches.get(0).getPropertyId();
@@ -940,7 +995,7 @@ public class WaterServiceImpl implements WaterService {
 
 
 // ============================================================
-// STEP 1: Remove duplicate KNOs
+// STEP 1: Remove duplicate KNOs and filter out excluded KNOs
 // ============================================================
 
 		Map<String, WaterConnection> uniqueConnections = new LinkedHashMap<>();
@@ -953,6 +1008,11 @@ public class WaterServiceImpl implements WaterService {
 			}
 
 			String kno = connection.getConnectionNo().trim();
+
+			if (excludedKnos.contains(kno)) {
+				log.info("Skipping excluded/crossed KNO: {}", kno);
+				continue;
+			}
 
 			uniqueConnections.putIfAbsent(kno, connection);
 		}
@@ -1053,11 +1113,29 @@ public class WaterServiceImpl implements WaterService {
 								.dueAmount(totalDue.toString())
 								.totalAmount(totalAmount.toString())
 								.applicationNo(applicationNo)
+								.excludedKnos(new ArrayList<>(excludedKnos))
 								.build());
 			}
 		}
 
 		return results;
+	}
+
+	private void extractExcludedKnosFromAdditionalDetails(Object additionalDetails, Set<String> excludedKnos) {
+		if (additionalDetails == null) return;
+		try {
+			Map<String, Object> addDetails = mapper.convertValue(additionalDetails, Map.class);
+			if (addDetails != null && addDetails.get("excludedKnos") instanceof List) {
+				List<?> list = (List<?>) addDetails.get("excludedKnos");
+				for (Object item : list) {
+					if (item != null && !StringUtils.isEmpty(item.toString().trim())) {
+						excludedKnos.add(item.toString().trim());
+					}
+				}
+			}
+		} catch (Exception e) {
+			log.error("Error reading excludedKnos from additionalDetails: ", e);
+		}
 	}
 
 	private List<WaterConnection> safeSearch(SearchCriteria criteria, RequestInfo requestInfo, String errorCode) {
@@ -1125,6 +1203,7 @@ public class WaterServiceImpl implements WaterService {
 				.dueAmount(totalDue.toString())
 				.totalAmount(totalAmount.toString())
 				.applicationNo(applicationNo)
+				.isActive(true)
 				.build();
 	}
 
@@ -1227,6 +1306,9 @@ public class WaterServiceImpl implements WaterService {
 	        for (DueVerification dueVerification : duesList) {
 
 	            if (dueVerification == null || StringUtils.isEmpty(dueVerification.getKno())) {
+	                continue;
+	            }
+	            if (Boolean.FALSE.equals(dueVerification.getIsActive())) {
 	                continue;
 	            }
 	            String kno = dueVerification.getKno().trim();
