@@ -61,8 +61,23 @@ function ApplicationDetailsActionBar({
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     });
 
+  const isMutationOrReconnection =
+    applicationDetails?.applicationData?.applicationType?.includes("MUTATION") ||
+    applicationData?.applicationType?.includes("MUTATION") ||
+    businessService?.toUpperCase()?.includes("MUTATION") ||
+    applicationData?.applicationNo?.includes("MUT") ||
+    applicationDetails?.applicationData?.applicationType?.includes("RECONNECT") ||
+    applicationData?.applicationType?.includes("RECONNECT") ||
+    businessService?.toUpperCase()?.includes("RECONNECTION") ||
+    applicationData?.applicationNo?.includes("RC") ||
+    applicationData?.reconnectRequest;
+
+  const hasDirectSendBack = actions?.some((e) => e.action === "SEND_BACK_TO_CITIZEN_DIRECT");
+
   const completelySatisfied =
-    approvalChecklist?.isFullySatisfied !== undefined
+    isMutationOrReconnection
+      ? undefined
+      : approvalChecklist?.isFullySatisfied !== undefined
       ? approvalChecklist?.isFullySatisfied
       : showApprovalChecklist
       ? undefined
@@ -70,13 +85,38 @@ function ApplicationDetailsActionBar({
       ? applicationDetails?.applicationData?.additionalDetails?.CompletelySatisfied
       : applicationData?.additionalDetails?.CompletelySatisfied;
 
-  if (completelySatisfied !== undefined) {
+  if (!isMutationOrReconnection && hasDirectSendBack && completelySatisfied !== undefined) {
     if (completelySatisfied === true) {
       actions = actions?.filter((e) => e.action !== "SEND_BACK_TO_CITIZEN");
     } else if (completelySatisfied === false) {
       actions = actions?.filter((e) => e.action !== "SEND_BACK_TO_CITIZEN_DIRECT");
     }
   }
+
+  actions?.forEach((action) => {
+    if (action?.action === "SEND_BACK_TO_CITIZEN" && !action.forcedName) {
+      const primaryKey = forcedActionPrefix ? `${forcedActionPrefix}_SEND_BACK_TO_CITIZEN` : `WF_EMPLOYEE_${businessService?.toUpperCase()}_SEND_BACK_TO_CITIZEN`;
+      const translatedPrimary = t(primaryKey);
+      if (translatedPrimary && translatedPrimary !== primaryKey) {
+        action.forcedName = primaryKey;
+      } else {
+        const fallbackKeys = [
+          "WF_EMPLOYEE_NEWWS1_SEND_BACK_TO_CITIZEN",
+          "WF_EMPLOYEE_WS_SEND_BACK_TO_CITIZEN",
+          "WF_SEND_BACK_TO_CITIZEN",
+          "ES_COMMON_SEND_BACK",
+          "SEND_BACK_TO_CITIZEN",
+        ];
+        for (const fbKey of fallbackKeys) {
+          const trans = t(fbKey);
+          if (trans && trans !== fbKey) {
+            action.forcedName = fbKey;
+            break;
+          }
+        }
+      }
+    }
+  });
 
   const closeMenu = () => {
     setDisplayMenu(false);
