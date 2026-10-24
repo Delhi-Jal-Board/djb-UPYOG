@@ -51,26 +51,30 @@ public class WhatsAppService {
 
     @PostConstruct
     public void init() {
-        try {
-            TrustManager[] trustAllCerts = new TrustManager[]{
-                new X509TrustManager() {
-                    public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[0]; }
-                    public void checkClientTrusted(X509Certificate[] certs, String authType) {}
-                    public void checkServerTrusted(X509Certificate[] certs, String authType) {}
-                }
-            };
-            SSLContext sslContext = SSLContext.getInstance("TLS");
-            sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
-            CloseableHttpClient httpClient = HttpClients.custom()
-                .setSSLHostnameVerifier(new NoopHostnameVerifier())
-                .setSSLContext(sslContext)
-                .build();
-            HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
-            requestFactory.setHttpClient(httpClient);
-            this.secureRestTemplate = new RestTemplate(requestFactory);
-        } catch (Exception e) {
-            log.error("Failed to initialize secure RestTemplate for WhatsApp, falling back to default", e);
+        if (this.restTemplate != null) {
             this.secureRestTemplate = this.restTemplate;
+        } else {
+            try {
+                TrustManager[] trustAllCerts = new TrustManager[]{
+                    new X509TrustManager() {
+                        public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[0]; }
+                        public void checkClientTrusted(X509Certificate[] certs, String authType) {}
+                        public void checkServerTrusted(X509Certificate[] certs, String authType) {}
+                    }
+                };
+                SSLContext sslContext = SSLContext.getInstance("TLS");
+                sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
+                CloseableHttpClient httpClient = HttpClients.custom()
+                    .setSSLHostnameVerifier(new NoopHostnameVerifier())
+                    .setSSLContext(sslContext)
+                    .build();
+                HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
+                requestFactory.setHttpClient(httpClient);
+                this.secureRestTemplate = new RestTemplate(requestFactory);
+            } catch (Exception e) {
+                log.error("Failed to initialize secure RestTemplate for WhatsApp, falling back to default", e);
+                this.secureRestTemplate = this.restTemplate;
+            }
         }
     }
 

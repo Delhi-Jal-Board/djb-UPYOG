@@ -53,6 +53,10 @@ public class SmsNotificationListener {
 
     @Value("${whatsapp.enabled:false}")
     private Boolean whatsappEnabled;
+
+    @Autowired
+    @Qualifier("notificationExecutor")
+    private java.util.concurrent.Executor notificationExecutor;
     @Autowired
     public SmsNotificationListener(
             ApplicationContext context,
@@ -94,16 +98,10 @@ public class SmsNotificationListener {
                         if (!StringUtils.isEmpty(expiredSmsTopic))
                             kafkaTemplate.send(expiredSmsTopic, request);
                     } else {
-                        smsService.sendSMS(request.toDomain());
-                        if (whatsappEnabled) {
-                            whatsAppService.sendWhatsApp(request.toDomain());
-                        }
+                        dispatchNotificationsInParallel(request.toDomain());
                     }
                 } else {
-                    smsService.sendSMS(request.toDomain());
-                    if (whatsappEnabled) {
-                        whatsAppService.sendWhatsApp(request.toDomain());
-                    }
+                    dispatchNotificationsInParallel(request.toDomain());
                 }
             }
 
@@ -123,6 +121,37 @@ public class SmsNotificationListener {
             } else {
                 throw ex;
             }
+        }
+    }
+
+    private void dispatchNotificationsInParallel(org.egov.web.notification.sms.models.Sms sms) {
+        java.util.concurrent.CompletableFuture<Void> smsFuture = java.util.concurrent.CompletableFuture.runAsync(() -> {
+            try {
+                smsService.sendSMS(sms);
+            } catch (Exception e) {
+                log.error("Failed to send SMS to {}: {}", sms != null ? sms.getMobileNumber() : null, e.getMessage(), e);
+            }
+        }, notificationExecutor);
+
+        java.util.concurrent.CompletableFuture<Void> whatsappFuture = null;
+        if (Boolean.TRUE.equals(whatsappEnabled)) {
+            whatsappFuture = java.util.concurrent.CompletableFuture.runAsync(() -> {
+                try {
+                    whatsAppService.sendWhatsApp(sms);
+                } catch (Exception e) {
+                    log.error("Failed to send WhatsApp to {}: {}", sms != null ? sms.getMobileNumber() : null, e.getMessage(), e);
+                }
+            }, notificationExecutor);
+        }
+
+        try {
+            if (whatsappFuture != null) {
+                java.util.concurrent.CompletableFuture.allOf(smsFuture, whatsappFuture).join();
+            } else {
+                smsFuture.join();
+            }
+        } catch (Exception e) {
+            log.error("Exception waiting for parallel notification dispatch to {}: {}", sms != null ? sms.getMobileNumber() : null, e.getMessage(), e);
         }
     }
 }
