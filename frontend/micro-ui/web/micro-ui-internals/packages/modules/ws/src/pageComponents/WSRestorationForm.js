@@ -242,6 +242,7 @@ const WSRestorationForm = ({ t, config, onSelect, userType, flow }) => {
           onSuccess: async (createdData, variables) => {
             let response = await updatePayloadOfWSRestoration(createdData?.WaterConnection?.[0], "WATER");
             let waterConnectionUpdate = { WaterConnection: response, disconnectRequest: false, reconnectRequest: true };
+            await new Promise((resolve) => setTimeout(resolve, 5000));
             await waterUpdateMutation(waterConnectionUpdate, {
               onError: (error, variables) => {
                 setIsEnableLoader(false);
@@ -275,6 +276,7 @@ const WSRestorationForm = ({ t, config, onSelect, userType, flow }) => {
           onSuccess: async (createdData, variables) => {
             let response = await updatePayloadOfWSRestoration(createdData?.SewerageConnections?.[0], "SEWERAGE");
             let sewerageConnectionUpdate = { SewerageConnection: response, disconnectRequest: false, reconnectRequest: true };
+            await new Promise((resolve) => setTimeout(resolve, 5000));
             await sewerageUpdateMutation(sewerageConnectionUpdate, {
               onError: (error, variables) => {
                 setIsEnableLoader(false);
@@ -546,6 +548,7 @@ if (flow === "reconnection") {
         const createdConnection = createResponse?.[responseKey]?.[0];
         const updateConnection = await updatePayloadOfWSRestoration(createdConnection, serviceType);
         const updatePayload = { [connectionKey]: updateConnection, reconnectRequest: true, disconnectRequest: false };
+        await new Promise((resolve) => setTimeout(resolve, 5000));
         const updateResponse = await executeMutation(updateMutation, updatePayload);
         const finalConnection = updateResponse?.[responseKey]?.[0] || createdConnection;
         Digit.SessionStorage.set("WS_DISCONNECTION", { ...applicationData, DisconnectionResponse: finalConnection });

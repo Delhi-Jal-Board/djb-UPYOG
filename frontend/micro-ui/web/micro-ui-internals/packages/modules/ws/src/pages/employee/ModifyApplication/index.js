@@ -164,6 +164,7 @@ const ModifyApplication = () => {
           onSuccess: async (data, variables) => {
             let response = await updatePayloadOfWS(data?.WaterConnection?.[0], "WATER");
             let waterConnectionUpdate = { WaterConnection: response, reconnectRequest:false, disconnectRequest:false };
+            await new Promise((resolve) => setTimeout(resolve, 5000));
             waterUpdateMutation(waterConnectionUpdate, {
               onError: (error, variables) => {
                 setIsEnableLoader(false);
@@ -193,6 +194,7 @@ const ModifyApplication = () => {
           onSuccess: async (data, variables) => {
             let response = await updatePayloadOfWS(data?.SewerageConnections?.[0], "SEWERAGE");
             let sewerageConnectionUpdate = { SewerageConnection: response,reconnectRequest:false, disconnectRequest:false  };
+            await new Promise((resolve) => setTimeout(resolve, 5000));
             await sewerageUpdateMutation(sewerageConnectionUpdate, {
               onError: (error, variables) => {
                 setIsEnableLoader(false);
