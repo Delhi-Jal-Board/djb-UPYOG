@@ -473,7 +473,7 @@ const MutationApplication = () => {
           setIsSubmitting(false);
           setShowToast({ key: "error", message: error?.response?.data?.Errors?.[0]?.message || "Failed to submit application" });
         },
-        onSuccess: (data) => {
+        onSuccess: async (data) => {
           // Check if the Request utility returned an Axios error object
           if (data instanceof Error || data?.isAxiosError || data?.response?.data?.Errors) {
             setIsSubmitting(false);
@@ -517,6 +517,7 @@ const MutationApplication = () => {
                 ? { WaterConnection: updatePayload, reconnectRequest: false, disconnectRequest: false }
                 : { SewerageConnection: updatePayload, reconnectRequest: false, disconnectRequest: false };
 
+            await new Promise((resolve) => setTimeout(resolve, 5000));
             updateMutation(reqDetailsUpdate, {
               onError: (error) => {
                 setIsSubmitting(false);

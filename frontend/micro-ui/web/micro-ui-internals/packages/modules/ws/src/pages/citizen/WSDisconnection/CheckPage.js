@@ -73,6 +73,7 @@ const CheckPage = () => {
             let response = await updatePayloadOfWSDisconnection(data?.WaterConnection?.[0], "WATER");
             let waterConnectionUpdate = { WaterConnection: response };
             waterConnectionUpdate = { ...waterConnectionUpdate, disconnectRequest: true }
+            await new Promise((resolve) => setTimeout(resolve, 5000));
             await waterUpdateMutation(waterConnectionUpdate, {
               onError: (error, variables) => {
                 setIsEnableLoader(false);
@@ -101,6 +102,7 @@ const CheckPage = () => {
             let response = await updatePayloadOfWSDisconnection(data?.SewerageConnections?.[0], "SEWERAGE");
             let sewerageConnectionUpdate = { SewerageConnection: response };
             sewerageConnectionUpdate = { ...sewerageConnectionUpdate, disconnectRequest: true };
+            await new Promise((resolve) => setTimeout(resolve, 5000));
             await sewerageUpdateMutation(sewerageConnectionUpdate, {
               onError: (error, variables) => {
                 setIsEnableLoader(false);

@@ -1241,6 +1241,7 @@ const NewApplication = () => {
               let response = await updatePayloadOfWS(waterData?.WaterConnection?.[0], "WATER");
               let waterConnectionUpdate = { WaterConnection: response, disconnectRequest: false, reconnectRequest: false };
 
+              await new Promise((resolve) => setTimeout(resolve, 5000));
               waterUpdateMutation(waterConnectionUpdate, {
                 onError: (error) => {
                   setIsEnableLoader(false);
@@ -1266,6 +1267,7 @@ const NewApplication = () => {
                       let response = await updatePayloadOfWS(sewerageData?.SewerageConnections?.[0], "SEWERAGE");
                       let sewerageConnectionUpdate = { SewerageConnection: response, disconnectRequest: false, reconnectRequest: false };
 
+                      await new Promise((resolve) => setTimeout(resolve, 5000));
                       await sewerageUpdateMutation(sewerageConnectionUpdate, {
                         onError: (error) => {
                           setIsEnableLoader(false);
@@ -1307,6 +1309,7 @@ const NewApplication = () => {
             onSuccess: async (data) => {
               let response = await updatePayloadOfWS(data?.WaterConnection?.[0], "WATER");
               let waterConnectionUpdate = { WaterConnection: response };
+              await new Promise((resolve) => setTimeout(resolve, 5000));
               waterUpdateMutation(waterConnectionUpdate, {
                 onError: (error) => {
                   setIsEnableLoader(false);
@@ -1342,6 +1345,7 @@ const NewApplication = () => {
             onSuccess: async (data) => {
               let response = await updatePayloadOfWS(data?.SewerageConnections?.[0], "SEWERAGE");
               let sewerageConnectionUpdate = { SewerageConnection: response };
+              await new Promise((resolve) => setTimeout(resolve, 5000));
               await sewerageUpdateMutation(sewerageConnectionUpdate, {
                 onError: (error) => {
                   setIsEnableLoader(false);
