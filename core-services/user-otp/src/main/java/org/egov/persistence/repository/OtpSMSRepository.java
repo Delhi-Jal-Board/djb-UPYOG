@@ -29,6 +29,15 @@ public class OtpSMSRepository {
     @Value("${expiry.time.for.otp: 4000}")
     private long maxExecutionTime=2000L;
 
+    @Value("${sms.message.format.login:Dear User,\n\nYour OTP for login to Delhi Jal Board portal is %s. OTP is valid for 10 minutes. Do not share this OTP with anyone.\n\nDelhi Jal Board}")
+    private String defaultLoginOtpFormat;
+
+    @Value("${sms.message.format.ekyc:Dear Consumer,\nYour confirmation number for DJB eKYC is %s.\nPlease share this number only with the authorized DJB eKYC representative to complete the process.\nThank you,\nDelhi Jal Board\n\n\\u092a\\u094d\\u0930\\u093f\\u092f \\u0909\\u092a\\u092d\\u094b\\u0915\\u094d\\u0924\\u093e,\nDJB eKYC \\u0915\\u0947 \\u0932\\u093f\\u090f \\u0906\\u092a\\u0915\\u093e \\u092a\\u0941\\u0937\\u094d\\u091f\\u093f \\u0928\\u0902\\u092c\\u0930 %s  \\u0939\\u0948\\u0964\n\\u0915\\u0943\\u092a\\u092f\\u093e eKYC \\u092a\\u094d\\u0930\\u0915\\u094d\\u0930\\u093f\\u092f\\u093e \\u092a\\u0942\\u0930\\u0940 \\u0915\\u0930\\u0928\\u0947 \\u0915\\u0947 \\u0932\\u093f\\u090f \\u092f\\u0939 \\u0928\\u0902\\u092c\\u0930 \\u0915\\u0947\\u0935\\u0932 \\u0926\\u093f\\u0932\\u094d\\u0932\\u0940 \\u091c\\u0932 \\u092c\\u094b\\u0930\\u094d\\u0921 (DJB) \\u0915\\u0947 \\u0905\\u0927\\u093f\\u0915\\u0943\\u0924 eKYC \\u092a\\u094d\\u0930\\u0924\\u093f\\u0928\\u093f\\u0927\\u093f \\u0915\\u0947 \\u0938\\u093e\\u0925 \\u0939\\u0940 \\u0938\\u093e\\u091d\\u093e \\u0915\\u0930\\u0947\\u0902\\u0964\n\\u0927\\u0928\\u094d\\u092f\\u0935\\u093e\\u0926,\n\\u0926\\u093f\\u0932\\u094d\\u0932\\u0940 \\u091c\\u0932 \\u092c\\u094b\\u0930\\u094d\\u0921 (DJB)}")
+    private String defaultEkycOtpFormat;
+
+    @Value("${sms.use.dlt.approved.format:true}")
+    private boolean useDltApprovedFormat = true;
+
     @Value("${egov.localisation.tenantid.strip.suffix.count}")
     private int tenantIdStripSuffixCount;
 
@@ -61,10 +70,16 @@ public class OtpSMSRepository {
     }
 
     private String getMessage(String otpNumber, OtpRequest otpRequest) {
+        if (useDltApprovedFormat) {
+            if (otpRequest.isLoginRequestType()) {
+                return format(defaultLoginOtpFormat, otpNumber);
+            } else if (otpRequest.isEkycRequestType()) {
+                return format(defaultEkycOtpFormat, otpNumber, otpNumber);
+            }
+        }
         final String messageFormat = getMessageFormat(otpRequest);
         if (otpRequest.isEkycRequestType()) {
-            String consumerName = otpRequest.getName() != null ? otpRequest.getName() : "Consumer";
-            return format(messageFormat, consumerName, otpNumber);
+            return format(messageFormat, otpNumber, otpNumber);
         }
         return format(messageFormat, otpNumber);
     }
@@ -75,18 +90,18 @@ public class OtpSMSRepository {
         if (localisedMsgs.isEmpty()) {
             log.info("Localization Service didn't return any msgs so using default...");
             localisedMsgs.put(LOCALIZATION_KEY_REGISTER_SMS, "Dear Citizen, Your OTP to complete your mSeva Registration is %s.");
-            localisedMsgs.put(LOCALIZATION_KEY_LOGIN_SMS, "Dear Citizen, Your Login OTP is %s.");
+            localisedMsgs.put(LOCALIZATION_KEY_LOGIN_SMS, defaultLoginOtpFormat);
             localisedMsgs.put(LOCALIZATION_KEY_PWD_RESET_SMS, "Dear Citizen, Your OTP for recovering password is %s.");
-            localisedMsgs.put(LOCALIZATION_KEY_EKYC_SMS, "Dear %s, Your confirmation number for DJB eKYC is %s. Please share this number only with the authorized DJB eKYC representative to complete the process. Thank you, Delhi Jal Board");
+            localisedMsgs.put(LOCALIZATION_KEY_EKYC_SMS, defaultEkycOtpFormat);
         }
         String message = null;
 
         if (otpRequest.isRegistrationRequestType())
             message = localisedMsgs.get(LOCALIZATION_KEY_REGISTER_SMS);
         else if (otpRequest.isLoginRequestType())
-            message = localisedMsgs.get(LOCALIZATION_KEY_LOGIN_SMS);
+            message = localisedMsgs.getOrDefault(LOCALIZATION_KEY_LOGIN_SMS, defaultLoginOtpFormat);
         else if (otpRequest.isEkycRequestType())
-            message = localisedMsgs.getOrDefault(LOCALIZATION_KEY_EKYC_SMS, "Dear %s, Your confirmation number for DJB eKYC is %s. Please share this number only with the authorized DJB eKYC representative to complete the process. Thank you, Delhi Jal Board");
+            message = localisedMsgs.getOrDefault(LOCALIZATION_KEY_EKYC_SMS, defaultEkycOtpFormat);
         else
             message = localisedMsgs.get(LOCALIZATION_KEY_PWD_RESET_SMS);
 

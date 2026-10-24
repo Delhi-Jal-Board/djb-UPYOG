@@ -87,6 +87,36 @@ public class SMSProperties {
     @Value("${sms.enabled:false}")
     private boolean smsEnabled;
 
+    @Value("${pinnacle.sms.url}")
+    private String pinnacleUrl;
+
+    @Value("${pinnacle.sms.accesskey}")
+    private String pinnacleAccessKey;
+
+    @Value("${pinnacle.sms.header}")
+    private String pinnacleHeader;
+
+    @Value("${pinnacle.sms.version}")
+    private String pinnacleVersion;
+
+    @Value("${pinnacle.sms.app.country:1}")
+    private String pinnacleAppCountry;
+
+    @Value("${pinnacle.sms.country.cd:91}")
+    private String pinnacleCountryCd;
+
+    @Value("${pinnacle.sms.dlt.entity.id}")
+    private String pinnacleDltEntityId;
+
+    @Value("${pinnacle.sms.default.template.id}")
+    private String pinnacleDefaultTemplateId;
+
+    @Value("${pinnacle.sms.enabled:true}")
+    private boolean pinnacleSmsEnabled;
+
+    @Value("${pinnacle.sms.debug:true}")
+    private boolean pinnacleDebug;
+
     @Value("${mishtel.sms.url}")
     private String mishtelUrl;
 
@@ -111,7 +141,7 @@ public class SMSProperties {
     @Value("${mishtel.sms.dlt.template.id}")
     private String mishtelTemplateId;
 
-    @Value("${mishtel.sms.enabled:true}")
+    @Value("${mishtel.sms.enabled:false}")
     private boolean mishtelSmsEnabled;
 
     @Value("${mishtel.sms.debug:false}")
