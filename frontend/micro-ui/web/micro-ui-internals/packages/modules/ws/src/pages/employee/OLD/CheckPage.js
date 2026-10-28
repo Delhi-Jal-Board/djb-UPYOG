@@ -148,6 +148,30 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
                 checkForNA(connectionDetails?.applicantType?.i18nKey || connectionDetails?.applicantType?.code || connectionDetails?.applicantType)
               )}`}
             />
+            {(() => {
+              const appType = connectionDetails?.applicantType;
+              const val = typeof appType === "object" ? (appType?.code || appType?.name || appType?.i18nKey || "") : String(appType || "");
+              const isAuthRep = String(val).toLowerCase().includes("authorized") || String(val).toLowerCase().includes("representative");
+              if (isAuthRep) {
+                return (
+                  <React.Fragment>
+                    <Row
+                      label={t("Authorized Representative Name")}
+                      text={`${checkForNA(connectionDetails?.authorizedRepresentativeName || data?.additionalDetails?.authorizedRepresentativeName)}`}
+                    />
+                    <Row
+                      label={t("Authorized Representative Designation")}
+                      text={`${checkForNA(connectionDetails?.authorizedRepresentativeDesignation || data?.additionalDetails?.authorizedRepresentativeDesignation)}`}
+                    />
+                    <Row
+                      label={t("CORE_COMMON_MOBILE_NUMBER")}
+                      text={`${checkForNA(connectionDetails?.authorizedRepresentativeMobileNumber || data?.additionalDetails?.authorizedRepresentativeMobileNumber)}`}
+                    />
+                  </React.Fragment>
+                );
+              }
+              return null;
+            })()}
             <Row
               label={t("WS_Billing_Address_Type")}
               text={`${t(
