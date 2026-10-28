@@ -68,6 +68,8 @@ const CreatePropertyForm = ({ config, onSelect, value, userType, redirectUrl }) 
             streetName: propertyAddress?.streetName || propertyAddress?.street,
             landmarkName: propertyAddress?.landmark || propertyAddress?.landmarkName,
             noOfFloors: propertyAddress?.noOfFloors || propertyAddress?.numberOfFloors || useDetails?.noOfFloors,
+            totalNoOfFloors: propertyAddress?.totalNoOfFloors || propertyAddress?.totalFloors || useDetails?.totalNoOfFloors || useDetails?.totalFloors,
+            totalFloors: propertyAddress?.totalNoOfFloors || propertyAddress?.totalFloors || useDetails?.totalNoOfFloors || useDetails?.totalFloors,
             landmark: propertyAddress?.landmark || propertyAddress?.landmarkName,
             pincode: propertyAddress?.pincode || propertyAddress?.pinCode,
             latitude: propertyAddress?.latitude || propertyAddress?.geoLocation?.latitude || "",
