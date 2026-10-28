@@ -25,8 +25,8 @@ const BannerPicker = (props) => {
   return (
     <Banner
       message={GetActionMessage(props)}
-      applicationNumber={props.data?.Properties?.[0]?.acknowldgementNumber}
-      info={props.isSuccess ? props.t("PT_APPLICATION_NO") : ""}
+      // applicationNumber={props.data?.Properties?.[0]?.acknowldgementNumber}
+      // info={props.isSuccess ? props.t("PT_APPLICATION_NO") : ""}
       successful={props.isSuccess}
     />
   );
@@ -210,7 +210,7 @@ const PTAcknowledgement = ({ onSuccess, onSelect, formData, redirectUrl, userTyp
       {isMutationSuccess && <CardText>{window.location.href.includes("employee") ? t("CS_CREATE_PROPERTY_SUCCESS_EMP_RESPONSE") : t("CS_CREATE_PROPERTY_SUCCESS_CITIZEN_RESPONSE")}</CardText>}
       {!isMutationSuccess && <CardText>{isErrorState && errorMsg ? errorMsg : (mutation.data?.response?.data?.Errors?.[0]?.message || mutation.data?.message || t("CS_FILE_PROPERTY_FAILED_RESPONSE"))}</CardText>}
 
-      <StatusTable>
+      {/* <StatusTable>
         {isMutationSuccess && (
           <Row
             rowContainerStyle={rowContainerStyle}
@@ -220,7 +220,7 @@ const PTAcknowledgement = ({ onSuccess, onSelect, formData, redirectUrl, userTyp
             textStyle={{ whiteSpace: "pre", width: "200%" }}
           />
         )}
-      </StatusTable>
+      </StatusTable> */}
       {/* {mutation.isSuccess && !onSelect && <SubmitBar label={t("PT_DOWNLOAD_ACK_FORM")} onSubmit={null} />} */}
       {(!isMutationSuccess && isErrorState) && (
         <SubmitBar

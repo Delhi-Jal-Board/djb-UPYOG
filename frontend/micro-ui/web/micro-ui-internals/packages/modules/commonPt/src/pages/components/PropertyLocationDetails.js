@@ -72,6 +72,7 @@ const PropertyLocationDetails = ({
       // Convert to dropdown-compatible object so AddressDetails Dropdown can match it
       const zroValue = zroCode ? { code: zroCode, name: zroCode, i18nKey: zroCode } : "";
       const rawNoOfFloors = details.noOfFloors || additionalDetails.numberOfFloors || additionalDetails.noOfFloors || addressData.noOfFloors || "";
+      const rawTotalNoOfFloors = details.totalNoOfFloors || details.totalFloors || additionalDetails.totalNoOfFloors || additionalDetails.totalFloors || addressData.totalNoOfFloors || addressData.totalFloors || "";
 
       setFormData({
         pincode: addressData.pincode || "",
@@ -93,6 +94,8 @@ const PropertyLocationDetails = ({
         addressLine1: addressData.addressLine1 || "",
         addressLine2: addressData.addressLine2 || "",
         noOfFloors: rawNoOfFloors,
+        totalNoOfFloors: rawTotalNoOfFloors,
+        totalFloors: rawTotalNoOfFloors,
 
         actualAssembly: addressData.actualAssembly || additionalDetails.actualAssembly || addressData.additionalDetails?.actualAssembly || additionalDetails.assembly || addressData.assembly || "",
         actualWard: addressData.actualWard || additionalDetails.actualWard || addressData.additionalDetails?.actualWard || additionalDetails.block || addressData.block || addressData.ward || "",
@@ -115,6 +118,8 @@ const PropertyLocationDetails = ({
           addressLine1: addressData.addressLine1 || "",
           addressLine2: addressData.addressLine2 || "",
           noOfFloors: rawNoOfFloors,
+          totalNoOfFloors: rawTotalNoOfFloors,
+          totalFloors: rawTotalNoOfFloors,
           actualWard: addressData.actualWard || additionalDetails.actualWard || addressData.additionalDetails?.actualWard || additionalDetails.block || addressData.block || addressData.ward || "",
           actualZone: addressData.actualZone || additionalDetails.actualZone || addressData.additionalDetails?.actualZone || additionalDetails.zone || addressData.zone || "",
           actualAssembly: addressData.actualAssembly || additionalDetails.actualAssembly || addressData.additionalDetails?.actualAssembly || additionalDetails.assembly || addressData.assembly || "",
@@ -145,6 +150,8 @@ const PropertyLocationDetails = ({
         actualAssembly: "",
         zro: "",
         noOfFloors: "",
+        totalNoOfFloors: "",
+        totalFloors: "",
         address: {},
       };
       setFormData(clearedData);

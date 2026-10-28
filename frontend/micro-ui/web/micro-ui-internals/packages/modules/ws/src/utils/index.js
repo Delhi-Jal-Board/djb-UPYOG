@@ -426,7 +426,11 @@ export const createPayloadOfWS = async (data) => {
       zro: data?.zro?.code || data?.zro,
       locality: data?.propertyAddress?.locality?.code || data?.cpt?.details?.address?.locality?.code,
       detailsProvidedBy: data?.plumberDetails?.[0]?.detailsProvidedBy?.code || data?.plumberDetails?.[0]?.detailsProvidedBy || "",
-      applicantType: data?.applicationSelection?.applicantType?.code,
+      applicantType: data?.applicationSelection?.applicantType?.code || connectionDetailsObject?.applicantType?.code || connectionDetailsObject?.applicantType,
+      authorizedRepresentativeName: connectionDetailsObject?.authorizedRepresentativeName || "",
+      authorizedRepresentativeDesignation: connectionDetailsObject?.authorizedRepresentativeDesignation || "",
+      authorizedRepresentativeMobileNumber: connectionDetailsObject?.authorizedRepresentativeMobileNumber || "",
+      authorizedMobileNumber: connectionDetailsObject?.authorizedRepresentativeMobileNumber || "",
       connectionType:
         data?.applicationSelection?.connectionType?.code ||
         connectionDetailsObject?.connectionType?.code ||

@@ -19,13 +19,26 @@ const allOptions = [
 ];
 
 const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, disable, ...props }) => {
-  const { showZRO: configShowZRO, mappedZROLocation: configMappedZROLocation, hideNextButton: configHideNextButton, showNoOfFloors: configShowNoOfFloors, showAddressType: configShowAddressType, hideAddressType: configHideAddressType } = config || {};
+  const {
+    showZRO: configShowZRO,
+    mappedZROLocation: configMappedZROLocation,
+    hideNextButton: configHideNextButton,
+    showNoOfFloors: configShowNoOfFloors,
+    showAddressType: configShowAddressType,
+    hideAddressType: configHideAddressType,
+  } = config || {};
   const showZRO = props.showZRO !== undefined ? props.showZRO : configShowZRO;
   const mappedZROLocation = props.mappedZROLocation !== undefined ? props.mappedZROLocation : configMappedZROLocation;
   const hideNextButton = props.hideNextButton !== undefined ? props.hideNextButton : configHideNextButton;
   const showNoOfFloors = props.showNoOfFloors !== undefined ? props.showNoOfFloors : configShowNoOfFloors;
   const hideAddressType = props.hideAddressType !== undefined ? props.hideAddressType : configHideAddressType;
-  const showAddressType = hideAddressType ? false : (props.showAddressType !== undefined ? props.showAddressType : (configShowAddressType !== undefined ? configShowAddressType : true));
+  const showAddressType = hideAddressType
+    ? false
+    : props.showAddressType !== undefined
+    ? props.showAddressType
+    : configShowAddressType !== undefined
+    ? configShowAddressType
+    : true;
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const { data: zroLocationsData } = Digit.Hooks.ws.useWSConfigMDMS.ZROLocation(tenantId, { enabled: !!showZRO && !mappedZROLocation });
@@ -35,10 +48,12 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
     if (props.floorOptions) return props.floorOptions;
     const fromMdms = ptServicesMastersData?.PropertyTax?.NoOfFloors;
     if (Array.isArray(fromMdms) && fromMdms.length > 0) {
-      return fromMdms.filter((item) => item.active !== false).map((item) => ({
-        code: item.code,
-        name: item.name,
-      }));
+      return fromMdms
+        .filter((item) => item.active !== false)
+        .map((item) => ({
+          code: item.code,
+          name: item.name,
+        }));
     }
     return [];
   }, [props.floorOptions, ptServicesMastersData]);
@@ -77,11 +92,11 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
   );
   const [addressLine1, setAddressLine1] = useState(
     formData?.addressLine1 ||
-    formData?.subLocality ||
-    formData?.address?.addressLine1 ||
-    formData?.address?.subLocality ||
-    formData?.infodetails?.existingDataSet?.address?.addressline1 ||
-    ""
+      formData?.subLocality ||
+      formData?.address?.addressLine1 ||
+      formData?.address?.subLocality ||
+      formData?.infodetails?.existingDataSet?.address?.addressline1 ||
+      ""
   );
   const [addressLine2, setAddressLine2] = useState(
     formData?.addressLine2 || formData?.address?.addressLine2 || formData?.infodetails?.existingDataSet?.address?.addressline2 || ""
@@ -92,16 +107,16 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
   const [addressType, setAddressType] = useState(
     convertToObject(formData?.addressType) || formData?.address?.addressType || formData?.infodetails?.existingDataSet?.address?.addressType
       ? allOptions.find(
-        (a) =>
-          a.code ===
-          (formData?.addressType?.code ||
-            formData?.addressType ||
-            formData?.address?.addressType ||
-            formData?.infodetails?.existingDataSet?.address?.addressType)
-      ) ||
-      convertToObject(formData?.addressType) ||
-      formData?.address?.addressType ||
-      formData?.infodetails?.existingDataSet?.address?.addressType
+          (a) =>
+            a.code ===
+            (formData?.addressType?.code ||
+              formData?.addressType ||
+              formData?.address?.addressType ||
+              formData?.infodetails?.existingDataSet?.address?.addressType)
+        ) ||
+          convertToObject(formData?.addressType) ||
+          formData?.address?.addressType ||
+          formData?.infodetails?.existingDataSet?.address?.addressType
       : allOptions.find((a) => a.code === "PERMANENT")
   );
   const [showPincodeSuggestions, setShowPincodeSuggestions] = useState(false);
@@ -138,8 +153,9 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
   const [tempZone, setTempZone] = useState("");
   const [tempWard, setTempWard] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [noOfFloors, setNoOfFloors] = useState(
-    formData?.noOfFloors || formData?.address?.noOfFloors || ""
+  const [noOfFloors, setNoOfFloors] = useState(formData?.noOfFloors || formData?.address?.noOfFloors || "");
+  const [totalNoOfFloors, setTotalNoOfFloors] = useState(
+    formData?.totalNoOfFloors || formData?.totalFloors || formData?.address?.totalNoOfFloors || formData?.address?.totalFloors || ""
   );
 
   useEffect(() => {
@@ -148,6 +164,13 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
       setNoOfFloors(val);
     }
   }, [formData?.noOfFloors, formData?.address?.noOfFloors]);
+
+  useEffect(() => {
+    const val = formData?.totalNoOfFloors || formData?.totalFloors || formData?.address?.totalNoOfFloors || formData?.address?.totalFloors;
+    if (val !== undefined && val !== null && val !== "") {
+      setTotalNoOfFloors(val);
+    }
+  }, [formData?.totalNoOfFloors, formData?.totalFloors, formData?.address?.totalNoOfFloors, formData?.address?.totalFloors]);
 
   const selectedFloor = useMemo(() => {
     if (!noOfFloors) return null;
@@ -326,12 +349,14 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
       const cat = loc.colonyMcdCategory || loc.category;
       if (cat) categories.add(cat);
     });
-    ["A", "B", "C", "D", "E", "F", "G", "H"].forEach(cat => categories.add(cat));
-    return Array.from(categories).sort().map((cat) => ({
-      code: cat,
-      name: cat,
-      i18nKey: cat
-    }));
+    ["A", "B", "C", "D", "E", "F", "G", "H"].forEach((cat) => categories.add(cat));
+    return Array.from(categories)
+      .sort()
+      .map((cat) => ({
+        code: cat,
+        name: cat,
+        i18nKey: cat,
+      }));
   }, [structuredLocalityData]);
 
   const fetchedPincodes = useMemo(() => {
@@ -558,10 +583,13 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
       addressType,
       latitude,
       longitude,
-      geoLocation: (latitude || longitude) ? {
-        latitude: typeof latitude === "number" ? latitude : parseFloat(latitude) || latitude,
-        longitude: typeof longitude === "number" ? longitude : parseFloat(longitude) || longitude,
-      } : undefined,
+      geoLocation:
+        latitude || longitude
+          ? {
+              latitude: typeof latitude === "number" ? latitude : parseFloat(latitude) || latitude,
+              longitude: typeof longitude === "number" ? longitude : parseFloat(longitude) || longitude,
+            }
+          : undefined,
       assembly,
       zone,
       block,
@@ -572,7 +600,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
       actualZone,
       actualWard,
       colonyMcdCategory,
-      ...(showNoOfFloors ? { noOfFloors } : {}),
+      ...(showNoOfFloors ? { noOfFloors, totalNoOfFloors, totalFloors: totalNoOfFloors } : {}),
       ...(config?.doorImage ? { doorImage, doorImageId } : {}),
     };
 
@@ -620,10 +648,13 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
       addressType,
       latitude,
       longitude,
-      geoLocation: (latitude || longitude) ? {
-        latitude: typeof latitude === "number" ? latitude : parseFloat(latitude) || latitude,
-        longitude: typeof longitude === "number" ? longitude : parseFloat(longitude) || longitude,
-      } : undefined,
+      geoLocation:
+        latitude || longitude
+          ? {
+              latitude: typeof latitude === "number" ? latitude : parseFloat(latitude) || latitude,
+              longitude: typeof longitude === "number" ? longitude : parseFloat(longitude) || longitude,
+            }
+          : undefined,
       assembly,
       zone,
       block,
@@ -634,7 +665,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
       actualZone,
       actualWard,
       colonyMcdCategory,
-      ...(showNoOfFloors ? { noOfFloors } : {}),
+      ...(showNoOfFloors ? { noOfFloors, totalNoOfFloors, totalFloors: totalNoOfFloors } : {}),
       ...(isEkyc ? { doorImage, doorImageId } : {}),
     };
 
@@ -682,6 +713,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
     actualWard,
     colonyMcdCategory,
     noOfFloors,
+    totalNoOfFloors,
     showNoOfFloors,
     config?.key,
     onSelect,
@@ -710,6 +742,9 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
       setActualZone(selectedAddress.actualZone);
       setActualWard(selectedAddress.actualWard);
       setColonyMcdCategory(selectedAddress.colonyMcdCategory);
+      if (selectedAddress.noOfFloors) setNoOfFloors(selectedAddress.noOfFloors);
+      if (selectedAddress.totalNoOfFloors || selectedAddress.totalFloors)
+        setTotalNoOfFloors(selectedAddress.totalNoOfFloors || selectedAddress.totalFloors);
       if (config?.doorImage) {
         setDoorImage(selectedAddress.doorImage);
         setDoorImageId(selectedAddress.doorImageId);
@@ -1273,6 +1308,27 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
                 placeholder={t("WS_NUMBER_OF_FLOORS")}
               />
             </div>
+          </LabelFieldPair>
+        )}
+        {showNoOfFloors && (
+          <LabelFieldPair>
+            <CardLabel>{`${t("WS_TOTAL_NUMBER_OF_FLOORS_IN_THE_BUILDING")}`}</CardLabel>
+            <TextInput
+              t={t}
+              type={"text"}
+              isMandatory={false}
+              name="totalNoOfFloors"
+              value={totalNoOfFloors}
+              style={{ width: "100%" }}
+              placeholder={t("Enter Total Number of floor in the Building")}
+              onChange={(e) => {
+                const val = e.target.value.replace(/[^0-9]/g, "").slice(0, 2);
+                setTotalNoOfFloors(val);
+              }}
+              disabled={disable}
+              maxlength={2}
+              maxLength={2}
+            />
           </LabelFieldPair>
         )}
         {props?.showMapActualLocation && (

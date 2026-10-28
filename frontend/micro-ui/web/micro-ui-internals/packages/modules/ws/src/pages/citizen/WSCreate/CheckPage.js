@@ -346,6 +346,12 @@ const CheckPage = ({ onSubmit, value }) => {
           label={t("WS_NUMBER_OF_FLOORS")}
           text={`${t(checkForNA(useDetails?.noOfFloors?.i18nKey || useDetails?.noOfFloors?.code || useDetails?.noOfFloors))}`}
         />
+        {(useDetails?.totalNoOfFloors || useDetails?.totalFloors || property?.totalNoOfFloors || property?.totalFloors || property?.additionalDetails?.totalNoOfFloors || property?.additionalDetails?.totalFloors) && (
+          <Row
+            label={t("Total Number of floor in the Building")}
+            text={`${t(checkForNA(useDetails?.totalNoOfFloors || useDetails?.totalFloors || property?.totalNoOfFloors || property?.totalFloors || property?.additionalDetails?.totalNoOfFloors || property?.additionalDetails?.totalFloors))}`}
+          />
+        )}
         <Row label={t("WS_PLOT_AREA")} text={`${t(checkForNA(useDetails?.plotArea))}`} />
         <Row label={t("WS_BUILT_UP_AREA")} text={`${t(checkForNA(useDetails?.builtUpArea))}`} />
         {useDetails?.heightOfTheBuilding && (

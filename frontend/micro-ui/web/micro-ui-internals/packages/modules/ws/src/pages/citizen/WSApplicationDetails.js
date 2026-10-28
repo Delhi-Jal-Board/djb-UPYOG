@@ -1138,6 +1138,19 @@ const WSApplicationDetails = () => {
                     )
                   )}`}
                 />
+                {(propertyAdditionalDetails?.totalNoOfFloors || propertyAdditionalDetails?.totalFloors || PTData?.Properties?.[0]?.totalNoOfFloors || PTData?.Properties?.[0]?.totalFloors) && (
+                  <Row
+                    label={t("Total Number of floor in the Building")}
+                    text={`${t(
+                      checkForNA(
+                        propertyAdditionalDetails?.totalNoOfFloors ||
+                        propertyAdditionalDetails?.totalFloors ||
+                        PTData?.Properties?.[0]?.totalNoOfFloors ||
+                        PTData?.Properties?.[0]?.totalFloors
+                      )
+                    )}`}
+                  />
+                )}
                 <Row label={t("WS_PLOT_AREA")} text={`${t(checkForNA(useDetails?.plotArea))}`} />
                 <Row label={t("WS_BUILT_UP_AREA")} text={`${t(checkForNA(useDetails?.builtUpArea))}`} />
                 <Row label={t("WS_HEIGHT_OF_THE_BUILDING")} text={`${t(checkForNA(useDetails?.heightOfTheBuilding))}`} />

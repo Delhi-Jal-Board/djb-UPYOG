@@ -64,6 +64,8 @@ const mapPropertyToFormData = (property = {}) => {
       noOfFloors: numberOfFloors
         ? { code: String(numberOfFloors), i18nKey: `PT_NO_OF_FLOORS_${numberOfFloors}` }
         : null,
+      totalNoOfFloors: addDet.totalNoOfFloors || addDet.totalFloors || property.address?.totalNoOfFloors || property.address?.totalFloors || "",
+      totalFloors: addDet.totalNoOfFloors || addDet.totalFloors || property.address?.totalNoOfFloors || property.address?.totalFloors || "",
     },
     // waterConnection is read by PropertyWaterConnection via formData[config.key]
     waterConnection: { useDetails },
@@ -228,6 +230,8 @@ const EditPropertyForm = ({ config, onSelect, userType }) => {
           yearOfConstruction: useDetails?.SelectYearofConstruction?.value || rawProperty.additionalDetails?.yearOfConstruction || "",
           numberOfDwellingUnits: useDetails?.NumberofDwellingUnits || rawProperty.additionalDetails?.numberOfDwellingUnits || "",
           numberOfFloors: floorsCode || rawProperty.additionalDetails?.numberOfFloors || "",
+          totalNoOfFloors: loc?.totalNoOfFloors || loc?.totalFloors || rawProperty.additionalDetails?.totalNoOfFloors || rawProperty.additionalDetails?.totalFloors || "",
+          totalFloors: loc?.totalNoOfFloors || loc?.totalFloors || rawProperty.additionalDetails?.totalNoOfFloors || rawProperty.additionalDetails?.totalFloors || "",
           plotArea: useDetails?.plotArea || rawProperty.additionalDetails?.plotArea || "",
           builtUpArea: useDetails?.builtUpArea || rawProperty.additionalDetails?.builtUpArea || "",
           farArea: useDetails?.farArea || rawProperty.additionalDetails?.farArea || "",
