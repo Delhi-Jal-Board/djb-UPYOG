@@ -24,11 +24,11 @@ const WSApplication = ({ application }) => {
   let filter1 = { tenantId: application.tenantId, applicationNumber: application.applicationNo };
   const { isLoading, isError, error, data } = Digit.Hooks.ws.useMyApplicationSearch(
     { filters: filter1, BusinessService: application.applicationNo?.includes("SW") ? "SW" : "WS" },
-    { filters: filter1, privacy: Digit.Utils.getPrivacyObject() }
+    { filters: filter1, privacy: Digit.Utils.getPrivacyObject(), enabled: !application?.isBillAmendment }
   );
   const { isLoading: isPTLoading, isError: isPTError, error: PTerror, data: PTData } = Digit.Hooks.pt.usePropertySearch(
     { tenantId: application?.tenantId, filters: { propertyIds: application?.propertyId } },
-    { filters: { propertyIds: application?.propertyId }, privacy: Digit.Utils.getPrivacyObject() }
+    { filters: { propertyIds: application?.propertyId }, privacy: Digit.Utils.getPrivacyObject(), enabled: !application?.isBillAmendment && !!application?.propertyId }
   );
   const isMutation = application?.applicationType?.includes("MUTATION");
   const isReconnection = application?.applicationType?.includes("RECONNECT") || application?.applicationNo?.includes("RC");
@@ -55,32 +55,36 @@ const WSApplication = ({ application }) => {
   return (
     <Card>
       <KeyNote keyValue={t("WS_MYCONNECTIONS_APPLICATION_NO")} note={application?.applicationNo} />
-      <KeyNote keyValue={t("WS_SERVICE_NAME")} note={t(`WS_APPLICATION_TYPE_${application?.applicationType}`)} />
-      <KeyNote keyValue={t("WS_CONSUMER_NAME")} note={application?.connectionHolders?.map((owner) => owner.name).join(",") || application?.property?.owners?.sort((a, b) => a?.additionalDetails?.ownerSequence - b?.additionalDetails?.ownerSequence).map((owner) => owner.name).join(",") || t("CS_NA")} />
+      <KeyNote keyValue={t("WS_SERVICE_NAME")} note={t(`WS_APPLICATION_TYPE_${application?.applicationType}`, application?.serviceType === "SEWERAGE" ? "Sewerage Bill Amendment" : "Water Bill Amendment")} />
+      <KeyNote keyValue={t("WS_CONSUMER_NAME")} note={application?.isBillAmendment && application?.connectionNo ? `${t("WS_CONSUMER_CODE")}: ${application?.connectionNo}` : (application?.connectionHolders?.map((owner) => owner.name).join(",") || application?.property?.owners?.sort((a, b) => a?.additionalDetails?.ownerSequence - b?.additionalDetails?.ownerSequence).map((owner) => owner.name).join(",") || t("CS_NA"))} />
       <KeyNote keyValue={t("WS_PROPERTY_ID")} note={application?.propertyId || t("CS_NA")} />
-      <KeyNote keyValue={t("WS_STATUS")} note={t(`CS_${application?.applicationStatus}`) || t("CS_NA")} />
+      <KeyNote keyValue={t("WS_STATUS")} note={t(`CS_${application?.applicationStatus}`, application?.applicationStatus) || t("CS_NA")} />
       <KeyNote keyValue={t("WS_SLA")} note={Math.round(application?.sla / (24 * 60 * 60 * 1000)) ? `${Math.round(application?.sla / (24 * 60 * 60 * 1000))} Days` : t("CS_NA")} />
-      <KeyNote
-        keyValue={t("WS_PROPERTY_ADDRESS")}
-        note={getAddress(application?.property?.address, t)}
-        privacy={{
-          uuid: application?.property?.owners?.[0]?.uuid,
-          fieldName: ["doorNo", "street", "landmark"],
-          model: "Property", showValue: true,
-          loadData: {
-            serviceName: "/property-services/property/_search",
-            requestBody: {},
-            requestParam: { tenantId: application?.tenantId || "dl.djb", mobileNumber: userMobileNumber },
-            jsonPath: "Properties[0].address.street",
-            isArray: false,
-            d: (res) => {
-              let resultString = (_.get(res, "Properties[0].address.doorNo") ? `${_.get(res, "Properties[0].address.doorNo")}, ` : "") + (_.get(res, "Properties[0].address.street") ? `${_.get(res, "Properties[0].address.street")}, ` : "") + (_.get(res, "Properties[0].address.landmark") ? `${_.get(res, "Properties[0].address.landmark")}` : "")
-              return resultString;
-            }
-          },
-        }}
-      />
-      <Link to={`/digit-ui/citizen/ws/connection/application/${encodeApplicationNo}`}>
+      {!application?.isBillAmendment && (
+        <KeyNote
+          keyValue={t("WS_PROPERTY_ADDRESS")}
+          note={getAddress(application?.property?.address, t)}
+          privacy={{
+            uuid: application?.property?.owners?.[0]?.uuid,
+            fieldName: ["doorNo", "street", "landmark"],
+            model: "Property", showValue: true,
+            loadData: {
+              serviceName: "/property-services/property/_search",
+              requestBody: {},
+              requestParam: { tenantId: application?.tenantId || "dl.djb", mobileNumber: userMobileNumber },
+              jsonPath: "Properties[0].address.street",
+              isArray: false,
+              d: (res) => {
+                let resultString = (_.get(res, "Properties[0].address.doorNo") ? `${_.get(res, "Properties[0].address.doorNo")}, ` : "") + (_.get(res, "Properties[0].address.street") ? `${_.get(res, "Properties[0].address.street")}, ` : "") + (_.get(res, "Properties[0].address.landmark") ? `${_.get(res, "Properties[0].address.landmark")}` : "")
+                return resultString;
+              }
+            },
+          }}
+        />
+      )}
+      <Link to={application?.isBillAmendment
+        ? `/digit-ui/citizen/ws/bill-amendment/application-details?applicationNumber=${encodeApplicationNo}`
+        : `/digit-ui/citizen/ws/connection/application/${encodeApplicationNo}`}>
         <SubmitBar label={t("WS_VIEW_DETAILS_LABEL")} />
       </Link>
       {application?.applicationStatus === "PENDING_FOR_PAYMENT" ? (

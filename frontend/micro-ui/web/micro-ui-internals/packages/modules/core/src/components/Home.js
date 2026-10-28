@@ -35,6 +35,14 @@ export const processLinkData = (newData, code, t) => {
       link.i18nKey = t(link["name"]);
       return link;
     });
+    if ((code === "WS" || code === "WS_SERVICES") && !obj.some((l) => l?.link?.includes("bill-amendment") || l?.navigationURL?.includes("bill-amendment"))) {
+      obj.push({
+        link: "/digit-ui/citizen/ws/bill-amendment",
+        navigationURL: "/digit-ui/citizen/ws/bill-amendment",
+        i18nKey: t("WS_APPLY_BILL_AMENDMENT") || "Apply for Bill Amendment",
+        orderNumber: 2.5,
+      });
+    }
   }
   const newObj = {
     links: obj?.reverse(),
