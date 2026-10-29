@@ -124,51 +124,57 @@ public class RequestServiceQueryBuilder {
             query.append(" ursbd.tenant_id LIKE ? ");
             preparedStmtList.add("%" + criteria.getTenantId() + "%");
         }
-        // Apply applicant_uuid filter ONLY if explicitly required
+        // Apply citizen/creator filter if present
         if (criteria.getCreatedBy() != null && !criteria.getCreatedBy().isEmpty()) {
-
-            if (requestServiceConfiguration.getIsUserProfileEnabled()) {
-                addClauseIfRequired(query, preparedStmtList);
-                query.append(" ursbd.applicant_uuid IS NOT NULL ");
-            } else {
-                // If user profile is not enabled, we don't need to filter by applicant UUID
-                addClauseIfRequired(query, preparedStmtList);
-                query.append(" ursbd.applicant_uuid IS NULL ");
-            }
-        }
-
-        // Apply bookingNo / mobileNumber filter ONLY if present
-        if (!ObjectUtils.isEmpty(criteria.getBookingNo()) || !ObjectUtils.isEmpty(criteria.getMobileNumber())) {
-
             addClauseIfRequired(query, preparedStmtList);
-            query.append(" ( ");
-
-            // bookingNo
-            if (!ObjectUtils.isEmpty(criteria.getBookingNo())) {
-
-                String[] bookingNumbers = criteria.getBookingNo().split(",");
-                String placeholders = String.join(",", Collections.nCopies(bookingNumbers.length, "?"));
-
-                query.append(" ursbd.booking_no IN (").append(placeholders).append(") ");
-                Collections.addAll(preparedStmtList, bookingNumbers);
-
-
-            }
-
-            // mobileNumber
+            String placeholders = String.join(",", Collections.nCopies(criteria.getCreatedBy().size(), "?"));
+            query.append(" ( ursbd.createdby IN (").append(placeholders).append(") OR ursbd.applicant_uuid IN (").append(placeholders).append(") ");
+            preparedStmtList.addAll(criteria.getCreatedBy());
+            preparedStmtList.addAll(criteria.getCreatedBy());
             if (!ObjectUtils.isEmpty(criteria.getMobileNumber())) {
+                query.append(" OR ursbd.mobile_number LIKE ? ");
+                preparedStmtList.add("%" + criteria.getMobileNumber() + "%");
+            }
+            query.append(" ) ");
 
+            // Apply bookingNo filter ONLY if present
+            if (!ObjectUtils.isEmpty(criteria.getBookingNo())) {
+                addClauseIfRequired(query, preparedStmtList);
+                String[] bookingNumbers = criteria.getBookingNo().split(",");
+                String placeholdersBn = String.join(",", Collections.nCopies(bookingNumbers.length, "?"));
+                query.append(" ursbd.booking_no IN (").append(placeholdersBn).append(") ");
+                Collections.addAll(preparedStmtList, bookingNumbers);
+            }
+        } else {
+            // Apply bookingNo / mobileNumber filter ONLY if present
+            if (!ObjectUtils.isEmpty(criteria.getBookingNo()) || !ObjectUtils.isEmpty(criteria.getMobileNumber())) {
+
+                addClauseIfRequired(query, preparedStmtList);
+                query.append(" ( ");
+
+                // bookingNo
                 if (!ObjectUtils.isEmpty(criteria.getBookingNo())) {
-                    query.append(" AND ");   // ✅ OR is correct for search
+
+                    String[] bookingNumbers = criteria.getBookingNo().split(",");
+                    String placeholders = String.join(",", Collections.nCopies(bookingNumbers.length, "?"));
+
+                    query.append(" ursbd.booking_no IN (").append(placeholders).append(") ");
+                    Collections.addAll(preparedStmtList, bookingNumbers);
                 }
 
-                query.append(" ursbd.mobile_number LIKE ? ");
-                preparedStmtList.add("%" + criteria.getMobileNumber() + "%");
+                // mobileNumber
+                if (!ObjectUtils.isEmpty(criteria.getMobileNumber())) {
 
+                    if (!ObjectUtils.isEmpty(criteria.getBookingNo())) {
+                        query.append(" AND ");   // ✅ OR is correct for search
+                    }
 
+                    query.append(" ursbd.mobile_number LIKE ? ");
+                    preparedStmtList.add("%" + criteria.getMobileNumber() + "%");
+                }
+
+                query.append(" ) ");
             }
-
-            query.append(" ) ");
         }
 
         if(!ObjectUtils.isEmpty(criteria.getLocalityCode())){
@@ -417,6 +423,30 @@ public class RequestServiceQueryBuilder {
             preparedStmtList.add("%" + criteria.getTenantId() + "%");
         }
 
+        if (criteria.getCreatedBy() != null && !criteria.getCreatedBy().isEmpty()) {
+            addClauseIfRequired(query, preparedStmtList);
+            String placeholders = String.join(",", Collections.nCopies(criteria.getCreatedBy().size(), "?"));
+            query.append(" ( ursbd.createdby IN (").append(placeholders).append(") OR ursbd.applicant_uuid IN (").append(placeholders).append(") ");
+            preparedStmtList.addAll(criteria.getCreatedBy());
+            preparedStmtList.addAll(criteria.getCreatedBy());
+            if (!ObjectUtils.isEmpty(criteria.getMobileNumber())) {
+                query.append(" OR ursbd.mobile_number LIKE ? ");
+                preparedStmtList.add("%" + criteria.getMobileNumber() + "%");
+            }
+            query.append(" ) ");
+        } else if (!ObjectUtils.isEmpty(criteria.getMobileNumber())) {
+            addClauseIfRequired(query, preparedStmtList);
+            query.append(" ursbd.mobile_number LIKE ? ");
+            preparedStmtList.add("%" + criteria.getMobileNumber() + "%");
+        }
+
+        if (criteria.getVendorIds() != null && !criteria.getVendorIds().isEmpty()) {
+            addClauseIfRequired(query, preparedStmtList);
+            String placeholders = String.join(",", Collections.nCopies(criteria.getVendorIds().size(), "?"));
+            query.append(" ursbd.vendor_id IN (").append(placeholders).append(") ");
+            preparedStmtList.addAll(criteria.getVendorIds());
+        }
+
         if (criteria.getFromDate() != null) {
             addClauseIfRequired(query, preparedStmtList);
             query.append(" ursbd.createdtime >= ? ");
@@ -457,6 +487,30 @@ public class RequestServiceQueryBuilder {
             addClauseIfRequired(query, preparedStmtList);
             query.append(" ursbd.tenant_id LIKE ? ");
             preparedStmtList.add("%" + criteria.getTenantId() + "%");
+        }
+
+        if (criteria.getCreatedBy() != null && !criteria.getCreatedBy().isEmpty()) {
+            addClauseIfRequired(query, preparedStmtList);
+            String placeholders = String.join(",", Collections.nCopies(criteria.getCreatedBy().size(), "?"));
+            query.append(" ( ursbd.createdby IN (").append(placeholders).append(") OR ursbd.applicant_uuid IN (").append(placeholders).append(") ");
+            preparedStmtList.addAll(criteria.getCreatedBy());
+            preparedStmtList.addAll(criteria.getCreatedBy());
+            if (!ObjectUtils.isEmpty(criteria.getMobileNumber())) {
+                query.append(" OR ursbd.mobile_number LIKE ? ");
+                preparedStmtList.add("%" + criteria.getMobileNumber() + "%");
+            }
+            query.append(" ) ");
+        } else if (!ObjectUtils.isEmpty(criteria.getMobileNumber())) {
+            addClauseIfRequired(query, preparedStmtList);
+            query.append(" ursbd.mobile_number LIKE ? ");
+            preparedStmtList.add("%" + criteria.getMobileNumber() + "%");
+        }
+
+        if (criteria.getVendorIds() != null && !criteria.getVendorIds().isEmpty()) {
+            addClauseIfRequired(query, preparedStmtList);
+            String placeholders = String.join(",", Collections.nCopies(criteria.getVendorIds().size(), "?"));
+            query.append(" ursbd.vendor_id IN (").append(placeholders).append(") ");
+            preparedStmtList.addAll(criteria.getVendorIds());
         }
 
         if (!ObjectUtils.isEmpty(criteria.getApplicationType())) {

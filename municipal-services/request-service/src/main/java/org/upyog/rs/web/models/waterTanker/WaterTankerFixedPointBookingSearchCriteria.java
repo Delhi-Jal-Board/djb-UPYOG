@@ -4,6 +4,8 @@ package org.upyog.rs.web.models.waterTanker;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
+import java.util.List;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -11,6 +13,9 @@ import lombok.*;
 @Builder
 @ToString
 public class WaterTankerFixedPointBookingSearchCriteria {
+
+    @JsonProperty("tenantId")
+    private String tenantId;
 
     @JsonProperty("mobileNumber")
     private String mobileNumber;
@@ -38,5 +43,11 @@ public class WaterTankerFixedPointBookingSearchCriteria {
 
     @JsonProperty("fixedPointId")
     private String fixedPointId;
+
+    @JsonProperty("createdBy")
+    private List<String> createdBy;
+
+    @JsonProperty("vendorIds")
+    private List<String> vendorIds;
 
 }

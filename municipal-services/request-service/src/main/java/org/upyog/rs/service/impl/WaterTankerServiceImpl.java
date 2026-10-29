@@ -1,6 +1,10 @@
 package org.upyog.rs.service.impl;
 
 import java.util.*;
+import java.util.stream.Collectors;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.upyog.rs.util.VendorUtil;
 
 import digit.models.coremodels.UserDetailResponse;
 import org.apache.commons.lang.StringUtils;
@@ -51,6 +55,9 @@ public class WaterTankerServiceImpl implements WaterTankerService {
 
 	@Autowired
 	private UserService userService;
+
+	@Autowired
+	private VendorUtil vendorUtil;
 
 @Override
 public WaterTankerBookingDetail createNewWaterTankerBookingRequest(WaterTankerBookingRequest waterTankerRequest) {
@@ -192,6 +199,7 @@ public WaterTankerBookingDetail createNewWaterTankerBookingRequest(WaterTankerBo
 	public List<WaterTankerBookingDetail> getWaterTankerBookingDetails(RequestInfo requestInfo,
 			WaterTankerBookingSearchCriteria waterTankerBookingSearchCriteria) {
 
+		applyUserRoleRestrictions(requestInfo, waterTankerBookingSearchCriteria);
 		enrichmentService.enrichSearchCriteriaWithIds(requestInfo, waterTankerBookingSearchCriteria);
 
 		// If the user searched by a Vendor name, but that vendor doesn't exist, return empty immediately.
@@ -258,6 +266,7 @@ public WaterTankerBookingDetail createNewWaterTankerBookingRequest(WaterTankerBo
 			RequestInfo requestInfo,
 			WaterTankerFixedPointBookingSearchCriteria criteria) {
 
+		applyUserRoleRestrictionsForFixedPoint(requestInfo, criteria);
 		List<WaterTankerFixedPointDetail> applications =
 				requestServiceRepository.getWaterTankerFixedPointBookingDetails(criteria);
 
@@ -269,6 +278,8 @@ public WaterTankerBookingDetail createNewWaterTankerBookingRequest(WaterTankerBo
 			WaterTankerBookingSearchCriteria criteria,
 			RequestInfo requestInfo) {
 
+		applyUserRoleRestrictions(requestInfo, criteria);
+		enrichmentService.enrichSearchCriteriaWithIds(requestInfo, criteria);
 		Map<String, Integer> statusCounts =
 				requestServiceRepository.getStatusCountsByApplicationType(criteria);
 
@@ -292,8 +303,10 @@ public WaterTankerBookingDetail createNewWaterTankerBookingRequest(WaterTankerBo
 
 	@Override
 	public Long getWaterTankerFixedPointCount(
-			WaterTankerFixedPointBookingSearchCriteria criteria) {
+			WaterTankerFixedPointBookingSearchCriteria criteria,
+			RequestInfo requestInfo) {
 
+		applyUserRoleRestrictionsForFixedPoint(requestInfo, criteria);
 		return requestServiceRepository.getWaterTankerFixedPointCount(criteria);
 	}
 
@@ -303,34 +316,141 @@ public WaterTankerBookingDetail createNewWaterTankerBookingRequest(WaterTankerBo
 		waterTankerBookingSearchCriteria.setCountCall(true);
 		Integer bookingCount = 0;
 
-		waterTankerBookingSearchCriteria = addCreatedByMeToCriteria(waterTankerBookingSearchCriteria, requestInfo);
+		applyUserRoleRestrictions(requestInfo, waterTankerBookingSearchCriteria);
+		enrichmentService.enrichSearchCriteriaWithIds(requestInfo, waterTankerBookingSearchCriteria);
 		bookingCount = requestServiceRepository.getApplicationsCount(waterTankerBookingSearchCriteria);
 
 		return bookingCount;
 	}
 
-	private WaterTankerBookingSearchCriteria addCreatedByMeToCriteria(WaterTankerBookingSearchCriteria criteria,
-			RequestInfo requestInfo) {
-		if (requestInfo.getUserInfo() == null) {
-			log.info("Request info is null returning criteira");
-			return criteria;
+	private void applyUserRoleRestrictions(RequestInfo requestInfo, WaterTankerBookingSearchCriteria criteria) {
+		if (requestInfo == null || requestInfo.getUserInfo() == null || criteria == null) {
+			return;
 		}
-		List<String> roles = new ArrayList<>();
-		for (Role role : requestInfo.getUserInfo().getRoles()) {
-			roles.add(role.getCode());
+
+		List<String> roleCodes = !CollectionUtils.isEmpty(requestInfo.getUserInfo().getRoles())
+				? requestInfo.getUserInfo().getRoles().stream()
+						.map(Role::getCode)
+						.filter(Objects::nonNull)
+						.map(String::toUpperCase)
+						.collect(Collectors.toList())
+				: Collections.emptyList();
+
+		// 1. Driver should not be restricted by citizen createdBy or vendorId
+		if (roleCodes.contains("WT_DRIVER") || roleCodes.contains("DRIVER")) {
+			return;
 		}
-		log.info("user roles for searching : " + roles);
-		/**
-		 * Citizen can see booking details only booked by him
-		 */
-		List<String> uuids = new ArrayList<>();
-		if (roles.contains(RequestServiceConstants.CITIZEN)
-				&& !StringUtils.isEmpty(requestInfo.getUserInfo().getUuid())) {
-			uuids.add(requestInfo.getUserInfo().getUuid());
-			criteria.setCreatedBy(uuids);
-			log.debug("loading data of created and by me" + uuids.toString());
+
+		// 2. Vendor: restricted to their assigned vendorId
+		boolean isVendor = roleCodes.contains("WT_VENDOR") || roleCodes.contains("VENDOR") || roleCodes.contains("COMMON_VENDOR");
+		if (isVendor) {
+			String userUuid = requestInfo.getUserInfo().getUuid();
+			String tenantId = !StringUtils.isEmpty(criteria.getTenantId())
+					? criteria.getTenantId()
+					: requestInfo.getUserInfo().getTenantId();
+			Object vendorResp = vendorUtil.searchVendorByOwnerId(requestInfo, tenantId, userUuid);
+			List<String> myVendorIds = extractVendorIdsFromResponse(vendorResp);
+			if (!CollectionUtils.isEmpty(myVendorIds)) {
+				criteria.setVendorIds(myVendorIds);
+			} else {
+				criteria.setVendorIds(Collections.singletonList("NO_MATCHING_VENDOR"));
+			}
+			log.info("Restricted vendor search criteria for user {} to vendorIds: {}", userUuid, criteria.getVendorIds());
+			return;
 		}
-		return criteria;
+
+		// 3. Employee: full access to see all bookings
+		String userType = requestInfo.getUserInfo().getType();
+		if ("EMPLOYEE".equalsIgnoreCase(userType)) {
+			criteria.setCreatedBy(null);
+			log.info("User is employee, allowing full access without vendor/citizen restriction");
+			return;
+		}
+
+		// 4. Citizen: restricted to bookings created by or for this citizen
+		if ("CITIZEN".equalsIgnoreCase(userType)) {
+			String userUuid = requestInfo.getUserInfo().getUuid();
+			if (!StringUtils.isEmpty(userUuid)) {
+				criteria.setCreatedBy(Collections.singletonList(userUuid));
+			}
+			if (!StringUtils.isEmpty(requestInfo.getUserInfo().getMobileNumber())) {
+				criteria.setMobileNumber(requestInfo.getUserInfo().getMobileNumber());
+			}
+			log.info("Restricted citizen search criteria for user {} with createdBy: {} and mobileNumber: {}",
+					userUuid, criteria.getCreatedBy(), criteria.getMobileNumber());
+		}
+	}
+
+	private void applyUserRoleRestrictionsForFixedPoint(RequestInfo requestInfo, WaterTankerFixedPointBookingSearchCriteria criteria) {
+		if (requestInfo == null || requestInfo.getUserInfo() == null || criteria == null) {
+			return;
+		}
+
+		List<String> roleCodes = !CollectionUtils.isEmpty(requestInfo.getUserInfo().getRoles())
+				? requestInfo.getUserInfo().getRoles().stream()
+						.map(Role::getCode)
+						.filter(Objects::nonNull)
+						.map(String::toUpperCase)
+						.collect(Collectors.toList())
+				: Collections.emptyList();
+
+		if (roleCodes.contains("WT_DRIVER") || roleCodes.contains("DRIVER")) {
+			return;
+		}
+
+		boolean isVendor = roleCodes.contains("WT_VENDOR") || roleCodes.contains("VENDOR") || roleCodes.contains("COMMON_VENDOR");
+		if (isVendor) {
+			String userUuid = requestInfo.getUserInfo().getUuid();
+			String tenantId = !StringUtils.isEmpty(criteria.getTenantId())
+					? criteria.getTenantId()
+					: requestInfo.getUserInfo().getTenantId();
+			Object vendorResp = vendorUtil.searchVendorByOwnerId(requestInfo, tenantId, userUuid);
+			List<String> myVendorIds = extractVendorIdsFromResponse(vendorResp);
+			if (!CollectionUtils.isEmpty(myVendorIds)) {
+				criteria.setVendorIds(myVendorIds);
+			} else {
+				criteria.setVendorIds(Collections.singletonList("NO_MATCHING_VENDOR"));
+			}
+			return;
+		}
+
+		String userType = requestInfo.getUserInfo().getType();
+		if ("EMPLOYEE".equalsIgnoreCase(userType)) {
+			criteria.setCreatedBy(null);
+			return;
+		}
+
+		if ("CITIZEN".equalsIgnoreCase(userType)) {
+			String userUuid = requestInfo.getUserInfo().getUuid();
+			if (!StringUtils.isEmpty(userUuid)) {
+				criteria.setCreatedBy(Collections.singletonList(userUuid));
+			}
+			if (!StringUtils.isEmpty(requestInfo.getUserInfo().getMobileNumber())) {
+				criteria.setMobileNumber(requestInfo.getUserInfo().getMobileNumber());
+			}
+		}
+	}
+
+	private List<String> extractVendorIdsFromResponse(Object response) {
+		List<String> ids = new ArrayList<>();
+		if (response == null) return ids;
+		try {
+			ObjectMapper mapper = new ObjectMapper();
+			Map<String, Object> responseMap = mapper.convertValue(response, Map.class);
+			if (responseMap != null && responseMap.containsKey("vendor")) {
+				List<Map<String, Object>> entities = (List<Map<String, Object>>) responseMap.get("vendor");
+				if (entities != null) {
+					for (Map<String, Object> entity : entities) {
+						if (entity != null && entity.get("id") != null) {
+							ids.add(entity.get("id").toString());
+						}
+					}
+				}
+			}
+		} catch (Exception e) {
+			log.error("Error extracting vendor IDs from response", e);
+		}
+		return ids;
 	}
 
 	@Override
@@ -546,6 +666,11 @@ public WaterTankerBookingDetail createNewWaterTankerBookingRequest(WaterTankerBo
 		totalCountCriteria.setVehicleIds(waterTankerBookingSearchCriteria.getVehicleIds());
 		totalCountCriteria.setDriverIds(waterTankerBookingSearchCriteria.getDriverIds());
 		totalCountCriteria.setFillingPointId(waterTankerBookingSearchCriteria.getFillingPointId());
+		totalCountCriteria.setCreatedBy(waterTankerBookingSearchCriteria.getCreatedBy());
+
+		applyUserRoleRestrictions(requestInfo, totalCountCriteria);
+		enrichmentService.enrichSearchCriteriaWithIds(requestInfo, totalCountCriteria);
+
 		return requestServiceRepository.getTotalApplicationsCount(totalCountCriteria);
 	}
 }
