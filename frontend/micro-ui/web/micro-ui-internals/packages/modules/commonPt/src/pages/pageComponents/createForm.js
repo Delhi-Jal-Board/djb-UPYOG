@@ -146,7 +146,16 @@ const CreatePropertyForm = ({ config, onSelect, value, userType, redirectUrl }) 
       },
     };
     const loc = currentFormValue?.locationDet;
-    if (!loc?.addressType || !loc?.city || !loc?.pincode || !loc?.locality || !loc?.addressLine1 || !loc?.houseNo) {
+    if (
+      !loc?.addressType ||
+      !loc?.city ||
+      !loc?.pincode ||
+      !loc?.locality ||
+      !loc?.addressLine1 ||
+      !loc?.houseNo ||
+      !loc?.landmark ||
+      (typeof loc?.landmark === "string" && !loc?.landmark?.trim())
+    ) {
       setShowToast({ key: true, label: t("Please fill all the mandatory fields") });
       return;
     }

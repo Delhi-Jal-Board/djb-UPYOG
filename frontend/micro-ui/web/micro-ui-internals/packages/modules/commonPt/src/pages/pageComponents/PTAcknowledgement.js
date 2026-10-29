@@ -178,12 +178,16 @@ const PTAcknowledgement = ({ onSuccess, onSelect, formData, redirectUrl, userTyp
       const finalRedirectUrl = (redirectUrl && redirectUrl !== "undefined") ? redirectUrl : (redirectUrlFromQuery && redirectUrlFromQuery !== "undefined" ? redirectUrlFromQuery : fallbackUrl);
       
       if (finalRedirectUrl) {
-        const targetUrl = finalRedirectUrl.includes("ws/info")
-          ? (window.location.href.includes("/employee/") ? "/digit-ui/employee/ws/info" : "/digit-ui/citizen/ws/info")
-          : `${finalRedirectUrl}${finalRedirectUrl.includes("?") ? "&" : "?"}propertyId=${responseData?.Properties[0]?.propertyId}&tenantId=${responseData?.Properties[0]?.tenantId}`;
+        const isWsInfo = finalRedirectUrl.includes("ws/info");
+        const separator = finalRedirectUrl.includes("?") ? "&" : "?";
+        const targetUrl = isWsInfo
+          ? `${finalRedirectUrl}${separator}hasProperty=YES&propertyId=${responseData?.Properties?.[0]?.propertyId || ""}`
+          : `${finalRedirectUrl}${separator}propertyId=${responseData?.Properties?.[0]?.propertyId}&tenantId=${responseData?.Properties?.[0]?.tenantId}`;
         history.push(targetUrl, {
           property: responseData?.Properties?.[0],
           propertyId: responseData?.Properties?.[0]?.propertyId,
+          hasProperty: "YES",
+          fromPropertyCreate: true,
           ...location?.state?.prevState,
         });
         return;
@@ -192,9 +196,12 @@ const PTAcknowledgement = ({ onSuccess, onSelect, formData, redirectUrl, userTyp
       if (onSelect) {
         onSelect("cpt", { details: responseData?.Properties?.[0] });
       } else {
-        history.push(fallbackUrl, {
+        const fallbackTarget = `${fallbackUrl}?hasProperty=YES&propertyId=${responseData?.Properties?.[0]?.propertyId || ""}`;
+        history.push(fallbackTarget, {
           property: responseData?.Properties?.[0],
           propertyId: responseData?.Properties?.[0]?.propertyId,
+          hasProperty: "YES",
+          fromPropertyCreate: true,
           ...location?.state?.prevState,
         });
       }
@@ -223,44 +230,54 @@ const PTAcknowledgement = ({ onSuccess, onSelect, formData, redirectUrl, userTyp
       </StatusTable> */}
       {/* {mutation.isSuccess && !onSelect && <SubmitBar label={t("PT_DOWNLOAD_ACK_FORM")} onSubmit={null} />} */}
       {(!isMutationSuccess && isErrorState) && (
-        <SubmitBar
-          label={t("CORE_COMMON_GO_TO_HOME")}
-          onSubmit={() => {
-            history.push(window.location.href.includes("/employee/") ? "/digit-ui/employee" : "/digit-ui/citizen/commonpt/property/citizen-search");
-          }}
-        />
-      )}
-      {isMutationSuccess &&
-        (window.location.href.includes("/citizen/") || window.location.href.includes("/employee/")) &&
-        (onSelect ? (
-          <SubmitBar label={t("CS_COMMON_PROCEED")} onSubmit={onNext} />
-        ) : (
+        <div style={{ marginTop: "24px", display: "flex", justifyContent: "flex-start", width: "100%" }}>
           <SubmitBar
-            label={t("CS_COMMON_PROCEED")}
+            label={t("CORE_COMMON_GO_TO_HOME")}
+            style={{
+              width: "auto",
+              minWidth: "240px",
+              minHeight: "44px",
+              height: "auto",
+              padding: "10px 24px",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              borderRadius: "4px",
+              boxSizing: "border-box",
+              whiteSpace: "nowrap",
+              fontSize: "16px",
+              cursor: "pointer",
+            }}
             onSubmit={() => {
-              const queryParams = new URLSearchParams(location.search);
-              const redirectUrlFromQuery = queryParams.get("redirectToUrl") || queryParams.get("redirectUrl");
-              const fallbackUrl = window.location.href.includes("/employee/") ? "/digit-ui/employee/ws/info" : "/digit-ui/citizen/ws/info";
-              const finalRedirectUrl = (redirectUrl && redirectUrl !== "undefined") ? redirectUrl : (redirectUrlFromQuery && redirectUrlFromQuery !== "undefined" ? redirectUrlFromQuery : fallbackUrl);
-              if (finalRedirectUrl) {
-                const targetUrl = finalRedirectUrl.includes("ws/info")
-                  ? (window.location.href.includes("/employee/") ? "/digit-ui/employee/ws/info" : "/digit-ui/citizen/ws/info")
-                  : `${finalRedirectUrl}${finalRedirectUrl.includes("?") ? "&" : "?"}propertyId=${responseData?.Properties[0]?.propertyId}&tenantId=${responseData?.Properties[0]?.tenantId}`;
-                history.push(targetUrl, {
-                  property: responseData?.Properties?.[0],
-                  propertyId: responseData?.Properties?.[0]?.propertyId,
-                  ...location?.state?.prevState,
-                });
-              } else {
-                history.push(fallbackUrl, {
-                  property: responseData?.Properties?.[0],
-                  propertyId: responseData?.Properties?.[0]?.propertyId,
-                  ...location?.state?.prevState,
-                });
-              }
+              history.push(window.location.href.includes("/employee/") ? "/digit-ui/employee" : "/digit-ui/citizen/commonpt/property/citizen-search");
             }}
           />
-        ))}
+        </div>
+      )}
+      {isMutationSuccess &&
+        (window.location.href.includes("/citizen/") || window.location.href.includes("/employee/")) && (
+          <div style={{ marginTop: "24px", display: "flex", justifyContent: "flex-start", width: "100%" }}>
+            <SubmitBar
+              label={t("CS_COMMON_PROCEED")}
+              style={{
+                width: "auto",
+                minWidth: "320px",
+                minHeight: "44px",
+                height: "auto",
+                padding: "10px 28px",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: "4px",
+                boxSizing: "border-box",
+                whiteSpace: "nowrap",
+                fontSize: "16px",
+                cursor: "pointer",
+              }}
+              onSubmit={onNext}
+            />
+          </div>
+        )}
     </Card>
     </div>
   );

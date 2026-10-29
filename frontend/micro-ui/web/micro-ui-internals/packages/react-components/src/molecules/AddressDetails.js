@@ -811,8 +811,8 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
         t={t}
         isDisabled={
           config?.doorImage
-            ? !houseNo || !locality || !pincode || !addressLine1 || !streetName || !doorImageId
-            : !houseNo || !city || !locality || !pincode || !addressLine1 || (showZRO && !zro)
+            ? !houseNo || !locality || !pincode || !addressLine1 || !streetName || !doorImageId || !landmark
+            : !houseNo || !city || !locality || !pincode || !addressLine1 || !landmark || (showZRO && !zro)
         }
         className="no-box-shadow flex-box flex-box-col flex-gap-3 p-top-0"
       >
@@ -1269,10 +1269,12 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
           />
         </LabelFieldPair>
         <LabelFieldPair>
-          <CardLabel>{`${t("LANDMARK")}`}</CardLabel>
+          <CardLabel>
+            {`${t("LANDMARK")}`} <span className="check-page-link-button">*</span>
+          </CardLabel>
           <TextInput
             t={t}
-            type={"textarea"}
+            type={"text"}
             isMandatory={false}
             optionKey="i18nKey"
             name="landmark"
@@ -1285,9 +1287,9 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
             disabled={disable}
             ValidationRequired={true}
             validation={{
-              isRequired: false,
-              pattern: "^[a-zA-Z0-9 ]+$",
-              type: "textarea",
+              isRequired: true,
+              pattern: "^[a-zA-Z0-9 ,\\.\\-\\/]+$",
+              type: "text",
               title: t("LANDMARK_ERROR_MESSAGE"),
             }}
           />

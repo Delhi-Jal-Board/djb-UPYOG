@@ -281,6 +281,9 @@ const ActionModal = ({
     } else if (applicationData?.applicationType == "WATER_RECONNECTION") {
       submitAction({ WaterConnection: applicationData, disconnectRequest: false, reconnectRequest: true });
     } else {
+      if (!applicationData?.additionalDetails) {
+        applicationData.additionalDetails = {};
+      }
       const adhocRebateData = sessionStorage.getItem("Digit.ADHOC_ADD_REBATE_DATA");
       const parsedAdhocRebateData = adhocRebateData ? JSON.parse(adhocRebateData) : "";
       if (parsedAdhocRebateData?.value?.adhocPenalty)

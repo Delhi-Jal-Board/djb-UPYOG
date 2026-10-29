@@ -14,19 +14,18 @@ const ActivateConnection = () => {
   let state = location?.state ? (typeof location.state === "string" ? JSON.parse(location.state) : location.state) : {};
   const history = useHistory();
   let filters = func.getQueryStringParams(location.search);
+  const initialAppData = cloneDeep(state?.data || state?.applicationData || (state?.applicationNo ? state : undefined));
+  let details = initialAppData;
+  const stateId = Digit.ULBService.getStateId();
+  let tenantId = Digit.ULBService.getCurrentTenantId() || Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code;
+
   const [canSubmit, setSubmitValve] = useState(false);
   const [isEnableLoader, setIsEnableLoader] = useState(false);
   const [showToast, setShowToast] = useState(null);
   const [appDetails, setAppDetails] = useState({});
   const [isAppDetailsPage, setIsAppDetailsPage] = useState(false);
 
-  const [config, setConfig] = React.useState({ body: [] });
-
-  const stateId = Digit.ULBService.getStateId();
-  let tenantId = Digit.ULBService.getCurrentTenantId() || Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code;
   let { data: newConfig, isLoading } = Digit.Hooks.ws.useWSConfigMDMS.WSActivationConfig(stateId, {});
-  const initialAppData = cloneDeep(state?.data || state?.applicationData || (state?.applicationNo ? state : undefined));
-  let details = initialAppData;
   let { isLoading: isappdetailsLoading, isError, data: applicationDetails, error } = Digit.Hooks.ws.useWSDetailsPage(
     t,
     tenantId,
@@ -43,6 +42,67 @@ const ActivateConnection = () => {
     error: updateError,
     mutate,
   } = Digit.Hooks.ws.useWSApplicationActions(filters?.service);
+
+  const getActivationConfig = (cfgData, loading) => {
+    const configsToUse = (!loading && cfgData && Array.isArray(cfgData) && cfgData.length > 0) ? cfgData : newConfigLocal;
+    if (configsToUse && Array.isArray(configsToUse)) {
+      const isCitizen = Digit.UserService.getUser()?.info?.type === "CITIZEN" || window.location.href.includes("/citizen");
+      const configObj = configsToUse.find((conf) => conf.hideInCitizen) || configsToUse[0];
+      if (configObj && configObj.body) {
+        let flattenedBody = [];
+        configObj.body.forEach((section) => {
+          if (section.body && Array.isArray(section.body)) {
+            const mappedSectionBody = section.body.map((item) => {
+              if (item.key === "activationDetails" && (isCitizen || item.component === "WSActivationPageDetails")) {
+                return {
+                  ...item,
+                  component: "WSActivationDetails",
+                };
+              }
+              if (item.key === "supportingDocuments") {
+                return {
+                  ...item,
+                  isMandatory: true,
+                  validation: { required: true },
+                };
+              }
+              return item;
+            });
+            flattenedBody = [...flattenedBody, ...mappedSectionBody];
+          }
+        });
+        const isActivationStatus =
+          filters?.action === "ACTIVATE_CONNECTION" ||
+          state?.action === "ACTIVATE_CONNECTION" ||
+          initialAppData?.applicationStatus?.includes("PENDING_FOR_CONNECTION_ACTIVATION") ||
+          applicationDetails?.applicationData?.applicationStatus?.includes("PENDING_FOR_CONNECTION_ACTIVATION");
+
+        const currentActionHead =
+          !isActivationStatus && (
+            filters?.action === "ENTER_METER_DETAILS" ||
+            state?.action === "ENTER_METER_DETAILS" ||
+            initialAppData?.applicationStatus?.includes("PENDING_FOR_METER_INSTALLATION") ||
+            applicationDetails?.applicationData?.applicationStatus?.includes("PENDING_FOR_METER_INSTALLATION")
+          )
+            ? (t("WF_EMPLOYEE_NEWWS1_ENTER_METER_DETAILS") && t("WF_EMPLOYEE_NEWWS1_ENTER_METER_DETAILS") !== "WF_EMPLOYEE_NEWWS1_ENTER_METER_DETAILS"
+                ? "WF_EMPLOYEE_NEWWS1_ENTER_METER_DETAILS"
+                : t("ENTER_METER_DETAILS") && t("ENTER_METER_DETAILS") !== "ENTER_METER_DETAILS"
+                ? "ENTER_METER_DETAILS"
+                : "Enter Meter Details")
+            : "WF_EMPLOYEE_NEWSW1_ACTIVATE_CONNECTION";
+
+        return [
+          {
+            head: currentActionHead,
+            body: flattenedBody,
+          },
+        ];
+      }
+    }
+    return [];
+  };
+
+  const [config, setConfig] = React.useState(() => getActivationConfig(newConfig, isLoading));
 
   const waterSourceSubDataWithClone = state?.data?.waterSource ? cloneDeep(state?.data?.waterSource) : "";
   const waterSourceSubDataWithUS = waterSourceSubDataWithClone ? stringReplaceAll(waterSourceSubDataWithClone?.toUpperCase(), " ", "_") : "";
@@ -135,42 +195,11 @@ const ActivateConnection = () => {
   }, [isappdetailsLoading, applicationDetails]);
 
   useEffect(() => {
-    const configsToUse = (!isLoading && newConfig && Array.isArray(newConfig) && newConfig.length > 0) ? newConfig : newConfigLocal;
-    if (configsToUse && Array.isArray(configsToUse)) {
-      const isCitizen = Digit.UserService.getUser()?.info?.type === "CITIZEN" || window.location.href.includes("/citizen");
-      const configObj = configsToUse.find((conf) => conf.hideInCitizen) || configsToUse[0];
-      if (configObj && configObj.body) {
-        let flattenedBody = [];
-        configObj.body.forEach((section) => {
-          if (section.body && Array.isArray(section.body)) {
-            const mappedSectionBody = section.body.map((item) => {
-              if (item.key === "activationDetails" && (isCitizen || item.component === "WSActivationPageDetails")) {
-                return {
-                  ...item,
-                  component: "WSActivationDetails",
-                };
-              }
-              if (item.key === "supportingDocuments") {
-                return {
-                  ...item,
-                  isMandatory: true,
-                  validation: { required: true },
-                };
-              }
-              return item;
-            });
-            flattenedBody = [...flattenedBody, ...mappedSectionBody];
-          }
-        });
-        setConfig([
-          {
-            head: "WF_EMPLOYEE_NEWSW1_ACTIVATE_CONNECTION",
-            body: flattenedBody,
-          },
-        ]);
-      }
+    const updated = getActivationConfig(newConfig, isLoading);
+    if (Array.isArray(updated) && updated.length > 0) {
+      setConfig(updated);
     }
-  }, [newConfig, isLoading]);
+  }, [newConfig, isLoading, isappdetailsLoading, applicationDetails]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -278,7 +307,24 @@ const ActivateConnection = () => {
         formData.connectionExecutionDate = await getConvertedDate(actObj?.connectionExecutionDate);
 
       formData.comment = formDetails?.comments?.comments || "";
-      formData.action = filters?.action;
+
+      const isPendingActivation =
+        formData?.applicationStatus?.includes("PENDING_FOR_CONNECTION_ACTIVATION") ||
+        baseAppData?.applicationStatus?.includes("PENDING_FOR_CONNECTION_ACTIVATION") ||
+        filters?.action === "ACTIVATE_CONNECTION" ||
+        state?.action === "ACTIVATE_CONNECTION";
+
+      const isPendingMeter =
+        !isPendingActivation && (
+          formData?.applicationStatus?.includes("PENDING_FOR_METER_INSTALLATION") ||
+          baseAppData?.applicationStatus?.includes("PENDING_FOR_METER_INSTALLATION") ||
+          filters?.action === "ENTER_METER_DETAILS" ||
+          state?.action === "ENTER_METER_DETAILS"
+        );
+
+      const currentAction = isPendingActivation ? "ACTIVATE_CONNECTION" : (isPendingMeter ? "ENTER_METER_DETAILS" : (filters?.action || "ACTIVATE_CONNECTION"));
+
+      formData.action = currentAction;
       formData.wfDocuments = docFileStoreId
         ? [
             {
@@ -288,7 +334,7 @@ const ActivateConnection = () => {
           ]
         : [];
       formData.processInstance = {
-        action: filters?.action,
+        action: currentAction,
         comment: formDetails?.comments?.comments || "",
         documents: docFileStoreId
           ? [
@@ -361,7 +407,51 @@ const ActivateConnection = () => {
     }
   };
 
-  if (isEnableLoader || isLoading || isappdetailsLoading) {
+  const isPendingActivation =
+    filters?.action === "ACTIVATE_CONNECTION" ||
+    state?.action === "ACTIVATE_CONNECTION" ||
+    applicationDetails?.applicationData?.applicationStatus?.includes("PENDING_FOR_CONNECTION_ACTIVATION") ||
+    initialAppData?.applicationStatus?.includes("PENDING_FOR_CONNECTION_ACTIVATION") ||
+    details?.applicationData?.applicationStatus?.includes("PENDING_FOR_CONNECTION_ACTIVATION") ||
+    appDetails?.applicationStatus?.includes("PENDING_FOR_CONNECTION_ACTIVATION");
+
+  const isPendingMeter =
+    !isPendingActivation && (
+      filters?.action === "ENTER_METER_DETAILS" ||
+      state?.action === "ENTER_METER_DETAILS" ||
+      applicationDetails?.applicationData?.applicationStatus?.includes("PENDING_FOR_METER_INSTALLATION") ||
+      initialAppData?.applicationStatus?.includes("PENDING_FOR_METER_INSTALLATION") ||
+      details?.applicationData?.applicationStatus?.includes("PENDING_FOR_METER_INSTALLATION") ||
+      appDetails?.applicationStatus?.includes("PENDING_FOR_METER_INSTALLATION")
+    );
+
+  const getActionLabel = () => {
+    if (isPendingActivation) {
+      return t("WF_EMPLOYEE_NEWSW1_ACTIVATE_CONNECTION") && t("WF_EMPLOYEE_NEWSW1_ACTIVATE_CONNECTION") !== "WF_EMPLOYEE_NEWSW1_ACTIVATE_CONNECTION"
+        ? t("WF_EMPLOYEE_NEWSW1_ACTIVATE_CONNECTION")
+        : t("WS_ACTIVATE_CONNECTION") && t("WS_ACTIVATE_CONNECTION") !== "WS_ACTIVATE_CONNECTION"
+        ? t("WS_ACTIVATE_CONNECTION")
+        : "Activate Connection";
+    }
+    if (isPendingMeter) {
+      const keys = [
+        "WF_EMPLOYEE_NEWWS1_ENTER_METER_DETAILS",
+        "WF_NEWWS1_ENTER_METER_DETAILS",
+        "WF_CS_ENTER_METER_DETAILS",
+        "CS_ENTER_METER_DETAILS",
+        "WS_ENTER_METER_DETAILS",
+        "ENTER_METER_DETAILS",
+      ];
+      for (const k of keys) {
+        const val = t(k);
+        if (val && val !== k) return val;
+      }
+      return "Enter Meter Details";
+    }
+    return t("WF_EMPLOYEE_NEWSW1_ACTIVATE_CONNECTION") || "Activate Connection";
+  };
+
+  if (isEnableLoader || isLoading || isappdetailsLoading || !Array.isArray(config) || config.length === 0) {
     //updatingApplication ||
     return <Loader />;
   }
@@ -369,9 +459,9 @@ const ActivateConnection = () => {
   return (
     <React.Fragment>
       <div className="employee-form-section-wrapper">
-        <VerticalTimeline config={[{ timeLine: [{ actions: t("WF_EMPLOYEE_NEWSW1_ACTIVATE_CONNECTION"), currentStep: 1 }] }]} showFinalStep={false} />
+        <VerticalTimeline config={[{ timeLine: [{ actions: getActionLabel(), currentStep: 1 }] }]} showFinalStep={false} />
         <FormComposer
-          config={config.map((config) => {
+          config={(Array.isArray(config) ? config : []).map((config) => {
             return {
               ...config,
               isCollapsible: true,
@@ -382,7 +472,7 @@ const ActivateConnection = () => {
           // userType={"employee"}
           defaultValues={defaultValues}
           onSubmit={onSubmit}
-          label={t("WF_EMPLOYEE_NEWSW1_ACTIVATE_CONNECTION")}
+          label={getActionLabel()}
           onFormValueChange={onFormValueChange}
           // isDisabled={!canSubmit}
           noBreakLine={true}
