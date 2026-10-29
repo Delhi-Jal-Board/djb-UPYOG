@@ -357,16 +357,18 @@ public class RequestServiceQueryBuilder {
             limit = requestServiceConfiguration.getMaxSearchLimit();
         }
 
-        if (criteria.getLimit() != null && criteria.getLimit() <= requestServiceConfiguration.getMaxSearchLimit()) {
-            limit = criteria.getLimit();
-        }
-
-        if (criteria.getLimit() != null && criteria.getLimit() > requestServiceConfiguration.getMaxSearchLimit()) {
-            limit = requestServiceConfiguration.getMaxSearchLimit();
+        if (criteria.getLimit() != null) {
+            if (criteria.getLimit() == -1) {
+                limit = -1;
+            } else if (criteria.getLimit() > 0 && criteria.getLimit() <= requestServiceConfiguration.getMaxSearchLimit()) {
+                limit = criteria.getLimit();
+            } else if (criteria.getLimit() > requestServiceConfiguration.getMaxSearchLimit()) {
+                limit = requestServiceConfiguration.getMaxSearchLimit();
+            }
         }
 
         if (criteria.getOffset() != null)
-            offset = criteria.getOffset();
+            offset = Math.max(0, criteria.getOffset());
 
         if (limit == -1) {
             finalQuery = finalQuery.replace("WHERE offset_ > ? AND offset_ <= ?", "");
@@ -390,16 +392,18 @@ public class RequestServiceQueryBuilder {
             limit = requestServiceConfiguration.getMaxSearchLimit();
         }
 
-        if (criteria.getLimit() != null && criteria.getLimit() <= requestServiceConfiguration.getMaxSearchLimit()) {
-            limit = criteria.getLimit();
-        }
-
-        if (criteria.getLimit() != null && criteria.getLimit() > requestServiceConfiguration.getMaxSearchLimit()) {
-            limit = requestServiceConfiguration.getMaxSearchLimit();
+        if (criteria.getLimit() != null) {
+            if (criteria.getLimit() == -1) {
+                limit = -1;
+            } else if (criteria.getLimit() > 0 && criteria.getLimit() <= requestServiceConfiguration.getMaxSearchLimit()) {
+                limit = criteria.getLimit();
+            } else if (criteria.getLimit() > requestServiceConfiguration.getMaxSearchLimit()) {
+                limit = requestServiceConfiguration.getMaxSearchLimit();
+            }
         }
 
         if (criteria.getOffset() != null)
-            offset = criteria.getOffset();
+            offset = Math.max(0, criteria.getOffset());
 
         if (limit == -1) {
             finalQuery = finalQuery.replace("WHERE offset_ > ? AND offset_ <= ?", "");
