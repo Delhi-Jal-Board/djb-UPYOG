@@ -341,25 +341,7 @@ public WaterTankerBookingDetail createNewWaterTankerBookingRequest(WaterTankerBo
 			return;
 		}
 
-		// 2. Vendor: restricted to their assigned vendorId
-		boolean isVendor = roleCodes.contains("WT_VENDOR") || roleCodes.contains("VENDOR") || roleCodes.contains("COMMON_VENDOR");
-		if (isVendor) {
-			String userUuid = requestInfo.getUserInfo().getUuid();
-			String tenantId = !StringUtils.isEmpty(criteria.getTenantId())
-					? criteria.getTenantId()
-					: requestInfo.getUserInfo().getTenantId();
-			Object vendorResp = vendorUtil.searchVendorByOwnerId(requestInfo, tenantId, userUuid);
-			List<String> myVendorIds = extractVendorIdsFromResponse(vendorResp);
-			if (!CollectionUtils.isEmpty(myVendorIds)) {
-				criteria.setVendorIds(myVendorIds);
-			} else {
-				criteria.setVendorIds(Collections.singletonList("NO_MATCHING_VENDOR"));
-			}
-			log.info("Restricted vendor search criteria for user {} to vendorIds: {}", userUuid, criteria.getVendorIds());
-			return;
-		}
-
-		// 3. Employee: full access to see all bookings
+		// 2. Employee: full access to see all bookings without restriction
 		String userType = requestInfo.getUserInfo().getType();
 		if ("EMPLOYEE".equalsIgnoreCase(userType)) {
 			criteria.setCreatedBy(null);
@@ -367,18 +349,32 @@ public WaterTankerBookingDetail createNewWaterTankerBookingRequest(WaterTankerBo
 			return;
 		}
 
-		// 4. Citizen: restricted to bookings created by or for this citizen
-		if ("CITIZEN".equalsIgnoreCase(userType)) {
-			String userUuid = requestInfo.getUserInfo().getUuid();
-			if (!StringUtils.isEmpty(userUuid)) {
-				criteria.setCreatedBy(Collections.singletonList(userUuid));
-			}
-			if (!StringUtils.isEmpty(requestInfo.getUserInfo().getMobileNumber())) {
-				criteria.setMobileNumber(requestInfo.getUserInfo().getMobileNumber());
-			}
-			log.info("Restricted citizen search criteria for user {} with createdBy: {} and mobileNumber: {}",
-					userUuid, criteria.getCreatedBy(), criteria.getMobileNumber());
+		// 3. For all non-employee users (Citizen, Citizen with Vendor role, etc.):
+		// Always allow access to self-created bookings (matching createdby, applicant_uuid, or registered mobile)
+		String userUuid = requestInfo.getUserInfo().getUuid();
+		if (!StringUtils.isEmpty(userUuid)) {
+			criteria.setCreatedBy(Collections.singletonList(userUuid));
 		}
+		if (!StringUtils.isEmpty(requestInfo.getUserInfo().getMobileNumber())) {
+			criteria.setMobileNumber(requestInfo.getUserInfo().getMobileNumber());
+		}
+
+		// 4. In addition, if user is a Vendor, also grant access to bookings assigned to their vendor
+		boolean isVendor = roleCodes.contains("WT_VENDOR") || roleCodes.contains("VENDOR") || roleCodes.contains("COMMON_VENDOR");
+		if (isVendor) {
+			String tenantId = !StringUtils.isEmpty(criteria.getTenantId())
+					? criteria.getTenantId()
+					: requestInfo.getUserInfo().getTenantId();
+			Object vendorResp = vendorUtil.searchVendorByOwnerId(requestInfo, tenantId, userUuid);
+			List<String> myVendorIds = extractVendorIdsFromResponse(vendorResp);
+			if (!CollectionUtils.isEmpty(myVendorIds)) {
+				criteria.setVendorIds(myVendorIds);
+			}
+			log.info("User {} has vendor role, mapped vendorIds: {}", userUuid, criteria.getVendorIds());
+		}
+
+		log.info("Restricted non-employee search criteria for user {} with createdBy: {}, mobileNumber: {}, vendorIds: {}",
+				userUuid, criteria.getCreatedBy(), criteria.getMobileNumber(), criteria.getVendorIds());
 	}
 
 	private void applyUserRoleRestrictionsForFixedPoint(RequestInfo requestInfo, WaterTankerFixedPointBookingSearchCriteria criteria) {
@@ -398,9 +394,22 @@ public WaterTankerBookingDetail createNewWaterTankerBookingRequest(WaterTankerBo
 			return;
 		}
 
+		String userType = requestInfo.getUserInfo().getType();
+		if ("EMPLOYEE".equalsIgnoreCase(userType)) {
+			criteria.setCreatedBy(null);
+			return;
+		}
+
+		String userUuid = requestInfo.getUserInfo().getUuid();
+		if (!StringUtils.isEmpty(userUuid)) {
+			criteria.setCreatedBy(Collections.singletonList(userUuid));
+		}
+		if (!StringUtils.isEmpty(requestInfo.getUserInfo().getMobileNumber())) {
+			criteria.setMobileNumber(requestInfo.getUserInfo().getMobileNumber());
+		}
+
 		boolean isVendor = roleCodes.contains("WT_VENDOR") || roleCodes.contains("VENDOR") || roleCodes.contains("COMMON_VENDOR");
 		if (isVendor) {
-			String userUuid = requestInfo.getUserInfo().getUuid();
 			String tenantId = !StringUtils.isEmpty(criteria.getTenantId())
 					? criteria.getTenantId()
 					: requestInfo.getUserInfo().getTenantId();
@@ -408,25 +417,6 @@ public WaterTankerBookingDetail createNewWaterTankerBookingRequest(WaterTankerBo
 			List<String> myVendorIds = extractVendorIdsFromResponse(vendorResp);
 			if (!CollectionUtils.isEmpty(myVendorIds)) {
 				criteria.setVendorIds(myVendorIds);
-			} else {
-				criteria.setVendorIds(Collections.singletonList("NO_MATCHING_VENDOR"));
-			}
-			return;
-		}
-
-		String userType = requestInfo.getUserInfo().getType();
-		if ("EMPLOYEE".equalsIgnoreCase(userType)) {
-			criteria.setCreatedBy(null);
-			return;
-		}
-
-		if ("CITIZEN".equalsIgnoreCase(userType)) {
-			String userUuid = requestInfo.getUserInfo().getUuid();
-			if (!StringUtils.isEmpty(userUuid)) {
-				criteria.setCreatedBy(Collections.singletonList(userUuid));
-			}
-			if (!StringUtils.isEmpty(requestInfo.getUserInfo().getMobileNumber())) {
-				criteria.setMobileNumber(requestInfo.getUserInfo().getMobileNumber());
 			}
 		}
 	}
