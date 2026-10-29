@@ -135,6 +135,11 @@ public class RequestServiceQueryBuilder {
                 query.append(" OR ursbd.mobile_number LIKE ? ");
                 preparedStmtList.add("%" + criteria.getMobileNumber() + "%");
             }
+            if (criteria.getVendorIds() != null && !criteria.getVendorIds().isEmpty()) {
+                String vendorPlaceholders = String.join(",", Collections.nCopies(criteria.getVendorIds().size(), "?"));
+                query.append(" OR ursbd.vendor_id IN (").append(vendorPlaceholders).append(") ");
+                preparedStmtList.addAll(criteria.getVendorIds());
+            }
             query.append(" ) ");
 
             // Apply bookingNo filter ONLY if present
@@ -220,8 +225,8 @@ public class RequestServiceQueryBuilder {
             preparedStmtList.add(criteria.getDriverId());
         }
 
-        // 1. FILTER BY VENDOR IDS
-        if (criteria.getVendorIds() != null && !criteria.getVendorIds().isEmpty()) {
+        // 1. FILTER BY VENDOR IDS (Only for Employee search when criteria.getCreatedBy() is null)
+        if (criteria.getCreatedBy() == null && criteria.getVendorIds() != null && !criteria.getVendorIds().isEmpty()) {
             addClauseIfRequired(query, preparedStmtList);
             String placeholders = String.join(",", Collections.nCopies(criteria.getVendorIds().size(), "?"));
             query.append(" ursbd.vendor_id IN (").append(placeholders).append(") ");
@@ -433,6 +438,11 @@ public class RequestServiceQueryBuilder {
                 query.append(" OR ursbd.mobile_number LIKE ? ");
                 preparedStmtList.add("%" + criteria.getMobileNumber() + "%");
             }
+            if (criteria.getVendorIds() != null && !criteria.getVendorIds().isEmpty()) {
+                String vendorPlaceholders = String.join(",", Collections.nCopies(criteria.getVendorIds().size(), "?"));
+                query.append(" OR ursbd.vendor_id IN (").append(vendorPlaceholders).append(") ");
+                preparedStmtList.addAll(criteria.getVendorIds());
+            }
             query.append(" ) ");
         } else if (!ObjectUtils.isEmpty(criteria.getMobileNumber())) {
             addClauseIfRequired(query, preparedStmtList);
@@ -440,7 +450,7 @@ public class RequestServiceQueryBuilder {
             preparedStmtList.add("%" + criteria.getMobileNumber() + "%");
         }
 
-        if (criteria.getVendorIds() != null && !criteria.getVendorIds().isEmpty()) {
+        if (criteria.getCreatedBy() == null && criteria.getVendorIds() != null && !criteria.getVendorIds().isEmpty()) {
             addClauseIfRequired(query, preparedStmtList);
             String placeholders = String.join(",", Collections.nCopies(criteria.getVendorIds().size(), "?"));
             query.append(" ursbd.vendor_id IN (").append(placeholders).append(") ");
@@ -499,6 +509,11 @@ public class RequestServiceQueryBuilder {
                 query.append(" OR ursbd.mobile_number LIKE ? ");
                 preparedStmtList.add("%" + criteria.getMobileNumber() + "%");
             }
+            if (criteria.getVendorIds() != null && !criteria.getVendorIds().isEmpty()) {
+                String vendorPlaceholders = String.join(",", Collections.nCopies(criteria.getVendorIds().size(), "?"));
+                query.append(" OR ursbd.vendor_id IN (").append(vendorPlaceholders).append(") ");
+                preparedStmtList.addAll(criteria.getVendorIds());
+            }
             query.append(" ) ");
         } else if (!ObjectUtils.isEmpty(criteria.getMobileNumber())) {
             addClauseIfRequired(query, preparedStmtList);
@@ -506,7 +521,7 @@ public class RequestServiceQueryBuilder {
             preparedStmtList.add("%" + criteria.getMobileNumber() + "%");
         }
 
-        if (criteria.getVendorIds() != null && !criteria.getVendorIds().isEmpty()) {
+        if (criteria.getCreatedBy() == null && criteria.getVendorIds() != null && !criteria.getVendorIds().isEmpty()) {
             addClauseIfRequired(query, preparedStmtList);
             String placeholders = String.join(",", Collections.nCopies(criteria.getVendorIds().size(), "?"));
             query.append(" ursbd.vendor_id IN (").append(placeholders).append(") ");
