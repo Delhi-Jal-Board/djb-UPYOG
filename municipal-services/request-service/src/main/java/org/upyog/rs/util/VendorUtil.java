@@ -49,4 +49,24 @@ public class VendorUtil {
             throw new RuntimeException("Failed to fetch vendor details", e);
         }
     }
+
+    public Object searchVendorByOwnerId(RequestInfo requestInfo, String tenantId, String ownerId) {
+        StringBuilder url = new StringBuilder(vendorHost).append(vendorSearchEndpoint);
+        url.append("?tenantId=").append(tenantId);
+
+        if (ownerId != null && !ownerId.trim().isEmpty()) {
+            url.append("&ownerIds=").append(ownerId.trim());
+        }
+
+        Map<String, Object> request = new HashMap<>();
+        request.put("RequestInfo", requestInfo);
+
+        try {
+            ResponseEntity<Object> response = restTemplate.postForEntity(url.toString(), request, Object.class);
+            return response.getBody();
+        } catch (Exception e) {
+            log.error("Error while fetching Vendor details for ownerId: {}", ownerId, e);
+            return null;
+        }
+    }
 }
