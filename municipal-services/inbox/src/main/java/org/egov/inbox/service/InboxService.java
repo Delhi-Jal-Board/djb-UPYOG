@@ -533,7 +533,9 @@ public class InboxService {
 
 			if (!ObjectUtils.isEmpty(processCriteria.getModuleName())
 
-					&& processCriteria.getModuleName().equals(REQUEST_SERVICE_WATER_TANKER)
+					&& (processCriteria.getModuleName().equals(REQUEST_SERVICE_WATER_TANKER)
+					|| processCriteria.getModuleName().equals("request-service.water_tanker_fixedpoint")
+					|| processCriteria.getModuleName().equals("request-service.watertanker_fixedpoint"))
 
 			) {
 
@@ -1030,12 +1032,18 @@ public class InboxService {
 				} else {
 					// For non- Bill Amendment Inbox search
 					if (!isBusinessServiceWSOrSW) {
+						boolean isWaterTanker = !ObjectUtils.isEmpty(processCriteria.getModuleName())
+								&& (processCriteria.getModuleName().equals(REQUEST_SERVICE_WATER_TANKER)
+								|| processCriteria.getModuleName().equals("request-service.water_tanker_fixedpoint")
+								|| processCriteria.getModuleName().equals("request-service.watertanker_fixedpoint"));
 						businessKeys.forEach(businessKey -> {
-							Inbox inbox = new Inbox();
-							inbox.setProcessInstance(processInstanceMap.get(businessKey));
-							inbox.setBusinessObject(toMap((JSONObject) finalBusinessMap.get(businessKey)));
-							if (inbox.getProcessInstance() != null)
-								inboxes.add(inbox);
+							if (!isWaterTanker || (finalBusinessMap.containsKey(businessKey) && finalBusinessMap.get(businessKey) != null)) {
+								Inbox inbox = new Inbox();
+								inbox.setProcessInstance(processInstanceMap.get(businessKey));
+								inbox.setBusinessObject(toMap((JSONObject) finalBusinessMap.get(businessKey)));
+								if (inbox.getProcessInstance() != null)
+									inboxes.add(inbox);
+							}
 						});
 					} else {
 						// When Bill Amendment objects are searched
@@ -1274,7 +1282,9 @@ public class InboxService {
 
 
 		if (processCriteria != null && !ObjectUtils.isEmpty(processCriteria.getModuleName())
-				&& processCriteria.getModuleName().equals(REQUEST_SERVICE_WATER_TANKER)) {
+				&& (processCriteria.getModuleName().equals(REQUEST_SERVICE_WATER_TANKER)
+				|| processCriteria.getModuleName().equals("request-service.water_tanker_fixedpoint")
+				|| processCriteria.getModuleName().equals("request-service.watertanker_fixedpoint"))) {
 
 			Map<String, Integer> exactCounts = WTInboxFilterService.fetchStatusCounts(criteria, requestInfo);
 
@@ -1290,6 +1300,7 @@ public class InboxService {
 				}
 
 				statusCountMap = wtStatusCountMap;
+				totalCount = exactCounts.values().stream().mapToInt(Integer::intValue).sum();
 			}
 
 			response.setStatusCounts(exactCounts);
