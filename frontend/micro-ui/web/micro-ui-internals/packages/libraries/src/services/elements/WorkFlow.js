@@ -90,11 +90,18 @@ const getAssignerDetails = (instance, nextStep, moduleCode) => {
 
 export const WorkflowService = {
   init: (stateCode, businessServices) => {
+    const isCitizen = typeof window !== "undefined" && window.location.href.includes("/citizen");
+    let mappedBusinessServices = businessServices;
+    if (isCitizen && businessServices === "WS") {
+      mappedBusinessServices = "NewWS1";
+    } else if (isCitizen && businessServices === "SW") {
+      mappedBusinessServices = "NewSW1";
+    }
     return Request({
       url: `${Urls.WorkFlow}`,
       useCache: true,
       method: "POST",
-      params: { tenantId: stateCode, businessServices },
+      params: { tenantId: stateCode, businessServices: mappedBusinessServices },
       auth: true,
     });
   },
@@ -112,8 +119,14 @@ export const WorkflowService = {
   getDetailsById: async ({ tenantId, id, moduleCode, role, getTripData }) => {
     const workflow = await Digit.WorkflowService.getByBusinessId(tenantId, id); 
     const applicationProcessInstance = cloneDeep(workflow?.ProcessInstances);
+    const isCitizen = typeof window !== "undefined" && window.location.href.includes("/citizen");
     const getLocationDetails = window.location.href.includes("/obps/") || window.location.href.includes("noc/inbox");
-    const moduleCodeData = getLocationDetails ? applicationProcessInstance?.[0]?.businessService : moduleCode;
+    let moduleCodeData = getLocationDetails ? applicationProcessInstance?.[0]?.businessService : moduleCode;
+    if (isCitizen && (moduleCodeData === "WS" || moduleCode === "WS")) {
+      moduleCodeData = applicationProcessInstance?.[0]?.businessService || "NewWS1";
+    } else if (isCitizen && (moduleCodeData === "SW" || moduleCode === "SW")) {
+      moduleCodeData = applicationProcessInstance?.[0]?.businessService || "NewSW1";
+    }
     const businessServiceResponse = (await Digit.WorkflowService.init(tenantId, moduleCodeData))?.BusinessServices[0]?.states;
     if (workflow && workflow.ProcessInstances) {
       const processInstances = workflow.ProcessInstances;

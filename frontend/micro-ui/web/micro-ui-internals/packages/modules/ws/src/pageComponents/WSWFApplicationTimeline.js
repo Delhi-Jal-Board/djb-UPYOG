@@ -153,35 +153,74 @@ const StepCard = ({ checkpoint, index, isActive, t, getTimelineCaptions }) => {
   );
 };
 
-const ActionButton = ({ label, to, state }) => (
-  <Link to={{ pathname: to, state }}>
-    <button style={{
-      width: "100%",
-      marginTop: "8px",
-      padding: "13px 20px",
-      borderRadius: "10px",
-      border: "none",
-      cursor: "pointer",
-      background: TOKEN.accent,
-      color: "#fff",
-      fontWeight: 700,
-      fontSize: "14px",
-      letterSpacing: "0.04em",
-      boxShadow: "0 4px 20px rgba(124,58,237,0.4)",
-      transition: "opacity 0.2s, transform 0.2s",
-    }}
-      onMouseEnter={e => { e.currentTarget.style.opacity = "0.88"; e.currentTarget.style.transform = "translateY(-1px)"; }}
-      onMouseLeave={e => { e.currentTarget.style.opacity = "1"; e.currentTarget.style.transform = "translateY(0)"; }}
-    >
-      {label}
-    </button>
-  </Link>
-);
+const ActionButton = ({ label, to, state }) => {
+  const toObj =
+    typeof to === "string" && to.includes("?")
+      ? { pathname: to.split("?")[0], search: `?${to.split("?")[1]}`, state }
+      : typeof to === "object"
+      ? { ...to, state: state || to.state }
+      : { pathname: to, state };
+
+  return (
+    <Link to={toObj}>
+      <button
+        style={{
+          width: "100%",
+          marginTop: "8px",
+          padding: "13px 20px",
+          borderRadius: "10px",
+          border: "none",
+          cursor: "pointer",
+          background: "linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%)",
+          color: "#fff",
+          fontWeight: 700,
+          fontSize: "14px",
+          letterSpacing: "0.04em",
+          boxShadow: "0 4px 16px rgba(29, 78, 216, 0.3)",
+          transition: "opacity 0.2s, transform 0.2s",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.opacity = "0.88";
+          e.currentTarget.style.transform = "translateY(-1px)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.opacity = "1";
+          e.currentTarget.style.transform = "translateY(0)";
+        }}
+      >
+        {label}
+      </button>
+    </Link>
+  );
+};
 
 
 const WSWFApplicationTimeline = (props) => {
   const { t } = useTranslation();
-  const businessService = props.application?.applicationNo.split("_")[0];
+  const rawBusinessService = props.application?.applicationNo?.split("_")?.[0];
+  const isSW = rawBusinessService === "SW" || props.application?.applicationNo?.includes("SW");
+  const isModify = props.application?.applicationType?.includes("MODIFY");
+  const isDisconnect = props.application?.applicationType?.includes("DISCONNECT");
+  const isReconnect = props.application?.applicationType?.includes("RECONNECT");
+
+  const defaultBusinessService = isSW
+    ? isModify
+      ? "ModifySWConnection"
+      : isDisconnect
+      ? "DisconnectSWConnection"
+      : isReconnect
+      ? "SWReconnection"
+      : "NewSW1"
+    : isModify
+    ? "ModifyWSConnection"
+    : isDisconnect
+    ? "DisconnectWSConnection"
+    : isReconnect
+    ? "WSReconnection"
+    : "NewWS1";
+
+  const businessService = props.businessService || props.application?.processInstance?.businessService || defaultBusinessService;
+
   const { isLoading, data } = Digit.Hooks.useWorkflowDetails({
     tenantId: props.application?.tenantId,
     id: props.id,
@@ -242,14 +281,13 @@ const WSWFApplicationTimeline = (props) => {
     : businessService;
 
   const showNextActions = (nextActions) => {
-    if (!nextActions?.length) return null;
-    let nextAction = nextActions[0];
-    const next = nextActions.map((action) => action.action);
-    if (next.includes("PAY") || next.includes("EDIT")) {
-      let currentIndex = next.indexOf("EDIT") || next.indexOf("PAY");
-      currentIndex = currentIndex !== -1 ? currentIndex : next.indexOf("PAY");
-      nextAction = nextActions[currentIndex];
-    }
+    let nextAction =
+      nextActions?.find((a) => a.action === "PAY") ||
+      // nextActions?.find((a) => a.action === "EDIT") ||
+      nextActions?.filter((a) => a.action !== "EDIT")?.[0];
+
+    if (!nextAction) return null;
+
     switch (nextAction?.action) {
       case "PAY":
         if (props?.paymentbuttonenabled !== false)
@@ -261,14 +299,14 @@ const WSWFApplicationTimeline = (props) => {
             />
           );
         break;
-      case "EDIT":
+      /* case "EDIT":
         return businessService !== "PT.MUTATION" ? (
           <ActionButton
             label={t("CS_APPLICATION_DETAILS_EDIT")}
             to={`/digit-ui/citizen/pt/property/edit-application/action=edit-${businessService}/${props.id}`}
             state={{ tenantId: props.application.tenantId }}
           />
-        ) : null;
+        ) : null; */
       case "SUBMIT_FEEDBACK":
         return (
           <ActionButton
@@ -374,7 +412,11 @@ const WSWFApplicationTimeline = (props) => {
           )}
 
           {/* next action CTA */}
-          {data && showNextActions(data?.nextActions)}
+          {showNextActions(data?.nextActions) && (
+            <div style={{ marginTop: "16px" }}>
+              {showNextActions(data?.nextActions)}
+            </div>
+          )}
         </div>
       )}
     </Fragment>

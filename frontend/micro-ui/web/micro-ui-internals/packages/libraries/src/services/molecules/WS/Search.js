@@ -1195,6 +1195,115 @@ export const WSSearch = {
       documentDetails,
     ];
 
+    if (
+      wsDataDetails?.applicationStatus === "PENDING_FOR_CONNECTION_ACTIVATION" ||
+      wsDataDetails?.applicationStatus === "CONNECTION_ACTIVATED"
+    ) {
+      const isMetered =
+        !wsDataDetails?.connectionType ||
+        wsDataDetails?.connectionType?.toUpperCase() === "METERED" ||
+        wsDataDetails?.additionalDetails?.connectionType?.toUpperCase() === "METERED";
+
+      const plumberProvidedBy = wsDataDetails?.additionalDetails?.detailsProvidedBy;
+      const isULBPlumber = plumberProvidedBy?.toUpperCase() === "ULB" || plumberProvidedBy?.toUpperCase() === "DJB";
+
+      const activationValues = [
+        {
+          title: "WS_SERV_DETAIL_CONN_TYPE",
+          value: wsDataDetails?.connectionType
+            ? t(`WS_CONNECTIONTYPE_${wsDataDetails?.connectionType?.toUpperCase()}`) && t(`WS_CONNECTIONTYPE_${wsDataDetails?.connectionType?.toUpperCase()}`) !== `WS_CONNECTIONTYPE_${wsDataDetails?.connectionType?.toUpperCase()}`
+              ? t(`WS_CONNECTIONTYPE_${wsDataDetails?.connectionType?.toUpperCase()}`)
+              : wsDataDetails?.connectionType
+            : "Metered",
+        },
+        {
+          title: "WS_ADDN_DETAILS_PLUMBER_PROVIDED_BY",
+          value: plumberProvidedBy
+            ? isULBPlumber
+              ? "DJB"
+              : t(`WS_PLUMBER_${plumberProvidedBy?.toUpperCase()}`) && t(`WS_PLUMBER_${plumberProvidedBy?.toUpperCase()}`) !== `WS_PLUMBER_${plumberProvidedBy?.toUpperCase()}`
+              ? t(`WS_PLUMBER_${plumberProvidedBy?.toUpperCase()}`)
+              : plumberProvidedBy
+            : t("NA"),
+        },
+        ...(isULBPlumber
+          ? [
+              {
+                title: "WS_ADDN_DETAILS_PLUMBER_LICENCE_NO_LABEL",
+                value: wsDataDetails?.plumberInfo?.[0]?.licenseNo || t("NA"),
+              },
+              {
+                title: "WS_ADDN_DETAILS_PLUMBER_NAME_LABEL",
+                value: wsDataDetails?.plumberInfo?.[0]?.name || t("NA"),
+              },
+              {
+                title: "WS_PLUMBER_MOBILE_NO_LABEL",
+                value: wsDataDetails?.plumberInfo?.[0]?.mobileNumber || t("NA"),
+              },
+            ]
+          : []),
+        ...(isMetered
+          ? [
+              {
+                title: "WS_SERV_DETAIL_METER_ID",
+                value: wsDataDetails?.meterId || t("NA"),
+              },
+              {
+                title: "WS_INSTALLATION_DATE_LABEL",
+                value: wsDataDetails?.meterInstallationDate ? convertEpochToDate(wsDataDetails?.meterInstallationDate) : t("NA"),
+              },
+              {
+                title: "WS_INITIAL_METER_READING_LABEL",
+                value:
+                  wsDataDetails?.additionalDetails?.initialMeterReading !== undefined &&
+                  wsDataDetails?.additionalDetails?.initialMeterReading !== null &&
+                  wsDataDetails?.additionalDetails?.initialMeterReading !== ""
+                    ? String(wsDataDetails?.additionalDetails?.initialMeterReading)
+                    : "0",
+              },
+            ]
+          : []),
+        {
+          title: "WS_SERV_DETAIL_CONN_EXECUTION_DATE",
+          value: wsDataDetails?.connectionExecutionDate ? convertEpochToDate(wsDataDetails?.connectionExecutionDate) : t("NA"),
+        },
+      ];
+
+      const activationComment =
+        wsDataDetails?.comment ||
+        wsDataDetails?.comments ||
+        wsDataDetails?.processInstance?.comment ||
+        wsDataDetails?.additionalDetails?.comments;
+      if (activationComment) {
+        activationValues.push({
+          title: "WS_COMMON_COMMENTS",
+          value: activationComment,
+        });
+      }
+
+      // const activationDoc =
+      //   wsDataDetails?.wfDocuments?.[0] ||
+      //   workFlowDataDetails?.ProcessInstances?.find((pi) => pi?.documents?.length > 0)?.documents?.[0] ||
+      //   wsDataDetails?.documents?.find((d) => d?.documentType === "Document - 1" || d?.documentType?.includes("ACTIVATION"));
+
+      // if (activationDoc?.fileStoreId) {
+      //   activationValues.push({
+      //     title: "WS_SUPPORTING_DOCUMENTS",
+      //     value: t("CS_COMMON_VIEW") || "View",
+      //     isLink: true,
+      //     to: `/digit-ui/employee/common/view-pdf?tenantId=${tenantId}&fileStoreId=${activationDoc.fileStoreId}`,
+      //   });
+      // }
+
+      const activateConnectionDetails = {
+        title: "WS_ACTIVATION_DETAILS",
+        asSectionHeader: true,
+        values: activationValues,
+      };
+
+      details.push(activateConnectionDetails);
+    }
+
     if (wsDataDetails?.applicationStatus === "PENDING_FOR_FIELD_INSPECTION" || wsDataDetails?.applicationStatus === "PENDING_FOR_CITIZEN_ACTION") {
       const dueVerificationDetails = {
         title: " ",

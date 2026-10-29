@@ -25,9 +25,25 @@ const WSInfoPage = () => {
   const user = Digit.UserService.getUser();
   const userMobileNumber = user?.info?.userName?.match(/^[0-9]{10}$/) ? user.info.userName : user?.info?.mobileNumber;
 
-  const [hasProperty, setHasProperty] = useState(null);
+  const radioOptions = [
+    { code: "YES", name: "Yes" },
+    { code: "NO", name: "No" },
+  ];
+
+  const searchParams = new URLSearchParams(location.search);
+  const isFromPropertyCreate =
+    Boolean(location?.state?.property || location?.state?.propertyId || location?.state?.hasProperty === "YES" || location?.state?.fromPropertyCreate) ||
+    searchParams.get("hasProperty") === "YES" ||
+    Boolean(searchParams.get("propertyId"));
+
+  const createdProperty = location?.state?.property;
+  const createdPropertyId = location?.state?.propertyId || searchParams.get("propertyId");
+
+  const [hasProperty, setHasProperty] = useState(isFromPropertyCreate ? radioOptions[0] : radioOptions[1]);
   const [selectedProperty, setSelectedProperty] = useState(null);
-  const [searchMobileNumber, setSearchMobileNumber] = useState(isEmployee ? "" : userMobileNumber || "");
+  const [searchMobileNumber, setSearchMobileNumber] = useState(
+    createdProperty?.owners?.[0]?.mobileNumber || (isEmployee ? "" : userMobileNumber || "")
+  );
   const [showOtpVerification, setShowOtpVerification] = useState(false);
   const [otp, setOtp] = useState("");
   const [isOtpSending, setIsOtpSending] = useState(false);
@@ -35,6 +51,7 @@ const WSInfoPage = () => {
   const [showToast, setShowToast] = useState(null);
   const [isMobileVerified, setIsMobileVerified] = useState(false);
   const [timeLeft, setTimeLeft] = useState(0);
+  const hasAutoSelected = React.useRef(false);
 
   useEffect(() => {
     let timer;
@@ -45,11 +62,34 @@ const WSInfoPage = () => {
   }, [timeLeft]);
 
   useEffect(() => {
-    // A property may only be used after a fresh OTP verification in this flow.
+    if (isFromPropertyCreate) {
+      setHasProperty(radioOptions[0]);
+      if (createdProperty?.owners?.[0]?.mobileNumber) {
+        setSearchMobileNumber(createdProperty.owners[0].mobileNumber);
+      }
+    }
     sessionStorage.removeItem("WS_OTP_VERIFIED_PROPERTY_ID");
-  }, []);
+  }, [location.search, location.state]);
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
+
+  const { data: propByIdData } = Digit.Hooks.pt.usePropertySearch(
+    { filters: { propertyIds: createdPropertyId }, tenantId: tenantId },
+    {
+      filters: { propertyIds: createdPropertyId },
+      tenantId: tenantId,
+      enabled: Boolean(isFromPropertyCreate && createdPropertyId && !createdProperty),
+    }
+  );
+
+  useEffect(() => {
+    if (propByIdData?.Properties?.[0]) {
+      const prop = propByIdData.Properties[0];
+      if (prop.owners?.[0]?.mobileNumber && !searchMobileNumber) {
+        setSearchMobileNumber(prop.owners[0].mobileNumber);
+      }
+    }
+  }, [propByIdData]);
   const mobileNumberToSearch = searchMobileNumber;
 
   const { isLoading, data: propertyDetails } = Digit.Hooks.pt.usePropertySearch(
@@ -61,10 +101,33 @@ const WSInfoPage = () => {
     }
   );
 
-  const radioOptions = [
-    { code: "YES", name: "Yes" },
-    { code: "NO", name: "No" },
-  ];
+  useEffect(() => {
+    if (!isMobileVerified) {
+      hasAutoSelected.current = false;
+      return;
+    }
+
+    if (propertyDetails?.Properties && propertyDetails.Properties.length > 0) {
+      const sorted = [...propertyDetails.Properties].sort((a, b) => {
+        const timeA = a?.auditDetails?.createdTime || a?.createdTime || 0;
+        const timeB = b?.auditDetails?.createdTime || b?.createdTime || 0;
+        return timeB - timeA;
+      });
+
+      // Target property is either the createdPropertyId (if coming from create property) or the newest property (sorted[0])
+      const target = (createdPropertyId && sorted.find((p) => p.propertyId === createdPropertyId)) || (!hasAutoSelected.current ? sorted[0] : null);
+
+      if (target && (!selectedProperty || selectedProperty.propertyId !== target.propertyId)) {
+        const formatted = {
+          ...target,
+          displayName: `${target.propertyId} - ${getAddress(target.address, t)}`,
+        };
+        setSelectedProperty(formatted);
+        sessionStorage.setItem("WS_OTP_VERIFIED_PROPERTY_ID", target.propertyId);
+        hasAutoSelected.current = true;
+      }
+    }
+  }, [isMobileVerified, propertyDetails, createdPropertyId, t]);
 
   const proceedToNext = () => {
     sessionStorage.removeItem("Digit.PT_CREATE_EMP_WS_NEW_FORM");
@@ -173,6 +236,17 @@ const WSInfoPage = () => {
       setShowToast({ key: "success", message: t("OTP verified successfully!") });
       setShowOtpVerification(false);
       setIsMobileVerified(true);
+
+      const fallbackProp = createdProperty || propByIdData?.Properties?.[0];
+      if (fallbackProp) {
+        const formatted = {
+          ...fallbackProp,
+          displayName: `${fallbackProp.propertyId} - ${getAddress(fallbackProp.address, t)}`,
+        };
+        setSelectedProperty(formatted);
+        sessionStorage.setItem("WS_OTP_VERIFIED_PROPERTY_ID", fallbackProp.propertyId);
+        hasAutoSelected.current = true;
+      }
     } catch (err) {
       setIsOtpVerifying(false);
       let errMsg = err.message || t("Failed to verify OTP");
@@ -208,15 +282,28 @@ const WSInfoPage = () => {
   };
 
   const handleCreateProperty = () => {
-    const propertyUrl = isEmployee ? "/digit-ui/employee/ws/create-application/create-property" : "/digit-ui/citizen/commonpt-home";
+    const propertyUrl = isEmployee
+      ? `/digit-ui/employee/commonpt/new-application?redirectToUrl=${encodeURIComponent("/digit-ui/employee/ws/info")}`
+      : `/digit-ui/citizen/commonpt/property/new-application?redirectToUrl=${encodeURIComponent("/digit-ui/citizen/ws/info")}`;
     history.push(propertyUrl);
   };
 
-  const propertyOptions =
-    propertyDetails?.Properties?.map((prop) => ({
+  const propertyOptions = React.useMemo(() => {
+    const rawList = propertyDetails?.Properties || [];
+    const sortedList = [...rawList].sort((a, b) => {
+      const timeA = a?.auditDetails?.createdTime || a?.createdTime || 0;
+      const timeB = b?.auditDetails?.createdTime || b?.createdTime || 0;
+      return timeB - timeA;
+    });
+    const list = sortedList.map((prop) => ({
       ...prop,
       displayName: `${prop.propertyId} - ${getAddress(prop.address, t)}`,
-    })) || [];
+    }));
+    if (selectedProperty && !list.some((p) => p.propertyId === selectedProperty.propertyId)) {
+      return [selectedProperty, ...list];
+    }
+    return list;
+  }, [propertyDetails, selectedProperty, t]);
 
   const handleDigiLockerLogin = async (e) => {
     if (e && e.preventDefault) e.preventDefault();
@@ -1123,6 +1210,30 @@ const WSInfoPage = () => {
           </div> */}
         {/* </div> */}
 
+        {/* DigiLocker Fast-Track Banner */}
+        <div className="ws-digilocker-box">
+          <div className="ws-digilocker-content">
+            <div className="ws-dl-icon-circle">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#003366" strokeWidth="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              </svg>
+            </div>
+            <div className="ws-dl-info">
+              <div className="ws-dl-title-wrap">
+                <span className="ws-dl-title">{t("Fast-Track with DigiLocker")}</span>
+                <span className="ws-dl-pill">{t("RECOMMENDED")}</span>
+              </div>
+              <p className="ws-dl-sub">
+                {t("Fetch your verified Aadhaar, Electricity Bill, and Identity documents directly without manual upload.")}
+              </p>
+            </div>
+          </div>
+          <button type="button" className="ws-btn ws-btn-digilocker" onClick={handleDigiLockerLogin}>
+            <span>🔐</span>
+            <span>{t("DigiLocker Consent")}</span>
+          </button>
+        </div>
+
         {/* 2. Step 1: Property Verification Card */}
         <div className="ws-card">
           <div className="ws-step-header">
@@ -1131,7 +1242,7 @@ const WSInfoPage = () => {
               <h2 className="ws-step-title">{t("Property Verification & Linking")}</h2>
               <p className="ws-step-subtitle">
                 {t(
-                  "A registered Property ID is required to apply for a water/sewerage connection. Linking your property enables automatic address verification and autofills premises details."
+                  "A Registered Property Details is required to apply for a water/sewerage connection. Linking your Details enables to apply for a New Connection."
                 )}
               </p>
             </div>
@@ -1152,6 +1263,9 @@ const WSInfoPage = () => {
                 setSelectedProperty(null);
                 setShowOtpVerification(false);
                 setOtp("");
+                setIsMobileVerified(false);
+                sessionStorage.removeItem("WS_OTP_VERIFIED_PROPERTY_ID");
+                hasAutoSelected.current = false;
               }}
               style={{ display: "flex", gap: "24px" }}
             />
@@ -1184,6 +1298,8 @@ const WSInfoPage = () => {
                           setShowOtpVerification(false);
                           setOtp("");
                           setIsMobileVerified(false);
+                          sessionStorage.removeItem("WS_OTP_VERIFIED_PROPERTY_ID");
+                          hasAutoSelected.current = false;
                         }}
                         placeholder={t("Enter 10-digit mobile number")}
                         maxLength={10}
@@ -1217,6 +1333,9 @@ const WSInfoPage = () => {
                           setSelectedProperty(val);
                           setShowOtpVerification(false);
                           setOtp("");
+                          if (val?.propertyId) {
+                            sessionStorage.setItem("WS_OTP_VERIFIED_PROPERTY_ID", val.propertyId);
+                          }
                         }}
                         t={t}
                         placeholder={isMobileVerified ? t("Select Property from list") : t("Verify mobile number to view properties")}
@@ -1285,8 +1404,11 @@ const WSInfoPage = () => {
                     className="ws-btn-link"
                     onClick={() => {
                       setIsMobileVerified(false);
+                      setSelectedProperty(null);
                       setOtp("");
                       setShowOtpVerification(false);
+                      sessionStorage.removeItem("WS_OTP_VERIFIED_PROPERTY_ID");
+                      hasAutoSelected.current = false;
                     }}
                   >
                     {t("Change Number")}
@@ -1304,7 +1426,7 @@ const WSInfoPage = () => {
                       {t("No property is currently registered with this mobile number. You need a registered property to apply for a connection.")}
                     </p>
                     <button className="ws-btn ws-btn-primary" type="button" onClick={handleCreateProperty}>
-                      {t("Register New Property")}
+                      {t("WS_Register_New_Property")}
                     </button>
                   </div>
                 </div>
@@ -1331,30 +1453,6 @@ const WSInfoPage = () => {
               </button>
             </div>
           )}
-        </div>
-
-        {/* DigiLocker Fast-Track Banner */}
-        <div className="ws-digilocker-box">
-          <div className="ws-digilocker-content">
-            <div className="ws-dl-icon-circle">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#003366" strokeWidth="2">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-              </svg>
-            </div>
-            <div className="ws-dl-info">
-              <div className="ws-dl-title-wrap">
-                <span className="ws-dl-title">{t("Fast-Track with DigiLocker")}</span>
-                <span className="ws-dl-pill">{t("RECOMMENDED")}</span>
-              </div>
-              <p className="ws-dl-sub">
-                {t("Fetch your verified Aadhaar, Electricity Bill, and Identity documents directly without manual upload.")}
-              </p>
-            </div>
-          </div>
-          <button type="button" className="ws-btn ws-btn-digilocker" onClick={handleDigiLockerLogin}>
-            <span>🔐</span>
-            <span>{t("DigiLocker Consent")}</span>
-          </button>
         </div>
 
         {/* Bottom Action Card */}

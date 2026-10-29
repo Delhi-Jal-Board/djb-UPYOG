@@ -39,7 +39,7 @@ export const WSMyApplications = () => {
   let workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
     id: applicationNos,
-    moduleCode: "WS,SW",
+    moduleCode: "NewWS1,NewSW1",
     config: {
       enabled: !!applicationNos,
     },

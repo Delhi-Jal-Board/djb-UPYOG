@@ -33,7 +33,7 @@ const createConnectionDetails = () => ({
   proposedToilets: "",
   proposedWaterClosets: "",
 
-  serviceType: { code: "WATER", i18nKey: "WS_APPLICATION_TYPE_WATER" },
+  serviceType: { code: "NEW_WATER_CONNECTION", i18nKey: "WS_APPLICATION_TYPE_NEW_WATER_CONNECTION", name: "Water Connection" },
   categoryType: { code: "DOMESTIC", i18nKey: "WS_CATEGORY_DOMESTIC" },
   connectionType: { code: "Metered", i18nKey: "WS_CONNECTIONTYPE_METERED", name: "Metered" },
   temporaryType: { code: "Exhibition", i18nKey: "Exhibition" },
@@ -206,6 +206,31 @@ const WSConnectionDetails = ({ config, onSelect, userType, formData, setError, f
     list?.forEach((data) => (data.i18nKey = `WS_APPLICATION_TYPE_${data.code}`));
     setApplicationTypeList(list);
 
+    if (list.length > 0) {
+      const waterOption =
+        list.find(
+          (opt) =>
+            opt?.code === "NEW_WATER_CONNECTION" ||
+            opt?.code === "WATER_CONNECTION" ||
+            opt?.name?.toLowerCase() === "water connection" ||
+            t(opt?.i18nKey)?.toLowerCase() === "water connection"
+        ) || list[0];
+
+      if (waterOption) {
+        setConnectionDetails((prev) => {
+          const current = prev?.[0];
+          const isDefault =
+            !current?.serviceType ||
+            current?.serviceType?.code === "WATER" ||
+            current?.serviceType?.i18nKey === "WS_APPLICATION_TYPE_WATER";
+          if (isDefault) {
+            return [{ ...(current || createConnectionDetails()), serviceType: waterOption }];
+          }
+          return prev;
+        });
+      }
+    }
+
     // Fallback logic for the others since they are not coming from MDMS
     const categories = wsServicesMastersData?.["ws-services-masters"]?.WsCategoryType || [];
     categories.forEach((data) => (data.i18nKey = data.i18nKey || `WS_CATEGORY_${data.code}`));
@@ -366,7 +391,12 @@ const ConnectionDetails = (_props) => {
   const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue, trigger, getValues } = useForm(
     {
       defaultValues: {
-        serviceType: connectionDetail?.serviceType || { code: "WATER", i18nKey: "WS_APPLICATION_TYPE_WATER" },
+        serviceType:
+          connectionDetail?.serviceType &&
+          connectionDetail?.serviceType?.code !== "WATER" &&
+          connectionDetail?.serviceType?.i18nKey !== "WS_APPLICATION_TYPE_WATER"
+            ? connectionDetail.serviceType
+            : { code: "NEW_WATER_CONNECTION", i18nKey: "WS_APPLICATION_TYPE_NEW_WATER_CONNECTION", name: "Water Connection" },
         categoryType: connectionDetail?.categoryType || { code: "DOMESTIC", i18nKey: "WS_CATEGORY_DOMESTIC" },
         connectionType: connectionDetail?.connectionType || { code: "Metered", i18nKey: "WS_CONNECTIONTYPE_METERED", name: "Metered" },
         temporaryType: connectionDetail?.temporaryType || { code: "Exhibition", i18nKey: "Exhibition" },
@@ -423,6 +453,30 @@ const ConnectionDetails = (_props) => {
       prevPropAddrRef.current = newFormattedAddr;
     }
   }, [formData?.cpt?.details?.propertyId, formData?.cpt?.details?.address, formData?.property?.address]);
+
+  useEffect(() => {
+    if (applicationTypeList && applicationTypeList.length > 0) {
+      const waterOption =
+        applicationTypeList.find(
+          (opt) =>
+            opt?.code === "NEW_WATER_CONNECTION" ||
+            opt?.code === "WATER_CONNECTION" ||
+            opt?.name?.toLowerCase() === "water connection" ||
+            t(opt?.i18nKey)?.toLowerCase() === "water connection"
+        ) || applicationTypeList[0];
+
+      const currentService = getValues("serviceType");
+      const isDefault =
+        !currentService ||
+        currentService?.i18nKey === "WS_APPLICATION_TYPE_WATER" ||
+        currentService?.code === "WATER" ||
+        currentService === "Water";
+
+      if (waterOption && isDefault) {
+        setValue("serviceType", waterOption);
+      }
+    }
+  }, [applicationTypeList]);
 
   const [uploadedFile, setUploadedFile] = useState(connectionDetail?.orgDeptDocument || null);
   const [file, setFile] = useState(null);
@@ -594,14 +648,18 @@ const ConnectionDetails = (_props) => {
               rules={{ required: t("REQUIRED_FIELD") }}
               isMandatory={true}
               render={(props) => (
-                <TextInput
+                <Dropdown
                   className="form-field"
-                  value={"Water Connection"}
-                  disable={true}
-                  disabled={true}
-                  onChange={() => {}}
-                  style={{ backgroundColor: "#eee" }}
+                  selected={getValues("serviceType")}
+                  disable={false}
+                  option={applicationTypeList}
+                  select={(e) => {
+                    props.onChange(e);
+                  }}
                   placeholder={t("Select Service Type")}
+                  optionKey="i18nKey"
+                  onBlur={props.onBlur}
+                  t={t}
                 />
               )}
             />
@@ -708,67 +766,67 @@ const ConnectionDetails = (_props) => {
             )}
           />
         </LabelFieldPair> */}
-        <LabelFieldPair>
-          <CardLabel>
-            {`${t("Applicant Type")}`}
-            <span className="check-page-link-button">*</span>
-          </CardLabel>
-          <Controller
-            control={control}
-            name={"applicantType"}
-            defaultValue={connectionDetail?.applicantType || ""}
-            rules={{ required: t("REQUIRED_FIELD") }}
-            isMandatory={true}
-            render={(props) => (
-              <Dropdown
-                className="form-field"
-                selected={getValues("applicantType")}
-                disable={false}
-                option={applicantTypeList}
-                errorStyle={localFormState.touched.applicantType && errors?.applicantType?.message ? true : false}
-                select={(e) => {
-                  props.onChange(e);
-                }}
-                optionKey="i18nKey"
-                onBlur={props.onBlur}
-                t={t}
-                placeholder={t("Select Applicant Type")}
-              />
-            )}
-          />
-        </LabelFieldPair>
-        <LabelFieldPair>
-          <CardLabel>
-            {t("WS_Billing_Address_Type")}
-            <span className="check-page-link-button">*</span>
-          </CardLabel>
-          <div className="field">
+          <LabelFieldPair>
+            <CardLabel>
+              {`${t("Applicant Type")}`}
+              <span className="check-page-link-button">*</span>
+            </CardLabel>
             <Controller
               control={control}
-              name={"addressType"}
-              defaultValue={initialAddressValue || ""}
+              name={"applicantType"}
+              defaultValue={connectionDetail?.applicantType || ""}
               rules={{ required: t("REQUIRED_FIELD") }}
               isMandatory={true}
               render={(props) => (
-                <TextInput
+                <Dropdown
                   className="form-field"
-                  value={props.value ?? getValues("addressType") ?? ""}
+                  selected={getValues("applicantType")}
                   disable={false}
-                  disabled={false}
-                  errorStyle={localFormState.touched.addressType && errors?.addressType?.message ? true : false}
-                  onChange={(e) => {
-                    isAddressUserEditedRef.current = true;
-                    props.onChange(e.target.value);
-                    setValue("completeAddress", e.target.value);
+                  option={applicantTypeList}
+                  errorStyle={localFormState.touched.applicantType && errors?.applicantType?.message ? true : false}
+                  select={(e) => {
+                    props.onChange(e);
                   }}
+                  optionKey="i18nKey"
                   onBlur={props.onBlur}
-                  placeholder={t("WS_Billing_Address_Type")}
+                  t={t}
+                  placeholder={t("Select Applicant Type")}
                 />
               )}
             />
-          </div>
-        </LabelFieldPair>
-        {/* <LabelFieldPair>
+          </LabelFieldPair>
+          <LabelFieldPair>
+            <CardLabel>
+              {t("WS_Billing_Address_Type")}
+              <span className="check-page-link-button">*</span>
+            </CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name={"addressType"}
+                defaultValue={initialAddressValue || ""}
+                rules={{ required: t("REQUIRED_FIELD") }}
+                isMandatory={true}
+                render={(props) => (
+                  <TextInput
+                    className="form-field"
+                    value={props.value ?? getValues("addressType") ?? ""}
+                    disable={false}
+                    disabled={false}
+                    errorStyle={localFormState.touched.addressType && errors?.addressType?.message ? true : false}
+                    onChange={(e) => {
+                      isAddressUserEditedRef.current = true;
+                      props.onChange(e.target.value);
+                      setValue("completeAddress", e.target.value);
+                    }}
+                    onBlur={props.onBlur}
+                    placeholder={t("WS_Billing_Address_Type")}
+                  />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
+          {/* <LabelFieldPair>
           <CardLabel>{`${formValue?.categoryType?.code === "NON_DOMESTIC" || formValue?.categoryType?.name === "Non-Domestic"
               ? t("Non-Domestic Type")
               : t("Domestic Type")

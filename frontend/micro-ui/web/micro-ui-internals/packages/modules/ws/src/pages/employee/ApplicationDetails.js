@@ -250,14 +250,7 @@ const ApplicationDetails = () => {
       });
     }
   }
-  workflowDetails?.data?.actionState?.nextActions?.forEach((action) => {
-    if (action?.action === "ACTIVATE_CONNECTION") {
-      action.redirectionUrll = {
-        action: "ACTIVATE_CONNECTION",
-        pathname: `/digit-ui/employee/ws/activate-connection?applicationNumber=${applicationNumber}&service=${serviceType}&action=ACTIVATE_CONNECTION`,
-        state: applicationDetails?.applicationData,
-      };
-    }
+  [workflowDetails?.data?.actionState?.nextActions, workflowDetails?.data?.nextActions].forEach((actionsList) => actionsList?.forEach((action) => {
     if (action?.action === "RESUBMIT_APPLICATION") {
       const isMutation = applicationDetails?.applicationData?.applicationType?.includes("MUTATION");
       let pathName = isMutation
@@ -295,7 +288,7 @@ const ApplicationDetails = () => {
         state: applicationDetails,
       };
     }
-  });
+  }));
 
   // if (
   //   workflowDetails?.data?.nextActions?.length > 0 &&
