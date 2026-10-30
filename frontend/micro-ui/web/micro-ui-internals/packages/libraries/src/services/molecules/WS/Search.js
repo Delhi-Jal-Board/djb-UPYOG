@@ -542,7 +542,7 @@ export const WSSearch = {
       title: "WS_COMMON_PROPERTY_DETAILS",
       asSectionHeader: true,
       values: [
-        { title: "WS_PROPERTY_ID_LABEL", value: propertyDataDetails?.propertyId },
+        // { title: "WS_PROPERTY_ID_LABEL", value: propertyDataDetails?.propertyId },
         { title: "WS_COMMON_OWNER_NAME_LABEL", value: getOwnerNames(propertyDataDetails, t) },
         // {
         //   title: "WS_PROPERTY_ADDRESS_LABEL",
@@ -1414,7 +1414,7 @@ export const WSSearch = {
       title: "WS_COMMON_PROPERTY_DETAILS",
       asSectionHeader: true,
       values: [
-        {
+        /* {
           title: "WS_PROPERTY_ID_LABEL",
           value: propertyDataDetails?.propertyId,
           oldValue:
@@ -1428,7 +1428,7 @@ export const WSSearch = {
                 },
               ]
               : null,
-        },
+        }, */
         {
           title: "WS_COMMON_OWNER_NAME_LABEL",
           value: getOwnerNames(propertyDataDetails, t),
@@ -2681,7 +2681,7 @@ export const WSSearch = {
       title: "WS_COMMON_PROPERTY_DETAILS",
       asSectionHeader: true,
       values: [
-        { title: "WS_PROPERTY_ID_LABEL", value: propertyDataDetails?.propertyId },
+        // { title: "WS_PROPERTY_ID_LABEL", value: propertyDataDetails?.propertyId },
         {
           title: "WS_COMMON_OWNER_NAME_LABEL",
           value: getOwnerNames(propertyDataDetails, t),
@@ -3029,7 +3029,7 @@ export const WSSearch = {
       title: "WS_COMMON_PROPERTY_DETAILS",
       asSectionHeader: true,
       values: [
-        { title: "WS_PROPERTY_ID_LABEL", value: propertyDataDetails?.propertyId },
+        // { title: "WS_PROPERTY_ID_LABEL", value: propertyDataDetails?.propertyId },
         { title: "WS_COMMON_OWNER_NAME_LABEL", value: getOwnerNames(propertyDataDetails, t) },
         {
           title: "WS_PROPERTY_ADDRESS_LABEL",
