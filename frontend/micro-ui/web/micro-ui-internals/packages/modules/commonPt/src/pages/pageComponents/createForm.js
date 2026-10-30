@@ -220,15 +220,15 @@ const CreatePropertyForm = ({ config, onSelect, value, userType, redirectUrl }) 
             return;
           }
           // setShowToast({ key: false, label: `${t("CS_NEW_PROPERTY_APPLICATION_CREATED_SUCCESS")} - ${data?.Properties?.[0]?.propertyId}` });
-          // setTimeout(() => {
-          //   if (onSelect) {
-          //     onSelect("cptNewProperty", { property: data?.Properties?.[0] });
-          //   } else {
-          //     history.push(`${match.path}/save-property?redirectToUrl=${redirectUrl || ""}`, {
-          //       property: data?.Properties?.[0]
-          //     });
-          //   }
-          // }, 3000);
+          setTimeout(() => {
+            if (onSelect) {
+              onSelect("cptNewProperty", { property: data?.Properties?.[0] });
+            } else {
+              history.push(`${match.path}/save-property?redirectToUrl=${redirectUrl || ""}`, {
+                property: data?.Properties?.[0]
+              });
+            }
+          }, 1000);
         },
         onError: (error) => {
           setShowToast({ key: true, label: error?.response?.data?.Errors?.[0]?.message || t("PT_COMMON_FAILED_TO_CREATE_PROPERTY") });
