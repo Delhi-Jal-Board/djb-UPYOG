@@ -153,17 +153,19 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
   const [tempZone, setTempZone] = useState("");
   const [tempWard, setTempWard] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [noOfFloors, setNoOfFloors] = useState(formData?.noOfFloors || formData?.address?.noOfFloors || "");
+  const [noOfFloors, setNoOfFloors] = useState(
+    formData?.numberOfFloors || formData?.noOfFloors || formData?.address?.numberOfFloors || formData?.address?.noOfFloors || ""
+  );
   const [totalNoOfFloors, setTotalNoOfFloors] = useState(
     formData?.totalNoOfFloors || formData?.totalFloors || formData?.address?.totalNoOfFloors || formData?.address?.totalFloors || ""
   );
 
   useEffect(() => {
-    const val = formData?.noOfFloors || formData?.address?.noOfFloors;
+    const val = formData?.numberOfFloors || formData?.noOfFloors || formData?.address?.numberOfFloors || formData?.address?.noOfFloors;
     if (val !== undefined && val !== null && val !== "") {
       setNoOfFloors(val);
     }
-  }, [formData?.noOfFloors, formData?.address?.noOfFloors]);
+  }, [formData?.numberOfFloors, formData?.noOfFloors, formData?.address?.numberOfFloors, formData?.address?.noOfFloors]);
 
   useEffect(() => {
     const val = formData?.totalNoOfFloors || formData?.totalFloors || formData?.address?.totalNoOfFloors || formData?.address?.totalFloors;
@@ -600,7 +602,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
       actualZone,
       actualWard,
       colonyMcdCategory,
-      ...(showNoOfFloors ? { noOfFloors, totalNoOfFloors, totalFloors: totalNoOfFloors } : {}),
+      ...(showNoOfFloors ? { noOfFloors, numberOfFloors: noOfFloors, totalNoOfFloors, totalFloors: totalNoOfFloors } : {}),
       ...(config?.doorImage ? { doorImage, doorImageId } : {}),
     };
 
@@ -665,7 +667,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
       actualZone,
       actualWard,
       colonyMcdCategory,
-      ...(showNoOfFloors ? { noOfFloors, totalNoOfFloors, totalFloors: totalNoOfFloors } : {}),
+      ...(showNoOfFloors ? { noOfFloors, numberOfFloors: noOfFloors, totalNoOfFloors, totalFloors: totalNoOfFloors } : {}),
       ...(isEkyc ? { doorImage, doorImageId } : {}),
     };
 
@@ -1072,6 +1074,71 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
         </LabelFieldPair>
         <LabelFieldPair>
           <CardLabel>
+            {`${t("HOUSE_NO")}`} <span className="check-page-link-button">*</span>
+          </CardLabel>
+          <TextInput
+            t={t}
+            type={"text"}
+            isMandatory={false}
+            optionKey="i18nKey"
+            name="houseNo"
+            value={houseNo}
+            style={{ width: "100%" }}
+            placeholder={"Enter House No"}
+            onChange={(e) => {
+              setHouseNo(e.target.value);
+            }}
+            disabled={disable}
+            ValidationRequired={true}
+            validation={{
+              isRequired: true,
+              pattern: "^[a-zA-Z0-9 ,\\-]+$",
+              type: "text",
+              title: t("HOUSE_NO_ERROR_MESSAGE"),
+            }}
+          />
+        </LabelFieldPair>
+        {showNoOfFloors && (
+          <LabelFieldPair>
+            <CardLabel>
+              {`${t("WS_NUMBER_OF_FLOORS")}`} <span className="check-page-link-button">*</span>
+            </CardLabel>
+            <div className="form-field" style={{ width: "100%" }}>
+              <Dropdown
+                option={floorOptions}
+                optionKey="name"
+                selected={selectedFloor}
+                select={(val) => setNoOfFloors(val)}
+                t={t}
+                disable={disable}
+                placeholder={t("WS_NUMBER_OF_FLOORS")}
+              />
+            </div>
+          </LabelFieldPair>
+        )}
+        {showNoOfFloors && (
+          <LabelFieldPair>
+            <CardLabel>{`${t("WS_TOTAL_NUMBER_OF_FLOORS_IN_THE_BUILDING")}`}</CardLabel>
+            <TextInput
+              t={t}
+              type={"text"}
+              isMandatory={false}
+              name="totalNoOfFloors"
+              value={totalNoOfFloors}
+              style={{ width: "100%" }}
+              placeholder={t("Enter Total Number of floor in the Building")}
+              onChange={(e) => {
+                const val = e.target.value.replace(/[^0-9]/g, "").slice(0, 2);
+                setTotalNoOfFloors(val);
+              }}
+              disabled={disable}
+              maxlength={2}
+              maxLength={2}
+            />
+          </LabelFieldPair>
+        )}
+        <LabelFieldPair>
+          <CardLabel>
             {`${t(config?.doorImage ? "EKYC_SUB_LOCALITY" : "ADDRESS_LINE1")}`} <span className="check-page-link-button">*</span>
           </CardLabel>
           <TextInput
@@ -1128,34 +1195,32 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
             />
           </LabelFieldPair>
         )}
-
         <LabelFieldPair>
           <CardLabel>
-            {`${t("HOUSE_NO")}`} <span className="check-page-link-button">*</span>
+            {`${t("LANDMARK")}`} <span className="check-page-link-button">*</span>
           </CardLabel>
           <TextInput
             t={t}
             type={"text"}
             isMandatory={false}
             optionKey="i18nKey"
-            name="houseNo"
-            value={houseNo}
+            name="landmark"
+            value={landmark}
             style={{ width: "100%" }}
-            placeholder={"Enter House No"}
+            placeholder={"Enter Landmark"}
             onChange={(e) => {
-              setHouseNo(e.target.value);
+              setLandmark(e.target.value);
             }}
             disabled={disable}
             ValidationRequired={true}
             validation={{
               isRequired: true,
-              pattern: "^[a-zA-Z0-9 ,\\-]+$",
+              pattern: "^[a-zA-Z0-9 ,\\.\\-\\/]+$",
               type: "text",
-              title: t("HOUSE_NO_ERROR_MESSAGE"),
+              title: t("LANDMARK_ERROR_MESSAGE"),
             }}
           />
         </LabelFieldPair>
-
         {!props?.isVendor && (
           <LabelFieldPair>
             <CardLabel>{`${t("LATITUDE_GEOTAG")}`}</CardLabel>
@@ -1268,71 +1333,6 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
             disabled={true}
           />
         </LabelFieldPair>
-        <LabelFieldPair>
-          <CardLabel>
-            {`${t("LANDMARK")}`} <span className="check-page-link-button">*</span>
-          </CardLabel>
-          <TextInput
-            t={t}
-            type={"text"}
-            isMandatory={false}
-            optionKey="i18nKey"
-            name="landmark"
-            value={landmark}
-            style={{ width: "100%" }}
-            placeholder={"Enter Landmark"}
-            onChange={(e) => {
-              setLandmark(e.target.value);
-            }}
-            disabled={disable}
-            ValidationRequired={true}
-            validation={{
-              isRequired: true,
-              pattern: "^[a-zA-Z0-9 ,\\.\\-\\/]+$",
-              type: "text",
-              title: t("LANDMARK_ERROR_MESSAGE"),
-            }}
-          />
-        </LabelFieldPair>
-        {showNoOfFloors && (
-          <LabelFieldPair>
-            <CardLabel>
-              {`${t("WS_NUMBER_OF_FLOORS")}`} <span className="check-page-link-button">*</span>
-            </CardLabel>
-            <div className="form-field" style={{ width: "100%" }}>
-              <Dropdown
-                option={floorOptions}
-                optionKey="name"
-                selected={selectedFloor}
-                select={(val) => setNoOfFloors(val)}
-                t={t}
-                disable={disable}
-                placeholder={t("WS_NUMBER_OF_FLOORS")}
-              />
-            </div>
-          </LabelFieldPair>
-        )}
-        {showNoOfFloors && (
-          <LabelFieldPair>
-            <CardLabel>{`${t("WS_TOTAL_NUMBER_OF_FLOORS_IN_THE_BUILDING")}`}</CardLabel>
-            <TextInput
-              t={t}
-              type={"text"}
-              isMandatory={false}
-              name="totalNoOfFloors"
-              value={totalNoOfFloors}
-              style={{ width: "100%" }}
-              placeholder={t("Enter Total Number of floor in the Building")}
-              onChange={(e) => {
-                const val = e.target.value.replace(/[^0-9]/g, "").slice(0, 2);
-                setTotalNoOfFloors(val);
-              }}
-              disabled={disable}
-              maxlength={2}
-              maxLength={2}
-            />
-          </LabelFieldPair>
-        )}
         {props?.showMapActualLocation && (
           <React.Fragment>
             <div>

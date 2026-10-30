@@ -442,7 +442,35 @@ export const createPayloadOfWS = async (data) => {
         useDetailsObject?.waterDemandType ||
         { code: "NON_BULK", i18nKey: "WS_WATER_DEMAND_NON_BULK" },
       categoryType: useDetailsObject?.categoryType?.code || useDetailsObject?.categoryType || data?.applicationSelection?.categoryType?.code || connectionHolder?.ownerType?.code || connectionHolder?.ownerType,
-      noOfFloors: useDetailsObject?.noOfFloors?.code || useDetailsObject?.noOfFloors,
+      noOfFloors:
+        useDetailsObject?.noOfFloors?.code ||
+        useDetailsObject?.noOfFloors ||
+        data?.propertyAddress?.noOfFloors?.code ||
+        data?.propertyAddress?.noOfFloors ||
+        data?.propertyAddress?.numberOfFloors ||
+        data?.cpt?.details?.additionalDetails?.numberOfFloors ||
+        data?.cpt?.details?.additionalDetails?.noOfFloors ||
+        data?.cpt?.details?.noOfFloors,
+      numberOfFloors:
+        data?.propertyAddress?.numberOfFloors ||
+        data?.propertyAddress?.noOfFloors?.code ||
+        data?.propertyAddress?.noOfFloors ||
+        useDetailsObject?.noOfFloors?.code ||
+        useDetailsObject?.noOfFloors ||
+        data?.cpt?.details?.additionalDetails?.numberOfFloors ||
+        data?.cpt?.details?.noOfFloors,
+      totalNoOfFloors:
+        data?.propertyAddress?.totalNoOfFloors ||
+        data?.propertyAddress?.totalFloors ||
+        data?.cpt?.details?.additionalDetails?.totalNoOfFloors ||
+        data?.cpt?.details?.additionalDetails?.totalFloors ||
+        data?.cpt?.details?.noOfFloors,
+      totalFloors:
+        data?.propertyAddress?.totalNoOfFloors ||
+        data?.propertyAddress?.totalFloors ||
+        data?.cpt?.details?.additionalDetails?.totalNoOfFloors ||
+        data?.cpt?.details?.additionalDetails?.totalFloors ||
+        data?.cpt?.details?.noOfFloors,
       subCategory: data?.applicationSelection?.subCategory?.code,
       domesticType: data?.applicationSelection?.domesticType?.code,
       temporaryConnection: data?.applicationSelection?.temporaryConnection?.code,
