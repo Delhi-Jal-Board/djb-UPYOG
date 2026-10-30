@@ -15,6 +15,7 @@ import java.util.regex.Pattern;
 public class FillingPointValidator {
 
     private static final Pattern SCRIPT_OR_HTML_PATTERN = Pattern.compile("(?i)<[^>]*>|javascript:|alert\\s*\\(|on\\w+\\s*=");
+    private static final Pattern CSV_FORMULA_PATTERN = Pattern.compile("^[=+\\-@\\t\\r].*");
     private static final Pattern SAFE_TEXT_PATTERN = Pattern.compile("^[a-zA-Z0-9\\s.,&/()#'_\\-]+$");
     private static final Pattern MOBILE_PATTERN = Pattern.compile("^[0-9]{10}$");
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$");
@@ -142,7 +143,9 @@ public class FillingPointValidator {
 
     private void validateSafeText(String value, String fieldKey, String fieldName, Map<String, String> errorMap) {
         if (StringUtils.isNotBlank(value)) {
-            if (SCRIPT_OR_HTML_PATTERN.matcher(value).find()) {
+            if (CSV_FORMULA_PATTERN.matcher(value.trim()).matches()) {
+                errorMap.put(fieldKey, fieldName + " cannot start with formula injection characters (=, +, -, @)");
+            } else if (SCRIPT_OR_HTML_PATTERN.matcher(value).find()) {
                 errorMap.put(fieldKey, fieldName + " contains prohibited script or HTML characters");
             } else if (!SAFE_TEXT_PATTERN.matcher(value).matches()) {
                 errorMap.put(fieldKey, fieldName + " contains invalid characters");

@@ -141,6 +141,36 @@ public class RequestServiceSecurityAuditTest {
         assertTrue(ex.getErrors().containsKey("INVALID_EMERGENCY_NAME"));
     }
 
+    // =========================================================================
+    // AUDIT CASE V: CSV INJECTION (FORMULA CHARACTERS =, +, -, @)
+    // =========================================================================
+
+    @Test
+    @DisplayName("NEGATIVE CASE V-1: Audit Case V CSV Formula payloads in fillingPointName are rejected")
+    void testCsvInjectionPayloadsAreRejected() {
+        String[] payloads = {
+            "=cmd|'/C calc'!A0",
+            "+1+2",
+            "-2+3",
+            "@SUM(1,2)",
+            "\t=1+1",
+            "\r=cmd"
+        };
+
+        for (String payload : payloads) {
+            FillingPoint fp = createValidFillingPoint();
+            fp.setFillingPointName(payload);
+
+            FillingPointRequest request = new FillingPointRequest();
+            request.setFillingPoints(Collections.singletonList(fp));
+
+            CustomException ex = assertThrows(CustomException.class, () -> fillingPointValidator.validateCreate(request),
+                    "Payload should be rejected: " + payload);
+            assertNotNull(ex.getErrors());
+            assertTrue(ex.getErrors().containsKey("INVALID_FILLING_POINT_NAME"));
+        }
+    }
+
     @Test
     @DisplayName("NEGATIVE CASE VIII-5: Invalid mobile numbers (too short, too long, letters) are rejected")
     void testInvalidMobileNumbersAreRejected() {
