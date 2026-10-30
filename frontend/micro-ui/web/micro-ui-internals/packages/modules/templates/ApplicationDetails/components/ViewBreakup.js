@@ -155,7 +155,7 @@ const ViewBreakup = ({ wsAdditionalDetails, workflowDetails, print, download }) 
 
   const propertyRows = propertyDetail
     ? [
-        { label: t("WS_PROPERTY_ID"), value: propertyDetail.propertyId, isText: true },
+        // { label: t("WS_PROPERTY_ID"), value: propertyDetail.propertyId, isText: true },
         { label: t("WS_PROPERTY_TYPE"), value: propertyDetail.propertyType, isText: true },
         { label: t("WS_PLOT_AREA"), value: propertyDetail.landArea, unit: " (sq. meter.)" },
         { label: t("WS_BUILT_UP_AREA"), value: propertyDetail.superBuiltUpArea, unit: " (sq. meter.)" },
