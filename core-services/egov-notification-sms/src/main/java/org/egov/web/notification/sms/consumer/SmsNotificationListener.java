@@ -68,16 +68,12 @@ public class SmsNotificationListener {
     }
 
     @KafkaListener(
-            topics = "${kafka.topics.notification.sms.name:egov.core.notification.sms}"
+            topics = {
+                "${kafka.topics.notification.sms.name:egov.core.notification.sms}",
+                "${kafka.topics.notification.sms.otp.name:egov.core.notification.sms.otp}"
+            }
     )
     public void process(HashMap<String, Object> consumerRecord) {
-        processMessage(consumerRecord);
-    }
-
-    @KafkaListener(
-            topics = "${kafka.topics.notification.sms.otp.name:egov.core.notification.sms.otp}"
-    )
-    public void processOtp(HashMap<String, Object> consumerRecord) {
         processMessage(consumerRecord);
     }
 
@@ -146,9 +142,19 @@ public class SmsNotificationListener {
 
         try {
             if (whatsappFuture != null) {
-                java.util.concurrent.CompletableFuture.allOf(smsFuture, whatsappFuture).join();
+                java.util.concurrent.CompletableFuture.allOf(smsFuture, whatsappFuture)
+                        .get(15, java.util.concurrent.TimeUnit.SECONDS);
             } else {
-                smsFuture.join();
+                smsFuture.get(15, java.util.concurrent.TimeUnit.SECONDS);
+            }
+        } catch (java.util.concurrent.TimeoutException te) {
+            log.warn("Notification dispatch timed out after 15 seconds for mobile {}. Either SMS or WhatsApp gateway took too long.",
+                    sms != null ? sms.getMobileNumber() : null);
+            if (whatsappFuture != null && !whatsappFuture.isDone()) {
+                whatsappFuture.cancel(true);
+            }
+            if (!smsFuture.isDone()) {
+                smsFuture.cancel(true);
             }
         } catch (Exception e) {
             log.error("Exception waiting for parallel notification dispatch to {}: {}", sms != null ? sms.getMobileNumber() : null, e.getMessage(), e);
