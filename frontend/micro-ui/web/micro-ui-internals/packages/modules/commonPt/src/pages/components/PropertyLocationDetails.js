@@ -71,8 +71,23 @@ const PropertyLocationDetails = ({
       const zroCode = addressData.zroLocation || additionalDetails.zroLocation || addressData.additionalDetails?.zroLocation || "";
       // Convert to dropdown-compatible object so AddressDetails Dropdown can match it
       const zroValue = zroCode ? { code: zroCode, name: zroCode, i18nKey: zroCode } : "";
-      const rawNoOfFloors = details.noOfFloors || additionalDetails.numberOfFloors || additionalDetails.noOfFloors || addressData.noOfFloors || "";
-      const rawTotalNoOfFloors = details.totalNoOfFloors || details.totalFloors || additionalDetails.totalNoOfFloors || additionalDetails.totalFloors || addressData.totalNoOfFloors || addressData.totalFloors || "";
+      const rawNoOfFloors =
+        additionalDetails.numberOfFloors ||
+        additionalDetails.noOfFloors ||
+        details.numberOfFloors ||
+        addressData.numberOfFloors ||
+        addressData.noOfFloors ||
+        details.noOfFloors ||
+        "";
+      const rawTotalNoOfFloors =
+        additionalDetails.totalNoOfFloors ||
+        additionalDetails.totalFloors ||
+        details.totalNoOfFloors ||
+        details.totalFloors ||
+        addressData.totalNoOfFloors ||
+        addressData.totalFloors ||
+        details.noOfFloors ||
+        "";
 
       setFormData({
         pincode: addressData.pincode || "",
@@ -94,6 +109,7 @@ const PropertyLocationDetails = ({
         addressLine1: addressData.addressLine1 || "",
         addressLine2: addressData.addressLine2 || "",
         noOfFloors: rawNoOfFloors,
+        numberOfFloors: rawNoOfFloors,
         totalNoOfFloors: rawTotalNoOfFloors,
         totalFloors: rawTotalNoOfFloors,
 
@@ -118,6 +134,7 @@ const PropertyLocationDetails = ({
           addressLine1: addressData.addressLine1 || "",
           addressLine2: addressData.addressLine2 || "",
           noOfFloors: rawNoOfFloors,
+          numberOfFloors: rawNoOfFloors,
           totalNoOfFloors: rawTotalNoOfFloors,
           totalFloors: rawTotalNoOfFloors,
           actualWard: addressData.actualWard || additionalDetails.actualWard || addressData.additionalDetails?.actualWard || additionalDetails.block || addressData.block || addressData.ward || "",

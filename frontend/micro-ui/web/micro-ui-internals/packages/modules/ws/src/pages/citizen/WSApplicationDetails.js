@@ -921,11 +921,11 @@ const WSApplicationDetails = () => {
               <React.Fragment>
                 <CardHeader styles={{ fontSize: "28px" }}>{t("WS_COMMON_PROPERTY_DETAILS")}</CardHeader>
                 <StatusTable>
-                  <Row
+                  {/* <Row
                     label={t("WS_PROPERTY_ID_LABEL")}
                     text={data?.WaterConnection?.[0]?.propertyId || data?.SewerageConnections?.[0]?.propertyId}
                     textStyle={{ wordBreak: "break-word" }}
-                  />
+                  /> */}
                   <Row
                     label={t("WS_OWN_DETAIL_OWN_NAME_LABEL")}
                     text={

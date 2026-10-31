@@ -93,6 +93,69 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
   }
   const additionalDetails = cpt?.additionalDetails || {};
 
+  const rawNumberOfFloors =
+    propertyAddress?.numberOfFloors ||
+    propertyAddress?.noOfFloors ||
+    additionalDetails?.numberOfFloors ||
+    additionalDetails?.noOfFloors ||
+    cpt?.additionalDetails?.numberOfFloors ||
+    cpt?.additionalDetails?.noOfFloors ||
+    useDetails?.numberOfFloors ||
+    useDetails?.noOfFloors ||
+    cpt?.numberOfFloors ||
+    cpt?.noOfFloors ||
+    data?.cpt?.details?.additionalDetails?.numberOfFloors ||
+    data?.cpt?.details?.additionalDetails?.noOfFloors ||
+    data?.cpt?.details?.noOfFloors;
+
+  const rawTotalNoOfFloors =
+    propertyAddress?.totalNoOfFloors ||
+    propertyAddress?.totalFloors ||
+    additionalDetails?.totalNoOfFloors ||
+    additionalDetails?.totalFloors ||
+    cpt?.additionalDetails?.totalNoOfFloors ||
+    cpt?.additionalDetails?.totalFloors ||
+    useDetails?.totalNoOfFloors ||
+    useDetails?.totalFloors ||
+    cpt?.totalNoOfFloors ||
+    cpt?.totalFloors ||
+    data?.cpt?.details?.additionalDetails?.totalNoOfFloors ||
+    data?.cpt?.details?.additionalDetails?.totalFloors ||
+    cpt?.noOfFloors ||
+    additionalDetails?.noOfFloors;
+
+  const getFloorDisplay = (floor) => {
+    if (floor === undefined || floor === null || floor === "") return t("CS_NA");
+    if (typeof floor === "object") {
+      const val = floor?.name || floor?.i18nKey || floor?.code;
+      return val ? t(val) : t("CS_NA");
+    }
+    const str = String(floor);
+    const directTranslation = t(str);
+    if (directTranslation && directTranslation !== str) return directTranslation;
+    const ptTranslation = t(`COMMON_MASTERS_FLOOR_${str}`);
+    if (ptTranslation && ptTranslation !== `COMMON_MASTERS_FLOOR_${str}`) return ptTranslation;
+    const propTaxTranslation = t(`PROPERTYTAX_FLOOR_${str}`);
+    if (propTaxTranslation && propTaxTranslation !== `PROPERTYTAX_FLOOR_${str}`) return propTaxTranslation;
+    if (str.includes("_")) {
+      return str
+        .toLowerCase()
+        .split("_")
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(" ");
+    }
+    return str;
+  };
+
+  const getTotalFloorsDisplay = (total) => {
+    if (total === undefined || total === null || total === "") return t("CS_NA");
+    if (typeof total === "object") {
+      const val = total?.name || total?.code || total?.value;
+      return val ? String(val) : t("CS_NA");
+    }
+    return String(total);
+  };
+
   let connectionDetails = data?.ConnectionDetails?.[0] || data?.ConnectionDetails || data?.connectionDetails?.[0] || data?.connectionDetails || {};
   if (Array.isArray(connectionDetails)) {
     connectionDetails = connectionDetails[0] || {};
@@ -114,10 +177,10 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
       <Card className="overflow-y-scroll">
         <CardHeader>{t("WS_COMMON_SUMMARY")}</CardHeader>
         <div>
-          <CardSubHeader>{t("WS_COMMON_PROPERTY_DETAILS")}</CardSubHeader>
-          <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
+          {/* <CardSubHeader>{t("WS_COMMON_PROPERTY_DETAILS")}</CardSubHeader> */}
+          {/* <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
             <Row label={t("WS_PROPERTY_ID_LABEL")} text={`${t(checkForNA(cpt?.propertyId))}`} actionButton={<ActionButton onClick={onEdit} />} />
-          </StatusTable>
+          </StatusTable> */}
 
           <CardSubHeader>{t("WS_COMMON_CONNECTION_DETAIL")}</CardSubHeader>
           <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
@@ -150,7 +213,7 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
             />
             {(() => {
               const appType = connectionDetails?.applicantType;
-              const val = typeof appType === "object" ? (appType?.code || appType?.name || appType?.i18nKey || "") : String(appType || "");
+              const val = typeof appType === "object" ? appType?.code || appType?.name || appType?.i18nKey || "" : String(appType || "");
               const isAuthRep = String(val).toLowerCase().includes("authorized") || String(val).toLowerCase().includes("representative");
               if (isAuthRep) {
                 return (
@@ -161,11 +224,15 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
                     />
                     <Row
                       label={t("Authorized Representative Designation")}
-                      text={`${checkForNA(connectionDetails?.authorizedRepresentativeDesignation || data?.additionalDetails?.authorizedRepresentativeDesignation)}`}
+                      text={`${checkForNA(
+                        connectionDetails?.authorizedRepresentativeDesignation || data?.additionalDetails?.authorizedRepresentativeDesignation
+                      )}`}
                     />
                     <Row
                       label={t("CORE_COMMON_MOBILE_NUMBER")}
-                      text={`${checkForNA(connectionDetails?.authorizedRepresentativeMobileNumber || data?.additionalDetails?.authorizedRepresentativeMobileNumber)}`}
+                      text={`${checkForNA(
+                        connectionDetails?.authorizedRepresentativeMobileNumber || data?.additionalDetails?.authorizedRepresentativeMobileNumber
+                      )}`}
                     />
                   </React.Fragment>
                 );
@@ -203,21 +270,13 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
                   : connectionDetails?.addressType?.code || connectionDetails?.addressType?.name) ||
                 data?.additionalDetails?.addressType ||
                 "";
-              const compAddrStr =
-                connectionDetails?.completeAddress ||
-                data?.additionalDetails?.completeAddress ||
-                "";
+              const compAddrStr = connectionDetails?.completeAddress || data?.additionalDetails?.completeAddress || "";
               if (
                 compAddrStr &&
                 compAddrStr !== addrTypeStr &&
                 ["PERMANENT", "CORRESPONDENCE", "Permanent", "Correspondence"].includes(addrTypeStr)
               ) {
-                return (
-                  <Row
-                    label={t("Complete Address")}
-                    text={`${checkForNA(compAddrStr)}`}
-                  />
-                );
+                return <Row label={t("Complete Address")} text={`${checkForNA(compAddrStr)}`} />;
               }
               return null;
             })()}
@@ -308,9 +367,20 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
               text={`${t(checkForNA(propertyAddress?.subLocality?.name || propertyAddress?.subLocality?.code || propertyAddress?.subLocality))}`}
             />
             <Row label={t("STREET_NAME")} text={`${t(checkForNA(propertyAddress?.streetName || propertyAddress?.street))}`} />
+
+            <Row label={t("HOUSE_NO")} text={`${t(checkForNA(propertyAddress?.houseNo || propertyAddress?.doorNo))}`} />
+            <Row
+              label={t("WS_NUMBER_OF_FLOORS")}
+              text={`${getFloorDisplay(rawNumberOfFloors)}`}
+            />
+            <Row
+              label={t("WS_TOTAL_NUMBER_OF_FLOORS_IN_THE_BUILDING")}
+              text={`${getTotalFloorsDisplay(rawTotalNoOfFloors)}`}
+            />
             <Row label={t("ADDRESS_LINE1")} text={`${t(checkForNA(propertyAddress?.addressLine1 || propertyAddress?.street))}`} />
             <Row label={t("ADDRESS_LINE2")} text={`${t(checkForNA(propertyAddress?.addressLine2))}`} />
-            <Row label={t("HOUSE_NO")} text={`${t(checkForNA(propertyAddress?.houseNo || propertyAddress?.doorNo))}`} />
+            <Row label={t("LANDMARK")} text={`${t(checkForNA(propertyAddress?.landmark))}`} />
+
             <Row label={t("LATITUDE_GEOTAG")} text={`${t(checkForNA(propertyAddress?.latitude))}`} />
             <Row label={t("LONGITUDE_GEOTAG")} text={`${t(checkForNA(propertyAddress?.longitude))}`} />
             <Row
@@ -349,7 +419,6 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
             />
             <Row label={t("COMMON_CURRENT_WARD")} text={`${t(checkForNA(propertyAddress?.actualWard || additionalDetails?.actualWard))}`} />
             <Row label={t("COMMON_CURRENT_ZONE")} text={`${t(checkForNA(propertyAddress?.actualZone || additionalDetails?.actualZone))}`} />
-            <Row label={t("LANDMARK")} text={`${t(checkForNA(propertyAddress?.landmark))}`} />
           </StatusTable>
 
           <CardSubHeader>{t("WS_PROPERTY_AND_WATER_CONNECTION_USE_DETAILS")}</CardSubHeader>
@@ -380,10 +449,7 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
                 )
               )}`}
             />
-            <Row
-              label={t("WS_NUMBER_OF_FLOORS")}
-              text={`${t(checkForNA(useDetails?.noOfFloors?.i18nKey || useDetails?.noOfFloors?.code || useDetails?.noOfFloors))}`}
-            />
+
             <Row label={t("WS_PLOT_AREA")} text={`${t(checkForNA(useDetails?.plotArea))}`} />
             <Row label={t("WS_BUILT_UP_AREA")} text={`${t(checkForNA(useDetails?.builtUpArea))}`} />
             {useDetails?.heightOfTheBuilding && (
@@ -403,7 +469,7 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
                 )
               )}`}
             />
-            {(String(
+            {String(
               useDetails?.propertyCategory?.code ||
                 useDetails?.propertyCategory?.name ||
                 useDetails?.propertyCategory ||
@@ -412,18 +478,21 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
                 cpt?.propertyType?.propertyCategory ||
                 cpt?.usageCategory ||
                 ""
-            ).toUpperCase().includes("RESIDENTIAL")) ? (
+            )
+              .toUpperCase()
+              .includes("RESIDENTIAL") ? (
               <Row
                 label={t("WS_NUMBER_OF_DWELLING_UNITS")}
                 text={`${t(checkForNA(useDetails?.NumberofDwellingUnits || useDetails?.noOfDwellingUnits))}`}
               />
             ) : null}
             {(Array.isArray(useDetails?.questions || cpt?.additionalDetails?.questions)
-              ? (useDetails?.questions || cpt?.additionalDetails?.questions)
+              ? useDetails?.questions || cpt?.additionalDetails?.questions
               : []
             ).map((q, idx) => {
               const qText = typeof q === "object" ? q?.question || q?.questionText || q?.title || `Question ${idx + 1}` : `Question ${idx + 1}`;
-              const aText = typeof q === "object" ? (typeof q?.answer === "object" ? (q?.answer?.name || q?.answer?.value || q?.answer?.code) : q?.answer) : q;
+              const aText =
+                typeof q === "object" ? (typeof q?.answer === "object" ? q?.answer?.name || q?.answer?.value || q?.answer?.code : q?.answer) : q;
               const trimmedQ = String(qText || "").trim();
               const displayLabel = trimmedQ.toLowerCase().startsWith("question") ? trimmedQ : `${trimmedQ}`;
               return <Row key={`question_${idx}`} label={displayLabel} text={`${t(checkForNA(aText))}`} />;

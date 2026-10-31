@@ -80,7 +80,7 @@ const CheckPage = ({ onSubmit, value }) => {
       <Card style={{ paddingRight: "16px" }}>
         <CardHeader styles={{ fontSize: "28px" }}>{t(`WS_BASIC_DETAILS_HEADER`)}</CardHeader>
         <StatusTable>
-          <Row className="border-none" label={t("WS_PROPERTY_ID_LABEL")} text={cpt?.details?.propertyId} />
+          {/* <Row className="border-none" label={t("WS_PROPERTY_ID_LABEL")} text={cpt?.details?.propertyId} /> */}
           <Row className="border-none" label={t("WS_OWNERS_NAME_LABEL")} text={t(reversedOwners[0]?.name)} />
           <Row className="border-none" label={t("WS_COMMON_TABLE_COL_ADDRESS")} text={propAddArr.join(", ")} />
           <Row className="border-none" label={t("WS_CONNECTION_DETAILS_STATUS_LABEL")} text={t(cpt?.details?.status)} />
@@ -344,7 +344,19 @@ const CheckPage = ({ onSubmit, value }) => {
         />
         <Row
           label={t("WS_NUMBER_OF_FLOORS")}
-          text={`${t(checkForNA(useDetails?.noOfFloors?.i18nKey || useDetails?.noOfFloors?.code || useDetails?.noOfFloors))}`}
+          text={`${t(
+            checkForNA(
+              useDetails?.numberOfFloors?.i18nKey ||
+                useDetails?.numberOfFloors?.code ||
+                useDetails?.numberOfFloors ||
+                useDetails?.noOfFloors?.i18nKey ||
+                useDetails?.noOfFloors?.code ||
+                useDetails?.noOfFloors ||
+                property?.additionalDetails?.numberOfFloors ||
+                property?.additionalDetails?.noOfFloors ||
+                property?.noOfFloors
+            )
+          )}`}
         />
         {(useDetails?.totalNoOfFloors || useDetails?.totalFloors || property?.totalNoOfFloors || property?.totalFloors || property?.additionalDetails?.totalNoOfFloors || property?.additionalDetails?.totalFloors) && (
           <Row

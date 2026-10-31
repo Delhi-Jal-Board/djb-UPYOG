@@ -458,16 +458,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
       setValue("useDetails.questions", []);
     }
     propertyDetailsInitialized.current = true;
-  }, [
-    formData?.cpt?.details,
-    formData?.cpt,
-    categoryOptions,
-    propertyTypeOptions,
-    usageTypeOptions,
-    yearOptions,
-    categoryTypeList,
-    setValue,
-  ]);
+  }, [formData?.cpt?.details, formData?.cpt, categoryOptions, propertyTypeOptions, usageTypeOptions, yearOptions, categoryTypeList, setValue]);
 
   const lastErrorState = React.useRef(null);
   useEffect(() => {
@@ -520,6 +511,97 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
           </div>
         </LabelFieldPair>
         {errors?.useDetails?.propertyType && <CardLabelError style={errorStyle}>{errors.useDetails.propertyType.message}</CardLabelError>}
+
+        {activeQuestions &&
+          activeQuestions.length > 0 &&
+          activeQuestions.map((questionText, index) => {
+            const rawQ = String(questionText || "").trim();
+            const label = rawQ.toLowerCase().startsWith("question") ? rawQ : `Question : ${rawQ}`;
+            return (
+              <LabelFieldPair key={`question_${index}_${rawQ}`}>
+                <CardLabel style={{ whiteSpace: "normal", wordBreak: "break-word", fontWeight: "bold" }}>
+                  <strong>{label}</strong>
+                </CardLabel>
+                <div className="form-field">
+                  <TextInput
+                    name={`useDetails.question_${index}`}
+                    value={questionAnswers[index]?.answer !== undefined ? questionAnswers[index].answer : ""}
+                    disabled={isPropertyFound}
+                    placeholder="Enter Answer"
+                    onChange={(e) => handleAnswerChange(index, questionText, e.target.value)}
+                  />
+                </div>
+              </LabelFieldPair>
+            );
+          })}
+
+        {isSchoolCollegeProperty ? (
+          <React.Fragment>
+            <LabelFieldPair>
+              <CardLabel>{`${t("WS_NUMBER_OF_STUDENTS")}`}</CardLabel>
+              <div className="form-field">
+                <TextInput
+                  t={t}
+                  inputRef={register({
+                    pattern: { value: NUMBER_PATTERN, message: t("ERR_INVALID_NUMBER") },
+                  })}
+                  name="useDetails.numberOfStudents"
+                  disabled={isPropertyFound}
+                  placeholder={t("WS_NUMBER_OF_STUDENTS")}
+                />
+              </div>
+            </LabelFieldPair>
+            {errors?.useDetails?.numberOfStudents && <CardLabelError style={errorStyle}>{errors.useDetails.numberOfStudents.message}</CardLabelError>}
+          </React.Fragment>
+        ) : null}
+
+        {isHotelRestaurantProperty ? (
+          <React.Fragment>
+            <LabelFieldPair>
+              <CardLabel>
+                {`${t("WS_NUMBER_OF_ROOMS")}`}
+                <span className="check-page-link-button"> *</span>
+              </CardLabel>
+              <div className="form-field">
+                <TextInput
+                  t={t}
+                  inputRef={register({
+                    pattern: { value: NUMBER_PATTERN, message: t("ERR_INVALID_NUMBER") },
+                    required: isHotelRestaurantProperty ? t("REQUIRED_FIELD") : false,
+                  })}
+                  name="useDetails.NumberofRooms"
+                  disabled={isPropertyFound}
+                  placeholder={t("WS_NUMBER_OF_ROOMS")}
+                />
+              </div>
+            </LabelFieldPair>
+            {errors?.useDetails?.NumberofRooms && <CardLabelError style={errorStyle}>{errors.useDetails.NumberofRooms.message}</CardLabelError>}
+          </React.Fragment>
+        ) : null}
+
+        {isHospitalProperty ? (
+          <React.Fragment>
+            <LabelFieldPair>
+              <CardLabel>
+                {`${t("WS_NUMBER_OF_BEDS")}`}
+                <span className="check-page-link-button"> *</span>
+              </CardLabel>
+              <div className="form-field">
+                <TextInput
+                  t={t}
+                  inputRef={register({
+                    pattern: { value: NUMBER_PATTERN, message: t("ERR_INVALID_NUMBER") },
+                    required: isHospitalProperty ? t("REQUIRED_FIELD") : false,
+                  })}
+                  name="useDetails.numberOfBeds"
+                  disabled={isPropertyFound}
+                  placeholder={t("WS_NUMBER_OF_BEDS")}
+                />
+              </div>
+            </LabelFieldPair>
+            {errors?.useDetails?.numberOfBeds && <CardLabelError style={errorStyle}>{errors.useDetails.numberOfBeds.message}</CardLabelError>}
+          </React.Fragment>
+        ) : null}
         <LabelFieldPair>
           <CardLabel>
             {`${t("WS_CATEGORY_TYPE")}`} <span className="check-page-link-button">*</span>
@@ -598,27 +680,6 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
         {errors?.useDetails?.WaterConnectionUsageType && (
           <CardLabelError style={errorStyle}>{errors.useDetails.WaterConnectionUsageType.message}</CardLabelError>
         )}
-
-        {activeQuestions &&
-          activeQuestions.length > 0 &&
-          activeQuestions.map((questionText, index) => {
-            const rawQ = String(questionText || "").trim();
-            const label = rawQ.toLowerCase().startsWith("question") ? rawQ : `Question : ${rawQ}`;
-            return (
-              <LabelFieldPair key={`question_${index}_${rawQ}`}>
-                <CardLabel style={{ whiteSpace: "normal", wordBreak: "break-word" }}>{label}</CardLabel>
-                <div className="form-field">
-                  <TextInput
-                    name={`useDetails.question_${index}`}
-                    value={questionAnswers[index]?.answer !== undefined ? questionAnswers[index].answer : ""}
-                    disabled={isPropertyFound}
-                    placeholder="Enter Answer"
-                    onChange={(e) => handleAnswerChange(index, questionText, e.target.value)}
-                  />
-                </div>
-              </LabelFieldPair>
-            );
-          })}
 
         <LabelFieldPair>
           <CardLabel>
@@ -758,74 +819,6 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
 
         {isDwellingUnit && errors?.useDetails?.NumberofDwellingUnits && (
           <CardLabelError style={errorStyle}>{errors.useDetails.NumberofDwellingUnits.message}</CardLabelError>
-        )}
-
-        {isHotelRestaurantProperty ? (
-          <LabelFieldPair>
-            <CardLabel>
-              {`${t("WS_NUMBER_OF_ROOMS")}`}
-              <span className="check-page-link-button"> *</span>
-            </CardLabel>
-            <div className="form-field">
-              <TextInput
-                t={t}
-                inputRef={register({
-                  pattern: { value: NUMBER_PATTERN, message: t("ERR_INVALID_NUMBER") },
-                  required: isHotelRestaurantProperty ? t("REQUIRED_FIELD") : false,
-                })}
-                name="useDetails.NumberofRooms"
-                disabled={isPropertyFound}
-                placeholder={t("WS_NUMBER_OF_ROOMS")}
-              />
-            </div>
-          </LabelFieldPair>
-        ) : null}
-        {isHotelRestaurantProperty && errors?.useDetails?.NumberofRooms && (
-          <CardLabelError style={errorStyle}>{errors.useDetails.NumberofRooms.message}</CardLabelError>
-        )}
-
-        {isHospitalProperty ? (
-          <LabelFieldPair>
-            <CardLabel>
-              {`${t("WS_NUMBER_OF_BEDS")}`}
-              <span className="check-page-link-button"> *</span>
-            </CardLabel>
-            <div className="form-field">
-              <TextInput
-                t={t}
-                inputRef={register({
-                  pattern: { value: NUMBER_PATTERN, message: t("ERR_INVALID_NUMBER") },
-                  required: isHospitalProperty ? t("REQUIRED_FIELD") : false,
-                })}
-                name="useDetails.numberOfBeds"
-                disabled={isPropertyFound}
-                placeholder={t("WS_NUMBER_OF_BEDS")}
-              />
-            </div>
-          </LabelFieldPair>
-        ) : null}
-        {isHospitalProperty && errors?.useDetails?.numberOfBeds && (
-          <CardLabelError style={errorStyle}>{errors.useDetails.numberOfBeds.message}</CardLabelError>
-        )}
-
-        {isSchoolCollegeProperty ? (
-          <LabelFieldPair>
-            <CardLabel>{`${t("WS_NUMBER_OF_STUDENTS")}`}</CardLabel>
-            <div className="form-field">
-              <TextInput
-                t={t}
-                inputRef={register({
-                  pattern: { value: NUMBER_PATTERN, message: t("ERR_INVALID_NUMBER") },
-                })}
-                name="useDetails.numberOfStudents"
-                disabled={isPropertyFound}
-                placeholder={t("WS_NUMBER_OF_STUDENTS")}
-              />
-            </div>
-          </LabelFieldPair>
-        ) : null}
-        {isSchoolCollegeProperty && errors?.useDetails?.numberOfStudents && (
-          <CardLabelError style={errorStyle}>{errors.useDetails.numberOfStudents.message}</CardLabelError>
         )}
 
         {/* {isServentHouse ? (
