@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import java.util.Map;
+import java.net.URI;
 
 @Repository
 @Slf4j
@@ -36,6 +37,20 @@ public class ServiceRequestRepository {
 			log.error("Exception while fetching from searcher: ", e);
 		}
 		return response;
+	}
+
+	public Object fetchResult(URI uri, Object request) {
+		mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+		try {
+			log.debug("Fetching external service using URI: {}", uri);
+			return restTemplate.postForObject(uri, request, Map.class);
+		} catch (HttpClientErrorException e) {
+			log.error("External Service threw an Exception: ", e);
+			throw new ServiceCallException(e.getResponseBodyAsString());
+		} catch (Exception e) {
+			log.error("Exception while fetching external service: ", e);
+			throw new RuntimeException("Unable to call external service", e);
+		}
 	}
 
 	public Object fetchResultUsingGet(StringBuilder uri) {

@@ -12,6 +12,7 @@ import org.egov.common.utils.MultiStateInstanceUtil;
 import org.egov.tracer.model.CustomException;
 import org.egov.waterconnection.config.WSConfiguration;
 import org.egov.waterconnection.constants.WCConstants;
+import org.egov.waterconnection.repository.InfrastructureChargeAssessmentRepository;
 import org.egov.waterconnection.repository.ServiceRequestRepository;
 import org.egov.waterconnection.repository.WaterDao;
 import org.egov.waterconnection.util.NotificationUtil;
@@ -79,6 +80,9 @@ public class PaymentUpdateService {
 
 	@Autowired
 	private MultiStateInstanceUtil centralInstanceUtil;
+
+    @Autowired
+    private InfrastructureChargeAssessmentRepository infraAssessmentRepository;
 
 	/**
 	 * After payment change the application status
@@ -177,7 +181,22 @@ public class PaymentUpdateService {
 				    // Removed hardcoded 'PENDING_FOR_DOCUMENT_VERIFICATION' override so that the status returned by the workflow engine is preserved. 
 					repo.updateWaterConnection(waterConnectionRequest, true);
                    log.info("First payment successful. Moving to " + waterConnectionRequest.getWaterConnection().getApplicationStatus());   
-				} else if ("PENDING_FOR_FINAL_PAYMENT".equalsIgnoreCase(statusBeforePayment) || "PENDING_FOR_ADDITIONAL_PAYMENT".equalsIgnoreCase(statusBeforePayment)) {
+                } else if (WCConstants.PENDING_FOR_INFRA_PAYMENT_EE_STATUS_CODE.equalsIgnoreCase(statusBeforePayment)
+                        || WCConstants.PENDING_FOR_INFRA_PAYMENT_ZRO_STATUS_CODE.equalsIgnoreCase(statusBeforePayment)) {
+                    // PAY workflow transition should return the application to the reviewer
+                    // encoded by NewWS1. Do not use the final-payment auto-activation path.
+                    repo.updateWaterConnection(waterConnectionRequest, true);
+                    InfrastructureChargeAssessment assessment = infraAssessmentRepository.findByApplication(
+                            connection.getTenantId(), connection.getApplicationNo());
+                    if (assessment != null && "PAYMENT_PENDING".equalsIgnoreCase(assessment.getStatus())) {
+                        assessment.setStatus("ASSESSED");
+                        assessment.setPendingAdditionalAmount(java.math.BigDecimal.ZERO.setScale(2));
+                        assessment.setLastModifiedBy("SYSTEM_PAYMENT");
+                        infraAssessmentRepository.save(assessment);
+                    }
+                    log.info("Additional infrastructure payment successful. applicationNo={}, resumedStatus={}",
+                            connection.getApplicationNo(), waterConnectionRequest.getWaterConnection().getApplicationStatus());
+                } else if ("PENDING_FOR_FINAL_PAYMENT".equalsIgnoreCase(statusBeforePayment) || "PENDING_FOR_ADDITIONAL_PAYMENT".equalsIgnoreCase(statusBeforePayment)) {
 
 					waterConnectionRequest.getWaterConnection().setApplicationStatus("PENDING_FOR_CONNECTION_ACTIVATION");
 
