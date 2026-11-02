@@ -208,7 +208,7 @@ const WSDocumentsEmployee = ({ t, config, onSelect, userType, formData, setError
 
   useEffect(() => {
     let count = 0;
-    wsDocs?.[wsDocsData]?.filter(doc => doc.code !== "OWNER.APPLICANTPHOTO")?.map((doc) => {
+    wsDocs?.[wsDocsData]?.map((doc) => {
       const isDocRequired = isOtherDocument(doc?.code) ? false : doc.required;
       let isRequired = false;
       documents.map((data) => {
@@ -239,7 +239,7 @@ const WSDocumentsEmployee = ({ t, config, onSelect, userType, formData, setError
   if (window.location.href.includes("edit") && applicationDetailsData?.applicationData?.documents?.length > 0) {
     const documentsData = applicationDetailsData?.applicationData?.documents || [];
     documentsData?.map((documentData) => {
-      wsDocs?.[wsDocsData]?.filter(doc => doc.code !== "OWNER.APPLICANTPHOTO")?.forEach((docData) => {
+      wsDocs?.[wsDocsData]?.forEach((docData) => {
         const docType = docData?.code?.split(".")[1]
           ? docData?.code?.split(".")[0] + "." + docData?.code?.split(".")[1]
           : docData?.code?.split(".")[0];
@@ -263,7 +263,7 @@ const WSDocumentsEmployee = ({ t, config, onSelect, userType, formData, setError
 
   const innerContent = (
     <div className="formcomposer-section-grid ws-doc-upload">
-      {wsDocs?.[wsDocsData]?.filter(doc => doc.code !== "OWNER.APPLICANTPHOTO")?.map((document, index) => {
+      {wsDocs?.[wsDocsData]?.map((document, index) => {
         let modifiedDocument = { ...document };
         const isOther = isOtherDocument(document?.code);
         if (isOtherDocument(modifiedDocument.code)) {
@@ -673,6 +673,7 @@ function SelectDocument({
   const pendingId = useRef(Date.now());
   const otherUploadedDocuments = isOther ? documents?.filter((item) => item?.documentType?.includes(doc?.code) && item?.tempId !== pendingId.current) || [] : [];
   const filteredDocument = isOther ? null : documents?.filter((item) => item?.documentType?.includes(doc?.code))[0];
+  const isApplicantPhoto = doc?.code === "OWNER.APPLICANTPHOTO";
   const [selectedDocument, setSelectedDocument] = useState(() => {
     if (filteredDocument && doc?.dropdownData) {
       const match = doc?.dropdownData?.find((d) => d.code === filteredDocument.documentType);
@@ -682,9 +683,14 @@ function SelectDocument({
       const rwhMatch = doc?.dropdownData?.find((d) => isRwhDocType(d));
       if (rwhMatch) return { ...rwhMatch, i18nKey: rwhMatch.code?.replaceAll(".", "_") };
     }
+    if (isApplicantPhoto) {
+      return filteredDocument
+        ? { ...filteredDocument, code: filteredDocument?.documentType || doc?.code || "OWNER.APPLICANTPHOTO", i18nKey: "OWNER_APPLICANTPHOTO" }
+        : { ...doc, code: doc?.code || "OWNER.APPLICANTPHOTO", i18nKey: "OWNER_APPLICANTPHOTO" };
+    }
     return filteredDocument
       ? { ...filteredDocument, code: filteredDocument?.documentType, i18nKey: filteredDocument?.documentType?.replaceAll(".", "_") }
-      : doc?.hasDropdown
+      : doc?.hasDropdown && Array.isArray(doc?.dropdownData) && doc?.dropdownData?.length > 0
       ? doc?.dropdownData?.length === 1
         ? doc?.dropdownData[0]
         : {}
@@ -705,11 +711,32 @@ function SelectDocument({
   const [digiLockerUpload, setDigilockerUpload] = useState(false);
   const [docNumberError, setDocNumberError] = useState(null);
 
+  const isOtherDocumentsRemark = Boolean(
+    isOther &&
+      selectedDocument &&
+      (selectedDocument?.code === "OWNER.OTHERDOCUMENTS.OTHER_DOCUMENTS" ||
+        selectedDocument?.code === "OWNER_OTHERDOCUMENTS_OTHER_DOCUMENTS" ||
+        selectedDocument?.i18nKey === "OWNER_OTHERDOCUMENTS_OTHER_DOCUMENTS" ||
+        selectedDocument?.code?.endsWith(".OTHER_DOCUMENTS") ||
+        selectedDocument?.code?.includes("OTHER_DOCUMENTS") ||
+        selectedDocument?.name?.toUpperCase()?.includes("OTHER DOCUMENT") ||
+        selectedDocument?.i18nKey?.includes("OTHER_DOCUMENTS"))
+  );
+
   const validateDocumentNumber = (value, docTypeCode, isReq, hasFile) => {
     if (!isReq && !hasFile && (!value || !value.trim())) return null;
     if (!value || !value.trim()) return null;
     const trimmed = value.trim();
     const upperCode = (docTypeCode || "").toUpperCase();
+
+    if (
+      isOtherDocumentsRemark ||
+      upperCode.includes("OTHER_DOCUMENTS") ||
+      upperCode.includes("OTHERDOCUMENTS") ||
+      upperCode.includes("OTHER_DOCUMENT")
+    ) {
+      return null;
+    }
 
     if (upperCode.includes("AADHAAR") || upperCode.includes("AADHAR")) {
       if (!/^\d{12}$/.test(trimmed)) return t("WS_AADHAAR_VALIDATION_ERROR") || "Aadhaar number must be exactly 12 digits";
@@ -786,7 +813,9 @@ function SelectDocument({
           ? { ...filteredDocument, ...match }
           : filteredDocument
           ? { ...filteredDocument, code: filteredDocument?.documentType, i18nKey: filteredDocument?.documentType?.replaceAll(".", "_") }
-          : doc?.hasDropdown
+          : isApplicantPhoto
+          ? { ...doc, code: doc?.code || "OWNER.APPLICANTPHOTO", i18nKey: "OWNER_APPLICANTPHOTO" }
+          : doc?.hasDropdown && Array.isArray(doc?.dropdownData) && doc?.dropdownData?.length > 0
           ? doc?.dropdownData?.length === 1
             ? doc?.dropdownData[0]
             : {}
@@ -809,7 +838,7 @@ function SelectDocument({
   }
   const { dropdownData } = doc;
   const { dropdownFilter, enabledActions, filterCondition } = doc?.additionalDetails || {};
-  var dropDownData = dropdownData;
+  var dropDownData = Array.isArray(dropdownData) ? dropdownData : [];
 
   const checkIsTenant = (val) => {
     if (!val) return false;
@@ -958,6 +987,8 @@ function SelectDocument({
             documentName: selectedDocument?.i18nKey || selectedDocument?.code || "",
             documentUid: documentUid,
             documentNumber: documentUid,
+            remarks: isOtherDocumentsRemark ? documentUid : undefined,
+            additionalDetails: isOtherDocumentsRemark ? { remark: documentUid } : undefined,
             i18nKey: selectedDocument?.code,
             id: selectedDocument?.id,
             status: "ACTIVE",
@@ -974,8 +1005,12 @@ function SelectDocument({
     const rwhMissing = isRwhRequired && !isRwhSatisfied;
 
     const hasOtherUploaded = isOther && documents?.some(item => item?.documentType?.includes(doc?.code));
-    const isCompletelyEmpty = !uploadedFile && (!documentUid || !documentUid.trim()) && !selectedDocument?.code;
-    const isPartiallyFilled = (!isCompletelyEmpty) && !(uploadedFile && selectedDocument?.code);
+    const isCompletelyEmpty = isApplicantPhoto
+      ? !uploadedFile
+      : !uploadedFile && (!documentUid || !documentUid.trim()) && !selectedDocument?.code;
+    const isPartiallyFilled = isApplicantPhoto
+      ? false
+      : (!isCompletelyEmpty) && !(uploadedFile && selectedDocument?.code);
     
     const effectiveRequired = (doc?.required && !hasOtherUploaded) || isPartiallyFilled || (isOther && isRwhMandatory && !hasRwhUploaded);
     const err = validateDocumentNumber(documentUid, selectedDocument?.code, effectiveRequired, !!uploadedFile);
@@ -1050,7 +1085,7 @@ function SelectDocument({
         marginBottom: "20px",
       }}
     >
-      {doc?.hasDropdown ? (
+      {doc?.hasDropdown && !isApplicantPhoto && Array.isArray(dropDownData) && dropDownData.length > 0 ? (
         <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
           <CardLabel style={{ margin: 0 }}>
             {t(doc?.i18nKey)}
@@ -1077,7 +1112,13 @@ function SelectDocument({
 
       {doc?.code !== "OWNER.APPLICANTPHOTO" && (
         <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-          <CardLabel style={{ margin: 0 }}>{t(`${doc?.i18nKey?.replaceAll(".", "_")}_DOCUMENT_NO`)}</CardLabel>
+          <CardLabel style={{ margin: 0 }}>
+            {isOtherDocumentsRemark
+              ? (!t("WS_OTHER_DOCUMENT_REMARK") || t("WS_OTHER_DOCUMENT_REMARK") === "WS_OTHER_DOCUMENT_REMARK"
+                ? "Other Document Remark"
+                : t("WS_OTHER_DOCUMENT_REMARK"))
+              : t(`${doc?.i18nKey?.replaceAll(".", "_")}_DOCUMENT_NO`)}
+          </CardLabel>
           <div className="field">
             <TextInput
               type="text"
@@ -1097,6 +1138,8 @@ function SelectDocument({
                       ? 15
                       : upperCode.includes("PASSPORT")
                       ? 8
+                      : isOtherDocumentsRemark
+                      ? 256
                       : 64;
                   if (val.length > maxLen) {
                     val = val.substring(0, maxLen);
@@ -1108,7 +1151,13 @@ function SelectDocument({
               onBlur={() => {
                 setDocNumberError(validateDocumentNumber(documentUid, selectedDocument?.code, doc?.required, !!uploadedFile));
               }}
-              placeholder={t("WS_IDENTITY_NO_PLACEHOLDER")}
+              placeholder={
+                isOtherDocumentsRemark
+                  ? (!t("WS_ENTER_OTHER_DOCUMENT_REMARK") || t("WS_ENTER_OTHER_DOCUMENT_REMARK") === "WS_ENTER_OTHER_DOCUMENT_REMARK"
+                    ? "Enter Other Document Remark"
+                    : t("WS_ENTER_OTHER_DOCUMENT_REMARK"))
+                  : t("WS_IDENTITY_NO_PLACEHOLDER")
+              }
               disabled={isDocumentUidLocked}
               style={
                 isDocumentUidLocked
@@ -1128,6 +1177,8 @@ function SelectDocument({
                   ? 15
                   : selectedDocument?.code?.toUpperCase().includes("PASSPORT")
                   ? 8
+                  : isOtherDocumentsRemark
+                  ? 256
                   : 64
               }
             />
@@ -1162,12 +1213,18 @@ function SelectDocument({
       <div style={{ display: "flex", flexDirection: "column", gap: "8px", gridColumn: "span 1" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <CardLabel style={{ margin: 0 }}>
-            {t(`${doc?.i18nKey?.replaceAll(".", "_")}_UPLOAD_DOCUMENT`)}
+            {doc?.code === "OWNER.APPLICANTPHOTO"
+              ? (!t("WS_UPLOAD_APPLICANT_PHOTO") || t("WS_UPLOAD_APPLICANT_PHOTO") === "WS_UPLOAD_APPLICANT_PHOTO"
+                ? doc?.description || "Upload Applicant Photo"
+                : t("WS_UPLOAD_APPLICANT_PHOTO"))
+              : t(`${doc?.i18nKey?.replaceAll(".", "_")}_UPLOAD_DOCUMENT`)}
             {doc?.required && <span className="check-page-link-button">*</span>}
           </CardLabel>
         </div>
         <div style={{ fontSize: "12px", color: "#666", marginTop: "-2px", marginBottom: "4px" }}>
-          {t("WS_DOCUMENT_MAX_SIZE_MESSAGE") || "Allowed formats: PDF, JPG, PNG | Max file size: 5MB"}
+          {doc?.code === "OWNER.APPLICANTPHOTO"
+            ? t("WS_PHOTO_MAX_SIZE_MESSAGE") || "Allowed formats: JPG, PNG | Max file size: 5MB"
+            : t("WS_DOCUMENT_MAX_SIZE_MESSAGE") || "Allowed formats: PDF, JPG, PNG | Max file size: 5MB"}
         </div>
         <div className="field" style={{ display: "flex", gap: "10px", alignItems: "flex-start", width: "100%" }}>
           <div style={{ flex: 1 }}>
@@ -1339,12 +1396,14 @@ function SelectDocument({
         ))}
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "8px", gridColumn: "span 1" }}>
-        <CardLabel style={{ margin: 0 }}>
-          {doc?.code === "OWNER.APPLICANTPHOTO" ? t("WS_CLICK_APPLICANT_PHOTO") || "Click Applicant Photo" : "\u00A0"}
-        </CardLabel>
-        <div style={{ display: "flex", alignItems: "center", gap: "20px", height: "100%" }}>
-          {doc?.code === "OWNER.APPLICANTPHOTO" && (
+      {doc?.code === "OWNER.APPLICANTPHOTO" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: "8px", gridColumn: "span 1" }}>
+          <CardLabel style={{ margin: 0 }}>
+            {!t("WS_CLICK_APPLICANT_PHOTO") || t("WS_CLICK_APPLICANT_PHOTO") === "WS_CLICK_APPLICANT_PHOTO"
+              ? "Click Applicant Photo"
+              : t("WS_CLICK_APPLICANT_PHOTO")}
+          </CardLabel>
+          <div style={{ display: "flex", alignItems: "center", gap: "20px", height: "100%" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
               <button
                 type="button"
@@ -1371,9 +1430,9 @@ function SelectDocument({
               )}
               {uploadedFile && !isUploading && <span style={{ color: "green", fontWeight: "bold", fontSize: "14px" }}>✔ Uploaded</span>}
             </div>
-          )}
+          </div>
         </div>
-      </div>
+      )}
       {showCamera && <CameraCaptureModal onCapture={handleCapture} onClose={() => setShowCamera(false)} t={t} />}
       {showDocModal && (
         <Modal
