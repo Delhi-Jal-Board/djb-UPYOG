@@ -16,9 +16,15 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import java.security.cert.X509Certificate;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import javax.annotation.PostConstruct;
 
@@ -44,6 +50,12 @@ public class WhatsAppService {
     @Value("${whatsapp.apikey:}")
     private String whatsappApikey;
 
+    @Value("${whatsapp.connect.timeout:5000}")
+    private int connectTimeout;
+
+    @Value("${whatsapp.socket.timeout:10000}")
+    private int socketTimeout;
+
     @Autowired
     private SMSProperties smsProperties;
 
@@ -51,29 +63,59 @@ public class WhatsAppService {
 
     @PostConstruct
     public void init() {
-        if (this.restTemplate != null) {
-            this.secureRestTemplate = this.restTemplate;
-        } else {
-            try {
-                TrustManager[] trustAllCerts = new TrustManager[]{
-                    new X509TrustManager() {
-                        public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[0]; }
-                        public void checkClientTrusted(X509Certificate[] certs, String authType) {}
-                        public void checkServerTrusted(X509Certificate[] certs, String authType) {}
-                    }
-                };
-                SSLContext sslContext = SSLContext.getInstance("TLS");
-                sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
-                CloseableHttpClient httpClient = HttpClients.custom()
-                    .setSSLHostnameVerifier(new NoopHostnameVerifier())
-                    .setSSLContext(sslContext)
+        try {
+            TrustManager[] trustAllCerts = new TrustManager[]{
+                new X509TrustManager() {
+                    public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[0]; }
+                    public void checkClientTrusted(X509Certificate[] certs, String authType) {}
+                    public void checkServerTrusted(X509Certificate[] certs, String authType) {}
+                }
+            };
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
+
+            SSLConnectionSocketFactory csf = new SSLConnectionSocketFactory(
+                    sslContext,
+                    NoopHostnameVerifier.INSTANCE
+            );
+
+            PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(
+                    RegistryBuilder.<ConnectionSocketFactory>create()
+                            .register("http", PlainConnectionSocketFactory.getSocketFactory())
+                            .register("https", csf)
+                            .build()
+            );
+            connectionManager.setMaxTotal(200);
+            connectionManager.setDefaultMaxPerRoute(50);
+
+            RequestConfig requestConfig = RequestConfig.custom()
+                    .setConnectTimeout(connectTimeout)
+                    .setSocketTimeout(socketTimeout)
+                    .setConnectionRequestTimeout(3000)
                     .build();
-                HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
-                requestFactory.setHttpClient(httpClient);
-                this.secureRestTemplate = new RestTemplate(requestFactory);
-            } catch (Exception e) {
-                log.error("Failed to initialize secure RestTemplate for WhatsApp, falling back to default", e);
+
+            CloseableHttpClient httpClient = HttpClients.custom()
+                    .setConnectionManager(connectionManager)
+                    .setSSLSocketFactory(csf)
+                    .setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)
+                    .setDefaultRequestConfig(requestConfig)
+                    .build();
+
+            HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
+            requestFactory.setHttpClient(httpClient);
+            requestFactory.setConnectTimeout(connectTimeout);
+            requestFactory.setReadTimeout(socketTimeout);
+            this.secureRestTemplate = new RestTemplate(requestFactory);
+            log.info("Initialized dedicated secure RestTemplate for WhatsApp with connectTimeout={}ms, socketTimeout={}ms", connectTimeout, socketTimeout);
+        } catch (Exception e) {
+            log.error("Failed to initialize secure RestTemplate for WhatsApp, falling back to default pooling RestTemplate", e);
+            if (this.restTemplate != null) {
                 this.secureRestTemplate = this.restTemplate;
+            } else {
+                HttpComponentsClientHttpRequestFactory fallbackFactory = new HttpComponentsClientHttpRequestFactory();
+                fallbackFactory.setConnectTimeout(connectTimeout);
+                fallbackFactory.setReadTimeout(socketTimeout);
+                this.secureRestTemplate = new RestTemplate(fallbackFactory);
             }
         }
     }
