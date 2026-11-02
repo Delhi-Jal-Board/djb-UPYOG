@@ -281,6 +281,15 @@ const OLDApplication = () => {
     const isDjbEmp =
       djbData?.isDjbEmployee === true ||
       String(djbData?.isDjbEmployee) === "true";
+    const djbDoc =
+      djbData?.document?.fileStoreId ||
+      (typeof djbData?.document === "string" && djbData?.document.trim()) ||
+      djbData?.document ||
+      formDataRef.current?.DocumentsRequired?.documents?.find((d) => d?.documentType === "OWNER.DJB_EMPLOYEE_ID" || d?.documentType?.includes("DJB_EMPLOYEE_ID"))?.fileStoreId ||
+      formData?.DocumentsRequired?.documents?.find((d) => d?.documentType === "OWNER.DJB_EMPLOYEE_ID" || d?.documentType?.includes("DJB_EMPLOYEE_ID"))?.fileStoreId ||
+      formDataRef.current?.documents?.documents?.find((d) => d?.documentType === "OWNER.DJB_EMPLOYEE_ID" || d?.documentType?.includes("DJB_EMPLOYEE_ID"))?.fileStoreId ||
+      formData?.documents?.documents?.find((d) => d?.documentType === "OWNER.DJB_EMPLOYEE_ID" || d?.documentType?.includes("DJB_EMPLOYEE_ID"))?.fileStoreId;
+
     const isDjbEmpInvalid =
       isDjbEmp &&
       (!djbData?.employeeId ||
@@ -293,22 +302,7 @@ const OLDApplication = () => {
           djbData?.document
         ));
 
-    const rwhData = formDataRef.current?.rainWaterHarvesting || formDataRef.current?.additionalDetails;
-    const isRwhRequired =
-      rwhData?.hasCertificate === true ||
-      String(rwhData?.hasCertificate) === "true" ||
-      rwhData?.isRainwaterHarvesting === true ||
-      String(rwhData?.isRainwaterHarvesting) === "true";
-
-    const allDocs =
-      formDataRef.current?.DocumentsRequired?.documents ||
-      formDataRef.current?.documents?.documents ||
-      formDataRef.current?.documents ||
-      [];
-    const isRwhDocUploaded = Array.isArray(allDocs) && allDocs.some((d) => isRwhDoc(d) && (d?.fileStoreId || d?.file));
-    const isRwhInvalid = isRwhRequired && !isRwhDocUploaded;
-
-    const hasErrors = Object.keys(formState?.errors || {}).length > 0 || isDjbEmpInvalid || isRwhInvalid;
+    const hasErrors = Object.keys(formState?.errors || {}).length > 0 || isDjbEmpInvalid;
     const hasProperty =
       formDataRef.current?.cpt?.details?.propertyId ||
       sessionStorage.getItem("WS_OTP_VERIFIED_PROPERTY_ID") ||
@@ -350,17 +344,20 @@ const OLDApplication = () => {
     const isDjbEmp =
       djbData?.isDjbEmployee === true ||
       String(djbData?.isDjbEmployee) === "true";
+    const djbDoc =
+      djbData?.document?.fileStoreId ||
+      (typeof djbData?.document === "string" && djbData?.document.trim()) ||
+      djbData?.document ||
+      combinedData?.DocumentsRequired?.documents?.find((d) => d?.documentType === "OWNER.DJB_EMPLOYEE_ID" || d?.documentType?.includes("DJB_EMPLOYEE_ID"))?.fileStoreId ||
+      combinedData?.documents?.documents?.find((d) => d?.documentType === "OWNER.DJB_EMPLOYEE_ID" || d?.documentType?.includes("DJB_EMPLOYEE_ID"))?.fileStoreId;
+
     const isDjbEmpInvalid =
       isDjbEmp &&
       (!djbData?.employeeId ||
         !String(djbData?.employeeId).trim() ||
         !djbData?.designation ||
         !String(djbData?.designation).trim() ||
-        !(
-          djbData?.document?.fileStoreId ||
-          (typeof djbData?.document === "string" && djbData?.document.trim()) ||
-          djbData?.document
-        ));
+        !djbDoc);
 
     if (isDjbEmpInvalid) {
       setShowToast({ key: "error", message: "ERR_FILL_ALL_MANDATORY_FIELDS" });
@@ -391,6 +388,46 @@ const OLDApplication = () => {
       });
       return;
     }
+
+    if (djbDoc) {
+      if (!combinedData.djbEmployee) combinedData.djbEmployee = {};
+      combinedData.djbEmployee.document = djbDoc;
+      if (!formDataRef.current.djbEmployee) formDataRef.current.djbEmployee = {};
+      formDataRef.current.djbEmployee.document = djbDoc;
+    }
+
+// <<<<<<< Updated upstream
+//     const rwhSubmitData = combinedData?.rainWaterHarvesting || combinedData?.additionalDetails;
+//     const isRwhSubmitRequired =
+//       rwhSubmitData?.hasCertificate === true ||
+//       String(rwhSubmitData?.hasCertificate) === "true" ||
+//       rwhSubmitData?.isRainwaterHarvesting === true ||
+//       String(rwhSubmitData?.isRainwaterHarvesting) === "true";
+
+//     const allSubmitDocs =
+//       combinedData?.DocumentsRequired?.documents ||
+//       combinedData?.documents?.documents ||
+//       combinedData?.documents ||
+//       formDataRef.current?.DocumentsRequired?.documents ||
+//       formDataRef.current?.documents?.documents ||
+//       formDataRef.current?.documents ||
+//       [];
+//     const isRwhSubmitDocUploaded = Array.isArray(allSubmitDocs) && allSubmitDocs.some((d) => isRwhDoc(d) && (d?.fileStoreId || d?.file));
+
+//     if (isRwhSubmitRequired && !isRwhSubmitDocUploaded) {
+//       setShowToast({
+//         key: "error",
+//         message: t("ERR_RWH_CERTIFICATE_MANDATORY") || "Rain Water Harvesting Certificate is mandatory to upload",
+//       });
+//       return;
+// =======
+//     if (djbDoc) {
+//       if (!combinedData.djbEmployee) combinedData.djbEmployee = {};
+//       combinedData.djbEmployee.document = djbDoc;
+//       if (!formDataRef.current.djbEmployee) formDataRef.current.djbEmployee = {};
+//       formDataRef.current.djbEmployee.document = djbDoc;
+// >>>>>>> Stashed changes
+//     }
 
     // Validation passed, show CheckPage
     setShowCheckPage(true);
@@ -444,6 +481,18 @@ const OLDApplication = () => {
         ownershipDocumentNumber: ownershipDoc?.documentUid || "",
         otherDocumentNumber: otherDoc?.documentUid || "",
       };
+    }
+
+    const djbDoc =
+      data?.djbEmployee?.document?.fileStoreId ||
+      (typeof data?.djbEmployee?.document === "string" && data?.djbEmployee?.document.trim()) ||
+      data?.djbEmployee?.document ||
+      data?.DocumentsRequired?.documents?.find((d) => d?.documentType === "OWNER.DJB_EMPLOYEE_ID" || d?.documentType?.includes("DJB_EMPLOYEE_ID"))?.fileStoreId ||
+      data?.documents?.documents?.find((d) => d?.documentType === "OWNER.DJB_EMPLOYEE_ID" || d?.documentType?.includes("DJB_EMPLOYEE_ID"))?.fileStoreId;
+
+    if (djbDoc) {
+      if (!data.djbEmployee) data.djbEmployee = {};
+      data.djbEmployee.document = djbDoc;
     }
 
     if (data?.propertyAddress) {

@@ -156,8 +156,8 @@ const WSDeclaration = ({ config, onSelect, userType, formData, setError, formSta
           />
         </div>
 
-        {/* <div className="formcomposer-section-grid">
-          <div>
+        <div className="formcomposer-section-grid">
+          {/* <div>
             <LabelFieldPair>
               <CardLabel>{t("WS_SUBMITTED_BY")}</CardLabel>
               <div className="field">
@@ -170,7 +170,7 @@ const WSDeclaration = ({ config, onSelect, userType, formData, setError, formSta
                 />
               </div>
             </LabelFieldPair>
-          </div>
+          </div> */}
 
           <div>
             <LabelFieldPair>
@@ -210,9 +210,9 @@ const WSDeclaration = ({ config, onSelect, userType, formData, setError, formSta
               </div>
             </LabelFieldPair>
           </div>
-        </div> */}
+        </div>
       </CollapsibleCardPage>
-      {/* {showDocModal && (
+      {showDocModal && (
         <Modal
           open={showDocModal}
           headerBarMain={t("WS_VIEW_DOCUMENT") || "View Document"}
@@ -241,7 +241,7 @@ const WSDeclaration = ({ config, onSelect, userType, formData, setError, formSta
             )}
           </div>
         </Modal>
-      )} */}
+      )}
     </React.Fragment>
   );
 };

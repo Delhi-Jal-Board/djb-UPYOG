@@ -303,12 +303,17 @@ export const createPayloadOfWS = async (data) => {
   let allDocuments = Array.isArray(data?.documents?.documents) ? [...data.documents.documents] : (Array.isArray(data?.documents) ? [...data.documents] : []);
 
   if (data?.djbEmployee?.document) {
-    allDocuments.push({
-      documentType: "OWNER.DJB_EMPLOYEE_ID",
-      fileStoreId: data?.djbEmployee?.document?.fileStoreId || data?.djbEmployee?.document,
-      documentUid: "",
-      status: "ACTIVE",
-    });
+    const hasDjbDoc = allDocuments.some(
+      (d) => d?.documentType === "OWNER.DJB_EMPLOYEE_ID" || d?.documentType?.includes("DJB_EMPLOYEE_ID")
+    );
+    if (!hasDjbDoc) {
+      allDocuments.push({
+        documentType: "OWNER.DJB_EMPLOYEE_ID",
+        fileStoreId: data?.djbEmployee?.document?.fileStoreId || data?.djbEmployee?.document,
+        documentUid: "",
+        status: "ACTIVE",
+      });
+    }
   }
   if (data?.governmentEmployee?.organizationDocument) {
     allDocuments.push({
@@ -424,7 +429,11 @@ export const createPayloadOfWS = async (data) => {
       isRainwaterHarvesting: !!(
         data?.rainWaterHarvesting?.hasCertificate || data?.rainWaterHarvesting?.isRainwaterHarvesting
       ),
-      document: data?.djbEmployee?.document?.fileStoreId || data?.djbEmployee?.document || undefined,
+      document:
+        data?.djbEmployee?.document?.fileStoreId ||
+        (typeof data?.djbEmployee?.document === "string" ? data?.djbEmployee?.document : null) ||
+        allDocuments.find((d) => d?.documentType === "OWNER.DJB_EMPLOYEE_ID" || d?.documentType?.includes("DJB_EMPLOYEE_ID"))?.fileStoreId ||
+        undefined,
       ...data?.bankDetails,
       ...data?.declarationData,
       ...data?.declaration,

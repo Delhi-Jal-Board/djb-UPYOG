@@ -2731,16 +2731,14 @@ const NewApplication = () => {
                 <Controller
                   control={control}
                   name="documents.otherDocumentFile"
-                  rules={{ validate: (value) => !!value || "Other Upload Document is required." }}
                   render={(props) => (
                     <FileUploadField
                       error={getFieldError("documents.otherDocumentFile")}
                       id="other-document-file"
                       isUploading={!!uploadingFields["documents.otherDocumentFile"]}
-                      label="Other Upload Document *"
+                      label="Other Upload Document"
                       onDelete={() => clearUploadedFile("documents.otherDocumentFile", props.onChange)}
                       onUpload={(event) => uploadFile(event, "documents.otherDocumentFile", props.onChange)}
-                      required
                       value={props.value}
                     />
                   )}
