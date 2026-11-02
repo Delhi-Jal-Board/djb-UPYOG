@@ -501,6 +501,10 @@ export const createPayloadOfWS = async (data) => {
       identityProofNumber: data?.documents?.identityProofNumber,
       ownershipDocumentNumber: data?.documents?.ownershipDocumentNumber,
       otherDocumentNumber: data?.documents?.otherDocumentNumber,
+      otherDocumentRemark:
+        data?.documents?.otherDocumentRemark ||
+        allDocuments.find((d) => d?.documentType?.includes("OTHER_DOCUMENTS") || d?.documentType?.includes("OTHERDOCUMENTS"))?.documentUid ||
+        allDocuments.find((d) => d?.documentType?.includes("OTHER_DOCUMENTS") || d?.documentType?.includes("OTHERDOCUMENTS"))?.remarks,
       detailsProvidedBy: "",
       channel: isCitizen ? "CITIZEN" : "CFC_COUNTER",
     },

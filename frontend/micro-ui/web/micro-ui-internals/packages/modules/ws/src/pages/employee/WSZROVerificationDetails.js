@@ -167,7 +167,7 @@ const WSZROVerificationDetails = () => {
         {/* Billing & Consumption Details Section */}
         <CardSubHeader style={{ marginTop: "32px" }}>{t("WS_BILLING_AND_CONSUMPTION_DETAILS")}</CardSubHeader>
         <StatusTable>
-          <Row label={t("WS_BILLING_CYCLE_ID")} text={billingData.billingCycleId || "NA"} />
+          {/* <Row label={t("WS_BILLING_CYCLE_ID")} text={billingData.billingCycleId || "NA"} /> */}
           <Row label={t("WS_BILLING_PERIOD")} text={`${formatDate(billingData.billingPeriodFrom)} - ${formatDate(billingData.billingPeriodTo)}`} />
           <Row label={t("WS_BILLING_DAYS")} text={billingData.billingDays ?? "NA"} />
           <Row label={t("WS_PREVIOUS_READING_LABEL")} text={billingData.previousReading ?? "NA"} />

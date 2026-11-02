@@ -171,7 +171,12 @@ function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false, 
       uploadLabel = "Upload Ownership Proof*";
     } else if (value.title === "WS_OTHER_DOCUMENTS") {
       typeLabel = "Other Documents*";
-      numLabel = "Other Document Number";
+      const isOtherDocRemark =
+        value?.documentType?.includes("OTHER_DOCUMENTS") ||
+        value?.documentType?.includes("OTHERDOCUMENTS") ||
+        String(docSubType).toUpperCase().includes("OTHER_DOCUMENTS") ||
+        String(docSubType).toUpperCase().includes("OTHER DOCUMENT");
+      numLabel = isOtherDocRemark ? "Other Document Remark" : (value.numberLabel || "Other Document Number");
       uploadLabel = "Upload Other Documents*";
     } else if (value.title === "WS_APPLICANT_PHOTO") {
       uploadLabel = "Upload Applicant Photo*";
