@@ -264,13 +264,13 @@ const EditPropertyForm = ({ config, onSelect, userType }) => {
           if (onSelect) {
             onSelect("editProperty", { property: data?.Properties?.[0] });
           } else {
-            history.push(`${match.url}/save-property`, { property: data?.Properties?.[0] });
+            history.push(`${match.url}/save-property`, { property: data?.Properties?.[0], isEdit: true, isUpdate: true });
           }
         }, 2000);
       },
       onError: (error) => {
         sessionStorage.setItem("PT_ERROR_MSG", error?.response?.data?.Errors?.[0]?.message || t("PT_COMMON_FAILED_TO_UPDATE_PROPERTY"));
-        history.push(`${match.url}/save-property`, { isError: true, errorMsg: error?.response?.data?.Errors?.[0]?.message || t("PT_COMMON_FAILED_TO_UPDATE_PROPERTY") });
+        history.push(`${match.url}/save-property`, { isError: true, isEdit: true, isUpdate: true, errorMsg: error?.response?.data?.Errors?.[0]?.message || t("PT_COMMON_FAILED_TO_UPDATE_PROPERTY") });
       },
     });
   };

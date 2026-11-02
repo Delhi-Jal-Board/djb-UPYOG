@@ -36,6 +36,19 @@ const isDigiLockerEligible = (code = "") => {
 
 const isOtherDocument = (code = "") => code.toUpperCase().includes("OTHER");
 
+const isRwhDocType = (doc) => {
+  if (!doc) return false;
+  const str = (
+    (typeof doc === "string" ? doc : "") + " " +
+    (doc?.documentType || "") + " " +
+    (doc?.code || "") + " " +
+    (doc?.i18nKey || "") + " " +
+    (doc?.name || "") + " " +
+    (doc?.documentName || "")
+  ).toUpperCase();
+  return str.includes("RAIN") || str.includes("HARVEST");
+};
+
 const removeDuplicateOtherDocuments = (documentList = []) => {
   const documentTypes = new Set();
   return documentList.filter((document) => {
@@ -48,11 +61,30 @@ const removeDuplicateOtherDocuments = (documentList = []) => {
 
 const WSDocumentsEmployee = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
+  const checkIsTenant = (val) => {
+    if (!val) return false;
+    const code = typeof val === "object" ? val?.code || val?.name || val?.value : val;
+    return String(code).toUpperCase() === "TENANT";
+  };
+
   const isTenant = 
-    formData?.ConnectionDetails?.[0]?.applicantType?.code === "TENANT" || 
-    formData?.applicationSelection?.applicantType?.code === "TENANT" || 
-    formData?.connectionHolders?.[0]?.applicantType === "TENANT" ||
-    formData?.connectionHolders?.[0]?.applicantType?.code === "TENANT";
+    checkIsTenant(formData?.ConnectionDetails?.[0]?.applicantType) ||
+    checkIsTenant(formData?.ConnectionDetails?.applicantType) ||
+    checkIsTenant(formData?.applicationSelection?.applicantType) ||
+    checkIsTenant(formData?.applicationSelection?.[0]?.applicantType) ||
+    checkIsTenant(formData?.connectionHolders?.[0]?.applicantType) ||
+    checkIsTenant(formData?.ConnectionHolderDetails?.[0]?.applicantType) ||
+    checkIsTenant(formData?.additionalDetails?.applicantType);
+
+  const isRwhMandatory = !!(
+    formData?.rainWaterHarvesting?.hasCertificate === true ||
+    String(formData?.rainWaterHarvesting?.hasCertificate) === "true" ||
+    formData?.rainWaterHarvesting?.isRainwaterHarvesting === true ||
+    String(formData?.rainWaterHarvesting?.isRainwaterHarvesting) === "true" ||
+    formData?.additionalDetails?.hasRainWaterHarvestingCertificate === true ||
+    formData?.additionalDetails?.isRainwaterHarvesting === true
+  );
+
   const [documents, setDocuments] = useState(() =>
     removeDuplicateOtherDocuments(
       userType === "citizen" ? formData?.documents?.documents || formData?.documents || [] : formData?.DocumentsRequired?.documents || []
@@ -60,6 +92,7 @@ const WSDocumentsEmployee = ({ t, config, onSelect, userType, formData, setError
   );
   const [enableSubmit, setEnableSubmit] = useState(true);
   const [error, setError] = useState(null);
+  const hasRwhUploaded = documents?.some((item) => isRwhDocType(item) && item?.fileStoreId);
   const wsDocsData = window.location.href.includes("modify")
     ? "ModifyConnectionDocuments"
     : window.location.href.includes("disconnection")
@@ -103,13 +136,14 @@ const WSDocumentsEmployee = ({ t, config, onSelect, userType, formData, setError
       });
       if (!isRequired && doc.required) count = count + 1;
     });
-    if ((count == "0" || count == 0) && documents.length > 0) setEnableSubmit(false);
+    const rwhPending = !isTenant && isRwhMandatory && !hasRwhUploaded;
+    if ((count == "0" || count == 0) && documents.length > 0 && !rwhPending) setEnableSubmit(false);
     else setEnableSubmit(true);
 
     if (userType !== "citizen") {
       goNext();
     }
-  }, [documents, wsDocs]);
+  }, [documents, wsDocs, isRwhMandatory, hasRwhUploaded]);
 
   if (isLoading) {
     return <Loader />;
@@ -146,11 +180,31 @@ const WSDocumentsEmployee = ({ t, config, onSelect, userType, formData, setError
     <div className="formcomposer-section-grid ws-doc-upload">
       {wsDocs?.[wsDocsData]?.filter(doc => doc.code !== "OWNER.APPLICANTPHOTO")?.map((document, index) => {
         let modifiedDocument = { ...document };
-        if (!isTenant && modifiedDocument.dropdownData) {
-          modifiedDocument.dropdownData = modifiedDocument.dropdownData.filter(opt => {
-            const code = opt.code || "";
-            return !(code.includes("NOC_FROM_OWNER") || code === "NOC from Owner");
-          });
+        const isOther = isOtherDocument(document?.code);
+        if (isOther && modifiedDocument.dropdownData) {
+          if (isTenant) {
+            modifiedDocument.dropdownData = modifiedDocument.dropdownData.filter((opt) => {
+              const code = opt.code || "";
+              const name = opt.name || "";
+              return code.includes("NOC_FROM_OWNER") || code === "NOC from Owner" || name.includes("NOC from Owner");
+            });
+            if (modifiedDocument.dropdownData.length === 0) {
+              modifiedDocument.dropdownData = [
+                {
+                  code: "OWNER.OTHERDOCUMENTS.NOC_FROM_OWNER",
+                  i18nKey: "OWNER_OTHERDOCUMENTS_NOC_FROM_OWNER",
+                  name: "NOC from Owner",
+                  active: true,
+                },
+              ];
+            }
+          } else {
+            modifiedDocument.dropdownData = modifiedDocument.dropdownData.filter((opt) => {
+              const code = opt.code || "";
+              const name = opt.name || "";
+              return !(code.includes("NOC_FROM_OWNER") || code === "NOC from Owner" || name.includes("NOC from Owner"));
+            });
+          }
         }
         return (
           <SelectDocument
@@ -168,13 +222,34 @@ const WSDocumentsEmployee = ({ t, config, onSelect, userType, formData, setError
             clearFormErrors={clearFormErrors}
             config={config}
             formState={formState}
-            isOtherDocument={isOtherDocument(document?.code)}
+            isOtherDocument={isOther}
+            isRwhMandatory={isRwhMandatory}
+            hasRwhUploaded={hasRwhUploaded}
+            isTenant={isTenant}
           />
         );
       })}
     </div>
   );
 
+  const rwhAlertBanner = !isTenant && isRwhMandatory && !hasRwhUploaded ? (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "10px",
+        marginBottom: "16px",
+        padding: "10px 14px",
+        backgroundColor: "#fff2f0",
+        borderLeft: "4px solid #ff4d4f",
+        borderRadius: "4px",
+      }}
+    >
+      <span style={{ fontSize: "14px", color: "#d32f2f", fontWeight: "600" }}>
+        ⚠️ {t("WS_RWH_CERTIFICATE_MANDATORY_INSTRUCTION") || "Rain Water Harvesting Certificate is mandatory to upload. Please upload it under Other Documents."}
+      </span>
+    </div>
+  ) : null;
 
   const nocDownloadSection = isTenant ? (
     <div
@@ -237,6 +312,7 @@ const WSDocumentsEmployee = ({ t, config, onSelect, userType, formData, setError
         <Timeline currentStep={3} />
         <FormStep t={t} config={config} onSelect={goNext} onSkip={() => onSelect()} isDisabled={enableSubmit}>
           {uploadInfoBanner}
+          {rwhAlertBanner}
           {nocDownloadSection}
           {innerContent}
           {error && <Toast label={error} onClose={() => setError(null)} error />}
@@ -248,6 +324,7 @@ const WSDocumentsEmployee = ({ t, config, onSelect, userType, formData, setError
   return (
     <CollapsibleCardPage title={t("WS_DOCUMENTS")} defaultOpen={true}>
       {uploadInfoBanner}
+      {rwhAlertBanner}
       {nocDownloadSection}
       {innerContent}
       {error && <Toast label={error} onClose={() => setError(null)} error />}
@@ -271,6 +348,9 @@ function SelectDocument({
   fromRawData,
   id,
   isOtherDocument: isOther = false,
+  isRwhMandatory = false,
+  hasRwhUploaded = false,
+  isTenant: isTenantProp,
 }) {
   const fileRef = useRef();
   const pendingId = useRef(Date.now());
@@ -280,6 +360,10 @@ function SelectDocument({
     if (filteredDocument && doc?.dropdownData) {
       const match = doc?.dropdownData?.find((d) => d.code === filteredDocument.documentType);
       if (match) return { ...filteredDocument, ...match };
+    }
+    if (isOther && isRwhMandatory && !hasRwhUploaded && doc?.dropdownData) {
+      const rwhMatch = doc?.dropdownData?.find((d) => isRwhDocType(d));
+      if (rwhMatch) return { ...rwhMatch, i18nKey: rwhMatch.code?.replaceAll(".", "_") };
     }
     return filteredDocument
       ? { ...filteredDocument, code: filteredDocument?.documentType, i18nKey: filteredDocument?.documentType?.replaceAll(".", "_") }
@@ -407,16 +491,91 @@ function SelectDocument({
   const { dropdownFilter, enabledActions, filterCondition } = doc?.additionalDetails || {};
   var dropDownData = dropdownData;
 
-  const applicantTypeVal = formData?.applicationSelection?.applicantType 
-    || formData?.applicationSelection?.[0]?.applicantType 
-    || formData?.ConnectionDetails?.applicantType 
-    || formData?.ConnectionDetails?.[0]?.applicantType;
-    
-  const applicantTypeCode = typeof applicantTypeVal === "object" ? applicantTypeVal?.code : applicantTypeVal;
+  const checkIsTenant = (val) => {
+    if (!val) return false;
+    const code = typeof val === "object" ? val?.code || val?.name || val?.value : val;
+    return String(code).toUpperCase() === "TENANT";
+  };
 
-  if (isOther && applicantTypeCode !== "TENANT") {
-    dropDownData = dropDownData?.filter((d) => d.code !== "OWNER.OTHERDOCUMENTS.NOC_FROM_OWNER" && !d.code?.includes("NOC_FROM_OWNER"));
+  const isTenant =
+    isTenantProp !== undefined
+      ? isTenantProp
+      : checkIsTenant(formData?.ConnectionDetails?.[0]?.applicantType) ||
+        checkIsTenant(formData?.ConnectionDetails?.applicantType) ||
+        checkIsTenant(formData?.applicationSelection?.applicantType) ||
+        checkIsTenant(formData?.applicationSelection?.[0]?.applicantType) ||
+        checkIsTenant(formData?.connectionHolders?.[0]?.applicantType) ||
+        checkIsTenant(formData?.ConnectionHolderDetails?.[0]?.applicantType) ||
+        checkIsTenant(formData?.additionalDetails?.applicantType);
+
+  if (isOther) {
+    if (isTenant) {
+      // When Tenant is selected, ONLY show "NOC from Owner" in Other Documents
+      dropDownData = dropDownData?.filter((d) => {
+        const code = d.code || "";
+        const name = d.name || "";
+        return code.includes("NOC_FROM_OWNER") || code === "NOC from Owner" || name.includes("NOC from Owner");
+      });
+      if (dropDownData && dropDownData.length === 0) {
+        dropDownData = [
+          {
+            code: "OWNER.OTHERDOCUMENTS.NOC_FROM_OWNER",
+            i18nKey: "OWNER_OTHERDOCUMENTS_NOC_FROM_OWNER",
+            name: "NOC from Owner",
+            active: true,
+          },
+        ];
+      }
+    } else {
+      // When NOT Tenant, remove "NOC from Owner"
+      dropDownData = dropDownData?.filter((d) => {
+        const code = d.code || "";
+        const name = d.name || "";
+        return !(code.includes("NOC_FROM_OWNER") || code === "NOC from Owner" || name.includes("NOC from Owner"));
+      });
+      // Add Rain Water Harvesting Certificate for non-tenants if not present
+      if (dropDownData && !dropDownData.some((d) => isRwhDocType(d))) {
+        dropDownData = [
+          ...dropDownData,
+          {
+            code: "OWNER.OTHERDOCUMENTS.RAINWATER_HARVESTING",
+            i18nKey: "OWNER_OTHERDOCUMENTS_RAINWATER_HARVESTING",
+            name: "Rain Water Harvesting Certificate",
+            active: true,
+          },
+        ];
+      }
+    }
   }
+
+  useEffect(() => {
+    if (isOther) {
+      if (isTenant) {
+        const nocOwner = dropDownData?.find((d) => {
+          const code = d.code || "";
+          const name = d.name || "";
+          return code.includes("NOC_FROM_OWNER") || code === "NOC from Owner" || name.includes("NOC from Owner");
+        });
+        if (nocOwner && selectedDocument?.code !== nocOwner.code) {
+          setSelectedDocument({ ...nocOwner, i18nKey: nocOwner.code?.replaceAll(".", "_") || "NOC from Owner" });
+        }
+      } else {
+        if (selectedDocument?.code && (selectedDocument.code.includes("NOC_FROM_OWNER") || selectedDocument.code === "NOC from Owner")) {
+          setSelectedDocument({});
+          setUploadedFile(null);
+          setFile(null);
+        } else if (isRwhMandatory && !hasRwhUploaded) {
+          const isCurrentRwh = selectedDocument?.code && isRwhDocType(selectedDocument);
+          if (!isCurrentRwh && dropDownData?.length > 0) {
+            const rwhMatch = dropDownData.find((d) => isRwhDocType(d));
+            if (rwhMatch && (!uploadedFile || !selectedDocument?.code)) {
+              setSelectedDocument({ ...rwhMatch, i18nKey: rwhMatch.code?.replaceAll(".", "_") });
+            }
+          }
+        }
+      }
+    }
+  }, [isTenant, isOther, isRwhMandatory, hasRwhUploaded, dropDownData]);
 
   const [isHidden, setHidden] = useState(false);
   const documentDisplayName = selectedDocument?.i18nKey || selectedDocument?.name || selectedDocument?.code || doc?.i18nKey || doc?.name || doc?.code;
@@ -478,11 +637,15 @@ function SelectDocument({
       });
     }
 
+    const isRwhRequired = isOther && isRwhMandatory;
+    const isRwhSatisfied = hasRwhUploaded || (uploadedFile && isRwhDocType(selectedDocument));
+    const rwhMissing = isRwhRequired && !isRwhSatisfied;
+
     const hasOtherUploaded = isOther && documents?.some(item => item?.documentType?.includes(doc?.code));
     const isCompletelyEmpty = !uploadedFile && (!documentUid || !documentUid.trim()) && !selectedDocument?.code;
     const isPartiallyFilled = (!isCompletelyEmpty) && !(uploadedFile && selectedDocument?.code);
     
-    const effectiveRequired = (doc?.required && !hasOtherUploaded) || isPartiallyFilled;
+    const effectiveRequired = (doc?.required && !hasOtherUploaded) || isPartiallyFilled || (isOther && isRwhMandatory && !hasRwhUploaded);
     const err = validateDocumentNumber(documentUid, selectedDocument?.code, effectiveRequired, !!uploadedFile);
 
     if (!isHidden) {
@@ -492,13 +655,15 @@ function SelectDocument({
         addError();
       } else if ((!uploadedFile || !selectedDocument?.code) && doc?.required && !hasOtherUploaded) {
         addError();
+      } else if (rwhMissing) {
+        addError();
       } else {
         removeError();
       }
     } else if (isHidden) {
       removeError();
     }
-  }, [uploadedFile, selectedDocument, documentUid, isHidden, formData?.ConnectionDetails?.[0]]);
+  }, [uploadedFile, selectedDocument, documentUid, isHidden, formData?.ConnectionDetails?.[0], isRwhMandatory, hasRwhUploaded]);
 
   useEffect(() => {
     (async () => {
@@ -557,8 +722,13 @@ function SelectDocument({
         <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
           <CardLabel style={{ margin: 0 }}>
             {t(doc?.i18nKey)}
-            {doc?.required && <span className="check-page-link-button">*</span>}
+            {(doc?.required || (!isTenant && isOther && isRwhMandatory)) && <span className="check-page-link-button">*</span>}
           </CardLabel>{" "}
+          {!isTenant && isOther && isRwhMandatory && !hasRwhUploaded && !(uploadedFile && isRwhDocType(selectedDocument)) && (
+            <div style={{ fontSize: "12px", color: "#d32f2f", marginTop: "-4px" }}>
+              * {t("WS_RWH_CERTIFICATE_MANDATORY_MSG") || "Rain Water Harvesting Certificate is mandatory to upload."}
+            </div>
+          )}
           <Dropdown
             id={`doc-${doc?.code}`}
             key={`doc-${doc?.code}`}

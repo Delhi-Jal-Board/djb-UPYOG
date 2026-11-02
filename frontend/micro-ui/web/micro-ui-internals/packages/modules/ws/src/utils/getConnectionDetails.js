@@ -37,6 +37,7 @@ import {
       title: t("WS_COMMON_CONNECTION_DETAILS"),
       values: application?.applicationNo?.includes("WS") && application?.connectionType == "Metered" ? [
         { title: t("WS_DIVYANGJAN"), value: application?.additionalDetails?.isDivyangjan ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO") },
+        { title: t("WS_RAIN_WATER_HARVESTING_CERTIFICATE") || "Rain Water Harvesting Certificate", value: application?.additionalDetails?.hasRainWaterHarvestingCertificate || application?.additionalDetails?.isRainwaterHarvesting ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO") },
         ...(Digit.UserService.getUser()?.info?.type !== "CITIZEN" ? [{ title: t("WS_DJB_EMPLOYEE_LABEL"), value: application?.additionalDetails?.isDjbEmployee ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO") }] : []),
         { title: t("WS_SERV_DETAIL_CONN_TYPE"), value: application?.connectionType ? t(`WS_SERVICES_MASTERS_WATERSOURCE_${stringReplaceAll(application?.connectionType?.toUpperCase(), " ", "_")}`) : t("CS_NA") },
         { title: t("WS_SERV_DETAIL_NO_OF_TAPS"), value: application?.noOfTaps || t("CS_NA") },
@@ -51,6 +52,7 @@ import {
       :  application?.applicationNo?.includes("WS") && application?.connectionType !== "Metered" ?
       [
         { title: t("WS_DIVYANGJAN"), value: application?.additionalDetails?.isDivyangjan ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO") },
+        { title: t("WS_RAIN_WATER_HARVESTING_CERTIFICATE") || "Rain Water Harvesting Certificate", value: application?.additionalDetails?.hasRainWaterHarvestingCertificate || application?.additionalDetails?.isRainwaterHarvesting ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO") },
         ...(Digit.UserService.getUser()?.info?.type !== "CITIZEN" ? [{ title: t("WS_DJB_EMPLOYEE_LABEL"), value: application?.additionalDetails?.isDjbEmployee ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO") }] : []),
         { title: t("WS_SERV_DETAIL_CONN_TYPE"), value: application?.connectionType ? t(`WS_SERVICES_MASTERS_WATERSOURCE_${stringReplaceAll(application?.connectionType?.toUpperCase(), " ", "_")}`) : t("CS_NA") },
         { title: t("WS_SERV_DETAIL_NO_OF_TAPS"), value: application?.noOfTaps || t("CS_NA") },
@@ -62,6 +64,7 @@ import {
       :
       [
         { title: t("WS_DIVYANGJAN"), value: application?.additionalDetails?.isDivyangjan ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO") },
+        { title: t("WS_RAIN_WATER_HARVESTING_CERTIFICATE") || "Rain Water Harvesting Certificate", value: application?.additionalDetails?.hasRainWaterHarvestingCertificate || application?.additionalDetails?.isRainwaterHarvesting ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO") },
         ...(Digit.UserService.getUser()?.info?.type !== "CITIZEN" ? [{ title: t("WS_DJB_EMPLOYEE_LABEL"), value: application?.additionalDetails?.isDjbEmployee ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO") }] : []),
         { title: t("WS_SERV_DETAIL_CONN_TYPE"), value: application?.connectionType ? t(`WS_SERVICES_MASTERS_WATERSOURCE_${stringReplaceAll(application?.connectionType?.toUpperCase(), " ", "_")}`) : t("CS_NA") },
         { title: t("WS_NUMBER_WATER_CLOSETS_LABEL"), value: application?.noOfWaterClosets || t("CS_NA") },

@@ -38,6 +38,7 @@ import WSBankDetails from "./pageComponents/WSBankDetails";
 import WSDeclaration from "./pageComponents/WSDeclaration";
 import WSDjbEmployee from "./pageComponents/WSDjbEmployee";
 import WSDivyangjan from "./pageComponents/WSDivyangjan";
+import WSRainWaterHarvesting from "./pageComponents/WSRainWaterHarvesting";
 import WSPropertyWaterConnection from "./pageComponents/WSPropertyWaterConnection";
 
 //Components
@@ -292,6 +293,7 @@ const componentsToRegister = {
   WSBulkBillGeneration: BulkBillGeneration,
   WSOLDApplication: OLDApplication,
   WSDivyangjan: WSDivyangjan,
+  WSRainWaterHarvesting: WSRainWaterHarvesting,
   WSExecuteDisconnection: WSExecuteDisconnection,
 };
 

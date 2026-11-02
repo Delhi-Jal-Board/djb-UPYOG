@@ -856,6 +856,7 @@ const NewApplication = () => {
     contact: React.useRef(null),
     djbEmployee: React.useRef(null),
     disability: React.useRef(null),
+    rainWaterHarvesting: React.useRef(null),
     governmentEmployee: React.useRef(null),
     propertyAddress: React.useRef(null),
     useDetails: React.useRef(null),
@@ -953,6 +954,7 @@ const NewApplication = () => {
     { sectionId: "applicant", route: "applicant-details", actions: applicantSectionTitle },
     ...(isDjbEmployee ? [{ sectionId: "djbEmployee", route: "djb-employee", actions: "For DJB Employee" }] : []),
     { sectionId: "disability", route: "disability", actions: "Divyangjan/Person with Disability" },
+    { sectionId: "rainWaterHarvesting", route: "rain-water-harvesting", actions: "Rain Water Harvesting Certificate" },
     ...(isGovernmentEmployee ? [{ sectionId: "governmentEmployee", route: "government-employee", actions: "For Government Employee" }] : []),
     { sectionId: "propertyAddress", route: "property-address", actions: "Property Address" },
     { sectionId: "useDetails", route: "use-details", actions: "Property & Connection Use Details" },
@@ -2204,6 +2206,29 @@ const NewApplication = () => {
               </SectionCard>
 
               <SectionCard
+                description="Please indicate whether the applicant has a Rain Water Harvesting Certificate."
+                isOpen={collapsedSections.rainWaterHarvesting}
+                onToggle={toggleSection}
+                sectionKey="rainWaterHarvesting"
+                title="Rain Water Harvesting Certificate"
+                sectionRef={sectionRefs.rainWaterHarvesting}
+              >
+                <FieldBlock label="Rain Water Harvesting Certificate">
+                  <Controller
+                    control={control}
+                    name="rainWaterHarvesting.hasCertificate"
+                    render={(props) => (
+                      <CheckBox
+                        checked={!!props.value}
+                        label="Rain Water Harvesting Certificate"
+                        onChange={(event) => props.onChange(event.target.checked)}
+                      />
+                    )}
+                  />
+                </FieldBlock>
+              </SectionCard>
+
+              <SectionCard
                 description={t("WS_PROPERTY_ADDRESS_DESC")}
                 isOpen={collapsedSections.address}
                 onToggle={toggleSection}
@@ -2891,6 +2916,17 @@ const NewApplication = () => {
                 onEditClick={() => handleSectionEdit("disability")}
               >
                 <PreviewItem label="Divyangjan/Person with Disability?" value={formValues?.disability?.isDivyangjan} />
+              </SectionCard>
+
+              <SectionCard
+                description="Rain Water Harvesting Certificate declaration."
+                isOpen={collapsedSections.rainWaterHarvesting}
+                onToggle={toggleSection}
+                sectionKey="rainWaterHarvesting"
+                title="Rain Water Harvesting Certificate"
+                onEditClick={() => handleSectionEdit("rainWaterHarvesting")}
+              >
+                <PreviewItem label="Rain Water Harvesting Certificate" value={formValues?.rainWaterHarvesting?.hasCertificate} />
               </SectionCard>
 
               {formValues?.governmentEmployee?.isGovernmentEmployee && (

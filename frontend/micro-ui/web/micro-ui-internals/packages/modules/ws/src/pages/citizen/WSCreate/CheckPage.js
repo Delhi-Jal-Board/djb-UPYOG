@@ -38,6 +38,7 @@ const CheckPage = ({ onSubmit, value }) => {
   const useDetails = value?.waterConnection?.useDetails || {};
   const djbEmployee = value?.djbEmployee || {};
   const disability = value?.disability || value?.additionalDetails || {};
+  const rainWaterHarvesting = value?.rainWaterHarvesting || value?.additionalDetails || {};
   const bankDetails = value?.bankDetails || {};
   const additionalDetails = {};
 
@@ -438,6 +439,18 @@ const CheckPage = ({ onSubmit, value }) => {
       <CardSubHeader>{t("WS_DIVYANGJAN")}</CardSubHeader>
       <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
         <Row label={t("WS_DIVYANGJAN")} text={`${disability?.isDivyangjan ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}`} />
+      </StatusTable>
+
+      <CardSubHeader>{t("Rain Water Harvesting Certificate")}</CardSubHeader>
+      <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
+        <Row
+          label={t("Rain Water Harvesting Certificate")}
+          text={`${
+            rainWaterHarvesting?.hasCertificate || rainWaterHarvesting?.isRainwaterHarvesting
+              ? t("CORE_COMMON_YES")
+              : t("CORE_COMMON_NO")
+          }`}
+        />
       </StatusTable>
 
       {/*<CardSubHeader>{t("WS_BANK_DETAILS")}</CardSubHeader>
