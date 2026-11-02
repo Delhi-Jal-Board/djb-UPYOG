@@ -67,6 +67,8 @@ const WSInfoPage = () => {
       if (createdProperty?.owners?.[0]?.mobileNumber) {
         setSearchMobileNumber(createdProperty.owners[0].mobileNumber);
       }
+    } else {
+      setHasProperty(radioOptions[1]);
     }
     sessionStorage.removeItem("WS_OTP_VERIFIED_PROPERTY_ID");
   }, [location.search, location.state]);
@@ -297,7 +299,7 @@ const WSInfoPage = () => {
     });
     const list = sortedList.map((prop) => ({
       ...prop,
-      displayName: `${prop.propertyId} - ${getAddress(prop.address, t)}`,
+      displayName: getAddress(prop.address, t) || prop.propertyId,
     }));
     if (selectedProperty && !list.some((p) => p.propertyId === selectedProperty.propertyId)) {
       return [selectedProperty, ...list];
@@ -1248,7 +1250,7 @@ const WSInfoPage = () => {
             </div>
           </div>
 
-          <div className="ws-question-container">
+          {/* <div className="ws-question-container">
             <label className="ws-question-label">
               <span className="ws-req-dot">*</span> {t("Do you have an existing property?")}
             </label>
@@ -1269,7 +1271,7 @@ const WSInfoPage = () => {
               }}
               style={{ display: "flex", gap: "24px" }}
             />
-          </div>
+          </div> */}
 
           {/* Property YES Flow */}
           {hasProperty?.code === "YES" && (
@@ -1448,9 +1450,26 @@ const WSInfoPage = () => {
                   </p>
                 </div>
               </div>
-              <button className="ws-btn ws-btn-primary" type="button" onClick={handleCreateProperty}>
-                {t("Register New Property")}
-              </button>
+              <div style={{ display: "flex", gap: "16px", alignItems: "center", flexWrap: "wrap", marginTop: "12px" }}>
+                <button className="ws-btn ws-btn-primary" type="button" onClick={handleCreateProperty}>
+                  {t("WS_Register_New_Property")}
+                </button>
+                {/* <button
+                  type="button"
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color: "#00703c",
+                    cursor: "pointer",
+                    textDecoration: "underline",
+                    fontSize: "14px",
+                    fontWeight: 600,
+                  }}
+                  onClick={() => setHasProperty(radioOptions[0])}
+                >
+                  {t("Already have a Property ID? Link Property")}
+                </button> */}
+              </div>
             </div>
           )}
         </div>

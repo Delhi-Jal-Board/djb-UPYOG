@@ -46,7 +46,20 @@ const WSDocumentDetails = ({ t, config, onSelect, userType, formData, setError: 
     }
   };
 
-  const isTenant = formData?.ConnectionDetails?.[0]?.applicantType?.code === "TENANT";
+  const checkIsTenant = (val) => {
+    if (!val) return false;
+    const code = typeof val === "object" ? val?.code || val?.name || val?.value : val;
+    return String(code).toUpperCase() === "TENANT";
+  };
+
+  const isTenant =
+    checkIsTenant(formData?.ConnectionDetails?.[0]?.applicantType) ||
+    checkIsTenant(formData?.ConnectionDetails?.applicantType) ||
+    checkIsTenant(formData?.applicationSelection?.applicantType) ||
+    checkIsTenant(formData?.applicationSelection?.[0]?.applicantType) ||
+    checkIsTenant(formData?.connectionHolders?.[0]?.applicantType) ||
+    checkIsTenant(formData?.ConnectionHolderDetails?.[0]?.applicantType) ||
+    checkIsTenant(formData?.additionalDetails?.applicantType);
 
   const nocDownloadSection = isTenant ? (
     <div style={{ marginBottom: "20px", display: "flex", alignItems: "center", justifyContent: "space-between", backgroundColor: "#eaf3fa", padding: "16px", borderRadius: "8px", border: "1px solid #00497e" }}>
@@ -83,12 +96,31 @@ const WSDocumentDetails = ({ t, config, onSelect, userType, formData, setError: 
           {nocDownloadSection}
           {wsDocs?.Documents?.filter(doc => doc.code !== "OWNER.APPLICANTPHOTO")?.map((document, index) => {
             let modifiedDocument = { ...document };
-            if (!isTenant && modifiedDocument.dropdownData) {
-              modifiedDocument.dropdownData = modifiedDocument.dropdownData.filter((opt) => {
-                const code = opt.code || "";
-                const isNocOwner = code.includes("NOC_FROM_OWNER") || code === "NOC from Owner";
-                return !isNocOwner;
-              });
+            const isOther = document?.code?.includes("OTHERDOCUMENTS");
+            if (isOther && modifiedDocument.dropdownData) {
+              if (isTenant) {
+                modifiedDocument.dropdownData = modifiedDocument.dropdownData.filter((opt) => {
+                  const code = opt.code || "";
+                  const name = opt.name || "";
+                  return code.includes("NOC_FROM_OWNER") || code === "NOC from Owner" || name.includes("NOC from Owner");
+                });
+                if (modifiedDocument.dropdownData.length === 0) {
+                  modifiedDocument.dropdownData = [
+                    {
+                      code: "OWNER.OTHERDOCUMENTS.NOC_FROM_OWNER",
+                      i18nKey: "OWNER_OTHERDOCUMENTS_NOC_FROM_OWNER",
+                      name: "NOC from Owner",
+                      active: true,
+                    },
+                  ];
+                }
+              } else {
+                modifiedDocument.dropdownData = modifiedDocument.dropdownData.filter((opt) => {
+                  const code = opt.code || "";
+                  const name = opt.name || "";
+                  return !(code.includes("NOC_FROM_OWNER") || code === "NOC from Owner" || name.includes("NOC from Owner"));
+                });
+              }
             }
 
             return (

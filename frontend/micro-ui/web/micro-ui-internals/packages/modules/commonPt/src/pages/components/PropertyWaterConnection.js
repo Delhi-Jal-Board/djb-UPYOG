@@ -54,7 +54,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
   const { data: wsServicesMastersData } = Digit.Hooks.ws.useMDMS(tenantId, "ws-services-masters", ["WsCategoryType"]);
 
   const [categoryTypeList, setCategoryTypeList] = useState([]);
-  const propertyDetailsInitialized = React.useRef(false);
+  const initializedPropertyRef = React.useRef(null);
 
   useEffect(() => {
     const categories = wsServicesMastersData?.["ws-services-masters"]?.WsCategoryType || [];
@@ -107,13 +107,19 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
 
   const isServentHouse = isDwellingUnit;
 
+  const prevIsDwellingUnit = React.useRef(null);
   useEffect(() => {
-    if (!isDwellingUnit) {
+    if (prevIsDwellingUnit.current === null) {
+      prevIsDwellingUnit.current = isDwellingUnit;
+      return;
+    }
+    if (prevIsDwellingUnit.current && !isDwellingUnit) {
       setValue("useDetails.NumberofDwellingUnits", "");
       if (clearErrors) {
         clearErrors("useDetails.NumberofDwellingUnits");
       }
     }
+    prevIsDwellingUnit.current = isDwellingUnit;
   }, [isDwellingUnit]);
 
   const yearOptions = useMemo(() => {
@@ -381,83 +387,92 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
   }, [formValue, questionAnswers, config.key, onSelect]);
 
   useEffect(() => {
-    if (propertyDetailsInitialized.current || !formData?.cpt?.details) return;
+    if (!formData?.cpt?.details) {
+      if (formData?.cpt === null && initializedPropertyRef.current !== null) {
+        initializedPropertyRef.current = null;
+        setValue("useDetails.categoryType", null);
+        setValue("useDetails.propertyCategory", null);
+        setValue("useDetails.propertyType", null);
+        setValue("useDetails.WaterConnectionUsageType", null);
+        setValue("useDetails.plotArea", "");
+        setValue("useDetails.builtUpArea", "");
+        setValue("useDetails.farArea", "");
+        setValue("useDetails.heightOfTheBuilding", "");
+        setValue("useDetails.SelectYearofConstruction", null);
+        setValue("useDetails.NumberofDwellingUnits", "");
+        setValue("useDetails.NumberofRooms", "");
+        setValue("useDetails.numberOfBeds", "");
+        setValue("useDetails.numberOfStudents", "");
+        setValue("useDetails.servantQuarterArea", "");
+        setQuestionAnswers([]);
+        setValue("useDetails.questions", []);
+      }
+      return;
+    }
 
     // Populate the dependent dropdowns only after their master options load.
-    // Re-running this effect after a user selection would restore old values.
     if (!categoryTypeList.length || !ptServicesMastersData) return;
 
-    if (formData?.cpt?.details) {
-      const details = formData.cpt.details;
-      const additionalDetails = details?.additionalDetails || {};
+    const details = formData.cpt.details;
+    const additionalDetails = details?.additionalDetails || {};
+    const propKey = `${details?.propertyId}_${details?.auditDetails?.lastModifiedTime || ""}_${additionalDetails?.numberOfDwellingUnits || additionalDetails?.noOfDwellingUnits || ""}_${details?.landArea || ""}_${details?.superBuiltUpArea || ""}`;
+    if (initializedPropertyRef.current === propKey) return;
+    initializedPropertyRef.current = propKey;
 
-      const usageCategory = getCode(additionalDetails.propertyCategory || additionalDetails.usageCategory || details.usageCategory);
-      const catType = getCode(additionalDetails.categoryType) || (String(usageCategory).includes("RESIDENTIAL") ? "DOMESTIC" : "NON_DOMESTIC");
+    const usageCategory = getCode(additionalDetails.propertyCategory || additionalDetails.usageCategory || details.usageCategory);
+    const catType = getCode(additionalDetails.categoryType) || (String(usageCategory).includes("RESIDENTIAL") ? "DOMESTIC" : "NON_DOMESTIC");
 
-      setValue("useDetails.categoryType", categoryTypeList?.find((o) => normalizeCode(o.code) === normalizeCode(catType)) || null);
+    setValue("useDetails.categoryType", categoryTypeList?.find((o) => normalizeCode(o.code) === normalizeCode(catType)) || null);
 
-      const propCategoryMatch =
-        categoryOptions?.find(
-          (o) => normalizeCode(o.code) === normalizeCode(usageCategory) || normalizeCode(o.name) === normalizeCode(usageCategory)
-        ) || ptServicesMastersData?.PropertyTax?.PropertyCategory?.find((o) => normalizeCode(o.code) === normalizeCode(usageCategory));
-      setValue(
-        "useDetails.propertyCategory",
-        propCategoryMatch
-          ? { code: propCategoryMatch.code, name: propCategoryMatch.name }
-          : usageCategory
-          ? { code: usageCategory, name: usageCategory }
-          : null
-      );
+    const propCategoryMatch =
+      categoryOptions?.find(
+        (o) => normalizeCode(o.code) === normalizeCode(usageCategory) || normalizeCode(o.name) === normalizeCode(usageCategory)
+      ) || ptServicesMastersData?.PropertyTax?.PropertyCategory?.find((o) => normalizeCode(o.code) === normalizeCode(usageCategory));
+    setValue(
+      "useDetails.propertyCategory",
+      propCategoryMatch
+        ? { code: propCategoryMatch.code, name: propCategoryMatch.name }
+        : usageCategory
+        ? { code: usageCategory, name: usageCategory }
+        : null
+    );
 
-      const propTypeList = propertyType2List?.length > 0 ? propertyType2List : ptServicesMastersData?.PropertyTax?.PropertyType || [];
-      const propTypeMatch = propTypeList.find(
-        (o) => normalizeCode(o.code) === normalizeCode(getCode(additionalDetails.propertyType || details.propertyType))
-      );
-      setValue("useDetails.propertyType", propTypeMatch ? { code: propTypeMatch.code, name: propTypeMatch.name } : null);
-      prevPropertyTypeCode.current = propTypeMatch?.code || null;
+    const propTypeList = propertyType2List?.length > 0 ? propertyType2List : ptServicesMastersData?.PropertyTax?.PropertyType || [];
+    const propTypeMatch = propTypeList.find(
+      (o) => normalizeCode(o.code) === normalizeCode(getCode(additionalDetails.propertyType || details.propertyType))
+    );
+    setValue("useDetails.propertyType", propTypeMatch ? { code: propTypeMatch.code, name: propTypeMatch.name } : null);
+    prevPropertyTypeCode.current = propTypeMatch?.code || null;
 
-      const usageVal = getCode(additionalDetails.waterConnectionUsageType || additionalDetails.WaterConnectionUsageType);
-      const usageTypeMatch = usageTypeOptions.find(
-        (o) => normalizeCode(o.code) === normalizeCode(usageVal) || normalizeCode(o.name) === normalizeCode(usageVal)
-      );
-      setValue("useDetails.WaterConnectionUsageType", usageTypeMatch || null);
-      setValue("useDetails.plotArea", additionalDetails.plotArea || details?.landArea?.toString() || "");
-      setValue("useDetails.builtUpArea", additionalDetails.builtUpArea || details?.superBuiltUpArea?.toString() || "");
-      setValue("useDetails.heightOfTheBuilding", additionalDetails.heightOfTheBuilding || details?.heightOfTheBuilding?.toString() || "");
-      setValue("useDetails.SelectYearofConstruction", yearOptions?.find((o) => o.value === additionalDetails.yearOfConstruction) || null);
-      setValue(
-        "useDetails.NumberofDwellingUnits",
-        additionalDetails.numberOfDwellingUnits || additionalDetails.noOfDwellingUnits || details?.noOfDwellingUnits || ""
-      );
-      setValue("useDetails.NumberofRooms", additionalDetails.numberOfRooms || additionalDetails.noOfRooms || details?.noOfRooms || "");
-      setValue("useDetails.farArea", additionalDetails.farArea || details?.farArea?.toString() || "");
-      setValue("useDetails.servantQuarterArea", additionalDetails.servantQuarterArea || details?.servantQuarterArea?.toString() || "");
-      setValue("useDetails.numberOfBeds", additionalDetails.numberOfBeds || details?.numberOfBeds?.toString() || "");
-      setValue("useDetails.numberOfStudents", additionalDetails.numberOfStudents || details?.numberOfStudents?.toString() || "");
-      const savedQAs = additionalDetails.questions || additionalDetails.questionAnswers || additionalDetails.propertyQuestions || [];
-      if (Array.isArray(savedQAs) && savedQAs.length > 0) {
-        setQuestionAnswers(savedQAs);
-        setValue("useDetails.questions", savedQAs);
-      }
-    } else if (formData?.cpt === null) {
-      setValue("useDetails.categoryType", null);
-      setValue("useDetails.propertyCategory", null);
-      setValue("useDetails.propertyType", null);
-      setValue("useDetails.WaterConnectionUsageType", null);
-      setValue("useDetails.plotArea", "");
-      setValue("useDetails.builtUpArea", "");
-      setValue("useDetails.farArea", "");
-      setValue("useDetails.heightOfTheBuilding", "");
-      setValue("useDetails.SelectYearofConstruction", null);
-      setValue("useDetails.NumberofDwellingUnits", "");
-      setValue("useDetails.NumberofRooms", "");
-      setValue("useDetails.numberOfBeds", "");
-      setValue("useDetails.numberOfStudents", "");
-      setValue("useDetails.servantQuarterArea", "");
-      setQuestionAnswers([]);
-      setValue("useDetails.questions", []);
+    const usageVal = getCode(additionalDetails.waterConnectionUsageType || additionalDetails.WaterConnectionUsageType);
+    const usageTypeMatch = usageTypeOptions.find(
+      (o) => normalizeCode(o.code) === normalizeCode(usageVal) || normalizeCode(o.name) === normalizeCode(usageVal)
+    );
+    setValue("useDetails.WaterConnectionUsageType", usageTypeMatch || null);
+    setValue("useDetails.plotArea", additionalDetails.plotArea || details?.landArea?.toString() || "");
+    setValue("useDetails.builtUpArea", additionalDetails.builtUpArea || details?.superBuiltUpArea?.toString() || "");
+    setValue("useDetails.heightOfTheBuilding", additionalDetails.heightOfTheBuilding || details?.heightOfTheBuilding?.toString() || "");
+    setValue("useDetails.SelectYearofConstruction", yearOptions?.find((o) => o.value === additionalDetails.yearOfConstruction) || null);
+    setValue(
+      "useDetails.NumberofDwellingUnits",
+      additionalDetails.numberOfDwellingUnits ||
+        additionalDetails.noOfDwellingUnits ||
+        additionalDetails.NumberofDwellingUnits ||
+        details?.noOfDwellingUnits ||
+        details?.numberOfDwellingUnits ||
+        details?.NumberofDwellingUnits ||
+        ""
+    );
+    setValue("useDetails.NumberofRooms", additionalDetails.numberOfRooms || additionalDetails.noOfRooms || details?.noOfRooms || "");
+    setValue("useDetails.farArea", additionalDetails.farArea || details?.farArea?.toString() || "");
+    setValue("useDetails.servantQuarterArea", additionalDetails.servantQuarterArea || details?.servantQuarterArea?.toString() || "");
+    setValue("useDetails.numberOfBeds", additionalDetails.numberOfBeds || details?.numberOfBeds?.toString() || "");
+    setValue("useDetails.numberOfStudents", additionalDetails.numberOfStudents || details?.numberOfStudents?.toString() || "");
+    const savedQAs = additionalDetails.questions || additionalDetails.questionAnswers || additionalDetails.propertyQuestions || [];
+    if (Array.isArray(savedQAs) && savedQAs.length > 0) {
+      setQuestionAnswers(savedQAs);
+      setValue("useDetails.questions", savedQAs);
     }
-    propertyDetailsInitialized.current = true;
   }, [formData?.cpt?.details, formData?.cpt, categoryOptions, propertyTypeOptions, usageTypeOptions, yearOptions, categoryTypeList, setValue]);
 
   const lastErrorState = React.useRef(null);

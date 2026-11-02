@@ -8,6 +8,19 @@ import { createPayloadOfWS, updatePayloadOfWS } from "../../../utils";
 import CheckPage from "./CheckPage";
 import { newConfig as newConfigLocal } from "../../../config/wsCreateConfig";
 
+const isRwhDoc = (doc) => {
+  if (!doc) return false;
+  const str = (
+    (typeof doc === "string" ? doc : "") + " " +
+    (doc?.documentType || "") + " " +
+    (doc?.code || "") + " " +
+    (doc?.i18nKey || "") + " " +
+    (doc?.name || "") + " " +
+    (doc?.documentName || "")
+  ).toUpperCase();
+  return str.includes("RAIN") || str.includes("HARVEST");
+};
+
 const OLDApplication = () => {
   const { t } = useTranslation();
   const history = useHistory();
@@ -28,6 +41,7 @@ const OLDApplication = () => {
     { label: "WS_COMMON_CONNECTION_HOLDER_DETAILS_HEADER" },
     { label: "Are you a Divyangjan/Person with Disability?" },
     { label: "WS_DJB_EMPLOYEE" },
+    { label: "Rain Water Harvesting Certificate" },
     { label: "PT_LOCATION_DETAILS" },
     { label: "WS_PROPERTY_AND_WATER_CONNECTION_USE_DETAILS" },
     // ...(isCitizen ? [] : [{ label: "WS_DJB_EMPLOYEE" }]),
@@ -99,6 +113,7 @@ const OLDApplication = () => {
       "WSConnectionHolderDetails",
       "WSDivyangjan",
       "WSDjbEmployee",
+      "WSRainWaterHarvesting",
       "WSPropertyLocationDetails",
       "PropertyWaterConnection",
       "WSActivationPlumberDetails",
@@ -184,6 +199,21 @@ const OLDApplication = () => {
             },
           ],
         });
+      } else if (compName === "WSRainWaterHarvesting") {
+        reorderedBody.push({
+          isCreateConnection: true,
+          body: [
+            {
+              type: "component",
+              key: "rainWaterHarvesting",
+              component: "WSRainWaterHarvesting",
+              withoutLabel: true,
+              texts: {
+                header: "Rain Water Harvesting Certificate",
+              },
+            },
+          ],
+        });
       }
     });
 
@@ -263,7 +293,22 @@ const OLDApplication = () => {
           djbData?.document
         ));
 
-    const hasErrors = Object.keys(formState?.errors || {}).length > 0 || isDjbEmpInvalid;
+    const rwhData = formDataRef.current?.rainWaterHarvesting || formDataRef.current?.additionalDetails;
+    const isRwhRequired =
+      rwhData?.hasCertificate === true ||
+      String(rwhData?.hasCertificate) === "true" ||
+      rwhData?.isRainwaterHarvesting === true ||
+      String(rwhData?.isRainwaterHarvesting) === "true";
+
+    const allDocs =
+      formDataRef.current?.DocumentsRequired?.documents ||
+      formDataRef.current?.documents?.documents ||
+      formDataRef.current?.documents ||
+      [];
+    const isRwhDocUploaded = Array.isArray(allDocs) && allDocs.some((d) => isRwhDoc(d) && (d?.fileStoreId || d?.file));
+    const isRwhInvalid = isRwhRequired && !isRwhDocUploaded;
+
+    const hasErrors = Object.keys(formState?.errors || {}).length > 0 || isDjbEmpInvalid || isRwhInvalid;
     const hasProperty =
       formDataRef.current?.cpt?.details?.propertyId ||
       sessionStorage.getItem("WS_OTP_VERIFIED_PROPERTY_ID") ||
@@ -319,6 +364,31 @@ const OLDApplication = () => {
 
     if (isDjbEmpInvalid) {
       setShowToast({ key: "error", message: "ERR_FILL_ALL_MANDATORY_FIELDS" });
+      return;
+    }
+
+    const rwhSubmitData = combinedData?.rainWaterHarvesting || combinedData?.additionalDetails;
+    const isRwhSubmitRequired =
+      rwhSubmitData?.hasCertificate === true ||
+      String(rwhSubmitData?.hasCertificate) === "true" ||
+      rwhSubmitData?.isRainwaterHarvesting === true ||
+      String(rwhSubmitData?.isRainwaterHarvesting) === "true";
+
+    const allSubmitDocs =
+      combinedData?.DocumentsRequired?.documents ||
+      combinedData?.documents?.documents ||
+      combinedData?.documents ||
+      formDataRef.current?.DocumentsRequired?.documents ||
+      formDataRef.current?.documents?.documents ||
+      formDataRef.current?.documents ||
+      [];
+    const isRwhSubmitDocUploaded = Array.isArray(allSubmitDocs) && allSubmitDocs.some((d) => isRwhDoc(d) && (d?.fileStoreId || d?.file));
+
+    if (isRwhSubmitRequired && !isRwhSubmitDocUploaded) {
+      setShowToast({
+        key: "error",
+        message: t("ERR_RWH_CERTIFICATE_MANDATORY") || "Rain Water Harvesting Certificate is mandatory to upload",
+      });
       return;
     }
 
@@ -413,6 +483,19 @@ const OLDApplication = () => {
       data.declarationData.submittedBy = data.declaration.submittedBy;
       data.declarationData.agree = data.declaration.agree;
       data.declarationData.declarations = data.declaration.declarations;
+    }
+
+    if (data?.rainWaterHarvesting) {
+      data.additionalDetails = {
+        ...data.additionalDetails,
+        ...data.rainWaterHarvesting,
+        hasRainWaterHarvestingCertificate: !!(
+          data?.rainWaterHarvesting?.hasCertificate || data?.rainWaterHarvesting?.isRainwaterHarvesting
+        ),
+        isRainwaterHarvesting: !!(
+          data?.rainWaterHarvesting?.hasCertificate || data?.rainWaterHarvesting?.isRainwaterHarvesting
+        ),
+      };
     }
 
     // Ensure cpt details are set before payload creation
@@ -628,7 +711,7 @@ const OLDApplication = () => {
     return (
       <React.Fragment>
         <div className="employee-form-section-wrapper">
-          <VerticalTimeline config={timelineConfig} currentActiveIndex={9} showFinalStep={false} />
+          <VerticalTimeline config={timelineConfig} currentActiveIndex={timelineConfig.length - 1} showFinalStep={false} />
           <CheckPage
             data={formDataRef.current || sessionFormData}
             onSubmit={(finalData) => processSubmission(finalData || formDataRef.current || sessionFormData)}
