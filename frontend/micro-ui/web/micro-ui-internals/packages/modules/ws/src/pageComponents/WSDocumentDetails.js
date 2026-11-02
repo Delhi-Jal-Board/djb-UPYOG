@@ -24,10 +24,11 @@ const WSDocumentDetails = ({ t, config, onSelect, userType, formData, setError: 
     let count = 0;
     wsDocs?.Documents?.filter(doc => doc.code !== "OWNER.APPLICANTPHOTO")?.map((doc) => {
       let isRequired = false;
+      const isDocRequired = doc?.code?.toUpperCase().includes("OTHER") ? false : doc.required;
       documents.map((data) => {
-        if (doc.required && data?.documentType.includes(doc.code)) isRequired = true;
+        if (isDocRequired && data?.documentType.includes(doc.code)) isRequired = true;
       });
-      if (!isRequired && doc.required) count = count + 1;
+      if (!isRequired && isDocRequired) count = count + 1;
     });
     if ((count == "0" || count == 0) && documents.length > 0) setEnableSubmit(false);
     else setEnableSubmit(true);
@@ -97,6 +98,9 @@ const WSDocumentDetails = ({ t, config, onSelect, userType, formData, setError: 
           {wsDocs?.Documents?.filter(doc => doc.code !== "OWNER.APPLICANTPHOTO")?.map((document, index) => {
             let modifiedDocument = { ...document };
             const isOther = document?.code?.includes("OTHERDOCUMENTS");
+            if (modifiedDocument?.code?.toUpperCase().includes("OTHER")) {
+              modifiedDocument.required = false;
+            }
             if (isOther && modifiedDocument.dropdownData) {
               if (isTenant) {
                 modifiedDocument.dropdownData = modifiedDocument.dropdownData.filter((opt) => {

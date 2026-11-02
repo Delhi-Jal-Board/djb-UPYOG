@@ -4,11 +4,9 @@ import {
   TextInput,
   CollapsibleCardPage,
   FormStep,
-  UploadFile,
-  ViewsIcon,
-  RemoveIcon,
   RadioButtons,
   CardLabelError,
+  DatePicker,
 } from "@djb25/digit-ui-react-components";
 import _ from "lodash";
 import React, { useEffect, useState } from "react";
@@ -81,7 +79,7 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
   const hasData = !!(formData?.djbEmployee !== undefined || formData?.additionalDetails?.isDjbEmployee !== undefined);
   const isInitializedRef = React.useRef(hasData);
 
-  const getValidationErrors = (values, docFile) => {
+  const getValidationErrors = (values) => {
     const errs = {};
     const isEmp = values?.isDjbEmployee === true || String(values?.isDjbEmployee) === "true";
     if (isEmp) {
@@ -90,14 +88,6 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
       }
       if (!values?.designation || !String(values?.designation).trim()) {
         errs.designation = t("CORE_COMMON_REQUIRED_ERRMSG");
-      }
-      const hasDoc =
-        values?.document?.fileStoreId ||
-        (typeof values?.document === "string" && values?.document.trim()) ||
-        values?.document ||
-        docFile;
-      if (!hasDoc) {
-        errs.document = t("CORE_COMMON_REQUIRED_ERRMSG");
       }
     }
     return errs;
@@ -111,17 +101,11 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
       setValue("dor", vals.dor);
       setValue("designation", vals.designation);
       setValue("document", vals.document);
-      setUploadedFile(vals.document || null);
       isInitializedRef.current = true;
     }
   }, [formData?.djbEmployee, formData?.additionalDetails]);
 
-  const tenantId = Digit.ULBService.getCurrentTenantId();
-  const [file, setFile] = useState(null);
-  const [uploadedFile, setUploadedFile] = useState(() => initialVals.document || null);
-  const [errorUpload, setErrorUpload] = useState(null);
-
-  const djbErrors = getValidationErrors(formValue, uploadedFile);
+  const djbErrors = getValidationErrors(formValue);
   const hasDjbErrors = Object.keys(djbErrors).length > 0;
 
   useEffect(() => {
@@ -132,78 +116,17 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
       setValue("dor", "");
       setValue("designation", "");
       setValue("document", "");
-      setUploadedFile(null);
-      setFile(null);
       if (clearErrors) clearErrors(configKey);
     } else {
       setTimeout(() => {
-        trigger(["employeeId", "designation", "document"]);
+        trigger(["employeeId", "designation"]);
       }, 50);
-      const errs = getValidationErrors(formValue, uploadedFile);
+      const errs = getValidationErrors(formValue);
       if (Object.keys(errs).length > 0 && setError) {
         setError(configKey, { type: "required", message: "CORE_COMMON_REQUIRED_ERRMSG" });
       }
     }
   }, [isDjbEmployee]);
-
-  const handleView = async (fileStoreId, tenantId) => {
-    try {
-      const id = typeof fileStoreId === "object" ? fileStoreId?.fileStoreId : fileStoreId;
-      if (!id) return;
-      const response = await Digit.UploadServices.Filefetch([id], tenantId);
-      const url = response?.data?.fileStoreIds?.[0]?.url;
-      if (url) {
-        const differentFormats = url?.split(",") || [];
-        let fileURL = "";
-        differentFormats.map((link) => {
-          if (!link.includes("large") && !link.includes("medium") && !link.includes("small")) {
-            fileURL = link;
-          }
-        });
-        window.open(fileURL || differentFormats[0], "_blank");
-      }
-    } catch (error) {
-      console.error("Error fetching file URL:", error);
-    }
-  };
-
-  useEffect(() => {
-    (async () => {
-      setErrorUpload(null);
-      if (file) {
-        if (file.size > 5242880) {
-          setErrorUpload({ key: "error", message: t("CS_MAXIMUM_UPLOAD_SIZE_EXCEEDED") || "File size should not exceed 5MB" });
-          setFile(null);
-        } else {
-          try {
-            setUploadedFile(null);
-            const response = await Digit.UploadServices.Filestorage("WS", file, tenantId?.split(".")[0]);
-            if (response?.data?.files?.length > 0) {
-              const fileId = response?.data?.files[0]?.fileStoreId;
-              setUploadedFile(fileId);
-              setValue("document", fileId, { shouldValidate: true });
-            } else {
-              setErrorUpload({ key: "error", message: t("CS_FILE_UPLOAD_ERROR") || "File Upload Error" });
-            }
-          } catch (err) {
-            setErrorUpload({ key: "error", message: t("CS_FILE_UPLOAD_ERROR") || "File Upload Error" });
-          }
-        }
-      }
-    })();
-  }, [file]);
-
-  function selectfile(e) {
-    const selected = e?.target?.files?.[0];
-    if (selected) {
-      if (selected.size > 5242880) {
-        setErrorUpload({ key: "error", message: t("CS_MAXIMUM_UPLOAD_SIZE_EXCEEDED") || "File size should not exceed 5MB" });
-        if (e?.target) e.target.value = "";
-        return;
-      }
-      setFile(selected);
-    }
-  }
 
   useEffect(() => {
     const isEmployeeMode =
@@ -215,9 +138,7 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
     if (isEmployeeMode) {
       const isDifferent = !_.isEqual(formData?.djbEmployee, formValue);
       if (isDifferent) {
-        const isImmediate =
-          formData?.djbEmployee?.isDjbEmployee !== formValue?.isDjbEmployee ||
-          formData?.djbEmployee?.document !== formValue?.document;
+        const isImmediate = formData?.djbEmployee?.isDjbEmployee !== formValue?.isDjbEmployee;
         const delay = isImmediate ? 0 : 100;
         const timer = setTimeout(() => {
           onSelect(config?.key || "djbEmployee", { ...formValue });
@@ -241,8 +162,6 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
     formValue?.isDjbEmployee,
     formValue?.employeeId,
     formValue?.designation,
-    formValue?.document,
-    uploadedFile,
     config?.key,
   ]);
 
@@ -318,7 +237,7 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
           </LabelFieldPair>
         </div>
 
-        {/* <div>
+        <div>
           <LabelFieldPair>
             <CardLabel>
               {t("Date of Retirement")}
@@ -333,7 +252,7 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
               />
             </div>
           </LabelFieldPair>
-        </div> */}
+        </div>
 
         <div>
           <LabelFieldPair>
@@ -363,92 +282,6 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
               />
               {localFormState?.touched?.designation && !formValue?.designation?.trim?.() && (
                 <CardLabelError style={errorStyle}>{t("CORE_COMMON_REQUIRED_ERRMSG")}</CardLabelError>
-              )}
-            </div>
-          </LabelFieldPair>
-        </div>
-
-        <div>
-          <LabelFieldPair>
-            <div>
-              <CardLabel>
-                {t("Upload Employee ID Document")}
-                {isDjbEmployee && <span className="check-page-link-button"> *</span>}
-              </CardLabel>
-              <div style={{ fontSize: "12px", color: "#666", marginTop: "-2px", marginBottom: "4px" }}>
-                {t("WS_DOCUMENT_MAX_SIZE_MESSAGE") || "Allowed formats: PDF, JPG, PNG | Max file size: 5MB"}
-              </div>
-            </div>
-            <div className="field" style={{ width: "100%" }}>
-              <Controller
-                control={control}
-                name="document"
-                rules={{ required: isDjbEmployee ? t("CORE_COMMON_REQUIRED_ERRMSG") : false }}
-                render={(props) => (
-                  <UploadFile
-                    id={"employee-doc"}
-                    extraStyleName={"propertyCreate"}
-                    placeholder={t("Upload Employee ID Document")}
-                    accept="image/*, .pdf, .png, .jpeg, .jpg"
-                    onUpload={(e) => {
-                      selectfile(e);
-                    }}
-                    onDelete={() => {
-                      setUploadedFile(null);
-                      setFile(null);
-                      props.onChange("");
-                      setValue("document", "", { shouldValidate: true });
-                      trigger("document");
-                    }}
-                    message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`ES_NO_FILE_SELECTED_LABEL`)}
-                    error={errorUpload}
-                    uploadedFiles={
-                      uploadedFile && !file ? [[file?.name || t("Upload Employee ID Document"), { fileStoreId: uploadedFile }]] : undefined
-                    }
-                  />
-                )}
-              />
-              {uploadedFile && (
-                <div
-                  style={{
-                    marginTop: "16px",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "16px",
-                    background: "#F3F4F6",
-                    padding: "8px 16px",
-                    borderRadius: "8px",
-                    width: "fit-content",
-                    border: "1px solid #E5E7EB",
-                  }}
-                >
-                  <span style={{ fontSize: "14px", color: "#374151", fontWeight: "600" }}>{file?.name || t("Upload Employee ID Document")}</span>
-                  <div style={{ display: "flex", gap: "10px" }}>
-                    <button
-                      type="button"
-                      onClick={() => handleView(uploadedFile, tenantId?.split(".")[0])}
-                      title={t("View Document") || "View Document"}
-                      style={{ border: "none", background: "transparent", color: "#00497e", cursor: "pointer", padding: 0 }}
-                    >
-                      <ViewsIcon />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setUploadedFile(null);
-                        setFile(null);
-                        setValue("document", "", { shouldValidate: true });
-                        const fileInput = document.getElementById("employee-doc");
-                        if (fileInput) fileInput.value = "";
-                        trigger("document");
-                      }}
-                      title="Remove Document"
-                      style={{ border: "none", background: "transparent", color: "#d32f2f", cursor: "pointer", padding: 0, fontSize: "18px" }}
-                    >
-                      <RemoveIcon />
-                    </button>
-                  </div>
-                </div>
               )}
             </div>
           </LabelFieldPair>

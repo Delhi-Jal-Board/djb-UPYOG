@@ -563,7 +563,12 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
             {documents?.map((doc, index) => (
               <React.Fragment key={index}>
                 <Row
-                  label={t(`${doc?.documentType?.replaceAll(".", "_")}`)}
+                  label={t(
+                    doc?.i18nKey ||
+                    (doc?.documentType === "OWNER.DJB_EMPLOYEE_ID" || doc?.documentType?.includes("DJB_EMPLOYEE_ID")
+                      ? "WS_UPLOAD_EMPLOYEE_ID_DOC"
+                      : doc?.documentType?.replaceAll(".", "_"))
+                  )}
                   text={checkForNA(doc?.documentUid)}
                   actionButton={index === 0 ? <ActionButton onClick={onEdit} /> : null}
                 />
