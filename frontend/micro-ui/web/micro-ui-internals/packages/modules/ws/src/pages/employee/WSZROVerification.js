@@ -49,7 +49,7 @@ const WSZROVerification = () => {
                 search: `?connectionNumber=${row.original?.connectionNo}&tenantId=${tenantId}`,
                 state: { caseData: row.original },
               }}
-              style={{ color: "#f47738", textDecoration: "none" }}
+              style={{ color: "#667eea", textDecoration: "none" }}
             >
               {row.original?.connectionNo || "NA"}
             </Link>

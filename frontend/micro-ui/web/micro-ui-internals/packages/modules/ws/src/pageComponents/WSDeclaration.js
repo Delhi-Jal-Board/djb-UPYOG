@@ -16,17 +16,41 @@ import { useTranslation } from "react-i18next";
 
 const WSDeclaration = ({ config, onSelect, userType, formData, setError, formState, clearErrors, tenantId }) => {
   const { t } = useTranslation();
-  const [signatureFileStoreId, setSignatureFileStoreId] = useState(formData?.declarationData?.signatureFileStoreId || null);
-  const [signatureFile, setSignatureFile] = useState(formData?.declarationData?.signatureFile || null);
+  const initialFsId =
+    formData?.declarationData?.signatureFileStoreId ||
+    formData?.declaration?.signatureFileStoreId ||
+    formData?.declarationData?.signatureFile?.fileStoreId ||
+    formData?.declaration?.signatureFile?.fileStoreId ||
+    (typeof formData?.declarationData?.signatureFile === "string" ? formData?.declarationData?.signatureFile : null) ||
+    (typeof formData?.declaration?.signatureFile === "string" ? formData?.declaration?.signatureFile : null) ||
+    formData?.additionalDetails?.signatureFileStoreId ||
+    null;
+
+  const initialFileName =
+    formData?.declarationData?.signatureFileName ||
+    formData?.declaration?.signatureFileName ||
+    formData?.declarationData?.signatureFile?.fileName ||
+    formData?.declaration?.signatureFile?.fileName ||
+    formData?.declarationData?.signatureFile?.name ||
+    formData?.declaration?.signatureFile?.name ||
+    formData?.additionalDetails?.signatureFileName ||
+    (initialFsId ? "signature.png" : "");
+
+  const [signatureFileStoreId, setSignatureFileStoreId] = useState(initialFsId);
+  const [signatureFile, setSignatureFile] = useState(
+    formData?.declarationData?.signatureFile ||
+    formData?.declaration?.signatureFile ||
+    (initialFsId ? { fileStoreId: initialFsId, fileName: initialFileName } : null)
+  );
 
   const { control, formState: localFormState, watch, trigger, getValues, setValue } = useForm({
     defaultValues: {
-      agree: formData?.declarationData?.agree || false,
-      submittedBy: formData?.declarationData?.submittedBy || { code: "SELF", i18nKey: "WS_SUBMITTED_BY_SELF" },
-      signatureFile: formData?.declarationData?.signatureFile || null,
-      signatureFileStoreId: formData?.declarationData?.signatureFileStoreId || null,
-      signatureFileName: formData?.declarationData?.signatureFileName || "",
-      declarations: formData?.declarationData?.declarations || Array(10).fill(formData?.declarationData?.agree || false),
+      agree: formData?.declarationData?.agree || formData?.declaration?.agree || false,
+      submittedBy: formData?.declarationData?.submittedBy || formData?.declaration?.submittedBy || { code: "SELF", i18nKey: "WS_SUBMITTED_BY_SELF" },
+      signatureFile: formData?.declarationData?.signatureFile || formData?.declaration?.signatureFile || (initialFsId ? { fileStoreId: initialFsId, fileName: initialFileName } : null),
+      signatureFileStoreId: initialFsId,
+      signatureFileName: initialFileName,
+      declarations: formData?.declarationData?.declarations || formData?.declaration?.declarations || Array(10).fill(formData?.declarationData?.agree || formData?.declaration?.agree || false),
     },
   });
   const formValue = watch();
@@ -50,20 +74,41 @@ const WSDeclaration = ({ config, onSelect, userType, formData, setError, formSta
   const submittedByOptions = [{ code: "SELF", i18nKey: "WS_SUBMITTED_BY_SELF" }];
 
   useEffect(() => {
-    const fsId = formData?.declarationData?.signatureFileStoreId || null;
+    const fsId =
+      formData?.declarationData?.signatureFileStoreId ||
+      formData?.declaration?.signatureFileStoreId ||
+      formData?.declarationData?.signatureFile?.fileStoreId ||
+      formData?.declaration?.signatureFile?.fileStoreId ||
+      (typeof formData?.declarationData?.signatureFile === "string" ? formData?.declarationData?.signatureFile : null) ||
+      (typeof formData?.declaration?.signatureFile === "string" ? formData?.declaration?.signatureFile : null) ||
+      formData?.additionalDetails?.signatureFileStoreId ||
+      null;
     const currentFsId = signatureFileStoreId || null;
-    if (fsId !== currentFsId) {
+    if (fsId && fsId !== currentFsId) {
+      const fileName =
+        formData?.declarationData?.signatureFileName ||
+        formData?.declaration?.signatureFileName ||
+        formData?.declarationData?.signatureFile?.fileName ||
+        formData?.declaration?.signatureFile?.name ||
+        "signature.png";
       setSignatureFileStoreId(fsId);
       setValue("signatureFileStoreId", fsId);
+      setValue("signatureFileName", fileName);
+      setValue("signatureFile", { fileStoreId: fsId, fileName: fileName });
     }
-  }, [formData?.declarationData?.signatureFileStoreId]);
+  }, [formData?.declarationData?.signatureFileStoreId, formData?.declaration?.signatureFileStoreId]);
 
-  const lastSentValue = React.useRef(formData?.declarationData || null);
+  const lastSentValue = React.useRef(formData?.declarationData || formData?.declaration || null);
   useEffect(() => {
+    const fileName = formValue?.signatureFileName || (typeof signatureFile === "object" ? (signatureFile?.name || signatureFile?.fileName) : null) || "signature.png";
     const currentValues = {
       ...formValue,
       signatureFileStoreId,
-      signatureFile,
+      signatureFileName: signatureFileStoreId ? fileName : "",
+      signature: signatureFileStoreId,
+      signatureFile: signatureFileStoreId
+        ? { fileStoreId: signatureFileStoreId, fileName: fileName }
+        : null,
     };
     if (!_.isEqual(lastSentValue.current, currentValues)) {
       const timer = setTimeout(() => {
@@ -84,10 +129,11 @@ const WSDeclaration = ({ config, onSelect, userType, formData, setError, formSta
           const response = await Digit.UploadServices.Filestorage("WS", file, Digit.ULBService.getStateId());
           if (response?.data?.files?.length > 0) {
             const fsId = response?.data?.files[0]?.fileStoreId;
+            const sigObj = { fileStoreId: fsId, fileName: file.name };
             setSignatureFileStoreId(fsId);
-            setSignatureFile(file);
+            setSignatureFile(sigObj);
             setValue("signatureFileStoreId", fsId);
-            setValue("signatureFile", file);
+            setValue("signatureFile", sigObj);
             setValue("signatureFileName", file.name);
           }
         } catch (err) {
@@ -191,7 +237,7 @@ const WSDeclaration = ({ config, onSelect, userType, formData, setError, formSta
                     buttonType="button"
                     accept="image/*, .pdf, .png, .jpeg, .jpg"
                     uploadedFiles={
-                      signatureFileStoreId && !signatureFile ? [[formValue?.signatureFileName || "Document", { fileStoreId: signatureFileStoreId }]] : undefined
+                      signatureFileStoreId ? [[formValue?.signatureFileName || "Signature", { fileStoreId: signatureFileStoreId }]] : undefined
                     }
                     removeTargetedFile={() => {
                       setSignatureFile(null);

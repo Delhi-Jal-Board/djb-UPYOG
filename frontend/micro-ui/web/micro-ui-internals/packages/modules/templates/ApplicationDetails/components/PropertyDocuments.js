@@ -180,6 +180,8 @@ function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false, 
       uploadLabel = "Upload Other Documents*";
     } else if (value.title === "WS_APPLICANT_PHOTO") {
       uploadLabel = "Upload Applicant Photo*";
+    } else if (value.title === "WS_APPLICANT_SIGNATURE") {
+      uploadLabel = "Upload Signature*";
     } else {
       typeLabel = (value?.categoryLabel || "Document") + "*";
       numLabel = "Document Number";
@@ -189,7 +191,7 @@ function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false, 
     return (
       <div key={index} style={{ marginBottom: "24px" }}>
         <StatusTable>
-          {!isPhoto && (
+          {!isPhoto && value.title !== "WS_APPLICANT_SIGNATURE" && (
             <React.Fragment>
               <Row label={typeLabel} text={docSubType || t("NA")} />
               <Row label={numLabel} text={docUid || t("NA")} />
