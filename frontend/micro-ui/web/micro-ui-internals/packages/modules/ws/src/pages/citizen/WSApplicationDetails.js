@@ -176,6 +176,97 @@ const WSApplicationDetails = () => {
   const bankDetails = additionalDetails;
   const propertyAddress = PTData?.Properties?.[0]?.address || additionalDetails;
 
+  const rawLatitude =
+    propertyAddress?.latitude ||
+    propertyAddress?.Latitude ||
+    propertyAddress?.geoLocation?.latitude ||
+    propertyAddress?.locality?.latitude ||
+    additionalDetails?.latitude ||
+    additionalDetails?.Latitude ||
+    additionalDetails?.geoLocation?.latitude ||
+    additionalDetails?.propertyLocationDetails?.latitude ||
+    additionalDetails?.propertyAddress?.latitude ||
+    PTData?.Properties?.[0]?.address?.latitude ||
+    PTData?.Properties?.[0]?.address?.Latitude ||
+    PTData?.Properties?.[0]?.address?.geoLocation?.latitude ||
+    PTData?.Properties?.[0]?.address?.locality?.latitude ||
+    PTData?.Properties?.[0]?.latitude ||
+    PTData?.Properties?.[0]?.Latitude ||
+    PTData?.Properties?.[0]?.additionalDetails?.latitude ||
+    applicationData?.property?.address?.latitude ||
+    applicationData?.property?.address?.Latitude ||
+    applicationData?.propertyAddress?.latitude ||
+    "";
+
+  const rawLongitude =
+    propertyAddress?.longitude ||
+    propertyAddress?.Longitude ||
+    propertyAddress?.geoLocation?.longitude ||
+    propertyAddress?.locality?.longitude ||
+    additionalDetails?.longitude ||
+    additionalDetails?.Longitude ||
+    additionalDetails?.geoLocation?.longitude ||
+    additionalDetails?.propertyLocationDetails?.longitude ||
+    additionalDetails?.propertyAddress?.longitude ||
+    PTData?.Properties?.[0]?.address?.longitude ||
+    PTData?.Properties?.[0]?.address?.Longitude ||
+    PTData?.Properties?.[0]?.address?.geoLocation?.longitude ||
+    PTData?.Properties?.[0]?.address?.locality?.longitude ||
+    PTData?.Properties?.[0]?.longitude ||
+    PTData?.Properties?.[0]?.Longitude ||
+    PTData?.Properties?.[0]?.additionalDetails?.longitude ||
+    applicationData?.property?.address?.longitude ||
+    applicationData?.property?.address?.Longitude ||
+    applicationData?.propertyAddress?.longitude ||
+    "";
+
+  const rawFloorConsumerResides =
+    propertyAddress?.atWhichFloorConsumerResides ||
+    additionalDetails?.atWhichFloorConsumerResides ||
+    additionalDetails?.propertyAddress?.atWhichFloorConsumerResides ||
+    additionalDetails?.propertyLocationDetails?.atWhichFloorConsumerResides ||
+    propertyAddress?.numberOfFloors ||
+    propertyAddress?.noOfFloors ||
+    additionalDetails?.numberOfFloors ||
+    additionalDetails?.noOfFloors ||
+    useDetails?.noOfFloors ||
+    propertyAdditionalDetails?.numberOfFloors ||
+    propertyAdditionalDetails?.noOfFloors ||
+    propertyAdditionalDetails?.atWhichFloorConsumerResides ||
+    PTData?.Properties?.[0]?.noOfFloors ||
+    PTData?.Properties?.[0]?.numberOfFloors ||
+    "";
+
+  const rawTotalFloors =
+    propertyAddress?.totalNumberOfFloorInTheBuilding ||
+    propertyAddress?.totalNoOfFloors ||
+    propertyAddress?.totalFloors ||
+    additionalDetails?.totalNumberOfFloorInTheBuilding ||
+    additionalDetails?.totalNoOfFloors ||
+    additionalDetails?.totalFloors ||
+    propertyAdditionalDetails?.totalNumberOfFloorInTheBuilding ||
+    propertyAdditionalDetails?.totalNoOfFloors ||
+    propertyAdditionalDetails?.totalFloors ||
+    PTData?.Properties?.[0]?.totalNumberOfFloorInTheBuilding ||
+    PTData?.Properties?.[0]?.totalNoOfFloors ||
+    PTData?.Properties?.[0]?.totalFloors ||
+    PTData?.Properties?.[0]?.address?.totalNoOfFloors ||
+    PTData?.Properties?.[0]?.address?.totalFloors ||
+    "";
+
+  const getFloorDisplay = (val) => {
+    if (val === undefined || val === null || val === "") return "";
+    if (typeof val === "object") {
+      return val?.name || val?.i18nKey ? t(val?.i18nKey || val?.name) : val?.code ? t(`PT_NO_OF_FLOORS_${val.code}`, val.code) : "";
+    }
+    const str = String(val).trim();
+    if (!str) return "";
+    const key = `PT_NO_OF_FLOORS_${str.toUpperCase()}`;
+    const translated = t(key);
+    if (translated && translated !== key) return translated;
+    return str;
+  };
+
   const checkifPrivacyenabled =
     Digit.Hooks.ws.useToCheckPrivacyEnablement({
       privacy: {
@@ -1032,8 +1123,24 @@ const WSApplicationDetails = () => {
                 <Row label={t("ADDRESS_LINE1")} text={`${t(checkForNA(propertyAddress?.addressLine1 || propertyAddress?.street))}`} />
                 <Row label={t("ADDRESS_LINE2")} text={`${t(checkForNA(propertyAddress?.addressLine2))}`} />
                 <Row label={t("HOUSE_NO")} text={`${t(checkForNA(propertyAddress?.houseNo || propertyAddress?.doorNo))}`} />
-                <Row label={t("LATITUDE_GEOTAG")} text={`${t(checkForNA(propertyAddress?.latitude))}`} />
-                <Row label={t("LONGITUDE_GEOTAG")} text={`${t(checkForNA(propertyAddress?.longitude))}`} />
+                <Row
+                  label={
+                    t("WS_AT_WHICH_FLOOR_CONSUMER_RESIDES", "At which Floor Consumer Resides") !== "WS_AT_WHICH_FLOOR_CONSUMER_RESIDES"
+                      ? t("WS_AT_WHICH_FLOOR_CONSUMER_RESIDES")
+                      : "At which Floor Consumer Resides"
+                  }
+                  text={`${t(checkForNA(getFloorDisplay(rawFloorConsumerResides)))}`}
+                />
+                <Row
+                  label={
+                    t("WS_TOTAL_NUMBER_OF_FLOORS_IN_THE_BUILDING", "Total Number of floor in the Building") !== "WS_TOTAL_NUMBER_OF_FLOORS_IN_THE_BUILDING"
+                      ? t("WS_TOTAL_NUMBER_OF_FLOORS_IN_THE_BUILDING")
+                      : "Total Number of floor in the Building"
+                  }
+                  text={`${t(checkForNA(getFloorDisplay(rawTotalFloors)))}`}
+                />
+                <Row label={t("LATITUDE_GEOTAG")} text={`${t(checkForNA(rawLatitude))}`} />
+                <Row label={t("LONGITUDE_GEOTAG")} text={`${t(checkForNA(rawLongitude))}`} />
                 <Row
                   label={t("COMMON_ASSEMBLY")}
                   text={`${t(
@@ -1065,19 +1172,22 @@ const WSApplicationDetails = () => {
                 />
 
                 <Row
-                  label={t("COMMON_CURRENT_ASSEMBLY")}
+                  label={t("COMMON_CURRENT_ASSEMBLY") && t("COMMON_CURRENT_ASSEMBLY") !== "Assembly" && t("COMMON_CURRENT_ASSEMBLY") !== "COMMON_CURRENT_ASSEMBLY" ? t("COMMON_CURRENT_ASSEMBLY") : "Actual Assembly"}
                   text={`${t(checkForNA(propertyAddress?.actualAssembly || additionalDetails?.actualAssembly))}`}
                 />
-                <Row label={t("COMMON_CURRENT_WARD")} text={`${t(checkForNA(propertyAddress?.actualWard || additionalDetails?.actualWard))}`} />
                 <Row
-                  label={t("COMMON_CURRENT_ZONE")}
+                  label={t("COMMON_CURRENT_WARD") && t("COMMON_CURRENT_WARD") !== "Ward" && t("COMMON_CURRENT_WARD") !== "COMMON_CURRENT_WARD" ? t("COMMON_CURRENT_WARD") : "Actual Ward"}
+                  text={`${t(checkForNA(propertyAddress?.actualWard || additionalDetails?.actualWard))}`}
+                />
+                <Row
+                  label={t("COMMON_CURRENT_ZONE") && t("COMMON_CURRENT_ZONE") !== "Zone" && t("COMMON_CURRENT_ZONE") !== "COMMON_CURRENT_ZONE" ? t("COMMON_CURRENT_ZONE") : "Actual Zone"}
                   text={`${t(
                     checkForNA(
+                      propertyAddress?.actualZone ||
+                      additionalDetails?.actualZone ||
                       propertyAddress?.zone?.name ||
                       propertyAddress?.zone?.code ||
-                      propertyAddress?.zone ||
-                      propertyAddress?.actualZone ||
-                      additionalDetails?.actualZone
+                      propertyAddress?.zone
                     )
                   )}`}
                 />
@@ -1119,25 +1229,10 @@ const WSApplicationDetails = () => {
                   )}`}
                 />
                 <Row
-                  label={t("WS_WATER_CONNECTION_USAGE_TYPE")}
-                  text={`${t(
-                    checkForNA(
-                      useDetails?.WaterConnectionUsageType?.i18nKey ||
-                      useDetails?.WaterConnectionUsageType?.code ||
-                      useDetails?.WaterConnectionUsageType ||
-                      useDetails?.waterConnectionUsageType?.i18nKey ||
-                      useDetails?.waterConnectionUsageType?.code ||
-                      useDetails?.waterConnectionUsageType ||
-                      propertyAdditionalDetails?.waterConnectionUsageType?.name ||
-                      propertyAdditionalDetails?.waterConnectionUsageType?.code ||
-                      propertyAdditionalDetails?.waterConnectionUsageType
-                    )
-                  )}`}
-                />
-                <Row
                   label={t("WS_NUMBER_OF_FLOORS")}
                   text={`${t(
                     checkForNA(
+                      getFloorDisplay(rawFloorConsumerResides) ||
                       useDetails?.noOfFloors?.i18nKey ||
                       useDetails?.noOfFloors?.code ||
                       useDetails?.noOfFloors ||
@@ -1147,19 +1242,6 @@ const WSApplicationDetails = () => {
                     )
                   )}`}
                 />
-                {(propertyAdditionalDetails?.totalNoOfFloors || propertyAdditionalDetails?.totalFloors || PTData?.Properties?.[0]?.totalNoOfFloors || PTData?.Properties?.[0]?.totalFloors) && (
-                  <Row
-                    label={t("Total Number of floor in the Building")}
-                    text={`${t(
-                      checkForNA(
-                        propertyAdditionalDetails?.totalNoOfFloors ||
-                        propertyAdditionalDetails?.totalFloors ||
-                        PTData?.Properties?.[0]?.totalNoOfFloors ||
-                        PTData?.Properties?.[0]?.totalFloors
-                      )
-                    )}`}
-                  />
-                )}
                 <Row label={t("WS_PLOT_AREA")} text={`${t(checkForNA(useDetails?.plotArea))}`} />
                 <Row label={t("WS_BUILT_UP_AREA")} text={`${t(checkForNA(useDetails?.builtUpArea))}`} />
                 <Row label={t("WS_HEIGHT_OF_THE_BUILDING")} text={`${t(checkForNA(useDetails?.heightOfTheBuilding))}`} />
@@ -1313,6 +1395,13 @@ const WSApplicationDetails = () => {
                           return acc;
                         }
                       }, [])
+                      .sort((a, b) => {
+                        const isPhotoA = (a?.documentType || "").toUpperCase().includes("PHOTO");
+                        const isPhotoB = (b?.documentType || "").toUpperCase().includes("PHOTO");
+                        if (isPhotoA && !isPhotoB) return -1;
+                        if (!isPhotoA && isPhotoB) return 1;
+                        return 0;
+                      })
                       .map((doc, index, array) => (
                         <div key={`doc-${index}`}>
                           {
@@ -1340,6 +1429,13 @@ const WSApplicationDetails = () => {
                           return acc;
                         }
                       }, [])
+                      .sort((a, b) => {
+                        const isPhotoA = (a?.documentType || "").toUpperCase().includes("PHOTO");
+                        const isPhotoB = (b?.documentType || "").toUpperCase().includes("PHOTO");
+                        if (isPhotoA && !isPhotoB) return -1;
+                        if (!isPhotoA && isPhotoB) return 1;
+                        return 0;
+                      })
                       .map((doc, index, array) => (
                         <div key={`doc-${index}`}>
                           {

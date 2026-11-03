@@ -522,16 +522,38 @@ const OLDApplication = () => {
 
     if (data?.declarationData) {
       const declarations = data.declarationData?.agree ? true : false;
+      const sigFsId =
+        data.declarationData?.signatureFileStoreId ||
+        data.declarationData?.signatureFile?.fileStoreId ||
+        (typeof data.declarationData?.signatureFile === "string" ? data.declarationData?.signatureFile : null) ||
+        data.declarationData?.signature ||
+        null;
+      const sigFileName =
+        data.declarationData?.signatureFileName ||
+        data.declarationData?.signatureFile?.name ||
+        data.declarationData?.signatureFile?.fileName ||
+        "signature.png";
+
       data.declaration = {
         ...data.declarationData,
         submittedBy:
           typeof data.declarationData?.submittedBy === "object" ? data.declarationData?.submittedBy?.code : data.declarationData?.submittedBy,
         agree: declarations,
         declarations: data.declarationData?.declarations || Array(10).fill(declarations),
+        signatureFileStoreId: sigFsId,
+        signatureFileName: sigFileName,
+        signature: sigFsId,
+        signatureFile: sigFsId ? { fileStoreId: sigFsId, fileName: sigFileName } : null,
       };
       data.declarationData.submittedBy = data.declaration.submittedBy;
       data.declarationData.agree = data.declaration.agree;
       data.declarationData.declarations = data.declaration.declarations;
+      if (sigFsId) {
+        data.declarationData.signatureFileStoreId = sigFsId;
+        data.declarationData.signatureFileName = sigFileName;
+        data.declarationData.signature = sigFsId;
+        data.declarationData.signatureFile = { fileStoreId: sigFsId, fileName: sigFileName };
+      }
     }
 
     if (data?.rainWaterHarvesting) {

@@ -588,37 +588,152 @@ export const WSSearch = {
           title: "SUBLOCALITY",
           value: propertyDataDetails?.address?.subLocality || t("NA"),
         },
-        { title: "PT_PROPERTY_ADDRESS_HOUSE_NO", value: propertyDataDetails?.address?.houseNo || t("NA") },
+        { title: "PT_PROPERTY_ADDRESS_HOUSE_NO", value: propertyDataDetails?.address?.houseNo || propertyDataDetails?.address?.doorNo || t("NA") },
+        {
+          title: "At which Floor Consumer Resides",
+          value:
+            propertyDataDetails?.address?.atWhichFloorConsumerResides ||
+            wsDataDetails?.additionalDetails?.atWhichFloorConsumerResides ||
+            wsDataDetails?.additionalDetails?.numberOfFloors ||
+            wsDataDetails?.additionalDetails?.noOfFloors ||
+            propertyDataDetails?.additionalDetails?.numberOfFloors ||
+            propertyDataDetails?.additionalDetails?.noOfFloors ||
+            propertyDataDetails?.noOfFloors ||
+            t("NA"),
+        },
+        {
+          title: "Total Number of floor in the Building",
+          value:
+            propertyDataDetails?.address?.totalNumberOfFloorInTheBuilding ||
+            propertyDataDetails?.address?.totalNoOfFloors ||
+            wsDataDetails?.additionalDetails?.totalNumberOfFloorInTheBuilding ||
+            wsDataDetails?.additionalDetails?.totalNoOfFloors ||
+            propertyDataDetails?.additionalDetails?.totalNoOfFloors ||
+            propertyDataDetails?.totalNoOfFloors ||
+            t("NA"),
+        },
         { title: "PT_PROPERTY_ADDRESS_STREET_NAME", value: propertyDataDetails?.address?.street || t("NA") },
         { title: "ADDRESS_LINE1", value: propertyDataDetails?.address?.street || t("NA") },
         { title: "ADDRESS_LINE2", value: propertyDataDetails?.address?.address2 || propertyDataDetails?.address?.subLocality || t("NA") },
-        { title: "LATITUDE", value: propertyDataDetails?.address?.locality?.latitude || t("NA") },
-        { title: "LONGITUDE", value: propertyDataDetails?.address?.locality?.longitude || t("NA") },
+        {
+          title: "LATITUDE",
+          value:
+            propertyDataDetails?.address?.latitude ||
+            propertyDataDetails?.address?.Latitude ||
+            propertyDataDetails?.address?.geoLocation?.latitude ||
+            propertyDataDetails?.latitude ||
+            propertyDataDetails?.Latitude ||
+            propertyDataDetails?.additionalDetails?.latitude ||
+            propertyDataDetails?.additionalDetails?.Latitude ||
+            wsDataDetails?.additionalDetails?.latitude ||
+            wsDataDetails?.additionalDetails?.Latitude ||
+            propertyDataDetails?.address?.locality?.latitude ||
+            t("NA"),
+        },
+        {
+          title: "LONGITUDE",
+          value:
+            propertyDataDetails?.address?.longitude ||
+            propertyDataDetails?.address?.Longitude ||
+            propertyDataDetails?.address?.geoLocation?.longitude ||
+            propertyDataDetails?.longitude ||
+            propertyDataDetails?.Longitude ||
+            propertyDataDetails?.additionalDetails?.longitude ||
+            propertyDataDetails?.additionalDetails?.Longitude ||
+            wsDataDetails?.additionalDetails?.longitude ||
+            wsDataDetails?.additionalDetails?.Longitude ||
+            propertyDataDetails?.address?.locality?.longitude ||
+            t("NA"),
+        },
         {
           title: "WARD",
           value:
+            (typeof propertyDataDetails?.address?.ward === "object"
+              ? propertyDataDetails?.address?.ward?.name || propertyDataDetails?.address?.ward?.code
+              : propertyDataDetails?.address?.ward) ||
+            (typeof propertyDataDetails?.address?.block === "object"
+              ? propertyDataDetails?.address?.block?.name || propertyDataDetails?.address?.block?.code
+              : propertyDataDetails?.address?.block) ||
+            (typeof propertyDataDetails?.additionalDetails?.ward === "object"
+              ? propertyDataDetails?.additionalDetails?.ward?.name || propertyDataDetails?.additionalDetails?.ward?.code
+              : propertyDataDetails?.additionalDetails?.ward) ||
+            (typeof propertyDataDetails?.additionalDetails?.block === "object"
+              ? propertyDataDetails?.additionalDetails?.block?.name || propertyDataDetails?.additionalDetails?.block?.code
+              : propertyDataDetails?.additionalDetails?.block) ||
             propertyDataDetails?.additionalDetails?.Block ||
+            propertyDataDetails?.address?.additionalDetails?.ward ||
+            propertyDataDetails?.address?.additionalDetails?.block ||
             propertyDataDetails?.address?.additionalDetails?.Block ||
             propertyDataDetails?.address?.Block ||
+            propertyDataDetails?.address?.actualWard ||
+            propertyDataDetails?.additionalDetails?.actualWard ||
+            (typeof wsDataDetails?.property?.address?.ward === "object"
+              ? wsDataDetails?.property?.address?.ward?.name || wsDataDetails?.property?.address?.ward?.code
+              : wsDataDetails?.property?.address?.ward) ||
+            (typeof wsDataDetails?.property?.address?.block === "object"
+              ? wsDataDetails?.property?.address?.block?.name || wsDataDetails?.property?.address?.block?.code
+              : wsDataDetails?.property?.address?.block) ||
+            (typeof wsDataDetails?.additionalDetails?.ward === "object"
+              ? wsDataDetails?.additionalDetails?.ward?.name || wsDataDetails?.additionalDetails?.ward?.code
+              : wsDataDetails?.additionalDetails?.ward) ||
+            (typeof wsDataDetails?.additionalDetails?.block === "object"
+              ? wsDataDetails?.additionalDetails?.block?.name || wsDataDetails?.additionalDetails?.block?.code
+              : wsDataDetails?.additionalDetails?.block) ||
+            wsDataDetails?.additionalDetails?.actualWard ||
+            wsDataDetails?.additionalDetails?.propertyAddress?.ward ||
+            wsDataDetails?.additionalDetails?.propertyAddress?.block ||
+            wsDataDetails?.additionalDetails?.propertyLocationDetails?.ward ||
+            wsDataDetails?.additionalDetails?.propertyLocationDetails?.block ||
+            (typeof propertyDataDetails?.address?.locality === "object"
+              ? propertyDataDetails?.address?.locality?.ward || propertyDataDetails?.address?.locality?.block
+              : null) ||
             t("NA"),
         },
         {
           title: "ASSEMBLY",
           value:
-            propertyDataDetails?.additionalDetails?.assembly ||
+            (typeof propertyDataDetails?.address?.assembly === "object"
+              ? propertyDataDetails?.address?.assembly?.name || propertyDataDetails?.address?.assembly?.code
+              : propertyDataDetails?.address?.assembly) ||
+            (typeof propertyDataDetails?.additionalDetails?.assembly === "object"
+              ? propertyDataDetails?.additionalDetails?.assembly?.name || propertyDataDetails?.additionalDetails?.assembly?.code
+              : propertyDataDetails?.additionalDetails?.assembly) ||
+            propertyDataDetails?.address?.additionalDetails?.assembly?.name ||
+            propertyDataDetails?.address?.additionalDetails?.assembly?.code ||
             propertyDataDetails?.address?.additionalDetails?.assembly ||
-            propertyDataDetails?.address?.assembly ||
+            propertyDataDetails?.address?.actualAssembly ||
+            propertyDataDetails?.additionalDetails?.actualAssembly ||
+            (typeof wsDataDetails?.property?.address?.assembly === "object"
+              ? wsDataDetails?.property?.address?.assembly?.name || wsDataDetails?.property?.address?.assembly?.code
+              : wsDataDetails?.property?.address?.assembly) ||
+            wsDataDetails?.additionalDetails?.assembly ||
+            wsDataDetails?.additionalDetails?.actualAssembly ||
+            wsDataDetails?.additionalDetails?.propertyAddress?.assembly ||
+            wsDataDetails?.additionalDetails?.propertyLocationDetails?.assembly ||
             t("NA"),
         },
         { title: "LANDMARK", value: propertyDataDetails?.address?.landmark || t("NA") },
         {
           title: "ZONE",
           value:
-            propertyDataDetails?.address?.zone?.name ||
-            propertyDataDetails?.address?.zone?.code ||
-            propertyDataDetails?.address?.zone ||
-            propertyDataDetails?.additionalDetails?.zone ||
+            (typeof propertyDataDetails?.address?.zone === "object"
+              ? propertyDataDetails?.address?.zone?.name || propertyDataDetails?.address?.zone?.code
+              : propertyDataDetails?.address?.zone) ||
+            (typeof propertyDataDetails?.additionalDetails?.zone === "object"
+              ? propertyDataDetails?.additionalDetails?.zone?.name || propertyDataDetails?.additionalDetails?.zone?.code
+              : propertyDataDetails?.additionalDetails?.zone) ||
+            propertyDataDetails?.address?.additionalDetails?.zone?.name ||
+            propertyDataDetails?.address?.additionalDetails?.zone?.code ||
             propertyDataDetails?.address?.additionalDetails?.zone ||
+            propertyDataDetails?.address?.actualZone ||
+            propertyDataDetails?.additionalDetails?.actualZone ||
+            (typeof wsDataDetails?.property?.address?.zone === "object"
+              ? wsDataDetails?.property?.address?.zone?.name || wsDataDetails?.property?.address?.zone?.code
+              : wsDataDetails?.property?.address?.zone) ||
+            wsDataDetails?.additionalDetails?.zone ||
+            wsDataDetails?.additionalDetails?.actualZone ||
+            wsDataDetails?.additionalDetails?.propertyAddress?.zone ||
+            wsDataDetails?.additionalDetails?.propertyLocationDetails?.zone ||
             t("NA"),
         },
       ],
@@ -630,13 +745,14 @@ export const WSSearch = {
       values: [
         { title: "WS_PROPERTY_CATEGORY", value: propertyDataDetails?.additionalDetails?.propertyCategory || t("NA") },
         { title: "WS_PROPERTY_TYPE", value: propertyDataDetails?.additionalDetails?.propertyType || t("NA") },
-        { title: "WS_WATER_CONNECTION_USAGE_TYPE", value: propertyDataDetails?.additionalDetails?.waterConnectionUsageType || t("NA") },
         { title: "WS_NUMBER_OF_FLOORS", value: propertyDataDetails?.noOfFloors || propertyDataDetails?.additionalDetails?.noOfFloors || t("NA") },
         { title: "WS_PLOT_AREA", value: propertyDataDetails?.additionalDetails?.plotArea || t("NA") },
         { title: "WS_BUILT_UP_AREA", value: propertyDataDetails?.additionalDetails?.builtUpArea || t("NA") },
         { title: "WS_HEIGHT_OF_THE_BUILDING(meters)", value: propertyDataDetails?.additionalDetails?.heightOfTheBuilding || propertyDataDetails?.heightOfTheBuilding || t("NA") },
         { title: "WS_SELECT_YEAR_OF_CONSTRUCTION", value: propertyDataDetails?.additionalDetails?.yearOfConstruction || t("NA") },
-        { title: "WS_NUMBER_OF_ROOMS", value: propertyDataDetails?.additionalDetails?.numberOfRooms || t("NA") },
+        ...(propertyDataDetails?.additionalDetails?.numberOfRooms
+          ? [{ title: "WS_NUMBER_OF_ROOMS", value: propertyDataDetails.additionalDetails.numberOfRooms }]
+          : []),
       ],
     };
     const dwellingPropertyTypes = [
@@ -850,6 +966,17 @@ export const WSSearch = {
       (d) => d?.documentType?.includes("ADDRESSPROOF") || d?.documentType?.includes("OWNERSHIP") || d?.documentType?.includes("PROPERTY") || ["REGISTERED_SALE_DEED", "CONVEYANCE_DEED", "GIFT_DEED", "WILL", "RELINQUISHMENT_DEED", "MUTATION_CERTIFICATE", "GPA", "ALLOTMENT_LETTER", "ELECTRICITY_BILL", "WATER_BILL"].includes(d?.documentType)
     );
     const applicantPhoto = allDocs.find((d) => d?.documentType?.includes("APPLICANTPHOTO") || d?.documentType?.includes("PHOTO"));
+    const signatureDoc = allDocs.find(
+      (d) => d?.documentType?.includes("SIGNATURE") || d?.documentType?.includes("SIGN")
+    ) || (wsDataDetails?.additionalDetails?.signatureFileStoreId ? {
+      documentType: "OWNER.SIGNATURE",
+      fileStoreId: wsDataDetails?.additionalDetails?.signatureFileStoreId,
+      fileName: wsDataDetails?.additionalDetails?.signatureFileName || "signature.png"
+    } : (wsDataDetails?.additionalDetails?.signature ? {
+      documentType: "OWNER.SIGNATURE",
+      fileStoreId: wsDataDetails?.additionalDetails?.signature,
+      fileName: wsDataDetails?.additionalDetails?.signatureFileName || "signature.png"
+    } : null));
 
     if (isMutationApp) {
       if (wsDataDetails?.additionalDetails?.identityProofDocumentId || wsDataDetails?.additionalDetails?.identityProofDocumentName || wsDataDetails?.additionalDetails?.identityProofDocumentNumber) {
@@ -871,7 +998,10 @@ export const WSSearch = {
     const unmappedDocs = allDocs.filter(d => 
         d?.id !== identityDoc?.id && 
         d?.id !== ownershipDoc?.id && 
-        d?.id !== applicantPhoto?.id
+        d?.id !== applicantPhoto?.id &&
+        d?.id !== signatureDoc?.id &&
+        !d?.documentType?.includes("SIGNATURE") &&
+        !d?.documentType?.includes("SIGN")
     );
 
     const otherDocsValues = unmappedDocs.map(d => ({
@@ -899,6 +1029,19 @@ export const WSSearch = {
           {
             title: "",
             values: [
+              applicantPhoto
+                ? {
+                  title: "WS_APPLICANT_PHOTO",
+                  categoryLabel: "Applicant Photo",
+                  documentType: applicantPhoto?.documentType,
+                  documentUid: "",
+                  documentNumber: "",
+                  fileStoreId: applicantPhoto?.fileStoreId,
+                  numberLabel: "",
+                  isPhoto: true,
+                  originalDoc: applicantPhoto,
+                }
+                : null,
               (isMutationApp ? identityDoc?.fileStoreId : identityDoc)
                 ? {
                   title: "WS_IDENTITY_PROOF",
@@ -924,17 +1067,17 @@ export const WSSearch = {
                 }
                 : null,
               ...(isMutationApp ? [] : otherDocsValues),
-              applicantPhoto
+              signatureDoc
                 ? {
-                  title: "WS_APPLICANT_PHOTO",
-                  categoryLabel: "Applicant Photo",
-                  documentType: applicantPhoto?.documentType,
+                  title: "WS_APPLICANT_SIGNATURE",
+                  categoryLabel: "Applicant Signature",
+                  documentType: signatureDoc?.documentType || "OWNER.SIGNATURE",
                   documentUid: "",
                   documentNumber: "",
-                  fileStoreId: applicantPhoto?.fileStoreId,
+                  fileStoreId: signatureDoc?.fileStoreId,
                   numberLabel: "",
-                  isPhoto: true,
-                  originalDoc: applicantPhoto,
+                  isPhoto: false,
+                  originalDoc: signatureDoc,
                 }
                 : null,
             ].filter(Boolean),
@@ -1030,17 +1173,6 @@ export const WSSearch = {
             fields.push({
               title: "WS_Billing_Address_Type",
               value: addrType === "PERMANENT" ? "Permanent" : addrType === "CORRESPONDENCE" ? "Correspondence" : t(addrType) || t("NA"),
-            });
-          }
-
-          const rawCompleteAddress =
-            wsDataDetails?.additionalDetails?.completeAddress ||
-            wsDataDetails?.ConnectionDetails?.[0]?.completeAddress ||
-            wsDataDetails?.completeAddress;
-          if (rawCompleteAddress) {
-            fields.push({
-              title: "Complete Address",
-              value: rawCompleteAddress,
             });
           }
 

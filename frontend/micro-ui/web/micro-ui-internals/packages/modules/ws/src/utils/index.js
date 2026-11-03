@@ -54,7 +54,7 @@ export const convertEpochToDate = (dateEpoch) => {
 export const pdfDownloadLink = (documents = {}, fileStoreId = "", format = "") => {
   /* Need to enhance this util to return required format*/
 
-  let downloadLink = documents[fileStoreId] || "";
+  let downloadLink = documents?.[fileStoreId] || "";
   let differentFormats = downloadLink?.split(",") || [];
   let fileURL = "";
   differentFormats.length > 0 &&
@@ -63,7 +63,10 @@ export const pdfDownloadLink = (documents = {}, fileStoreId = "", format = "") =
         fileURL = link;
       }
     });
-  return fileURL;
+  if (!fileURL && differentFormats.length > 0) {
+    fileURL = differentFormats[0];
+  }
+  return fileURL || downloadLink || "";
 };
 
 /*   method to get filename  from fielstore url*/
@@ -276,6 +279,44 @@ export const getFiles = async (filesArray, tenant) => {
   }
 };
 
+export const getSignatureDetails = (data) => {
+  const signatureFileStoreId =
+    data?.declarationData?.signatureFileStoreId ||
+    data?.declaration?.signatureFileStoreId ||
+    data?.declarationData?.signatureFile?.fileStoreId ||
+    data?.declaration?.signatureFile?.fileStoreId ||
+    (typeof data?.declarationData?.signatureFile === "string" ? data?.declarationData?.signatureFile : null) ||
+    (typeof data?.declaration?.signatureFile === "string" ? data?.declaration?.signatureFile : null) ||
+    data?.declaration?.signature ||
+    data?.declarationData?.signature ||
+    data?.signatureFileStoreId ||
+    data?.signatureFile?.fileStoreId ||
+    (typeof data?.signatureFile === "string" ? data?.signatureFile : null) ||
+    data?.additionalDetails?.signatureFileStoreId ||
+    data?.additionalDetails?.signature ||
+    data?.additionalDetails?.signatureFile?.fileStoreId ||
+    (Array.isArray(data?.documents?.documents)
+      ? data.documents.documents.find((d) => d?.documentType === "OWNER.SIGNATURE" || d?.documentType?.includes("SIGNATURE"))?.fileStoreId
+      : Array.isArray(data?.documents)
+      ? data.documents.find((d) => d?.documentType === "OWNER.SIGNATURE" || d?.documentType?.includes("SIGNATURE"))?.fileStoreId
+      : null);
+
+  const signatureFileName =
+    data?.declarationData?.signatureFileName ||
+    data?.declaration?.signatureFileName ||
+    data?.declarationData?.signatureFile?.name ||
+    data?.declaration?.signatureFile?.name ||
+    data?.declarationData?.signatureFile?.fileName ||
+    data?.declaration?.signatureFile?.fileName ||
+    data?.signatureFileName ||
+    data?.signatureFile?.name ||
+    data?.signatureFile?.fileName ||
+    data?.additionalDetails?.signatureFileName ||
+    "signature.png";
+
+  return { signatureFileStoreId, signatureFileName };
+};
+
 export const createPayloadOfWS = async (data) => {
   const userInfo = Digit.UserService.getUser()?.info;
   const isCitizen = userInfo?.type === "CITIZEN" || userInfo?.roles?.some(role => role.code === "CITIZEN");
@@ -301,6 +342,32 @@ export const createPayloadOfWS = async (data) => {
 
 
   let allDocuments = Array.isArray(data?.documents?.documents) ? [...data.documents.documents] : (Array.isArray(data?.documents) ? [...data.documents] : []);
+
+  const { signatureFileStoreId, signatureFileName } = getSignatureDetails(data);
+  if (signatureFileStoreId) {
+    const sigIdx = allDocuments.findIndex(
+      (d) => d?.documentType === "OWNER.SIGNATURE" || d?.documentType?.includes("SIGNATURE")
+    );
+    if (sigIdx !== -1) {
+      allDocuments[sigIdx] = {
+        ...allDocuments[sigIdx],
+        documentType: "OWNER.SIGNATURE",
+        fileStoreId: signatureFileStoreId,
+        fileName: signatureFileName || allDocuments[sigIdx]?.fileName || "signature.png",
+        documentName: "Signature",
+        status: "ACTIVE",
+      };
+    } else {
+      allDocuments.push({
+        documentType: "OWNER.SIGNATURE",
+        fileStoreId: signatureFileStoreId,
+        fileName: signatureFileName || "signature.png",
+        documentName: "Signature",
+        documentUid: "",
+        status: "ACTIVE",
+      });
+    }
+  }
 
   if (data?.djbEmployee?.document) {
     const hasDjbDoc = allDocuments.some(
@@ -437,6 +504,14 @@ export const createPayloadOfWS = async (data) => {
       ...data?.bankDetails,
       ...data?.declarationData,
       ...data?.declaration,
+      ...(signatureFileStoreId
+        ? {
+            signatureFileStoreId: signatureFileStoreId,
+            signatureFileName: signatureFileName,
+            signature: signatureFileStoreId,
+            signatureFile: { fileStoreId: signatureFileStoreId, fileName: signatureFileName },
+          }
+        : {}),
       completeAddress: connectionDetailsObject?.completeAddress || "",
       addressType: connectionDetailsObject?.addressType?.code || connectionDetailsObject?.addressType || "",
       zro: data?.zro?.code || data?.zro,
@@ -529,17 +604,34 @@ export const createPayloadOfWS = async (data) => {
 };
 
 export const updatePayloadOfWS = async (data, type) => {
+  const { signatureFileStoreId, signatureFileName } = getSignatureDetails(data);
+  let docsFromStorage = JSON.parse(
+    sessionStorage.getItem("WS_DOCUMENTS_INOF") && sessionStorage.getItem("WS_DOCUMENTS_INOF") !== "undefined"
+      ? sessionStorage.getItem("WS_DOCUMENTS_INOF")
+      : "null"
+  ) || data?.documents || [];
+
+  if (Array.isArray(docsFromStorage) && signatureFileStoreId) {
+    const hasSig = docsFromStorage.some((d) => d?.documentType === "OWNER.SIGNATURE" || d?.documentType?.includes("SIGNATURE"));
+    if (!hasSig) {
+      docsFromStorage.push({
+        documentType: "OWNER.SIGNATURE",
+        fileStoreId: signatureFileStoreId,
+        fileName: signatureFileName || "signature.png",
+        documentName: "Signature",
+        documentUid: "",
+        status: "ACTIVE",
+      });
+    }
+  }
+
   let payload = {
     ...data,
     processInstance: {
       ...data?.processInstance,
       action: "SUBMIT_APPLICATION",
     },
-    documents: JSON.parse(
-      sessionStorage.getItem("WS_DOCUMENTS_INOF") && sessionStorage.getItem("WS_DOCUMENTS_INOF") !== "undefined"
-        ? sessionStorage.getItem("WS_DOCUMENTS_INOF")
-        : "null"
-    ),
+    documents: docsFromStorage,
     property: JSON.parse(
       sessionStorage.getItem("WS_PROPERTY_INOF") && sessionStorage.getItem("WS_PROPERTY_INOF") !== "undefined"
         ? sessionStorage.getItem("WS_PROPERTY_INOF")
@@ -548,6 +640,14 @@ export const updatePayloadOfWS = async (data, type) => {
     connectionType: type === "WATER" ? (data?.connectionType === "Permanent" ? "Metered" : (data?.connectionType || "Metered")) : "Non Metered",
     additionalDetails: {
       ...data?.additionalDetails,
+      ...(signatureFileStoreId
+        ? {
+            signatureFileStoreId: signatureFileStoreId,
+            signatureFileName: signatureFileName,
+            signature: signatureFileStoreId,
+            signatureFile: { fileStoreId: signatureFileStoreId, fileName: signatureFileName },
+          }
+        : {}),
       connectionType: data?.additionalDetails?.connectionType || "Permanent",
       waterDemandType: data?.additionalDetails?.waterDemandType || { code: "NON_BULK", i18nKey: "WS_WATER_DEMAND_NON_BULK" },
     },
@@ -562,6 +662,32 @@ export const updatePayloadOfWS = async (data, type) => {
 
 export const getAllDocumentsForUpdate = (data) => {
   let allDocuments = Array.isArray(data?.documents?.documents) ? [...data.documents.documents] : (Array.isArray(data?.documents) ? [...data.documents] : []);
+  
+  const { signatureFileStoreId, signatureFileName } = getSignatureDetails(data);
+  if (signatureFileStoreId) {
+    let existingIndex = allDocuments.findIndex(
+      (doc) => doc?.documentType === "OWNER.SIGNATURE" || doc?.documentType?.includes("SIGNATURE")
+    );
+    if (existingIndex !== -1) {
+      allDocuments[existingIndex] = {
+        ...allDocuments[existingIndex],
+        documentType: "OWNER.SIGNATURE",
+        fileStoreId: signatureFileStoreId,
+        fileName: signatureFileName || allDocuments[existingIndex]?.fileName || "signature.png",
+        documentName: "Signature",
+        status: "ACTIVE",
+      };
+    } else {
+      allDocuments.push({
+        documentType: "OWNER.SIGNATURE",
+        fileStoreId: signatureFileStoreId,
+        fileName: signatureFileName || "signature.png",
+        documentName: "Signature",
+        documentUid: "",
+        status: "ACTIVE",
+      });
+    }
+  }
   
   if (data?.djbEmployee) {
     const isDjbEmp = String(data?.djbEmployee?.isDjbEmployee) === "true" || data?.djbEmployee?.isDjbEmployee === true;
@@ -637,6 +763,7 @@ export const getAllDocumentsForUpdate = (data) => {
 };
 
 export const convertToWSUpdate = (data) => {
+  const { signatureFileStoreId, signatureFileName } = getSignatureDetails(data);
   let formdata = {
     WaterConnection: {
       ...data?.WaterConnectionResult?.WaterConnection?.[0],
@@ -650,6 +777,14 @@ export const convertToWSUpdate = (data) => {
       additionalDetails: {
         ...(data?.WaterConnectionResult?.WaterConnection?.[0]?.additionalDetails || {}),
         ...(data?.additionalDetails || {}),
+        ...(signatureFileStoreId
+          ? {
+              signatureFileStoreId: signatureFileStoreId,
+              signatureFileName: signatureFileName,
+              signature: signatureFileStoreId,
+              signatureFile: { fileStoreId: signatureFileStoreId, fileName: signatureFileName },
+            }
+          : {}),
         ...(data?.djbEmployee !== undefined
           ? {
               ...data?.djbEmployee,
@@ -703,6 +838,7 @@ export const convertToWSUpdate = (data) => {
 };
 
 export const convertToEditWSUpdate = (data) => {
+  const { signatureFileStoreId, signatureFileName } = getSignatureDetails(data);
   let waterResult = data?.WaterConnectionResult?.WaterConnection?.[0];
   let formdata = {
     WaterConnection: {
@@ -725,6 +861,14 @@ export const convertToEditWSUpdate = (data) => {
       additionalDetails: {
         ...(waterResult?.additionalDetails || {}),
         ...(data?.isEditApplication ? data?.additionalDetails : waterResult?.additionalDetails),
+        ...(signatureFileStoreId
+          ? {
+              signatureFileStoreId: signatureFileStoreId,
+              signatureFileName: signatureFileName,
+              signature: signatureFileStoreId,
+              signatureFile: { fileStoreId: signatureFileStoreId, fileName: signatureFileName },
+            }
+          : {}),
         CompletelySatisfied:
           data?.additionalDetails?.CompletelySatisfied !== undefined
             ? data?.additionalDetails?.CompletelySatisfied
@@ -958,6 +1102,7 @@ export const convertToEditWSUpdate = (data) => {
 };
 
 export const convertToEditSWUpdate = (data) => {
+  const { signatureFileStoreId, signatureFileName } = getSignatureDetails(data);
   let SewerageResult = data?.SewerageConnectionResult?.SewerageConnections?.[0];
   let formdata = {
     SewerageConnection: {
@@ -980,6 +1125,14 @@ export const convertToEditSWUpdate = (data) => {
       additionalDetails: {
         ...(SewerageResult?.additionalDetails || {}),
         ...(data?.isEditApplication ? data?.additionalDetails : SewerageResult?.additionalDetails),
+        ...(signatureFileStoreId
+          ? {
+              signatureFileStoreId: signatureFileStoreId,
+              signatureFileName: signatureFileName,
+              signature: signatureFileStoreId,
+              signatureFile: { fileStoreId: signatureFileStoreId, fileName: signatureFileName },
+            }
+          : {}),
         CompletelySatisfied:
           data?.additionalDetails?.CompletelySatisfied !== undefined
             ? data?.additionalDetails?.CompletelySatisfied
@@ -1212,6 +1365,7 @@ export const convertToEditSWUpdate = (data) => {
 };
 
 export const convertToSWUpdate = (data) => {
+  const { signatureFileStoreId, signatureFileName } = getSignatureDetails(data);
   let formdata = {
     SewerageConnection: {
       ...data?.SewerageConnectionResult?.SewerageConnections?.[0],
@@ -1226,6 +1380,14 @@ export const convertToSWUpdate = (data) => {
       additionalDetails: {
         ...(data?.SewerageConnectionResult?.SewerageConnections?.[0]?.additionalDetails || {}),
         ...(data?.additionalDetails || {}),
+        ...(signatureFileStoreId
+          ? {
+              signatureFileStoreId: signatureFileStoreId,
+              signatureFileName: signatureFileName,
+              signature: signatureFileStoreId,
+              signatureFile: { fileStoreId: signatureFileStoreId, fileName: signatureFileName },
+            }
+          : {}),
         ...(data?.djbEmployee !== undefined
           ? {
               ...data?.djbEmployee,

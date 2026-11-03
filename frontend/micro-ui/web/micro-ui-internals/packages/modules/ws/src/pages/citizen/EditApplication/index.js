@@ -641,6 +641,38 @@ const EditApplication = ({ parentRoute }) => {
       params.documents = { documents: params.DocumentsRequired.documents };
     }
     const currentApp = Waterresult || Sewarageresult;
+    const existingSig = currentApp?.documents?.find(
+      (d) => d?.documentType === "OWNER.SIGNATURE" || d?.documentType?.includes("SIGNATURE")
+    );
+    const sigFsId =
+      params?.additionalDetails?.signatureFileStoreId ||
+      params?.additionalDetails?.signature ||
+      params?.declarationData?.signatureFileStoreId ||
+      existingSig?.fileStoreId;
+    if (sigFsId) {
+      params.additionalDetails = {
+        ...params.additionalDetails,
+        signatureFileStoreId: sigFsId,
+        signatureFileName: existingSig?.fileName || params?.additionalDetails?.signatureFileName || "signature.png",
+        signature: sigFsId,
+        signatureFile: { fileStoreId: sigFsId, fileName: existingSig?.fileName || params?.additionalDetails?.signatureFileName || "signature.png" },
+      };
+      if (params?.documents?.documents && Array.isArray(params.documents.documents)) {
+        const hasSig = params.documents.documents.some(
+          (d) => d?.documentType === "OWNER.SIGNATURE" || d?.documentType?.includes("SIGNATURE")
+        );
+        if (!hasSig) {
+          params.documents.documents.push({
+            documentType: "OWNER.SIGNATURE",
+            fileStoreId: sigFsId,
+            fileName: existingSig?.fileName || "signature.png",
+            documentName: "Signature",
+            documentUid: "",
+            status: "ACTIVE",
+          });
+        }
+      }
+    }
     const backendSatisfied = currentApp?.additionalDetails?.CompletelySatisfied;
     if (backendSatisfied !== undefined) {
       params.additionalDetails = {
