@@ -50,7 +50,6 @@ public class WaterTankerBookingSearchCriteria {
     private boolean isCountCall;
 
     @JsonProperty("createdBy")
-    @JsonIgnore
     private List<String> createdBy;
 
     @JsonProperty("vendorName")

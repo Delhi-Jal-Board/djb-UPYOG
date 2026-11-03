@@ -38,6 +38,7 @@ const CheckPage = ({ onSubmit, value }) => {
   const useDetails = value?.waterConnection?.useDetails || {};
   const djbEmployee = value?.djbEmployee || {};
   const disability = value?.disability || value?.additionalDetails || {};
+  const rainWaterHarvesting = value?.rainWaterHarvesting || value?.additionalDetails || {};
   const bankDetails = value?.bankDetails || {};
   const additionalDetails = {};
 
@@ -80,7 +81,7 @@ const CheckPage = ({ onSubmit, value }) => {
       <Card style={{ paddingRight: "16px" }}>
         <CardHeader styles={{ fontSize: "28px" }}>{t(`WS_BASIC_DETAILS_HEADER`)}</CardHeader>
         <StatusTable>
-          <Row className="border-none" label={t("WS_PROPERTY_ID_LABEL")} text={cpt?.details?.propertyId} />
+          {/* <Row className="border-none" label={t("WS_PROPERTY_ID_LABEL")} text={cpt?.details?.propertyId} /> */}
           <Row className="border-none" label={t("WS_OWNERS_NAME_LABEL")} text={t(reversedOwners[0]?.name)} />
           <Row className="border-none" label={t("WS_COMMON_TABLE_COL_ADDRESS")} text={propAddArr.join(", ")} />
           <Row className="border-none" label={t("WS_CONNECTION_DETAILS_STATUS_LABEL")} text={t(cpt?.details?.status)} />
@@ -344,8 +345,26 @@ const CheckPage = ({ onSubmit, value }) => {
         />
         <Row
           label={t("WS_NUMBER_OF_FLOORS")}
-          text={`${t(checkForNA(useDetails?.noOfFloors?.i18nKey || useDetails?.noOfFloors?.code || useDetails?.noOfFloors))}`}
+          text={`${t(
+            checkForNA(
+              useDetails?.numberOfFloors?.i18nKey ||
+                useDetails?.numberOfFloors?.code ||
+                useDetails?.numberOfFloors ||
+                useDetails?.noOfFloors?.i18nKey ||
+                useDetails?.noOfFloors?.code ||
+                useDetails?.noOfFloors ||
+                property?.additionalDetails?.numberOfFloors ||
+                property?.additionalDetails?.noOfFloors ||
+                property?.noOfFloors
+            )
+          )}`}
         />
+        {(useDetails?.totalNoOfFloors || useDetails?.totalFloors || property?.totalNoOfFloors || property?.totalFloors || property?.additionalDetails?.totalNoOfFloors || property?.additionalDetails?.totalFloors) && (
+          <Row
+            label={t("Total Number of floor in the Building")}
+            text={`${t(checkForNA(useDetails?.totalNoOfFloors || useDetails?.totalFloors || property?.totalNoOfFloors || property?.totalFloors || property?.additionalDetails?.totalNoOfFloors || property?.additionalDetails?.totalFloors))}`}
+          />
+        )}
         <Row label={t("WS_PLOT_AREA")} text={`${t(checkForNA(useDetails?.plotArea))}`} />
         <Row label={t("WS_BUILT_UP_AREA")} text={`${t(checkForNA(useDetails?.builtUpArea))}`} />
         {useDetails?.heightOfTheBuilding && (
@@ -420,6 +439,18 @@ const CheckPage = ({ onSubmit, value }) => {
       <CardSubHeader>{t("WS_DIVYANGJAN")}</CardSubHeader>
       <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
         <Row label={t("WS_DIVYANGJAN")} text={`${disability?.isDivyangjan ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}`} />
+      </StatusTable>
+
+      <CardSubHeader>{t("Rain Water Harvesting Certificate")}</CardSubHeader>
+      <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
+        <Row
+          label={t("Rain Water Harvesting Certificate")}
+          text={`${
+            rainWaterHarvesting?.hasCertificate || rainWaterHarvesting?.isRainwaterHarvesting
+              ? t("CORE_COMMON_YES")
+              : t("CORE_COMMON_NO")
+          }`}
+        />
       </StatusTable>
 
       {/*<CardSubHeader>{t("WS_BANK_DETAILS")}</CardSubHeader>

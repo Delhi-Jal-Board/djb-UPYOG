@@ -67,7 +67,15 @@ export const isWSApprovalChecklistComplete = (applicationData, values = {}) => {
   if (!remarksValid) return false;
 
   // Satisfaction confirmation must be selected
-  return values?.isFullySatisfied !== undefined;
+  if (values?.isFullySatisfied === undefined) return false;
+
+  // When 'No — Not Completely Satisfied' is selected, remark is mandatory
+  if (values?.isFullySatisfied === false) {
+    const satisfactionRemark = values?.notCompletelySatisfiedRemarks || values?.completelySatisfiedRemarks;
+    return typeof satisfactionRemark === "string" && satisfactionRemark.trim().length > 0;
+  }
+
+  return true;
 };
 
 const WSApprovalChecklist = ({ applicationData, showApprovalChecklist, values = {}, onChange }) => {
@@ -188,8 +196,42 @@ const WSApprovalChecklist = ({ applicationData, showApprovalChecklist, values = 
                 }
               : null
           }
-          onSelect={(option) => onChange({ ...values, isFullySatisfied: option.code })}
+          onSelect={(option) => {
+            const updated = { ...values, isFullySatisfied: option.code };
+            if (option.code === true) {
+              delete updated.notCompletelySatisfiedRemarks;
+              delete updated.completelySatisfiedRemarks;
+            }
+            onChange(updated);
+          }}
         />
+
+        {values?.isFullySatisfied === false && (
+          <div style={{ marginTop: "16px" }}>
+            <div style={{ marginBottom: "6px", fontSize: "14px", fontWeight: "500", color: "#0B0C0C" }}>
+              {t("Remarks")} <span style={{ color: "#D4351C" }}>*</span>
+            </div>
+            <TextArea
+              name="notCompletelySatisfiedRemarks"
+              value={values?.notCompletelySatisfiedRemarks || values?.completelySatisfiedRemarks || ""}
+              onChange={(event) => {
+                const val = event.target.value;
+                onChange({
+                  ...values,
+                  notCompletelySatisfiedRemarks: val,
+                  completelySatisfiedRemarks: val,
+                });
+              }}
+              placeholder={t("Enter mandatory remarks for selecting No")}
+              style={{ width: "100%", minHeight: "60px" }}
+            />
+            {!(values?.notCompletelySatisfiedRemarks || values?.completelySatisfiedRemarks)?.trim() && (
+              <span className="card-label-error" style={{ fontSize: "12px", marginTop: "4px", display: "block" }}>
+                {t("CS_REMARK_IS_MANDATORY", "Remarks are mandatory when selecting No")}
+              </span>
+            )}
+          </div>
+        )}
       </div>
     </React.Fragment>
   );

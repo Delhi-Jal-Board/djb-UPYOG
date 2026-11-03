@@ -7,12 +7,19 @@ import { convertToProperty, convertToUpdateProperty } from "../../../utils";
 
 const GetActionMessage = (props) => {
   const { t } = useTranslation();
+  const isEdit =
+    props?.isEdit ||
+    props?.isUpdate ||
+    window.location.href.includes("edit-property") ||
+    window.location.href.includes("edit-application") ||
+    window.location.href.includes("update-property");
+
   if (props.isSuccess) {
-    return !window.location.href.includes("edit-application") ? t("CS_PROPERTY_APPLICATION_SUCCESS") : t("CS_PROPERTY_UPDATE_APPLICATION_SUCCESS");
+    return !isEdit ? t("CS_PROPERTY_APPLICATION_SUCCESS") : t("CS_PROPERTY_UPDATE_APPLICATION_SUCCESS", "Property Updated Successfully");
   } else if (props.isLoading) {
-    return !window.location.href.includes("edit-application") ? t("CS_PROPERTY_APPLICATION_PENDING") : t("CS_PROPERTY_UPDATE_APPLICATION_PENDING");
+    return !isEdit ? t("CS_PROPERTY_APPLICATION_PENDING") : t("CS_PROPERTY_UPDATE_APPLICATION_PENDING");
   } else if (!props.isSuccess) {
-    return !window.location.href.includes("edit-application") ? t("CS_PROPERTY_APPLICATION_FAILED") : t("CS_PROPERTY_UPDATE_APPLICATION_FAILED");
+    return !isEdit ? t("CS_PROPERTY_APPLICATION_FAILED") : t("CS_PROPERTY_UPDATE_APPLICATION_FAILED");
   }
 };
 

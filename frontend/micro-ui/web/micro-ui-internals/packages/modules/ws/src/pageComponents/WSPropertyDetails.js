@@ -63,12 +63,12 @@ const WSPropertyDetails = ({ t, config, onSelect, userType, formData, setError, 
           {/* <header className="card-section-header" style={{ marginBottom: 0, marginTop: "20px" }}>
             {t("PT_DETAILS")}
           </header> */}
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t(`PROPERTY_ID`)}`}</CardLabel>
+          {/* <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{t("PROPERTY_ID")}</CardLabel>
             <div className="field">
               <p>{propertyDetails?.Properties[0]?.propertyId}</p>
             </div>
-          </LabelFieldPair>
+          </LabelFieldPair> */}
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t(`OWNER_NAME`)}`}</CardLabel>
             <div className="field">

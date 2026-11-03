@@ -382,6 +382,7 @@ const WSApplicationDetails = () => {
       downloadOptions = downloadOptions.concat(applicationDownloadObject, wsEstimateDownloadObject);
       break;
     case "PENDING_FOR_CONNECTION_ACTIVATION":
+    case "PENDING_FOR_METER_INSTALLATION":
     case "CONNECTION_ACTIVATED":
       downloadOptions = downloadOptions.concat(
         sanctionDownloadObject,
@@ -464,7 +465,7 @@ const WSApplicationDetails = () => {
           <Card className="modern-card">
             <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
               {/* <Header>{t("WS_APPLICATION_DETAILS_HEADER")}</Header> */}
-              <div style={{ zIndex: "10", display: "flex", flexDirection: "row-reverse", alignItems: "center", marginTop: "-25px" }}>
+              {/* <div style={{ zIndex: "10", display: "flex", flexDirection: "row-reverse", alignItems: "center", marginTop: "-25px" }}>
                 {downloadOptions && downloadOptions.length > 0 && (
                   <div ref={menuRef}>
                     <MultiLink
@@ -476,7 +477,7 @@ const WSApplicationDetails = () => {
                     />
                   </div>
                 )}
-              </div>
+              </div> */}
             </div>
             {checkifPrivacyenabled && <WSInfoLabel t={t} />}
             <div className="hide-seperator">
@@ -655,6 +656,14 @@ const WSApplicationDetails = () => {
                   return null;
                 })()}
                 <Row label={t("WS_DIVYANGJAN")} text={`${connectionDetails?.isDivyangjan ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}`} />
+                <Row
+                  label={t("WS_RAIN_WATER_HARVESTING_CERTIFICATE") || "Rain Water Harvesting Certificate"}
+                  text={`${
+                    connectionDetails?.hasRainWaterHarvestingCertificate || connectionDetails?.isRainwaterHarvesting
+                      ? t("CORE_COMMON_YES")
+                      : t("CORE_COMMON_NO")
+                  }`}
+                />
                 {/* <Row
                   label={t("WS_SERVICE_TYPE")}
                   text={`${t(
@@ -920,11 +929,11 @@ const WSApplicationDetails = () => {
               <React.Fragment>
                 <CardHeader styles={{ fontSize: "28px" }}>{t("WS_COMMON_PROPERTY_DETAILS")}</CardHeader>
                 <StatusTable>
-                  <Row
+                  {/* <Row
                     label={t("WS_PROPERTY_ID_LABEL")}
                     text={data?.WaterConnection?.[0]?.propertyId || data?.SewerageConnections?.[0]?.propertyId}
                     textStyle={{ wordBreak: "break-word" }}
-                  />
+                  /> */}
                   <Row
                     label={t("WS_OWN_DETAIL_OWN_NAME_LABEL")}
                     text={
@@ -1138,6 +1147,19 @@ const WSApplicationDetails = () => {
                     )
                   )}`}
                 />
+                {(propertyAdditionalDetails?.totalNoOfFloors || propertyAdditionalDetails?.totalFloors || PTData?.Properties?.[0]?.totalNoOfFloors || PTData?.Properties?.[0]?.totalFloors) && (
+                  <Row
+                    label={t("Total Number of floor in the Building")}
+                    text={`${t(
+                      checkForNA(
+                        propertyAdditionalDetails?.totalNoOfFloors ||
+                        propertyAdditionalDetails?.totalFloors ||
+                        PTData?.Properties?.[0]?.totalNoOfFloors ||
+                        PTData?.Properties?.[0]?.totalFloors
+                      )
+                    )}`}
+                  />
+                )}
                 <Row label={t("WS_PLOT_AREA")} text={`${t(checkForNA(useDetails?.plotArea))}`} />
                 <Row label={t("WS_BUILT_UP_AREA")} text={`${t(checkForNA(useDetails?.builtUpArea))}`} />
                 <Row label={t("WS_HEIGHT_OF_THE_BUILDING")} text={`${t(checkForNA(useDetails?.heightOfTheBuilding))}`} />
@@ -1336,6 +1358,97 @@ const WSApplicationDetails = () => {
                 </React.Fragment>
               )}
 
+              {(data?.WaterConnection?.[0]?.applicationStatus === "PENDING_FOR_CONNECTION_ACTIVATION" ||
+                data?.WaterConnection?.[0]?.applicationStatus === "CONNECTION_ACTIVATED" ||
+                data?.SewerageConnections?.[0]?.applicationStatus === "PENDING_FOR_CONNECTION_ACTIVATION" ||
+                data?.SewerageConnections?.[0]?.applicationStatus === "CONNECTION_ACTIVATED") && (
+                <React.Fragment>
+                  <CardHeader styles={{ fontSize: "28px", marginTop: "24px" }}>
+                    {t("WS_ACTIVATION_DETAILS") && t("WS_ACTIVATION_DETAILS") !== "WS_ACTIVATION_DETAILS"
+                      ? t("WS_ACTIVATION_DETAILS")
+                      : "Activate Connection Details"}
+                  </CardHeader>
+                  <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
+                    <Row
+                      label={t("WS_SERV_DETAIL_CONN_TYPE")}
+                      text={
+                        (data?.WaterConnection?.[0] || data?.SewerageConnections?.[0])?.connectionType
+                          ? t((data?.WaterConnection?.[0] || data?.SewerageConnections?.[0])?.connectionType) || "Metered"
+                          : "Metered"
+                      }
+                    />
+                    <Row
+                      label={t("WS_ADDN_DETAILS_PLUMBER_PROVIDED_BY")}
+                      text={
+                        (data?.WaterConnection?.[0] || data?.SewerageConnections?.[0])?.additionalDetails?.detailsProvidedBy
+                          ? (data?.WaterConnection?.[0] || data?.SewerageConnections?.[0])?.additionalDetails?.detailsProvidedBy?.toUpperCase() === "ULB"
+                            ? "DJB"
+                            : (data?.WaterConnection?.[0] || data?.SewerageConnections?.[0])?.additionalDetails?.detailsProvidedBy
+                          : t("NA")
+                      }
+                    />
+                    {((data?.WaterConnection?.[0] || data?.SewerageConnections?.[0])?.additionalDetails?.detailsProvidedBy?.toUpperCase() === "ULB" ||
+                      (data?.WaterConnection?.[0] || data?.SewerageConnections?.[0])?.additionalDetails?.detailsProvidedBy?.toUpperCase() === "DJB") && (
+                      <React.Fragment>
+                        <Row
+                          label={t("WS_ADDN_DETAILS_PLUMBER_LICENCE_NO_LABEL")}
+                          text={(data?.WaterConnection?.[0] || data?.SewerageConnections?.[0])?.plumberInfo?.[0]?.licenseNo || t("NA")}
+                        />
+                        <Row
+                          label={t("WS_ADDN_DETAILS_PLUMBER_NAME_LABEL")}
+                          text={(data?.WaterConnection?.[0] || data?.SewerageConnections?.[0])?.plumberInfo?.[0]?.name || t("NA")}
+                        />
+                        <Row
+                          label={t("WS_PLUMBER_MOBILE_NO_LABEL")}
+                          text={(data?.WaterConnection?.[0] || data?.SewerageConnections?.[0])?.plumberInfo?.[0]?.mobileNumber || t("NA")}
+                        />
+                      </React.Fragment>
+                    )}
+                    <Row
+                      label={t("WS_SERV_DETAIL_METER_ID")}
+                      text={(data?.WaterConnection?.[0] || data?.SewerageConnections?.[0])?.meterId || t("NA")}
+                    />
+                    <Row
+                      label={t("WS_INSTALLATION_DATE_LABEL")}
+                      text={
+                        (data?.WaterConnection?.[0] || data?.SewerageConnections?.[0])?.meterInstallationDate
+                          ? convertEpochToDate((data?.WaterConnection?.[0] || data?.SewerageConnections?.[0])?.meterInstallationDate)
+                          : t("NA")
+                      }
+                    />
+                    <Row
+                      label={t("WS_INITIAL_METER_READING_LABEL")}
+                      text={
+                        (data?.WaterConnection?.[0] || data?.SewerageConnections?.[0])?.additionalDetails?.initialMeterReading !== undefined &&
+                        (data?.WaterConnection?.[0] || data?.SewerageConnections?.[0])?.additionalDetails?.initialMeterReading !== null &&
+                        (data?.WaterConnection?.[0] || data?.SewerageConnections?.[0])?.additionalDetails?.initialMeterReading !== ""
+                          ? String((data?.WaterConnection?.[0] || data?.SewerageConnections?.[0])?.additionalDetails?.initialMeterReading)
+                          : "0"
+                      }
+                    />
+                    <Row
+                      label={t("WS_SERV_DETAIL_CONN_EXECUTION_DATE")}
+                      text={
+                        (data?.WaterConnection?.[0] || data?.SewerageConnections?.[0])?.connectionExecutionDate
+                          ? convertEpochToDate((data?.WaterConnection?.[0] || data?.SewerageConnections?.[0])?.connectionExecutionDate)
+                          : t("NA")
+                      }
+                    />
+                    {((data?.WaterConnection?.[0] || data?.SewerageConnections?.[0])?.comment ||
+                      (data?.WaterConnection?.[0] || data?.SewerageConnections?.[0])?.comments) && (
+                      <Row
+                        label={t("WS_COMMON_COMMENTS")}
+                        text={
+                          (data?.WaterConnection?.[0] || data?.SewerageConnections?.[0])?.comment ||
+                          (data?.WaterConnection?.[0] || data?.SewerageConnections?.[0])?.comments ||
+                          t("NA")
+                        }
+                      />
+                    )}
+                  </StatusTable>
+                </React.Fragment>
+              )}
+
               {data?.WaterConnection?.[0]?.applicationStatus === "PENDING_FOR_PAYMENT" ||
                 data?.WaterConnection?.[0]?.applicationStatus === "PENDING_FOR_FINAL_PAYMENT" ||
                 data?.WaterConnection?.[0]?.applicationStatus === "PENDING_FOR_ADDITIONAL_PAYMENT" ||
@@ -1482,21 +1595,44 @@ const WSApplicationDetails = () => {
                   <SubmitBar label={t("WS_EXECUTE_DISCONNECTION")} />
                 </Link>
               ) : null}
-              {data?.WaterConnection?.[0]?.applicationStatus?.includes("PENDING_FOR_CONNECTION_ACTIVATION") ||
-                data?.SewerageConnections?.[0]?.applicationStatus?.includes("PENDING_FOR_CONNECTION_ACTIVATION") ||
+              {data?.WaterConnection?.[0]?.applicationStatus?.includes("PENDING_FOR_METER_INSTALLATION") ||
+                data?.SewerageConnections?.[0]?.applicationStatus?.includes("PENDING_FOR_METER_INSTALLATION") ||
                 data?.WaterConnection?.[0]?.applicationStatus?.includes("PENDING_FOR_RECONNECTION_EXECUTION") ||
                 data?.SewerageConnections?.[0]?.applicationStatus?.includes("PENDING_FOR_RECONNECTION_EXECUTION") ? (
-                <Link
-                  to={{
-                    pathname: `/digit-ui/citizen/ws/activate-connection`,
-                    search: `?applicationNumber=${data?.WaterConnection?.[0]?.applicationNo || data?.SewerageConnections?.[0]?.applicationNo}&service=${data?.WaterConnection?.[0] ? "WATER" : "SEWERAGE"}&action=ACTIVATE_CONNECTION`,
-                    state: {
-                      applicationData: data?.WaterConnection?.[0] || data?.SewerageConnections?.[0]
-                    },
+                <button
+                  type="button"
+                  style={{
+                    padding: "12px 24px",
+                    background: "#1f5fa8",
+                    color: "#ffffff",
+                    border: "none",
+                    borderRadius: "4px",
+                    fontWeight: 700,
+                    fontSize: "14px",
+                    letterSpacing: "0.04em",
+                    cursor: "pointer",
+                    display: "inline-block",
+                  }}
+                  onClick={() => {
+                    const isPendingMeter =
+                      data?.WaterConnection?.[0]?.applicationStatus?.includes("PENDING_FOR_METER_INSTALLATION") ||
+                      data?.SewerageConnections?.[0]?.applicationStatus?.includes("PENDING_FOR_METER_INSTALLATION");
+                    const currentAction = isPendingMeter ? "ENTER_METER_DETAILS" : "ACTIVATE_CONNECTION";
+                    history.push({
+                      pathname: `/digit-ui/citizen/ws/activate-connection`,
+                      search: `?applicationNumber=${data?.WaterConnection?.[0]?.applicationNo || data?.SewerageConnections?.[0]?.applicationNo}&service=${data?.WaterConnection?.[0] ? "WATER" : "SEWERAGE"}&action=${currentAction}`,
+                      state: {
+                        applicationData: data?.WaterConnection?.[0] || data?.SewerageConnections?.[0],
+                        action: currentAction,
+                      },
+                    });
                   }}
                 >
-                  <SubmitBar label={t("WS_ACTIVATE_CONNECTION")} />
-                </Link>
+                  {data?.WaterConnection?.[0]?.applicationStatus?.includes("PENDING_FOR_METER_INSTALLATION") ||
+                  data?.SewerageConnections?.[0]?.applicationStatus?.includes("PENDING_FOR_METER_INSTALLATION")
+                    ? t("CS_PENDING_FOR_METER_INSTALLATION")
+                    : t("WS_ACTIVATE_CONNECTION")}
+                </button>
               ) : null}
             </div>
           </Card>

@@ -105,7 +105,7 @@ curl --location --request POST 'https://dev.digit.org/egov-workflow-v2/egov-wf/b
                     "actions": [
                         {
                             "action": "APPROVE_FOR_CONNECTION",
-                            "nextState": "PENDING_FOR_CONNECTION_ACTIVATION",
+                            "nextState": "PENDING_FOR_METER_INSTALLATION",
                             "roles": [
                                 "WS_ZRO"
                             ]
@@ -171,6 +171,24 @@ curl --location --request POST 'https://dev.digit.org/egov-workflow-v2/egov-wf/b
                 },
                 {
                     "sla": null,
+                    "state": "PENDING_FOR_METER_INSTALLATION",
+                    "applicationStatus": "PENDING_FOR_METER_INSTALLATION",
+                    "docUploadRequired": false,
+                    "isStartState": false,
+                    "isTerminateState": false,
+                    "isStateUpdatable": true,
+                    "actions": [
+                        {
+                            "action": "ENTER_METER_DETAILS",
+                            "nextState": "PENDING_FOR_CONNECTION_ACTIVATION",
+                            "roles": [
+                                "CITIZEN"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "sla": null,
                     "state": "PENDING_FOR_CONNECTION_ACTIVATION",
                     "applicationStatus": "PENDING_FOR_CONNECTION_ACTIVATION",
                     "docUploadRequired": false,
@@ -182,7 +200,7 @@ curl --location --request POST 'https://dev.digit.org/egov-workflow-v2/egov-wf/b
                             "action": "ACTIVATE_CONNECTION",
                             "nextState": "CONNECTION_ACTIVATED",
                             "roles": [
-                                "CITIZEN"
+                                "WS_ZRO"
                             ]
                         }
                     ]

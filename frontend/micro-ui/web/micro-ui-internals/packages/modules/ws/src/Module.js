@@ -38,6 +38,7 @@ import WSBankDetails from "./pageComponents/WSBankDetails";
 import WSDeclaration from "./pageComponents/WSDeclaration";
 import WSDjbEmployee from "./pageComponents/WSDjbEmployee";
 import WSDivyangjan from "./pageComponents/WSDivyangjan";
+import WSRainWaterHarvesting from "./pageComponents/WSRainWaterHarvesting";
 import WSPropertyWaterConnection from "./pageComponents/WSPropertyWaterConnection";
 
 //Components
@@ -164,7 +165,7 @@ export const WSLinks = ({ matchPath, userType }) => {
       link: `${matchPath}/mutation-application`,
       i18nKey: t("WS_APPLY_MUTATION"),
     },
-     {
+    {
       link: `${matchPath}/disconnect-application`,
       i18nKey: t("WS_DISCONNECTION"),
     },
@@ -172,7 +173,10 @@ export const WSLinks = ({ matchPath, userType }) => {
       link: `${matchPath}/restore-application/k-number`,
       i18nKey: t("WS_RECONNECTION") || "Apply Reconnection",
     },
-
+    {
+      link: `${matchPath}/bill-amendment`,
+      i18nKey: t("WS_APPLY_BILL_AMENDMENT") || "Apply for Bill Amendment",
+    },
   ];
 
   return <CitizenHomeCard header={t("ACTION_TEST_WATER_AND_SEWERAGE")} links={links} Icon={() => <WSICon />} />;
@@ -289,6 +293,7 @@ const componentsToRegister = {
   WSBulkBillGeneration: BulkBillGeneration,
   WSOLDApplication: OLDApplication,
   WSDivyangjan: WSDivyangjan,
+  WSRainWaterHarvesting: WSRainWaterHarvesting,
   WSExecuteDisconnection: WSExecuteDisconnection,
 };
 

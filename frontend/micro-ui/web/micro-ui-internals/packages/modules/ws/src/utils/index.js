@@ -303,12 +303,17 @@ export const createPayloadOfWS = async (data) => {
   let allDocuments = Array.isArray(data?.documents?.documents) ? [...data.documents.documents] : (Array.isArray(data?.documents) ? [...data.documents] : []);
 
   if (data?.djbEmployee?.document) {
-    allDocuments.push({
-      documentType: "OWNER.DJB_EMPLOYEE_ID",
-      fileStoreId: data?.djbEmployee?.document?.fileStoreId || data?.djbEmployee?.document,
-      documentUid: "",
-      status: "ACTIVE",
-    });
+    const hasDjbDoc = allDocuments.some(
+      (d) => d?.documentType === "OWNER.DJB_EMPLOYEE_ID" || d?.documentType?.includes("DJB_EMPLOYEE_ID")
+    );
+    if (!hasDjbDoc) {
+      allDocuments.push({
+        documentType: "OWNER.DJB_EMPLOYEE_ID",
+        fileStoreId: data?.djbEmployee?.document?.fileStoreId || data?.djbEmployee?.document,
+        documentUid: "",
+        status: "ACTIVE",
+      });
+    }
   }
   if (data?.governmentEmployee?.organizationDocument) {
     allDocuments.push({
@@ -416,8 +421,19 @@ export const createPayloadOfWS = async (data) => {
       ...useDetailsObject,
       ...data?.djbEmployee,
       ...data?.disability,
+      ...data?.rainWaterHarvesting,
       isDivyangjan: !!data?.disability?.isDivyangjan,
-      document: data?.djbEmployee?.document?.fileStoreId || data?.djbEmployee?.document || undefined,
+      hasRainWaterHarvestingCertificate: !!(
+        data?.rainWaterHarvesting?.hasCertificate || data?.rainWaterHarvesting?.isRainwaterHarvesting
+      ),
+      isRainwaterHarvesting: !!(
+        data?.rainWaterHarvesting?.hasCertificate || data?.rainWaterHarvesting?.isRainwaterHarvesting
+      ),
+      document:
+        data?.djbEmployee?.document?.fileStoreId ||
+        (typeof data?.djbEmployee?.document === "string" ? data?.djbEmployee?.document : null) ||
+        allDocuments.find((d) => d?.documentType === "OWNER.DJB_EMPLOYEE_ID" || d?.documentType?.includes("DJB_EMPLOYEE_ID"))?.fileStoreId ||
+        undefined,
       ...data?.bankDetails,
       ...data?.declarationData,
       ...data?.declaration,
@@ -426,7 +442,11 @@ export const createPayloadOfWS = async (data) => {
       zro: data?.zro?.code || data?.zro,
       locality: data?.propertyAddress?.locality?.code || data?.cpt?.details?.address?.locality?.code,
       detailsProvidedBy: data?.plumberDetails?.[0]?.detailsProvidedBy?.code || data?.plumberDetails?.[0]?.detailsProvidedBy || "",
-      applicantType: data?.applicationSelection?.applicantType?.code,
+      applicantType: data?.applicationSelection?.applicantType?.code || connectionDetailsObject?.applicantType?.code || connectionDetailsObject?.applicantType,
+      authorizedRepresentativeName: connectionDetailsObject?.authorizedRepresentativeName || "",
+      authorizedRepresentativeDesignation: connectionDetailsObject?.authorizedRepresentativeDesignation || "",
+      authorizedRepresentativeMobileNumber: connectionDetailsObject?.authorizedRepresentativeMobileNumber || "",
+      authorizedMobileNumber: connectionDetailsObject?.authorizedRepresentativeMobileNumber || "",
       connectionType:
         data?.applicationSelection?.connectionType?.code ||
         connectionDetailsObject?.connectionType?.code ||
@@ -438,7 +458,35 @@ export const createPayloadOfWS = async (data) => {
         useDetailsObject?.waterDemandType ||
         { code: "NON_BULK", i18nKey: "WS_WATER_DEMAND_NON_BULK" },
       categoryType: useDetailsObject?.categoryType?.code || useDetailsObject?.categoryType || data?.applicationSelection?.categoryType?.code || connectionHolder?.ownerType?.code || connectionHolder?.ownerType,
-      noOfFloors: useDetailsObject?.noOfFloors?.code || useDetailsObject?.noOfFloors,
+      noOfFloors:
+        useDetailsObject?.noOfFloors?.code ||
+        useDetailsObject?.noOfFloors ||
+        data?.propertyAddress?.noOfFloors?.code ||
+        data?.propertyAddress?.noOfFloors ||
+        data?.propertyAddress?.numberOfFloors ||
+        data?.cpt?.details?.additionalDetails?.numberOfFloors ||
+        data?.cpt?.details?.additionalDetails?.noOfFloors ||
+        data?.cpt?.details?.noOfFloors,
+      numberOfFloors:
+        data?.propertyAddress?.numberOfFloors ||
+        data?.propertyAddress?.noOfFloors?.code ||
+        data?.propertyAddress?.noOfFloors ||
+        useDetailsObject?.noOfFloors?.code ||
+        useDetailsObject?.noOfFloors ||
+        data?.cpt?.details?.additionalDetails?.numberOfFloors ||
+        data?.cpt?.details?.noOfFloors,
+      totalNoOfFloors:
+        data?.propertyAddress?.totalNoOfFloors ||
+        data?.propertyAddress?.totalFloors ||
+        data?.cpt?.details?.additionalDetails?.totalNoOfFloors ||
+        data?.cpt?.details?.additionalDetails?.totalFloors ||
+        data?.cpt?.details?.noOfFloors,
+      totalFloors:
+        data?.propertyAddress?.totalNoOfFloors ||
+        data?.propertyAddress?.totalFloors ||
+        data?.cpt?.details?.additionalDetails?.totalNoOfFloors ||
+        data?.cpt?.details?.additionalDetails?.totalFloors ||
+        data?.cpt?.details?.noOfFloors,
       subCategory: data?.applicationSelection?.subCategory?.code,
       domesticType: data?.applicationSelection?.domesticType?.code,
       temporaryConnection: data?.applicationSelection?.temporaryConnection?.code,
@@ -453,6 +501,10 @@ export const createPayloadOfWS = async (data) => {
       identityProofNumber: data?.documents?.identityProofNumber,
       ownershipDocumentNumber: data?.documents?.ownershipDocumentNumber,
       otherDocumentNumber: data?.documents?.otherDocumentNumber,
+      otherDocumentRemark:
+        data?.documents?.otherDocumentRemark ||
+        allDocuments.find((d) => d?.documentType?.includes("OTHER_DOCUMENTS") || d?.documentType?.includes("OTHERDOCUMENTS"))?.documentUid ||
+        allDocuments.find((d) => d?.documentType?.includes("OTHER_DOCUMENTS") || d?.documentType?.includes("OTHERDOCUMENTS"))?.remarks,
       detailsProvidedBy: "",
       channel: isCitizen ? "CITIZEN" : "CFC_COUNTER",
     },
@@ -588,6 +640,12 @@ export const convertToWSUpdate = (data) => {
   let formdata = {
     WaterConnection: {
       ...data?.WaterConnectionResult?.WaterConnection?.[0],
+      property:
+        (data?.cpt?.details && Object.keys(data.cpt.details).length > 0)
+          ? { ...data.cpt.details }
+          : (data?.property && Object.keys(data.property).length > 0)
+          ? { ...data.property }
+          : data?.WaterConnectionResult?.WaterConnection?.[0]?.property,
       documents: getAllDocumentsForUpdate(data),
       additionalDetails: {
         ...(data?.WaterConnectionResult?.WaterConnection?.[0]?.additionalDetails || {}),
@@ -618,6 +676,17 @@ export const convertToWSUpdate = (data) => {
           ? {
               ...data?.disability,
               isDivyangjan: !!data?.disability?.isDivyangjan,
+            }
+          : {}),
+        ...(data?.rainWaterHarvesting !== undefined
+          ? {
+              ...data?.rainWaterHarvesting,
+              hasRainWaterHarvestingCertificate: !!(
+                data?.rainWaterHarvesting?.hasCertificate || data?.rainWaterHarvesting?.isRainwaterHarvesting
+              ),
+              isRainwaterHarvesting: !!(
+                data?.rainWaterHarvesting?.hasCertificate || data?.rainWaterHarvesting?.isRainwaterHarvesting
+              ),
             }
           : {}),
         ...(data?.bankDetails !== undefined ? data?.bankDetails : {}),
@@ -697,7 +766,37 @@ export const convertToEditWSUpdate = (data) => {
               isDivyangjan: !!data?.disability?.isDivyangjan,
             }
           : {}),
+        ...(data?.rainWaterHarvesting !== undefined
+          ? {
+              ...data?.rainWaterHarvesting,
+              hasRainWaterHarvestingCertificate: !!(
+                data?.rainWaterHarvesting?.hasCertificate || data?.rainWaterHarvesting?.isRainwaterHarvesting
+              ),
+              isRainwaterHarvesting: !!(
+                data?.rainWaterHarvesting?.hasCertificate || data?.rainWaterHarvesting?.isRainwaterHarvesting
+              ),
+            }
+          : {}),
         ...(data?.bankDetails !== undefined ? data?.bankDetails : {}),
+        ...(data?.waterConnection?.useDetails
+          ? {
+              plotArea: data.waterConnection.useDetails.plotArea || data?.additionalDetails?.plotArea || waterResult?.additionalDetails?.plotArea,
+              plotSize: data.waterConnection.useDetails.plotArea || data?.additionalDetails?.plotSize || waterResult?.additionalDetails?.plotSize,
+              builtUpArea: data.waterConnection.useDetails.builtUpArea || data?.additionalDetails?.builtUpArea || waterResult?.additionalDetails?.builtUpArea,
+              heightOfTheBuilding: data.waterConnection.useDetails.heightOfTheBuilding || data?.additionalDetails?.heightOfTheBuilding || waterResult?.additionalDetails?.heightOfTheBuilding,
+              categoryType: data.waterConnection.useDetails.categoryType?.code || data.waterConnection.useDetails.categoryType || data?.additionalDetails?.categoryType || waterResult?.additionalDetails?.categoryType,
+              propertyCategory: data.waterConnection.useDetails.propertyCategory?.code || data.waterConnection.useDetails.propertyCategory || data?.additionalDetails?.propertyCategory || waterResult?.additionalDetails?.propertyCategory,
+              propertyType: data.waterConnection.useDetails.propertyType?.code || data.waterConnection.useDetails.propertyType || data?.additionalDetails?.propertyType || waterResult?.additionalDetails?.propertyType,
+              waterConnectionUsageType: data.waterConnection.useDetails.WaterConnectionUsageType?.code || data.waterConnection.useDetails.WaterConnectionUsageType || data?.additionalDetails?.waterConnectionUsageType || waterResult?.additionalDetails?.waterConnectionUsageType,
+              numberOfDwellingUnits:
+                data.waterConnection.useDetails.NumberofDwellingUnits ||
+                data?.additionalDetails?.numberOfDwellingUnits ||
+                data?.property?.additionalDetails?.numberOfDwellingUnits ||
+                data?.cpt?.details?.additionalDetails?.numberOfDwellingUnits ||
+                waterResult?.additionalDetails?.numberOfDwellingUnits ||
+                "",
+            }
+          : {}),
       },
       auditDetails: data?.isEditApplication ? data?.auditDetails : waterResult?.auditDetails,
       processInstance: data?.isEditApplication
@@ -742,7 +841,64 @@ export const convertToEditWSUpdate = (data) => {
       noOfTaps: (data?.isEditApplication ? data?.noOfTaps : waterResult?.noOfTaps) || null,
       waterSourceSubSource: null,
       waterSubSource: (data?.isEditApplication ? data?.waterSubSource : waterResult?.waterSubSource) || null,
-      property: data?.isEditApplication ? { ...data?.property } : { ...waterResult?.property },
+      property: (() => {
+        const baseProp =
+          (data?.cpt?.details && Object.keys(data.cpt.details).length > 0)
+            ? { ...data.cpt.details }
+            : (data?.property && Object.keys(data.property).length > 0)
+            ? { ...data.property }
+            : { ...(waterResult?.property || {}) };
+
+        const formAddress = data?.propertyLocationDetails || data?.propertyAddress || {};
+        const useDetails = data?.waterConnection?.useDetails || data?.proposedUsageDetails || {};
+
+        return {
+          ...baseProp,
+          ...(Object.keys(formAddress).length > 0
+            ? {
+                address: {
+                  ...(baseProp?.address || {}),
+                  doorNo: formAddress.houseNo || formAddress.doorNo || baseProp?.address?.doorNo,
+                  street: formAddress.streetName || formAddress.street || baseProp?.address?.street,
+                  landmark: formAddress.landmark || baseProp?.address?.landmark,
+                  addressLine1: formAddress.addressLine1 || formAddress.street || baseProp?.address?.addressLine1,
+                  addressLine2: formAddress.addressLine2 || baseProp?.address?.addressLine2,
+                  pincode: formAddress.pincode || formAddress.pinCode || baseProp?.address?.pincode,
+                  assembly: formAddress.actualAssembly || formAddress.assembly?.name || formAddress.assembly?.code || formAddress.assembly || baseProp?.address?.assembly,
+                  ward: formAddress.actualWard || formAddress.ward?.name || formAddress.ward?.code || formAddress.ward || formAddress.block?.name || formAddress.block?.code || formAddress.block || baseProp?.address?.ward,
+                  zone: formAddress.actualZone || formAddress.zone?.name || formAddress.zone?.code || formAddress.zone || baseProp?.address?.zone,
+                },
+              }
+            : {}),
+          ...(Object.keys(useDetails).length > 0
+            ? {
+                landArea: useDetails.plotArea ? Number(useDetails.plotArea) : baseProp?.landArea,
+                superBuiltUpArea: useDetails.builtUpArea ? Number(useDetails.builtUpArea) : baseProp?.superBuiltUpArea,
+                heightOfTheBuilding: useDetails.heightOfTheBuilding ? Number(useDetails.heightOfTheBuilding) : baseProp?.heightOfTheBuilding,
+                noOfDwellingUnits: useDetails.NumberofDwellingUnits
+                  ? Number(useDetails.NumberofDwellingUnits)
+                  : (baseProp?.noOfDwellingUnits || baseProp?.additionalDetails?.numberOfDwellingUnits || baseProp?.additionalDetails?.noOfDwellingUnits),
+                additionalDetails: {
+                  ...(baseProp?.additionalDetails || {}),
+                  plotArea: useDetails.plotArea || baseProp?.additionalDetails?.plotArea,
+                  builtUpArea: useDetails.builtUpArea || baseProp?.additionalDetails?.builtUpArea,
+                  heightOfTheBuilding: useDetails.heightOfTheBuilding || baseProp?.additionalDetails?.heightOfTheBuilding,
+                  numberOfDwellingUnits:
+                    useDetails.NumberofDwellingUnits ||
+                    baseProp?.additionalDetails?.numberOfDwellingUnits ||
+                    baseProp?.additionalDetails?.noOfDwellingUnits ||
+                    baseProp?.noOfDwellingUnits ||
+                    "",
+                  yearOfConstruction: useDetails.SelectYearofConstruction?.value || useDetails.SelectYearofConstruction || baseProp?.additionalDetails?.yearOfConstruction,
+                  categoryType: useDetails.categoryType?.code || useDetails.categoryType || baseProp?.additionalDetails?.categoryType,
+                  propertyCategory: useDetails.propertyCategory?.code || useDetails.propertyCategory || baseProp?.additionalDetails?.propertyCategory,
+                  propertyType: useDetails.propertyType?.code || useDetails.propertyType || baseProp?.additionalDetails?.propertyType,
+                  waterConnectionUsageType: useDetails.WaterConnectionUsageType?.code || useDetails.WaterConnectionUsageType || baseProp?.additionalDetails?.waterConnectionUsageType,
+                },
+              }
+            : {}),
+        };
+      })(),
       dueVerification: data?.isEditApplication ? data?.dueVerification : waterResult?.dueVerification,
       water: data?.applicationType?.includes("WATER") ? true : false,
       sewerage: data?.applicationType?.includes("WATER") ? true : false,
@@ -865,7 +1021,37 @@ export const convertToEditSWUpdate = (data) => {
               isDivyangjan: !!data?.disability?.isDivyangjan,
             }
           : {}),
+        ...(data?.rainWaterHarvesting !== undefined
+          ? {
+              ...data?.rainWaterHarvesting,
+              hasRainWaterHarvestingCertificate: !!(
+                data?.rainWaterHarvesting?.hasCertificate || data?.rainWaterHarvesting?.isRainwaterHarvesting
+              ),
+              isRainwaterHarvesting: !!(
+                data?.rainWaterHarvesting?.hasCertificate || data?.rainWaterHarvesting?.isRainwaterHarvesting
+              ),
+            }
+          : {}),
         ...(data?.bankDetails !== undefined ? data?.bankDetails : {}),
+        ...(data?.waterConnection?.useDetails
+          ? {
+              plotArea: data.waterConnection.useDetails.plotArea || data?.additionalDetails?.plotArea || SewerageResult?.additionalDetails?.plotArea,
+              plotSize: data.waterConnection.useDetails.plotArea || data?.additionalDetails?.plotSize || SewerageResult?.additionalDetails?.plotSize,
+              builtUpArea: data.waterConnection.useDetails.builtUpArea || data?.additionalDetails?.builtUpArea || SewerageResult?.additionalDetails?.builtUpArea,
+              heightOfTheBuilding: data.waterConnection.useDetails.heightOfTheBuilding || data?.additionalDetails?.heightOfTheBuilding || SewerageResult?.additionalDetails?.heightOfTheBuilding,
+              categoryType: data.waterConnection.useDetails.categoryType?.code || data.waterConnection.useDetails.categoryType || data?.additionalDetails?.categoryType || SewerageResult?.additionalDetails?.categoryType,
+              propertyCategory: data.waterConnection.useDetails.propertyCategory?.code || data.waterConnection.useDetails.propertyCategory || data?.additionalDetails?.propertyCategory || SewerageResult?.additionalDetails?.propertyCategory,
+              propertyType: data.waterConnection.useDetails.propertyType?.code || data.waterConnection.useDetails.propertyType || data?.additionalDetails?.propertyType || SewerageResult?.additionalDetails?.propertyType,
+              waterConnectionUsageType: data.waterConnection.useDetails.WaterConnectionUsageType?.code || data.waterConnection.useDetails.WaterConnectionUsageType || data?.additionalDetails?.waterConnectionUsageType || SewerageResult?.additionalDetails?.waterConnectionUsageType,
+              numberOfDwellingUnits:
+                data.waterConnection.useDetails.NumberofDwellingUnits ||
+                data?.additionalDetails?.numberOfDwellingUnits ||
+                data?.property?.additionalDetails?.numberOfDwellingUnits ||
+                data?.cpt?.details?.additionalDetails?.numberOfDwellingUnits ||
+                SewerageResult?.additionalDetails?.numberOfDwellingUnits ||
+                "",
+            }
+          : {}),
       },
       auditDetails: data?.isEditApplication ? data?.auditDetails : SewerageResult?.auditDetails,
       processInstance: data?.isEditApplication
@@ -910,7 +1096,64 @@ export const convertToEditSWUpdate = (data) => {
       noOfTaps: (data?.isEditApplication ? data?.noOfTaps : SewerageResult?.noOfTaps) || null,
       waterSourceSubSource: null,
       waterSubSource: (data?.isEditApplication ? data?.waterSubSource : SewerageResult?.waterSubSource) || null,
-      property: data?.isEditApplication ? { ...data?.property } : { ...SewerageResult?.property },
+      property: (() => {
+        const baseProp =
+          (data?.cpt?.details && Object.keys(data.cpt.details).length > 0)
+            ? { ...data.cpt.details }
+            : (data?.property && Object.keys(data.property).length > 0)
+            ? { ...data.property }
+            : { ...(SewerageResult?.property || {}) };
+
+        const formAddress = data?.propertyLocationDetails || data?.propertyAddress || {};
+        const useDetails = data?.waterConnection?.useDetails || data?.proposedUsageDetails || {};
+
+        return {
+          ...baseProp,
+          ...(Object.keys(formAddress).length > 0
+            ? {
+                address: {
+                  ...(baseProp?.address || {}),
+                  doorNo: formAddress.houseNo || formAddress.doorNo || baseProp?.address?.doorNo,
+                  street: formAddress.streetName || formAddress.street || baseProp?.address?.street,
+                  landmark: formAddress.landmark || baseProp?.address?.landmark,
+                  addressLine1: formAddress.addressLine1 || formAddress.street || baseProp?.address?.addressLine1,
+                  addressLine2: formAddress.addressLine2 || baseProp?.address?.addressLine2,
+                  pincode: formAddress.pincode || formAddress.pinCode || baseProp?.address?.pincode,
+                  assembly: formAddress.actualAssembly || formAddress.assembly?.name || formAddress.assembly?.code || formAddress.assembly || baseProp?.address?.assembly,
+                  ward: formAddress.actualWard || formAddress.ward?.name || formAddress.ward?.code || formAddress.ward || formAddress.block?.name || formAddress.block?.code || formAddress.block || baseProp?.address?.ward,
+                  zone: formAddress.actualZone || formAddress.zone?.name || formAddress.zone?.code || formAddress.zone || baseProp?.address?.zone,
+                },
+              }
+            : {}),
+          ...(Object.keys(useDetails).length > 0
+            ? {
+                landArea: useDetails.plotArea ? Number(useDetails.plotArea) : baseProp?.landArea,
+                superBuiltUpArea: useDetails.builtUpArea ? Number(useDetails.builtUpArea) : baseProp?.superBuiltUpArea,
+                heightOfTheBuilding: useDetails.heightOfTheBuilding ? Number(useDetails.heightOfTheBuilding) : baseProp?.heightOfTheBuilding,
+                noOfDwellingUnits: useDetails.NumberofDwellingUnits
+                  ? Number(useDetails.NumberofDwellingUnits)
+                  : (baseProp?.noOfDwellingUnits || baseProp?.additionalDetails?.numberOfDwellingUnits || baseProp?.additionalDetails?.noOfDwellingUnits),
+                additionalDetails: {
+                  ...(baseProp?.additionalDetails || {}),
+                  plotArea: useDetails.plotArea || baseProp?.additionalDetails?.plotArea,
+                  builtUpArea: useDetails.builtUpArea || baseProp?.additionalDetails?.builtUpArea,
+                  heightOfTheBuilding: useDetails.heightOfTheBuilding || baseProp?.additionalDetails?.heightOfTheBuilding,
+                  numberOfDwellingUnits:
+                    useDetails.NumberofDwellingUnits ||
+                    baseProp?.additionalDetails?.numberOfDwellingUnits ||
+                    baseProp?.additionalDetails?.noOfDwellingUnits ||
+                    baseProp?.noOfDwellingUnits ||
+                    "",
+                  yearOfConstruction: useDetails.SelectYearofConstruction?.value || useDetails.SelectYearofConstruction || baseProp?.additionalDetails?.yearOfConstruction,
+                  categoryType: useDetails.categoryType?.code || useDetails.categoryType || baseProp?.additionalDetails?.categoryType,
+                  propertyCategory: useDetails.propertyCategory?.code || useDetails.propertyCategory || baseProp?.additionalDetails?.propertyCategory,
+                  propertyType: useDetails.propertyType?.code || useDetails.propertyType || baseProp?.additionalDetails?.propertyType,
+                  waterConnectionUsageType: useDetails.WaterConnectionUsageType?.code || useDetails.WaterConnectionUsageType || baseProp?.additionalDetails?.waterConnectionUsageType,
+                },
+              }
+            : {}),
+        };
+      })(),
       dueVerification: data?.isEditApplication ? data?.dueVerification : SewerageResult?.dueVerification,
       water: data?.applicationType?.includes("WATER") ? true : false,
       sewerage: data?.applicationType?.includes("WATER") ? true : false,
@@ -972,6 +1215,12 @@ export const convertToSWUpdate = (data) => {
   let formdata = {
     SewerageConnection: {
       ...data?.SewerageConnectionResult?.SewerageConnections?.[0],
+      property:
+        (data?.cpt?.details && Object.keys(data.cpt.details).length > 0)
+          ? { ...data.cpt.details }
+          : (data?.property && Object.keys(data.property).length > 0)
+          ? { ...data.property }
+          : data?.SewerageConnectionResult?.SewerageConnections?.[0]?.property,
       connectionType: "Non Metered",
       documents: getAllDocumentsForUpdate(data),
       additionalDetails: {
@@ -1003,6 +1252,17 @@ export const convertToSWUpdate = (data) => {
           ? {
               ...data?.disability,
               isDivyangjan: !!data?.disability?.isDivyangjan,
+            }
+          : {}),
+        ...(data?.rainWaterHarvesting !== undefined
+          ? {
+              ...data?.rainWaterHarvesting,
+              hasRainWaterHarvestingCertificate: !!(
+                data?.rainWaterHarvesting?.hasCertificate || data?.rainWaterHarvesting?.isRainwaterHarvesting
+              ),
+              isRainwaterHarvesting: !!(
+                data?.rainWaterHarvesting?.hasCertificate || data?.rainWaterHarvesting?.isRainwaterHarvesting
+              ),
             }
           : {}),
         ...(data?.bankDetails !== undefined ? data?.bankDetails : {}),

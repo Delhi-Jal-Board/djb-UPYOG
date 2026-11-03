@@ -420,6 +420,38 @@ public class EstimationService {
 
 		String requestConnectionCategory = criteria.getWaterConnection().getConnectionCategory();
 
+		// For Mutation Connection: Resolve connectionCategory from additionalDetails.propertyCategory
+		if (criteria.getWaterConnection() != null && 
+				WSCalculationConstant.MUTATION_WATER_CONNECTION.equalsIgnoreCase(criteria.getWaterConnection().getApplicationType())) {
+			if (criteria.getWaterConnection().getAdditionalDetails() != null) {
+				try {
+					Map<String, Object> additionalDetails = mapper.convertValue(criteria.getWaterConnection().getAdditionalDetails(), Map.class);
+					Object propCategoryObj = additionalDetails.get("propertyCategory");
+
+					if (propCategoryObj instanceof Map) {
+						Map<String, Object> propCatMap = (Map<String, Object>) propCategoryObj;
+						if (propCatMap.get("code") != null) {
+							String code = String.valueOf(propCatMap.get("code"));
+							if ("Residential".equalsIgnoreCase(code)) {
+								requestConnectionCategory = "DOMESTIC";
+							} else if ("Commercial".equalsIgnoreCase(code)) {
+								requestConnectionCategory = "COMMERCIAL";
+							}
+						}
+					} else if (propCategoryObj instanceof String && !((String) propCategoryObj).trim().isEmpty()) {
+						String code = (String) propCategoryObj;
+						if ("Residential".equalsIgnoreCase(code)) {
+							requestConnectionCategory = "DOMESTIC";
+						} else if ("Commercial".equalsIgnoreCase(code)) {
+							requestConnectionCategory = "COMMERCIAL";
+						}
+					}
+				} catch (Exception e) {
+					log.error("[WS-MUTATION] Error reading propertyCategory from additionalDetails", e);
+				}
+			}
+		}
+
 		if ((requestConnectionCategory == null || requestConnectionCategory.trim().isEmpty()) && criteria.getWaterConnection().getAdditionalDetails() != null) {
 
 			JSONObject additionalDetails = mapper.convertValue(criteria.getWaterConnection().getAdditionalDetails(), JSONObject.class);
@@ -1011,7 +1043,8 @@ public class EstimationService {
 			return Arrays.asList(
 					WSCalculationConstant.MUTATION_FEE,
 					WSCalculationConstant.WATER_ADVANCE,
-					WSCalculationConstant.MUTATION_TRADE_SECURITY
+					WSCalculationConstant.MUTATION_TRADE_SECURITY,
+					WSCalculationConstant.OCCUPY_SECURITY_CHARGE
 			).contains(feeComponent);
 		}
 		return true;

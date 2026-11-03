@@ -26,7 +26,7 @@ const EditProperty = () => {
         </LayoutWrapper>
       </Route>
       <Route exact path={`${match.path}/save-property`}>
-        <PTAcknowledgement data={params} onSuccess={onSuccess} userType="citizen" />
+        <PTAcknowledgement data={params} onSuccess={onSuccess} userType="citizen" isEdit={true} isUpdate={true} />
       </Route>
     </Switch>
   );

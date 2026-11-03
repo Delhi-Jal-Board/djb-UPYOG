@@ -154,7 +154,7 @@ public class RequestServiceController {
 				? criteria.getOffset() : 0;
 		criteria.setOffset(offset);
 
-		Long totalCount = waterTankerService.getWaterTankerFixedPointCount(criteria);
+		Long totalCount = waterTankerService.getWaterTankerFixedPointCount(criteria, requestInfoWrapper.getRequestInfo());
 
 		List<WaterTankerFixedPointDetail> applications =
 				waterTankerService.getWaterTankerFixedPointBookingDetails(

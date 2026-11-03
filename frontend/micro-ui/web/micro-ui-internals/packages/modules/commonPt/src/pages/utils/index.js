@@ -112,6 +112,8 @@ export const setAddressDetailsLW = (data) => {
     actualZone: actualZone,
     colonyMcdCategory: address?.colonyMcdCategory,
     noOfFloors: address?.noOfFloors?.code || address?.noOfFloors?.name || (typeof address?.noOfFloors === "string" ? address?.noOfFloors : undefined),
+    totalNoOfFloors: address?.totalNoOfFloors || address?.totalFloors,
+    totalFloors: address?.totalNoOfFloors || address?.totalFloors,
   };
 
   data.address = propAddress;
@@ -343,6 +345,8 @@ export const convertToPropertyLightWeight = (data = {}) => {
             ? (data.address?.noOfFloors?.code || data.locationDet?.noOfFloors?.code || data.propertyAddress?.noOfFloors?.code || data.waterConnection?.useDetails?.noOfFloors?.code || data.useDetails?.noOfFloors?.code)
             : (data.address?.noOfFloors || data.locationDet?.noOfFloors || data.propertyAddress?.noOfFloors || data.waterConnection?.useDetails?.noOfFloors || data.useDetails?.noOfFloors)) || 1,
         noOfFloors: noOfFloors,
+        totalNoOfFloors: data.address?.totalNoOfFloors || data.locationDet?.totalNoOfFloors || data.address?.totalFloors || data.locationDet?.totalFloors,
+        totalFloors: data.address?.totalNoOfFloors || data.locationDet?.totalNoOfFloors || data.address?.totalFloors || data.locationDet?.totalFloors,
         plotArea: data.waterConnection?.useDetails?.plotArea || data.useDetails?.plotArea,
         builtUpArea: data.waterConnection?.useDetails?.builtUpArea || data.useDetails?.builtUpArea,
         farArea: data.waterConnection?.useDetails?.farArea || data.useDetails?.farArea,
@@ -447,6 +451,8 @@ export const convertToUpdatePropertyLightWeight = (data = {}) => {
             ? (data.address?.noOfFloors?.code || data.locationDet?.noOfFloors?.code || data.propertyAddress?.noOfFloors?.code || data.waterConnection?.useDetails?.noOfFloors?.code || data.useDetails?.noOfFloors?.code)
             : (data.address?.noOfFloors || data.locationDet?.noOfFloors || data.propertyAddress?.noOfFloors || data.waterConnection?.useDetails?.noOfFloors || data.useDetails?.noOfFloors)) || 1,
         noOfFloors: noOfFloors,
+        totalNoOfFloors: data.address?.totalNoOfFloors || data.locationDet?.totalNoOfFloors || data.address?.totalFloors || data.locationDet?.totalFloors,
+        totalFloors: data.address?.totalNoOfFloors || data.locationDet?.totalNoOfFloors || data.address?.totalFloors || data.locationDet?.totalFloors,
         plotArea: data.waterConnection?.useDetails?.plotArea || data.useDetails?.plotArea,
         builtUpArea: data.waterConnection?.useDetails?.builtUpArea || data.useDetails?.builtUpArea,
         farArea: data.waterConnection?.useDetails?.farArea || data.useDetails?.farArea,

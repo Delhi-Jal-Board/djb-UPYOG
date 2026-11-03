@@ -31,10 +31,11 @@ const ApplicationBillAmendment = () => {
   const [showToast, setShowToast] = useState(null)
   //connectionNumber=WS/107/2021-22/227166&tenantId=pb.amritsar&service=WATER&connectionType=Metered
   const { t } = useTranslation();
-  const { connectionNumber, tenantId, service, connectionType, isEdit } = Digit.Hooks.useQueryParams();
+  const { connectionNumber, tenantId: queryTenantId, service, connectionType, isEdit } = Digit.Hooks.useQueryParams();
+  const tenantId = queryTenantId || Digit.ULBService.getCurrentTenantId() || "dl.djb";
   const stateId = Digit.ULBService.getStateId();
   let { state } = useLocation();
-  state = state  ? (typeof(state) === "string" ? JSON.parse(state) : state) : {};
+  state = state ? (typeof (state) === "string" ? JSON.parse(state) : state) : {};
   const [error, setUploadError] = useState("")
   const [ischeckedReduce, setischeckedReduce] = useState(false)
   const [ischeckedAddition, setischeckedAddition] = useState(false)
@@ -45,9 +46,9 @@ const ApplicationBillAmendment = () => {
     tenantId: stateId,
   });
 
-  const servicev1 = "WS";
+  const servicev1 = service === "SEWERAGE" || connectionNumber?.includes("SW") ? "SW" : "WS";
   const billSearchFilters = { tenantId, consumerCode: connectionNumber, service: servicev1 };
-  const { data: preBillSearchData, isLoading: isBillSearchLoading } = Digit.Hooks.usePaymentSearch(tenantId, billSearchFilters);
+  const { data: preBillSearchData, isLoading: isBillSearchLoading } = Digit.Hooks.usePaymentSearch(tenantId, billSearchFilters, { enabled: !!connectionNumber });
 
   const editFormData = state?.data?.applicationDetails?.amendment?.additionalDetails?.editForm;
   useEffect(() => {
@@ -105,27 +106,26 @@ const ApplicationBillAmendment = () => {
   const uploadFile = async (data, fname, props) => {
     setUploadError("")
     try {
-      if(data?.target?.files?.[0]?.size < 5242880 && /(.*?)(jpg|jpeg|png|pdf)$/i.test(data?.target?.files?.[0]?.type)){
-      dispatch({ type: "addLoader", payload: { id: fname } });
-      const response = await Digit.UploadServices.Filestorage("WS", data?.target?.files[0], tenantId);
-      const fileStoreId = response?.data?.files?.[0]?.fileStoreId;
-      if (fileStoreId) {
-        const { data: urlResponse } = await Digit.UploadServices.Filefetch([fileStoreId], tenantId);
-        const url = urlResponse?.fileStoreIds?.[0]?.url;
-        dispatch({ type: "upload", payload: { id: fname, url } });
-        props.onChange({ id: fname, url, fileName: data?.target?.files[0]?.name, fileStoreId, fileStore: fileStoreId });
-      } else {
-        alert(t("CS_FILE_UPLOAD_ERROR"));
+      if (data?.target?.files?.[0]?.size < 5242880 && /(.*?)(jpg|jpeg|png|pdf)$/i.test(data?.target?.files?.[0]?.type)) {
+        dispatch({ type: "addLoader", payload: { id: fname } });
+        const response = await Digit.UploadServices.Filestorage("WS", data?.target?.files[0], tenantId);
+        const fileStoreId = response?.data?.files?.[0]?.fileStoreId;
+        if (fileStoreId) {
+          const { data: urlResponse } = await Digit.UploadServices.Filefetch([fileStoreId], tenantId);
+          const url = urlResponse?.fileStoreIds?.[0]?.url;
+          dispatch({ type: "upload", payload: { id: fname, url } });
+          props.onChange({ id: fname, url, fileName: data?.target?.files[0]?.name, fileStoreId, fileStore: fileStoreId });
+        } else {
+          alert(t("CS_FILE_UPLOAD_ERROR"));
+        }
       }
-    }
-    else
-    {
-      if(data?.target?.files?.[0]?.size > 5242880)
-     { 
-      setUploadError({message : "FILE_SIZE_EXCEEDED", documentType :fname })}
-      else
-      setUploadError({message: "FILE_TYPE_MISMATCHED", documentType: fname})
-    }
+      else {
+        if (data?.target?.files?.[0]?.size > 5242880) {
+          setUploadError({ message: "FILE_SIZE_EXCEEDED", documentType: fname })
+        }
+        else
+          setUploadError({ message: "FILE_TYPE_MISMATCHED", documentType: fname })
+      }
     }
     catch (err) {
     } finally {
@@ -177,7 +177,7 @@ const ApplicationBillAmendment = () => {
   };
 
   const getDemandDetailsComparingUpdates = (d) => {
-    const action = (d?.[`${servicev1}_REDUCED_AMOUNT`]?.VALUE !== undefined && d?.[`${servicev1}_REDUCED_AMOUNT`]?.VALUE) || ((d?.[`${servicev1}_ADDITIONAL_AMOUNT`]?.VALUE !==undefined) && !(d?.[`${servicev1}_ADDITIONAL_AMOUNT`]?.VALUE)) ? "rebate" : "penalty";
+    const action = (d?.[`${servicev1}_REDUCED_AMOUNT`]?.VALUE !== undefined && d?.[`${servicev1}_REDUCED_AMOUNT`]?.VALUE) || ((d?.[`${servicev1}_ADDITIONAL_AMOUNT`]?.VALUE !== undefined) && !(d?.[`${servicev1}_ADDITIONAL_AMOUNT`]?.VALUE)) ? "rebate" : "penalty";
     let actionPerformed = JSON.parse(JSON.stringify(d?.WS_REDUCED_AMOUNT?.VALUE ? d?.WS_REDUCED_AMOUNT : d?.WS_ADDITIONAL_AMOUNT));
     delete actionPerformed?.VALUE;
     const actionPerformedInArray = Object.entries(actionPerformed);
@@ -219,7 +219,13 @@ const ApplicationBillAmendment = () => {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (goToAppDetailsPage) window.location.href = `${window.location.origin}/digit-ui/employee/ws/generate-note-bill-amendment?applicationNumber=${state?.data.applicationDetails.amendment.amendmentId}`
+      if (goToAppDetailsPage) {
+        if (isEmployee) {
+          window.location.href = `${window.location.origin}/digit-ui/employee/ws/generate-note-bill-amendment?applicationNumber=${state?.data?.applicationDetails?.amendment?.amendmentId}`;
+        } else {
+          window.location.href = `${window.location.origin}/digit-ui/citizen/ws/my-applications`;
+        }
+      }
     }, 5000);
     return () => clearTimeout(timer);
   }, [goToAppDetailsPage]);
@@ -296,7 +302,7 @@ const ApplicationBillAmendment = () => {
       return
     }
 
-    history.push("/digit-ui/employee/ws/response", data);
+    history.push(isEmployee ? "/digit-ui/employee/ws/response" : "/digit-ui/citizen/ws/response", data);
   };
 
 
@@ -308,13 +314,13 @@ const ApplicationBillAmendment = () => {
 
   };
 
-  function getReasonDocNoHeader(){
-    if(amendmentReason?.code === "COURT_CASE_SETTLEMENT")
-    return "WS_COURT_ORDER_NO";
-    else if(amendmentReason?.code === "ARREAR_WRITE_OFF" || amendmentReason?.code === "ONE_TIME_SETTLEMENT")
-    return "WS_GOVERNMENT_NOTIFICATION_NUMBER";
+  function getReasonDocNoHeader() {
+    if (amendmentReason?.code === "COURT_CASE_SETTLEMENT")
+      return "WS_COURT_ORDER_NO";
+    else if (amendmentReason?.code === "ARREAR_WRITE_OFF" || amendmentReason?.code === "ONE_TIME_SETTLEMENT")
+      return "WS_GOVERNMENT_NOTIFICATION_NUMBER";
     else
-    return "WS_DOCUMENT_NO";
+      return "WS_DOCUMENT_NO";
   }
 
   let adhocAmount = 0;
@@ -327,11 +333,28 @@ const ApplicationBillAmendment = () => {
     console.warn("Bill Amendment form errors:", formErrors);
   };
 
+  if (!connectionNumber) {
+    return (
+      <Card>
+        <Header>{t("WS_BILL_AMEND_APP")}</Header>
+        <CardText style={{ marginTop: "16px", marginBottom: "20px" }}>
+          {t("WS_SELECT_CONNECTION_FOR_BILL_AMENDMENT_MSG", "Please select a connection from your connections list to apply for Bill Amendment.")}
+        </CardText>
+        <ActionBar>
+          <SubmitBar
+            label={t("WS_VIEW_MY_CONNECTIONS", "Go to My Connections")}
+            onSubmit={() => history.push(isEmployee ? "/digit-ui/employee/ws/water/search-connection" : "/digit-ui/citizen/ws/my-connections")}
+          />
+        </ActionBar>
+      </Card>
+    );
+  }
+
   return (
     <form onSubmit={handleSubmit(onFormSubmit, onFormError)}>
-      <div style={{marginLeft:"20px"}}><Header>{state?.data?.action ? t("WS_APP_FOR_WATER_AND_SEWERAGE_EDIT_LABEL") : t("WS_BILL_AMENDMENT_BUTTON")}</Header></div>
+      <div style={{ marginLeft: "20px" }}><Header>{state?.data?.action ? t("WS_APP_FOR_WATER_AND_SEWERAGE_EDIT_LABEL") : t("WS_BILL_AMENDMENT_BUTTON")}</Header></div>
       <Card>
-        <LabelFieldPair style={{marginBottom:"20px"}}>
+        <LabelFieldPair style={{ marginBottom: "20px" }}>
           <CardLabel style={{ fontWeight: "500" }}>{t(`WS_ACKNO_CONNECTION_NO_LABEL`)}</CardLabel>
           <CardText style={{ marginBottom: "0px" }}>{connectionNumber}</CardText>
         </LabelFieldPair>
@@ -340,194 +363,194 @@ const ApplicationBillAmendment = () => {
 
         {!isBillSearchLoading ? (
           <table cellPadding={"8px"} cellSpacing={"10px"}>
-            <div  style={isMobile && isEmployee ? {overflow:"scroll",maxWidth:"50%"} : {}}>
-            <tbody>
-            <tr style={{ textAlign: "left" }}>
-              <th>{t("WS_TAX_HEADS")}</th>
-              <th style={{textAlign : "right"}}>{t("WS_CURRENT_AMOUNT")}</th>
-              <th style={{paddingLeft:"150px"}}>
-                <>
-                  <Controller
-                    name={`${servicev1}_REDUCED_AMOUNT.VALUE`}
-                    key={`${servicev1}_REDUCED_AMOUNT.VALUE`}
-                    control={control}
-                    defaultValue={false}
-                    rules={{
-                      validate: (value) => {
-                        return !!value || ischeckedAddition || !!getValues(`${servicev1}_ADDITIONAL_AMOUNT.VALUE`);
-                      },
-                    }}
-                    render={({ value, onChange }) => {
-                      return (
-                        <div
-                          style={{ paddingTop: "20px", marginLeft: "35px", cursor: "pointer" }}
-                          onClick={(e) => {
-                            if (e.target.tagName !== "INPUT") {
-                              const nextVal = !value;
-                              onChange(nextVal);
-                              setischeckedReduce(nextVal);
-                              if (nextVal) {
-                                setischeckedAddition(false);
-                                setValue(`${servicev1}_ADDITIONAL_AMOUNT.VALUE`, false);
-                                setOtherTextFieldsAndActionToNull(`${servicev1}_ADDITIONAL_AMOUNT`, false);
+            <div style={isMobile && isEmployee ? { overflow: "scroll", maxWidth: "50%" } : {}}>
+              <tbody>
+                <tr style={{ textAlign: "left" }}>
+                  <th>{t("WS_TAX_HEADS")}</th>
+                  <th style={{ textAlign: "right" }}>{t("WS_CURRENT_AMOUNT")}</th>
+                  <th style={{ paddingLeft: "150px" }}>
+                    <>
+                      <Controller
+                        name={`${servicev1}_REDUCED_AMOUNT.VALUE`}
+                        key={`${servicev1}_REDUCED_AMOUNT.VALUE`}
+                        control={control}
+                        defaultValue={false}
+                        rules={{
+                          validate: (value) => {
+                            return !!value || ischeckedAddition || !!getValues(`${servicev1}_ADDITIONAL_AMOUNT.VALUE`);
+                          },
+                        }}
+                        render={({ value, onChange }) => {
+                          return (
+                            <div
+                              style={{ paddingTop: "20px", marginLeft: "35px", cursor: "pointer" }}
+                              onClick={(e) => {
+                                if (e.target.tagName !== "INPUT") {
+                                  const nextVal = !value;
+                                  onChange(nextVal);
+                                  setischeckedReduce(nextVal);
+                                  if (nextVal) {
+                                    setischeckedAddition(false);
+                                    setValue(`${servicev1}_ADDITIONAL_AMOUNT.VALUE`, false);
+                                    setOtherTextFieldsAndActionToNull(`${servicev1}_ADDITIONAL_AMOUNT`, false);
+                                  }
+                                }
+                              }}
+                            >
+                              <CheckBox
+                                label={t(`${servicev1}_REDUCED_AMOUNT`)}
+                                checked={!!value}
+                                onChange={(e) => {
+                                  const isChecked = e.target.checked;
+                                  onChange(isChecked);
+                                  setischeckedReduce(isChecked);
+                                  if (isChecked) {
+                                    setischeckedAddition(false);
+                                    setValue(`${servicev1}_ADDITIONAL_AMOUNT.VALUE`, false);
+                                    setOtherTextFieldsAndActionToNull(`${servicev1}_ADDITIONAL_AMOUNT`, false);
+                                  }
+                                }}
+                              />
+                            </div>
+                          );
+                        }}
+                      />
+                      {errors?.WS_REDUCED_AMOUNT?.VALUE && !ischeckedAddition && !ischeckedReduce ? <CardLabelError style={{ marginLeft: "35px" }}>{t("WS_REQUIRED_FIELD")}</CardLabelError> : null}
+                    </>
+                  </th>
+                  <th>
+                    <>
+                      <Controller
+                        name={`${servicev1}_ADDITIONAL_AMOUNT.VALUE`}
+                        key={`${servicev1}_ADDITIONAL_AMOUNT.VALUE`}
+                        control={control}
+                        defaultValue={false}
+                        rules={{
+                          validate: (value) => {
+                            return !!value || ischeckedReduce || !!getValues(`${servicev1}_REDUCED_AMOUNT.VALUE`);
+                          },
+                        }}
+                        render={({ value, onChange }) => {
+                          return (
+                            <div
+                              style={{ paddingTop: "17px", marginLeft: "35px", cursor: "pointer" }}
+                              onClick={(e) => {
+                                if (e.target.tagName !== "INPUT") {
+                                  const nextVal = !value;
+                                  onChange(nextVal);
+                                  setischeckedAddition(nextVal);
+                                  if (nextVal) {
+                                    setischeckedReduce(false);
+                                    setValue(`${servicev1}_REDUCED_AMOUNT.VALUE`, false);
+                                    setOtherTextFieldsAndActionToNull(`${servicev1}_REDUCED_AMOUNT`, false);
+                                  }
+                                }
+                              }}
+                            >
+                              <CheckBox
+                                label={t(`${servicev1}_ADDITIONAL_AMOUNT`)}
+                                checked={!!value}
+                                onChange={(e) => {
+                                  const isChecked = e.target.checked;
+                                  onChange(isChecked);
+                                  setischeckedAddition(isChecked);
+                                  if (isChecked) {
+                                    setischeckedReduce(false);
+                                    setValue(`${servicev1}_REDUCED_AMOUNT.VALUE`, false);
+                                    setOtherTextFieldsAndActionToNull(`${servicev1}_REDUCED_AMOUNT`, false);
+                                  }
+                                }}
+                              />
+                            </div>
+                          );
+                        }}
+                      />
+                      {errors?.WS_ADDITIONAL_AMOUNT?.VALUE && !ischeckedReduce && !ischeckedAddition ? <CardLabelError style={{ marginLeft: "35px" }}>{t("WS_REQUIRED_FIELD")}</CardLabelError> : null}
+                    </>
+                  </th>
+                </tr>
+                {billSearchData?.map((node) => (
+                  <tr>
+                    <td style={{ paddingRight: "60px", fontWeight: "700" }}>{t(`${node.taxHeadCode}`)}</td>
+                    <td style={{ textAlign: "end" }}>₹ {node.amount}</td>
+                    <div>
+                      <td style={{ paddingRight: "60px", paddingLeft: "150px" }}>
+                        <>
+                          <TextInput
+                            disabled={!ischeckedReduce}
+                            type={"number"}
+                            name={`${servicev1}_REDUCED_AMOUNT.${node.taxHeadCode}`}
+                            inputRef={register({
+                              max: {
+                                value: node.amount,
+                                message: t(`${servicev1}_ERROR_ENTER_LESS_THAN_MAX_VALUE`),
+                              },
+                              pattern: {
+                                value: /^[+]?[1-9]\d*$/,
+                                message: t("CS_INVALID_INPUT")
                               }
-                            }
-                          }}
-                        >
-                          <CheckBox
-                            label={t(`${servicev1}_REDUCED_AMOUNT`)}
-                            checked={!!value}
-                            onChange={(e) => {
-                              const isChecked = e.target.checked;
-                              onChange(isChecked);
-                              setischeckedReduce(isChecked);
-                              if (isChecked) {
-                                setischeckedAddition(false);
-                                setValue(`${servicev1}_ADDITIONAL_AMOUNT.VALUE`, false);
-                                setOtherTextFieldsAndActionToNull(`${servicev1}_ADDITIONAL_AMOUNT`, false);
-                              }
-                            }}
+                            })}
                           />
-                        </div>
-                      );
-                    }}
-                  />
-                  {errors?.WS_REDUCED_AMOUNT?.VALUE && !ischeckedAddition && !ischeckedReduce ? <CardLabelError style={{ marginLeft: "35px" }}>{t("WS_REQUIRED_FIELD")}</CardLabelError> : null}
-                </>
-              </th>
-              <th>
-                <>
-                  <Controller
-                    name={`${servicev1}_ADDITIONAL_AMOUNT.VALUE`}
-                    key={`${servicev1}_ADDITIONAL_AMOUNT.VALUE`}
-                    control={control}
-                    defaultValue={false}
-                    rules={{
-                      validate: (value) => {
-                        return !!value || ischeckedReduce || !!getValues(`${servicev1}_REDUCED_AMOUNT.VALUE`);
-                      },
-                    }}
-                    render={({ value, onChange }) => {
-                      return (
-                        <div
-                          style={{ paddingTop: "17px", marginLeft: "35px", cursor: "pointer" }}
-                          onClick={(e) => {
-                            if (e.target.tagName !== "INPUT") {
-                              const nextVal = !value;
-                              onChange(nextVal);
-                              setischeckedAddition(nextVal);
-                              if (nextVal) {
-                                setischeckedReduce(false);
-                                setValue(`${servicev1}_REDUCED_AMOUNT.VALUE`, false);
-                                setOtherTextFieldsAndActionToNull(`${servicev1}_REDUCED_AMOUNT`, false);
-                              }
+                        </>
+                      </td>
+                      {errors?.WS_REDUCED_AMOUNT?.[node.taxHeadCode] && <CardLabelError style={{ marginBottom: "-20px", marginTop: "-30px", marginLeft: "150px" }}>{errors?.WS_REDUCED_AMOUNT?.[node.taxHeadCode]?.message}</CardLabelError>}
+                    </div>
+                    <td style={{ paddingRight: "60px" }}>
+                      <>
+                        <TextInput
+                          disabled={!ischeckedAddition}
+                          type={"number"}
+                          name={`${servicev1}_ADDITIONAL_AMOUNT.${node.taxHeadCode}`}
+                          //inputRef={register()}
+                          inputRef={register({
+                            pattern: {
+                              value: /^[+]?[1-9]\d*$/,
+                              message: t("CS_INVALID_INPUT")
                             }
-                          }}
-                        >
-                          <CheckBox
-                            label={t(`${servicev1}_ADDITIONAL_AMOUNT`)}
-                            checked={!!value}
-                            onChange={(e) => {
-                              const isChecked = e.target.checked;
-                              onChange(isChecked);
-                              setischeckedAddition(isChecked);
-                              if (isChecked) {
-                                setischeckedReduce(false);
-                                setValue(`${servicev1}_REDUCED_AMOUNT.VALUE`, false);
-                                setOtherTextFieldsAndActionToNull(`${servicev1}_REDUCED_AMOUNT`, false);
-                              }
-                            }}
-                          />
-                        </div>
-                      );
-                    }}
-                  />
-                  {errors?.WS_ADDITIONAL_AMOUNT?.VALUE && !ischeckedReduce && !ischeckedAddition ? <CardLabelError style={{ marginLeft: "35px" }}>{t("WS_REQUIRED_FIELD")}</CardLabelError> : null}
-                </>
-              </th>
-            </tr>
-            {billSearchData?.map((node) => (
-              <tr>
-                <td style={{ paddingRight: "60px", fontWeight:"700" }}>{t(`${node.taxHeadCode}`)}</td>
-                <td style={{  textAlign: "end" }}>₹ {node.amount}</td>
-                <div>
-                <td style={{ paddingRight: "60px", paddingLeft:"150px" }}>
-                  <>
-                    <TextInput
-                      disabled={!ischeckedReduce}
-                      type={"number"}
-                      name={`${servicev1}_REDUCED_AMOUNT.${node.taxHeadCode}`}
-                      inputRef={register({
-                        max: {
-                          value: node.amount,
-                          message: t(`${servicev1}_ERROR_ENTER_LESS_THAN_MAX_VALUE`),
-                        },
-                        pattern:{
-                          value: /^[+]?[1-9]\d*$/,
-                          message: t("CS_INVALID_INPUT")
-                        }
-                      })}
-                    />
-                  </>
-                </td>
-                {errors?.WS_REDUCED_AMOUNT?.[node.taxHeadCode] && <CardLabelError style={{marginBottom:"-20px", marginTop:"-30px", marginLeft:"150px"}}>{errors?.WS_REDUCED_AMOUNT?.[node.taxHeadCode]?.message}</CardLabelError>}
-                  </div>    
-                <td style={{ paddingRight: "60px" }}>
-                  <>
-                    <TextInput
-                      disabled={!ischeckedAddition}
-                      type={"number"}
-                      name={`${servicev1}_ADDITIONAL_AMOUNT.${node.taxHeadCode}`}
-                      //inputRef={register()}
-                      inputRef={register({
-                        pattern:{
-                          value: /^[+]?[1-9]\d*$/,
-                          message: t("CS_INVALID_INPUT")
-                        }
-                      })}
-                    />
-                  </>
-                  {errors?.WS_ADDITIONAL_AMOUNT?.[node.taxHeadCode] && <CardLabelError style={{ marginTop:"-19px"}}>{errors?.WS_ADDITIONAL_AMOUNT?.[node.taxHeadCode]?.message}</CardLabelError>}
-                
-                </td>
-              </tr>
-            ))}
-            {<tr>
-              <td style={{ paddingRight: "60px", fontWeight:"700" }}>{t("WS_REBATE_PENALTY")}
-                <div className="tooltip" style={{marginLeft:"10px",marginBottom:"-4px"}}>
-                  <InfoBannerIcon fill="#0b0c0c" style />
-                  <span className="tooltiptext" style={{
-                    whiteSpace: "nowrap",
-                    fontSize: "medium"
-                  }}>
-                    {`1. ${t(`WS_ADHOC_REBATE_TOOLTIP`)}`}
-                    <br /><br />
-                    {`2. ${t(`WS_ADHOC_PENALTY_TOOLTIP`)}`}
-                  </span>
-                </div>
-              </td>
-              <td style={{  textAlign: "end" }}>₹ {adhocAmount || 0}</td>
-              
-              <td style={{ paddingRight: "60px", paddingLeft:"150px" }}>
-                <>
-                  <TextInput
-                    disabled={!ischeckedReduce}
-                    name={`${servicev1}_REBATE`}
-                    inputRef={register()}
-                  />
-                </>
-              </td>
-              <td style={{ paddingRight: "60px" }}>
-                <>
-                  <TextInput
-                    disabled={!ischeckedAddition}
-                    name={`${servicev1}_PENALTY`}
-                    inputRef={register()}
-                  />
-                </>
-              </td>
-            </tr>}
-            </tbody>
+                          })}
+                        />
+                      </>
+                      {errors?.WS_ADDITIONAL_AMOUNT?.[node.taxHeadCode] && <CardLabelError style={{ marginTop: "-19px" }}>{errors?.WS_ADDITIONAL_AMOUNT?.[node.taxHeadCode]?.message}</CardLabelError>}
+
+                    </td>
+                  </tr>
+                ))}
+                {<tr>
+                  <td style={{ paddingRight: "60px", fontWeight: "700" }}>{t("WS_REBATE_PENALTY")}
+                    <div className="tooltip" style={{ marginLeft: "10px", marginBottom: "-4px" }}>
+                      <InfoBannerIcon fill="#0b0c0c" style />
+                      <span className="tooltiptext" style={{
+                        whiteSpace: "nowrap",
+                        fontSize: "medium"
+                      }}>
+                        {`1. ${t(`WS_ADHOC_REBATE_TOOLTIP`)}`}
+                        <br /><br />
+                        {`2. ${t(`WS_ADHOC_PENALTY_TOOLTIP`)}`}
+                      </span>
+                    </div>
+                  </td>
+                  <td style={{ textAlign: "end" }}>₹ {adhocAmount || 0}</td>
+
+                  <td style={{ paddingRight: "60px", paddingLeft: "150px" }}>
+                    <>
+                      <TextInput
+                        disabled={!ischeckedReduce}
+                        name={`${servicev1}_REBATE`}
+                        inputRef={register()}
+                      />
+                    </>
+                  </td>
+                  <td style={{ paddingRight: "60px" }}>
+                    <>
+                      <TextInput
+                        disabled={!ischeckedAddition}
+                        name={`${servicev1}_PENALTY`}
+                        inputRef={register()}
+                      />
+                    </>
+                  </td>
+                </tr>}
+              </tbody>
             </div>
           </table>
         ) : (
@@ -578,52 +601,52 @@ const ApplicationBillAmendment = () => {
             </LabelFieldPair>
             {errors?.effectiveFrom ? <CardLabelError style={{ width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" }}>{t("WS_REQUIRED_FIELD")}</CardLabelError> : null}
             {amendmentReason?.code !== "COURT_CASE_SETTLEMENT" && <div>
-            <LabelFieldPair>
-              <CardLabel style={{ fontWeight: "500" }}>{`${t("WS_BILL_AMEND_EFFECTIVE_TILL")} *`}</CardLabel>
-              <Controller
-                render={(props) => <DatePicker style={isMobile && isEmployee ? {} : { width: "640px" }} date={props.value} disabled={false} onChange={props.onChange} />}
-                name="effectiveTill"
-                rules={{ required: true, validate: { isValidToDate } }}
-                control={control}
-              />
+              <LabelFieldPair>
+                <CardLabel style={{ fontWeight: "500" }}>{`${t("WS_BILL_AMEND_EFFECTIVE_TILL")} *`}</CardLabel>
+                <Controller
+                  render={(props) => <DatePicker style={isMobile && isEmployee ? {} : { width: "640px" }} date={props.value} disabled={false} onChange={props.onChange} />}
+                  name="effectiveTill"
+                  rules={{ required: true, validate: { isValidToDate } }}
+                  control={control}
+                />
 
-            </LabelFieldPair>
-            {errors?.effectiveTill?.type === "required" && <CardLabelError style={{ width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" }}>{t("WS_REQUIRED_FIELD")}</CardLabelError>}
-            {errors?.effectiveTill?.message === "Invalid format" && <CardLabelError style={{ width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" }}>{t("ERR_DEFAULT_INPUT_FIELD_MSG")}</CardLabelError>}
+              </LabelFieldPair>
+              {errors?.effectiveTill?.type === "required" && <CardLabelError style={{ width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" }}>{t("WS_REQUIRED_FIELD")}</CardLabelError>}
+              {errors?.effectiveTill?.message === "Invalid format" && <CardLabelError style={{ width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" }}>{t("ERR_DEFAULT_INPUT_FIELD_MSG")}</CardLabelError>}
             </div>}
           </>
         )}
         {!!amendmentReason ? <CardSectionHeader style={{ marginBottom: "16px" }}>{t("WS_DOCUMENT_REQUIRED")}</CardSectionHeader> : null}
         {requiredDocuments?.map((e) => (
-          <div style={{marginBottom:"25px"}}>
-          <LabelFieldPair>
-            <CardLabel style={{ fontWeight: "500" }}>
-              {t(`${e?.documentType}`)}
-              {e?.required ? `*` : null}
-            </CardLabel>
-            <div className="field">
-              <Controller
-                name={`DOCUMENTS.${e?.documentType}`}
-                control={control}
-                rules={e?.required ? { required: true } : {}}
-                render={(props) => (
-                  <UploadFile
-                    id={`ws-doc-${e.documentType}`}
-                    onUpload={(d) => functionToHandleFileUpload(d, e?.documentType, props)}
-                    onDelete={() => dispatch({ type: "remove", payload: { id: e?.documentType } })}
-                    style={isMobile && isEmployee ? {} : { width: "640px" }}
-                    //message={functionToDisplayTheMessage}
-                    message={e?.url ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
-                    accept= "image/*, .pdf, .png, .jpeg, .jpg"
-                    textStyles={{ width: "100%" }}
-                    inputStyles={{ width: "280px" }}
-                    error={error?.message}
-                  />
-                )}
-              />
-            </div>
-          </LabelFieldPair>
-          {errors?.["DOCUMENTS"]?.[e?.documentType] || (error && error?.documentType === e.documentType) ? <CardLabelError style={{ width: "70%", marginLeft: "30%", fontSize: "12px"}}>{error && error?.documentType === e.documentType ? t(error?.message) : t("WS_NO_FILE_SELECTED")}</CardLabelError> : null}
+          <div style={{ marginBottom: "25px" }}>
+            <LabelFieldPair>
+              <CardLabel style={{ fontWeight: "500" }}>
+                {t(`${e?.documentType}`)}
+                {e?.required ? `*` : null}
+              </CardLabel>
+              <div className="field">
+                <Controller
+                  name={`DOCUMENTS.${e?.documentType}`}
+                  control={control}
+                  rules={e?.required ? { required: true } : {}}
+                  render={(props) => (
+                    <UploadFile
+                      id={`ws-doc-${e.documentType}`}
+                      onUpload={(d) => functionToHandleFileUpload(d, e?.documentType, props)}
+                      onDelete={() => dispatch({ type: "remove", payload: { id: e?.documentType } })}
+                      style={isMobile && isEmployee ? {} : { width: "640px" }}
+                      //message={functionToDisplayTheMessage}
+                      message={e?.url ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
+                      accept="image/*, .pdf, .png, .jpeg, .jpg"
+                      textStyles={{ width: "100%" }}
+                      inputStyles={{ width: "280px" }}
+                      error={error?.message}
+                    />
+                  )}
+                />
+              </div>
+            </LabelFieldPair>
+            {errors?.["DOCUMENTS"]?.[e?.documentType] || (error && error?.documentType === e.documentType) ? <CardLabelError style={{ width: "70%", marginLeft: "30%", fontSize: "12px" }}>{error && error?.documentType === e.documentType ? t(error?.message) : t("WS_NO_FILE_SELECTED")}</CardLabelError> : null}
           </div>
         ))}
       </Card>
@@ -637,9 +660,9 @@ const ApplicationBillAmendment = () => {
         />
       ) : null}
       <ActionBar>
-        <SubmitBar 
-          submit={true} 
-          label={state?.data?.action ? t("WF_CITIZEN_NEWWS1_RESUBMIT_APPLICATION") : t("WS_COMMON_BUTTON_SUBMIT")} 
+        <SubmitBar
+          submit={true}
+          label={state?.data?.action ? t("WF_CITIZEN_NEWWS1_RESUBMIT_APPLICATION") : t("WS_COMMON_BUTTON_SUBMIT")}
           onSubmit={handleSubmit(onFormSubmit, onFormError)}
         />
       </ActionBar>

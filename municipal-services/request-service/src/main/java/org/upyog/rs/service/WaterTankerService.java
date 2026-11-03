@@ -35,7 +35,7 @@ public interface WaterTankerService {
 	WaterTankerBookingDetail updateBookingLifecycle(WaterTankerBookingRequest request);
 
 	FixedFillingPointMapping createMapping(FixedFillingPointMappingRequest request);
-	Long getWaterTankerFixedPointCount(WaterTankerFixedPointBookingSearchCriteria criteria);
+	Long getWaterTankerFixedPointCount(WaterTankerFixedPointBookingSearchCriteria criteria, RequestInfo requestInfo);
 	BookingStatusCountResponse getBookingStatusCounts(WaterTankerBookingSearchCriteria criteria,RequestInfo requestInfo);
 	Integer getTotalApplicationsCount(WaterTankerBookingSearchCriteria waterTankerBookingSearchCriteria,
 									  RequestInfo requestInfo);

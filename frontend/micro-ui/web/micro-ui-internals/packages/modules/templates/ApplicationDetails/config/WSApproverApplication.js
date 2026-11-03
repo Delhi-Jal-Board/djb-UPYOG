@@ -20,7 +20,7 @@ export const configWSApproverApplication = ({
   setOtherReasonText,
 }) => {
   let checkCondtions = true;
-  if (action?.action?.includes("SEND_BACK") || action?.action == "APPROVE_FOR_CONNECTION") checkCondtions = false;
+  if (action?.action?.includes("SEND_BACK") || action?.action == "APPROVE_FOR_CONNECTION" || action?.action === "ACTIVATE_CONNECTION") checkCondtions = false;
   if (action.isTerminateState) checkCondtions = false;
 
   const reasonOptions = [
@@ -51,7 +51,7 @@ export const configWSApproverApplication = ({
           ),
         },
         {
-          label: t("WF_COMMON_COMMENTS"),
+          label: t("WF_COMMON_COMMENTS") && t("WF_COMMON_COMMENTS") !== "WF_COMMON_COMMENTS" ? t("WF_COMMON_COMMENTS") : "Comments",
           type: "textarea",
           populators: {
             name: "comments",
@@ -60,7 +60,7 @@ export const configWSApproverApplication = ({
       ]
     : [
         {
-          label: t("WF_COMMON_COMMENTS"),
+          label: t("WF_COMMON_COMMENTS") && t("WF_COMMON_COMMENTS") !== "WF_COMMON_COMMENTS" ? t("WF_COMMON_COMMENTS") : "Comments",
           type: "textarea",
           populators: {
             name: "comments",
@@ -68,10 +68,34 @@ export const configWSApproverApplication = ({
         },
       ];
 
+  const isActivate = action?.action === "ACTIVATE_CONNECTION";
+
+  const getHeadingLabel = () => {
+    if (isActivate) {
+      const translated = t("WF_APPROVE_APPLICATION");
+      if (translated && translated !== "WF_APPROVE_APPLICATION") return translated;
+      return "Approve Application";
+    }
+    return `WF_${action?.action}_APPLICATION`;
+  };
+
+  const getSubmitLabel = () => {
+    if (isActivate) {
+      const translated = t("WF_APPROVE_CONNECTION");
+      if (translated && translated !== "WF_APPROVE_CONNECTION") return translated;
+      const translatedAction = t("WF_EMPLOYEE_NEWWS1_ACTIVATE_CONNECTION");
+      if (translatedAction && translatedAction !== "WF_EMPLOYEE_NEWWS1_ACTIVATE_CONNECTION" && translatedAction !== "Activate Connection") {
+        return translatedAction;
+      }
+      return "Approve Connection";
+    }
+    return `WF_${businessService?.toUpperCase()}_${action?.action}`;
+  };
+
   return {
     label: {
-      heading: `WF_${action?.action}_APPLICATION`,
-      submit: `WF_${businessService?.toUpperCase()}_${action?.action}`,
+      heading: getHeadingLabel(),
+      submit: getSubmitLabel(),
       cancel: "CS_COMMON_CANCEL",
     },
     form: [

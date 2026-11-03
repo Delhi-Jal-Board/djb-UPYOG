@@ -38,6 +38,8 @@ const Response = () => {
         getAckPdf(applicationDetails?.amendment, tenantId, t, applicationDetails?.applicationDetails, applicationDetails)
     }
 
+    const isEmployee = window.location.href.includes("/employee");
+
     return <div>
         {isLoading || isLoadingAppDetails ? <Loader/> : <Card>
             <Banner
@@ -54,16 +56,23 @@ const Response = () => {
               {t("WS_PRINT_APPLICATION_LABEL")}
             </div>)}
             <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
-                {data?.Amendments?.[0]?.amendmentId && (
+                {data?.Amendments?.[0]?.amendmentId && isEmployee && (
                   <SubmitBar 
                     label={t("CS_TITLE_GENERATE_NOTE")} 
                     onSubmit={() => history.push(`/digit-ui/employee/ws/generate-note-bill-amendment?applicationNumber=${data?.Amendments?.[0]?.amendmentId}`)}
                     style={{ marginRight: "1rem" }}
                   />
                 )}
+                {data?.Amendments?.[0]?.amendmentId && !isEmployee && (
+                  <SubmitBar 
+                    label={t("WS_TRACK_APPLICATION", "Track Application")} 
+                    onSubmit={() => history.push(`/digit-ui/citizen/ws/bill-amendment/application-details?applicationNumber=${data?.Amendments?.[0]?.amendmentId}`)}
+                    style={{ marginRight: "1rem" }}
+                  />
+                )}
                 <SubmitBar 
                   label={t("CORE_COMMON_GO_TO_HOME")} 
-                  onSubmit={() => history.push(`/digit-ui/employee`)}
+                  onSubmit={() => history.push(isEmployee ? `/digit-ui/employee` : `/digit-ui/citizen`)}
                   style={{ marginRight: "1rem" }}
                 />
             </ActionBar>

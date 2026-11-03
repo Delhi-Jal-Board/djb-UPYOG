@@ -101,7 +101,16 @@ public class WaterTankerFixedPointQueryBuilder {
 
         //query.append(" WHERE ad.fixed_point_id IS NOT NULL ");
 
-        if (criteria.getMobileNumber() != null && !criteria.getMobileNumber().trim().isEmpty()) {
+        if (criteria.getCreatedBy() != null && !criteria.getCreatedBy().isEmpty()) {
+            String placeholders = String.join(",", java.util.Collections.nCopies(criteria.getCreatedBy().size(), "?"));
+            query.append(" AND ( ad.createdby IN (").append(placeholders).append(") ");
+            preparedStmtList.addAll(criteria.getCreatedBy());
+            if (criteria.getMobileNumber() != null && !criteria.getMobileNumber().trim().isEmpty()) {
+                query.append(" OR ad.mobile_number = ? ");
+                preparedStmtList.add(criteria.getMobileNumber());
+            }
+            query.append(" ) ");
+        } else if (criteria.getMobileNumber() != null && !criteria.getMobileNumber().trim().isEmpty()) {
             query.append(" AND ad.mobile_number = ? ");
             preparedStmtList.add(criteria.getMobileNumber());
         }
@@ -165,7 +174,16 @@ public class WaterTankerFixedPointQueryBuilder {
         );
         preparedStmtList.add("FIXED-POINT");
 
-        if (criteria.getMobileNumber() != null && !criteria.getMobileNumber().trim().isEmpty()) {
+        if (criteria.getCreatedBy() != null && !criteria.getCreatedBy().isEmpty()) {
+            String placeholders = String.join(",", java.util.Collections.nCopies(criteria.getCreatedBy().size(), "?"));
+            query.append(" AND ( ad.createdby IN (").append(placeholders).append(") ");
+            preparedStmtList.addAll(criteria.getCreatedBy());
+            if (criteria.getMobileNumber() != null && !criteria.getMobileNumber().trim().isEmpty()) {
+                query.append(" OR ad.mobile_number = ? ");
+                preparedStmtList.add(criteria.getMobileNumber());
+            }
+            query.append(" ) ");
+        } else if (criteria.getMobileNumber() != null && !criteria.getMobileNumber().trim().isEmpty()) {
             query.append(" AND ad.mobile_number = ? ");
             preparedStmtList.add(criteria.getMobileNumber());
         }

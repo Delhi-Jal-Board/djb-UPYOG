@@ -40,7 +40,6 @@ public class Address {
 	@NotBlank
 	private String houseNo;
 	
-	@NotBlank
 	private String streetName;
 	
 	@NotBlank

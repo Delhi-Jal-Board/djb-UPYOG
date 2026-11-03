@@ -119,7 +119,7 @@ const Step4_Preview = ({ t, formData, applicationDetails, resolvedServiceType, o
         <div style={{ display: "grid", gridTemplateColumns: isMobileView ? "1fr 1fr" : "repeat(auto-fill, minmax(150px, 1fr))", gap: isMobileView ? "12px" : "16px" }}>
           {infoItem("Connection No", connectionNo)}
           {infoItem("Meter Number", meterId)}
-          {infoItem("Property ID", propertyId)}
+          {/* {infoItem("Property ID", propertyId)} */}
         </div>
       </div>
 

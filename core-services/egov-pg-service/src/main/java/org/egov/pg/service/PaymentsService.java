@@ -103,17 +103,24 @@ public class PaymentsService {
 					.build();
 			paymentDetails.add(detail);
 		}
+
+
+		String userName = null;
+		if (request.getTransaction().getUser() != null && request.getTransaction().getUser().getName() != null) {
+			userName = request.getTransaction().getUser().getName().trim();
+			request.getTransaction().getUser().setName(userName);
+		}
 				
 		return CollectionPayment.builder().paymentDetails(paymentDetails)
 				.tenantId(request.getTransaction().getTenantId())
 				.totalAmountPaid(new BigDecimal(request.getTransaction().getTxnAmount()))
 				.paymentMode(CollectionPaymentModeEnum.ONLINE)
-				.paidBy(request.getTransaction().getUser().getName())
-				.mobileNumber(request.getTransaction().getUser().getMobileNumber())
+				.paidBy(userName)
+				.mobileNumber(request.getTransaction().getUser() != null ? request.getTransaction().getUser().getMobileNumber() : null)
 				.instrumentDate(System.currentTimeMillis())
 				.instrumentNumber("PROV_PAYMENT_VALIDATION")
 				.transactionNumber("PROV_PAYMENT_VALIDATION")
-				.payerName(request.getTransaction().getUser().getName())
+				.payerName(userName)
 				.build();
 	}
 

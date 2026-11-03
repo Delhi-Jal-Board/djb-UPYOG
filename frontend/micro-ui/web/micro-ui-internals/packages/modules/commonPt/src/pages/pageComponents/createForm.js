@@ -68,6 +68,8 @@ const CreatePropertyForm = ({ config, onSelect, value, userType, redirectUrl }) 
             streetName: propertyAddress?.streetName || propertyAddress?.street,
             landmarkName: propertyAddress?.landmark || propertyAddress?.landmarkName,
             noOfFloors: propertyAddress?.noOfFloors || propertyAddress?.numberOfFloors || useDetails?.noOfFloors,
+            totalNoOfFloors: propertyAddress?.totalNoOfFloors || propertyAddress?.totalFloors || useDetails?.totalNoOfFloors || useDetails?.totalFloors,
+            totalFloors: propertyAddress?.totalNoOfFloors || propertyAddress?.totalFloors || useDetails?.totalNoOfFloors || useDetails?.totalFloors,
             landmark: propertyAddress?.landmark || propertyAddress?.landmarkName,
             pincode: propertyAddress?.pincode || propertyAddress?.pinCode,
             latitude: propertyAddress?.latitude || propertyAddress?.geoLocation?.latitude || "",
@@ -144,7 +146,16 @@ const CreatePropertyForm = ({ config, onSelect, value, userType, redirectUrl }) 
       },
     };
     const loc = currentFormValue?.locationDet;
-    if (!loc?.addressType || !loc?.city || !loc?.pincode || !loc?.locality || !loc?.addressLine1 || !loc?.houseNo) {
+    if (
+      !loc?.addressType ||
+      !loc?.city ||
+      !loc?.pincode ||
+      !loc?.locality ||
+      !loc?.addressLine1 ||
+      !loc?.houseNo ||
+      !loc?.landmark ||
+      (typeof loc?.landmark === "string" && !loc?.landmark?.trim())
+    ) {
       setShowToast({ key: true, label: t("Please fill all the mandatory fields") });
       return;
     }
@@ -208,7 +219,7 @@ const CreatePropertyForm = ({ config, onSelect, value, userType, redirectUrl }) 
             setShowToast({ key: true, label: data?.Errors[0]?.message || t("PT_COMMON_FAILED_TO_CREATE_PROPERTY") });
             return;
           }
-          setShowToast({ key: false, label: `${t("CS_NEW_PROPERTY_APPLICATION_CREATED_SUCCESS")} - ${data?.Properties?.[0]?.propertyId}` });
+          // setShowToast({ key: false, label: `${t("CS_NEW_PROPERTY_APPLICATION_CREATED_SUCCESS")} - ${data?.Properties?.[0]?.propertyId}` });
           setTimeout(() => {
             if (onSelect) {
               onSelect("cptNewProperty", { property: data?.Properties?.[0] });
@@ -217,7 +228,7 @@ const CreatePropertyForm = ({ config, onSelect, value, userType, redirectUrl }) 
                 property: data?.Properties?.[0]
               });
             }
-          }, 3000);
+          }, 1000);
         },
         onError: (error) => {
           setShowToast({ key: true, label: error?.response?.data?.Errors?.[0]?.message || t("PT_COMMON_FAILED_TO_CREATE_PROPERTY") });

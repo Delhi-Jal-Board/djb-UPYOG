@@ -293,13 +293,13 @@ const PropertySearchNSummary = ({ config, onSelect, userType, formData, setError
                 <Card className="card-with-background" style={{ boxShadow: "none" }}>
                   <StatusTable style={{ padding: "0", margin: "0" }}>
                     <div className="formcomposer-section-grid" style={isMobile ? {} : {}}>
-                      <Row
+                      {/* <Row
                         className="border-none"
                         labelStyle={isMobile ? { width: "40%" } : { width: "30%", color: "#505a5f", fontWeight: "600" }}
                         textStyle={{ color: "#000" }}
                         label={t(`PROPERTY_ID`)}
                         text={activeProperty?.propertyId}
-                      />
+                      /> */}
                       <Row
                         className="border-none"
                         labelStyle={isMobile ? { width: "40%" } : { width: "30%", color: "#505a5f", fontWeight: "600" }}

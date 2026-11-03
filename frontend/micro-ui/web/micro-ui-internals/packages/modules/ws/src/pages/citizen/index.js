@@ -5,6 +5,11 @@ import { PrivateRoute, BackButton, LayoutWrapper, ModuleHeader, ArrowLeft, AppCo
 import TestAcknowledgment from "./TestAcknowledgment";
 import { WSMyApplications } from "./WSMyApplications";
 import WSResponse from "../employee/WSResponse";
+import Response from "../employee/Response";
+import ResponseBillAmend from "../employee/ResponseBillAmend";
+import ApplicationBillAmendment from "../employee/ApplicationBillAmendment";
+import ApplicationDetailsBillAmendment from "../employee/ApplicationDetailsBillAmendment";
+import RequiredDocuments from "../employee/RequiredDocuments";
 import { HomeIcon } from "@djb25/digit-ui-react-components";
 
 const App = ({ path }) => {
@@ -162,6 +167,26 @@ const App = ({ path }) => {
       label: t("WS_APPLICATION_DETAILS_HEADER"),
       show: location.pathname.includes("ws-response"),
     },
+    {
+      path: "/digit-ui/citizen/ws/required-documents",
+      label: t("ES_COMMON_WS_DOCUMENTS_REQUIRED"),
+      show: location.pathname.includes("/required-documents"),
+    },
+    {
+      path: "/digit-ui/citizen/ws/bill-amendment",
+      label: t("WS_BILL_AMEND_APP"),
+      show: location.pathname.includes("/bill-amendment"),
+    },
+    {
+      path: "/digit-ui/citizen/ws/response",
+      label: t("WS_ACK_SCREEN"),
+      show: location.pathname.includes("/response"),
+    },
+    {
+      path: "/digit-ui/citizen/ws/bill-amendment/application-details",
+      label: t("WS_BILL_AMEND_APP_DETAILS", "Bill Amendment Details"),
+      show: location.pathname.includes("/bill-amendment/application-details"),
+    },
   ];
 
   const getDynamicBreadcrumbs = () => {
@@ -191,6 +216,9 @@ const App = ({ path }) => {
   const WSMutationApplication = Digit?.ComponentRegistryService?.getComponent("WSMutationApplication");
   const WSExecuteDisconnection = Digit?.ComponentRegistryService?.getComponent("WSExecuteDisconnection");
   const WSActivateConnection = Digit?.ComponentRegistryService?.getComponent("WSActivateConnection");
+  const WSApplicationBillAmendment = Digit?.ComponentRegistryService?.getComponent("WSApplicationBillAmendment") || ApplicationBillAmendment;
+  const WSRequiredDocuments = Digit?.ComponentRegistryService?.getComponent("WSRequiredDocuments") || RequiredDocuments;
+  const WSApplicationDetailsBillAmendment = Digit?.ComponentRegistryService?.getComponent("WSApplicationDetailsBillAmendment") || ApplicationDetailsBillAmendment;
   return (
     <React.Fragment>
       <Switch>
@@ -247,6 +275,11 @@ const App = ({ path }) => {
                 <PrivateRoute path={`${path}/info`} component={WSInfoPage} />
                 <PrivateRoute path={`${path}/ws-response`} component={WSResponse} />
                 <PrivateRoute path={`${path}/mutation-application`} component={WSMutationApplication} />
+                <PrivateRoute path={`${path}/bill-amendment`} component={(props) => <WSApplicationBillAmendment {...props} path={path} />} />
+                <PrivateRoute path={`${path}/required-documents`} component={(props) => <WSRequiredDocuments {...props} path={path} />} />
+                <PrivateRoute path={`${path}/response`} component={(props) => <Response {...props} path={path} />} />
+                <PrivateRoute path={`${path}/response-bill-amend`} component={(props) => <ResponseBillAmend {...props} path={path} />} />
+                <PrivateRoute path={`${path}/bill-amendment/application-details`} component={(props) => <WSApplicationDetailsBillAmendment {...props} path={path} />} />
               </div>
             </div>
           </div>

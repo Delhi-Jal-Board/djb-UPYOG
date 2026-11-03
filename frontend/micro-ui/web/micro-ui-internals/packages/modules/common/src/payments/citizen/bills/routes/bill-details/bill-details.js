@@ -309,8 +309,20 @@ const BillDetails = ({ paymentRules, businessService }) => {
               <span className="card-label-error">{t(formError)}</span>
             )}
           </div>
-          <div style={{ display: "flex", justifyContent: "flex-start" }}>
+          <div style={{ display: "flex", justifyContent: "flex-start", gap: "12px", flexWrap: "wrap" }}>
             <SubmitBar disabled={!paymentAllowed || getTotal() === 0} onSubmit={onSubmit} label={t("CS_COMMON_PROCEED_TO_PAY")} />
+            {(wrkflow === "WNS" || businessService === "WS" || businessService === "SW") && (
+              <SubmitBar
+                submit={false}
+                style={{ backgroundColor: "transparent", color: "#a82227", border: "1px solid #a82227" }}
+                onSubmit={() => {
+                  const sType = businessService === "SW" || consumerCode?.includes("SW") ? "SEWERAGE" : "WATER";
+                  const cCode = stringReplaceAll(consumerCode, "+", "/");
+                  history.push(`/digit-ui/citizen/ws/bill-amendment?connectionNumber=${encodeURIComponent(cCode)}&tenantId=${tenantId}&service=${sType}`);
+                }}
+                label={t("WS_BILL_AMENDMENT_BUTTON")}
+              />
+            )}
           </div>
         </div>
       </Card>

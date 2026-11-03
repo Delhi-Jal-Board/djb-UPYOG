@@ -236,6 +236,11 @@ const ActionModal = ({
         ? approvalChecklist.isFullySatisfied
         : applicationData?.additionalDetails?.CompletelySatisfied;
 
+      const satisfactionRemark =
+        approvalChecklist?.notCompletelySatisfiedRemarks ||
+        approvalChecklist?.completelySatisfiedRemarks ||
+        "";
+
       const remarksPayload = {};
       Object.keys(approvalChecklist || {}).forEach((key) => {
         if (key.endsWith("Remarks")) {
@@ -260,6 +265,23 @@ const ActionModal = ({
         CompletelySatisfied: resolvedCompletelySatisfied,
         ...remarksPayload,
       };
+
+      if (resolvedCompletelySatisfied === true) {
+        delete applicationData.additionalDetails.notCompletelySatisfiedRemarks;
+        delete applicationData.additionalDetails.completelySatisfiedRemarks;
+      } else if (satisfactionRemark) {
+        applicationData.additionalDetails.notCompletelySatisfiedRemarks = satisfactionRemark;
+        applicationData.additionalDetails.completelySatisfiedRemarks = satisfactionRemark;
+      }
+
+      if (!commentValue && resolvedCompletelySatisfied === false && satisfactionRemark) {
+        commentValue = satisfactionRemark;
+        workflow.comments = satisfactionRemark;
+        applicationData.comment = satisfactionRemark;
+        if (applicationData.processInstance) {
+          applicationData.processInstance.comment = satisfactionRemark;
+        }
+      }
     }
     if (data?.date && applicationData?.applicationType?.includes("DISCONNECT")) {
       const disconnectionExecutionDate = cloneDeep(data?.date);
@@ -281,6 +303,9 @@ const ActionModal = ({
     } else if (applicationData?.applicationType == "WATER_RECONNECTION") {
       submitAction({ WaterConnection: applicationData, disconnectRequest: false, reconnectRequest: true });
     } else {
+      if (!applicationData?.additionalDetails) {
+        applicationData.additionalDetails = {};
+      }
       const adhocRebateData = sessionStorage.getItem("Digit.ADHOC_ADD_REBATE_DATA");
       const parsedAdhocRebateData = adhocRebateData ? JSON.parse(adhocRebateData) : "";
       if (parsedAdhocRebateData?.value?.adhocPenalty)

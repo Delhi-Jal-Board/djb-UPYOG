@@ -12,6 +12,7 @@ import {
   Modal,
   ViewsIcon,
   FormStep,
+  MobileNumber,
 } from "@djb25/digit-ui-react-components";
 import Timeline from "../components/Timeline";
 import React, { useEffect, useState } from "react";
@@ -32,7 +33,7 @@ const createConnectionDetails = () => ({
   proposedToilets: "",
   proposedWaterClosets: "",
 
-  serviceType: { code: "WATER", i18nKey: "WS_APPLICATION_TYPE_WATER" },
+  serviceType: { code: "NEW_WATER_CONNECTION", i18nKey: "WS_APPLICATION_TYPE_NEW_WATER_CONNECTION", name: "Water Connection" },
   categoryType: { code: "DOMESTIC", i18nKey: "WS_CATEGORY_DOMESTIC" },
   connectionType: { code: "Metered", i18nKey: "WS_CONNECTIONTYPE_METERED", name: "Metered" },
   temporaryType: { code: "Exhibition", i18nKey: "Exhibition" },
@@ -45,7 +46,22 @@ const createConnectionDetails = () => ({
   orgDeptDocument: "",
   addressType: "",
   completeAddress: "",
+  authorizedRepresentativeName: "",
+  authorizedRepresentativeDesignation: "",
+  authorizedRepresentativeMobileNumber: "",
 });
+
+const isAuthorizedRepresentative = (type, t) => {
+  if (!type) return false;
+  const candidates = [typeof type === "string" ? type : "", type?.code, type?.name, type?.i18nKey, type?.i18nKey && t ? t(type.i18nKey) : ""].filter(
+    Boolean
+  );
+
+  return candidates.some((cand) => {
+    const s = String(cand).toLowerCase();
+    return s.includes("authorized") || s.includes("representative");
+  });
+};
 
 const getCptAddress = (formData) => {
   if (formData?.cpt?.details?.address) return formData.cpt.details.address;
@@ -190,6 +206,31 @@ const WSConnectionDetails = ({ config, onSelect, userType, formData, setError, f
     list?.forEach((data) => (data.i18nKey = `WS_APPLICATION_TYPE_${data.code}`));
     setApplicationTypeList(list);
 
+    if (list.length > 0) {
+      const waterOption =
+        list.find(
+          (opt) =>
+            opt?.code === "NEW_WATER_CONNECTION" ||
+            opt?.code === "WATER_CONNECTION" ||
+            opt?.name?.toLowerCase() === "water connection" ||
+            t(opt?.i18nKey)?.toLowerCase() === "water connection"
+        ) || list[0];
+
+      if (waterOption) {
+        setConnectionDetails((prev) => {
+          const current = prev?.[0];
+          const isDefault =
+            !current?.serviceType ||
+            current?.serviceType?.code === "WATER" ||
+            current?.serviceType?.i18nKey === "WS_APPLICATION_TYPE_WATER";
+          if (isDefault) {
+            return [{ ...(current || createConnectionDetails()), serviceType: waterOption }];
+          }
+          return prev;
+        });
+      }
+    }
+
     // Fallback logic for the others since they are not coming from MDMS
     const categories = wsServicesMastersData?.["ws-services-masters"]?.WsCategoryType || [];
     categories.forEach((data) => (data.i18nKey = data.i18nKey || `WS_CATEGORY_${data.code}`));
@@ -272,12 +313,7 @@ const WSConnectionDetails = ({ config, onSelect, userType, formData, setError, f
           {connectionDetails.map(
             (connectionDetail, index) =>
               connectionDetail && (
-                <ConnectionDetails
-                  key={connectionDetail?.key || index}
-                  index={index}
-                  connectionDetail={connectionDetail}
-                  {...commonProps}
-                />
+                <ConnectionDetails key={connectionDetail?.key || index} index={index} connectionDetail={connectionDetail} {...commonProps} />
               )
           )}
         </FormStep>
@@ -290,12 +326,7 @@ const WSConnectionDetails = ({ config, onSelect, userType, formData, setError, f
       {connectionDetails.map(
         (connectionDetail, index) =>
           connectionDetail && (
-            <ConnectionDetails
-              key={connectionDetail?.key || index}
-              index={index}
-              connectionDetail={connectionDetail}
-              {...commonProps}
-            />
+            <ConnectionDetails key={connectionDetail?.key || index} index={index} connectionDetail={connectionDetail} {...commonProps} />
           )
       )}
     </React.Fragment>
@@ -346,10 +377,8 @@ const ConnectionDetails = (_props) => {
     formData?.completeAddress;
 
   const owner = formData?.cpt?.details?.owners?.[0];
-  const ownerPermAddress =
-    owner?.permanentAddress && owner?.permanentAddress !== "NA" ? owner.permanentAddress : "";
-  const ownerCorrAddress =
-    owner?.correspondenceAddress && owner?.correspondenceAddress !== "NA" ? owner.correspondenceAddress : "";
+  const ownerPermAddress = owner?.permanentAddress && owner?.permanentAddress !== "NA" ? owner.permanentAddress : "";
+  const ownerCorrAddress = owner?.correspondenceAddress && owner?.correspondenceAddress !== "NA" ? owner.correspondenceAddress : "";
 
   const initialAddressValue =
     getCleanAddressValue(rawAddressType) ||
@@ -362,7 +391,12 @@ const ConnectionDetails = (_props) => {
   const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue, trigger, getValues } = useForm(
     {
       defaultValues: {
-        serviceType: connectionDetail?.serviceType || { code: "WATER", i18nKey: "WS_APPLICATION_TYPE_WATER" },
+        serviceType:
+          connectionDetail?.serviceType &&
+          connectionDetail?.serviceType?.code !== "WATER" &&
+          connectionDetail?.serviceType?.i18nKey !== "WS_APPLICATION_TYPE_WATER"
+            ? connectionDetail.serviceType
+            : { code: "NEW_WATER_CONNECTION", i18nKey: "WS_APPLICATION_TYPE_NEW_WATER_CONNECTION", name: "Water Connection" },
         categoryType: connectionDetail?.categoryType || { code: "DOMESTIC", i18nKey: "WS_CATEGORY_DOMESTIC" },
         connectionType: connectionDetail?.connectionType || { code: "Metered", i18nKey: "WS_CONNECTIONTYPE_METERED", name: "Metered" },
         temporaryType: connectionDetail?.temporaryType || { code: "Exhibition", i18nKey: "Exhibition" },
@@ -376,6 +410,9 @@ const ConnectionDetails = (_props) => {
         orgDeptDocumentName: connectionDetail?.orgDeptDocumentName || "",
         addressType: initialAddressValue || "",
         completeAddress: initialAddressValue || "",
+        authorizedRepresentativeName: connectionDetail?.authorizedRepresentativeName || "",
+        authorizedRepresentativeDesignation: connectionDetail?.authorizedRepresentativeDesignation || "",
+        authorizedRepresentativeMobileNumber: connectionDetail?.authorizedRepresentativeMobileNumber || "",
       },
     }
   );
@@ -388,9 +425,7 @@ const ConnectionDetails = (_props) => {
 
   useEffect(() => {
     const currentPropertyId = formData?.cpt?.details?.propertyId;
-    const isNewPropertySelected = Boolean(
-      currentPropertyId && prevPropertyIdRef.current && currentPropertyId !== prevPropertyIdRef.current
-    );
+    const isNewPropertySelected = Boolean(currentPropertyId && prevPropertyIdRef.current && currentPropertyId !== prevPropertyIdRef.current);
 
     if (isNewPropertySelected) {
       prevPropertyIdRef.current = currentPropertyId;
@@ -407,8 +442,7 @@ const ConnectionDetails = (_props) => {
     const newFormattedAddr = getPropertyAddressString(currentCptAddr, t);
 
     const currentVal = getValues("addressType");
-    const isValOldType =
-      typeof currentVal === "object" || currentVal === "PERMANENT" || currentVal === "CORRESPONDENCE";
+    const isValOldType = typeof currentVal === "object" || currentVal === "PERMANENT" || currentVal === "CORRESPONDENCE";
 
     if (
       newFormattedAddr &&
@@ -418,11 +452,31 @@ const ConnectionDetails = (_props) => {
       setValue("completeAddress", newFormattedAddr);
       prevPropAddrRef.current = newFormattedAddr;
     }
-  }, [
-    formData?.cpt?.details?.propertyId,
-    formData?.cpt?.details?.address,
-    formData?.property?.address,
-  ]);
+  }, [formData?.cpt?.details?.propertyId, formData?.cpt?.details?.address, formData?.property?.address]);
+
+  useEffect(() => {
+    if (applicationTypeList && applicationTypeList.length > 0) {
+      const waterOption =
+        applicationTypeList.find(
+          (opt) =>
+            opt?.code === "NEW_WATER_CONNECTION" ||
+            opt?.code === "WATER_CONNECTION" ||
+            opt?.name?.toLowerCase() === "water connection" ||
+            t(opt?.i18nKey)?.toLowerCase() === "water connection"
+        ) || applicationTypeList[0];
+
+      const currentService = getValues("serviceType");
+      const isDefault =
+        !currentService ||
+        currentService?.i18nKey === "WS_APPLICATION_TYPE_WATER" ||
+        currentService?.code === "WATER" ||
+        currentService === "Water";
+
+      if (waterOption && isDefault) {
+        setValue("serviceType", waterOption);
+      }
+    }
+  }, [applicationTypeList]);
 
   const [uploadedFile, setUploadedFile] = useState(connectionDetail?.orgDeptDocument || null);
   const [file, setFile] = useState(null);
@@ -507,6 +561,12 @@ const ConnectionDetails = (_props) => {
           ) {
             return;
           }
+          if (
+            !isAuthorizedRepresentative(formValue?.applicantType, t) &&
+            ["authorizedRepresentativeName", "authorizedRepresentativeDesignation", "authorizedRepresentativeMobileNumber"].includes(data)
+          ) {
+            return;
+          }
           if (!formValue[data] && isErrorsFound) {
             isErrorsFound = false;
             setIsErrors(true);
@@ -527,6 +587,12 @@ const ConnectionDetails = (_props) => {
         if (
           connectionDetails[0]?.domesticType?.code === "INDIVIDUAL" &&
           ["institutionName", "natureOfWork", "orgDeptDocument", "departmentType"].includes(data)
+        ) {
+          return;
+        }
+        if (
+          !isAuthorizedRepresentative(connectionDetails[0]?.applicantType, t) &&
+          ["authorizedRepresentativeName", "authorizedRepresentativeDesignation", "authorizedRepresentativeMobileNumber"].includes(data)
         ) {
           return;
         }
@@ -556,36 +622,49 @@ const ConnectionDetails = (_props) => {
     }
   }, [errors, formState?.errors]);
 
+  useEffect(() => {
+    if (!isAuthorizedRepresentative(formValue?.applicantType, t)) {
+      clearLocalErrors("authorizedRepresentativeName");
+      clearLocalErrors("authorizedRepresentativeDesignation");
+      clearLocalErrors("authorizedRepresentativeMobileNumber");
+    }
+  }, [formValue?.applicantType]);
+
   const isMobile = window.Digit.Utils.browser.isMobile();
   const isEmployee = window.location.href.includes("/employee");
   return (
-    <CollapsibleCardPage title={t("Connection Details")} defaultOpen={true}>
-      <div className="formcomposer-section-grid">
-        <LabelFieldPair>
-          <CardLabel>
-            {`${t("Service Type")}`}
-            <span className="check-page-link-button">*</span>
-          </CardLabel>
-          <Controller
-            control={control}
-            name={"serviceType"}
-            defaultValue={connectionDetail?.serviceType || ""}
-            rules={{ required: t("REQUIRED_FIELD") }}
-            isMandatory={true}
-            render={(props) => (
-              <TextInput
-                className="form-field"
-                value={"Water Connection"}
-                disable={true}
-                disabled={true}
-                onChange={() => {}}
-                style={{ backgroundColor: "#eee" }}
-                placeholder={t("Select Service Type")}
-              />
-            )}
-          />
-        </LabelFieldPair>
-        {/* <LabelFieldPair>
+    <React.Fragment>
+      <CollapsibleCardPage title={t("Connection Details")} defaultOpen={true}>
+        <div className="formcomposer-section-grid">
+          <LabelFieldPair>
+            <CardLabel>
+              {`${t("Service Type")}`}
+              <span className="check-page-link-button">*</span>
+            </CardLabel>
+            <Controller
+              control={control}
+              name={"serviceType"}
+              defaultValue={connectionDetail?.serviceType || ""}
+              rules={{ required: t("REQUIRED_FIELD") }}
+              isMandatory={true}
+              render={(props) => (
+                <Dropdown
+                  className="form-field"
+                  selected={getValues("serviceType")}
+                  disable={false}
+                  option={applicationTypeList}
+                  select={(e) => {
+                    props.onChange(e);
+                  }}
+                  placeholder={t("Select Service Type")}
+                  optionKey="i18nKey"
+                  onBlur={props.onBlur}
+                  t={t}
+                />
+              )}
+            />
+          </LabelFieldPair>
+          {/* <LabelFieldPair>
           <CardLabel>{`${t("Category Type")}*`}</CardLabel>
           <Controller
             control={control}
@@ -610,7 +689,7 @@ const ConnectionDetails = (_props) => {
             )}
           />
         </LabelFieldPair> */}
-        {/* <LabelFieldPair>
+          {/* <LabelFieldPair>
           <CardLabel>{`${t("Connection Type")}*`}</CardLabel>
           <Controller
             control={control}
@@ -662,7 +741,7 @@ const ConnectionDetails = (_props) => {
             />
           </LabelFieldPair>
         )} */}
-        {/* <LabelFieldPair>
+          {/* <LabelFieldPair>
           <CardLabel>{`${t("Water Demand Type")}*`}</CardLabel>
           <Controller
             control={control}
@@ -687,67 +766,67 @@ const ConnectionDetails = (_props) => {
             )}
           />
         </LabelFieldPair> */}
-        <LabelFieldPair>
-          <CardLabel>
-            {`${t("Applicant Type")}`}
-            <span className="check-page-link-button">*</span>
-          </CardLabel>
-          <Controller
-            control={control}
-            name={"applicantType"}
-            defaultValue={connectionDetail?.applicantType || ""}
-            rules={{ required: t("REQUIRED_FIELD") }}
-            isMandatory={true}
-            render={(props) => (
-              <Dropdown
-                className="form-field"
-                selected={getValues("applicantType")}
-                disable={false}
-                option={applicantTypeList}
-                errorStyle={localFormState.touched.applicantType && errors?.applicantType?.message ? true : false}
-                select={(e) => {
-                  props.onChange(e);
-                }}
-                optionKey="i18nKey"
-                onBlur={props.onBlur}
-                t={t}
-                placeholder={t("Select Applicant Type")}
-              />
-            )}
-          />
-        </LabelFieldPair>
-        <LabelFieldPair>
-          <CardLabel>
-            {t("WS_Billing_Address_Type")}
-            <span className="check-page-link-button">*</span>
-          </CardLabel>
-          <div className="field">
+          <LabelFieldPair>
+            <CardLabel>
+              {`${t("Applicant Type")}`}
+              <span className="check-page-link-button">*</span>
+            </CardLabel>
             <Controller
               control={control}
-              name={"addressType"}
-              defaultValue={initialAddressValue || ""}
+              name={"applicantType"}
+              defaultValue={connectionDetail?.applicantType || ""}
               rules={{ required: t("REQUIRED_FIELD") }}
               isMandatory={true}
               render={(props) => (
-                <TextInput
+                <Dropdown
                   className="form-field"
-                  value={props.value ?? getValues("addressType") ?? ""}
+                  selected={getValues("applicantType")}
                   disable={false}
-                  disabled={false}
-                  errorStyle={localFormState.touched.addressType && errors?.addressType?.message ? true : false}
-                  onChange={(e) => {
-                    isAddressUserEditedRef.current = true;
-                    props.onChange(e.target.value);
-                    setValue("completeAddress", e.target.value);
+                  option={applicantTypeList}
+                  errorStyle={localFormState.touched.applicantType && errors?.applicantType?.message ? true : false}
+                  select={(e) => {
+                    props.onChange(e);
                   }}
+                  optionKey="i18nKey"
                   onBlur={props.onBlur}
-                  placeholder={t("WS_Billing_Address_Type")}
+                  t={t}
+                  placeholder={t("Select Applicant Type")}
                 />
               )}
             />
-          </div>
-        </LabelFieldPair>
-        {/* <LabelFieldPair>
+          </LabelFieldPair>
+          <LabelFieldPair>
+            <CardLabel>
+              {t("WS_Billing_Address_Type")}
+              <span className="check-page-link-button">*</span>
+            </CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name={"addressType"}
+                defaultValue={initialAddressValue || ""}
+                rules={{ required: t("REQUIRED_FIELD") }}
+                isMandatory={true}
+                render={(props) => (
+                  <TextInput
+                    className="form-field"
+                    value={props.value ?? getValues("addressType") ?? ""}
+                    disable={false}
+                    disabled={false}
+                    errorStyle={localFormState.touched.addressType && errors?.addressType?.message ? true : false}
+                    onChange={(e) => {
+                      isAddressUserEditedRef.current = true;
+                      props.onChange(e.target.value);
+                      setValue("completeAddress", e.target.value);
+                    }}
+                    onBlur={props.onBlur}
+                    placeholder={t("WS_Billing_Address_Type")}
+                  />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
+          {/* <LabelFieldPair>
           <CardLabel>{`${formValue?.categoryType?.code === "NON_DOMESTIC" || formValue?.categoryType?.name === "Non-Domestic"
               ? t("Non-Domestic Type")
               : t("Domestic Type")
@@ -779,7 +858,7 @@ const ConnectionDetails = (_props) => {
             />
           </div>
         </LabelFieldPair> */}
-        {/* {formValue?.domesticType?.code === "ORGANIZATION" && (
+          {/* {formValue?.domesticType?.code === "ORGANIZATION" && (
           <React.Fragment>
             <LabelFieldPair>
               <CardLabel>{`${t("Department Type")}*`}</CardLabel>
@@ -911,38 +990,186 @@ const ConnectionDetails = (_props) => {
             {fileUploadError && <div style={{ color: "red", fontSize: "12px", marginTop: "4px" }}>{fileUploadError}</div>}
           </React.Fragment>
         )} */}
-      </div>
-      {showDocModal && (
-        <Modal
-          open={showDocModal}
-          headerBarMain={t("View Document") || "View Document"}
-          headerBarEnd={
-            <div className="icon-bg-secondary" onClick={() => setShowDocModal(false)} style={{ cursor: "pointer", padding: "5px" }}>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FFFFFF" width="24" height="24">
-                <path d="M0 0h24v24H0V0z" fill="none" />
-                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
-              </svg>
+        </div>
+        {showDocModal && (
+          <Modal
+            open={showDocModal}
+            headerBarMain={t("View Document") || "View Document"}
+            headerBarEnd={
+              <div className="icon-bg-secondary" onClick={() => setShowDocModal(false)} style={{ cursor: "pointer", padding: "5px" }}>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FFFFFF" width="24" height="24">
+                  <path d="M0 0h24v24H0V0z" fill="none" />
+                  <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+                </svg>
+              </div>
+            }
+            center
+            actionCancelOnSubmit={() => setShowDocModal(false)}
+            actionCancelLabel={t("CS_COMMON_CLOSE") || "Close"}
+            popupStyles={{ width: "80%", maxWidth: "800px" }}
+          >
+            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", padding: "20px", minHeight: "300px" }}>
+              {docFileType === "pdf" ? (
+                <iframe src={docFileUrl} title="Document Preview" width="100%" height="500px" style={{ border: "none" }} />
+              ) : (
+                <img
+                  src={docFileUrl}
+                  alt="Document Preview"
+                  style={{ maxWidth: "100%", maxHeight: "500px", objectFit: "contain", borderRadius: "4px" }}
+                />
+              )}
             </div>
-          }
-          center
-          actionCancelOnSubmit={() => setShowDocModal(false)}
-          actionCancelLabel={t("CS_COMMON_CLOSE") || "Close"}
-          popupStyles={{ width: "80%", maxWidth: "800px" }}
-        >
-          <div style={{ display: "flex", justifyContent: "center", alignItems: "center", padding: "20px", minHeight: "300px" }}>
-            {docFileType === "pdf" ? (
-              <iframe src={docFileUrl} title="Document Preview" width="100%" height="500px" style={{ border: "none" }} />
-            ) : (
-              <img
-                src={docFileUrl}
-                alt="Document Preview"
-                style={{ maxWidth: "100%", maxHeight: "500px", objectFit: "contain", borderRadius: "4px" }}
+          </Modal>
+        )}
+      </CollapsibleCardPage>
+      {isAuthorizedRepresentative(formValue?.applicantType, t) && (
+        <CollapsibleCardPage title={t("WS_AUTHORIZED_REPRESENTATIVE_DETAILS")} defaultOpen={true}>
+          <div className="formcomposer-section-grid">
+            <LabelFieldPair>
+              <CardLabel>
+                {`${t("Name")}`}
+                <span className="check-page-link-button">*</span>
+              </CardLabel>
+              <Controller
+                control={control}
+                name="authorizedRepresentativeName"
+                defaultValue={connectionDetail?.authorizedRepresentativeName || ""}
+                rules={{
+                  validate: (e) =>
+                    !isAuthorizedRepresentative(getValues("applicantType"), t) || (e && e.trim())
+                      ? /^[a-zA-Z\s]{1,50}$/.test(e)
+                        ? true
+                        : t("WS_NAME_ERROR_MESSAGE") || "Only alphabets are allowed"
+                      : t("REQUIRED_FIELD"),
+                  required: isAuthorizedRepresentative(getValues("applicantType"), t) ? t("REQUIRED_FIELD") : false,
+                }}
+                isMandatory={true}
+                render={(props) => (
+                  <div>
+                    <TextInput
+                      className="form-field"
+                      value={props.value || ""}
+                      autoFocus={focusIndex.index === connectionDetail?.key && focusIndex.type === "authorizedRepresentativeName"}
+                      errorStyle={localFormState.touched.authorizedRepresentativeName && errors?.authorizedRepresentativeName?.message ? true : false}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/[^a-zA-Z\s]/g, "").slice(0, 50);
+                        props.onChange(val);
+                        setFocusIndex({ index: connectionDetail?.key, type: "authorizedRepresentativeName" });
+                      }}
+                      onBlur={props.onBlur}
+                      placeholder={t("Enter Name")}
+                    />
+                    {localFormState.touched.authorizedRepresentativeName && errors?.authorizedRepresentativeName && (
+                      <CardLabelError style={{ width: "100%", fontSize: "12px" }}>{errors.authorizedRepresentativeName.message}</CardLabelError>
+                    )}
+                  </div>
+                )}
               />
-            )}
+            </LabelFieldPair>
+            <LabelFieldPair>
+              <CardLabel>
+                {`${t("Designation")}`}
+                <span className="check-page-link-button">*</span>
+              </CardLabel>
+              <Controller
+                control={control}
+                name="authorizedRepresentativeDesignation"
+                defaultValue={connectionDetail?.authorizedRepresentativeDesignation || ""}
+                rules={{
+                  validate: (e) =>
+                    !isAuthorizedRepresentative(getValues("applicantType"), t) || (e && e.trim())
+                      ? /^[a-zA-Z\s]{1,50}$/.test(e)
+                        ? true
+                        : t("WS_DESIGNATION_ERROR_MESSAGE") || "Only alphabets are allowed"
+                      : t("REQUIRED_FIELD"),
+                  required: isAuthorizedRepresentative(getValues("applicantType"), t) ? t("REQUIRED_FIELD") : false,
+                }}
+                isMandatory={true}
+                render={(props) => (
+                  <div>
+                    <TextInput
+                      className="form-field"
+                      value={props.value || ""}
+                      autoFocus={focusIndex.index === connectionDetail?.key && focusIndex.type === "authorizedRepresentativeDesignation"}
+                      errorStyle={
+                        localFormState.touched.authorizedRepresentativeDesignation && errors?.authorizedRepresentativeDesignation?.message
+                          ? true
+                          : false
+                      }
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/[^a-zA-Z\s]/g, "").slice(0, 50);
+                        props.onChange(val);
+                        setFocusIndex({ index: connectionDetail?.key, type: "authorizedRepresentativeDesignation" });
+                      }}
+                      onBlur={props.onBlur}
+                      placeholder={t("Enter Designation")}
+                    />
+                    {localFormState.touched.authorizedRepresentativeDesignation && errors?.authorizedRepresentativeDesignation && (
+                      <CardLabelError style={{ width: "100%", fontSize: "12px" }}>
+                        {errors.authorizedRepresentativeDesignation.message}
+                      </CardLabelError>
+                    )}
+                  </div>
+                )}
+              />
+            </LabelFieldPair>
+
+            <LabelFieldPair>
+              <CardLabel>
+                {`${t("CORE_COMMON_MOBILE_NUMBER")}`}
+                <span className="check-page-link-button">*</span>
+              </CardLabel>
+              <div className="field">
+                <Controller
+                  control={control}
+                  name="authorizedRepresentativeMobileNumber"
+                  defaultValue={connectionDetail?.authorizedRepresentativeMobileNumber || ""}
+                  rules={{
+                    validate: (e) => {
+                      if (!isAuthorizedRepresentative(getValues("applicantType"), t)) return true;
+                      if (!e || !e.trim()) return t("REQUIRED_FIELD");
+                      if (/^[6-9]\d{9}$/.test(e)) return true;
+                      return t("CORE_COMMON_PHONENO_INVALID") || "Please enter a valid 10-digit mobile number";
+                    },
+                    required: isAuthorizedRepresentative(getValues("applicantType"), t) ? t("REQUIRED_FIELD") : false,
+                  }}
+                  isMandatory={true}
+                  render={(props) => (
+                    <div>
+                      <MobileNumber
+                        name="authorizedRepresentativeMobileNumber"
+                        value={props.value || ""}
+                        maxlength={10}
+                        maxLength={10}
+                        autoFocus={focusIndex.index === connectionDetail?.key && focusIndex.type === "authorizedRepresentativeMobileNumber"}
+                        errorStyle={
+                          localFormState.touched.authorizedRepresentativeMobileNumber && errors?.authorizedRepresentativeMobileNumber?.message
+                            ? true
+                            : false
+                        }
+                        onChange={(val) => {
+                          const cleanVal = (val || "").replace(/[^0-9]/g, "").slice(0, 10);
+                          props.onChange(cleanVal);
+                          setFocusIndex({ index: connectionDetail?.key, type: "authorizedRepresentativeMobileNumber" });
+                        }}
+                        onBlur={props.onBlur}
+                        hideSpan={false}
+                        placeholder={t("CORE_COMMON_MOBILE_NUMBER")}
+                      />
+                      {localFormState.touched.authorizedRepresentativeMobileNumber && errors?.authorizedRepresentativeMobileNumber && (
+                        <CardLabelError style={{ width: "100%", fontSize: "12px" }}>
+                          {errors.authorizedRepresentativeMobileNumber.message}
+                        </CardLabelError>
+                      )}
+                    </div>
+                  )}
+                />
+              </div>
+            </LabelFieldPair>
           </div>
-        </Modal>
+        </CollapsibleCardPage>
       )}
-    </CollapsibleCardPage>
+    </React.Fragment>
   );
 };
 

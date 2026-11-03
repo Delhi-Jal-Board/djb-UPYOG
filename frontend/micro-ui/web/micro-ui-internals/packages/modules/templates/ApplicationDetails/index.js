@@ -93,6 +93,13 @@ const ApplicationDetails = (props) => {
         if (typeof applicationData?.additionalDetails?.CompletelySatisfied === "boolean") {
           initialChecklist.isFullySatisfied = applicationData?.additionalDetails?.CompletelySatisfied;
         }
+        if (applicationData?.additionalDetails?.notCompletelySatisfiedRemarks) {
+          initialChecklist.notCompletelySatisfiedRemarks = applicationData.additionalDetails.notCompletelySatisfiedRemarks;
+          initialChecklist.completelySatisfiedRemarks = applicationData.additionalDetails.notCompletelySatisfiedRemarks;
+        } else if (applicationData?.additionalDetails?.completelySatisfiedRemarks) {
+          initialChecklist.notCompletelySatisfiedRemarks = applicationData.additionalDetails.completelySatisfiedRemarks;
+          initialChecklist.completelySatisfiedRemarks = applicationData.additionalDetails.completelySatisfiedRemarks;
+        }
         setApprovalChecklist(initialChecklist);
       }
     } else {
