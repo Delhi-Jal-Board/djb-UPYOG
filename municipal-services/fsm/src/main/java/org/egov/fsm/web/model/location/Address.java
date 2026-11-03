@@ -1,7 +1,9 @@
 package org.egov.fsm.web.model.location;
 
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
+/*import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;*/
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
 import org.egov.fsm.web.model.AuditDetails;
 import org.springframework.validation.annotation.Validated;
@@ -22,7 +24,7 @@ import lombok.ToString;
  */
 
 @Validated
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-12-09T07:13:46.742Z[GMT]")
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-12-09T07:13:46.742Z[GMT]")
 
 
 @AllArgsConstructor

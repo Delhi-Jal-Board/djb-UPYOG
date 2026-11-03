@@ -2,9 +2,12 @@ package org.egov.fsm.web.model;
 
 import java.util.Objects;
 
-import javax.validation.constraints.Size;
+//import javax.validation.constraints.Size;
+import jakarta.validation.constraints.Size;
 
-import org.hibernate.validator.constraints.SafeHtml;
+//import org.hibernate.validator.constraints.SafeHtml;
+import org.egov.fsm.validator.SafeHtml;
+
 import org.springframework.validation.annotation.Validated;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -14,7 +17,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 
 @Validated
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-12-09T07:13:46.742Z[GMT]")
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-12-09T07:13:46.742Z[GMT]")
 
 
 public class Document   {

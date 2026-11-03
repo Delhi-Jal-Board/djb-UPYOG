@@ -1,6 +1,7 @@
 package org.egov.fsm.web.model;
 
-import javax.validation.Valid;
+//import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.springframework.validation.annotation.Validated;
@@ -17,7 +18,7 @@ import lombok.Setter;
  * Request object for FSM
  */
 @Validated
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-12-23T12:08:13.326Z[GMT]")
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-12-23T12:08:13.326Z[GMT]")
 
 @Builder
 @AllArgsConstructor

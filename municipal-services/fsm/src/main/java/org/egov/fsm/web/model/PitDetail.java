@@ -1,8 +1,11 @@
 package org.egov.fsm.web.model;
 
-import javax.validation.constraints.DecimalMax;
+//import javax.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMax;
 
-import org.hibernate.validator.constraints.SafeHtml;
+//import org.hibernate.validator.constraints.SafeHtml;
+import org.egov.fsm.validator.SafeHtml;
+
 import org.springframework.validation.annotation.Validated;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -19,7 +22,7 @@ import lombok.ToString;
  * cature the pit details 
  */
 @Validated
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-12-23T12:08:13.326Z[GMT]")
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-12-23T12:08:13.326Z[GMT]")
 
 @AllArgsConstructor
 @EqualsAndHashCode

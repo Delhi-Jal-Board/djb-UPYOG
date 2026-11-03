@@ -7,7 +7,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.validator.constraints.SafeHtml;
+//import org.hibernate.validator.constraints.SafeHtml;
+import org.egov.fsm.validator.SafeHtml;
+
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 

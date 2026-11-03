@@ -1,7 +1,10 @@
 package org.egov.fsm.web.model.vehicle.trip;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+/*import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;*/
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
 
 import org.egov.fsm.web.model.AuditDetails;
 import org.springframework.validation.annotation.Validated;
@@ -20,7 +23,7 @@ import lombok.Setter;
  * Request schema of VehicleLog.  
  */
 @Validated
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-12-23T12:08:13.326Z[GMT]")
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-12-23T12:08:13.326Z[GMT]")
 
 @Builder
 @AllArgsConstructor

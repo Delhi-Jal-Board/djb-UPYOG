@@ -1,14 +1,17 @@
 package org.egov.fsm.web.model.worker;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import javax.validation.constraints.Size;
+//import javax.validation.constraints.Size;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.egov.fsm.web.model.AuditDetails;
-import org.hibernate.validator.constraints.SafeHtml;
+//import org.hibernate.validator.constraints.SafeHtml;
+import org.egov.fsm.validator.SafeHtml;
+
 import org.springframework.validation.annotation.Validated;
 
 

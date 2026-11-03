@@ -9,7 +9,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.egov.fsm.web.model.AuditDetails;
 import org.egov.fsm.web.model.worker.WorkerStatus;
-import org.hibernate.validator.constraints.SafeHtml;
+//import org.hibernate.validator.constraints.SafeHtml;
+import org.egov.fsm.validator.SafeHtml;
+
 import org.springframework.validation.annotation.Validated;
 
 /**

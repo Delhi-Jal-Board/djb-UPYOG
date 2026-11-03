@@ -2,10 +2,14 @@ package org.egov.fsm.web.model.vehicle.trip;
 
 import java.util.List;
 
-import javax.validation.Valid;
+/*import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.NotNull;*/
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
 import org.egov.common.contract.request.User;
 import org.egov.fsm.web.model.AuditDetails;
@@ -24,7 +28,7 @@ import lombok.Setter;
  * Request schema of VehicleTrip.  
  */
 @Validated
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-12-23T12:08:13.326Z[GMT]")
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-12-23T12:08:13.326Z[GMT]")
 
 @Builder
 @AllArgsConstructor

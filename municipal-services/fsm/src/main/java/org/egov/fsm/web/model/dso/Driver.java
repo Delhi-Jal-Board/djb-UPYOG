@@ -1,11 +1,14 @@
 package org.egov.fsm.web.model.dso;
 
-import javax.validation.Valid;
-import javax.validation.constraints.Size;
+/*import javax.validation.Valid;
+import javax.validation.constraints.Size;*/
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Size;
 
 import org.egov.fsm.web.model.AuditDetails;
 import org.egov.fsm.web.model.user.User;
-import org.hibernate.validator.constraints.SafeHtml;
+//import org.hibernate.validator.constraints.SafeHtml;
+import org.egov.fsm.validator.SafeHtml;
 import org.springframework.validation.annotation.Validated;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -22,7 +25,7 @@ import lombok.Setter;
  * Capture the Driver information in the system.
  */
 @Validated
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2021-01-06T05:34:12.238Z[GMT]")
+@jakarta.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2021-01-06T05:34:12.238Z[GMT]")
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder

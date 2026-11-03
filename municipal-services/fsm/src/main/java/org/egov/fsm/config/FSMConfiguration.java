@@ -1,7 +1,8 @@
 package org.egov.fsm.config;
 
 import java.util.TimeZone;
-import javax.annotation.PostConstruct;
+//import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
