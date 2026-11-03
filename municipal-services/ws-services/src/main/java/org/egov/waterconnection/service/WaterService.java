@@ -20,4 +20,6 @@ public interface WaterService {
 	List<DueVerification> fetchDueVerification(DueVerificationRequest dueVerificationRequest);
 	
 	void enrichDueVerificationWithBillAmount(List<WaterConnection> waterConnectionList,RequestInfo requestInfo);
+
+	List<WaterConnection> submitSiteInspection(WaterConnectionRequest waterConnectionRequest);
 }

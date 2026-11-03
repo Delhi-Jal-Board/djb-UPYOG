@@ -121,4 +121,15 @@ public class WaterController {
 				.build();
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
+
+	@RequestMapping(value = {"/site-inspection/_submit", "/_siteInspection"}, method = RequestMethod.POST, produces = "application/json")
+	public ResponseEntity<WaterConnectionResponse> submitSiteInspection(
+			@Valid @RequestBody WaterConnectionRequest waterConnectionRequest) {
+		List<WaterConnection> waterConnections = waterService.submitSiteInspection(waterConnectionRequest);
+		WaterConnectionResponse response = WaterConnectionResponse.builder()
+				.waterConnection(waterConnections)
+				.responseInfo(responseInfoFactory.createResponseInfoFromRequestInfo(waterConnectionRequest.getRequestInfo(), true))
+				.build();
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
 }

@@ -107,6 +107,9 @@ public class WaterServiceImpl implements WaterService {
 	@Autowired
 	private UnmaskingUtil unmaskingUtil;
 
+	@Autowired
+	private org.egov.waterconnection.repository.SiteInspectionRepository siteInspectionRepository;
+
 	/**
 	 *
 	 * @param waterConnectionRequest
@@ -1355,4 +1358,102 @@ public class WaterServiceImpl implements WaterService {
 	}
 
 
+
+	@Override
+	public List<WaterConnection> submitSiteInspection(WaterConnectionRequest waterConnectionRequest) {
+		if (waterConnectionRequest == null || waterConnectionRequest.getWaterConnection() == null) {
+			throw new CustomException("INVALID_REQUEST", "WaterConnectionRequest and WaterConnection cannot be null.");
+		}
+
+		WaterConnection incoming = waterConnectionRequest.getWaterConnection();
+		String applicationNo = incoming.getApplicationNo();
+		String tenantId = incoming.getTenantId();
+
+		if (StringUtils.isEmpty(applicationNo) || StringUtils.isEmpty(tenantId)) {
+			throw new CustomException("INVALID_REQUEST", "Application number and TenantId are mandatory for site inspection.");
+		}
+
+		RequestInfo requestInfo = waterConnectionRequest.getRequestInfo();
+
+		// Step 1: Fetch existing application
+		SearchCriteria criteria = SearchCriteria.builder()
+				.applicationNumber(Collections.singleton(applicationNo.trim()))
+				.tenantId(tenantId.trim())
+				.build();
+
+		List<WaterConnection> existingConnections = safeSearch(criteria, requestInfo, "APPLICATION_SEARCH_FAILED");
+		if (CollectionUtils.isEmpty(existingConnections)) {
+			throw new CustomException("APPLICATION_NOT_FOUND", "No application found for applicationNo: " + applicationNo);
+		}
+
+		WaterConnection existingConnection = existingConnections.get(0);
+		String connectionId = existingConnection.getId();
+
+		// Step 2: Upsert eg_ws_inspection_information
+		if (incoming.getInspectionInformation() != null) {
+			siteInspectionRepository.upsertInspectionInformation(tenantId, applicationNo, incoming.getInspectionInformation(), requestInfo);
+		}
+
+		// Step 3: Safely merge additionalDetails in eg_ws_connection without overwriting existing fields
+		com.fasterxml.jackson.databind.node.ObjectNode mergedDetails;
+		if (existingConnection.getAdditionalDetails() != null) {
+			try {
+				mergedDetails = (com.fasterxml.jackson.databind.node.ObjectNode) mapper.valueToTree(existingConnection.getAdditionalDetails()).deepCopy();
+			} catch (Exception e) {
+				log.warn("Could not copy existing additionalDetails, creating new node", e);
+				mergedDetails = mapper.createObjectNode();
+			}
+		} else {
+			mergedDetails = mapper.createObjectNode();
+		}
+
+		// Merge incoming additionalDetails
+		if (incoming.getAdditionalDetails() != null) {
+			try {
+				com.fasterxml.jackson.databind.JsonNode incomingNode = mapper.valueToTree(incoming.getAdditionalDetails());
+				if (incomingNode.isObject()) {
+					Iterator<Map.Entry<String, com.fasterxml.jackson.databind.JsonNode>> fields = incomingNode.fields();
+					while (fields.hasNext()) {
+						Map.Entry<String, com.fasterxml.jackson.databind.JsonNode> field = fields.next();
+						mergedDetails.set(field.getKey(), field.getValue());
+					}
+				}
+			} catch (Exception e) {
+				log.error("Error parsing incoming additionalDetails", e);
+			}
+		}
+
+		long now = System.currentTimeMillis();
+		String inspectorName = (incoming.getInspectionInformation() != null && !StringUtils.isEmpty(incoming.getInspectionInformation().getInspectorName()))
+				? incoming.getInspectionInformation().getInspectorName()
+				: ((requestInfo != null && requestInfo.getUserInfo() != null) ? requestInfo.getUserInfo().getName() : "INSPECTOR");
+
+		// Explicit site inspection status flags
+		mergedDetails.put("isSiteInspected", true);
+		mergedDetails.put("siteInspectionStatus", "SUBMITTED");
+		mergedDetails.put("siteInspectionSubmittedDate", now);
+		mergedDetails.put("siteInspectionSubmittedBy", inspectorName);
+
+		// If siteInspection node exists, ensure its internal status flags are also set
+		if (mergedDetails.has("siteInspection") && mergedDetails.get("siteInspection").isObject()) {
+			com.fasterxml.jackson.databind.node.ObjectNode siteInspNode = (com.fasterxml.jackson.databind.node.ObjectNode) mergedDetails.get("siteInspection");
+			siteInspNode.put("isSubmitted", true);
+			siteInspNode.put("status", "SUBMITTED");
+			if (!siteInspNode.has("submissionDate") || siteInspNode.get("submissionDate").isNull()) {
+				siteInspNode.put("submissionDate", now);
+			}
+		}
+
+		siteInspectionRepository.updateConnectionAdditionalDetails(tenantId, connectionId, applicationNo, mergedDetails, requestInfo);
+
+		// Step 4: Save documents/photos if provided
+		if (!CollectionUtils.isEmpty(incoming.getDocuments())) {
+			siteInspectionRepository.saveInspectionDocuments(tenantId, connectionId, incoming.getDocuments(), requestInfo);
+		}
+
+		log.info("Site inspection successfully submitted for application: {}", applicationNo);
+
+		// Step 5: Return refreshed connection with all joined data
+		return safeSearch(criteria, requestInfo, "APPLICATION_SEARCH_FAILED");
+	}
 }
