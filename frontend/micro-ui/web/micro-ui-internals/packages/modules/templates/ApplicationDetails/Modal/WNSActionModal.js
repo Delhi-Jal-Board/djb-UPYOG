@@ -236,6 +236,11 @@ const ActionModal = ({
         ? approvalChecklist.isFullySatisfied
         : applicationData?.additionalDetails?.CompletelySatisfied;
 
+      const satisfactionRemark =
+        approvalChecklist?.notCompletelySatisfiedRemarks ||
+        approvalChecklist?.completelySatisfiedRemarks ||
+        "";
+
       const remarksPayload = {};
       Object.keys(approvalChecklist || {}).forEach((key) => {
         if (key.endsWith("Remarks")) {
@@ -260,6 +265,23 @@ const ActionModal = ({
         CompletelySatisfied: resolvedCompletelySatisfied,
         ...remarksPayload,
       };
+
+      if (resolvedCompletelySatisfied === true) {
+        delete applicationData.additionalDetails.notCompletelySatisfiedRemarks;
+        delete applicationData.additionalDetails.completelySatisfiedRemarks;
+      } else if (satisfactionRemark) {
+        applicationData.additionalDetails.notCompletelySatisfiedRemarks = satisfactionRemark;
+        applicationData.additionalDetails.completelySatisfiedRemarks = satisfactionRemark;
+      }
+
+      if (!commentValue && resolvedCompletelySatisfied === false && satisfactionRemark) {
+        commentValue = satisfactionRemark;
+        workflow.comments = satisfactionRemark;
+        applicationData.comment = satisfactionRemark;
+        if (applicationData.processInstance) {
+          applicationData.processInstance.comment = satisfactionRemark;
+        }
+      }
     }
     if (data?.date && applicationData?.applicationType?.includes("DISCONNECT")) {
       const disconnectionExecutionDate = cloneDeep(data?.date);

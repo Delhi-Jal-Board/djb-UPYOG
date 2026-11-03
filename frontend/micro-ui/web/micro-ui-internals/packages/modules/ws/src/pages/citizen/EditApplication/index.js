@@ -14,8 +14,67 @@ const getPath = (path, params) => {
   return path;
 };
 
-const getEditDetails = (waterResult, sewerageresult, t) => {
+const mapPropertyToFormFields = (property) => {
+  if (!property) return { propertyLocationDetails: {}, waterConnection: { useDetails: {} } };
+  const addDet = property.additionalDetails || {};
+  const usageCategory = addDet.propertyCategory || addDet.usageCategory || property.usageCategory;
+  const categoryType = addDet.categoryType || (String(usageCategory).includes("RESIDENTIAL") ? "DOMESTIC" : "NON_DOMESTIC");
+  const propertyType = addDet.propertyType || property.propertyType;
+  const waterConnectionUsageType = addDet.waterConnectionUsageType || addDet.WaterConnectionUsageType;
+  const numberOfFloors = addDet.numberOfFloors || property.noOfFloors;
+
+  const dwellingUnits = String(
+    addDet.numberOfDwellingUnits ||
+    addDet.noOfDwellingUnits ||
+    addDet.NumberofDwellingUnits ||
+    property.noOfDwellingUnits ||
+    property.numberOfDwellingUnits ||
+    ""
+  );
+
+  return {
+    propertyLocationDetails: {
+      ...property.address,
+      houseNo: property.address?.doorNo || property.address?.houseNo || "",
+      streetName: property.address?.street || property.address?.streetName || "",
+      landmark: property.address?.landmark || "",
+      addressLine1: property.address?.addressLine1 || property.address?.street || "",
+      addressLine2: property.address?.addressLine2 || "",
+      city: property.address?.city || "",
+      pincode: property.address?.pincode || property.address?.pinCode || "",
+      locality: property.address?.locality || null,
+      subLocality: property.address?.subLocality || null,
+      colonyCategory: property.address?.colonyCategory || "",
+      atWhichFloorConsumerResides: addDet.atWhichFloorConsumerResides || "",
+      totalNumberOfFloorInTheBuilding: addDet.totalNoOfFloors || addDet.totalFloors || property.address?.totalNoOfFloors || "",
+    },
+    waterConnection: {
+      useDetails: {
+        categoryType: categoryType ? { code: categoryType, name: categoryType, i18nKey: `WS_CATEGORY_${categoryType}` } : null,
+        propertyCategory: usageCategory ? { code: usageCategory, name: usageCategory, i18nKey: usageCategory } : null,
+        propertyType: propertyType ? { code: propertyType, name: propertyType, i18nKey: propertyType } : null,
+        WaterConnectionUsageType: waterConnectionUsageType ? { code: waterConnectionUsageType, name: waterConnectionUsageType, value: waterConnectionUsageType } : null,
+        noOfFloors: numberOfFloors ? { code: String(numberOfFloors), i18nKey: `PT_NO_OF_FLOORS_${numberOfFloors}` } : null,
+        plotArea: String(addDet.plotArea || property.landArea || ""),
+        builtUpArea: String(addDet.builtUpArea || property.superBuiltUpArea || ""),
+        heightOfTheBuilding: String(addDet.heightOfTheBuilding || property.heightOfTheBuilding || ""),
+        farArea: String(addDet.farArea || property.farArea || ""),
+        SelectYearofConstruction: addDet.yearOfConstruction ? { value: String(addDet.yearOfConstruction), name: String(addDet.yearOfConstruction) } : null,
+        NumberofDwellingUnits: dwellingUnits,
+        NumberofRooms: String(addDet.numberOfRooms || addDet.noOfRooms || property.noOfRooms || ""),
+        numberOfBeds: String(addDet.numberOfBeds || property.numberOfBeds || ""),
+        numberOfStudents: String(addDet.numberOfStudents || property.numberOfStudents || ""),
+        servantQuarterArea: String(addDet.numberOfServantQuarters || addDet.servantQuarterArea || property.servantQuarterArea || ""),
+        questions: addDet.questions || addDet.questionAnswers || addDet.propertyQuestions || [],
+      },
+    },
+  };
+};
+
+const getEditDetails = (waterResult, sewerageresult, t, latestProperty) => {
   if (waterResult) {
+    const propToUse = latestProperty || waterResult?.property;
+    const propMapped = mapPropertyToFormFields(propToUse);
     waterResult.ConnectionHolderDetails = waterResult?.connectionHolders
       ? [
           {
@@ -52,21 +111,21 @@ const getEditDetails = (waterResult, sewerageresult, t) => {
         ]
       : [
           {
-            address: waterResult?.property?.owners?.[0]?.correspondenceAddress,
+            address: propToUse?.owners?.[0]?.correspondenceAddress,
             documentId: "",
             documentType: "",
             filestoreId: null,
-            gender: waterResult?.property?.owners?.[0]?.gender
-              ? { code: waterResult?.property?.owners?.[0]?.gender, i18nKey: `COMMON_GENDER_${waterResult?.property?.owners?.[0]?.gender}` }
+            gender: propToUse?.owners?.[0]?.gender
+              ? { code: propToUse?.owners?.[0]?.gender, i18nKey: `COMMON_GENDER_${propToUse?.owners?.[0]?.gender}` }
               : null,
-            guardian: waterResult?.property?.owners?.[0]?.fatherOrHusbandName,
+            guardian: propToUse?.owners?.[0]?.fatherOrHusbandName,
             isOwnerSame: waterResult?.connectionHolders ? false : true,
-            mobileNumber: waterResult?.property?.owners?.[0]?.mobileNumber,
-            name: waterResult?.property?.owners?.[0]?.name,
-            relationship: waterResult?.property?.owners?.[0]?.relationship
+            mobileNumber: propToUse?.owners?.[0]?.mobileNumber,
+            name: propToUse?.owners?.[0]?.name,
+            relationship: propToUse?.owners?.[0]?.relationship
               ? {
-                  code: waterResult?.property?.owners?.[0]?.relationship,
-                  i18nKey: `COMMON_MASTERS_OWNERTYPE_${waterResult?.property?.owners?.[0]?.relationship}`,
+                  code: propToUse?.owners?.[0]?.relationship,
+                  i18nKey: `COMMON_MASTERS_OWNERTYPE_${propToUse?.owners?.[0]?.relationship}`,
                 }
               : null,
             specialCategoryType: waterResult?.connectionHolders?.[0]?.ownerType
@@ -77,9 +136,12 @@ const getEditDetails = (waterResult, sewerageresult, t) => {
               : "",
           },
         ];
-    waterResult.WaterConnectionResult = { WaterConnection: [{ ...waterResult }] };
-    waterResult.cpt = { details: { ...waterResult?.property } };
-    waterResult.cptId = { id: waterResult?.propertyId };
+    waterResult.property = propToUse;
+    waterResult.WaterConnectionResult = { WaterConnection: [{ ...waterResult, property: propToUse }] };
+    waterResult.cpt = { details: { ...propToUse } };
+    waterResult.cptId = { id: propToUse?.propertyId || waterResult?.propertyId };
+    waterResult.propertyLocationDetails = propMapped.propertyLocationDetails;
+    waterResult.waterConnection = propMapped.waterConnection;
     waterResult.DocumentsRequired = { documents: waterResult?.documents || [] };
     waterResult.plumberPreference = { plumberPreference: { code: "ULB", i18nKey: "WS_I_WOULD_PREFER_FROM_MUNICIPAL_OFFICE" } };
     waterResult.serviceName = waterResult?.applicationType?.includes("WATER")
@@ -201,21 +263,21 @@ const getEditDetails = (waterResult, sewerageresult, t) => {
         ]
       : [
           {
-            address: sewerageresult?.property?.owners?.[0]?.correspondenceAddress,
+            address: (latestProperty || sewerageresult?.property)?.owners?.[0]?.correspondenceAddress,
             documentId: "",
             documentType: "",
             filestoreId: null,
-            gender: sewerageresult?.property?.owners?.[0]?.gender
-              ? { code: sewerageresult?.property?.owners?.[0]?.gender, i18nKey: `COMMON_GENDER_${sewerageresult?.property?.owners?.[0]?.gender}` }
+            gender: (latestProperty || sewerageresult?.property)?.owners?.[0]?.gender
+              ? { code: (latestProperty || sewerageresult?.property)?.owners?.[0]?.gender, i18nKey: `COMMON_GENDER_${(latestProperty || sewerageresult?.property)?.owners?.[0]?.gender}` }
               : null,
-            guardian: sewerageresult?.property?.owners?.[0]?.fatherOrHusbandName,
+            guardian: (latestProperty || sewerageresult?.property)?.owners?.[0]?.fatherOrHusbandName,
             isOwnerSame: sewerageresult?.connectionHolders ? false : true,
-            mobileNumber: sewerageresult?.property?.owners?.[0]?.mobileNumber,
-            name: sewerageresult?.property?.owners?.[0]?.name,
-            relationship: sewerageresult?.property?.owners?.[0]?.relationship
+            mobileNumber: (latestProperty || sewerageresult?.property)?.owners?.[0]?.mobileNumber,
+            name: (latestProperty || sewerageresult?.property)?.owners?.[0]?.name,
+            relationship: (latestProperty || sewerageresult?.property)?.owners?.[0]?.relationship
               ? {
-                  code: sewerageresult?.property?.owners?.[0]?.relationship,
-                  i18nKey: `COMMON_MASTERS_OWNERTYPE_${sewerageresult?.property?.owners?.[0]?.relationship}`,
+                  code: (latestProperty || sewerageresult?.property)?.owners?.[0]?.relationship,
+                  i18nKey: `COMMON_MASTERS_OWNERTYPE_${(latestProperty || sewerageresult?.property)?.owners?.[0]?.relationship}`,
                 }
               : null,
             specialCategoryType: sewerageresult?.connectionHolders?.[0]?.ownerType
@@ -226,9 +288,14 @@ const getEditDetails = (waterResult, sewerageresult, t) => {
               : "",
           },
         ];
-    sewerageresult.SewerageConnectionResult = { SewerageConnections: [{ ...sewerageresult }] };
-    sewerageresult.cpt = { details: { ...sewerageresult?.property } };
-    sewerageresult.cptId = { id: sewerageresult?.propertyId };
+    const propToUseSewerage = latestProperty || sewerageresult?.property;
+    const propMappedSewerage = mapPropertyToFormFields(propToUseSewerage);
+    sewerageresult.property = propToUseSewerage;
+    sewerageresult.SewerageConnectionResult = { SewerageConnections: [{ ...sewerageresult, property: propToUseSewerage }] };
+    sewerageresult.cpt = { details: { ...propToUseSewerage } };
+    sewerageresult.cptId = { id: propToUseSewerage?.propertyId || sewerageresult?.propertyId };
+    sewerageresult.propertyLocationDetails = propMappedSewerage.propertyLocationDetails;
+    sewerageresult.waterConnection = propMappedSewerage.waterConnection;
     sewerageresult.DocumentsRequired = { documents: sewerageresult?.documents || [] };
     sewerageresult.plumberPreference = { plumberPreference: { code: "ULB", i18nKey: "WS_I_WOULD_PREFER_FROM_MUNICIPAL_OFFICE" } };
     sewerageresult.serviceName = sewerageresult?.applicationType.includes("WATER")
@@ -354,6 +421,32 @@ const EditApplication = ({ parentRoute }) => {
   );
   let isModifyEdit = window.location.href.includes("/modify-connection") || window.location.href.includes("/edit-application");
 
+  const propertyId =
+    Waterresult?.propertyId ||
+    Sewarageresult?.propertyId ||
+    params?.propertyId ||
+    params?.cptId?.id ||
+    params?.cpt?.details?.propertyId;
+
+  const propertyTenantId =
+    Waterresult?.property?.tenantId ||
+    Sewarageresult?.property?.tenantId ||
+    params?.property?.tenantId ||
+    params?.cpt?.details?.tenantId ||
+    stateId ||
+    "dl";
+
+  const { data: ptData } = Digit.Hooks.pt.usePropertySearch(
+    { filters: { propertyIds: propertyId }, tenantId: propertyTenantId },
+    {
+      filters: { propertyIds: propertyId },
+      tenantId: propertyTenantId,
+      enabled: !!(propertyId && propertyId !== ""),
+      privacy: Digit.Utils.getPrivacyObject(),
+    }
+  );
+  const latestProperty = ptData?.Properties?.[0];
+
   useEffect(() => {
     if (window.location.href.includes("/acknowledgement")) {
       return;
@@ -381,6 +474,15 @@ const EditApplication = ({ parentRoute }) => {
       params?.applicationStatus &&
       params?.applicationStatus !== currentApp?.applicationStatus;
 
+    const prevProp = params?.cpt?.details || params?.property;
+    const isPropertyUpdated =
+      latestProperty &&
+      (!prevProp ||
+        prevProp.propertyId !== latestProperty.propertyId ||
+        prevProp.auditDetails?.lastModifiedTime !== latestProperty.auditDetails?.lastModifiedTime ||
+        JSON.stringify(prevProp) !== JSON.stringify(latestProperty) ||
+        !params?.waterConnection?.useDetails?.NumberofDwellingUnits);
+
     if (
       isAppLoaded &&
       (isNotHydrated || isDifferentApp || isSatisfiedChanged || isAuditChanged || isStatusChanged)
@@ -406,9 +508,56 @@ const EditApplication = ({ parentRoute }) => {
       }
       sessionStorage.setItem("WaterInitialObject", JSON.stringify({ ...waterapplication }));
       sessionStorage.setItem("SewerageInitialObject", JSON.stringify({ ...sewerageapplication }));
-      let EditDetails = getEditDetails(waterapplication, sewerageapplication, t);
+      let EditDetails = getEditDetails(waterapplication, sewerageapplication, t, latestProperty);
       setParams(EditDetails);
-    } else if (Object.keys(params).length > 0 && currentApp) {
+    } else if (Object.keys(params).length > 0 && (currentApp || latestProperty)) {
+      if (isPropertyUpdated) {
+        setParams((prevParams) => {
+          const propMapped = mapPropertyToFormFields(latestProperty);
+          let updatedParams = {
+            ...prevParams,
+            property: latestProperty,
+            cpt: { details: latestProperty },
+            cptId: { id: latestProperty.propertyId },
+            propertyLocationDetails: {
+              ...(propMapped.propertyLocationDetails || {}),
+              ...(prevParams?.propertyLocationDetails || {}),
+            },
+            waterConnection: {
+              ...(prevParams?.waterConnection || {}),
+              useDetails: {
+                ...(propMapped.waterConnection?.useDetails || {}),
+                ...(prevParams?.waterConnection?.useDetails || {}),
+                NumberofDwellingUnits:
+                  propMapped.waterConnection?.useDetails?.NumberofDwellingUnits ||
+                  prevParams?.waterConnection?.useDetails?.NumberofDwellingUnits ||
+                  "",
+                plotArea:
+                  propMapped.waterConnection?.useDetails?.plotArea ||
+                  prevParams?.waterConnection?.useDetails?.plotArea ||
+                  "",
+                builtUpArea:
+                  propMapped.waterConnection?.useDetails?.builtUpArea ||
+                  prevParams?.waterConnection?.useDetails?.builtUpArea ||
+                  "",
+                heightOfTheBuilding:
+                  propMapped.waterConnection?.useDetails?.heightOfTheBuilding ||
+                  prevParams?.waterConnection?.useDetails?.heightOfTheBuilding ||
+                  "",
+              },
+            },
+          };
+          if (updatedParams?.WaterConnectionResult?.WaterConnection?.[0]) {
+            updatedParams.WaterConnectionResult.WaterConnection[0].property = latestProperty;
+            updatedParams.WaterConnectionResult.WaterConnection[0].propertyId = latestProperty.propertyId;
+          }
+          if (updatedParams?.SewerageConnectionResult?.SewerageConnections?.[0]) {
+            updatedParams.SewerageConnectionResult.SewerageConnections[0].property = latestProperty;
+            updatedParams.SewerageConnectionResult.SewerageConnections[0].propertyId = latestProperty.propertyId;
+          }
+          return updatedParams;
+        });
+      }
       const addrType = currentApp?.additionalDetails?.addressType || currentApp?.ConnectionDetails?.[0]?.addressType || currentApp?.addressType;
       const compAddr = currentApp?.additionalDetails?.completeAddress || currentApp?.ConnectionDetails?.[0]?.completeAddress || currentApp?.completeAddress;
       const needsAddressSync =
@@ -478,7 +627,7 @@ const EditApplication = ({ parentRoute }) => {
         });
       }
     }
-  }, [Waterresult, Sewarageresult]);
+  }, [Waterresult, Sewarageresult, latestProperty]);
 
   // Stepper navigation removed for long form implementation
   const onSuccess = () => {
@@ -509,6 +658,32 @@ const EditApplication = ({ parentRoute }) => {
           ...params.SewerageConnectionResult.SewerageConnections[0]?.additionalDetails,
           CompletelySatisfied: backendSatisfied,
         };
+      }
+    }
+    const propToSubmit = latestProperty || params?.cpt?.details || params?.property;
+    if (propToSubmit) {
+      const propMapped = mapPropertyToFormFields(propToSubmit);
+      params.property = propToSubmit;
+      params.cpt = { details: propToSubmit };
+      params.cptId = { id: propToSubmit?.propertyId };
+      params.propertyLocationDetails = {
+        ...(propMapped.propertyLocationDetails || {}),
+        ...(params.propertyLocationDetails || {}),
+      };
+      params.waterConnection = {
+        ...(params.waterConnection || {}),
+        useDetails: {
+          ...(propMapped.waterConnection?.useDetails || {}),
+          ...(params.waterConnection?.useDetails || {}),
+        },
+      };
+      if (params?.WaterConnectionResult?.WaterConnection?.[0]) {
+        params.WaterConnectionResult.WaterConnection[0].property = propToSubmit;
+        params.WaterConnectionResult.WaterConnection[0].propertyId = propToSubmit?.propertyId;
+      }
+      if (params?.SewerageConnectionResult?.SewerageConnections?.[0]) {
+        params.SewerageConnectionResult.SewerageConnections[0].property = propToSubmit;
+        params.SewerageConnectionResult.SewerageConnections[0].propertyId = propToSubmit?.propertyId;
       }
     }
     history.push(`${getPath(match.path, match.params)}/acknowledgement`);

@@ -884,7 +884,10 @@ export const WSSearch = {
         documentUid: wsDataDetails?.additionalDetails?.otherDocumentNumber || d?.documentNumber || "NA",
         documentNumber: wsDataDetails?.additionalDetails?.otherDocumentNumber || d?.documentNumber,
         fileStoreId: d?.fileStoreId,
-        numberLabel: "Other Document Number",
+        numberLabel:
+          d?.documentType?.includes("OTHER_DOCUMENTS") || d?.documentType?.includes("OTHERDOCUMENTS")
+            ? "Other Document Remark"
+            : "Other Document Number",
         originalDoc: d,
     }));
 

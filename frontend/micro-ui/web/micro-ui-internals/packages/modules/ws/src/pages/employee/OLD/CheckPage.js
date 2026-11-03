@@ -171,6 +171,8 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
   const declaration = data?.declarationData || data?.declaration || {};
   const djbEmployee = data?.djbEmployee?.djbEmployee || data?.djbEmployee || {};
   const disability = data?.disability?.disability || data?.disability || data?.additionalDetails || {};
+  const rainWaterHarvesting =
+    data?.rainWaterHarvesting?.rainWaterHarvesting || data?.rainWaterHarvesting || data?.additionalDetails || {};
 
   return (
     <React.Fragment>
@@ -536,6 +538,18 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
             <Row label="Divyangjan/Person with Disability?" text={disability?.isDivyangjan ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")} />
           </StatusTable>
 
+          <CardSubHeader>{t("Rain Water Harvesting Certificate")}</CardSubHeader>
+          <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
+            <Row
+              label={t("Rain Water Harvesting Certificate")}
+              text={
+                rainWaterHarvesting?.hasCertificate || rainWaterHarvesting?.isRainwaterHarvesting
+                  ? t("CORE_COMMON_YES")
+                  : t("CORE_COMMON_NO")
+              }
+            />
+          </StatusTable>
+
           {/*<CardSubHeader>{t("WS_BANK_DETAILS")}</CardSubHeader>
           <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
             <Row label={t("WS_NAME_OF_BANK")} text={`${t(checkForNA(bankDetails?.bankName))}`} actionButton={<ActionButton onClick={onEdit} />} />
@@ -549,7 +563,12 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
             {documents?.map((doc, index) => (
               <React.Fragment key={index}>
                 <Row
-                  label={t(`${doc?.documentType?.replaceAll(".", "_")}`)}
+                  label={t(
+                    doc?.i18nKey ||
+                    (doc?.documentType === "OWNER.DJB_EMPLOYEE_ID" || doc?.documentType?.includes("DJB_EMPLOYEE_ID")
+                      ? "WS_UPLOAD_EMPLOYEE_ID_DOC"
+                      : doc?.documentType?.replaceAll(".", "_"))
+                  )}
                   text={checkForNA(doc?.documentUid)}
                   actionButton={index === 0 ? <ActionButton onClick={onEdit} /> : null}
                 />

@@ -7,12 +7,31 @@ import { convertToPropertyLightWeight, convertToUpdatePropertyLightWeight } from
 
 const GetActionMessage = (props) => {
   const { t } = useTranslation();
+  const isEdit =
+    props?.isEdit ||
+    props?.isUpdate ||
+    window.location.href.includes("edit-property") ||
+    window.location.href.includes("edit-application") ||
+    window.location.href.includes("update-property");
+
   if (props.isSuccess) {
-    return !window.location.href.includes("edit-application") ? (window.location.href.includes("employee") ?  t("CS_NEW_PROPERTY_APPLICATION_CREATED_SUCCESS") : t("CS_NEW_PROPERTY_APPLICATION_SUBMITTED_SUCCESS")) : t("CS_PROPERTY_UPDATE_APPLICATION_SUCCESS");
+    if (isEdit) {
+      const translated = t("CS_PROPERTY_UPDATE_APPLICATION_SUCCESS");
+      return translated && translated !== "CS_PROPERTY_UPDATE_APPLICATION_SUCCESS" && !translated.toLowerCase().includes("create")
+        ? translated
+        : t("Property Updated Successfully");
+    }
+    return window.location.href.includes("employee")
+      ? t("CS_NEW_PROPERTY_APPLICATION_CREATED_SUCCESS", "Property Created Successfully")
+      : t("CS_NEW_PROPERTY_APPLICATION_SUBMITTED_SUCCESS", "Property Created Successfully");
   } else if (props.isLoading) {
-    return !window.location.href.includes("edit-application") ? t("CS_PROPERTY_APPLICATION_PENDING") : t("CS_PROPERTY_UPDATE_APPLICATION_PENDING");
+    return isEdit
+      ? t("CS_PROPERTY_UPDATE_APPLICATION_PENDING", "Property Update Pending")
+      : t("CS_PROPERTY_APPLICATION_PENDING", "Property Application Pending");
   } else if (!props.isSuccess) {
-    return !window.location.href.includes("edit-application") ? t("CS_PROPERTY_APPLICATION_FAILED") : t("CS_PROPERTY_UPDATE_APPLICATION_FAILED");
+    return isEdit
+      ? t("CS_PROPERTY_UPDATE_APPLICATION_FAILED", "Property Update Failed")
+      : t("CS_PROPERTY_APPLICATION_FAILED", "Property Application Failed");
   }
 };
 
@@ -32,12 +51,22 @@ const BannerPicker = (props) => {
   );
 };
 
-const PTAcknowledgement = ({ onSuccess, onSelect, formData, redirectUrl, userType }) => {
+const PTAcknowledgement = ({ onSuccess, onSelect, formData, redirectUrl, userType, isEdit, isUpdate }) => {
   const { t } = useTranslation();
   const location = useLocation();
   const stateId = Digit.ULBService.getStateId();
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const history = useHistory();
+
+  const isEditOrUpdate = Boolean(
+    isEdit ||
+      isUpdate ||
+      location?.state?.isEdit ||
+      location?.state?.isUpdate ||
+      window.location.href.includes("edit-property") ||
+      window.location.href.includes("edit-application") ||
+      window.location.href.includes("update-property")
+  );
 
   let data = location?.state?.data;
   if (onSelect) {
@@ -187,7 +216,8 @@ const PTAcknowledgement = ({ onSuccess, onSelect, formData, redirectUrl, userTyp
           property: responseData?.Properties?.[0],
           propertyId: responseData?.Properties?.[0]?.propertyId,
           hasProperty: "YES",
-          fromPropertyCreate: true,
+          fromPropertyCreate: !isEditOrUpdate,
+          fromPropertyUpdate: !!isEditOrUpdate,
           ...location?.state?.prevState,
         });
         return;
@@ -201,7 +231,8 @@ const PTAcknowledgement = ({ onSuccess, onSelect, formData, redirectUrl, userTyp
           property: responseData?.Properties?.[0],
           propertyId: responseData?.Properties?.[0]?.propertyId,
           hasProperty: "YES",
-          fromPropertyCreate: true,
+          fromPropertyCreate: !isEditOrUpdate,
+          fromPropertyUpdate: !!isEditOrUpdate,
           ...location?.state?.prevState,
         });
       }
@@ -213,8 +244,24 @@ const PTAcknowledgement = ({ onSuccess, onSelect, formData, redirectUrl, userTyp
   ) : (
     <div style={{ width: "100%" }}>
       <Card>
-        <BannerPicker t={t} data={responseData} isSuccess={isMutationSuccess} isLoading={isMutationLoading} />
-      {isMutationSuccess && <CardText>{window.location.href.includes("employee") ? t("CS_CREATE_PROPERTY_SUCCESS_EMP_RESPONSE") : t("CS_CREATE_PROPERTY_SUCCESS_CITIZEN_RESPONSE")}</CardText>}
+        <BannerPicker t={t} data={responseData} isSuccess={isMutationSuccess} isLoading={isMutationLoading} isEdit={isEditOrUpdate} />
+      {isMutationSuccess && (
+        <CardText>
+          {isEditOrUpdate
+            ? (() => {
+                const updateKey = window.location.href.includes("employee")
+                  ? "CS_UPDATE_PROPERTY_SUCCESS_EMP_RESPONSE"
+                  : "CS_UPDATE_PROPERTY_SUCCESS_CITIZEN_RESPONSE";
+                const translated = t(updateKey);
+                return translated && translated !== updateKey && !translated.toLowerCase().includes("creation")
+                  ? translated
+                  : t("The Notification regarding property update is sent to the owner's registered mobile number.");
+              })()
+            : window.location.href.includes("employee")
+            ? t("CS_CREATE_PROPERTY_SUCCESS_EMP_RESPONSE")
+            : t("CS_CREATE_PROPERTY_SUCCESS_CITIZEN_RESPONSE")}
+        </CardText>
+      )}
       {!isMutationSuccess && <CardText>{isErrorState && errorMsg ? errorMsg : (mutation.data?.response?.data?.Errors?.[0]?.message || mutation.data?.message || t("CS_FILE_PROPERTY_FAILED_RESPONSE"))}</CardText>}
 
       {/* <StatusTable>

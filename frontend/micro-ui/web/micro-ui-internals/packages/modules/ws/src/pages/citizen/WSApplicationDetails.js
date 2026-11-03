@@ -656,6 +656,14 @@ const WSApplicationDetails = () => {
                   return null;
                 })()}
                 <Row label={t("WS_DIVYANGJAN")} text={`${connectionDetails?.isDivyangjan ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}`} />
+                <Row
+                  label={t("WS_RAIN_WATER_HARVESTING_CERTIFICATE") || "Rain Water Harvesting Certificate"}
+                  text={`${
+                    connectionDetails?.hasRainWaterHarvestingCertificate || connectionDetails?.isRainwaterHarvesting
+                      ? t("CORE_COMMON_YES")
+                      : t("CORE_COMMON_NO")
+                  }`}
+                />
                 {/* <Row
                   label={t("WS_SERVICE_TYPE")}
                   text={`${t(
