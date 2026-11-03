@@ -371,7 +371,7 @@ public class UserController {
     @PostMapping("/_createAddress")
     public ResponseEntity<AddressResponse> createAddress(@RequestBody AddressRequest addressRequest) {
 
-        Address userAddress = userService.createAddress(addressRequest.getUserUuid(), addressRequest.getAddress());
+        Address userAddress = userService.createAddress(addressRequest.getUserUuid(), addressRequest.getAddress(), addressRequest.getRequestInfo());
         List<Address> userAddressList = new ArrayList<>();
         userAddressList.add(userAddress);
         ResponseInfo responseInfo = ResponseInfo.builder().status(HttpStatus.CREATED.toString()).build();
@@ -402,7 +402,7 @@ public class UserController {
     @PostMapping("/_updateAddress")
     public AddressResponse updateAddress(@RequestBody AddressRequest addressRequest) {
 
-        Address userAddress = userService.updateAddress(addressRequest.getAddress());
+        Address userAddress = userService.updateAddress(addressRequest.getAddress(), addressRequest.getRequestInfo());
         List<Address> userAddressList = new ArrayList<>();
         userAddressList.add(userAddress);
         ResponseInfo responseInfo = ResponseInfo.builder().status(String.valueOf(HttpStatus.OK.value())).build();
@@ -412,7 +412,7 @@ public class UserController {
     @PostMapping("/v1/_updateAddress")
     public AddressResponse updateAddressV2(@RequestBody AddressRequest addressRequest) {
 
-        Address userAddress = userService.updateAddressV2(addressRequest.getAddress());
+        Address userAddress = userService.updateAddressV2(addressRequest.getAddress(), addressRequest.getRequestInfo());
         List<Address> userAddressList = new ArrayList<>();
         userAddressList.add(userAddress);
         ResponseInfo responseInfo = ResponseInfo.builder().status(String.valueOf(HttpStatus.OK.value())).build();
