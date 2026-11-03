@@ -943,6 +943,32 @@ public class UserService {
      * @throws IllegalArgumentException If the provided user UUID is not valid.
      */
     public Address createAddress(String userUuid, Address address) {
+        return createAddress(userUuid, address, null);
+    }
+
+    /**
+     * Endpoint to create a new address with IDOR protection (Audit Case I).
+     * Validates that authenticated citizens cannot create or assign addresses for another user.
+     */
+    public Address createAddress(String userUuid, Address address, RequestInfo requestInfo) {
+        if (requestInfo != null && requestInfo.getUserInfo() != null) {
+            org.egov.common.contract.request.User authUser = requestInfo.getUserInfo();
+            if ("CITIZEN".equalsIgnoreCase(authUser.getType())) {
+                if (StringUtils.isNotBlank(userUuid) && !userUuid.equalsIgnoreCase(authUser.getUuid())) {
+                    log.warn("IDOR attempt: Citizen {} tried to create address for userUuid {}", authUser.getUuid(), userUuid);
+                    throw new CustomException("ACCESS_DENIED", "You are not authorized to create address for another user.");
+                }
+                userUuid = authUser.getUuid();
+                if (address != null) {
+                    if (address.getUserId() != null && authUser.getId() != null && !address.getUserId().equals(authUser.getId())) {
+                        log.warn("IDOR attempt: Citizen ID {} tried to set address for userId {}", authUser.getId(), address.getUserId());
+                        throw new CustomException("ACCESS_DENIED", "You are not authorized to assign address to another user ID.");
+                    }
+                    address.setUserId(authUser.getId());
+                }
+            }
+        }
+
         Long userId = userRepository.getUserIdByUuid(userUuid);
         if (userId == null) {
             throw new IllegalArgumentException("USER_UUID_NOT_VALID: The provided user UUID:"+userUuid+" is not valid");
@@ -1003,6 +1029,42 @@ public class UserService {
      * @throws IllegalArgumentException if the address ID does not exist in the database.
      */
     public Address updateAddress(Address address) {
+        return updateAddress(address, null);
+    }
+
+    /**
+     * Updates an existing address with IDOR protection (Audit Case I).
+     * Validates that authenticated citizens can only update their own addresses.
+     */
+    public Address updateAddress(Address address, RequestInfo requestInfo) {
+        if (requestInfo != null && requestInfo.getUserInfo() != null) {
+            org.egov.common.contract.request.User authUser = requestInfo.getUserInfo();
+            if ("CITIZEN".equalsIgnoreCase(authUser.getType())) {
+                if (address != null) {
+                    if (address.getUserId() != null && authUser.getId() != null && !address.getUserId().equals(authUser.getId())) {
+                        log.warn("IDOR attempt: Citizen ID {} tried to update address with userId {}", authUser.getId(), address.getUserId());
+                        throw new CustomException("ACCESS_DENIED", "You are not authorized to modify address for another user ID.");
+                    }
+                    if (address.getId() != null) {
+                        AddressSearchCriteria addressSearchCriteria = AddressSearchCriteria.builder()
+                                .id(address.getId())
+                                .status(UserConstants.ADDRESS_ACTIVE_STATUS)
+                                .build();
+                        List<Address> existing = addressRepository.getAddressV2(addressSearchCriteria);
+                        if (existing != null && !existing.isEmpty()) {
+                            Address existingAddress = existing.get(0);
+                            if (existingAddress.getUserId() != null && authUser.getId() != null 
+                                    && !existingAddress.getUserId().equals(authUser.getId())) {
+                                log.warn("IDOR attempt: Citizen ID {} tried to update address ID {} belonging to user ID {}", 
+                                        authUser.getId(), address.getId(), existingAddress.getUserId());
+                                throw new CustomException("ACCESS_DENIED", "You are not authorized to modify an address belonging to another user.");
+                            }
+                        }
+                    }
+                    address.setUserId(authUser.getId());
+                }
+            }
+        }
 
         // Validate mandatory fields if enabled
         if (addressMandatoryFieldsEnabled && address.isMandatoryFieldsMissing(addressMandatoryFieldsEnabled)) {
@@ -1014,10 +1076,11 @@ public class UserService {
                 .id(address.getId())
                 .status(UserConstants.ADDRESS_ACTIVE_STATUS)
                 .build();
-        Address existingAddress = addressRepository.getAddressV2(addressSearchCriteria).get(0);
-        if (existingAddress == null) {
+        List<Address> existingAddresses = addressRepository.getAddressV2(addressSearchCriteria);
+        if (existingAddresses == null || existingAddresses.isEmpty()) {
             throw new IllegalArgumentException("ADDRESS_NOT_VALID: Address ID " + address.getId() + " does not exist.");
         }
+        Address existingAddress = existingAddresses.get(0);
         // Encrypt address before updating
         //address = encryptionDecryptionUtil.encryptObject(address, UserConstants.USER_ADDRESS_ENCRYPTION_KEY, Address.class);
         // Update the old address status to inactive
@@ -1030,26 +1093,11 @@ public class UserService {
     }
 
     public Address updateAddressV2(Address address) {
+        return updateAddress(address, null);
+    }
 
-        // Validate mandatory fields if enabled
-        if (addressMandatoryFieldsEnabled && address.isMandatoryFieldsMissing(addressMandatoryFieldsEnabled)) {
-            log.error("Address validation failed - mandatory fields missing for address update with ID: {}", address.getId());
-            throw new CustomException("ADDRESS_VALIDATION_ERROR", "City, pincode, and address are mandatory fields for address creation");
-        }
-
-        AddressSearchCriteria addressSearchCriteria = AddressSearchCriteria.builder()
-                .id(address.getId())
-                .status(UserConstants.ADDRESS_ACTIVE_STATUS)
-                .build();
-        Address existingAddress = addressRepository.getAddressV2(addressSearchCriteria).get(0);
-        if (existingAddress == null) {
-            throw new IllegalArgumentException("ADDRESS_NOT_VALID: Address ID " + address.getId() + " does not exist.");
-        }
-        // Encrypt address before updating
-        // Update the old address status to inactive
-        addressRepository.updateAddressV2(address.getId(), address.getUserId(), UserConstants.ADDRESS_INACTIVE_STATUS);
-        // Create a new address entry with the updated details with the same user id
-        return addressRepository.createAddressV2(address, address.getUserId(), address.getTenantId());
+    public Address updateAddressV2(Address address, RequestInfo requestInfo) {
+        return updateAddress(address, requestInfo);
     }
 
     /**
