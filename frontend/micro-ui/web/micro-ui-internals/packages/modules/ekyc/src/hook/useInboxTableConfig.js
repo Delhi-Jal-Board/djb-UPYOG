@@ -62,14 +62,14 @@ const useInboxTableConfig = ({
       accessor: "citizenName",
       Cell: ({ row }) => <span>{toTitleCase(row.original?.citizenName) || "NA"}</span>,
     },
-    {
-      Header: t("EKYC_STATUS"),
-      accessor: "actionStatus",
-      Cell: ({ row }) => {
-        const status = (row.original?.status || "DEFAULT").toUpperCase();
-        return <span className={`ekyc-status-tag ${status}`}>{toTitleCase(row.original?.status || "DEFAULT")}</span>;
-      },
-    },
+    // {
+    //   Header: t("EKYC_STATUS"),
+    //   accessor: "actionStatus",
+    //   Cell: ({ row }) => {
+    //     const status = (row.original?.status || "DEFAULT").toUpperCase();
+    //     return <span className={`ekyc-status-tag ${status}`}>{toTitleCase(row.original?.status || "DEFAULT")}</span>;
+    //   },
+    // },
     {
       Header: t("SUBMITTED_AT") || "Submitted At",
       accessor: "submittedAt",
