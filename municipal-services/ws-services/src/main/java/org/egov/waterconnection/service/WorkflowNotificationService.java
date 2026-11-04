@@ -142,6 +142,15 @@ public class WorkflowNotificationService {
                         notificationUtil.sendEmail(emailRequests, tenantId);
                     }
                 }}
+
+            if (config.getWhatsappNotificationsEnabled() != null && config.getWhatsappNotificationsEnabled()) {
+                try {
+                    processWhatsAppNotifications(request, property, tenantId);
+                } catch (Exception e) {
+                    log.error("Error occurred while processing WhatsApp notification for application: " 
+                            + (request.getWaterConnection() != null ? request.getWaterConnection().getApplicationNo() : ""), e);
+                }
+            }
         } catch (Exception ex) {
             log.error("Error occured while processing the record from topic : " + topic, ex);
         }
@@ -889,6 +898,446 @@ public class WorkflowNotificationService {
         UserDetailResponse userDetailResponse = userService.getUser(userSearchRequest);
         requestInfo.setUserInfo(userInfoCopy);
         return userDetailResponse;
+    }
+
+    /**
+     * Processes WhatsApp notifications based on workflow action and application type.
+     * Non-blocking and isolated from other notification channels.
+     * 
+     * @param request WaterConnectionRequest
+     * @param property Property
+     * @param tenantId Tenant ID
+     */
+    private void processWhatsAppNotifications(WaterConnectionRequest request, Property property, String tenantId) {
+        if (request == null || request.getWaterConnection() == null || request.getWaterConnection().getProcessInstance() == null) {
+            return;
+        }
+
+        String action = request.getWaterConnection().getProcessInstance().getAction();
+        String appType = request.getWaterConnection().getApplicationType();
+
+        // Check for New Water Connection Application
+        boolean isNewConnection = appType == null 
+                || WCConstants.NEW_WATER_CONNECTION.equalsIgnoreCase(appType)
+                || "NEW_WATER_CONNECTION".equalsIgnoreCase(appType);
+
+        if (isNewConnection && WCConstants.SUBMIT_APPLICATION_CONST.equalsIgnoreCase(action)) {
+            List<WhatsAppRequest> whatsappRequests = getWhatsAppRequestForAppSubmission(request, property);
+            if (!CollectionUtils.isEmpty(whatsappRequests)) {
+                notificationUtil.sendWhatsApp(whatsappRequests, tenantId);
+            }
+        } else if (isNewConnection && (WCConstants.ACTION_REJECT.equalsIgnoreCase(action)
+                || WCConstants.STATUS_REJECTED.equalsIgnoreCase(request.getWaterConnection().getApplicationStatus()))) {
+            List<WhatsAppRequest> whatsappRequests = getWhatsAppRequestForAppRejection(request, property);
+            if (!CollectionUtils.isEmpty(whatsappRequests)) {
+                notificationUtil.sendWhatsApp(whatsappRequests, tenantId);
+            }
+        } else if (isNewConnection && (WCConstants.ACTION_SEND_BACK_TO_CITIZEN.equalsIgnoreCase(action)
+                || WCConstants.ACTION_SEND_BACK_TO_CITIZEN_DIRECT.equalsIgnoreCase(action))) {
+            List<WhatsAppRequest> whatsappRequests = getWhatsAppRequestForQueryRaised(request, property);
+            if (!CollectionUtils.isEmpty(whatsappRequests)) {
+                notificationUtil.sendWhatsApp(whatsappRequests, tenantId);
+            }
+        }
+        // Note: Approval / Activation notification is kept on hold as per requirement until manager confirms template & PDF details
+        /*
+        else if (isNewConnection && (WCConstants.ACTIVATE_CONNECTION_CONST.equalsIgnoreCase(action)
+                || WCConstants.ACTIVATE_CONNECTION.equalsIgnoreCase(action))) {
+            List<WhatsAppRequest> whatsappRequests = getWhatsAppRequestForAppApproved(request, property);
+            if (!CollectionUtils.isEmpty(whatsappRequests)) {
+                notificationUtil.sendWhatsApp(whatsappRequests, tenantId);
+            }
+        }
+        */
+    }
+
+    /**
+     * Extracts mobile numbers and names for notification recipients (Owners, Connection Holders, Applicant).
+     */
+    private Map<String, String> extractRecipientMobileNumbersAndNames(WaterConnectionRequest request, Property property, WaterConnection connection) {
+        Map<String, String> mobileNumbersAndNames = new HashMap<>();
+        Set<String> ownersUuids = new HashSet<>();
+
+        // 1. Owners from Property
+        if (property != null && !CollectionUtils.isEmpty(property.getOwners())) {
+            property.getOwners().forEach(owner -> {
+                if (!StringUtils.isEmpty(owner.getMobileNumber())) {
+                    mobileNumbersAndNames.put(owner.getMobileNumber(), owner.getName());
+                } else if (!StringUtils.isEmpty(owner.getUuid())) {
+                    ownersUuids.add(owner.getUuid());
+                }
+            });
+        }
+
+        // 2. Connection Holders
+        if (!CollectionUtils.isEmpty(connection.getConnectionHolders())) {
+            connection.getConnectionHolders().forEach(holder -> {
+                if (!StringUtils.isEmpty(holder.getMobileNumber())) {
+                    mobileNumbersAndNames.put(holder.getMobileNumber(), holder.getName());
+                } else if (!StringUtils.isEmpty(holder.getUuid())) {
+                    ownersUuids.add(holder.getUuid());
+                }
+            });
+        }
+
+        // 3. Fallback: Fetch missing users by UUID if necessary
+        if (!CollectionUtils.isEmpty(ownersUuids)) {
+            try {
+                UserDetailResponse userDetailResponse = fetchUserByUUID(ownersUuids, request.getRequestInfo(), connection.getTenantId());
+                if (userDetailResponse != null && !CollectionUtils.isEmpty(userDetailResponse.getUser())) {
+                    for (OwnerInfo user : userDetailResponse.getUser()) {
+                        if (!StringUtils.isEmpty(user.getMobileNumber())) {
+                            mobileNumbersAndNames.put(user.getMobileNumber(), user.getName());
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("Error fetching user details by UUID for WhatsApp notification", e);
+            }
+        }
+
+        // 4. Applicant from RequestInfo UserInfo
+        if (request.getRequestInfo() != null && request.getRequestInfo().getUserInfo() != null) {
+            User userInfo = request.getRequestInfo().getUserInfo();
+            if (!StringUtils.isEmpty(userInfo.getMobileNumber()) 
+                    && (userInfo.getType() == null || !"SYSTEM".equalsIgnoreCase(userInfo.getType()))) {
+                mobileNumbersAndNames.put(userInfo.getMobileNumber(), userInfo.getName());
+            }
+        }
+
+        return mobileNumbersAndNames;
+    }
+
+    /**
+     * Prepares WhatsAppRequest for New Connection Application Submission.
+     * Template: nc_application_submitted
+     * Parameters:
+     *   {{1}} -> Applicant / Owner Name
+     *   {{2}} -> Application No
+     *   {{3}} -> Submission Date (dd-MM-yyyy)
+     * 
+     * @param request WaterConnectionRequest
+     * @param property Property
+     * @return List of WhatsAppRequest
+     */
+    private List<WhatsAppRequest> getWhatsAppRequestForAppSubmission(WaterConnectionRequest request, Property property) {
+        WaterConnection connection = request.getWaterConnection();
+        if (connection == null) {
+            return Collections.emptyList();
+        }
+
+        Map<String, String> mobileNumbersAndNames = extractRecipientMobileNumbersAndNames(request, property, connection);
+        if (CollectionUtils.isEmpty(mobileNumbersAndNames)) {
+            log.info("No mobile numbers found for WhatsApp submission notification on application: {}", connection.getApplicationNo());
+            return Collections.emptyList();
+        }
+
+        // Format submission date as dd-MM-yyyy (Asia/Kolkata timezone)
+        Long createdTime = null;
+        if (connection.getAuditDetails() != null && connection.getAuditDetails().getCreatedTime() != null) {
+            createdTime = connection.getAuditDetails().getCreatedTime();
+        } else {
+            createdTime = System.currentTimeMillis();
+        }
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy").withZone(ZoneId.of("Asia/Kolkata"));
+        String submissionDate = formatter.format(Instant.ofEpochMilli(createdTime));
+
+        String applicationNo = connection.getApplicationNo();
+        String templateName = config.getNcApplicationSubmittedTemplateName();
+
+        List<WhatsAppRequest> whatsappRequests = new ArrayList<>();
+        mobileNumbersAndNames.forEach((mobileNumber, name) -> {
+            String applicantName = !StringUtils.isEmpty(name) ? name : "Citizen";
+            List<String> parameters = Arrays.asList(
+                    applicantName,
+                    applicationNo,
+                    submissionDate
+            );
+
+            WhatsAppRequest req = WhatsAppRequest.builder()
+                    .mobileNumber(mobileNumber)
+                    .templateName(templateName)
+                    .parameters(parameters)
+                    .build();
+            whatsappRequests.add(req);
+        });
+
+        return whatsappRequests;
+    }
+
+    /**
+     * Prepares WhatsAppRequest for New Connection Application Rejection.
+     * Template: nc_application_rejected
+     * Parameters:
+     *   {{1}} -> Applicant / Owner Name
+     *   {{2}} -> Application Number
+     *   {{3}} -> Decision Date (dd-MM-yyyy)
+     *   {{4}} -> Reason for Rejection
+     * 
+     * @param request WaterConnectionRequest
+     * @param property Property
+     * @return List of WhatsAppRequest
+     */
+    private List<WhatsAppRequest> getWhatsAppRequestForAppRejection(WaterConnectionRequest request, Property property) {
+        WaterConnection connection = request.getWaterConnection();
+        if (connection == null) {
+            return Collections.emptyList();
+        }
+
+        Map<String, String> mobileNumbersAndNames = extractRecipientMobileNumbersAndNames(request, property, connection);
+        if (CollectionUtils.isEmpty(mobileNumbersAndNames)) {
+            log.info("No mobile numbers found for WhatsApp rejection notification on application: {}", connection.getApplicationNo());
+            return Collections.emptyList();
+        }
+
+        // Format decision date as dd-MM-yyyy (Asia/Kolkata timezone)
+        Long decisionTime = null;
+        if (connection.getAuditDetails() != null && connection.getAuditDetails().getLastModifiedTime() != null) {
+            decisionTime = connection.getAuditDetails().getLastModifiedTime();
+        } else {
+            decisionTime = System.currentTimeMillis();
+        }
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy").withZone(ZoneId.of("Asia/Kolkata"));
+        String decisionDate = formatter.format(Instant.ofEpochMilli(decisionTime));
+
+        String applicationNo = connection.getApplicationNo();
+        String templateName = config.getNcApplicationRejectedTemplateName();
+
+        // Reason for rejection from workflow comment / remarks
+        String rejectionReason = "Document or details not valid";
+        if (connection.getProcessInstance() != null && !StringUtils.isEmpty(connection.getProcessInstance().getComment())) {
+            rejectionReason = connection.getProcessInstance().getComment().trim();
+        }
+
+        List<WhatsAppRequest> whatsappRequests = new ArrayList<>();
+        final String finalRejectionReason = rejectionReason;
+        mobileNumbersAndNames.forEach((mobileNumber, name) -> {
+            String applicantName = !StringUtils.isEmpty(name) ? name : "Citizen";
+            List<String> parameters = Arrays.asList(
+                    applicantName,
+                    applicationNo,
+                    decisionDate,
+                    finalRejectionReason
+            );
+
+            WhatsAppRequest req = WhatsAppRequest.builder()
+                    .mobileNumber(mobileNumber)
+                    .templateName(templateName)
+                    .parameters(parameters)
+                    .build();
+            whatsappRequests.add(req);
+        });
+
+        return whatsappRequests;
+    }
+
+    /**
+     * Prepares WhatsAppRequest for New Connection Query Raised / Send Back to Citizen.
+     * Template: nc_query_raised
+     * Parameters:
+     *   {{1}} -> Applicant / Owner Name
+     *   {{2}} -> Application Number
+     *   {{3}} -> Query Raised By (e.g. Zonal Revenue Office)
+     *   {{4}} -> Query Date (dd-MM-yyyy)
+     * 
+     * @param request WaterConnectionRequest
+     * @param property Property
+     * @return List of WhatsAppRequest
+     */
+    private List<WhatsAppRequest> getWhatsAppRequestForQueryRaised(WaterConnectionRequest request, Property property) {
+        WaterConnection connection = request.getWaterConnection();
+        if (connection == null) {
+            return Collections.emptyList();
+        }
+
+        Map<String, String> mobileNumbersAndNames = extractRecipientMobileNumbersAndNames(request, property, connection);
+        if (CollectionUtils.isEmpty(mobileNumbersAndNames)) {
+            log.info("No mobile numbers found for WhatsApp query raised notification on application: {}", connection.getApplicationNo());
+            return Collections.emptyList();
+        }
+
+        // Format query date as dd-MM-yyyy (Asia/Kolkata timezone)
+        Long queryTime = null;
+        if (connection.getAuditDetails() != null && connection.getAuditDetails().getLastModifiedTime() != null) {
+            queryTime = connection.getAuditDetails().getLastModifiedTime();
+        } else {
+            queryTime = System.currentTimeMillis();
+        }
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy").withZone(ZoneId.of("Asia/Kolkata"));
+        String queryDate = formatter.format(Instant.ofEpochMilli(queryTime));
+
+        String applicationNo = connection.getApplicationNo();
+        String templateName = config.getNcQueryRaisedTemplateName();
+        String queryRaisedBy = "Zonal Revenue Office";
+
+        List<WhatsAppRequest> whatsappRequests = new ArrayList<>();
+        mobileNumbersAndNames.forEach((mobileNumber, name) -> {
+            String applicantName = !StringUtils.isEmpty(name) ? name : "Citizen";
+            List<String> parameters = Arrays.asList(
+                    applicantName,
+                    applicationNo,
+                    queryRaisedBy,
+                    queryDate
+            );
+
+            WhatsAppRequest req = WhatsAppRequest.builder()
+                    .mobileNumber(mobileNumber)
+                    .templateName(templateName)
+                    .parameters(parameters)
+                    .build();
+            whatsappRequests.add(req);
+        });
+
+        return whatsappRequests;
+    }
+
+    /**
+     * Prepares WhatsAppRequest for New Connection Application Approval.
+     * Template: nc_application_approved
+     * Parameters:
+     *   {{1}} -> Consumer / Applicant Name
+     *   {{2}} -> Application Number
+     *   {{3}} -> Zone
+     *   {{4}} -> ZRO Office
+     *   {{5}} -> Connection Type
+     *   {{6}} -> Approval Date (dd-MM-yyyy)
+     *   {{7}} -> Installation Timeline (e.g. 15 working days)
+     * 
+     * @param request WaterConnectionRequest
+     * @param property Property
+     * @return List of WhatsAppRequest
+     */
+    private List<WhatsAppRequest> getWhatsAppRequestForAppApproved(WaterConnectionRequest request, Property property) {
+        WaterConnection connection = request.getWaterConnection();
+        if (connection == null) {
+            return Collections.emptyList();
+        }
+
+        Map<String, String> mobileNumbersAndNames = extractRecipientMobileNumbersAndNames(request, property, connection);
+        if (CollectionUtils.isEmpty(mobileNumbersAndNames)) {
+            log.info("No mobile numbers found for WhatsApp approval notification on application: {}", connection.getApplicationNo());
+            return Collections.emptyList();
+        }
+
+        // Format approval/activation date as dd-MM-yyyy (Asia/Kolkata timezone)
+        Long approvalTime = null;
+        if (connection.getConnectionExecutionDate() != null) {
+            approvalTime = connection.getConnectionExecutionDate();
+        } else if (connection.getDateEffectiveFrom() != null) {
+            approvalTime = connection.getDateEffectiveFrom();
+        } else if (connection.getAuditDetails() != null && connection.getAuditDetails().getLastModifiedTime() != null) {
+            approvalTime = connection.getAuditDetails().getLastModifiedTime();
+        } else {
+            approvalTime = System.currentTimeMillis();
+        }
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy").withZone(ZoneId.of("Asia/Kolkata"));
+        String approvalDate = formatter.format(Instant.ofEpochMilli(approvalTime));
+
+        String applicationNo = !StringUtils.isEmpty(connection.getApplicationNo()) 
+                ? connection.getApplicationNo() 
+                : connection.getConnectionNo();
+        String templateName = config.getNcApplicationApprovedTemplateName();
+
+        // 1. Zone resolution
+        String zone = null;
+        if (property != null && property.getAddress() != null) {
+            if (!StringUtils.isEmpty(property.getAddress().getZone())) {
+                zone = property.getAddress().getZone();
+            } else if (property.getAddress().getLocality() != null && !StringUtils.isEmpty(property.getAddress().getLocality().getZone())) {
+                zone = property.getAddress().getLocality().getZone();
+            }
+        }
+        if (StringUtils.isEmpty(zone) && connection.getAdditionalDetails() != null) {
+            try {
+                Map<String, Object> addDetails = mapper.convertValue(connection.getAdditionalDetails(), Map.class);
+                if (addDetails.get("zone") != null) {
+                    zone = String.valueOf(addDetails.get("zone"));
+                }
+            } catch (Exception e) {
+                log.warn("Error reading zone from additionalDetails", e);
+            }
+        }
+        if (StringUtils.isEmpty(zone)) {
+            zone = "Delhi Zone";
+        } else if (!zone.toLowerCase().contains("zone")) {
+            zone = zone + " Zone";
+        }
+
+        // 2. ZRO Office resolution
+        String zroOffice = null;
+        if (property != null && property.getAddress() != null && !StringUtils.isEmpty(property.getAddress().getZroLocation())) {
+            zroOffice = property.getAddress().getZroLocation();
+        }
+        if (StringUtils.isEmpty(zroOffice) && connection.getAdditionalDetails() != null) {
+            try {
+                Map<String, Object> addDetails = mapper.convertValue(connection.getAdditionalDetails(), Map.class);
+                if (addDetails.get("zro") != null) {
+                    zroOffice = String.valueOf(addDetails.get("zro"));
+                } else if (addDetails.get("zroLocation") != null) {
+                    zroOffice = String.valueOf(addDetails.get("zroLocation"));
+                }
+            } catch (Exception e) {
+                log.warn("Error reading zro from additionalDetails", e);
+            }
+        }
+        if (StringUtils.isEmpty(zroOffice)) {
+            zroOffice = "ZRO Delhi";
+        } else if (!zroOffice.toUpperCase().contains("ZRO")) {
+            zroOffice = "ZRO " + zroOffice;
+        }
+
+        // 3. Connection Type resolution (e.g. Domestic / Commercial)
+        String connectionType = "Domestic";
+        String category = connection.getConnectionCategory();
+        if (StringUtils.isEmpty(category) && connection.getAdditionalDetails() != null) {
+            try {
+                Map<String, Object> addDetails = mapper.convertValue(connection.getAdditionalDetails(), Map.class);
+                if (addDetails.get("propertyCategory") != null) {
+                    category = String.valueOf(addDetails.get("propertyCategory"));
+                }
+            } catch (Exception e) {
+                log.warn("Error reading propertyCategory from additionalDetails", e);
+            }
+        }
+        if (!StringUtils.isEmpty(category)) {
+            if ("COMMERCIAL".equalsIgnoreCase(category) || "NON_DOMESTIC".equalsIgnoreCase(category)) {
+                connectionType = "Commercial";
+            } else if ("DOMESTIC".equalsIgnoreCase(category) || "RESIDENTIAL".equalsIgnoreCase(category)) {
+                connectionType = "Domestic";
+            } else {
+                connectionType = Character.toUpperCase(category.charAt(0)) + category.substring(1).toLowerCase();
+            }
+        }
+
+        // 4. Installation Timeline
+        String installationTimeline = "15 working days";
+
+        final String finalZone = zone;
+        final String finalZroOffice = zroOffice;
+        final String finalConnectionType = connectionType;
+
+        List<WhatsAppRequest> whatsappRequests = new ArrayList<>();
+        mobileNumbersAndNames.forEach((mobileNumber, name) -> {
+            String applicantName = !StringUtils.isEmpty(name) ? name : "Citizen";
+            List<String> parameters = Arrays.asList(
+                    applicantName,
+                    applicationNo,
+                    finalZone,
+                    finalZroOffice,
+                    finalConnectionType,
+                    approvalDate,
+                    installationTimeline
+            );
+
+            WhatsAppRequest req = WhatsAppRequest.builder()
+                    .mobileNumber(mobileNumber)
+                    .templateName(templateName)
+                    .parameters(parameters)
+                    .build();
+            whatsappRequests.add(req);
+        });
+
+        return whatsappRequests;
     }
 
 }

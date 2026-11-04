@@ -101,6 +101,18 @@ public class WSConfiguration {
     @Value("${pinbot.template.name.payment:ws_payment_notification_template}")
     private String paymentTemplateName;
 
+    @Value("${pinbot.template.name.application.submitted:nc_application_submitted}")
+    private String ncApplicationSubmittedTemplateName;
+
+    @Value("${pinbot.template.name.application.rejected:nc_application_rejected}")
+    private String ncApplicationRejectedTemplateName;
+
+    @Value("${pinbot.template.name.query.raised:nc_query_raised}")
+    private String ncQueryRaisedTemplateName;
+
+    @Value("${pinbot.template.name.application.approved:nc_application_approved}")
+    private String ncApplicationApprovedTemplateName;
+
     @Value("${notification.sms.enabled}")
     private Boolean isSMSEnabled;
 
