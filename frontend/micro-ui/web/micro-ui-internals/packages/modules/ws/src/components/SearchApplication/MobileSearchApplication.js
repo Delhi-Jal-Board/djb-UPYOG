@@ -2,6 +2,7 @@ import React, { Fragment, useCallback, useMemo, useReducer } from "react";
 import { Link } from "react-router-dom";
 import { CloseSvg, SearchForm, Table, Card, SearchAction, PopUp, DetailsCard, Loader, Toast } from "@djb25/digit-ui-react-components";
 import SearchFormFields from "./SearchFields";
+import { getServiceTypeDisplay } from "../../utils";
 
 const MobileSearchApplication = ({ Controller, register, control, t, reset, previousPage, handleSubmit, tenantId, data, onSubmit, businessService }) => {
   function activateModal(state, action) {
@@ -119,7 +120,7 @@ const MobileSearchApplication = ({ Controller, register, control, t, reset, prev
           </span>
         </div>
       ),
-      [t("WS_APPLICATION_TYPE_LABEL")]: data?.applicationType ? replaceUnderscore(data.applicationType) : "-",
+      [t("WS_APPLICATION_TYPE_LABEL")]: getServiceTypeDisplay(data, t) || "-",
       [t("WS_COMMON_TABLE_COL_OWN_NAME_LABEL")]: data?.ownerNames || "-",
       [t("WS_COMMON_TABLE_COL_APPLICATION_STATUS_LABEL")]: t(data?.applicationStatus || "NA"),
       [t("WS_COMMON_TABLE_COL_ADDRESS")]: data?.address || "-",

@@ -4,7 +4,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import WSApplication from "./ws-application";
-import { propertyCardBodyStyle, stringReplaceAll, getAddress } from "../../../utils";
+import { propertyCardBodyStyle, stringReplaceAll, getAddress, getServiceTypeDisplay } from "../../../utils";
 import WSInfoLabel from "../../../pageComponents/WSInfoLabel";
 
 export const WSMyApplications = () => {
@@ -110,10 +110,7 @@ export const WSMyApplications = () => {
         disableSortBy: true,
         Cell: ({ row }) => {
           const app = row.original;
-          if (app?.isBillAmendment) {
-            return GetCell(t(`WS_APPLICATION_TYPE_${app?.applicationType}`, app?.serviceType === "SEWERAGE" ? "Sewerage Bill Amendment" : "Water Bill Amendment"));
-          }
-          return GetCell(t(`WS_APPLICATION_TYPE_${app?.applicationType}`));
+          return GetCell(getServiceTypeDisplay(app, t));
         },
       },
       {

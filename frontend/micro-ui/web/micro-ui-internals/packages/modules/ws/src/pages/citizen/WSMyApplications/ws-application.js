@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Link, useHistory } from "react-router-dom";
 import { getAddress } from "../../../utils/index";
 import _ from "lodash";
-import { stringReplaceAll, convertEpochToDate } from "../../../utils";
+import { stringReplaceAll, convertEpochToDate, getServiceTypeDisplay } from "../../../utils";
 
 const WSApplication = ({ application }) => {
   const history = useHistory();
@@ -55,7 +55,7 @@ const WSApplication = ({ application }) => {
   return (
     <Card>
       <KeyNote keyValue={t("WS_MYCONNECTIONS_APPLICATION_NO")} note={application?.applicationNo} />
-      <KeyNote keyValue={t("WS_SERVICE_NAME")} note={t(`WS_APPLICATION_TYPE_${application?.applicationType}`, application?.serviceType === "SEWERAGE" ? "Sewerage Bill Amendment" : "Water Bill Amendment")} />
+      <KeyNote keyValue={t("WS_SERVICE_NAME")} note={getServiceTypeDisplay(application, t)} />
       <KeyNote keyValue={t("WS_CONSUMER_NAME")} note={application?.isBillAmendment && application?.connectionNo ? `${t("WS_CONSUMER_CODE")}: ${application?.connectionNo}` : (application?.connectionHolders?.map((owner) => owner.name).join(",") || application?.property?.owners?.sort((a, b) => a?.additionalDetails?.ownerSequence - b?.additionalDetails?.ownerSequence).map((owner) => owner.name).join(",") || t("CS_NA"))} />
       {/* <KeyNote keyValue={t("WS_PROPERTY_ID")} note={application?.propertyId || t("CS_NA")} /> */}
       <KeyNote keyValue={t("WS_STATUS")} note={t(`CS_${application?.applicationStatus}`, application?.applicationStatus) || t("CS_NA")} />

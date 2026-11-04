@@ -5,6 +5,7 @@ import SearchFields from "./SearchFields";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import MobileSearchApplication from "./MobileSearchApplication";
+import { getServiceTypeDisplay } from "../../utils";
 const SearchApplication = ({ tenantId, onSubmit, data, count, resultOk, businessService, isLoading }) => {
   const [sessionFormData, setSessionFormData, clearSessionFormData] = Digit.Hooks.useSessionStorage("ADHOC_ADD_REBATE_DATA", {});
   const [sessionBillFormData, setSessionBillFormData, clearBillSessionFormData] = Digit.Hooks.useSessionStorage("ADHOC_BILL_ADD_REBATE_DATA", {});
@@ -188,7 +189,7 @@ const SearchApplication = ({ tenantId, onSubmit, data, count, resultOk, business
         Header: t("WS_APPLICATION_TYPE_LABEL"),
         disableSortBy: true,
         accessor: (row) => {
-          return GetCell(t(`WS_${row.applicationType}`));
+          return GetCell(getServiceTypeDisplay(row, t));
         },
       },
       {
