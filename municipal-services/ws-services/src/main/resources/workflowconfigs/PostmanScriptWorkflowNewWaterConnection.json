@@ -148,6 +148,13 @@ curl --location --request POST 'https://dev.digit.org/egov-workflow-v2/egov-wf/b
                             "roles": [
                                 "CITIZEN"
                             ]
+                        },
+                        {
+                            "action": "RESUBMIT_FOR_INFRA_PAYMENT",
+                            "nextState": "PENDING_FOR_INFRA_PAYMENT_EE",
+                            "roles": [
+                                "CITIZEN"
+                            ]
                         }
                     ]
                 },
@@ -163,6 +170,49 @@ curl --location --request POST 'https://dev.digit.org/egov-workflow-v2/egov-wf/b
                         {
                             "action": "RESUBMIT_APPLICATION",
                             "nextState": "PENDING_FOR_ZRO_APPROVAL",
+                            "roles": [
+                                "CITIZEN"
+                            ]
+                        },
+                        {
+                            "action": "RESUBMIT_FOR_INFRA_PAYMENT",
+                            "nextState": "PENDING_FOR_INFRA_PAYMENT_ZRO",
+                            "roles": [
+                                "CITIZEN"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "sla": null,
+                    "state": "PENDING_FOR_INFRA_PAYMENT_EE",
+                    "applicationStatus": "PENDING_FOR_INFRA_PAYMENT_EE",
+                    "docUploadRequired": false,
+                    "isStartState": false,
+                    "isTerminateState": false,
+                    "isStateUpdatable": true,
+                    "actions": [
+                        {
+                            "action": "PAY",
+                            "nextState": "PENDING_FOR_EE_APPROVAL",
+                            "roles": [
+                                "CITIZEN"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "sla": null,
+                    "state": "PENDING_FOR_INFRA_PAYMENT_ZRO",
+                    "applicationStatus": "PENDING_FOR_INFRA_PAYMENT_ZRO",
+                    "docUploadRequired": false,
+                    "isStartState": false,
+                    "isTerminateState": false,
+                    "isStateUpdatable": true,
+                    "actions": [
+                        {
+                            "action": "PAY",
+                            "nextState": "PENDING_FOR_EE_APPROVAL",
                             "roles": [
                                 "CITIZEN"
                             ]
