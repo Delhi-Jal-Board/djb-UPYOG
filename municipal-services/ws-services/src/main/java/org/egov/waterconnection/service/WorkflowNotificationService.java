@@ -236,7 +236,11 @@ public class WorkflowNotificationService {
             UserDetailResponse userDetailResponse = fetchUserByUsername(mobileNumber, request.getRequestInfo(), request.getWaterConnection().getTenantId());
             if (!CollectionUtils.isEmpty(userDetailResponse.getUser())) {
                 OwnerInfo user = userDetailResponse.getUser().get(0);
-                mobileNumbersAndNames.put(user.getMobileNumber(), user.getName());
+                String name = user.getName();
+                if (StringUtils.isEmpty(name) && !CollectionUtils.isEmpty(request.getWaterConnection().getConnectionHolders())) {
+                    name = request.getWaterConnection().getConnectionHolders().get(0).getName();
+                }
+                mobileNumbersAndNames.put(user.getMobileNumber(), name);
                 mapOfPhoneNoAndUUIDs.put(user.getMobileNumber(), user.getUuid());
             } else {
                 log.info("No User for mobile {} skipping event", mobileNumber);
@@ -549,8 +553,12 @@ public class WorkflowNotificationService {
             String messageToReplace = message;
             Boolean isConnectionNoPresent = !StringUtils.isEmpty(waterConnectionRequest.getWaterConnection().getConnectionNo());
 
-            if (messageToReplace.contains("{Owner Name}"))
-                messageToReplace = messageToReplace.replace("{Owner Name}", mobileAndName.getValue());
+            if (messageToReplace.contains("{Owner Name}")) {
+                String ownerName = !StringUtils.isEmpty(mobileAndName.getValue()) ? mobileAndName.getValue()
+                        : (!CollectionUtils.isEmpty(waterConnectionRequest.getWaterConnection().getConnectionHolders())
+                            ? waterConnectionRequest.getWaterConnection().getConnectionHolders().get(0).getName() : "");
+                messageToReplace = messageToReplace.replace("{Owner Name}", ownerName);
+            }
             if (messageToReplace.contains("{Service}"))
                 messageToReplace = messageToReplace.replace("{Service}", WCConstants.SERVICE_FIELD_VALUE_NOTIFICATION);
 
