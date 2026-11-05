@@ -421,8 +421,8 @@ public class DemandService {
                     "Infrastructure recalculation did not return tax-head estimates.");
         }
 
-        BigDecimal currentIfc = sumDemandTaxHead(existingDetails, WSCalculationConstant.WS_INFRASTRUCTURE_CHARGE)
-                .add(sumDemandTaxHead(existingDetails, WSCalculationConstant.WS_ADDITIONAL_INFRASTRUCTURE_CHARGE));
+        List<DemandDetail> updatedDetails = existingDetails == null
+                ? new ArrayList<>() : new ArrayList<>(existingDetails);
         BigDecimal revisedIfc = calculation.getTaxHeadEstimates().stream()
                 .filter(Objects::nonNull)
                 .filter(estimate -> WSCalculationConstant.WS_INFRASTRUCTURE_CHARGE
@@ -431,10 +431,11 @@ public class DemandService {
                 .filter(Objects::nonNull)
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
                 .setScale(2, java.math.RoundingMode.HALF_UP);
+        int removedDuplicateBaseRows = neutralizeDuplicatedUncollectedBaseIfcRows(updatedDetails);
+        BigDecimal currentIfc = sumDemandTaxHead(updatedDetails, WSCalculationConstant.WS_INFRASTRUCTURE_CHARGE)
+                .add(sumDemandTaxHead(updatedDetails, WSCalculationConstant.WS_ADDITIONAL_INFRASTRUCTURE_CHARGE));
 
         BigDecimal delta = revisedIfc.subtract(currentIfc).setScale(2, java.math.RoundingMode.HALF_UP);
-        List<DemandDetail> updatedDetails = existingDetails == null
-                ? new ArrayList<>() : new ArrayList<>(existingDetails);
 
         if (delta.compareTo(BigDecimal.ZERO) > 0) {
             updatedDetails.add(DemandDetail.builder()
@@ -470,10 +471,100 @@ public class DemandService {
         // remains the billing source of truth.
         calculation.setInfrastructureChargeAdjustment(delta.max(BigDecimal.ZERO));
         addRoundOffTaxHead(calculation.getTenantId(), updatedDetails);
-        log.info("[WS-IFC] Demand reconciliation: tenantId={}, applicationNo={}, currentIfc={}, revisedIfc={}, positiveDelta={}, taxAndCessDelta={}",
+        log.info("[WS-IFC] Demand reconciliation: tenantId={}, applicationNo={}, currentIfc={}, revisedIfc={}, positiveDelta={}, taxAndCessDelta={}, neutralizedDuplicateBaseIfcRows={}",
                 calculation.getTenantId(), calculation.getApplicationNO(), currentIfc, revisedIfc,
-                delta.max(BigDecimal.ZERO), taxAndCessDelta.max(BigDecimal.ZERO));
+                delta.max(BigDecimal.ZERO), taxAndCessDelta.max(BigDecimal.ZERO), removedDuplicateBaseRows);
         return updatedDetails;
+    }
+
+    /**
+     * Neutralizes only a provable legacy duplicate: an uncollected base IFC detail
+     * that has the same amount as an uncollected additional IFC detail, while another
+     * base IFC detail has already been collected. The original collected assessment
+     * and the additional IFC assessment are retained. The duplicate detail is kept
+     * with a zero amount so Billing Service receives an explicit update for its ID.
+     */
+    private int neutralizeDuplicatedUncollectedBaseIfcRows(List<DemandDetail> details) {
+        if (details == null || details.isEmpty()) {
+            return 0;
+        }
+
+        boolean hasCollectedBaseIfc = details.stream()
+                .filter(Objects::nonNull)
+                .filter(detail -> WSCalculationConstant.WS_INFRASTRUCTURE_CHARGE
+                        .equalsIgnoreCase(detail.getTaxHeadMasterCode()))
+                .anyMatch(detail -> detail.getCollectionAmount() != null
+                        && detail.getCollectionAmount().compareTo(BigDecimal.ZERO) > 0);
+        if (!hasCollectedBaseIfc) {
+            return 0;
+        }
+
+        List<DemandDetail> unmatchedAdditionalRows = details.stream()
+                .filter(Objects::nonNull)
+                .filter(detail -> WSCalculationConstant.WS_ADDITIONAL_INFRASTRUCTURE_CHARGE
+                        .equalsIgnoreCase(detail.getTaxHeadMasterCode()))
+                .filter(detail -> detail.getCollectionAmount() == null
+                        || detail.getCollectionAmount().compareTo(BigDecimal.ZERO) == 0)
+                .collect(Collectors.toCollection(ArrayList::new));
+
+        if (unmatchedAdditionalRows.isEmpty()) {
+            return 0;
+        }
+
+        int removed = 0;
+        for (DemandDetail baseRow : new ArrayList<>(details)) {
+            if (baseRow == null || !WSCalculationConstant.WS_INFRASTRUCTURE_CHARGE
+                    .equalsIgnoreCase(baseRow.getTaxHeadMasterCode())) {
+                continue;
+            }
+            boolean uncollected = baseRow.getCollectionAmount() == null
+                    || baseRow.getCollectionAmount().compareTo(BigDecimal.ZERO) == 0;
+            if (!uncollected || baseRow.getTaxAmount() == null) {
+                continue;
+            }
+
+            DemandDetail matchingAdditional = unmatchedAdditionalRows.stream()
+                    .filter(additional -> additional.getTaxAmount() != null
+                            && additional.getTaxAmount().compareTo(baseRow.getTaxAmount()) == 0)
+                    .findFirst().orElse(null);
+            if (matchingAdditional != null) {
+                baseRow.setTaxAmount(BigDecimal.ZERO.setScale(2, java.math.RoundingMode.HALF_UP));
+                baseRow.setCollectionAmount(BigDecimal.ZERO);
+                unmatchedAdditionalRows.remove(matchingAdditional);
+                removed++;
+            }
+        }
+        return removed;
+    }
+
+    private BigDecimal sumOutstandingNewDemandTaxHead(List<DemandDetail> details, String taxHeadCode) {
+        if (details == null || taxHeadCode == null) {
+            return BigDecimal.ZERO;
+        }
+        // New demand details do not have a persisted ID until Billing Service saves them.
+        return details.stream()
+                .filter(Objects::nonNull)
+                .filter(detail -> taxHeadCode.equalsIgnoreCase(detail.getTaxHeadMasterCode()))
+                .filter(detail -> detail.getId() == null)
+                .filter(detail -> detail.getTaxAmount() != null)
+                .map(detail -> detail.getTaxAmount().subtract(
+                        detail.getCollectionAmount() == null ? BigDecimal.ZERO : detail.getCollectionAmount()))
+                .filter(amount -> amount.compareTo(BigDecimal.ZERO) > 0)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    private BigDecimal sumOutstandingDemandTaxHead(List<DemandDetail> details, String taxHeadCode) {
+        if (details == null || taxHeadCode == null) {
+            return BigDecimal.ZERO;
+        }
+        return details.stream()
+                .filter(Objects::nonNull)
+                .filter(detail -> taxHeadCode.equalsIgnoreCase(detail.getTaxHeadMasterCode()))
+                .filter(detail -> detail.getTaxAmount() != null)
+                .map(detail -> detail.getTaxAmount().subtract(
+                        detail.getCollectionAmount() == null ? BigDecimal.ZERO : detail.getCollectionAmount()))
+                .filter(amount -> amount.compareTo(BigDecimal.ZERO) > 0)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     private BigDecimal sumDemandTaxHead(List<DemandDetail> details, String taxHeadCode) {
@@ -814,18 +905,17 @@ public class DemandService {
             }
 			Demand demand = searchResult.get(0);
 			String tenantId = calculation.getTenantId();
-            int existingDetailCount = demand.getDemandDetails() == null ? 0 : demand.getDemandDetails().size();
             List<DemandDetail> updatedDetails = getUpdatedDemandDetails(calculation, demand.getDemandDetails(),
                     isDisconnectionRequest, infrastructureReassessment);
-            if (infrastructureReassessment && updatedDetails.size() > existingDetailCount) {
-                BigDecimal incrementalAmount = updatedDetails.subList(existingDetailCount, updatedDetails.size()).stream()
-                        .filter(Objects::nonNull)
-                        .map(DemandDetail::getTaxAmount)
-                        .filter(Objects::nonNull)
-                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+            if (infrastructureReassessment) {
+
+                // update, so list-size comparisons cannot suppress the minimum-payable update.
+                BigDecimal incrementalAmount = sumOutstandingDemandTaxHead(updatedDetails,
+                        WSCalculationConstant.WS_ADDITIONAL_INFRASTRUCTURE_CHARGE)
+                        .add(sumOutstandingNewDemandTaxHead(updatedDetails, WSCalculationConstant.WS_TAX_AND_CESS));
                 if (incrementalAmount.compareTo(BigDecimal.ZERO) > 0) {
-                    // In this workflow the initial one-time fee has already been paid. Set the
-                    // minimum payable to the incremental due, not the original full assessment.
+                    // Initial one-time fee is already paid in this workflow; only incremental
+                    // IFC/tax-and-cess outstanding should be payable on the refreshed bill.
                     demand.setMinimumAmountPayable(incrementalAmount.setScale(2, java.math.RoundingMode.HALF_UP));
                 }
             }
@@ -1297,7 +1387,14 @@ public class DemandService {
 				errorMap.add(demand);
 			}
 		}
-		String uuid = demandResponse.get(0).getAuditDetails().getCreatedBy();
+		if (CollectionUtils.isEmpty(demandResponse)) {
+			return false;
+		}
+		Demand notificationDemand = demandResponse.get(0);
+		String uuid = notificationDemand.getPayer() == null ? null : notificationDemand.getPayer().getUuid();
+		if (StringUtils.isBlank(uuid) && notificationDemand.getAuditDetails() != null) {
+			uuid = notificationDemand.getAuditDetails().getCreatedBy();
+		}
 		if (errorMap.size() == demandResponse.size()) {
 			paymentNotificationService.sendBillNotification(requestInfo, uuid,
 						demandResponse.get(0).getTenantId(), masterMap, false);
