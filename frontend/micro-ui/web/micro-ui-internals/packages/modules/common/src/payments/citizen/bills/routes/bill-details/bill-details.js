@@ -68,6 +68,52 @@ const BillDetails = ({ paymentRules, businessService }) => {
     window?.location?.href?.includes("ONE_TIME_FEE") ||
     bill?.billDetails?.[0]?.billAccountDetails?.some((head) => head?.taxHeadCode?.includes("ONE_TIME_FEE"));
 
+  const normalizedConsumerCode = stringReplaceAll(consumerCode || "", "+", "/");
+  const isApplicationNo =
+    normalizedConsumerCode.includes("_AP") ||
+    normalizedConsumerCode.includes("_APPLICATION") ||
+    normalizedConsumerCode.startsWith("WS_") ||
+    normalizedConsumerCode.startsWith("SW_");
+
+  const isWSOrSW =
+    !isNewConnection &&
+    !isApplicationNo &&
+    (businessService === "WS" ||
+      businessService === "SW" ||
+      ((wrkflow === "WNS" || businessService?.startsWith?.("WS") || businessService?.startsWith?.("SW")) &&
+        !businessService?.includes("ONE_TIME_FEE")));
+
+  const serviceType = businessService === "SW" || normalizedConsumerCode?.includes("SW") ? "SEWERAGE" : "WATER";
+  const { data: connectionSearchData } = Digit.Hooks.ws.useOldValue(
+    {
+      tenantId,
+      filters: { connectionNumber: normalizedConsumerCode, searchType: "CONNECTION", isConnectionSearch: true },
+      businessService: serviceType,
+    },
+    {
+      enabled: isWSOrSW && !!normalizedConsumerCode,
+      staleTime: 60000,
+    }
+  );
+
+  const stateConnection = state?.connection || state?.applicationData || (state?.status ? state : null);
+  const connectionList = connectionSearchData?.WaterConnection || connectionSearchData?.SewerageConnections || [];
+  const connectionObj =
+    connectionList?.find((c) => c?.connectionNo === normalizedConsumerCode) ||
+    connectionList?.[0] ||
+    stateConnection;
+
+  const connStatus = String(connectionObj?.status || "").toUpperCase();
+  const connAppStatus = String(connectionObj?.applicationStatus || "").toUpperCase();
+  const isConnectionActive = Boolean(
+    isWSOrSW &&
+    connectionObj &&
+    (connStatus === "ACTIVE" || connAppStatus === "ACTIVE" || connAppStatus === "CONNECTION_ACTIVATED") &&
+    connStatus !== "INACTIVE" &&
+    connAppStatus !== "DISCONNECTION_EXECUTED" &&
+    connAppStatus !== "CONNECTION_DISCONNECTED"
+  );
+
   const getBillingPeriod = () => {
     const { fromPeriod, toPeriod } = billDetails;
     if (fromPeriod && toPeriod) {
@@ -311,14 +357,24 @@ const BillDetails = ({ paymentRules, businessService }) => {
           </div>
           <div style={{ display: "flex", justifyContent: "flex-start", gap: "12px", flexWrap: "wrap" }}>
             <SubmitBar disabled={!paymentAllowed || getTotal() === 0} onSubmit={onSubmit} label={t("CS_COMMON_PROCEED_TO_PAY")} />
-            {(wrkflow === "WNS" || businessService === "WS" || businessService === "SW") && (
+            {isConnectionActive && (
               <SubmitBar
                 submit={false}
                 style={{ backgroundColor: "transparent", color: "#a82227", border: "1px solid #a82227" }}
-                onSubmit={() => {
-                  const sType = businessService === "SW" || consumerCode?.includes("SW") ? "SEWERAGE" : "WATER";
-                  const cCode = stringReplaceAll(consumerCode, "+", "/");
-                  history.push(`/digit-ui/citizen/ws/bill-amendment?connectionNumber=${encodeURIComponent(cCode)}&tenantId=${tenantId}&service=${sType}`);
+                onSubmit={async () => {
+                  const sType = serviceType;
+                  const bService = sType === "SEWERAGE" ? "SW" : "WS";
+                  try {
+                    const res = await Digit.PaymentService.searchAmendment(tenantId, { consumerCode: normalizedConsumerCode, businessService: bService });
+                    const inWorkflow = res?.Amendments?.find((item) => item?.status === "INWORKFLOW");
+                    if (inWorkflow) {
+                      history.push(`/digit-ui/citizen/ws/bill-amendment/application-details?applicationNumber=${inWorkflow.amendmentId}`);
+                      return;
+                    }
+                  } catch (e) {
+                    console.error("Error checking active amendment", e);
+                  }
+                  history.push(`/digit-ui/citizen/ws/bill-amendment?connectionNumber=${encodeURIComponent(normalizedConsumerCode)}&tenantId=${tenantId}&service=${sType}`);
                 }}
                 label={t("WS_BILL_AMENDMENT_BUTTON")}
               />

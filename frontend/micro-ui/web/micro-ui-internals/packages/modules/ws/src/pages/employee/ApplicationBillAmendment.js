@@ -47,8 +47,40 @@ const ApplicationBillAmendment = () => {
   });
 
   const servicev1 = service === "SEWERAGE" || connectionNumber?.includes("SW") ? "SW" : "WS";
+  const isApplicationNo =
+    connectionNumber?.includes("_AP") ||
+    connectionNumber?.includes("_APPLICATION") ||
+    connectionNumber?.startsWith("WS_") ||
+    connectionNumber?.startsWith("SW_");
+
+  const { data: connSearchData, isLoading: isConnLoading } = Digit.Hooks.ws.useOldValue(
+    {
+      tenantId,
+      filters: { connectionNumber, searchType: "CONNECTION", isConnectionSearch: true },
+      businessService: servicev1 === "SW" ? "SEWERAGE" : "WATER",
+    },
+    {
+      enabled: !isEdit && !state?.data?.action && !!connectionNumber && !isApplicationNo,
+      staleTime: 60000,
+    }
+  );
+
+  const connList = connSearchData?.WaterConnection || connSearchData?.SewerageConnections || [];
+  const foundConn = connList?.find((c) => c?.connectionNo === connectionNumber) || connList?.[0];
+  const connStatus = String(foundConn?.status || "").toUpperCase();
+  const connAppStatus = String(foundConn?.applicationStatus || "").toUpperCase();
+  const isConnInactive =
+    !isEdit &&
+    !state?.data?.action &&
+    !isConnLoading &&
+    connSearchData &&
+    (!foundConn ||
+      connStatus === "INACTIVE" ||
+      connAppStatus === "DISCONNECTION_EXECUTED" ||
+      (connStatus !== "ACTIVE" && connAppStatus !== "CONNECTION_ACTIVATED" && connAppStatus !== "ACTIVE"));
+
   const billSearchFilters = { tenantId, consumerCode: connectionNumber, service: servicev1 };
-  const { data: preBillSearchData, isLoading: isBillSearchLoading } = Digit.Hooks.usePaymentSearch(tenantId, billSearchFilters, { enabled: !!connectionNumber });
+  const { data: preBillSearchData, isLoading: isBillSearchLoading } = Digit.Hooks.usePaymentSearch(tenantId, billSearchFilters, { enabled: !!connectionNumber && !isApplicationNo && !isConnInactive });
 
   const editFormData = state?.data?.applicationDetails?.amendment?.additionalDetails?.editForm;
   useEffect(() => {
@@ -218,16 +250,17 @@ const ApplicationBillAmendment = () => {
   let amendmentIdToRedirect
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (goToAppDetailsPage) {
+    if (goToAppDetailsPage) {
+      const appId = state?.data?.applicationDetails?.amendment?.amendmentId;
+      const timer = setTimeout(() => {
         if (isEmployee) {
-          window.location.href = `${window.location.origin}/digit-ui/employee/ws/generate-note-bill-amendment?applicationNumber=${state?.data?.applicationDetails?.amendment?.amendmentId}`;
+          history.push(`/digit-ui/employee/ws/generate-note-bill-amendment?applicationNumber=${appId}`);
         } else {
-          window.location.href = `${window.location.origin}/digit-ui/citizen/ws/my-applications`;
+          history.push(`/digit-ui/citizen/ws/bill-amendment/application-details?applicationNumber=${appId}`);
         }
-      }
-    }, 5000);
-    return () => clearTimeout(timer);
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
   }, [goToAppDetailsPage]);
 
   const onFormSubmit = (d) => {
@@ -269,14 +302,25 @@ const ApplicationBillAmendment = () => {
     //then call mutate wit this data
 
     if (state?.data?.action === "RE-SUBMIT-APPLICATION") {
-      //isme processInstance aur wfDocuments obj bhi bhejo RAIN-6981
+      const selectedAction =
+        state?.data?.applicationDetails?.processInstancesDetails?.[0]?.nextActions?.find((a) =>
+          ["RE-SUBMIT", "RESUBMIT", "RE_SUBMIT", "SUBMIT"].includes(a?.action)
+        )?.action || "RE-SUBMIT";
+
       const workflow = {
         businessId: state?.data?.applicationDetails?.amendment?.amendmentId,
-        action: "RE-SUBMIT",
+        action: selectedAction,
         tenantId: tenantId,
-        businessService: "WS.AMENDMENT",
-        moduleName: "WS",
-      }
+        businessService:
+          state?.data?.applicationDetails?.processInstancesDetails?.[0]?.businessService?.includes(".AMENDMENT")
+            ? state?.data?.applicationDetails?.processInstancesDetails?.[0]?.businessService
+            : state?.data?.applicationDetails?.amendment?.businessService?.includes(".AMENDMENT")
+            ? state?.data?.applicationDetails?.amendment?.businessService
+            : servicev1 === "SW" || state?.data?.applicationDetails?.amendment?.businessService === "SW"
+            ? "SW.AMENDMENT"
+            : "WS.AMENDMENT",
+        moduleName: servicev1 === "SW" ? "SW" : "WS",
+      };
       const AmendmentUpdate = { ...state?.data?.applicationDetails?.applicationData?.billAmendmentDetails, workflow, ...data?.Amendment }
       mutate({ AmendmentUpdate }, {
         onError: (error, variables) => {
@@ -333,12 +377,16 @@ const ApplicationBillAmendment = () => {
     console.warn("Bill Amendment form errors:", formErrors);
   };
 
-  if (!connectionNumber) {
+  if (!connectionNumber || (!isEdit && !state?.data?.action && isApplicationNo) || isConnInactive) {
     return (
       <Card>
         <Header>{t("WS_BILL_AMEND_APP")}</Header>
         <CardText style={{ marginTop: "16px", marginBottom: "20px" }}>
-          {t("WS_SELECT_CONNECTION_FOR_BILL_AMENDMENT_MSG", "Please select a connection from your connections list to apply for Bill Amendment.")}
+          {isApplicationNo
+            ? t("WS_BILL_AMENDMENT_NOT_FOR_APPLICATION", "Bill Amendment is only applicable for active connections, not for new connection applications.")
+            : isConnInactive
+            ? t("WS_BILL_AMENDMENT_CONN_NOT_ACTIVE", "Bill Amendment is only allowed on active connections. The selected connection is not active.")
+            : t("WS_SELECT_CONNECTION_FOR_BILL_AMENDMENT_MSG", "Please select a connection from your connections list to apply for Bill Amendment.")}
         </CardText>
         <ActionBar>
           <SubmitBar

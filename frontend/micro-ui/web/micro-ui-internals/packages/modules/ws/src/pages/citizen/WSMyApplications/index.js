@@ -52,6 +52,14 @@ export const WSMyApplications = () => {
     { filters: { mobileNumber: userMobileNumber }, enabled: userMobileNumber ? true : false }
   );
 
+  const { data: userConnections } = Digit.Hooks.ws.useMyApplicationSearch(
+    { filters: { tenantId, mobileNumber: userMobileNumber, searchType: "CONNECTION" } },
+    { filters: { tenantId, mobileNumber: userMobileNumber, searchType: "CONNECTION" }, enabled: !!userMobileNumber }
+  );
+
+  const [pageOffset, setPageOffset] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
+  const [searchParams, setSearchParams] = useState(null);
   const [billAmendments, setBillAmendments] = useState([]);
   const [isBillAmendLoading, setIsBillAmendLoading] = useState(false);
 
@@ -61,9 +69,43 @@ export const WSMyApplications = () => {
       if (!userMobileNumber) return;
       setIsBillAmendLoading(true);
       try {
-        const res = await Digit.PaymentService.searchAmendment(tenantId, { mobileNumber: userMobileNumber });
+        const consumerCodes = new Set();
+        (data?.WaterConnection || []).forEach((c) => c?.connectionNo && consumerCodes.add(c.connectionNo));
+        (SWdata?.SewerageConnections || []).forEach((c) => c?.connectionNo && consumerCodes.add(c.connectionNo));
+        (userConnections?.WaterConnection || []).forEach((c) => c?.connectionNo && consumerCodes.add(c.connectionNo));
+        (userConnections?.SewerageConnections || []).forEach((c) => c?.connectionNo && consumerCodes.add(c.connectionNo));
+
+        const amendmentPromises = [];
+        consumerCodes.forEach((code) => {
+          amendmentPromises.push(
+            Digit.PaymentService.searchAmendment(tenantId, { consumerCode: code, businessService: "WS" }).catch(() => ({ Amendments: [] }))
+          );
+          amendmentPromises.push(
+            Digit.PaymentService.searchAmendment(tenantId, { consumerCode: code, businessService: "SW" }).catch(() => ({ Amendments: [] }))
+          );
+        });
+
+        if (searchParams?.applicationNo) {
+          amendmentPromises.push(
+            Digit.PaymentService.searchAmendment(tenantId, { amendmentId: searchParams.applicationNo, businessService: "WS" }).catch(() => ({ Amendments: [] }))
+          );
+          amendmentPromises.push(
+            Digit.PaymentService.searchAmendment(tenantId, { amendmentId: searchParams.applicationNo, businessService: "SW" }).catch(() => ({ Amendments: [] }))
+          );
+        }
+
+        const responses = await Promise.all(amendmentPromises);
+        const allAmendmentsMap = new Map();
+        responses.forEach((res) => {
+          (res?.Amendments || []).forEach((amend) => {
+            if (amend?.amendmentId) {
+              allAmendmentsMap.set(amend.amendmentId, amend);
+            }
+          });
+        });
+
         if (isMounted) {
-          setBillAmendments(res?.Amendments || []);
+          setBillAmendments(Array.from(allAmendmentsMap.values()));
         }
       } catch (err) {
         console.warn("Could not fetch bill amendments in My Applications", err);
@@ -77,11 +119,8 @@ export const WSMyApplications = () => {
     return () => {
       isMounted = false;
     };
-  }, [tenantId, userMobileNumber]);
+  }, [tenantId, userMobileNumber, data, SWdata, userConnections, searchParams?.applicationNo]);
 
-  const [pageOffset, setPageOffset] = useState(0);
-  const [pageSize, setPageSize] = useState(10);
-  const [searchParams, setSearchParams] = useState(null);
   const isMobile = window.Digit.Utils.browser.isMobile();
 
   const GetCell = (value) => <span className="cell-text">{value}</span>;
