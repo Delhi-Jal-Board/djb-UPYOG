@@ -368,7 +368,7 @@ public class EstimationService {
 			SearchCriteria searchCriteria = new SearchCriteria();
 			searchCriteria.setApplicationNumber(criteria.getApplicationNo());
 			searchCriteria.setTenantId(criteria.getTenantId());
-			WaterConnection waterConnection = calculatorUtil.getWaterConnectionOnApplicationNO(requestInfo, searchCriteria, requestInfo.getUserInfo().getTenantId());
+			WaterConnection waterConnection = calculatorUtil.getWaterConnectionOnApplicationNO(requestInfo, searchCriteria, criteria.getTenantId());
 			criteria.setWaterConnection(waterConnection);
 		}
 		if (StringUtils.isEmpty(criteria.getWaterConnection())) {
@@ -1168,7 +1168,7 @@ public class EstimationService {
 			SearchCriteria searchCriteria = new SearchCriteria();
 			searchCriteria.setApplicationNumber(criteria.getApplicationNo());
 			searchCriteria.setTenantId(criteria.getTenantId());
-			WaterConnection waterConnection = calculatorUtil.getWaterConnectionOnApplicationNO(requestInfo, searchCriteria, requestInfo.getUserInfo().getTenantId());
+			WaterConnection waterConnection = calculatorUtil.getWaterConnectionOnApplicationNO(requestInfo, searchCriteria, criteria.getTenantId());
 			criteria.setWaterConnection(waterConnection);
 		}
 		if (StringUtils.isEmpty(criteria.getWaterConnection())) {
