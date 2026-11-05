@@ -1111,10 +1111,15 @@ public class WorkflowNotificationService {
         String applicationNo = connection.getApplicationNo();
         String templateName = config.getNcApplicationRejectedTemplateName();
 
-        // Reason for rejection from workflow comment / remarks
+        // Reason for rejection from workflow comment / remarks (sanitized with comma for WhatsApp API rules)
         String rejectionReason = "Document or details not valid";
         if (connection.getProcessInstance() != null && !StringUtils.isEmpty(connection.getProcessInstance().getComment())) {
-            rejectionReason = connection.getProcessInstance().getComment().trim();
+            rejectionReason = connection.getProcessInstance().getComment()
+                    .trim()
+                    .replaceAll("[\\r\\n\\t]+", ", ")
+                    .replaceAll(",+", ",")
+                    .replaceAll(" {2,}", " ")
+                    .trim();
         }
 
         List<WhatsAppRequest> whatsappRequests = new ArrayList<>();
