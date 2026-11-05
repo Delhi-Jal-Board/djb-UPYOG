@@ -395,7 +395,14 @@ export const WSSearch = {
             { title: "PDF_STATIC_LABEL_APPLICATION_NUMBER_LABEL", value: wsDataDetails?.applicationNo || t("NA") },
             {
               title: "WS_SERVICE_NAME_LABEL",
-              value: t(`WS_APPLICATION_TYPE_${wsDataDetails?.applicationType ? wsDataDetails?.applicationType : wsDataDetails?.serviceType}`),
+              value: wsDataDetails?.additionalDetails?.serviceType?.code
+                ? t(
+                    wsDataDetails?.additionalDetails?.serviceType?.i18nKey ||
+                      `WS_APPLICATION_TYPE_${wsDataDetails?.additionalDetails?.serviceType?.code}`,
+                    wsDataDetails?.additionalDetails?.serviceType?.name?.trim() ||
+                      wsDataDetails?.additionalDetails?.serviceType?.code.replace(/_/g, " ")
+                  )
+                : t(`WS_APPLICATION_TYPE_${wsDataDetails?.applicationType ? wsDataDetails?.applicationType : wsDataDetails?.serviceType}`),
             },
             // { title: "WS_NO_OF_CONNECTIONS_PROPOSED_LABEL", value: wsDataDetails?.proposedTaps || t("NA") },
             // { title: "WS_PROPOSED_PIPE_SIZE", value: wsDataDetails?.proposedPipeSize || t("NA") },
@@ -404,7 +411,14 @@ export const WSSearch = {
             { title: "PDF_STATIC_LABEL_APPLICATION_NUMBER_LABEL", value: wsDataDetails?.applicationNo || t("NA") },
             {
               title: "WS_SERVICE_NAME_LABEL",
-              value: t(`WS_APPLICATION_TYPE_${wsDataDetails?.applicationType ? wsDataDetails?.applicationType : wsDataDetails?.serviceType}`),
+              value: wsDataDetails?.additionalDetails?.serviceType?.code
+                ? t(
+                    wsDataDetails?.additionalDetails?.serviceType?.i18nKey ||
+                      `WS_APPLICATION_TYPE_${wsDataDetails?.additionalDetails?.serviceType?.code}`,
+                    wsDataDetails?.additionalDetails?.serviceType?.name?.trim() ||
+                      wsDataDetails?.additionalDetails?.serviceType?.code.replace(/_/g, " ")
+                  )
+                : t(`WS_APPLICATION_TYPE_${wsDataDetails?.applicationType ? wsDataDetails?.applicationType : wsDataDetails?.serviceType}`),
             },
             { title: "WS_NO_WATER_CLOSETS_LABEL", value: wsDataDetails?.proposedWaterClosets || t("NA") },
             { title: "WS_PROPOSED_WATER_TOILETS_LABEL", value: wsDataDetails?.proposedToilets || t("NA") },
@@ -1108,7 +1122,12 @@ export const WSSearch = {
             {
               title: "WS_SERVICE_TYPE",
               value: wsDataDetails?.additionalDetails?.serviceType?.code
-                ? t(`WS_APPLICATION_TYPE_${wsDataDetails?.additionalDetails?.serviceType?.code}`)
+                ? t(
+                    wsDataDetails?.additionalDetails?.serviceType?.i18nKey ||
+                      `WS_APPLICATION_TYPE_${wsDataDetails?.additionalDetails?.serviceType?.code}`,
+                    wsDataDetails?.additionalDetails?.serviceType?.name?.trim() ||
+                      wsDataDetails?.additionalDetails?.serviceType?.code.replace(/_/g, " ")
+                  )
                 : wsDataDetails?.applicationType
                   ? t(`WS_APPLICATION_TYPE_${wsDataDetails?.applicationType}`)
                   : t("NA"),
