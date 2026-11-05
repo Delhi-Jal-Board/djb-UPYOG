@@ -110,7 +110,7 @@ public class WSConfiguration {
     @Value("${pinbot.template.name.query.raised:nc_query_raised}")
     private String ncQueryRaisedTemplateName;
 
-    @Value("${pinbot.template.name.application.approved:nc_application_approved}")
+    @Value("${pinbot.template.name.application.approved:nc_application_approved_notice}")
     private String ncApplicationApprovedTemplateName;
 
     @Value("${notification.sms.enabled}")
