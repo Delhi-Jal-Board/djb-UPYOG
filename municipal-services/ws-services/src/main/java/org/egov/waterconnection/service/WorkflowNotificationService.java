@@ -34,6 +34,7 @@ import org.egov.common.utils.MultiStateInstanceUtil;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.Map.Entry;
@@ -946,17 +947,13 @@ public class WorkflowNotificationService {
             if (!CollectionUtils.isEmpty(whatsappRequests)) {
                 notificationUtil.sendWhatsApp(whatsappRequests, tenantId);
             }
-        }
-        // Note: Approval / Activation notification is kept on hold as per requirement until manager confirms template & PDF details
-        /*
-        else if (isNewConnection && (WCConstants.ACTIVATE_CONNECTION_CONST.equalsIgnoreCase(action)
-                || WCConstants.ACTIVATE_CONNECTION.equalsIgnoreCase(action))) {
+        } else if (isNewConnection && (WCConstants.APPROVE_CONNECTION_CONST.equalsIgnoreCase(action)
+                || "APPROVE_FOR_CONNECTION".equalsIgnoreCase(action))) {
             List<WhatsAppRequest> whatsappRequests = getWhatsAppRequestForAppApproved(request, property);
             if (!CollectionUtils.isEmpty(whatsappRequests)) {
                 notificationUtil.sendWhatsApp(whatsappRequests, tenantId);
             }
         }
-        */
     }
 
     /**
@@ -1206,7 +1203,7 @@ public class WorkflowNotificationService {
 
     /**
      * Prepares WhatsAppRequest for New Connection Application Approval.
-     * Template: nc_application_approved
+     * Template: nc_application_approved_notice
      * Parameters:
      *   {{1}} -> Consumer / Applicant Name
      *   {{2}} -> Application Number
@@ -1214,7 +1211,8 @@ public class WorkflowNotificationService {
      *   {{4}} -> ZRO Office
      *   {{5}} -> Connection Type
      *   {{6}} -> Approval Date (dd-MM-yyyy)
-     *   {{7}} -> Installation Timeline (e.g. 15 working days)
+     *   {{7}} -> Timeline (7 days after approval date, dd-MM-yyyy)
+     *   {{8}} -> Consent Letter / Notice Download Link (PDF)
      * 
      * @param request WaterConnectionRequest
      * @param property Property
@@ -1243,8 +1241,10 @@ public class WorkflowNotificationService {
         } else {
             approvalTime = System.currentTimeMillis();
         }
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy").withZone(ZoneId.of("Asia/Kolkata"));
-        String approvalDate = formatter.format(Instant.ofEpochMilli(approvalTime));
+        ZoneId zoneId = ZoneId.of("Asia/Kolkata");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy").withZone(zoneId);
+        ZonedDateTime approvalDateTime = Instant.ofEpochMilli(approvalTime).atZone(zoneId);
+        String approvalDate = approvalDateTime.format(formatter);
 
         String applicationNo = !StringUtils.isEmpty(connection.getApplicationNo()) 
                 ? connection.getApplicationNo() 
@@ -1322,24 +1322,37 @@ public class WorkflowNotificationService {
             }
         }
 
-        // 4. Installation Timeline
-        String installationTimeline = "15 working days";
+        // 4. Installation Timeline (7 days after approval date)
+        String installationTimeline = approvalDateTime.plusDays(7).format(formatter);
+
+        // 5. Consent Letter / Notice Download Link (using actual payment receipt PDF for testing)
+        String consentLetterPdfUrl = "https://dev-djberp.nitcon.in/filestore/v1/files/id?tenantId=dl&fileStoreId=2c42cc8e-25f6-4372-a048-9eae38e7f33d";
+        try {
+            String shortened = waterServiceUtil.getShortnerURL(consentLetterPdfUrl);
+            if (!StringUtils.isEmpty(shortened)) {
+                consentLetterPdfUrl = shortened;
+            }
+        } catch (Exception e) {
+            log.warn("Failed to shorten consent letter PDF URL, using direct filestore link: {}", consentLetterPdfUrl, e);
+        }
 
         final String finalZone = zone;
         final String finalZroOffice = zroOffice;
         final String finalConnectionType = connectionType;
+        final String finalConsentLetterPdfUrl = consentLetterPdfUrl;
 
         List<WhatsAppRequest> whatsappRequests = new ArrayList<>();
         mobileNumbersAndNames.forEach((mobileNumber, name) -> {
             String applicantName = !StringUtils.isEmpty(name) ? name : "Citizen";
             List<String> parameters = Arrays.asList(
-                    applicantName,
-                    applicationNo,
-                    finalZone,
-                    finalZroOffice,
-                    finalConnectionType,
-                    approvalDate,
-                    installationTimeline
+                    applicantName,          // {{1}}
+                    applicationNo,          // {{2}}
+                    finalZone,              // {{3}}
+                    finalZroOffice,         // {{4}}
+                    finalConnectionType,    // {{5}}
+                    approvalDate,           // {{6}}
+                    installationTimeline,   // {{7}} (7 days after approval date)
+                    finalConsentLetterPdfUrl // {{8}} (Downloadable Consent Letter PDF link)
             );
 
             WhatsAppRequest req = WhatsAppRequest.builder()
