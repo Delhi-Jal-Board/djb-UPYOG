@@ -1217,18 +1217,18 @@ const NewApplication = () => {
       if (payload?.water && payload?.sewerage) waterAndSewerageLoader = true;
 
       if (waterAndSewerageLoader) {
-        setWaterAndSewerageBoth(true);
-        sessionStorage.setItem("setWaterAndSewerageBoth", JSON.stringify(true));
+        // setWaterAndSewerageBoth(true);
+        sessionStorage.setItem("setWaterAndSewerageBoth", JSON.stringify(false));
       } else {
         sessionStorage.setItem("setWaterAndSewerageBoth", JSON.stringify(false));
       }
 
       let waterConnection = { WaterConnection: payload, disconnectRequest: false, reconnectRequest: false };
-      let sewerageConnection = { SewerageConnection: payload, disconnectRequest: false, reconnectRequest: false };
+      // let sewerageConnection = { SewerageConnection: payload, disconnectRequest: false, reconnectRequest: false };
 
-      // Case 1: Both Water and Sewerage
+      // Case 1: Both Water and Sewerage (Sewerage API commented out - only Water runs)
       if (payload?.water && payload?.sewerage) {
-        if (waterMutation && sewerageMutation) {
+        if (waterMutation) {
           setIsEnableLoader(true);
           await waterMutation(waterConnection, {
             onError: (error) => {
@@ -1255,7 +1255,13 @@ const NewApplication = () => {
                 },
                 onSuccess: async (waterUpdateData) => {
                   setAppDetails((prev) => ({ ...prev, waterConnection: waterUpdateData?.WaterConnection?.[0] }));
+                  window.sessionStorage.removeItem(FORM_STORAGE_KEY);
+                  history.push(
+                    `/digit-ui/employee/ws/ws-response?applicationNumber=${waterUpdateData?.WaterConnection?.[0]?.applicationNo}`
+                  );
 
+                  /*
+                  // Sewerage API commented out - only Water runs
                   await sewerageMutation(sewerageConnection, {
                     onError: (error) => {
                       setIsEnableLoader(false);
@@ -1289,6 +1295,7 @@ const NewApplication = () => {
                       });
                     },
                   });
+                  */
                 },
               });
             },
@@ -1331,7 +1338,8 @@ const NewApplication = () => {
           });
         }
       }
-      // Case 3: Only Sewerage
+      // Case 3: Only Sewerage (Commented out - Sewerage API disabled)
+      /*
       else if (payload?.sewerage && !payload?.water) {
         if (sewerageMutation) {
           setIsEnableLoader(true);
@@ -1367,6 +1375,7 @@ const NewApplication = () => {
           });
         }
       }
+      */
     } catch (error) {
       setIsEnableLoader(false);
       setShowToast({ key: "error", message: "Failed to generate payload or submit application." });

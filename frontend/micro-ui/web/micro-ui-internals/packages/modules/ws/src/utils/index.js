@@ -2673,3 +2673,103 @@ export const WSCalculationPayload = (data, tenantId) => {
 
   return payload;
 };
+
+export const getServiceTypeDisplay = (app, t) => {
+  if (!app) return t ? t("CS_NA") : "NA";
+
+  if (app?.isBillAmendment) {
+    return t
+      ? t(`WS_APPLICATION_TYPE_${app?.applicationType}`, app?.serviceType === "SEWERAGE" ? "Sewerage Bill Amendment" : "Water Bill Amendment")
+      : app?.serviceType === "SEWERAGE"
+      ? "Sewerage Bill Amendment"
+      : "Water Bill Amendment";
+  }
+
+  let addDetails = app?.additionalDetails;
+  if (typeof addDetails === "string") {
+    try {
+      addDetails = JSON.parse(addDetails);
+    } catch (e) {
+      addDetails = {};
+    }
+  }
+
+  let srv =
+    addDetails?.serviceType ||
+    addDetails?.connectionDetails?.serviceType ||
+    addDetails?.appDetails?.serviceType ||
+    app?.serviceType;
+
+  if (typeof srv === "string" && srv.trim().startsWith("{")) {
+    try {
+      srv = JSON.parse(srv);
+    } catch (e) {}
+  }
+
+  if (srv) {
+    if (typeof srv === "object") {
+      const code = srv?.code || "";
+      const i18nKey = srv?.i18nKey || (code ? `WS_APPLICATION_TYPE_${code}` : "");
+      let fallbackName = srv?.name ? srv.name.trim() : "";
+
+      if (!fallbackName && code) {
+        if (code === "WATER_SEWERAGE_CONNECTION" || code === "WATER_AND_SEWERAGE") {
+          fallbackName = "Water and Sewerage Connection";
+        } else if (code === "NEW_WATER_CONNECTION" || code === "WATER_CONNECTION") {
+          fallbackName = "Water Connection";
+        } else if (code === "NEW_SEWERAGE_CONNECTION" || code === "SEWERAGE_CONNECTION") {
+          fallbackName = "Sewerage Connection";
+        } else {
+          fallbackName = code.replace(/_/g, " ");
+        }
+      }
+
+      if (t && i18nKey) {
+        const translated = t(i18nKey, fallbackName || undefined);
+        if (translated && translated !== i18nKey) {
+          return translated;
+        }
+      }
+
+      if (fallbackName) {
+        return fallbackName;
+      }
+      if (code) {
+        return code.replace(/_/g, " ");
+      }
+    } else if (typeof srv === "string") {
+      const srvUpper = srv.toUpperCase();
+      let fallbackName = "";
+      if (srvUpper === "WATER_SEWERAGE_CONNECTION" || srvUpper === "WATER_AND_SEWERAGE" || srvUpper === "BOTH") {
+        fallbackName = "Water and Sewerage Connection";
+      } else if (srvUpper === "NEW_WATER_CONNECTION" || srvUpper === "WATER" || srvUpper === "WATER_CONNECTION") {
+        fallbackName = "Water Connection";
+      } else if (srvUpper === "NEW_SEWERAGE_CONNECTION" || srvUpper === "SEWERAGE" || srvUpper === "SEWERAGE_CONNECTION") {
+        fallbackName = "Sewerage Connection";
+      } else {
+        fallbackName = srv.replace(/_/g, " ");
+      }
+
+      const i18nKey = `WS_APPLICATION_TYPE_${srvUpper}`;
+      if (t) {
+        const translated = t(i18nKey, fallbackName);
+        if (translated && translated !== i18nKey) {
+          return translated;
+        }
+      }
+      return fallbackName || (t ? t(i18nKey) : srv);
+    }
+  }
+
+  // Fallback to applicationType
+  if (app?.applicationType) {
+    const key = `WS_APPLICATION_TYPE_${app.applicationType}`;
+    let fallback = "";
+    if (app.applicationType === "NEW_WATER_CONNECTION") fallback = "Water Connection";
+    else if (app.applicationType === "NEW_SEWERAGE_CONNECTION") fallback = "Sewerage Connection";
+    else fallback = app.applicationType.replace(/_/g, " ");
+    return t ? t(key, fallback) : fallback;
+  }
+
+  return t ? t("CS_NA") : "NA";
+};

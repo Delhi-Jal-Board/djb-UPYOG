@@ -25,7 +25,7 @@ import getDisconnectPDFData from "../../utils/getWSDisconnectionApplicationForm"
 import { convertEpochToDateDMY, getFiles } from "../../utils";
 import { stringReplaceAll, convertEpochToDate } from "../../utils";
 import WSInfoLabel from "../../pageComponents/WSInfoLabel";
-import { getAddress, formatPropertyAddress } from "../../utils";
+import { getAddress, formatPropertyAddress, getServiceTypeDisplay } from "../../utils";
 import _ from "lodash";
 import WSFeeEstimation from "../../../../templates/ApplicationDetails/components/WSFeeEstimation";
 import ViewBreakup from "../../../../templates/ApplicationDetails/components/ViewBreakup";
@@ -588,7 +588,7 @@ const WSApplicationDetails = () => {
                   )}
                 <Row
                   label={t("WS_SERVICE_NAME_LABEL")}
-                  text={t(`WS_APPLICATION_TYPE_${data?.WaterConnection?.[0]?.applicationType || data?.SewerageConnections?.[0]?.applicationType}`)}
+                  text={getServiceTypeDisplay(applicationData, t)}
                   textStyle={{ wordBreak: "break-word" }}
                 />
                 {/* <Row
@@ -661,17 +661,7 @@ const WSApplicationDetails = () => {
               <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
                 <Row
                   label={t("WS_SERVICE_TYPE")}
-                  text={`${t(
-                    checkForNA(
-                      connectionDetails?.serviceType?.code
-                        ? `WS_APPLICATION_TYPE_${connectionDetails?.serviceType?.code}`
-                        : connectionDetails?.serviceType
-                          ? `WS_APPLICATION_TYPE_${connectionDetails?.serviceType}`
-                          : applicationData?.applicationType
-                            ? `WS_APPLICATION_TYPE_${applicationData?.applicationType}`
-                            : "NA"
-                    )
-                  )}`}
+                  text={getServiceTypeDisplay(applicationData, t)}
                 />
                 {/* <Row
                   label={t("WS_CONNECTION_TYPE")}

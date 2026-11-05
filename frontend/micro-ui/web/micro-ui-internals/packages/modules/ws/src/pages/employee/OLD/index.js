@@ -621,14 +621,14 @@ const OLDApplication = () => {
 
     if (waterAndSewerageLoader) {
       // setWaterAndSewerageBoth(true);
-      sessionStorage.setItem("setWaterAndSewerageBoth", JSON.stringify(true));
+      sessionStorage.setItem("setWaterAndSewerageBoth", JSON.stringify(false));
     } else {
       sessionStorage.setItem("setWaterAndSewerageBoth", JSON.stringify(false));
     }
 
-    // Case 1: Both Water and Sewerage
+    // Case 1: Both Water and Sewerage (Sewerage API commented out - only Water runs)
     if (payload?.water && payload?.sewerage) {
-      if (waterMutation && sewerageMutation) {
+      if (waterMutation) {
         setIsEnableLoader(true);
         await waterMutation(waterConnection, {
           onError: (error) => {
@@ -653,7 +653,14 @@ const OLDApplication = () => {
               },
               onSuccess: async (waterUpdateData) => {
                 // setAppDetails((prev) => ({ ...prev, waterConnection: waterUpdateData?.WaterConnection?.[0] }));
+                clearSessionFormData();
+                sessionStorage.removeItem("WS_OTP_VERIFIED_PROPERTY_ID");
+                history.push(
+                  `${basePath}/ws-response?applicationNumber=${waterUpdateData?.WaterConnection?.[0]?.applicationNo}`
+                );
 
+                /*
+                // Sewerage API commented out - only Water runs
                 await sewerageMutation(sewerageConnection, {
                   onError: (error) => {
                     setIsEnableLoader(false);
@@ -686,6 +693,7 @@ const OLDApplication = () => {
                     });
                   },
                 });
+                */
               },
             });
           },
@@ -730,7 +738,8 @@ const OLDApplication = () => {
         });
       }
     }
-    // Case 3: Only Sewerage
+    // Case 3: Only Sewerage (Commented out - Sewerage API disabled)
+    /*
     else if (payload?.sewerage && !payload?.water) {
       if (sewerageMutation) {
         setIsEnableLoader(true);
@@ -768,6 +777,7 @@ const OLDApplication = () => {
         });
       }
     }
+    */
   };
 
   const closeToast = () => {
