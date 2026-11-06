@@ -239,6 +239,8 @@ public class WCConstants {
 
 	public static final String SANCTION_LETTER_FILESTORE_ID = "sanctionFileStoreId";
 
+	public static final String CONSENT_LETTER_FILESTORE_ID = "consentFileStoreId";
+
 	public static final String ESTIMATION_DATE_CONST = "estimationLetterDate";
 
 	public static final String LOCALITY = "locality";
@@ -249,7 +251,7 @@ public class WCConstants {
 	public static final List<String> ADDITIONAL_OBJ_CONSTANT = Collections
 			.unmodifiableList(Arrays.asList(ADHOC_PENALTY, ADHOC_REBATE, ADHOC_PENALTY_REASON, ADHOC_PENALTY_COMMENT,
 					ADHOC_REBATE_REASON, ADHOC_REBATE_COMMENT, INITIAL_METER_READING_CONST, DETAILS_PROVIDED_BY,
-					APP_CREATED_DATE, ESTIMATION_FILESTORE_ID, SANCTION_LETTER_FILESTORE_ID, ESTIMATION_DATE_CONST,IS_DIVYANGJAN));
+					APP_CREATED_DATE, ESTIMATION_FILESTORE_ID, SANCTION_LETTER_FILESTORE_ID, CONSENT_LETTER_FILESTORE_ID, ESTIMATION_DATE_CONST,IS_DIVYANGJAN));
 
 	public static final List<String> IGNORE_CLASS_ADDED = Collections.unmodifiableList(Arrays.asList("PlumberInfo"));
 
@@ -260,6 +262,8 @@ public class WCConstants {
 	public static final String PDF_ESTIMATION_KEY = "ws-estimationnotice";
 
 	public static final String PDF_SANCTION_KEY = "ws-sanctionletter";
+
+	public static final String PDF_CONSENT_KEY = "ws-consentletter";
 
 	public static final String PENDING_FOR_CONNECTION_ACTIVATION = "PENDING_FOR_CONNECTION_ACTIVATION";
 
