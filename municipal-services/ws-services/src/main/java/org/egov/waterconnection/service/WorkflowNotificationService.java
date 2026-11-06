@@ -81,6 +81,9 @@ public class WorkflowNotificationService {
     @Autowired
     private MultiStateInstanceUtil centralInstanceUtil;
 
+    @Autowired
+    private PdfFileStoreService pdfFileStoreService;
+
     String tenantIdReplacer = "$tenantId";
     String urlReplacer = "url";
     String requestInfoReplacer = "RequestInfo";
@@ -1325,8 +1328,37 @@ public class WorkflowNotificationService {
         // 4. Installation Timeline (7 days after approval date)
         String installationTimeline = approvalDateTime.plusDays(7).format(formatter);
 
-        // 5. Consent Letter / Notice Download Link (using actual payment receipt PDF for testing)
-        String consentLetterPdfUrl = "https://dev-djberp.nitcon.in/filestore/v1/files/id?tenantId=dl&fileStoreId=2c42cc8e-25f6-4372-a048-9eae38e7f33d";
+        // 5. Consent Letter / Notice Download Link (dynamic from consentFileStoreId with fallback)
+        String consentFileStoreId = null;
+        if (connection.getAdditionalDetails() != null) {
+            Map<String, Object> addDetails = mapper.convertValue(connection.getAdditionalDetails(), Map.class);
+            if (addDetails.get(WCConstants.CONSENT_LETTER_FILESTORE_ID) != null) {
+                consentFileStoreId = String.valueOf(addDetails.get(WCConstants.CONSENT_LETTER_FILESTORE_ID));
+            }
+        }
+
+        // If not found in additionalDetails yet, generate it via pdfFileStoreService
+        if (StringUtils.isEmpty(consentFileStoreId)) {
+            try {
+                consentFileStoreId = pdfFileStoreService.getConsentFileStoreId(request, property, WCConstants.PDF_CONSENT_KEY);
+                if (!StringUtils.isEmpty(consentFileStoreId)) {
+                    Map<String, Object> addDetails = (connection.getAdditionalDetails() != null)
+                            ? mapper.convertValue(connection.getAdditionalDetails(), Map.class) : new HashMap<>();
+                    addDetails.put(WCConstants.CONSENT_LETTER_FILESTORE_ID, consentFileStoreId);
+                    connection.setAdditionalDetails(addDetails);
+                }
+            } catch (Exception e) {
+                log.warn("Could not generate consent letter on the fly: {}", e.getMessage());
+            }
+        }
+
+        String consentLetterPdfUrl;
+        if (!StringUtils.isEmpty(consentFileStoreId)) {
+            consentLetterPdfUrl = "https://dev-djberp.nitcon.in/filestore/v1/files/id?tenantId=dl&fileStoreId=" + consentFileStoreId;
+        } else {
+            consentLetterPdfUrl = "https://dev-djberp.nitcon.in/filestore/v1/files/id?tenantId=dl&fileStoreId=2c42cc8e-25f6-4372-a048-9eae38e7f33d";
+        }
+
         try {
             String shortened = waterServiceUtil.getShortnerURL(consentLetterPdfUrl);
             if (!StringUtils.isEmpty(shortened)) {

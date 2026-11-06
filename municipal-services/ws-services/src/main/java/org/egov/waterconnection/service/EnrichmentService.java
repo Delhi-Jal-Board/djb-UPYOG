@@ -363,12 +363,15 @@ public class EnrichmentService {
 	 */
 	public void enrichFileStoreIds(WaterConnectionRequest waterConnectionRequest) {
 		try {
-			log.info("ACTION " + waterConnectionRequest.getWaterConnection().getProcessInstance().getAction());
+			String action = waterConnectionRequest.getWaterConnection().getProcessInstance() != null
+					? waterConnectionRequest.getWaterConnection().getProcessInstance().getAction() : "";
+			log.info("ACTION " + action);
 			log.info("ApplicationStatus " + waterConnectionRequest.getWaterConnection().getApplicationStatus());
 			if (waterConnectionRequest.getWaterConnection().getApplicationStatus()
 					.equalsIgnoreCase(WCConstants.PENDING_APPROVAL_FOR_CONNECTION_CODE)
-					|| waterConnectionRequest.getWaterConnection().getProcessInstance().getAction()
-					.equalsIgnoreCase(WCConstants.ACTION_PAY)) {
+					|| action.equalsIgnoreCase(WCConstants.ACTION_PAY)
+					|| action.equalsIgnoreCase(WCConstants.APPROVE_CONNECTION_CONST)
+					|| action.equalsIgnoreCase(WCConstants.APPROVE_CONNECTION)) {
 				waterDao.enrichFileStoreIds(waterConnectionRequest);
 			}
 		} catch (Exception ex) {

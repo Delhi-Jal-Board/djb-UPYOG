@@ -1,9 +1,12 @@
 package org.egov.waterconnection.service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.egov.common.contract.request.RequestInfo;
@@ -167,6 +170,7 @@ public class PdfFileStoreService {
 		JSONObject requestPayload = new JSONObject();
 		requestPayload.put(requestInfoReplacer, requestInfo);
 		requestPayload.put(WaterConnectionReplacer, waterConnectionList);
+		requestPayload.put("WaterConnection", waterConnectionList);
 		try {
 			StringBuilder builder = new StringBuilder();
 			builder.append(config.getPdfServiceHost());
@@ -183,6 +187,52 @@ public class PdfFileStoreService {
 			return fileStoreIds.get(0).toString();
 		} catch (Exception ex) {
 			throw new CustomException("WATER_FILESTORE_PDF_EXCEPTION", "PDF response can not parsed!!!");
+		}
+	}
+
+	/**
+	 * Get fileStore Id for Consent Letter / Information Notice
+	 *
+	 * @param waterConnectionRequest WaterConnectionRequest Object
+	 * @param property Property Object
+	 * @param applicationKey ApplicationKey
+	 * @return file store id
+	 */
+	public String getConsentFileStoreId(WaterConnectionRequest waterConnectionRequest, Property property, String applicationKey) {
+		try {
+			JSONObject waterObject = mapper.convertValue(waterConnectionRequest.getWaterConnection(), JSONObject.class);
+
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+			LocalDate today = LocalDate.now();
+			String approvalDate = today.format(formatter);
+			String meterInstallationDate = today.plusDays(7).format(formatter);
+
+			waterObject.put("approvalDate", approvalDate);
+			waterObject.put("meterInstallationDate", meterInstallationDate);
+
+			// Static Plumber Details
+			Map<String, Object> plumberMap = new HashMap<>();
+			plumberMap.put("name", "Sh. Ramesh Kumar");
+			plumberMap.put("agency", "M/s Delhi Plumbing Solutions");
+			plumberMap.put("mobileNumber", "9876543210");
+			plumberMap.put("licenceNo", "DJB/LIC/PLM/2026/0452");
+			waterObject.put("plumberInfo", plumberMap);
+
+			String[] tenantDetails = property.getTenantId().split("\\.");
+			String tenantId = property.getTenantId();
+			if (tenantDetails.length > centralInstanceUtil.getStateLevelTenantIdLength()) {
+				tenantId = tenantDetails[0] + "." + tenantDetails[1];
+			}
+			if (tenantDetails.length > 1) {
+				waterObject.put(tenantName, tenantDetails[1].toUpperCase());
+			}
+			waterObject.put(propertyKey, property);
+			waterObject.put(service, "WATER");
+
+			return getFileStoreIdFromPDFService(waterObject, waterConnectionRequest.getRequestInfo(), tenantId, applicationKey);
+		} catch (Exception ex) {
+			log.error("Error generating Consent Letter PDF from PDF service: {}", ex.getMessage(), ex);
+			return null;
 		}
 	}
 
@@ -206,6 +256,18 @@ public class PdfFileStoreService {
 			addDetail.put(WCConstants.SANCTION_LETTER_FILESTORE_ID,
 					getFileStoreId(waterConnectionRequest, property, WCConstants.PDF_SANCTION_KEY));
 		}
+
+		String action = (waterConnectionRequest.getWaterConnection().getProcessInstance() != null)
+				? waterConnectionRequest.getWaterConnection().getProcessInstance().getAction() : "";
+		if ((WCConstants.APPROVE_CONNECTION_CONST.equalsIgnoreCase(action)
+				|| WCConstants.APPROVE_CONNECTION.equalsIgnoreCase(action))
+				&& addDetail.getOrDefault(WCConstants.CONSENT_LETTER_FILESTORE_ID, null) == null) {
+			String consentFileStoreId = getConsentFileStoreId(waterConnectionRequest, property, WCConstants.PDF_CONSENT_KEY);
+			if (consentFileStoreId != null) {
+				addDetail.put(WCConstants.CONSENT_LETTER_FILESTORE_ID, consentFileStoreId);
+			}
+		}
+
 		waterConnectionRequest.getWaterConnection().setAdditionalDetails(addDetail);
 		waterDao.saveFileStoreIds(waterConnectionRequest);
 	}
