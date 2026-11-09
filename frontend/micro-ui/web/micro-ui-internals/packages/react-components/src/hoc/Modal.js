@@ -31,6 +31,7 @@ const Modal = ({
   actionClearLabel,
   actionClearOnSubmit,
   popupModuleActionBarStyles = {},
+  className
 }) => {
   /**
    * TODO: It needs to be done from the desgin changes
@@ -74,7 +75,7 @@ const Modal = ({
     };
   }, []);
   return (
-    <PopUp>
+    <PopUp className={className}>
       <style>{`
         @keyframes digit-modal-appear {
           from {
