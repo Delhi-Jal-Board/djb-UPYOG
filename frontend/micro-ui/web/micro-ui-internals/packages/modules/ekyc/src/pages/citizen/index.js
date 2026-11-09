@@ -104,9 +104,9 @@ const CitizenApp = () => {
           )}
         /> */}
           <PrivateRoute
-            path={`${path}/review`}
+            path={`${path}/review/:kno`}
             component={() => (
-              <LayoutWrapper layoutClass="action">
+              <LayoutWrapper layoutClass={roles.includes("EKYC_SUPERVISOR") ? "action" : "normal"}>
                 <Review />
               </LayoutWrapper>
             )}

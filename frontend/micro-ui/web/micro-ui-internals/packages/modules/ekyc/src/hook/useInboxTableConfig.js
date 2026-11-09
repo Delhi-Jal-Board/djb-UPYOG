@@ -1,9 +1,8 @@
-import React, { useState } from "react";
+import React from "react";
 import { useHistory } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 const useInboxTableConfig = ({
-  parentRoute,
   onPageSizeChange,
   formState,
   totalCount,
@@ -11,7 +10,6 @@ const useInboxTableConfig = ({
   dispatch,
   checkPathName,
   onSortingByData,
-  tenantId,
   inboxStyles = {},
   tableStyle = {},
 }) => {
@@ -25,23 +23,14 @@ const useInboxTableConfig = ({
       .replace(/\b\w/g, (c) => c.toUpperCase());
   };
   const history = useHistory();
-  const [selectedKno, setSelectedKno] = useState("");
-  const { data: reviewData, getReview } = Digit.Hooks.ekyc.useEkycAPI("review", tenantId);
+
   const handleReview = (kno) => {
-    setSelectedKno(kno);
-    getReview({ kno });
+    history.push(`/digit-ui/${userType}/ekyc/review/${kno}`);
   };
 
   const limit = formState?.tableForm?.limit || 10;
   const offset = formState?.tableForm?.offset || 0;
   const userType = Digit.SessionStorage.get("User")?.info?.type?.toLowerCase() || "citizen";
-
-  React.useEffect(() => {
-    if (reviewData) {
-      history.push(`/digit-ui/${userType}/ekyc/review/${selectedKno}`, { aadhaarData: reviewData?.aadhaarData, reviewData });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reviewData]);
 
   const tableColumnConfig = [
     {

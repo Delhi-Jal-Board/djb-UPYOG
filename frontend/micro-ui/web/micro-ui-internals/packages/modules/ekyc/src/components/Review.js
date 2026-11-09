@@ -1,33 +1,20 @@
-import React, { Fragment, useState } from "react";
+import React, { useState } from "react";
 import {
   Card,
-  CardSubHeader,
-  StatusTable,
-  Row,
   SubmitBar,
-  Loader,
+  // Loader,
   ActionBar,
   CheckBox,
   LinkButton,
-  EditIcon,
   GenericFileIcon,
   Menu,
   Toast,
+  Table,
+  MdClose,
+  Modal
 } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useHistory, useLocation, useParams } from "react-router-dom";
-
-// ─── Constants ───────────────────────────────────────────────────────────────
-
-const ActionButton = ({ jumpTo, state }) => {
-  const history = useHistory();
-  function routeTo() {
-    history.push(jumpTo, { ...state, isEditing: true });
-  }
-  return (
-    <LinkButton label={<EditIcon style={{ width: "20px", height: "20px", fill: "#F47738" }} />} style={{ margin: 0, padding: 0 }} onClick={routeTo} />
-  );
-};
 
 const checkForNA = (value) => (value !== null && value !== undefined && value !== "" ? value : "N/A");
 
@@ -37,441 +24,174 @@ const boolToYesNo = (value, t) => {
   if (value === "true") return t("CORE_COMMON_YES");
   if (value === "false") return t("CORE_COMMON_NO");
 };
-/**
- * Robust data extraction for comparison.
- * The API returns { applicationReviewInfo: { newData: { ... }, oldData: { ... } } }
- */
-const extractReviewData = (searchData, flowState) => {
-  const rawData = searchData && Object.keys(searchData).length > 0 ? searchData : flowState?.reviewData || {};
 
-  // Navigate through applicationReviewInfo -> newData/oldData
-  const reviewWrapper = rawData?.applicationReviewInfo || rawData?.applicationReview || rawData;
-  const applicationData = (Array.isArray(reviewWrapper) ? reviewWrapper[0] : reviewWrapper) || {};
-
-  return {
-    newData: applicationData?.newData || applicationData,
-    oldData: applicationData?.oldData || null,
-  };
-};
-
-const ReviewSection = ({ title, fields, newData, oldData, t, jumpTo, state, hideEditButton }) => {
-  return (
-    <div
-      className="review-section-wrapper"
-      style={{ marginBottom: "48px", background: "#fff", borderRadius: "12px", border: "1px solid #EAECF0", overflow: "hidden" }}
-    >
-      <div
-        style={{
-          padding: "20px 24px",
-          background: "#F9FAFB",
-          borderBottom: "1px solid #EAECF0",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <CardSubHeader style={{ margin: 0, fontSize: "18px", color: "#101828", fontWeight: "700" }}>{title}</CardSubHeader>
-        {jumpTo && !hideEditButton && <ActionButton jumpTo={jumpTo} state={state} />}
-      </div>
-
-      <div style={{ padding: "0 24px" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
-          <thead>
-            <tr>
-              <th
-                style={{
-                  padding: "16px 0",
-                  textAlign: "left",
-                  color: "#667085",
-                  fontSize: "12px",
-                  fontWeight: "600",
-                  textTransform: "uppercase",
-                  width: "30%",
-                }}
-              >
-                {t("EKYC_FIELD_NAME")}
-              </th>
-              <th
-                style={{
-                  padding: "16px 0",
-                  textAlign: "left",
-                  color: "#667085",
-                  fontSize: "12px",
-                  fontWeight: "600",
-                  textTransform: "uppercase",
-                  width: "35%",
-                }}
-              >
-                {t("EKYC_EXISTING_INFORMATION")}
-              </th>
-              <th
-                style={{
-                  padding: "16px 0",
-                  textAlign: "left",
-                  color: "#667085",
-                  fontSize: "12px",
-                  fontWeight: "600",
-                  textTransform: "uppercase",
-                  width: "35%",
-                }}
-              >
-                {t("EKYC_PROPOSED_UPDATES")}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {fields.map((field, idx) => {
-              const valNew = newData?.[field.key];
-              const valOld = oldData?.[field.key];
-              const normalizeVal = (v) => (v === null || v === undefined || v === "" ? "" : String(v));
-              const isChanged = oldData && valOld !== undefined && normalizeVal(valNew) !== normalizeVal(valOld);
-
-              return (
-                <tr key={idx} style={{ borderTop: "1px solid #F2F4F7" }}>
-                  <td style={{ padding: "16px 0", fontSize: "14px", color: "#344054", fontWeight: "500" }}>{field.preTranslated ? field.label : t(field.label)}</td>
-                  <td style={{ padding: "16px 0", fontSize: "14px", color: "#667085" }}>
-                    {field.isBool ? boolToYesNo(valOld, t) : checkForNA(valOld)}
-                  </td>
-                  <td
-                    style={{ padding: "16px 0", fontSize: "14px", color: isChanged ? "#1B8B32" : "#101828", fontWeight: isChanged ? "700" : "400" }}
-                  >
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                      {field.isBool ? boolToYesNo(valNew, t) : checkForNA(valNew)}
-                      {isChanged && (
-                        <span
-                          style={{
-                            background: "#ECFDF3",
-                            color: "#067647",
-                            padding: "2px 8px",
-                            borderRadius: "12px",
-                            fontSize: "10px",
-                            fontWeight: "600",
-                          }}
-                        >
-                          {t("EKYC_CHANGED")}
-                        </span>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-};
+// ── All-fields mapping (headerMapping keys match flat API response keys) ──
+const headerMapping = [
+  { key: "updateType", label: "UPDATE_TYPE" },
+  { key: "kno", label: "KNO" },
+  { key: "pidNumber", label: "PID_NUMBER" },
+  { key: "subPropertyCategory", label: "SUB_PROPERTY_CATEGORY" },
+  { key: "propertyType", label: "PROPERTY_TYPE" },
+  { key: "noOfFloor", label: "NO_OF_FLOOR" },
+  { key: "noOfRooms", label: "NO_OF_ROOMS" },
+  { key: "noOfBeds", label: "NO_OF_BEDS" },
+  { key: "buildingImageFileStoreId", label: "BUILDING_IMAGE_FILE_STORE_ID" },
+  { key: "propertyDocumentFileStoreId", label: "PROPERTY_DOCUMENT_FILE_STORE_ID" },
+  { key: "floorNo", label: "FLOOR_NO" },
+  { key: "numberOfDwellingUnits", label: "NUMBER_OF_DWELLING_UNITS" },
+  { key: "modifiedBy", label: "MODIFIED_BY" },
+  { key: "ekycStatus", label: "EKYC_STATUS" },
+  { key: "fullAddress", label: "FULL_ADDRESS" },
+  { key: "flatHouseNumber", label: "FLAT_HOUSE_NUMBER" },
+  { key: "streetName", label: "STREET_NAME" },
+  { key: "subLocality", label: "SUB_LOCALITY" },
+  { key: "landmark", label: "EKYC_LANDMARK" },
+  { key: "pinCode", label: "EKYC_PINCODE" },
+  { key: "ward", label: "WARD" },
+  { key: "assembly", label: "EKYC_ASSEMBLY" },
+  { key: "locality", label: "EKYC_LOCALITY" },
+  { key: "zoneName", label: "ZONE" },
+  { key: "doorPhotoFilestoreId", label: "DOOR_PHOTO_FILE_STORE_ID" },
+  { key: "gpsValid", label: "GPS_VALID", isBool: true },
+  { key: "latitude", label: "LATITUDE" },
+  { key: "longitude", label: "LONGITUDE" },
+  { key: "consumerType", label: "CONSUMER_TYPE" },
+  { key: "occupantType", label: "OCCUPANT_TYPE" },
+  { key: "knoCategory", label: "KNO_CATEGORY" },
+  { key: "firstName", label: "FIRST_NAME" },
+  { key: "lastName", label: "LAST_NAME" },
+  { key: "middleName", label: "MIDDLE_NAME" },
+  { key: "gender", label: "GENDER" },
+  { key: "mobileNo", label: "MOBILE_NUMBER" },
+  { key: "noOfPerson", label: "NUMBER_OF_PERSON" },
+  { key: "proofOfIdentityType", label: "PROOF_OF_IDENTITY_TYPE" },
+  { key: "documentNumber", label: "DOCUMENT_NUMBER" },
+  { key: "consentGiven", label: "CONSENT_GIVEN", isBool: true },
+  { key: "parentSpouse", label: "PARENT_SPOUSE" },
+  { key: "email", label: "EMAIL" },
+  { key: "whatsappNo", label: "WHATSAPP_NO" },
+  { key: "informantIsConsumer", label: "INFORMANT_IS_CONSUMER" },
+  { key: "informantName", label: "INFORMANT_NAME" },
+  { key: "informantRelation", label: "INFORMANT_RELATION" },
+  { key: "panFilestoreId", label: "PAN_FILE_STORE_ID" },
+  { key: "documentProofFilestoreId", label: "DOCUMENT_PROOF_FILE_STORE_ID" },
+  { key: "ownerMobile", label: "OWNER_MOBILE" },
+  { key: "ownerVerificationDone", label: "OWNER_VERIFICATION_DONE", isBool: true },
+  { key: "designation", label: "DESIGNATION" },
+  { key: "department", label: "DEPARTMENT" },
+  { key: "employeeId", label: "EMPLOYEE_ID" },
+  { key: "landlineNo", label: "LANDLINE_NO" },
+  { key: "contactPerson", label: "CONTACT_PERSON" },
+  { key: "relation", label: "RELATION" },
+  { key: "entityName", label: "ENTITY_NAME" },
+  { key: "meterStatus", label: "METER_STATUS" },
+  { key: "meterCondition", label: "METER_CONDITION" },
+  { key: "meterNumber", label: "METER_NUMBER" },
+  { key: "meterMake", label: "METER_MAKE" },
+  { key: "workingStatus", label: "WORKING_STATUS" },
+  { key: "meterLocation", label: "METER_LOCATION" },
+  { key: "meterLocationAddress", label: "METER_LOCATION_ADDRESS" },
+  { key: "meterLatitude", label: "EKYC_METER_LATITUDE1" },
+  { key: "meterLongitude", label: "EKYC_METER_LONGITUDE1" },
+  { key: "meterPhotoFileStoreId", label: "METER_PHOTO_FILE_STORE_ID" },
+  { key: "lastBillRaised", label: "LAST_BILL_RAISED", isBool: true },
+  { key: "lastBillReceivedDate", label: "LAST_BILL_RECEIVED_DATE" },
+  { key: "lastBillNotRaisedReason", label: "LAST_BILL_NOT_RAISED_REASON" },
+  { key: "accessToMeter", label: "ACCESS_TO_METER", isBool: true },
+  { key: "sewerConnection", label: "SEWER_CONNECTION", isBool: true },
+  { key: "septicTank", label: "SEPTIC_TANK", isBool: true },
+  { key: "systemMeterId", label: "SYSTEM_METER_ID" },
+  { key: "caNumber", label: "CA_NUMBER" },
+];
 
 const Review = () => {
   const { t } = useTranslation();
   const history = useHistory();
   const location = useLocation();
   let { kno, applicationId } = useParams();
-
+  const tenantId = Digit.ULBService.getCurrentTenantId();
   const [agree, setAgree] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  // const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [previewUrl, setPreviewUrl] = useState("");
+  const [previewError, setPreviewError] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const [documentName, setDocumentName] = useState("");
   const [toastData, setToastData] = useState({ error: false, label: "" });
 
-  const options = [
-    { action: t("APPROVE") },
-    { action: t("REJECT") }
+  const options = [{ action: t("APPROVE") }, { action: t("REJECT") }];
+
+  const activeKno = kno || applicationId;
+  
+  const { data: searchData } = Digit.Hooks.ekyc.useSearchConnection(
+    { tenantId, details: { kno: activeKno, fetchType: "REVIEW" } },
+    { enabled: !!activeKno }
+  );
+
+  const newData = searchData?.applicationReview?.newData;
+  const oldData = searchData?.applicationReview?.oldData;
+
+  const reviewTableData = headerMapping.map((field) => {
+    const newValue = newData?.[field.key];
+    const oldValue = oldData?.[field.key];
+    const normalizeValue = (value) => (value === null || value === undefined || value === "" ? "" : String(value));
+    const isChanged = !!oldData && oldValue !== undefined && normalizeValue(newValue) !== normalizeValue(oldValue);
+
+    return {
+      fieldName: field.preTranslated ? field.label : t(field.label),
+      oldValue: field.isBool ? boolToYesNo(oldValue, t) : checkForNA(oldValue),
+      newValue: field.isBool ? boolToYesNo(newValue, t) : checkForNA(newValue),
+      isChanged,
+    };
+  });
+
+  const reviewTableColumns = [
+    {
+      Header: t("EKYC_FIELD_NAME"),
+      accessor: "fieldName",
+      width: 30,
+      disableSortBy: true,
+      Cell: ({ value }) => <span className="review-table__field">{value}</span>,
+    },
+    {
+      Header: t("EKYC_EXISTING_INFORMATION"),
+      accessor: "oldValue",
+      width: 35,
+      disableSortBy: true,
+      Cell: ({ value }) => <span className="review-table__old-value">{value}</span>,
+    },
+    {
+      Header: t("EKYC_PROPOSED_UPDATES"),
+      accessor: "newValue",
+      width: 35,
+      disableSortBy: true,
+      Cell: ({ row, value }) => (
+        <div className={`review-table__new-value ${row.original.isChanged ? "review-table__new-value--changed" : ""}`}>
+          <span>{value}</span>
+          {row.original.isChanged && <span className="review-table__changed-badge">{t("EKYC_CHANGED")}</span>}
+        </div>
+      ),
+    },
   ];
 
-  const flowState = location.state || {};
-  const { edits = {} } = flowState;
-  const activeKno = kno || applicationId;
-
-  const { aadhaarData = {}, addressDetails: editedAddress = {}, propertyDetails: editedProperty = {}, meterDetails: editedMeter = {} } = edits;
-
-  const tenantId = Digit.ULBService.getCurrentTenantId();
   const workflowMutation = Digit.Hooks.ekyc.useEkycWorkflow(tenantId);
-  const updateMutation = Digit.Hooks.ekyc.useEkycUpdate(tenantId);
-
-  const { data: searchData, isLoading: isSearchLoading } = Digit.Hooks.ekyc.useEkycSearchReview({ kno: activeKno, fetchType: "REVIEW" }, tenantId, {
-    enabled: !!activeKno,
-  });
 
   const userRoles = Digit.SessionStorage.get("User")?.info?.roles?.map((ele) => ele.code) || [];
   const isZRO = userRoles.includes("EKYC_ZRO") || userRoles.includes("ZRO");
-  // const isSupervisorOrSurveyorOrVendor = userRoles.includes("EKYC_SUPERVISOR") || userRoles.includes("EKYC_SURVEYOR") || userRoles.includes("EKYC_VENDOR");
   const isSupervisorOrSurveyorOrVendor = userRoles.includes("EKYC_SURVEYOR") || userRoles.includes("EKYC_VENDOR");
-
-  // Dynamically resolve the primary EKYC role of the logged-in user
-  // const EKYC_ROLE_PRIORITY = ["EKYC_ZRO", "ZRO", "EKYC_SUPERVISOR", "EKYC_SURVEYOR", "EKYC_VENDOR"];
-  // const currentUserRole = EKYC_ROLE_PRIORITY.find((r) => userRoles.includes(r)) || userRoles[0] || "EMPLOYEE";
 
   const isStatusView = location.pathname.includes("/status/");
   const hideEditButton = (isSupervisorOrSurveyorOrVendor && !isZRO) || isStatusView;
-
-  // ── Data Consolidation (kept for approve/reject submit payloads) ──────────
-  const { newData: apiNewData, oldData: apiOldData } = extractReviewData(searchData, flowState);
-
-  // Flatten all sub-objects so headerMapping flat keys (kno, mobileNo, meterNumber etc.) are accessible
-  const flatNewData = apiNewData ? {
-    ...(apiNewData || {}),
-    ...(apiNewData?.connectionDetails || {}),
-    ...(apiNewData?.addressDetails || {}),
-    ...(apiNewData?.propertyInfo || {}),
-    ...(apiNewData?.meterDetails || {}),
-  } : null;
-  const flatOldData = apiOldData ? {
-    ...(apiOldData || {}),
-    ...(apiOldData?.connectionDetails || {}),
-    ...(apiOldData?.addressDetails || {}),
-    ...(apiOldData?.propertyInfo || {}),
-    ...(apiOldData?.meterDetails || {}),
-  } : null;
-
-  const prepareConsolidatedData = (data) => {
-    if (!data) return null;
-    const apiConn = data?.connectionDetails || data || {};
-    const apiAddr = data?.addressDetails || data || {};
-    const apiProp = data?.propertyInfo || data || {};
-    const apiMeter = data?.meterDetails || data || {};
-
-    return {
-      connection: {
-        consumerName:
-          apiConn?.consumerName || (apiConn?.firstName ? [apiConn.firstName, apiConn.middleName, apiConn.lastName].filter(Boolean).join(" ") : null),
-        address: apiConn?.address || apiConn?.addressRaw,
-        connectionType: apiConn?.connectionType || apiConn?.connectionCategory,
-        meterNumber: apiConn?.meterNumber || apiConn?.meterNo,
-        phoneNumber: apiConn?.phoneNumber || apiConn?.mobileNo || apiConn?.mobileNumber,
-        email: apiConn?.email,
-        statusflag: apiConn?.statusflag || apiConn?.statusFlag,
-        ekycStatus: apiConn?.ekycStatus,
-        knumber: apiConn?.knumber || apiConn?.kno,
-      },
-      address: {
-        fullAddress: apiAddr?.fullAddress || apiAddr?.addressRaw,
-        flatHouseNumber: apiAddr?.flatHouseNumber || apiAddr?.flatNo,
-        buildingTower: apiAddr?.buildingTower || apiAddr?.building,
-        landmark: apiAddr?.landmark,
-        pinCode: apiAddr?.pinCode || apiAddr?.pincode,
-        ward: apiAddr?.ward || apiAddr?.locality,
-        assembly: apiAddr?.assembly,
-        gpsValid: apiAddr?.gpsValid,
-        latitude: apiAddr?.latitude,
-        longitude: apiAddr?.longitude,
-        mobileNo: apiAddr?.mobileNo || apiAddr?.mobileNumber,
-        whatsappNo: apiAddr?.whatsappNo,
-        email: apiAddr?.email,
-        noOfPerson: apiAddr?.noOfPerson || apiAddr?.noOfPersons,
-        knumber: apiAddr?.knumber || apiAddr?.kno,
-        doorPhotoFilestoreId: apiAddr?.doorPhotoFileStoreId || apiAddr?.doorPhotoFilestoreId,
-      },
-      property: {
-        kno: apiProp?.kno,
-        pidNumber: apiProp?.pidNumber,
-        typeOfConnection: apiProp?.typeOfConnection,
-        connectionCategory: apiProp?.connectionCategory,
-        userType: apiProp?.userType,
-        numberOfFloors: apiProp?.numberOfFloors || apiProp?.noOfFloor,
-        tenantName: apiProp?.tenantName,
-        tenantMobile: apiProp?.tenantMobile,
-        ekycStatus: apiProp?.ekycStatus,
-        propertyDocumentFileStoreId: apiProp?.propertyDocumentFileStoreId,
-        buildingImageFileStoreId: apiProp?.buildingImageFileStoreId || apiProp?.buildingImageFilestoreId,
-      },
-      meter: {
-        kno: apiMeter?.kno,
-        metered: apiMeter?.meterStatus === "METERED" || apiMeter?.metered,
-        meterNumber: apiMeter?.meterNumber || apiMeter?.meterNo,
-        meterMake: apiMeter?.meterMake,
-        meterLocationAddress: apiMeter?.meterLocationAddress,
-        meterLatitude: apiMeter?.meterLatitude,
-        meterLongitude: apiMeter?.meterLongitude,
-        workingStatus: apiMeter?.workingStatus,
-        lastBillRaised: apiMeter?.lastBillRaised,
-        systemMeterId: apiMeter?.systemMeterId,
-        meterPhotoFileStoreId: apiMeter?.meterPhotoFileStoreId || apiMeter?.meterPhotoFilestoreId,
-      },
-    };
-  };
-
-  const newDataRaw = prepareConsolidatedData(apiNewData);
-  const oldDataRaw = prepareConsolidatedData(apiOldData);
-
-
-  // Apply edits to newData if present
-  const connectionData = {
-    ...newDataRaw?.connection,
-    consumerName: aadhaarData?.name || newDataRaw?.connection?.consumerName,
-    phoneNumber: aadhaarData?.mobileNumber || newDataRaw?.connection?.phoneNumber,
-    knumber: newDataRaw?.connection?.knumber || activeKno,
-  };
-
-  const addressData = {
-    ...newDataRaw?.address,
-    fullAddress: editedAddress?.fullAddress || newDataRaw?.address?.fullAddress,
-    flatHouseNumber: editedAddress?.flatHouseNumber || editedAddress?.flatNo || newDataRaw?.address?.flatHouseNumber,
-    buildingTower: editedAddress?.buildingTower || editedAddress?.building || newDataRaw?.address?.buildingTower,
-    landmark: editedAddress?.landmark || newDataRaw?.address?.landmark,
-    pinCode: editedAddress?.pinCode || editedAddress?.pincode || newDataRaw?.address?.pinCode,
-    ward: editedAddress?.ward || newDataRaw?.address?.ward,
-    assembly: editedAddress?.assembly || newDataRaw?.address?.assembly,
-    gpsValid: editedAddress?.gpsValid !== undefined ? editedAddress.gpsValid : newDataRaw?.address?.gpsValid,
-    latitude: editedAddress?.latitude || newDataRaw?.address?.latitude,
-    longitude: editedAddress?.longitude || newDataRaw?.address?.longitude,
-    mobileNo: editedAddress?.mobileNo || aadhaarData?.mobileNumber || newDataRaw?.address?.mobileNo,
-    whatsappNo: editedAddress?.whatsappNo || aadhaarData?.whatsappNumber || newDataRaw?.address?.whatsappNo,
-    email: editedAddress?.email || newDataRaw?.address?.email,
-    noOfPerson: editedAddress?.noOfPerson || aadhaarData?.noOfPersons || newDataRaw?.address?.noOfPerson,
-    knumber: editedAddress?.knumber || newDataRaw?.address?.knumber || activeKno,
-    doorPhotoFilestoreId: editedAddress?.doorPhotoFilestoreId || newDataRaw?.address?.doorPhotoFilestoreId,
-  };
-
-
-  const propertyData = {
-    ...newDataRaw?.property,
-    kno: newDataRaw?.property?.kno || activeKno,
-    pidNumber: editedProperty?.pidNumber || newDataRaw?.property?.pidNumber,
-    typeOfConnection: editedProperty?.connectionTypeData?.label || newDataRaw?.property?.typeOfConnection,
-    connectionCategory: editedProperty?.connectionCategoryData?.label || newDataRaw?.property?.connectionCategory,
-    userType: editedProperty?.userTypeData?.label || newDataRaw?.property?.userType,
-    numberOfFloors: editedProperty?.noOfFloorsData?.label || newDataRaw?.property?.numberOfFloors,
-    propertyDocumentFileStoreId: editedProperty?.propertyDocumentFileStoreId || newDataRaw?.property?.propertyDocumentFileStoreId,
-  };
-
-  const meterData = {
-    ...newDataRaw?.meter,
-    kno: editedMeter?.kno || newDataRaw?.meter?.kno || activeKno,
-    metered: editedMeter?.meterStatusData?.value === "Metered" || newDataRaw?.meter?.metered,
-    meterNumber: newDataRaw?.meter?.meterNumber,
-    meterMake: editedMeter?.meterMake || newDataRaw?.meter?.meterMake,
-    meterLocationAddress: editedMeter?.meterLocation || newDataRaw?.meter?.meterLocationAddress,
-    workingStatus: editedMeter?.workingStatusData?.value === "Working" || newDataRaw?.meter?.workingStatus,
-    lastBillRaised: editedMeter?.lastBillRaisedData?.value === "Yes" || newDataRaw?.meter?.lastBillRaised,
-    meterPhotoFileStoreId: editedMeter?.meterPhotoFileStoreId || newDataRaw?.meter?.meterPhotoFileStoreId,
-  };
-
-  // ── All-fields mapping (headerMapping keys match flat API response keys) ──
-  const headerMapping = [
-    { key: "kno", label: "KNO" },
-    { key: "firstName", label: "FIRST_NAME" },
-    { key: "middleName", label: "MIDDLE_NAME" },
-    { key: "lastName", label: "LAST_NAME" },
-    { key: "status", label: "STATUS" },
-    { key: "ekycStatus", label: "EKYC_STATUS" },
-    { key: "zoneName", label: "ZONE" },
-    { key: "zoneCode", label: "ZONE_CODE" },
-    { key: "assembly", label: "EKYC_ASSEMBLY" },
-    { key: "ward", label: "WARD" },
-    { key: "pincode", label: "EKYC_PINCODE" },
-    { key: "addressRaw", label: "ADDRESS_RAW" },
-    { key: "locality", label: "EKYC_LOCALITY" },
-    { key: "subLocality", label: "SUB_LOCALITY" },
-    { key: "flatHouseNumber", label: "FLAT_HOUSE_NUMBER" },
-    { key: "streetName", label: "STREET_NAME" },
-    { key: "landmark", label: "EKYC_LANDMARK" },
-    { key: "city", label: "CITY" },
-    { key: "state", label: "STATE" },
-    { key: "addressType", label: "ADDRESS_TYPE" },
-    { key: "addressProofType", label: "ADDRESS_PROOF_TYPE" },
-    { key: "mobileNo", label: "MOBILE_NUMBER" },
-    { key: "alternateMobileNo", label: "ALTERNATE_MOBILE_NUMBER" },
-    { key: "whatsappNo", label: "WHATSAPP_NO" },
-    { key: "email", label: "EMAIL" },
-    { key: "landlineNo", label: "LANDLINE_NO" },
-    { key: "mrkey", label: "MR_KEY" },
-    { key: "mrcode", label: "MR_CODE" },
-    { key: "areacode", label: "AREA_CODE" },
-    { key: "source", label: "SOURCE" },
-    { key: "submittedAt", label: "SUBMITTED_AT" },
-    { key: "assignedAt", label: "ASSIGNED_AT" },
-    { key: "connectionType", label: "CONNECTION_TYPE" },
-    { key: "Type", label: "CONSUMER_TYPE" },
-    { key: "occupantType", label: "OCCUPANT_TYPE" },
-    { key: "knoCategory", label: "KNO_CATEGORY" },
-    { key: "approvedAt", label: "APPROVED_AT" },
-    { key: "gender", label: "GENDER" },
-    { key: "parentSpouse", label: "PARENT_SPOUSE" },
-    { key: "fatherOrHusbandName", label: "FATHER_HUSBUND_NAME" },
-    { key: "relationship", label: "RELATIONSHIP" },
-    { key: "informantName", label: "INFORMANT_NAME" },
-    { key: "informantRelation", label: "INFORMANT_RELATION" },
-    { key: "informantIs", label: "INFORMANT_IS" },
-    { key: "contactPerson", label: "CONTACT_PERSON" },
-    { key: "relation", label: "RELATION" },
-    { key: "entityName", label: "ENTITY_NAME" },
-    { key: "designation", label: "DESIGNATION" },
-    { key: "department", label: "DEPARTMENT" },
-    { key: "employeeId", label: "EMPLOYEE_ID" },
-    { key: "ownerMobile", label: "OWNER_MOBILE" },
-    { key: "ownerVerificationDone", label: "OWNER_VERIFICATION_DONE", isBool: true },
-    { key: "consentGiven", label: "CONSENT_GIVEN", isBool: true },
-    { key: "proofOfIdentityType", label: "PROOF_OF_IDENTITY_TYPE" },
-    { key: "documentNumber", label: "DOCUMENT_NUMBER" },
-    { key: "noOfPerson", label: "NUMBER_OF_PERSON" },
-    { key: "latitude", label: "LATITUDE" },
-    { key: "longitude", label: "LONGITUDE" },
-    { key: "gpsValid", label: "GPS_VALID", isBool: true },
-    { key: "meterNumber", label: "METER_NUMBER" },
-    { key: "meterMake", label: "METER_MAKE" },
-    { key: "meterStatus", label: "METER_STATUS" },
-    { key: "meterCondition", label: "METER_CONDITION" },
-    { key: "meterLocation", label: "METER_LOCATION" },
-    { key: "meterLocationAddress", label: "METER_LOCATION_ADDRESS" },
-    { key: "workingStatus", label: "WORKING_STATUS" },
-    { key: "sewerConnection", label: "SEWER_CONNECTION", isBool: true },
-    { key: "septicTank", label: "SEPTIC_TANK", isBool: true },
-    { key: "lastBillRaised", label: "LAST_BILL_RAISED", isBool: true },
-    { key: "lastBillReceivedDate", label: "LAST_BILL_RECEIVED_DATE" },
-    { key: "accessToMeter", label: "ACCESS_TO_METER", isBool: true },
-    { key: "systemMeterId", label: "SYSTEM_METER_ID" },
-    { key: "lastBillNotRaisedReason", label: "LAST_BILL_NOT_RAISED_REASON" },
-    { key: "waterConnectionYears", label: "WATER_CONNECTION_YEARS" },
-    { key: "sewerConnectionYears", label: "SEWER_CONNECTION_YEARS" },
-    { key: "pidNumber", label: "PID_NUMBER" },
-    { key: "propertyType", label: "PROPERTY_TYPE" },
-    { key: "subPropertyCategory", label: "SUB_PROPERTY_CATEGORY" },
-    { key: "noOfFloor", label: "NO_OF_FLOOR" },
-    { key: "noOfRooms", label: "NO_OF_ROOMS" },
-    { key: "noOfBeds", label: "NO_OF_BEDS" },
-    { key: "numberOfDwellingUnits", label: "NUMBER_OF_DWELLING_UNITS" },
-    { key: "floorNo", label: "FLOOR_NO" },
-    { key: "userType", label: "USER_TYPE" },
-    { key: "tenantName", label: "TENANT_NAME" },
-    { key: "tenantMobile", label: "TENANT_MOBILE" },
-    { key: "verificationStatus", label: "VERIFICATION_STATUS" },
-    { key: "houseBuiltDuration", label: "HOUSE_BUILT_DURATION" },
-    { key: "surveyorId", label: "SURVEYOR_ID" },
-    { key: "supervisorId", label: "SUPERVISOR_ID" },
-    { key: "vendorId", label: "VENDOR_ID" },
-    { key: "assignmentType", label: "ASSIGNMENT_TYPE" },
-    { key: "assignmentValue", label: "ASSIGNMENT_VALUE" },
-    { key: "assignedTime", label: "ASSIGNED_TIME" },
-    { key: "isSelfAssigned", label: "IS_SELF_ASSIGNED", isBool: true },
-    { key: "modifiedBy", label: "MODIFIED_BY" },
-    { key: "emailId", label: "EMAIL_ID" },
-    { key: "dob", label: "DOB" },
-    { key: "consumerType", label: "CONSUMER_TYPE" },
-    { key: "createdTime", label: "CREATED_TIME" },
-    { key: "lastModifiedTime", label: "LAST_MODIFIED_TIME" },
-    { key: "meterLatitude", label: "EKYC_METER_LATITUDE1" },
-    { key: "meterLongitude", label: "EKYC_METER_LONGITUDE1" },
-  ];
 
   const handleDeclaration = () => setAgree(!agree);
 
   const loggedInUserInfo = Digit.UserService.getUser()?.info;
 
-  const { data: userData } = Digit.Hooks.useUserSearch(
-    tenantId,
-    { uuid: [loggedInUserInfo?.uuid] },
-    {},
-    { enabled: !!loggedInUserInfo?.uuid }
-  );
+  const { data: userData } = Digit.Hooks.useUserSearch(tenantId, { uuid: [loggedInUserInfo?.uuid] }, {}, { enabled: !!loggedInUserInfo?.uuid });
   const supervisorData = userData?.user || [];
 
-  const matchedSupervisor = supervisorData?.find(
-    (s) => s?.uuid === loggedInUserInfo?.uuid || s?.userName === loggedInUserInfo?.userName
-  );
+  const matchedSupervisor = supervisorData?.find((s) => s?.uuid === loggedInUserInfo?.uuid || s?.userName === loggedInUserInfo?.userName);
   const supervisorId = matchedSupervisor?.uuid || loggedInUserInfo?.uuid;
 
   const handleReject = async () => {
@@ -488,7 +208,7 @@ const Review = () => {
       remarks: "Application rejected by reviewer",
       reviewedBy: supervisorId,
       // role: currentUserRole,
-      role: "ZRO"
+      role: "ZRO",
     };
     try {
       const result = await workflowMutation.mutateAsync(payload);
@@ -509,7 +229,8 @@ const Review = () => {
         err?.response?.data?.message ||
         err?.response?.data?.Errors?.[0]?.message ||
         err?.Errors?.[0]?.message ||
-        t("EKYC_REJECT_ERROR") || "Reject failed. Please try again.";
+        t("EKYC_REJECT_ERROR") ||
+        "Reject failed. Please try again.";
       setToastData({ error: true, label: errMsg });
       setShowToast(true);
     }
@@ -529,7 +250,7 @@ const Review = () => {
       remarks: "All documents verified",
       reviewedBy: supervisorId,
       // role: currentUserRole,
-      role: "ZRO"
+      role: "ZRO",
     };
     try {
       const result = await workflowMutation.mutateAsync(payload);
@@ -549,46 +270,63 @@ const Review = () => {
         err?.response?.data?.Errors?.[0]?.message ||
         err?.Errors?.[0]?.message ||
         err?.message ||
-        t("EKYC_APPROVE_ERROR") || "Approve failed. Please try again.";
+        t("EKYC_APPROVE_ERROR") ||
+        "Approve failed. Please try again.";
       setToastData({ error: true, label: errMsg });
       setShowToast(true);
     }
   };
 
-  const handleFinalSubmit = async () => {
-    setIsSubmitting(true);
-    try {
-      const payload = {
-        kno: activeKno,
-        tenantId: tenantId,
-        newData: {
-          connectionDetails: connectionData,
-          addressDetails: addressData,
-          propertyInfo: propertyData,
-          meterDetails: meterData,
-        },
-      };
+  // const handleFinalSubmit = async () => {
+  //   setIsSubmitting(true);
+  //   try {
+  //     const payload = {
+  //       kno: activeKno,
+  //       tenantId: tenantId,
+  //       newData: {
+  //         connectionDetails: connectionData,
+  //         addressDetails: addressData,
+  //         propertyInfo: propertyData,
+  //         meterDetails: meterData,
+  //       },
+  //     };
 
-      const result = await updateMutation.mutateAsync(payload);
-      if (result) {
-        history.push("/digit-ui/employee/ekyc/response", { success: true, result });
-      }
-    } catch (err) {
-      console.error("Submit Error:", err);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  //     const result = await updateMutation.mutateAsync(payload);
+  //     if (result) {
+  //       history.push("/digit-ui/employee/ekyc/response", { success: true, result });
+  //     }
+  //   } catch (err) {
+  //     console.error("Submit Error:", err);
+  //   } finally {
+  //     setIsSubmitting(false);
+  //   }
+  // };
 
-  const handleViewDocument = async (fileStoreId) => {
+  const handleViewDocument = async (fileStoreId, selectedDoc, type) => {
     if (!fileStoreId) return;
+
     try {
-      const response = await Digit.UploadServices.FileFetchbyid(fileStoreId, tenantId);
-      if (response?.data) {
-        const blobUrl = URL.createObjectURL(response.data);
-        setPreviewUrl(blobUrl);
-        setShowPreview(true);
-      }
+      const response = await Digit.UploadServices.FileFetchbyid(fileStoreId, "dl.djb");
+
+      if (!response?.data) return;
+
+      const blob =
+        response.data instanceof Blob
+          ? response.data
+          : new Blob([response.data], {
+              type: type === "image" ? "image/jpeg" : "application/pdf",
+            });
+
+      const blobUrl = URL.createObjectURL(blob);
+
+      setPreviewUrl((prevUrl) => {
+        if (prevUrl) URL.revokeObjectURL(prevUrl);
+        return blobUrl;
+      });
+
+      setPreviewError(false);
+      setDocumentName({name:selectedDoc, documentType:type});
+      setShowPreview(true);
     } catch (error) {
       console.error("Error fetching document:", error);
     }
@@ -603,190 +341,173 @@ const Review = () => {
     }
   };
 
-  if (isSearchLoading || isSubmitting) return <Loader />;
+  const documents = [
+    {
+      label: t("EKYC_DOOR_PHOTO"),
+      fileStoreId: newData?.doorPhotoFilestoreId,
+      type: "image",
+    },
+    {
+      label: t("EKYC_METER_PHOTO"),
+      fileStoreId: newData?.meterPhotoFileStoreId,
+      type: "image",
+    },
+    {
+      label: t("EKYC_BUILDING_IMAGE"),
+      fileStoreId: newData?.buildingImageFileStoreId,
+      type: "image",
+    },
+    {
+      label: t("EKYC_PROPERTY_DOCUMENTS"),
+      fileStoreId: newData?.propertyDocumentFileStoreId,
+      type: "document",
+    },
+  ];
 
+  const documentColumns = [
+    {
+      Header: t("CS_COMMON_DOCUMENT"),
+      accessor: "label",
+      disableSortBy: true,
+    },
+    {
+      Header: t("CS_COMMON_STATUS"),
+      accessor: "fileStoreId",
+      disableSortBy: true,
+      Cell: ({ value }) => (
+        <span
+          className={`review-document-status ${
+            value
+              ? "review-document-status--available"
+              : "review-document-status--missing"
+          }`}
+        >
+          <span className="review-document-status__dot" />
+          {value ? t("EKYC_PHOTO_AVAILABLE") : t("CS_NA")}
+        </span>
+      ),
+    },
+    {
+      Header: t("CS_COMMON_ACTION"),
+      accessor: "action",
+      disableSortBy: true,
+      Cell: ({ row }) => {
+        const document = row.original;
+
+        return document.fileStoreId ? (
+          <button
+            type="button"
+            className="review-document-button"
+            onClick={() =>
+              handleViewDocument(
+                document.fileStoreId,
+                document.label,
+                document.type
+              )
+            }
+            aria-label={`${t("EKYC_OPEN_DOCUMENT")} ${document.label}`}
+          >
+            <GenericFileIcon />
+            <span>{t("EKYC_VIEW_DOCUMENT") || "View"}</span>
+          </button>
+        ) : (
+          "-"
+        );
+      },
+    },
+  ];
 
   return (
-    <Fragment>
+    <div style={{ position: "relative" }}>
       <Card className="overflow-y-scroll">
-        {/* ── All Details (from headerMapping) ──────────────────────── */}
-        <ReviewSection
-          title={t("EKYC_ALL_DETAILS") || "All Details"}
-          fields={headerMapping}
-          newData={flatNewData}
-          oldData={flatOldData}
-          t={t}
-          hideEditButton={true}
-        />
+        <div className="review-section-wrapper">
+          <Table
+            t={t}
+            data={reviewTableData}
+            columns={reviewTableColumns}
+            className="review-table"
+            disableSort
+            autoSort={false}
+            manualPagination={false}
+            pageSizeLimit={headerMapping.length}
+            isPaginationRequired={false}
+            isTableScrollable
+            tableTitle={t("EKYC_ALL_DETAILS") || "All Details"}
+          />
+        </div>
 
-        {/* ── 5. Documents ────────────────────────────────────────────── */}
-        <div style={{ marginTop: "40px" }}>
-          <CardSubHeader style={{ marginBottom: "20px" }}>{t("EKYC_DOCUMENTS")}</CardSubHeader>
-          <StatusTable style={{ maxWidth: "600px" }}>
-            <Row
-              label={t("EKYC_DOOR_PHOTO")}
-              text={addressData.doorPhotoFilestoreId ? t("EKYC_PHOTO_AVAILABLE") : t("CS_NA")}
-              actionButton={
-                addressData.doorPhotoFilestoreId && (
-                  <div onClick={() => handleViewDocument(addressData.doorPhotoFilestoreId)}>
-                    <GenericFileIcon style={{ cursor: "pointer", fill: "#F47738" }} />
-                  </div>
-                )
-              }
-            />
-            <Row
-              label={t("EKYC_METER_PHOTO")}
-              text={meterData.meterPhotoFileStoreId ? t("EKYC_PHOTO_AVAILABLE") : t("CS_NA")}
-              actionButton={
-                meterData.meterPhotoFileStoreId && (
-                  <div onClick={() => handleViewDocument(meterData.meterPhotoFileStoreId)}>
-                    <GenericFileIcon style={{ cursor: "pointer", fill: "#F47738" }} />
-                  </div>
-                )
-              }
-            />
-            <Row
-              label={t("EKYC_BUILDING_IMAGE")}
-              text={propertyData.buildingImageFileStoreId ? t("EKYC_PHOTO_AVAILABLE") : t("CS_NA")}
-              actionButton={
-                propertyData.buildingImageFileStoreId && (
-                  <div onClick={() => handleViewDocument(propertyData.buildingImageFileStoreId)}>
-                    <GenericFileIcon style={{ cursor: "pointer", fill: "#F47738" }} />
-                  </div>
-                )
-              }
-            />
-            <Row
-              label={t("EKYC_PROPERTY_DOCUMENTS")}
-              text={propertyData.propertyDocumentFileStoreId ? t("EKYC_DOCS_AVAILABLE") : t("CS_NA")}
-              actionButton={
-                propertyData.propertyDocumentFileStoreId && (
-                  <div onClick={() => handleViewDocument(propertyData.propertyDocumentFileStoreId)}>
-                    <GenericFileIcon style={{ cursor: "pointer", fill: "#F47738" }} />
-                  </div>
-                )
-              }
-            />
-          </StatusTable>
+        <div className="review-section-wrapper">
+          <Table
+            t={t}
+            data={documents}
+            columns={documentColumns}
+            disableSort={true}
+            manualPagination={false}
+            isPaginationRequired={false}
+            className="review-table"
+            tableClass="review-details-table"
+            // className="table"
+            tableTitle={t("EKYC_DOCUMENTS") || "All Details"}
+          />
         </div>
 
         {!hideEditButton && (
-          <div style={{ marginTop: "40px", paddingTop: "30px", borderTop: "1px solid #EAECF0" }}>
+          <div className="review-declaration">
             <CheckBox
               id="agreeDeclaration"
               name="agreeDeclaration"
-              label={<span style={{ fontSize: "16px", color: "#344054" }}>{t("EKYC_FINAL_DECLARATION")}</span>}
+              label={<span className="review-declaration__label">{t("EKYC_FINAL_DECLARATION")}</span>}
               onChange={handleDeclaration}
               checked={agree}
             />
           </div>
         )}
 
-        {/* <ActionBar>
-          <SubmitBar label={t("EKYC_REJECT")} onSubmit={handleReject} disabled={!agree} />
-          <SubmitBar label={t("EKYC_APPROVE")} onSubmit={handleApprove} disabled={!agree} />
-          <SubmitBar label={t("EKYC_SUBMIT_APPLICATION")} onSubmit={handleFinalSubmit} disabled={!agree} />
-        </ActionBar> */}
         {!hideEditButton && (
           <ActionBar>
-            <SubmitBar
-              label={t("TAKE_ACTION_FOR_APPROVE_REJECT")}
-              onSubmit={() => setShowOptions((prev) => !prev)}
-              disabled={!agree}
-            />
-            {showOptions && (
-              <Menu
-                options={options}
-                optionKey={"action"}
-                t={t}
-                onSelect={handleMenuSelect}
-                style={{
-                  color: "#FFFFFF",
-                  fontSize: "18px",
-                }}
-              />
-            )}
+            <SubmitBar label={t("TAKE_ACTION_FOR_APPROVE_REJECT")} onSubmit={() => setShowOptions((prev) => !prev)} disabled={!agree} />
+            {showOptions && <Menu options={options} optionKey={"action"} t={t} onSelect={handleMenuSelect} className="review-action-menu" />}
           </ActionBar>
         )}
       </Card>
 
-      {/* ── Document Preview Modal ────────────────────────────────────── */}
       {showPreview && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            backgroundColor: "rgba(0,0,0,0.7)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 10000,
-          }}
-        >
-          <div
-            style={{
-              position: "relative",
-              backgroundColor: "#fff",
-              padding: "30px",
-              borderRadius: "12px",
-              maxWidth: "600px",
-              width: "100%",
-              maxHeight: "70vh",
-              overflow: "auto",
-              boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
-            }}
-          >
-            <div
-              onClick={() => setShowPreview(false)}
-              style={{
-                position: "absolute",
-                top: "10px",
-                right: "10px",
-                cursor: "pointer",
-                fontWeight: "bold",
-                fontSize: "20px",
-                color: "#333",
-                background: "#eee",
-                width: "30px",
-                height: "30px",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                borderRadius: "50%",
+        <Modal
+          headerBarMain={documentName.name}
+          headerBarEnd={
+            <button
+              type="button"
+              className="review-preview-modal__close"
+              onClick={() => {
+                setShowPreview(false);
+                setDocumentName("");
               }}
+              aria-label={t("CORE_COMMON_CLOSE")}
             >
-              ×
-            </div>
-            <img
-              src={previewUrl}
-              alt="Document Preview"
-              style={{ maxWidth: "100%", height: "auto", display: "block" }}
-              onError={(e) => {
-                e.target.style.display = "none";
-                e.target.nextSibling.style.display = "block";
-              }}
-            />
-            <div style={{ display: "none", padding: "40px", textAlign: "center" }}>
+              <MdClose />
+            </button>
+          }
+          hideSubmit
+          width="fitContent"
+          className="review-preview-modal"
+        >
+          {!previewError ? (
+            documentName?.type === "document" ? (
+              <iframe src={previewUrl} title={documentName?.name} className="review-preview-modal__pdf" />
+            ) : (
+              <img className="review-preview-modal__image" src={previewUrl} alt={documentName?.name} onError={() => setPreviewError(true)} />
+            )
+          ) : (
+            <div className="review-preview-modal__fallback">
               <p>{t("EKYC_DOCUMENT_PREVIEW_NOT_AVAILABLE")}</p>
-              <LinkButton label={t("EKYC_OPEN_IN_NEW_TAB")} onClick={() => window.open(previewUrl, "_blank")} />
+              <LinkButton label={t("EKYC_OPEN_IN_NEW_TAB")} onClick={() => window.open(previewUrl, "_blank", "noopener,noreferrer")} />
             </div>
-          </div>
-        </div>
+          )}
+        </Modal>
       )}
-      {showToast && (
-        <Toast
-          error={toastData.error}
-          label={toastData.label}
-          onClose={() => setShowToast(false)}
-        />
-      )}
-    </Fragment>
+      {showToast && <Toast error={toastData.error} label={toastData.label} onClose={() => setShowToast(false)} />}
+    </div>
   );
 };
 
 export default Review;
-
-

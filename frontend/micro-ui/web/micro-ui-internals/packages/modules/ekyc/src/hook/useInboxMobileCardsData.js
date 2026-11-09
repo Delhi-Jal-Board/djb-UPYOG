@@ -1,5 +1,5 @@
+import React from "react";
 import { RadioButtons, SearchField } from "@djb25/digit-ui-react-components";
-import React, { useState } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
@@ -7,20 +7,10 @@ import { useHistory } from "react-router-dom";
 const useInboxMobileCardsData = ({ table, tenantId, isSupervisor = false }) => {
   const { t } = useTranslation();
   const history = useHistory();
-  const [selectedKno, setSelectedKno] = useState("");
-  const { data: reviewData, getReview } = Digit.Hooks.ekyc.useEkycAPI("review", tenantId);
   const userType = Digit.SessionStorage.get("User")?.info?.type?.toLowerCase() || "citizen";
 
-  React.useEffect(() => {
-    if (!isSupervisor && reviewData) {
-      history.push(`/digit-ui/${userType}/ekyc/review/${selectedKno}`, { aadhaarData: reviewData?.aadhaarData, reviewData });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reviewData, isSupervisor]);
-
   const handleReview = (kno) => {
-    setSelectedKno(kno);
-    getReview({ kno });
+    history.push(`/digit-ui/${userType}/ekyc/review/${kno}`);
   };
 
   const handleSupervisorReview = (id) => {
