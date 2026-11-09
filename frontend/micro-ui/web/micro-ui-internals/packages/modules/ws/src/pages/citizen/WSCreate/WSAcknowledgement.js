@@ -76,6 +76,14 @@ const WSAcknowledgement = ({ data, onSuccess, clearParams }) => {
     sessionStorage.removeItem("WS_EDIT_APPLICATION_V5");
     sessionStorage.removeItem("WaterInitialObject");
     sessionStorage.removeItem("SewerageInitialObject");
+    sessionStorage.removeItem("IS_PROPERTY_UPDATED");
+    sessionStorage.removeItem("WS_WORKFLOW_ACTION");
+    if (data?.propertyId) {
+      sessionStorage.removeItem("IS_PROPERTY_UPDATED_" + data.propertyId);
+    }
+    if (data?.cpt?.details?.propertyId) {
+      sessionStorage.removeItem("IS_PROPERTY_UPDATED_" + data.cpt.details.propertyId);
+    }
     if (onSuccess) onSuccess(res);
   };
 
@@ -205,6 +213,28 @@ const WSAcknowledgement = ({ data, onSuccess, clearParams }) => {
       //style={{ width: "100px" }}
       onClick={handleDownloadPdfSewerage}
     />}
+      {((WSmutation?.data?.WaterConnection?.[0]?.applicationStatus?.includes("INFRA_PAYMENT") ||
+         WSmutation?.data?.WaterConnection?.[0]?.applicationStatus === "PENDING_FOR_PAYMENT") ||
+        (SWmutation?.data?.SewerageConnections?.[0]?.applicationStatus?.includes("INFRA_PAYMENT") ||
+         SWmutation?.data?.SewerageConnections?.[0]?.applicationStatus === "PENDING_FOR_PAYMENT")) && (
+        <div style={{ marginTop: "10px", marginBottom: "10px" }}>
+          <Link
+            to={{
+              pathname: `/digit-ui/citizen/payment/collect/${
+                WSmutation?.data?.WaterConnection?.[0]?.applicationNo ? "WS.ONE_TIME_FEE" : "SW.ONE_TIME_FEE"
+              }/${(WSmutation?.data?.WaterConnection?.[0]?.applicationNo || SWmutation?.data?.SewerageConnections?.[0]?.applicationNo || "").replace(/\//g, "+")}`,
+              search: `?workflow=WNS&tenantId=${
+                data?.cpt?.details?.tenantId ||
+                WSmutation?.data?.WaterConnection?.[0]?.tenantId ||
+                SWmutation?.data?.SewerageConnections?.[0]?.tenantId
+              }&consumerCode=${WSmutation?.data?.WaterConnection?.[0]?.applicationNo || SWmutation?.data?.SewerageConnections?.[0]?.applicationNo}`,
+              state: { fromAcknowledgement: true },
+            }}
+          >
+            <SubmitBar label={t("MAKE_PAYMENT")} />
+          </Link>
+        </div>
+      )}
       <Link to={{
         pathname: `/digit-ui/${window.location.pathname.includes("employee") ? "employee" : "citizen"}`,
       }}>

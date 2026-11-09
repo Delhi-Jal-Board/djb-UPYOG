@@ -266,7 +266,14 @@ export const WSMyApplications = () => {
                   ? "WS.MUTATION"
                   : "WS.ONE_TIME_FEE";
 
-          return application?.applicationStatus === "PENDING_FOR_PAYMENT" ? (
+          return (
+            application?.applicationStatus === "PENDING_FOR_PAYMENT" ||
+            application?.applicationStatus === "PENDING_FOR_FINAL_PAYMENT" ||
+            application?.applicationStatus === "PENDING_FOR_ADDITIONAL_PAYMENT" ||
+            application?.applicationStatus === "PENDING_FOR_INFRA_PAYMENT_ZRO" ||
+            application?.applicationStatus === "PENDING_FOR_INFRA_PAYMENT_EE" ||
+            application?.applicationStatus?.includes?.("PENDING_FOR_INFRA_PAYMENT")
+          ) ? (
             <span className="link">
               <Link
                 to={{

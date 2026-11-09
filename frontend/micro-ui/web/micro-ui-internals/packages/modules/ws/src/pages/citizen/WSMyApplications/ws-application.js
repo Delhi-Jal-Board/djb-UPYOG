@@ -87,7 +87,12 @@ const WSApplication = ({ application }) => {
         : `/digit-ui/citizen/ws/connection/application/${encodeApplicationNo}`}>
         <SubmitBar label={t("WS_VIEW_DETAILS_LABEL")} />
       </Link>
-      {application?.applicationStatus === "PENDING_FOR_PAYMENT" ? (
+      {(application?.applicationStatus === "PENDING_FOR_PAYMENT" ||
+        application?.applicationStatus === "PENDING_FOR_FINAL_PAYMENT" ||
+        application?.applicationStatus === "PENDING_FOR_ADDITIONAL_PAYMENT" ||
+        application?.applicationStatus === "PENDING_FOR_INFRA_PAYMENT_ZRO" ||
+        application?.applicationStatus === "PENDING_FOR_INFRA_PAYMENT_EE" ||
+        application?.applicationStatus?.includes?.("PENDING_FOR_INFRA_PAYMENT")) ? (
           <div style={{ marginTop: "10px" }}>
             <SubmitBar 
               label={t("MAKE_PAYMENT")} 

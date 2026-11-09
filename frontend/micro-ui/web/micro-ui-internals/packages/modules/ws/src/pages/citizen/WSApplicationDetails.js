@@ -181,11 +181,7 @@ const WSApplicationDetails = () => {
     propertyAddress?.Latitude ||
     propertyAddress?.geoLocation?.latitude ||
     propertyAddress?.locality?.latitude ||
-    additionalDetails?.latitude ||
-    additionalDetails?.Latitude ||
-    additionalDetails?.geoLocation?.latitude ||
-    additionalDetails?.propertyLocationDetails?.latitude ||
-    additionalDetails?.propertyAddress?.latitude ||
+    propertyAdditionalDetails?.latitude ||
     PTData?.Properties?.[0]?.address?.latitude ||
     PTData?.Properties?.[0]?.address?.Latitude ||
     PTData?.Properties?.[0]?.address?.geoLocation?.latitude ||
@@ -193,6 +189,11 @@ const WSApplicationDetails = () => {
     PTData?.Properties?.[0]?.latitude ||
     PTData?.Properties?.[0]?.Latitude ||
     PTData?.Properties?.[0]?.additionalDetails?.latitude ||
+    additionalDetails?.latitude ||
+    additionalDetails?.Latitude ||
+    additionalDetails?.geoLocation?.latitude ||
+    additionalDetails?.propertyLocationDetails?.latitude ||
+    additionalDetails?.propertyAddress?.latitude ||
     applicationData?.property?.address?.latitude ||
     applicationData?.property?.address?.Latitude ||
     applicationData?.propertyAddress?.latitude ||
@@ -203,11 +204,7 @@ const WSApplicationDetails = () => {
     propertyAddress?.Longitude ||
     propertyAddress?.geoLocation?.longitude ||
     propertyAddress?.locality?.longitude ||
-    additionalDetails?.longitude ||
-    additionalDetails?.Longitude ||
-    additionalDetails?.geoLocation?.longitude ||
-    additionalDetails?.propertyLocationDetails?.longitude ||
-    additionalDetails?.propertyAddress?.longitude ||
+    propertyAdditionalDetails?.longitude ||
     PTData?.Properties?.[0]?.address?.longitude ||
     PTData?.Properties?.[0]?.address?.Longitude ||
     PTData?.Properties?.[0]?.address?.geoLocation?.longitude ||
@@ -215,6 +212,11 @@ const WSApplicationDetails = () => {
     PTData?.Properties?.[0]?.longitude ||
     PTData?.Properties?.[0]?.Longitude ||
     PTData?.Properties?.[0]?.additionalDetails?.longitude ||
+    additionalDetails?.longitude ||
+    additionalDetails?.Longitude ||
+    additionalDetails?.geoLocation?.longitude ||
+    additionalDetails?.propertyLocationDetails?.longitude ||
+    additionalDetails?.propertyAddress?.longitude ||
     applicationData?.property?.address?.longitude ||
     applicationData?.property?.address?.Longitude ||
     applicationData?.propertyAddress?.longitude ||
@@ -222,28 +224,25 @@ const WSApplicationDetails = () => {
 
   const rawFloorConsumerResides =
     propertyAddress?.atWhichFloorConsumerResides ||
+    propertyAdditionalDetails?.atWhichFloorConsumerResides ||
+    propertyAdditionalDetails?.numberOfFloors ||
+    propertyAdditionalDetails?.noOfFloors ||
+    propertyAddress?.numberOfFloors ||
+    propertyAddress?.noOfFloors ||
+    PTData?.Properties?.[0]?.noOfFloors ||
+    PTData?.Properties?.[0]?.numberOfFloors ||
     additionalDetails?.atWhichFloorConsumerResides ||
     additionalDetails?.propertyAddress?.atWhichFloorConsumerResides ||
     additionalDetails?.propertyLocationDetails?.atWhichFloorConsumerResides ||
-    propertyAddress?.numberOfFloors ||
-    propertyAddress?.noOfFloors ||
     additionalDetails?.numberOfFloors ||
     additionalDetails?.noOfFloors ||
     useDetails?.noOfFloors ||
-    propertyAdditionalDetails?.numberOfFloors ||
-    propertyAdditionalDetails?.noOfFloors ||
-    propertyAdditionalDetails?.atWhichFloorConsumerResides ||
-    PTData?.Properties?.[0]?.noOfFloors ||
-    PTData?.Properties?.[0]?.numberOfFloors ||
     "";
 
   const rawTotalFloors =
     propertyAddress?.totalNumberOfFloorInTheBuilding ||
     propertyAddress?.totalNoOfFloors ||
     propertyAddress?.totalFloors ||
-    additionalDetails?.totalNumberOfFloorInTheBuilding ||
-    additionalDetails?.totalNoOfFloors ||
-    additionalDetails?.totalFloors ||
     propertyAdditionalDetails?.totalNumberOfFloorInTheBuilding ||
     propertyAdditionalDetails?.totalNoOfFloors ||
     propertyAdditionalDetails?.totalFloors ||
@@ -252,6 +251,9 @@ const WSApplicationDetails = () => {
     PTData?.Properties?.[0]?.totalFloors ||
     PTData?.Properties?.[0]?.address?.totalNoOfFloors ||
     PTData?.Properties?.[0]?.address?.totalFloors ||
+    additionalDetails?.totalNumberOfFloorInTheBuilding ||
+    additionalDetails?.totalNoOfFloors ||
+    additionalDetails?.totalFloors ||
     "";
 
   const getFloorDisplay = (val) => {
@@ -287,7 +289,10 @@ const WSApplicationDetails = () => {
       applicationStatus !== "PENDING_APPROVAL_FOR_MUTATION" &&
       applicationStatus !== "PENDING_FOR_PAYMENT" &&
       applicationStatus !== "PENDING_FOR_FINAL_PAYMENT" &&
-      applicationStatus !== "PENDING_FOR_ADDITIONAL_PAYMENT"
+      applicationStatus !== "PENDING_FOR_ADDITIONAL_PAYMENT" &&
+      applicationStatus !== "PENDING_FOR_INFRA_PAYMENT_ZRO" &&
+      applicationStatus !== "PENDING_FOR_INFRA_PAYMENT_EE" &&
+      !applicationStatus.includes("PENDING_FOR_INFRA_PAYMENT")
       ? true
       : false;
 
@@ -470,6 +475,8 @@ const WSApplicationDetails = () => {
       break;
     case "PENDING_APPROVAL_FOR_CONNECTION":
     case "PENDING_FOR_PAYMENT":
+    case "PENDING_FOR_INFRA_PAYMENT_ZRO":
+    case "PENDING_FOR_INFRA_PAYMENT_EE":
       downloadOptions = downloadOptions.concat(applicationDownloadObject, wsEstimateDownloadObject);
       break;
     case "PENDING_FOR_CONNECTION_ACTIVATION":
@@ -1188,19 +1195,37 @@ const WSApplicationDetails = () => {
               <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
                 <Row
                   label={t("WS_CATEGORY_TYPE")}
-                  text={`${t(checkForNA(useDetails?.categoryType?.i18nKey || useDetails?.categoryType?.code || useDetails?.categoryType))}`}
+                  text={`${t(
+                    checkForNA(
+                      propertyAdditionalDetails?.categoryType?.i18nKey ||
+                      propertyAdditionalDetails?.categoryType?.code ||
+                      propertyAdditionalDetails?.categoryType ||
+                      propertyAdditionalDetails?.waterConnectionUsageType?.i18nKey ||
+                      propertyAdditionalDetails?.waterConnectionUsageType?.code ||
+                      propertyAdditionalDetails?.waterConnectionUsageType ||
+                      useDetails?.categoryType?.i18nKey ||
+                      useDetails?.categoryType?.code ||
+                      useDetails?.categoryType ||
+                      useDetails?.WaterConnectionUsageType?.i18nKey ||
+                      useDetails?.WaterConnectionUsageType?.code ||
+                      useDetails?.WaterConnectionUsageType
+                    )
+                  )}`}
                 />
                 <Row
                   label={t("WS_PROPERTY_CATEGORY")}
                   text={`${t(
                     checkForNA(
-                      useDetails?.propertyCategory?.i18nKey ||
-                      useDetails?.propertyCategory?.code ||
-                      useDetails?.propertyCategory ||
+                      propertyAdditionalDetails?.propertyCategory?.i18nKey ||
                       propertyAdditionalDetails?.propertyCategory?.name ||
                       propertyAdditionalDetails?.propertyCategory?.code ||
                       propertyAdditionalDetails?.propertyCategory ||
-                      PTData?.Properties?.[0]?.usageCategory
+                      PTData?.Properties?.[0]?.usageCategory ||
+                      useDetails?.propertyCategory?.i18nKey ||
+                      useDetails?.propertyCategory?.name ||
+                      useDetails?.propertyCategory?.code ||
+                      useDetails?.propertyCategory ||
+                      applicationData?.property?.usageCategory
                     )
                   )}`}
                 />
@@ -1208,13 +1233,15 @@ const WSApplicationDetails = () => {
                   label={t("WS_PROPERTY_TYPE")}
                   text={`${t(
                     checkForNA(
-                      useDetails?.propertyType?.i18nKey ||
-                      useDetails?.propertyType?.code ||
-                      useDetails?.propertyType ||
+                      propertyAdditionalDetails?.propertyType?.i18nKey ||
                       propertyAdditionalDetails?.propertyType?.name ||
                       propertyAdditionalDetails?.propertyType?.code ||
                       propertyAdditionalDetails?.propertyType ||
-                      PTData?.Properties?.[0]?.propertyType
+                      PTData?.Properties?.[0]?.propertyType ||
+                      useDetails?.propertyType?.i18nKey ||
+                      useDetails?.propertyType?.name ||
+                      useDetails?.propertyType?.code ||
+                      useDetails?.propertyType
                     )
                   )}`}
                 />
@@ -1222,34 +1249,93 @@ const WSApplicationDetails = () => {
                   label={t("WS_NUMBER_OF_FLOORS")}
                   text={`${t(
                     checkForNA(
-                      getFloorDisplay(rawFloorConsumerResides) ||
-                      useDetails?.noOfFloors?.i18nKey ||
-                      useDetails?.noOfFloors?.code ||
-                      useDetails?.noOfFloors ||
-                      propertyAdditionalDetails?.numberOfFloors ||
-                      propertyAdditionalDetails?.noOfFloors ||
-                      PTData?.Properties?.[0]?.noOfFloors
+                      getFloorDisplay(
+                        propertyAddress?.atWhichFloorConsumerResides ||
+                        propertyAdditionalDetails?.atWhichFloorConsumerResides ||
+                        propertyAdditionalDetails?.numberOfFloors ||
+                        propertyAdditionalDetails?.noOfFloors ||
+                        propertyAddress?.numberOfFloors ||
+                        propertyAddress?.noOfFloors ||
+                        PTData?.Properties?.[0]?.noOfFloors ||
+                        PTData?.Properties?.[0]?.numberOfFloors ||
+                        rawFloorConsumerResides ||
+                        useDetails?.noOfFloors?.i18nKey ||
+                        useDetails?.noOfFloors?.code ||
+                        useDetails?.noOfFloors ||
+                        useDetails?.numberOfFloors
+                      )
                     )
                   )}`}
                 />
-                <Row label={t("WS_PLOT_AREA")} text={`${t(checkForNA(useDetails?.plotArea))}`} />
-                <Row label={t("WS_BUILT_UP_AREA")} text={`${t(checkForNA(useDetails?.builtUpArea))}`} />
-                <Row label={t("WS_HEIGHT_OF_THE_BUILDING")} text={`${t(checkForNA(useDetails?.heightOfTheBuilding))}`} />
+                <Row
+                  label={t("WS_PLOT_AREA")}
+                  text={`${t(
+                    checkForNA(
+                      (propertyAdditionalDetails?.plotArea !== undefined && propertyAdditionalDetails?.plotArea !== null && propertyAdditionalDetails?.plotArea !== "")
+                        ? propertyAdditionalDetails.plotArea
+                        : (PTData?.Properties?.[0]?.landArea !== undefined && PTData?.Properties?.[0]?.landArea !== null && PTData?.Properties?.[0]?.landArea !== "")
+                        ? PTData.Properties[0].landArea
+                        : useDetails?.plotArea
+                    )
+                  )}`}
+                />
+                <Row
+                  label={t("WS_BUILT_UP_AREA")}
+                  text={`${t(
+                    checkForNA(
+                      (propertyAdditionalDetails?.builtUpArea !== undefined && propertyAdditionalDetails?.builtUpArea !== null && propertyAdditionalDetails?.builtUpArea !== "")
+                        ? propertyAdditionalDetails.builtUpArea
+                        : (PTData?.Properties?.[0]?.superBuiltUpArea !== undefined && PTData?.Properties?.[0]?.superBuiltUpArea !== null && PTData?.Properties?.[0]?.superBuiltUpArea !== "")
+                        ? PTData.Properties[0].superBuiltUpArea
+                        : useDetails?.builtUpArea
+                    )
+                  )}`}
+                />
+                <Row
+                  label={t("WS_HEIGHT_OF_THE_BUILDING")}
+                  text={`${t(
+                    checkForNA(
+                      (propertyAdditionalDetails?.heightOfTheBuilding !== undefined && propertyAdditionalDetails?.heightOfTheBuilding !== null && propertyAdditionalDetails?.heightOfTheBuilding !== "")
+                        ? propertyAdditionalDetails.heightOfTheBuilding
+                        : (PTData?.Properties?.[0]?.heightOfTheBuilding !== undefined && PTData?.Properties?.[0]?.heightOfTheBuilding !== null && PTData?.Properties?.[0]?.heightOfTheBuilding !== "")
+                        ? PTData.Properties[0].heightOfTheBuilding
+                        : useDetails?.heightOfTheBuilding
+                    )
+                  )}`}
+                />
                 <Row
                   label={t("WS_SELECT_YEAR_OF_CONSTRUCTION")}
                   text={`${t(
                     checkForNA(
+                      propertyAdditionalDetails?.yearOfConstruction?.i18nKey ||
+                      propertyAdditionalDetails?.yearOfConstruction?.value ||
+                      propertyAdditionalDetails?.yearOfConstruction?.code ||
+                      propertyAdditionalDetails?.yearOfConstruction ||
+                      propertyAdditionalDetails?.SelectYearofConstruction?.i18nKey ||
+                      propertyAdditionalDetails?.SelectYearofConstruction?.value ||
+                      propertyAdditionalDetails?.SelectYearofConstruction?.code ||
+                      propertyAdditionalDetails?.SelectYearofConstruction ||
+                      propertyAdditionalDetails?.constructionYear?.i18nKey ||
+                      propertyAdditionalDetails?.constructionYear?.value ||
+                      propertyAdditionalDetails?.constructionYear?.code ||
+                      propertyAdditionalDetails?.constructionYear ||
                       useDetails?.SelectYearofConstruction?.i18nKey ||
                       useDetails?.SelectYearofConstruction?.value ||
                       useDetails?.SelectYearofConstruction?.code ||
                       useDetails?.SelectYearofConstruction ||
                       useDetails?.constructionYear?.i18nKey ||
                       useDetails?.constructionYear?.code ||
-                      useDetails?.constructionYear
+                      useDetails?.constructionYear ||
+                      useDetails?.yearOfConstruction
                     )
                   )}`}
                 />
                 {(String(
+                  propertyAdditionalDetails?.propertyCategory?.code ||
+                  propertyAdditionalDetails?.propertyCategory?.name ||
+                  propertyAdditionalDetails?.propertyCategory ||
+                  PTData?.Properties?.[0]?.usageCategory ||
+                  PTData?.Properties?.[0]?.propertyType ||
                   useDetails?.propertyCategory?.code ||
                   useDetails?.propertyCategory?.name ||
                   useDetails?.propertyCategory ||
@@ -1261,17 +1347,97 @@ const WSApplicationDetails = () => {
                 ).toUpperCase().includes("RESIDENTIAL")) ? (
                   <Row
                     label={t("WS_NUMBER_OF_DWELLING_UNITS")}
-                    text={`${t(checkForNA(useDetails?.NumberofDwellingUnits || useDetails?.noOfDwellingUnits))}`}
+                    text={`${t(
+                      checkForNA(
+                        (propertyAdditionalDetails?.numberOfDwellingUnits !== undefined && propertyAdditionalDetails?.numberOfDwellingUnits !== null && propertyAdditionalDetails?.numberOfDwellingUnits !== "")
+                          ? propertyAdditionalDetails.numberOfDwellingUnits
+                          : (propertyAdditionalDetails?.NumberofDwellingUnits !== undefined && propertyAdditionalDetails?.NumberofDwellingUnits !== null && propertyAdditionalDetails?.NumberofDwellingUnits !== "")
+                          ? propertyAdditionalDetails.NumberofDwellingUnits
+                          : (propertyAdditionalDetails?.noOfDwellingUnits !== undefined && propertyAdditionalDetails?.noOfDwellingUnits !== null && propertyAdditionalDetails?.noOfDwellingUnits !== "")
+                          ? propertyAdditionalDetails.noOfDwellingUnits
+                          : (PTData?.Properties?.[0]?.numberOfDwellingUnits !== undefined && PTData?.Properties?.[0]?.numberOfDwellingUnits !== null && PTData?.Properties?.[0]?.numberOfDwellingUnits !== "")
+                          ? PTData.Properties[0].numberOfDwellingUnits
+                          : (PTData?.Properties?.[0]?.noOfDwellingUnits !== undefined && PTData?.Properties?.[0]?.noOfDwellingUnits !== null && PTData?.Properties?.[0]?.noOfDwellingUnits !== "")
+                          ? PTData.Properties[0].noOfDwellingUnits
+                          : (useDetails?.NumberofDwellingUnits !== undefined && useDetails?.NumberofDwellingUnits !== null && useDetails?.NumberofDwellingUnits !== "")
+                          ? useDetails.NumberofDwellingUnits
+                          : (useDetails?.noOfDwellingUnits !== undefined && useDetails?.noOfDwellingUnits !== null && useDetails?.noOfDwellingUnits !== "")
+                          ? useDetails.noOfDwellingUnits
+                          : useDetails?.numberOfDwellingUnits
+                      )
+                    )}`}
                   />
                 ) : null}
+                {Boolean(
+                  propertyAdditionalDetails?.numberOfRooms ||
+                  propertyAdditionalDetails?.NumberofRooms ||
+                  PTData?.Properties?.[0]?.numberOfRooms ||
+                  useDetails?.NumberofRooms ||
+                  useDetails?.numberOfRooms
+                ) && (
+                  <Row
+                    label={t("WS_NUMBER_OF_ROOMS")}
+                    text={`${t(
+                      checkForNA(
+                        propertyAdditionalDetails?.numberOfRooms ||
+                        propertyAdditionalDetails?.NumberofRooms ||
+                        PTData?.Properties?.[0]?.numberOfRooms ||
+                        useDetails?.NumberofRooms ||
+                        useDetails?.numberOfRooms
+                      )
+                    )}`}
+                  />
+                )}
+                {Boolean(
+                  propertyAdditionalDetails?.numberOfBeds ||
+                  propertyAdditionalDetails?.hospitalBeds ||
+                  PTData?.Properties?.[0]?.numberOfBeds ||
+                  useDetails?.numberOfBeds
+                ) && (
+                  <Row
+                    label={t("WS_NUMBER_OF_BEDS")}
+                    text={`${t(
+                      checkForNA(
+                        propertyAdditionalDetails?.numberOfBeds ||
+                        propertyAdditionalDetails?.hospitalBeds ||
+                        PTData?.Properties?.[0]?.numberOfBeds ||
+                        useDetails?.numberOfBeds
+                      )
+                    )}`}
+                  />
+                )}
+                {Boolean(
+                  propertyAdditionalDetails?.numberOfStudents ||
+                  PTData?.Properties?.[0]?.numberOfStudents ||
+                  useDetails?.numberOfStudents
+                ) && (
+                  <Row
+                    label={t("WS_NUMBER_OF_STUDENTS")}
+                    text={`${t(
+                      checkForNA(
+                        propertyAdditionalDetails?.numberOfStudents ||
+                        PTData?.Properties?.[0]?.numberOfStudents ||
+                        useDetails?.numberOfStudents
+                      )
+                    )}`}
+                  />
+                )}
                 {(Array.isArray(
+                  propertyAdditionalDetails?.questions ||
+                  propertyAdditionalDetails?.questionAnswers ||
+                  propertyAdditionalDetails?.propertyQuestions ||
+                  PTData?.Properties?.[0]?.questions ||
                   useDetails?.questions ||
                   useDetails?.questionAnswers ||
                   applicationData?.additionalDetails?.questions ||
                   applicationData?.additionalDetails?.questionAnswers ||
                   applicationData?.property?.additionalDetails?.questions
                 )
-                  ? useDetails?.questions ||
+                  ? propertyAdditionalDetails?.questions ||
+                  propertyAdditionalDetails?.questionAnswers ||
+                  propertyAdditionalDetails?.propertyQuestions ||
+                  PTData?.Properties?.[0]?.questions ||
+                  useDetails?.questions ||
                   useDetails?.questionAnswers ||
                   applicationData?.additionalDetails?.questions ||
                   applicationData?.additionalDetails?.questionAnswers ||
@@ -1538,16 +1704,26 @@ const WSApplicationDetails = () => {
               {data?.WaterConnection?.[0]?.applicationStatus === "PENDING_FOR_PAYMENT" ||
                 data?.WaterConnection?.[0]?.applicationStatus === "PENDING_FOR_FINAL_PAYMENT" ||
                 data?.WaterConnection?.[0]?.applicationStatus === "PENDING_FOR_ADDITIONAL_PAYMENT" ||
+                data?.WaterConnection?.[0]?.applicationStatus === "PENDING_FOR_INFRA_PAYMENT_ZRO" ||
+                data?.WaterConnection?.[0]?.applicationStatus === "PENDING_FOR_INFRA_PAYMENT_EE" ||
+                data?.WaterConnection?.[0]?.applicationStatus?.includes?.("PENDING_FOR_INFRA_PAYMENT") ||
                 data?.SewerageConnections?.[0]?.applicationStatus === "PENDING_FOR_PAYMENT" ||
                 data?.SewerageConnections?.[0]?.applicationStatus === "PENDING_FOR_FINAL_PAYMENT" ||
-                data?.SewerageConnections?.[0]?.applicationStatus === "PENDING_FOR_ADDITIONAL_PAYMENT" ? (
+                data?.SewerageConnections?.[0]?.applicationStatus === "PENDING_FOR_ADDITIONAL_PAYMENT" ||
+                data?.SewerageConnections?.[0]?.applicationStatus === "PENDING_FOR_INFRA_PAYMENT_ZRO" ||
+                data?.SewerageConnections?.[0]?.applicationStatus === "PENDING_FOR_INFRA_PAYMENT_EE" ||
+                data?.SewerageConnections?.[0]?.applicationStatus?.includes?.("PENDING_FOR_INFRA_PAYMENT") ? (
                 <div style={{ marginTop: "10px" }}>
                   <SubmitBar
                     label={t("MAKE_PAYMENT")}
                     onSubmit={() => {
+                      const bService =
+                        paymentDetails?.data?.Bill?.[0]?.businessService ||
+                        (applicationNobyData?.includes("SW") ? "SW.ONE_TIME_FEE" : "WS.ONE_TIME_FEE");
+                      const cCode = paymentDetails?.data?.Bill?.[0]?.consumerCode || applicationNobyData;
                       history.push({
-                        pathname: `/digit-ui/citizen/payment/collect/${paymentDetails?.data?.Bill?.[0]?.businessService}/${stringReplaceAll(
-                          paymentDetails?.data?.Bill?.[0]?.consumerCode,
+                        pathname: `/digit-ui/citizen/payment/collect/${bService}/${stringReplaceAll(
+                          cCode,
                           "/",
                           "+"
                         )}`,
@@ -1555,7 +1731,7 @@ const WSApplicationDetails = () => {
                           }&ConsumerName=${data?.WaterConnection?.[0]?.connectionHolders?.map((owner) => owner.name).join(",") ||
                           data?.SewerageConnections?.[0]?.connectionHolders?.map((owner) => owner.name).join(",") ||
                           PTData?.Properties?.[0]?.owners?.map((owner) => owner.name).join(",")
-                          }&isDisoconnectFlow=${applicationNobyData?.includes("DC") ? true : false}&consumerCode=${paymentDetails?.data?.Bill?.[0]?.consumerCode
+                          }&isDisoconnectFlow=${applicationNobyData?.includes("DC") ? true : false}&consumerCode=${cCode
                           }`,
                         state: { fromApplicationDetails: true },
                       });

@@ -533,7 +533,15 @@ export const WSSearch = {
       appStatus !== "PENDING_FOR_PAYMENT" &&
       appStatus !== "PENDING_FOR_FINAL_PAYMENT" &&
       appStatus !== "PENDING_FOR_ADDITIONAL_PAYMENT" &&
-      appStatus !== "PENDING_APPROVAL_FOR_MUTATION";
+      appStatus !== "PENDING_APPROVAL_FOR_MUTATION" &&
+      appStatus !== "PENDING_FOR_INFRA_PAYMENT_ZRO" &&
+      appStatus !== "PENDING_FOR_INFRA_PAYMENT_EE" &&
+      !appStatus.includes("PENDING_FOR_INFRA_PAYMENT");
+
+    const isInfraPaymentPending =
+      appStatus === "PENDING_FOR_INFRA_PAYMENT_ZRO" ||
+      appStatus === "PENDING_FOR_INFRA_PAYMENT_EE" ||
+      (appStatus && appStatus.includes("PENDING_FOR_INFRA_PAYMENT"));
 
     const feeEstimation = {
       title: "WS_TASK_DETAILS_FEE_ESTIMATE",
@@ -544,7 +552,11 @@ export const WSSearch = {
         appDetails: { ...wtrSewDetails, property: propertyDataDetails, service: serviceDataType },
         isAdhocRebate: isAdhocRebate,
         isVisible: isVisible,
-        isPaid: colletionData?.Payments?.length > 0 || isWorkflowPaid || isCitizenActionPostPayment ? true : false,
+        isPaid: isInfraPaymentPending
+          ? false
+          : colletionData?.Payments?.length > 0 || isWorkflowPaid || isCitizenActionPostPayment
+          ? true
+          : false,
         isViewBreakup: isVisible && !isReconnectionFeeOnlyStatus && !isDisconnectionFeeOnlyStatus,
         onlyReconnectionFee: isReconnectionFeeOnlyStatus,
         onlyDisconnectionFee: isDisconnectionFeeOnlyStatus,
@@ -757,15 +769,92 @@ export const WSSearch = {
       title: "WS_PROPERTY_AND_WATER_CONNECTION_USE_DETAILS",
       asSectionHeader: true,
       values: [
-        { title: "WS_PROPERTY_CATEGORY", value: propertyDataDetails?.additionalDetails?.propertyCategory || t("NA") },
-        { title: "WS_PROPERTY_TYPE", value: propertyDataDetails?.additionalDetails?.propertyType || t("NA") },
-        { title: "WS_NUMBER_OF_FLOORS", value: propertyDataDetails?.noOfFloors || propertyDataDetails?.additionalDetails?.noOfFloors || t("NA") },
-        { title: "WS_PLOT_AREA", value: propertyDataDetails?.additionalDetails?.plotArea || t("NA") },
-        { title: "WS_BUILT_UP_AREA", value: propertyDataDetails?.additionalDetails?.builtUpArea || t("NA") },
-        { title: "WS_HEIGHT_OF_THE_BUILDING(meters)", value: propertyDataDetails?.additionalDetails?.heightOfTheBuilding || propertyDataDetails?.heightOfTheBuilding || t("NA") },
-        { title: "WS_SELECT_YEAR_OF_CONSTRUCTION", value: propertyDataDetails?.additionalDetails?.yearOfConstruction || t("NA") },
-        ...(propertyDataDetails?.additionalDetails?.numberOfRooms
-          ? [{ title: "WS_NUMBER_OF_ROOMS", value: propertyDataDetails.additionalDetails.numberOfRooms }]
+        {
+          title: "WS_CATEGORY_TYPE",
+          value:
+            propertyDataDetails?.additionalDetails?.categoryType?.i18nKey ||
+            propertyDataDetails?.additionalDetails?.categoryType?.code ||
+            propertyDataDetails?.additionalDetails?.categoryType ||
+            propertyDataDetails?.additionalDetails?.waterConnectionUsageType ||
+            wsDataDetails?.additionalDetails?.categoryType?.code ||
+            wsDataDetails?.additionalDetails?.categoryType ||
+            t("NA"),
+        },
+        {
+          title: "WS_PROPERTY_CATEGORY",
+          value:
+            propertyDataDetails?.additionalDetails?.propertyCategory?.name ||
+            propertyDataDetails?.additionalDetails?.propertyCategory?.code ||
+            propertyDataDetails?.additionalDetails?.propertyCategory ||
+            propertyDataDetails?.usageCategory ||
+            wsDataDetails?.additionalDetails?.propertyCategory ||
+            t("NA"),
+        },
+        {
+          title: "WS_PROPERTY_TYPE",
+          value:
+            propertyDataDetails?.additionalDetails?.propertyType?.name ||
+            propertyDataDetails?.additionalDetails?.propertyType?.code ||
+            propertyDataDetails?.additionalDetails?.propertyType ||
+            propertyDataDetails?.propertyType ||
+            wsDataDetails?.additionalDetails?.propertyType ||
+            t("NA"),
+        },
+        {
+          title: "WS_NUMBER_OF_FLOORS",
+          value:
+            propertyDataDetails?.noOfFloors ||
+            propertyDataDetails?.additionalDetails?.numberOfFloors ||
+            propertyDataDetails?.additionalDetails?.noOfFloors ||
+            wsDataDetails?.additionalDetails?.numberOfFloors ||
+            wsDataDetails?.additionalDetails?.noOfFloors ||
+            t("NA"),
+        },
+        {
+          title: "WS_PLOT_AREA",
+          value:
+            propertyDataDetails?.additionalDetails?.plotArea ||
+            propertyDataDetails?.landArea ||
+            wsDataDetails?.additionalDetails?.plotArea ||
+            t("NA"),
+        },
+        {
+          title: "WS_BUILT_UP_AREA",
+          value:
+            propertyDataDetails?.additionalDetails?.builtUpArea ||
+            propertyDataDetails?.superBuiltUpArea ||
+            wsDataDetails?.additionalDetails?.builtUpArea ||
+            t("NA"),
+        },
+        {
+          title: "WS_HEIGHT_OF_THE_BUILDING(meters)",
+          value:
+            propertyDataDetails?.additionalDetails?.heightOfTheBuilding ||
+            propertyDataDetails?.heightOfTheBuilding ||
+            wsDataDetails?.additionalDetails?.heightOfTheBuilding ||
+            t("NA"),
+        },
+        {
+          title: "WS_SELECT_YEAR_OF_CONSTRUCTION",
+          value:
+            propertyDataDetails?.additionalDetails?.yearOfConstruction ||
+            propertyDataDetails?.additionalDetails?.SelectYearofConstruction ||
+            propertyDataDetails?.additionalDetails?.constructionYear ||
+            wsDataDetails?.additionalDetails?.yearOfConstruction ||
+            wsDataDetails?.additionalDetails?.SelectYearofConstruction ||
+            t("NA"),
+        },
+        ...(propertyDataDetails?.additionalDetails?.numberOfRooms || wsDataDetails?.additionalDetails?.numberOfRooms
+          ? [
+              {
+                title: "WS_NUMBER_OF_ROOMS",
+                value:
+                  propertyDataDetails?.additionalDetails?.numberOfRooms ||
+                  propertyDataDetails?.additionalDetails?.NumberofRooms ||
+                  wsDataDetails?.additionalDetails?.numberOfRooms ||
+                  wsDataDetails?.additionalDetails?.NumberofRooms,
+              },
+            ]
           : []),
       ],
     };
@@ -1018,22 +1107,55 @@ export const WSSearch = {
         !d?.documentType?.includes("SIGN")
     );
 
-    const otherDocsValues = unmappedDocs.map(d => ({
+    const isInvalidDocVal = (val, d) => {
+      if (!val || typeof val !== "string") return true;
+      const trimmed = val.trim();
+      if (
+        !trimmed ||
+        trimmed.toUpperCase() === "NA" ||
+        trimmed.toUpperCase() === "NULL" ||
+        trimmed.toUpperCase() === "UNDEFINED" ||
+        trimmed.toUpperCase() === "NONE" ||
+        trimmed === "-"
+      ) {
+        return true;
+      }
+      const uuidRegex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+      if (uuidRegex.test(trimmed)) return true;
+      if (/^[0-9a-fA-F]{32}$/.test(trimmed)) return true;
+      if (d?.fileStoreId && trimmed === String(d.fileStoreId).trim()) return true;
+      if (d?.id && trimmed === String(d.id).trim()) return true;
+      return false;
+    };
+
+    const getCleanDocNumber = (candidates, d) => {
+      for (const c of candidates) {
+        if (c && !isInvalidDocVal(c, d)) {
+          return String(c).trim();
+        }
+      }
+      return "NA";
+    };
+
+    const otherDocsValues = unmappedDocs.map(d => {
+      const cleanNum = getCleanDocNumber([wsDataDetails?.additionalDetails?.otherDocumentNumber, d?.documentNumber, d?.documentUid], d);
+      return {
         title: d?.documentType?.includes("ELECTRICITY") ? "WS_ELECTRICITY_BILL" : 
                d?.documentType?.includes("PLUMBER") ? "WS_PLUMBER_REPORT" :
                d?.documentType?.includes("BUILDING") ? "WS_BUILDING_PLAN" :
                d?.documentType?.includes("TAX") ? "WS_PROPERTY_TAX" : "WS_OTHER_DOCUMENTS",
         categoryLabel: "Other Documents",
         documentType: d?.documentType,
-        documentUid: wsDataDetails?.additionalDetails?.otherDocumentNumber || d?.documentNumber || "NA",
-        documentNumber: wsDataDetails?.additionalDetails?.otherDocumentNumber || d?.documentNumber,
+        documentUid: cleanNum,
+        documentNumber: cleanNum === "NA" ? "" : cleanNum,
         fileStoreId: d?.fileStoreId,
         numberLabel:
           d?.documentType?.includes("OTHER_DOCUMENTS") || d?.documentType?.includes("OTHERDOCUMENTS")
             ? "Other Document Remark"
             : "Other Document Number",
         originalDoc: d,
-    }));
+      };
+    });
 
     const documentDetails = {
       title: "WS_DOCUMENTS",
@@ -1061,8 +1183,18 @@ export const WSSearch = {
                   title: "WS_IDENTITY_PROOF",
                   categoryLabel: "Proof of Identity",
                   documentType: identityDoc?.documentType,
-                  documentUid: isMutationApp ? identityDoc?.documentNumber : (wsDataDetails?.additionalDetails?.identityProofNumber || identityDoc?.documentNumber || "NA"),
-                  documentNumber: isMutationApp ? identityDoc?.documentNumber : (wsDataDetails?.additionalDetails?.identityProofNumber || identityDoc?.documentNumber),
+                  documentUid: getCleanDocNumber([
+                    wsDataDetails?.additionalDetails?.identityProofDocumentNumber,
+                    wsDataDetails?.additionalDetails?.identityProofNumber,
+                    identityDoc?.documentNumber,
+                    identityDoc?.documentUid,
+                  ], identityDoc),
+                  documentNumber: getCleanDocNumber([
+                    wsDataDetails?.additionalDetails?.identityProofDocumentNumber,
+                    wsDataDetails?.additionalDetails?.identityProofNumber,
+                    identityDoc?.documentNumber,
+                    identityDoc?.documentUid,
+                  ], identityDoc),
                   fileStoreId: identityDoc?.fileStoreId,
                   numberLabel: "Identity Proof Document Number",
                   originalDoc: identityDoc,
@@ -1073,8 +1205,16 @@ export const WSSearch = {
                   title: isMutationApp ? "WS_REASON_BASED_DOCUMENT" : "WS_OWNERSHIP_PROOF",
                   categoryLabel: isMutationApp ? "Supporting Document" : "Proof of Ownership",
                   documentType: ownershipDoc?.documentType || (isMutationApp ? "SUPPORTING_DOCUMENT" : ""),
-                  documentUid: isMutationApp ? "NA" : (wsDataDetails?.additionalDetails?.ownershipDocumentNumber || ownershipDoc?.documentNumber || "NA"),
-                  documentNumber: isMutationApp ? "NA" : (wsDataDetails?.additionalDetails?.ownershipDocumentNumber || ownershipDoc?.documentNumber),
+                  documentUid: getCleanDocNumber([
+                    wsDataDetails?.additionalDetails?.ownershipDocumentNumber,
+                    ownershipDoc?.documentNumber,
+                    ownershipDoc?.documentUid,
+                  ], ownershipDoc),
+                  documentNumber: getCleanDocNumber([
+                    wsDataDetails?.additionalDetails?.ownershipDocumentNumber,
+                    ownershipDoc?.documentNumber,
+                    ownershipDoc?.documentUid,
+                  ], ownershipDoc),
                   fileStoreId: ownershipDoc?.fileStoreId,
                   numberLabel: isMutationApp ? "" : "Ownership Proof Document Number",
                   originalDoc: ownershipDoc,

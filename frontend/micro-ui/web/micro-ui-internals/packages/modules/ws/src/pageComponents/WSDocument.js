@@ -70,6 +70,54 @@ const isPhotoDoc = (doc, code) => {
   return str.includes("APPLICANTPHOTO") || str.includes("PHOTO");
 };
 
+const isPhotoOrSignatureDoc = (doc, code) => {
+  const str = (
+    (doc?.documentType || "") + " " +
+    (doc?.documentName || "") + " " +
+    (code || "")
+  ).toUpperCase();
+  return (
+    str.includes("APPLICANTPHOTO") ||
+    str.includes("PHOTO") ||
+    str.includes("SIGNATURE") ||
+    str.includes("SIGN")
+  );
+};
+
+const isInvalidDocNum = (val, doc) => {
+  if (!val || typeof val !== "string") return true;
+  const trimmed = val.trim();
+  if (
+    !trimmed ||
+    trimmed.toUpperCase() === "NA" ||
+    trimmed.toUpperCase() === "NULL" ||
+    trimmed.toUpperCase() === "UNDEFINED" ||
+    trimmed.toUpperCase() === "NONE" ||
+    trimmed === "-"
+  ) {
+    return true;
+  }
+  // Standard UUID format: 8-4-4-4-12 hex chars
+  const uuidRegex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+  if (uuidRegex.test(trimmed)) return true;
+  if (/^[0-9a-fA-F]{32}$/.test(trimmed)) return true;
+  if (doc?.fileStoreId && trimmed === String(doc.fileStoreId).trim()) return true;
+  if (doc?.id && trimmed === String(doc.id).trim()) return true;
+  if (doc?.documentId && trimmed === String(doc.documentId).trim()) return true;
+  return false;
+};
+
+const getDocNumber = (document, isPhotoOrSig, t) => {
+  if (isPhotoOrSig) return "";
+  const candidates = [document?.documentNumber, document?.documentUid];
+  for (const c of candidates) {
+    if (c && !isInvalidDocNum(c, document)) {
+      return String(c).trim();
+    }
+  }
+  return t ? t("NA") : "NA";
+};
+
 function WSDocument({ value = {}, Code, index, showFileName = false, appStatus }) {
   const { t } = useTranslation();
   const [localUrls, setLocalUrls] = useState({});
@@ -131,7 +179,8 @@ function WSDocument({ value = {}, Code, index, showFileName = false, appStatus }
 
             const displayName = getDocumentDisplayName(document, Code, t);
             const isPhoto = isPhotoDoc(document, Code);
-            const docNum = !isPhoto ? (document?.documentNumber || document?.documentUid || "") : "";
+            const isPhotoOrSig = isPhotoOrSignatureDoc(document, Code);
+            const docNum = getDocNumber(document, isPhotoOrSig, t);
 
             return (
               <div
@@ -200,7 +249,7 @@ function WSDocument({ value = {}, Code, index, showFileName = false, appStatus }
                   >
                     {displayName}
                   </p>
-                  {docNum ? (
+                  {!isPhotoOrSig && (
                     <p
                       style={{
                         marginTop: "4px",
@@ -210,9 +259,9 @@ function WSDocument({ value = {}, Code, index, showFileName = false, appStatus }
                         maxWidth: "200px",
                       }}
                     >
-                      {docNum}
+                      {docNum || t("NA")}
                     </p>
-                  ) : null}
+                  )}
                 </a>
                 {appStatus === "PENDING_FOR_CONNECTION_ACTIVATION" && (
                   <div style={{ marginTop: "10px" }}>
