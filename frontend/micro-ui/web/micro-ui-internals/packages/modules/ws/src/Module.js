@@ -105,6 +105,7 @@ import SearchWaterConnectionViewIntegrated from "./pages/employee/SearchWaterCon
 import BulkBillGeneration from "./pages/employee/BulkBillGeneration";
 import OLDApplication from "./pages/employee/OLD";
 import WSExecuteDisconnection from "./pages/employee/ExecuteDisconnection/WSExecuteDisconnection";
+import WSFieldInspection from "./pages/employee/WSFieldInspection";
 
 export const WSModule = ({ stateCode, userType, tenants }) => {
   const tenantId = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code || Digit.ULBService.getCurrentTenantId();
@@ -295,6 +296,7 @@ const componentsToRegister = {
   WSDivyangjan: WSDivyangjan,
   WSRainWaterHarvesting: WSRainWaterHarvesting,
   WSExecuteDisconnection: WSExecuteDisconnection,
+  WSFieldInspection: WSFieldInspection,
 };
 
 export const initWSComponents = () => {

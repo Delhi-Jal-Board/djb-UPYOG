@@ -213,6 +213,7 @@ const Urls = {
     due_verification: "/ws-services/wc/due-verification/_search",
     zro_verification_search: "/ws-calculator/zro-verification/_search",
     zro_verification_update: "/ws-calculator/zro-verification/_update",
+    site_inspection_submit: "/ws-services/wc/site-inspection/_submit",
   },
 
   asset: {

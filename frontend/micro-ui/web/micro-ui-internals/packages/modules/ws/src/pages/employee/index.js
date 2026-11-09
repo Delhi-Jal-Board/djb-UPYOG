@@ -16,6 +16,7 @@ import getModifyPDFData from "../../utils/getWsAckDataForModifyPdfs";
 import WSCalculation from "../../pageComponents/WSCalculation";
 import WSZROVerification from "./WSZROVerification";
 import WSZROVerificationDetails from "./WSZROVerificationDetails";
+import WSFieldInspection from "./WSFieldInspection";
 
 const BILLSBreadCrumbs = ({ location, showPrint }) => {
   const { t } = useTranslation();
@@ -496,6 +497,11 @@ const BILLSBreadCrumbs = ({ location, showPrint }) => {
       label: t("WS_APPLICATION_DETAILS_HEADER"),
       show: location.pathname.includes("/ws/zro-verification-details") ? true : false,
     },
+    {
+      path: "/digit-ui/employee/ws/field-inspection",
+      label: t("WS_FIELD_INSPECTION", "Field Inspection"),
+      show: location.pathname.includes("/ws/field-inspection") ? true : false,
+    },
   ];
 
   let lastCrumbIndex = findLastIndex(crumbs, "show", true);
@@ -778,6 +784,7 @@ const App = ({ path }) => {
               <PrivateRoute path={`${path}/water/calculation`} component={(props) => <WSCalculation {...props} parentRoute={path} />} />
               <PrivateRoute path={`${path}/zro-application`} component={() => <WSZROVerification />} />
               <PrivateRoute path={`${path}/zro-verification-details`} component={() => <WSZROVerificationDetails />} />
+              <PrivateRoute path={`${path}/field-inspection`} component={WSFieldInspection} />
               <PrivateRoute path={`${path}/execute-disconnection`} component={WSExecuteDisconnection} />
 
               {/* <Route path={`${path}/search`} component={SearchConnectionComponent} />
