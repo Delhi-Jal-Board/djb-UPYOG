@@ -21,6 +21,8 @@ import {
   endOfMonth,
   startOfQuarter,
   endOfQuarter,
+  parse,
+  isValid
 } from "date-fns";
 
 function isEndDateFocused(focusNumber) {
@@ -34,6 +36,15 @@ function isStartDateFocused(focusNumber) {
 const DateRange = ({ values, onFilterChange, t, hideLabel = false, onOpenChange, emptyInitialDate = false, placeholder = "" }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [focusedRange, setFocusedRange] = useState([0, 0]);
+  const [inputValue, setInputValue] = useState("");
+
+  useEffect(() => {
+    if (values?.startDate && values?.endDate) {
+      setInputValue(`${format(values.startDate, "dd/MM/yyyy")} - ${format(values.endDate, "dd/MM/yyyy")}`);
+    } else {
+      setInputValue("");
+    }
+  }, [values?.startDate, values?.endDate]);
 
   const today = new Date();
 
@@ -80,7 +91,7 @@ const DateRange = ({ values, onFilterChange, t, hideLabel = false, onOpenChange,
 
       const duration = getDuration(startDate, endDate);
 
-      const title = `${format(startDate, "MMM d, yy")} - ${format(endDate, "MMM d, yy")}`;
+      const title = `${format(startDate, "dd/MM/yyyy")} - ${format(endDate, "dd/MM/yyyy")}`;
 
       onFilterChange({
         range: {
@@ -195,6 +206,57 @@ const DateRange = ({ values, onFilterChange, t, hideLabel = false, onOpenChange,
     }
   };
 
+  const handleInputChange = (e) => {
+    const title = e.target.value;
+    setInputValue(title);
+
+    const dates = title.split(" - ");
+
+    if (dates.length !== 2) return;
+
+    const startDate = parse(dates[0].trim(), "dd/MM/yyyy", new Date());
+    const endDate = parse(dates[1].trim(), "dd/MM/yyyy", new Date());
+
+    // Validate both dates and ensure the range is correct.
+    if (
+      !isValid(startDate) ||
+      !isValid(endDate) ||
+      format(startDate, "dd/MM/yyyy") !== dates[0].trim() ||
+      format(endDate, "dd/MM/yyyy") !== dates[1].trim() ||
+      startDate > endDate
+    ) {
+      return;
+    }
+
+    const adjustedEndDate = addSeconds(addMinutes(addHours(endDate, 23), 59), 59);
+
+    const duration = getDuration(startDate, adjustedEndDate);
+
+    setSelectionRange((prev) => ({
+      ...prev,
+      startDate,
+      endDate: adjustedEndDate,
+      duration,
+      title,
+    }));
+
+    // Notify the parent immediately after a valid range is entered.
+    onFilterChange({
+      range: {
+        startDate,
+        endDate: adjustedEndDate,
+        duration,
+        title,
+      },
+      requestDate: {
+        startDate,
+        endDate: adjustedEndDate,
+        duration,
+        title,
+      },
+    });
+  };
+
   return (
     <Fragment>
       {!hideLabel && <div className="filter-label">{t(`ES_DSS_DATE_RANGE`)}</div>}
@@ -208,7 +270,7 @@ const DateRange = ({ values, onFilterChange, t, hideLabel = false, onOpenChange,
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >
-          <input placeholder={t(placeholder) || t("Select date range")} className="employee-select-wrap--elipses" type="text" value={values?.title ? values.title : ""} readOnly />
+          <input placeholder={t(placeholder) || t("Select date range")} className="employee-select-wrap--elipses" type="text" value={inputValue} onChange={handleInputChange} />
 
           <LuCalendarIcon hoverColor="#a1a1aa" color="#d1d1d1" className="cursorPointer" isHovered={isHovered} />
         </div>

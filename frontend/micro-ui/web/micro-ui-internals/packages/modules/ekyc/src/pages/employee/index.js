@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Switch, useLocation } from "react-router-dom";
 import Dashboard from "../../components/Dashboard";
 import VendorDetailsCard from "../../components/VendorDetailsCard.js";
-import Inbox from "./Inbox";
+import Inbox from "../../components/Inbox.js";
 import Review from "../../components/Review";
 import EKYCForm from "./EKYCForm";
 // import AssignEkyc from "../../components/AssignEkyc.js";
@@ -144,7 +144,7 @@ const EmployeeApp = ({ path }) => {
               path={`${path}/inbox`}
               component={() => (
                 <LayoutWrapper layoutClass="normal">
-                  <Inbox parentRoute={path} businessService="EKYC" moduleCode="EKYC" isInbox={true} />
+                  <Inbox parentRoute={path}/>
                 </LayoutWrapper>
               )}
             />
@@ -230,11 +230,6 @@ const EmployeeApp = ({ path }) => {
                 </LayoutWrapper>
               )}
             />
-
-            {/* <PrivateRoute
-                path={`${path}/`}
-                component={() => <Inbox parentRoute={path} businessService="EKYC" moduleCode="EKYC" isInbox={true} />}
-              /> */}
           </Switch>
         </div>
       </div>

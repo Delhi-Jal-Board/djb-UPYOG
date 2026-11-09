@@ -3,12 +3,12 @@ import { AppContainer, PrivateRoute, ModuleHeader, ArrowLeft, HomeIcon, LayoutWr
 import { useTranslation } from "react-i18next";
 import { Switch, useLocation, useRouteMatch, Redirect, Route } from "react-router-dom";
 import Review from "../../components/Review";
-import Inbox from "./Inbox";
 import AssignEkyc from "../../components/AssignEkyc";
 import SurveyorDetailsCard from "../../components/SurveyorDetailsCard";
 import SupervisorDetailsCard from "../../components/SupervisorDetailsCard";
 import VendorDetailsCard from "../../components/VendorDetailsCard";
 import EkycStatus from "./EkycStatus";
+import Inbox from "../../components/Inbox";
 
 const CitizenApp = () => {
   const { t } = useTranslation();
@@ -104,9 +104,9 @@ const CitizenApp = () => {
           )}
         /> */}
           <PrivateRoute
-            path={`${path}/review`}
+            path={`${path}/review/:kno`}
             component={() => (
-              <LayoutWrapper layoutClass="action">
+              <LayoutWrapper layoutClass={roles.includes("EKYC_SUPERVISOR") ? "action" : "normal"}>
                 <Review />
               </LayoutWrapper>
             )}

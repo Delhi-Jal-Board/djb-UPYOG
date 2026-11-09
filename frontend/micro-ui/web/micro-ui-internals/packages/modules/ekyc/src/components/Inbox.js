@@ -3,9 +3,8 @@ import { useLocation } from "react-router-dom";
 import { InboxComposer } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { FaUsers, FaCheckCircle, FaClock } from "react-icons/fa";
-import useInboxTableConfig from "../../hook/useInboxTableConfig";
-import SearchFormFieldsComponents from "../../components/SearchFormFieldsComponent";
-// import useInboxMobileCardsData from "../../hook/useInboxMobileCardsData";
+import useInboxTableConfig from "../hook/useInboxTableConfig";
+import SearchFormFieldsComponents from "./SearchFormFieldsComponent";
 
 const StatCard = ({ title, value, type, isLoading, icon, color }) => (
   <div style={{ borderColor: color }} className={`stat-card ${type}`}>
@@ -29,6 +28,7 @@ const StatCard = ({ title, value, type, isLoading, icon, color }) => (
 const Inbox = ({ parentRoute }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const location = useLocation();
+  const { t } = useTranslation();
 
   const formInitValue = {
     filterForm: {},
@@ -56,6 +56,7 @@ const Inbox = ({ parentRoute }) => {
       tenantId,
       offset: formState?.tableForm?.offset || 0,
       limit: formState?.tableForm?.limit || 10,
+      search: formState?.searchForm || {},
     };
   }, [tenantId, formState?.tableForm?.offset, formState?.tableForm?.limit]);
 
@@ -87,46 +88,44 @@ const Inbox = ({ parentRoute }) => {
     };
   });
 
-  const { t } = useTranslation();
-
   const cards = [
     {
-      label: t("EKYC_TOTAL"),
+      label: "EKYC_TOTAL",
       count: progressData?.totalKnosInZones || 0,
       color: "#0B2559",
       type: "today",
       icon: <FaUsers />,
     },
     {
-      label: t("EKYC_COMPLETED"),
+      label: "EKYC_COMPLETED",
       count: progressData?.completedKnosInZones || 0,
       color: "#2E8B57",
       type: "month",
       icon: <FaCheckCircle />,
     },
     {
-      label: t("EKYC_SUBMITTED_BY_VENDORS"),
+      label: "EKYC_SUBMITTED_BY_VENDORS",
       count: progressData?.submittedKnosInZones || 0,
       color: "#8B5CF6",
       type: "month",
       icon: <FaCheckCircle />,
     },
     {
-      label: t("EKYC_SUBMITTED_BY_CITIZEN"),
+      label: "EKYC_SUBMITTED_BY_CITIZEN",
       count: progressData?.selfEkycCountInZones || 0,
       color: "#2775DD",
       type: "month",
       icon: <FaCheckCircle />,
     },
     {
-      label: t("EKYC_PENDING"),
+      label: "EKYC_PENDING",
       count: progressData?.pendingKnosInZones || 0,
       color: "#F59E0B",
       type: "pending",
       icon: <FaClock />,
     },
     // {
-    //   label: t("OVERALL_PROGRESS"),
+    //   label: "OVERALL_PROGRESS",
     //   count: `${progressData?.overallProgressPercent || 0}%`,
     //   color: "#A855F7",
     //   type: "progress",
@@ -288,11 +287,11 @@ const Inbox = ({ parentRoute }) => {
         {...{
           isInboxLoading,
           // PropsForInboxLinks,
-          ...propsForSearchForm,
           // ...propsForFilterForm,
           // ...propsForMobileSortForm,
-          propsForInboxTable,
           // propsForInboxMobileCards,
+          ...propsForSearchForm,
+          propsForInboxTable,
           formState,
           countData: listData,
           forceTable: true,

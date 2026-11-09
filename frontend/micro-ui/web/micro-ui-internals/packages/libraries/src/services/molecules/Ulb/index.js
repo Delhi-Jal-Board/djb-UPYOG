@@ -36,6 +36,7 @@ export const ULBService = {
         return user.extraRoleInfo?.tenantId;
       }
     }
+    
     //TODO: fix tenant id from userinfo
     const tenantId =
       user?.info?.type === "EMPLOYEE" && user?.info?.tenantId ? user?.info?.tenantId : window?.globalConfigs.getConfig("STATE_LEVEL_TENANT_ID");
@@ -68,25 +69,6 @@ export const ULBService = {
     const initData = StoreService.getInitData();
     const tenantId = ULBService.getCurrentTenantId();
     return initData.tenants.find((tenant) => tenant.code === tenantId);
-  }
-  /**
-   * Custom method to get citizen's current selected city
-   *
-   * @author jagankumar-egov
-   *
-   * @example
-   * Digit.ULBService.getCitizenCurrentTenant() -> will return selected home city if not loggedin users city if not state tenant
-   *
-   * Digit.ULBService.getCitizenCurrentTenant(true) -> will return selected home city
-   * 
-   * @returns {String}
-   */,
-  getCitizenCurrentTenant: (selectedCity=false) => {
-    const homeCity=Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code;
-    if(selectedCity){
-      return homeCity;
-    }
-    return homeCity|| Digit.UserService.getUser()?.info?.permanentCity || ULBService.getStateId();
   },
 
   /**
@@ -126,7 +108,7 @@ export const ULBService = {
    */
   getUserUlbs: (userRole = "") => {
     const stringReplaceAll = (str = "", searcher = "", replaceWith = "") => {
-      if (searcher == "") return str;
+      if (searcher === "") return str;
       while (str?.includes(searcher)) {
         str = str?.replace(searcher, replaceWith);
       }

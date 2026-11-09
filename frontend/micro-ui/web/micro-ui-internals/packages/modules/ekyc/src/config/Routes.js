@@ -1,5 +1,5 @@
 import Dashboard from "../components/Dashboard";
-import Inbox from "../pages/employee/Inbox";
+import Inbox from "../components/Inbox";
 import EKYCForm from "../pages/employee/EKYCForm";
 import Review from "../components/Review";
 import AssignEkyc from "../components/AssignEkyc";
@@ -17,7 +17,7 @@ const breadcrumb = (userType, listLabel, listPath, detailLabel) => [
 ];
 
 // 👇 isi function ko employee ke liye bhi call karenge, citizen ke liye bhi
-export const getEkycRoutes = (userType, t) => [
+export const getEkycRoutes = (userType) => [
   // ---- simple pages ----
   { path: "/dashboard", component: Dashboard, layout: "normal", breadcrumb: "EKYC_DASHBOARD" },
   { path: "/inbox", component: Inbox, layout: "normal", breadcrumb: "EKYC_INBOX" },
