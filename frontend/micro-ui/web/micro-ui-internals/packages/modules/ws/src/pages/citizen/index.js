@@ -236,50 +236,52 @@ const App = ({ path }) => {
             />
             <div className="employee-form">
               <div className="employee-form-content">
-                <PrivateRoute path={`${path}/create-application`} component={WSInfoPage} />
-                <PrivateRoute path={`${path}/disconnect-application`} component={WSDisconnection} />
-                <PrivateRoute path={`${path}/execute-disconnection`} component={WSExecuteDisconnection} />
-                <PrivateRoute path={`${path}/activate-connection`} component={WSActivateConnection} />
-                <PrivateRoute path={`${path}/restore-application`} component={WSRestoration} />
-                <PrivateRoute path={`${path}/disconnect-acknowledge`} component={WSDisconnectAcknowledgement} />
-                <PrivateRoute path={`${path}/restoration-acknowledge`} component={WSRestorationAcknowledgement} />
-                <PrivateRoute path={`${path}/resubmit-disconnect-application`} component={WSReSubmitDisconnectionApplication} />
-                <Route path={`${path}/search`} component={WSSearchConnectionComponent} />
-                <PrivateRoute path={`${path}/my-bills`} component={WNSMyBillsComponent} />
-                <Route path={`${path}/search-results`} component={WSSearchResultsComponent} />
-                <Route path={`${path}/test-acknowledgment`} component={TestAcknowledgment} />
-                <PrivateRoute path={`${path}/my-payments`} component={WSMyPayments} />
-                <PrivateRoute path={`${path}/my-applications`} component={WSMyApplications} />
-                <PrivateRoute path={`${path}/my-connections`} component={WSMyConnections} />
-                <PrivateRoute path={`${path}/connection/application/:acknowledgementIds`} component={WSCitizenApplicationDetails} />
-                <PrivateRoute path={`${path}/connection/additional/:acknowledgementIds`} component={WSAdditionalDetails} />
-                <PrivateRoute path={`${path}/connection/details/:acknowledgementIds`} component={WSCitizenConnectionDetails} />
-                <PrivateRoute
-                  path={`${path}/consumption/details`}
-                  component={() => (
-                    <LayoutWrapper layoutClass="action">
-                      <WSCitizenConsumptionDetails />
-                    </LayoutWrapper>
-                  )}
-                />
-                <PrivateRoute path={`${path}/edit-application/:tenantId`} component={WSCitizenEditApplication} />
-                <PrivateRoute path={`${path}/modify-connection/:tenantId`} component={WSCitizenEditApplication} />
-                <PrivateRoute
-                  path={`${path}/old-application`}
-                  component={() => (
-                    <LayoutWrapper layoutClass="action">
-                      <WSOLDApplication />
-                    </LayoutWrapper>
-                  )}
-                />
-                <PrivateRoute path={`${path}/info`} component={WSInfoPage} />
-                <PrivateRoute path={`${path}/ws-response`} component={WSResponse} />
-                <PrivateRoute path={`${path}/mutation-application`} component={WSMutationApplication} />
-                <PrivateRoute path={`${path}/bill-amendment`} component={(props) => <WSApplicationBillAmendment {...props} path={path} />} />
-                <PrivateRoute path={`${path}/required-documents`} component={(props) => <WSRequiredDocuments {...props} path={path} />} />
-                <PrivateRoute path={`${path}/response`} component={(props) => <Response {...props} path={path} />} />
-                <PrivateRoute path={`${path}/response-bill-amend`} component={(props) => <ResponseBillAmend {...props} path={path} />} />
-                <PrivateRoute path={`${path}/bill-amendment/application-details`} component={(props) => <WSApplicationDetailsBillAmendment {...props} path={path} />} />
+                <Switch>
+                  <PrivateRoute path={`${path}/create-application`} component={WSInfoPage} />
+                  <PrivateRoute path={`${path}/disconnect-application`} component={WSDisconnection} />
+                  <PrivateRoute path={`${path}/execute-disconnection`} component={WSExecuteDisconnection} />
+                  <PrivateRoute path={`${path}/activate-connection`} component={WSActivateConnection} />
+                  <PrivateRoute path={`${path}/restore-application`} component={WSRestoration} />
+                  <PrivateRoute path={`${path}/disconnect-acknowledge`} component={WSDisconnectAcknowledgement} />
+                  <PrivateRoute path={`${path}/restoration-acknowledge`} component={WSRestorationAcknowledgement} />
+                  <PrivateRoute path={`${path}/resubmit-disconnect-application`} component={WSReSubmitDisconnectionApplication} />
+                  <Route path={`${path}/search`} component={WSSearchConnectionComponent} />
+                  <PrivateRoute path={`${path}/my-bills`} component={WNSMyBillsComponent} />
+                  <Route path={`${path}/search-results`} component={WSSearchResultsComponent} />
+                  <Route path={`${path}/test-acknowledgment`} component={TestAcknowledgment} />
+                  <PrivateRoute path={`${path}/my-payments`} component={WSMyPayments} />
+                  <PrivateRoute path={`${path}/my-applications`} component={WSMyApplications} />
+                  <PrivateRoute path={`${path}/my-connections`} component={WSMyConnections} />
+                  <PrivateRoute path={`${path}/connection/application/:acknowledgementIds`} component={WSCitizenApplicationDetails} />
+                  <PrivateRoute path={`${path}/connection/additional/:acknowledgementIds`} component={WSAdditionalDetails} />
+                  <PrivateRoute path={`${path}/connection/details/:acknowledgementIds`} component={WSCitizenConnectionDetails} />
+                  <PrivateRoute
+                    path={`${path}/consumption/details`}
+                    component={() => (
+                      <LayoutWrapper layoutClass="action">
+                        <WSCitizenConsumptionDetails />
+                      </LayoutWrapper>
+                    )}
+                  />
+                  <PrivateRoute path={`${path}/edit-application/:tenantId`} component={WSCitizenEditApplication} />
+                  <PrivateRoute path={`${path}/modify-connection/:tenantId`} component={WSCitizenEditApplication} />
+                  <PrivateRoute
+                    path={`${path}/old-application`}
+                    component={() => (
+                      <LayoutWrapper layoutClass="action">
+                        <WSOLDApplication />
+                      </LayoutWrapper>
+                    )}
+                  />
+                  <PrivateRoute path={`${path}/info`} component={WSInfoPage} />
+                  <PrivateRoute path={`${path}/ws-response`} component={WSResponse} />
+                  <PrivateRoute path={`${path}/mutation-application`} component={WSMutationApplication} />
+                  <PrivateRoute exact path={`${path}/bill-amendment/application-details`} component={(props) => <WSApplicationDetailsBillAmendment {...props} path={path} />} />
+                  <PrivateRoute exact path={`${path}/bill-amendment`} component={(props) => <WSApplicationBillAmendment {...props} path={path} />} />
+                  <PrivateRoute path={`${path}/required-documents`} component={(props) => <WSRequiredDocuments {...props} path={path} />} />
+                  <PrivateRoute path={`${path}/response`} component={(props) => <Response {...props} path={path} />} />
+                  <PrivateRoute path={`${path}/response-bill-amend`} component={(props) => <ResponseBillAmend {...props} path={path} />} />
+                </Switch>
               </div>
             </div>
           </div>

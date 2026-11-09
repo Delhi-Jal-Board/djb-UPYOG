@@ -2539,8 +2539,18 @@ export const WSSearch = {
     }
     const billAmendmentSearch = await WSSearch.searchAmendment(tenantId, applicationNumber, billAmendSearchService);
 
+    const amendment = billAmendmentSearch?.Amendments?.[0];
+    const consumerCode = amendment?.consumerCode;
+    if (!amendment || !consumerCode) {
+      return {
+        applicationData: {},
+        applicationDetails: [],
+        tenantId,
+      };
+    }
+
     const filtersForWSSearch = {
-      connectionNumber: billAmendmentSearch.Amendments[0].consumerCode,
+      connectionNumber: consumerCode,
       searchType: "CONNECTION",
       billAmendSearchService,
       isPropertyDetailsRequired: true,
@@ -2575,9 +2585,10 @@ export const WSSearch = {
     const { Demands: BillDemandDetails } = await PaymentService.demandSearch(tenantId, filtersForWSSearch?.connectionNumber, billAmendSearchService);
     const billServiceTaxHeadMaster = await MdmsService.getWSTaxHeadMaster(tenantId, "WS");
     const billServiceTaxHeadMasterForBillAmendment = billServiceTaxHeadMaster?.BillingService?.TaxHeadMaster?.filter((w) => w.IsBillamend);
-    const actualFieldsAndAmountOfBillDetails = BillDemandDetails?.[0]?.demandDetails.filter((e) =>
-      billServiceTaxHeadMasterForBillAmendment.find((taxHeadMaster) => taxHeadMaster.code === e.taxHeadMasterCode)
-    );
+    const actualFieldsAndAmountOfBillDetails =
+      BillDemandDetails?.[0]?.demandDetails?.filter((e) =>
+        billServiceTaxHeadMasterForBillAmendment?.find((taxHeadMaster) => taxHeadMaster.code === e.taxHeadMasterCode)
+      ) || [];
     const billData = await WSSearch.searchBills(tenantId, consumercodes);
 
     if (filters?.applicationNumber) businessIds = filters?.applicationNumber;
@@ -2600,15 +2611,15 @@ export const WSSearch = {
       title: "WS_AMOUNT_DETAILS",
       asSectionHeader: true,
       values: [
-        ...actualFieldsAndAmountOfBillDetails.map((e) => ({
+        ...(actualFieldsAndAmountOfBillDetails?.map((e) => ({
           title: e?.taxHeadMasterCode,
           value: `₹ ${e?.taxAmount}`,
-        })),
-        { title: "WS_REVISED_DEMAND", value: `₹ ${Math.round(actualFieldsAndAmountOfBillDetails.reduce((acc, curr) => curr.taxAmount + acc, 0))}` },
+        })) || []),
+        { title: "WS_REVISED_DEMAND", value: `₹ ${Math.round(actualFieldsAndAmountOfBillDetails?.reduce((acc, curr) => (curr?.taxAmount || 0) + acc, 0) || 0)}` },
       ],
     };
 
-    const tableData = billAmendmentSearch?.Amendments?.[0]?.additionalDetails?.searchBillDetails;
+    const tableData = amendment?.additionalDetails?.searchBillDetails;
     const action = tableData?.action;
     const tableHeader = ["WS_TAX_HEAD", "WS_CURRENT_DEMAND", `WS_${action}_HEAD`, "WS_REVISED_DEMAND"];
     const tableRows = [];

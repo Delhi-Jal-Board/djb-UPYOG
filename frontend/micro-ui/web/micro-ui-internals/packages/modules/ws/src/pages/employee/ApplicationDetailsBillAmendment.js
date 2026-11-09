@@ -8,7 +8,11 @@ const ApplicationDetailsBillAmendment = () => {
   const queryParams = Digit.Hooks.useQueryParams();
   const applicationNumber = queryParams?.applicationNumber || queryParams?.applicationNo;
   const isEmployee = window.location.href.includes("/employee");
-  const tenantId = Digit.ULBService.getCurrentTenantId() || "dl.djb";
+  const tenantId =
+    queryParams?.tenantId ||
+    (Digit.ULBService.getCurrentTenantId() && Digit.ULBService.getCurrentTenantId() !== "dl"
+      ? Digit.ULBService.getCurrentTenantId()
+      : "dl.djb");
   const { t } = useTranslation();
   let serviceType = "WATER";
   if (applicationNumber?.includes("SW")) serviceType = "SEWERAGE";
@@ -29,8 +33,13 @@ const ApplicationDetailsBillAmendment = () => {
     config: { enabled: !!applicationNumber },
   });
 
-  workflowDetails?.data?.actionState?.nextActions?.forEach((action) => {
-    if (action?.action === "RE-SUBMIT") {
+  const allNextActions = [
+    ...(workflowDetails?.data?.actionState?.nextActions || []),
+    ...(workflowDetails?.data?.nextActions || []),
+  ];
+
+  allNextActions.forEach((action) => {
+    if (["RE-SUBMIT", "RESUBMIT", "RE_SUBMIT", "SUBMIT", "EDIT"].includes(action?.action)) {
       let pathName = isEmployee
         ? `/digit-ui/employee/ws/bill-amendment?connectionNumber=${applicationDetails?.applicationData?.connectionNo}&tenantId=${tenantId}&isEdit=true`
         : `/digit-ui/citizen/ws/bill-amendment?connectionNumber=${applicationDetails?.applicationData?.connectionNo}&tenantId=${tenantId}&isEdit=true`;
