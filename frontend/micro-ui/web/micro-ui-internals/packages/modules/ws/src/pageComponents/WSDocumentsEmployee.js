@@ -698,7 +698,15 @@ function SelectDocument({
   });
   const [file, setFile] = useState(null);
   const [uploadedFile, setUploadedFile] = useState(() => (isOther ? null : filteredDocument?.fileStoreId || null));
-  const [documentUid, setDocumentUid] = useState(() => (isOther ? "" : filteredDocument?.documentNumber || ""));
+  const [documentUid, setDocumentUid] = useState(() => {
+    if (isOther) return "";
+    const num = filteredDocument?.documentNumber || "";
+    const uuidRegex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+    if (uuidRegex.test(num) || num === filteredDocument?.fileStoreId || num === filteredDocument?.id) {
+      return "";
+    }
+    return num;
+  });
   const [isDocumentUidLocked, setIsDocumentUidLocked] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
   const [isUploading, setIsUploading] = useState(false);

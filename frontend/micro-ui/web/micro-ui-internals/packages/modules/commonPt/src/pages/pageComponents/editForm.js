@@ -260,6 +260,14 @@ const EditPropertyForm = ({ config, onSelect, userType }) => {
           return;
         }
         setShowToast({ key: false, label: t("CS_PROPERTY_UPDATE_APPLICATION_SUCCESS") });
+        try {
+          sessionStorage.setItem("IS_PROPERTY_UPDATED", "true");
+          if (rawProperty?.propertyId) {
+            sessionStorage.setItem("IS_PROPERTY_UPDATED_" + rawProperty.propertyId, "true");
+          }
+        } catch (e) {
+          console.error("Error setting property update flag in sessionStorage", e);
+        }
         setTimeout(() => {
           if (onSelect) {
             onSelect("editProperty", { property: data?.Properties?.[0] });

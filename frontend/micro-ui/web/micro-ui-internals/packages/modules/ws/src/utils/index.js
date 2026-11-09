@@ -840,6 +840,25 @@ export const convertToWSUpdate = (data) => {
 export const convertToEditWSUpdate = (data) => {
   const { signatureFileStoreId, signatureFileName } = getSignatureDetails(data);
   let waterResult = data?.WaterConnectionResult?.WaterConnection?.[0];
+
+  const isPropUpdated = Boolean(
+    data?.isPropertyUpdated === true ||
+    data?.workflowAction === "RESUBMIT_FOR_INFRA_PAYMENT" ||
+    (typeof sessionStorage !== "undefined" && sessionStorage.getItem("WS_WORKFLOW_ACTION") === "RESUBMIT_FOR_INFRA_PAYMENT") ||
+    (typeof sessionStorage !== "undefined" && sessionStorage.getItem("IS_PROPERTY_UPDATED") === "true") ||
+    (typeof sessionStorage !== "undefined" && data?.propertyId && sessionStorage.getItem("IS_PROPERTY_UPDATED_" + data.propertyId) === "true") ||
+    (typeof sessionStorage !== "undefined" && waterResult?.propertyId && sessionStorage.getItem("IS_PROPERTY_UPDATED_" + waterResult.propertyId) === "true") ||
+    (data?.property?.auditDetails?.lastModifiedTime && waterResult?.property?.auditDetails?.lastModifiedTime &&
+     data.property.auditDetails.lastModifiedTime > waterResult.property.auditDetails.lastModifiedTime) ||
+    (data?.property?.auditDetails?.lastModifiedTime && waterResult?.auditDetails?.lastModifiedTime &&
+     data.property.auditDetails.lastModifiedTime > waterResult.auditDetails.lastModifiedTime)
+  );
+
+  const actionToTake =
+    data?.workflowAction ||
+    (typeof sessionStorage !== "undefined" && sessionStorage.getItem("WS_WORKFLOW_ACTION")) ||
+    (isPropUpdated ? "RESUBMIT_FOR_INFRA_PAYMENT" : "RESUBMIT_APPLICATION");
+
   let formdata = {
     WaterConnection: {
       id: data?.isEditApplication ? data?.id : waterResult?.id,
@@ -946,7 +965,7 @@ export const convertToEditWSUpdate = (data) => {
       processInstance: data?.isEditApplication
         ? {
           ...data?.processInstance,
-          action: "RESUBMIT_APPLICATION",
+          action: actionToTake,
         }
         : {
           ...waterResult?.processInstance,
@@ -1091,7 +1110,7 @@ export const convertToEditWSUpdate = (data) => {
       comment: "",
       wfDocuments: [],
       assignee: [],
-      action: data?.isEditApplication ? "RESUBMIT_APPLICATION" : "SUBMIT_APPLICATION",
+      action: data?.isEditApplication ? actionToTake : "SUBMIT_APPLICATION",
       assignes: [],
     },
   };
@@ -1104,6 +1123,7 @@ export const convertToEditWSUpdate = (data) => {
 export const convertToEditSWUpdate = (data) => {
   const { signatureFileStoreId, signatureFileName } = getSignatureDetails(data);
   let SewerageResult = data?.SewerageConnectionResult?.SewerageConnections?.[0];
+  const actionToTake = data?.workflowAction || "RESUBMIT_APPLICATION";
   let formdata = {
     SewerageConnection: {
       id: data?.isEditApplication ? data?.id : SewerageResult?.id,
@@ -1210,7 +1230,7 @@ export const convertToEditSWUpdate = (data) => {
       processInstance: data?.isEditApplication
         ? {
           ...data?.processInstance,
-          action: "RESUBMIT_APPLICATION",
+          action: actionToTake,
         }
         : {
           ...SewerageResult?.processInstance,
@@ -1355,7 +1375,7 @@ export const convertToEditSWUpdate = (data) => {
       comment: "",
       wfDocuments: [],
       assignee: [],
-      action: data?.isEditApplication ? "RESUBMIT_APPLICATION" : "SUBMIT_APPLICATION",
+      action: data?.isEditApplication ? actionToTake : "SUBMIT_APPLICATION",
       assignes: [],
     },
   };

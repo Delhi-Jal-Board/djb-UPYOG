@@ -718,6 +718,45 @@ const EditApplication = ({ parentRoute }) => {
         params.SewerageConnectionResult.SewerageConnections[0].propertyId = propToSubmit?.propertyId;
       }
     }
+
+    const isPropertySessionUpdated =
+      sessionStorage.getItem("IS_PROPERTY_UPDATED") === "true" ||
+      (propertyId && sessionStorage.getItem("IS_PROPERTY_UPDATED_" + propertyId) === "true") ||
+      (propToSubmit?.propertyId && sessionStorage.getItem("IS_PROPERTY_UPDATED_" + propToSubmit.propertyId) === "true");
+
+    const appProp = Waterresult?.property || Sewarageresult?.property;
+    const isPropertyTimeUpdated = Boolean(
+      latestProperty?.auditDetails?.lastModifiedTime &&
+      ((appProp?.auditDetails?.lastModifiedTime && latestProperty.auditDetails.lastModifiedTime > appProp.auditDetails.lastModifiedTime) ||
+       (currentApp?.auditDetails?.lastModifiedTime && latestProperty.auditDetails.lastModifiedTime > currentApp.auditDetails.lastModifiedTime) ||
+       (currentApp?.auditDetails?.createdTime && latestProperty.auditDetails.lastModifiedTime > currentApp.auditDetails.createdTime))
+    );
+
+    const isPropertyFieldUpdated = Boolean(
+      latestProperty && appProp && (
+        (latestProperty?.additionalDetails?.plotArea && latestProperty?.additionalDetails?.plotArea != appProp?.additionalDetails?.plotArea) ||
+        (latestProperty?.additionalDetails?.builtUpArea && latestProperty?.additionalDetails?.builtUpArea != appProp?.additionalDetails?.builtUpArea) ||
+        (latestProperty?.additionalDetails?.propertyCategory && latestProperty?.additionalDetails?.propertyCategory != appProp?.additionalDetails?.propertyCategory) ||
+        (latestProperty?.propertyType && latestProperty?.propertyType != appProp?.propertyType) ||
+        (latestProperty?.noOfFloors && latestProperty?.noOfFloors != appProp?.noOfFloors) ||
+        ((latestProperty?.additionalDetails?.numberOfDwellingUnits || latestProperty?.additionalDetails?.noOfDwellingUnits) &&
+         (latestProperty?.additionalDetails?.numberOfDwellingUnits || latestProperty?.additionalDetails?.noOfDwellingUnits) !=
+           (appProp?.additionalDetails?.numberOfDwellingUnits || appProp?.additionalDetails?.noOfDwellingUnits)) ||
+        (latestProperty?.additionalDetails?.heightOfTheBuilding && latestProperty?.additionalDetails?.heightOfTheBuilding != appProp?.additionalDetails?.heightOfTheBuilding)
+      )
+    );
+
+    const isPropUpdated = Boolean(
+      isPropertySessionUpdated ||
+      isPropertyTimeUpdated ||
+      isPropertyFieldUpdated ||
+      params?.isPropertyUpdated === true
+    );
+
+    params.isPropertyUpdated = isPropUpdated;
+    params.workflowAction = isPropUpdated ? "RESUBMIT_FOR_INFRA_PAYMENT" : "RESUBMIT_APPLICATION";
+    sessionStorage.setItem("WS_WORKFLOW_ACTION", params.workflowAction);
+
     history.push(`${getPath(match.path, match.params)}/acknowledgement`);
   };
 

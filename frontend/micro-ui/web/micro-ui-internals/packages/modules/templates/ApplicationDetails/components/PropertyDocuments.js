@@ -150,11 +150,45 @@ function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false, 
     );
   };
 
+  const isInvalidDocNum = (val, doc) => {
+    if (!val || typeof val !== "string") return true;
+    const trimmed = val.trim();
+    if (
+      !trimmed ||
+      trimmed.toUpperCase() === "NA" ||
+      trimmed.toUpperCase() === "NULL" ||
+      trimmed.toUpperCase() === "UNDEFINED" ||
+      trimmed.toUpperCase() === "NONE" ||
+      trimmed === "-"
+    ) {
+      return true;
+    }
+    const uuidRegex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+    if (uuidRegex.test(trimmed)) return true;
+    if (/^[0-9a-fA-F]{32}$/.test(trimmed)) return true;
+    if (doc?.fileStoreId && trimmed === String(doc.fileStoreId).trim()) return true;
+    if (doc?.id && trimmed === String(doc.id).trim()) return true;
+    if (doc?.documentId && trimmed === String(doc.documentId).trim()) return true;
+    if (doc?.originalDoc?.fileStoreId && trimmed === String(doc.originalDoc.fileStoreId).trim()) return true;
+    if (doc?.originalDoc?.id && trimmed === String(doc.originalDoc.id).trim()) return true;
+    return false;
+  };
+
+  const getDocNumber = (doc) => {
+    const candidates = [doc?.documentNumber, doc?.documentUid, doc?.originalDoc?.documentNumber, doc?.originalDoc?.documentUid];
+    for (const c of candidates) {
+      if (c && !isInvalidDocNum(c, doc)) {
+        return String(c).trim();
+      }
+    }
+    return t("NA");
+  };
+
   /** Render a single document row in the structured format */
   const renderDocumentRow = (value, index) => {
     const fileUrl = pdfFiles[value.fileStoreId]?.split(",")[0];
     const docSubType = getDocSubType(value?.documentType);
-    const docUid = value?.documentNumber || value?.documentUid || "";
+    const docUid = getDocNumber(value);
     const isPhoto = value?.isPhoto;
 
     let typeLabel = "";
