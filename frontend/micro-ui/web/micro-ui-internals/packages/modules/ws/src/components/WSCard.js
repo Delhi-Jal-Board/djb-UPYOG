@@ -135,6 +135,11 @@ const WSCard = () => {
         ],
       },
       {
+        label: t("WS_FIELD_INSPECTION", "Field Inspection"),
+        link: `/digit-ui/employee/ws/field-inspection`,
+        roles: ["WS_CEMP", "WS_FIELD_INSPECTOR", "WS_APPROVER", "WS_ZRO", "EE", "WS_CLERK", "SW_FIELD_INSPECTOR"],
+      },
+      {
         label: t("WS_ZRO_VERIFICATION"),
         link: `/digit-ui/employee/ws/zro-application`,
         roles: ["WS_CEMP", "WS_ZRO"],

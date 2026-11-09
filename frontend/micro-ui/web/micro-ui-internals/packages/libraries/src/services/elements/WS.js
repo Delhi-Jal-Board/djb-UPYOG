@@ -2,6 +2,17 @@ import Urls from "../atoms/urls";
 import { Request } from "../atoms/Utils/Request";
 
 export const WSService = {
+  submitSiteInspection: (data) =>
+    Request({
+      url: Urls.ws.site_inspection_submit || "/ws-services/wc/site-inspection/_submit",
+      data: data,
+      useCache: false,
+      setTimeParam: false,
+      userService: true,
+      method: "POST",
+      params: {},
+      auth: true,
+    }),
   searchZROVerification: (details) =>
     Request({
       url: Urls.ws.zro_verification_search,
