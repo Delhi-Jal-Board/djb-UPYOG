@@ -956,6 +956,13 @@ public class WorkflowNotificationService {
             if (!CollectionUtils.isEmpty(whatsappRequests)) {
                 notificationUtil.sendWhatsApp(whatsappRequests, tenantId);
             }
+        } else if (isNewConnection && (WCConstants.ACTIVATE_CONNECTION_CONST.equalsIgnoreCase(action)
+                || "ACTIVATE_CONNECTION".equalsIgnoreCase(action)
+                || WCConstants.STATUS_APPROVED.equalsIgnoreCase(request.getWaterConnection().getApplicationStatus()))) {
+            List<WhatsAppRequest> whatsappRequests = getWhatsAppRequestForConnectionActivated(request, property);
+            if (!CollectionUtils.isEmpty(whatsappRequests)) {
+                notificationUtil.sendWhatsApp(whatsappRequests, tenantId);
+            }
         }
     }
 
@@ -1340,7 +1347,9 @@ public class WorkflowNotificationService {
         // If not found in additionalDetails yet, generate it via pdfFileStoreService
         if (StringUtils.isEmpty(consentFileStoreId)) {
             try {
+                log.info("Attempting Consent Letter generation for application: {}", connection.getApplicationNo());
                 consentFileStoreId = pdfFileStoreService.getConsentFileStoreId(request, property, WCConstants.PDF_CONSENT_KEY);
+                log.info("Consent letter generated fileStoreId: {} for application: {}", consentFileStoreId, connection.getApplicationNo());
                 if (!StringUtils.isEmpty(consentFileStoreId)) {
                     Map<String, Object> addDetails = (connection.getAdditionalDetails() != null)
                             ? mapper.convertValue(connection.getAdditionalDetails(), Map.class) : new HashMap<>();
@@ -1348,7 +1357,7 @@ public class WorkflowNotificationService {
                     connection.setAdditionalDetails(addDetails);
                 }
             } catch (Exception e) {
-                log.warn("Could not generate consent letter on the fly: {}", e.getMessage());
+                log.warn("Could not generate consent letter on the fly: {}", e.getMessage(), e);
             }
         }
 
@@ -1385,6 +1394,90 @@ public class WorkflowNotificationService {
                     approvalDate,           // {{6}}
                     installationTimeline,   // {{7}} (7 days after approval date)
                     finalConsentLetterPdfUrl // {{8}} (Downloadable Consent Letter PDF link)
+            );
+
+            WhatsAppRequest req = WhatsAppRequest.builder()
+                    .mobileNumber(mobileNumber)
+                    .templateName(templateName)
+                    .parameters(parameters)
+                    .build();
+            whatsappRequests.add(req);
+        });
+
+        return whatsappRequests;
+    }
+
+    /**
+     * Builds WhatsApp requests for New Water Connection Activated notification.
+     * Template: new_water_connection_activated
+     * 
+     * Template Text:
+     * Dear {{1}},
+     * 
+     * This is to inform you that your application for a New Water Connection has been activated successfully.
+     * 
+     * Activation Details:
+     * - Consumer Number: {{2}}
+     * - Applicant Name: {{1}}
+     * 
+     * Thank you.
+     * 
+     * Delhi Jal Board
+     * 
+     * Parameters:
+     *   {{1}} -> Citizen / Applicant Name
+     *   {{2}} -> Consumer Number (Connection Number / KNO)
+     * 
+     * @param request WaterConnectionRequest
+     * @param property Property
+     * @return List of WhatsAppRequest
+     */
+    private List<WhatsAppRequest> getWhatsAppRequestForConnectionActivated(WaterConnectionRequest request, Property property) {
+        WaterConnection connection = request.getWaterConnection();
+        if (connection == null) {
+            return Collections.emptyList();
+        }
+
+        Map<String, String> mobileNumbersAndNames = extractRecipientMobileNumbersAndNames(request, property, connection);
+        if (CollectionUtils.isEmpty(mobileNumbersAndNames)) {
+            log.info("No mobile numbers found for WhatsApp activation notification on application: {}", connection.getApplicationNo());
+            return Collections.emptyList();
+        }
+
+        // 1. Consumer Number (Connection Number / KNO / Consumer No)
+        String consumerNumber = connection.getConnectionNo();
+        if (StringUtils.isEmpty(consumerNumber) && connection.getAdditionalDetails() != null) {
+            try {
+                Map<String, Object> addDetails = mapper.convertValue(connection.getAdditionalDetails(), Map.class);
+                if (addDetails.get("kno") != null) {
+                    consumerNumber = String.valueOf(addDetails.get("kno"));
+                } else if (addDetails.get("consumerNo") != null) {
+                    consumerNumber = String.valueOf(addDetails.get("consumerNo"));
+                } else if (addDetails.get("connectionNo") != null) {
+                    consumerNumber = String.valueOf(addDetails.get("connectionNo"));
+                }
+            } catch (Exception e) {
+                log.warn("Error reading consumer number from additionalDetails", e);
+            }
+        }
+        if (StringUtils.isEmpty(consumerNumber)) {
+            consumerNumber = connection.getApplicationNo();
+        }
+        if (!StringUtils.isEmpty(consumerNumber)) {
+            consumerNumber = consumerNumber.trim().replaceAll("[\\r\\n\\t]+", " ").replaceAll(" {2,}", " ");
+        }
+
+        String templateName = config.getConnectionActivatedTemplateName();
+        final String finalConsumerNumber = consumerNumber;
+
+        List<WhatsAppRequest> whatsappRequests = new ArrayList<>();
+        mobileNumbersAndNames.forEach((mobileNumber, name) -> {
+            String applicantName = !StringUtils.isEmpty(name) ? name : "Citizen";
+            applicantName = applicantName.trim().replaceAll("[\\r\\n\\t]+", " ").replaceAll(" {2,}", " ");
+
+            List<String> parameters = Arrays.asList(
+                    applicantName,          // {{1}}
+                    finalConsumerNumber     // {{2}}
             );
 
             WhatsAppRequest req = WhatsAppRequest.builder()

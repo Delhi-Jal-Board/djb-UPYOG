@@ -113,6 +113,9 @@ public class WSConfiguration {
     @Value("${pinbot.template.name.application.approved:nc_application_approved_notice}")
     private String ncApplicationApprovedTemplateName;
 
+    @Value("${pinbot.template.name.connection.activated:new_water_connection_activated}")
+    private String connectionActivatedTemplateName;
+
     @Value("${notification.sms.enabled}")
     private Boolean isSMSEnabled;
 
