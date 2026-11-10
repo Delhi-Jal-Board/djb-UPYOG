@@ -70,7 +70,7 @@ const headerMapping = [
   { key: "parentSpouse", label: "PARENT_SPOUSE" },
   { key: "email", label: "EMAIL" },
   { key: "whatsappNo", label: "WHATSAPP_NO" },
-  { key: "informantIsConsumer", label: "INFORMANT_IS_CONSUMER" },
+  { key: "informantIsConsumer", label: "INFORMANT_IS_CONSUMER", isBool:true },
   { key: "informantName", label: "INFORMANT_NAME" },
   { key: "informantRelation", label: "INFORMANT_RELATION" },
   { key: "panFilestoreId", label: "PAN_FILE_STORE_ID" },
@@ -88,7 +88,7 @@ const headerMapping = [
   { key: "meterCondition", label: "METER_CONDITION" },
   { key: "meterNumber", label: "METER_NUMBER" },
   { key: "meterMake", label: "METER_MAKE" },
-  { key: "workingStatus", label: "WORKING_STATUS" },
+  { key: "workingStatus", label: "WORKING_STATUS", isBool: true },
   { key: "meterLocation", label: "METER_LOCATION" },
   { key: "meterLocationAddress", label: "METER_LOCATION_ADDRESS" },
   { key: "meterLatitude", label: "EKYC_METER_LATITUDE1" },
@@ -132,19 +132,25 @@ const Review = () => {
   const newData = searchData?.applicationReview?.newData;
   const oldData = searchData?.applicationReview?.oldData;
 
+  console.log(JSON.stringify(headerMapping));
+
   const reviewTableData = headerMapping.map((field) => {
     const newValue = newData?.[field.key];
     const oldValue = oldData?.[field.key];
+
     const normalizeValue = (value) => (value === null || value === undefined || value === "" ? "" : String(value));
+
     const isChanged = !!oldData && oldValue !== undefined && normalizeValue(newValue) !== normalizeValue(oldValue);
 
     return {
       fieldName: field.preTranslated ? field.label : t(field.label),
-      oldValue: field.isBool ? boolToYesNo(oldValue, t) : checkForNA(oldValue),
-      newValue: field.isBool ? boolToYesNo(newValue, t) : checkForNA(newValue),
+      oldValue: field.isBool ? boolToYesNo(oldValue, t) || "N/A" : checkForNA(oldValue),
+      newValue: field.isBool ? boolToYesNo(newValue, t) || "N/A" : checkForNA(newValue),
       isChanged,
     };
   });
+
+  console.log("111111111111",JSON.stringify(reviewTableData));
 
   const reviewTableColumns = [
     {
@@ -456,10 +462,11 @@ const Review = () => {
             <CheckBox
               id="agreeDeclaration"
               name="agreeDeclaration"
-              label={<span className="review-declaration__label">{t("EKYC_FINAL_DECLARATION")}</span>}
+              // label={}
               onChange={handleDeclaration}
               checked={agree}
             />
+            <span className="review-declaration__label">{t("EKYC_FINAL_DECLARATION")}</span>
           </div>
         )}
 
