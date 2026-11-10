@@ -211,6 +211,8 @@
 }
 
 .review-declaration {
+  display: flex;
+  gap: 12px !important;
   .review-declaration__label {
     color: #344054;
     font-size: 16px;
@@ -218,16 +220,15 @@
 
   .checkbox-wrap {
     margin-bottom: 0;
-    width: auto;
-    height: auto;
-
-    .label {
-      margin-left: 32px;
+    width: 24px;
+    height: 24px;
+    .custom-checkbox-emp{
+      border-radius: 4px !important;
     }
 
     input {
-      width: auto;
-      height: auto;
+      width: 24px;
+      height: 24px;
       top: 0;
       transform: translateY(0%);
     }
