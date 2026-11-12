@@ -39,7 +39,7 @@ const CheckBox = ({
           <span className="label label-left">{label}</span>
         </React.Fragment>
       )}
-
+      <div className={customClass}>
       <input
         type="checkbox"
         className={`${inputClass} ${errorStyle && "employee-card-input-error"}`}
@@ -50,8 +50,6 @@ const CheckBox = ({
         checked={checked}
         {...props}
       />
-
-      <div className={customClass}>
         <CheckSvg />
       </div>
 
