@@ -63,19 +63,22 @@ public final class DJBConsumptionPeriodUtil {
 		}
 
 		YearMonth startMonth = YearMonth.from(Instant.ofEpochMilli(from).atZone(DJB_ZONE));
-
 		YearMonth endMonth = YearMonth.from(Instant.ofEpochMilli(to).atZone(DJB_ZONE));
-
 		long months = ChronoUnit.MONTHS.between(startMonth, endMonth);
-
 		return Math.max(months, 1L);
+	}
+
+
+	public static BigDecimal toDjbBillingPeriodMonths(Long from, Long to) {
+		BigDecimal days = calculateElapsedDays(from, to);
+		if (days == null || days.signum() <= 0) {
+			return null;
+		}
+		return days.divide(NORMALIZATION_DAYS, 18, RoundingMode.HALF_UP).stripTrailingZeros();
 	}
 
 	/**
 	 * Converts a period consumption into a 30-day monthly equivalent.
-	 *
-	 * This is used for the DJB 1.5x/ZRO decision. It deliberately uses elapsed days
-	 * so a partial month can be normalized proportionally.
 	 */
 	public static BigDecimal toMonthlyConsumption(BigDecimal consumption, Long from, Long to) {
 
