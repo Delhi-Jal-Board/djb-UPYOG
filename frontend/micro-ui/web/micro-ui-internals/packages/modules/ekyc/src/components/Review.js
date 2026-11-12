@@ -14,7 +14,7 @@ import {
   Modal
 } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
-import { useHistory, useLocation, useParams } from "react-router-dom";
+import { useHistory, useParams } from "react-router-dom";
 
 const checkForNA = (value) => (value !== null && value !== undefined && value !== "" ? value : "N/A");
 
@@ -107,7 +107,6 @@ const headerMapping = [
 const Review = () => {
   const { t } = useTranslation();
   const history = useHistory();
-  const location = useLocation();
   let { kno, applicationId } = useParams();
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [agree, setAgree] = useState(false);
@@ -132,8 +131,6 @@ const Review = () => {
   const newData = searchData?.applicationReview?.newData;
   const oldData = searchData?.applicationReview?.oldData;
 
-  console.log(JSON.stringify(headerMapping));
-
   const reviewTableData = headerMapping.map((field) => {
     const newValue = newData?.[field.key];
     const oldValue = oldData?.[field.key];
@@ -149,8 +146,6 @@ const Review = () => {
       isChanged,
     };
   });
-
-  console.log("111111111111",JSON.stringify(reviewTableData));
 
   const reviewTableColumns = [
     {
@@ -187,8 +182,7 @@ const Review = () => {
   const isZRO = userRoles.includes("EKYC_ZRO") || userRoles.includes("ZRO");
   const isSupervisorOrSurveyorOrVendor = userRoles.includes("EKYC_SURVEYOR") || userRoles.includes("EKYC_VENDOR");
 
-  const isStatusView = location.pathname.includes("/status/");
-  const hideEditButton = (isSupervisorOrSurveyorOrVendor && !isZRO) || isStatusView;
+  const hideEditButton = (isSupervisorOrSurveyorOrVendor && !isZRO);
 
   const handleDeclaration = () => setAgree(!agree);
 
@@ -458,16 +452,13 @@ const Review = () => {
         </div>
 
         {!hideEditButton && (
-          <div className="review-declaration">
-            <CheckBox
-              id="agreeDeclaration"
-              name="agreeDeclaration"
-              // label={}
-              onChange={handleDeclaration}
-              checked={agree}
-            />
-            <span className="review-declaration__label">{t("EKYC_FINAL_DECLARATION")}</span>
-          </div>
+          <CheckBox
+            id="agreeDeclaration"
+            name="agreeDeclaration"
+            label={<span className="review-declaration__label">{t("EKYC_FINAL_DECLARATION")}</span>}
+            onChange={handleDeclaration}
+            checked={agree}
+          />
         )}
 
         {!hideEditButton && (

@@ -210,29 +210,9 @@
   }
 }
 
-.review-declaration {
-  display: flex;
-  gap: 12px !important;
-  .review-declaration__label {
-    color: #344054;
-    font-size: 16px;
-  }
-
-  .checkbox-wrap {
-    margin-bottom: 0;
-    width: 24px;
-    height: 24px;
-    .custom-checkbox-emp{
-      border-radius: 4px !important;
-    }
-
-    input {
-      width: 24px;
-      height: 24px;
-      top: 0;
-      transform: translateY(0%);
-    }
-  }
+.review-declaration__label {
+  color: #344054 !important;
+  font-size: 16px;
 }
 
 .review-action-menu {

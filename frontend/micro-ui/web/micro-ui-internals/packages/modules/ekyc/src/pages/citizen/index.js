@@ -1,7 +1,7 @@
 import React from "react";
 import { AppContainer, PrivateRoute, ModuleHeader, ArrowLeft, HomeIcon, LayoutWrapper } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
-import { Switch, useLocation, useRouteMatch, Redirect, Route } from "react-router-dom";
+import { Switch, useLocation, useRouteMatch, Redirect } from "react-router-dom";
 import Review from "../../components/Review";
 import AssignEkyc from "../../components/AssignEkyc";
 import SurveyorDetailsCard from "../../components/SurveyorDetailsCard";
@@ -9,13 +9,14 @@ import SupervisorDetailsCard from "../../components/SupervisorDetailsCard";
 import VendorDetailsCard from "../../components/VendorDetailsCard";
 import EkycStatus from "./EkycStatus";
 import Inbox from "../../components/Inbox";
+import PermissionGuard from "../../components/PermissionGuard";
+import { EKYC_PERMISSIONS } from "../../config/accessControl";
 
 const CitizenApp = () => {
   const { t } = useTranslation();
   const location = useLocation();
   const { path } = useRouteMatch();
-  const roles = Digit.SessionStorage.get("User")?.info?.roles.map((ele) => ele.code);
-  // Digit.Hooks.useStore.getInitData();
+  const roles = Digit.SessionStorage.get("User")?.info?.roles?.map((ele) => ele.code) || [];
 
   sessionStorage.removeItem("revalidateddone");
 
@@ -68,7 +69,6 @@ const CitizenApp = () => {
 
   // const roles = Digit.SessionStorage.get("User")?.info?.roles.map((ele) => ele.code);
   // const isEkyAction = (!roles?.includes("EKYC_SURVEYOR") || roles?.includes("EMPLOYEE"))
-
   return (
     <AppContainer>
       <div className="ground-container form-container" style={{ flex: 1 }}>
@@ -84,105 +84,136 @@ const CitizenApp = () => {
         />
 
         <Switch>
-          <Route exact path={`${path}`}>
-            <Redirect to="/digit-ui/citizen/ekyc-home" />
-          </Route>
+          <PrivateRoute path={path} exact component={() => <Redirect to="/digit-ui/citizen/ekyc-home" />} />
+
           <PrivateRoute
             path={`${path}/inbox`}
-            component={() => (
-              <LayoutWrapper layoutClass="normal">
-                <Inbox />
-              </LayoutWrapper>
-            )}
-          />
-          {/* <PrivateRoute
-          path={`${path}/address-details`}
-          component={() => (
-          <LayoutWrapper layoutClass="normal">
-            <AddressDetails />
-          </LayoutWrapper>
-          )}
-        /> */}
-          <PrivateRoute
-            path={`${path}/review/:kno`}
-            component={() => (
-              <LayoutWrapper layoutClass={roles.includes("EKYC_SUPERVISOR") ? "action" : "normal"}>
-                <Review />
-              </LayoutWrapper>
-            )}
-          />
-          <PrivateRoute
-            path={`${path}/assign`}
             exact
             component={() => (
-              <LayoutWrapper layoutClass="normal">
-                <AssignEkyc />
-              </LayoutWrapper>
+              <PermissionGuard permissions={[EKYC_PERMISSIONS.INBOX_VIEW]}>
+                <LayoutWrapper layoutClass="normal">
+                  <Inbox />
+                </LayoutWrapper>
+              </PermissionGuard>
             )}
           />
+
+          <PrivateRoute
+            path={`${path}/review/:kno`}
+            exact
+            component={() => (
+              <PermissionGuard permissions={[EKYC_PERMISSIONS.REVIEW_VIEW]}>
+                <LayoutWrapper layoutClass={roles.includes("EKYC_SUPERVISOR") ? "action" : "normal"}>
+                  <Review />
+                </LayoutWrapper>
+              </PermissionGuard>
+            )}
+          />
+
           <PrivateRoute
             path={`${path}/assign/surveyor-details/:id`}
             exact
             component={() => (
-              <LayoutWrapper layoutClass={roles.includes("EKYC_SUPERVISOR") ? "action" : "normal"}>
-                <SurveyorDetailsCard />
-              </LayoutWrapper>
+              <PermissionGuard permissions={[EKYC_PERMISSIONS.SURVEYOR_DETAILS_VIEW]}>
+                <LayoutWrapper layoutClass={roles.includes("EKYC_SUPERVISOR") ? "action" : "normal"}>
+                  <SurveyorDetailsCard />
+                </LayoutWrapper>
+              </PermissionGuard>
             )}
           />
+
+          <PrivateRoute
+            path={`${path}/assign`}
+            exact
+            component={() => (
+              <PermissionGuard permissions={[EKYC_PERMISSIONS.ASSIGN_SURVEYOR]}>
+                <LayoutWrapper layoutClass="normal">
+                  <AssignEkyc />
+                </LayoutWrapper>
+              </PermissionGuard>
+            )}
+          />
+
           <PrivateRoute
             path={`${path}/status/:applicationId`}
+            exact
             component={() => (
-              <LayoutWrapper layoutClass="normal">
-                <Review />
-              </LayoutWrapper>
+              <PermissionGuard allowedRoles={["CITIZEN"]} permissions={[EKYC_PERMISSIONS.APPLICATION_STATUS_VIEW]}>
+                <LayoutWrapper layoutClass="normal">
+                  <Review />
+                </LayoutWrapper>
+              </PermissionGuard>
             )}
           />
+
           <PrivateRoute
-            path={`${path}/vendor-dashboard/:vendorId?`}
+            path={`${path}/vendor-dashboard`}
             component={() => (
-              <LayoutWrapper layoutClass="normal">
-                <VendorDetailsCard />
-              </LayoutWrapper>
+              <PermissionGuard permissions={[EKYC_PERMISSIONS.VENDOR_DASHBOARD_VIEW]}>
+                <LayoutWrapper layoutClass="normal">
+                  <VendorDetailsCard />
+                </LayoutWrapper>
+              </PermissionGuard>
             )}
           />
+
           <PrivateRoute
             path={`${path}/supervisor-dashboard/:id`}
+            exact
             component={() => (
-              <LayoutWrapper layoutClass="normal">
-                <SupervisorDetailsCard />
-              </LayoutWrapper>
+              <PermissionGuard permissions={[EKYC_PERMISSIONS.SUPERVISOR_DASHBOARD_DETAILS_VIEW]}>
+                <LayoutWrapper layoutClass="normal">
+                  <SupervisorDetailsCard />
+                </LayoutWrapper>
+              </PermissionGuard>
             )}
           />
+
           <PrivateRoute
             path={`${path}/supervisor-dashboard`}
+            exact
             component={() => (
-              <LayoutWrapper layoutClass="normal">
-                <SupervisorDetailsCard />
-              </LayoutWrapper>
+              <PermissionGuard permissions={[EKYC_PERMISSIONS.SUPERVISOR_DASHBOARD_VIEW]}>
+                <LayoutWrapper layoutClass="normal">
+                  <SupervisorDetailsCard />
+                </LayoutWrapper>
+              </PermissionGuard>
             )}
           />
+
           <PrivateRoute
             path={`${path}/surveyor-dashboard/:id`}
+            exact
             component={() => (
-              <LayoutWrapper layoutClass={roles.includes("EKYC_SUPERVISOR") ? "action" : "normal"}>
-                <SurveyorDetailsCard />
-              </LayoutWrapper>
+              <PermissionGuard permissions={[EKYC_PERMISSIONS.SURVEYOR_DASHBOARD_DETAILS_VIEW]}>
+                <LayoutWrapper layoutClass={roles.includes("EKYC_SUPERVISOR") ? "action" : "normal"}>
+                  <SurveyorDetailsCard />
+                </LayoutWrapper>
+              </PermissionGuard>
             )}
           />
+
           <PrivateRoute
             path={`${path}/surveyor-dashboard`}
+            exact
             component={() => (
-              <LayoutWrapper layoutClass="normal">
-                <SurveyorDetailsCard />
-              </LayoutWrapper>
+              <PermissionGuard permissions={[EKYC_PERMISSIONS.SURVEYOR_DASHBOARD_VIEW]}>
+                <LayoutWrapper layoutClass="normal">
+                  <SurveyorDetailsCard />
+                </LayoutWrapper>
+              </PermissionGuard>
             )}
           />
+
           <PrivateRoute
             path={`${path}/:id`}
+            exact
             component={() => (
-              <LayoutWrapper layoutClass="normal">
-                <EkycStatus />
-              </LayoutWrapper>
+              <PermissionGuard permissions={[EKYC_PERMISSIONS.APPLICATION_STATUS_VIEW]}>
+                <LayoutWrapper layoutClass="normal">
+                  <EkycStatus />
+                </LayoutWrapper>
+              </PermissionGuard>
             )}
           />
         </Switch>
