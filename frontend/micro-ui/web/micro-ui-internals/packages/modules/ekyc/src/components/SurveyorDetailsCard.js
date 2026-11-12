@@ -1,7 +1,7 @@
 import React, { useState, Fragment } from "react";
 import { Card, SubmitBar, ActionBar, Menu, Loader, Table, Toast, MdDownloadIcon } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
-import { useParams } from "react-router-dom";
+import { useParams, useHistory } from "react-router-dom";
 import AssignEkycModal from "./AssignEkycModal";
 import { FaUsers, FaCheckCircle, FaClock, FaChartLine } from "react-icons/fa";
 import EkycFilterModal from "./EkycFilterModal";
@@ -26,6 +26,12 @@ const SurveyorDetailsCard = () => {
   const ownerIds = Digit.SessionStorage.get("User")?.info?.uuid;
 
   const { t } = useTranslation();
+   const history = useHistory();
+   const userType = Digit.SessionStorage.get("User")?.info?.type?.toLowerCase() || "citizen";
+
+  const handleReview = (kno) => {
+    history.push(`/digit-ui/${userType}/ekyc/review/${kno}`);
+  };
 
   const { data: surveyorSearch, isLoading: isLoadingId } = Digit.Hooks.fsm.useSurveyorSearch(
     tenantId,
@@ -125,6 +131,14 @@ const SurveyorDetailsCard = () => {
     {
       Header: t("KNO") || "KNO",
       accessor: "kno",
+      Cell: ({ row }) => {
+        const kno = row.original?.kno || row.original?.applicationNumber || "NA";
+        return (
+          <span className="link" onClick={() => handleReview(kno)}>
+            {kno}
+          </span>
+        );
+      },
     },
     {
       Header: t("CONSUMER_NAME") || "Consumer Name",

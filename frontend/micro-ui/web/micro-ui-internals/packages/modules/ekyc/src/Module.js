@@ -1,11 +1,13 @@
 import React, { useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { useRouteMatch } from "react-router-dom";
+import { useRouteMatch, Redirect, useLocation } from "react-router-dom";
 import { CitizenHomeCard, DocumentIcon, Loader } from "@djb25/digit-ui-react-components";
 import EKYCCard from "./components/EKYCCard";
 import Inbox from "./components/Dashboard";
 import EmployeeApp from "./pages/employee";
 import CitizenApp from "./pages/citizen";
+import { EKYC_PERMISSIONS } from "./config/accessControl";
+import { getUserRoles, hasPermission } from "./utils/accessControl";
 
 export const EkycModule = ({ stateCode, userType, tenants }) => {
   const { path, url } = useRouteMatch();
@@ -36,64 +38,84 @@ export const EkycModule = ({ stateCode, userType, tenants }) => {
 
 export const EkycLinks = ({ matchPath, userType }) => {
   const { t } = useTranslation();
-  const propsForModuleCard = {
-    links: [],
-  };
-  const citizenInfo = Digit.SessionStorage.get("User")?.info?.roles;
-  const roles = Array.isArray(citizenInfo) ? citizenInfo.map((ele) => ele.code) : [];
+  const location = useLocation();
 
-  if (roles.includes("EKYC_SURVEYOR")) {
-    propsForModuleCard.links.push({
-      label: t("SURVEYOR_DASHBOARD"),
-      link: `/digit-ui/citizen/ekyc/surveyor-dashboard`,
-    });
-  }
+  const links = [];
 
-  if (roles.includes("EKYC_SUPERVISOR") || roles.includes("EKYC_VENDOR")) {
-    propsForModuleCard.links.push({
-      label: t("EKYC_INBOX"),
-      link: `/digit-ui/citizen/ekyc/inbox`,
-    });
-  }
-
-  if (roles.includes("EKYC_SUPERVISOR")) {
-    propsForModuleCard.links.push(
-      {
-        label: t("EKYC_SUPERVISOR_DASHBOARD"),
-        link: `/digit-ui/citizen/ekyc/supervisor-dashboard`,
-      },
-      {
-        label: t("EKYC_ASSIGN"),
-        link: `/digit-ui/citizen/ekyc/assign`,
-      }
+  const user = Digit.SessionStorage.get("User");
+  const isAuthenticated = !!window.keycloak?.authenticated || !!user?.access_token;
+  if (!isAuthenticated) {
+    return (
+      <Redirect
+        to={{
+          pathname: "/digit-ui/citizen/login",
+          state: { from: location.pathname + location.search },
+        }}
+      />
     );
   }
 
-  if (roles.includes("EKYC_VENDOR")) {
-    propsForModuleCard.links.push({
-      label: t("EKYC_VENDOR_DASHBOARD"),
-      link: `/digit-ui/citizen/ekyc/vendor-dashboard`,
-    });
-  }
+  const addLink = (permission, label, link) => {
+    if (hasPermission(permission)) {
+      links.push({
+        label: t(label),
+        link,
+      });
+    }
+  };
 
-  if (roles.includes("EKYC_SUPERVISOR") || roles.includes("EKYC_VENDOR")) {
-    propsForModuleCard.links.push({
-      label: t("TITLE_VENDOR_MANAGEMENT"),
-      link: `/digit-ui/citizen/vendor/search-vendor`,
-    });
-  }
+  // Surveyor only
+  addLink(
+    EKYC_PERMISSIONS.SURVEYOR_DASHBOARD_VIEW,
+    "SURVEYOR_DASHBOARD",
+    "/digit-ui/citizen/ekyc/surveyor-dashboard"
+  );
 
-  if (roles.length === 1 && roles.includes("CITIZEN")) {
-    propsForModuleCard.links.push({
+  // Supervisor and Vendor
+  addLink(
+    EKYC_PERMISSIONS.INBOX_VIEW,
+    "EKYC_INBOX",
+    "/digit-ui/citizen/ekyc/inbox"
+  );
+
+  // Supervisor only
+  addLink(
+    EKYC_PERMISSIONS.SUPERVISOR_DASHBOARD_VIEW,
+    "EKYC_SUPERVISOR_DASHBOARD",
+    "/digit-ui/citizen/ekyc/supervisor-dashboard"
+  );
+
+  addLink(
+    EKYC_PERMISSIONS.ASSIGN_SURVEYOR,
+    "EKYC_ASSIGN",
+    "/digit-ui/citizen/ekyc/assign"
+  );
+
+  // Vendor only
+  addLink(
+    EKYC_PERMISSIONS.VENDOR_DASHBOARD_VIEW,
+    "EKYC_VENDOR_DASHBOARD",
+    "/digit-ui/citizen/ekyc/vendor-dashboard"
+  );
+
+  // Supervisor and Vendor
+  addLink(
+    EKYC_PERMISSIONS.VENDOR_MANAGEMENT_VIEW,
+    "TITLE_VENDOR_MANAGEMENT",
+    "/digit-ui/citizen/vendor/search-vendor"
+  );
+
+  // Citizen only
+  if (getUserRoles().length === 1 && getUserRoles().includes("CITIZEN")) {
+    links.push({
       label: t("EKYC_STATUS"),
-      link: `/digit-ui/citizen/ekyc/:id`,
+      link: "/digit-ui/citizen/ekyc",
     });
   }
 
-  const formattedLinks = propsForModuleCard.links.map((l) => ({
-    i18nKey: l.label,
-    link: l.link,
-    count: l.count,
+  const formattedLinks = links.map((link) => ({
+    i18nKey: link.label,
+    link: link.link,
   }));
 
   return (
