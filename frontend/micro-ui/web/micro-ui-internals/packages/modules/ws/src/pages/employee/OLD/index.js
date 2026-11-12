@@ -235,6 +235,68 @@ const OLDApplication = () => {
     }
   }, [sessionFormData?.cpt, propertyId]);
 
+  useEffect(() => {
+    const hasProp =
+      formDataRef.current?.cpt?.details?.propertyId ||
+      sessionStorage.getItem("WS_OTP_VERIFIED_PROPERTY_ID") ||
+      propertyId ||
+      propertyDetails?.Properties?.[0]?.propertyId;
+
+    if (hasProp && !canSubmit) {
+      const djbData = formDataRef.current?.djbEmployee || formDataRef.current?.additionalDetails;
+      const isDjbEmp = djbData?.isDjbEmployee === true || String(djbData?.isDjbEmployee) === "true";
+      const docs =
+        formDataRef.current?.DocumentsRequired?.documents ||
+        formDataRef.current?.documents?.documents ||
+        formDataRef.current?.documents ||
+        [];
+      const foundDjb = Array.isArray(docs) && docs.find(
+        (d) =>
+          (d?.documentType === "OWNER.DJB_EMPLOYEE_ID" || d?.documentType?.includes("DJB_EMPLOYEE_ID")) &&
+          (d?.fileStoreId || d?.file || d?.filestoreId)
+      );
+      const djbDoc =
+        djbData?.document?.fileStoreId ||
+        (typeof djbData?.document === "string" && djbData?.document.trim()) ||
+        djbData?.document ||
+        (foundDjb ? foundDjb.fileStoreId || foundDjb.file || foundDjb.filestoreId : null);
+
+      const isDjbEmpInv =
+        isDjbEmp &&
+        (!djbData?.employeeId ||
+          !String(djbData?.employeeId).trim() ||
+          !djbData?.designation ||
+          !String(djbData?.designation).trim() ||
+          !djbDoc);
+
+      const rwhData = formDataRef.current?.rainWaterHarvesting || formDataRef.current?.additionalDetails;
+      const isRwhReq =
+        rwhData?.hasCertificate === true ||
+        String(rwhData?.hasCertificate) === "true" ||
+        rwhData?.isRainwaterHarvesting === true ||
+        String(rwhData?.isRainwaterHarvesting) === "true";
+      const isRwhUploaded = Array.isArray(docs) && docs.some((d) => isRwhDoc(d) && (d?.fileStoreId || d?.file));
+      const isRwhInv = isRwhReq && !isRwhUploaded;
+
+      const storedErrors = sessionStorage.getItem("FORMSTATE_ERRORS");
+      let parsedErrors = {};
+      try {
+        parsedErrors = storedErrors ? JSON.parse(storedErrors) : {};
+      } catch (e) {}
+      const hasStoredErrors = Object.keys(parsedErrors).some((k) => {
+        const err = parsedErrors[k];
+        if (!err) return false;
+        if (Array.isArray(err?.type) && err.type.length === 0) return false;
+        if (typeof err === "object" && Object.keys(err).length === 0) return false;
+        return true;
+      });
+
+      if (!hasStoredErrors && !isDjbEmpInv && !isRwhInv) {
+        setSubmitValve(true);
+      }
+    }
+  }, [propertyId, propertyDetails]);
+
   const {
     isLoading: creatingWaterApplicationLoading,
 
@@ -277,6 +339,16 @@ const OLDApplication = () => {
       setPropertyId(cptPropId);
     }
 
+    const findDjbDoc = (docs) => {
+      if (!Array.isArray(docs)) return null;
+      const found = docs.find(
+        (d) =>
+          (d?.documentType === "OWNER.DJB_EMPLOYEE_ID" || d?.documentType?.includes("DJB_EMPLOYEE_ID")) &&
+          (d?.fileStoreId || d?.file || d?.filestoreId)
+      );
+      return found ? found.fileStoreId || found.file || found.filestoreId : null;
+    };
+
     const djbData = formDataRef.current?.djbEmployee || formDataRef.current?.additionalDetails;
     const isDjbEmp =
       djbData?.isDjbEmployee === true ||
@@ -285,10 +357,17 @@ const OLDApplication = () => {
       djbData?.document?.fileStoreId ||
       (typeof djbData?.document === "string" && djbData?.document.trim()) ||
       djbData?.document ||
-      formDataRef.current?.DocumentsRequired?.documents?.find((d) => d?.documentType === "OWNER.DJB_EMPLOYEE_ID" || d?.documentType?.includes("DJB_EMPLOYEE_ID"))?.fileStoreId ||
-      formData?.DocumentsRequired?.documents?.find((d) => d?.documentType === "OWNER.DJB_EMPLOYEE_ID" || d?.documentType?.includes("DJB_EMPLOYEE_ID"))?.fileStoreId ||
-      formDataRef.current?.documents?.documents?.find((d) => d?.documentType === "OWNER.DJB_EMPLOYEE_ID" || d?.documentType?.includes("DJB_EMPLOYEE_ID"))?.fileStoreId ||
-      formData?.documents?.documents?.find((d) => d?.documentType === "OWNER.DJB_EMPLOYEE_ID" || d?.documentType?.includes("DJB_EMPLOYEE_ID"))?.fileStoreId;
+      findDjbDoc(formDataRef.current?.DocumentsRequired?.documents) ||
+      findDjbDoc(formData?.DocumentsRequired?.documents) ||
+      findDjbDoc(formDataRef.current?.documents?.documents) ||
+      findDjbDoc(formData?.documents?.documents) ||
+      findDjbDoc(formDataRef.current?.documents) ||
+      findDjbDoc(formData?.documents);
+
+    if (djbDoc) {
+      if (!formDataRef.current.djbEmployee) formDataRef.current.djbEmployee = {};
+      formDataRef.current.djbEmployee.document = djbDoc;
+    }
 
     const isDjbEmpInvalid =
       isDjbEmp &&
@@ -296,13 +375,35 @@ const OLDApplication = () => {
         !String(djbData?.employeeId).trim() ||
         !djbData?.designation ||
         !String(djbData?.designation).trim() ||
-        !(
-          djbData?.document?.fileStoreId ||
-          (typeof djbData?.document === "string" && djbData?.document.trim()) ||
-          djbData?.document
-        ));
+        !djbDoc);
 
-    const hasErrors = Object.keys(formState?.errors || {}).length > 0 || isDjbEmpInvalid;
+    const rwhData = formDataRef.current?.rainWaterHarvesting || formDataRef.current?.additionalDetails;
+    const isRwhRequired =
+      rwhData?.hasCertificate === true ||
+      String(rwhData?.hasCertificate) === "true" ||
+      rwhData?.isRainwaterHarvesting === true ||
+      String(rwhData?.isRainwaterHarvesting) === "true";
+
+    const allCurrentDocs =
+      formDataRef.current?.DocumentsRequired?.documents ||
+      formData?.DocumentsRequired?.documents ||
+      formDataRef.current?.documents?.documents ||
+      formData?.documents?.documents ||
+      formDataRef.current?.documents ||
+      formData?.documents ||
+      [];
+    const isRwhDocUploaded = Array.isArray(allCurrentDocs) && allCurrentDocs.some((d) => isRwhDoc(d) && (d?.fileStoreId || d?.file));
+    const isRwhInvalid = isRwhRequired && !isRwhDocUploaded;
+
+    const actualFormErrors = Object.keys(formState?.errors || {}).filter((key) => {
+      const err = formState?.errors?.[key];
+      if (!err) return false;
+      if (Array.isArray(err?.type) && err.type.length === 0) return false;
+      if (typeof err === "object" && Object.keys(err).length === 0) return false;
+      return true;
+    });
+
+    const hasErrors = actualFormErrors.length > 0 || isDjbEmpInvalid || isRwhInvalid;
     const hasProperty =
       formDataRef.current?.cpt?.details?.propertyId ||
       sessionStorage.getItem("WS_OTP_VERIFIED_PROPERTY_ID") ||
@@ -344,12 +445,26 @@ const OLDApplication = () => {
     const isDjbEmp =
       djbData?.isDjbEmployee === true ||
       String(djbData?.isDjbEmployee) === "true";
+    const findDjbDocInSubmit = (docs) => {
+      if (!Array.isArray(docs)) return null;
+      const found = docs.find(
+        (d) =>
+          (d?.documentType === "OWNER.DJB_EMPLOYEE_ID" || d?.documentType?.includes("DJB_EMPLOYEE_ID")) &&
+          (d?.fileStoreId || d?.file || d?.filestoreId)
+      );
+      return found ? found.fileStoreId || found.file || found.filestoreId : null;
+    };
+
     const djbDoc =
       djbData?.document?.fileStoreId ||
       (typeof djbData?.document === "string" && djbData?.document.trim()) ||
       djbData?.document ||
-      combinedData?.DocumentsRequired?.documents?.find((d) => d?.documentType === "OWNER.DJB_EMPLOYEE_ID" || d?.documentType?.includes("DJB_EMPLOYEE_ID"))?.fileStoreId ||
-      combinedData?.documents?.documents?.find((d) => d?.documentType === "OWNER.DJB_EMPLOYEE_ID" || d?.documentType?.includes("DJB_EMPLOYEE_ID"))?.fileStoreId;
+      findDjbDocInSubmit(combinedData?.DocumentsRequired?.documents) ||
+      findDjbDocInSubmit(combinedData?.documents?.documents) ||
+      findDjbDocInSubmit(combinedData?.documents) ||
+      findDjbDocInSubmit(formDataRef.current?.DocumentsRequired?.documents) ||
+      findDjbDocInSubmit(formDataRef.current?.documents?.documents) ||
+      findDjbDocInSubmit(formDataRef.current?.documents);
 
     const isDjbEmpInvalid =
       isDjbEmp &&
