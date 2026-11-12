@@ -367,7 +367,7 @@ const ConnectionDetails = (_props) => {
     const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-z.-]+\.(com|org|in)$/;
     const errors = sessionStorage.getItem("FORMSTATE_ERRORS");
     let formStateErros = typeof errors === "string" ? JSON.parse(errors) : {};
-    if (emailPattern.test(value)) {
+    if (!value || !value.trim() || emailPattern.test(value)) {
       if (clearErrors) clearErrors("emailId");
 
       if (

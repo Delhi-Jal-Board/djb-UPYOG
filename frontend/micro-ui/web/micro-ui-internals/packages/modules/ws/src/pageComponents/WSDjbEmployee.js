@@ -136,17 +136,19 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
       window.location.href.includes("old-application");
 
     if (isEmployeeMode) {
-      const isDifferent = !_.isEqual(formData?.djbEmployee, formValue);
+      const currentDoc = formData?.djbEmployee?.document || formValue?.document || "";
+      const formValueComparable = { ...formValue, document: currentDoc };
+      const isDifferent = !_.isEqual(formData?.djbEmployee, formValueComparable);
       if (isDifferent) {
         const isImmediate = formData?.djbEmployee?.isDjbEmployee !== formValue?.isDjbEmployee;
         const delay = isImmediate ? 0 : 100;
         const timer = setTimeout(() => {
-          onSelect(config?.key || "djbEmployee", { ...formValue });
+          onSelect(config?.key || "djbEmployee", { ...formValue, document: currentDoc });
         }, delay);
         return () => clearTimeout(timer);
       }
     }
-  }, [formValue, userType]);
+  }, [formValue, userType, formData?.djbEmployee?.document]);
 
   useEffect(() => {
     const configKey = config?.key || "djbEmployee";

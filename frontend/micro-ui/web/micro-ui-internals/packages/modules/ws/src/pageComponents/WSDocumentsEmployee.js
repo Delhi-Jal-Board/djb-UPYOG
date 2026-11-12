@@ -135,7 +135,7 @@ const WSDocumentsEmployee = ({ t, config, onSelect, userType, formData, setError
   const { isLoading, data: wsDocs } = Digit.Hooks.ws.WSSearchMdmsTypes.useWSServicesNewMasters(tenantId, wsDocsData);
 
   const hasDjbEmployeeDoc = (documents || []).some(
-    (d) => (d?.documentType === "OWNER.DJB_EMPLOYEE_ID" || d?.documentType?.includes("DJB_EMPLOYEE_ID")) && d?.fileStoreId
+    (d) => (d?.documentType === "OWNER.DJB_EMPLOYEE_ID" || d?.documentType?.includes("DJB_EMPLOYEE_ID")) && (d?.fileStoreId || d?.file)
   );
 
   const addEmployeeDocError = () => {
@@ -166,6 +166,18 @@ const WSDocumentsEmployee = ({ t, config, onSelect, userType, formData, setError
         addEmployeeDocError();
       } else {
         removeEmployeeDocError();
+        if (formSetValue && formData?.djbEmployee) {
+          const djbItem = (documents || []).find(
+            (d) => (d?.documentType === "OWNER.DJB_EMPLOYEE_ID" || d?.documentType?.includes("DJB_EMPLOYEE_ID")) && (d?.fileStoreId || d?.file)
+          );
+          const fsId = djbItem?.fileStoreId || djbItem?.file;
+          if (fsId && formData?.djbEmployee?.document !== fsId) {
+            formSetValue("djbEmployee", {
+              ...formData.djbEmployee,
+              document: fsId,
+            });
+          }
+        }
       }
     } else {
       removeEmployeeDocError();
