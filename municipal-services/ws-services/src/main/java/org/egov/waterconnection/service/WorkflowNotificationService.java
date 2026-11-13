@@ -1363,7 +1363,7 @@ public class WorkflowNotificationService {
 
         String consentLetterPdfUrl;
         if (!StringUtils.isEmpty(consentFileStoreId)) {
-            consentLetterPdfUrl = "https://dev-djberp.nitcon.in/filestore/v1/files/id?tenantId=dl&fileStoreId=" + consentFileStoreId;
+            consentLetterPdfUrl = "https://dev-djberp.nitcon.in/filestore/v1/files/id?tenantId=dl.djb&fileStoreId=" + consentFileStoreId;
         } else {
             consentLetterPdfUrl = "https://dev-djberp.nitcon.in/filestore/v1/files/id?tenantId=dl&fileStoreId=2c42cc8e-25f6-4372-a048-9eae38e7f33d";
         }
