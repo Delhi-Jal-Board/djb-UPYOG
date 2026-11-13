@@ -73,10 +73,12 @@ const OLDApplication = () => {
   const sessionSaveTimeoutRef = useRef(null);
 
   const defaultValues = useMemo(() => {
-    return sessionFormData && Object.keys(sessionFormData).length > 0
-      ? sessionFormData
-      : Digit.SessionStorage.get("PT_CREATE_EMP_WS_NEW_FORM") || {};
-  }, []);
+    const fromStorage = Digit.SessionStorage.get("PT_CREATE_EMP_WS_NEW_FORM");
+    if (fromStorage && Object.keys(fromStorage).length > 0) return fromStorage;
+    if (sessionFormData && Object.keys(sessionFormData).length > 0) return sessionFormData;
+    if (formDataRef.current && Object.keys(formDataRef.current).length > 0) return formDataRef.current;
+    return {};
+  }, [sessionFormData, showCheckPage]);
 
   const { data: propertyDetails } = Digit.Hooks.pt.usePropertySearch(
     { filters: { propertyIds: propertyId }, tenantId: tenantId },
@@ -329,6 +331,7 @@ const OLDApplication = () => {
     }
     sessionSaveTimeoutRef.current = setTimeout(() => {
       Digit.SessionStorage.set("PT_CREATE_EMP_WS_NEW_FORM", formDataRef.current);
+      setSessionFormData(formDataRef.current);
     }, 300);
 
     // Always update errors to ensure validation state is in sync
@@ -419,6 +422,7 @@ const OLDApplication = () => {
     const combinedData = { ...formDataRef.current, ...data };
     formDataRef.current = combinedData;
     Digit.SessionStorage.set("PT_CREATE_EMP_WS_NEW_FORM", combinedData);
+    setSessionFormData(combinedData);
 
     const hasProperty =
       combinedData?.cpt?.details?.propertyId ||
@@ -510,39 +514,6 @@ const OLDApplication = () => {
       if (!formDataRef.current.djbEmployee) formDataRef.current.djbEmployee = {};
       formDataRef.current.djbEmployee.document = djbDoc;
     }
-
-// <<<<<<< Updated upstream
-//     const rwhSubmitData = combinedData?.rainWaterHarvesting || combinedData?.additionalDetails;
-//     const isRwhSubmitRequired =
-//       rwhSubmitData?.hasCertificate === true ||
-//       String(rwhSubmitData?.hasCertificate) === "true" ||
-//       rwhSubmitData?.isRainwaterHarvesting === true ||
-//       String(rwhSubmitData?.isRainwaterHarvesting) === "true";
-
-//     const allSubmitDocs =
-//       combinedData?.DocumentsRequired?.documents ||
-//       combinedData?.documents?.documents ||
-//       combinedData?.documents ||
-//       formDataRef.current?.DocumentsRequired?.documents ||
-//       formDataRef.current?.documents?.documents ||
-//       formDataRef.current?.documents ||
-//       [];
-//     const isRwhSubmitDocUploaded = Array.isArray(allSubmitDocs) && allSubmitDocs.some((d) => isRwhDoc(d) && (d?.fileStoreId || d?.file));
-
-//     if (isRwhSubmitRequired && !isRwhSubmitDocUploaded) {
-//       setShowToast({
-//         key: "error",
-//         message: t("ERR_RWH_CERTIFICATE_MANDATORY") || "Rain Water Harvesting Certificate is mandatory to upload",
-//       });
-//       return;
-// =======
-//     if (djbDoc) {
-//       if (!combinedData.djbEmployee) combinedData.djbEmployee = {};
-//       combinedData.djbEmployee.document = djbDoc;
-//       if (!formDataRef.current.djbEmployee) formDataRef.current.djbEmployee = {};
-//       formDataRef.current.djbEmployee.document = djbDoc;
-// >>>>>>> Stashed changes
-//     }
 
     // Validation passed, show CheckPage
     setShowCheckPage(true);
@@ -643,6 +614,15 @@ const OLDApplication = () => {
         (typeof data.declarationData?.signatureFile === "string" ? data.declarationData?.signatureFile : null) ||
         data.declarationData?.signature ||
         null;
+
+      if (!sigFsId) {
+        setShowToast({
+          key: "error",
+          message: t("ERR_SIGNATURE_MANDATORY") || "Signature is mandatory to submit application",
+        });
+        return;
+      }
+
       const sigFileName =
         data.declarationData?.signatureFileName ||
         data.declarationData?.signatureFile?.name ||
@@ -903,6 +883,11 @@ const OLDApplication = () => {
     return <Loader />;
   }
 
+  const handleEdit = () => {
+    setShowCheckPage(false);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   if (showCheckPage) {
     return (
       <React.Fragment>
@@ -911,7 +896,7 @@ const OLDApplication = () => {
           <CheckPage
             data={formDataRef.current || sessionFormData}
             onSubmit={(finalData) => processSubmission(finalData || formDataRef.current || sessionFormData)}
-            onEdit={() => setShowCheckPage(false)}
+            onEdit={handleEdit}
           />
         </div>
       </React.Fragment>

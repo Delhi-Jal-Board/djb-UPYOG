@@ -43,8 +43,11 @@ const WSConnectionHolderDetails = ({ config, onSelect, userType, formData, setEr
   const { pathname } = useLocation();
   const filters = func.getQueryStringParams(location.search);
   const [connectionHolderDetails, setConnectionHolderDetails] = useState(() => {
-    if (formData?.ConnectionHolderDetails) {
-      return [{ ...formData?.ConnectionHolderDetails?.[0] }];
+    const sessionDetails = Digit.SessionStorage.get("PT_CREATE_EMP_WS_NEW_FORM")?.ConnectionHolderDetails;
+    if (formData?.ConnectionHolderDetails && formData.ConnectionHolderDetails.length > 0 && formData.ConnectionHolderDetails[0]?.name) {
+      return [{ ...formData.ConnectionHolderDetails[0] }];
+    } else if (sessionDetails && sessionDetails.length > 0 && sessionDetails[0]?.name) {
+      return [{ ...sessionDetails[0] }];
     } else {
       let initData = createConnectionHolderDetails();
       const userInfo = Digit.UserService.getUser()?.info;
@@ -94,6 +97,16 @@ const WSConnectionHolderDetails = ({ config, onSelect, userType, formData, setEr
       }
     }
   }, [connectionHolderDetails, config?.key]);
+
+  useEffect(() => {
+    if (formData?.ConnectionHolderDetails && formData.ConnectionHolderDetails.length > 0) {
+      const incoming = formData.ConnectionHolderDetails[0];
+      const current = connectionHolderDetails?.[0];
+      if (incoming && (incoming.name || incoming.middleName || incoming.lastName) && !_.isEqual(current, incoming)) {
+        setConnectionHolderDetails([{ ...incoming }]);
+      }
+    }
+  }, [formData?.ConnectionHolderDetails]);
 
   function ispagereloadingenabled(eyeclick) {
     if (
@@ -303,6 +316,24 @@ const ConnectionDetails = (_props) => {
       isWatsappSameAsMobile,
     ]
   );
+
+  useEffect(() => {
+    if (connectionHolderDetail) {
+      if (connectionHolderDetail.name !== undefined && connectionHolderDetail.name !== name) setName(connectionHolderDetail.name);
+      if (connectionHolderDetail.middleName !== undefined && connectionHolderDetail.middleName !== middleName) setMiddleName(connectionHolderDetail.middleName);
+      if (connectionHolderDetail.lastName !== undefined && connectionHolderDetail.lastName !== lastName) setLastName(connectionHolderDetail.lastName);
+      if (connectionHolderDetail.gender !== undefined && connectionHolderDetail.gender !== gender) setGender(connectionHolderDetail.gender);
+      if (connectionHolderDetail.mobileNumber !== undefined && connectionHolderDetail.mobileNumber !== mobileNumber) setMobileNumber(connectionHolderDetail.mobileNumber);
+      if (connectionHolderDetail.guardian !== undefined && connectionHolderDetail.guardian !== guardian) setGuardian(connectionHolderDetail.guardian);
+      if (connectionHolderDetail.relationship !== undefined && connectionHolderDetail.relationship !== relationship) setRelationship(connectionHolderDetail.relationship);
+      if (connectionHolderDetail.address !== undefined && connectionHolderDetail.address !== address) setAddress(connectionHolderDetail.address);
+      if (connectionHolderDetail.ownerType !== undefined && connectionHolderDetail.ownerType !== ownerType) setOwnerType(connectionHolderDetail.ownerType);
+      if (connectionHolderDetail.sameAsOwnerDetails !== undefined && connectionHolderDetail.sameAsOwnerDetails !== sameAsOwnerDetails) setSameAsOwnerDetails(connectionHolderDetail.sameAsOwnerDetails);
+      if (connectionHolderDetail.emailId !== undefined && connectionHolderDetail.emailId !== emailId) setEmailId(connectionHolderDetail.emailId);
+      if (connectionHolderDetail.watsAppMobileNumber !== undefined && connectionHolderDetail.watsAppMobileNumber !== watsAppMobileNumber) setWatsAppMobileNumber(connectionHolderDetail.watsAppMobileNumber);
+      if (connectionHolderDetail.isWatsappSameAsMobile !== undefined && connectionHolderDetail.isWatsappSameAsMobile !== isWatsappSameAsMobile) setIsWatsappSameAsMobile(connectionHolderDetail.isWatsappSameAsMobile);
+    }
+  }, [connectionHolderDetail]);
   const { errors } = localFormState;
   const isMobile = window.Digit.Utils.browser.isMobile();
   const isEmployee = window.location.href.includes("/employee");

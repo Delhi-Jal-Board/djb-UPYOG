@@ -389,7 +389,11 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
               label={t("COMMON_ASSEMBLY")}
               text={`${t(
                 checkForNA(
-                  propertyAddress?.assembly?.name || propertyAddress?.assembly?.code || propertyAddress?.assembly || additionalDetails?.assembly
+                  propertyAddress?.assembly?.name ||
+                    propertyAddress?.assembly?.code ||
+                    propertyAddress?.assembly ||
+                    cpt?.address?.assembly ||
+                    additionalDetails?.assembly
                 )
               )}`}
             />
@@ -404,6 +408,8 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
                     propertyAddress?.ward?.name ||
                     propertyAddress?.ward?.code ||
                     propertyAddress?.ward ||
+                    cpt?.address?.ward ||
+                    cpt?.address?.block ||
                     additionalDetails?.ward
                 )
               )}`}
@@ -411,16 +417,67 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
             <Row
               label={t("COMMON_ZONE")}
               text={`${t(
-                checkForNA(propertyAddress?.zone?.name || propertyAddress?.zone?.code || propertyAddress?.zone || additionalDetails?.zone)
+                checkForNA(
+                  propertyAddress?.zone?.name ||
+                    propertyAddress?.zone?.code ||
+                    propertyAddress?.zone ||
+                    cpt?.address?.zone ||
+                    additionalDetails?.zone
+                )
               )}`}
             />
 
             <Row
-              label={t("COMMON_CURRENT_ASSEMBLY")}
-              text={`${t(checkForNA(propertyAddress?.actualAssembly || additionalDetails?.actualAssembly))}`}
+              label={
+                t("COMMON_CURRENT_ASSEMBLY") &&
+                t("COMMON_CURRENT_ASSEMBLY") !== "Assembly" &&
+                t("COMMON_CURRENT_ASSEMBLY") !== "COMMON_CURRENT_ASSEMBLY"
+                  ? t("COMMON_CURRENT_ASSEMBLY")
+                  : "Actual Assembly"
+              }
+              text={`${t(
+                checkForNA(
+                  propertyAddress?.actualAssembly ||
+                    cpt?.address?.actualAssembly ||
+                    additionalDetails?.actualAssembly ||
+                    cpt?.additionalDetails?.actualAssembly
+                )
+              )}`}
             />
-            <Row label={t("COMMON_CURRENT_WARD")} text={`${t(checkForNA(propertyAddress?.actualWard || additionalDetails?.actualWard))}`} />
-            <Row label={t("COMMON_CURRENT_ZONE")} text={`${t(checkForNA(propertyAddress?.actualZone || additionalDetails?.actualZone))}`} />
+            <Row
+              label={
+                t("COMMON_CURRENT_WARD") &&
+                t("COMMON_CURRENT_WARD") !== "Ward" &&
+                t("COMMON_CURRENT_WARD") !== "COMMON_CURRENT_WARD"
+                  ? t("COMMON_CURRENT_WARD")
+                  : "Actual Ward"
+              }
+              text={`${t(
+                checkForNA(
+                  propertyAddress?.actualWard ||
+                    cpt?.address?.actualWard ||
+                    additionalDetails?.actualWard ||
+                    cpt?.additionalDetails?.actualWard
+                )
+              )}`}
+            />
+            <Row
+              label={
+                t("COMMON_CURRENT_ZONE") &&
+                t("COMMON_CURRENT_ZONE") !== "Zone" &&
+                t("COMMON_CURRENT_ZONE") !== "COMMON_CURRENT_ZONE"
+                  ? t("COMMON_CURRENT_ZONE")
+                  : "Actual Zone"
+              }
+              text={`${t(
+                checkForNA(
+                  propertyAddress?.actualZone ||
+                    cpt?.address?.actualZone ||
+                    additionalDetails?.actualZone ||
+                    cpt?.additionalDetails?.actualZone
+                )
+              )}`}
+            />
           </StatusTable>
 
           <CardSubHeader>{t("WS_PROPERTY_AND_WATER_CONNECTION_USE_DETAILS")}</CardSubHeader>
@@ -595,14 +652,32 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
           />
         </div>
 
-        <ActionBar>
-          <SubmitBar
-            label={t("CS_COMMON_SUBMIT")}
-            onSubmit={() => onSubmit({ ...data, declarationData })}
-            style={{ width: "150px" }}
-            disabled={!declarationData?.agree}
-          />{" "}
-        </ActionBar>
+        {(() => {
+          const hasSignature = Boolean(
+            declarationData?.signatureFileStoreId ||
+            declarationData?.signature ||
+            declarationData?.signatureFile?.fileStoreId ||
+            (typeof declarationData?.signatureFile === "string" && declarationData?.signatureFile.trim()) ||
+            data?.declarationData?.signatureFileStoreId ||
+            data?.declaration?.signatureFileStoreId ||
+            data?.additionalDetails?.signatureFileStoreId
+          );
+          const isSubmitDisabled = !declarationData?.agree || !hasSignature;
+
+          return (
+            <ActionBar>
+              <SubmitBar
+                label={t("CS_COMMON_SUBMIT")}
+                onSubmit={() => {
+                  if (isSubmitDisabled) return;
+                  onSubmit({ ...data, declarationData });
+                }}
+                style={{ width: "150px" }}
+                disabled={isSubmitDisabled}
+              />
+            </ActionBar>
+          );
+        })()}
       </Card>
       {showDocModal && (
         <Modal
