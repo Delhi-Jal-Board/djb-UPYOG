@@ -275,7 +275,13 @@ const CheckPage = ({ onSubmit, value }) => {
         <Row
           label={t("COMMON_ASSEMBLY")}
           text={`${t(
-            checkForNA(propertyAddress?.assembly?.name || propertyAddress?.assembly?.code || propertyAddress?.assembly || additionalDetails?.assembly)
+            checkForNA(
+              propertyAddress?.assembly?.name ||
+                propertyAddress?.assembly?.code ||
+                propertyAddress?.assembly ||
+                cpt?.details?.address?.assembly ||
+                additionalDetails?.assembly
+            )
           )}`}
         />
 
@@ -289,25 +295,69 @@ const CheckPage = ({ onSubmit, value }) => {
                 propertyAddress?.ward?.name ||
                 propertyAddress?.ward?.code ||
                 propertyAddress?.ward ||
+                cpt?.details?.address?.ward ||
+                cpt?.details?.address?.block ||
                 additionalDetails?.ward
             )
           )}`}
         />
         <Row
           label={t("COMMON_ZONE")}
-          text={`${t(checkForNA(propertyAddress?.zone?.name || propertyAddress?.zone?.code || propertyAddress?.zone || additionalDetails?.zone))}`}
-        />
-
-        <Row label={t("COMMON_CURRENT_ASSEMBLY")} text={`${t(checkForNA(propertyAddress?.actualAssembly || additionalDetails?.actualAssembly))}`} />
-        <Row label={t("COMMON_CURRENT_WARD")} text={`${t(checkForNA(propertyAddress?.actualWard || additionalDetails?.actualWard))}`} />
-        <Row
-          label={t("COMMON_CURRENT_ZONE")}
           text={`${t(
             checkForNA(
               propertyAddress?.zone?.name ||
                 propertyAddress?.zone?.code ||
                 propertyAddress?.zone ||
-                propertyAddress?.actualZone ||
+                cpt?.details?.address?.zone ||
+                additionalDetails?.zone
+            )
+          )}`}
+        />
+
+        <Row
+          label={
+            t("COMMON_CURRENT_ASSEMBLY") &&
+            t("COMMON_CURRENT_ASSEMBLY") !== "Assembly" &&
+            t("COMMON_CURRENT_ASSEMBLY") !== "COMMON_CURRENT_ASSEMBLY"
+              ? t("COMMON_CURRENT_ASSEMBLY")
+              : "Actual Assembly"
+          }
+          text={`${t(
+            checkForNA(
+              propertyAddress?.actualAssembly ||
+                cpt?.details?.address?.actualAssembly ||
+                additionalDetails?.actualAssembly
+            )
+          )}`}
+        />
+        <Row
+          label={
+            t("COMMON_CURRENT_WARD") &&
+            t("COMMON_CURRENT_WARD") !== "Ward" &&
+            t("COMMON_CURRENT_WARD") !== "COMMON_CURRENT_WARD"
+              ? t("COMMON_CURRENT_WARD")
+              : "Actual Ward"
+          }
+          text={`${t(
+            checkForNA(
+              propertyAddress?.actualWard ||
+                cpt?.details?.address?.actualWard ||
+                additionalDetails?.actualWard
+            )
+          )}`}
+        />
+        <Row
+          label={
+            t("COMMON_CURRENT_ZONE") &&
+            t("COMMON_CURRENT_ZONE") !== "Zone" &&
+            t("COMMON_CURRENT_ZONE") !== "COMMON_CURRENT_ZONE"
+              ? t("COMMON_CURRENT_ZONE")
+              : "Actual Zone"
+          }
+          text={`${t(
+            checkForNA(
+              propertyAddress?.actualZone ||
+                cpt?.details?.address?.actualZone ||
                 additionalDetails?.actualZone
             )
           )}`}

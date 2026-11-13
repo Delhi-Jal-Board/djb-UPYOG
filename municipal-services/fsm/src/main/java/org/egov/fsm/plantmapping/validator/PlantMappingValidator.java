@@ -8,7 +8,9 @@ import javax.validation.Valid;
 
 import org.apache.commons.lang3.StringUtils;
 import org.egov.fsm.plantmapping.config.PlantMappingConfiguration;
+import org.egov.fsm.plantmapping.repository.PlantMappingRepository;
 import org.egov.fsm.plantmapping.service.PlantMappingService;
+//import org.egov.fsm.plantmapping.util.PlantMappingConstants;
 import org.egov.fsm.plantmapping.util.PlantMappingConstants;
 import org.egov.fsm.plantmapping.web.model.PlantMapping;
 import org.egov.fsm.plantmapping.web.model.PlantMappingRequest;
@@ -39,8 +41,11 @@ public class PlantMappingValidator {
 	@Autowired
 	private PlantMappingConfiguration config;
 
+//	@Autowired
+//	private PlantMappingService plantMappingService;
+
 	@Autowired
-	private PlantMappingService plantMappingService;
+	private PlantMappingRepository plantMappingRepository;
 
 	public void validateCreateOrUpdate(@Valid PlantMappingRequest request) {
 
@@ -88,7 +93,7 @@ public class PlantMappingValidator {
 		plantMappingSearchCriteria.setEmployeeUuid(Arrays.asList(request.getPlantMapping().getEmployeeUuid()));
 		plantMappingSearchCriteria.setPlantCode(request.getPlantMapping().getPlantCode());
 		plantMappingSearchCriteria.setTenantId(request.getPlantMapping().getTenantId());
-		PlantMappingResponse plantMapResponse = plantMappingService.search(plantMappingSearchCriteria);
+		PlantMappingResponse plantMapResponse = plantMappingRepository.getPlantMappingData(plantMappingSearchCriteria);
 		if (null != plantMapResponse && null != plantMapResponse.getPlantMapping()
 				&& !plantMapResponse.getPlantMapping().isEmpty()
 				&& StringUtils.isNotBlank(plantMapResponse.getPlantMapping().get(0).getId()))

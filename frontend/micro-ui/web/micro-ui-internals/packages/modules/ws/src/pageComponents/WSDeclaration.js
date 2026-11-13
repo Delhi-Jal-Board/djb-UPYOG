@@ -1,5 +1,6 @@
 import {
   CardLabel,
+  CardLabelError,
   Dropdown,
   LabelFieldPair,
   CheckBox,
@@ -37,6 +38,7 @@ const WSDeclaration = ({ config, onSelect, userType, formData, setError, formSta
     (initialFsId ? "signature.png" : "");
 
   const [signatureFileStoreId, setSignatureFileStoreId] = useState(initialFsId);
+  const [localFile, setLocalFile] = useState(null);
   const [signatureFile, setSignatureFile] = useState(
     formData?.declarationData?.signatureFile ||
     formData?.declaration?.signatureFile ||
@@ -111,11 +113,8 @@ const WSDeclaration = ({ config, onSelect, userType, formData, setError, formSta
         : null,
     };
     if (!_.isEqual(lastSentValue.current, currentValues)) {
-      const timer = setTimeout(() => {
-        lastSentValue.current = currentValues;
-        onSelect(config?.key, currentValues);
-      }, 200);
-      return () => clearTimeout(timer);
+      lastSentValue.current = currentValues;
+      onSelect(config?.key, currentValues);
     }
   }, [formValue, signatureFileStoreId, signatureFile, config?.key, onSelect]);
 
@@ -125,6 +124,7 @@ const WSDeclaration = ({ config, onSelect, userType, formData, setError, formSta
       if (file.size >= 5242880) {
         // Handle error if needed
       } else {
+        setLocalFile(file);
         try {
           const response = await Digit.UploadServices.Filestorage("WS", file, Digit.ULBService.getStateId());
           if (response?.data?.files?.length > 0) {
@@ -132,12 +132,13 @@ const WSDeclaration = ({ config, onSelect, userType, formData, setError, formSta
             const sigObj = { fileStoreId: fsId, fileName: file.name };
             setSignatureFileStoreId(fsId);
             setSignatureFile(sigObj);
-            setValue("signatureFileStoreId", fsId);
-            setValue("signatureFile", sigObj);
-            setValue("signatureFileName", file.name);
+            setValue("signatureFileStoreId", fsId, { shouldDirty: true, shouldValidate: true });
+            setValue("signatureFile", sigObj, { shouldDirty: true, shouldValidate: true });
+            setValue("signatureFileName", file.name, { shouldDirty: true, shouldValidate: true });
           }
         } catch (err) {
           console.error("Signature upload failed", err);
+          setLocalFile(null);
         }
       }
     }
@@ -220,38 +221,50 @@ const WSDeclaration = ({ config, onSelect, userType, formData, setError, formSta
 
           <div>
             <LabelFieldPair>
-              <CardLabel>{t("WS_UPLOAD_SIGNATURE_FILE")}</CardLabel>
-              <div className="field" style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-                <div style={{ flex: 1 }}>
-                  <UploadFile
-                    onUpload={onUploadSignature}
-                    onDelete={() => {
-                      setSignatureFile(null);
-                      setSignatureFileStoreId(null);
-                      setValue("signatureFile", null);
-                      setValue("signatureFileStoreId", null);
-                    }}
-                    id={"ws-declaration-signature"}
-                    message={signatureFileStoreId ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
-                    textStyles={{ width: "100%" }}
-                    buttonType="button"
-                    accept="image/*, .pdf, .png, .jpeg, .jpg"
-                    uploadedFiles={
-                      signatureFileStoreId ? [[formValue?.signatureFileName || "Signature", { fileStoreId: signatureFileStoreId }]] : undefined
-                    }
-                    removeTargetedFile={() => {
-                      setSignatureFile(null);
-                      setSignatureFileStoreId(null);
-                      setValue("signatureFile", null);
-                      setValue("signatureFileStoreId", null);
-                      setValue("signatureFileName", "");
-                    }}
-                  />
-                </div>
-                {signatureFileStoreId && (
-                  <div onClick={viewDocument} style={{ cursor: "pointer" }}>
-                    <ViewsIcon />
+              <CardLabel>{t("WS_UPLOAD_SIGNATURE_FILE")} <span style={{ color: "red" }}>*</span></CardLabel>
+              <div className="field" style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                <div style={{ display: "flex", gap: "10px", alignItems: "center", width: "100%" }}>
+                  <div style={{ flex: 1 }}>
+                    <UploadFile
+                      onUpload={onUploadSignature}
+                      onDelete={() => {
+                        setLocalFile(null);
+                        setSignatureFile(null);
+                        setSignatureFileStoreId(null);
+                        setValue("signatureFile", null, { shouldDirty: true, shouldValidate: true });
+                        setValue("signatureFileStoreId", null, { shouldDirty: true, shouldValidate: true });
+                        setValue("signatureFileName", "", { shouldDirty: true, shouldValidate: true });
+                      }}
+                      id={"ws-declaration-signature"}
+                      message={signatureFileStoreId ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
+                      textStyles={{ width: "100%" }}
+                      buttonType="button"
+                      accept="image/*, .pdf, .png, .jpeg, .jpg"
+                      uploadedFiles={
+                        signatureFileStoreId && !localFile
+                          ? [[formValue?.signatureFileName || signatureFile?.fileName || signatureFile?.name || "signature.png", { fileStoreId: signatureFileStoreId }]]
+                          : undefined
+                      }
+                      removeTargetedFile={() => {
+                        setLocalFile(null);
+                        setSignatureFile(null);
+                        setSignatureFileStoreId(null);
+                        setValue("signatureFile", null, { shouldDirty: true, shouldValidate: true });
+                        setValue("signatureFileStoreId", null, { shouldDirty: true, shouldValidate: true });
+                        setValue("signatureFileName", "", { shouldDirty: true, shouldValidate: true });
+                      }}
+                    />
                   </div>
+                  {signatureFileStoreId && (
+                    <div onClick={viewDocument} style={{ cursor: "pointer" }}>
+                      <ViewsIcon />
+                    </div>
+                  )}
+                </div>
+                {!signatureFileStoreId && formValue?.agree && (
+                  <CardLabelError style={{ color: "red", fontSize: "12px", marginTop: "4px" }}>
+                    {t("WS_SIGNATURE_MANDATORY_ERROR") || "Signature is mandatory to submit application"}
+                  </CardLabelError>
                 )}
               </div>
             </LabelFieldPair>

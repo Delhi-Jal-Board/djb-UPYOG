@@ -210,28 +210,9 @@
   }
 }
 
-.review-declaration {
-  .review-declaration__label {
-    color: #344054;
-    font-size: 16px;
-  }
-
-  .checkbox-wrap {
-    margin-bottom: 0;
-    width: auto;
-    height: auto;
-
-    .label {
-      margin-left: 32px;
-    }
-
-    input {
-      width: auto;
-      height: auto;
-      top: 0;
-      transform: translateY(0%);
-    }
-  }
+.review-declaration__label {
+  color: #344054 !important;
+  font-size: 16px;
 }
 
 .review-action-menu {

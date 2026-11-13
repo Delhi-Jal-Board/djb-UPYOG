@@ -2,6 +2,7 @@ package org.egov.pt.validator;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -36,6 +37,7 @@ import org.egov.pt.util.PropertyUtil;
 import org.egov.pt.web.contracts.PropertyRequest;
 import org.egov.pt.web.contracts.RequestInfoWrapper;
 import org.egov.tracer.model.CustomException;
+import org.egov.tracer.model.ServiceCallException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
@@ -286,32 +288,78 @@ public class PropertyValidator {
 		if (property == null || StringUtils.isEmpty(property.getPropertyId()) || StringUtils.isEmpty(property.getTenantId()))
 			return;
 
+		RequestInfo originalRequestInfo = request.getRequestInfo();
+		boolean isCitizen = originalRequestInfo != null
+				&& originalRequestInfo.getUserInfo() != null
+				&& "CITIZEN".equalsIgnoreCase(originalRequestInfo.getUserInfo().getType());
+
+		// Use a SYSTEM RequestInfo with isInternalCall=true so ws-services skips
+		// employee jurisdiction/zone filtering and returns all connections for this property.
+		String callerUuid = (originalRequestInfo != null && originalRequestInfo.getUserInfo() != null
+				&& !StringUtils.isEmpty(originalRequestInfo.getUserInfo().getUuid()))
+						? originalRequestInfo.getUserInfo().getUuid()
+						: "SYSTEM";
+		User internalUser = User.builder()
+				.uuid(callerUuid)
+				.type("SYSTEM")
+				.tenantId(property.getTenantId())
+				.roles(Collections.emptyList())
+				.build();
+		RequestInfo internalRequestInfo = RequestInfo.builder()
+				.apiId(originalRequestInfo != null ? originalRequestInfo.getApiId() : null)
+				.ver(originalRequestInfo != null ? originalRequestInfo.getVer() : null)
+				.ts(originalRequestInfo != null ? originalRequestInfo.getTs() : null)
+				.action(originalRequestInfo != null ? originalRequestInfo.getAction() : null)
+				.did(originalRequestInfo != null ? originalRequestInfo.getDid() : null)
+				.key(originalRequestInfo != null ? originalRequestInfo.getKey() : null)
+				.msgId(originalRequestInfo != null ? originalRequestInfo.getMsgId() : null)
+				.authToken(originalRequestInfo != null ? originalRequestInfo.getAuthToken() : null)
+				.correlationId(originalRequestInfo != null ? originalRequestInfo.getCorrelationId() : null)
+				.userInfo(internalUser)
+				.build();
+
 		StringBuilder uri = new StringBuilder(configs.getWsHost())
 				.append(configs.getWsSearchEndpoint())
 				.append("?tenantId=").append(property.getTenantId())
 				.append("&propertyIds=").append(property.getPropertyId())
-				.append("&searchType=APPLICATION");
+				.append("&searchType=APPLICATION")
+				.append("&isInternalCall=true");
 
 		try {
 			Optional<Object> response = serviceRequestRepository.fetchResult(uri,
-					RequestInfoWrapper.builder().requestInfo(request.getRequestInfo()).build());
+					RequestInfoWrapper.builder().requestInfo(internalRequestInfo).build());
 			if (response.isPresent()) {
 				Map<String, Object> responseMap = (Map<String, Object>) response.get();
 				List<Map<String, Object>> connections = (List<Map<String, Object>>) responseMap.get("WaterConnection");
 				if (!CollectionUtils.isEmpty(connections)) {
-					boolean isCitizen = request.getRequestInfo() != null
-							&& request.getRequestInfo().getUserInfo() != null
-							&& "CITIZEN".equalsIgnoreCase(request.getRequestInfo().getUserInfo().getType());
-
 					for (Map<String, Object> conn : connections) {
-						String appType = (String) conn.get("applicationType");
-						String appStatus = (String) conn.get("applicationStatus");
-						if (StringUtils.isEmpty(appStatus)) {
-							appStatus = (String) conn.get("status");
+						if (conn == null) {
+							continue;
 						}
-						boolean isNewConn = appType == null || "NEW_WATER_CONNECTION".equalsIgnoreCase(appType);
-						boolean isActivated = "CONNECTION_ACTIVATED".equalsIgnoreCase(appStatus) || "APPROVED".equalsIgnoreCase(appStatus);
-						if (isNewConn && isActivated) {
+						String appType = conn.get("applicationType") != null
+								? String.valueOf(conn.get("applicationType")).trim()
+								: null;
+						String appStatus = conn.get("applicationStatus") != null
+								? String.valueOf(conn.get("applicationStatus")).trim()
+								: null;
+						if (StringUtils.isEmpty(appStatus) && conn.get("status") != null) {
+							appStatus = String.valueOf(conn.get("status")).trim();
+						}
+						boolean isNewConn = StringUtils.isEmpty(appType)
+								|| "NEW_WATER_CONNECTION".equalsIgnoreCase(appType);
+						if (!isNewConn) {
+							continue;
+						}
+
+						boolean isTerminated = "REJECTED".equalsIgnoreCase(appStatus)
+								|| "CANCELLED".equalsIgnoreCase(appStatus);
+						if (isTerminated) {
+							continue;
+						}
+
+						boolean isActivated = "CONNECTION_ACTIVATED".equalsIgnoreCase(appStatus)
+								|| "APPROVED".equalsIgnoreCase(appStatus);
+						if (isActivated) {
 							throw new CustomException("EG_PT_WATER_CONNECTION_EXISTS",
 									"Property cannot be updated because a New Water Connection is already activated for this property.");
 						}
@@ -322,15 +370,26 @@ public class PropertyValidator {
 								|| appStatus.toUpperCase().contains("CITIZEN_ACTION")
 								|| appStatus.toUpperCase().contains("SEND_BACK_TO_CITIZEN"));
 
-						if (isNewConn && isSentBackToCitizen && !isCitizen) {
-							throw new CustomException("EG_PT_CITIZEN_ONLY_UPDATE",
-									"Only citizen can update property when water connection application is sent back to citizen.");
+						if (isSentBackToCitizen) {
+							if (!isCitizen) {
+								throw new CustomException("EG_PT_CITIZEN_ONLY_UPDATE",
+										"Only citizen can update property when water connection application is sent back to citizen.");
+							}
+							continue;
 						}
+
+						throw new CustomException("EG_PT_WATER_CONNECTION_EXISTS",
+								"Property cannot be updated because a New Water Connection application is in progress ("
+										+ appStatus + "). Property can only be updated by citizen when sent back to citizen.");
 					}
 				}
 			}
 		} catch (CustomException ce) {
 			throw ce;
+		} catch (ServiceCallException sce) {
+			log.error("Service call error checking water connection for property {}: {}", property.getPropertyId(), sce.getMessage());
+			throw new CustomException("EG_PT_WS_SEARCH_ERROR",
+					"Unable to verify existing water connection status for property " + property.getPropertyId());
 		} catch (Exception e) {
 			log.error("Error checking water connection for property {}: {}", property.getPropertyId(), e.getMessage());
 		}

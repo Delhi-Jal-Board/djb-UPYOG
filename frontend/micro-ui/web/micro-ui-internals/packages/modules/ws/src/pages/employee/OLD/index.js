@@ -73,10 +73,12 @@ const OLDApplication = () => {
   const sessionSaveTimeoutRef = useRef(null);
 
   const defaultValues = useMemo(() => {
-    return sessionFormData && Object.keys(sessionFormData).length > 0
-      ? sessionFormData
-      : Digit.SessionStorage.get("PT_CREATE_EMP_WS_NEW_FORM") || {};
-  }, []);
+    const fromStorage = Digit.SessionStorage.get("PT_CREATE_EMP_WS_NEW_FORM");
+    if (fromStorage && Object.keys(fromStorage).length > 0) return fromStorage;
+    if (sessionFormData && Object.keys(sessionFormData).length > 0) return sessionFormData;
+    if (formDataRef.current && Object.keys(formDataRef.current).length > 0) return formDataRef.current;
+    return {};
+  }, [sessionFormData, showCheckPage]);
 
   const { data: propertyDetails } = Digit.Hooks.pt.usePropertySearch(
     { filters: { propertyIds: propertyId }, tenantId: tenantId },
@@ -235,6 +237,68 @@ const OLDApplication = () => {
     }
   }, [sessionFormData?.cpt, propertyId]);
 
+  useEffect(() => {
+    const hasProp =
+      formDataRef.current?.cpt?.details?.propertyId ||
+      sessionStorage.getItem("WS_OTP_VERIFIED_PROPERTY_ID") ||
+      propertyId ||
+      propertyDetails?.Properties?.[0]?.propertyId;
+
+    if (hasProp && !canSubmit) {
+      const djbData = formDataRef.current?.djbEmployee || formDataRef.current?.additionalDetails;
+      const isDjbEmp = djbData?.isDjbEmployee === true || String(djbData?.isDjbEmployee) === "true";
+      const docs =
+        formDataRef.current?.DocumentsRequired?.documents ||
+        formDataRef.current?.documents?.documents ||
+        formDataRef.current?.documents ||
+        [];
+      const foundDjb = Array.isArray(docs) && docs.find(
+        (d) =>
+          (d?.documentType === "OWNER.DJB_EMPLOYEE_ID" || d?.documentType?.includes("DJB_EMPLOYEE_ID")) &&
+          (d?.fileStoreId || d?.file || d?.filestoreId)
+      );
+      const djbDoc =
+        djbData?.document?.fileStoreId ||
+        (typeof djbData?.document === "string" && djbData?.document.trim()) ||
+        djbData?.document ||
+        (foundDjb ? foundDjb.fileStoreId || foundDjb.file || foundDjb.filestoreId : null);
+
+      const isDjbEmpInv =
+        isDjbEmp &&
+        (!djbData?.employeeId ||
+          !String(djbData?.employeeId).trim() ||
+          !djbData?.designation ||
+          !String(djbData?.designation).trim() ||
+          !djbDoc);
+
+      const rwhData = formDataRef.current?.rainWaterHarvesting || formDataRef.current?.additionalDetails;
+      const isRwhReq =
+        rwhData?.hasCertificate === true ||
+        String(rwhData?.hasCertificate) === "true" ||
+        rwhData?.isRainwaterHarvesting === true ||
+        String(rwhData?.isRainwaterHarvesting) === "true";
+      const isRwhUploaded = Array.isArray(docs) && docs.some((d) => isRwhDoc(d) && (d?.fileStoreId || d?.file));
+      const isRwhInv = isRwhReq && !isRwhUploaded;
+
+      const storedErrors = sessionStorage.getItem("FORMSTATE_ERRORS");
+      let parsedErrors = {};
+      try {
+        parsedErrors = storedErrors ? JSON.parse(storedErrors) : {};
+      } catch (e) {}
+      const hasStoredErrors = Object.keys(parsedErrors).some((k) => {
+        const err = parsedErrors[k];
+        if (!err) return false;
+        if (Array.isArray(err?.type) && err.type.length === 0) return false;
+        if (typeof err === "object" && Object.keys(err).length === 0) return false;
+        return true;
+      });
+
+      if (!hasStoredErrors && !isDjbEmpInv && !isRwhInv) {
+        setSubmitValve(true);
+      }
+    }
+  }, [propertyId, propertyDetails]);
+
   const {
     isLoading: creatingWaterApplicationLoading,
 
@@ -267,6 +331,7 @@ const OLDApplication = () => {
     }
     sessionSaveTimeoutRef.current = setTimeout(() => {
       Digit.SessionStorage.set("PT_CREATE_EMP_WS_NEW_FORM", formDataRef.current);
+      setSessionFormData(formDataRef.current);
     }, 300);
 
     // Always update errors to ensure validation state is in sync
@@ -277,6 +342,16 @@ const OLDApplication = () => {
       setPropertyId(cptPropId);
     }
 
+    const findDjbDoc = (docs) => {
+      if (!Array.isArray(docs)) return null;
+      const found = docs.find(
+        (d) =>
+          (d?.documentType === "OWNER.DJB_EMPLOYEE_ID" || d?.documentType?.includes("DJB_EMPLOYEE_ID")) &&
+          (d?.fileStoreId || d?.file || d?.filestoreId)
+      );
+      return found ? found.fileStoreId || found.file || found.filestoreId : null;
+    };
+
     const djbData = formDataRef.current?.djbEmployee || formDataRef.current?.additionalDetails;
     const isDjbEmp =
       djbData?.isDjbEmployee === true ||
@@ -285,10 +360,17 @@ const OLDApplication = () => {
       djbData?.document?.fileStoreId ||
       (typeof djbData?.document === "string" && djbData?.document.trim()) ||
       djbData?.document ||
-      formDataRef.current?.DocumentsRequired?.documents?.find((d) => d?.documentType === "OWNER.DJB_EMPLOYEE_ID" || d?.documentType?.includes("DJB_EMPLOYEE_ID"))?.fileStoreId ||
-      formData?.DocumentsRequired?.documents?.find((d) => d?.documentType === "OWNER.DJB_EMPLOYEE_ID" || d?.documentType?.includes("DJB_EMPLOYEE_ID"))?.fileStoreId ||
-      formDataRef.current?.documents?.documents?.find((d) => d?.documentType === "OWNER.DJB_EMPLOYEE_ID" || d?.documentType?.includes("DJB_EMPLOYEE_ID"))?.fileStoreId ||
-      formData?.documents?.documents?.find((d) => d?.documentType === "OWNER.DJB_EMPLOYEE_ID" || d?.documentType?.includes("DJB_EMPLOYEE_ID"))?.fileStoreId;
+      findDjbDoc(formDataRef.current?.DocumentsRequired?.documents) ||
+      findDjbDoc(formData?.DocumentsRequired?.documents) ||
+      findDjbDoc(formDataRef.current?.documents?.documents) ||
+      findDjbDoc(formData?.documents?.documents) ||
+      findDjbDoc(formDataRef.current?.documents) ||
+      findDjbDoc(formData?.documents);
+
+    if (djbDoc) {
+      if (!formDataRef.current.djbEmployee) formDataRef.current.djbEmployee = {};
+      formDataRef.current.djbEmployee.document = djbDoc;
+    }
 
     const isDjbEmpInvalid =
       isDjbEmp &&
@@ -296,13 +378,35 @@ const OLDApplication = () => {
         !String(djbData?.employeeId).trim() ||
         !djbData?.designation ||
         !String(djbData?.designation).trim() ||
-        !(
-          djbData?.document?.fileStoreId ||
-          (typeof djbData?.document === "string" && djbData?.document.trim()) ||
-          djbData?.document
-        ));
+        !djbDoc);
 
-    const hasErrors = Object.keys(formState?.errors || {}).length > 0 || isDjbEmpInvalid;
+    const rwhData = formDataRef.current?.rainWaterHarvesting || formDataRef.current?.additionalDetails;
+    const isRwhRequired =
+      rwhData?.hasCertificate === true ||
+      String(rwhData?.hasCertificate) === "true" ||
+      rwhData?.isRainwaterHarvesting === true ||
+      String(rwhData?.isRainwaterHarvesting) === "true";
+
+    const allCurrentDocs =
+      formDataRef.current?.DocumentsRequired?.documents ||
+      formData?.DocumentsRequired?.documents ||
+      formDataRef.current?.documents?.documents ||
+      formData?.documents?.documents ||
+      formDataRef.current?.documents ||
+      formData?.documents ||
+      [];
+    const isRwhDocUploaded = Array.isArray(allCurrentDocs) && allCurrentDocs.some((d) => isRwhDoc(d) && (d?.fileStoreId || d?.file));
+    const isRwhInvalid = isRwhRequired && !isRwhDocUploaded;
+
+    const actualFormErrors = Object.keys(formState?.errors || {}).filter((key) => {
+      const err = formState?.errors?.[key];
+      if (!err) return false;
+      if (Array.isArray(err?.type) && err.type.length === 0) return false;
+      if (typeof err === "object" && Object.keys(err).length === 0) return false;
+      return true;
+    });
+
+    const hasErrors = actualFormErrors.length > 0 || isDjbEmpInvalid || isRwhInvalid;
     const hasProperty =
       formDataRef.current?.cpt?.details?.propertyId ||
       sessionStorage.getItem("WS_OTP_VERIFIED_PROPERTY_ID") ||
@@ -318,6 +422,7 @@ const OLDApplication = () => {
     const combinedData = { ...formDataRef.current, ...data };
     formDataRef.current = combinedData;
     Digit.SessionStorage.set("PT_CREATE_EMP_WS_NEW_FORM", combinedData);
+    setSessionFormData(combinedData);
 
     const hasProperty =
       combinedData?.cpt?.details?.propertyId ||
@@ -344,12 +449,26 @@ const OLDApplication = () => {
     const isDjbEmp =
       djbData?.isDjbEmployee === true ||
       String(djbData?.isDjbEmployee) === "true";
+    const findDjbDocInSubmit = (docs) => {
+      if (!Array.isArray(docs)) return null;
+      const found = docs.find(
+        (d) =>
+          (d?.documentType === "OWNER.DJB_EMPLOYEE_ID" || d?.documentType?.includes("DJB_EMPLOYEE_ID")) &&
+          (d?.fileStoreId || d?.file || d?.filestoreId)
+      );
+      return found ? found.fileStoreId || found.file || found.filestoreId : null;
+    };
+
     const djbDoc =
       djbData?.document?.fileStoreId ||
       (typeof djbData?.document === "string" && djbData?.document.trim()) ||
       djbData?.document ||
-      combinedData?.DocumentsRequired?.documents?.find((d) => d?.documentType === "OWNER.DJB_EMPLOYEE_ID" || d?.documentType?.includes("DJB_EMPLOYEE_ID"))?.fileStoreId ||
-      combinedData?.documents?.documents?.find((d) => d?.documentType === "OWNER.DJB_EMPLOYEE_ID" || d?.documentType?.includes("DJB_EMPLOYEE_ID"))?.fileStoreId;
+      findDjbDocInSubmit(combinedData?.DocumentsRequired?.documents) ||
+      findDjbDocInSubmit(combinedData?.documents?.documents) ||
+      findDjbDocInSubmit(combinedData?.documents) ||
+      findDjbDocInSubmit(formDataRef.current?.DocumentsRequired?.documents) ||
+      findDjbDocInSubmit(formDataRef.current?.documents?.documents) ||
+      findDjbDocInSubmit(formDataRef.current?.documents);
 
     const isDjbEmpInvalid =
       isDjbEmp &&
@@ -395,39 +514,6 @@ const OLDApplication = () => {
       if (!formDataRef.current.djbEmployee) formDataRef.current.djbEmployee = {};
       formDataRef.current.djbEmployee.document = djbDoc;
     }
-
-// <<<<<<< Updated upstream
-//     const rwhSubmitData = combinedData?.rainWaterHarvesting || combinedData?.additionalDetails;
-//     const isRwhSubmitRequired =
-//       rwhSubmitData?.hasCertificate === true ||
-//       String(rwhSubmitData?.hasCertificate) === "true" ||
-//       rwhSubmitData?.isRainwaterHarvesting === true ||
-//       String(rwhSubmitData?.isRainwaterHarvesting) === "true";
-
-//     const allSubmitDocs =
-//       combinedData?.DocumentsRequired?.documents ||
-//       combinedData?.documents?.documents ||
-//       combinedData?.documents ||
-//       formDataRef.current?.DocumentsRequired?.documents ||
-//       formDataRef.current?.documents?.documents ||
-//       formDataRef.current?.documents ||
-//       [];
-//     const isRwhSubmitDocUploaded = Array.isArray(allSubmitDocs) && allSubmitDocs.some((d) => isRwhDoc(d) && (d?.fileStoreId || d?.file));
-
-//     if (isRwhSubmitRequired && !isRwhSubmitDocUploaded) {
-//       setShowToast({
-//         key: "error",
-//         message: t("ERR_RWH_CERTIFICATE_MANDATORY") || "Rain Water Harvesting Certificate is mandatory to upload",
-//       });
-//       return;
-// =======
-//     if (djbDoc) {
-//       if (!combinedData.djbEmployee) combinedData.djbEmployee = {};
-//       combinedData.djbEmployee.document = djbDoc;
-//       if (!formDataRef.current.djbEmployee) formDataRef.current.djbEmployee = {};
-//       formDataRef.current.djbEmployee.document = djbDoc;
-// >>>>>>> Stashed changes
-//     }
 
     // Validation passed, show CheckPage
     setShowCheckPage(true);
@@ -528,6 +614,15 @@ const OLDApplication = () => {
         (typeof data.declarationData?.signatureFile === "string" ? data.declarationData?.signatureFile : null) ||
         data.declarationData?.signature ||
         null;
+
+      if (!sigFsId) {
+        setShowToast({
+          key: "error",
+          message: t("ERR_SIGNATURE_MANDATORY") || "Signature is mandatory to submit application",
+        });
+        return;
+      }
+
       const sigFileName =
         data.declarationData?.signatureFileName ||
         data.declarationData?.signatureFile?.name ||
@@ -788,6 +883,11 @@ const OLDApplication = () => {
     return <Loader />;
   }
 
+  const handleEdit = () => {
+    setShowCheckPage(false);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   if (showCheckPage) {
     return (
       <React.Fragment>
@@ -796,7 +896,7 @@ const OLDApplication = () => {
           <CheckPage
             data={formDataRef.current || sessionFormData}
             onSubmit={(finalData) => processSubmission(finalData || formDataRef.current || sessionFormData)}
-            onEdit={() => setShowCheckPage(false)}
+            onEdit={handleEdit}
           />
         </div>
       </React.Fragment>

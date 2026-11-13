@@ -14,7 +14,7 @@ import {
   Modal
 } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
-import { useHistory, useLocation, useParams } from "react-router-dom";
+import { useHistory, useParams } from "react-router-dom";
 
 const checkForNA = (value) => (value !== null && value !== undefined && value !== "" ? value : "N/A");
 
@@ -70,7 +70,7 @@ const headerMapping = [
   { key: "parentSpouse", label: "PARENT_SPOUSE" },
   { key: "email", label: "EMAIL" },
   { key: "whatsappNo", label: "WHATSAPP_NO" },
-  { key: "informantIsConsumer", label: "INFORMANT_IS_CONSUMER" },
+  { key: "informantIsConsumer", label: "INFORMANT_IS_CONSUMER", isBool:true },
   { key: "informantName", label: "INFORMANT_NAME" },
   { key: "informantRelation", label: "INFORMANT_RELATION" },
   { key: "panFilestoreId", label: "PAN_FILE_STORE_ID" },
@@ -88,7 +88,7 @@ const headerMapping = [
   { key: "meterCondition", label: "METER_CONDITION" },
   { key: "meterNumber", label: "METER_NUMBER" },
   { key: "meterMake", label: "METER_MAKE" },
-  { key: "workingStatus", label: "WORKING_STATUS" },
+  { key: "workingStatus", label: "WORKING_STATUS", isBool: true },
   { key: "meterLocation", label: "METER_LOCATION" },
   { key: "meterLocationAddress", label: "METER_LOCATION_ADDRESS" },
   { key: "meterLatitude", label: "EKYC_METER_LATITUDE1" },
@@ -107,7 +107,6 @@ const headerMapping = [
 const Review = () => {
   const { t } = useTranslation();
   const history = useHistory();
-  const location = useLocation();
   let { kno, applicationId } = useParams();
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [agree, setAgree] = useState(false);
@@ -135,13 +134,15 @@ const Review = () => {
   const reviewTableData = headerMapping.map((field) => {
     const newValue = newData?.[field.key];
     const oldValue = oldData?.[field.key];
+
     const normalizeValue = (value) => (value === null || value === undefined || value === "" ? "" : String(value));
+
     const isChanged = !!oldData && oldValue !== undefined && normalizeValue(newValue) !== normalizeValue(oldValue);
 
     return {
       fieldName: field.preTranslated ? field.label : t(field.label),
-      oldValue: field.isBool ? boolToYesNo(oldValue, t) : checkForNA(oldValue),
-      newValue: field.isBool ? boolToYesNo(newValue, t) : checkForNA(newValue),
+      oldValue: field.isBool ? boolToYesNo(oldValue, t) || "N/A" : checkForNA(oldValue),
+      newValue: field.isBool ? boolToYesNo(newValue, t) || "N/A" : checkForNA(newValue),
       isChanged,
     };
   });
@@ -181,8 +182,7 @@ const Review = () => {
   const isZRO = userRoles.includes("EKYC_ZRO") || userRoles.includes("ZRO");
   const isSupervisorOrSurveyorOrVendor = userRoles.includes("EKYC_SURVEYOR") || userRoles.includes("EKYC_VENDOR");
 
-  const isStatusView = location.pathname.includes("/status/");
-  const hideEditButton = (isSupervisorOrSurveyorOrVendor && !isZRO) || isStatusView;
+  const hideEditButton = (isSupervisorOrSurveyorOrVendor && !isZRO);
 
   const handleDeclaration = () => setAgree(!agree);
 
@@ -452,15 +452,13 @@ const Review = () => {
         </div>
 
         {!hideEditButton && (
-          <div className="review-declaration">
-            <CheckBox
-              id="agreeDeclaration"
-              name="agreeDeclaration"
-              label={<span className="review-declaration__label">{t("EKYC_FINAL_DECLARATION")}</span>}
-              onChange={handleDeclaration}
-              checked={agree}
-            />
-          </div>
+          <CheckBox
+            id="agreeDeclaration"
+            name="agreeDeclaration"
+            label={<span className="review-declaration__label">{t("EKYC_FINAL_DECLARATION")}</span>}
+            onChange={handleDeclaration}
+            checked={agree}
+          />
         )}
 
         {!hideEditButton && (

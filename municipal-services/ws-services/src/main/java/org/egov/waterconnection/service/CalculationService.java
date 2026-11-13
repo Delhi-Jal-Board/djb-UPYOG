@@ -82,6 +82,8 @@ public class CalculationService {
 	 */
 	public void calculateFeeAndGenerateDemand(WaterConnectionRequest request, Property property) {
 		String action = request.getWaterConnection().getProcessInstance().getAction();
+		log.info("[WS-DEMAND] calculateFeeAndGenerateDemand invoked. action={}, applicationNo={}, applicationType={}",
+				action, request.getWaterConnection().getApplicationNo(), request.getWaterConnection().getApplicationType());
 
 		if (WCConstants.SUBMIT_APPLICATION_CONST.equalsIgnoreCase(action)) {
 			CalculationRes calculationResponse = triggerCalculation(request, property, action, false);
@@ -127,8 +129,11 @@ public class CalculationService {
 			}
 		}
 		*/
-		else if ("RESUBMIT_APPLICATION".equalsIgnoreCase(action)
+		else if (("RESUBMIT_APPLICATION".equalsIgnoreCase(action)
+				|| WCConstants.RESUBMIT_FOR_INFRA_PAYMENT_CONST.equalsIgnoreCase(action))
 				&& isNewWaterConnection(request.getWaterConnection())) {
+			log.info("[WS-IFC] Handling new water connection resubmission. action={}, applicationNo={}, propertyId={}",
+					action, request.getWaterConnection().getApplicationNo(), property == null ? null : property.getPropertyId());
 			// Property Service is the authoritative source. Keep the WS application copy
 			// synchronized before fingerprinting, estimation and persisting the application.
 			synchronizePropertyCalculationDetails(request.getWaterConnection(), property);
@@ -302,7 +307,8 @@ public class CalculationService {
 		}
 
 		if (assessment != null && snapshot.getFingerprint().equals(assessment.getInputFingerprint())) {
-			log.info("[WS-IFC] No charge-driving property change for application {}; skipping IFC reassessment.", applicationNo);
+			log.info("[WS-IFC] No charge-driving property change for application {}; refreshing existing demand and bill through calculator.", applicationNo);
+			triggerCalculation(request, property, "RESUBMIT_APPLICATION", true);
 			return;
 		}
 
@@ -355,6 +361,12 @@ public class CalculationService {
 					.createdBy(assessment == null ? actor : assessment.getCreatedBy()).lastModifiedBy(actor).build());
 			log.info("[WS-IFC] Relevant property details changed but IFC is unchanged. applicationNo={}, assessed={}",
 					applicationNo, currentlyAssessedIfc);
+		}
+
+		if (delta.compareTo(BigDecimal.ZERO) <= 0) {
+			triggerCalculation(request, property, "RESUBMIT_APPLICATION", true);
+			log.info("[WS-IFC] Calculator demand/bill refresh completed without additional IFC. applicationNo={}, delta={}",
+					applicationNo, delta);
 		}
 	}
 
