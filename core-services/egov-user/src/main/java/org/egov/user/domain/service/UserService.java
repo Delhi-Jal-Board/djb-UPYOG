@@ -674,7 +674,7 @@ public class UserService {
      */
     public void updatePasswordForLoggedInUser(LoggedInUserUpdatePasswordRequest updatePasswordRequest) {
         updatePasswordRequest.validate();
-        final User user = getUniqueUser(updatePasswordRequest.getUserName(), updatePasswordRequest.getTenantId(),
+        User user = getUniqueUser(updatePasswordRequest.getUserName(), updatePasswordRequest.getTenantId(),
                 updatePasswordRequest.getType(), null);
 
         if (user.getType().toString().equals(UserType.CITIZEN.toString()) && isCitizenLoginOtpBased)
@@ -685,6 +685,9 @@ public class UserService {
         validateExistingPassword(user, updatePasswordRequest.getExistingPassword());
         validatePassword(updatePasswordRequest.getNewPassword());
         user.updatePassword(encryptPwd(updatePasswordRequest.getNewPassword()));
+        /* encrypt here */
+        /* encrypted value is stored in DB*/
+        user = encryptionDecryptionUtil.encryptObject(user, "User", User.class);
         userRepository.update(user, user, user.getId() , user.getUuid());
     }
 
