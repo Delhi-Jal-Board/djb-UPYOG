@@ -1,26 +1,36 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import { RoundedCheck, DeleteBtn, ErrorIcon } from "./svgindex";
 import ButtonSelector from "./ButtonSelector";
 
 const Toast = (props) => {
   const {
-    duration = 15000, // ✅ default 15 sec
+    duration = 3000, // ✅ default 3 sec
     onClose,
     error,
     warning,
+    isDleteBtn = true,
   } = props;
+
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   // ✅ Auto dismiss logic
   useEffect(() => {
     if (!onClose) return;
 
     const timer = setTimeout(() => {
-      onClose();
+      if (onCloseRef.current) {
+        onCloseRef.current();
+      }
     }, duration);
 
     return () => clearTimeout(timer);
-  }, [duration, onClose]);
+  }, [duration, !onClose]);
+
+  const showCloseBtn = (isDleteBtn !== false && props.isDleteBtn !== false) && typeof onClose === "function";
 
   // ❌ ERROR TOAST
   if (error) {
@@ -28,7 +38,11 @@ const Toast = (props) => {
       <div className="toast-error" style={{ ...props.style }}>
         <ErrorIcon />
         <h2 style={{ ...props.labelstyle }}>{props.label}</h2>
-        {props.isDleteBtn && <DeleteBtn fill="none" className="toast-close-btn" onClick={onClose} />}
+        {showCloseBtn && (
+          <span style={{ cursor: "pointer", marginLeft: "auto", display: "inline-flex", alignItems: "center" }} onClick={onClose}>
+            <DeleteBtn fill="none" className="toast-close-btn" />
+          </span>
+        )}
       </div>
     );
   }
@@ -44,10 +58,14 @@ const Toast = (props) => {
           ...props.style,
         }}
       >
-        <div style={{ display: "flex" }}>
+        <div style={{ display: "flex", alignItems: "center", width: "100%" }}>
           <ErrorIcon />
           <h2 style={{ marginLeft: "10px" }}>{props.label}</h2>
-          {props.isDleteBtn && <DeleteBtn fill="none" className="toast-close-btn" onClick={onClose} />}
+          {showCloseBtn && (
+            <span style={{ cursor: "pointer", marginLeft: "auto", display: "inline-flex", alignItems: "center" }} onClick={onClose}>
+              <DeleteBtn fill="none" className="toast-close-btn" />
+            </span>
+          )}
         </div>
 
         {props?.isWarningButtons && (
@@ -65,7 +83,11 @@ const Toast = (props) => {
     <div className="toast-success" style={{ ...props.style }}>
       <RoundedCheck />
       <h2>{props.label}</h2>
-      <DeleteBtn fill="none" className="toast-close-btn" onClick={onClose} />
+      {showCloseBtn && (
+        <span style={{ cursor: "pointer", marginLeft: "auto", display: "inline-flex", alignItems: "center" }} onClick={onClose}>
+          <DeleteBtn fill="none" className="toast-close-btn" />
+        </span>
+      )}
     </div>
   );
 };
@@ -80,8 +102,8 @@ Toast.propTypes = {
 Toast.defaultProps = {
   label: "",
   onClose: undefined,
-  isDleteBtn: false,
-  duration: 15000, // ✅ default 15 sec
+  isDleteBtn: true,
+  duration: 3000, // ✅ default 3 sec
 };
 
 export default Toast;

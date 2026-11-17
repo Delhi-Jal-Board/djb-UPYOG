@@ -1116,7 +1116,7 @@ const ConnectionDetails = (_props) => {
               <div>
                 <CardLabel>{`${t("Organization/Department Document")}*`}</CardLabel>
                 <div style={{ fontSize: "12px", color: "#666", marginTop: "-2px", marginBottom: "4px" }}>
-                  {t("WS_DOCUMENT_MAX_SIZE_MESSAGE") || "Allowed formats: PDF, JPG, PNG | Max file size: 5MB"}
+                  {"Allowed formats: PDF, JPG, PNG | Max file size: 5MB"}
                 </div>
               </div>
               <div className="field" style={{ display: "flex", gap: "10px", alignItems: "center" }}>

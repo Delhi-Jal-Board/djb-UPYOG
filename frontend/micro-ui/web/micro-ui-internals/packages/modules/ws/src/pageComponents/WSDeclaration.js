@@ -39,6 +39,17 @@ const WSDeclaration = ({ config, onSelect, userType, formData, setError, formSta
 
   const [signatureFileStoreId, setSignatureFileStoreId] = useState(initialFsId);
   const [localFile, setLocalFile] = useState(null);
+  const [signError, setSignError] = useState(null);
+  const signSpecs = {
+    maxSize: 50 * 1024, // 50KB = 51200 bytes
+    maxSizeText: "50KB",
+    allowedExtensions: ["jpg", "jpeg"],
+    allowedMimeTypes: ["image/jpeg", "image/jpg"],
+    accept: "image/jpeg, .jpg, .jpeg",
+    uiMessage: "Allowed format: JPEG | Max file size: 50KB",
+    formatErrorMessage: "Only JPEG format (.jpg, .jpeg) is allowed for Signature",
+    sizeErrorMessage: "Signature size should not exceed 50KB",
+  };
   const [signatureFile, setSignatureFile] = useState(
     formData?.declarationData?.signatureFile ||
     formData?.declaration?.signatureFile ||
@@ -119,27 +130,44 @@ const WSDeclaration = ({ config, onSelect, userType, formData, setError, formSta
   }, [formValue, signatureFileStoreId, signatureFile, config?.key, onSelect]);
 
   const onUploadSignature = async (e) => {
+    setSignError(null);
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size >= 5242880) {
-        // Handle error if needed
-      } else {
-        setLocalFile(file);
-        try {
-          const response = await Digit.UploadServices.Filestorage("WS", file, Digit.ULBService.getStateId());
-          if (response?.data?.files?.length > 0) {
-            const fsId = response?.data?.files[0]?.fileStoreId;
-            const sigObj = { fileStoreId: fsId, fileName: file.name };
-            setSignatureFileStoreId(fsId);
-            setSignatureFile(sigObj);
-            setValue("signatureFileStoreId", fsId, { shouldDirty: true, shouldValidate: true });
-            setValue("signatureFile", sigObj, { shouldDirty: true, shouldValidate: true });
-            setValue("signatureFileName", file.name, { shouldDirty: true, shouldValidate: true });
-          }
-        } catch (err) {
-          console.error("Signature upload failed", err);
+      const ext = (file.name || "").split(".").pop().toLowerCase();
+      const isExtAllowed = signSpecs.allowedExtensions.includes(ext);
+      const isMimeAllowed = signSpecs.allowedMimeTypes.includes(file.type);
+
+      if (!isExtAllowed && !isMimeAllowed) {
+        setSignError(t("WS_SIGNATURE_ONLY_JPEG") || signSpecs.formatErrorMessage);
+        if (e.target) e.target.value = "";
+        return;
+      }
+
+      if (file.size > signSpecs.maxSize) {
+        setSignError(t("WS_SIGNATURE_MAX_SIZE_EXCEEDED") || signSpecs.sizeErrorMessage);
+        if (e.target) e.target.value = "";
+        return;
+      }
+
+      setLocalFile(file);
+      try {
+        const response = await Digit.UploadServices.Filestorage("WS", file, Digit.ULBService.getStateId());
+        if (response?.data?.files?.length > 0) {
+          const fsId = response?.data?.files[0]?.fileStoreId;
+          const sigObj = { fileStoreId: fsId, fileName: file.name };
+          setSignatureFileStoreId(fsId);
+          setSignatureFile(sigObj);
+          setValue("signatureFileStoreId", fsId, { shouldDirty: true, shouldValidate: true });
+          setValue("signatureFile", sigObj, { shouldDirty: true, shouldValidate: true });
+          setValue("signatureFileName", file.name, { shouldDirty: true, shouldValidate: true });
+        } else {
+          setSignError(t("CS_FILE_UPLOAD_ERROR") || "File upload failed");
           setLocalFile(null);
         }
+      } catch (err) {
+        console.error("Signature upload failed", err);
+        setSignError(t("CS_FILE_UPLOAD_ERROR") || "File upload failed");
+        setLocalFile(null);
       }
     }
   };
@@ -221,7 +249,14 @@ const WSDeclaration = ({ config, onSelect, userType, formData, setError, formSta
 
           <div>
             <LabelFieldPair>
-              <CardLabel>{t("WS_UPLOAD_SIGNATURE_FILE")} <span style={{ color: "red" }}>*</span></CardLabel>
+              <div>
+                <CardLabel style={{ margin: 0 }}>
+                  {t("WS_UPLOAD_SIGNATURE_FILE") || "Upload Signature"} <span style={{ color: "red" }}>*</span>
+                </CardLabel>
+                <div style={{ fontSize: "12px", color: "#555", marginTop: "2px", marginBottom: "4px" }}>
+                  {signSpecs.uiMessage}
+                </div>
+              </div>
               <div className="field" style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                 <div style={{ display: "flex", gap: "10px", alignItems: "center", width: "100%" }}>
                   <div style={{ flex: 1 }}>
@@ -231,6 +266,7 @@ const WSDeclaration = ({ config, onSelect, userType, formData, setError, formSta
                         setLocalFile(null);
                         setSignatureFile(null);
                         setSignatureFileStoreId(null);
+                        setSignError(null);
                         setValue("signatureFile", null, { shouldDirty: true, shouldValidate: true });
                         setValue("signatureFileStoreId", null, { shouldDirty: true, shouldValidate: true });
                         setValue("signatureFileName", "", { shouldDirty: true, shouldValidate: true });
@@ -239,16 +275,17 @@ const WSDeclaration = ({ config, onSelect, userType, formData, setError, formSta
                       message={signatureFileStoreId ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
                       textStyles={{ width: "100%" }}
                       buttonType="button"
-                      accept="image/*, .pdf, .png, .jpeg, .jpg"
+                      accept={signSpecs.accept}
                       uploadedFiles={
                         signatureFileStoreId && !localFile
-                          ? [[formValue?.signatureFileName || signatureFile?.fileName || signatureFile?.name || "signature.png", { fileStoreId: signatureFileStoreId }]]
+                          ? [[formValue?.signatureFileName || signatureFile?.fileName || signatureFile?.name || "signature.jpg", { fileStoreId: signatureFileStoreId }]]
                           : undefined
                       }
                       removeTargetedFile={() => {
                         setLocalFile(null);
                         setSignatureFile(null);
                         setSignatureFileStoreId(null);
+                        setSignError(null);
                         setValue("signatureFile", null, { shouldDirty: true, shouldValidate: true });
                         setValue("signatureFileStoreId", null, { shouldDirty: true, shouldValidate: true });
                         setValue("signatureFileName", "", { shouldDirty: true, shouldValidate: true });
@@ -261,6 +298,11 @@ const WSDeclaration = ({ config, onSelect, userType, formData, setError, formSta
                     </div>
                   )}
                 </div>
+                {signError && (
+                  <div style={{ fontSize: "12px", color: "#d32f2f", marginTop: "4px" }}>
+                    {signError}
+                  </div>
+                )}
                 {!signatureFileStoreId && formValue?.agree && (
                   <CardLabelError style={{ color: "red", fontSize: "12px", marginTop: "4px" }}>
                     {t("WS_SIGNATURE_MANDATORY_ERROR") || "Signature is mandatory to submit application"}

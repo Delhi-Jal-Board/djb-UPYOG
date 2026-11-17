@@ -132,18 +132,9 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
     return str;
   };
 
-  const validActualAssembly = getValidActualValue(
-    propertyAddress?.actualAssembly,
-    baseAssembly
-  );
-  const validActualWard = getValidActualValue(
-    propertyAddress?.actualWard,
-    baseWard
-  );
-  const validActualZone = getValidActualValue(
-    propertyAddress?.actualZone,
-    baseZone
-  );
+  const validActualAssembly = getValidActualValue(propertyAddress?.actualAssembly, baseAssembly);
+  const validActualWard = getValidActualValue(propertyAddress?.actualWard, baseWard);
+  const validActualZone = getValidActualValue(propertyAddress?.actualZone, baseZone);
 
   const rawNumberOfFloors =
     propertyAddress?.numberOfFloors ||
@@ -218,29 +209,17 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
     holderDetails = holderDetails[0] || {};
   }
   const useDetails = data?.useDetails?.useDetails || data?.useDetails || {};
-  const bankDetails =
-    data?.bankDetails?.bankDetails ||
-    data?.bankDetails ||
-    data?.additionalDetails?.bankDetails ||
-    data?.additionalDetails ||
-    {};
+  const bankDetails = data?.bankDetails?.bankDetails || data?.bankDetails || data?.additionalDetails?.bankDetails || data?.additionalDetails || {};
   const documents = data?.DocumentsRequired?.documents || data?.documents?.documents || [];
   const declaration = data?.declarationData || data?.declaration || {};
   const djbEmployee = data?.djbEmployee?.djbEmployee || data?.djbEmployee || {};
   const disability = data?.disability?.disability || data?.disability || data?.additionalDetails || {};
-  const rainWaterHarvesting =
-    data?.rainWaterHarvesting?.rainWaterHarvesting || data?.rainWaterHarvesting || data?.additionalDetails || {};
+  const rainWaterHarvesting = data?.rainWaterHarvesting?.rainWaterHarvesting || data?.rainWaterHarvesting || data?.additionalDetails || {};
 
   return (
     <React.Fragment>
-      <Card style={{ paddingRight: "16px", height: "auto", overflow: "visible" }}>
+      <Card className="overflow-y-scroll">
         <CardHeader>{t("WS_COMMON_SUMMARY")}</CardHeader>
-        <div>
-          {/* <CardSubHeader>{t("WS_COMMON_PROPERTY_DETAILS")}</CardSubHeader> */}
-          {/* <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
-            <Row label={t("WS_PROPERTY_ID_LABEL")} text={`${t(checkForNA(cpt?.propertyId))}`} actionButton={<ActionButton onClick={onEdit} />} />
-          </StatusTable> */}
-
           <CardSubHeader>{t("WS_COMMON_CONNECTION_DETAIL")}</CardSubHeader>
           <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
             <Row
@@ -395,10 +374,13 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
 
           <CardSubHeader>Divyangjan/Person with Disability?</CardSubHeader>
           <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
-            <Row label="Divyangjan/Person with Disability?" text={disability?.isDivyangjan ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")} />
+            <Row
+              label="Divyangjan/Person with Disability?"
+              text={disability?.isDivyangjan ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}
+              actionButton={<ActionButton onClick={onEdit} />}
+            />
           </StatusTable>
 
-          {/* {!isCitizen && ( */}
           <React.Fragment>
             <CardSubHeader>{t("WS_DJB_EMPLOYEE")}</CardSubHeader>
             <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
@@ -428,7 +410,6 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
               )}
             </StatusTable>
           </React.Fragment>
-          {/* )} */}
 
           <CardSubHeader>{t("WS_BANK_DETAILS")}</CardSubHeader>
           <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
@@ -442,15 +423,12 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
           <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
             <Row
               label={t("Rain Water Harvesting Certificate")}
-              text={
-                rainWaterHarvesting?.hasCertificate || rainWaterHarvesting?.isRainwaterHarvesting
-                  ? t("CORE_COMMON_YES")
-                  : t("CORE_COMMON_NO")
-              }
+              text={rainWaterHarvesting?.hasCertificate || rainWaterHarvesting?.isRainwaterHarvesting ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}
+              actionButton={<ActionButton onClick={onEdit} />}
             />
           </StatusTable>
 
-          <CardSubHeader>{t("WS_PROPERTY_AND_WATER_CONNECTION_USE_DETAILS")}</CardSubHeader>
+          <CardSubHeader>{t("PT_LOCATION_DETAILS")}</CardSubHeader>
           <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
             {/* <Row
               label={t("WS_ZRO_LOCATION")}
@@ -486,14 +464,8 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
             <Row label={t("STREET_NAME")} text={`${t(checkForNA(propertyAddress?.streetName || propertyAddress?.street))}`} />
 
             <Row label={t("HOUSE_NO")} text={`${t(checkForNA(propertyAddress?.houseNo || propertyAddress?.doorNo))}`} />
-            <Row
-              label={t("WS_NUMBER_OF_FLOORS")}
-              text={`${getFloorDisplay(rawNumberOfFloors)}`}
-            />
-            <Row
-              label={t("WS_TOTAL_NUMBER_OF_FLOORS_IN_THE_BUILDING")}
-              text={`${getTotalFloorsDisplay(rawTotalNoOfFloors)}`}
-            />
+            <Row label={t("WS_NUMBER_OF_FLOORS")} text={`${getFloorDisplay(rawNumberOfFloors)}`} />
+            <Row label={t("WS_TOTAL_NUMBER_OF_FLOORS_IN_THE_BUILDING")} text={`${getTotalFloorsDisplay(rawTotalNoOfFloors)}`} />
             <Row label={t("ADDRESS_LINE1")} text={`${t(checkForNA(propertyAddress?.addressLine1 || propertyAddress?.street))}`} />
             <Row label={t("ADDRESS_LINE2")} text={`${t(checkForNA(propertyAddress?.addressLine2))}`} />
             <Row label={t("LANDMARK")} text={`${t(checkForNA(propertyAddress?.landmark))}`} />
@@ -533,11 +505,7 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
               label={t("COMMON_ZONE")}
               text={`${t(
                 checkForNA(
-                  propertyAddress?.zone?.name ||
-                    propertyAddress?.zone?.code ||
-                    propertyAddress?.zone ||
-                    cpt?.address?.zone ||
-                    additionalDetails?.zone
+                  propertyAddress?.zone?.name || propertyAddress?.zone?.code || propertyAddress?.zone || cpt?.address?.zone || additionalDetails?.zone
                 )
               )}`}
             />
@@ -558,9 +526,7 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
             {validActualWard ? (
               <Row
                 label={
-                  t("COMMON_CURRENT_WARD") &&
-                  t("COMMON_CURRENT_WARD") !== "Ward" &&
-                  t("COMMON_CURRENT_WARD") !== "COMMON_CURRENT_WARD"
+                  t("COMMON_CURRENT_WARD") && t("COMMON_CURRENT_WARD") !== "Ward" && t("COMMON_CURRENT_WARD") !== "COMMON_CURRENT_WARD"
                     ? t("COMMON_CURRENT_WARD")
                     : "Actual Ward"
                 }
@@ -571,9 +537,7 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
             {validActualZone ? (
               <Row
                 label={
-                  t("COMMON_CURRENT_ZONE") &&
-                  t("COMMON_CURRENT_ZONE") !== "Zone" &&
-                  t("COMMON_CURRENT_ZONE") !== "COMMON_CURRENT_ZONE"
+                  t("COMMON_CURRENT_ZONE") && t("COMMON_CURRENT_ZONE") !== "Zone" && t("COMMON_CURRENT_ZONE") !== "COMMON_CURRENT_ZONE"
                     ? t("COMMON_CURRENT_ZONE")
                     : "Actual Zone"
                 }
@@ -667,9 +631,9 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
                 <Row
                   label={t(
                     doc?.i18nKey ||
-                    (doc?.documentType === "OWNER.DJB_EMPLOYEE_ID" || doc?.documentType?.includes("DJB_EMPLOYEE_ID")
-                      ? "WS_UPLOAD_EMPLOYEE_ID_DOC"
-                      : doc?.documentType?.replaceAll(".", "_"))
+                      (doc?.documentType === "OWNER.DJB_EMPLOYEE_ID" || doc?.documentType?.includes("DJB_EMPLOYEE_ID")
+                        ? "WS_UPLOAD_EMPLOYEE_ID_DOC"
+                        : doc?.documentType?.replaceAll(".", "_"))
                   )}
                   text={checkForNA(doc?.documentUid)}
                   actionButton={index === 0 ? <ActionButton onClick={onEdit} /> : null}
@@ -695,35 +659,34 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
             formData={{ declarationData: declarationData }}
             userType="employee"
           />
-        </div>
+      </Card>
 
-        {(() => {
-          const hasSignature = Boolean(
-            declarationData?.signatureFileStoreId ||
+      {(() => {
+        const hasSignature = Boolean(
+          declarationData?.signatureFileStoreId ||
             declarationData?.signature ||
             declarationData?.signatureFile?.fileStoreId ||
             (typeof declarationData?.signatureFile === "string" && declarationData?.signatureFile.trim()) ||
             data?.declarationData?.signatureFileStoreId ||
             data?.declaration?.signatureFileStoreId ||
             data?.additionalDetails?.signatureFileStoreId
-          );
-          const isSubmitDisabled = !declarationData?.agree || !hasSignature;
+        );
+        const isSubmitDisabled = !declarationData?.agree || !hasSignature;
 
-          return (
-            <ActionBar>
-              <SubmitBar
-                label={t("CS_COMMON_SUBMIT")}
-                onSubmit={() => {
-                  if (isSubmitDisabled) return;
-                  onSubmit({ ...data, declarationData });
-                }}
-                style={{ width: "150px" }}
-                disabled={isSubmitDisabled}
-              />
-            </ActionBar>
-          );
-        })()}
-      </Card>
+        return (
+          <ActionBar>
+            <SubmitBar
+              label={t("CS_COMMON_SUBMIT")}
+              onSubmit={() => {
+                if (isSubmitDisabled) return;
+                onSubmit({ ...data, declarationData });
+              }}
+              style={{ width: "150px" }}
+              disabled={isSubmitDisabled}
+            />
+          </ActionBar>
+        );
+      })()}
       {showDocModal && (
         <Modal
           open={showDocModal}

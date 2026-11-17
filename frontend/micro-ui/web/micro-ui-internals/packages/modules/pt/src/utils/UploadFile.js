@@ -435,18 +435,20 @@ const UploadFileDigiLocker = (props) => {
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      if (file.size > 5242880) { // 5MB limit
-        setShowToast({ error: true, label: "File size should not exceed 5MB." });
+      const maxSize = props.maxSize || 5242880;
+      const maxSizeText = props.maxSizeText || "5MB";
+      if (file.size > maxSize) {
+        setShowToast({ error: true, label: props.sizeErrorMessage || `File size should not exceed ${maxSizeText}.` });
         inpRef.current.value = "";
         return;
       }
       
-      const allowedTypes = ["application/pdf", "image/jpeg", "image/png", "image/jpg"];
+      const allowedTypes = props.allowedTypes || ["application/pdf", "image/jpeg", "image/png", "image/jpg"];
       const fileExtension = file.name.split('.').pop().toLowerCase();
-      const allowedExtensions = ["pdf", "jpeg", "png", "jpg"];
+      const allowedExtensions = props.allowedExtensions || ["pdf", "jpeg", "png", "jpg"];
 
       if (!allowedTypes.includes(file.type) && !allowedExtensions.includes(fileExtension)) {
-        setShowToast({ error: true, label: "Invalid file format. Only PDF, JPG, and PNG are allowed." });
+        setShowToast({ error: true, label: props.formatErrorMessage || `Invalid file format. Only ${props.allowedFormatsText || "PDF, JPG, and PNG"} are allowed.` });
         inpRef.current.value = "";
         return;
       }
