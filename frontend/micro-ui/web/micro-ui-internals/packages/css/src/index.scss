@@ -165,8 +165,8 @@ h6 {
 }
 
 .overflow-y-scroll {
-  overflow-y: visible !important;
-  height: auto !important;
+  overflow-y: scroll;
+  height: 100%;
   width: 100%;
 }
 
@@ -673,6 +673,7 @@ input[type="number"] {
 }
 
 @media (min-width: 780px) {
+
   .citizen-obps-wrapper,
   .pgr-citizen-wrapper,
   .bill-citizen,
@@ -698,6 +699,7 @@ input[type="number"] {
 }
 
 @media only screen and (max-width: 768px) {
+
   /* For mobile phones: */
   .error-boundary {
     height: 75vh;
@@ -863,7 +865,7 @@ input[type="number"] {
 }
 
 .ekyc-report-filter {
-  .header-wrap{
+  .header-wrap {
     padding: 8px !important;
   }
 }

@@ -105,10 +105,181 @@ export const getQueryStringParams = (query) => {
     : {};
 };
 
-export const getAddress = (address, t) => {
-  return `${address?.doorNo ? `${address?.doorNo}, ` : ""}${address?.street ? `${address?.street}, ` : ""}${address?.landmark ? `${address?.landmark}, ` : ""
-    }${address?.locality?.code ? t(`TENANTS_MOHALLA_${address?.locality?.code}`) : ""}${address?.city?.code || address?.city ? `, ${t(address?.city.code || address?.city)}` : ""
-    }${address?.pincode ? `, ${address.pincode}` : " "}`;
+export const getAddress = (address, t, property) => {
+  if (!address && !property) return "";
+  const addrObj = typeof address === "object" && address !== null ? address : {};
+  const propAddr = property?.address || {};
+  const addDetails = property?.additionalDetails || property?.address?.additionalDetails || {};
+
+  const parts = [];
+
+  const houseNo =
+    addrObj?.doorNo ||
+    addrObj?.houseNo ||
+    addrObj?.houseDoorNo ||
+    propAddr?.doorNo ||
+    propAddr?.houseNo ||
+    propAddr?.houseDoorNo ||
+    property?.doorNo ||
+    property?.houseNo ||
+    "";
+  if (houseNo && String(houseNo).trim() && String(houseNo).trim() !== "NA") {
+    parts.push(String(houseNo).trim());
+  }
+
+  const building =
+    addrObj?.buildingName ||
+    addrObj?.buildingColonyName ||
+    propAddr?.buildingName ||
+    propAddr?.buildingColonyName ||
+    property?.buildingName ||
+    "";
+  if (building && String(building).trim() && String(building).trim() !== "NA") {
+    parts.push(String(building).trim());
+  }
+
+  const street =
+    addrObj?.street ||
+    addrObj?.streetName ||
+    addrObj?.addressLine1 ||
+    propAddr?.street ||
+    propAddr?.streetName ||
+    propAddr?.addressLine1 ||
+    property?.street ||
+    property?.addressLine1 ||
+    "";
+  if (street && String(street).trim() && String(street).trim() !== "NA") {
+    parts.push(String(street).trim());
+  }
+
+  const addressLine2 =
+    addrObj?.addressLine2 ||
+    propAddr?.addressLine2 ||
+    property?.addressLine2 ||
+    "";
+  if (addressLine2 && String(addressLine2).trim() && String(addressLine2).trim() !== "NA") {
+    parts.push(String(addressLine2).trim());
+  }
+
+  const landmark =
+    addrObj?.landmark ||
+    addrObj?.landmarkName ||
+    propAddr?.landmark ||
+    propAddr?.landmarkName ||
+    property?.landmark ||
+    "";
+  if (landmark && String(landmark).trim() && String(landmark).trim() !== "NA") {
+    parts.push(String(landmark).trim());
+  }
+
+  const tenantId =
+    addrObj?.tenantId ||
+    propAddr?.tenantId ||
+    property?.tenantId ||
+    Digit?.ULBService?.getCurrentTenantId?.();
+  const localityRaw = addrObj?.locality || propAddr?.locality || property?.locality;
+  const localityCode = localityRaw?.code || (typeof localityRaw === "string" ? localityRaw : null);
+
+  let localityText = "";
+  if (localityCode && Digit?.Utils?.pt?.getMohallaLocale) {
+    const locLocale = Digit.Utils.pt.getMohallaLocale(localityCode, tenantId);
+    localityText = t ? t(locLocale) : locLocale;
+  }
+  if (!localityText || localityText === localityCode) {
+    localityText = localityRaw?.name || localityRaw?.code || "";
+  }
+  if (localityText && String(localityText).trim() && String(localityText).trim() !== "NA") {
+    parts.push(String(localityText).trim());
+  }
+
+  const assemblyVal =
+    addrObj?.assembly ||
+    addrObj?.Assembly ||
+    addrObj?.actualAssembly ||
+    addrObj?.additionalDetails?.assembly ||
+    propAddr?.assembly ||
+    propAddr?.Assembly ||
+    propAddr?.actualAssembly ||
+    propAddr?.additionalDetails?.assembly ||
+    addDetails?.assembly ||
+    property?.assembly ||
+    "";
+  const assemblyText = typeof assemblyVal === "object" ? assemblyVal?.name || assemblyVal?.code || "" : String(assemblyVal || "");
+  if (assemblyText && assemblyText.trim() && assemblyText.trim() !== "NA") {
+    parts.push(assemblyText.trim());
+  }
+
+  const zoneVal =
+    addrObj?.zone ||
+    addrObj?.Zone ||
+    addrObj?.actualZone ||
+    addrObj?.additionalDetails?.zone ||
+    propAddr?.zone ||
+    propAddr?.Zone ||
+    propAddr?.actualZone ||
+    propAddr?.additionalDetails?.zone ||
+    addDetails?.zone ||
+    property?.zone ||
+    "";
+  const zoneText = typeof zoneVal === "object" ? zoneVal?.name || zoneVal?.code || "" : String(zoneVal || "");
+  if (zoneText && zoneText.trim() && zoneText.trim() !== "NA") {
+    parts.push(zoneText.trim());
+  }
+
+  const wardVal =
+    addrObj?.ward ||
+    addrObj?.Ward ||
+    addrObj?.block ||
+    addrObj?.Block ||
+    addrObj?.actualWard ||
+    addrObj?.additionalDetails?.ward ||
+    addrObj?.additionalDetails?.block ||
+    propAddr?.ward ||
+    propAddr?.Ward ||
+    propAddr?.block ||
+    propAddr?.Block ||
+    propAddr?.actualWard ||
+    propAddr?.additionalDetails?.ward ||
+    propAddr?.additionalDetails?.block ||
+    addDetails?.ward ||
+    property?.ward ||
+    "";
+  const wardText = typeof wardVal === "object" ? wardVal?.name || wardVal?.code || "" : String(wardVal || "");
+  if (wardText && wardText.trim() && wardText.trim() !== "NA") {
+    parts.push(wardText.trim());
+  }
+
+  let cityText = "";
+  if (tenantId && Digit?.Utils?.pt?.getCityLocale) {
+    const cityLocale = Digit.Utils.pt.getCityLocale(tenantId);
+    cityText = t ? t(cityLocale) : cityLocale;
+  }
+  if (!cityText || cityText === tenantId) {
+    cityText = addrObj?.city || propAddr?.city || tenantId || "";
+  }
+  if (cityText && String(cityText).trim() && String(cityText).trim() !== "NA") {
+    parts.push(String(cityText).trim());
+  }
+
+  const pincode =
+    addrObj?.pincode ||
+    addrObj?.pinCode ||
+    propAddr?.pincode ||
+    propAddr?.pinCode ||
+    property?.pincode ||
+    "";
+  if (pincode && String(pincode).trim() && String(pincode).trim() !== "NA") {
+    parts.push(String(pincode).trim());
+  }
+
+  const uniqueParts = [];
+  parts.forEach((p) => {
+    if (p && !uniqueParts.some((existing) => existing.toLowerCase() === p.toLowerCase())) {
+      uniqueParts.push(p);
+    }
+  });
+
+  return uniqueParts.join(", ");
 };
 
 export const toTitleCase = (value) => {

@@ -15,12 +15,189 @@ import { useTranslation } from "react-i18next";
 import _ from "lodash";
 import { useLocation, Link, useHistory } from "react-router-dom";
 
-const getAddress = (address, t) => {
-  return `${address?.doorNo ? `${address?.doorNo}, ` : ""} ${address?.street ? `${address?.street}, ` : ""}${
-    address?.landmark ? `${address?.landmark}, ` : ""
-  }${t(Digit.Utils.pt.getMohallaLocale(address?.locality.code, address?.tenantId))}, ${t(Digit.Utils.pt.getCityLocale(address?.tenantId))}${
-    address?.pincode && t(address?.pincode) ? `, ${address.pincode}` : " "
-  }`;
+const getAddress = (address, t, property) => {
+  if (!address && !property) return "";
+  const addrObj = typeof address === "object" && address !== null ? address : {};
+  const propAddr = property?.address || {};
+  const addDetails = property?.additionalDetails || property?.address?.additionalDetails || {};
+
+  const parts = [];
+
+  // 1. House No / Door No
+  const houseNo =
+    addrObj?.doorNo ||
+    addrObj?.houseNo ||
+    addrObj?.houseDoorNo ||
+    propAddr?.doorNo ||
+    propAddr?.houseNo ||
+    propAddr?.houseDoorNo ||
+    property?.doorNo ||
+    property?.houseNo ||
+    "";
+  if (houseNo && String(houseNo).trim() && String(houseNo).trim() !== "NA") {
+    parts.push(String(houseNo).trim());
+  }
+
+  // 2. Building / Colony Name
+  const building =
+    addrObj?.buildingName ||
+    addrObj?.buildingColonyName ||
+    propAddr?.buildingName ||
+    propAddr?.buildingColonyName ||
+    property?.buildingName ||
+    "";
+  if (building && String(building).trim() && String(building).trim() !== "NA") {
+    parts.push(String(building).trim());
+  }
+
+  // 3. Street / Street Name / AddressLine1
+  const street =
+    addrObj?.street ||
+    addrObj?.streetName ||
+    addrObj?.addressLine1 ||
+    propAddr?.street ||
+    propAddr?.streetName ||
+    propAddr?.addressLine1 ||
+    property?.street ||
+    property?.addressLine1 ||
+    "";
+  if (street && String(street).trim() && String(street).trim() !== "NA") {
+    parts.push(String(street).trim());
+  }
+
+  // 4. AddressLine2
+  const addressLine2 =
+    addrObj?.addressLine2 ||
+    propAddr?.addressLine2 ||
+    property?.addressLine2 ||
+    "";
+  if (addressLine2 && String(addressLine2).trim() && String(addressLine2).trim() !== "NA") {
+    parts.push(String(addressLine2).trim());
+  }
+
+  // 5. Landmark
+  const landmark =
+    addrObj?.landmark ||
+    addrObj?.landmarkName ||
+    propAddr?.landmark ||
+    propAddr?.landmarkName ||
+    property?.landmark ||
+    "";
+  if (landmark && String(landmark).trim() && String(landmark).trim() !== "NA") {
+    parts.push(String(landmark).trim());
+  }
+
+  // 6. Locality
+  const tenantId =
+    addrObj?.tenantId ||
+    propAddr?.tenantId ||
+    property?.tenantId ||
+    Digit.ULBService.getCurrentTenantId();
+  const localityRaw = addrObj?.locality || propAddr?.locality || property?.locality;
+  const localityCode = localityRaw?.code || (typeof localityRaw === "string" ? localityRaw : null);
+
+  let localityText = "";
+  if (localityCode && Digit.Utils?.pt?.getMohallaLocale) {
+    const locLocale = Digit.Utils.pt.getMohallaLocale(localityCode, tenantId);
+    localityText = t ? t(locLocale) : locLocale;
+  }
+  if (!localityText || localityText === localityCode) {
+    localityText = localityRaw?.name || localityRaw?.code || "";
+  }
+  if (localityText && String(localityText).trim() && String(localityText).trim() !== "NA") {
+    parts.push(String(localityText).trim());
+  }
+
+  // 7. Assembly
+  const assemblyVal =
+    addrObj?.assembly ||
+    addrObj?.Assembly ||
+    addrObj?.actualAssembly ||
+    addrObj?.additionalDetails?.assembly ||
+    propAddr?.assembly ||
+    propAddr?.Assembly ||
+    propAddr?.actualAssembly ||
+    addDetails?.assembly ||
+    property?.assembly ||
+    "";
+  const assemblyText = typeof assemblyVal === "object" ? assemblyVal?.name || assemblyVal?.code || "" : String(assemblyVal || "");
+  if (assemblyText && assemblyText.trim() && assemblyText.trim() !== "NA") {
+    parts.push(assemblyText.trim());
+  }
+
+  // 8. Zone
+  const zoneVal =
+    addrObj?.zone ||
+    addrObj?.Zone ||
+    addrObj?.actualZone ||
+    addrObj?.additionalDetails?.zone ||
+    propAddr?.zone ||
+    propAddr?.Zone ||
+    propAddr?.actualZone ||
+    addDetails?.zone ||
+    property?.zone ||
+    "";
+  const zoneText = typeof zoneVal === "object" ? zoneVal?.name || zoneVal?.code || "" : String(zoneVal || "");
+  if (zoneText && zoneText.trim() && zoneText.trim() !== "NA") {
+    parts.push(zoneText.trim());
+  }
+
+  // 9. Ward
+  const wardVal =
+    addrObj?.ward ||
+    addrObj?.Ward ||
+    addrObj?.block ||
+    addrObj?.Block ||
+    addrObj?.actualWard ||
+    addrObj?.additionalDetails?.ward ||
+    addrObj?.additionalDetails?.block ||
+    propAddr?.ward ||
+    propAddr?.Ward ||
+    propAddr?.block ||
+    propAddr?.Block ||
+    propAddr?.actualWard ||
+    addDetails?.ward ||
+    property?.ward ||
+    "";
+  const wardText = typeof wardVal === "object" ? wardVal?.name || wardVal?.code || "" : String(wardVal || "");
+  if (wardText && wardText.trim() && wardText.trim() !== "NA") {
+    parts.push(wardText.trim());
+  }
+
+  // 10. City
+  let cityText = "";
+  if (tenantId && Digit.Utils?.pt?.getCityLocale) {
+    const cityLocale = Digit.Utils.pt.getCityLocale(tenantId);
+    cityText = t ? t(cityLocale) : cityLocale;
+  }
+  if (!cityText || cityText === tenantId) {
+    cityText = addrObj?.city || propAddr?.city || tenantId || "";
+  }
+  if (cityText && String(cityText).trim() && String(cityText).trim() !== "NA") {
+    parts.push(String(cityText).trim());
+  }
+
+  // 11. Pincode
+  const pincode =
+    addrObj?.pincode ||
+    addrObj?.pinCode ||
+    propAddr?.pincode ||
+    propAddr?.pinCode ||
+    property?.pincode ||
+    "";
+  if (pincode && String(pincode).trim() && String(pincode).trim() !== "NA") {
+    parts.push(String(pincode).trim());
+  }
+
+  // Deduplicate parts case-insensitively while preserving order
+  const uniqueParts = [];
+  parts.forEach((p) => {
+    if (p && !uniqueParts.some((existing) => existing.toLowerCase() === p.toLowerCase())) {
+      uniqueParts.push(p);
+    }
+  });
+
+  return uniqueParts.join(", ");
 };
 
 const PropertySearchNSummary = ({ config, onSelect, userType, formData, setError, formState, clearErrors }) => {
@@ -151,7 +328,7 @@ const PropertySearchNSummary = ({ config, onSelect, userType, formData, setError
   const activeProperty = selectedProperty ? selectedProperty : propertyDetails?.Properties?.length === 1 ? propertyDetails?.Properties[0] : null;
 
   if (activeProperty) {
-    propertyAddress = getAddress(activeProperty?.address, t);
+    propertyAddress = getAddress(activeProperty?.address, t, activeProperty);
   }
 
   const getInputStyles = () => {
@@ -327,11 +504,8 @@ const PropertySearchNSummary = ({ config, onSelect, userType, formData, setError
                             },
                             jsonPath: "Properties[0].address.street",
                             d: (res) => {
-                              let resultString =
-                                (_.get(res, "Properties[0].address.doorNo") ? `${_.get(res, "Properties[0].address.doorNo")}, ` : "") +
-                                (_.get(res, "Properties[0].address.street") ? `${_.get(res, "Properties[0].address.street")}, ` : "") +
-                                (_.get(res, "Properties[0].address.landmark") ? `${_.get(res, "Properties[0].address.landmark")}` : "");
-                              return resultString;
+                              const prop = _.get(res, "Properties[0]");
+                              return getAddress(prop?.address, t, prop);
                             },
                             isArray: false,
                           },

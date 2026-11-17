@@ -269,6 +269,18 @@ const OLDApplication = () => {
     }
   }, [propertyId, propertyDetails]);
 
+  useEffect(() => {
+    if (showCheckPage) {
+      window.history.pushState({ step: "check" }, "");
+      const handlePopState = () => {
+        setShowCheckPage(false);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      };
+      window.addEventListener("popstate", handlePopState);
+      return () => window.removeEventListener("popstate", handlePopState);
+    }
+  }, [showCheckPage]);
+
   const {
     isLoading: creatingWaterApplicationLoading,
 
@@ -539,6 +551,7 @@ const OLDApplication = () => {
 
     // Validation passed, show CheckPage
     setShowCheckPage(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const processSubmission = async (data) => {
@@ -921,7 +934,16 @@ const OLDApplication = () => {
     return (
       <React.Fragment>
         <div className="employee-form-section-wrapper">
-          <VerticalTimeline config={timelineConfig} currentActiveIndex={timelineConfig.length - 1} showFinalStep={false} />
+          <VerticalTimeline
+            config={timelineConfig}
+            currentActiveIndex={timelineConfig.length - 1}
+            showFinalStep={false}
+            onSelect={(route, idx) => {
+              if (idx < timelineConfig.length - 1) {
+                handleEdit();
+              }
+            }}
+          />
           <CheckPage
             data={formDataRef.current || sessionFormData}
             onSubmit={(finalData) => processSubmission(finalData || formDataRef.current || sessionFormData)}
@@ -958,7 +980,7 @@ const OLDApplication = () => {
         {showToast && (
           <Toast
             isDleteBtn={true}
-            duration={5000}
+            duration={3000}
             error={showToast?.key === "error" ? true : false}
             warning={showToast?.warning}
             label={t(showToast?.message)}

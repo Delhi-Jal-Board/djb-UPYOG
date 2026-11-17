@@ -39,11 +39,16 @@ const isOtherDocument = (code = "") => code.toUpperCase().includes("OTHER");
 const isRwhDocType = (doc) => {
   if (!doc) return false;
   const str = (
-    (typeof doc === "string" ? doc : "") + " " +
-    (doc?.documentType || "") + " " +
-    (doc?.code || "") + " " +
-    (doc?.i18nKey || "") + " " +
-    (doc?.name || "") + " " +
+    (typeof doc === "string" ? doc : "") +
+    " " +
+    (doc?.documentType || "") +
+    " " +
+    (doc?.code || "") +
+    " " +
+    (doc?.i18nKey || "") +
+    " " +
+    (doc?.name || "") +
+    " " +
     (doc?.documentName || "")
   ).toUpperCase();
   return str.includes("RAIN") || str.includes("HARVEST");
@@ -59,7 +64,62 @@ const removeDuplicateOtherDocuments = (documentList = []) => {
   });
 };
 
-const WSDocumentsEmployee = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState, setValue: formSetValue }) => {
+const getDocUploadSpecs = (doc, isApplicantPhoto) => {
+  const code = (doc?.code || "").toUpperCase();
+  if (isApplicantPhoto || code === "OWNER.APPLICANTPHOTO" || code.includes("PHOTO")) {
+    return {
+      type: "PHOTO",
+      maxSize: 200 * 1024, // 200KB = 204800 bytes
+      maxSizeText: "200KB",
+      allowedExtensions: ["jpg", "jpeg"],
+      allowedMimeTypes: ["image/jpeg", "image/jpg"],
+      allowedFormatsText: "JPEG",
+      accept: "image/jpeg, .jpg, .jpeg",
+      uiMessage: "Allowed format: JPEG | Max file size: 200KB",
+      formatErrorMessage: "Only JPEG format (.jpg, .jpeg) is allowed for Applicant Photo",
+      sizeErrorMessage: "Applicant Photo size should not exceed 200KB",
+    };
+  }
+  if (code === "OWNER.OWNERSHIPPROOF" || code.includes("OWNERSHIP")) {
+    return {
+      type: "OWNERSHIP",
+      maxSize: 5 * 1024 * 1024, // 5MB = 5242880 bytes
+      maxSizeText: "5MB",
+      allowedExtensions: ["pdf"],
+      allowedMimeTypes: ["application/pdf"],
+      allowedFormatsText: "PDF",
+      accept: ".pdf, application/pdf",
+      uiMessage: "Allowed format: PDF | Max file size: 5MB",
+      formatErrorMessage: "Only PDF format (.pdf) is allowed for Ownership Documents",
+      sizeErrorMessage: "Ownership Document size should not exceed 5MB",
+    };
+  }
+  // ID and Other documents (Identity Proof, Other Documents, Employee ID, etc.)
+  return {
+    type: "ID_OR_OTHER",
+    maxSize: 1024 * 1024, // 1MB = 1048576 bytes
+    maxSizeText: "1MB",
+    allowedExtensions: ["pdf", "jpg", "jpeg"],
+    allowedMimeTypes: ["application/pdf", "image/jpeg", "image/jpg"],
+    allowedFormatsText: "PDF, JPEG",
+    accept: ".pdf, application/pdf, image/jpeg, .jpg, .jpeg",
+    uiMessage: "Allowed formats: PDF, JPEG | Max file size: 1MB",
+    formatErrorMessage: "Only PDF and JPEG formats are allowed for this document",
+    sizeErrorMessage: "File size should not exceed 1MB",
+  };
+};
+
+const WSDocumentsEmployee = ({
+  t,
+  config,
+  onSelect,
+  userType,
+  formData,
+  setError: setFormError,
+  clearErrors: clearFormErrors,
+  formState,
+  setValue: formSetValue,
+}) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const checkIsTenant = (val) => {
     if (!val) return false;
@@ -67,7 +127,7 @@ const WSDocumentsEmployee = ({ t, config, onSelect, userType, formData, setError
     return String(code).toUpperCase() === "TENANT";
   };
 
-  const isTenant = 
+  const isTenant =
     checkIsTenant(formData?.ConnectionDetails?.[0]?.applicantType) ||
     checkIsTenant(formData?.ConnectionDetails?.applicantType) ||
     checkIsTenant(formData?.applicationSelection?.applicantType) ||
@@ -85,12 +145,9 @@ const WSDocumentsEmployee = ({ t, config, onSelect, userType, formData, setError
     formData?.additionalDetails?.isRainwaterHarvesting === true
   );
 
-
   const sessionDjb = Digit.SessionStorage.get("PT_CREATE_EMP_WS_NEW_FORM")?.djbEmployee;
   const djbData = formData?.djbEmployee || sessionDjb || formData?.additionalDetails;
-  const isDjbEmployee =
-    djbData?.isDjbEmployee === true ||
-    String(djbData?.isDjbEmployee) === "true";
+  const isDjbEmployee = djbData?.isDjbEmployee === true || String(djbData?.isDjbEmployee) === "true";
 
   const [documents, setDocuments] = useState(() => {
     const initialDocs = removeDuplicateOtherDocuments(
@@ -99,9 +156,7 @@ const WSDocumentsEmployee = ({ t, config, onSelect, userType, formData, setError
     const hasDjbInDocs = initialDocs.some(
       (d) => (d?.documentType === "OWNER.DJB_EMPLOYEE_ID" || d?.documentType?.includes("DJB_EMPLOYEE_ID")) && d?.fileStoreId
     );
-    const djbDocId =
-      djbData?.document?.fileStoreId ||
-      (typeof djbData?.document === "string" ? djbData?.document : null);
+    const djbDocId = djbData?.document?.fileStoreId || (typeof djbData?.document === "string" ? djbData?.document : null);
     if (isDjbEmployee && !hasDjbInDocs && djbDocId) {
       initialDocs.push({
         documentType: "OWNER.DJB_EMPLOYEE_ID",
@@ -190,9 +245,7 @@ const WSDocumentsEmployee = ({ t, config, onSelect, userType, formData, setError
     } else {
       removeEmployeeDocError();
       setDocuments((prevDocs) => {
-        const filtered = (prevDocs || []).filter(
-          (d) => d?.documentType !== "OWNER.DJB_EMPLOYEE_ID" && !d?.documentType?.includes("DJB_EMPLOYEE_ID")
-        );
+        const filtered = (prevDocs || []).filter((d) => d?.documentType !== "OWNER.DJB_EMPLOYEE_ID" && !d?.documentType?.includes("DJB_EMPLOYEE_ID"));
         if (filtered.length !== (prevDocs || []).length) {
           return filtered;
         }
@@ -294,8 +347,6 @@ const WSDocumentsEmployee = ({ t, config, onSelect, userType, formData, setError
     });
   }
 
-
-
   const innerContent = (
     <div className="formcomposer-section-grid ws-doc-upload">
       {wsDocs?.[wsDocsData]?.map((document, index) => {
@@ -365,24 +416,27 @@ const WSDocumentsEmployee = ({ t, config, onSelect, userType, formData, setError
     </div>
   );
 
-  const rwhAlertBanner = !isTenant && isRwhMandatory && !hasRwhUploaded ? (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: "10px",
-        marginBottom: "16px",
-        padding: "10px 14px",
-        backgroundColor: "#fff2f0",
-        borderLeft: "4px solid #ff4d4f",
-        borderRadius: "4px",
-      }}
-    >
-      <span style={{ fontSize: "14px", color: "#d32f2f", fontWeight: "600" }}>
-        ⚠️ {t("WS_RWH_CERTIFICATE_MANDATORY_INSTRUCTION") || "Rain Water Harvesting Certificate is mandatory to upload. Please upload it under Other Documents."}
-      </span>
-    </div>
-  ) : null;
+  const rwhAlertBanner =
+    !isTenant && isRwhMandatory && !hasRwhUploaded ? (
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "10px",
+          marginBottom: "16px",
+          padding: "10px 14px",
+          backgroundColor: "#fff2f0",
+          borderLeft: "4px solid #ff4d4f",
+          borderRadius: "4px",
+        }}
+      >
+        <span style={{ fontSize: "14px", color: "#d32f2f", fontWeight: "600" }}>
+          ⚠️{" "}
+          {t("WS_RWH_CERTIFICATE_MANDATORY_INSTRUCTION") ||
+            "Rain Water Harvesting Certificate is mandatory to upload. Please upload it under Other Documents."}
+        </span>
+      </div>
+    ) : null;
 
   const nocDownloadSection = isTenant ? (
     <div
@@ -420,35 +474,15 @@ const WSDocumentsEmployee = ({ t, config, onSelect, userType, formData, setError
     </div>
   ) : null;
 
-  const uploadInfoBanner = (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: "10px",
-        marginBottom: "16px",
-        padding: "10px 14px",
-        backgroundColor: "#e8f4fd",
-        borderLeft: "4px solid #00497e",
-        borderRadius: "4px",
-      }}
-    >
-      <span style={{ fontSize: "14px", color: "#00497e", fontWeight: "600" }}>
-        ℹ️ {t("WS_DOCUMENT_UPLOAD_INSTRUCTION") || "Maximum upload size: 5MB per document. Supported formats: PDF, JPG, PNG."}
-      </span>
-    </div>
-  );
-
   if (userType === "citizen") {
     return (
       <div>
         <Timeline currentStep={3} />
         <FormStep t={t} config={config} onSelect={goNext} onSkip={() => onSelect()} isDisabled={enableSubmit}>
-          {uploadInfoBanner}
           {rwhAlertBanner}
           {nocDownloadSection}
           {innerContent}
-          {error && <Toast label={error} onClose={() => setError(null)} error />}
+          {error && <Toast label={error} onClose={() => setError(null)} error isDleteBtn={true} duration={3000} />}
         </FormStep>
       </div>
     );
@@ -456,26 +490,16 @@ const WSDocumentsEmployee = ({ t, config, onSelect, userType, formData, setError
 
   return (
     <CollapsibleCardPage title={t("WS_DOCUMENTS")} defaultOpen={true}>
-      {uploadInfoBanner}
       {rwhAlertBanner}
       {nocDownloadSection}
       {innerContent}
-      {error && <Toast label={error} onClose={() => setError(null)} error />}
+      {error && <Toast label={error} onClose={() => setError(null)} error isDleteBtn={true} duration={3000} />}
     </CollapsibleCardPage>
   );
 };
 
-function EmployeeIdDocumentUpload({
-  t,
-  documents,
-  setDocuments,
-  formData,
-  formSetValue,
-  tenantId,
-}) {
-  const existingEmployeeDoc = documents?.find(
-    (d) => d?.documentType === "OWNER.DJB_EMPLOYEE_ID" || d?.documentType?.includes("DJB_EMPLOYEE_ID")
-  );
+function EmployeeIdDocumentUpload({ t, documents, setDocuments, formData, formSetValue, tenantId }) {
+  const existingEmployeeDoc = documents?.find((d) => d?.documentType === "OWNER.DJB_EMPLOYEE_ID" || d?.documentType?.includes("DJB_EMPLOYEE_ID"));
   const initialFileId =
     existingEmployeeDoc?.fileStoreId ||
     formData?.djbEmployee?.document?.fileStoreId ||
@@ -486,10 +510,19 @@ function EmployeeIdDocumentUpload({
   const [fileName, setFileName] = useState(existingEmployeeDoc?.fileName || "");
   const [errorUpload, setErrorUpload] = useState(null);
 
+  const specs = {
+    maxSize: 1024 * 1024, // 1MB = 1048576 bytes
+    maxSizeText: "1MB",
+    allowedExtensions: ["pdf", "jpg", "jpeg"],
+    allowedMimeTypes: ["application/pdf", "image/jpeg", "image/jpg"],
+    accept: ".pdf, application/pdf, image/jpeg, .jpg, .jpeg",
+    uiMessage: "Allowed formats: PDF, JPEG | Max file size: 1MB",
+    formatErrorMessage: "Only PDF and JPEG formats are allowed for Employee ID Document",
+    sizeErrorMessage: "Employee ID Document size should not exceed 1MB",
+  };
+
   useEffect(() => {
-    const doc = documents?.find(
-      (d) => d?.documentType === "OWNER.DJB_EMPLOYEE_ID" || d?.documentType?.includes("DJB_EMPLOYEE_ID")
-    );
+    const doc = documents?.find((d) => d?.documentType === "OWNER.DJB_EMPLOYEE_ID" || d?.documentType?.includes("DJB_EMPLOYEE_ID"));
     const currentId =
       doc?.fileStoreId ||
       formData?.djbEmployee?.document?.fileStoreId ||
@@ -504,50 +537,61 @@ function EmployeeIdDocumentUpload({
     (async () => {
       setErrorUpload(null);
       if (file) {
-        if (file.size > 5242880) {
-          setErrorUpload(t("CS_MAXIMUM_UPLOAD_SIZE_EXCEEDED") || "File size should not exceed 5MB");
+        const ext = (file.name || "").split(".").pop().toLowerCase();
+        const isExtAllowed = specs.allowedExtensions.includes(ext);
+        const isMimeAllowed = specs.allowedMimeTypes.includes(file.type);
+
+        if (!isExtAllowed && !isMimeAllowed) {
+          setErrorUpload(t("WS_ONLY_PDF_JPEG_ALLOWED_EMP") || specs.formatErrorMessage);
           setFile(null);
-        } else {
-          try {
-            setUploadedFile(null);
-            const stateOrTenantId = tenantId?.split(".")[0] || Digit.ULBService.getStateId();
-            const response = await Digit.UploadServices.Filestorage("WS", file, stateOrTenantId);
-            if (response?.data?.files?.length > 0) {
-              const fileId = response?.data?.files[0]?.fileStoreId;
-              const nameOfFile = file?.name || t("WS_UPLOAD_EMPLOYEE_ID_DOC") || "Employee_ID_Document";
-              setUploadedFile(fileId);
-              setFileName(nameOfFile);
+          return;
+        }
 
-              setDocuments((prevDocs) => {
-                const filtered = (prevDocs || []).filter(
-                  (d) => d?.documentType !== "OWNER.DJB_EMPLOYEE_ID" && !d?.documentType?.includes("DJB_EMPLOYEE_ID")
-                );
-                return [
-                  ...filtered,
-                  {
-                    documentType: "OWNER.DJB_EMPLOYEE_ID",
-                    fileStoreId: fileId,
-                    fileName: nameOfFile,
-                    documentName: "WS_UPLOAD_EMPLOYEE_ID_DOC",
-                    documentUid: formData?.djbEmployee?.employeeId || "",
-                    i18nKey: "WS_UPLOAD_EMPLOYEE_ID_DOC",
-                    status: "ACTIVE",
-                  },
-                ];
+        if (file.size > specs.maxSize) {
+          setErrorUpload(t("WS_EMP_ID_MAX_SIZE_EXCEEDED") || specs.sizeErrorMessage);
+          setFile(null);
+          return;
+        }
+
+        try {
+          setUploadedFile(null);
+          const stateOrTenantId = tenantId?.split(".")[0] || Digit.ULBService.getStateId();
+          const response = await Digit.UploadServices.Filestorage("WS", file, stateOrTenantId);
+          if (response?.data?.files?.length > 0) {
+            const fileId = response?.data?.files[0]?.fileStoreId;
+            const nameOfFile = file?.name || t("WS_UPLOAD_EMPLOYEE_ID_DOC") || "Employee_ID_Document";
+            setUploadedFile(fileId);
+            setFileName(nameOfFile);
+
+            setDocuments((prevDocs) => {
+              const filtered = (prevDocs || []).filter(
+                (d) => d?.documentType !== "OWNER.DJB_EMPLOYEE_ID" && !d?.documentType?.includes("DJB_EMPLOYEE_ID")
+              );
+              return [
+                ...filtered,
+                {
+                  documentType: "OWNER.DJB_EMPLOYEE_ID",
+                  fileStoreId: fileId,
+                  fileName: nameOfFile,
+                  documentName: "WS_UPLOAD_EMPLOYEE_ID_DOC",
+                  documentUid: formData?.djbEmployee?.employeeId || "",
+                  i18nKey: "WS_UPLOAD_EMPLOYEE_ID_DOC",
+                  status: "ACTIVE",
+                },
+              ];
+            });
+
+            if (formSetValue && formData?.djbEmployee) {
+              formSetValue("djbEmployee", {
+                ...formData.djbEmployee,
+                document: fileId,
               });
-
-              if (formSetValue && formData?.djbEmployee) {
-                formSetValue("djbEmployee", {
-                  ...formData.djbEmployee,
-                  document: fileId,
-                });
-              }
-            } else {
-              setErrorUpload(t("CS_FILE_UPLOAD_ERROR") || "File Upload Error");
             }
-          } catch (err) {
+          } else {
             setErrorUpload(t("CS_FILE_UPLOAD_ERROR") || "File Upload Error");
           }
+        } catch (err) {
+          setErrorUpload(t("CS_FILE_UPLOAD_ERROR") || "File Upload Error");
         }
       }
     })();
@@ -555,9 +599,20 @@ function EmployeeIdDocumentUpload({
 
   function selectfile(e) {
     const selected = e?.target?.files?.[0];
+    setErrorUpload(null);
     if (selected) {
-      if (selected.size > 5242880) {
-        setErrorUpload(t("CS_MAXIMUM_UPLOAD_SIZE_EXCEEDED") || "File size should not exceed 5MB");
+      const ext = (selected.name || "").split(".").pop().toLowerCase();
+      const isExtAllowed = specs.allowedExtensions.includes(ext);
+      const isMimeAllowed = specs.allowedMimeTypes.includes(selected.type);
+
+      if (!isExtAllowed && !isMimeAllowed) {
+        setErrorUpload(t("WS_ONLY_PDF_JPEG_ALLOWED_EMP") || specs.formatErrorMessage);
+        if (e?.target) e.target.value = "";
+        return;
+      }
+
+      if (selected.size > specs.maxSize) {
+        setErrorUpload(t("WS_EMP_ID_MAX_SIZE_EXCEEDED") || specs.sizeErrorMessage);
         if (e?.target) e.target.value = "";
         return;
       }
@@ -574,9 +629,7 @@ function EmployeeIdDocumentUpload({
     if (fileInput) fileInput.value = "";
 
     setDocuments((prevDocs) =>
-      (prevDocs || []).filter(
-        (d) => d?.documentType !== "OWNER.DJB_EMPLOYEE_ID" && !d?.documentType?.includes("DJB_EMPLOYEE_ID")
-      )
+      (prevDocs || []).filter((d) => d?.documentType !== "OWNER.DJB_EMPLOYEE_ID" && !d?.documentType?.includes("DJB_EMPLOYEE_ID"))
     );
 
     if (formSetValue && formData?.djbEmployee) {
@@ -627,26 +680,27 @@ function EmployeeIdDocumentUpload({
             <span className="check-page-link-button">*</span>
           </CardLabel>
         </div>
-        <div style={{ fontSize: "12px", color: "#666", marginTop: "-2px", marginBottom: "4px" }}>
-          {t("WS_DOCUMENT_MAX_SIZE_MESSAGE") || "Allowed formats: PDF, JPG, PNG | Max file size: 5MB"}
-        </div>
+        <div style={{ fontSize: "12px", color: "#555", marginTop: "-2px", marginBottom: "4px" }}>{specs.uiMessage}</div>
         <div className="field" style={{ display: "flex", gap: "10px", alignItems: "flex-start", width: "100%" }}>
           <div style={{ flex: 1 }}>
             <UploadFile
               id={"employee-doc-upload"}
               extraStyleName={"propertyCreate"}
               placeholder={t("WS_UPLOAD_EMPLOYEE_ID_DOC") || t("Upload Employee ID Document")}
-              accept="image/*, .pdf, .png, .jpeg, .jpg"
+              accept={specs.accept}
               onUpload={selectfile}
               onDelete={handleDelete}
               message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`ES_NO_FILE_SELECTED_LABEL`)}
               error={errorUpload}
               uploadedFiles={
-                uploadedFile && !file ? [[fileName || t("WS_UPLOAD_EMPLOYEE_ID_DOC") || t("Upload Employee ID Document"), { fileStoreId: uploadedFile }]] : undefined
+                uploadedFile && !file
+                  ? [[fileName || t("WS_UPLOAD_EMPLOYEE_ID_DOC") || t("Upload Employee ID Document"), { fileStoreId: uploadedFile }]]
+                  : undefined
               }
             />
           </div>
         </div>
+        {errorUpload && <div style={{ fontSize: "12px", color: "#d32f2f", marginTop: "4px" }}>{errorUpload}</div>}
         {uploadedFile && (
           <div
             style={{
@@ -706,13 +760,14 @@ function SelectDocument({
 }) {
   const fileRef = useRef();
   const pendingId = useRef(Date.now());
-  const otherUploadedDocuments = isOther ? documents?.filter((item) => item?.documentType?.includes(doc?.code) && item?.tempId !== pendingId.current) || [] : [];
+  const otherUploadedDocuments = isOther
+    ? documents?.filter((item) => item?.documentType?.includes(doc?.code) && item?.tempId !== pendingId.current) || []
+    : [];
   const filteredDocument = isOther ? null : documents?.filter((item) => item?.documentType?.includes(doc?.code))[0];
   const isApplicantPhoto = doc?.code === "OWNER.APPLICANTPHOTO";
-  const isIdentityProof =
-    doc?.code === "OWNER.IDENTITYPROOF" ||
-    doc?.code?.includes("IDENTITYPROOF") ||
-    doc?.code?.includes("IDENTITY");
+  const specs = getDocUploadSpecs(doc, isApplicantPhoto);
+  const [fileError, setFileError] = useState(null);
+  const isIdentityProof = doc?.code === "OWNER.IDENTITYPROOF" || doc?.code?.includes("IDENTITYPROOF") || doc?.code?.includes("IDENTITY");
   const isOwnershipProof =
     doc?.code === "OWNER.ADDRESSPROOF" ||
     doc?.code === "OWNER.OWNERSHIPPROOF" ||
@@ -818,6 +873,14 @@ function SelectDocument({
   }, [selectedDocument]);
 
   const handleCapture = (capturedFile) => {
+    setFileError(null);
+    if (capturedFile.size > specs.maxSize) {
+      const msg = t("WS_PHOTO_MAX_SIZE_EXCEEDED") || specs.sizeErrorMessage;
+      setError(msg);
+      setFileError(msg);
+      setShowCamera(false);
+      return;
+    }
     setFile(capturedFile);
     setIsCameraFile(true);
     setShowCamera(false);
@@ -827,6 +890,7 @@ function SelectDocument({
 
   const removeUploadedDocument = (fileStoreId) => {
     setDocuments((previousDocuments) => previousDocuments.filter((item) => item?.fileStoreId !== fileStoreId));
+    setFileError(null);
     if (fileStoreId === uploadedFile) {
       setUploadedFile(null);
       setFile(null);
@@ -883,9 +947,24 @@ function SelectDocument({
 
   function selectfile(e, newFile) {
     const selectedFile = newFile || e?.target?.files?.[0];
+    setFileError(null);
     if (selectedFile) {
-      if (selectedFile.size > 5242880) {
-        setError(t("CS_MAXIMUM_UPLOAD_SIZE_EXCEEDED") || "File size should not exceed 5MB");
+      const ext = (selectedFile.name || "").split(".").pop().toLowerCase();
+      const isExtAllowed = specs.allowedExtensions.includes(ext);
+      const isMimeAllowed = specs.allowedMimeTypes.includes(selectedFile.type);
+
+      if (!isExtAllowed && !isMimeAllowed) {
+        const msg = t(specs.formatErrorMessageKey) || specs.formatErrorMessage;
+        setError(msg);
+        setFileError(msg);
+        if (e?.target) e.target.value = "";
+        return;
+      }
+
+      if (selectedFile.size > specs.maxSize) {
+        const msg = t(specs.sizeErrorMessageKey) || specs.sizeErrorMessage;
+        setError(msg);
+        setFileError(msg);
         if (e?.target) e.target.value = "";
         return;
       }
@@ -1008,15 +1087,13 @@ function SelectDocument({
     }
   };
 
-  const hasOtherUploaded = isOther && documents?.some(item => item?.documentType?.includes(doc?.code));
+  const hasOtherUploaded = isOther && documents?.some((item) => item?.documentType?.includes(doc?.code));
   const hasInput = !!uploadedFile || !!(documentUid && documentUid.trim());
-  const isCompletelyEmpty = !doc?.required
-    ? !hasInput
-    : (!uploadedFile && (!documentUid || !documentUid.trim()) && !selectedDocument?.code);
-  
+  const isCompletelyEmpty = !doc?.required ? !hasInput : !uploadedFile && (!documentUid || !documentUid.trim()) && !selectedDocument?.code;
+
   const isPartiallyFilled = !doc?.required
     ? hasInput && !(uploadedFile && (doc?.hasDropdown ? selectedDocument?.code : true))
-    : (!isCompletelyEmpty) && !(uploadedFile && selectedDocument?.code);
+    : !isCompletelyEmpty && !(uploadedFile && selectedDocument?.code);
 
   const effectiveRequired = (doc?.required && !hasOtherUploaded) || isPartiallyFilled;
 
@@ -1061,19 +1138,18 @@ function SelectDocument({
     const isRwhSatisfied = hasRwhUploaded || (uploadedFile && isRwhDocType(selectedDocument));
     const rwhMissing = isRwhRequired && !isRwhSatisfied;
 
-    const hasOtherUploaded = isOther && documents?.some(item => item?.documentType?.includes(doc?.code));
-    const isCompletelyEmpty = isApplicantPhoto
-      ? !uploadedFile
-      : !uploadedFile && (!documentUid || !documentUid.trim()) && !selectedDocument?.code;
+    const hasOtherUploaded = isOther && documents?.some((item) => item?.documentType?.includes(doc?.code));
+    const isCompletelyEmpty = isApplicantPhoto ? !uploadedFile : !uploadedFile && (!documentUid || !documentUid.trim()) && !selectedDocument?.code;
     const isDocNumberMissing = isDocNumberMandatory && (!documentUid || !documentUid.trim());
     const isDocMissing = doc?.required && !hasOtherUploaded && (!uploadedFile || !selectedDocument?.code);
     const isPartiallyFilled = isApplicantPhoto
       ? false
       : isDocNumberMandatory
-      ? (!uploadedFile || !selectedDocument?.code || isDocNumberMissing)
-      : (!isCompletelyEmpty) && !(uploadedFile && selectedDocument?.code);
-    
-    const effectiveRequired = (doc?.required && !hasOtherUploaded) || isPartiallyFilled || (isOther && isRwhMandatory && !hasRwhUploaded) || isDocNumberMandatory;
+      ? !uploadedFile || !selectedDocument?.code || isDocNumberMissing
+      : !isCompletelyEmpty && !(uploadedFile && selectedDocument?.code);
+
+    const effectiveRequired =
+      (doc?.required && !hasOtherUploaded) || isPartiallyFilled || (isOther && isRwhMandatory && !hasRwhUploaded) || isDocNumberMandatory;
     const err = validateDocumentNumber(documentUid, selectedDocument?.code, isDocNumberMandatory || effectiveRequired, !!uploadedFile);
 
     if (!isHidden) {
@@ -1091,41 +1167,74 @@ function SelectDocument({
     } else if (isHidden) {
       removeError();
     }
-  }, [uploadedFile, selectedDocument, documentUid, isHidden, effectiveRequired, isPartiallyFilled, hasOtherUploaded, formData?.ConnectionDetails?.[0], isRwhMandatory, hasRwhUploaded]);
+  }, [
+    uploadedFile,
+    selectedDocument,
+    documentUid,
+    isHidden,
+    effectiveRequired,
+    isPartiallyFilled,
+    hasOtherUploaded,
+    formData?.ConnectionDetails?.[0],
+    isRwhMandatory,
+    hasRwhUploaded,
+  ]);
 
   useEffect(() => {
     (async () => {
       setError(null);
       if (file) {
+        setFileError(null);
         const isDuplicateDocument = isOther && documents.some((item) => item?.documentType === selectedDocument?.code);
 
         if (isDuplicateDocument) {
           const documentNameKey = selectedDocument?.i18nKey || selectedDocument?.code || "This";
           const translatedDocumentName = t(documentNameKey);
           const documentName = translatedDocumentName === documentNameKey ? documentNameKey.replaceAll("_", " ") : translatedDocumentName;
-          setError(`Document "${documentName}" has already been uploaded.`);
+          const msg = `Document "${documentName}" has already been uploaded.`;
+          setError(msg);
+          setFileError(msg);
           setFile(null);
-        } else if (file.size > 5242880) {
-          setError(t("CS_MAXIMUM_UPLOAD_SIZE_EXCEEDED") || "File size should not exceed 5MB");
+          return;
+        }
+
+        const ext = (file.name || "").split(".").pop().toLowerCase();
+        const isExtAllowed = specs.allowedExtensions.includes(ext);
+        const isMimeAllowed = specs.allowedMimeTypes.includes(file.type);
+
+        if (!isExtAllowed && !isMimeAllowed) {
+          const msg = t(specs.formatErrorMessageKey) || specs.formatErrorMessage;
+          setError(msg);
+          setFileError(msg);
           setFile(null);
-        } else if (doc?.code === "OWNER.APPLICANTPHOTO" && !file.type.match(/image\/(jpeg|png)/i) && !file.name.match(/\.(jpg|jpeg|png)$/i)) {
-          setError(t("WS_ONLY_JPG_PNG_ALLOWED") || "Only JPG and PNG files are allowed for Applicant Photo");
+          return;
+        }
+
+        if (file.size > specs.maxSize) {
+          const msg = t(specs.sizeErrorMessageKey) || specs.sizeErrorMessage;
+          setError(msg);
+          setFileError(msg);
           setFile(null);
-        } else {
-          try {
-            setUploadedFile(null);
-            setIsUploading(true);
-            const response = await Digit.UploadServices.Filestorage("WS", file, Digit.ULBService.getStateId());
-            if (response?.data?.files?.length > 0) {
-              setUploadedFile(response?.data?.files[0]?.fileStoreId);
-            } else {
-              setError(t("CS_FILE_UPLOAD_ERROR"));
-            }
-          } catch (err) {
-            setError(t("CS_FILE_UPLOAD_ERROR"));
-          } finally {
-            setIsUploading(false);
+          return;
+        }
+
+        try {
+          setUploadedFile(null);
+          setIsUploading(true);
+          const response = await Digit.UploadServices.Filestorage("WS", file, Digit.ULBService.getStateId());
+          if (response?.data?.files?.length > 0) {
+            setUploadedFile(response?.data?.files[0]?.fileStoreId);
+          } else {
+            const msg = t("CS_FILE_UPLOAD_ERROR") || "File upload failed";
+            setError(msg);
+            setFileError(msg);
           }
+        } catch (err) {
+          const msg = t("CS_FILE_UPLOAD_ERROR") || "File upload failed";
+          setError(msg);
+          setFileError(msg);
+        } finally {
+          setIsUploading(false);
         }
       }
     })();
@@ -1175,9 +1284,9 @@ function SelectDocument({
         <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
           <CardLabel style={{ margin: 0 }}>
             {isOtherDocumentsRemark
-              ? (!t("WS_OTHER_DOCUMENT_REMARK") || t("WS_OTHER_DOCUMENT_REMARK") === "WS_OTHER_DOCUMENT_REMARK"
+              ? !t("WS_OTHER_DOCUMENT_REMARK") || t("WS_OTHER_DOCUMENT_REMARK") === "WS_OTHER_DOCUMENT_REMARK"
                 ? "Other Document Remark"
-                : t("WS_OTHER_DOCUMENT_REMARK"))
+                : t("WS_OTHER_DOCUMENT_REMARK")
               : t(`${doc?.i18nKey?.replaceAll(".", "_")}_DOCUMENT_NO`)}
             {isDocNumberMandatory && <span className="check-page-link-button"> *</span>}
           </CardLabel>
@@ -1219,9 +1328,9 @@ function SelectDocument({
               }}
               placeholder={
                 isOtherDocumentsRemark
-                  ? (!t("WS_ENTER_OTHER_DOCUMENT_REMARK") || t("WS_ENTER_OTHER_DOCUMENT_REMARK") === "WS_ENTER_OTHER_DOCUMENT_REMARK"
+                  ? !t("WS_ENTER_OTHER_DOCUMENT_REMARK") || t("WS_ENTER_OTHER_DOCUMENT_REMARK") === "WS_ENTER_OTHER_DOCUMENT_REMARK"
                     ? "Enter Other Document Remark"
-                    : t("WS_ENTER_OTHER_DOCUMENT_REMARK"))
+                    : t("WS_ENTER_OTHER_DOCUMENT_REMARK")
                   : t("WS_IDENTITY_NO_PLACEHOLDER")
               }
               disabled={isDocumentUidLocked}
@@ -1280,18 +1389,14 @@ function SelectDocument({
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <CardLabel style={{ margin: 0 }}>
             {doc?.code === "OWNER.APPLICANTPHOTO"
-              ? (!t("WS_UPLOAD_APPLICANT_PHOTO") || t("WS_UPLOAD_APPLICANT_PHOTO") === "WS_UPLOAD_APPLICANT_PHOTO"
+              ? !t("WS_UPLOAD_APPLICANT_PHOTO") || t("WS_UPLOAD_APPLICANT_PHOTO") === "WS_UPLOAD_APPLICANT_PHOTO"
                 ? doc?.description || "Upload Applicant Photo"
-                : t("WS_UPLOAD_APPLICANT_PHOTO"))
+                : t("WS_UPLOAD_APPLICANT_PHOTO")
               : t(`${doc?.i18nKey?.replaceAll(".", "_")}_UPLOAD_DOCUMENT`)}
             {doc?.required && <span className="check-page-link-button">*</span>}
           </CardLabel>
         </div>
-        <div style={{ fontSize: "12px", color: "#666", marginTop: "-2px", marginBottom: "4px" }}>
-          {doc?.code === "OWNER.APPLICANTPHOTO"
-            ? t("WS_PHOTO_MAX_SIZE_MESSAGE") || "Allowed formats: JPG, PNG | Max file size: 5MB"
-            : t("WS_DOCUMENT_MAX_SIZE_MESSAGE") || "Allowed formats: PDF, JPG, PNG | Max file size: 5MB"}
-        </div>
+        <div style={{ fontSize: "12px", color: "#555", marginTop: "-2px", marginBottom: "4px" }}>{specs.uiMessage}</div>
         <div className="field" style={{ display: "flex", gap: "10px", alignItems: "flex-start", width: "100%" }}>
           <div style={{ flex: 1 }}>
             {digiLockerUpload ? (
@@ -1300,6 +1405,7 @@ function SelectDocument({
                 onDelete={() => {
                   setUploadedFile(null);
                   setFile(null);
+                  setFileError(null);
                   setIsCameraFile(false);
                   setIsDocumentUidLocked(false);
                   setDocumentUid("");
@@ -1312,13 +1418,21 @@ function SelectDocument({
                 textStyles={{ width: "100%" }}
                 buttonType="button"
                 error={effectiveRequired && !uploadedFile}
-                accept={doc?.code === "OWNER.APPLICANTPHOTO" ? "image/jpeg, image/png, .jpg, .jpeg, .png" : "image/*, .pdf, .png, .jpeg, .jpg"}
+                accept={specs.accept}
+                maxSize={specs.maxSize}
+                maxSizeText={specs.maxSizeText}
+                allowedExtensions={specs.allowedExtensions}
+                allowedTypes={specs.allowedMimeTypes}
+                allowedFormatsText={specs.allowedFormatsText}
+                sizeErrorMessage={specs.sizeErrorMessage}
+                formatErrorMessage={specs.formatErrorMessage}
                 uploadedFiles={
                   uploadedFile && !file
                     ? [[filteredDocument?.fileName || file?.name || t(documentDisplayName || "CS_COMMON_DOCUMENT"), { fileStoreId: uploadedFile }]]
                     : undefined
                 }
                 removeTargetedFile={() => {
+                  setFileError(null);
                   if (isOther && uploadedFile) {
                     removeUploadedDocument(uploadedFile);
                   } else {
@@ -1344,6 +1458,7 @@ function SelectDocument({
                 onDelete={() => {
                   setUploadedFile(null);
                   setFile(null);
+                  setFileError(null);
                   setIsCameraFile(false);
                   setIsDocumentUidLocked(false);
                   setDocumentUid("");
@@ -1356,13 +1471,14 @@ function SelectDocument({
                 textStyles={{ width: "100%" }}
                 buttonType="button"
                 error={effectiveRequired && !uploadedFile}
-                accept={doc?.code === "OWNER.APPLICANTPHOTO" ? "image/jpeg, image/png, .jpg, .jpeg, .png" : "image/*, .pdf, .png, .jpeg, .jpg"}
+                accept={specs.accept}
                 uploadedFiles={
                   uploadedFile && !file
                     ? [[filteredDocument?.fileName || file?.name || t(documentDisplayName || "CS_COMMON_DOCUMENT"), { fileStoreId: uploadedFile }]]
                     : undefined
                 }
                 removeTargetedFile={() => {
+                  setFileError(null);
                   if (isOther && uploadedFile) {
                     removeUploadedDocument(uploadedFile);
                   } else {
@@ -1395,11 +1511,12 @@ function SelectDocument({
                   setError(docNumberError);
                   return;
                 }
-                
+
                 pendingId.current = Date.now();
-                
+
                 setUploadedFile(null);
                 setFile(null);
+                setFileError(null);
                 setSelectedDocument(doc?.hasDropdown ? {} : doc);
                 setDocumentUid("");
                 setDocNumberError(null);
@@ -1413,13 +1530,14 @@ function SelectDocument({
                 padding: "6px 12px",
                 cursor: "pointer",
                 fontWeight: "bold",
-                marginTop: "2px"
+                marginTop: "2px",
               }}
             >
               + {t("NEW_DOCUMENT_TEXT") || "Add Document"}
             </button>
           )}
         </div>
+        {fileError && <div style={{ fontSize: "12px", color: "#d32f2f", marginTop: "4px" }}>{fileError}</div>}
         {(isOther
           ? otherUploadedDocuments
           : uploadedFile
@@ -1575,10 +1693,14 @@ const CameraCaptureModal = ({ onCapture, onClose, t }) => {
       context.scale(-1, 1);
 
       context.drawImage(videoRef.current, 0, 0, canvasRef.current.width, canvasRef.current.height);
-      canvasRef.current.toBlob((blob) => {
-        const file = new File([blob], "applicant_photo.jpg", { type: "image/jpeg" });
-        onCapture(file);
-      }, "image/jpeg");
+      canvasRef.current.toBlob(
+        (blob) => {
+          const file = new File([blob], "applicant_photo.jpg", { type: "image/jpeg" });
+          onCapture(file);
+        },
+        "image/jpeg",
+        0.7
+      );
     }
   };
 
