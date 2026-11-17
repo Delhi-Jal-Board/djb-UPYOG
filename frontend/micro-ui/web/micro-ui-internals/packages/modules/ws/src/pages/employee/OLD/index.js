@@ -4,18 +4,23 @@ import { useTranslation } from "react-i18next";
 import { useLocation, useHistory } from "react-router-dom";
 import _ from "lodash";
 import cloneDeep from "lodash/cloneDeep";
-import { createPayloadOfWS, updatePayloadOfWS } from "../../../utils";
+import { createPayloadOfWS, updatePayloadOfWS, getNormalizedBankDetails } from "../../../utils";
 import CheckPage from "./CheckPage";
 import { newConfig as newConfigLocal } from "../../../config/wsCreateConfig";
 
 const isRwhDoc = (doc) => {
   if (!doc) return false;
   const str = (
-    (typeof doc === "string" ? doc : "") + " " +
-    (doc?.documentType || "") + " " +
-    (doc?.code || "") + " " +
-    (doc?.i18nKey || "") + " " +
-    (doc?.name || "") + " " +
+    (typeof doc === "string" ? doc : "") +
+    " " +
+    (doc?.documentType || "") +
+    " " +
+    (doc?.code || "") +
+    " " +
+    (doc?.i18nKey || "") +
+    " " +
+    (doc?.name || "") +
+    " " +
     (doc?.documentName || "")
   ).toUpperCase();
   return str.includes("RAIN") || str.includes("HARVEST");
@@ -41,11 +46,11 @@ const OLDApplication = () => {
     { label: "WS_COMMON_CONNECTION_HOLDER_DETAILS_HEADER" },
     { label: "Are you a Divyangjan/Person with Disability?" },
     { label: "WS_DJB_EMPLOYEE" },
+    { label: "WS_BANK_DETAILS" },
     { label: "Rain Water Harvesting Certificate" },
     { label: "PT_LOCATION_DETAILS" },
     { label: "WS_PROPERTY_AND_WATER_CONNECTION_USE_DETAILS" },
     // ...(isCitizen ? [] : [{ label: "WS_DJB_EMPLOYEE" }]),
-    // { label: "WS_BANK_DETAILS" },
     { label: "WS_DOCUMENTS" },
     { label: "WS_DECLARATION" },
   ].map((step, index) => ({
@@ -115,12 +120,12 @@ const OLDApplication = () => {
       "WSConnectionHolderDetails",
       "WSDivyangjan",
       "WSDjbEmployee",
+      "WSBankDetails",
       "WSRainWaterHarvesting",
       "WSPropertyLocationDetails",
       "PropertyWaterConnection",
       "WSActivationPlumberDetails",
       "WSRoadCuttingDetails",
-      // "WSBankDetails",
       "WSDocumentsEmployee",
     ];
 
@@ -216,6 +221,21 @@ const OLDApplication = () => {
             },
           ],
         });
+      } else if (compName === "WSBankDetails") {
+        reorderedBody.push({
+          isCreateConnection: true,
+          body: [
+            {
+              type: "component",
+              key: "bankDetails",
+              component: "WSBankDetails",
+              withoutLabel: true,
+              texts: {
+                header: "Bank Details",
+              },
+            },
+          ],
+        });
       }
     });
 
@@ -245,57 +265,7 @@ const OLDApplication = () => {
       propertyDetails?.Properties?.[0]?.propertyId;
 
     if (hasProp && !canSubmit) {
-      const djbData = formDataRef.current?.djbEmployee || formDataRef.current?.additionalDetails;
-      const isDjbEmp = djbData?.isDjbEmployee === true || String(djbData?.isDjbEmployee) === "true";
-      const docs =
-        formDataRef.current?.DocumentsRequired?.documents ||
-        formDataRef.current?.documents?.documents ||
-        formDataRef.current?.documents ||
-        [];
-      const foundDjb = Array.isArray(docs) && docs.find(
-        (d) =>
-          (d?.documentType === "OWNER.DJB_EMPLOYEE_ID" || d?.documentType?.includes("DJB_EMPLOYEE_ID")) &&
-          (d?.fileStoreId || d?.file || d?.filestoreId)
-      );
-      const djbDoc =
-        djbData?.document?.fileStoreId ||
-        (typeof djbData?.document === "string" && djbData?.document.trim()) ||
-        djbData?.document ||
-        (foundDjb ? foundDjb.fileStoreId || foundDjb.file || foundDjb.filestoreId : null);
-
-      const isDjbEmpInv =
-        isDjbEmp &&
-        (!djbData?.employeeId ||
-          !String(djbData?.employeeId).trim() ||
-          !djbData?.designation ||
-          !String(djbData?.designation).trim() ||
-          !djbDoc);
-
-      const rwhData = formDataRef.current?.rainWaterHarvesting || formDataRef.current?.additionalDetails;
-      const isRwhReq =
-        rwhData?.hasCertificate === true ||
-        String(rwhData?.hasCertificate) === "true" ||
-        rwhData?.isRainwaterHarvesting === true ||
-        String(rwhData?.isRainwaterHarvesting) === "true";
-      const isRwhUploaded = Array.isArray(docs) && docs.some((d) => isRwhDoc(d) && (d?.fileStoreId || d?.file));
-      const isRwhInv = isRwhReq && !isRwhUploaded;
-
-      const storedErrors = sessionStorage.getItem("FORMSTATE_ERRORS");
-      let parsedErrors = {};
-      try {
-        parsedErrors = storedErrors ? JSON.parse(storedErrors) : {};
-      } catch (e) {}
-      const hasStoredErrors = Object.keys(parsedErrors).some((k) => {
-        const err = parsedErrors[k];
-        if (!err) return false;
-        if (Array.isArray(err?.type) && err.type.length === 0) return false;
-        if (typeof err === "object" && Object.keys(err).length === 0) return false;
-        return true;
-      });
-
-      if (!hasStoredErrors && !isDjbEmpInv && !isRwhInv) {
-        setSubmitValve(true);
-      }
+      setSubmitValve(true);
     }
   }, [propertyId, propertyDetails]);
 
@@ -353,9 +323,7 @@ const OLDApplication = () => {
     };
 
     const djbData = formDataRef.current?.djbEmployee || formDataRef.current?.additionalDetails;
-    const isDjbEmp =
-      djbData?.isDjbEmployee === true ||
-      String(djbData?.isDjbEmployee) === "true";
+    const isDjbEmp = djbData?.isDjbEmployee === true || String(djbData?.isDjbEmployee) === "true";
     const djbDoc =
       djbData?.document?.fileStoreId ||
       (typeof djbData?.document === "string" && djbData?.document.trim()) ||
@@ -374,11 +342,7 @@ const OLDApplication = () => {
 
     const isDjbEmpInvalid =
       isDjbEmp &&
-      (!djbData?.employeeId ||
-        !String(djbData?.employeeId).trim() ||
-        !djbData?.designation ||
-        !String(djbData?.designation).trim() ||
-        !djbDoc);
+      (!djbData?.employeeId || !String(djbData?.employeeId).trim() || !djbData?.designation || !String(djbData?.designation).trim() || !djbDoc);
 
     const rwhData = formDataRef.current?.rainWaterHarvesting || formDataRef.current?.additionalDetails;
     const isRwhRequired =
@@ -398,23 +362,14 @@ const OLDApplication = () => {
     const isRwhDocUploaded = Array.isArray(allCurrentDocs) && allCurrentDocs.some((d) => isRwhDoc(d) && (d?.fileStoreId || d?.file));
     const isRwhInvalid = isRwhRequired && !isRwhDocUploaded;
 
-    const actualFormErrors = Object.keys(formState?.errors || {}).filter((key) => {
-      const err = formState?.errors?.[key];
-      if (!err) return false;
-      if (Array.isArray(err?.type) && err.type.length === 0) return false;
-      if (typeof err === "object" && Object.keys(err).length === 0) return false;
-      return true;
-    });
-
-    const hasErrors = actualFormErrors.length > 0 || isDjbEmpInvalid || isRwhInvalid;
     const hasProperty =
       formDataRef.current?.cpt?.details?.propertyId ||
       sessionStorage.getItem("WS_OTP_VERIFIED_PROPERTY_ID") ||
       propertyId ||
       propertyDetails?.Properties?.[0]?.propertyId;
 
-    // Enable submit if no form errors AND property is selected
-    const canSubmitNow = !hasErrors && !!hasProperty;
+    // Enable submit if property is selected
+    const canSubmitNow = !!hasProperty;
     setSubmitValve((prev) => (prev !== canSubmitNow ? canSubmitNow : prev));
   };
 
@@ -445,10 +400,25 @@ const OLDApplication = () => {
       }
     }
 
-    const djbData = combinedData?.djbEmployee || combinedData?.additionalDetails;
-    const isDjbEmp =
-      djbData?.isDjbEmployee === true ||
-      String(djbData?.isDjbEmployee) === "true";
+    const docsFromStorage = (() => {
+      try {
+        const stored = sessionStorage.getItem("DISCONNECTION_EDIT_DOCS");
+        return stored ? JSON.parse(stored) : [];
+      } catch (e) {
+        return [];
+      }
+    })();
+
+    const allSubmitDocs = [
+      ...(Array.isArray(combinedData?.DocumentsRequired?.documents) ? combinedData.DocumentsRequired.documents : []),
+      ...(Array.isArray(combinedData?.documents?.documents) ? combinedData.documents.documents : []),
+      ...(Array.isArray(combinedData?.documents) ? combinedData.documents : []),
+      ...(Array.isArray(formDataRef.current?.DocumentsRequired?.documents) ? formDataRef.current.DocumentsRequired.documents : []),
+      ...(Array.isArray(formDataRef.current?.documents?.documents) ? formDataRef.current.documents.documents : []),
+      ...(Array.isArray(formDataRef.current?.documents) ? formDataRef.current.documents : []),
+      ...docsFromStorage,
+    ];
+
     const findDjbDocInSubmit = (docs) => {
       if (!Array.isArray(docs)) return null;
       const found = docs.find(
@@ -459,24 +429,18 @@ const OLDApplication = () => {
       return found ? found.fileStoreId || found.file || found.filestoreId : null;
     };
 
+    const djbData = combinedData?.djbEmployee || combinedData?.additionalDetails;
+    const isDjbEmp = djbData?.isDjbEmployee === true || String(djbData?.isDjbEmployee) === "true";
+
     const djbDoc =
       djbData?.document?.fileStoreId ||
       (typeof djbData?.document === "string" && djbData?.document.trim()) ||
       djbData?.document ||
-      findDjbDocInSubmit(combinedData?.DocumentsRequired?.documents) ||
-      findDjbDocInSubmit(combinedData?.documents?.documents) ||
-      findDjbDocInSubmit(combinedData?.documents) ||
-      findDjbDocInSubmit(formDataRef.current?.DocumentsRequired?.documents) ||
-      findDjbDocInSubmit(formDataRef.current?.documents?.documents) ||
-      findDjbDocInSubmit(formDataRef.current?.documents);
+      findDjbDocInSubmit(allSubmitDocs);
 
     const isDjbEmpInvalid =
       isDjbEmp &&
-      (!djbData?.employeeId ||
-        !String(djbData?.employeeId).trim() ||
-        !djbData?.designation ||
-        !String(djbData?.designation).trim() ||
-        !djbDoc);
+      (!djbData?.employeeId || !String(djbData?.employeeId).trim() || !djbData?.designation || !String(djbData?.designation).trim() || !djbDoc);
 
     if (isDjbEmpInvalid) {
       setShowToast({ key: "error", message: "ERR_FILL_ALL_MANDATORY_FIELDS" });
@@ -490,14 +454,6 @@ const OLDApplication = () => {
       rwhSubmitData?.isRainwaterHarvesting === true ||
       String(rwhSubmitData?.isRainwaterHarvesting) === "true";
 
-    const allSubmitDocs =
-      combinedData?.DocumentsRequired?.documents ||
-      combinedData?.documents?.documents ||
-      combinedData?.documents ||
-      formDataRef.current?.DocumentsRequired?.documents ||
-      formDataRef.current?.documents?.documents ||
-      formDataRef.current?.documents ||
-      [];
     const isRwhSubmitDocUploaded = Array.isArray(allSubmitDocs) && allSubmitDocs.some((d) => isRwhDoc(d) && (d?.fileStoreId || d?.file));
 
     if (isRwhSubmitRequired && !isRwhSubmitDocUploaded) {
@@ -513,6 +469,72 @@ const OLDApplication = () => {
       combinedData.djbEmployee.document = djbDoc;
       if (!formDataRef.current.djbEmployee) formDataRef.current.djbEmployee = {};
       formDataRef.current.djbEmployee.document = djbDoc;
+    }
+
+    const hasBankDetailsStep = config?.body?.some((s) => s.body?.[0]?.component === "WSBankDetails");
+    if (hasBankDetailsStep) {
+      const bankData =
+        combinedData?.bankDetails?.bankDetails ||
+        combinedData?.bankDetails ||
+        formDataRef.current?.bankDetails?.bankDetails ||
+        formDataRef.current?.bankDetails;
+
+      const isBankInvalid =
+        !bankData?.bankName ||
+        !String(bankData?.bankName).trim() ||
+        !(bankData?.bankBranchName || bankData?.branchName) ||
+        !String(bankData?.bankBranchName || bankData?.branchName).trim() ||
+        !bankData?.ifscCode ||
+        !/^[A-Z]{4}0[A-Z0-9]{6}$/.test(String(bankData?.ifscCode).trim().toUpperCase()) ||
+        !(bankData?.bankAccountNumber || bankData?.accountNumber) ||
+        !/^[0-9]{1,18}$/.test(String(bankData?.bankAccountNumber || bankData?.accountNumber).trim());
+
+      if (isBankInvalid) {
+        setShowToast({
+          key: "error",
+          message: t("ERR_BANK_DETAILS_MANDATORY") || "All Bank Details fields are mandatory",
+        });
+        return;
+      }
+    }
+
+    const hasPhoto = allSubmitDocs.some(
+      (d) =>
+        (d?.documentType === "OWNER.PHOTO" || d?.documentType?.includes("PHOTO") || d?.documentType === "OWNER.APPLICANTPHOTO") &&
+        (d?.fileStoreId || d?.file)
+    );
+    if (!hasPhoto) {
+      setShowToast({ key: "error", message: t("WS_PHOTO_MANDATORY") || "Applicant Photo is mandatory" });
+      return;
+    }
+
+    const hasIdentity = allSubmitDocs.some(
+      (d) => (d?.documentType?.includes("IDENTITYPROOF") || d?.documentType?.includes("IDENTITY")) && (d?.fileStoreId || d?.file)
+    );
+    if (!hasIdentity) {
+      setShowToast({ key: "error", message: t("WS_IDENTITY_PROOF_MANDATORY") || "Identity Proof Document is mandatory" });
+      return;
+    }
+
+    const hasOwnership = allSubmitDocs.some(
+      (d) => (d?.documentType?.includes("ADDRESSPROOF") || d?.documentType?.includes("OWNERSHIP")) && (d?.fileStoreId || d?.file)
+    );
+    if (!hasOwnership) {
+      setShowToast({ key: "error", message: t("WS_OWNERSHIP_PROOF_MANDATORY") || "Ownership Proof Document is mandatory" });
+      return;
+    }
+
+    if (combinedData?.bankDetails) {
+      combinedData.bankDetails = {
+        ...combinedData.bankDetails,
+        branchName: combinedData.bankDetails.branchName || combinedData.bankDetails.bankBranchName,
+        bankBranchName: combinedData.bankDetails.bankBranchName || combinedData.bankDetails.branchName,
+        bankAccountNumber: combinedData.bankDetails.bankAccountNumber || combinedData.bankDetails.accountNumber,
+        accountNumber: combinedData.bankDetails.accountNumber || combinedData.bankDetails.bankAccountNumber,
+      };
+      if (formDataRef.current) {
+        formDataRef.current.bankDetails = combinedData.bankDetails;
+      }
     }
 
     // Validation passed, show CheckPage
@@ -573,8 +595,10 @@ const OLDApplication = () => {
       data?.djbEmployee?.document?.fileStoreId ||
       (typeof data?.djbEmployee?.document === "string" && data?.djbEmployee?.document.trim()) ||
       data?.djbEmployee?.document ||
-      data?.DocumentsRequired?.documents?.find((d) => d?.documentType === "OWNER.DJB_EMPLOYEE_ID" || d?.documentType?.includes("DJB_EMPLOYEE_ID"))?.fileStoreId ||
-      data?.documents?.documents?.find((d) => d?.documentType === "OWNER.DJB_EMPLOYEE_ID" || d?.documentType?.includes("DJB_EMPLOYEE_ID"))?.fileStoreId;
+      data?.DocumentsRequired?.documents?.find((d) => d?.documentType === "OWNER.DJB_EMPLOYEE_ID" || d?.documentType?.includes("DJB_EMPLOYEE_ID"))
+        ?.fileStoreId ||
+      data?.documents?.documents?.find((d) => d?.documentType === "OWNER.DJB_EMPLOYEE_ID" || d?.documentType?.includes("DJB_EMPLOYEE_ID"))
+        ?.fileStoreId;
 
     if (djbDoc) {
       if (!data.djbEmployee) data.djbEmployee = {};
@@ -655,13 +679,20 @@ const OLDApplication = () => {
       data.additionalDetails = {
         ...data.additionalDetails,
         ...data.rainWaterHarvesting,
-        hasRainWaterHarvestingCertificate: !!(
-          data?.rainWaterHarvesting?.hasCertificate || data?.rainWaterHarvesting?.isRainwaterHarvesting
-        ),
-        isRainwaterHarvesting: !!(
-          data?.rainWaterHarvesting?.hasCertificate || data?.rainWaterHarvesting?.isRainwaterHarvesting
-        ),
+        hasRainWaterHarvestingCertificate: !!(data?.rainWaterHarvesting?.hasCertificate || data?.rainWaterHarvesting?.isRainwaterHarvesting),
+        isRainwaterHarvesting: !!(data?.rainWaterHarvesting?.hasCertificate || data?.rainWaterHarvesting?.isRainwaterHarvesting),
       };
+    }
+
+    if (data?.bankDetails) {
+      const normalizedBank = getNormalizedBankDetails(data);
+      if (normalizedBank) {
+        data.additionalDetails = {
+          ...data.additionalDetails,
+          ...normalizedBank,
+          bankDetails: normalizedBank,
+        };
+      }
     }
 
     // Ensure cpt details are set before payload creation
@@ -750,9 +781,7 @@ const OLDApplication = () => {
                 // setAppDetails((prev) => ({ ...prev, waterConnection: waterUpdateData?.WaterConnection?.[0] }));
                 clearSessionFormData();
                 sessionStorage.removeItem("WS_OTP_VERIFIED_PROPERTY_ID");
-                history.push(
-                  `${basePath}/ws-response?applicationNumber=${waterUpdateData?.WaterConnection?.[0]?.applicationNo}`
-                );
+                history.push(`${basePath}/ws-response?applicationNumber=${waterUpdateData?.WaterConnection?.[0]?.applicationNo}`);
 
                 /*
                 // Sewerage API commented out - only Water runs

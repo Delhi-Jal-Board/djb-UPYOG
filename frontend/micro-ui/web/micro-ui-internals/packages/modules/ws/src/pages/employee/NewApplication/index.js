@@ -574,7 +574,10 @@ const getDisplayValue = (value, t) => {
 const FieldBlock = ({ label, required, error, children, hint, isFullWidth }) => {
   return (
     <div style={{ ...fieldWrapperStyle, ...(isFullWidth ? { gridColumn: "1 / -1" } : {}) }}>
-      <CardLabel style={{ fontWeight: "600", marginBottom: "0px" }}>{required ? `${label} *` : label}</CardLabel>
+      <CardLabel style={{ fontWeight: "600", marginBottom: "0px" }}>
+        {label}
+        {required ? <span className="astericColor" style={{ color: "#d4351c" }}> *</span> : null}
+      </CardLabel>
       {children}
       {hint ? <CardText style={{ color: "#505A5F", fontSize: "14px", marginBottom: "0px", marginTop: "0px" }}>{hint}</CardText> : null}
       {error ? <CardLabelError>{error?.message || error}</CardLabelError> : null}
@@ -958,7 +961,7 @@ const NewApplication = () => {
     ...(isGovernmentEmployee ? [{ sectionId: "governmentEmployee", route: "government-employee", actions: "For Government Employee" }] : []),
     { sectionId: "propertyAddress", route: "property-address", actions: "Property Address" },
     { sectionId: "useDetails", route: "use-details", actions: "Property & Connection Use Details" },
-    /*{ sectionId: "bankDetails", route: "bank-details", actions: "Bank Details" },*/
+    { sectionId: "bankDetails", route: "bank-details", actions: "Bank Details" },
     { sectionId: "documents", route: "documents", actions: "Documents to be Attached" },
     { sectionId: "declaration", route: "declaration", actions: "Declaration/Undertaking" },
     { sectionId: "Review", route: "review", actions: "Review Application" },
@@ -1194,6 +1197,34 @@ const NewApplication = () => {
   const onSubmit = async (data) => {
     if (hasPendingUpload) {
       setShowToast({ warning: true, message: "Please wait for all file uploads to complete." });
+      return;
+    }
+
+    const plotAreaNum = parseFloat(data?.useDetails?.plotArea);
+    const builtUpAreaNum = parseFloat(data?.useDetails?.builtUpArea);
+    if (!isNaN(plotAreaNum) && !isNaN(builtUpAreaNum) && plotAreaNum <= builtUpAreaNum) {
+      const plotTrans = t("WS_PLOT_AREA_MORE_THAN_BUILT_UP_AREA");
+      setShowToast({
+        key: "error",
+        message: plotTrans && plotTrans !== "WS_PLOT_AREA_MORE_THAN_BUILT_UP_AREA"
+          ? plotTrans
+          : "Plot area should always be more than built up area.",
+      });
+      return;
+    }
+
+    const usageTypeObj = data?.useDetails?.WaterConnectionUsageType;
+    const usageTypeCode = typeof usageTypeObj === "object" ? usageTypeObj?.code || usageTypeObj?.value || usageTypeObj?.name : usageTypeObj;
+    const isNormalUsage = String(usageTypeCode || "").toUpperCase() === "NORMAL";
+    const heightNum = parseFloat(data?.useDetails?.heightOfTheBuilding);
+    if (isNormalUsage && !isNaN(heightNum) && heightNum > 17.5) {
+      const heightTrans = t("WS_HEIGHT_OF_BUILDING_NORMAL_ERROR");
+      setShowToast({
+        key: "error",
+        message: heightTrans && heightTrans !== "WS_HEIGHT_OF_BUILDING_NORMAL_ERROR"
+          ? heightTrans
+          : "Height of the building must be 17.5 meters or less for Normal connection.",
+      });
       return;
     }
 
@@ -1510,7 +1541,7 @@ const NewApplication = () => {
       <div className="employee-form-section-wrapper">
         {!previewMode && <VerticalTimeline config={timelineConfig} currentActiveIndex={currentStep - 1} showFinalStep={false} />}
 
-        <div style={{ flex: "1", overflowY: "auto", minWidth: 0 }}>
+        <div style={{ flex: "1", minWidth: 0 }}>
           {/* <Card style={{ marginBottom: "16px" }}>
           <CardSubHeader>{previewMode ? t("Preview Application") : t("Application Form")}</CardSubHeader>
         </Card> */}
@@ -2163,10 +2194,19 @@ const NewApplication = () => {
                     <FieldBlock error={getFieldError("djbEmployee.employeeId")} label={t("WS_EMPLOYEE_ID")} required={isDjbEmployee}>
                       <TextInput
                         errorStyle={!!getFieldError("djbEmployee.employeeId")}
+                        maxlength={8}
+                        maxLength={8}
                         inputRef={register({
                           required: isDjbEmployee ? "Employee ID is required." : false,
+                          pattern: {
+                            value: /^\d{8}$/,
+                            message: "Employee ID must be exactly 8 digits (numbers only)",
+                          },
                         })}
                         name="djbEmployee.employeeId"
+                        onChange={(e) => {
+                          e.target.value = e.target.value.replace(/\D/g, "").slice(0, 8);
+                        }}
                       />
                     </FieldBlock>
 
@@ -2518,11 +2558,11 @@ const NewApplication = () => {
                 ) : null}
               </SectionCard>
 
-              {/*<SectionCard
+              <SectionCard
                 description="Refund or payment-linked bank account details."
                 isOpen={collapsedSections.bank}
                 onToggle={toggleSection}
-                sectionKey="bankDetails"
+                sectionKey="bank"
                 title="Bank Details"
                 sectionRef={sectionRefs.bankDetails}
               >
@@ -2554,8 +2594,21 @@ const NewApplication = () => {
                       required: "IFSC Code is required.",
                     })}
                     name="bankDetails.ifscCode"
+                    maxLength={11}
                     onChange={(event) => {
-                      event.target.value = event.target.value.toUpperCase();
+                      const code = event.target.value.toUpperCase();
+                      event.target.value = code;
+                      if (code.length === 11) {
+                        fetch(`https://ifsc.razorpay.com/${code}`)
+                          .then((res) => (res.ok ? res.json() : null))
+                          .then((d) => {
+                            if (d) {
+                              if (d.BANK) setValue("bankDetails.bankName", d.BANK, { shouldValidate: true, shouldDirty: true });
+                              if (d.BRANCH) setValue("bankDetails.branchName", d.BRANCH, { shouldValidate: true, shouldDirty: true });
+                            }
+                          })
+                          .catch(() => {});
+                      }
                     }}
                   />
                 </FieldBlock>
@@ -2568,9 +2621,13 @@ const NewApplication = () => {
                       required: "Bank Account Number is required.",
                     })}
                     name="bankDetails.bankAccountNumber"
+                    maxLength={18}
+                    onChange={(e) => {
+                      e.target.value = e.target.value.replace(/\D/g, "").slice(0, 18);
+                    }}
                   />
                 </FieldBlock>
-              </SectionCard>*/}
+              </SectionCard>
 
               <SectionCard
                 description="Documents to be attached. Maximum allowed file size is 5 MB."
@@ -2645,8 +2702,8 @@ const NewApplication = () => {
                     )}
                   />
                 </FieldBlock>
-                <FieldBlock error={getFieldError("documents.identityProofNumber")} label="Proof of Identity Document">
-                  <TextInput name="documents.identityProofNumber" inputRef={register()} placeholder="Identity No." />
+                <FieldBlock error={getFieldError("documents.identityProofNumber")} label="Proof of Identity Document *" required>
+                  <TextInput name="documents.identityProofNumber" inputRef={register({ required: "Proof of Identity Document Number is required." })} placeholder="Identity No." />
                 </FieldBlock>
 
                 {/* Identity Upload Row */}
@@ -2689,8 +2746,8 @@ const NewApplication = () => {
                     )}
                   />
                 </FieldBlock>
-                <FieldBlock error={getFieldError("documents.ownershipDocumentNumber")} label="Proof of Ownership Document">
-                  <TextInput name="documents.ownershipDocumentNumber" inputRef={register()} placeholder="Ownership No." />
+                <FieldBlock error={getFieldError("documents.ownershipDocumentNumber")} label="Proof of Ownership Document *" required>
+                  <TextInput name="documents.ownershipDocumentNumber" inputRef={register({ required: "Proof of Ownership Document Number is required." })} placeholder="Ownership No." />
                 </FieldBlock>
 
                 {/* Ownership Upload Row */}
@@ -2829,7 +2886,7 @@ const NewApplication = () => {
                 title="Application Selection"
                 onEditClick={() => handleSectionEdit("application")}
               >
-                <PreviewItem label="ZRO Location" value={formValues?.zro} />
+                {/* <PreviewItem label="ZRO Location" value={formValues?.zro} /> */}
                 <PreviewItem label="Service Type" value={formValues?.applicationSelection?.serviceType} />
                 <PreviewItem label="Applicant Type" value={formValues?.applicationSelection?.applicantType} />
                 <PreviewItem label="Connection Type" value={formValues?.applicationSelection?.connectionType} />
@@ -2995,7 +3052,7 @@ const NewApplication = () => {
                 <PreviewItem label="Water Connection Usage Type" value={formValues?.useDetails?.WaterConnectionUsageType} />
               </SectionCard>
 
-              {/*<SectionCard
+              <SectionCard
                 description="Banking information as entered in the form."
                 isOpen={collapsedSections.bank}
                 onToggle={toggleSection}
@@ -3007,7 +3064,7 @@ const NewApplication = () => {
                 <PreviewItem label="Name of the Branch" value={formValues?.bankDetails?.branchName} />
                 <PreviewItem label="IFSC Code" value={formValues?.bankDetails?.ifscCode} />
                 <PreviewItem label="Bank Account No." value={formValues?.bankDetails?.bankAccountNumber} />
-              </SectionCard>*/}
+              </SectionCard>
 
               <SectionCard
                 description="Uploaded supporting documents."

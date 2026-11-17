@@ -16,6 +16,23 @@ const PropertyLocationDetails = ({
 }) => {
   const { t } = useTranslation();
   const initialAddress = address || formDataProp?.locationDet || formDataProp?.address || props?.props?.value || {};
+  const baseInitialAssembly = initialAddress?.assembly || "";
+  const baseInitialBlock = initialAddress?.block || initialAddress?.ward || "";
+  const baseInitialZone = initialAddress?.zone || "";
+
+  const rawInitActualAssembly = initialAddress?.actualAssembly || "";
+  const rawInitActualWard = initialAddress?.actualWard || "";
+  const rawInitActualZone = initialAddress?.actualZone || "";
+
+  const isInitActualIdentical =
+    (!rawInitActualAssembly || rawInitActualAssembly === baseInitialAssembly) &&
+    (!rawInitActualWard || rawInitActualWard === baseInitialBlock) &&
+    (!rawInitActualZone || rawInitActualZone === baseInitialZone);
+
+  const initActualAssembly = isInitActualIdentical ? "" : rawInitActualAssembly;
+  const initActualWard = isInitActualIdentical ? "" : rawInitActualWard;
+  const initActualZone = isInitActualIdentical ? "" : rawInitActualZone;
+
   const [formData, setFormData] = useState({
     noOfFloors: address?.noOfFloors || "",
     // addressType: initialAddress?.addressType || "",
@@ -35,9 +52,9 @@ const PropertyLocationDetails = ({
     zone: initialAddress?.zone || "",
     zroLocation: initialAddress?.zroLocation || initialAddress?.zro?.code || initialAddress?.zro || "",
     subLocality: initialAddress?.subLocality || "",
-    actualAssembly: initialAddress?.actualAssembly || initialAddress?.assembly || "",
-    actualWard: initialAddress?.actualWard || initialAddress?.block || initialAddress?.ward || "",
-    actualZone: initialAddress?.actualZone || initialAddress?.zone || "",
+    actualAssembly: initActualAssembly,
+    actualWard: initActualWard,
+    actualZone: initActualZone,
     colonyMcdCategory: initialAddress?.colonyMcdCategory || "",
 
   });
@@ -89,6 +106,23 @@ const PropertyLocationDetails = ({
         details.noOfFloors ||
         "";
 
+        const baseAssembly = additionalDetails.assembly || addressData.assembly || addressData.additionalDetails?.assembly || "";
+        const baseBlock = additionalDetails.block || addressData.block || addressData.additionalDetails?.block || addressData.ward || "";
+        const baseZone = additionalDetails.zone || addressData.zone || addressData.additionalDetails?.zone || "";
+
+        const rawActualAssembly = addressData.actualAssembly || additionalDetails.actualAssembly || addressData.additionalDetails?.actualAssembly || "";
+        const rawActualWard = addressData.actualWard || additionalDetails.actualWard || addressData.additionalDetails?.actualWard || "";
+        const rawActualZone = addressData.actualZone || additionalDetails.actualZone || addressData.additionalDetails?.actualZone || "";
+
+        const isActualIdentical =
+          (!rawActualAssembly || rawActualAssembly === baseAssembly) &&
+          (!rawActualWard || rawActualWard === baseBlock) &&
+          (!rawActualZone || rawActualZone === baseZone);
+
+        const actualAssemblyVal = isActualIdentical ? "" : rawActualAssembly;
+        const actualWardVal = isActualIdentical ? "" : rawActualWard;
+        const actualZoneVal = isActualIdentical ? "" : rawActualZone;
+
       setFormData({
         pincode: addressData.pincode || "",
         city: addressData.city || "",
@@ -99,9 +133,9 @@ const PropertyLocationDetails = ({
         latitude: lat,
         longitude: lng,
         // Read assembly/block/zone from addressData directly (API returns them there)
-        assembly: additionalDetails.assembly || addressData.assembly || addressData.additionalDetails?.assembly || "",
-        block: additionalDetails.block || addressData.block || addressData.additionalDetails?.block || "",
-        zone: additionalDetails.zone || addressData.zone || addressData.additionalDetails?.zone || "",
+        assembly: baseAssembly,
+        block: baseBlock,
+        zone: baseZone,
         zroLocation: zroCode,
         zro: zroValue,
         subLocality: addressData.subLocality || "",
@@ -113,9 +147,9 @@ const PropertyLocationDetails = ({
         totalNoOfFloors: rawTotalNoOfFloors,
         totalFloors: rawTotalNoOfFloors,
 
-        actualAssembly: addressData.actualAssembly || additionalDetails.actualAssembly || addressData.additionalDetails?.actualAssembly || additionalDetails.assembly || addressData.assembly || "",
-        actualWard: addressData.actualWard || additionalDetails.actualWard || addressData.additionalDetails?.actualWard || additionalDetails.block || addressData.block || addressData.ward || "",
-        actualZone: addressData.actualZone || additionalDetails.actualZone || addressData.additionalDetails?.actualZone || additionalDetails.zone || addressData.zone || "",
+        actualAssembly: actualAssemblyVal,
+        actualWard: actualWardVal,
+        actualZone: actualZoneVal,
         address: {
           ...addressData,
           city: addressData.city || "",
@@ -127,9 +161,9 @@ const PropertyLocationDetails = ({
           longitude: lng,
           zroLocation: zroCode,
           zro: zroValue,
-          assembly: additionalDetails.assembly || addressData.assembly || addressData.additionalDetails?.assembly || "",
-          block: additionalDetails.block || addressData.block || addressData.additionalDetails?.block || "",
-          zone: additionalDetails.zone || addressData.zone || addressData.additionalDetails?.zone || "",
+          assembly: baseAssembly,
+          block: baseBlock,
+          zone: baseZone,
           subLocality: addressData.subLocality || "",
           addressLine1: addressData.addressLine1 || "",
           addressLine2: addressData.addressLine2 || "",
@@ -137,9 +171,9 @@ const PropertyLocationDetails = ({
           numberOfFloors: rawNoOfFloors,
           totalNoOfFloors: rawTotalNoOfFloors,
           totalFloors: rawTotalNoOfFloors,
-          actualWard: addressData.actualWard || additionalDetails.actualWard || addressData.additionalDetails?.actualWard || additionalDetails.block || addressData.block || addressData.ward || "",
-          actualZone: addressData.actualZone || additionalDetails.actualZone || addressData.additionalDetails?.actualZone || additionalDetails.zone || addressData.zone || "",
-          actualAssembly: addressData.actualAssembly || additionalDetails.actualAssembly || addressData.additionalDetails?.actualAssembly || additionalDetails.assembly || addressData.assembly || "",
+          actualWard: actualWardVal,
+          actualZone: actualZoneVal,
+          actualAssembly: actualAssemblyVal,
 
         },
       });

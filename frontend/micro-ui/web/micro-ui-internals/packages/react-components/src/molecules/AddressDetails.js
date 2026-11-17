@@ -45,26 +45,40 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
   const { data: ptServicesMastersData } = Digit.Hooks.pt?.usePropertyMDMS?.(tenantId, "PropertyTax", ["NoOfFloors"]) || {};
 
   const floorOptions = useMemo(() => {
-    if (props.floorOptions) return props.floorOptions;
-    const fromMdms = ptServicesMastersData?.PropertyTax?.NoOfFloors;
-    if (Array.isArray(fromMdms) && fromMdms.length > 0) {
-      return fromMdms
-        .filter((item) => item.active !== false)
-        .map((item) => ({
-          code: item.code,
-          name: item.name,
-        }));
+    let options = [];
+    if (props.floorOptions) {
+      options = props.floorOptions;
+    } else {
+      const fromMdms = ptServicesMastersData?.PropertyTax?.NoOfFloors;
+      if (Array.isArray(fromMdms) && fromMdms.length > 0) {
+        options = fromMdms
+          .filter((item) => item.active !== false)
+          .map((item) => ({
+            code: item.code,
+            name: item.name,
+          }));
+      }
     }
-    return [];
+    return [...options].sort((a, b) => {
+      const labelA = a?.name || a?.code || "";
+      const labelB = b?.name || b?.code || "";
+      return String(labelA).localeCompare(String(labelB), undefined, { numeric: true, sensitivity: "base" });
+    });
   }, [props.floorOptions, ptServicesMastersData]);
 
   const _mappedZROLocation = useMemo(() => {
-    if (mappedZROLocation) return mappedZROLocation;
-    return zroLocationsData?.map((item) => ({
-      ...item,
-      i18nKey: item?.i18nKey || item?.name || item?.code,
-    }));
-  }, [mappedZROLocation, zroLocationsData]);
+    const list = mappedZROLocation || zroLocationsData || [];
+    return [...list]
+      .map((item) => ({
+        ...item,
+        i18nKey: item?.i18nKey || item?.name || item?.code,
+      }))
+      .sort((a, b) => {
+        const labelA = t ? t(a?.i18nKey || a?.name || a?.code || "") : a?.name || a?.code || "";
+        const labelB = t ? t(b?.i18nKey || b?.name || b?.code || "") : b?.name || b?.code || "";
+        return String(labelA).localeCompare(String(labelB), undefined, { numeric: true, sensitivity: "base" });
+      });
+  }, [mappedZROLocation, zroLocationsData, t]);
 
   const { data: allCities } = Digit.Hooks.useTenants();
   const convertToObject = (value) => {
@@ -292,9 +306,9 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
     Object.keys(asmToWards).forEach((k) => (asmToWards[k] = Array.from(asmToWards[k])));
 
     return {
-      assemblyOptions: Array.from(assemblies.values()),
-      zoneOptions: Array.from(zones.values()),
-      wardOptions: Array.from(wards.values()),
+      assemblyOptions: Array.from(assemblies.values()).sort((a, b) => (a.name || "").localeCompare(b.name || "", undefined, { numeric: true, sensitivity: "base" })),
+      zoneOptions: Array.from(zones.values()).sort((a, b) => (a.name || "").localeCompare(b.name || "", undefined, { numeric: true, sensitivity: "base" })),
+      wardOptions: Array.from(wards.values()).sort((a, b) => (a.name || "").localeCompare(b.name || "", undefined, { numeric: true, sensitivity: "base" })),
       assemblyToZones: asmToZones,
       assemblyToWards: asmToWards,
     };
@@ -391,27 +405,34 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
   }, [structuredLocalityData, city]);
 
   const filteredLocalities = useMemo(() => {
+    let list = structuredLocalityData || [];
     // If pincode is not provided, show all localities
-    if (!pincode) return structuredLocalityData;
-
-    // Check if the entered pincode exists in our data
-    const pincodeExists = structuredLocalityData.some((loc) => {
-      if (!loc.pincode) return false;
-      const pins = Array.isArray(loc.pincode) ? loc.pincode : [loc.pincode];
-      return pins.some((p) => p.toString() === pincode);
-    });
-
-    // If pincode exists in data, filter localities. If not (manual entry), show all localities.
-    if (pincodeExists) {
-      return structuredLocalityData.filter((loc) => {
+    if (pincode) {
+      // Check if the entered pincode exists in our data
+      const pincodeExists = structuredLocalityData.some((loc) => {
         if (!loc.pincode) return false;
         const pins = Array.isArray(loc.pincode) ? loc.pincode : [loc.pincode];
         return pins.some((p) => p.toString() === pincode);
       });
+
+      // If pincode exists in data, filter localities. If not (manual entry), show all localities.
+      if (pincodeExists) {
+        list = structuredLocalityData.filter((loc) => {
+          if (!loc.pincode) return false;
+          const pins = Array.isArray(loc.pincode) ? loc.pincode : [loc.pincode];
+          return pins.some((p) => p.toString() === pincode);
+        });
+      }
     }
 
-    return structuredLocalityData;
-  }, [structuredLocalityData, pincode]);
+    return [...list].sort((a, b) => {
+      const labelA = t ? t(a?.i18nKey || a?.name || a?.code || "") : a?.name || a?.code || "";
+      const labelB = t ? t(b?.i18nKey || b?.name || b?.code || "") : b?.name || b?.code || "";
+      if (!labelA && labelB) return 1;
+      if (labelA && !labelB) return -1;
+      return String(labelA).localeCompare(String(labelB), undefined, { numeric: true, sensitivity: "base" });
+    });
+  }, [structuredLocalityData, pincode, t]);
 
   useEffect(() => {
     handleGetLocation();
@@ -814,7 +835,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
         isDisabled={
           config?.doorImage
             ? !houseNo || !locality || !pincode || !addressLine1 || !streetName || !doorImageId || !landmark
-            : !houseNo || !city || !locality || !pincode || !addressLine1 || !landmark || (showZRO && !zro)
+            : !houseNo || !city || !locality || !pincode || !addressLine1 || !landmark || (showZRO && !zro) || (showNoOfFloors ? (!noOfFloors || !totalNoOfFloors) : false)
         }
         className="no-box-shadow flex-box flex-box-col flex-gap-3 p-top-0"
       >
@@ -1084,7 +1105,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
             name="houseNo"
             value={houseNo}
             style={{ width: "100%" }}
-            placeholder={"Enter House No"}
+            placeholder={t("Address entry example like- D-7/200") || "Address entry example like- D-7/200"}
             onChange={(e) => {
               setHouseNo(e.target.value);
             }}
@@ -1092,7 +1113,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
             ValidationRequired={true}
             validation={{
               isRequired: true,
-              pattern: "^[a-zA-Z0-9 ,\\-]+$",
+              pattern: "^[a-zA-Z0-9 ,\\-/]+$",
               type: "text",
               title: t("HOUSE_NO_ERROR_MESSAGE"),
             }}
@@ -1118,7 +1139,9 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
         )}
         {showNoOfFloors && (
           <LabelFieldPair>
-            <CardLabel>{`${t("WS_TOTAL_NUMBER_OF_FLOORS_IN_THE_BUILDING")}`}</CardLabel>
+            <CardLabel>
+              {`${t("WS_TOTAL_NUMBER_OF_FLOORS_IN_THE_BUILDING")}`} <span className="check-page-link-button">*</span>
+            </CardLabel>
             <TextInput
               t={t}
               type={"text"}
@@ -1132,6 +1155,13 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
                 setTotalNoOfFloors(val);
               }}
               disabled={disable}
+              ValidationRequired={true}
+              validation={{
+                isRequired: true,
+                pattern: "^[0-9]+$",
+                type: "text",
+                title: t("WS_TOTAL_FLOORS_ERROR_MESSAGE") || "Please enter valid number of floors",
+              }}
               maxlength={2}
               maxLength={2}
             />
@@ -1348,7 +1378,14 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
                   type="button"
                 />
               )}
-              {(actualAssembly || actualZone || actualWard) && (
+              {Boolean(
+                (actualAssembly || actualZone || actualWard) &&
+                !(
+                  (!actualAssembly || actualAssembly === assembly) &&
+                  (!actualZone || actualZone === zone) &&
+                  (!actualWard || actualWard === block || actualWard === ward)
+                )
+              ) && (
                 <div style={{ marginTop: "16px", padding: "16px", border: "1px solid #E3E3E3", backgroundColor: "#FAFAFA", borderRadius: "4px" }}>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", rowGap: "16px", columnGap: "32px" }}>
                     {actualAssembly && (

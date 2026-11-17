@@ -78,9 +78,9 @@ const CreatePropertyForm = ({ config, onSelect, value, userType, redirectUrl }) 
             addressLine1: propertyAddress?.addressLine1 || propertyAddress?.address,
             addressLine2: propertyAddress?.addressLine2 || propertyAddress?.address2,
             addressType: propertyAddress?.addressType,
-            actualWard: propertyAddress?.actualWard || propertyAddress?.block || propertyAddress?.ward || "",
-            actualAssembly: propertyAddress?.actualAssembly || propertyAddress?.assembly || "",
-            actualZone: propertyAddress?.actualZone || propertyAddress?.zone || "",
+            actualWard: propertyAddress?.actualWard || "",
+            actualAssembly: propertyAddress?.actualAssembly || "",
+            actualZone: propertyAddress?.actualZone || "",
             assembly: propertyAddress?.assembly || "",
             block: propertyAddress?.block || propertyAddress?.ward || "",
             zone: propertyAddress?.zone || "",
@@ -153,8 +153,11 @@ const CreatePropertyForm = ({ config, onSelect, value, userType, redirectUrl }) 
       !loc?.locality ||
       !loc?.addressLine1 ||
       !loc?.houseNo ||
+      (typeof loc?.houseNo === "string" && !loc?.houseNo?.trim()) ||
       !loc?.landmark ||
-      (typeof loc?.landmark === "string" && !loc?.landmark?.trim())
+      (typeof loc?.landmark === "string" && !loc?.landmark?.trim()) ||
+      (!loc?.noOfFloors && !loc?.numberOfFloors) ||
+      (!loc?.totalNoOfFloors && !loc?.totalFloors)
     ) {
       setShowToast({ key: true, label: t("Please fill all the mandatory fields") });
       return;
@@ -171,6 +174,34 @@ const CreatePropertyForm = ({ config, onSelect, value, userType, redirectUrl }) 
       !useDetails?.heightOfTheBuilding
     ) {
       setShowToast({ key: true, label: t("Please fill all the mandatory fields") });
+      return;
+    }
+
+    const plotAreaNum = parseFloat(useDetails?.plotArea);
+    const builtUpAreaNum = parseFloat(useDetails?.builtUpArea);
+    if (!isNaN(plotAreaNum) && !isNaN(builtUpAreaNum) && plotAreaNum <= builtUpAreaNum) {
+      const plotTrans = t("WS_PLOT_AREA_MORE_THAN_BUILT_UP_AREA");
+      setShowToast({
+        key: true,
+        label: plotTrans && plotTrans !== "WS_PLOT_AREA_MORE_THAN_BUILT_UP_AREA"
+          ? plotTrans
+          : "Plot area should always be more than built up area.",
+      });
+      return;
+    }
+
+    const usageTypeObj = useDetails?.WaterConnectionUsageType;
+    const usageTypeCode = typeof usageTypeObj === "object" ? usageTypeObj?.code || usageTypeObj?.value || usageTypeObj?.name : usageTypeObj;
+    const isNormalUsage = String(usageTypeCode || "").toUpperCase() === "NORMAL";
+    const heightNum = parseFloat(useDetails?.heightOfTheBuilding);
+    if (isNormalUsage && !isNaN(heightNum) && heightNum > 17.5) {
+      const heightTrans = t("WS_HEIGHT_OF_BUILDING_NORMAL_ERROR");
+      setShowToast({
+        key: true,
+        label: heightTrans && heightTrans !== "WS_HEIGHT_OF_BUILDING_NORMAL_ERROR"
+          ? heightTrans
+          : "Height of the building must be 17.5 meters or less for Normal connection.",
+      });
       return;
     }
 

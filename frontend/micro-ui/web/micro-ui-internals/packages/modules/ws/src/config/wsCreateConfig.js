@@ -134,9 +134,10 @@ export const newConfig = [
           submitBarLabel: "CS_COMMON_NEXT",
         },
       },
-      /*{
+      {
         route: "bank-details",
         component: "WSBankDetails",
+        isMandatory: true,
         key: "bankDetails",
         nextStep: "disability-details",
         WATER: "disability-details",
@@ -147,7 +148,7 @@ export const newConfig = [
           cardText: "",
           submitBarLabel: "CS_COMMON_NEXT",
         },
-      },*/
+      },
       {
         route: "disability-details",
         component: "WSDivyangjan",

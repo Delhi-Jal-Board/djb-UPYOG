@@ -40,6 +40,15 @@ const formatPropertyQuestions = (propertyObj) => {
     });
 };
 
+const getValidActual = (actualVal, baseVal) => {
+  if (!actualVal) return null;
+  const str = String(typeof actualVal === "object" ? actualVal?.name || actualVal?.code || "" : actualVal).trim();
+  const baseStr = String(typeof baseVal === "object" ? baseVal?.name || baseVal?.code || "" : baseVal).trim();
+  if (!str || str === "NA" || str === "null" || str === "undefined") return null;
+  if (baseStr && str.toUpperCase() === baseStr.toUpperCase()) return null;
+  return str;
+};
+
 export const PTSearch = {
   all: async (tenantId, filters = {}) => {
     const response = await PTService.search({ tenantId, filters });
@@ -101,9 +110,42 @@ export const PTSearch = {
         { title: "ASSEMBLY", value: property?.address?.assembly || property?.address?.additionalDetails?.assembly?.name || property?.address?.additionalDetails?.assembly || property?.additionalDetails?.assembly || "NA" },
         { title: "WARD", value: property?.address?.block || property?.address?.ward || property?.address?.additionalDetails?.ward?.name || property?.address?.additionalDetails?.ward || property?.additionalDetails?.ward || "NA" },
         { title: "ZONE", value: property?.address?.zone || property?.address?.additionalDetails?.zone?.name || property?.address?.additionalDetails?.zone || property?.additionalDetails?.zone || "NA" },
-        { title: "ACTUAL_ASSEMBLY", value: property?.address?.actualAssembly || "NA" },
-        { title: "ACTUAL_WARD", value: property?.address?.actualWard || "NA" },
-        { title: "ACTUAL_ZONE", value: property?.address?.actualZone || "NA" },
+        ...(getValidActual(
+          property?.address?.actualAssembly,
+          property?.address?.assembly || property?.address?.additionalDetails?.assembly?.name || property?.address?.additionalDetails?.assembly || property?.additionalDetails?.assembly
+        )
+          ? [{
+              title: "ACTUAL_ASSEMBLY",
+              value: getValidActual(
+                property?.address?.actualAssembly,
+                property?.address?.assembly || property?.address?.additionalDetails?.assembly?.name || property?.address?.additionalDetails?.assembly || property?.additionalDetails?.assembly
+              ),
+            }]
+          : []),
+        ...(getValidActual(
+          property?.address?.actualWard,
+          property?.address?.block || property?.address?.ward || property?.address?.additionalDetails?.ward?.name || property?.address?.additionalDetails?.ward || property?.additionalDetails?.ward
+        )
+          ? [{
+              title: "ACTUAL_WARD",
+              value: getValidActual(
+                property?.address?.actualWard,
+                property?.address?.block || property?.address?.ward || property?.address?.additionalDetails?.ward?.name || property?.address?.additionalDetails?.ward || property?.additionalDetails?.ward
+              ),
+            }]
+          : []),
+        ...(getValidActual(
+          property?.address?.actualZone,
+          property?.address?.zone || property?.address?.additionalDetails?.zone?.name || property?.address?.additionalDetails?.zone || property?.additionalDetails?.zone
+        )
+          ? [{
+              title: "ACTUAL_ZONE",
+              value: getValidActual(
+                property?.address?.actualZone,
+                property?.address?.zone || property?.address?.additionalDetails?.zone?.name || property?.address?.additionalDetails?.zone || property?.additionalDetails?.zone
+              ),
+            }]
+          : []),
         { title: "LANDMARK", value: property?.address?.landmark || "NA" },
       ],
     };
@@ -295,9 +337,42 @@ export const PTSearch = {
           { title: "ASSEMBLY", value: response?.address?.assembly || response?.address?.additionalDetails?.assembly?.name || response?.address?.additionalDetails?.assembly || response?.additionalDetails?.assembly || "NA" },
           { title: "WARD", value: response?.address?.block || response?.address?.ward || response?.address?.additionalDetails?.ward?.name || response?.address?.additionalDetails?.ward || response?.additionalDetails?.ward || "NA" },
           { title: "ZONE", value: response?.address?.zone || response?.address?.additionalDetails?.zone?.name || response?.address?.additionalDetails?.zone || response?.additionalDetails?.zone || "NA" },
-          { title: "ACTUAL_ASSEMBLY", value: response?.address?.actualAssembly || "NA" },
-          { title: "ACTUAL_WARD", value: response?.address?.actualWard || "NA" },
-          { title: "ACTUAL_ZONE", value: response?.address?.actualZone || "NA" },
+          ...(getValidActual(
+            response?.address?.actualAssembly,
+            response?.address?.assembly || response?.address?.additionalDetails?.assembly?.name || response?.address?.additionalDetails?.assembly || response?.additionalDetails?.assembly
+          )
+            ? [{
+                title: "ACTUAL_ASSEMBLY",
+                value: getValidActual(
+                  response?.address?.actualAssembly,
+                  response?.address?.assembly || response?.address?.additionalDetails?.assembly?.name || response?.address?.additionalDetails?.assembly || response?.additionalDetails?.assembly
+                ),
+              }]
+            : []),
+          ...(getValidActual(
+            response?.address?.actualWard,
+            response?.address?.block || response?.address?.ward || response?.address?.additionalDetails?.ward?.name || response?.address?.additionalDetails?.ward || response?.additionalDetails?.ward
+          )
+            ? [{
+                title: "ACTUAL_WARD",
+                value: getValidActual(
+                  response?.address?.actualWard,
+                  response?.address?.block || response?.address?.ward || response?.address?.additionalDetails?.ward?.name || response?.address?.additionalDetails?.ward || response?.additionalDetails?.ward
+                ),
+              }]
+            : []),
+          ...(getValidActual(
+            response?.address?.actualZone,
+            response?.address?.zone || response?.address?.additionalDetails?.zone?.name || response?.address?.additionalDetails?.zone || response?.additionalDetails?.zone
+          )
+            ? [{
+                title: "ACTUAL_ZONE",
+                value: getValidActual(
+                  response?.address?.actualZone,
+                  response?.address?.zone || response?.address?.additionalDetails?.zone?.name || response?.address?.additionalDetails?.zone || response?.additionalDetails?.zone
+                ),
+              }]
+            : []),
           { title: "LANDMARK", value: response?.address?.landmark || "NA" },
         ],
       },

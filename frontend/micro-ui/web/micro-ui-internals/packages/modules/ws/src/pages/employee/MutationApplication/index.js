@@ -597,7 +597,7 @@ const MutationApplication = () => {
           <VerticalTimeline config={timelineConfig} currentActiveIndex={currentStep - 1} showFinalStep={false} onSelect={handleTimelineSelect} />
         )}
 
-        <div style={{ flex: "1", overflowY: "auto", minWidth: 0 }}>
+        <div style={{ flex: "1", minWidth: 0 }}>
           <Switch>
             <Route path={`${path}/search-connection`}>
               {isEditFlow ? (
