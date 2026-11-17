@@ -145,8 +145,45 @@ const CustomNameDropdown = (props) => {
     }
   }
 
+  const getOptionLabel = (opt) => {
+    if (opt === null || opt === undefined) return "";
+    if (typeof opt !== "object") {
+      const trans = t(opt);
+      return String(trans !== undefined && trans !== null ? trans : opt);
+    }
+    const key = props.optionKey;
+    let rawVal;
+    if (key && opt[key] !== undefined && opt[key] !== null) {
+      rawVal = opt[key];
+    } else if (opt.name !== undefined && opt.name !== null) {
+      rawVal = opt.name;
+    } else if (opt.i18nKey !== undefined && opt.i18nKey !== null) {
+      rawVal = opt.i18nKey;
+    } else if (opt.code !== undefined && opt.code !== null) {
+      rawVal = opt.code;
+    } else if (opt.value !== undefined && opt.value !== null) {
+      rawVal = opt.value;
+    } else {
+      rawVal = "";
+    }
+    const trans = t(rawVal);
+    return String(trans !== undefined && trans !== null ? trans : rawVal);
+  };
+
+  const sortedOptions = React.useMemo(() => {
+    if (!props.option || !Array.isArray(props.option)) return [];
+    if (props.disableSort) return props.option;
+    return [...props.option].sort((a, b) => {
+      const labelA = getOptionLabel(a);
+      const labelB = getOptionLabel(b);
+      if (!labelA && labelB) return 1;
+      if (labelA && !labelB) return -1;
+      return labelA.localeCompare(labelB, undefined, { numeric: true, sensitivity: "base" });
+    });
+  }, [props.option, props.disableSort, props.optionKey, t]);
+
   let filteredOption =
-    (props.option && props.option?.filter((option) => t(option[props.optionKey])?.toUpperCase()?.indexOf(filterVal?.toUpperCase()) > -1)) || [];
+    (sortedOptions && sortedOptions.filter((option) => getOptionLabel(option)?.toUpperCase()?.indexOf(filterVal?.toUpperCase()) > -1)) || [];
   function selectOption(ind) {
     onSelect(filteredOption[ind]);
   }

@@ -1,4 +1,4 @@
-import { LabelFieldPair, Dropdown, TextInput, CardLabelError, CardLabel, CollapsibleCardPage } from "@djb25/digit-ui-react-components";
+import { LabelFieldPair, Dropdown, TextInput, CardLabelError, CardLabel, CollapsibleCardPage, Toast } from "@djb25/digit-ui-react-components";
 import React, { useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import _ from "lodash";
@@ -82,6 +82,101 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
   const watchPropertyType = watch("useDetails.propertyType");
   const watchPropertyCategory = watch("useDetails.propertyCategory");
   const watchWaterConnectionUsageType = watch("useDetails.WaterConnectionUsageType");
+  const watchPlotArea = watch("useDetails.plotArea");
+  const watchBuiltUpArea = watch("useDetails.builtUpArea");
+  const watchHeightOfTheBuilding = watch("useDetails.heightOfTheBuilding");
+  const [showToast, setShowToast] = useState(null);
+
+  useEffect(() => {
+    if (showToast) {
+      const timer = setTimeout(() => {
+        setShowToast(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [showToast]);
+
+  const getPlotAreaError = () => {
+    const trans = t("WS_PLOT_AREA_MORE_THAN_BUILT_UP_AREA");
+    return trans && trans !== "WS_PLOT_AREA_MORE_THAN_BUILT_UP_AREA"
+      ? trans
+      : "Plot area should always be more than built up area.";
+  };
+
+  const getHeightErrorMessage = () => {
+    const trans = t("WS_HEIGHT_OF_BUILDING_NORMAL_ERROR");
+    return trans && trans !== "WS_HEIGHT_OF_BUILDING_NORMAL_ERROR"
+      ? trans
+      : "Height of the building must be 17.5 meters or less for Normal connection.";
+  };
+
+  const isPlotAreaInvalid = useMemo(() => {
+    if (!watchPlotArea || !watchBuiltUpArea) return false;
+    const plot = parseFloat(watchPlotArea);
+    const built = parseFloat(watchBuiltUpArea);
+    if (!isNaN(plot) && !isNaN(built)) {
+      return plot <= built;
+    }
+    return false;
+  }, [watchPlotArea, watchBuiltUpArea]);
+
+  const isHeightInvalid = useMemo(() => {
+    if (!watchHeightOfTheBuilding) return false;
+    const usageCode = typeof watchWaterConnectionUsageType === "object"
+      ? watchWaterConnectionUsageType?.code || watchWaterConnectionUsageType?.value || watchWaterConnectionUsageType?.name
+      : watchWaterConnectionUsageType;
+    const isNormal = normalizeCode(usageCode) === "NORMAL";
+    if (!isNormal) return false;
+    const height = parseFloat(watchHeightOfTheBuilding);
+    return !isNaN(height) && height > 17.5;
+  }, [watchHeightOfTheBuilding, watchWaterConnectionUsageType]);
+
+  const handleAreaBlur = () => {
+    const plot = parseFloat(watchPlotArea);
+    const built = parseFloat(watchBuiltUpArea);
+    if (!isNaN(plot) && !isNaN(built) && plot <= built) {
+      setShowToast({
+        key: true,
+        label: getPlotAreaError(),
+      });
+    }
+  };
+
+  const handleHeightBlur = (e) => {
+    const usageCode = typeof watchWaterConnectionUsageType === "object"
+      ? watchWaterConnectionUsageType?.code || watchWaterConnectionUsageType?.value || watchWaterConnectionUsageType?.name
+      : watchWaterConnectionUsageType;
+    const isNormal = normalizeCode(usageCode) === "NORMAL";
+    const height = parseFloat(e?.target?.value !== undefined ? e.target.value : watchHeightOfTheBuilding);
+    if (isNormal && !isNaN(height) && height > 17.5) {
+      setShowToast({
+        key: true,
+        label: getHeightErrorMessage(),
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (isPlotAreaInvalid) {
+      if (typeof setError === "function" && config?.key) {
+        setError(config.key, {
+          type: "custom",
+          message: getPlotAreaError(),
+        });
+      }
+    } else if (isHeightInvalid) {
+      if (typeof setError === "function" && config?.key) {
+        setError(config.key, {
+          type: "custom",
+          message: getHeightErrorMessage(),
+        });
+      }
+    } else {
+      if (typeof clearErrors === "function" && config?.key) {
+        clearErrors(config.key);
+      }
+    }
+  }, [isPlotAreaInvalid, isHeightInvalid, config?.key, setError, clearErrors]);
   const isHospitalProperty =
     watchPropertyType?.code === "HOSPITAL_NURSING_HOME" ||
     watchPropertyType?.code === "DharamshalasOrHostels" ||
@@ -142,11 +237,13 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
   const categoryOptions = useMemo(() => {
     const list = propertyType2List?.length > 0 ? propertyType2List : ptServicesMastersData?.PropertyTax?.PropertyType || [];
     const uniqueCats = [...new Set(list.map((item) => item.propertyCategory).filter(Boolean))];
-    return uniqueCats.map((cat) => ({
-      code: cat,
-      name: cat,
-      i18nKey: cat,
-    }));
+    return uniqueCats
+      .sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" }))
+      .map((cat) => ({
+        code: cat,
+        name: cat,
+        i18nKey: cat,
+      }));
   }, [propertyType2List, ptServicesMastersData]);
 
   const propertyTypeOptions = useMemo(() => {
@@ -158,18 +255,21 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
         code: item.code,
         name: item.name || item.code,
         i18nKey: item.i18nKey || item.code,
-      }));
+      }))
+      .sort((a, b) => (a.name || "").localeCompare(b.name || "", undefined, { numeric: true, sensitivity: "base" }));
   }, [propertyType2List, ptServicesMastersData]);
 
   const usageTypeOptions = useMemo(() => {
     const list = propertyType2List?.length > 0 ? propertyType2List : ptServicesMastersData?.PropertyTax?.PropertyType || [];
     const uniqueTypes = [...new Set(list.map((item) => item.waterConnectionUsageType).filter(Boolean))];
     const typesToMap = uniqueTypes.length > 0 ? uniqueTypes : ["Normal", "Bulk"];
-    return typesToMap.map((type) => ({
-      code: type,
-      name: type,
-      value: type,
-    }));
+    return typesToMap
+      .sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" }))
+      .map((type) => ({
+        code: type,
+        name: type,
+        value: type,
+      }));
   }, [propertyType2List, ptServicesMastersData]);
 
   const availableCategoryOptions = useMemo(() => {
@@ -491,11 +591,12 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
   const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
 
   return (
-    <CollapsibleCardPage
-      title={t("WS_PROPERTY_AND_WATER_CONNECTION_USE_DETAILS") + (config?.isAutomaticFill ? " " + t("(Automatic Fill by Property)") : "")}
-      defaultOpen={config?.isAutomaticFill ? false : true}
-      style={props.style}
-    >
+    <React.Fragment>
+      <CollapsibleCardPage
+        title={t("WS_PROPERTY_AND_WATER_CONNECTION_USE_DETAILS") + (config?.isAutomaticFill ? " " + t("(Automatic Fill by Property)") : "")}
+        defaultOpen={config?.isAutomaticFill ? false : true}
+        style={props.style}
+      >
       <div className="formcomposer-section-grid">
         <LabelFieldPair>
           <CardLabel>
@@ -704,37 +805,67 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
             <TextInput
               t={t}
               inputRef={register({
+                required: t("REQUIRED_FIELD"),
                 pattern: { value: DECIMAL_PATTERN, message: t("ERR_INVALID_DECIMAL") },
+                validate: (value) => {
+                  const built = parseFloat(watchBuiltUpArea);
+                  const plot = parseFloat(value);
+                  if (!isNaN(plot) && !isNaN(built) && plot <= built) {
+                    return getPlotAreaError();
+                  }
+                  return true;
+                },
               })}
               rules={{ required: t("REQUIRED_FIELD") }}
               name="useDetails.plotArea"
               disabled={isPropertyFound}
               placeholder={t("WS_PLOT_AREA")}
+              onBlur={handleAreaBlur}
             />
+            {errors?.useDetails?.plotArea && (
+              <CardLabelError style={{ fontSize: "12px", color: "#d4351c", marginTop: "4px" }}>
+                {errors.useDetails.plotArea.message}
+              </CardLabelError>
+            )}
           </div>
         </LabelFieldPair>
-        {errors?.useDetails?.plotArea && <CardLabelError style={errorStyle}>{errors.useDetails.plotArea.message}</CardLabelError>}
-        <div>
-          <LabelFieldPair>
-            <CardLabel>
-              {`${t("WS_BUILT_UP_AREA")}`} <span className="check-page-link-button">*</span>
-            </CardLabel>
-            <div className="form-field">
-              <TextInput
-                t={t}
-                inputRef={register({
-                  required: t("REQUIRED_FIELD"),
-                  pattern: { value: DECIMAL_PATTERN, message: t("ERR_INVALID_DECIMAL") },
-                })}
-                name="useDetails.builtUpArea"
-                rules={{ required: t("REQUIRED_FIELD") }}
-                disabled={isPropertyFound}
-                placeholder={t("WS_BUILT_UP_AREA")}
-              />
-            </div>
-          </LabelFieldPair>
-          {errors?.useDetails?.builtUpArea && <CardLabelError style={errorStyle}>{errors.useDetails.builtUpArea.message}</CardLabelError>}
-        </div>
+
+        <LabelFieldPair>
+          <CardLabel>
+            {`${t("WS_BUILT_UP_AREA")}`} <span className="check-page-link-button">*</span>
+          </CardLabel>
+          <div className="form-field">
+            <TextInput
+              t={t}
+              inputRef={register({
+                required: t("REQUIRED_FIELD"),
+                pattern: { value: DECIMAL_PATTERN, message: t("ERR_INVALID_DECIMAL") },
+                validate: (value) => {
+                  const plot = parseFloat(watchPlotArea);
+                  const built = parseFloat(value);
+                  if (!isNaN(plot) && !isNaN(built) && plot <= built) {
+                    return getPlotAreaError();
+                  }
+                  return true;
+                },
+              })}
+              name="useDetails.builtUpArea"
+              rules={{ required: t("REQUIRED_FIELD") }}
+              disabled={isPropertyFound}
+              placeholder={t("WS_BUILT_UP_AREA")}
+              onBlur={handleAreaBlur}
+            />
+            {errors?.useDetails?.builtUpArea ? (
+              <CardLabelError style={{ fontSize: "12px", color: "#d4351c", marginTop: "4px" }}>
+                {errors.useDetails.builtUpArea.message}
+              </CardLabelError>
+            ) : isPlotAreaInvalid ? (
+              <CardLabelError style={{ fontSize: "12px", color: "#d4351c", marginTop: "4px" }}>
+                {getPlotAreaError()}
+              </CardLabelError>
+            ) : null}
+          </div>
+        </LabelFieldPair>
         {/* <div>
           <LabelFieldPair>
             <CardLabel>{`${t("WS_FAR_AREA")}`}</CardLabel>
@@ -774,16 +905,34 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
               inputRef={register({
                 required: t("REQUIRED_FIELD"),
                 pattern: { value: DECIMAL_PATTERN, message: t("ERR_INVALID_DECIMAL") },
+                validate: (value) => {
+                  const usageCode = typeof watchWaterConnectionUsageType === "object"
+                    ? watchWaterConnectionUsageType?.code || watchWaterConnectionUsageType?.value || watchWaterConnectionUsageType?.name
+                    : watchWaterConnectionUsageType;
+                  const isNormal = normalizeCode(usageCode) === "NORMAL";
+                  const height = parseFloat(value);
+                  if (isNormal && !isNaN(height) && height > 17.5) {
+                    return getHeightErrorMessage();
+                  }
+                  return true;
+                },
               })}
               name="useDetails.heightOfTheBuilding"
               rules={{ required: t("REQUIRED_FIELD") }}
               disabled={isPropertyFound}
               placeholder={t("WS_HEIGHT_OF_THE_BUILDING")}
+              onBlur={handleHeightBlur}
             />
+            {errors?.useDetails?.heightOfTheBuilding ? (
+              <CardLabelError style={{ fontSize: "12px", color: "#d4351c", marginTop: "4px" }}>
+                {errors.useDetails.heightOfTheBuilding.message}
+              </CardLabelError>
+            ) : isHeightInvalid ? (
+              <CardLabelError style={{ fontSize: "12px", color: "#d4351c", marginTop: "4px" }}>
+                {getHeightErrorMessage()}
+              </CardLabelError>
+            ) : null}
           </div>
-          {errors?.useDetails?.heightOfTheBuilding && (
-            <CardLabelError style={errorStyle}>{errors.useDetails.heightOfTheBuilding.message}</CardLabelError>
-          )}
         </LabelFieldPair>
         <LabelFieldPair>
           <CardLabel>{`${t("WS_SELECT_YEAR_OF_CONSTRUCTION")}`}</CardLabel>
@@ -857,6 +1006,17 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
         )} */}
       </div>
     </CollapsibleCardPage>
+    {showToast && (
+      <Toast
+        error={showToast.key}
+        label={showToast.label}
+        isDleteBtn={true}
+        onClose={() => {
+          setShowToast(null);
+        }}
+      />
+    )}
+  </React.Fragment>
   );
 };
 

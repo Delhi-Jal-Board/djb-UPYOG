@@ -2,6 +2,7 @@ import PropTypes from "prop-types";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ReactDOM from "react-dom";
 import { ArrowDown } from "./svgindex";
+import { useTranslation } from "react-i18next";
 
 const TextField = (props) => {
   const {
@@ -124,7 +125,48 @@ const Dropdown = (props) => {
   const triggerRef = useRef(null);
   const dropdownRef = useRef(null);
   const hasCustomSelector = !!props.customSelector;
-  const t = props.t || translateDummy;
+  const { t: i18nT } = useTranslation();
+  const t = props.t || i18nT || translateDummy;
+
+  const getOptionLabel = useCallback(
+    (opt) => {
+      if (opt === null || opt === undefined) return "";
+      if (typeof opt !== "object") {
+        const trans = t(opt);
+        return String(trans !== undefined && trans !== null ? trans : opt);
+      }
+      const key = props.optionKey;
+      let rawVal;
+      if (key && opt[key] !== undefined && opt[key] !== null) {
+        rawVal = opt[key];
+      } else if (opt.name !== undefined && opt.name !== null) {
+        rawVal = opt.name;
+      } else if (opt.i18nKey !== undefined && opt.i18nKey !== null) {
+        rawVal = opt.i18nKey;
+      } else if (opt.code !== undefined && opt.code !== null) {
+        rawVal = opt.code;
+      } else if (opt.value !== undefined && opt.value !== null) {
+        rawVal = opt.value;
+      } else {
+        rawVal = "";
+      }
+      const trans = t(rawVal);
+      return String(trans !== undefined && trans !== null ? trans : rawVal);
+    },
+    [props.optionKey, t]
+  );
+
+  const sortedOptions = useMemo(() => {
+    if (!props.option || !Array.isArray(props.option)) return [];
+    if (props.disableSort) return props.option;
+    return [...props.option].sort((a, b) => {
+      const labelA = getOptionLabel(a);
+      const labelB = getOptionLabel(b);
+      if (!labelA && labelB) return 1;
+      if (labelA && !labelB) return -1;
+      return labelA.localeCompare(labelB, undefined, { numeric: true, sensitivity: "base" });
+    });
+  }, [props.option, props.disableSort, getOptionLabel]);
 
   useEffect(() => {
     setSelectedOption(props.selected);
@@ -201,6 +243,10 @@ const Dropdown = (props) => {
     }
   }, [dropdownStatus]);
 
+  useEffect(() => {
+    setOptionIndex(0);
+  }, [filterVal]);
+
   const openDropdown = () => {
     if (props.disable) return;
     setDropdownStatus(true);
@@ -236,10 +282,27 @@ const Dropdown = (props) => {
     }
   }, []);
 
-  const filteredOption = useMemo(
-    () => (props.option && props.option.filter((option) => t(option[props.optionKey])?.toUpperCase()?.indexOf(filterVal?.toUpperCase()) > -1)) || [],
-    [props.option, props.optionKey, filterVal, t]
-  );
+  const filteredOption = useMemo(() => {
+    if (!sortedOptions || sortedOptions.length === 0) return [];
+    if (!filterVal || !filterVal.trim()) return sortedOptions;
+    const filterUpper = filterVal.trim().toUpperCase();
+    return sortedOptions.filter((option) => {
+      const label = getOptionLabel(option);
+      if (label && label.toUpperCase().indexOf(filterUpper) > -1) return true;
+      if (typeof option === "object" && option !== null) {
+        if (props.optionKey && option[props.optionKey] && String(option[props.optionKey]).toUpperCase().indexOf(filterUpper) > -1) {
+          return true;
+        }
+        if (option.code && String(option.code).toUpperCase().indexOf(filterUpper) > -1) {
+          return true;
+        }
+        if (option.name && String(option.name).toUpperCase().indexOf(filterUpper) > -1) {
+          return true;
+        }
+      }
+      return false;
+    });
+  }, [sortedOptions, filterVal, getOptionLabel, props.optionKey]);
 
   const selectOption = useCallback(
     (ind) => {
@@ -280,9 +343,9 @@ const Dropdown = (props) => {
           >
             {option.icon && <span className="icon"> {option.icon} </span>}
             {props.isPropertyAssess ? (
-              <div>{props.t ? props.t(option[props.optionKey]) : option[props.optionKey]}</div>
+              <div>{getOptionLabel(option)}</div>
             ) : (
-              <span>{props.t ? props.t(option[props.optionKey]) : option[props.optionKey]}</span>
+              <span>{getOptionLabel(option)}</span>
             )}
           </div>
         ))
@@ -316,13 +379,9 @@ const Dropdown = (props) => {
             keepNull={props.keepNull}
             selectedVal={
               selectedOption
-                ? props.t
-                  ? props.isMultiSelectEmp
-                    ? `${selectedOption} ${t("BPA_SELECTED_TEXT")}`
-                    : t(props.optionKey ? selectedOption[props.optionKey] : selectedOption)
-                  : props.optionKey
-                  ? selectedOption[props.optionKey]
-                  : selectedOption
+                ? props.isMultiSelectEmp
+                  ? `${selectedOption} ${t("BPA_SELECTED_TEXT")}`
+                  : getOptionLabel(selectedOption)
                 : null
             }
             filterVal={filterVal}
@@ -357,6 +416,7 @@ Dropdown.propTypes = {
   t: PropTypes.func,
   isSearchable: PropTypes.bool,
   searchPlaceholder: PropTypes.string,
+  disableSort: PropTypes.bool,
 };
 
 Dropdown.defaultProps = {

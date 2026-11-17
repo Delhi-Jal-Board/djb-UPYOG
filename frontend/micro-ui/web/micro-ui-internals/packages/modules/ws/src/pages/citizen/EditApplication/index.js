@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useQueryClient } from "react-query";
 import { Redirect, Route, Switch, useHistory, useLocation, useParams, useRouteMatch, Link } from "react-router-dom";
 import { newConfig as newConfigWS } from "../../../config/wsCreateConfig";
-import { getCommencementDataFormat, stringReplaceAll } from "../../../utils/index";
+import { getCommencementDataFormat, stringReplaceAll, getNormalizedBankDetails } from "../../../utils/index";
 
 const getPath = (path, params) => {
   params &&
@@ -207,17 +207,21 @@ const getEditDetails = (waterResult, sewerageresult, t, latestProperty) => {
     ];
     waterResult.addressType = addressTypeObj;
     waterResult.completeAddress = completeAddressStr;
+    const bankSrc =
+      waterResult?.additionalDetails?.bankDetails ||
+      waterResult?.additionalDetails ||
+      {};
     waterResult.bankDetails = {
-      bankName: waterResult?.additionalDetails?.bankName || "",
-      bankBranchName: waterResult?.additionalDetails?.bankBranchName || waterResult?.additionalDetails?.branchName || "",
-      ifscCode: waterResult?.additionalDetails?.ifscCode || "",
-      accountNumber: waterResult?.additionalDetails?.bankAccountNumber || waterResult?.additionalDetails?.accountNumber || "",
+      bankName: bankSrc?.bankName || "",
+      bankBranchName: bankSrc?.bankBranchName || bankSrc?.branchName || "",
+      ifscCode: bankSrc?.ifscCode || "",
+      accountNumber: bankSrc?.bankAccountNumber || bankSrc?.accountNumber || "",
       confirmAccountNumber:
-        waterResult?.additionalDetails?.confirmAccountNumber ||
-        waterResult?.additionalDetails?.bankAccountNumber ||
-        waterResult?.additionalDetails?.accountNumber ||
+        bankSrc?.confirmAccountNumber ||
+        bankSrc?.bankAccountNumber ||
+        bankSrc?.accountNumber ||
         "",
-      accountHolderName: waterResult?.additionalDetails?.accountHolderName || waterResult?.additionalDetails?.ownerName || "",
+      accountHolderName: bankSrc?.accountHolderName || bankSrc?.ownerName || "",
     };
     waterResult.djbEmployee = {
       isDjbEmployee: String(waterResult?.additionalDetails?.isDjbEmployee) === "true",
@@ -354,17 +358,21 @@ const getEditDetails = (waterResult, sewerageresult, t, latestProperty) => {
     ];
     sewerageresult.addressType = addressTypeObjSewerage;
     sewerageresult.completeAddress = completeAddressStrSewerage;
+    const bankSrcSewerage =
+      sewerageresult?.additionalDetails?.bankDetails ||
+      sewerageresult?.additionalDetails ||
+      {};
     sewerageresult.bankDetails = {
-      bankName: sewerageresult?.additionalDetails?.bankName || "",
-      bankBranchName: sewerageresult?.additionalDetails?.bankBranchName || sewerageresult?.additionalDetails?.branchName || "",
-      ifscCode: sewerageresult?.additionalDetails?.ifscCode || "",
-      accountNumber: sewerageresult?.additionalDetails?.bankAccountNumber || sewerageresult?.additionalDetails?.accountNumber || "",
+      bankName: bankSrcSewerage?.bankName || "",
+      bankBranchName: bankSrcSewerage?.bankBranchName || bankSrcSewerage?.branchName || "",
+      ifscCode: bankSrcSewerage?.ifscCode || "",
+      accountNumber: bankSrcSewerage?.bankAccountNumber || bankSrcSewerage?.accountNumber || "",
       confirmAccountNumber:
-        sewerageresult?.additionalDetails?.confirmAccountNumber ||
-        sewerageresult?.additionalDetails?.bankAccountNumber ||
-        sewerageresult?.additionalDetails?.accountNumber ||
+        bankSrcSewerage?.confirmAccountNumber ||
+        bankSrcSewerage?.bankAccountNumber ||
+        bankSrcSewerage?.accountNumber ||
         "",
-      accountHolderName: sewerageresult?.additionalDetails?.accountHolderName || sewerageresult?.additionalDetails?.ownerName || "",
+      accountHolderName: bankSrcSewerage?.accountHolderName || bankSrcSewerage?.ownerName || "",
     };
     sewerageresult.djbEmployee = {
       isDjbEmployee: String(sewerageresult?.additionalDetails?.isDjbEmployee) === "true",
@@ -719,6 +727,29 @@ const EditApplication = ({ parentRoute }) => {
       }
     }
 
+    const normalizedBank = getNormalizedBankDetails(params);
+    if (normalizedBank) {
+      params.additionalDetails = {
+        ...params.additionalDetails,
+        ...normalizedBank,
+        bankDetails: normalizedBank,
+      };
+      if (params?.WaterConnectionResult?.WaterConnection?.[0]) {
+        params.WaterConnectionResult.WaterConnection[0].additionalDetails = {
+          ...params.WaterConnectionResult.WaterConnection[0]?.additionalDetails,
+          ...normalizedBank,
+          bankDetails: normalizedBank,
+        };
+      }
+      if (params?.SewerageConnectionResult?.SewerageConnections?.[0]) {
+        params.SewerageConnectionResult.SewerageConnections[0].additionalDetails = {
+          ...params.SewerageConnectionResult.SewerageConnections[0]?.additionalDetails,
+          ...normalizedBank,
+          bankDetails: normalizedBank,
+        };
+      }
+    }
+
     const isPropertySessionUpdated =
       sessionStorage.getItem("IS_PROPERTY_UPDATED") === "true" ||
       (propertyId && sessionStorage.getItem("IS_PROPERTY_UPDATED_" + propertyId) === "true") ||
@@ -789,6 +820,27 @@ const EditApplication = ({ parentRoute }) => {
           },
         };
       });
+    } else if (key === "bankDetails") {
+      setParams((prev) => {
+        const updatedBank = { ...prev?.bankDetails, ...data };
+        return {
+          ...prev,
+          bankDetails: updatedBank,
+          additionalDetails: {
+            ...prev?.additionalDetails,
+            ...data,
+            bankName: data?.bankName ?? prev?.additionalDetails?.bankName,
+            bankBranchName: data?.bankBranchName ?? data?.branchName ?? prev?.additionalDetails?.bankBranchName,
+            branchName: data?.bankBranchName ?? data?.branchName ?? prev?.additionalDetails?.branchName,
+            ifscCode: data?.ifscCode ?? prev?.additionalDetails?.ifscCode,
+            accountNumber: data?.accountNumber ?? data?.bankAccountNumber ?? prev?.additionalDetails?.accountNumber,
+            bankAccountNumber: data?.accountNumber ?? data?.bankAccountNumber ?? prev?.additionalDetails?.bankAccountNumber,
+            confirmAccountNumber: data?.confirmAccountNumber ?? data?.accountNumber ?? prev?.additionalDetails?.confirmAccountNumber,
+            accountHolderName: data?.accountHolderName ?? prev?.additionalDetails?.accountHolderName,
+            bankDetails: updatedBank,
+          },
+        };
+      });
     } else {
       setParams((prev) => ({
         ...prev,
@@ -819,6 +871,8 @@ const EditApplication = ({ parentRoute }) => {
     "connection-holder",
     "djb-employee-details",
     "disability-details",
+    "bank-details",
+    "rain-water-harvesting",
     "property-location-details",
     "property-water-details",
     "due-verification-details",

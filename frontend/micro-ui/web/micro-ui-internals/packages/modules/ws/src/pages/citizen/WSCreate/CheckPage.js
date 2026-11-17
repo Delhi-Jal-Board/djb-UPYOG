@@ -39,8 +39,61 @@ const CheckPage = ({ onSubmit, value }) => {
   const djbEmployee = value?.djbEmployee || {};
   const disability = value?.disability || value?.additionalDetails || {};
   const rainWaterHarvesting = value?.rainWaterHarvesting || value?.additionalDetails || {};
-  const bankDetails = value?.bankDetails || {};
+  const bankDetails =
+    value?.bankDetails?.bankDetails ||
+    value?.bankDetails ||
+    value?.additionalDetails?.bankDetails ||
+    value?.additionalDetails ||
+    {};
   const additionalDetails = {};
+
+  const baseAssembly =
+    propertyAddress?.assembly?.name ||
+    propertyAddress?.assembly?.code ||
+    propertyAddress?.assembly ||
+    cpt?.details?.address?.assembly ||
+    additionalDetails?.assembly ||
+    "";
+  const baseWard =
+    propertyAddress?.block?.name ||
+    propertyAddress?.block?.code ||
+    propertyAddress?.block ||
+    propertyAddress?.ward?.name ||
+    propertyAddress?.ward?.code ||
+    propertyAddress?.ward ||
+    cpt?.details?.address?.ward ||
+    cpt?.details?.address?.block ||
+    additionalDetails?.ward ||
+    "";
+  const baseZone =
+    propertyAddress?.zone?.name ||
+    propertyAddress?.zone?.code ||
+    propertyAddress?.zone ||
+    cpt?.details?.address?.zone ||
+    additionalDetails?.zone ||
+    "";
+
+  const getValidActualValue = (actualVal, baseVal) => {
+    if (!actualVal) return null;
+    const str = String(typeof actualVal === "object" ? actualVal?.name || actualVal?.code || "" : actualVal).trim();
+    const baseStr = String(typeof baseVal === "object" ? baseVal?.name || baseVal?.code || "" : baseVal).trim();
+    if (!str || str === "NA" || str === "null" || str === "undefined") return null;
+    if (baseStr && str.toUpperCase() === baseStr.toUpperCase()) return null;
+    return str;
+  };
+
+  const validActualAssembly = getValidActualValue(
+    propertyAddress?.actualAssembly,
+    baseAssembly
+  );
+  const validActualWard = getValidActualValue(
+    propertyAddress?.actualWard,
+    baseWard
+  );
+  const validActualZone = getValidActualValue(
+    propertyAddress?.actualZone,
+    baseZone
+  );
 
   const checkForNA = (val) => (val ? val : "CS_NA");
   const onEdit = () => {};
@@ -234,9 +287,63 @@ const CheckPage = ({ onSubmit, value }) => {
           <Row className="border-none" label={t("WS_EMAIL_ID")} text={ConnectionHolderDetails?.[0]?.emailId || t("CS_NA")} />
         </StatusTable>
       </Card>
-      <CardSubHeader>{t("WS_PROPERTY_AND_WATER_CONNECTION_USE_DETAILS")}</CardSubHeader>
+
+      <CardSubHeader>{t("WS_DIVYANGJAN")}</CardSubHeader>
+      <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
+        <Row label={t("WS_DIVYANGJAN")} text={`${disability?.isDivyangjan ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}`} />
+      </StatusTable>
+
+      <CardSubHeader>{t("WS_DJB_EMPLOYEE")}</CardSubHeader>
       <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
         <Row
+          label={t("WS_DJB_EMPLOYEE")}
+          text={`${djbEmployee?.isDjbEmployee ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}`}
+          actionButton={<ActionButton onClick={onEdit} />}
+        />
+        {djbEmployee?.isDjbEmployee && (
+          <React.Fragment>
+            <Row label={t("WS_EMPLOYEE_ID")} text={`${t(checkForNA(djbEmployee?.employeeId))}`} />
+            <Row label={t("WS_EMPLOYEE_DESIGNATION")} text={`${t(checkForNA(djbEmployee?.designation))}`} />
+            {djbEmployee?.document && (
+              <Row
+                label={t("WS_UPLOAD_EMPLOYEE_ID_DOC")}
+                text={
+                  <span
+                    style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", color: "#f47738" }}
+                    onClick={() => openFilePDF(djbEmployee?.document)}
+                  >
+                    <GenericFileIcon /> {t("CS_COMMON_VIEW")}
+                  </span>
+                }
+              />
+            )}
+          </React.Fragment>
+        )}
+      </StatusTable>
+
+      <CardSubHeader>{t("WS_BANK_DETAILS")}</CardSubHeader>
+      <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
+        <Row label={t("WS_NAME_OF_BANK")} text={`${t(checkForNA(bankDetails?.bankName))}`} actionButton={<ActionButton onClick={onEdit} />} />
+        <Row label={t("WS_NAME_OF_BRANCH")} text={`${t(checkForNA(bankDetails?.bankBranchName || bankDetails?.branchName))}`} />
+        <Row label={t("WS_IFSC_CODE")} text={`${t(checkForNA(bankDetails?.ifscCode))}`} />
+        <Row label={t("WS_BANK_ACCOUNT_NO")} text={`${t(checkForNA(bankDetails?.bankAccountNumber || bankDetails?.accountNumber))}`} />
+      </StatusTable>
+
+      <CardSubHeader>{t("Rain Water Harvesting Certificate")}</CardSubHeader>
+      <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
+        <Row
+          label={t("Rain Water Harvesting Certificate")}
+          text={`${
+            rainWaterHarvesting?.hasCertificate || rainWaterHarvesting?.isRainwaterHarvesting
+              ? t("CORE_COMMON_YES")
+              : t("CORE_COMMON_NO")
+          }`}
+        />
+      </StatusTable>
+
+      <CardSubHeader>{t("WS_PROPERTY_AND_WATER_CONNECTION_USE_DETAILS")}</CardSubHeader>
+      <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
+        {/* <Row
           label={t("WS_ZRO_LOCATION")}
           text={`${t(
             checkForNA(
@@ -248,10 +355,11 @@ const CheckPage = ({ onSubmit, value }) => {
             )
           )}`}
           actionButton={<ActionButton onClick={onEdit} />}
-        />
+        /> */}
         <Row
           label={t("COMMON_ADDRESS_TYPE")}
           text={`${t(checkForNA(propertyAddress?.addressType?.i18nKey || propertyAddress?.addressType?.code || propertyAddress?.addressType))}`}
+          actionButton={<ActionButton onClick={onEdit} />}
         />
         <Row
           label={t("CORE_COMMON_PROFILE_CITY")}
@@ -314,54 +422,44 @@ const CheckPage = ({ onSubmit, value }) => {
           )}`}
         />
 
-        <Row
-          label={
-            t("COMMON_CURRENT_ASSEMBLY") &&
-            t("COMMON_CURRENT_ASSEMBLY") !== "Assembly" &&
-            t("COMMON_CURRENT_ASSEMBLY") !== "COMMON_CURRENT_ASSEMBLY"
-              ? t("COMMON_CURRENT_ASSEMBLY")
-              : "Actual Assembly"
-          }
-          text={`${t(
-            checkForNA(
-              propertyAddress?.actualAssembly ||
-                cpt?.details?.address?.actualAssembly ||
-                additionalDetails?.actualAssembly
-            )
-          )}`}
-        />
-        <Row
-          label={
-            t("COMMON_CURRENT_WARD") &&
-            t("COMMON_CURRENT_WARD") !== "Ward" &&
-            t("COMMON_CURRENT_WARD") !== "COMMON_CURRENT_WARD"
-              ? t("COMMON_CURRENT_WARD")
-              : "Actual Ward"
-          }
-          text={`${t(
-            checkForNA(
-              propertyAddress?.actualWard ||
-                cpt?.details?.address?.actualWard ||
-                additionalDetails?.actualWard
-            )
-          )}`}
-        />
-        <Row
-          label={
-            t("COMMON_CURRENT_ZONE") &&
-            t("COMMON_CURRENT_ZONE") !== "Zone" &&
-            t("COMMON_CURRENT_ZONE") !== "COMMON_CURRENT_ZONE"
-              ? t("COMMON_CURRENT_ZONE")
-              : "Actual Zone"
-          }
-          text={`${t(
-            checkForNA(
-              propertyAddress?.actualZone ||
-                cpt?.details?.address?.actualZone ||
-                additionalDetails?.actualZone
-            )
-          )}`}
-        />
+        {validActualAssembly ? (
+          <Row
+            label={
+              t("COMMON_CURRENT_ASSEMBLY") &&
+              t("COMMON_CURRENT_ASSEMBLY") !== "Assembly" &&
+              t("COMMON_CURRENT_ASSEMBLY") !== "COMMON_CURRENT_ASSEMBLY"
+                ? t("COMMON_CURRENT_ASSEMBLY")
+                : "Actual Assembly"
+            }
+            text={`${t(validActualAssembly)}`}
+          />
+        ) : null}
+
+        {validActualWard ? (
+          <Row
+            label={
+              t("COMMON_CURRENT_WARD") &&
+              t("COMMON_CURRENT_WARD") !== "Ward" &&
+              t("COMMON_CURRENT_WARD") !== "COMMON_CURRENT_WARD"
+                ? t("COMMON_CURRENT_WARD")
+                : "Actual Ward"
+            }
+            text={`${t(validActualWard)}`}
+          />
+        ) : null}
+
+        {validActualZone ? (
+          <Row
+            label={
+              t("COMMON_CURRENT_ZONE") &&
+              t("COMMON_CURRENT_ZONE") !== "Zone" &&
+              t("COMMON_CURRENT_ZONE") !== "COMMON_CURRENT_ZONE"
+                ? t("COMMON_CURRENT_ZONE")
+                : "Actual Zone"
+            }
+            text={`${t(validActualZone)}`}
+          />
+        ) : null}
         <Row label={t("LANDMARK")} text={`${t(checkForNA(propertyAddress?.landmark))}`} />
       </StatusTable>
 
@@ -458,58 +556,6 @@ const CheckPage = ({ onSubmit, value }) => {
         })}
       </StatusTable>
 
-      <CardSubHeader>{t("WS_DJB_EMPLOYEE")}</CardSubHeader>
-      <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
-        <Row
-          label={t("WS_DJB_EMPLOYEE")}
-          text={`${djbEmployee?.isDjbEmployee ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}`}
-          actionButton={<ActionButton onClick={onEdit} />}
-        />
-        {djbEmployee?.isDjbEmployee && (
-          <React.Fragment>
-            <Row label={t("WS_EMPLOYEE_ID")} text={`${t(checkForNA(djbEmployee?.employeeId))}`} />
-            <Row label={t("WS_EMPLOYEE_DESIGNATION")} text={`${t(checkForNA(djbEmployee?.designation))}`} />
-            {djbEmployee?.document && (
-              <Row
-                label={t("WS_UPLOAD_EMPLOYEE_ID_DOC")}
-                text={
-                  <span
-                    style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", color: "#f47738" }}
-                    onClick={() => openFilePDF(djbEmployee?.document)}
-                  >
-                    <GenericFileIcon /> {t("CS_COMMON_VIEW")}
-                  </span>
-                }
-              />
-            )}
-          </React.Fragment>
-        )}
-      </StatusTable>
-
-      <CardSubHeader>{t("WS_DIVYANGJAN")}</CardSubHeader>
-      <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
-        <Row label={t("WS_DIVYANGJAN")} text={`${disability?.isDivyangjan ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}`} />
-      </StatusTable>
-
-      <CardSubHeader>{t("Rain Water Harvesting Certificate")}</CardSubHeader>
-      <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
-        <Row
-          label={t("Rain Water Harvesting Certificate")}
-          text={`${
-            rainWaterHarvesting?.hasCertificate || rainWaterHarvesting?.isRainwaterHarvesting
-              ? t("CORE_COMMON_YES")
-              : t("CORE_COMMON_NO")
-          }`}
-        />
-      </StatusTable>
-
-      {/*<CardSubHeader>{t("WS_BANK_DETAILS")}</CardSubHeader>
-      <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
-        <Row label={t("WS_NAME_OF_BANK")} text={`${t(checkForNA(bankDetails?.bankName))}`} actionButton={<ActionButton onClick={onEdit} />} />
-        <Row label={t("WS_NAME_OF_BRANCH")} text={`${t(checkForNA(bankDetails?.bankBranchName || bankDetails?.branchName))}`} />
-        <Row label={t("WS_IFSC_CODE")} text={`${t(checkForNA(bankDetails?.ifscCode))}`} />
-        <Row label={t("WS_BANK_ACCOUNT_NO")} text={`${t(checkForNA(bankDetails?.bankAccountNumber || bankDetails?.accountNumber))}`} />
-      </StatusTable>*/}
       {/* <Card style={{ paddingRight: "16px" }}>
         <div style={{ position: "relative" }}>
           <CardHeader styles={{ fontSize: "28px" }}>{t("WS_COMMON_CONNECTION_DETAIL")}</CardHeader>

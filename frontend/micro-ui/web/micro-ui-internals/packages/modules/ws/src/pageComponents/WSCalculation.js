@@ -260,6 +260,38 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
   const isMobile = window.Digit.Utils.browser.isMobile();
 
   const handleSubmit = () => {
+    const plotAreaNum = parseFloat(formValue?.useDetails?.plotArea);
+    const builtUpAreaNum = parseFloat(formValue?.useDetails?.builtUpArea);
+    if (!isNaN(plotAreaNum) && !isNaN(builtUpAreaNum) && plotAreaNum <= builtUpAreaNum) {
+      const plotTrans = t("WS_PLOT_AREA_MORE_THAN_BUILT_UP_AREA");
+      if (setError) {
+        setError(config?.key, {
+          type: "custom",
+          message: plotTrans && plotTrans !== "WS_PLOT_AREA_MORE_THAN_BUILT_UP_AREA"
+            ? plotTrans
+            : "Plot area should always be more than built up area.",
+        });
+      }
+      return;
+    }
+
+    const usageTypeObj = formValue?.useDetails?.WaterConnectionUsageType;
+    const usageTypeCode = typeof usageTypeObj === "object" ? usageTypeObj?.code || usageTypeObj?.value || usageTypeObj?.name : usageTypeObj;
+    const isNormalUsage = String(usageTypeCode || "").toUpperCase() === "NORMAL";
+    const heightNum = parseFloat(formValue?.useDetails?.heightOfTheBuilding);
+    if (isNormalUsage && !isNaN(heightNum) && heightNum > 17.5) {
+      const heightTrans = t("WS_HEIGHT_OF_BUILDING_NORMAL_ERROR");
+      if (setError) {
+        setError(config?.key, {
+          type: "custom",
+          message: heightTrans && heightTrans !== "WS_HEIGHT_OF_BUILDING_NORMAL_ERROR"
+            ? heightTrans
+            : "Height of the building must be 17.5 meters or less for Normal connection.",
+        });
+      }
+      return;
+    }
+
     const payload = WSCalculationPayload(formValue, tenantId);
 
     calculateCharges(payload, {
@@ -684,6 +716,14 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
                     t={t}
                     inputRef={register({
                       pattern: { value: DECIMAL_PATTERN, message: t("ERR_INVALID_DECIMAL") },
+                      validate: (value) => {
+                        const plot = parseFloat(formValue?.useDetails?.plotArea);
+                        const built = parseFloat(value);
+                        if (!isNaN(plot) && !isNaN(built) && plot <= built) {
+                          return t("WS_PLOT_AREA_MORE_THAN_BUILT_UP_AREA") || "Plot area should always be more than built up area.";
+                        }
+                        return true;
+                      },
                     })}
                     name="useDetails.builtUpArea"
                   />
