@@ -1,11 +1,15 @@
 package org.egov.web.controller;
 
 import org.egov.domain.exception.InvalidOtpRequestException;
+import org.egov.domain.exception.OtpCooldownException;
+import org.egov.domain.exception.OtpFloodLimitExceededException;
 import org.egov.domain.exception.UserAlreadyExistInSystemException;
 import org.egov.domain.exception.UserMobileNumberNotFoundException;
 import org.egov.domain.exception.UserNotExistingInSystemException;
 import org.egov.domain.exception.UserNotFoundException;
 import org.egov.web.contract.ErrorResponse;
+import org.egov.web.error.OtpCooldownErrorAdapter;
+import org.egov.web.error.OtpFloodLimitErrorAdapter;
 import org.egov.web.error.OtpRequestErrorAdapter;
 import org.egov.web.error.UserAlreadyExistErrorAdapter;
 import org.egov.web.error.UserMobileNumberNotFoundErrorAdapter;
@@ -53,6 +57,18 @@ public class CustomControllerAdvice {
 	@ExceptionHandler(UserNotExistingInSystemException.class)
 	public ErrorResponse handleUserNotExistException() {
 		return new UserNotExistErrorAdapter().adapt(null);
+	}
+
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ExceptionHandler(OtpFloodLimitExceededException.class)
+	public ErrorResponse handleOtpFloodLimitExceeded(OtpFloodLimitExceededException ex) {
+		return new OtpFloodLimitErrorAdapter().adapt(ex);
+	}
+
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ExceptionHandler(OtpCooldownException.class)
+	public ErrorResponse handleOtpCooldown(OtpCooldownException ex) {
+		return new OtpCooldownErrorAdapter().adapt(ex);
 	}
 
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
