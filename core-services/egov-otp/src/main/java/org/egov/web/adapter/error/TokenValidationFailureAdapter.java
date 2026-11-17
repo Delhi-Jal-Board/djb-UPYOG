@@ -3,6 +3,7 @@ package org.egov.web.adapter.error;
 import org.egov.common.contract.response.Error;
 import org.egov.common.contract.response.ErrorField;
 import org.egov.common.contract.response.ErrorResponse;
+import org.egov.domain.exception.TokenValidationFailureException;
 import org.egov.domain.model.Token;
 import org.springframework.http.HttpStatus;
 
@@ -19,15 +20,25 @@ public class TokenValidationFailureAdapter implements ErrorAdapter<Token> {
         final Error error = Error.builder()
                 .code(HttpStatus.BAD_REQUEST.value())
                 .message(OTP_VALIDATION_FAILED_MESSAGE)
-                .fields(Collections.singletonList(getError()))
+                .fields(Collections.singletonList(getError(OTP_VALIDATION_FAILED_MESSAGE)))
                 .build();
         return new ErrorResponse(null, error);
     }
 
-    private ErrorField getError() {
+    public ErrorResponse adapt(TokenValidationFailureException ex) {
+        String msg = (ex != null && ex.getMessage() != null) ? ex.getMessage() : OTP_VALIDATION_FAILED_MESSAGE;
+        final Error error = Error.builder()
+                .code(HttpStatus.BAD_REQUEST.value())
+                .message(msg)
+                .fields(Collections.singletonList(getError(msg)))
+                .build();
+        return new ErrorResponse(null, error);
+    }
+
+    private ErrorField getError(String message) {
         return ErrorField.builder()
                 .code(OTP_VALIDATION_FAILED_CODE)
-                .message(OTP_VALIDATION_FAILED_MESSAGE)
+                .message(message)
                 .field(OTP_FIELD)
                 .build();
     }

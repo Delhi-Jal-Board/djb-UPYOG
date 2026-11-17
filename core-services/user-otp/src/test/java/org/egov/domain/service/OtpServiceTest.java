@@ -146,4 +146,17 @@ public class OtpServiceTest {
 
 		verify(otpEmailRepository).send("foo@bar.com", otpNumber);
 	}
+
+	@Test(expected = OtpCooldownException.class)
+	public void test_should_throw_cooldown_exception_on_rapid_otp_resend() {
+		final OtpRequest otpRequest = OtpRequest.builder().tenantId("tenant").mobileNumber("9876543210")
+				.type(OtpRequestType.EKYC).build();
+		when(otpRepository.fetchOtp(otpRequest)).thenReturn("123456");
+
+		// First OTP send succeeds
+		otpService.sendOtp(otpRequest);
+
+		// Immediate second OTP send within 60s cooldown must throw OtpCooldownException
+		otpService.sendOtp(otpRequest);
+	}
 }

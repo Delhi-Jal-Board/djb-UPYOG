@@ -22,18 +22,29 @@ public class OtpService {
     private OtpSMSRepository otpSMSSender;
     private OtpEmailRepository otpEmailRepository;
     private UserRepository userRepository;
+    private OtpRateLimiterService otpRateLimiterService;
 
     @Autowired
     public OtpService(OtpRepository otpRepository, OtpSMSRepository otpSMSSender, OtpEmailRepository otpEmailRepository,
-                      UserRepository userRepository) {
+                      UserRepository userRepository, OtpRateLimiterService otpRateLimiterService) {
         this.otpRepository = otpRepository;
         this.otpSMSSender = otpSMSSender;
         this.otpEmailRepository = otpEmailRepository;
         this.userRepository = userRepository;
+        this.otpRateLimiterService = otpRateLimiterService != null ? otpRateLimiterService : new OtpRateLimiterService();
+    }
+
+    public OtpService(OtpRepository otpRepository, OtpSMSRepository otpSMSSender, OtpEmailRepository otpEmailRepository,
+                      UserRepository userRepository) {
+        this(otpRepository, otpSMSSender, otpEmailRepository, userRepository, new OtpRateLimiterService());
     }
 
     public void sendOtp(OtpRequest otpRequest) {
         otpRequest.validate();
+
+        // Enforce anti-flooding / rate-limiting (CWE-400)
+        otpRateLimiterService.validateRateLimit(otpRequest.getMobileNumber());
+
         if (otpRequest.isRegistrationRequestType() || otpRequest.isLoginRequestType()) {
             sendOtpForUserRegistration(otpRequest);
         } else if (otpRequest.isEkycRequestType()) {
