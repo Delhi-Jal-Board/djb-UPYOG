@@ -149,16 +149,24 @@ const WSDocumentsEmployee = ({ t, config, onSelect, userType, formData, setError
 
   const removeEmployeeDocError = () => {
     let type = formState?.errors?.[config?.key]?.type;
-    if (!Array.isArray(type)) type = [];
-    if (type.includes("OWNER.DJB_EMPLOYEE_ID")) {
+    if (Array.isArray(type)) {
       type = type.filter((e) => e != "OWNER.DJB_EMPLOYEE_ID");
       if (!type.length) {
         clearFormErrors && clearFormErrors(config?.key);
       } else {
         setFormError && setFormError(config?.key, { type });
       }
+    } else {
+      clearFormErrors && clearFormErrors(config?.key);
     }
   };
+
+  useEffect(() => {
+    if (onSelect && Array.isArray(documents) && documents.length > 0) {
+      const docPayload = { documents: removeDuplicateOtherDocuments(documents) };
+      onSelect(config.key, docPayload);
+    }
+  }, [documents]);
 
   useEffect(() => {
     if (isDjbEmployee) {
@@ -224,7 +232,22 @@ const WSDocumentsEmployee = ({ t, config, onSelect, userType, formData, setError
       const isDocRequired = isOtherDocument(doc?.code) ? false : doc.required;
       let isRequired = false;
       documents.map((data) => {
-        if (isDocRequired && data?.documentType.includes(doc.code)) isRequired = true;
+        if (isDocRequired && data?.documentType.includes(doc.code)) {
+          const isIdOrOwn =
+            doc.code === "OWNER.IDENTITYPROOF" ||
+            doc.code === "OWNER.ADDRESSPROOF" ||
+            doc.code === "OWNER.OWNERSHIPPROOF" ||
+            doc.code?.includes("IDENTITY") ||
+            doc.code?.includes("ADDRESS") ||
+            doc.code?.includes("OWNERSHIP");
+          if (isIdOrOwn) {
+            if (data?.fileStoreId && data?.documentUid && String(data.documentUid).trim()) {
+              isRequired = true;
+            }
+          } else if (data?.fileStoreId) {
+            isRequired = true;
+          }
+        }
       });
       if (!isRequired && isDocRequired) count = count + 1;
     });
@@ -686,6 +709,16 @@ function SelectDocument({
   const otherUploadedDocuments = isOther ? documents?.filter((item) => item?.documentType?.includes(doc?.code) && item?.tempId !== pendingId.current) || [] : [];
   const filteredDocument = isOther ? null : documents?.filter((item) => item?.documentType?.includes(doc?.code))[0];
   const isApplicantPhoto = doc?.code === "OWNER.APPLICANTPHOTO";
+  const isIdentityProof =
+    doc?.code === "OWNER.IDENTITYPROOF" ||
+    doc?.code?.includes("IDENTITYPROOF") ||
+    doc?.code?.includes("IDENTITY");
+  const isOwnershipProof =
+    doc?.code === "OWNER.ADDRESSPROOF" ||
+    doc?.code === "OWNER.OWNERSHIPPROOF" ||
+    doc?.code?.includes("ADDRESSPROOF") ||
+    doc?.code?.includes("OWNERSHIP");
+  const isDocNumberMandatory = isIdentityProof || isOwnershipProof;
   const [selectedDocument, setSelectedDocument] = useState(() => {
     if (filteredDocument && doc?.dropdownData) {
       const match = doc?.dropdownData?.find((d) => d.code === filteredDocument.documentType);
@@ -744,9 +777,13 @@ function SelectDocument({
   );
 
   const validateDocumentNumber = (value, docTypeCode, isReq, hasFile) => {
-    if (!isReq && !hasFile && (!value || !value.trim())) return null;
-    if (!value || !value.trim()) return null;
-    const trimmed = value.trim();
+    const trimmed = (value || "").trim();
+    if (isDocNumberMandatory || isReq) {
+      if (!trimmed) return t("CORE_COMMON_REQUIRED_ERRMSG") || "This field is required";
+    } else {
+      if (!isReq && !hasFile && !trimmed) return null;
+      if (!trimmed) return null;
+    }
     const upperCode = (docTypeCode || "").toUpperCase();
 
     if (
@@ -1028,19 +1065,23 @@ function SelectDocument({
     const isCompletelyEmpty = isApplicantPhoto
       ? !uploadedFile
       : !uploadedFile && (!documentUid || !documentUid.trim()) && !selectedDocument?.code;
+    const isDocNumberMissing = isDocNumberMandatory && (!documentUid || !documentUid.trim());
+    const isDocMissing = doc?.required && !hasOtherUploaded && (!uploadedFile || !selectedDocument?.code);
     const isPartiallyFilled = isApplicantPhoto
       ? false
+      : isDocNumberMandatory
+      ? (!uploadedFile || !selectedDocument?.code || isDocNumberMissing)
       : (!isCompletelyEmpty) && !(uploadedFile && selectedDocument?.code);
     
-    const effectiveRequired = (doc?.required && !hasOtherUploaded) || isPartiallyFilled || (isOther && isRwhMandatory && !hasRwhUploaded);
-    const err = validateDocumentNumber(documentUid, selectedDocument?.code, effectiveRequired, !!uploadedFile);
+    const effectiveRequired = (doc?.required && !hasOtherUploaded) || isPartiallyFilled || (isOther && isRwhMandatory && !hasRwhUploaded) || isDocNumberMandatory;
+    const err = validateDocumentNumber(documentUid, selectedDocument?.code, isDocNumberMandatory || effectiveRequired, !!uploadedFile);
 
     if (!isHidden) {
       if (err) {
         addError();
-      } else if (isPartiallyFilled) {
+      } else if (isDocNumberMissing) {
         addError();
-      } else if ((!uploadedFile || !selectedDocument?.code) && doc?.required && !hasOtherUploaded) {
+      } else if (isDocMissing) {
         addError();
       } else if (rwhMissing) {
         addError();
@@ -1138,6 +1179,7 @@ function SelectDocument({
                 ? "Other Document Remark"
                 : t("WS_OTHER_DOCUMENT_REMARK"))
               : t(`${doc?.i18nKey?.replaceAll(".", "_")}_DOCUMENT_NO`)}
+            {isDocNumberMandatory && <span className="check-page-link-button"> *</span>}
           </CardLabel>
           <div className="field">
             <TextInput
@@ -1165,11 +1207,15 @@ function SelectDocument({
                     val = val.substring(0, maxLen);
                   }
                   setDocumentUid(val);
-                  setDocNumberError(null);
+                  if (isDocNumberMandatory && !val.trim()) {
+                    setDocNumberError(t("CORE_COMMON_REQUIRED_ERRMSG") || "This field is required");
+                  } else {
+                    setDocNumberError(validateDocumentNumber(val, selectedDocument?.code, isDocNumberMandatory || doc?.required, !!uploadedFile));
+                  }
                 }
               }}
               onBlur={() => {
-                setDocNumberError(validateDocumentNumber(documentUid, selectedDocument?.code, doc?.required, !!uploadedFile));
+                setDocNumberError(validateDocumentNumber(documentUid, selectedDocument?.code, isDocNumberMandatory || doc?.required, !!uploadedFile));
               }}
               placeholder={
                 isOtherDocumentsRemark

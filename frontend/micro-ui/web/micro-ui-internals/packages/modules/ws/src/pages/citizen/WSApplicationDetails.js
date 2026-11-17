@@ -173,7 +173,7 @@ const WSApplicationDetails = () => {
   const useDetails = additionalDetails;
   const propertyAdditionalDetails = PTData?.Properties?.[0]?.additionalDetails || {};
   const djbEmployee = additionalDetails;
-  const bankDetails = additionalDetails;
+  const bankDetails = additionalDetails?.bankDetails || additionalDetails || {};
   const propertyAddress = PTData?.Properties?.[0]?.address || additionalDetails;
 
   const rawLatitude =
@@ -268,6 +268,50 @@ const WSApplicationDetails = () => {
     if (translated && translated !== key) return translated;
     return str;
   };
+
+  const baseAssembly =
+    propertyAddress?.assembly?.name ||
+    propertyAddress?.assembly?.code ||
+    propertyAddress?.assembly ||
+    additionalDetails?.assembly ||
+    "";
+  const baseWard =
+    propertyAddress?.block?.name ||
+    propertyAddress?.block?.code ||
+    propertyAddress?.block ||
+    propertyAddress?.ward?.name ||
+    propertyAddress?.ward?.code ||
+    propertyAddress?.ward ||
+    additionalDetails?.ward ||
+    "";
+  const baseZone =
+    propertyAddress?.zone?.name ||
+    propertyAddress?.zone?.code ||
+    propertyAddress?.zone ||
+    additionalDetails?.zone ||
+    "";
+
+  const getValidActualValue = (actualVal, baseVal) => {
+    if (!actualVal) return null;
+    const str = String(typeof actualVal === "object" ? actualVal?.name || actualVal?.code || "" : actualVal).trim();
+    const baseStr = String(typeof baseVal === "object" ? baseVal?.name || baseVal?.code || "" : baseVal).trim();
+    if (!str || str === "NA" || str === "null" || str === "undefined") return null;
+    if (baseStr && str.toUpperCase() === baseStr.toUpperCase()) return null;
+    return str;
+  };
+
+  const validActualAssembly = getValidActualValue(
+    propertyAddress?.actualAssembly || additionalDetails?.actualAssembly,
+    baseAssembly
+  );
+  const validActualWard = getValidActualValue(
+    propertyAddress?.actualWard || additionalDetails?.actualWard,
+    baseWard
+  );
+  const validActualZone = getValidActualValue(
+    propertyAddress?.actualZone || additionalDetails?.actualZone,
+    baseZone
+  );
 
   const checkifPrivacyenabled =
     Digit.Hooks.ws.useToCheckPrivacyEnablement({
@@ -1091,11 +1135,11 @@ const WSApplicationDetails = () => {
                       propertyAddress?.additionalDetails?.zroLocation
                     )
                   )}`}
-                />
+                /> */}
                 <Row
                   label={t("COMMON_ADDRESS_TYPE")}
                   text={`${t(checkForNA(propertyAddress?.addressType?.i18nKey || propertyAddress?.addressType?.code || propertyAddress?.addressType))}`}
-                /> */}
+                />
                 <Row
                   label={t("CORE_COMMON_PROFILE_CITY")}
                   text={`${t(
@@ -1168,26 +1212,24 @@ const WSApplicationDetails = () => {
                   )}`}
                 />
 
-                <Row
-                  label={t("COMMON_CURRENT_ASSEMBLY") && t("COMMON_CURRENT_ASSEMBLY") !== "Assembly" && t("COMMON_CURRENT_ASSEMBLY") !== "COMMON_CURRENT_ASSEMBLY" ? t("COMMON_CURRENT_ASSEMBLY") : "Actual Assembly"}
-                  text={`${t(checkForNA(propertyAddress?.actualAssembly || additionalDetails?.actualAssembly))}`}
-                />
-                <Row
-                  label={t("COMMON_CURRENT_WARD") && t("COMMON_CURRENT_WARD") !== "Ward" && t("COMMON_CURRENT_WARD") !== "COMMON_CURRENT_WARD" ? t("COMMON_CURRENT_WARD") : "Actual Ward"}
-                  text={`${t(checkForNA(propertyAddress?.actualWard || additionalDetails?.actualWard))}`}
-                />
-                <Row
-                  label={t("COMMON_CURRENT_ZONE") && t("COMMON_CURRENT_ZONE") !== "Zone" && t("COMMON_CURRENT_ZONE") !== "COMMON_CURRENT_ZONE" ? t("COMMON_CURRENT_ZONE") : "Actual Zone"}
-                  text={`${t(
-                    checkForNA(
-                      propertyAddress?.actualZone ||
-                      additionalDetails?.actualZone ||
-                      propertyAddress?.zone?.name ||
-                      propertyAddress?.zone?.code ||
-                      propertyAddress?.zone
-                    )
-                  )}`}
-                />
+                {validActualAssembly ? (
+                  <Row
+                    label={t("COMMON_CURRENT_ASSEMBLY") && t("COMMON_CURRENT_ASSEMBLY") !== "Assembly" && t("COMMON_CURRENT_ASSEMBLY") !== "COMMON_CURRENT_ASSEMBLY" ? t("COMMON_CURRENT_ASSEMBLY") : "Actual Assembly"}
+                    text={`${t(validActualAssembly)}`}
+                  />
+                ) : null}
+                {validActualWard ? (
+                  <Row
+                    label={t("COMMON_CURRENT_WARD") && t("COMMON_CURRENT_WARD") !== "Ward" && t("COMMON_CURRENT_WARD") !== "COMMON_CURRENT_WARD" ? t("COMMON_CURRENT_WARD") : "Actual Ward"}
+                    text={`${t(validActualWard)}`}
+                  />
+                ) : null}
+                {validActualZone ? (
+                  <Row
+                    label={t("COMMON_CURRENT_ZONE") && t("COMMON_CURRENT_ZONE") !== "Zone" && t("COMMON_CURRENT_ZONE") !== "COMMON_CURRENT_ZONE" ? t("COMMON_CURRENT_ZONE") : "Actual Zone"}
+                    text={`${t(validActualZone)}`}
+                  />
+                ) : null}
                 <Row label={t("LANDMARK")} text={`${t(checkForNA(propertyAddress?.landmark))}`} />
               </StatusTable>
 
@@ -1527,7 +1569,7 @@ const WSApplicationDetails = () => {
                 </React.Fragment>
               )}
 
-              {/*!isMutation && (
+              {!isMutation && (
                 <React.Fragment>
                   <CardHeader styles={{ fontSize: "28px" }}>{t("WS_BANK_DETAILS")}</CardHeader>
                   <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
@@ -1537,7 +1579,7 @@ const WSApplicationDetails = () => {
                     <Row label={t("WS_BANK_ACCOUNT_NO")} text={`${t(checkForNA(bankDetails?.bankAccountNumber || bankDetails?.accountNumber))}`} />
                   </StatusTable>
                 </React.Fragment>
-              )*/}
+              )}
               {!isDisconnectionExecuted && !isDisconnectionPaymentPending && (
                 <React.Fragment>
                   <CardHeader styles={{ fontSize: "28px" }}>{t("WS_COMMON_DOCUMENT_DETAILS")}</CardHeader>

@@ -317,6 +317,36 @@ export const getSignatureDetails = (data) => {
   return { signatureFileStoreId, signatureFileName };
 };
 
+export const getNormalizedBankDetails = (data) => {
+  const bank =
+    data?.bankDetails?.bankDetails ||
+    data?.bankDetails ||
+    data?.additionalDetails?.bankDetails ||
+    data?.additionalDetails ||
+    {};
+  const bankName = bank?.bankName || "";
+  const branchName = bank?.branchName || bank?.bankBranchName || "";
+  const ifscCode = bank?.ifscCode || "";
+  const accountNumber = bank?.bankAccountNumber || bank?.accountNumber || "";
+  const accountHolderName = bank?.accountHolderName || "";
+  const confirmAccountNumber = bank?.confirmAccountNumber || accountNumber || "";
+
+  if (!bankName && !branchName && !ifscCode && !accountNumber) {
+    return null;
+  }
+
+  return {
+    bankName,
+    branchName,
+    bankBranchName: branchName,
+    ifscCode,
+    accountNumber,
+    bankAccountNumber: accountNumber,
+    accountHolderName,
+    confirmAccountNumber,
+  };
+};
+
 export const createPayloadOfWS = async (data) => {
   const userInfo = Digit.UserService.getUser()?.info;
   const isCitizen = userInfo?.type === "CITIZEN" || userInfo?.roles?.some(role => role.code === "CITIZEN");
@@ -501,7 +531,7 @@ export const createPayloadOfWS = async (data) => {
         (typeof data?.djbEmployee?.document === "string" ? data?.djbEmployee?.document : null) ||
         allDocuments.find((d) => d?.documentType === "OWNER.DJB_EMPLOYEE_ID" || d?.documentType?.includes("DJB_EMPLOYEE_ID"))?.fileStoreId ||
         undefined,
-      ...data?.bankDetails,
+      ...(getNormalizedBankDetails(data) ? { ...getNormalizedBankDetails(data), bankDetails: getNormalizedBankDetails(data) } : {}),
       ...data?.declarationData,
       ...data?.declaration,
       ...(signatureFileStoreId
@@ -580,6 +610,7 @@ export const createPayloadOfWS = async (data) => {
         data?.documents?.otherDocumentRemark ||
         allDocuments.find((d) => d?.documentType?.includes("OTHER_DOCUMENTS") || d?.documentType?.includes("OTHERDOCUMENTS"))?.documentUid ||
         allDocuments.find((d) => d?.documentType?.includes("OTHER_DOCUMENTS") || d?.documentType?.includes("OTHERDOCUMENTS"))?.remarks,
+      ...(getNormalizedBankDetails(data) ? { ...getNormalizedBankDetails(data), bankDetails: getNormalizedBankDetails(data) } : {}),
       detailsProvidedBy: "",
       channel: isCitizen ? "CITIZEN" : "CFC_COUNTER",
     },
@@ -824,7 +855,7 @@ export const convertToWSUpdate = (data) => {
               ),
             }
           : {}),
-        ...(data?.bankDetails !== undefined ? data?.bankDetails : {}),
+        ...(getNormalizedBankDetails(data) ? { ...getNormalizedBankDetails(data), bankDetails: getNormalizedBankDetails(data) } : {}),
       },
       processInstance: {
         action: "SUBMIT_APPLICATION",
@@ -940,7 +971,7 @@ export const convertToEditWSUpdate = (data) => {
               ),
             }
           : {}),
-        ...(data?.bankDetails !== undefined ? data?.bankDetails : {}),
+        ...(getNormalizedBankDetails(data) ? { ...getNormalizedBankDetails(data), bankDetails: getNormalizedBankDetails(data) } : {}),
         ...(data?.waterConnection?.useDetails
           ? {
               plotArea: data.waterConnection.useDetails.plotArea || data?.additionalDetails?.plotArea || waterResult?.additionalDetails?.plotArea,
@@ -1205,7 +1236,7 @@ export const convertToEditSWUpdate = (data) => {
               ),
             }
           : {}),
-        ...(data?.bankDetails !== undefined ? data?.bankDetails : {}),
+        ...(getNormalizedBankDetails(data) ? { ...getNormalizedBankDetails(data), bankDetails: getNormalizedBankDetails(data) } : {}),
         ...(data?.waterConnection?.useDetails
           ? {
               plotArea: data.waterConnection.useDetails.plotArea || data?.additionalDetails?.plotArea || SewerageResult?.additionalDetails?.plotArea,
@@ -1447,7 +1478,7 @@ export const convertToSWUpdate = (data) => {
               ),
             }
           : {}),
-        ...(data?.bankDetails !== undefined ? data?.bankDetails : {}),
+        ...(getNormalizedBankDetails(data) ? { ...getNormalizedBankDetails(data), bankDetails: getNormalizedBankDetails(data) } : {}),
       },
       processInstance: {
         action: "SUBMIT_APPLICATION",

@@ -1461,10 +1461,32 @@ export const WSSearch = {
       title: "WS_BANK_DETAILS",
       asSectionHeader: true,
       values: [
-        { title: "WS_NAME_OF_BANK", value: wsDataDetails?.additionalDetails?.bankName || t("NA") },
-        { title: "WS_NAME_OF_BRANCH", value: wsDataDetails?.additionalDetails?.branchName || t("NA") },
-        { title: "WS_IFSC_CODE", value: wsDataDetails?.additionalDetails?.ifscCode || t("NA") },
-        { title: "WS_BANK_ACCOUNT_NO", value: wsDataDetails?.additionalDetails?.bankAccountNumber || t("NA") },
+        {
+          title: "WS_NAME_OF_BANK",
+          value: wsDataDetails?.additionalDetails?.bankName || wsDataDetails?.additionalDetails?.bankDetails?.bankName || t("NA"),
+        },
+        {
+          title: "WS_NAME_OF_BRANCH",
+          value:
+            wsDataDetails?.additionalDetails?.branchName ||
+            wsDataDetails?.additionalDetails?.bankBranchName ||
+            wsDataDetails?.additionalDetails?.bankDetails?.branchName ||
+            wsDataDetails?.additionalDetails?.bankDetails?.bankBranchName ||
+            t("NA"),
+        },
+        {
+          title: "WS_IFSC_CODE",
+          value: wsDataDetails?.additionalDetails?.ifscCode || wsDataDetails?.additionalDetails?.bankDetails?.ifscCode || t("NA"),
+        },
+        {
+          title: "WS_BANK_ACCOUNT_NO",
+          value:
+            wsDataDetails?.additionalDetails?.bankAccountNumber ||
+            wsDataDetails?.additionalDetails?.accountNumber ||
+            wsDataDetails?.additionalDetails?.bankDetails?.bankAccountNumber ||
+            wsDataDetails?.additionalDetails?.bankDetails?.accountNumber ||
+            t("NA"),
+        },
       ],
     };
 
@@ -1485,7 +1507,7 @@ export const WSSearch = {
       connectionHolderDetails,
       propertyDetails,
       propertyWaterConnectionUseDetails,
-      // ...(isMutationApp ? [] : [bankDetails]),
+      ...(isMutationApp ? [] : [bankDetails]),
       documentDetails,
     ];
 

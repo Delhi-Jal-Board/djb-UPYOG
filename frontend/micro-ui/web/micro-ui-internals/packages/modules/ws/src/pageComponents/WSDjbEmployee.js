@@ -83,8 +83,11 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
     const errs = {};
     const isEmp = values?.isDjbEmployee === true || String(values?.isDjbEmployee) === "true";
     if (isEmp) {
-      if (!values?.employeeId || !String(values?.employeeId).trim()) {
+      const empId = String(values?.employeeId || "").trim();
+      if (!empId) {
         errs.employeeId = t("CORE_COMMON_REQUIRED_ERRMSG");
+      } else if (!/^\d{8}$/.test(empId)) {
+        errs.employeeId = t("WS_EMPLOYEE_ID_8_DIGITS_ERRMSG") || "Employee ID must be exactly 8 digits (numbers only)";
       }
       if (!values?.designation || !String(values?.designation).trim()) {
         errs.designation = t("CORE_COMMON_REQUIRED_ERRMSG");
@@ -155,17 +158,9 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
     if (hasDjbErrors) {
       if (setError) setError(configKey, { type: "required", message: "CORE_COMMON_REQUIRED_ERRMSG" });
     } else {
-      if (formState?.errors?.[configKey] && clearErrors) {
-        clearErrors(configKey);
-      }
+      if (clearErrors) clearErrors(configKey);
     }
-  }, [
-    hasDjbErrors,
-    formValue?.isDjbEmployee,
-    formValue?.employeeId,
-    formValue?.designation,
-    config?.key,
-  ]);
+  }, [hasDjbErrors, config?.key]);
 
   const goNext = () => {
     onSelect(config.key, formValue);
@@ -216,12 +211,27 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
               <Controller
                 control={control}
                 name="employeeId"
-                rules={{ required: isDjbEmployee ? t("CORE_COMMON_REQUIRED_ERRMSG") : false }}
+                rules={{
+                  required: isDjbEmployee ? t("CORE_COMMON_REQUIRED_ERRMSG") : false,
+                  validate: (val) => {
+                    if (!isDjbEmployee) return true;
+                    const trimmed = String(val || "").trim();
+                    if (!trimmed) return t("CORE_COMMON_REQUIRED_ERRMSG");
+                    if (!/^\d{8}$/.test(trimmed)) {
+                      return t("WS_EMPLOYEE_ID_8_DIGITS_ERRMSG") || "Employee ID must be exactly 8 digits (numbers only)";
+                    }
+                    return true;
+                  },
+                }}
                 render={(props) => (
                   <TextInput
+                    type="text"
                     value={props.value}
+                    maxlength={8}
+                    maxLength={8}
                     onChange={(e) => {
-                      props.onChange(e.target.value);
+                      const cleanVal = e.target.value.replace(/\D/g, "").slice(0, 8);
+                      props.onChange(cleanVal);
                       trigger("employeeId");
                     }}
                     onBlur={(e) => {
@@ -232,8 +242,12 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
                   />
                 )}
               />
-              {localFormState?.touched?.employeeId && !formValue?.employeeId?.trim?.() && (
-                <CardLabelError style={errorStyle}>{t("CORE_COMMON_REQUIRED_ERRMSG")}</CardLabelError>
+              {localFormState?.touched?.employeeId && (
+                localFormState?.errors?.employeeId?.message || djbErrors?.employeeId ? (
+                  <CardLabelError style={errorStyle}>
+                    {localFormState?.errors?.employeeId?.message || djbErrors?.employeeId}
+                  </CardLabelError>
+                ) : null
               )}
             </div>
           </LabelFieldPair>

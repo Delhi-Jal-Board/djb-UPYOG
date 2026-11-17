@@ -78,7 +78,7 @@ const WSDocsRequired = ({ onSelect, userType, onSkip, config }) => {
 
   return (
     <div className="employee-form-content-with-action-bar">
-      <div className="overflow-y-scroll">
+      <div style={{ width: "100%", height: "auto" }}>
         {wsDocsLoading ? (
           <Loader />
         ) : (

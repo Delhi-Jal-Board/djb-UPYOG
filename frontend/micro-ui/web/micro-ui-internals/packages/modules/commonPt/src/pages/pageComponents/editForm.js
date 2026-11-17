@@ -139,6 +139,34 @@ const EditPropertyForm = ({ config, onSelect, userType }) => {
     const useDetails = currentFormValue?.waterConnection?.useDetails || {};
     const stateId = Digit.ULBService.getStateId();
 
+    const plotAreaNum = parseFloat(useDetails?.plotArea);
+    const builtUpAreaNum = parseFloat(useDetails?.builtUpArea);
+    if (!isNaN(plotAreaNum) && !isNaN(builtUpAreaNum) && plotAreaNum <= builtUpAreaNum) {
+      const plotTrans = t("WS_PLOT_AREA_MORE_THAN_BUILT_UP_AREA");
+      setShowToast({
+        key: true,
+        label: plotTrans && plotTrans !== "WS_PLOT_AREA_MORE_THAN_BUILT_UP_AREA"
+          ? plotTrans
+          : "Plot area should always be more than built up area.",
+      });
+      return;
+    }
+
+    const usageTypeObj = useDetails?.WaterConnectionUsageType;
+    const usageTypeCode = typeof usageTypeObj === "object" ? usageTypeObj?.code || usageTypeObj?.value || usageTypeObj?.name : usageTypeObj;
+    const isNormalUsage = String(usageTypeCode || "").toUpperCase() === "NORMAL";
+    const heightNum = parseFloat(useDetails?.heightOfTheBuilding);
+    if (isNormalUsage && !isNaN(heightNum) && heightNum > 17.5) {
+      const heightTrans = t("WS_HEIGHT_OF_BUILDING_NORMAL_ERROR");
+      setShowToast({
+        key: true,
+        label: heightTrans && heightTrans !== "WS_HEIGHT_OF_BUILDING_NORMAL_ERROR"
+          ? heightTrans
+          : "Height of the building must be 17.5 meters or less for Normal connection.",
+      });
+      return;
+    }
+
     // Parse noOfFloors code → integer
     // "GROUND_FLOOR" → 0, "1_FLOOR" → 1, "2_FLOORS" → 2, etc.
     const loc = currentFormValue?.locationDet || {};

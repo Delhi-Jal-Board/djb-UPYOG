@@ -41,45 +41,35 @@ export const setAddressDetailsLW = (data) => {
     return String(val);
   };
 
-  const actualWard =
-    resolveCodeOrName(address?.actualWard) ||
-    resolveCodeOrName(address?.block) ||
-    resolveCodeOrName(address?.ward) ||
-    resolveCodeOrName(address?.locality?.ward) ||
-    "";
-
-  const actualAssembly =
-    resolveCodeOrName(address?.actualAssembly) ||
-    resolveCodeOrName(address?.assembly) ||
-    resolveCodeOrName(address?.Assembly) ||
-    resolveCodeOrName(address?.locality?.assembly) ||
-    "";
-
-  const actualZone =
-    resolveCodeOrName(address?.actualZone) ||
-    resolveCodeOrName(address?.zone) ||
-    resolveCodeOrName(address?.locality?.zone) ||
-    "";
+  const rawActualWard = resolveCodeOrName(address?.actualWard) || "";
+  const rawActualAssembly = resolveCodeOrName(address?.actualAssembly) || "";
+  const rawActualZone = resolveCodeOrName(address?.actualZone) || "";
 
   const assembly =
     resolveCodeOrName(address?.assembly) ||
     resolveCodeOrName(address?.Assembly) ||
     resolveCodeOrName(address?.locality?.assembly) ||
-    actualAssembly ||
     "";
 
   const block =
     resolveCodeOrName(address?.block) ||
     resolveCodeOrName(address?.ward) ||
     resolveCodeOrName(address?.locality?.ward) ||
-    actualWard ||
     "";
 
   const zone =
     resolveCodeOrName(address?.zone) ||
     resolveCodeOrName(address?.locality?.zone) ||
-    actualZone ||
     "";
+
+  const isActualIdentical =
+    (!rawActualAssembly || rawActualAssembly === assembly) &&
+    (!rawActualWard || rawActualWard === block) &&
+    (!rawActualZone || rawActualZone === zone);
+
+  const actualAssembly = isActualIdentical ? "" : rawActualAssembly;
+  const actualWard = isActualIdentical ? "" : rawActualWard;
+  const actualZone = isActualIdentical ? "" : rawActualZone;
 
   let propAddress = {
     city: address?.city?.code || address?.city?.name || address?.city,
