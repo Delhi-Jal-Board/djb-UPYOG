@@ -31,4 +31,31 @@ public class OtpConfiguration {
     @Value("${egov.otp.default.value}")
     private String defaultOtpValue;
 
+    @Value("${egov.otp.max.validation.attempts:5}")
+    private int maxValidationAttempts;
+
+    @Value("${egov.otp.lockout.duration.seconds:900}")
+    private long lockoutDurationSeconds;
+
+    @Value("${egov.otp.rate.limit.max.creations:5}")
+    private int maxCreationsPerWindow;
+
+    @Value("${egov.otp.rate.limit.window.seconds:900}")
+    private long creationWindowSeconds;
+
+    @Value("${egov.otp.rate.limit.min.interval.seconds:60}")
+    private long minCreationIntervalSeconds;
+
+    public OtpConfiguration(long ttl, int otpLength, boolean encryptOTP, boolean defaultOtpEnabled, String defaultOtpValue) {
+        this.ttl = ttl;
+        this.otpLength = otpLength;
+        this.encryptOTP = encryptOTP;
+        this.defaultOtpEnabled = defaultOtpEnabled;
+        this.defaultOtpValue = defaultOtpValue;
+        this.maxValidationAttempts = 5;
+        this.lockoutDurationSeconds = 900;
+        this.maxCreationsPerWindow = 5;
+        this.creationWindowSeconds = 900;
+        this.minCreationIntervalSeconds = 60;
+    }
 }

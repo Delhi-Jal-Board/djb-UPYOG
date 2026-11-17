@@ -39,8 +39,20 @@ public class CustomControllerAdvice {
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(TokenValidationFailureException.class)
-    public ErrorResponse handleTokenValidationFailureException() {
-        return new TokenValidationFailureAdapter().adapt(null);
+    public ErrorResponse handleTokenValidationFailureException(TokenValidationFailureException ex) {
+        return new TokenValidationFailureAdapter().adapt(ex);
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(TokenValidationLockoutException.class)
+    public ErrorResponse handleTokenValidationLockoutException(TokenValidationLockoutException ex) {
+        return new TokenValidationLockoutAdapter().adapt(ex);
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(TokenCreationRateLimitException.class)
+    public ErrorResponse handleTokenCreationRateLimitException(TokenCreationRateLimitException ex) {
+        return new TokenCreationRateLimitAdapter().adapt(ex);
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)

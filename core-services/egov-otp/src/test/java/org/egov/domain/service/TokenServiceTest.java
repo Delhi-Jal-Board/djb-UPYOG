@@ -15,7 +15,9 @@ import java.util.Date;
 import java.util.List;
 
 import org.egov.domain.exception.TokenAlreadyUsedException;
+import org.egov.domain.exception.TokenCreationRateLimitException;
 import org.egov.domain.exception.TokenValidationFailureException;
+import org.egov.domain.exception.TokenValidationLockoutException;
 import org.egov.domain.model.Token;
 import org.egov.domain.model.TokenRequest;
 import org.egov.domain.model.TokenSearchCriteria;
@@ -31,6 +33,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.beans.factory.annotation.*;
 import org.springframework.boot.test.context.*;
 import org.springframework.security.crypto.bcrypt.*;
+
+import java.util.Collections;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TokenServiceTest {
@@ -133,5 +137,39 @@ public class TokenServiceTest {
         assertEquals(expectedToken, actualToken);
     }
 
+    @Test
+    public void test_should_lockout_identity_after_exceeding_max_failed_attempts() {
+        final ValidateRequest validateRequest = new ValidateRequest("tenant", "wrongOtp", "bruteForceIdentity");
+        when(tokenRepository.findByIdentityAndTenantId(validateRequest)).thenReturn(new Tokens(Collections.emptyList()));
+
+        for (int i = 1; i <= 4; i++) {
+            try {
+                tokenService.validate(validateRequest);
+                org.junit.Assert.fail("Attempt " + i + " should have failed with TokenValidationFailureException");
+            } catch (TokenValidationFailureException e) {
+                // Expected
+            }
+        }
+
+        try {
+            tokenService.validate(validateRequest);
+            org.junit.Assert.fail("Attempt 5 should have thrown TokenValidationLockoutException");
+        } catch (TokenValidationLockoutException e) {
+            org.junit.Assert.assertTrue(e.getMessage().contains("Maximum OTP validation attempts exceeded"));
+        }
+    }
+
+    @Test(expected = TokenCreationRateLimitException.class)
+    public void test_should_enforce_rate_limit_on_rapid_token_creations() {
+        TokenRequest request = new TokenRequest("identity_rapid", "tenant");
+        Token token = Token.builder().uuid("uuid").identity("identity_rapid").tenantId("tenant").build();
+        when(tokenRepository.save(org.mockito.Matchers.any(Token.class))).thenReturn(token);
+
+        // First creation succeeds
+        tokenService.create(request);
+
+        // Immediate second creation violates 60-second cooldown interval
+        tokenService.create(request);
+    }
 
 }
