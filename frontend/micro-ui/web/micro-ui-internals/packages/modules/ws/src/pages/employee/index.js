@@ -470,9 +470,9 @@ const BILLSBreadCrumbs = ({ location, showPrint }) => {
     },
     {
       path: "/digit-ui/employee/ws/generate-note-bill-amendment",
-      label: t("CS_TITLE_GENERATE_NOTE"),
+      label: fromScreen ? `${t(fromScreen)} / ${t("WS_APPLICATION_DETAILS_HEADER")}` : t("WS_APPLICATION_DETAILS_HEADER"),
       show: location.pathname.includes("/generate-note-bill-amendment") ? true : false,
-      //isclickable : false,
+      isBack: fromScreen && true,
     },
     {
       path: "/digit-ui/employee/ws/water/bulk-bil",
@@ -526,6 +526,9 @@ const BILLSBreadCrumbs = ({ location, showPrint }) => {
         else if (fromScreen === "WS_SEARCH_APPLICATIONS") fromScreenPath = `/digit-ui/employee/ws/${svc}/search-application`;
         else if (fromScreen === "WS_SEARCH_CONNECTION") fromScreenPath = `/digit-ui/employee/ws/${svc}/search-connection`;
         else if (fromScreen === "WS_SEARCH_INTEGRATED_BILL") fromScreenPath = "/digit-ui/employee/ws/water/wns-search";
+        else if (fromScreen === "ES_COMMON_BILL_AMEND_WATER_INBOX_LABEL") fromScreenPath = "/digit-ui/employee/ws/water/bill-amendment/inbox";
+        else if (fromScreen === "ES_COMMON_BILL_AMEND_SEWERAGE_INBOX_LABEL") fromScreenPath = "/digit-ui/employee/ws/sewerage/bill-amendment/inbox";
+        else if (fromScreen === "WS_BILL_AMENDMENT_SEARCH_APPLICATION") fromScreenPath = "/digit-ui/employee/ws/water/bill-amendment/search-application";
         else fromScreenPath = lastCrumb.path;
 
         activeCrumbs.pop();
@@ -728,7 +731,14 @@ const App = ({ path }) => {
                 )}
               />
               <PrivateRoute path={`${path}/bill-amendment`} component={() => <WSApplicationBillAmendment {...{ path }} />} />
-              <PrivateRoute path={`${path}/generate-note-bill-amendment`} component={() => <WSApplicationDetailsBillAmendment {...{ path }} />} />
+              <PrivateRoute
+                path={`${path}/generate-note-bill-amendment`}
+                component={() => (
+                  <LayoutWrapper layoutClass="action">
+                    <WSApplicationDetailsBillAmendment {...{ path }} />
+                  </LayoutWrapper>
+                )}
+              />
               <PrivateRoute path={`${path}/response`} component={() => <Response {...{ path }} />} />
               <PrivateRoute path={`${path}/response-bill-amend`} component={() => <ResponseBillAmend {...{ path }} />} />
               <PrivateRoute path={`${path}/required-documents`} component={() => <WSRequiredDocuments {...{ path }} />} />

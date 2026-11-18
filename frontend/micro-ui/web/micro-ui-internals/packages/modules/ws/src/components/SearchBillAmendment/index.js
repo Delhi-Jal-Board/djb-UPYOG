@@ -78,13 +78,16 @@ const SearchBillAmendment = () => {
       {
         Header: t("WS_ACK_COMMON_APP_NO_LABEL", "Application No"),
         accessor: "amendmentId",
-        Cell: ({ row }) => (
-          <span className="link">
-            <Link to={`/digit-ui/employee/ws/generate-note-bill-amendment?applicationNumber=${row.original.amendmentId}`}>
-              {row.original.amendmentId}
-            </Link>
-          </span>
-        ),
+        Cell: ({ row }) => {
+          const service = row.original?.businessService?.includes("SW") ? "SEWERAGE" : "WATER";
+          return (
+            <span className="link">
+              <Link to={`/digit-ui/employee/ws/generate-note-bill-amendment?applicationNumber=${row.original.amendmentId}&tenantId=${tenantId}&service=${service}&from=WS_BILL_AMENDMENT_SEARCH_APPLICATION`}>
+                {row.original.amendmentId}
+              </Link>
+            </span>
+          );
+        },
       },
       {
         Header: t("WS_MYCONNECTIONS_CONSUMER_NO", "Consumer No"),
@@ -111,13 +114,16 @@ const SearchBillAmendment = () => {
       },
       {
         Header: t("WS_COMMON_TABLE_COL_ACTION", "Action"),
-        Cell: ({ row }) => (
-          <span className="link">
-            <Link to={`/digit-ui/employee/ws/generate-note-bill-amendment?applicationNumber=${row.original.amendmentId}`}>
-              {t("ES_COMMON_VIEW", "View")}
-            </Link>
-          </span>
-        ),
+        Cell: ({ row }) => {
+          const service = row.original?.businessService?.includes("SW") ? "SEWERAGE" : "WATER";
+          return (
+            <span className="link">
+              <Link to={`/digit-ui/employee/ws/generate-note-bill-amendment?applicationNumber=${row.original.amendmentId}&tenantId=${tenantId}&service=${service}&from=WS_BILL_AMENDMENT_SEARCH_APPLICATION`}>
+                {t("ES_COMMON_VIEW", "View")}
+              </Link>
+            </span>
+          );
+        },
       },
     ],
     [t, tenantId]

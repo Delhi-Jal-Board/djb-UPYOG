@@ -8,10 +8,13 @@ const useInboxMobileCardsData = ({ parentRoute, table }) => {
   const { t } = useTranslation();
   const GetCell = (value) => <span className="cell-text styled-cell">{value}</span>;
 
-  const getApplicationNumberCell = (value, amendmentReason) => {
+  const getApplicationNumberCell = (value, amendmentReason, tenantId, service) => {
+    const serviceType = service?.includes("SW") ? "SEWERAGE" : "WATER";
+    const fromScreen = serviceType === "WATER" ? "ES_COMMON_BILL_AMEND_WATER_INBOX_LABEL" : "ES_COMMON_BILL_AMEND_SEWERAGE_INBOX_LABEL";
+    const linkUrl = `/digit-ui/employee/ws/generate-note-bill-amendment?applicationNumber=${value}&tenantId=${tenantId}&service=${serviceType}&from=${fromScreen}`;
     return (
       <div style={{ display: "flex", flexDirection: "column" }}>
-        <Link to={`/digit-ui/employee/ws/generate-note-bill-amendment?applicationNumber=${value}`}>
+        <Link to={linkUrl}>
           <span className="link">{value}</span>
         </Link>
         {GetCell(t(`BILLAMENDMENT_${amendmentReason}_HEADING`))}

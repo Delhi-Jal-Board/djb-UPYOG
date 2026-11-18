@@ -33,17 +33,20 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
         Header: t("WS_MYCONNECTIONS_APPLICATION_NO"),
         disableSortBy: true,
         Cell: ({ row }) => {
+          const service = row?.original?.service?.includes("SW") ? "SEWERAGE" : "WATER";
+          const fromScreen = service === "WATER" ? "ES_COMMON_BILL_AMEND_WATER_INBOX_LABEL" : "ES_COMMON_BILL_AMEND_SEWERAGE_INBOX_LABEL";
+          const applicationNo = row?.original?.["applicationNo"];
+          const linkUrl = `/digit-ui/employee/ws/generate-note-bill-amendment?applicationNumber=${applicationNo}&tenantId=${tenantId}&service=${service}&from=${fromScreen}`;
           return (
             <div style={{ display: "flex", flexDirection: "column" }}>
-              <Link to={`/digit-ui/employee/ws/generate-note-bill-amendment?applicationNumber=${row.original["applicationNo"]}`}>
-                <span className="link">{row.original["applicationNo"]}</span>
+              <Link to={linkUrl}>
+                <span className="link">{applicationNo}</span>
               </Link>
               {GetCell(t(`BILLAMENDMENT_${row?.original?.amendmentReason}_HEADING`))}
             </div>
           );
         },
       },
-      ,
       {
         Header: t("CORE_COMMON_NAME"),
         disableSortBy: true,
