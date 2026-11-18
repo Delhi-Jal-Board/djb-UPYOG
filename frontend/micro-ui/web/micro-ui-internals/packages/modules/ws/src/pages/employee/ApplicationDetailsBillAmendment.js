@@ -1,7 +1,8 @@
 import { Header, MultiLink, Toast } from "@djb25/digit-ui-react-components";
-import React, { Fragment, useEffect, useState } from "react";
+import React, { Fragment, useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import ApplicationDetailsTemplate from "../../../../templates/ApplicationDetails";
+import WorkflowTimeline from "../../components/WorkflowTimeline";
 import getPDFData from "../../utils/getWsAckDataForBillAmendPdf";
 
 const ApplicationDetailsBillAmendment = () => {
@@ -17,6 +18,9 @@ const ApplicationDetailsBillAmendment = () => {
   let serviceType = "WATER";
   if (applicationNumber?.includes("SW")) serviceType = "SEWERAGE";
   const [showToast, setShowToast] = useState(false);
+  const [hideTimeline, setHideTimeline] = React.useState(typeof window !== "undefined" ? window.innerWidth < 768 : false);
+  const menuRef = useRef();
+
   const { isLoading, isError, data: applicationDetails, error } = Digit.Hooks.ws.useWSApplicationDetailsBillAmendment(
     t,
     tenantId,
@@ -74,6 +78,11 @@ const ApplicationDetailsBillAmendment = () => {
 
   const [showOptions, setShowOptions] = useState(false);
 
+  const closeMenu = () => {
+    setShowOptions(false);
+  };
+  Digit.Hooks.useClickOutside(menuRef, closeMenu, showOptions);
+
   async function getCouponPDF({ tenantId, Amendments }) {
     const stateId = Digit.ULBService.getStateId();
     const response = await Digit.PaymentService.generatePdf(stateId, { Amendments: [Amendments] }, "bill-amendment-credit-note");
@@ -109,36 +118,46 @@ const ApplicationDetailsBillAmendment = () => {
 
   return (
     <Fragment>
-      <div className={"employee-main-application-details"}>
-        <div className={"employee-application-details"} style={{ marginBottom: "15px" }}>
-          <Header styles={{ marginLeft: "0px", paddingTop: "10px", fontSize: "32px" }}>
-            {isEmployee ? t("CS_TITLE_GENERATE_NOTE") : t("WS_BILL_AMEND_APP_DETAILS", "Bill Amendment Application Details")}
-          </Header>
+      <div className={"employee-main-application-details"} style={{ display: "flex", gap: "20px" }}>
+        {isEmployee && (
+          <div
+            className={`workflow-timeline-wrapper no-scrollbar ${hideTimeline ? "hide-workflow" : ""}`}
+            style={{ flex: "1 1 300px", maxWidth: hideTimeline ? "fit-content" : "400px", transition: "max-width 0.3s" }}
+          >
+            <WorkflowTimeline workflowDetails={workflowDetails} hideTimeline={hideTimeline} setHideTimeline={setHideTimeline} />
+          </div>
+        )}
+
+        <div style={{ flex: "2 1 500px", minWidth: "300px", position: "relative" }}>
           {dowloadOptions && dowloadOptions.length > 0 && (
-            <MultiLink
-              className="multilinkWrapper employee-mulitlink-main-div"
-              onHeadClick={() => setShowOptions(!showOptions)}
-              displayOptions={showOptions}
-              options={dowloadOptions}
-              downloadBtnClassName={"employee-download-btn-className"}
-              optionsClassName={"employee-options-btn-className"}
-            />
+            <div style={{ position: "absolute", right: "24px", zIndex: 11 }}>
+              <MultiLink
+                className="multilinkWrapper employee-mulitlink-main-divNew"
+                onHeadClick={() => setShowOptions(!showOptions)}
+                displayOptions={showOptions}
+                options={dowloadOptions}
+                downloadBtnClassName={"employee-download-btn-className"}
+                optionsClassName={"employee-options-btn-className"}
+                ref={menuRef}
+              />
+            </div>
           )}
+          <ApplicationDetailsTemplate
+            applicationDetails={applicationDetails}
+            isLoading={isLoading}
+            isDataLoading={isLoading}
+            applicationData={applicationDetails?.applicationData}
+            mutate={mutate}
+            workflowDetails={workflowDetails}
+            businessService={businessService}
+            moduleCode="WS"
+            showToast={showToast}
+            setShowToast={setShowToast}
+            closeToast={() => setShowToast(null)}
+            timelineStatusPrefix={`WF_${businessService?.toUpperCase()}_`}
+            showTimeLine={!isEmployee}
+          />
         </div>
-        <ApplicationDetailsTemplate
-          applicationDetails={applicationDetails}
-          isLoading={isLoading}
-          isDataLoading={isLoading}
-          applicationData={applicationDetails?.applicationData}
-          mutate={mutate}
-          workflowDetails={workflowDetails}
-          businessService={businessService}
-          moduleCode="WS"
-          showToast={showToast}
-          setShowToast={setShowToast}
-          closeToast={() => setShowToast(null)}
-          timelineStatusPrefix={`WF_${businessService?.toUpperCase()}_`}
-        />
       </div>
       {showToast ? (
         <Toast

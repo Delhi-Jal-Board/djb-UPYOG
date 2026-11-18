@@ -18,7 +18,7 @@ import {
 } from "@djb25/digit-ui-react-components";
 import { useHistory } from "react-router-dom";
 import _ from "lodash";
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation } from "react-router-dom";
 //import PropertyDocument from "../../pageComponents/PropertyDocument";
@@ -43,6 +43,7 @@ const ConnectionDetails = () => {
   let { state = {} } = useLocation();
   const [showModal, setshowModal] = useState(false);
   const [showActionToast, setshowActionToast] = useState(null);
+  const [activeAmendment, setActiveAmendment] = useState(null);
   const mobileView = Digit.Utils.browser.isMobile();
   const getAddress = (address) => {
     return `${address?.doorNo ? `${address?.doorNo}, ` : ""}${address?.street ? `${address?.street}, ` : ""}${address?.landmark ? `${address?.landmark}, ` : ""
@@ -195,7 +196,8 @@ const ConnectionDetails = () => {
     return a.order - b.order;
   });
 
-  const isSW = state?.applicationNo?.includes("SW");
+  const isSW = state?.applicationNo?.includes("SW") || applicationNobyData?.includes("SW");
+  const serviceType = state?.applicationType?.includes("WATER") || applicationNobyData?.includes("WS") ? "WATER" : "SEWERAGE";
   const fetchBillParams = { consumerCode: state?.connectionNo };
   const paymentDetails = Digit.Hooks.useFetchBillsForBuissnessService(
     { businessService: isSW ? "SW" : "WS", ...fetchBillParams, tenantId: tenantId },
@@ -255,6 +257,30 @@ const ConnectionDetails = () => {
     }
   };
 
+  useEffect(() => {
+    let isMounted = true;
+    const checkActiveAmendment = async () => {
+      const connNo = state?.connectionNo;
+      if (!connNo) return;
+      const finalTenantId = tenantId || state?.tenantId || "dl.djb";
+      const finalServiceType = serviceType || (connNo?.includes("SW") ? "SEWERAGE" : "WATER");
+      const businessService = finalServiceType === "WATER" ? "WS" : "SW";
+      try {
+        const res = await Digit.PaymentService.searchAmendment(finalTenantId, { consumerCode: connNo, businessService });
+        const inWorkflow = res?.Amendments?.find((item) => item?.status === "INWORKFLOW");
+        if (isMounted && inWorkflow) {
+          setActiveAmendment(inWorkflow);
+        }
+      } catch (e) {
+        console.warn("Could not check active amendment in connection details", e);
+      }
+    };
+    checkActiveAmendment();
+    return () => {
+      isMounted = false;
+    };
+  }, [state?.connectionNo, applicationNobyData, serviceType, tenantId]);
+
   const getBillAmendmentButton = async () => {
     const connNo = state?.connectionNo || applicationNobyData;
     const finalTenantId = tenantId || state?.tenantId || "dl.djb";
@@ -263,15 +289,9 @@ const ConnectionDetails = () => {
 
     try {
       const res = await Digit.PaymentService.searchAmendment(finalTenantId, { consumerCode: connNo, businessService });
-      const inWorkflow = res?.Amendments?.some((item) => item?.status === "INWORKFLOW");
+      const inWorkflow = res?.Amendments?.find((item) => item?.status === "INWORKFLOW");
       if (inWorkflow) {
-        setshowActionToast({
-          key: "error",
-          label: "WORKFLOW_IN_PROGRESS",
-        });
-        setTimeout(() => {
-          closeBillToast();
-        }, 5000);
+        history.push(`/digit-ui/citizen/ws/bill-amendment/application-details?applicationNumber=${inWorkflow.amendmentId}`);
         return;
       }
     } catch (e) {
@@ -318,7 +338,6 @@ const ConnectionDetails = () => {
   }
   sessionStorage.setItem("ApplicationNoState", state?.applicationNo);
 
-  let serviceType = state?.applicationType?.includes("WATER") ? "WATER" : "SEWERAGE";
   return (
     <React.Fragment>
       {checkifPrivacyenabled && <WSInfoLabel t={t} />}
@@ -336,6 +355,26 @@ const ConnectionDetails = () => {
                   downloadBtnClassName={"employee-download-btn-className"}
                   optionsClassName={"employee-options-btn-className"}
                 />
+              </div>
+            </div>
+          )}
+          {activeAmendment && (
+            <div style={{ padding: "14px 16px", backgroundColor: "#EFF6FF", border: "1px solid #BFDBFE", borderRadius: "8px", marginBottom: "20px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
+                <div>
+                  <div style={{ fontWeight: "700", color: "#1E40AF", fontSize: "16px" }}>
+                    {t("WS_ACTIVE_BILL_AMENDMENT_LABEL", "Active Bill Correction / Amendment Request")}
+                  </div>
+                  <div style={{ color: "#1E3A8A", fontSize: "14px", marginTop: "4px" }}>
+                    {t("WS_APPLICATION_NO_LABEL", "Application No:")} <strong>{activeAmendment.amendmentId}</strong> | {t("WS_STATUS_LABEL", "Status:")}{" "}
+                    <span style={{ fontWeight: "600", color: "#B45309" }}>{t(`CS_${activeAmendment.status}`, activeAmendment.status)}</span>
+                  </div>
+                </div>
+                <Link to={`/digit-ui/citizen/ws/bill-amendment/application-details?applicationNumber=${activeAmendment.amendmentId}`}>
+                  <button className="selector-button-border" style={{ height: "36px", padding: "0 16px", margin: 0, cursor: "pointer" }}>
+                    {t("WS_TRACK_OR_RESUBMIT_LABEL", "View Details & Track / Re-Submit")}
+                  </button>
+                </Link>
               </div>
             </div>
           )}

@@ -32,49 +32,53 @@ export const configWSApproverApplication = ({
 
   const commentsField = isReasonRequiredAction
     ? [
-        {
-          label: t("WF_REASON_LABEL") || t("Reason"),
-          isMandatory: false,
-          populators: (
-            <Dropdown
-              option={reasonOptions}
-              autoComplete="off"
-              optionKey="name"
-              id="mutationActionReason"
-              select={(val) => {
-                setSelectedReason(val);
-              }}
-              selected={selectedReason}
-              t={t}
-              placeholder={t("WF_SELECT_REASON_PLACEHOLDER") || "Select Reason"}
-            />
-          ),
+      {
+        label: t("WF_REASON_LABEL") || t("Reason"),
+        isMandatory: false,
+        populators: (
+          <Dropdown
+            option={reasonOptions}
+            autoComplete="off"
+            optionKey="name"
+            id="mutationActionReason"
+            select={(val) => {
+              setSelectedReason(val);
+            }}
+            selected={selectedReason}
+            t={t}
+            placeholder={t("WF_SELECT_REASON_PLACEHOLDER") || "Select Reason"}
+          />
+        ),
+      },
+      {
+        label: t("WF_COMMON_COMMENTS") && t("WF_COMMON_COMMENTS") !== "WF_COMMON_COMMENTS" ? t("WF_COMMON_COMMENTS") : "Comments",
+        type: "textarea",
+        populators: {
+          name: "comments",
         },
-        {
-          label: t("WF_COMMON_COMMENTS") && t("WF_COMMON_COMMENTS") !== "WF_COMMON_COMMENTS" ? t("WF_COMMON_COMMENTS") : "Comments",
-          type: "textarea",
-          populators: {
-            name: "comments",
-          },
-        },
-      ]
+      },
+    ]
     : [
-        {
-          label: t("WF_COMMON_COMMENTS") && t("WF_COMMON_COMMENTS") !== "WF_COMMON_COMMENTS" ? t("WF_COMMON_COMMENTS") : "Comments",
-          type: "textarea",
-          populators: {
-            name: "comments",
-          },
+      {
+        label: t("WF_COMMON_COMMENTS") && t("WF_COMMON_COMMENTS") !== "WF_COMMON_COMMENTS" ? t("WF_COMMON_COMMENTS") : "Comments",
+        type: "textarea",
+        populators: {
+          name: "comments",
         },
-      ];
+      },
+    ];
 
   const isActivate = action?.action === "ACTIVATE_CONNECTION";
+  const isAmendment = businessService?.toUpperCase()?.includes("AMENDMENT");
 
   const getHeadingLabel = () => {
     if (isActivate) {
       const translated = t("WF_APPROVE_APPLICATION");
       if (translated && translated !== "WF_APPROVE_APPLICATION") return translated;
       return "Approve Application";
+    }
+    if (isAmendment) {
+      return `WF_EMPLOYEE_${businessService?.toUpperCase()}_${action?.action}`;
     }
     return `WF_${action?.action}_APPLICATION`;
   };
@@ -88,6 +92,9 @@ export const configWSApproverApplication = ({
         return translatedAction;
       }
       return "Approve Connection";
+    }
+    if (isAmendment) {
+      return `WF_EMPLOYEE_${businessService?.toUpperCase()}_${action?.action}`;
     }
     return `WF_${businessService?.toUpperCase()}_${action?.action}`;
   };
