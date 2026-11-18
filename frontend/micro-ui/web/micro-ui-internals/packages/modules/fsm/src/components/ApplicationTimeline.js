@@ -92,8 +92,8 @@ export const ApplicationTimeline = (props) => {
         date: `${t("CS_FSM_EXPECTED_DATE")} ${Digit.DateUtils.ConvertTimestampToDate(props.application?.possibleServiceDate)}`,
       };
       return <TLCaption data={caption} />;
+    }
   };
-}
 
   const showNextActions = (nextAction) => {
     switch (nextAction?.action) {

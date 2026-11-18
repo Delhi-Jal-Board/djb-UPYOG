@@ -1,5 +1,6 @@
 import React from "react";
-const { DatePicker, Dropdown } = require("@djb25/digit-ui-react-components");
+import { DatePicker, Dropdown } from "@djb25/digit-ui-react-components";
+import SelectGender from "../../../pageComponents/SelectGender";
 import { convertEpochToDate } from "../../../utils";
 
 const VehicleConfig = (t, disabled = false) => {
@@ -12,6 +13,7 @@ const VehicleConfig = (t, disabled = false) => {
           isMandatory: true,
           type: "text",
           disable: disabled,
+          colSpan: "span 2",
           populators: {
             name: "registrationNumber",
             ValidationRequired: true,
@@ -31,6 +33,7 @@ const VehicleConfig = (t, disabled = false) => {
           key: "vehicle",
           isMandatory: true,
           type: "component",
+          colSpan: "span 2",
         },
         {
           label: "ES_FSM_REGISTRY_VEHICLE_POLLUTION_CERT",
@@ -84,6 +87,11 @@ const VehicleConfig = (t, disabled = false) => {
             component: (props, customProps) => <DatePicker onChange={props.onChange} date={props.value} {...customProps} />,
           },
         },
+      ],
+    },
+    {
+      head: "ES_FSM_REGISTRY_PERSONAL_DETAILS",
+      body: [
         {
           label: "ES_FSM_REGISTRY_NEW_VEHICLE_OWNER_NAME",
           isMandatory: true,
@@ -115,7 +123,6 @@ const VehicleConfig = (t, disabled = false) => {
             error: t("FSM_REGISTRY_INVALID_PHONE"),
             defaultValue: "",
             className: "payment-form-text-input-correction",
-            labelStyle: { border: "1px solid black", borderRight: "none" },
           },
         },
         {
@@ -125,27 +132,41 @@ const VehicleConfig = (t, disabled = false) => {
           route: "select-gender",
           hideInEmployee: false,
           key: "selectGender",
-          component: "SelectGender",
-          // disable: disabled,
+          component: SelectGender,
+          withoutLabel: true,
+          colSpan: "span 1",
         },
         {
-          label: t("ES_FSM_REGISTRY_NEW_DOB"),
+          label: "ES_FSM_REGISTRY_NEW_DOB",
           isMandatory: false,
           type: "custom",
           key: "dob",
           populators: {
             name: "dob",
             validation: {
-              required: true,
+              required: false,
             },
-            component: (props, customProps) => (
-              <DatePicker
-                onChange={props.onChange}
-                date={props.value}
-                {...customProps}
-                max={convertEpochToDate(new Date().setFullYear(new Date().getFullYear()))}
-              />
-            ),
+            component: (props, customProps) => {
+              const Picker = DatePicker || window?.Digit?.ComponentRegistryService?.getComponent("DatePicker");
+              if (!Picker) {
+                return (
+                  <input
+                    type="date"
+                    className="payment-form-text-input-correction employee-card-input"
+                    value={props.value || ""}
+                    onChange={(e) => props.onChange(e.target.value)}
+                  />
+                );
+              }
+              return (
+                <Picker
+                  onChange={props.onChange}
+                  date={props.value}
+                  {...customProps}
+                  max={convertEpochToDate(new Date().setFullYear(new Date().getFullYear()))}
+                />
+              );
+            },
           },
         },
         {
@@ -169,6 +190,7 @@ const VehicleConfig = (t, disabled = false) => {
           isMandatory: false,
           type: "textarea",
           key: "additionalDetails",
+          colSpan: "span 2",
           populators: {
             name: "additionalDetails",
             className: "payment-form-text-input-correction",

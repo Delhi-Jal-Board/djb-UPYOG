@@ -78,13 +78,21 @@ const FSMCard = () => {
     }
   }, [inbox]);
 
+  const isSuperUser = Digit.UserService.hasAccess(["SUPERUSER", "ADMIN"]) || false;
+  const isFsmAdmin = Digit.UserService.hasAccess(["FSM_ADMIN", "ES_FSM_ADMIN", "FSM_CEMP"]) || isSuperUser;
+  const isCreator = Digit.UserService.hasAccess(["FSM_CREATOR_EMP", "FSM_CEMP"]) || isSuperUser;
+  const isEditor = Digit.UserService.hasAccess(["FSM_EDITOR_EMP"]) || isSuperUser;
+  const isViewer = Digit.UserService.hasAccess(["FSM_VIEW_EMP"]) || isSuperUser;
+  const isReportViewer = Digit.UserService.hasAccess(["FSM_REPORT_VIEWER"]) || isSuperUser;
+  const isGenericEmployee = !isFSTPOperator && !isCreator && !isEditor && !isViewer && !isReportViewer && !COLLECTOR && !DSO && !isFsmAdmin;
+
   const allFSMLinks = [
     {
       count: total,
       label: t("ES_COMMON_INBOX"),
       link: `/digit-ui/employee/fsm/inbox`,
     },
-    {
+    (isCreator || isFsmAdmin || isGenericEmployee || !isFSTPOperator) && {
       label: t("ES_TITLE_NEW_DESULDGING_APPLICATION"),
       link: `/digit-ui/employee/fsm/new-application`,
     },
@@ -92,37 +100,37 @@ const FSMCard = () => {
       label: t("ES_TITILE_SEARCH_APPLICATION"),
       link: `/digit-ui/employee/fsm/search`,
     },
-    {
+    (isFsmAdmin || isGenericEmployee) && {
       label: t("ES_TITLE_FSM_REGISTRY"),
       link: `/digit-ui/employee/fsm/registry?selectedTabs=VENDOR`,
     },
-    {
-      label: t("ES_COMMON_FSTP_OPERATION"),
-      link: `/digit-ui/employee/fsm/fstp-operations`,
-    },
-    {
+    (isFSTPOperator || isSuperUser || isGenericEmployee) && {
       label: t("ES_TITLE_VEHICLE_LOG"),
       link: `/digit-ui/employee/fsm/fstp-inbox`,
     },
-    {
+    (isFSTPOperator || isSuperUser || isGenericEmployee) && {
+      label: t("ES_COMMON_FSTP_OPERATION"),
+      link: `/digit-ui/employee/fsm/fstp-operations`,
+    },
+    (isFSTPOperator || isSuperUser || isGenericEmployee) && {
       label: t("ES_FSM_ADD_NEW_BUTTON"),
       link: `/digit-ui/employee/fsm/fstp-add-vehicle`,
     },
-    {
+    (isReportViewer || isSuperUser || isGenericEmployee) && {
       label: t("ES_TITLE_REPORTS"),
       link: `/employee/report/fsm/FSMDailyDesludingReport`,
       hyperlink: true,
     },
-    {
+    (isReportViewer || isFSTPOperator || isGenericEmployee) && {
       label: t("ES_FSM_VIEW_REPORTS_BUTTON"),
       link: `/employee/report/fsm/FSMFSTPPlantWithVehicleLogReport`,
       hyperlink: true,
     },
-  ];
+  ].filter(Boolean);
 
   const propsForModuleCard = {
     Icon: <ShippingTruck />,
-    moduleName: isFSTPOperator ? t("ES_TITLE_VEHICLE_LOG") : t("ES_TITLE_FAECAL_SLUDGE_MGMT"),
+    moduleName: isFSTPOperator && !isFsmAdmin && !isCreator && !isEditor ? t("ES_TITLE_VEHICLE_LOG") : t("ES_TITLE_FAECAL_SLUDGE_MGMT"),
     kpis: [
       {
         count: total,

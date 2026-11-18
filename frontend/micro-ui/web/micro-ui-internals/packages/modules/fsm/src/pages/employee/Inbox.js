@@ -94,11 +94,13 @@ const Inbox = ({ parentRoute, isSearch = false, isInbox = false }) => {
     setPageOffset((prevState) => prevState - pageSize);
   };
 
-  const handleFilterChange = (filterParam) => {
-    let keys_to_delete = filterParam.delete;
+  const handleFilterChange = (filterParam = {}) => {
+    const safeFilterParam = filterParam || {};
+    let keys_to_delete = safeFilterParam?.delete;
     let _new = { ...searchParams };
     if (keys_to_delete) keys_to_delete.forEach((key) => delete _new[key]);
-    setSearchParams({ ..._new, ...filterParam });
+    delete safeFilterParam?.delete;
+    setSearchParams({ ..._new, ...safeFilterParam });
   };
 
   const handleSort = useCallback((args) => {

@@ -48,12 +48,19 @@ const AddVendor = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const isFsmRoute = window.location.pathname.includes("/fsm/");
   const defaultValues = {
-    serviceType: {
-      code: "WT",
-      name: "WT",
-      i18nKey: "WT",
-    },
+    serviceType: isFsmRoute
+      ? {
+        code: "FSM",
+        name: "FSM",
+        i18nKey: "FSM",
+      }
+      : {
+        code: "WT",
+        name: "WT",
+        i18nKey: "WT",
+      },
     tripData: {
       noOfTrips: 1,
       amountPerTrip: null,

@@ -167,7 +167,7 @@ const FSMSelectAddress = ({ t, config, onSelect, userType, formData }) => {
 
   if (userType === "employee") {
     return (
-      <React.Fragment>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px 24px", width: "100%" }}>
         <LabelFieldPair>
           <CardLabel className="card-label-smaller">
             {t("MYCITY_CODE_LABEL")}
@@ -226,7 +226,7 @@ const FSMSelectAddress = ({ t, config, onSelect, userType, formData }) => {
             </div>
           </LabelFieldPair>
         )}
-      </React.Fragment>
+      </div>
     );
   }
   return (

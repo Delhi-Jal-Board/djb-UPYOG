@@ -1,6 +1,7 @@
 import { Loader, Modal, FormComposer, Toast } from "@djb25/digit-ui-react-components";
 import React, { useState, useEffect } from "react";
 import { useQueryClient } from "react-query";
+import { useHistory } from "react-router-dom";
 import { UploadPitPhoto } from "@djb25/digit-ui-react-components";
 
 import { configAssignDso, configCompleteApplication, configReassignDSO, configAcceptDso, configRejectApplication, configScheduleDso, configUpdateTrips, configRejectFstpo } from "../config";
@@ -40,6 +41,8 @@ const popupActionBarStyles = {
 }
 
 const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction, actionData, module }) => {
+  const history = useHistory();
+  const applicationNumber = id;
   const mobileView = Digit.Utils.browser.isMobile() ? true : false;
   const { data: dsoData, isLoading: isDsoLoading, isSuccess: isDsoSuccess, error: dsoError } = Digit.Hooks.fsm.useDsoSearch(tenantId, { limit: '-1', status: 'ACTIVE' });
   const { isLoading, isSuccess, isError, data: applicationData, error } = Digit.Hooks.fsm.useSearch(
@@ -133,7 +136,7 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
   const [defaultValues, setDefautValue] = useState({
     capacity: vehicle?.capacity,
     wasteCollected: vehicle?.capacity,
-    propertyType: applicationData?.propertyUsage.split('.')[0],
+    propertyType: applicationData?.propertyUsage ? applicationData.propertyUsage.split('.')[0] : "",
     subtype: applicationData?.propertyUsage,
     pitType: applicationData?.sanitationtype,
     pitDetail: applicationData?.pitDetail,
@@ -155,8 +158,9 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
   }, [isVehicleDataLoaded, isSuccess]);
 
   useEffect(() => {
-    if (isSuccess && isPropertyDataLoaded && applicationData) {
-      const [property] = propertyList.filter((item) => item.code === applicationData.propertyUsage.split('.')[0]);
+    if (isSuccess && isPropertyDataLoaded && applicationData && applicationData.propertyUsage) {
+      const propertyCode = typeof applicationData.propertyUsage === "string" ? applicationData.propertyUsage.split('.')[0] : "";
+      const [property] = propertyList.filter((item) => item.code === propertyCode);
       let arrayList = defaultValues;
       arrayList.propertyType = property;
       setPropertyMenu([property]);
@@ -200,7 +204,7 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
     if (isSuccess && isDsoSuccess && applicationData && applicationData.dsoId) {
       const [dso] = dsoData.filter((dso) => dso.id === applicationData.dsoId);
       const tempList = dso?.vehicles?.filter((vehicle) => vehicle.capacity == applicationData?.vehicleCapacity);
-      const vehicleNoList = tempList.sort((a,b) => (a.registrationNumber > b.registrationNumber ? 1 : -1 ));
+      const vehicleNoList = tempList ? tempList.sort((a,b) => (a.registrationNumber > b.registrationNumber ? 1 : -1 )) : [];
       setVehicleNoList(vehicleNoList);
     }
   }, [isSuccess, isDsoSuccess]);

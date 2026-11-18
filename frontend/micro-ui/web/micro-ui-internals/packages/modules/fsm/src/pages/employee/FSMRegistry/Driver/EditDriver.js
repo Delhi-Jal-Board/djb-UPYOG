@@ -45,7 +45,7 @@ const EditDriver = ({ parentUrl, heading }) => {
         selectGender: driverDetails?.driverData?.owner?.gender,
         dob: driverDetails?.driverData?.owner?.dob && Digit.DateUtils.ConvertTimestampToDate(driverDetails?.driverData?.owner?.dob, "yyyy-MM-dd"),
         emailId: driverDetails?.driverData?.owner?.emailId === "abc@egov.com" ? "" : driverDetails?.driverData?.owner?.emailId,
-        // phone: driverDetails?.driverData?.owner?.mobileNumber,
+        mobileNumber: driverDetails?.driverData?.owner?.mobileNumber || driverDetails?.driverData?.mobileNumber,
         additionalDetails: driverDetails?.driverData?.additionalDetails?.description,
       };
       setDefaultValues(values);
@@ -75,10 +75,12 @@ const EditDriver = ({ parentUrl, heading }) => {
     const emailId = data?.emailId;
     const dob = new Date(`${data.dob}`).getTime();
     const additionalDetails = data?.additionalDetails;
+    const mobileNumber = data?.mobileNumber || driverDetails?.owner?.mobileNumber || driverDetails?.mobileNumber;
     const formData = {
       driver: {
         ...driverDetails,
         licenseNumber: license,
+        mobileNumber: mobileNumber,
         additionalDetails: additionalDetails,
         owner: {
           ...driverDetails.owner,
@@ -86,6 +88,7 @@ const EditDriver = ({ parentUrl, heading }) => {
           gender: gender || driverDetails.owner.gender || "OTHER",
           dob: dob,
           emailId: emailId || "abc@egov.com",
+          mobileNumber: mobileNumber,
         },
       },
     };

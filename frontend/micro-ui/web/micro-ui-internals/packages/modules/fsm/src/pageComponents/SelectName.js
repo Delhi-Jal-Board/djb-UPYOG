@@ -7,9 +7,22 @@ const SelectName = ({ t, config, onSelect, formData = {}, userType, register, er
   const { data: GenderData, isLoading } = Digit.Hooks.fsm.useMDMS(stateId, "common-masters", "FSMGenderType");
   const { pathname: url } = useLocation();
   const editScreen = url.includes("/modify-application/");
-  const [dropdownValue, setDropdownValue] = useState("");
   const [genderTypes, setGenderTypes] = useState([]);
-  const [error, setError]=useState("");
+
+  const defaultGenderOptions = [
+    { code: "MALE", name: "Male", i18nKey: "COMMON_GENDER_MALE" },
+    { code: "FEMALE", name: "Female", i18nKey: "COMMON_GENDER_FEMALE" },
+    { code: "TRANSGENDER", name: "Transgender", i18nKey: "COMMON_GENDER_TRANSGENDER" },
+  ];
+
+  useEffect(() => {
+    if (!isLoading && GenderData && GenderData.length > 0) {
+      setGenderTypes(GenderData);
+    } else {
+      setGenderTypes(defaultGenderOptions);
+    }
+  }, [GenderData, isLoading]);
+
   const inputs = [
         {
       label: "ES_NEW_APPLICATION_APPLICANT_NAME",
@@ -36,47 +49,27 @@ const SelectName = ({ t, config, onSelect, formData = {}, userType, register, er
       isMandatory: true,
     },
     {
-      label: "ES_NEW_APPLICATION_MAIL_ID",
-      type: "text",
-      name: "emailId",
-      validation: {
-        //isRequired: true,
-        pattern: "/^[a-zA-Z0-9._%+-]+@[a-z.-]+\.(com|org|in)$/",
-        title: t("CORE_COMMON_EMAIL_ID_INVALID"),
-      },
-      isMandatory:false,
+      label: "ES_NEW_APPLICATION_GENDER",
+      type: "dropdown",
+      name: "applicantGender",
+      options: genderTypes.length > 0 ? genderTypes : defaultGenderOptions,
+      isMandatory: false,
     },
   ];
 
-  useEffect(() => {
-    if (!isLoading && GenderData) {
-      setGenderTypes(GenderData);
-    }
-  }, [GenderData]);
-
-  const setValue=(value, input)=> {
-    if(input==="emailId"){
-      const emailRegex=/^[a-zA-Z0-9._%+-]+@[a-z.-]+\.(com|org|in)$/;
-      if(!emailRegex.test(value)){
-        setError(t("CORE_INVALID_EMAIL_ID_PATTERN"))
-      }
-      else{
-        setError("")
-      }
-    }
+  const setValue = (value, input) => {
     onSelect(config.key, { ...formData[config.key], [input]: value });
-  }
+  };
 
-  function selectDropdown(value) {
-    setDropdownValue(value);
+  const selectDropdown = (value) => {
     onSelect(config.key, { ...formData[config.key], applicantGender: value.code });
-  }
+  };
 
   return (
-    <div>
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px 24px", width: "100%" }}>
       {inputs?.map((input, index) => (
-        <React.Fragment key={index}>
-                  {input.type === "text" && (
+        <div key={index} style={{ width: "100%" }}>
+          {input.type === "text" && (
             <React.Fragment>
               {errors[input.name] && <CardLabelError>{t(input.error)}</CardLabelError>}
               <LabelFieldPair>
@@ -84,7 +77,7 @@ const SelectName = ({ t, config, onSelect, formData = {}, userType, register, er
                   {t(input.label)}
                   {input.isMandatory ? " * " : null}
                 </CardLabel>
-                <div className="field" style={{display:"flex"}}>
+                <div className="field" style={{ display: "flex", width: "100%" }}>
                   {input.componentInFront ? input.componentInFront : null}
                   <TextInput
                     key={input.name}
@@ -93,11 +86,8 @@ const SelectName = ({ t, config, onSelect, formData = {}, userType, register, er
                     disable={editScreen}
                     {...input.validation}
                   />
-                                  </div>
-                              </LabelFieldPair>
-              {input.name==="emailId" && error && (
-                  <CardLabelError style={{color:"red"}}>{error}</CardLabelError>
-                )}
+                </div>
+              </LabelFieldPair>
             </React.Fragment>
           )}
                     {input.type === "dropdown" && (
@@ -106,7 +96,7 @@ const SelectName = ({ t, config, onSelect, formData = {}, userType, register, er
                 {t(input.label)}
                 {input.isMandatory ? " * " : null}
               </CardLabel>
-              <div className="field">
+              <div className="field" style={{ width: "100%" }}>
                 <Dropdown
                   option={input.options?.sort((a, b) => a.code.localeCompare(b.code))}
                   optionKey="i18nKey"
@@ -120,7 +110,7 @@ const SelectName = ({ t, config, onSelect, formData = {}, userType, register, er
               </div>
             </LabelFieldPair>
           )}
-        </React.Fragment>
+        </div>
       ))}
     </div>
   );

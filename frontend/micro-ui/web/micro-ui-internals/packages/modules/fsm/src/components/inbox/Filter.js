@@ -45,9 +45,15 @@ const Filter = ({ searchParams, paginationParms, onFilterChange, onSearch, remov
   };
 
   const clearAll = () => {
-    if (isFstpOperator) return onFilterChange();
-    // onFilterChange({ applicationStatus: [], locality: [] });
-    // props?.onClose?.();
+    onFilterChange({
+      applicationStatus: [],
+      locality: [],
+      uuid: {
+        code: DSO || isFstpOperator ? "ASSIGNED_TO_ME" : "ASSIGNED_TO_ALL",
+        name: DSO || isFstpOperator ? t("ES_INBOX_ASSIGNED_TO_ME") : t("ES_INBOX_ASSIGNED_TO_ALL"),
+      },
+    });
+    props?.onClose?.();
   };
 
   return (

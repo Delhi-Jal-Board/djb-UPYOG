@@ -41,13 +41,11 @@ const CheckPage = ({ onSubmit, value }) => {
   }, "");
 
   const getAddress = (address, t) => {
-    console.log("address", address);
     if (address?.gramPanchayat?.code === "OTH1") {
       return `${address?.doorNo?.trim() ? `${address?.doorNo?.trim()}, ` : ""} ${address?.street?.trim() ? `${address?.street?.trim()}, ` : ""}${
         address?.propertyLocation?.code === "WITHIN_ULB_LIMITS" ? t(address?.locality?.i18nkey) : address?.newGramPanchayat
       },${t(address?.village?.code)}, ${t(address?.city?.code || address?.city || "")}`;
     } else if (address?.propertyLocation?.code === "WITHIN_ULB_LIMITS") {
-      console.log("trueee", `${t(address?.locality?.code)}`);
       return `${t(address?.locality?.code)}`;
     } else {
       return `${address?.doorNo?.trim() ? `${address?.doorNo?.trim()}, ` : ""} ${address?.street?.trim() ? `${address?.street?.trim()}, ` : ""}${

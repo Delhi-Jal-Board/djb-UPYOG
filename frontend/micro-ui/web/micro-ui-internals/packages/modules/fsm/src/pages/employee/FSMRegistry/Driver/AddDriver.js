@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { FormComposer, Toast, Header } from "@djb25/digit-ui-react-components";
+import { FormComposer, Toast } from "@djb25/digit-ui-react-components";
 import { useHistory } from "react-router-dom";
 import DriverConfig from "../../configs/DriverConfig";
 import { useQueryClient } from "react-query";
@@ -41,7 +41,12 @@ const AddDriver = ({ parentUrl, heading }) => {
   };
 
   const onFormValueChange = (setValue, formData) => {
-    if (formData?.driverName && formData?.selectGender) {
+    if (
+      formData?.driverName &&
+      formData?.license &&
+      (formData?.mobileNumber || formData?.phone) &&
+      (formData?.selectGender?.code || formData?.selectGender)
+    ) {
       setSubmitValve(true);
     } else {
       setSubmitValve(false);
@@ -55,16 +60,17 @@ const AddDriver = ({ parentUrl, heading }) => {
   const onSubmit = (data) => {
     const name = data?.driverName;
     const license = data?.license;
-    const gender = data?.selectGender?.code;
+    const gender = data?.selectGender?.code || data?.selectGender;
     const emailId = data?.emailId;
-    // const phone = data?.phone;
-    const dob = new Date(`${data.dob}`).getTime() || new Date(`1/1/1970`).getTime();
+    const mobileNumber = data?.mobileNumber || data?.phone;
+    const dob = data?.dob ? new Date(`${data.dob}`).getTime() : new Date(`1/1/1970`).getTime();
     const additionalDetails = data?.additionalDetails;
     const formData = {
       driver: {
         tenantId: tenantId,
         name: name,
         licenseNumber: license,
+        mobileNumber: mobileNumber,
         additionalDetails: additionalDetails,
         status: "ACTIVE",
         owner: {
@@ -72,10 +78,10 @@ const AddDriver = ({ parentUrl, heading }) => {
           name: name,
           fatherOrHusbandName: name,
           relationship: "OTHER",
-          gender: gender,
+          gender: gender || "OTHER",
           dob: dob,
           emailId: emailId || "abc@egov.com",
-          // mobileNumber: phone,
+          mobileNumber: mobileNumber,
         },
         vendorDriverStatus: "INACTIVE",
       },
@@ -98,37 +104,32 @@ const AddDriver = ({ parentUrl, heading }) => {
     });
   };
 
-  const isMobile = window.Digit.Utils.browser.isMobile();
-
   return (
     <React.Fragment>
-      <div>
-        <Header>{t("ES_FSM_REGISTRY_TITLE_NEW_DRIVER")}</Header>
-      </div>
-      <div style={!isMobile ? { marginLeft: "-15px" } : {}}>
-        <FormComposer
-          isDisabled={!canSubmit}
-          label={t("ES_COMMON_APPLICATION_SUBMIT")}
-          config={Config.filter((i) => !i.hideInEmployee).map((config) => {
-            return {
-              ...config,
-              body: config.body.filter((a) => !a.hideInEmployee),
-            };
-          })}
-          fieldStyle={{ marginRight: 0 }}
-          onSubmit={onSubmit}
-          defaultValues={defaultValues}
-          onFormValueChange={onFormValueChange}
-          noBreakLine={true}
+      <FormComposer
+        heading={t("ES_FSM_REGISTRY_TITLE_NEW_DRIVER")}
+        isDisabled={!canSubmit}
+        label={t("ES_COMMON_APPLICATION_SUBMIT")}
+        config={Config.filter((i) => !i.hideInEmployee).map((config) => {
+          return {
+            ...config,
+            body: config.body.filter((a) => !a.hideInEmployee),
+          };
+        })}
+        fieldStyle={{ marginRight: 0 }}
+        onSubmit={onSubmit}
+        defaultValues={defaultValues}
+        onFormValueChange={onFormValueChange}
+        noBreakLine={true}
+        formClassName="vehicle-details-card"
+      />
+      {showToast && (
+        <Toast
+          error={showToast.key === "error" ? true : false}
+          label={t(showToast.key === "success" ? `ES_FSM_${showToast.action}_SUCCESS` : showToast.action)}
+          onClose={closeToast}
         />
-        {showToast && (
-          <Toast
-            error={showToast.key === "error" ? true : false}
-            label={t(showToast.key === "success" ? `ES_FSM_${showToast.action}_SUCCESS` : showToast.action)}
-            onClose={closeToast}
-          />
-        )}
-      </div>
+      )}
     </React.Fragment>
   );
 };
