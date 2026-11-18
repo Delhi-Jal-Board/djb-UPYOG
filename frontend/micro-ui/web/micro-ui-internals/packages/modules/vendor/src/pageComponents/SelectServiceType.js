@@ -74,24 +74,16 @@ const SelectServiceType = ({ config, onSelect, t, userType, formData }) => {
   const options = formattedServiceTypes && formattedServiceTypes.length > 0 ? formattedServiceTypes : defaultServiceOptions;
 
   return (
-    <LabelFieldPair>
-      <CardLabel style={{ color: "#505A5F" }}>
-        {t(config.label)}
-        {config.isMandatory ? <span className="check-page-link-button"> * </span> : null}
-      </CardLabel>
-      <div className="field">
-        <Dropdown
-          className="payment-form-text-input-correction"
-          isMandatory={config.isMandatory}
-          selected={serviceTypes}
-          option={options}
-          select={selectServiceType}
-          optionKey="i18nKey"
-          disable={config.disable}
-          t={t}
-        />
-      </div>
-    </LabelFieldPair>
+    <Dropdown
+      className="payment-form-text-input-correction"
+      isMandatory={config.isMandatory}
+      selected={serviceTypes}
+      option={options}
+      select={selectServiceType}
+      optionKey="i18nKey"
+      disable={config.disable}
+      t={t}
+    />
   );
 };
 
