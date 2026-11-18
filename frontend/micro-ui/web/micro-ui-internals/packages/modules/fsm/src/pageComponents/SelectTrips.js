@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { getVehicleType } from "../utils";
+import { getVehicleType, fetchBillingSlabDetails, normalizeTenantId } from "../utils";
 import { LabelFieldPair, CardLabel, TextInput, Dropdown, Loader, CardLabelError } from "@djb25/digit-ui-react-components";
 import { useLocation, useParams } from "react-router-dom";
 
 const SelectTrips = ({ t, config, onSelect, formData = {}, userType, styles, FSMTextFieldStyle }) => {
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const tenantId = normalizeTenantId(Digit.ULBService.getCurrentTenantId());
   const state = Digit.ULBService.getStateId();
   const { pathname: url } = useLocation();
   const editScreen = url.includes("/modify-application/");
@@ -56,33 +56,24 @@ const SelectTrips = ({ t, config, onSelect, formData = {}, userType, styles, FSM
       disable: false,
       isMandatory: true,
     },
-    {
-      label:"ES_NEW_APPLICATION_DISTANCE_FROM_ROAD",
-      type: "text",
-      name: "distancefromroad",
-      default: formData?.tripData?.distancefromroad,
-      isMandatory: true,
-    },
-    {
-      label: "ES_NEW_APPLICATION_ROAD_WIDTH",
-      type: "text",
-      name: "roadWidth",
-      default: formData?.tripData?.roadWidth,
-      isMandatory: true,
-    }
   ];
-
-  function setTripNum(value) {
-    onSelect(config.key, { ...formData[config.key], noOfTrips: value });
-  }
 
   function selectVehicle(value) {
     setVehicle({ label: value.capacity });
     onSelect(config.key, { ...formData[config.key], vehicleType: value });
   }
-  //console.log(formdata)
+
   function setValue(value, input) {
-    value && input && onSelect(config.key, { ...formData[config.key], [input]: value });
+    if (input !== undefined && input !== null) {
+      const trips = input === "noOfTrips" ? Number(value) : Number(formData?.tripData?.noOfTrips) || 1;
+      const rate = Number(formData?.tripData?.amountPerTrip);
+      const totalAmount = !isNaN(trips) && !isNaN(rate) && rate > 0 ? trips * rate : formData?.tripData?.amount;
+      onSelect(config.key, {
+        ...formData[config.key],
+        [input]: value,
+        ...(totalAmount !== undefined && totalAmount !== null ? { amount: totalAmount } : {}),
+      });
+    }
   }
 
   useEffect(() => {
@@ -91,14 +82,20 @@ const SelectTrips = ({ t, config, onSelect, formData = {}, userType, styles, FSM
         setVehicle({ label: formData?.tripData?.vehicleType?.capacity });
       }
 
+      const trips = Number(formData?.tripData?.noOfTrips) || 1;
+
       if (
         formData?.address?.propertyLocation?.code === "FROM_GRAM_PANCHAYAT" &&
-        formData.tripData.noOfTrips &&
-        formData.tripData.amountPerTrip
+        formData.tripData?.noOfTrips &&
+        formData.tripData?.amountPerTrip
       ) {
-        setValue({
-          amount: formData.tripData.amountPerTrip * formData.tripData.noOfTrips,
-        });
+        const calculatedAmt = Number(formData.tripData.amountPerTrip) * trips;
+        if (formData?.[config.key]?.amount !== calculatedAmt) {
+          onSelect(config.key, {
+            ...formData[config.key],
+            amount: calculatedAmt,
+          });
+        }
       } else if (
         formData?.propertyType &&
         formData?.subtype &&
@@ -106,41 +103,43 @@ const SelectTrips = ({ t, config, onSelect, formData = {}, userType, styles, FSM
         formData?.tripData?.vehicleType?.capacity &&
         formData?.address?.propertyLocation?.code === "WITHIN_ULB_LIMITS"
       ) {
-        const capacity = formData?.tripData?.vehicleType.capacity;
-        const { slum: slumDetails } = formData.address;
-        const slum = slumDetails ? "YES" : "NO";
-        const billingDetails = await Digit.FSMService.billingSlabSearch(tenantId, {
-          propertyType: formData?.subtype,
-          capacity,
-          slum,
-        });
-
-        const billSlab = billingDetails?.billingSlab?.length && billingDetails?.billingSlab[0];
-        if (billSlab?.price || billSlab?.price === 0) {
-          // setValue({
-          //   amountPerTrip: billSlab.price,
-          //   amount: billSlab.price * formData.tripData.noOfTrips,
-          // });
-          // onSelect(config.key, { ...formData[config.key], amount: amount, amountPerTrip: billSlab.price });
-          setValue(billSlab.price,"amountPerTrip");
-          setValue(billSlab.price * formData.tripData.noOfTrips,"amount");
+        const billSlab = await fetchBillingSlabDetails(tenantId, formData);
+        if (billSlab && (billSlab?.price || billSlab?.price === 0)) {
+          const rate = billSlab.price;
+          const totalAmt = rate * trips;
+          if (formData?.[config.key]?.amountPerTrip !== rate || formData?.[config.key]?.amount !== totalAmt) {
+            onSelect(config.key, {
+              ...formData[config.key],
+              amountPerTrip: rate,
+              amount: totalAmt,
+            });
+            Digit.SessionStorage.set("total_amount", totalAmt);
+          }
           setError(false);
         } else {
-          setValue({
-            amountPerTrip: "",
-            amount: "",
-          });
-          setError(true);
+          // If no slab found, preserve manual amount if present
+          if (formData?.tripData?.amountPerTrip !== undefined && formData?.tripData?.amountPerTrip !== null && formData?.tripData?.amountPerTrip !== "") {
+            setError(false);
+          } else {
+            setError(false);
+          }
         }
       }
     })();
-  }, [formData?.propertyType, formData?.subtype, formData?.address, formData?.tripData?.vehicleType?.capacity, formData?.tripData?.noOfTrips, formData?.address?.propertyLocation?.code]);
+  }, [
+    formData?.propertyType,
+    formData?.subtype,
+    formData?.address?.slum,
+    formData?.address?.city?.code,
+    formData?.tripData?.vehicleType?.capacity,
+    formData?.tripData?.noOfTrips,
+    formData?.address?.propertyLocation?.code
+  ]);
 
-  // console.log(formData,"formData 1111111111")
   return isVehicleMenuLoading && isDsoLoading ? (
     <Loader />
   ) : (
-    <div>
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px 24px", width: "100%" }}>
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">{t("ES_NEW_APPLICATION_LOCATION_VEHICLE_REQUESTED") + " * "}</CardLabel>
         <Dropdown
@@ -175,7 +174,6 @@ const SelectTrips = ({ t, config, onSelect, formData = {}, userType, styles, FSM
           </div>
         </LabelFieldPair>
       ))}
-      {billError ? <CardLabelError style={{ width: "100%", textAlign: "center" }}>{t("ES_APPLICATION_BILL_SLAB_ERROR")}</CardLabelError> : null}
     </div>
   );
 };

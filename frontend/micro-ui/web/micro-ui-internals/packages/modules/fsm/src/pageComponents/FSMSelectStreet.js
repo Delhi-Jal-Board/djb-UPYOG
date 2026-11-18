@@ -145,7 +145,9 @@ if (property !== "undefined")
   };
 
   if (userType === "employee") {
-    return inputs?.map((input, index) => {
+    return (
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px 24px", width: "100%" }}>
+        {inputs?.map((input, index) => {
       return (
         <LabelFieldPair key={index}>
           <CardLabel className="card-label-smaller">
@@ -205,7 +207,9 @@ if (property !== "undefined")
           </div>
         </LabelFieldPair>
       );
-    });
+        })}
+      </div>
+    );
   }
   return (
     <React.Fragment>

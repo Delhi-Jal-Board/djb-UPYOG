@@ -9,33 +9,34 @@ const SelectPaymentType = ({ t, config, onSelect, formData = {}, userType, regis
   const { pathname: url } = useLocation();
   const editScreen = url.includes("/modify-application/");
   const [paymentType, setPaymentType] = useState(null);
-  const [isSlum, setIsSlum] = useState();
+
+  const defaultPaymentOptions = [
+    { code: "POST_PAY", name: "Pay Later", i18nKey: "CS_PAYMENT_POST_PAY" },
+    { code: "PRE_PAY", name: "Pay Now", i18nKey: "CS_PAYMENT_PRE_PAY" },
+  ];
+
+  const paymentOptions = paymentData && paymentData.length > 0 ? paymentData : defaultPaymentOptions;
 
   const inputs = [
     {
-      label: "Payment Preference",
+      label: "ES_FSM_PAYMENT_PREFERENCE_LABEL",
       type: "RadioButton",
       name: "paymentPreference",
-      options: paymentData,
+      options: paymentOptions,
       isMandatory: false,
     },
   ];
 
   useEffect(() => {
-    if (!isLoading && paymentData) {
-      const preFilledPaymentType = paymentData.filter(
-        (paymentType) => paymentType.code === (formData?.paymentPreference?.code || formData?.paymentPreference)
-      )[0];
-      preFilledPaymentType ? setPaymentType(preFilledPaymentType) : setPaymentType(paymentData.find((i) => i.code === "POST_PAY"));
+    const opts = paymentData && paymentData.length > 0 ? paymentData : defaultPaymentOptions;
+    const currentCode = formData?.paymentPreference?.code || formData?.paymentPreference;
+    const preFilledPaymentType = opts.find((pt) => pt.code === currentCode);
+    const defaultOption = preFilledPaymentType || opts.find((i) => i.code === "POST_PAY") || opts[0];
+    setPaymentType(defaultOption);
+    if (!currentCode && defaultOption) {
+      onSelect(config.key, defaultOption.code);
     }
-  }, [formData, formData?.paymentPreference?.code, formData?.paymentPreference, paymentData]);
-
-  useEffect(() => {
-    if (formData?.address) {
-      const { slum: slumDetails } = formData.address;
-      slumDetails ? setIsSlum(true) : setIsSlum(false);
-    }
-  }, [formData]);
+  }, [formData?.paymentPreference, paymentData]);
 
   function selectPaymentType(value) {
     setPaymentType(value);
@@ -49,7 +50,7 @@ const SelectPaymentType = ({ t, config, onSelect, formData = {}, userType, regis
           {formData?.tripData?.amountPerTrip !== 0 && input.type === "RadioButton" && (
             <LabelFieldPair>
               <CardLabel className="card-label-smaller">
-                {t(input.label)}
+                {t(input.label) || "Payment Preference"}
                 {input.isMandatory ? " * " : null}
               </CardLabel>
               <div className="field">

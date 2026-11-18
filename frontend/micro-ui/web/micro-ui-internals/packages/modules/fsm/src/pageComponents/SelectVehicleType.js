@@ -57,15 +57,23 @@ const SelectVehicleType = ({ t, config, onSelect, userType, formData, setValue }
   };
 
   return (
-    <React.Fragment>
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+        gap: "16px",
+        columnGap: "24px",
+        width: "100%",
+      }}
+    >
       <LabelFieldPair>
         <CardLabel>
           {t("ES_FSM_REGISTRY_VEHICLE_MODEL")}
-          {config.isMandatory ? " * " : null}
+          {config.isMandatory ? <span className="check-page-link-button"> * </span> : null}
         </CardLabel>
         <Dropdown
-          className="form-field"
-          isMandatory
+          className="payment-form-text-input-correction"
+          isMandatory={config.isMandatory}
           selected={selectedModal}
           disable={false}
           option={modals?.sort((a, b) => a.name.localeCompare(b.name))}
@@ -77,11 +85,11 @@ const SelectVehicleType = ({ t, config, onSelect, userType, formData, setValue }
       <LabelFieldPair>
         <CardLabel>
           {t("ES_FSM_REGISTRY_VEHICLE_TYPE")}
-          {config.isMandatory ? " * " : null}
+          {config.isMandatory ? <span className="check-page-link-button"> * </span> : null}
         </CardLabel>
         <Dropdown
-          className="form-field"
-          isMandatory
+          className="payment-form-text-input-correction"
+          isMandatory={config.isMandatory}
           selected={selectedType}
           option={types?.sort((a, b) => a.name.localeCompare(b.name))}
           select={selectType}
@@ -92,11 +100,16 @@ const SelectVehicleType = ({ t, config, onSelect, userType, formData, setValue }
       <LabelFieldPair>
         <CardLabel>
           {t("ES_FSM_REGISTRY_VEHICLE_CAPACITY")}
-          {config.isMandatory ? " * " : null}
+          {config.isMandatory ? <span className="check-page-link-button"> * </span> : null}
         </CardLabel>
-        <TextInput className="" value={selectedCapacity} onChange={() => {}} disable={true} />
+        <TextInput
+          className="payment-form-text-input-correction"
+          value={selectedCapacity ? `${selectedCapacity} ${t("CS_COMMON_LITRES") || "KL"}` : ""}
+          onChange={() => {}}
+          disable={true}
+        />
       </LabelFieldPair>
-    </React.Fragment>
+    </div>
   );
 };
 

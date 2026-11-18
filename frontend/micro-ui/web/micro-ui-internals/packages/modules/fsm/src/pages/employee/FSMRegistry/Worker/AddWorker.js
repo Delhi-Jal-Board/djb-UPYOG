@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { FormComposer, Toast, Header } from "@djb25/digit-ui-react-components";
-import { FormComposerV2 } from "../../../../../../../react-components/src";
+import { FormComposer, FormComposerV2, Toast, Header } from "@djb25/digit-ui-react-components";
 import { useHistory } from "react-router-dom";
 import WorkerConfig from "../../configs/WorkerConfig";
 import { useQueryClient } from "react-query";

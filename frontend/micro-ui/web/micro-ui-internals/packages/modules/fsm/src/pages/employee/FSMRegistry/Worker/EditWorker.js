@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Toast, Header, Loader } from "@djb25/digit-ui-react-components";
-import { FormComposerV2 } from "../../../../../../../react-components/src";
+import { Toast, Header, Loader, FormComposerV2 } from "@djb25/digit-ui-react-components";
 
-import { useHistory } from "react-router-dom";
+import { useHistory, useLocation, useParams } from "react-router-dom";
 import WorkerConfig from "../../../employee/configs/WorkerConfig";
 import { useQueryClient } from "react-query";
 
@@ -13,6 +12,8 @@ const EditWorker = ({ parentUrl, heading }) => {
   const stateId = Digit.ULBService.getStateId();
   const [showToast, setShowToast] = useState(null);
   const history = useHistory();
+  const location = useLocation();
+  const { id: paramId } = useParams();
   const queryClient = useQueryClient();
   const { t } = useTranslation();
   const [canSubmit, setSubmitValve] = useState(false);
@@ -22,7 +23,7 @@ const EditWorker = ({ parentUrl, heading }) => {
   const [employer, setEmployer] = useState([]);
   const [Config, setConfig] = useState(WorkerConfig({ t, disabled: true }));
   const searchParams = new URLSearchParams(location.search);
-  const id = searchParams.get("id");
+  const id = paramId || searchParams.get("id");
   const [checkRoleField, setCheckRoleField] = useState(false);
 
   const { isLoading: ismdms, data: mdmsOptions } = Digit.Hooks.useCustomMDMS(

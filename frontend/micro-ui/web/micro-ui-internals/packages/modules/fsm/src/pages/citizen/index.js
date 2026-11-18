@@ -37,14 +37,22 @@ const CitizenApp = ({ path }) => {
         <Switch>
           <PrivateRoute
             path={`${path}/inbox`}
-            component={() =>
-              Digit.UserService.hasAccess(["FSM_DSO"]) ? <Inbox parentRoute={path} isInbox={true} /> : <Redirect to="/digit-ui/citizen" />
+            component={(props) =>
+              Digit.UserService.hasAccess(["FSM_DSO", "FSM_ADMIN", "ADMIN", "SUPERUSER"]) ? (
+                <Inbox {...props} parentRoute={path} isInbox={true} />
+              ) : (
+                <Redirect to="/digit-ui/citizen" />
+              )
             }
           />
           <PrivateRoute
             path={`${path}/search`}
-            component={() =>
-              Digit.UserService.hasAccess(["FSM_DSO"]) ? <Inbox parentRoute={path} isSearch={true} /> : <Redirect to="/digit-ui/citizen" />
+            component={(props) =>
+              Digit.UserService.hasAccess(["FSM_DSO", "FSM_ADMIN", "ADMIN", "SUPERUSER"]) ? (
+                <Inbox {...props} parentRoute={path} isSearch={true} />
+              ) : (
+                <Redirect to="/digit-ui/citizen" />
+              )
             }
           />
           <PrivateRoute path={`${path}/new-application`} component={() => <NewApplicationCitizen parentRoute={path} />} />

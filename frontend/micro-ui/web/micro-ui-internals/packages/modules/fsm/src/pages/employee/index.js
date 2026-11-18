@@ -191,6 +191,7 @@ const EmployeeApp = ({ path, url, userType }) => {
   const DriverDetails = Digit.ComponentRegistryService.getComponent("DriverDetails");
   const AddDriver = Digit.ComponentRegistryService.getComponent("AddDriver");
   const EditDriver = Digit.ComponentRegistryService.getComponent("EditDriver");
+  const DsoDashboard = Digit.ComponentRegistryService.getComponent("FSMDsoDashboard");
   // const BreadCrumbComp = Digit.ComponentRegistryService.getComponent("FsmBreadCrumb");
 
   // const locationCheck =
@@ -216,7 +217,7 @@ const EmployeeApp = ({ path, url, userType }) => {
       crumbs.push({ label: t("ES_TITLE_MODIFY_DESULDGING_APPLICATION") });
     } else if (pathname.includes("/application-details") || pathname.includes("/dso-application-details")) {
       crumbs.push({ label: t("ES_COMMON_INBOX"), path: `${path}/inbox` });
-      crumbs.push({ label: t("CS_FSM_APPLICATION_DETAIL_TITLE") });
+      crumbs.push({ label: t("ES_TITLE_APPLICATION_DETAILS") });
     } else if (pathname.includes("/registry/new-vendor")) {
       crumbs.push({ label: t("ES_TITLE_FSM_REGISTRY"), path: `${path}/registry?selectedTabs=VENDOR` });
       crumbs.push({ label: t("ES_FSM_REGISTRY_TITLE_NEW_VENDOR") });
@@ -325,8 +326,26 @@ const EmployeeApp = ({ path, url, userType }) => {
           <PrivateRoute
             path={`${path}/application-details/:id`}
             component={(props) => (
-              <LayoutWrapper layoutClass="normal">
+              <LayoutWrapper layoutClass="action">
                 <EmployeeApplicationDetails {...props} parentRoute={path} userType="EMPLOYEE" />
+              </LayoutWrapper>
+            )}
+          />
+
+          <PrivateRoute
+            path={`${path}/dso-application-details/:id`}
+            component={(props) => (
+              <LayoutWrapper layoutClass="action">
+                <EmployeeApplicationDetails {...props} parentRoute={path} userType="DSO" />
+              </LayoutWrapper>
+            )}
+          />
+
+          <PrivateRoute
+            path={`${path}/dso-dashboard`}
+            component={(props) => (
+              <LayoutWrapper layoutClass="normal">
+                {DsoDashboard ? <DsoDashboard {...props} parentRoute={path} /> : null}
               </LayoutWrapper>
             )}
           />

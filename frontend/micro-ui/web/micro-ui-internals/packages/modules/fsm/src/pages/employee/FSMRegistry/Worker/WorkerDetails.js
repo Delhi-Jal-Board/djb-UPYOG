@@ -23,7 +23,7 @@ import {
 
 import { useQueryClient } from "react-query";
 
-import { useHistory, useParams } from "react-router-dom";
+import { useHistory, useParams, useLocation } from "react-router-dom";
 import ConfirmationBox from "../../../../components/Confirmation";
 import { ViewImages } from "../../../../components/ViewImages";
 
@@ -50,9 +50,11 @@ const WorkerDetails = (props) => {
   const state = Digit.ULBService.getStateId();
   const { t } = useTranslation();
   const history = useHistory();
+  const location = useLocation();
+  const { id: paramId } = useParams();
   const queryClient = useQueryClient();
   const searchParams = new URLSearchParams(location.search);
-  const id = searchParams.get("id");
+  const id = paramId || searchParams.get("id");
   const [displayMenu, setDisplayMenu] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
   const [config, setCurrentConfig] = useState({});

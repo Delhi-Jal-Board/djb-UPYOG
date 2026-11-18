@@ -11,6 +11,7 @@ import {
   KeyNote,
 } from "@djb25/digit-ui-react-components";
 import Timeline from "../components/TLTimelineInFSM";
+import { fetchBillingSlabDetails, normalizeTenantId } from "../utils";
 
 const SelectPaymentPreference = ({ config, formData, t, onSelect, userType }) => {
   const tenantId = Digit.ULBService.getCitizenCurrentTenant();
@@ -51,29 +52,15 @@ const SelectPaymentPreference = ({ config, formData, t, onSelect, userType }) =>
     (async () => {
       if (formData?.propertyType && formData?.subtype && formData?.address && formData?.selectTripNo?.vehicleCapacity.capacity &&
         formData?.address?.propertyLocation?.code === "WITHIN_ULB_LIMITS") {
-        const capacity = formData?.selectTripNo?.vehicleCapacity.capacity;
-        const { slum: slumDetails } = formData.address;
-        const slum = slumDetails ? "YES" : "NO";
-        const billingDetails = await Digit.FSMService.billingSlabSearch(
-          tenantId === formData?.address?.city?.code
-            ? tenantId
-            : formData?.address?.city?.code,
-          {
-            propertyType: formData?.subtype?.code,
-            capacity,
-            slum,
-          });
-
-        const billSlab = billingDetails?.billingSlab?.length && billingDetails?.billingSlab[0];
-        Digit.SessionStorage.set("amount_per_trip", billSlab.price);
+        const billSlab = await fetchBillingSlabDetails(tenantId, formData);
+        Digit.SessionStorage.set("amount_per_trip", billSlab?.price);
 
         if (billSlab?.price) {
           let totaltripAmount = billSlab.price * formData?.selectTripNo?.tripNo?.code;
+          const cleanTenant = normalizeTenantId(tenantId || formData?.address?.city?.code);
           const { advanceAmount: advanceBalanceAmount } =
             await Digit.FSMService.advanceBalanceCalculate(
-              tenantId === formData?.address?.city?.code
-                ? tenantId
-                : formData?.address?.city?.code,
+              cleanTenant,
               {
                 totalTripAmount: totaltripAmount,
               });

@@ -20,12 +20,12 @@ const FSMLink = ({ parentRoute, isMobile, data }) => {
       link: `/digit-ui/employee/fsm/registry?selectedTabs=VENDOR`,
     },
     {
-      text: t("ES_COMMON_FSTP_OPERATION"),
-      link: `/digit-ui/employee/fsm/fstp-operations`,
-    },
-    {
       text: t("ES_TITLE_VEHICLE_LOG"),
       link: `/digit-ui/employee/fsm/fstp-inbox`,
+    },
+    {
+      text: t("ES_COMMON_FSTP_OPERATION"),
+      link: `/digit-ui/employee/fsm/fstp-operations`,
     },
     {
       text: t("ES_FSM_ADD_NEW_BUTTON"),

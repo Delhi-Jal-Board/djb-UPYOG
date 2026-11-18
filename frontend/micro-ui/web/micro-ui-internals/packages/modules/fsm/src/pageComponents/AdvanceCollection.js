@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { LabelFieldPair, CardLabel, TextInput, Dropdown, Loader, CardLabelError } from "@djb25/digit-ui-react-components";
 import { useParams, useLocation } from "react-router-dom";
+import { fetchBillingSlabDetails, normalizeTenantId } from "../utils";
 
 const AdvanceCollection = ({ t, config, onSelect, formData, userType, FSMTextFieldStyle }) => {
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const tenantId = normalizeTenantId(Digit.ULBService.getCurrentTenantId());
   const state = Digit.ULBService.getStateId();
   const { pathname: url } = useLocation();
   let { id: applicationNumber } = useParams();
@@ -60,77 +61,78 @@ const AdvanceCollection = ({ t, config, onSelect, formData, userType, FSMTextFie
         setVehicle({ label: formData?.tripData?.vehicleType?.capacity });
       }
 
+      const trips = Number(formData?.tripData?.noOfTrips) || 1;
+      const targetTenant = normalizeTenantId(formData?.address?.city?.code || tenantId);
+
+      let rate = formData?.tripData?.amountPerTrip;
       if (
+        (rate === undefined || rate === null || rate === "") &&
         formData?.propertyType &&
         formData?.subtype &&
         formData?.address &&
         formData?.tripData?.vehicleType?.capacity &&
         formData?.address?.propertyLocation?.code === "WITHIN_ULB_LIMITS"
       ) {
-        const capacity = formData?.tripData?.vehicleType.capacity;
-        const { slum: slumDetails } = formData.address;
-        const slum = slumDetails ? "YES" : "NO";
-        const billingDetails = await Digit.FSMService.billingSlabSearch(tenantId, {
-          propertyType: formData?.subtype,
-          capacity,
-          slum,
-        });
+        const billSlab = await fetchBillingSlabDetails(tenantId, formData);
+        if (billSlab && (billSlab?.price || billSlab?.price === 0)) {
+          rate = billSlab.price;
+        }
+      }
 
-        const billSlab = billingDetails?.billingSlab?.length && billingDetails?.billingSlab[0];
-
-        if (billSlab?.price || billSlab?.price === 0) {
-          const totaltripAmount = billSlab.price * formData.tripData.noOfTrips;
-
-          const { advanceAmount: advanceBalanceAmount } = await Digit.FSMService.advanceBalanceCalculate(tenantId, {
+      if (rate !== undefined && rate !== null && rate !== "") {
+        const totaltripAmount = Number(rate) * trips;
+        try {
+          const res = await Digit.FSMService.advanceBalanceCalculate(targetTenant, {
             totalTripAmount: totaltripAmount,
           });
+          const advanceBalanceAmount = res?.advanceAmount !== undefined ? res.advanceAmount : 0;
           Digit.SessionStorage.set("total_amount", totaltripAmount);
           Digit.SessionStorage.set("advance_amount", advanceBalanceAmount);
           setTotalAmount(totaltripAmount);
           setAdvanceAmounts(advanceBalanceAmount);
           if (!url.includes("modify") || (url.includes("modify") && advanceBalanceAmount > formData?.advancepaymentPreference?.advanceAmount)) {
+            if (formData?.advancepaymentPreference?.advanceAmount !== advanceBalanceAmount) {
+              setValue({
+                advanceAmount: advanceBalanceAmount,
+              });
+            }
+          }
+          setError(false);
+        } catch (calcErr) {
+          console.warn("advanceBalanceCalculate failed, using fallback:", calcErr);
+          Digit.SessionStorage.set("total_amount", totaltripAmount);
+          Digit.SessionStorage.set("advance_amount", 0);
+          setTotalAmount(totaltripAmount);
+          setAdvanceAmounts(0);
+          if (formData?.advancepaymentPreference?.advanceAmount !== 0) {
             setValue({
               advanceAmount: advanceBalanceAmount,
             });
           }
 
           setError(false);
-        } else {
-          sessionStorage.removeItem("Digit.total_amount");
-          sessionStorage.removeItem("Digit.advance_amount");
-          setError(true);
         }
+      } else {
+        sessionStorage.removeItem("Digit.total_amount");
+        sessionStorage.removeItem("Digit.advance_amount");
+        setError(true);
       }
     })();
-  }, [formData?.propertyType, formData?.subtype, formData?.address?.slum, formData?.tripData?.vehicleType?.capacity, formData?.tripData?.noOfTrips]);
-
-  useEffect(() => {
-    (async () => {
-      if (formData?.address?.propertyLocation?.code === "FROM_GRAM_PANCHAYAT" && formData.tripData.noOfTrips && formData.tripData.amountPerTrip) {
-        const totaltripAmount = formData.tripData.amountPerTrip * formData.tripData.noOfTrips;
-
-        const { advanceAmount: advanceBalanceAmount } = await Digit.FSMService.advanceBalanceCalculate(tenantId, {
-          totalTripAmount: totaltripAmount,
-        });
-        Digit.SessionStorage.set("total_amount", totaltripAmount);
-        Digit.SessionStorage.set("advance_amount", advanceBalanceAmount);
-        setTotalAmount(totaltripAmount);
-        setAdvanceAmounts(advanceBalanceAmount);
-        if (!url.includes("modify") || (url.includes("modify") && advanceBalanceAmount > formData?.advancepaymentPreference?.advanceAmount)) {
-          setValue({
-            advanceAmount: advanceBalanceAmount,
-          });
-        }
-
-        setError(false);
-      }
-    })();
-  }, [formData.tripData.noOfTrips, formData.tripData.amountPerTrip]);
+  }, [
+    formData?.propertyType,
+    formData?.subtype,
+    formData?.address?.slum,
+    formData?.address?.city?.code,
+    formData?.tripData?.vehicleType?.capacity,
+    formData?.tripData?.noOfTrips,
+    formData?.tripData?.amountPerTrip,
+    formData?.address?.propertyLocation?.code,
+  ]);
 
   return isVehicleMenuLoading && isDsoLoading ? (
     <Loader />
   ) : (
-    <div>
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px 24px", width: "100%" }}>
       {formData?.tripData?.amountPerTrip !== 0 &&
         inputs?.map((input, index) => {
           let currentValue = formData && formData[config.key] && formData[config.key][input.name];

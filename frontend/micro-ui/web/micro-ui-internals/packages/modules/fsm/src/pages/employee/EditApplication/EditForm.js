@@ -263,6 +263,7 @@ const EditForm = ({ tenantId, applicationData, channelMenu, vehicleMenu, sanitat
           "withoutLabel": true,
           "key": "cpt",
           "type": "component",
+          "colSpan": "span 2",
           "hideInCitizen": true
         },
         {
@@ -271,6 +272,7 @@ const EditForm = ({ tenantId, applicationData, channelMenu, vehicleMenu, sanitat
           "type": "component",
           "route": "property-type",
           "key": "propertyType",
+          "colSpan": "span 1",
           "component": "SelectPropertyType",
           "texts": {
             "headerCaption": "",
@@ -286,6 +288,7 @@ const EditForm = ({ tenantId, applicationData, channelMenu, vehicleMenu, sanitat
           "type": "component",
           "route": "property-subtype",
           "key": "subtype",
+          "colSpan": "span 1",
           "component": "SelectPropertySubtype",
           "texts": {
             "headerCaption": "",
@@ -305,6 +308,7 @@ const EditForm = ({ tenantId, applicationData, channelMenu, vehicleMenu, sanitat
           "isMandatory": true,
           "type": "component",
           "key": "channel",
+          "colSpan": "span 1",
           "component": "SelectChannel",
           "nextStep": "applicantName"
         },
@@ -312,6 +316,7 @@ const EditForm = ({ tenantId, applicationData, channelMenu, vehicleMenu, sanitat
           "type": "component",
           "key": "applicationData",
           "withoutLabel": true,
+          "colSpan": "span 2",
           "component": "SelectName"
         }
       ]
@@ -330,6 +335,7 @@ const EditForm = ({ tenantId, applicationData, channelMenu, vehicleMenu, sanitat
               "submitBarLabel": "CS_COMMON_NEXT"
           },
           "key": "address",
+          "colSpan": "span 2",
           "nextStep": "locality-gramPanchayat",
           "isMandatory": true,
           "type": "component"
@@ -361,6 +367,7 @@ const EditForm = ({ tenantId, applicationData, channelMenu, vehicleMenu, sanitat
           },
           "withoutLabel": true,
           "key": "address",
+          "colSpan": "span 1",
           "nextStep": "check-slum",
           "type": "component"
       },
@@ -380,23 +387,10 @@ const EditForm = ({ tenantId, applicationData, channelMenu, vehicleMenu, sanitat
         },
         {
           "type": "component",
-          "route": "slum-details",
-          "isMandatory": true,
-          "component": "SelectSlumName",
-          "texts": {
-            "header": "CS_NEW_APPLICATION_SLUM_NAME",
-            "cardText": "CS_NEW_APPLICATION_SLUM_TEXT",
-            "submitBarLabel": "CS_COMMON_NEXT"
-          },
-          "withoutLabel": true,
-          "key": "address",
-          "nextStep": "street"
-        },
-        {
-          "type": "component",
           "route": "street",
           "component": "FSMSelectStreet",
           "key": "address",
+          "colSpan": "span 2",
           "withoutLabel": true,
           "texts": {
             "headerCaption": "CS_FILE_APPLICATION_PROPERTY_LOCATION_LABEL",
@@ -409,9 +403,25 @@ const EditForm = ({ tenantId, applicationData, channelMenu, vehicleMenu, sanitat
         },
         {
           "type": "component",
+          "route": "slum-details",
+          "isMandatory": true,
+          "component": "SelectSlumName",
+          "texts": {
+            "header": "CS_NEW_APPLICATION_SLUM_NAME",
+            "cardText": "CS_NEW_APPLICATION_SLUM_TEXT",
+            "submitBarLabel": "CS_COMMON_NEXT"
+          },
+          "withoutLabel": true,
+          "colSpan": "span 2",
+          "key": "address",
+          "nextStep": "street"
+        },
+        {
+          "type": "component",
           "route": "landmark",
           "component": "FSMSelectLandmark",
           "withoutLabel": true,
+          "colSpan": "span 1",
           "texts": {
             "headerCaption": "CS_FILE_APPLICATION_PROPERTY_LOCATION_LABEL",
             "header": "CS_FILE_APPLICATION_PROPERTY_LOCATION_PROVIDE_LANDMARK_TITLE",
@@ -449,6 +459,7 @@ const EditForm = ({ tenantId, applicationData, channelMenu, vehicleMenu, sanitat
           "type": "component",
           "route": "pit-type",
           "key": "pitType",
+          "colSpan": "span 2",
           "component": "SelectPitType",
           "texts": {
             "header": "CS_FILE_PROPERTY_PIT_TYPE",
@@ -461,6 +472,7 @@ const EditForm = ({ tenantId, applicationData, channelMenu, vehicleMenu, sanitat
           "route": "tank-size",
           "component": "SelectTankSize",
           "isMandatory": false,
+          "colSpan": "span 2",
           "texts": {
             "headerCaption": "",
             "header": "CS_FILE_APPLICATION_PIT_SEPTIC_TANK_SIZE_TITLE",
@@ -477,6 +489,7 @@ const EditForm = ({ tenantId, applicationData, channelMenu, vehicleMenu, sanitat
           "type": "component",
           "key": "tripData",
           "withoutLabel": true,
+          "colSpan": "span 2",
           "component": "SelectTrips"
         }
       ]
@@ -546,12 +559,14 @@ const EditForm = ({ tenantId, applicationData, channelMenu, vehicleMenu, sanitat
           "type": "component",
           "key": "tripData",
           "withoutLabel": true,
+          "colSpan": "span 2",
           "component": "SelectTripData"
         },
         {
           "type": "component",
           "key": "advancepaymentPreference",
           "withoutLabel": true,
+          "colSpan": "span 2",
           "component": "AdvanceCollection"
         }
       ]

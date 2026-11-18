@@ -130,6 +130,18 @@ const FSMLinks = ({ matchPath, userType }) => {
 
     return <CitizenHomeCard header={t("CS_HOME_FSM_SERVICES")} links={links} Icon={CitizenTruck} />;
   } else {
+    const isSuperUser = Digit.UserService.hasAccess(["SUPERUSER", "ADMIN"]) || false;
+    const isFsmAdmin = Digit.UserService.hasAccess(["FSM_ADMIN", "ES_FSM_ADMIN", "FSM_CEMP"]) || isSuperUser;
+    const isCreator = Digit.UserService.hasAccess(["FSM_CREATOR_EMP", "FSM_CEMP"]) || isSuperUser;
+    const isEditor = Digit.UserService.hasAccess(["FSM_EDITOR_EMP"]) || isSuperUser;
+    const isViewer = Digit.UserService.hasAccess(["FSM_VIEW_EMP"]) || isSuperUser;
+    const isFSTPOperator = Digit.UserService.hasAccess(["FSM_EMP_FSTPO"]) || isSuperUser;
+    const isReportViewer = Digit.UserService.hasAccess(["FSM_REPORT_VIEWER"]) || isSuperUser;
+    const DSO = Digit.UserService.hasAccess(["FSM_DSO"]) || false;
+    const COLLECTOR = Digit.UserService.hasAccess(["FSM_COLLECTOR"]) || false;
+    const isGenericEmployee =
+      !isFSTPOperator && !isCreator && !isEditor && !isViewer && !isReportViewer && !COLLECTOR && !DSO && !isFsmAdmin;
+
     return (
       <div className="employee-app-container">
         <div className="ground-container">
@@ -151,24 +163,39 @@ const FSMLinks = ({ matchPath, userType }) => {
                 <span className="link">
                   <Link to={`${matchPath}/inbox`}>{t("ES_TITLE_INBOX")}</Link>
                 </span>
-                <span className="link">
-                  <Link to={`${matchPath}/new-application/`}>{t("ES_TITLE_NEW_DESULDGING_APPLICATION")}</Link>
-                </span>
+                {(isCreator || isFsmAdmin || isGenericEmployee || !isFSTPOperator) && (
+                  <span className="link">
+                    <Link to={`${matchPath}/new-application/`}>{t("ES_TITLE_NEW_DESULDGING_APPLICATION")}</Link>
+                  </span>
+                )}
                 <span className="link">
                   <Link to={`${matchPath}/search`}>{t("ES_TITILE_SEARCH_APPLICATION")}</Link>
                 </span>
-                <span className="link">
-                  <Link to={`${matchPath}/registry?selectedTabs=VENDOR`}>{t("ES_TITLE_FSM_REGISTRY")}</Link>
-                </span>
-                <span className="link">
-                  <Link to={`${matchPath}/fstp-operations`}>{t("ES_COMMON_FSTP_OPERATION")}</Link>
-                </span>
-                <span className="link">
-                  <Link to={`${matchPath}/fstp-inbox`}>{t("ES_TITLE_VEHICLE_LOG")}</Link>
-                </span>
-                <span className="link">
-                  <Link to={`${matchPath}/fstp-add-vehicle`}>{t("ES_FSM_ADD_NEW_BUTTON")}</Link>
-                </span>
+                {(isFsmAdmin || isGenericEmployee) && (
+                  <span className="link">
+                    <Link to={`${matchPath}/registry?selectedTabs=VENDOR`}>{t("ES_TITLE_FSM_REGISTRY")}</Link>
+                  </span>
+                )}
+                {(isFSTPOperator || isGenericEmployee) && (
+                  <span className="link">
+                    <Link to={`${matchPath}/fstp-inbox`}>{t("ES_TITLE_VEHICLE_LOG")}</Link>
+                  </span>
+                )}
+                {(isFSTPOperator || isGenericEmployee) && (
+                  <span className="link">
+                    <Link to={`${matchPath}/fstp-operations`}>{t("ES_COMMON_FSTP_OPERATION")}</Link>
+                  </span>
+                )}
+                {(isFSTPOperator || isGenericEmployee) && (
+                  <span className="link">
+                    <Link to={`${matchPath}/fstp-add-vehicle`}>{t("ES_FSM_ADD_NEW_BUTTON")}</Link>
+                  </span>
+                )}
+                {(isReportViewer || isSuperUser || isGenericEmployee) && (
+                  <span className="link">
+                    <a href="/employee/report/fsm/FSMDailyDesludingReport">{t("ES_TITLE_REPORTS")}</a>
+                  </span>
+                )}
               </div>
             </div>
           </div>
