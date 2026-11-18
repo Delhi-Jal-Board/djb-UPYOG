@@ -124,7 +124,6 @@ const Dropdown = (props) => {
   const [dropdownStyles, setDropdownStyles] = useState({});
   const triggerRef = useRef(null);
   const dropdownRef = useRef(null);
-  const positionFrameRef = useRef(null);
   const hasCustomSelector = !!props.customSelector;
   const { t: i18nT } = useTranslation();
   const t = props.t || i18nT || translateDummy;
@@ -184,18 +183,9 @@ const Dropdown = (props) => {
   const updateDropdownPosition = useCallback(() => {
     if (!triggerRef.current || !dropdownRef.current) return;
 
-    if (positionFrameRef.current !== null) {
-      window.cancelAnimationFrame(positionFrameRef.current);
-    }
-
-    positionFrameRef.current = window.requestAnimationFrame(() => {
-      positionFrameRef.current = null;
-      const trigger = triggerRef.current;
-      const dropdown = dropdownRef.current;
-      if (!trigger || !dropdown || !trigger.isConnected || !dropdown.isConnected) return;
-
-      const triggerRect = trigger.getBoundingClientRect();
-      const dropdownRect = dropdown.getBoundingClientRect();
+    window.requestAnimationFrame(() => {
+      const triggerRect = triggerRef.current.getBoundingClientRect();
+      const dropdownRect = dropdownRef.current.getBoundingClientRect();
       const width = triggerRect.width;
       const spaceBelow = window.innerHeight - triggerRect.bottom;
       const spaceAbove = triggerRect.top;
@@ -228,10 +218,6 @@ const Dropdown = (props) => {
       window.removeEventListener("resize", handleScrollOrResize);
       window.removeEventListener("orientationchange", handleScrollOrResize);
       window.removeEventListener("scroll", handleScrollOrResize, true);
-      if (positionFrameRef.current !== null) {
-        window.cancelAnimationFrame(positionFrameRef.current);
-        positionFrameRef.current = null;
-      }
     };
   }, [dropdownStatus, updateDropdownPosition]);
 
@@ -347,9 +333,9 @@ const Dropdown = (props) => {
             style={
               index === optionIndex
                 ? {
-                    opacity: 1,
-                    backgroundColor: "rgba(238, 238, 238, var(--bg-opacity))",
-                  }
+                  opacity: 1,
+                  backgroundColor: "rgba(238, 238, 238, var(--bg-opacity))",
+                }
                 : {}
             }
             key={index}
