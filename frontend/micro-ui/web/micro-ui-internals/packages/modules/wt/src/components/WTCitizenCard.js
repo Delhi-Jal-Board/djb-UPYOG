@@ -15,6 +15,10 @@ const WTCitizenCard = () => {
   const { t } = useTranslation();
   const history = useHistory();
 
+  if (!Digit?.UserService?.hasAccess(["WT_VENDOR"])) {
+    return null;
+  }
+
   const [total, setTotal] = useState("-");
   const tenantId = Digit.ULBService.getCurrentTenantId() || Digit.ULBService.getCitizenCurrentTenant(true);
   const { data, isLoading, isFetching, isSuccess } = Digit.Hooks.useNewInboxGeneral({

@@ -70,7 +70,11 @@ const toExportableString = (value) => {
   return String(value);
 };
 
-const escapeCsvCell = (value) => `"${toExportableString(value).replace(/"/g, '""')}"`;
+const escapeCsvCell = (value) => {
+  const str = toExportableString(value);
+  const sanitized = /^[=+@\t\r\-]/.test(str) ? `'${str}` : str;
+  return `"${sanitized.replace(/"/g, '""')}"`;
+};
 
 const extractTextFromNode = (node) => {
   if (node === null || node === undefined) return "";

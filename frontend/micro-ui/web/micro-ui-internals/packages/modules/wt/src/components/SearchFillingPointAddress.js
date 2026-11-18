@@ -5,6 +5,7 @@ import { useHistory, Link, useLocation } from "react-router-dom";
 import LocalityModal from "./LocalityModal";
 import ApplicationTable from "./inbox/ApplicationTable";
 import PointAddressMap from "./PointAddressMap";
+import { sanitizeForCsv } from "../utils";
 
 const SearchFillingPointAddress = () => {
   const { t } = useTranslation();
@@ -148,7 +149,22 @@ const SearchFillingPointAddress = () => {
     setPageOffset(0);
     // Re-trigger search with empty filters for the new tab
     setSearchParams({});
+    try {
+      history.push({
+        pathname: location.pathname,
+        search: `?tab=${tab}`,
+      });
+    } catch (e) {
+      // ignore
+    }
   };
+
+  React.useEffect(() => {
+    const tabFromUrl = new URLSearchParams(location.search).get("tab");
+    if (tabFromUrl && tabFromUrl !== selectedTab && ["FILLING_POINT", "FIXED_POINT", "VIEW_ON_MAP"].includes(tabFromUrl)) {
+      setSelectedTab(tabFromUrl);
+    }
+  }, [location.search]);
 
   const onAddClick = () => {
     setShowAddMenu((prev) => !prev);
@@ -177,10 +193,15 @@ const SearchFillingPointAddress = () => {
   };
 
   const onFillingPointSelect = (row, value) => {
+    if (!value) return;
+    const fixedPtName = row?.original?.applicantDetail?.applicantId || row?.original?.id;
+    const fillingPtName = value?.id || value?.bookingId || value?.fillingPointId || value?.uuid || value?.fillingpointmetadata?.fillingPointId;
+    if (!fixedPtName || !fillingPtName) return;
+
     const payload = {
       fixedFillingPointMapping: {
-        fixed_pt_name: row.original.applicantDetail?.applicantId,
-        filling_pt_name: value.id || value.bookingId || value.fillingPointId || value.uuid || value.fillingpointmetadata?.fillingPointId,
+        fixed_pt_name: fixedPtName,
+        filling_pt_name: fillingPtName,
       },
     };
 
@@ -354,15 +375,19 @@ const SearchFillingPointAddress = () => {
         },
         {
           Header: t("WT_FIXING_POINT_APPLICANT_DETAILS"),
-          accessor: (row) => row?.applicantDetail?.name || "NA",
+          accessor: (row) => row?.applicantDetail?.name || row?.name || "NA",
           id: "applicantName",
-          Cell: ({ row }) => (
-            <span className="link">
-              <Link to={`/digit-ui/employee/wt/add-fix-point-address?id=${row.original.applicantDetail?.applicantId}`}>
-                {row.original.applicantDetail?.name || "NA"}
-              </Link>
-            </span>
-          ),
+          Cell: ({ row }) => {
+            const applicantId = row?.original?.applicantDetail?.applicantId || row?.original?.id || "";
+            const name = row?.original?.applicantDetail?.name || row?.original?.name || "NA";
+            return (
+              <span className="link">
+                <Link to={`/digit-ui/employee/wt/add-fix-point-address?id=${applicantId}`}>
+                  {name}
+                </Link>
+              </span>
+            );
+          },
         },
         {
           Header: t("WT_MOBILE_NUMBER"),
@@ -392,21 +417,21 @@ const SearchFillingPointAddress = () => {
             row?.fillingpointmetadata?.fillingPointId ||
             row?.fillingPtName ||
             row?.filling_pt_name ||
-            row?.fillingPoint ||
+            (row?.fillingPoint && typeof row.fillingPoint === "object" ? row.fillingPoint?.id : row?.fillingPoint) ||
             "NA",
           id: "fillingPoint",
           minWidth: 250,
           Cell: ({ row }) => {
             const rowFpId = String(
-              row.original.fillingPointId ||
-                row.original.fillingpointmetadata?.fillingPointId ||
-                row.original.fillingPtName ||
-                row.original.filling_pt_name ||
-                (row.original.fillingPoint && typeof row.original.fillingPoint === "object"
+              row?.original?.fillingPointId ||
+                row?.original?.fillingpointmetadata?.fillingPointId ||
+                row?.original?.fillingPtName ||
+                row?.original?.filling_pt_name ||
+                (row?.original?.fillingPoint && typeof row.original.fillingPoint === "object"
                   ? row.original.fillingPoint?.id
-                  : row.original.fillingPoint) ||
-                row.original.fillingPointDetail?.id ||
-                row.original.fillingPointDetail?.bookingId ||
+                  : row?.original?.fillingPoint) ||
+                row?.original?.fillingPointDetail?.id ||
+                row?.original?.fillingPointDetail?.bookingId ||
                 ""
             );
 
@@ -644,27 +669,27 @@ const SearchFillingPointAddress = () => {
       return [
         {
           Header: t("WT_FIXED_POINT_CODE"),
-          exportAccessor: (row) => row?.applicantDetail?.fixedPointId || "NA",
+          exportAccessor: (row) => sanitizeForCsv(row?.applicantDetail?.fixedPointId || "NA"),
         },
         {
           Header: t("WT_APPLICANT_NAME"),
-          exportAccessor: (row) => row?.applicantDetail?.name || "NA",
+          exportAccessor: (row) => sanitizeForCsv(row?.applicantDetail?.name || row?.name || "NA"),
         },
         {
           Header: t("WT_MOBILE_NUMBER"),
-          exportAccessor: (row) => row?.applicantDetail?.mobileNumber || "NA",
+          exportAccessor: (row) => sanitizeForCsv(row?.applicantDetail?.mobileNumber || "NA"),
         },
         {
           Header: t("WT_LOCALITY"),
-          exportAccessor: (row) => getLocalityTranslation(row?.address?.locality, tenantId, t) || "NA",
+          exportAccessor: (row) => sanitizeForCsv(getLocalityTranslation(row?.address?.locality, tenantId, t) || "NA"),
         },
         {
           Header: t("WT_LATITUDE"),
-          exportAccessor: (row) => row?.address?.latitude || "NA",
+          exportAccessor: (row) => sanitizeForCsv(row?.address?.latitude || "NA"),
         },
         {
           Header: t("WT_LONGITUDE"),
-          exportAccessor: (row) => row?.address?.longitude || "NA",
+          exportAccessor: (row) => sanitizeForCsv(row?.address?.longitude || "NA"),
         },
         {
           Header: t("WT_FILLING_POINT"),
@@ -693,7 +718,8 @@ const SearchFillingPointAddress = () => {
               row?.fillingPtName ||
               row?.filling_pt_name;
 
-            return name && name !== "undefined" && name !== "null" ? name : rowFpId && rowFpId !== "undefined" && rowFpId !== "null" ? rowFpId : "NA";
+            const finalValue = name && name !== "undefined" && name !== "null" ? name : rowFpId && rowFpId !== "undefined" && rowFpId !== "null" ? rowFpId : "NA";
+            return sanitizeForCsv(finalValue);
           },
         },
       ];
@@ -702,58 +728,59 @@ const SearchFillingPointAddress = () => {
     return [
       {
         Header: t("WT_FILLING_POINT_CODE"),
-        exportAccessor: (row) => row?.fillingPointId || "NA",
+        exportAccessor: (row) => sanitizeForCsv(row?.fillingPointId || "NA"),
       },
       {
         Header: t("WT_FILLING_POINT_NAME"),
-        exportAccessor: (row) => row?.fillingPointName || "NA",
+        exportAccessor: (row) => sanitizeForCsv(row?.fillingPointName || "NA"),
       },
       {
         Header: t("WT_AE_NAME"),
-        exportAccessor: (row) => row?.aeName || "NA",
+        exportAccessor: (row) => sanitizeForCsv(row?.aeName || "NA"),
       },
       {
         Header: t("WT_AE_MOBILE"),
-        exportAccessor: (row) => row?.aeMobile || "NA",
+        exportAccessor: (row) => sanitizeForCsv(row?.aeMobile || "NA"),
       },
       {
         Header: t("WT_AE_EMAIL"),
-        exportAccessor: (row) => row?.aeEmail || "NA",
+        exportAccessor: (row) => sanitizeForCsv(row?.aeEmail || "NA"),
       },
       {
         Header: t("WT_JE_NAME"),
-        exportAccessor: (row) => row?.jeName || "NA",
+        exportAccessor: (row) => sanitizeForCsv(row?.jeName || "NA"),
       },
       {
         Header: t("WT_JE_MOBILE"),
-        exportAccessor: (row) => row?.jeMobile || "NA",
+        exportAccessor: (row) => sanitizeForCsv(row?.jeMobile || "NA"),
       },
       {
         Header: t("WT_JE_EMAIL"),
-        exportAccessor: (row) => row?.jeEmail || "NA",
+        exportAccessor: (row) => sanitizeForCsv(row?.jeEmail || "NA"),
       },
       {
         Header: t("WT_EE_NAME"),
-        exportAccessor: (row) => row?.eeName || "NA",
+        exportAccessor: (row) => sanitizeForCsv(row?.eeName || "NA"),
       },
       {
         Header: t("WT_EE_MOBILE"),
-        exportAccessor: (row) => row?.eeMobile || "NA",
+        exportAccessor: (row) => sanitizeForCsv(row?.eeMobile || "NA"),
       },
       {
         Header: t("WT_EE_EMAIL"),
-        exportAccessor: (row) => row?.eeEmail || "NA",
+        exportAccessor: (row) => sanitizeForCsv(row?.eeEmail || "NA"),
       },
       {
         Header: t("WT_LOCALITY"),
         exportAccessor: (row) => {
           const codes =
             row?.fillingPointLocalityCodes?.length > 0 ? row.fillingPointLocalityCodes : row?.address?.locality ? [row.address.locality] : [];
-          return codes.length > 0 ? codes.map((code) => getLocalityTranslation(code, tenantId, t)).join(", ") : "NA";
+          const text = codes.length > 0 ? codes.map((code) => getLocalityTranslation(code, tenantId, t)).join(", ") : "NA";
+          return sanitizeForCsv(text);
         },
       },
     ];
-  }, [selectedTab, t]);
+  }, [selectedTab, t, allFillingPoints, tenantId]);
 
   return (
     <React.Fragment>
@@ -874,7 +901,7 @@ const SearchFillingPointAddress = () => {
       ) : (
         <Card>
           <ApplicationTable
-            key={allFillingPoints?.length > 0 ? "loaded" : "loading"}
+            key={`table-${selectedTab}-${allFillingPoints?.length > 0 ? "loaded" : "loading"}`}
             data={tableData}
             columns={columns}
             pageSize={pageSize}

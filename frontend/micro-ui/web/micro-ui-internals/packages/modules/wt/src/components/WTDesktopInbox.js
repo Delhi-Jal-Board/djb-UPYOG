@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import ApplicationTable from "./inbox/ApplicationTable";
 import InboxLinks from "./inbox/InboxLink";
 import SearchApplication from "./inbox/search";
+import { sanitizeForCsv } from "../utils";
 
 /**
  * `WTDesktopInbox` is a desktop view component for managing and displaying Water Tanker (WT) service applications.
@@ -114,15 +115,15 @@ const WTDesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
     const csvColumns = [
       {
         Header: columns?.[0]?.Header || t("WT_BOOKING_NO"),
-        exportAccessor: (row) => row?.searchData?.bookingNo || "",
+        exportAccessor: (row) => sanitizeForCsv(row?.searchData?.bookingNo || ""),
       },
       {
         Header: columns?.[1]?.Header || t("WT_APPLICANT_NAME"),
-        exportAccessor: (row) => row?.searchData?.applicantDetail?.name || "",
+        exportAccessor: (row) => sanitizeForCsv(row?.searchData?.applicantDetail?.name || ""),
       },
       {
         Header: columns?.[2]?.Header || t("WT_MOBILE_NUMBER"),
-        exportAccessor: (row) => row?.searchData?.applicantDetail?.mobileNumber || "",
+        exportAccessor: (row) => sanitizeForCsv(row?.searchData?.applicantDetail?.mobileNumber || ""),
       },
       {
         Header: columns?.[3]?.Header || t("LOCALITY"),
@@ -130,7 +131,7 @@ const WTDesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
           if (!row?.searchData?.localityCode) return "";
           const tenant = row?.searchData?.tenantId || Digit.ULBService.getCurrentTenantId() || "djb";
           const prefix = tenant.replace(".", "_").toUpperCase();
-          return t(`${prefix}_REVENUE_${row.searchData.localityCode}`);
+          return sanitizeForCsv(t(`${prefix}_REVENUE_${row.searchData.localityCode}`));
         },
       },
     ];
@@ -138,20 +139,20 @@ const WTDesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
     if (columns?.some((column) => column?.id === "fillingPoint")) {
       csvColumns.push({
         Header: columns?.find((column) => column?.id === "fillingPoint")?.Header || t("Filling Point"),
-        exportAccessor: (row) => row?.searchData?.fillingPointMetadata?.name || row?.searchData?.fillingPointName || "-",
+        exportAccessor: (row) => sanitizeForCsv(row?.searchData?.fillingPointMetadata?.name || row?.searchData?.fillingPointName || "-"),
       });
     }
 
     if (columns?.some((column) => column?.id === "createdTime")) {
       csvColumns.push({
         Header: columns?.find((column) => column?.id === "createdTime")?.Header || t("CREATED_AT"),
-        exportAccessor: (row) => getCreatedAtValue(row),
+        exportAccessor: (row) => sanitizeForCsv(getCreatedAtValue(row)),
       });
     }
 
     csvColumns.push({
       Header: columns?.find((column) => column?.id === "applicationStatus")?.Header || t("WT_STATUS"),
-      exportAccessor: (row) => (row?.workflowData?.state?.applicationStatus ? t(row.workflowData.state.applicationStatus) : ""),
+      exportAccessor: (row) => sanitizeForCsv(row?.workflowData?.state?.applicationStatus ? t(row.workflowData.state.applicationStatus) : ""),
     });
 
     if (columns?.some((column) => column?.id === "deliveryDateTime")) {
@@ -162,7 +163,7 @@ const WTDesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
           if (Array.isArray(driverTripReport) && driverTripReport.length > 0) {
             const lastModifiedTime = driverTripReport[0]?.auditDetails?.lastModifiedTime;
             if (lastModifiedTime) {
-              return `${Digit.DateUtils.ConvertEpochToDate(lastModifiedTime)} ${Digit.DateUtils.ConvertEpochToTimeInHours(lastModifiedTime)}`;
+              return sanitizeForCsv(`${Digit.DateUtils.ConvertEpochToDate(lastModifiedTime)} ${Digit.DateUtils.ConvertEpochToTimeInHours(lastModifiedTime)}`);
             }
           }
           return "-";
@@ -173,7 +174,7 @@ const WTDesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
     if (columns?.some((column) => column?.id === "vendorName")) {
       csvColumns.push({
         Header: columns?.find((column) => column?.id === "vendorName")?.Header || t("WT_VENDOR_NAME"),
-        exportAccessor: (row) => row?.searchData?.vendor?.name || row?.searchData?.vendorName || "-",
+        exportAccessor: (row) => sanitizeForCsv(row?.searchData?.vendor?.name || row?.searchData?.vendorName || "-"),
       });
     }
 
@@ -183,7 +184,7 @@ const WTDesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
         exportAccessor: (row) => {
           const searchData = row?.searchData;
           const mappedVehicle = searchData?.vehicle || searchData?.vendor?.vehicles?.find((vehicle) => vehicle?.id === searchData?.vehicleId);
-          return (
+          const val = (
             mappedVehicle?.registrationNumber ||
             mappedVehicle?.name ||
             mappedVehicle?.type ||
@@ -191,6 +192,7 @@ const WTDesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
             searchData?.vehicleRegistrationNo ||
             "-"
           );
+          return sanitizeForCsv(val);
         },
       });
     }
@@ -206,7 +208,8 @@ const WTDesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
               (driver) =>
                 driver?.id === searchData?.driverId || driver?.ownerId === searchData?.driverId || driver?.owner?.uuid === searchData?.driverId
             );
-          return mappedDriver?.name || mappedDriver?.owner?.name || searchData?.driverName || "-";
+          const val = mappedDriver?.name || mappedDriver?.owner?.name || searchData?.driverName || "-";
+          return sanitizeForCsv(val);
         },
       });
     }
