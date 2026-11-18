@@ -964,6 +964,20 @@ public class WorkflowNotificationService {
                 notificationUtil.sendWhatsApp(whatsappRequests, tenantId);
             }
         }
+
+        // Check for Water Connection Disconnection Application
+        boolean isDisconnection = (appType != null && (
+                WCConstants.DISCONNECT_WATER_CONNECTION.equalsIgnoreCase(appType)
+                || "DISCONNECT_WATER_CONNECTION".equalsIgnoreCase(appType)))
+                || request.isDisconnectRequest();
+
+        if (isDisconnection && (WCConstants.APPROVE_DISCONNECTION_CONST.equalsIgnoreCase(action)
+                || "APPROVE_FOR_DISCONNECTION".equalsIgnoreCase(action))) {
+            List<WhatsAppRequest> whatsappRequests = getWhatsAppRequestForDisconnectionApproved(request, property);
+            if (!CollectionUtils.isEmpty(whatsappRequests)) {
+                notificationUtil.sendWhatsApp(whatsappRequests, tenantId);
+            }
+        }
     }
 
     /**
@@ -1491,4 +1505,226 @@ public class WorkflowNotificationService {
         return whatsappRequests;
     }
 
+    /**
+     * Prepares WhatsAppRequest for Water Connection Disconnection Approved Notice.
+     * Template text provided by DJB:
+     * 
+     * Delhi Jal Board (DJB)
+     * 
+     * Dear {{1}},
+     * 
+     * We are pleased to inform you that your application for Water Connection Disconnection has been approved by the concerned Zonal Revenue Officer (ZRO).
+     * 
+     * Application & Connection Details:
+     * - Application Number: {{2}}
+     * - Zone: {{3}}
+     * - ZRO Office: {{4}}
+     * - Connection Type: {{5}}
+     * - Approval Date: {{6}}
+     * 
+     * Authorized Licensed Meter Fitter Details:
+     * The authorized licensed meter fitter details have been provided in the Disconnection Notice / Letter. The disconnection is expected to be completed by {{7}} as per the applicable DJB process.
+     * 
+     * You are requested to coordinate with the authorized fitter and provide the necessary access to your premises for meter disconnection.
+     * 
+     * You can download your official Disconnection Notice / Letter here: {{8}}
+     * 
+     * Thank you for choosing Delhi Jal Board.
+     * 
+     * Delhi Jal Board
+     * 
+     * Parameters:
+     *   {{1}} -> Citizen / Applicant Name
+     *   {{2}} -> Application Number / KNO
+     *   {{3}} -> Zone
+     *   {{4}} -> ZRO Office
+     *   {{5}} -> Connection Type
+     *   {{6}} -> Approval Date (dd-MM-yyyy)
+     *   {{7}} -> Disconnection Timeline Date (dd-MM-yyyy, 7 days after approval date)
+     *   {{8}} -> Downloadable Disconnection Notice PDF link
+     * 
+     * @param request WaterConnectionRequest
+     * @param property Property
+     * @return List of WhatsAppRequest
+     */
+    private List<WhatsAppRequest> getWhatsAppRequestForDisconnectionApproved(WaterConnectionRequest request, Property property) {
+        WaterConnection connection = request.getWaterConnection();
+        if (connection == null) {
+            return Collections.emptyList();
+        }
+
+        Map<String, String> mobileNumbersAndNames = extractRecipientMobileNumbersAndNames(request, property, connection);
+        if (CollectionUtils.isEmpty(mobileNumbersAndNames)) {
+            log.info("No mobile numbers found for WhatsApp disconnection approval notification on application: {}", connection.getApplicationNo());
+            return Collections.emptyList();
+        }
+
+        // Format approval/disconnection date as dd-MM-yyyy (Asia/Kolkata timezone)
+        Long approvalTime = null;
+        if (connection.getConnectionExecutionDate() != null) {
+            approvalTime = connection.getConnectionExecutionDate();
+        } else if (connection.getDateEffectiveFrom() != null) {
+            approvalTime = connection.getDateEffectiveFrom();
+        } else if (connection.getAuditDetails() != null && connection.getAuditDetails().getLastModifiedTime() != null) {
+            approvalTime = connection.getAuditDetails().getLastModifiedTime();
+        } else {
+            approvalTime = System.currentTimeMillis();
+        }
+        ZoneId zoneId = ZoneId.of("Asia/Kolkata");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy").withZone(zoneId);
+        ZonedDateTime approvalDateTime = Instant.ofEpochMilli(approvalTime).atZone(zoneId);
+        String approvalDate = approvalDateTime.format(formatter);
+
+        String applicationNo = !StringUtils.isEmpty(connection.getApplicationNo()) 
+                ? connection.getApplicationNo() 
+                : connection.getConnectionNo();
+        final String templateName = !StringUtils.isEmpty(config.getDisconnectionApprovedTemplateName())
+                ? config.getDisconnectionApprovedTemplateName()
+                : config.getNcApplicationApprovedTemplateName();
+
+        // 1. Zone resolution
+        String zone = null;
+        if (property != null && property.getAddress() != null) {
+            if (!StringUtils.isEmpty(property.getAddress().getZone())) {
+                zone = property.getAddress().getZone();
+            } else if (property.getAddress().getLocality() != null && !StringUtils.isEmpty(property.getAddress().getLocality().getZone())) {
+                zone = property.getAddress().getLocality().getZone();
+            }
+        }
+        if (StringUtils.isEmpty(zone) && connection.getAdditionalDetails() != null) {
+            try {
+                Map<String, Object> addDetails = mapper.convertValue(connection.getAdditionalDetails(), Map.class);
+                if (addDetails.get("zone") != null) {
+                    zone = String.valueOf(addDetails.get("zone"));
+                }
+            } catch (Exception e) {
+                log.warn("Error reading zone from additionalDetails", e);
+            }
+        }
+        if (StringUtils.isEmpty(zone)) {
+            zone = "Delhi Zone";
+        } else if (!zone.toLowerCase().contains("zone")) {
+            zone = zone + " Zone";
+        }
+
+        // 2. ZRO Office resolution
+        String zroOffice = null;
+        if (property != null && property.getAddress() != null && !StringUtils.isEmpty(property.getAddress().getZroLocation())) {
+            zroOffice = property.getAddress().getZroLocation();
+        }
+        if (StringUtils.isEmpty(zroOffice) && connection.getAdditionalDetails() != null) {
+            try {
+                Map<String, Object> addDetails = mapper.convertValue(connection.getAdditionalDetails(), Map.class);
+                if (addDetails.get("zro") != null) {
+                    zroOffice = String.valueOf(addDetails.get("zro"));
+                } else if (addDetails.get("zroLocation") != null) {
+                    zroOffice = String.valueOf(addDetails.get("zroLocation"));
+                }
+            } catch (Exception e) {
+                log.warn("Error reading zro from additionalDetails", e);
+            }
+        }
+        if (StringUtils.isEmpty(zroOffice)) {
+            zroOffice = "ZRO Delhi";
+        } else if (!zroOffice.toUpperCase().contains("ZRO")) {
+            zroOffice = "ZRO " + zroOffice;
+        }
+
+        // 3. Connection Type resolution
+        String connectionType = "Domestic";
+        String category = connection.getConnectionCategory();
+        if (StringUtils.isEmpty(category) && connection.getAdditionalDetails() != null) {
+            try {
+                Map<String, Object> addDetails = mapper.convertValue(connection.getAdditionalDetails(), Map.class);
+                if (addDetails.get("propertyCategory") != null) {
+                    category = String.valueOf(addDetails.get("propertyCategory"));
+                }
+            } catch (Exception e) {
+                log.warn("Error reading propertyCategory from additionalDetails", e);
+            }
+        }
+        if (!StringUtils.isEmpty(category)) {
+            if ("COMMERCIAL".equalsIgnoreCase(category) || "NON_DOMESTIC".equalsIgnoreCase(category)) {
+                connectionType = "Commercial";
+            } else if ("DOMESTIC".equalsIgnoreCase(category) || "RESIDENTIAL".equalsIgnoreCase(category)) {
+                connectionType = "Domestic";
+            } else {
+                connectionType = Character.toUpperCase(category.charAt(0)) + category.substring(1).toLowerCase();
+            }
+        }
+
+        // 4. Disconnection Timeline (7 days after approval date)
+        String disconnectionTimeline = approvalDateTime.plusDays(7).format(formatter);
+
+        // 5. Disconnection Notice Download Link
+        String disconnectionFileStoreId = null;
+        if (connection.getAdditionalDetails() != null) {
+            Map<String, Object> addDetails = mapper.convertValue(connection.getAdditionalDetails(), Map.class);
+            if (addDetails.get(WCConstants.DISCONNECTION_LETTER_FILESTORE_ID) != null) {
+                disconnectionFileStoreId = String.valueOf(addDetails.get(WCConstants.DISCONNECTION_LETTER_FILESTORE_ID));
+            }
+        }
+
+        // If not found in additionalDetails yet, generate it via pdfFileStoreService
+        if (StringUtils.isEmpty(disconnectionFileStoreId)) {
+            try {
+                log.info("Attempting Disconnection Notice generation for application: {}", connection.getApplicationNo());
+                disconnectionFileStoreId = pdfFileStoreService.getDisconnectionFileStoreId(request, property, WCConstants.PDF_DISCONNECTION_KEY);
+                log.info("Disconnection notice generated fileStoreId: {} for application: {}", disconnectionFileStoreId, connection.getApplicationNo());
+                if (!StringUtils.isEmpty(disconnectionFileStoreId)) {
+                    Map<String, Object> addDetails = (connection.getAdditionalDetails() != null)
+                            ? mapper.convertValue(connection.getAdditionalDetails(), Map.class) : new HashMap<>();
+                    addDetails.put(WCConstants.DISCONNECTION_LETTER_FILESTORE_ID, disconnectionFileStoreId);
+                    connection.setAdditionalDetails(addDetails);
+                }
+            } catch (Exception e) {
+                log.warn("Could not generate disconnection notice on the fly: {}", e.getMessage(), e);
+            }
+        }
+
+        String disconnectionNoticePdfUrl;
+        if (!StringUtils.isEmpty(disconnectionFileStoreId)) {
+            disconnectionNoticePdfUrl = "https://dev-djberp.nitcon.in/filestore/v1/files/id?tenantId=dl.djb&fileStoreId=" + disconnectionFileStoreId;
+        } else {
+            disconnectionNoticePdfUrl = "https://dev-djberp.nitcon.in/filestore/v1/files/id?tenantId=dl.djb&fileStoreId=2c42cc8e-25f6-4372-a048-9eae38e7f33d";
+        }
+
+        try {
+            String shortened = waterServiceUtil.getShortnerURL(disconnectionNoticePdfUrl);
+            if (!StringUtils.isEmpty(shortened)) {
+                disconnectionNoticePdfUrl = shortened;
+            }
+        } catch (Exception e) {
+            log.warn("Failed to shorten disconnection notice PDF URL, using direct filestore link: {}", disconnectionNoticePdfUrl, e);
+        }
+
+        final String finalZone = zone;
+        final String finalZroOffice = zroOffice;
+        final String finalConnectionType = connectionType;
+        final String finalDisconnectionNoticePdfUrl = disconnectionNoticePdfUrl;
+
+        List<WhatsAppRequest> whatsappRequests = new ArrayList<>();
+        mobileNumbersAndNames.forEach((mobileNumber, name) -> {
+            String applicantName = !StringUtils.isEmpty(name) ? name : "Citizen";
+            List<String> parameters = Arrays.asList(
+                    applicantName,                  // {{1}}
+                    applicationNo,                  // {{2}}
+                    finalZone,                      // {{3}}
+                    finalZroOffice,                 // {{4}}
+                    finalConnectionType,            // {{5}}
+                    approvalDate,                   // {{6}}
+                    disconnectionTimeline,          // {{7}}
+                    finalDisconnectionNoticePdfUrl  // {{8}}
+            );
+
+            WhatsAppRequest req = WhatsAppRequest.builder()
+                    .mobileNumber(mobileNumber)
+                    .templateName(templateName)
+                    .parameters(parameters)
+                    .build();
+            whatsappRequests.add(req);
+        });
+
+        return whatsappRequests;
+    }
 }
