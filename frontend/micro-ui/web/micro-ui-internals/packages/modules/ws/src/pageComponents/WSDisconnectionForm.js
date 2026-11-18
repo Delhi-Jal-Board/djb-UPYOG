@@ -65,11 +65,16 @@ const WSDisconnectionForm = ({ t, config, onSelect, userType }) => {
     ...storedApplicationData,
     applicationData: location.state?.connection || storedApplicationData.applicationData || {},
   };
-  const serviceType =
-    applicationData?.serviceType ||
-    applicationData?.applicationData?.serviceType ||
-    applicationData?.applicationData?.additionalDetails?.serviceType?.code ||
-    (applicationData?.applicationData?.sewerage ? "SEWERAGE" : "WATER");
+  const isWaterConn =
+    applicationData?.serviceType === "WATER" ||
+    applicationData?.serviceType === "WS" ||
+    applicationData?.applicationData?.water === true ||
+    applicationData?.applicationData?.service?.toLowerCase() === "water" ||
+    applicationData?.applicationData?.connectionNo?.includes("WS") ||
+    applicationData?.applicationData?.applicationNo?.includes("WS") ||
+    !applicationData?.applicationData?.connectionNo?.includes("SW");
+
+  const serviceType = isWaterConn ? "WATER" : "SEWERAGE";
   const history = useHistory();
   const match = useRouteMatch();
 

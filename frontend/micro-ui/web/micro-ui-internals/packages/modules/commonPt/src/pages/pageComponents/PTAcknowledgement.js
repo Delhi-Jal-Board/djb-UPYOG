@@ -198,6 +198,15 @@ const PTAcknowledgement = ({ onSuccess, onSelect, formData, redirectUrl, userTyp
 
   const onNext = () => {
     if (isMutationSuccess) {
+      if (isEditOrUpdate) {
+        history.push(
+          window.location.href.includes("/employee/")
+            ? "/digit-ui/employee/ws/water/inbox"
+            : "/digit-ui/citizen/ws/my-applications"
+        );
+        return;
+      }
+
       sessionStorage.setItem("Digit_OBPS_PT",JSON.stringify(responseData?.Properties?.[0]))
       sessionStorage.setItem("Digit_FSM_PT",JSON.stringify(responseData?.Properties?.[0]))
       
@@ -305,10 +314,20 @@ const PTAcknowledgement = ({ onSuccess, onSelect, formData, redirectUrl, userTyp
         (window.location.href.includes("/citizen/") || window.location.href.includes("/employee/")) && (
           <div style={{ marginTop: "24px", display: "flex", justifyContent: "flex-start", width: "100%" }}>
             <SubmitBar
-              label={t("CS_COMMON_PROCEED")}
+              label={
+                isEditOrUpdate
+                  ? (t("CS_COMMON_GO_TO_MY_APPLICATIONS") && t("CS_COMMON_GO_TO_MY_APPLICATIONS") !== "CS_COMMON_GO_TO_MY_APPLICATIONS"
+                      ? t("CS_COMMON_GO_TO_MY_APPLICATIONS")
+                      : (t("PT_GO_TO_MY_APPLICATIONS") && t("PT_GO_TO_MY_APPLICATIONS") !== "PT_GO_TO_MY_APPLICATIONS"
+                          ? t("PT_GO_TO_MY_APPLICATIONS")
+                          : (t("Go to My Applications") && t("Go to My Applications") !== "Go to My Applications"
+                              ? t("Go to My Applications")
+                              : "Go to My Applications")))
+                  : t("CS_COMMON_PROCEED")
+              }
               style={{
                 width: "auto",
-                minWidth: "320px",
+                minWidth: isEditOrUpdate ? "240px" : "320px",
                 minHeight: "44px",
                 height: "auto",
                 padding: "10px 28px",

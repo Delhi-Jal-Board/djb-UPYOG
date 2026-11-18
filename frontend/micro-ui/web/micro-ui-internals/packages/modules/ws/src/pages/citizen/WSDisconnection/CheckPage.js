@@ -1,6 +1,6 @@
 import {
   Card, CardHeader, CardSubHeader, CardText,
-  CitizenInfoLabel, LinkButton, Row, StatusTable, SubmitBar, EditIcon, Header, Loader
+  CitizenInfoLabel, LinkButton, Row, StatusTable, SubmitBar, EditIcon, Header, Loader, Toast
 } from "@djb25/digit-ui-react-components";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -21,6 +21,7 @@ const CheckPage = () => {
     location.href = jumpTo;
   }
   const [isEnableLoader, setIsEnableLoader] = useState(false);
+  const [error, setError] = useState(null);
 
   const {
     isLoading: creatingWaterApplicationLoading,
@@ -55,11 +56,23 @@ const CheckPage = () => {
     mutate: sewerageUpdateMutation,
   } = Digit.Hooks.ws.useWSApplicationActions("SEWERAGE");
 
-  const closeToastOfError = () => { setShowToast(null); };
+  const closeToastOfError = () => { setError(null); };
 
   const onSubmit = async (data) => {
-    const serviceType = value?.serviceType || value?.applicationData?.serviceType || value?.applicationData?.additionalDetails?.serviceType?.code || (value?.applicationData?.sewerage ? "SEWERAGE" : "WATER");
-    const payload = await createPayloadOfWSDisconnection(data, { applicationData: value?.applicationData || value }, serviceType);
+    const appData = value?.applicationData || value || {};
+    const isWater =
+      appData?.water === true ||
+      appData?.service?.toLowerCase() === "water" ||
+      appData?.connectionNo?.includes("WS") ||
+      appData?.applicationNo?.includes("WS") ||
+      value?.connectionNo?.includes("WS") ||
+      value?.serviceType?.toUpperCase() === "WATER" ||
+      value?.serviceType?.toUpperCase() === "WS" ||
+      appData?.additionalDetails?.serviceType?.code === "WATER" ||
+      !appData?.connectionNo?.includes("SW");
+
+    const serviceType = isWater ? "WATER" : "SEWERAGE";
+    const payload = await createPayloadOfWSDisconnection(data, { applicationData: appData }, serviceType);
     if (payload?.WaterConnection?.water) {
       if (waterMutation) {
         setIsEnableLoader(true);
@@ -151,6 +164,7 @@ const CheckPage = () => {
             <div style={{ display: "flex", justifyContent: "flex-end", width: "100%", gridColumn: "1 / -1" }}>
               <SubmitBar label={t("CS_COMMON_SUBMIT")} onSubmit={() => onSubmit(value?.WSDisconnectionForm)} />
             </div>
+            {error && <Toast error={error?.key === "error"} label={t(error?.message)} onClose={closeToastOfError} />}
           </Card>
         </div>
       </div>

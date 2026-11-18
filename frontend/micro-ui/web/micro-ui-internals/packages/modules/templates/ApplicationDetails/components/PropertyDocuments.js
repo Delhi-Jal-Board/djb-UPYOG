@@ -203,6 +203,10 @@ function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false, 
       typeLabel = "Ownership Proof*";
       numLabel = "Ownership Proof Document Number";
       uploadLabel = "Upload Ownership Proof*";
+    } else if (value.title === "WS_DJB_EMPLOYEE_ID" || value?.documentType?.includes("DJB_EMPLOYEE") || value?.documentType?.includes("EMPLOYEE_ID")) {
+      typeLabel = "";
+      numLabel = "";
+      uploadLabel = "Upload Employee ID Document*";
     } else if (value.title === "WS_OTHER_DOCUMENTS") {
       typeLabel = "Other Documents*";
       const isOtherDocRemark =
@@ -225,10 +229,10 @@ function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false, 
     return (
       <div key={index} style={{ marginBottom: "24px" }}>
         <StatusTable>
-          {!isPhoto && value.title !== "WS_APPLICANT_SIGNATURE" && (
+          {!isPhoto && value.title !== "WS_APPLICANT_SIGNATURE" && value.title !== "WS_DJB_EMPLOYEE_ID" && !value?.documentType?.includes("DJB_EMPLOYEE") && !value?.documentType?.includes("EMPLOYEE_ID") && (
             <React.Fragment>
-              <Row label={typeLabel} text={docSubType || t("NA")} />
-              <Row label={numLabel} text={docUid || t("NA")} />
+              {typeLabel ? <Row label={typeLabel} text={docSubType || t("NA")} /> : null}
+              {numLabel ? <Row label={numLabel} text={docUid || t("NA")} /> : null}
             </React.Fragment>
           )}
           <Row

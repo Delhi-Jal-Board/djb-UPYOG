@@ -13,6 +13,19 @@ const WSPropertyLocationDetails = (props) => {
   const onSkip = () => onSelect();
   const PropertyLocationDetails = Digit.ComponentRegistryService.getComponent("PropertyLocationDetails");
 
+  const handleCitizenSelect = React.useCallback(
+    (key, details) => {
+      setData((prev) => {
+        if (JSON.stringify(prev) === JSON.stringify(details)) return prev;
+        return details;
+      });
+      if (typeof onSelect === "function") {
+        onSelect(key, details);
+      }
+    },
+    [onSelect]
+  );
+
   if (userType === "citizen") {
     return (
       <div>
@@ -21,9 +34,7 @@ const WSPropertyLocationDetails = (props) => {
           <div style={{ marginTop: "-30px", marginBottom: "-30px" }}>
             <PropertyLocationDetails
               {...props}
-              onSelect={(key, details) => {
-                setData(details);
-              }}
+              onSelect={handleCitizenSelect}
             />
           </div>
         </FormStep>

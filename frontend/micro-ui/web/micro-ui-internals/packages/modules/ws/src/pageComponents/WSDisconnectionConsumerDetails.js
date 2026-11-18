@@ -84,11 +84,21 @@ const WSDisconnectionConsumerDetails = ({ userType, flow = "disconnection" }) =>
       };
       
       await Digit.UserService.validateOtp(payload);
+      const isWaterConn =
+        connection?.water === true ||
+        connection?.service?.toLowerCase() === "water" ||
+        connection?.connectionNo?.includes("WS") ||
+        connection?.applicationNo?.includes("WS") ||
+        applicationData?.serviceType === "WATER" ||
+        !connection?.connectionNo?.includes("SW");
+
+      const finalServiceType = isWaterConn ? "WATER" : (connection?.additionalDetails?.serviceType?.code || applicationData?.serviceType || "WATER");
+
       Digit.SessionStorage.set("WS_DISCONNECTION", {
         ...applicationData,
         applicationData: connection,
         connectionNo: connection?.connectionNo,
-        serviceType: connection?.additionalDetails?.serviceType?.code || applicationData?.serviceType,
+        serviceType: finalServiceType,
       });
       setIsLoading(false);
       // Proceed to the application form
