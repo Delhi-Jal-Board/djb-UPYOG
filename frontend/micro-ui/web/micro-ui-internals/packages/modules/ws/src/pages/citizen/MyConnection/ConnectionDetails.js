@@ -196,8 +196,9 @@ const ConnectionDetails = () => {
     return a.order - b.order;
   });
 
-  const isSW = state?.applicationNo?.includes("SW") || applicationNobyData?.includes("SW");
-  const serviceType = state?.applicationType?.includes("WATER") || applicationNobyData?.includes("WS") ? "WATER" : "SEWERAGE";
+  const isSW = (state?.applicationNo?.includes("SW") || applicationNobyData?.includes("SW") || state?.connectionNo?.includes("SW")) && !state?.applicationNo?.includes("WS") && !state?.connectionNo?.includes("WS");
+  const isWS = state?.applicationType?.includes("WATER") || state?.applicationNo?.includes("WS") || applicationNobyData?.includes("WS") || state?.connectionNo?.includes("WS") || state?.water === true;
+  const serviceType = isWS || !isSW ? "WATER" : "SEWERAGE";
   const fetchBillParams = { consumerCode: state?.connectionNo };
   const paymentDetails = Digit.Hooks.useFetchBillsForBuissnessService(
     { businessService: isSW ? "SW" : "WS", ...fetchBillParams, tenantId: tenantId },

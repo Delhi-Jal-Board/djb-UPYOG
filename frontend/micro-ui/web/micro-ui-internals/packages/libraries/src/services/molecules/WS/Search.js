@@ -935,14 +935,6 @@ export const WSSearch = {
       values:
         wsDataDetails?.connectionHolders?.length > 0
           ? [
-                        {
-              title: "WS_DIVYANGJAN",
-              value: wsDataDetails?.additionalDetails?.isDivyangjan === true || String(wsDataDetails?.additionalDetails?.isDivyangjan) === "true" ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO"),
-            },
-            {
-              title: "WS_DJB_EMPLOYEE",
-              value: wsDataDetails?.additionalDetails?.isDjbEmployee === true || String(wsDataDetails?.additionalDetails?.isDjbEmployee) === "true" ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO"),
-            },
             { title: "WS_OWN_DETAIL_NAME", value: wsDataDetails?.connectionHolders?.[0]?.name || t("NA") },
             ...(!isMutationApp ? [
               {
@@ -1081,6 +1073,14 @@ export const WSSearch = {
       fileName: wsDataDetails?.additionalDetails?.signatureFileName || "signature.png"
     } : null));
 
+    const employeeIdDoc = allDocs.find(
+      (d) => d?.documentType === "OWNER.DJB_EMPLOYEE_ID" || d?.documentType?.includes("DJB_EMPLOYEE") || d?.documentType?.includes("EMPLOYEE_ID")
+    ) || (wsDataDetails?.additionalDetails?.employeeDocumentId || wsDataDetails?.additionalDetails?.employeeDocument ? {
+      documentType: "OWNER.DJB_EMPLOYEE_ID",
+      fileStoreId: wsDataDetails?.additionalDetails?.employeeDocumentId || wsDataDetails?.additionalDetails?.employeeDocument,
+      fileName: "Employee_ID_Document"
+    } : null);
+
     if (isMutationApp) {
       if (wsDataDetails?.additionalDetails?.identityProofDocumentId || wsDataDetails?.additionalDetails?.identityProofDocumentName || wsDataDetails?.additionalDetails?.identityProofDocumentNumber) {
         identityDoc = {
@@ -1103,6 +1103,10 @@ export const WSSearch = {
         d?.id !== ownershipDoc?.id && 
         d?.id !== applicantPhoto?.id &&
         d?.id !== signatureDoc?.id &&
+        d?.id !== employeeIdDoc?.id &&
+        d?.fileStoreId !== employeeIdDoc?.fileStoreId &&
+        !d?.documentType?.includes("DJB_EMPLOYEE") &&
+        !d?.documentType?.includes("EMPLOYEE_ID") &&
         !d?.documentType?.includes("SIGNATURE") &&
         !d?.documentType?.includes("SIGN")
     );
@@ -1138,7 +1142,12 @@ export const WSSearch = {
     };
 
     const otherDocsValues = unmappedDocs.map(d => {
-      const cleanNum = getCleanDocNumber([wsDataDetails?.additionalDetails?.otherDocumentNumber, d?.documentNumber, d?.documentUid], d);
+      const isOtherDoc = d?.documentType?.includes("OTHER_DOCUMENTS") || d?.documentType?.includes("OTHERDOCUMENTS") || d?.documentType?.includes("OTHER");
+      const cleanNum = getCleanDocNumber([
+        d?.documentUid,
+        d?.documentNumber,
+        (isOtherDoc ? wsDataDetails?.additionalDetails?.otherDocumentNumber : null)
+      ], d);
       return {
         title: d?.documentType?.includes("ELECTRICITY") ? "WS_ELECTRICITY_BILL" : 
                d?.documentType?.includes("PLUMBER") ? "WS_PLUMBER_REPORT" :
@@ -1156,6 +1165,18 @@ export const WSSearch = {
         originalDoc: d,
       };
     });
+
+    const employeeIdDocValue = employeeIdDoc ? {
+      title: "WS_DJB_EMPLOYEE_ID",
+      categoryLabel: "Employee ID Card",
+      documentType: employeeIdDoc?.documentType || "OWNER.DJB_EMPLOYEE_ID",
+      documentUid: "",
+      documentNumber: "",
+      fileStoreId: employeeIdDoc?.fileStoreId,
+      numberLabel: "",
+      isPhoto: false,
+      originalDoc: employeeIdDoc,
+    } : null;
 
     const documentDetails = {
       title: "WS_DOCUMENTS",
@@ -1220,6 +1241,7 @@ export const WSSearch = {
                   originalDoc: ownershipDoc,
                 }
                 : null,
+              employeeIdDocValue,
               ...(isMutationApp ? [] : otherDocsValues),
               signatureDoc
                 ? {
@@ -1446,16 +1468,98 @@ export const WSSearch = {
       },
     };
 
-    const djbEmployeeDetails = (wsDataDetails?.additionalDetails?.isDjbEmployee === true || String(wsDataDetails?.additionalDetails?.isDjbEmployee) === "true")
-      ? {
-        title: "WS_DJB_EMPLOYEE",
-        asSectionHeader: true,
-        values: [
-          { title: "WS_EMPLOYEE_ID", value: wsDataDetails?.additionalDetails?.employeeId || t("NA") },
-          { title: "WS_EMPLOYEE_DESIGNATION", value: wsDataDetails?.additionalDetails?.designation || t("NA") },
-        ],
-      }
-      : null;
+    const isDivyangjan =
+      wsDataDetails?.additionalDetails?.isDivyangjan === true ||
+      String(wsDataDetails?.additionalDetails?.isDivyangjan) === "true" ||
+      String(wsDataDetails?.additionalDetails?.isDivyangjan).toLowerCase() === "yes";
+
+    const divyangjanLabel =
+      t("WS_DIVYANGJAN") && t("WS_DIVYANGJAN") !== "WS_DIVYANGJAN"
+        ? t("WS_DIVYANGJAN")
+        : "Divyangjan/Person with Disability?";
+
+    const divyangjanDetails = {
+      title: divyangjanLabel,
+      asSectionHeader: true,
+      values: [
+        {
+          title: divyangjanLabel,
+          value: isDivyangjan ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO"),
+        },
+      ],
+    };
+
+    const isDjbEmp =
+      wsDataDetails?.additionalDetails?.isDjbEmployee === true ||
+      String(wsDataDetails?.additionalDetails?.isDjbEmployee) === "true" ||
+      String(wsDataDetails?.additionalDetails?.isDjbEmployee).toLowerCase() === "yes";
+
+    const djbEmployeeLabel =
+      t("WS_DJB_EMPLOYEE") && t("WS_DJB_EMPLOYEE") !== "WS_DJB_EMPLOYEE"
+        ? t("WS_DJB_EMPLOYEE")
+        : "DJB Employee";
+
+    const djbEmployeeDetails = {
+      title: djbEmployeeLabel,
+      asSectionHeader: true,
+      values: isDjbEmp
+        ? [
+            {
+              title: djbEmployeeLabel,
+              value: t("CORE_COMMON_YES"),
+            },
+            {
+              title:
+                t("WS_EMPLOYEE_ID") && t("WS_EMPLOYEE_ID") !== "WS_EMPLOYEE_ID"
+                  ? t("WS_EMPLOYEE_ID")
+                  : "Employee ID",
+              value: wsDataDetails?.additionalDetails?.employeeId || t("NA"),
+            },
+            {
+              title:
+                t("WS_EMPLOYEE_DESIGNATION") && t("WS_EMPLOYEE_DESIGNATION") !== "WS_EMPLOYEE_DESIGNATION"
+                  ? t("WS_EMPLOYEE_DESIGNATION")
+                  : "Employee Designation",
+              value: wsDataDetails?.additionalDetails?.designation || t("NA"),
+            },
+          ]
+        : [
+            {
+              title: djbEmployeeLabel,
+              value: t("CORE_COMMON_NO"),
+            },
+          ],
+    };
+
+    const hasRwh =
+      wsDataDetails?.additionalDetails?.hasRainWaterHarvestingCertificate === true ||
+      String(wsDataDetails?.additionalDetails?.hasRainWaterHarvestingCertificate) === "true" ||
+      String(wsDataDetails?.additionalDetails?.hasRainWaterHarvestingCertificate).toLowerCase() === "yes" ||
+      wsDataDetails?.additionalDetails?.isRainwaterHarvesting === true ||
+      String(wsDataDetails?.additionalDetails?.isRainwaterHarvesting) === "true" ||
+      String(wsDataDetails?.additionalDetails?.isRainwaterHarvesting).toLowerCase() === "yes" ||
+      wsDataDetails?.additionalDetails?.rainWaterHarvesting?.hasCertificate === true ||
+      String(wsDataDetails?.additionalDetails?.rainWaterHarvesting?.hasCertificate) === "true" ||
+      String(wsDataDetails?.additionalDetails?.rainWaterHarvesting?.hasCertificate).toLowerCase() === "yes" ||
+      wsDataDetails?.rainWaterHarvesting?.hasCertificate === true ||
+      String(wsDataDetails?.rainWaterHarvesting?.hasCertificate) === "true" ||
+      String(wsDataDetails?.rainWaterHarvesting?.hasCertificate).toLowerCase() === "yes";
+
+    const rwhLabel =
+      t("WS_RAIN_WATER_HARVESTING_CERTIFICATE") && t("WS_RAIN_WATER_HARVESTING_CERTIFICATE") !== "WS_RAIN_WATER_HARVESTING_CERTIFICATE"
+        ? t("WS_RAIN_WATER_HARVESTING_CERTIFICATE")
+        : "Rain Water Harvesting Certificate";
+
+    const rainWaterHarvestingDetails = {
+      title: rwhLabel,
+      asSectionHeader: true,
+      values: [
+        {
+          title: rwhLabel,
+          value: hasRwh ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO"),
+        },
+      ],
+    };
 
     const bankDetails = {
       title: "WS_BANK_DETAILS",
@@ -1503,10 +1607,12 @@ export const WSSearch = {
       applicationHeaderDetails,
       feeEstimation,
       AdditionalDetailsByWS,
-      ...(djbEmployeeDetails ? [djbEmployeeDetails] : []),
       connectionHolderDetails,
       propertyDetails,
       propertyWaterConnectionUseDetails,
+      divyangjanDetails,
+      djbEmployeeDetails,
+      rainWaterHarvestingDetails,
       ...(isMutationApp ? [] : [bankDetails]),
       documentDetails,
     ];
@@ -1839,14 +1945,6 @@ export const WSSearch = {
       values:
         wsDataDetails?.connectionHolders?.length > 0
           ? [
-                        {
-              title: "WS_DIVYANGJAN",
-              value: wsDataDetails?.additionalDetails?.isDivyangjan === true || String(wsDataDetails?.additionalDetails?.isDivyangjan) === "true" ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO"),
-            },
-            {
-              title: "WS_DJB_EMPLOYEE",
-              value: wsDataDetails?.additionalDetails?.isDjbEmployee === true || String(wsDataDetails?.additionalDetails?.isDjbEmployee) === "true" ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO"),
-            },
             { title: "WS_OWN_DETAIL_NAME",
               value: wsDataDetails?.connectionHolders?.[0]?.name || t("NA"),
               oldValue:
@@ -2653,6 +2751,7 @@ export const WSSearch = {
         title: "WS_DJB_EMPLOYEE",
         asSectionHeader: true,
         values: [
+          { title: "WS_DJB_EMPLOYEE", value: t("CORE_COMMON_YES") },
           { title: "WS_EMPLOYEE_ID", value: wsDataDetails?.additionalDetails?.employeeId || t("NA") },
           { title: "WS_EMPLOYEE_DESIGNATION", value: wsDataDetails?.additionalDetails?.designation || t("NA") },
         ],
@@ -3058,14 +3157,6 @@ export const WSSearch = {
       values:
         wsDataDetails?.connectionHolders != null && wsDataDetails?.connectionHolders.length > 0
           ? [
-                        {
-              title: "WS_DIVYANGJAN",
-              value: wsDataDetails?.additionalDetails?.isDivyangjan === true || String(wsDataDetails?.additionalDetails?.isDivyangjan) === "true" ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO"),
-            },
-            {
-              title: "WS_DJB_EMPLOYEE",
-              value: wsDataDetails?.additionalDetails?.isDjbEmployee === true || String(wsDataDetails?.additionalDetails?.isDjbEmployee) === "true" ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO"),
-            },
             { title: "WS_OWN_DETAIL_NAME",
               value: wsDataDetails?.connectionHolders?.[0]?.name || t("NA"),
               privacy: {
@@ -3231,6 +3322,7 @@ export const WSSearch = {
         title: "WS_DJB_EMPLOYEE",
         asSectionHeader: true,
         values: [
+          { title: "WS_DJB_EMPLOYEE", value: t("CORE_COMMON_YES") },
           { title: "WS_EMPLOYEE_ID", value: wsDataDetails?.additionalDetails?.employeeId || t("NA") },
           { title: "WS_EMPLOYEE_DESIGNATION", value: wsDataDetails?.additionalDetails?.designation || t("NA") },
         ],
@@ -3397,14 +3489,6 @@ export const WSSearch = {
       values:
         wsDataDetails?.connectionHolders?.length > 0
           ? [
-                        {
-              title: "WS_DIVYANGJAN",
-              value: wsDataDetails?.additionalDetails?.isDivyangjan === true || String(wsDataDetails?.additionalDetails?.isDivyangjan) === "true" ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO"),
-            },
-            {
-              title: "WS_DJB_EMPLOYEE",
-              value: wsDataDetails?.additionalDetails?.isDjbEmployee === true || String(wsDataDetails?.additionalDetails?.isDjbEmployee) === "true" ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO"),
-            },
             { title: "WS_OWN_DETAIL_NAME",
               value: wsDataDetails?.connectionHolders?.[0]?.name || t("NA"),
               privacy: {
@@ -3629,6 +3713,7 @@ export const WSSearch = {
         title: "WS_DJB_EMPLOYEE",
         asSectionHeader: true,
         values: [
+          { title: "WS_DJB_EMPLOYEE", value: t("CORE_COMMON_YES") },
           { title: "WS_EMPLOYEE_ID", value: wsDataDetails?.additionalDetails?.employeeId || t("NA") },
           { title: "WS_EMPLOYEE_DESIGNATION", value: wsDataDetails?.additionalDetails?.designation || t("NA") },
         ],

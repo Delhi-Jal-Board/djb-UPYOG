@@ -60,6 +60,15 @@ const PropertyLocationDetails = ({
   });
 
   const isPropertyFound = window.location.href.includes("ws/old-application") || window.location.href.includes("/edit-property/") || window.location.href.includes("/edit-application");
+  const lastCptKeyRef = React.useRef(null);
+  const lastSentAddressRef = React.useRef(null);
+  const onSelectRef = React.useRef(onSelect);
+  const onChangeRef = React.useRef(props?.props?.onChange);
+
+  useEffect(() => {
+    onSelectRef.current = onSelect;
+    onChangeRef.current = props?.props?.onChange;
+  });
 
   useEffect(() => {
     if (props.register) {
@@ -71,6 +80,13 @@ const PropertyLocationDetails = ({
   useEffect(() => {
     if (formDataProp?.cpt?.details) {
       const details = formDataProp.cpt.details;
+      const propId = details?.propertyId || details?.id || "";
+      const modTime = details?.auditDetails?.lastModifiedTime || details?.auditDetails?.createdTime || "";
+      const cptKey = `${propId}_${modTime}`;
+      if (lastCptKeyRef.current === cptKey) {
+        return;
+      }
+      lastCptKeyRef.current = cptKey;
       const addressData = details.address || {};
       const additionalDetails = details.additionalDetails || {};
 
@@ -178,6 +194,8 @@ const PropertyLocationDetails = ({
         },
       });
     } else if (formDataProp?.cpt === null) {
+      if (lastCptKeyRef.current === "CLEARED") return;
+      lastCptKeyRef.current = "CLEARED";
       const clearedData = {
         // addressType: "",
         pincode: "",
@@ -206,23 +224,41 @@ const PropertyLocationDetails = ({
         address: {},
       };
       setFormData(clearedData);
-      onSelect(config?.key || "address", clearedData);
+      if (typeof onSelectRef.current === "function") {
+        onSelectRef.current(config?.key || "address", clearedData);
+      }
     }
   }, [formDataProp?.cpt?.details, formDataProp?.cpt]);
+
+  const handleAddressSelect = React.useCallback(
+    (key, data) => {
+      const dataStr = JSON.stringify(data);
+      if (lastSentAddressRef.current === dataStr) {
+        return;
+      }
+      lastSentAddressRef.current = dataStr;
+
+      setFormData((prev) => {
+        const updated = { ...prev, ...data };
+        if (JSON.stringify(prev) === JSON.stringify(updated)) return prev;
+        return updated;
+      });
+
+      if (onChangeRef.current) {
+        onChangeRef.current(data);
+      }
+      if (typeof onSelectRef.current === "function") {
+        onSelectRef.current(key, data, { shouldDirty: true, shouldValidate: true });
+      }
+    },
+    []
+  );
 
   return (
     <AddressDetails
       t={t}
       formData={formData}
-      onSelect={(key, data) => {
-        setFormData((prev) => ({ ...prev, ...data }));
-        if (props?.props?.onChange) {
-          props.props.onChange(data);
-        }
-        if (typeof onSelect === "function") {
-          onSelect(key, data, { shouldDirty: true, shouldValidate: true });
-        }
-      }}
+      onSelect={handleAddressSelect}
       config={{ isCollapsible: true, ...config }}
       isEdit={isEdit}
       // showZRO={hideZRO ? false : true}

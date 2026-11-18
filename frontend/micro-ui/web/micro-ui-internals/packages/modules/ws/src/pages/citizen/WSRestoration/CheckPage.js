@@ -60,7 +60,19 @@ const CheckPage = () => {
   const closeToastOfError = () => { setShowToast(null); };
 
   const onSubmit = async (data) => {
-    const serviceType = value?.serviceType || value?.applicationData?.serviceType || value?.applicationData?.additionalDetails?.serviceType?.code || (value?.applicationData?.sewerage ? "SEWERAGE" : "WATER");
+    const appData = value?.applicationData || value || {};
+    const isWater =
+      appData?.water === true ||
+      appData?.service?.toLowerCase() === "water" ||
+      appData?.connectionNo?.includes("WS") ||
+      appData?.applicationNo?.includes("WS") ||
+      value?.connectionNo?.includes("WS") ||
+      value?.serviceType?.toUpperCase() === "WATER" ||
+      value?.serviceType?.toUpperCase() === "WS" ||
+      appData?.additionalDetails?.serviceType?.code === "WATER" ||
+      !appData?.connectionNo?.includes("SW");
+
+    const serviceType = isWater ? "WATER" : "SEWERAGE";
     const payload = await createPayloadOfWSDisconnection(data, { applicationData: value }, serviceType);
     if (payload?.WaterConnection?.water) {
       payload.WaterConnection.isdisconnection = false;

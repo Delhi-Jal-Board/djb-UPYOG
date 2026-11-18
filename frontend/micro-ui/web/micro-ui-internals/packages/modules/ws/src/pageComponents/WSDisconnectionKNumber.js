@@ -35,7 +35,8 @@ const WSDisconnectionKNumber = ({ userType, flow = "disconnection" }) => {
 
     setIsLoading(true);
     try {
-      const tenantId = Digit.ULBService.getCurrentTenantId() || "dl";
+      const currentTenant = Digit.ULBService.getCurrentTenantId();
+      const tenantId = currentTenant && currentTenant !== "dl" ? currentTenant : (Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code || "dl.djb");
       const params = { connectionNumber: trimmed, searchType: "CONNECTION", isConnectionSearch: true };
 
       const isEligibleConnection = (candidate) => {
@@ -46,15 +47,23 @@ const WSDisconnectionKNumber = ({ userType, flow = "disconnection" }) => {
       };
 
       let detectedServiceType = "WATER";
-      const wsResponse = await Digit.WSService.search({ tenantId, filters: params, businessService: "WS" }).catch(() => null);
-      const waterResponse = wsResponse?.data || wsResponse;
+      let wsResponse = await Digit.WSService.search({ tenantId, filters: params, businessService: "WS" }).catch(() => null);
+      let waterResponse = wsResponse?.data || wsResponse;
       let connection = waterResponse?.WaterConnection?.find(isEligibleConnection) || (!isReconnection ? waterResponse?.WaterConnection?.[0] : null);
+
+      if (!connection && tenantId !== "dl") {
+        wsResponse = await Digit.WSService.search({ tenantId: "dl", filters: params, businessService: "WS" }).catch(() => null);
+        waterResponse = wsResponse?.data || wsResponse;
+        connection = waterResponse?.WaterConnection?.find(isEligibleConnection) || (!isReconnection ? waterResponse?.WaterConnection?.[0] : null);
+      }
 
       if (!connection) {
         const swResponse = await Digit.WSService.search({ tenantId, filters: params, businessService: "SW" }).catch(() => null);
         const sewerageResponse = swResponse?.data || swResponse;
         connection = sewerageResponse?.SewerageConnections?.find(isEligibleConnection) || (!isReconnection ? sewerageResponse?.SewerageConnections?.[0] : null);
-        if (connection) detectedServiceType = "SEWERAGE";
+        if (connection) {
+          detectedServiceType = connection?.connectionNo?.includes("WS") || connection?.water === true ? "WATER" : "SEWERAGE";
+        }
       }
 
       if (!connection) {
@@ -95,11 +104,20 @@ const WSDisconnectionKNumber = ({ userType, flow = "disconnection" }) => {
 
       // Persist connection data for the next step
       const existingData = Digit.SessionStorage.get("WS_DISCONNECTION") || {};
-      connection.serviceType = detectedServiceType;
+      const isWaterConn =
+        detectedServiceType === "WATER" ||
+        connection?.water === true ||
+        connection?.service?.toLowerCase() === "water" ||
+        connection?.connectionNo?.includes("WS") ||
+        connection?.applicationNo?.includes("WS") ||
+        !connection?.connectionNo?.includes("SW");
+
+      const finalServiceType = isWaterConn ? "WATER" : "SEWERAGE";
+      connection.serviceType = finalServiceType;
       Digit.SessionStorage.set("WS_DISCONNECTION", {
         ...existingData,
         kNumber: trimmed,
-        serviceType: detectedServiceType,
+        serviceType: finalServiceType,
         applicationData: connection,
         connectionNo: connection?.connectionNo,
       });

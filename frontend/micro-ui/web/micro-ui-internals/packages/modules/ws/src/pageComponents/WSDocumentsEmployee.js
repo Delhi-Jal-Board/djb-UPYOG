@@ -164,17 +164,18 @@ const WSDocumentsEmployee = ({
     formData?.additionalDetails?.isRainwaterHarvesting === true
   );
 
-  const isStpMandatory = !!(
-    formData?.sewerTreatmentPlant?.hasCertificate === true ||
-    String(formData?.sewerTreatmentPlant?.hasCertificate) === "true" ||
-    formData?.sewerTreatmentPlant?.hasStp === true ||
-    String(formData?.sewerTreatmentPlant?.hasStp) === "true" ||
-    formData?.sewerTreatmentPlant?.isSewerTreatmentPlant === true ||
-    String(formData?.sewerTreatmentPlant?.isSewerTreatmentPlant) === "true" ||
-    formData?.additionalDetails?.hasSewerTreatmentPlant === true ||
-    formData?.additionalDetails?.hasStp === true ||
-    formData?.additionalDetails?.isSewerTreatmentPlant === true
-  );
+  // const isStpMandatory = !!(
+  //   formData?.sewerTreatmentPlant?.hasCertificate === true ||
+  //   String(formData?.sewerTreatmentPlant?.hasCertificate) === "true" ||
+  //   formData?.sewerTreatmentPlant?.hasStp === true ||
+  //   String(formData?.sewerTreatmentPlant?.hasStp) === "true" ||
+  //   formData?.sewerTreatmentPlant?.isSewerTreatmentPlant === true ||
+  //   String(formData?.sewerTreatmentPlant?.isSewerTreatmentPlant) === "true" ||
+  //   formData?.additionalDetails?.hasSewerTreatmentPlant === true ||
+  //   formData?.additionalDetails?.hasStp === true ||
+  //   formData?.additionalDetails?.isSewerTreatmentPlant === true
+  // );
+  const isStpMandatory = false;
 
   const sessionDjb = Digit.SessionStorage.get("PT_CREATE_EMP_WS_NEW_FORM")?.djbEmployee;
   const djbData = formData?.djbEmployee || sessionDjb || formData?.additionalDetails;
@@ -888,7 +889,8 @@ function SelectDocument({
 
   const isSelectedRwh = isRwhDocType(selectedDocument);
   const isSelectedStp = isStpDocType(selectedDocument);
-  const showValidityDate = isOther && (isSelectedRwh || isSelectedStp || (isRwhMandatory && !hasRwhUploaded) || (isStpMandatory && !hasStpUploaded));
+  // const showValidityDate = isOther && (isSelectedRwh || isSelectedStp || (isRwhMandatory && !hasRwhUploaded) || (isStpMandatory && !hasStpUploaded));
+  const showValidityDate = false;
 
   const isOtherDocumentsRemark = Boolean(
     isOther &&
@@ -1388,7 +1390,7 @@ function SelectDocument({
         </div>
       ) : null}
 
-      {showValidityDate && (
+      {/* {showValidityDate && (
         <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
           <CardLabel style={{ margin: 0 }}>
             {t("WS_VALIDITY_UP_TO") || "Validity up to"}
@@ -1403,7 +1405,7 @@ function SelectDocument({
             </div>
           )}
         </div>
-      )}
+      )} */}
 
       {doc?.code !== "OWNER.APPLICANTPHOTO" && (
         <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
@@ -1701,11 +1703,11 @@ function SelectDocument({
               {uploadedDocument.fileName ? ` - ${uploadedDocument.fileName}` : ""}
             </span>
             {uploadedDocument.documentNumber && <span>{uploadedDocument.documentNumber}</span>}
-            {(uploadedDocument.validityDate || uploadedDocument.validityUpTo) && (
+            {/* {(uploadedDocument.validityDate || uploadedDocument.validityUpTo) && (
               <span style={{ fontSize: "13px", color: "#333" }}>
                 ({t("WS_VALIDITY_UP_TO") || "Validity up to"}: {uploadedDocument.validityDate || uploadedDocument.validityUpTo})
               </span>
-            )}
+            )} */}
             <button
               type="button"
               onClick={() => viewDocument(uploadedDocument.fileStoreId)}

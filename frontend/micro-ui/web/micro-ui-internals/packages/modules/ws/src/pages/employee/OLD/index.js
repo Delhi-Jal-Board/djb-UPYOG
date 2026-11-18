@@ -64,9 +64,9 @@ const OLDApplication = () => {
     { label: "WS_COMMON_CONNECTION_HOLDER_DETAILS_HEADER" },
     { label: "Are you a Divyangjan/Person with Disability?" },
     { label: "WS_DJB_EMPLOYEE" },
-    { label: "WS_BANK_DETAILS" },
     { label: "Rain Water Harvesting Certificate" },
-    { label: "Sewer Treatment Plant (STP)" },
+    { label: "WS_BANK_DETAILS" },
+    // { label: "Sewer Treatment Plant (STP)" },
     { label: "PT_LOCATION_DETAILS" },
     { label: "WS_PROPERTY_AND_WATER_CONNECTION_USE_DETAILS" },
     // ...(isCitizen ? [] : [{ label: "WS_DJB_EMPLOYEE" }]),
@@ -139,9 +139,9 @@ const OLDApplication = () => {
       "WSConnectionHolderDetails",
       "WSDivyangjan",
       "WSDjbEmployee",
-      "WSBankDetails",
       "WSRainWaterHarvesting",
-      "WSSewerTreatmentPlant",
+      "WSBankDetails",
+      // "WSSewerTreatmentPlant",
       "WSPropertyLocationDetails",
       "PropertyWaterConnection",
       "WSActivationPlumberDetails",
@@ -241,21 +241,21 @@ const OLDApplication = () => {
             },
           ],
         });
-      } else if (compName === "WSSewerTreatmentPlant") {
-        reorderedBody.push({
-          isCreateConnection: true,
-          body: [
-            {
-              type: "component",
-              key: "sewerTreatmentPlant",
-              component: "WSSewerTreatmentPlant",
-              withoutLabel: true,
-              texts: {
-                header: "Sewer Treatment Plant (STP)",
-              },
-            },
-          ],
-        });
+      // } else if (compName === "WSSewerTreatmentPlant") {
+      //   reorderedBody.push({
+      //     isCreateConnection: true,
+      //     body: [
+      //       {
+      //         type: "component",
+      //         key: "sewerTreatmentPlant",
+      //         component: "WSSewerTreatmentPlant",
+      //         withoutLabel: true,
+      //         texts: {
+      //           header: "Sewer Treatment Plant (STP)",
+      //         },
+      //       },
+      //     ],
+      //   });
       } else if (compName === "WSBankDetails") {
         reorderedBody.push({
           isCreateConnection: true,

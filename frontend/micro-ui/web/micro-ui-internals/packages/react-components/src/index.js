@@ -287,7 +287,7 @@ import {
   FaFileAlt,
 } from "./atoms/svgindex";
 import { FormComposer } from "./hoc/FormComposer";
-import { FormComposerV2 } from "./hoc/FormComposerV2";
+// import { FormComposerV2 } from "./hoc/FormComposerV2";
 import { FilterForm, FilterFormField } from "./molecules/FilterForm";
 import { SearchField, SearchForm } from "./molecules/SearchForm";
 
@@ -406,7 +406,7 @@ export {
   FinanceChartIcon,
   FirenocIcon,
   FormComposer,
-  FormComposerV2,
+  // FormComposerV2,
   FormStep,
   FSMIcon,
   GalleryIcon,

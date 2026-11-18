@@ -1444,7 +1444,7 @@ export const convertToEditWSUpdate = (data) => {
       })(),
       dueVerification: data?.isEditApplication ? data?.dueVerification : waterResult?.dueVerification,
       water: data?.applicationType?.includes("WATER") ? true : false,
-      sewerage: data?.applicationType?.includes("WATER") ? true : false,
+      sewerage: data?.applicationType?.includes("SEWERAGE") || data?.applicationType?.includes("SW") ? true : false,
       service: data?.isEditApplication ? data?.serviceName?.code : waterResult?.serviceName?.code,
       reviewDocData: [
         // {
@@ -1722,8 +1722,8 @@ export const convertToEditSWUpdate = (data) => {
         };
       })(),
       dueVerification: data?.isEditApplication ? data?.dueVerification : SewerageResult?.dueVerification,
-      water: data?.applicationType?.includes("WATER") ? true : false,
-      sewerage: data?.applicationType?.includes("WATER") ? true : false,
+      water: data?.applicationType?.includes("WATER") || data?.applicationType?.includes("WS") ? true : false,
+      sewerage: data?.applicationType?.includes("SEWERAGE") || data?.applicationType?.includes("SW") ? true : false,
       service: data?.isEditApplication ? data?.serviceName?.code : SewerageResult?.serviceName?.code,
       reviewDocData: [
         // {
@@ -1980,7 +1980,13 @@ export const createPayloadOfWSDisconnection = async (data, storeData, service) =
   //   if (storeData?.applicationData?.meterId) swPayload.SewerageConnection.meterId = storeData?.applicationData?.meterId;
   // }
 
-  let returnObject = service?.toUpperCase() === "WATER" ? wsPayload : swPayload;
+  const isSewerageService =
+    (service?.toUpperCase() === "SEWERAGE" || service?.toUpperCase() === "SW") &&
+    !storeData?.applicationData?.water &&
+    !storeData?.applicationData?.connectionNo?.includes("WS") &&
+    !storeData?.applicationData?.applicationNo?.includes("WS");
+
+  let returnObject = isSewerageService ? swPayload : wsPayload;
   /* use customiseCreateFormData hook to make some chnages to the water object */
   returnObject = Digit?.Customizations?.WS?.customiseCreatePayloadOfWSDisconnection
     ? Digit?.Customizations?.WS?.customiseCreatePayloadOfWSDisconnection(data, returnObject, service)
@@ -2104,7 +2110,13 @@ export const createPayloadOfWSReconnection = async (data, storeData, service) =>
   //   if (storeData?.applicationData?.meterId) swPayload.SewerageConnection.meterId = storeData?.applicationData?.meterId;
   // }
 
-  let returnObject = service?.toUpperCase() === "WATER" ? wsPayload : swPayload;
+  const isSewerageService =
+    (service?.toUpperCase() === "SEWERAGE" || service?.toUpperCase() === "SW") &&
+    !storeData?.applicationData?.water &&
+    !storeData?.applicationData?.connectionNo?.includes("WS") &&
+    !storeData?.applicationData?.applicationNo?.includes("WS");
+
+  let returnObject = isSewerageService ? swPayload : wsPayload;
   /* use customiseCreateFormData hook to make some chnages to the water object */
   // returnObject = Digit?.Customizations?.WS?.customiseCreatePayloadOfWSDisconnection
   //   ? Digit?.Customizations?.WS?.customiseCreatePayloadOfWSDisconnection(data, returnObject, service)
@@ -2171,7 +2183,13 @@ export const createPayloadOfWSReSubmitDisconnection = async (data, storeData, se
   //   if (storeData?.applicationData?.meterId) swPayload.SewerageConnection.meterId = storeData?.applicationData?.meterId;
   // }
 
-  let returnObject = service?.toUpperCase() === "WATER" ? wsPayload : swPayload;
+  const isSewerageService =
+    (service?.toUpperCase() === "SEWERAGE" || service?.toUpperCase() === "SW") &&
+    !storeData?.applicationData?.water &&
+    !storeData?.applicationData?.connectionNo?.includes("WS") &&
+    !storeData?.applicationData?.applicationNo?.includes("WS");
+
+  let returnObject = isSewerageService ? swPayload : wsPayload;
   /* use customiseCreateFormData hook to make some chnages to the water object */
   returnObject = Digit?.Customizations?.WS?.customiseCreatePayloadOfWSReSubmitDisconnection
     ? Digit?.Customizations?.WS?.customiseCreatePayloadOfWSReSubmitDisconnection(data, returnObject, service)

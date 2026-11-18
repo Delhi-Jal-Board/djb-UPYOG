@@ -488,8 +488,7 @@ const EditApplication = ({ parentRoute }) => {
       (!prevProp ||
         prevProp.propertyId !== latestProperty.propertyId ||
         prevProp.auditDetails?.lastModifiedTime !== latestProperty.auditDetails?.lastModifiedTime ||
-        JSON.stringify(prevProp) !== JSON.stringify(latestProperty) ||
-        !params?.waterConnection?.useDetails?.NumberofDwellingUnits);
+        (JSON.stringify(prevProp) !== JSON.stringify(latestProperty) && prevProp.propertyId === latestProperty.propertyId));
 
     if (
       isAppLoaded &&
