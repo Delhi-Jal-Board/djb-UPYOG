@@ -215,6 +215,7 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
   const djbEmployee = data?.djbEmployee?.djbEmployee || data?.djbEmployee || {};
   const disability = data?.disability?.disability || data?.disability || data?.additionalDetails || {};
   const rainWaterHarvesting = data?.rainWaterHarvesting?.rainWaterHarvesting || data?.rainWaterHarvesting || data?.additionalDetails || {};
+  const sewerTreatmentPlant = data?.sewerTreatmentPlant?.sewerTreatmentPlant || data?.sewerTreatmentPlant || data?.additionalDetails || {};
 
   return (
     <React.Fragment>
@@ -424,6 +425,15 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
             <Row
               label={t("Rain Water Harvesting Certificate")}
               text={rainWaterHarvesting?.hasCertificate || rainWaterHarvesting?.isRainwaterHarvesting ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}
+              actionButton={<ActionButton onClick={onEdit} />}
+            />
+          </StatusTable>
+
+          <CardSubHeader>{t("Sewer Treatment Plant (STP)")}</CardSubHeader>
+          <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
+            <Row
+              label={t("Sewer Treatment Plant (STP)")}
+              text={sewerTreatmentPlant?.hasCertificate || sewerTreatmentPlant?.hasStp || sewerTreatmentPlant?.isSewerTreatmentPlant ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}
               actionButton={<ActionButton onClick={onEdit} />}
             />
           </StatusTable>
@@ -638,6 +648,12 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
                   text={checkForNA(doc?.documentUid)}
                   actionButton={index === 0 ? <ActionButton onClick={onEdit} /> : null}
                 />
+                {(doc?.validityDate || doc?.validityUpTo || doc?.additionalDetails?.validityDate) && (
+                  <Row
+                    label={t("WS_VALIDITY_UP_TO") || "Validity up to"}
+                    text={checkForNA(doc?.validityDate || doc?.validityUpTo || doc?.additionalDetails?.validityDate)}
+                  />
+                )}
                 <Row
                   // label={t("WS_VIEW_DOCUMENT")}
                   text={

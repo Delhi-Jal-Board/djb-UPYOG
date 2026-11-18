@@ -2267,10 +2267,18 @@ const NewApplication = () => {
                     control={control}
                     name="rainWaterHarvesting.hasCertificate"
                     render={(props) => (
-                      <CheckBox
-                        checked={!!props.value}
-                        label="Rain Water Harvesting Certificate"
-                        onChange={(event) => props.onChange(event.target.checked)}
+                      <RadioButtons
+                        className="form-field"
+                        style={{ display: "flex", gap: "2rem", alignItems: "center" }}
+                        name="rainWaterHarvestingRadio"
+                        options={[
+                          { i18nKey: "CORE_COMMON_YES", code: true },
+                          { i18nKey: "CORE_COMMON_NO", code: false },
+                        ]}
+                        optionsKey="i18nKey"
+                        selectedOption={props.value ? { i18nKey: "CORE_COMMON_YES", code: true } : { i18nKey: "CORE_COMMON_NO", code: false }}
+                        onSelect={(e) => props.onChange(e.code)}
+                        t={t}
                       />
                     )}
                   />
