@@ -116,6 +116,9 @@ public class WSConfiguration {
     @Value("${pinbot.template.name.connection.activated:new_water_connection_activated}")
     private String connectionActivatedTemplateName;
 
+    @Value("${pinbot.template.name.disconnection.approved:dc_application_approved_notice}")
+    private String disconnectionApprovedTemplateName;
+
     @Value("${notification.sms.enabled}")
     private Boolean isSMSEnabled;
 

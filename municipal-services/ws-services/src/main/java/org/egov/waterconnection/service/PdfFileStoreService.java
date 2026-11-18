@@ -69,6 +69,9 @@ public class PdfFileStoreService {
 	@Autowired
 	private MultiStateInstanceUtil centralInstanceUtil;
 
+	@Autowired
+	private org.egov.waterconnection.repository.SiteInspectionRepository siteInspectionRepository;
+
 	String tenantIdReplacer = "$tenantId";
 	String fileStoreIdsReplacer = "$.filestoreIds";
 	String urlReplacer = "url";
@@ -236,6 +239,137 @@ public class PdfFileStoreService {
 		}
 	}
 
+	/**
+	 * Get fileStore Id for Disconnection Notice
+	 *
+	 * @param waterConnectionRequest WaterConnectionRequest Object
+	 * @param property Property Object
+	 * @param applicationKey ApplicationKey
+	 * @return file store id
+	 */
+	public String getDisconnectionFileStoreId(WaterConnectionRequest waterConnectionRequest, Property property, String applicationKey) {
+		try {
+			JSONObject waterObject = mapper.convertValue(waterConnectionRequest.getWaterConnection(), JSONObject.class);
+
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+			LocalDate today = LocalDate.now();
+			String disconnectionDate = today.format(formatter);
+
+			org.egov.waterconnection.web.models.WaterConnection connection = waterConnectionRequest.getWaterConnection();
+
+			// KNO / Connection No
+			String kno = connection.getConnectionNo();
+			if (org.apache.commons.lang3.StringUtils.isEmpty(kno)) {
+				kno = connection.getOldConnectionNo();
+			}
+			if (org.apache.commons.lang3.StringUtils.isEmpty(kno)) {
+				kno = connection.getApplicationNo();
+			}
+			waterObject.put("kno", kno);
+			waterObject.put("applicationNo", connection.getApplicationNo());
+			waterObject.put("disconnectionDate", disconnectionDate);
+
+			// Disconnection Reason
+			String reason = connection.getDisconnectionReason();
+			if (org.apache.commons.lang3.StringUtils.isEmpty(reason)) {
+				reason = "Consumer Request / Meter Disconnection";
+			}
+			waterObject.put("disconnectionReason", reason);
+
+			// Consumer Name and Address
+			String consumerName = "Consumer";
+			StringBuilder addressBuilder = new StringBuilder();
+			if (property != null) {
+				if (!CollectionUtils.isEmpty(property.getOwners()) && property.getOwners().get(0) != null) {
+					consumerName = property.getOwners().get(0).getName();
+				}
+				if (property.getAddress() != null) {
+					org.egov.waterconnection.web.models.Address addr = property.getAddress();
+					if (!org.apache.commons.lang3.StringUtils.isEmpty(addr.getDoorNo())) addressBuilder.append(addr.getDoorNo()).append(", ");
+					if (!org.apache.commons.lang3.StringUtils.isEmpty(addr.getBuildingName())) addressBuilder.append(addr.getBuildingName()).append(", ");
+					if (!org.apache.commons.lang3.StringUtils.isEmpty(addr.getStreet())) addressBuilder.append(addr.getStreet()).append(", ");
+					if (addr.getLocality() != null && !org.apache.commons.lang3.StringUtils.isEmpty(addr.getLocality().getName())) {
+						addressBuilder.append(addr.getLocality().getName()).append(", ");
+					}
+					if (!org.apache.commons.lang3.StringUtils.isEmpty(addr.getCity())) addressBuilder.append(addr.getCity());
+				}
+			}
+			String consumerAddress = addressBuilder.length() > 0 ? addressBuilder.toString() : "Delhi";
+			waterObject.put("consumerName", consumerName);
+			waterObject.put("consumerAddress", consumerAddress);
+
+			// Zone and ZRO
+			String zone = "Delhi Zone";
+			String zro = "ZRO Office";
+			if (property != null && property.getAddress() != null) {
+				if (!org.apache.commons.lang3.StringUtils.isEmpty(property.getAddress().getZone())) {
+					zone = property.getAddress().getZone();
+				} else if (property.getAddress().getLocality() != null && !org.apache.commons.lang3.StringUtils.isEmpty(property.getAddress().getLocality().getZone())) {
+					zone = property.getAddress().getLocality().getZone();
+				}
+				if (!org.apache.commons.lang3.StringUtils.isEmpty(property.getAddress().getZroLocation())) {
+					zro = property.getAddress().getZroLocation();
+				}
+			}
+			if (connection.getAdditionalDetails() != null) {
+				try {
+					Map<String, Object> addDetails = mapper.convertValue(connection.getAdditionalDetails(), Map.class);
+					if (addDetails.get("zone") != null) zone = String.valueOf(addDetails.get("zone"));
+					if (addDetails.get("zro") != null) zro = String.valueOf(addDetails.get("zro"));
+					else if (addDetails.get("zroLocation") != null) zro = String.valueOf(addDetails.get("zroLocation"));
+				} catch (Exception e) {
+					log.warn("Error reading zone/zro from additionalDetails", e);
+				}
+			}
+			if (!zone.toLowerCase().contains("zone")) zone = zone + " Zone";
+			if (!zro.toUpperCase().contains("ZRO")) zro = "ZRO " + zro;
+			waterObject.put("zone", zone);
+			waterObject.put("zro", zro);
+
+			// Plumber Details
+			waterObject.put("plumberName", "Sh. Ramesh Kumar");
+			waterObject.put("plumberCompany", "M/s Delhi Plumbing Solutions");
+			waterObject.put("plumberMobile", "9876543210");
+			waterObject.put("plumberLicense", "DJB/LIC/PLM/2026/0452");
+
+			String[] tenantDetails = (property != null && property.getTenantId() != null) 
+					? property.getTenantId().split("\\.") : connection.getTenantId().split("\\.");
+			String tenantId = (property != null && property.getTenantId() != null) 
+					? property.getTenantId() : connection.getTenantId();
+			if (tenantDetails.length > centralInstanceUtil.getStateLevelTenantIdLength()) {
+				tenantId = tenantDetails[0] + "." + tenantDetails[1];
+			}
+			if (tenantDetails.length > 1) {
+				waterObject.put(tenantName, tenantDetails[1].toUpperCase());
+			}
+			if (property != null) {
+				waterObject.put(propertyKey, property);
+			}
+			waterObject.put(service, "WATER");
+
+			String filestoreId = getFileStoreIdFromPDFService(waterObject, waterConnectionRequest.getRequestInfo(), tenantId, applicationKey);
+			if (!org.apache.commons.lang3.StringUtils.isEmpty(filestoreId)) {
+				try {
+					com.fasterxml.jackson.databind.node.ObjectNode updateDetails = mapper.createObjectNode();
+					updateDetails.put(WCConstants.DISCONNECTION_LETTER_FILESTORE_ID, filestoreId);
+					siteInspectionRepository.updateConnectionAdditionalDetails(
+							connection.getTenantId(),
+							connection.getId(),
+							connection.getApplicationNo(),
+							updateDetails,
+							waterConnectionRequest.getRequestInfo()
+					);
+				} catch (Exception e) {
+					log.warn("Could not directly update additionalDetails for disconnection filestore id: {}", e.getMessage());
+				}
+			}
+			return filestoreId;
+		} catch (Exception ex) {
+			log.error("Error generating Disconnection Notice PDF from PDF service: {}", ex.getMessage(), ex);
+			return null;
+		}
+	}
+
 	@SuppressWarnings("unchecked")
 	public void process(WaterConnectionRequest waterConnectionRequest, String topic) {
 
@@ -265,6 +399,15 @@ public class PdfFileStoreService {
 			String consentFileStoreId = getConsentFileStoreId(waterConnectionRequest, property, WCConstants.PDF_CONSENT_KEY);
 			if (consentFileStoreId != null) {
 				addDetail.put(WCConstants.CONSENT_LETTER_FILESTORE_ID, consentFileStoreId);
+			}
+		}
+
+		if ((WCConstants.APPROVE_DISCONNECTION_CONST.equalsIgnoreCase(action)
+				|| "APPROVE_FOR_DISCONNECTION".equalsIgnoreCase(action))
+				&& addDetail.getOrDefault(WCConstants.DISCONNECTION_LETTER_FILESTORE_ID, null) == null) {
+			String disconnectionFileStoreId = getDisconnectionFileStoreId(waterConnectionRequest, property, WCConstants.PDF_DISCONNECTION_KEY);
+			if (disconnectionFileStoreId != null) {
+				addDetail.put(WCConstants.DISCONNECTION_LETTER_FILESTORE_ID, disconnectionFileStoreId);
 			}
 		}
 
