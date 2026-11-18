@@ -7,87 +7,99 @@ import { APPLICATION_PATH } from "../utils";
 
 // This component WFApplicationTimeline displays the timeline of an application process.
 const WFApplicationTimeline = (props) => {
-  let bookingCode=props?.application?.bookingNo.split("-")[0]; // for selecting the Module code from booking number
   const { t } = useTranslation();
-  const businessService = bookingCode=="WT" 
-        ? "watertanker"
-          : bookingCode === "MT"
-          ? "mobileToilet"
-          : bookingCode === "TP"
-          ? "treePruning"
-          : "unknown"; // for selecting the Module code from booking number
+  const bookingNo = props?.application?.bookingNo || props?.id || "";
+  const bookingCode = bookingNo && typeof bookingNo === "string" ? bookingNo.split("-")[0]?.toUpperCase() : "";
 
-  // const moduleName = bookingCode=="WT" ? "request-service.water_tanker" : "request-service.mobile_toilet"; // for selecting the Module code from booking number
+  const businessService =
+    bookingCode === "WT"
+      ? "watertanker"
+      : bookingCode === "MT"
+      ? "mobileToilet"
+      : bookingCode === "TP"
+      ? "treePruning"
+      : "watertanker";
+
   const moduleName =
-  bookingCode === "WT"
-    ? "request-service.water_tanker"
-    : bookingCode === "MT"
-    ? "request-service.mobile_toilet"
-    : bookingCode === "TP"
-    ? "request-service.tree_pruning"
-    : "request-service.unknown";
-  
+    bookingCode === "WT"
+      ? "request-service.water_tanker"
+      : bookingCode === "MT"
+      ? "request-service.mobile_toilet"
+      : bookingCode === "TP"
+      ? "request-service.tree_pruning"
+      : "request-service.water_tanker";
+
+  const tenantId =
+    props?.application?.tenantId ||
+    props?.tenantId ||
+    Digit?.ULBService?.getCitizenCurrentTenant?.(true) ||
+    Digit?.ULBService?.getCurrentTenantId?.();
 
   const { isLoading, data } = Digit.Hooks.useWorkflowDetails({
-    tenantId: props.application?.tenantId,
-    id: props.application?.bookingNo,
+    tenantId,
+    id: bookingNo,
     moduleCode: businessService,
+    config: {
+      enabled: !!bookingNo && !!tenantId,
+    },
   });
-  
+
+  if (!bookingNo) {
+    return null;
+  }
 
   function OpenImage(thumbnailsToShow) {
-    window.open(thumbnailsToShow?.fullImage?.[0], "_blank");
+    if (thumbnailsToShow?.fullImage?.[0]) {
+      window.open(thumbnailsToShow.fullImage[0], "_blank");
+    }
   }
 
   const getTimelineCaptions = (checkpoint) => {
-    
-    if (checkpoint.state === "OPEN")
-    {
+    if (!checkpoint) return null;
+
+    if (checkpoint.state === "OPEN") {
       const caption = {
         date: checkpoint?.auditDetails?.lastModified,
-        source: props.application?.channel || "",
+        source: props?.application?.channel || "",
       };
       return <WFCaption data={caption} />;
-    }
-    else if (checkpoint.state) {
+    } else if (checkpoint.state) {
       const caption = {
         date: checkpoint?.auditDetails?.lastModified,
         name: checkpoint?.assignes?.[0]?.name,
         mobileNumber: checkpoint?.assignes?.[0]?.mobileNumber,
-        comment: t(checkpoint?.comment),
-        wfComment: checkpoint.wfComment,
+        comment: checkpoint?.comment ? t(checkpoint.comment) : "",
+        wfComment: checkpoint?.wfComment,
         thumbnailsToShow: checkpoint?.thumbnailsToShow,
       };
       return <WFCaption data={caption} OpenImage={OpenImage} />;
-    } 
-    
-   
-    else {
+    } else {
+      const lastModified = props?.application?.auditDetails?.lastModified;
       const caption = {
-        date: Digit.DateUtils.ConvertTimestampToDate(props.application?.auditDetails.lastModified),
-        name: checkpoint?.assigner?.name,
-        comment: t(checkpoint?.comment),
+        date: lastModified ? Digit.DateUtils.ConvertTimestampToDate(lastModified) : "",
+        name: checkpoint?.assigner?.name || "",
+        comment: checkpoint?.comment ? t(checkpoint.comment) : "",
       };
       return <WFCaption data={caption} />;
     }
   };
 
   const showNextActions = (nextActions) => {
-    let nextAction = nextActions[0];
+    const nextAction = Array.isArray(nextActions) && nextActions.length > 0 ? nextActions[0] : null;
     switch (nextAction?.action) {
       case "PAY":
-        return (
-          props?.userType === 'citizen'
-          ? (
+        return props?.userType === "citizen" ? (
           <div style={{ marginTop: "1em", bottom: "0px", width: "100%", marginBottom: "1.2em" }}>
             <Link
-              to={{ pathname: `${APPLICATION_PATH}/citizen/payment/my-bills/${moduleName}/${props?.application?.bookingNo}`, state: { tenantId: props.application.tenantId, bookingNo : props?.application?.bookingNo } }}
+              to={{
+                pathname: `${APPLICATION_PATH}/citizen/payment/my-bills/${moduleName}/${bookingNo}`,
+                state: { tenantId, bookingNo },
+              }}
             >
               <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} />
             </Link>
           </div>
-          ) : null
-        );
+        ) : null;
       default:
         return null;
     }
@@ -98,44 +110,47 @@ const WFApplicationTimeline = (props) => {
   }
 
   return (
-      <React.Fragment>
-        {!isLoading && (
-          <Fragment>
-            {data?.timeline?.length > 0 && (
-              <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>
-                {t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}
-              </CardSectionHeader>
-            )}
-            {data?.timeline && data?.timeline?.length === 1 ? (
-              <CheckPoint
-                isCompleted={true}
-                label={t((data?.timeline[0]?.state && `${data.timeline[0].state}`) || "NA")}
-                customChild={getTimelineCaptions(data?.timeline[0])}
-              />
-            ) : (
-              <ConnectingCheckPoints>
-                {data?.timeline &&
-                  data?.timeline.map((checkpoint, index) => {
-  
-                    return (
-                      <React.Fragment key={index}>
-                        <CheckPoint
-                          keyValue={index}
-                          isCompleted={index === 0}
-                          label={t(
-                            `${data?.processInstances[index].state?.["state"]}`
-                          )}
-                          customChild={getTimelineCaptions(checkpoint)}
-                        />
-                      </React.Fragment>
-                    );
-                  })}
-              </ConnectingCheckPoints>
-            )}
-          </Fragment>
-        )}
-        {data && showNextActions(data?.nextActions)}
-      </React.Fragment>
-    );
-  };
+    <React.Fragment>
+      {!isLoading && (
+        <Fragment>
+          {data?.timeline?.length > 0 && (
+            <CardSectionHeader style={{ marginBottom: "16px", marginTop: "32px" }}>
+              {t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}
+            </CardSectionHeader>
+          )}
+          {data?.timeline && data?.timeline?.length === 1 ? (
+            <CheckPoint
+              isCompleted={true}
+              label={t((data?.timeline[0]?.state && `${data.timeline[0].state}`) || "NA")}
+              customChild={getTimelineCaptions(data?.timeline[0])}
+            />
+          ) : (
+            <ConnectingCheckPoints>
+              {data?.timeline &&
+                data?.timeline.map((checkpoint, index) => {
+                  const stateLabel =
+                    data?.processInstances?.[index]?.state?.state ||
+                    checkpoint?.state ||
+                    "NA";
+
+                  return (
+                    <React.Fragment key={index}>
+                      <CheckPoint
+                        keyValue={index}
+                        isCompleted={index === 0}
+                        label={t(`${stateLabel}`)}
+                        customChild={getTimelineCaptions(checkpoint)}
+                      />
+                    </React.Fragment>
+                  );
+                })}
+            </ConnectingCheckPoints>
+          )}
+        </Fragment>
+      )}
+      {data && showNextActions(data?.nextActions)}
+    </React.Fragment>
+  );
+};
+
 export default WFApplicationTimeline;

@@ -41,14 +41,60 @@ const enlargedFixedPointIcon = new L.Icon({
   shadowSize: [50, 50]
 });
 
+// Helper to check valid coordinate numbers
+const isValidCoordinate = (lat, lng) => {
+  if (lat === null || lat === undefined || lng === null || lng === undefined) return false;
+  const nLat = parseFloat(lat);
+  const nLng = parseFloat(lng);
+  return (
+    !isNaN(nLat) &&
+    !isNaN(nLng) &&
+    isFinite(nLat) &&
+    isFinite(nLng) &&
+    nLat >= -90 &&
+    nLat <= 90 &&
+    nLng >= -180 &&
+    nLng <= 180
+  );
+};
+
+// Error Boundary for Map component
+class MapErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(error, errorInfo) {
+    console.error("PointAddressMap error:", error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: "40px", textAlign: "center", background: "#f8f9fa", borderRadius: "12px", border: "1px solid #ddd", margin: "20px 0" }}>
+          <h3 style={{ color: "#1D4E7F", marginBottom: "8px" }}>Map View Currently Unavailable</h3>
+          <p style={{ color: "#666", fontSize: "14px" }}>Unable to load map points at this moment. Please verify point coordinates.</p>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 // Component to handle map bounds and centering
 const ChangeView = ({ bounds, center, zoom }) => {
   const map = useMap();
   useEffect(() => {
-    if (center) {
-      map.setView(center, zoom || 15, { animate: true });
-    } else if (bounds && bounds.length > 0) {
-      map.fitBounds(bounds);
+    try {
+      if (center && isValidCoordinate(center[0], center[1])) {
+        map.setView(center, zoom || 15, { animate: true });
+      } else if (bounds && Array.isArray(bounds) && bounds.length > 0) {
+        map.fitBounds(bounds);
+      }
+    } catch (e) {
+      console.error("ChangeView error:", e);
     }
   }, [bounds, center, zoom, map]);
   return null;
@@ -87,13 +133,13 @@ const PointAddressMap = ({ fillingPoints = [], fixedPoints = [], isLoading, t })
   // Points to show on map
   const displayFillingPoints = useMemo(() => {
     if (selectedFillingPoint) {
-      return [selectedFillingPoint].filter(fp => fp.address?.latitude && fp.address?.longitude);
+      return [selectedFillingPoint].filter((fp) => isValidCoordinate(fp?.address?.latitude, fp?.address?.longitude));
     }
-    return fillingPoints?.filter(fp => fp.address?.latitude && fp.address?.longitude) || [];
+    return (fillingPoints || []).filter((fp) => isValidCoordinate(fp?.address?.latitude, fp?.address?.longitude));
   }, [fillingPoints, selectedFillingPoint]);
 
   const displayFixedPoints = useMemo(() => {
-    return relatedFixedPoints.filter(fx => fx.address?.latitude && fx.address?.longitude);
+    return (relatedFixedPoints || []).filter((fx) => isValidCoordinate(fx?.address?.latitude, fx?.address?.longitude));
   }, [relatedFixedPoints]);
 
   useEffect(() => {
@@ -105,7 +151,7 @@ const PointAddressMap = ({ fillingPoints = [], fixedPoints = [], isLoading, t })
       const marker = markerRefs.current[fxId];
       if (marker) marker.openPopup();
     } else {
-      Object.values(markerRefs.current).forEach(marker => {
+      Object.values(markerRefs.current).forEach((marker) => {
         if (marker && marker.isPopupOpen && marker.isPopupOpen()) marker.closePopup();
       });
     }
@@ -113,9 +159,9 @@ const PointAddressMap = ({ fillingPoints = [], fixedPoints = [], isLoading, t })
 
   const bounds = useMemo(() => {
     const allPoints = [
-      ...displayFillingPoints.map(p => [parseFloat(p.address.latitude), parseFloat(p.address.longitude)]),
-      ...displayFixedPoints.map(p => [parseFloat(p.address.latitude), parseFloat(p.address.longitude)])
-    ];
+      ...displayFillingPoints.map((p) => [parseFloat(p.address.latitude), parseFloat(p.address.longitude)]),
+      ...displayFixedPoints.map((p) => [parseFloat(p.address.latitude), parseFloat(p.address.longitude)]),
+    ].filter(([lat, lng]) => isValidCoordinate(lat, lng));
     if (allPoints.length === 0) return null;
     return allPoints;
   }, [displayFillingPoints, displayFixedPoints]);
@@ -140,7 +186,7 @@ const PointAddressMap = ({ fillingPoints = [], fixedPoints = [], isLoading, t })
       }
     } else {
       setSelectedFixedPoint(val);
-      if (val?.address?.latitude && val?.address?.longitude) {
+      if (isValidCoordinate(val?.address?.latitude, val?.address?.longitude)) {
         setMapCenter([parseFloat(val.address.latitude), parseFloat(val.address.longitude)]);
         setMapZoom(16);
       }
@@ -233,7 +279,7 @@ const PointAddressMap = ({ fillingPoints = [], fixedPoints = [], isLoading, t })
                       onClick={() => handleFixedPointSelect(fx)}
                       onMouseEnter={() => {
                         setHoveredFixedPointId(hoverOrMarkerId);
-                        if (fx?.address?.latitude && fx?.address?.longitude) {
+                        if (isValidCoordinate(fx?.address?.latitude, fx?.address?.longitude)) {
                           setMapCenter([parseFloat(fx.address.latitude), parseFloat(fx.address.longitude)]);
                           setMapZoom(16);
                         }
@@ -468,4 +514,10 @@ const PointAddressMap = ({ fillingPoints = [], fixedPoints = [], isLoading, t })
   );
 };
 
-export default PointAddressMap;
+const PointAddressMapWithErrorBoundary = (props) => (
+  <MapErrorBoundary>
+    <PointAddressMap {...props} />
+  </MapErrorBoundary>
+);
+
+export default PointAddressMapWithErrorBoundary;

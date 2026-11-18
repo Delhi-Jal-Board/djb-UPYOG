@@ -35,7 +35,11 @@ import getWTAcknowledgementData from "../../utils/getWTAcknowledgementData";
  */
 const WTApplicationDetails = () => {
   const { t } = useTranslation();
-  const { acknowledgementIds, tenantId } = useParams();
+  const { acknowledgementIds, tenantId: urlTenantId } = useParams();
+  const tenantId =
+    urlTenantId && urlTenantId !== "undefined"
+      ? urlTenantId
+      : Digit?.ULBService?.getCitizenCurrentTenant?.(true) || Digit?.ULBService?.getCurrentTenantId?.();
   const [showOptions, setShowOptions] = useState(false);
   const [showToast, setShowToast] = useState(null);
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
@@ -125,7 +129,19 @@ const WTApplicationDetails = () => {
   if (isLoading) {
     return <Loader />;
   }
-  if (reciept_data && reciept_data?.Payments.length > 0 && recieptDataLoading == false)
+
+  if (!wt_details || !wt_details?.bookingNo) {
+    return (
+      <Card>
+        <Header styles={{ fontSize: "24px" }}>{t("WT_BOOKING_DETAILS")}</Header>
+        <p style={{ marginTop: "16px", color: "#666" }}>
+          {t("WT_NO_APPLICATION_DETAILS_FOUND", "No application details found for this booking number.")}
+        </p>
+      </Card>
+    );
+  }
+
+  if (reciept_data && reciept_data?.Payments?.length > 0 && recieptDataLoading === false)
     dowloadOptions.push({
       label: t("WT_FEE_RECEIPT"),
       onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
@@ -176,14 +192,16 @@ const WTApplicationDetails = () => {
               <Row className="border-none" label={t("WT_TANKER_TYPE")} text={wt_details?.tankerType || t("CS_NA")} />
               <Row className="border-none" label={t("WT_WATER_TYPE")} text={t(wt_details?.waterType) || t("CS_NA")} />
               <Row className="border-none" label={t("WT_TANKER_QUANTITY")} text={wt_details?.tankerQuantity|| t("CS_NA")}/>
-              <Row className="border-none" label={t("WT_WATER_QUANTITY")} text={wt_details?.waterQuantity + " Ltr"|| t("CS_NA")} />
-              <Row className="border-none" label={t("WT_DELIVERY_DATE")} text={formatDate(wt_details?.deliveryDate)|| t("CS_NA")} />
+              <Row className="border-none" label={t("WT_WATER_QUANTITY")} text={wt_details?.waterQuantity ? `${wt_details.waterQuantity} Ltr` : t("CS_NA")} />
+              <Row className="border-none" label={t("WT_DELIVERY_DATE")} text={formatDate(wt_details?.deliveryDate) || t("CS_NA")} />
               <Row className="border-none" label={t("WT_DELIVERY_TIME")} text={convertTo12HourFormat(wt_details?.deliveryTime) || t("CS_NA")} />
               <Row className="border-none" label={t("WT_DESCRIPTION")} text={wt_details?.description || t("CS_NA")} />
               <Row className="border-none" label={t("WT_IMMEDIATE")} text={immediateRequired || t("CS_NA")} />
             </StatusTable>
             
-            <WFApplicationTimeline application={application} id={application?.bookingNo} userType={"citizen"} />
+            {application?.bookingNo && (
+              <WFApplicationTimeline application={application} id={application?.bookingNo} userType={"citizen"} />
+            )}
           {showToast && (
             <Toast
               error={showToast.key}

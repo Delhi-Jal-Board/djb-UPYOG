@@ -88,34 +88,42 @@ const App = () => {
             <div className="employee-form-content abcd">
               <PrivateRoute
                 path={`${path}/inbox`}
-                component={() => (
-                  <Inbox
-                    // Inbox component for waterTanker
-                    useNewInboxAPI={true}
-                    parentRoute={path}
-                    moduleCode="WT"
-                    businessService="watertanker"
-                    filterComponent="WT_INBOX_FILTER"
-                    initialStates={inboxInitialStateWT}
-                    isInbox={true}
-                  />
-                )}
+                component={() =>
+                  Digit.UserService.hasAccess(["WT_VENDOR"]) ? (
+                    <Inbox
+                      // Inbox component for waterTanker
+                      useNewInboxAPI={true}
+                      parentRoute={path}
+                      moduleCode="WT"
+                      businessService="watertanker"
+                      filterComponent="WT_INBOX_FILTER"
+                      initialStates={inboxInitialStateWT}
+                      isInbox={true}
+                    />
+                  ) : (
+                    <Redirect to="/digit-ui/access-denied" />
+                  )
+                }
               />
 
               <PrivateRoute
                 path={`${path}/mt/inbox`}
-                component={() => (
-                  <Inbox
-                    // Inbox component for mobileToilet
-                    useNewInboxAPI={true}
-                    parentRoute={path}
-                    businessService="mobileToilet"
-                    moduleCode="MT"
-                    filterComponent="WT_INBOX_FILTER"
-                    initialStates={inboxInitialStateMT}
-                    isInbox={true}
-                  />
-                )}
+                component={() =>
+                  Digit.UserService.hasAccess(["MT_VENDOR"]) ? (
+                    <Inbox
+                      // Inbox component for mobileToilet
+                      useNewInboxAPI={true}
+                      parentRoute={path}
+                      businessService="mobileToilet"
+                      moduleCode="MT"
+                      filterComponent="WT_INBOX_FILTER"
+                      initialStates={inboxInitialStateMT}
+                      isInbox={true}
+                    />
+                  ) : (
+                    <Redirect to="/digit-ui/access-denied" />
+                  )
+                }
               />
 
               <PrivateRoute path={`${path}/request-service`} component={WTCreate} />
@@ -123,8 +131,26 @@ const App = () => {
               <PrivateRoute path={`${path}/booking/waterTanker/:acknowledgementIds/:tenantId`} component={WTApplicationDetails} />
               <PrivateRoute path={`${path}/booking/mobileToilet/:acknowledgementIds/:tenantId`} component={MTApplicationDetails} />
               <PrivateRoute path={`${path}/booking/treePruning/:acknowledgementIds/:tenantId`} component={TPApplicationDetails} />
-              <PrivateRoute path={`${path}/booking-details/:id`} component={() => <ApplicationDetails parentRoute={path} />} />
-              <PrivateRoute path={`${path}/bookingsearch/booking-details/:id`} component={() => <ApplicationDetails parentRoute={path} />} />
+              <PrivateRoute
+                path={`${path}/booking-details/:id`}
+                component={() =>
+                  Digit.UserService.hasAccess(["WT_VENDOR", "MT_VENDOR"]) ? (
+                    <ApplicationDetails parentRoute={path} />
+                  ) : (
+                    <Redirect to="/digit-ui/access-denied" />
+                  )
+                }
+              />
+              <PrivateRoute
+                path={`${path}/bookingsearch/booking-details/:id`}
+                component={() =>
+                  Digit.UserService.hasAccess(["WT_VENDOR", "MT_VENDOR"]) ? (
+                    <ApplicationDetails parentRoute={path} />
+                  ) : (
+                    <Redirect to="/digit-ui/access-denied" />
+                  )
+                }
+              />
               <PrivateRoute
                 path={`${path}/wt-Vendor`}
                 component={() =>
@@ -185,8 +211,26 @@ const App = () => {
                   )
                 }
               />
-              <PrivateRoute path={`${path}/my-bookings`} component={(props) => <SearchApp {...props} parentRoute={path} moduleCode={"WT"} />} />
-              <PrivateRoute path={`${path}/mt/my-bookings`} component={(props) => <SearchApp {...props} parentRoute={path} moduleCode={"MT"} />} />
+              <PrivateRoute
+                path={`${path}/my-bookings`}
+                component={(props) =>
+                  Digit.UserService.hasAccess(["WT_VENDOR"]) ? (
+                    <SearchApp {...props} parentRoute={path} moduleCode={"WT"} />
+                  ) : (
+                    <Redirect to="/digit-ui/access-denied" />
+                  )
+                }
+              />
+              <PrivateRoute
+                path={`${path}/mt/my-bookings`}
+                component={(props) =>
+                  Digit.UserService.hasAccess(["MT_VENDOR"]) ? (
+                    <SearchApp {...props} parentRoute={path} moduleCode={"MT"} />
+                  ) : (
+                    <Redirect to="/digit-ui/access-denied" />
+                  )
+                }
+              />
             </div>
           </div>
         </AppContainer>

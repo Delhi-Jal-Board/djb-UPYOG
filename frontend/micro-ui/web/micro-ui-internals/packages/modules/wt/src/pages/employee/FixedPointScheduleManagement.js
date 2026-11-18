@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Card, Dropdown, SubmitBar, Toast, CardLabel, Label } from "@djb25/digit-ui-react-components";
 import AddTripModal from "../../components/AddTripModal";
 import ApplicationTable from "../../components/inbox/ApplicationTable";
+import { sanitizeForCsv } from "../../utils";
 
 const convertTo12Hour = (time24) => {
   if (!time24) return time24;
@@ -138,7 +139,8 @@ const FixedPointScheduleManagement = ({ ...props }) => {
       const csvRows = excelData.map((row) =>
         row
           .map((cell) => {
-            const escaped = ("" + (cell === null || cell === undefined ? "" : cell)).replace(/"/g, '\\"');
+            const sanitized = sanitizeForCsv(cell);
+            const escaped = ("" + (sanitized === null || sanitized === undefined ? "" : sanitized)).replace(/"/g, '""');
             return `"${escaped}"`;
           })
           .join(",")
@@ -310,17 +312,17 @@ const FixedPointScheduleManagement = ({ ...props }) => {
 
   const csvExportColumns = React.useMemo(
     () => [
-      { Header: t("WT_SCHEDULE_ID"), accessor: "scheduleId" },
-      { Header: t("WT_FIXED_POINT"), accessor: "fixedPoint" },
-      { Header: t("WT_DAY"), accessor: "day" },
-      { Header: t("WT_FREQ"), accessor: "freq" },
-      { Header: t("WT_ARR_TO_FPL"), accessor: "arrToFpl" },
-      { Header: t("WT_DEP_FROM_FPL"), accessor: "depFromFpl" },
-      { Header: t("WT_ARR_AT_FIXED_POINT"), accessor: "arrAtFixedPoint" },
-      { Header: t("WT_DEP_AT_FIXED_POINT"), accessor: "depAtFixedPoint" },
-      { Header: t("WT_RETURN_TO_FPL"), accessor: "returnToFpl" },
-      { Header: t("WT_VOLUME"), accessor: "volume" },
-      { Header: t("WT_ACTIVE"), accessor: "active" },
+      { Header: t("WT_SCHEDULE_ID"), exportAccessor: (row) => sanitizeForCsv(row?.scheduleId ?? "NA") },
+      { Header: t("WT_FIXED_POINT"), exportAccessor: (row) => sanitizeForCsv(row?.fixedPoint ?? "NA") },
+      { Header: t("WT_DAY"), exportAccessor: (row) => sanitizeForCsv(row?.day ?? "NA") },
+      { Header: t("WT_FREQ"), exportAccessor: (row) => sanitizeForCsv(row?.freq ?? "NA") },
+      { Header: t("WT_ARR_TO_FPL"), exportAccessor: (row) => sanitizeForCsv(row?.arrToFpl ?? "NA") },
+      { Header: t("WT_DEP_FROM_FPL"), exportAccessor: (row) => sanitizeForCsv(row?.depFromFpl ?? "NA") },
+      { Header: t("WT_ARR_AT_FIXED_POINT"), exportAccessor: (row) => sanitizeForCsv(row?.arrAtFixedPoint ?? "NA") },
+      { Header: t("WT_DEP_AT_FIXED_POINT"), exportAccessor: (row) => sanitizeForCsv(row?.depAtFixedPoint ?? "NA") },
+      { Header: t("WT_RETURN_TO_FPL"), exportAccessor: (row) => sanitizeForCsv(row?.returnToFpl ?? "NA") },
+      { Header: t("WT_VOLUME"), exportAccessor: (row) => sanitizeForCsv(row?.volume ?? "NA") },
+      { Header: t("WT_ACTIVE"), exportAccessor: (row) => sanitizeForCsv(row?.active ?? "NA") },
     ],
     [t]
   );

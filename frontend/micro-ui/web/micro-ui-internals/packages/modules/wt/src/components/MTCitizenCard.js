@@ -12,6 +12,10 @@ import { APPLICATION_PATH } from "../utils";
 const MTCitizenCard = () => {
   const { t } = useTranslation();
 
+  if (!Digit?.UserService?.hasAccess(["MT_VENDOR"])) {
+    return null;
+  }
+
   const [total, setTotal] = useState("-");
   const tenantId = Digit.ULBService.getCitizenCurrentTenant(true) || Digit.ULBService.getCurrentTenantId();
   const { data, isLoading, isFetching, isSuccess } = Digit.Hooks.useNewInboxGeneral({

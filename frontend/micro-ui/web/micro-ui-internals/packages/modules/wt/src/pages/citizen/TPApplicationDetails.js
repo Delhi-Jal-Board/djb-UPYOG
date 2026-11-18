@@ -30,7 +30,11 @@ import {
        */
       const TPApplicationDetails = () => {
         const { t } = useTranslation();
-        const { acknowledgementIds, tenantId } = useParams();
+        const { acknowledgementIds, tenantId: urlTenantId } = useParams();
+        const tenantId =
+          urlTenantId && urlTenantId !== "undefined"
+            ? urlTenantId
+            : Digit?.ULBService?.getCitizenCurrentTenant?.(true) || Digit?.ULBService?.getCurrentTenantId?.();
         const [showOptions, setShowOptions] = useState(false);
         const [showToast, setShowToast] = useState(null);
         const { data: storeData } = Digit.Hooks.useStore.getInitData();
@@ -114,7 +118,18 @@ import {
           return <Loader />;
         }
 
-        if (reciept_data && reciept_data?.Payments.length > 0 && recieptDataLoading == false)
+        if (!tp_details || !tp_details?.bookingNo) {
+          return (
+            <Card>
+              <Header styles={{ fontSize: "24px" }}>{t("TP_BOOKING_DETAILS")}</Header>
+              <p style={{ marginTop: "16px", color: "#666" }}>
+                {t("WT_NO_APPLICATION_DETAILS_FOUND", "No application details found for this booking number.")}
+              </p>
+            </Card>
+          );
+        }
+
+        if (reciept_data && reciept_data?.Payments?.length > 0 && recieptDataLoading === false)
           dowloadOptions.push({
             label: t("TP_FEE_RECEIPT"),
             onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
@@ -174,7 +189,9 @@ import {
                   <Row className="border-none" label={t("LONGITUDE_GEOTAG")} text={tp_details?.longitude || t("CS_NA")} />
                 </StatusTable>
       
-                <WFApplicationTimeline application={application} id={application?.bookingNo} userType={"citizen"} />
+                {application?.bookingNo && (
+                  <WFApplicationTimeline application={application} id={application?.bookingNo} userType={"citizen"} />
+                )}
                 {showToast && (
                   <Toast
                     error={showToast.key}

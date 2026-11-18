@@ -13,10 +13,25 @@ export const checkForNA = (value = "") => {
   return checkForNotNull(value) ? value : "NA";
 };
 
+export const sanitizeForCsv = (value) => {
+  if (value === null || value === undefined) return "";
+  const str = String(value);
+  // Neutralize CSV formula injection by prepending a single quote if field starts with =, +, -, @, \t, \r
+  if (/^[=+@\t\r\-]/.test(str)) {
+    return `'${str}`;
+  }
+  return str;
+};
+
 export const convertTo12HourFormat = (time) => {
   if (!time) return "NA"; // Handle empty or invalid values
+  if (typeof time !== "string") time = String(time);
+  if (!time.includes(":")) return time;
 
-  const [hours, minutes] = time.split(":").map(Number);
+  const parts = time.split(":");
+  const hours = Number(parts[0]);
+  const minutes = Number(parts[1]);
+  if (isNaN(hours) || isNaN(minutes)) return time;
   const period = hours >= 12 ? "PM" : "AM";
   const formattedHours = hours % 12 || 12; // Convert 0 to 12 for 12 AM
 
@@ -25,9 +40,31 @@ export const convertTo12HourFormat = (time) => {
 
 export const formatDate = (dateString) => {
   if (!dateString) return "NA"; // Handle empty or invalid values
-
-  const [year, month, day] = dateString.split("-");
-  return `${day}-${month}-${year}`;
+  if (typeof dateString === "number") {
+    try {
+      return Digit?.DateUtils?.ConvertTimestampToDate(dateString) || String(dateString);
+    } catch (e) {
+      return String(dateString);
+    }
+  }
+  if (typeof dateString === "string") {
+    if (dateString.includes("-")) {
+      const parts = dateString.split("-");
+      if (parts.length === 3) {
+        const [year, month, day] = parts;
+        return `${day}-${month}-${year}`;
+      }
+    }
+    const num = Number(dateString);
+    if (!isNaN(num) && num > 1000000000) {
+      try {
+        return Digit?.DateUtils?.ConvertTimestampToDate(num) || dateString;
+      } catch (e) {
+        return dateString;
+      }
+    }
+  }
+  return String(dateString);
 };
 
 // for replacing digit-ui

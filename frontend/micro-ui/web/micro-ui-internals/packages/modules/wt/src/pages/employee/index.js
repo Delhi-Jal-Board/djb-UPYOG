@@ -1,7 +1,7 @@
 import { AppContainer, PrivateRoute, ModuleHeader, ArrowLeft, HomeIcon, LayoutWrapper } from "@djb25/digit-ui-react-components";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { Switch, useLocation } from "react-router-dom";
+import { Switch, useLocation, Redirect } from "react-router-dom";
 import Inbox from "./Inbox";
 import SearchApp from "./SearchApp";
 import FixedPointScheduleManagement from "./FixedPointScheduleManagement";
@@ -15,6 +15,16 @@ import Reports from "../../components/Reports";
 const EmployeeApp = ({ path }) => {
   const { t } = useTranslation();
   const location = useLocation();
+
+  const hasWtEmployeeAccess =
+    Digit?.Utils?.wtAccess?.() ||
+    Digit?.Utils?.mtAccess?.() ||
+    Digit?.UserService?.hasAccess(["WT_CEMP", "MT_CEMP", "TP_CEMP", "WT_APPROVER", "WT_VERIFIER", "WT_ADMIN", "WT_VENDOR", "MT_VENDOR"]);
+
+  if (!hasWtEmployeeAccess) {
+    return <Redirect to="/digit-ui/access-denied" />;
+  }
+
   const fixedPointInboxLabel = t("Emergency Inbox") !== "Emergency Inbox" ? `${t("Emergency Inbox")} ${t("ES_COMMON_INBOX")}` : "Emergency Inbox";
   const emergencyRequestLabel =
     t("WT_EMERGENCY_WATER_TANKER_REQUEST") !== "WT_EMERGENCY_WATER_TANKER_REQUEST"

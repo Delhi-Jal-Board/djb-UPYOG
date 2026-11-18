@@ -30,25 +30,32 @@ const AddFixPointAddress = () => {
 
   useEffect(() => {
     if (editId && editData?.waterTankerBookingDetail && !isDataFetched) {
-      const data = editData.waterTankerBookingDetail.find((item) => item.applicantDetail?.applicantId === editId);
+      const data =
+        editData.waterTankerBookingDetail.find(
+          (item) =>
+            item?.applicantDetail?.applicantId === editId ||
+            item?.id === editId ||
+            item?.bookingId === editId ||
+            item?.applicantDetail?.fixedPointId === editId
+        ) || editData.waterTankerBookingDetail[0];
 
       if (data) {
         setFormData({
           owner: {
-            name: data.applicantDetail?.name,
-            mobileNumber: data.applicantDetail?.mobileNumber,
-            alternateNumber: data.applicantDetail?.alternateNumber,
-            emailId: data.applicantDetail?.emailId,
-            applicantId: data.applicantDetail?.applicantId,
+            name: data.applicantDetail?.name || data?.name || "",
+            mobileNumber: data.applicantDetail?.mobileNumber || "",
+            alternateNumber: data.applicantDetail?.alternateNumber || "",
+            emailId: data.applicantDetail?.emailId || "",
+            applicantId: data.applicantDetail?.applicantId || data?.id || "",
           },
           address: {
-            ...data.address,
+            ...(data.address || {}),
             addressId: data.address?.addressId,
             applicantId: data.address?.applicantId,
             block: data.address?.ward || data.address?.block,
             assembly: data.address?.constituency || data.address?.assembly,
           },
-          bookingId: data.bookingId,
+          bookingId: data.bookingId || data?.id,
           bookingNo: data.bookingNo,
           auditDetails: data.auditDetails,
         });
