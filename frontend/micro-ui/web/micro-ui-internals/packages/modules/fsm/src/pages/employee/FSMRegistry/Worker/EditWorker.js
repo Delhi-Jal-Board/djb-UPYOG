@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Toast, Header, Loader, FormComposerV2 } from "@djb25/digit-ui-react-components";
-
+import { Toast, Header, Loader } from "@djb25/digit-ui-react-components";
+import { FormComposerV2 } from "@djb25/digit-ui-react-components";
 import { useHistory, useLocation, useParams } from "react-router-dom";
 import WorkerConfig from "../../../employee/configs/WorkerConfig";
 import { useQueryClient } from "react-query";
@@ -210,17 +210,17 @@ const EditWorker = ({ parentUrl, heading }) => {
         documents: {
           img_photo: workerDetails?.photo
             ? [
-                [
-                  "Photo",
-                  {
-                    file: { name: "photo" },
-                    fileStoreId: {
-                      fileStoreId: workerDetails?.photo,
-                      tenantId: tenantId,
-                    },
+              [
+                "Photo",
+                {
+                  file: { name: "photo" },
+                  fileStoreId: {
+                    fileStoreId: workerDetails?.photo,
+                    tenantId: tenantId,
                   },
-                ],
-              ]
+                },
+              ],
+            ]
             : null,
         },
       };
@@ -389,12 +389,12 @@ const EditWorker = ({ parentUrl, heading }) => {
         identifiers:
           driverLicenses?.length > 0
             ? [
-                {
-                  ...workerinfo?.indentifiers?.[0],
-                  identifierType: "DRIVING_LICENSE_NUMBER",
-                  identifierId: driverLicenses?.[0],
-                },
-              ]
+              {
+                ...workerinfo?.indentifiers?.[0],
+                identifierType: "DRIVING_LICENSE_NUMBER",
+                identifierId: driverLicenses?.[0],
+              },
+            ]
             : null,
         skills: respSkills,
         photo: photograph,
@@ -410,18 +410,18 @@ const EditWorker = ({ parentUrl, heading }) => {
           tenantId: tenantId,
           roles: roleDetails
             ? // Object.values(roleDetails[0].sys_role).map((role) => ({
-              //     code: role.code,
-              //     tenantId: tenantId,
-              //   }))
-              roleDetails
-                .map((item) => Object.values(item.sys_role))
-                .flat()
-                .reduce((result, role) => {
-                  if (!result.some((entry) => entry.code === role.code)) {
-                    result.push({ code: role.code, tenantId });
-                  }
-                  return result;
-                }, [])
+            //     code: role.code,
+            //     tenantId: tenantId,
+            //   }))
+            roleDetails
+              .map((item) => Object.values(item.sys_role))
+              .flat()
+              .reduce((result, role) => {
+                if (!result.some((entry) => entry.code === role.code)) {
+                  result.push({ code: role.code, tenantId });
+                }
+                return result;
+              }, [])
             : [{ code: "SANITATION_WORKER", tenantId }],
           type: "CITIZEN",
         },
@@ -492,7 +492,7 @@ const EditWorker = ({ parentUrl, heading }) => {
         <Header>{t("FSM_REGISTRY_EDIT_WORKER_HEADING")}</Header>
       </div>
       <div style={!isMobile ? { marginLeft: "-15px" } : {}}>
-        <FormComposerV2
+        {/* <FormComposerV2
           isDisabled={!canSubmit}
           label={t("ES_COMMON_APPLICATION_SUBMIT")}
           config={Config.filter((i) => !i.hideInEmployee).map((config) => {
@@ -510,7 +510,7 @@ const EditWorker = ({ parentUrl, heading }) => {
           cardStyle={{
             padding: "1rem 1.5rem",
           }}
-        />
+        /> */}
         {showToast && (
           <Toast
             error={showToast.key === "error" ? true : false}

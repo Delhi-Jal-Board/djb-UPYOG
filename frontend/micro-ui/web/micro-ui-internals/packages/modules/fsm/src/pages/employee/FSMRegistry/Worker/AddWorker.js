@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FormComposer, FormComposerV2, Toast, Header } from "@djb25/digit-ui-react-components";
+import { FormComposerV2} from "@djb25/digit-ui-react-components";
 import { useHistory } from "react-router-dom";
 import WorkerConfig from "../../configs/WorkerConfig";
 import { useQueryClient } from "react-query";
@@ -297,7 +298,7 @@ const AddWorker = ({ parentUrl, heading }) => {
         <Header>{t("FSM_REGISTRY_ADD_WORKER_HEADING")}</Header>
       </div>
       <div style={!isMobile ? { marginLeft: "-15px" } : {}}>
-        <FormComposerV2
+        {/* <FormComposerV2
           isDisabled={!canSubmit}
           label={t("ES_COMMON_APPLICATION_SUBMIT")}
           config={Config.filter((i) => !i.hideInEmployee).map((config) => {
@@ -315,7 +316,7 @@ const AddWorker = ({ parentUrl, heading }) => {
           cardStyle={{
             padding: "1rem 1.5rem",
           }}
-        />
+        /> */}
         {showToast && (
           <Toast
             error={showToast.key === "error" ? true : false}

@@ -5,8 +5,7 @@ import Card from "../atoms/Card";
 import CardLabel from "../atoms/CardLabel";
 import CardText from "../atoms/CardText";
 import CardSubHeader from "../atoms/CardSubHeader";
-
-import CardSectionHeader from "../atoms/CardSectionHeader";
+// import CardSectionHeader from "../atoms/CardSectionHeader";
 import CardLabelDesc from "../atoms/CardLabelDesc";
 import CardLabelError from "../atoms/CardLabelError";
 import TextArea from "../atoms/TextArea";
@@ -138,10 +137,7 @@ export const FormComposer = (props) => {
       case "custom":
         return (
           <Controller
-            render={(props) => {
-              if (typeof populators?.component !== "function") return null;
-              return populators.component({ ...props, setValue }, populators.customProps) || null;
-            }}
+            render={(props) => populators.component({ ...props, setValue }, populators.customProps)}
             defaultValue={populators.defaultValue}
             name={populators?.name}
             control={control}
@@ -243,32 +239,30 @@ export const FormComposer = (props) => {
   // const titleStyle = { color: "#505A5F", fontWeight: "700", fontSize: "16px" };
 
   // Section headers span both columns in the grid
-  const titleStyle = { color: "#505A5F", fontWeight: "700", fontSize: "16px" };
-
-  const getCombinedComponent = (section, sectionIndex = 0) => {
-    if (section.head && section.subHead) {
-      return (
-        <div className="grid-title" style={{ marginTop: sectionIndex === 0 ? "8px" : "28px", marginBottom: "14px", borderBottom: "1px solid #E0E0E0", paddingBottom: "10px" }}>
-          <CardSectionHeader style={props?.sectionHeadStyle ? props?.sectionHeadStyle : { margin: "0px", fontSize: "18px", fontWeight: "700", color: "#0B0C0C" }} id={section.headId}>
-            {t(section.head)}
-          </CardSectionHeader>
-          <CardSectionHeader style={titleStyle} id={`${section.headId}_DES`}>
-            {t(section.subHead)}
-          </CardSectionHeader>
-        </div>
-      );
-    } else if (section.head) {
-      return (
-        <div className="grid-title" style={{ marginTop: sectionIndex === 0 ? "8px" : "28px", marginBottom: "14px", borderBottom: "1px solid #E0E0E0", paddingBottom: "10px" }}>
-          <CardSectionHeader style={props?.sectionHeadStyle ? props?.sectionHeadStyle : { margin: "0px", fontSize: "18px", fontWeight: "700", color: "#0B0C0C" }} id={section.headId}>
-            {t(section.head)}
-          </CardSectionHeader>
-        </div>
-      );
-    } else {
-      return null;
-    }
-  };
+  // const getCombinedComponent = (section) => {
+  //   if (section.head && section.subHead) {
+  //     return (
+  //       <div className="grid-title">
+  //         <CardSectionHeader style={props?.sectionHeadStyle ? props?.sectionHeadStyle : { margin: "5px 0px" }} id={section.headId}>
+  //           {t(section.head)}
+  //         </CardSectionHeader>
+  //         <CardSectionHeader style={titleStyle} id={`${section.headId}_DES`}>
+  //           {t(section.subHead)}
+  //         </CardSectionHeader>
+  //       </div>
+  //     );
+  //   } else if (section.head) {
+  //     return (
+  //       <div className="grid-title">
+  //         <CardSectionHeader style={props?.sectionHeadStyle ? props?.sectionHeadStyle : {}} id={section.headId}>
+  //           {t(section.head)}
+  //         </CardSectionHeader>
+  //       </div>
+  //     );
+  //   } else {
+  //     return null;
+  //   }
+  // };
 
   const isDisabled = props.isDisabled || false;
 
@@ -325,20 +319,13 @@ export const FormComposer = (props) => {
                     return (
                       <Fragment key={index}>
                         {field.type === "component" ? (
-                          <div
-                            style={{
-                              gridColumn: field?.colSpan ? field.colSpan : field.withoutLabel ? "span 2" : "span 1",
-                              width: "100%",
-                            }}
-                          >
-                            {field.withoutLabel ? (
-                              <Controller
-                                name={field.key}
-                                control={control}
-                                defaultValue={props.defaultValues?.[field.key]}
-                                render={(props) => {
-                                  if (!Component) return null;
-                                  return (
+                          <Controller
+                            name={field.key}
+                            control={control}
+                            defaultValue={props.defaultValues?.[field.key]}
+                            render={(props) => {
+                              return (
+                                <>
                                   <Component
                                     userType={"employee"}
                                     t={t}
@@ -357,69 +344,16 @@ export const FormComposer = (props) => {
                                     formState={formState}
                                     {...field?.props}
                                     style={{
-                                        width: "100%",
-                                        ...props?.fieldStyle,
-                                      }}
-                                    />
-                                  );
-                                }}
-                              />
-                            ) : (
-                              <LabelFieldPair>
-                                <CardLabel
-                                  style={{
-                                    color: field.isSectionText ? "#505A5F" : "",
-                                  }}
-                                  className={field?.disable ? "disabled-label" : ""}
-                                >
-                                  {t(field.label)}
-                                  {field.isMandatory ? <span className="check-page-link-button"> * </span> : null}
-                                  {field.labelChildren && field.labelChildren}
-                                </CardLabel>
-                                <div style={{ width: "100%", ...props?.fieldStyle }} className="field">
-                                  <Controller
-                                    name={field.key}
-                                    control={control}
-                                    defaultValue={props.defaultValues?.[field.key]}
-                                    render={(props) => {
-                                      if (!Component) return null;
-                                      return (
-                                        <Component
-                                          userType={"employee"}
-                                          t={t}
-                                          setValue={setValue}
-                                          onSelect={setValue}
-                                          config={field}
-                                          data={formData}
-                                          formData={{
-                                            ...formData,
-                                            [field.key]: props.value ?? formData[field.key],
-                                          }}
-                                          register={register}
-                                          errors={errors}
-                                          setError={setError}
-                                          clearErrors={clearErrors}
-                                          formState={formState}
-                                          {...field?.props}
-                                          style={{
-                                            width: "100%",
-                                            ...props?.fieldStyle,
-                                          }}
-                                        />
-                                      );
+                                      gridColumn: field?.colSpan ? field.colSpan : "span 1",
+                                      ...props?.fieldStyle,
                                     }}
                                   />
-                                </div>
-                              </LabelFieldPair>
-                            )}
-                          </div>
-                        ) : (
-                          <div
-                            style={{
-                              gridColumn: field?.colSpan ? field.colSpan : "span 1",
-                              width: "100%",
+                                </>
+                              );
                             }}
-                          >
+                          />
+                        ) : (
+                          <div>
                             <LabelFieldPair
                               key={index}
                               style={{
@@ -467,7 +401,7 @@ export const FormComposer = (props) => {
                 className={`formcomposer-section-grid ${section.className ? section.className : ""} ${props.cardFormWrapperClassName ? props.cardFormWrapperClassName : ""
                   }`}
               >
-                {section && getCombinedComponent(section, index)}
+                {/* {section && getCombinedComponent(section)} */}
 
                 {section.body.map((field, index) => {
                   const Component =
@@ -505,20 +439,13 @@ export const FormComposer = (props) => {
                   return (
                     <Fragment key={index}>
                       {field.type === "component" ? (
-                        <div
-                          style={{
-                            gridColumn: field?.colSpan ? field.colSpan : field.withoutLabel ? "span 2" : "span 1",
-                            width: "100%",
-                          }}
-                        >
-                          {field.withoutLabel ? (
-                            <Controller
-                              name={field.key}
-                              control={control}
-                              defaultValue={props.defaultValues?.[field.key]}
-                              render={(props) => {
-                                if (!Component) return null;
-                                return (
+                        <Controller
+                          name={field.key}
+                          control={control}
+                          defaultValue={props.defaultValues?.[field.key]}
+                          render={(props) => {
+                            return (
+                              <>
                                 <Component
                                   userType={"employee"}
                                   t={t}
@@ -537,66 +464,17 @@ export const FormComposer = (props) => {
                                   formState={formState}
                                   {...field?.props}
                                   style={{
-                                      width: "100%",
-                                      ...props?.fieldStyle,
-                                    }}
-                                  />
-                                );
-                              }}
-                            />
-                          ) : (
-                            <LabelFieldPair>
-                              <CardLabel
-                                style={{
-                                  color: field.isSectionText ? "#505A5F" : "",
-                                }}
-                                className={field?.disable ? "disabled-label" : ""}
-                              >
-                                {t(field.label)}
-                                {field.isMandatory ? <span className="check-page-link-button"> * </span> : null}
-                                {field.labelChildren && field.labelChildren}
-                              </CardLabel>
-                              <div style={{ width: "100%", ...props?.fieldStyle }} className="field">
-                                <Controller
-                                  name={field.key}
-                                  control={control}
-                                  defaultValue={props.defaultValues?.[field.key]}
-                                  render={(props) => {
-                                    if (!Component) return null;
-                                    return (
-                                      <Component
-                                        userType={"employee"}
-                                        t={t}
-                                        setValue={setValue}
-                                        onSelect={setValue}
-                                        config={field}
-                                        data={formData}
-                                        formData={{
-                                          ...formData,
-                                          [field.key]: props.value ?? formData[field.key],
-                                        }}
-                                        register={register}
-                                        errors={errors}
-                                        setError={setError}
-                                        clearErrors={clearErrors}
-                                        formState={formState}
-                                        {...field?.props}
-                                        style={{
-                                          width: "100%",
-                                          ...props?.fieldStyle,
-                                        }}
-                                      />
-                                    );
+                                    gridColumn: field?.colSpan ? field.colSpan : "span 1",
+                                    ...props?.fieldStyle,
                                   }}
                                 />
-                              </div>
-                            </LabelFieldPair>
-                          )}
-                        </div>
+                              </>
+                            );
+                          }}
+                        />
                       ) : (
                         <div style={{
                           gridColumn: field?.colSpan ? field.colSpan : "span 1",
-                          width: "100%",
                         }}>
                           <LabelFieldPair
                             style={{
