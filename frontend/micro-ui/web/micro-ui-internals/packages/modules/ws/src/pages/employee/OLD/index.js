@@ -26,6 +26,24 @@ const isRwhDoc = (doc) => {
   return str.includes("RAIN") || str.includes("HARVEST");
 };
 
+const isStpDoc = (doc) => {
+  if (!doc) return false;
+  const str = (
+    (typeof doc === "string" ? doc : "") +
+    " " +
+    (doc?.documentType || "") +
+    " " +
+    (doc?.code || "") +
+    " " +
+    (doc?.i18nKey || "") +
+    " " +
+    (doc?.name || "") +
+    " " +
+    (doc?.documentName || "")
+  ).toUpperCase();
+  return str.includes("SEWER") || str.includes("SEWAGE") || str.includes("STP") || str.includes("TREATMENT");
+};
+
 const OLDApplication = () => {
   const { t } = useTranslation();
   const history = useHistory();
@@ -48,6 +66,7 @@ const OLDApplication = () => {
     { label: "WS_DJB_EMPLOYEE" },
     { label: "WS_BANK_DETAILS" },
     { label: "Rain Water Harvesting Certificate" },
+    { label: "Sewer Treatment Plant (STP)" },
     { label: "PT_LOCATION_DETAILS" },
     { label: "WS_PROPERTY_AND_WATER_CONNECTION_USE_DETAILS" },
     // ...(isCitizen ? [] : [{ label: "WS_DJB_EMPLOYEE" }]),
@@ -122,6 +141,7 @@ const OLDApplication = () => {
       "WSDjbEmployee",
       "WSBankDetails",
       "WSRainWaterHarvesting",
+      "WSSewerTreatmentPlant",
       "WSPropertyLocationDetails",
       "PropertyWaterConnection",
       "WSActivationPlumberDetails",
@@ -217,6 +237,21 @@ const OLDApplication = () => {
               withoutLabel: true,
               texts: {
                 header: "Rain Water Harvesting Certificate",
+              },
+            },
+          ],
+        });
+      } else if (compName === "WSSewerTreatmentPlant") {
+        reorderedBody.push({
+          isCreateConnection: true,
+          body: [
+            {
+              type: "component",
+              key: "sewerTreatmentPlant",
+              component: "WSSewerTreatmentPlant",
+              withoutLabel: true,
+              texts: {
+                header: "Sewer Treatment Plant (STP)",
               },
             },
           ],
@@ -596,11 +631,33 @@ const OLDApplication = () => {
       const ownershipDoc = docs.find((d) => d?.documentType?.includes("ADDRESSPROOF") || d?.documentType?.includes("OWNERSHIPPROOF"));
       const otherDoc = docs.find((d) => d?.documentType?.includes("OTHERDOCUMENTS"));
 
+      const docWithValidity = docs.find(
+        (d) => d?.validityDate || d?.validityUpTo || d?.date || d?.additionalDetails?.validityDate || d?.additionalDetails?.validityUpTo
+      );
+      const valDate =
+        docWithValidity?.validityDate ||
+        docWithValidity?.validityUpTo ||
+        docWithValidity?.date ||
+        docWithValidity?.additionalDetails?.validityDate ||
+        docWithValidity?.additionalDetails?.validityUpTo ||
+        "";
+      const rwhDoc = docs.find((d) => isRwhDoc(d));
+      const stpDoc = docs.find((d) => isStpDoc(d));
+      const rwhValDate =
+        rwhDoc?.validityDate || rwhDoc?.validityUpTo || rwhDoc?.date || rwhDoc?.additionalDetails?.validityDate || "";
+      const stpValDate =
+        stpDoc?.validityDate || stpDoc?.validityUpTo || stpDoc?.date || stpDoc?.additionalDetails?.validityDate || "";
+
       data.documents = {
         documents: docs,
         identityProofNumber: identityDoc?.documentUid || "",
         ownershipDocumentNumber: ownershipDoc?.documentUid || "",
         otherDocumentNumber: otherDoc?.documentUid || "",
+        validityDate: valDate || undefined,
+        validityUpTo: valDate || undefined,
+        date: valDate || undefined,
+        rwhValidityDate: rwhValDate || undefined,
+        stpValidityDate: stpValDate || undefined,
       };
     }
 
@@ -688,13 +745,67 @@ const OLDApplication = () => {
       }
     }
 
+    const docsList = data?.DocumentsRequired?.documents || data?.documents?.documents || data?.documents || [];
+    const rwhDocFromList = Array.isArray(docsList) ? docsList.find((d) => isRwhDoc(d)) : null;
+    const stpDocFromList = Array.isArray(docsList) ? docsList.find((d) => isStpDoc(d)) : null;
+    const generalDocWithVal = Array.isArray(docsList)
+      ? docsList.find((d) => d?.validityDate || d?.validityUpTo || d?.date || d?.additionalDetails?.validityDate)
+      : null;
+    const extractedValDate =
+      generalDocWithVal?.validityDate ||
+      generalDocWithVal?.validityUpTo ||
+      generalDocWithVal?.date ||
+      generalDocWithVal?.additionalDetails?.validityDate ||
+      data?.documents?.validityDate ||
+      "";
+    const extractedRwhDate =
+      rwhDocFromList?.validityDate ||
+      rwhDocFromList?.validityUpTo ||
+      rwhDocFromList?.date ||
+      rwhDocFromList?.additionalDetails?.validityDate ||
+      extractedValDate;
+    const extractedStpDate =
+      stpDocFromList?.validityDate ||
+      stpDocFromList?.validityUpTo ||
+      stpDocFromList?.date ||
+      stpDocFromList?.additionalDetails?.validityDate ||
+      extractedValDate;
+
     if (data?.rainWaterHarvesting) {
       data.additionalDetails = {
         ...data.additionalDetails,
         ...data.rainWaterHarvesting,
         hasRainWaterHarvestingCertificate: !!(data?.rainWaterHarvesting?.hasCertificate || data?.rainWaterHarvesting?.isRainwaterHarvesting),
         isRainwaterHarvesting: !!(data?.rainWaterHarvesting?.hasCertificate || data?.rainWaterHarvesting?.isRainwaterHarvesting),
+        validityDate: extractedRwhDate || undefined,
+        validityUpTo: extractedRwhDate || undefined,
+        date: extractedRwhDate || undefined,
+        rwhValidityDate: extractedRwhDate || undefined,
       };
+      if (extractedRwhDate) {
+        data.rainWaterHarvesting.validityDate = extractedRwhDate;
+        data.rainWaterHarvesting.validityUpTo = extractedRwhDate;
+        data.rainWaterHarvesting.date = extractedRwhDate;
+      }
+    }
+
+    if (data?.sewerTreatmentPlant) {
+      data.additionalDetails = {
+        ...data.additionalDetails,
+        ...data.sewerTreatmentPlant,
+        hasSewerTreatmentPlant: !!(data?.sewerTreatmentPlant?.hasCertificate || data?.sewerTreatmentPlant?.hasStp || data?.sewerTreatmentPlant?.isSewerTreatmentPlant),
+        isSewerTreatmentPlant: !!(data?.sewerTreatmentPlant?.hasCertificate || data?.sewerTreatmentPlant?.hasStp || data?.sewerTreatmentPlant?.isSewerTreatmentPlant),
+        hasStp: !!(data?.sewerTreatmentPlant?.hasCertificate || data?.sewerTreatmentPlant?.hasStp || data?.sewerTreatmentPlant?.isSewerTreatmentPlant),
+        validityDate: extractedStpDate || undefined,
+        validityUpTo: extractedStpDate || undefined,
+        date: extractedStpDate || undefined,
+        stpValidityDate: extractedStpDate || undefined,
+      };
+      if (extractedStpDate) {
+        data.sewerTreatmentPlant.validityDate = extractedStpDate;
+        data.sewerTreatmentPlant.validityUpTo = extractedStpDate;
+        data.sewerTreatmentPlant.date = extractedStpDate;
+      }
     }
 
     if (data?.bankDetails) {

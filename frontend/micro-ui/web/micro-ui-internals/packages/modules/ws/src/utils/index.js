@@ -1,5 +1,41 @@
 import { use } from "react";
 
+export const isRwhDocType = (doc) => {
+  if (!doc) return false;
+  const str = (
+    (typeof doc === "string" ? doc : "") +
+    " " +
+    (doc?.documentType || "") +
+    " " +
+    (doc?.code || "") +
+    " " +
+    (doc?.i18nKey || "") +
+    " " +
+    (doc?.name || "") +
+    " " +
+    (doc?.documentName || "")
+  ).toUpperCase();
+  return str.includes("RAIN") || str.includes("HARVEST");
+};
+
+export const isStpDocType = (doc) => {
+  if (!doc) return false;
+  const str = (
+    (typeof doc === "string" ? doc : "") +
+    " " +
+    (doc?.documentType || "") +
+    " " +
+    (doc?.code || "") +
+    " " +
+    (doc?.i18nKey || "") +
+    " " +
+    (doc?.name || "") +
+    " " +
+    (doc?.documentName || "")
+  ).toUpperCase();
+  return str.includes("SEWER") || str.includes("SEWAGE") || str.includes("STP") || str.includes("TREATMENT");
+};
+
 export const stringReplaceAll = (str = "", searcher = "", replaceWith = "") => {
   if (searcher == "") return str;
   while (str && str.includes(searcher)) {
@@ -542,7 +578,13 @@ export const createPayloadOfWS = async (data) => {
   const connectionHolder = data?.ConnectionHolderDetails?.[0] || data?.ConnectionHolderDetails;
 
 
-  let allDocuments = Array.isArray(data?.documents?.documents) ? [...data.documents.documents] : (Array.isArray(data?.documents) ? [...data.documents] : []);
+  let allDocuments = Array.isArray(data?.documents?.documents)
+    ? [...data.documents.documents]
+    : Array.isArray(data?.documents)
+    ? [...data.documents]
+    : Array.isArray(data?.DocumentsRequired?.documents)
+    ? [...data.DocumentsRequired.documents]
+    : [];
 
   const { signatureFileStoreId, signatureFileName } = getSignatureDetails(data);
   if (signatureFileStoreId) {
@@ -600,6 +642,76 @@ export const createPayloadOfWS = async (data) => {
       status: "ACTIVE",
     });
   }
+
+  allDocuments = allDocuments.map((doc) => {
+    const vDate =
+      doc?.validityDate ||
+      doc?.validityUpTo ||
+      doc?.date ||
+      doc?.additionalDetails?.validityDate ||
+      doc?.additionalDetails?.validityUpTo ||
+      doc?.additionalDetails?.date;
+    const vEpoch = vDate ? convertDateToEpoch(vDate) : undefined;
+    return {
+      ...doc,
+      ...(vDate ? { validityDate: vDate, validityUpTo: vDate, date: vDate } : {}),
+      ...(typeof vEpoch === "number" ? { validityDateEpoch: vEpoch, validityUpToEpoch: vEpoch } : {}),
+      additionalDetails: {
+        ...(doc?.additionalDetails || {}),
+        ...(vDate ? { validityDate: vDate, validityUpTo: vDate, date: vDate } : {}),
+        ...(typeof vEpoch === "number" ? { validityDateEpoch: vEpoch, validityUpToEpoch: vEpoch } : {}),
+      },
+    };
+  });
+
+  const rwhDoc = allDocuments.find((d) => isRwhDocType(d));
+  const stpDoc = allDocuments.find((d) => isStpDocType(d));
+  const docWithValidity = allDocuments.find(
+    (d) => d?.validityDate || d?.validityUpTo || d?.date || d?.additionalDetails?.validityDate || d?.additionalDetails?.validityUpTo
+  );
+
+  const rwhValidityDate =
+    rwhDoc?.validityDate ||
+    rwhDoc?.validityUpTo ||
+    rwhDoc?.date ||
+    rwhDoc?.additionalDetails?.validityDate ||
+    data?.rainWaterHarvesting?.validityDate ||
+    data?.rainWaterHarvesting?.validityUpTo ||
+    data?.rainWaterHarvesting?.date ||
+    data?.additionalDetails?.rainWaterHarvestingValidityDate ||
+    data?.additionalDetails?.rwhValidityDate ||
+    "";
+
+  const stpValidityDate =
+    stpDoc?.validityDate ||
+    stpDoc?.validityUpTo ||
+    stpDoc?.date ||
+    stpDoc?.additionalDetails?.validityDate ||
+    data?.sewerTreatmentPlant?.validityDate ||
+    data?.sewerTreatmentPlant?.validityUpTo ||
+    data?.sewerTreatmentPlant?.date ||
+    data?.additionalDetails?.sewerTreatmentPlantValidityDate ||
+    data?.additionalDetails?.stpValidityDate ||
+    "";
+
+  const overallValidityDate =
+    docWithValidity?.validityDate ||
+    docWithValidity?.validityUpTo ||
+    docWithValidity?.date ||
+    docWithValidity?.additionalDetails?.validityDate ||
+    rwhValidityDate ||
+    stpValidityDate ||
+    data?.documents?.validityDate ||
+    data?.documents?.validityUpTo ||
+    data?.documents?.date ||
+    data?.additionalDetails?.validityDate ||
+    data?.additionalDetails?.validityUpTo ||
+    data?.additionalDetails?.date ||
+    "";
+
+  const overallValidityEpoch = overallValidityDate ? convertDateToEpoch(overallValidityDate) : undefined;
+  const rwhValidityEpoch = rwhValidityDate ? convertDateToEpoch(rwhValidityDate) : undefined;
+  const stpValidityEpoch = stpValidityDate ? convertDateToEpoch(stpValidityDate) : undefined;
   let payload = {
     water: !!isWater,
     sewerage: !!isSewerage,
@@ -690,12 +802,22 @@ export const createPayloadOfWS = async (data) => {
       ...data?.djbEmployee,
       ...data?.disability,
       ...data?.rainWaterHarvesting,
+      ...data?.sewerTreatmentPlant,
       isDivyangjan: !!data?.disability?.isDivyangjan,
       hasRainWaterHarvestingCertificate: !!(
         data?.rainWaterHarvesting?.hasCertificate || data?.rainWaterHarvesting?.isRainwaterHarvesting
       ),
       isRainwaterHarvesting: !!(
         data?.rainWaterHarvesting?.hasCertificate || data?.rainWaterHarvesting?.isRainwaterHarvesting
+      ),
+      hasSewerTreatmentPlant: !!(
+        data?.sewerTreatmentPlant?.hasCertificate || data?.sewerTreatmentPlant?.hasStp || data?.sewerTreatmentPlant?.isSewerTreatmentPlant
+      ),
+      isSewerTreatmentPlant: !!(
+        data?.sewerTreatmentPlant?.hasCertificate || data?.sewerTreatmentPlant?.hasStp || data?.sewerTreatmentPlant?.isSewerTreatmentPlant
+      ),
+      hasStp: !!(
+        data?.sewerTreatmentPlant?.hasCertificate || data?.sewerTreatmentPlant?.hasStp || data?.sewerTreatmentPlant?.isSewerTreatmentPlant
       ),
       document:
         data?.djbEmployee?.document?.fileStoreId ||
@@ -781,6 +903,34 @@ export const createPayloadOfWS = async (data) => {
         data?.documents?.otherDocumentRemark ||
         allDocuments.find((d) => d?.documentType?.includes("OTHER_DOCUMENTS") || d?.documentType?.includes("OTHERDOCUMENTS"))?.documentUid ||
         allDocuments.find((d) => d?.documentType?.includes("OTHER_DOCUMENTS") || d?.documentType?.includes("OTHERDOCUMENTS"))?.remarks,
+      validityDate: overallValidityDate || undefined,
+      validityUpTo: overallValidityDate || undefined,
+      date: overallValidityDate || undefined,
+      ...(typeof overallValidityEpoch === "number"
+        ? { validityDateEpoch: overallValidityEpoch, validityUpToEpoch: overallValidityEpoch }
+        : {}),
+      ...(rwhValidityDate
+        ? {
+            rwhValidityDate: rwhValidityDate,
+            rwhValidityUpTo: rwhValidityDate,
+            rainWaterHarvestingValidityDate: rwhValidityDate,
+            rainWaterHarvestingValidityUpTo: rwhValidityDate,
+            ...(typeof rwhValidityEpoch === "number"
+              ? { rwhValidityDateEpoch: rwhValidityEpoch, rwhValidityUpToEpoch: rwhValidityEpoch }
+              : {}),
+          }
+        : {}),
+      ...(stpValidityDate
+        ? {
+            stpValidityDate: stpValidityDate,
+            stpValidityUpTo: stpValidityDate,
+            sewerTreatmentPlantValidityDate: stpValidityDate,
+            sewerTreatmentPlantValidityUpTo: stpValidityDate,
+            ...(typeof stpValidityEpoch === "number"
+              ? { stpValidityDateEpoch: stpValidityEpoch, stpValidityUpToEpoch: stpValidityEpoch }
+              : {}),
+          }
+        : {}),
       ...(getNormalizedBankDetails(data) ? { ...getNormalizedBankDetails(data), bankDetails: getNormalizedBankDetails(data) } : {}),
       detailsProvidedBy: "",
       channel: isCitizen ? "CITIZEN" : "CFC_COUNTER",
@@ -1026,6 +1176,20 @@ export const convertToWSUpdate = (data) => {
               ),
             }
           : {}),
+        ...(data?.sewerTreatmentPlant !== undefined
+          ? {
+              ...data?.sewerTreatmentPlant,
+              hasSewerTreatmentPlant: !!(
+                data?.sewerTreatmentPlant?.hasCertificate || data?.sewerTreatmentPlant?.hasStp || data?.sewerTreatmentPlant?.isSewerTreatmentPlant
+              ),
+              isSewerTreatmentPlant: !!(
+                data?.sewerTreatmentPlant?.hasCertificate || data?.sewerTreatmentPlant?.hasStp || data?.sewerTreatmentPlant?.isSewerTreatmentPlant
+              ),
+              hasStp: !!(
+                data?.sewerTreatmentPlant?.hasCertificate || data?.sewerTreatmentPlant?.hasStp || data?.sewerTreatmentPlant?.isSewerTreatmentPlant
+              ),
+            }
+          : {}),
         ...(getNormalizedBankDetails(data) ? { ...getNormalizedBankDetails(data), bankDetails: getNormalizedBankDetails(data) } : {}),
       },
       processInstance: {
@@ -1139,6 +1303,20 @@ export const convertToEditWSUpdate = (data) => {
               ),
               isRainwaterHarvesting: !!(
                 data?.rainWaterHarvesting?.hasCertificate || data?.rainWaterHarvesting?.isRainwaterHarvesting
+              ),
+            }
+          : {}),
+        ...(data?.sewerTreatmentPlant !== undefined
+          ? {
+              ...data?.sewerTreatmentPlant,
+              hasSewerTreatmentPlant: !!(
+                data?.sewerTreatmentPlant?.hasCertificate || data?.sewerTreatmentPlant?.hasStp || data?.sewerTreatmentPlant?.isSewerTreatmentPlant
+              ),
+              isSewerTreatmentPlant: !!(
+                data?.sewerTreatmentPlant?.hasCertificate || data?.sewerTreatmentPlant?.hasStp || data?.sewerTreatmentPlant?.isSewerTreatmentPlant
+              ),
+              hasStp: !!(
+                data?.sewerTreatmentPlant?.hasCertificate || data?.sewerTreatmentPlant?.hasStp || data?.sewerTreatmentPlant?.isSewerTreatmentPlant
               ),
             }
           : {}),
@@ -1407,6 +1585,20 @@ export const convertToEditSWUpdate = (data) => {
               ),
             }
           : {}),
+        ...(data?.sewerTreatmentPlant !== undefined
+          ? {
+              ...data?.sewerTreatmentPlant,
+              hasSewerTreatmentPlant: !!(
+                data?.sewerTreatmentPlant?.hasCertificate || data?.sewerTreatmentPlant?.hasStp || data?.sewerTreatmentPlant?.isSewerTreatmentPlant
+              ),
+              isSewerTreatmentPlant: !!(
+                data?.sewerTreatmentPlant?.hasCertificate || data?.sewerTreatmentPlant?.hasStp || data?.sewerTreatmentPlant?.isSewerTreatmentPlant
+              ),
+              hasStp: !!(
+                data?.sewerTreatmentPlant?.hasCertificate || data?.sewerTreatmentPlant?.hasStp || data?.sewerTreatmentPlant?.isSewerTreatmentPlant
+              ),
+            }
+          : {}),
         ...(getNormalizedBankDetails(data) ? { ...getNormalizedBankDetails(data), bankDetails: getNormalizedBankDetails(data) } : {}),
         ...(data?.waterConnection?.useDetails
           ? {
@@ -1646,6 +1838,20 @@ export const convertToSWUpdate = (data) => {
               ),
               isRainwaterHarvesting: !!(
                 data?.rainWaterHarvesting?.hasCertificate || data?.rainWaterHarvesting?.isRainwaterHarvesting
+              ),
+            }
+          : {}),
+        ...(data?.sewerTreatmentPlant !== undefined
+          ? {
+              ...data?.sewerTreatmentPlant,
+              hasSewerTreatmentPlant: !!(
+                data?.sewerTreatmentPlant?.hasCertificate || data?.sewerTreatmentPlant?.hasStp || data?.sewerTreatmentPlant?.isSewerTreatmentPlant
+              ),
+              isSewerTreatmentPlant: !!(
+                data?.sewerTreatmentPlant?.hasCertificate || data?.sewerTreatmentPlant?.hasStp || data?.sewerTreatmentPlant?.isSewerTreatmentPlant
+              ),
+              hasStp: !!(
+                data?.sewerTreatmentPlant?.hasCertificate || data?.sewerTreatmentPlant?.hasStp || data?.sewerTreatmentPlant?.isSewerTreatmentPlant
               ),
             }
           : {}),

@@ -39,6 +39,7 @@ import WSDeclaration from "./pageComponents/WSDeclaration";
 import WSDjbEmployee from "./pageComponents/WSDjbEmployee";
 import WSDivyangjan from "./pageComponents/WSDivyangjan";
 import WSRainWaterHarvesting from "./pageComponents/WSRainWaterHarvesting";
+import WSSewerTreatmentPlant from "./pageComponents/WSSewerTreatmentPlant";
 import WSPropertyWaterConnection from "./pageComponents/WSPropertyWaterConnection";
 
 //Components
@@ -295,6 +296,7 @@ const componentsToRegister = {
   WSOLDApplication: OLDApplication,
   WSDivyangjan: WSDivyangjan,
   WSRainWaterHarvesting: WSRainWaterHarvesting,
+  WSSewerTreatmentPlant: WSSewerTreatmentPlant,
   WSExecuteDisconnection: WSExecuteDisconnection,
   WSFieldInspection: WSFieldInspection,
 };
