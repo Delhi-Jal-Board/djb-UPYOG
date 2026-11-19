@@ -1375,11 +1375,15 @@ public class WorkflowNotificationService {
             }
         }
 
+        String baseHost = !StringUtils.isEmpty(config.getNotificationUrl()) 
+                ? config.getNotificationUrl().trim().replaceAll("/+$", "") 
+                : "https://dev-djberp.nitcon.in";
+
         String consentLetterPdfUrl;
         if (!StringUtils.isEmpty(consentFileStoreId)) {
-            consentLetterPdfUrl = "https://dev-djberp.nitcon.in/filestore/v1/files/id?tenantId=dl.djb&fileStoreId=" + consentFileStoreId;
+            consentLetterPdfUrl = baseHost + "/filestore/v1/files/id?tenantId=dl.djb&fileStoreId=" + consentFileStoreId;
         } else {
-            consentLetterPdfUrl = "https://dev-djberp.nitcon.in/filestore/v1/files/id?tenantId=dl&fileStoreId=2c42cc8e-25f6-4372-a048-9eae38e7f33d";
+            consentLetterPdfUrl = baseHost + "/filestore/v1/files/id?tenantId=dl.djb&fileStoreId=2c42cc8e-25f6-4372-a048-9eae38e7f33d";
         }
 
         try {
@@ -1682,11 +1686,15 @@ public class WorkflowNotificationService {
             }
         }
 
+        String baseHost = !StringUtils.isEmpty(config.getNotificationUrl()) 
+                ? config.getNotificationUrl().trim().replaceAll("/+$", "") 
+                : "https://dev-djberp.nitcon.in";
+
         String disconnectionNoticePdfUrl;
         if (!StringUtils.isEmpty(disconnectionFileStoreId)) {
-            disconnectionNoticePdfUrl = "https://dev-djberp.nitcon.in/filestore/v1/files/id?tenantId=dl.djb&fileStoreId=" + disconnectionFileStoreId;
+            disconnectionNoticePdfUrl = baseHost + "/filestore/v1/files/id?tenantId=dl.djb&fileStoreId=" + disconnectionFileStoreId;
         } else {
-            disconnectionNoticePdfUrl = "https://dev-djberp.nitcon.in/filestore/v1/files/id?tenantId=dl.djb&fileStoreId=2c42cc8e-25f6-4372-a048-9eae38e7f33d";
+            disconnectionNoticePdfUrl = baseHost + "/filestore/v1/files/id?tenantId=dl.djb&fileStoreId=2c42cc8e-25f6-4372-a048-9eae38e7f33d";
         }
 
         try {
