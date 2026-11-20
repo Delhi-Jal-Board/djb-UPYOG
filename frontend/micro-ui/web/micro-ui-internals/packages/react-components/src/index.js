@@ -45,6 +45,7 @@ import EmployeeAppContainer from "./atoms/EmployeeAppContainer";
 import EventCalendarView from "./atoms/EventCalendarView";
 import ExpandedViewContext from "./atoms/ExpandedViewContext";
 import ExpandedViewPage from "./atoms/ExpandedViewPage";
+import FieldLabelWithTooltip from "./atoms/FieldLabelWithTooltip";
 import FilterAction from "./molecules/FilterAction";
 import FormStep from "./molecules/FormStep";
 import GreyOutText from "./atoms/GreyOutText";
@@ -398,6 +399,7 @@ export {
   FaChartBar,
   FastBackward,
   FastForward,
+  FieldLabelWithTooltip,
   FilterAction,
   FilterForm,
   FilterFormField,

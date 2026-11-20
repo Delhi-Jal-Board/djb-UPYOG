@@ -33,8 +33,24 @@ const PropertyLocationDetails = ({
   const initActualWard = isInitActualIdentical ? "" : rawInitActualWard;
   const initActualZone = isInitActualIdentical ? "" : rawInitActualZone;
 
+  const rawInitNoOfFloors =
+    initialAddress?.noOfFloors ||
+    initialAddress?.numberOfFloors ||
+    address?.noOfFloors ||
+    address?.numberOfFloors ||
+    "";
+  const rawInitTotalNoOfFloors =
+    initialAddress?.totalNoOfFloors ||
+    initialAddress?.totalFloors ||
+    address?.totalNoOfFloors ||
+    address?.totalFloors ||
+    "";
+
   const [formData, setFormData] = useState({
-    noOfFloors: address?.noOfFloors || "",
+    noOfFloors: rawInitNoOfFloors,
+    numberOfFloors: rawInitNoOfFloors,
+    totalNoOfFloors: rawInitTotalNoOfFloors,
+    totalFloors: rawInitTotalNoOfFloors,
     // addressType: initialAddress?.addressType || "",
     pincode: initialAddress?.pincode || initialAddress?.pinCode || "",
     city: initialAddress?.city || "",
@@ -56,8 +72,31 @@ const PropertyLocationDetails = ({
     actualWard: initActualWard,
     actualZone: initActualZone,
     colonyMcdCategory: initialAddress?.colonyMcdCategory || "",
-
   });
+
+  useEffect(() => {
+    const currentLoc = address || formDataProp?.locationDet || formDataProp?.address || props?.props?.value;
+    if (currentLoc) {
+      const incomingNoOfFloors = currentLoc?.noOfFloors || currentLoc?.numberOfFloors;
+      const incomingTotalFloors = currentLoc?.totalNoOfFloors || currentLoc?.totalFloors;
+      if (incomingNoOfFloors || incomingTotalFloors) {
+        setFormData((prev) => {
+          const nextNo = incomingNoOfFloors || prev?.noOfFloors || "";
+          const nextTotal = incomingTotalFloors || prev?.totalNoOfFloors || "";
+          if (prev?.noOfFloors === nextNo && prev?.totalNoOfFloors === nextTotal) {
+            return prev;
+          }
+          return {
+            ...prev,
+            noOfFloors: nextNo,
+            numberOfFloors: nextNo,
+            totalNoOfFloors: nextTotal,
+            totalFloors: nextTotal,
+          };
+        });
+      }
+    }
+  }, [formDataProp?.locationDet, address, props?.props?.value]);
 
   const isPropertyFound = window.location.href.includes("ws/old-application") || window.location.href.includes("/edit-property/") || window.location.href.includes("/edit-application");
   const lastCptKeyRef = React.useRef(null);

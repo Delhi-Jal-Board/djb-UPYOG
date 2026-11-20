@@ -262,14 +262,14 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
   const handleSubmit = () => {
     const plotAreaNum = parseFloat(formValue?.useDetails?.plotArea);
     const builtUpAreaNum = parseFloat(formValue?.useDetails?.builtUpArea);
-    if (!isNaN(plotAreaNum) && !isNaN(builtUpAreaNum) && plotAreaNum <= builtUpAreaNum) {
-      const plotTrans = t("WS_PLOT_AREA_MORE_THAN_BUILT_UP_AREA");
+    if (!isNaN(plotAreaNum) && !isNaN(builtUpAreaNum) && plotAreaNum < builtUpAreaNum) {
+      const plotTrans = t("WS_PLOT_AREA_MORE_THAN_OR_EQUAL_BUILT_UP_AREA") || t("WS_PLOT_AREA_MORE_THAN_BUILT_UP_AREA");
       if (setError) {
         setError(config?.key, {
           type: "custom",
-          message: plotTrans && plotTrans !== "WS_PLOT_AREA_MORE_THAN_BUILT_UP_AREA"
+          message: plotTrans && plotTrans !== "WS_PLOT_AREA_MORE_THAN_OR_EQUAL_BUILT_UP_AREA" && plotTrans !== "WS_PLOT_AREA_MORE_THAN_BUILT_UP_AREA"
             ? plotTrans
-            : "Plot area should always be more than built up area.",
+            : "Plot area should always be more than or equal to built up area.",
         });
       }
       return;
@@ -719,8 +719,8 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
                       validate: (value) => {
                         const plot = parseFloat(formValue?.useDetails?.plotArea);
                         const built = parseFloat(value);
-                        if (!isNaN(plot) && !isNaN(built) && plot <= built) {
-                          return t("WS_PLOT_AREA_MORE_THAN_BUILT_UP_AREA") || "Plot area should always be more than built up area.";
+                        if (!isNaN(plot) && !isNaN(built) && plot < built) {
+                          return t("WS_PLOT_AREA_MORE_THAN_OR_EQUAL_BUILT_UP_AREA") || t("WS_PLOT_AREA_MORE_THAN_BUILT_UP_AREA") || "Plot area should always be more than or equal to built up area.";
                         }
                         return true;
                       },

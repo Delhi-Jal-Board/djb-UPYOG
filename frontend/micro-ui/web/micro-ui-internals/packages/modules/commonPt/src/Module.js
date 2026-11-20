@@ -18,6 +18,7 @@ import CPTPropertyDetails from "./pages/pageComponents/PropertyDetails";
 import CPTPropertySearchNSummary from "./pages/pageComponents/PropertySearchNSummary";
 import CPTSearchResults from "./pages/citizen/SearchResults";
 import CPTCreateProperty from "./pages/pageComponents/createForm";
+import CPTPropertyPreview from "./pages/pageComponents/PropertyPreview";
 import CPTAcknowledgement from "./pages/pageComponents/PTAcknowledgement";
 import CommonPTCard from "./components/CommonPTCard";
 import CPTEditPropertyForm from "./pages/pageComponents/editForm";
@@ -88,6 +89,7 @@ const componentsToRegister = {
   CPTPropertySearchNSummary,
   CPTSearchResults,
   CPTCreateProperty,
+  CPTPropertyPreview,
   CPTAcknowledgement,
   CPTEditPropertyForm,
 };

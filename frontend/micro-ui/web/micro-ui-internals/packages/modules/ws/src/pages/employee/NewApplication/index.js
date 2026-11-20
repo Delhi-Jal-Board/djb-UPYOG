@@ -1202,13 +1202,13 @@ const NewApplication = () => {
 
     const plotAreaNum = parseFloat(data?.useDetails?.plotArea);
     const builtUpAreaNum = parseFloat(data?.useDetails?.builtUpArea);
-    if (!isNaN(plotAreaNum) && !isNaN(builtUpAreaNum) && plotAreaNum <= builtUpAreaNum) {
-      const plotTrans = t("WS_PLOT_AREA_MORE_THAN_BUILT_UP_AREA");
+    if (!isNaN(plotAreaNum) && !isNaN(builtUpAreaNum) && plotAreaNum < builtUpAreaNum) {
+      const plotTrans = t("WS_PLOT_AREA_MORE_THAN_OR_EQUAL_BUILT_UP_AREA") || t("WS_PLOT_AREA_MORE_THAN_BUILT_UP_AREA");
       setShowToast({
         key: "error",
-        message: plotTrans && plotTrans !== "WS_PLOT_AREA_MORE_THAN_BUILT_UP_AREA"
+        message: plotTrans && plotTrans !== "WS_PLOT_AREA_MORE_THAN_OR_EQUAL_BUILT_UP_AREA" && plotTrans !== "WS_PLOT_AREA_MORE_THAN_BUILT_UP_AREA"
           ? plotTrans
-          : "Plot area should always be more than built up area.",
+          : "Plot area should always be more than or equal to built up area.",
       });
       return;
     }

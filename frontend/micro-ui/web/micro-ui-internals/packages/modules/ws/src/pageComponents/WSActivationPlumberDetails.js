@@ -6,24 +6,59 @@ import _ from "lodash";
 import { useTranslation } from "react-i18next";
 import { getPattern } from "../utils";
 
-const createPlumberDetails = () => ({
-  plumberName: "",
-  plumberMobileNo: "",
-  plumberLicenseNo: "",
-  detailsProvidedBy: "",
-});
+const options = [
+  { name: "Self", code: "Self", i18nKey: "WS_PLUMBER_SELF" },
+  { name: "Delhi Jal Board", code: "DJB", i18nKey: "WS_PLUMBER_DJB" },
+];
+
+const getAppPlumberInfo = (formData) => {
+  return (
+    formData?.formDetails?.applicationData?.plumberInfo?.[0] ||
+    formData?.connectionDetails?.[0]?.formDetails?.applicationData?.plumberInfo?.[0] ||
+    formData?.plumberInfo?.[0] ||
+    null
+  );
+};
+
+const createPlumberDetails = (formData) => {
+  const appPlumber = getAppPlumberInfo(formData);
+  const existingPref =
+    formData?.formDetails?.applicationData?.additionalDetails?.detailsProvidedBy ||
+    formData?.additionalDetails?.detailsProvidedBy;
+
+  let defaultPref = null;
+  if (existingPref === "DJB" || existingPref === "ULB" || existingPref === "Delhi Jal Board") {
+    defaultPref = options[1];
+  } else if (existingPref === "Self" || appPlumber?.name) {
+    defaultPref = options[0];
+  }
+
+  return {
+    detailsProvidedBy: defaultPref,
+    plumberName: appPlumber?.name || "",
+    plumberMobileNo: appPlumber?.mobileNumber || "",
+    plumberLicenseNo: appPlumber?.licenseNo || "",
+    jeOrFirmName:
+      formData?.formDetails?.applicationData?.additionalDetails?.nameOfJEOrFirm ||
+      formData?.formDetails?.applicationData?.additionalDetails?.jeOrFirmName ||
+      "",
+    key: Date.now(),
+  };
+};
 
 const WSActivationPlumberDetails = ({ config, onSelect, userType, formData, setError, formState, clearErrors }) => {
   const { t } = useTranslation();
   const filters = func.getQueryStringParams(location.search);
-  const [plumberDetails, setPlumberDetails] = useState(formData?.plumberDetails?.length > 0 ? formData?.plumberDetails : [createPlumberDetails()]);
+
+  const [plumberDetails, setPlumberDetails] = useState(() => {
+    if (formData?.plumberDetails?.length > 0) {
+      return formData.plumberDetails;
+    }
+    return [createPlumberDetails(formData)];
+  });
+
   const [focusIndex, setFocusIndex] = useState({ index: -1, type: "" });
   const [isErrors, setIsErrors] = useState(true);
-
-  const options = [
-    { i18nKey: "WS_PLUMBER_ULB", code: "ULB" },
-    { i18nKey: "WS_PLUMBER_SELF", code: "Self" },
-  ];
 
   useEffect(() => {
     const data =
@@ -52,7 +87,6 @@ const WSActivationPlumberDetails = ({ config, onSelect, userType, formData, setE
     plumberDetails,
     filters,
     options,
-    setPlumberDetails,
   };
 
   return (
@@ -87,6 +121,22 @@ const PlumberDetails = (_props) => {
     setPlumberDetails,
   } = _props;
 
+  const getTrans = (key, defaultVal) => {
+    const val = t(key);
+    return val && val !== key ? val : defaultVal;
+  };
+
+  const appPlumber = getAppPlumberInfo(formData);
+
+  const initialPref =
+    plumberDetail?.detailsProvidedBy?.code === "DJB" ||
+    plumberDetail?.detailsProvidedBy?.code === "ULB" ||
+    plumberDetail?.detailsProvidedBy?.name === "Delhi Jal Board"
+      ? options[1]
+      : plumberDetail?.detailsProvidedBy?.code === "Self" || appPlumber?.name
+      ? options[0]
+      : plumberDetail?.detailsProvidedBy || null;
+
   const {
     control,
     formState: localFormState,
@@ -96,48 +146,49 @@ const PlumberDetails = (_props) => {
     setValue,
     trigger,
     getValues,
-  } = useForm();
+  } = useForm({
+    defaultValues: {
+      detailsProvidedBy: initialPref,
+      plumberName: plumberDetail?.plumberName || appPlumber?.name || "",
+      plumberLicenseNo: plumberDetail?.plumberLicenseNo || appPlumber?.licenseNo || "",
+      plumberMobileNo: plumberDetail?.plumberMobileNo || appPlumber?.mobileNumber || "",
+      jeOrFirmName: plumberDetail?.jeOrFirmName || "",
+    },
+  });
+
   const formValue = watch();
   const { errors } = localFormState;
   const isMobile = window.Digit.Utils.browser.isMobile();
   let isEmployee = window.location.href.includes("/employee");
+
+  const currentPref = formValue?.detailsProvidedBy?.code || plumberDetail?.detailsProvidedBy?.code;
+  const isDJB = currentPref === "DJB" || currentPref === "ULB" || formValue?.detailsProvidedBy?.name === "Delhi Jal Board";
+  const isSelf = currentPref === "Self";
 
   useEffect(() => {
     trigger();
   }, []);
 
   useEffect(() => {
-    // if (plumberDetails?.[0]?.detailsProvidedBy !== "Self") {
-    //   clearErrors("PlumberDetails");
-    // } else {
-    //   trigger();
-    // }
+    if (isDJB) {
+      clearLocalErrors(["plumberName", "plumberLicenseNo", "plumberMobileNo"]);
+    } else if (isSelf) {
+      clearLocalErrors(["jeOrFirmName"]);
+    }
     trigger();
-  }, [plumberDetails?.[0]?.detailsProvidedBy, formData?.disConnectionDetails?.[0]]);
+  }, [currentPref]);
 
   useEffect(() => {
     if (Object.entries(formValue).length > 0) {
       const keys = Object.keys(formValue);
       const part = {};
       keys.forEach((key) => (part[key] = plumberDetail[key]));
-      let plumbermobileCheck = window.location.href.includes("ws/config-by-disconnection-application")
-        ? formValue?.plumberMobileNo !== undefined && part?.plumberMobileNo
-        : true;
-      if (!_.isEqual(formValue, part) && plumbermobileCheck) {
-        let isErrorsFound = true;
-        Object.keys(formValue).map((data) => {
-          if (!formValue[data] && isErrorsFound) {
-            isErrorsFound = false;
-            setIsErrors(true);
-          }
-        });
-        if (isErrorsFound) setIsErrors(false);
-        let ob = [{ ...formValue }];
+      if (!_.isEqual(formValue, part)) {
+        let ob = [{ ...plumberDetail, ...formValue }];
         setPlumberDetails(ob);
-        trigger();
       }
     }
-  }, [formValue, plumberDetails]);
+  }, [formValue]);
 
   useEffect(() => {
     if (Object.keys(errors).length && !_.isEqual(formState.errors[config.key]?.type || {}, errors)) {
@@ -148,41 +199,64 @@ const PlumberDetails = (_props) => {
   }, [errors]);
 
   const errorStyle = { width: "100%", marginLeft: "0px", fontSize: "12px", marginTop: "-21px" };
+
   return (
     <React.Fragment>
       <LabelFieldPair>
-        <CardLabel>{t("WS_ADDN_DETAILS_PLUMBER_PROVIDED_BY")} <span style={{ color: "red" }}>*</span></CardLabel>
+        <CardLabel>
+          {getTrans("WS_ADDN_DETAILS_PLUMBER_PROVIDED_BY", "Plumber Provided By")} <span style={{ color: "red" }}>*</span>
+        </CardLabel>
         <Controller
           control={control}
           name={"detailsProvidedBy"}
-          defaultValue={plumberDetail?.detailsProvidedBy}
-          rules={{ required: t("REQUIRED_FIELD") }}
+          defaultValue={initialPref}
+          rules={{ required: getTrans("REQUIRED_FIELD", "Required") }}
           isMandatory={true}
           render={(props) => (
             <Dropdown
               className="form-field"
-              selected={getValues("detailsProvidedBy")}
+              selected={props.value || getValues("detailsProvidedBy")}
               disable={false}
               option={options}
-              placeholder={`${t(`WS_ADDN_DETAILS_PLUMBER_PROVIDED_BY_PLACEHOLDER`)}`}
+              placeholder={getTrans("WS_ADDN_DETAILS_PLUMBER_PROVIDED_BY_PLACEHOLDER", "Select plumber provided by")}
               errorStyle={localFormState.touched.detailsProvidedBy && errors?.detailsProvidedBy?.message ? true : false}
               select={(e) => {
-                if (e.code == "ULB") {
+                if (e.code === "DJB") {
+                  setValue("plumberName", "");
+                  setValue("plumberLicenseNo", "");
+                  setValue("plumberMobileNo", "");
+                  clearLocalErrors(["plumberName", "plumberLicenseNo", "plumberMobileNo"]);
                   let obj = {
                     ...plumberDetails?.[0],
                     detailsProvidedBy: e,
                     plumberName: "",
-                    plumberMobileNo: "",
                     plumberLicenseNo: "",
+                    plumberMobileNo: "",
                   };
                   setPlumberDetails([obj]);
-                } else {
-                  let obj = { detailsProvidedBy: e };
+                } else if (e.code === "Self") {
+                  setValue("jeOrFirmName", "");
+                  clearLocalErrors(["jeOrFirmName"]);
+                  const pName = appPlumber?.name || getValues("plumberName") || "";
+                  const pLic = appPlumber?.licenseNo || getValues("plumberLicenseNo") || "";
+                  const pMob = appPlumber?.mobileNumber || getValues("plumberMobileNo") || "";
+                  if (pName) setValue("plumberName", pName);
+                  if (pLic) setValue("plumberLicenseNo", pLic);
+                  if (pMob) setValue("plumberMobileNo", pMob);
+
+                  let obj = {
+                    ...plumberDetails?.[0],
+                    detailsProvidedBy: e,
+                    plumberName: pName,
+                    plumberLicenseNo: pLic,
+                    plumberMobileNo: pMob,
+                    jeOrFirmName: "",
+                  };
                   setPlumberDetails([obj]);
                 }
                 props.onChange(e);
               }}
-              optionKey="i18nKey"
+              optionKey="name"
               onBlur={props.onBlur}
               t={t}
             />
@@ -192,57 +266,62 @@ const PlumberDetails = (_props) => {
           <CardLabelError style={errorStyle}> {errors?.detailsProvidedBy?.message}</CardLabelError>
         ) : null}
       </LabelFieldPair>
-      {!plumberDetail?.detailsProvidedBy?.code || plumberDetail?.detailsProvidedBy?.code == "ULB" ? (
+
+      {/* If DJB is selected: Plumber details are NOT required, instead Name of JE / Name of Firm is shown */}
+      {isDJB ? (
+        <LabelFieldPair>
+          <CardLabel>
+            {getTrans("WS_NAME_OF_JE_OR_FIRM", "Name of JE / Name of Firm")} <span style={{ color: "red" }}>*</span>
+          </CardLabel>
+          <div className="field">
+            <Controller
+              control={control}
+              name="jeOrFirmName"
+              defaultValue={plumberDetail?.jeOrFirmName}
+              rules={{ required: getTrans("REQUIRED_FIELD", "Required") }}
+              isMandatory={true}
+              render={(props) => (
+                <TextInput
+                  value={props.value}
+                  autoFocus={focusIndex.index === plumberDetail?.key && focusIndex.type === "jeOrFirmName"}
+                  errorStyle={localFormState.touched.jeOrFirmName && errors?.jeOrFirmName?.message ? true : false}
+                  onChange={(e) => {
+                    props.onChange(e.target.value);
+                    setFocusIndex({ index: plumberDetail?.key, type: "jeOrFirmName" });
+                  }}
+                  labelStyle={{ marginTop: "unset" }}
+                  onBlur={props.onBlur}
+                  placeholder={getTrans("WS_NAME_OF_JE_OR_FIRM_PLACEHOLDER", "Enter Name of JE / Name of Firm")}
+                />
+              )}
+            />
+          </div>
+          {localFormState.touched.jeOrFirmName && errors?.jeOrFirmName?.message ? (
+            <CardLabelError style={errorStyle}> {errors?.jeOrFirmName?.message}</CardLabelError>
+          ) : null}
+        </LabelFieldPair>
+      ) : null}
+
+      {/* If Self is selected (or default before selection): Plumber details are mandatory */}
+      {isSelf || !currentPref ? (
         <React.Fragment>
           <LabelFieldPair>
-            <CardLabel>{t("WS_PLIMBER_LICENSE_NO_LABEL")} <span style={{ color: "red" }}>*</span></CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name="plumberLicenseNo"
-                defaultValue={plumberDetail?.plumberLicenseNo}
-                // rules={{ required: t("REQUIRED_FIELD") }}
-                rules={{
-                  validate: (e) => ((e && getPattern("WSOnlyNumbers").test(e)) || !e ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG")),
-                  required: t("REQUIRED_FIELD"),
-                }}
-                isMandatory={true}
-                render={(props) => (
-                  <TextInput
-                    value={props.value}
-                    autoFocus={focusIndex.index === plumberDetail?.key && focusIndex.type === "plumberLicenseNo"}
-                    errorStyle={localFormState.touched.plumberLicenseNo && errors?.plumberLicenseNo?.message ? true : false}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
-                      setFocusIndex({ index: plumberDetail?.key, type: "plumberLicenseNo" });
-                    }}
-                    labelStyle={{ marginTop: "unset" }}
-                    onBlur={props.onBlur}
-                    placeholder={`${t(`WS_PLIMBER_LICENSE_NO_PLACEHOLDER`)}`}
-                  />
-                )}
-              />
-            </div>
-            {localFormState.touched.plumberLicenseNo && errors?.plumberLicenseNo?.message ? (
-              <CardLabelError style={errorStyle}>{errors?.plumberLicenseNo?.message}</CardLabelError>
-            ) : null}
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel>{t("WS_ADDN_DETAILS_PLUMBER_NAME_LABEL")} <span style={{ color: "red" }}>*</span></CardLabel>
+            <CardLabel>
+              {getTrans("WS_ADDN_DETAILS_PLUMBER_NAME_LABEL", "Name of Plumber")} <span style={{ color: "red" }}>*</span>
+            </CardLabel>
             <div className="field">
               <Controller
                 control={control}
                 name="plumberName"
-                defaultValue={plumberDetail?.plumberName}
-                // rules={{ required: t("REQUIRED_FIELD") }}
+                defaultValue={plumberDetail?.plumberName || appPlumber?.name || ""}
                 rules={{
                   validate: (e) =>
                     !e || !e.trim()
-                      ? t("REQUIRED_FIELD")
+                      ? getTrans("REQUIRED_FIELD", "Required")
                       : /^[a-zA-Z\s]{1,50}$/.test(e)
                       ? true
-                      : t("WS_NAME_ERROR_MESSAGE") || t("PT_NAME_ERROR_MESSAGE") || "Only alphabets are allowed",
-                  required: t("REQUIRED_FIELD"),
+                      : getTrans("WS_NAME_ERROR_MESSAGE", "Only alphabets are allowed"),
+                  required: getTrans("REQUIRED_FIELD", "Required"),
                 }}
                 isMandatory={true}
                 render={(props) => (
@@ -258,7 +337,7 @@ const PlumberDetails = (_props) => {
                     }}
                     labelStyle={{ marginTop: "unset" }}
                     onBlur={props.onBlur}
-                    placeholder={`${t(`WS_ADDN_DETAILS_PLUMBER_NAME_PLACEHOLDER`)}`}
+                    placeholder={getTrans("WS_ADDN_DETAILS_PLUMBER_NAME_PLACEHOLDER", "Enter Name of Plumber")}
                   />
                 )}
               />
@@ -267,21 +346,58 @@ const PlumberDetails = (_props) => {
               <CardLabelError style={errorStyle}> {errors?.plumberName?.message}</CardLabelError>
             ) : null}
           </LabelFieldPair>
+
           <LabelFieldPair>
-            <CardLabel>{t("WS_PLUMBER_MOBILE_NO_LABEL")} <span style={{ color: "red" }}>*</span></CardLabel>
+            <CardLabel>
+              {getTrans("WS_PLIMBER_LICENSE_NO_LABEL", "Plumber License Number")} <span style={{ color: "red" }}>*</span>
+            </CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name="plumberLicenseNo"
+                defaultValue={plumberDetail?.plumberLicenseNo || appPlumber?.licenseNo || ""}
+                rules={{
+                  required: getTrans("REQUIRED_FIELD", "Required"),
+                }}
+                isMandatory={true}
+                render={(props) => (
+                  <TextInput
+                    value={props.value}
+                    autoFocus={focusIndex.index === plumberDetail?.key && focusIndex.type === "plumberLicenseNo"}
+                    errorStyle={localFormState.touched.plumberLicenseNo && errors?.plumberLicenseNo?.message ? true : false}
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
+                      setFocusIndex({ index: plumberDetail?.key, type: "plumberLicenseNo" });
+                    }}
+                    labelStyle={{ marginTop: "unset" }}
+                    onBlur={props.onBlur}
+                    placeholder={getTrans("WS_PLIMBER_LICENSE_NO_PLACEHOLDER", "Enter Plumber License Number")}
+                  />
+                )}
+              />
+            </div>
+            {localFormState.touched.plumberLicenseNo && errors?.plumberLicenseNo?.message ? (
+              <CardLabelError style={errorStyle}>{errors?.plumberLicenseNo?.message}</CardLabelError>
+            ) : null}
+          </LabelFieldPair>
+
+          <LabelFieldPair>
+            <CardLabel>
+              {getTrans("WS_PLUMBER_MOBILE_NO_LABEL", "Plumber Mobile Number")} <span style={{ color: "red" }}>*</span>
+            </CardLabel>
             <div className="field">
               <Controller
                 control={control}
                 name="plumberMobileNo"
-                defaultValue={plumberDetail?.plumberMobileNo}
+                defaultValue={plumberDetail?.plumberMobileNo || appPlumber?.mobileNumber || ""}
                 rules={{
                   validate: (e) => {
-                    if (!e || !e.trim()) return t("REQUIRED_FIELD");
+                    if (!e || !e.trim()) return getTrans("REQUIRED_FIELD", "Required");
                     if (e.includes("*")) return true;
                     if (/^[6-9]\d{9}$/.test(e)) return true;
-                    return t("CORE_COMMON_PHONENO_INVALID") || "Please enter a valid 10-digit mobile number";
+                    return getTrans("CORE_COMMON_PHONENO_INVALID", "Please enter a valid 10-digit mobile number");
                   },
-                  required: t("REQUIRED_FIELD"),
+                  required: getTrans("REQUIRED_FIELD", "Required"),
                 }}
                 type="mobileNumber"
                 isMandatory={true}
@@ -304,7 +420,7 @@ const PlumberDetails = (_props) => {
                       }}
                       labelStyle={{ marginTop: "unset" }}
                       onBlur={props.onBlur}
-                      placeholder={`${t(`WS_PLUMBER_MOBILE_NO_PLACEHOLDER`)}`}
+                      placeholder={getTrans("WS_PLUMBER_MOBILE_NO_PLACEHOLDER", "Enter Plumber Mobile Number")}
                     />
                     <div style={isMobile && isEmployee ? {} : { marginRight: "-50px", marginLeft: "10px" }}>
                       <WrapUnMaskComponent
@@ -335,9 +451,7 @@ const PlumberDetails = (_props) => {
                             isArray: false,
                           },
                         }}
-                      >
-                        {/*privacy={{ uuid:plumberDetail?.applicationNo, fieldName: ["plumberInfoMobileNumber"], model: "WnSConnectionPlumber" }}*/}
-                      </WrapUnMaskComponent>
+                      />
                     </div>
                   </div>
                 )}

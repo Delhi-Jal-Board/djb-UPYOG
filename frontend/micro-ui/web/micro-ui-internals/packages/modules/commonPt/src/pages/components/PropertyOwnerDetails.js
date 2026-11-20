@@ -13,6 +13,7 @@ import {
   DeleteIcon,
   CardSectionHeader,
   CollapsibleCardPage,
+  FieldLabelWithTooltip,
 } from "@djb25/digit-ui-react-components";
 import _ from "lodash";
 import React, { useState, useMemo, useEffect } from "react";
@@ -38,6 +39,11 @@ const PropertyOwnerDetails = ({ t, config, onSelect, userType, formData, formSta
     (formData?.owners && Array.isArray(formData.owners) && formData.owners[index]) ||
     (formData?.owners && !Array.isArray(formData.owners) ? formData.owners : null);
   const initialName = initOwner?.name || (isCitizen ? userInfo?.name || "" : "");
+  const nameParts = (initOwner?.name || initialName || "").trim().split(/\s+/);
+  const initialFirstName = initOwner?.firstName || (nameParts.length > 0 && nameParts[0] ? nameParts[0] : "");
+  const initialMiddleName = initOwner?.middleName || (nameParts.length > 2 ? nameParts.slice(1, -1).join(" ") : "");
+  const initialLastName = initOwner?.lastName || (nameParts.length > 1 ? nameParts[nameParts.length - 1] : "");
+  const initialEmail = initOwner?.emailId || initOwner?.email || (isCitizen ? userInfo?.emailId || userInfo?.email || "" : "");
   const initialMobile = initOwner?.mobileNumber || (isCitizen ? userInfo?.mobileNumber || "" : "");
   const initialGender =
     initOwner?.gender ||
@@ -49,6 +55,11 @@ const PropertyOwnerDetails = ({ t, config, onSelect, userType, formData, formSta
     {
       ...(formData.owners && formData.owners[index]),
       name: initialName,
+      firstName: initialFirstName,
+      middleName: initialMiddleName,
+      lastName: initialLastName,
+      emailId: initialEmail,
+      email: initialEmail,
       gender: initialGender,
       mobileNumber: initialMobile,
       fatherOrHusbandName:
@@ -58,7 +69,6 @@ const PropertyOwnerDetails = ({ t, config, onSelect, userType, formData, formSta
       ownerType: (formData.owners && formData.owners[index] && formData.owners[index]?.ownerType) || formData.owners?.ownerType || { code: "NONE", name: "None", i18nKey: "PT_OWNERSHIP_CATEGORY_NONE" },
       permanentAddress:
         (formData.owners && formData.owners[index] && formData.owners[index].permanentAddress) || formData?.owners?.permanentAddress || "NA",
-      email: (formData.owners && formData.owners[index] && formData.owners[index].email) || formData?.owners?.emailId || "",
       isCoresAddr: false,
     },
   ]);
@@ -176,10 +186,21 @@ const PropertyOwnerDetails = ({ t, config, onSelect, userType, formData, formSta
   }, [errors]);
 
   const updateState = (filedName = "name", ind = 0, value = "") => {
-    setOwnerDetails(
-      ownerDetails.map((owner, i) => {
+    setOwnerDetails((prevDetails) =>
+      (prevDetails || []).map((owner, i) => {
         if (i === ind) {
-          owner[filedName] = value;
+          return { ...owner, [filedName]: value };
+        }
+        return { ...owner };
+      })
+    );
+  };
+
+  const updateOwnerFields = (fieldsToUpdate = {}, ind = 0) => {
+    setOwnerDetails((prevDetails) =>
+      (prevDetails || []).map((owner, i) => {
+        if (i === ind) {
+          return { ...owner, ...fieldsToUpdate };
         }
         return { ...owner };
       })
@@ -228,7 +249,11 @@ const PropertyOwnerDetails = ({ t, config, onSelect, userType, formData, formSta
             <React.Fragment>
               <div className="formcomposer-section-grid">
                 <LabelFieldPair>
-                  <CardLabel>{`${t("PT_FORM3_MOBILE_NUMBER")}`}<span className="check-page-link-button"> *</span></CardLabel>
+                  <FieldLabelWithTooltip
+                    label={t("PT_FORM3_MOBILE_NUMBER")}
+                    isMandatory={true}
+                    infoText={t("PT_MOBILE_NUMBER_INFO_MSG", "Enter 10 digit Mobile Number")}
+                  />
 
                   <div className="form-field">
                     <Controller
@@ -275,12 +300,16 @@ const PropertyOwnerDetails = ({ t, config, onSelect, userType, formData, formSta
                 )}
 
                 <LabelFieldPair>
-                  <CardLabel>{`${t("PT_OWNER_NAME")}`}<span className="check-page-link-button"> *</span></CardLabel>
+                  <FieldLabelWithTooltip
+                    label={t("CORE_COMMON_FIRST_NAME", "First Name")}
+                    isMandatory={true}
+                    infoText={t("CORE_COMMON_FIRST_NAME_INFO_MSG", "Enter First Name")}
+                  />
                   <div className="form-field">
                     <Controller
-                      key={"name" + index}
-                      name={"name" + index}
-                      defaultValue={owner?.name}
+                      key={"firstName" + index}
+                      name={"firstName" + index}
+                      defaultValue={owner?.firstName}
                       control={control}
                       rules={{
                         required: t("REQUIRED_FIELD"),
@@ -294,26 +323,166 @@ const PropertyOwnerDetails = ({ t, config, onSelect, userType, formData, formSta
                           type={"text"}
                           isMandatory={false}
                           optionKey="i18nKey"
-                          name={"name" + index}
+                          name={"firstName" + index}
                           value={value}
                           onChange={(ev) => {
-                            onChange(ev.target.value);
-                            updateState("name", index, ev.target.value);
+                            const val = ev.target.value;
+                            onChange(val);
+                            const full = [val, owner?.middleName, owner?.lastName].filter(Boolean).join(" ");
+                            updateOwnerFields({ firstName: val, name: full }, index);
                           }}
                           disable={isUpdateProperty || isEditProperty}
                           onBlur={onBlur}
-                          placeholder={t("PT_OWNER_NAME")}
+                          placeholder={t("CORE_COMMON_FIRST_NAME_PLACEHOLDER", "Enter First Name")}
                         />
                       )}
                     />
                   </div>
                 </LabelFieldPair>
-                {touched?.["name" + index] && errors?.["name" + index]?.message && (
-                  <CardLabelError style={errorStyle}>{errors?.["name" + index]?.message}</CardLabelError>
+                {touched?.["firstName" + index] && errors?.["firstName" + index]?.message && (
+                  <CardLabelError style={errorStyle}>{errors?.["firstName" + index]?.message}</CardLabelError>
                 )}
 
                 <LabelFieldPair>
-                  <CardLabel>{`${t("PT_FORM3_GENDER")}`}<span className="check-page-link-button"> *</span></CardLabel>
+                  <FieldLabelWithTooltip
+                    label={t("CORE_COMMON_MIDDLE_NAME", "Middle Name")}
+                    isMandatory={false}
+                    infoText={t("CORE_COMMON_MIDDLE_NAME_INFO_MSG", "Enter Middle Name (Optional)")}
+                  />
+                  <div className="form-field">
+                    <Controller
+                      key={"middleName" + index}
+                      name={"middleName" + index}
+                      defaultValue={owner?.middleName}
+                      control={control}
+                      rules={{
+                        validate: (value) => {
+                          return !value || /^[a-zA-Z ]*$/i.test(value) ? true : t("PT_NAME_ERROR_MESSAGE");
+                        },
+                      }}
+                      render={({ value, onChange, onBlur }) => (
+                        <TextInput
+                          t={t}
+                          type={"text"}
+                          isMandatory={false}
+                          optionKey="i18nKey"
+                          name={"middleName" + index}
+                          value={value}
+                          onChange={(ev) => {
+                            const val = ev.target.value;
+                            onChange(val);
+                            const full = [owner?.firstName, val, owner?.lastName].filter(Boolean).join(" ");
+                            updateOwnerFields({ middleName: val, name: full }, index);
+                          }}
+                          disable={isUpdateProperty || isEditProperty}
+                          onBlur={onBlur}
+                          placeholder={t("CORE_COMMON_MIDDLE_NAME_PLACEHOLDER", "Enter Middle Name")}
+                        />
+                      )}
+                    />
+                  </div>
+                </LabelFieldPair>
+                {touched?.["middleName" + index] && errors?.["middleName" + index]?.message && (
+                  <CardLabelError style={errorStyle}>{errors?.["middleName" + index]?.message}</CardLabelError>
+                )}
+
+                <LabelFieldPair>
+                  <FieldLabelWithTooltip
+                    label={t("CORE_COMMON_LAST_NAME", "Last Name")}
+                    isMandatory={false}
+                    infoText={t("CORE_COMMON_LAST_NAME_INFO_MSG", "Enter Last Name")}
+                  />
+                  <div className="form-field">
+                    <Controller
+                      key={"lastName" + index}
+                      name={"lastName" + index}
+                      defaultValue={owner?.lastName}
+                      control={control}
+                      rules={{
+                        validate: (value) => {
+                          return !value || /^[a-zA-Z ]*$/i.test(value) ? true : t("PT_NAME_ERROR_MESSAGE");
+                        },
+                      }}
+                      render={({ value, onChange, onBlur }) => (
+                        <TextInput
+                          t={t}
+                          type={"text"}
+                          isMandatory={false}
+                          optionKey="i18nKey"
+                          name={"lastName" + index}
+                          value={value}
+                          onChange={(ev) => {
+                            const val = ev.target.value;
+                            onChange(val);
+                            const full = [owner?.firstName, owner?.middleName, val].filter(Boolean).join(" ");
+                            updateOwnerFields({ lastName: val, name: full }, index);
+                          }}
+                          disable={isUpdateProperty || isEditProperty}
+                          onBlur={onBlur}
+                          placeholder={t("CORE_COMMON_LAST_NAME_PLACEHOLDER", "Enter Last Name")}
+                        />
+                      )}
+                    />
+                  </div>
+                </LabelFieldPair>
+                {touched?.["lastName" + index] && errors?.["lastName" + index]?.message && (
+                  <CardLabelError style={errorStyle}>{errors?.["lastName" + index]?.message}</CardLabelError>
+                )}
+
+                <LabelFieldPair>
+                  <FieldLabelWithTooltip
+                    label={t("CORE_COMMON_EMAIL_ID", "Email")}
+                    isMandatory={false}
+                    infoText={t("CORE_COMMON_EMAIL_INFO_MSG", "Enter Email Address")}
+                  />
+                  <div className="form-field">
+                    <Controller
+                      key={"emailId" + index}
+                      name={"emailId" + index}
+                      defaultValue={owner?.emailId || owner?.email}
+                      control={control}
+                      rules={{
+                        validate: (value) => {
+                          if (!value || typeof value !== "string" || value.trim() === "") return true;
+                          return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(value.trim())
+                            ? true
+                            : t("CORE_COMMON_INVALID_EMAIL", "Please enter a valid Email ID");
+                        },
+                      }}
+                      render={({ value, onChange, onBlur }) => (
+                        <TextInput
+                          t={t}
+                          type={"email"}
+                          isMandatory={false}
+                          optionKey="i18nKey"
+                          name={"emailId" + index}
+                          value={value}
+                          onChange={(ev) => {
+                            const val = ev.target.value;
+                            onChange(val);
+                            updateOwnerFields({ emailId: val, email: val }, index);
+                          }}
+                          disable={isUpdateProperty || isEditProperty}
+                          onBlur={onBlur}
+                          placeholder={t("CORE_COMMON_EMAIL_PLACEHOLDER", "Enter Email Address")}
+                        />
+                      )}
+                    />
+                  </div>
+                </LabelFieldPair>
+                {(errors?.["emailId" + index]?.message ||
+                  (owner?.emailId && typeof owner?.emailId === "string" && owner?.emailId.trim() !== "" && !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(owner.emailId.trim()))) && (
+                  <CardLabelError style={errorStyle}>
+                    {errors?.["emailId" + index]?.message || t("CORE_COMMON_INVALID_EMAIL", "Please enter a valid Email ID")}
+                  </CardLabelError>
+                )}
+
+                <LabelFieldPair>
+                  <FieldLabelWithTooltip
+                    label={t("PT_FORM3_GENDER")}
+                    isMandatory={true}
+                    infoText={t("PT_GENDER_INFO_MSG", "Select Gender")}
+                  />
                   <div className="form-field">
                     <Controller
                       key={"gender" + index}

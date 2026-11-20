@@ -196,7 +196,42 @@ const WSFeeEstimation = ({ wsAdditionalDetails, workflowDetails, onlyDisconnecti
       : isReconnectionFeeOnly
       ? reopeningFee?.amount ?? reopeningFee?.estimateAmount ?? 0
       : billDetails?.totalAmount;
-  const displayedIsPaid = isDisconnectionExecuted ? disconnectionFee?.status === "PAID" || isPaid : isPaid;
+
+  const hasAdditionalInfraCharge = Boolean(
+    wsAdditionalDetails?.additionalDetails?.hasAdditionalInfraCharge ||
+    billRows.some((b) => b?.taxHeadCode === "WS_ADDITIONAL_INFRASTRUCTURE_CHARGE") ||
+    values.some((v) => v?.title === "WS_ADDITIONAL_INFRASTRUCTURE_CHARGE" || v?.taxHeadCode === "WS_ADDITIONAL_INFRASTRUCTURE_CHARGE")
+  );
+  const isPropUpdated = Boolean(
+    hasAdditionalInfraCharge ||
+    wsAdditionalDetails?.additionalDetails?.isPropUpdated ||
+    wsAdditionalDetails?.additionalDetails?.isPropertyUpdated ||
+    wsAdditionalDetails?.additionalDetails?.appDetails?.additionalDetails?.isPropertyUpdated ||
+    wsAdditionalDetails?.additionalDetails?.appDetails?.additionalDetails?.isPropUpdated
+  );
+
+  const hasUnpaidCharge =
+    isPropUpdated &&
+    Boolean(
+      wsAdditionalDetails?.additionalDetails?.hasUnpaidCharge !== undefined
+        ? wsAdditionalDetails?.additionalDetails?.hasUnpaidCharge
+        : (
+            billRows.some((b) => {
+              const st = String(b?.status || "").toUpperCase();
+              return st === "UNPAID" || (b?.taxHeadCode === "WS_ADDITIONAL_INFRASTRUCTURE_CHARGE" && st !== "PAID");
+            }) ||
+            values.some((v) => {
+              const st = String(v?.status || "").toUpperCase();
+              return st === "UNPAID" || ((v?.title === "WS_ADDITIONAL_INFRASTRUCTURE_CHARGE" || v?.taxHeadCode === "WS_ADDITIONAL_INFRASTRUCTURE_CHARGE") && st !== "PAID");
+            })
+          )
+    );
+
+  const displayedIsPaid = isPropUpdated
+    ? !hasUnpaidCharge
+    : isDisconnectionExecuted
+    ? disconnectionFee?.status === "PAID" || isPaid
+    : isPaid;
 
   const stateCode = Digit.ULBService.getStateId();
   const { isMdmsLoading, data: mdmsRes } = Digit.Hooks.ws.useMDMS(stateCode, "BillingService", ["TaxHeadMaster"]);
@@ -208,12 +243,15 @@ const WSFeeEstimation = ({ wsAdditionalDetails, workflowDetails, onlyDisconnecti
       const values = billAccountDetails.length > 0 
         ? billAccountDetails.map((bill) => ({
             title: bill?.taxHeadCode,
-            value: <span>&#8377;{Number(bill?.amount).toFixed(2)}</span>
+            value: <span>&#8377;{Number(bill?.amount ?? bill?.estimateAmount ?? 0).toFixed(2)}</span>,
+            status: bill?.status,
+            taxHeadCode: bill?.taxHeadCode,
+            amount: bill?.amount ?? bill?.estimateAmount ?? 0,
           }))
         : [
-            { title: "WS_APPLICATION_FEE_HEADER", value: <span>&#8377;{sessionFormData?.billDetails?.[0]?.fee}</span> },
-            { title: "WS_SERVICE_FEE_HEADER", value: <span>&#8377;{sessionFormData?.billDetails?.[0]?.charge}</span> },
-            { title: "WS_TAX_HEADER", value: <span>&#8377;{sessionFormData?.billDetails?.[0]?.taxAmount}</span> },
+            { title: "WS_APPLICATION_FEE_HEADER", value: <span>&#8377;{sessionFormData?.billDetails?.[0]?.fee || 0}</span>, amount: sessionFormData?.billDetails?.[0]?.fee || 0 },
+            { title: "WS_SERVICE_FEE_HEADER", value: <span>&#8377;{sessionFormData?.billDetails?.[0]?.charge || 0}</span>, amount: sessionFormData?.billDetails?.[0]?.charge || 0 },
+            { title: "WS_TAX_HEADER", value: <span>&#8377;{sessionFormData?.billDetails?.[0]?.taxAmount || 0}</span>, amount: sessionFormData?.billDetails?.[0]?.taxAmount || 0 },
           ];
       setValues(values);
       setBillDetails(sessionFormData?.billDetails?.[0]);
@@ -222,6 +260,15 @@ const WSFeeEstimation = ({ wsAdditionalDetails, workflowDetails, onlyDisconnecti
       setFields(data);
     }
   }, []);
+
+  useEffect(() => {
+    if (wsAdditionalDetails?.additionalDetails?.values?.length > 0 && (!sessionFormData?.billDetails || sessionFormData?.billDetails?.length === 0)) {
+      setValues(wsAdditionalDetails.additionalDetails.values);
+    }
+    if (wsAdditionalDetails?.additionalDetails?.data && (!sessionFormData?.billDetails || sessionFormData?.billDetails?.length === 0)) {
+      setBillDetails(wsAdditionalDetails.additionalDetails.data);
+    }
+  }, [wsAdditionalDetails?.additionalDetails?.values, wsAdditionalDetails?.additionalDetails?.data]);
 
   let validation = {};
 
@@ -295,12 +342,15 @@ const WSFeeEstimation = ({ wsAdditionalDetails, workflowDetails, onlyDisconnecti
             const values = taxHeadEstimates.length > 0 
               ? taxHeadEstimates.map((data) => ({
                   title: data?.taxHeadCode,
-                  value: <span>&#8377;{Number(data?.estimateAmount).toFixed(2)}</span>
+                  value: <span>&#8377;{Number(data?.estimateAmount ?? data?.amount ?? 0).toFixed(2)}</span>,
+                  status: data?.status,
+                  taxHeadCode: data?.taxHeadCode,
+                  amount: data?.estimateAmount ?? data?.amount ?? 0,
                 }))
               : [
-                  { title: "WS_APPLICATION_FEE_HEADER", value: result.Calculation?.[0]?.fee },
-                  { title: "WS_SERVICE_FEE_HEADER", value: result.Calculation?.[0]?.charge },
-                  { title: "WS_TAX_HEADER", value: result.Calculation?.[0]?.taxAmount },
+                  { title: "WS_APPLICATION_FEE_HEADER", value: <span>&#8377;{result.Calculation?.[0]?.fee || 0}</span>, amount: result.Calculation?.[0]?.fee || 0 },
+                  { title: "WS_SERVICE_FEE_HEADER", value: <span>&#8377;{result.Calculation?.[0]?.charge || 0}</span>, amount: result.Calculation?.[0]?.charge || 0 },
+                  { title: "WS_TAX_HEADER", value: <span>&#8377;{result.Calculation?.[0]?.taxAmount || 0}</span>, amount: result.Calculation?.[0]?.taxAmount || 0 },
                 ];
             setSessionBillFormData(cloneDeep(result.Calculation[0]));
             setBillDetails(result?.Calculation?.[0]);
@@ -350,8 +400,38 @@ const WSFeeEstimation = ({ wsAdditionalDetails, workflowDetails, onlyDisconnecti
           <StatusTable>
             <div>
               {displayedValues?.map((value, index) => {
+                const billRow = billRows?.find((b) => b?.taxHeadCode === value?.title || b?.taxHeadCode === value?.taxHeadCode);
+                const rawStatus = value?.status || billRow?.status || (value?.title === "WS_ADDITIONAL_INFRASTRUCTURE_CHARGE" || value?.taxHeadCode === "WS_ADDITIONAL_INFRASTRUCTURE_CHARGE" ? "UNPAID" : "");
+                const status = String(rawStatus || "").toUpperCase();
+                const isItemPaid = status === "PAID";
+                const isItemUnpaid = status === "UNPAID";
+                const showItemStatus = isPropUpdated && (isItemPaid || isItemUnpaid);
+
                 return (
-                  <Row className="border-none" key={`${value.title}`} label={`${t(`${value.title}`)}`} text={value?.value ? value?.value : ""} />
+                  <Row
+                    className="border-none"
+                    key={`${value.title || index}`}
+                    label={`${t(`${value.title}`)}`}
+                    text={
+                      showItemStatus ? (
+                        <span>
+                          {value?.value ? value?.value : <span>&#8377;{Number(value?.amount ?? (billRow?.amount ?? billRow?.estimateAmount ?? 0)).toFixed(2)}</span>}
+                          <span
+                            style={{
+                              color: isItemPaid ? "#2E9E8F" : "#D83A2F",
+                              marginLeft: "8px",
+                              fontWeight: "600",
+                              fontSize: "14px",
+                            }}
+                          >
+                            {isItemPaid ? "(paid)" : "(unpaid)"}
+                          </span>
+                        </span>
+                      ) : (
+                        value?.value ? value?.value : ""
+                      )
+                    }
+                  />
                 );
               })}
             </div>
@@ -368,7 +448,7 @@ const WSFeeEstimation = ({ wsAdditionalDetails, workflowDetails, onlyDisconnecti
                 className="border-none"
                 key={`CS_INBOX_STATUS_FILTER`}
                 label={`${t(`CS_INBOX_STATUS_FILTER`)}`}
-                text={displayedIsPaid ? t("WS_COMMON_PAID_LABEL") : t("WS_COMMON_NOT_PAID")}
+                text={displayedIsPaid ? (t("WS_COMMON_PAID_LABEL") || "PAID") : (isPropUpdated ? "UNPAID" : t("WS_COMMON_NOT_PAID"))}
                 textStyle={!displayedIsPaid ? { color: "#D83A2F" } : { color: "#2E9E8F" }}
               />
             </div>

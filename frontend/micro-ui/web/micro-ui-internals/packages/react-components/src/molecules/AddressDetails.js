@@ -11,6 +11,8 @@ import Modal from "../hoc/Modal";
 import Button from "../atoms/Button";
 import LabelFieldPair from "../atoms/LabelFieldPair";
 import CardLabel from "../atoms/CardLabel";
+import { InfoBannerIcon } from "../atoms/svgindex";
+import FieldLabelWithTooltip from "../atoms/FieldLabelWithTooltip";
 
 const allOptions = [
   { name: "Correspondence", code: "CORRESPONDENCE", i18nKey: "COMMON_ADDRESS_TYPE_CORRESPONDENCE" },
@@ -859,9 +861,11 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
 
         {showZRO && (
           <LabelFieldPair>
-            <CardLabel>
-              {t("WS_ZRO_LOCATION")} <span className="check-page-link-button">*</span>
-            </CardLabel>
+            <FieldLabelWithTooltip
+              label={t("WS_ZRO_LOCATION")}
+              isMandatory={true}
+              infoText={t("WS_ZRO_LOCATION_INFO_MSG", "Select ZRO Location")}
+            />
             <div className="field">
               <Controller
                 control={control}
@@ -888,9 +892,11 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
         )}
         {showAddressType && (
           <LabelFieldPair>
-            <CardLabel>
-              {`${t("COMMON_ADDRESS_TYPE")}`} <span className="check-page-link-button">*</span>
-            </CardLabel>
+            <FieldLabelWithTooltip
+              label={t("COMMON_ADDRESS_TYPE")}
+              isMandatory={true}
+              infoText={t("WS_ADDRESS_TYPE_INFO_MSG", "Select Address Type")}
+            />
             <Dropdown
               className="form-field"
               selected={addressType}
@@ -907,9 +913,11 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
         )}
         {!config?.doorImage && (
           <LabelFieldPair>
-            <CardLabel>
-              {`${t("CORE_COMMON_PROFILE_CITY")}`} <span className="check-page-link-button">*</span>
-            </CardLabel>
+            <FieldLabelWithTooltip
+              label={t("CORE_COMMON_PROFILE_CITY")}
+              isMandatory={true}
+              infoText={t("WS_CITY_INFO_MSG", "Select City")}
+            />
             <Controller
               control={control}
               name={"city"}
@@ -933,9 +941,11 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
           </LabelFieldPair>
         )}
         <LabelFieldPair>
-          <CardLabel>
-            {`${t("PINCODE")}`} <span className="check-page-link-button">*</span>
-          </CardLabel>
+          <FieldLabelWithTooltip
+            label={t("PINCODE")}
+            isMandatory={true}
+            infoText={t("WS_PINCODE_INFO_MSG", "Enter 6 digit Pincode")}
+          />
           <div className="form-field" style={{ position: "relative", width: "100%" }}>
             <TextInput
               value={pincode}
@@ -996,9 +1006,11 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
           </div>
         </LabelFieldPair>
         <LabelFieldPair>
-          <CardLabel>
-            {`${t("LOCALITY")}`} <span className="check-page-link-button">*</span>
-          </CardLabel>
+          <FieldLabelWithTooltip
+            label={t("LOCALITY")}
+            isMandatory={true}
+            infoText={t("WS_LOCALITY_INFO_MSG", "Select Locality")}
+          />
           <Controller
             control={control}
             name={"locality"}
@@ -1034,7 +1046,10 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
         </LabelFieldPair>
 
         <LabelFieldPair>
-          <CardLabel>{`${t("SubLocality")}`}</CardLabel>
+          <FieldLabelWithTooltip
+            label={t("SubLocality")}
+            infoText={t("WS_SUBLOCALITY_INFO_MSG", "Enter Sub-locality")}
+          />
           <TextInput
             t={t}
             type={"text"}
@@ -1058,7 +1073,10 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
           />
         </LabelFieldPair>
         <LabelFieldPair>
-          <CardLabel>{`${t("COMMON_COLONY_MCD_CATEGORY")}`}</CardLabel>
+          <FieldLabelWithTooltip
+            label={t("COMMON_COLONY_MCD_CATEGORY")}
+            infoText={t("WS_COLONY_CATEGORY_INFO_MSG", "Select Colony Category")}
+          />
           <Dropdown
             className="form-field"
             t={t}
@@ -1071,7 +1089,10 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
           />
         </LabelFieldPair>
         <LabelFieldPair>
-          <CardLabel>{`${t("STREET_NAME")}`}</CardLabel>
+          <FieldLabelWithTooltip
+            label={t("STREET_NAME")}
+            infoText={t("WS_STREET_NAME_INFO_MSG", "Enter Street Name")}
+          />
           <TextInput
             t={t}
             type={"text"}
@@ -1094,9 +1115,11 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
           />
         </LabelFieldPair>
         <LabelFieldPair>
-          <CardLabel>
-            {`${t("HOUSE_NO")}`} <span className="check-page-link-button">*</span>
-          </CardLabel>
+          <FieldLabelWithTooltip
+            label={t("HOUSE_NO")}
+            isMandatory={true}
+            infoText={t("WS_HOUSE_NO_INFO_MSG", "Enter House No. / Flat No.")}
+          />
           <TextInput
             t={t}
             type={"text"}
@@ -1121,9 +1144,11 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
         </LabelFieldPair>
         {showNoOfFloors && (
           <LabelFieldPair>
-            <CardLabel>
-              {`${t("WS_NUMBER_OF_FLOORS")}`} <span className="check-page-link-button">*</span>
-            </CardLabel>
+            <FieldLabelWithTooltip
+              label={t("WS_NUMBER_OF_FLOORS")}
+              isMandatory={true}
+              infoText={t("WS_RESIDING_FLOOR_INFO_MSG", "Select At which Floor Consumer Resides")}
+            />
             <div className="form-field" style={{ width: "100%" }}>
               <Dropdown
                 option={floorOptions}
@@ -1139,9 +1164,11 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
         )}
         {showNoOfFloors && (
           <LabelFieldPair>
-            <CardLabel>
-              {`${t("WS_TOTAL_NUMBER_OF_FLOORS_IN_THE_BUILDING")}`} <span className="check-page-link-button">*</span>
-            </CardLabel>
+            <FieldLabelWithTooltip
+              label={t("WS_TOTAL_NUMBER_OF_FLOORS_IN_THE_BUILDING", "Total Number of floor in the Building")}
+              isMandatory={true}
+              infoText={t("WS_TOTAL_FLOORS_INFO_MSG", "Enter Total Number of Floors in the Building")}
+            />
             <TextInput
               t={t}
               type={"text"}
@@ -1168,9 +1195,11 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
           </LabelFieldPair>
         )}
         <LabelFieldPair>
-          <CardLabel>
-            {`${t(config?.doorImage ? "EKYC_SUB_LOCALITY" : "ADDRESS_LINE1")}`} <span className="check-page-link-button">*</span>
-          </CardLabel>
+          <FieldLabelWithTooltip
+            label={t(config?.doorImage ? "EKYC_SUB_LOCALITY" : "ADDRESS_LINE1")}
+            isMandatory={true}
+            infoText={t("WS_ADDRESS_LINE1_INFO_MSG", config?.doorImage ? "Enter Sub-locality" : "Enter Address Line 1")}
+          />
           <TextInput
             t={t}
             type={"text"}
@@ -1189,7 +1218,10 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
         </LabelFieldPair>
         {!config?.doorImage && (
           <LabelFieldPair>
-            <CardLabel>{`${t("ADDRESS_LINE2")}`}</CardLabel>
+            <FieldLabelWithTooltip
+              label={t("ADDRESS_LINE2")}
+              infoText={t("WS_ADDRESS_LINE2_INFO_MSG", "Enter Address Line 2")}
+            />
             <TextInput
               t={t}
               type={"text"}
@@ -1209,9 +1241,11 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
         )}
         {config?.doorImage && (
           <LabelFieldPair>
-            <CardLabel>
-              {`${t("EKYC_DOOR_IMAGE")}`} <span className="check-page-link-button">*</span>
-            </CardLabel>
+            <FieldLabelWithTooltip
+              label={t("EKYC_DOOR_IMAGE")}
+              isMandatory={true}
+              infoText={t("WS_DOOR_IMAGE_INFO_MSG", "Upload Door Image")}
+            />
             <UploadFile
               onUpload={uploadFile}
               onDelete={() => {
@@ -1226,9 +1260,11 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
           </LabelFieldPair>
         )}
         <LabelFieldPair>
-          <CardLabel>
-            {`${t("LANDMARK")}`} <span className="check-page-link-button">*</span>
-          </CardLabel>
+          <FieldLabelWithTooltip
+            label={t("LANDMARK")}
+            isMandatory={true}
+            infoText={t("WS_LANDMARK_INFO_MSG", "Enter Landmark")}
+          />
           <TextInput
             t={t}
             type={"text"}
@@ -1253,7 +1289,10 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
         </LabelFieldPair>
         {!props?.isVendor && (
           <LabelFieldPair>
-            <CardLabel>{`${t("LATITUDE_GEOTAG")}`}</CardLabel>
+            <FieldLabelWithTooltip
+              label={t("LATITUDE_GEOTAG")}
+              infoText={t("WS_LATITUDE_INFO_MSG", "Enter Latitude (e.g. 28.6139)")}
+            />
             <TextInput
               t={t}
               type="text"
@@ -1281,7 +1320,10 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
 
         {!props?.isVendor && (
           <LabelFieldPair>
-            <CardLabel>{`${t("LONGITUDE_GEOTAG")}`}</CardLabel>
+            <FieldLabelWithTooltip
+              label={t("LONGITUDE_GEOTAG")}
+              infoText={t("WS_LONGITUDE_INFO_MSG", "Enter Longitude (e.g. 77.2090)")}
+            />
             <TextInput
               t={t}
               type="text"
@@ -1307,7 +1349,10 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
           </LabelFieldPair>
         )}
         <LabelFieldPair>
-          <CardLabel>{`${t("COMMON_ASSEMBLY")}`}</CardLabel>
+          <FieldLabelWithTooltip
+            label={t("COMMON_ASSEMBLY")}
+            infoText={t("WS_ASSEMBLY_INFO_MSG", "Assembly")}
+          />
           <TextInput
             t={t}
             type={"text"}
@@ -1336,7 +1381,10 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
               />
             </LabelFieldPair> */}
         <LabelFieldPair>
-          <CardLabel>{`${t("COMMON_WARD")}`}</CardLabel>
+          <FieldLabelWithTooltip
+            label={t("COMMON_WARD")}
+            infoText={t("WS_WARD_INFO_MSG", "Ward")}
+          />
           <TextInput
             t={t}
             type={"text"}
@@ -1350,7 +1398,10 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
           />
         </LabelFieldPair>
         <LabelFieldPair>
-          <CardLabel>{`${t("COMMON_ZONE")}`}</CardLabel>
+          <FieldLabelWithTooltip
+            label={t("COMMON_ZONE")}
+            infoText={t("WS_ZONE_INFO_MSG", "Zone")}
+          />
           <TextInput
             t={t}
             type={"text"}

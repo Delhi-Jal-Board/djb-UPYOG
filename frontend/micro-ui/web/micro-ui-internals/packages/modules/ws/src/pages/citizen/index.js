@@ -240,7 +240,14 @@ const App = ({ path }) => {
                   <PrivateRoute path={`${path}/create-application`} component={WSInfoPage} />
                   <PrivateRoute path={`${path}/disconnect-application`} component={WSDisconnection} />
                   <PrivateRoute path={`${path}/execute-disconnection`} component={WSExecuteDisconnection} />
-                  <PrivateRoute path={`${path}/activate-connection`} component={WSActivateConnection} />
+                  <PrivateRoute
+                    path={`${path}/activate-connection`}
+                    component={() => (
+                      <LayoutWrapper layoutClass="action">
+                        <WSActivateConnection />
+                      </LayoutWrapper>
+                    )}
+                  />
                   <PrivateRoute path={`${path}/restore-application`} component={WSRestoration} />
                   <PrivateRoute path={`${path}/disconnect-acknowledge`} component={WSDisconnectAcknowledgement} />
                   <PrivateRoute path={`${path}/restoration-acknowledge`} component={WSRestorationAcknowledgement} />

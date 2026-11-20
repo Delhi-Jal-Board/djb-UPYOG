@@ -742,7 +742,14 @@ const App = ({ path }) => {
               <PrivateRoute path={`${path}/response`} component={() => <Response {...{ path }} />} />
               <PrivateRoute path={`${path}/response-bill-amend`} component={() => <ResponseBillAmend {...{ path }} />} />
               <PrivateRoute path={`${path}/required-documents`} component={() => <WSRequiredDocuments {...{ path }} />} />
-              <PrivateRoute path={`${path}/activate-connection`} component={WSActivateConnection} />
+              <PrivateRoute
+                path={`${path}/activate-connection`}
+                component={() => (
+                  <LayoutWrapper layoutClass="action">
+                    <WSActivateConnection />
+                  </LayoutWrapper>
+                )}
+              />
               <PrivateRoute path={`${path}/water/bill-amendment/search-application`} component={(props) => <WSSearchBillAmendment {...props} parentRoute={path} />} />
               <PrivateRoute path={`${path}/water/search-application`} component={(props) => <WSSearch {...props} parentRoute={path} />} />
               <PrivateRoute path={`${path}/sewerage/search-application`} component={(props) => <WSSearch {...props} parentRoute={path} />} />

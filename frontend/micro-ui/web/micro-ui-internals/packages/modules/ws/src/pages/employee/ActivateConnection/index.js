@@ -8,6 +8,20 @@ import { stringReplaceAll, convertDateToEpochNew, convertEpochToDates } from "..
 import * as func from "../../../utils";
 import _ from "lodash";
 
+const METER_MAKES = [
+  { name: "Anand Asahi", code: "ANAND_ASAHI", i18nKey: "WS_METER_MAKE_ANAND_ASAHI" },
+  { name: "Arad", code: "ARAD", i18nKey: "WS_METER_MAKE_ARAD" },
+  { name: "Baylan", code: "BAYLAN", i18nKey: "WS_METER_MAKE_BAYLAN" },
+  { name: "Crescent", code: "CRESCENT", i18nKey: "WS_METER_MAKE_CRESCENT" },
+  { name: "Dasmesh / DMB", code: "DASMESH", i18nKey: "WS_METER_MAKE_DASMESH" },
+  { name: "Fedrel", code: "FEDREL", i18nKey: "WS_METER_MAKE_FEDREL" },
+  { name: "Itron", code: "ITRON", i18nKey: "WS_METER_MAKE_ITRON" },
+  { name: "Konark", code: "KONARK", i18nKey: "WS_METER_MAKE_KONARK" },
+  { name: "Kranti", code: "KRANTI", i18nKey: "WS_METER_MAKE_KRANTI" },
+  { name: "Teksan", code: "TEKSAN", i18nKey: "WS_METER_MAKE_TEKSAN" },
+  { name: "Other", code: "OTHER", i18nKey: "WS_METER_MAKE_OTHER" },
+];
+
 const ActivateConnection = () => {
   const { t } = useTranslation();
   const location = useLocation();
@@ -53,7 +67,7 @@ const ActivateConnection = () => {
         configObj.body.forEach((section) => {
           if (section.body && Array.isArray(section.body)) {
             const mappedSectionBody = section.body.map((item) => {
-              if (item.key === "activationDetails" && (isCitizen || item.component === "WSActivationPageDetails")) {
+              if (item.key === "activationDetails") {
                 return {
                   ...item,
                   component: "WSActivationDetails",
@@ -144,17 +158,27 @@ const ActivateConnection = () => {
           formDetails: details,
         };
 
+  const plumberPrefCode =
+    state?.data?.additionalDetails?.detailsProvidedBy ||
+    (state?.data?.plumberInfo?.[0]?.name ? "Self" : "");
+  const defaultPlumberPref =
+    plumberPrefCode === "DJB" || plumberPrefCode === "ULB"
+      ? { name: "DJB", code: "DJB", i18nKey: "WS_PLUMBER_DJB" }
+      : plumberPrefCode === "Self"
+      ? { name: "Self", code: "Self", i18nKey: "WS_PLUMBER_SELF" }
+      : null;
+
   const plumberDetails = [
     {
-      plumberName: state?.data?.plumberInfo?.[0]?.name || "",
-      plumberMobileNo: state?.data?.plumberInfo?.[0]?.mobileNumber || "",
-      plumberLicenseNo: state?.data?.plumberInfo?.[0]?.licenseNo || "",
-      detailsProvidedBy: state?.data?.additionalDetails?.detailsProvidedBy
-        ? {
-            i18nKey: `WS_PLUMBER_${state?.data?.additionalDetails?.detailsProvidedBy?.toUpperCase()}`,
-            code: state?.data?.additionalDetails?.detailsProvidedBy,
-          }
-        : "",
+      plumberName: state?.data?.plumberInfo?.[0]?.name || state?.data?.additionalDetails?.plumberName || "",
+      plumberMobileNo: state?.data?.plumberInfo?.[0]?.mobileNumber || state?.data?.additionalDetails?.plumberMobileNo || "",
+      plumberLicenseNo: state?.data?.plumberInfo?.[0]?.licenseNo || state?.data?.additionalDetails?.plumberLicenseNo || "",
+      detailsProvidedBy: defaultPlumberPref,
+      jeOrFirmName:
+        state?.data?.additionalDetails?.nameOfJEOrFirm ||
+        state?.data?.additionalDetails?.jeOrFirmName ||
+        state?.data?.nameOfJEOrFirm ||
+        "",
       applicationNo: state?.data?.applicationNo,
       key: Date.now(),
     },
@@ -167,12 +191,32 @@ const ActivateConnection = () => {
     state?.data?.additionalDetails?.connectionType?.toUpperCase() === "METERED" ||
     state?.data?.additionalDetails?.connectionType?.toUpperCase() === "PERMANENT";
 
+  const defaultMeterMake = state?.data?.meterMake || state?.data?.additionalDetails?.meterMake;
+  const defaultMeterSize = state?.data?.meterSize || state?.data?.additionalDetails?.meterSize;
+  const defaultFerruleSize = state?.data?.ferruleSize || state?.data?.additionalDetails?.ferruleSize;
+
   const activationDetails = isMeteredConn
     ? [
         {
-          meterId: state?.data?.meterId || "",
+          meterMake: defaultMeterMake
+            ? typeof defaultMeterMake === "object"
+              ? defaultMeterMake
+              : METER_MAKES.find((m) => m.code === defaultMeterMake || m.name === defaultMeterMake) || { name: defaultMeterMake, code: defaultMeterMake }
+            : null,
+          meterNo: state?.data?.meterId || state?.data?.additionalDetails?.meterNo || "",
+          meterId: state?.data?.meterId || state?.data?.additionalDetails?.meterNo || "",
+          meterSize: defaultMeterSize
+            ? typeof defaultMeterSize === "object"
+              ? defaultMeterSize?.value || defaultMeterSize?.name || defaultMeterSize?.code || ""
+              : defaultMeterSize
+            : "",
+          ferruleSize: defaultFerruleSize
+            ? typeof defaultFerruleSize === "object"
+              ? defaultFerruleSize?.value || defaultFerruleSize?.name || defaultFerruleSize?.code || ""
+              : defaultFerruleSize
+            : "",
           meterInstallationDate: state?.data?.meterInstallationDate ? convertEpochToDates(state?.data?.meterInstallationDate) : null,
-          meterInitialReading: state?.data?.additionalDetails?.initialMeterReading || "",
+          meterInitialReading: state?.data?.additionalDetails?.initialMeterReading !== undefined ? state?.data?.additionalDetails?.initialMeterReading : "0",
           connectionExecutionDate: state?.data?.connectionExecutionDate ? convertEpochToDates(state?.data?.connectionExecutionDate) : null,
         },
       ]
@@ -215,38 +259,114 @@ const ActivateConnection = () => {
     return () => clearTimeout(timer);
   }, [isAppDetailsPage]);
 
-  const onFormValueChange = (setValue, formData, formState) => {
-    const hasDoc = !!(
-      formData?.supportingDocuments?.[0]?.fileStoreId ||
-      formData?.supportingDocuments?.fileStoreId ||
-      (Array.isArray(formData?.supportingDocuments) && formData?.supportingDocuments?.[0]?.fileStoreId)
-    );
-    if (
-      Object.keys(formState.errors).length > 0 &&
-      Object.keys(formState.errors).length == 1 &&
-      formState.errors["owners"] &&
-      Object.values(formState.errors["owners"].type).filter((ob) => ob.type === "required").length == 0 &&
-      Object.getPrototypeOf(formState.errors) === Object.prototype
-    )
-      setSubmitValve(hasDoc);
-    else setSubmitValve(!Object.keys(formState.errors).length && hasDoc);
+  const checkCanSubmit = (formData) => {
+    // 1. Plumber / JE details check
+    const plumberPref =
+      formData?.plumberDetails?.[0]?.detailsProvidedBy?.code ||
+      formData?.plumberDetails?.[0]?.detailsProvidedBy?.name ||
+      formData?.plumberDetails?.[0]?.detailsProvidedBy ||
+      "";
+    const isDJB =
+      plumberPref === "DJB" ||
+      plumberPref === "ULB" ||
+      plumberPref === "Delhi Jal Board" ||
+      (typeof plumberPref === "string" && plumberPref.toLowerCase().includes("djb"));
+    const isSelf = !isDJB;
+
+    if (!plumberPref) return false;
+
+    if (isSelf) {
+      const pName = formData?.plumberDetails?.[0]?.plumberName;
+      const pLic = formData?.plumberDetails?.[0]?.plumberLicenseNo;
+      const pMob = formData?.plumberDetails?.[0]?.plumberMobileNo;
+      if (!pName || !pName.trim()) return false;
+      if (!pLic || !pLic.toString().trim()) return false;
+      if (!pMob || !/^[6-9]\d{9}$/.test(pMob.toString().trim())) return false;
+    } else if (isDJB) {
+      const jeFirm = formData?.plumberDetails?.[0]?.jeOrFirmName;
+      if (!jeFirm || !jeFirm.trim()) return false;
+    } else {
+      return false;
+    }
+
+    // 2. Meter details check
+    const act = Array.isArray(formData?.activationDetails) ? formData?.activationDetails?.[0] : formData?.activationDetails;
+    const meterMake = act?.meterMake?.code || act?.meterMake?.name || act?.meterMake;
+    const meterNo = act?.meterNo || act?.meterId;
+    const meterSize = act?.meterSize?.value || act?.meterSize?.name || act?.meterSize;
+    const ferruleSize = act?.ferruleSize?.value || act?.ferruleSize?.name || act?.ferruleSize;
+    const meterInstDate = act?.meterInstallationDate;
+    const connExecDate = act?.connectionExecutionDate;
+
+    if (!meterMake) return false;
+    if (!meterNo || !meterNo.toString().trim()) return false;
+    if (!meterSize || !meterSize.toString().trim()) return false;
+    if (!ferruleSize || !ferruleSize.toString().trim()) return false;
+    if (!meterInstDate) return false;
+    if (!connExecDate) return false;
+
+    // 3. Supporting documents check
+    const supDocs = formData?.supportingDocuments;
+    const docsList = Array.isArray(supDocs?.documents)
+      ? supDocs.documents
+      : Array.isArray(supDocs)
+      ? supDocs
+      : [];
+
+    const meterPhotoId =
+      supDocs?.meterPhoto?.fileStoreId ||
+      docsList.find((d) => d?.documentType === "METER_PHOTO")?.fileStoreId ||
+      supDocs?.[0]?.fileStoreId;
+
+    if (!meterPhotoId) return false;
+
+    if (isSelf) {
+      const meterWarrantyId =
+        supDocs?.meterWarranty?.fileStoreId ||
+        docsList.find((d) => d?.documentType === "METER_WARRANTY_CARD_TESTING_REPORT_INVOICE")?.fileStoreId;
+      const plumberDeclId =
+        supDocs?.plumberDeclaration?.fileStoreId ||
+        docsList.find((d) => d?.documentType === "DECLARATION_OF_LICENSED_PLUMBER")?.fileStoreId;
+
+      if (!meterWarrantyId) return false;
+      // Plumber declaration commented out as per requirement
+      // if (!plumberDeclId) return false;
+    }
+
+    return true;
   };
 
-  const getConvertedDate = async (dateOfTime) => {
-    let dateOfReplace = stringReplaceAll(dateOfTime, "/", "-");
-    let formattedDate = "";
-    if (dateOfReplace.split("-")[2] > 1900) {
-      formattedDate = `${dateOfReplace.split("-")[2]}-${dateOfReplace.split("-")[1]}-${dateOfReplace.split("-")[0]}`;
-    } else {
-      formattedDate = `${dateOfReplace.split("-")[0]}-${dateOfReplace.split("-")[2]}-${dateOfReplace.split("-")[1]}`;
+  const onFormValueChange = (setValue, formData, formState) => {
+    const canSub = checkCanSubmit(formData);
+    setSubmitValve(canSub);
+  };
+
+  const getConvertedDate = (dateOfTime) => {
+    if (!dateOfTime) return null;
+    if (typeof dateOfTime === "number") return dateOfTime;
+    const str = String(dateOfTime).trim();
+    if (/^\d+$/.test(str)) return Number(str);
+
+    const ymd = str.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/);
+    if (ymd) {
+      const year = parseInt(ymd[1], 10);
+      const month = parseInt(ymd[2], 10) - 1;
+      const day = parseInt(ymd[3], 10);
+      return new Date(year, month, day, 23, 59, 59).getTime();
     }
-    const convertedDate = await convertDateToEpochNew(formattedDate);
-    return convertedDate;
+    const dmy = str.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
+    if (dmy) {
+      const day = parseInt(dmy[1], 10);
+      const month = parseInt(dmy[2], 10) - 1;
+      const year = parseInt(dmy[3], 10);
+      return new Date(year, month, day, 23, 59, 59).getTime();
+    }
+    const d = new Date(str);
+    return isNaN(d.getTime()) ? null : d.getTime();
   };
 
   const closeToast = () => {
     setShowToast(null);
-    // history.push(`/digit-ui/employee/ws/application-details?applicationNumber=${filters?.applicationNumber}&service=${filters?.service}`, {});
   };
 
   const closeToastOfError = () => {
@@ -254,11 +374,7 @@ const ActivateConnection = () => {
   };
 
   const onSubmit = async (data) => {
-    const docFileStoreId =
-      data?.supportingDocuments?.[0]?.fileStoreId ||
-      data?.supportingDocuments?.fileStoreId ||
-      (Array.isArray(data?.supportingDocuments) && data?.supportingDocuments?.[0]?.fileStoreId);
-    if (!canSubmit || !docFileStoreId) {
+    if (!checkCanSubmit(data)) {
       setShowToast({ warning: true, message: "PLEASE_FILL_MANDATORY_DETAILS" });
       setTimeout(() => {
         setShowToast(false);
@@ -274,6 +390,8 @@ const ActivateConnection = () => {
         {};
       const formData = cloneDeep(baseAppData);
 
+      if (!formData.additionalDetails) formData.additionalDetails = {};
+
       if (formDetails?.connectionDetails?.[0]?.connectionType?.code)
         formData.connectionType = formDetails?.connectionDetails?.[0]?.connectionType?.code;
       if (formDetails?.connectionDetails?.[0]?.waterSource?.code) formData.waterSource = formDetails?.connectionDetails?.[0]?.sourceSubData?.code;
@@ -283,30 +401,175 @@ const ActivateConnection = () => {
       if (formDetails?.connectionDetails?.[0]?.noOfWaterClosets) formData.noOfWaterClosets = formDetails?.connectionDetails?.[0]?.noOfWaterClosets;
       if (formDetails?.connectionDetails?.[0]?.noOfToilets) formData.noOfToilets = formDetails?.connectionDetails?.[0]?.noOfToilets;
 
-      if (formDetails?.plumberDetails?.[0]?.detailsProvidedBy?.code) {
-        if (!formData.additionalDetails) formData.additionalDetails = {};
-        formData.additionalDetails.detailsProvidedBy = formDetails?.plumberDetails?.[0]?.detailsProvidedBy?.code;
-      }
-      if (!formData?.plumberInfo || !formData?.plumberInfo?.[0]) formData.plumberInfo = [{}];
-      if (formDetails?.plumberDetails?.[0]?.plumberName) formData.plumberInfo[0].name = formDetails?.plumberDetails?.[0]?.plumberName;
-      if (formDetails?.plumberDetails?.[0]?.plumberLicenseNo) formData.plumberInfo[0].licenseNo = formDetails?.plumberDetails?.[0]?.plumberLicenseNo;
-      if (formDetails?.plumberDetails?.[0]?.plumberMobileNo) formData.plumberInfo[0].mobileNumber = formDetails?.plumberDetails?.[0]?.plumberMobileNo;
+      // Handle Plumber / JE details
+      const plumberPref =
+        formDetails?.plumberDetails?.[0]?.detailsProvidedBy?.code ||
+        formDetails?.plumberDetails?.[0]?.detailsProvidedBy?.name ||
+        formDetails?.plumberDetails?.[0]?.detailsProvidedBy ||
+        data?.plumberDetails?.[0]?.detailsProvidedBy?.code ||
+        data?.plumberDetails?.[0]?.detailsProvidedBy?.name ||
+        data?.plumberDetails?.[0]?.detailsProvidedBy ||
+        "";
+      const isDJB =
+        plumberPref === "DJB" ||
+        plumberPref === "ULB" ||
+        plumberPref === "Delhi Jal Board" ||
+        (typeof plumberPref === "string" && plumberPref.toLowerCase().includes("djb"));
+      const isSelf = !isDJB;
 
+      formData.additionalDetails.detailsProvidedBy = isDJB ? "DJB" : "Self";
+      formData.additionalDetails.plumberProvidedBy = isDJB ? "DJB" : "Self";
+
+      if (isSelf) {
+        const pName = formDetails?.plumberDetails?.[0]?.plumberName || data?.plumberDetails?.[0]?.plumberName || "";
+        const pLic = formDetails?.plumberDetails?.[0]?.plumberLicenseNo || data?.plumberDetails?.[0]?.plumberLicenseNo || "";
+        const pMob = formDetails?.plumberDetails?.[0]?.plumberMobileNo || data?.plumberDetails?.[0]?.plumberMobileNo || "";
+
+        formData.plumberInfo = [
+          {
+            name: pName,
+            licenseNo: pLic,
+            mobileNumber: pMob,
+          },
+        ];
+        formData.additionalDetails.plumberName = pName;
+        formData.additionalDetails.plumberLicenseNo = pLic;
+        formData.additionalDetails.plumberMobileNo = pMob;
+        formData.additionalDetails.plumberInfo = formData.plumberInfo;
+      } else if (isDJB) {
+        const jeFirm = formDetails?.plumberDetails?.[0]?.jeOrFirmName || data?.plumberDetails?.[0]?.jeOrFirmName || "";
+        formData.plumberInfo = [
+          {
+            name: jeFirm,
+            licenseNo: "",
+            mobileNumber: "",
+          },
+        ];
+        formData.additionalDetails.nameOfJEOrFirm = jeFirm;
+        formData.additionalDetails.jeOrFirmName = jeFirm;
+        formData.nameOfJEOrFirm = jeFirm;
+        formData.additionalDetails.plumberInfo = formData.plumberInfo;
+      }
+
+      // Handle Meter details
       const actObj = Array.isArray(formDetails?.activationDetails)
         ? formDetails?.activationDetails?.[0]
-        : formDetails?.activationDetails;
-      if (actObj?.meterId) formData.meterId = actObj?.meterId;
-      if (actObj?.meterInstallationDate)
-        formData.meterInstallationDate = await getConvertedDate(actObj?.meterInstallationDate);
-      if (!formData.additionalDetails) formData.additionalDetails = {};
-      formData.additionalDetails.initialMeterReading =
-        actObj?.meterInitialReading !== undefined && actObj?.meterInitialReading !== ""
-          ? actObj.meterInitialReading
-          : "0";
-      if (actObj?.connectionExecutionDate)
-        formData.connectionExecutionDate = await getConvertedDate(actObj?.connectionExecutionDate);
+        : formDetails?.activationDetails || (Array.isArray(data?.activationDetails) ? data?.activationDetails?.[0] : data?.activationDetails);
+
+      const meterMakeVal = actObj?.meterMake?.name || actObj?.meterMake?.code || actObj?.meterMake || "";
+      const meterNoVal = actObj?.meterNo || actObj?.meterId || "";
+      const meterSizeVal = actObj?.meterSize?.name || actObj?.meterSize?.value || actObj?.meterSize || "";
+      const ferruleSizeVal = actObj?.ferruleSize?.name || actObj?.ferruleSize?.value || actObj?.ferruleSize || "";
+      const initialReadingVal = actObj?.meterInitialReading !== undefined && actObj?.meterInitialReading !== "" ? String(actObj.meterInitialReading) : "0";
+
+      formData.meterId = meterNoVal;
+      formData.meterNo = meterNoVal;
+      formData.meterMake = meterMakeVal;
+      formData.meterSize = meterSizeVal;
+      formData.ferruleSize = ferruleSizeVal;
+      formData.initialMeterReading = initialReadingVal;
+
+      if (actObj?.meterInstallationDate) {
+        formData.meterInstallationDate = getConvertedDate(actObj?.meterInstallationDate);
+      }
+      if (actObj?.connectionExecutionDate) {
+        formData.connectionExecutionDate = getConvertedDate(actObj?.connectionExecutionDate);
+      }
+
+      formData.additionalDetails.meterMake = meterMakeVal;
+      formData.additionalDetails.meterNo = meterNoVal;
+      formData.additionalDetails.meterId = meterNoVal;
+      formData.additionalDetails.meterSize = meterSizeVal;
+      formData.additionalDetails.ferruleSize = ferruleSizeVal;
+      formData.additionalDetails.initialMeterReading = initialReadingVal;
+      formData.additionalDetails.meterInstallationDate = formData.meterInstallationDate;
+      formData.additionalDetails.connectionExecutionDate = formData.connectionExecutionDate;
+
+      // Extract Documents
+      const supDocs = formDetails?.supportingDocuments || data?.supportingDocuments;
+      const docsList = Array.isArray(supDocs?.documents)
+        ? supDocs.documents
+        : Array.isArray(supDocs)
+        ? supDocs
+        : [];
+
+      const meterPhotoObj =
+        supDocs?.meterPhoto ||
+        data?.supportingDocuments?.meterPhoto ||
+        docsList.find((d) => d?.documentType === "METER_PHOTO") ||
+        (Array.isArray(supDocs) ? supDocs[0] : null);
+
+      const meterWarrantyObj =
+        supDocs?.meterWarranty ||
+        data?.supportingDocuments?.meterWarranty ||
+        docsList.find((d) => d?.documentType === "METER_WARRANTY_CARD_TESTING_REPORT_INVOICE");
+
+      const plumberDeclObj =
+        supDocs?.plumberDeclaration ||
+        data?.supportingDocuments?.plumberDeclaration ||
+        docsList.find((d) => d?.documentType === "DECLARATION_OF_LICENSED_PLUMBER");
+
+      const meterPhotoId = meterPhotoObj?.fileStoreId;
+      const meterWarrantyId = meterWarrantyObj?.fileStoreId;
+      const plumberDeclId = plumberDeclObj?.fileStoreId;
+
+      if (meterPhotoId) {
+        formData.additionalDetails.meterPhotoFileStoreId = meterPhotoId;
+        formData.additionalDetails.meterPhoto = {
+          fileStoreId: meterPhotoId,
+          documentType: "METER_PHOTO",
+          fileName: meterPhotoObj?.fileName || "Meter_Photo",
+        };
+      }
+      if (meterWarrantyId) {
+        formData.additionalDetails.meterWarrantyFileStoreId = meterWarrantyId;
+        formData.additionalDetails.meterWarranty = {
+          fileStoreId: meterWarrantyId,
+          documentType: "METER_WARRANTY_CARD_TESTING_REPORT_INVOICE",
+          fileName: meterWarrantyObj?.fileName || "Meter_Warranty_Card_Testing_Report_Invoice",
+        };
+      }
+      if (plumberDeclId) {
+        formData.additionalDetails.plumberDeclarationFileStoreId = plumberDeclId;
+        formData.additionalDetails.plumberDeclaration = {
+          fileStoreId: plumberDeclId,
+          documentType: "DECLARATION_OF_LICENSED_PLUMBER",
+          fileName: plumberDeclObj?.fileName || "Declaration_Of_Licensed_Plumber",
+        };
+      }
+
+      const wfDocs = [];
+      if (meterPhotoId) {
+        wfDocs.push({
+          documentType: "METER_PHOTO",
+          fileStoreId: meterPhotoId,
+          fileName: meterPhotoObj?.fileName || "Meter_Photo",
+        });
+      }
+      if (meterWarrantyId) {
+        wfDocs.push({
+          documentType: "METER_WARRANTY_CARD_TESTING_REPORT_INVOICE",
+          fileStoreId: meterWarrantyId,
+          fileName: meterWarrantyObj?.fileName || "Meter_Warranty_Card_Testing_Report_Invoice",
+        });
+      }
+      if (plumberDeclId) {
+        wfDocs.push({
+          documentType: "DECLARATION_OF_LICENSED_PLUMBER",
+          fileStoreId: plumberDeclId,
+          fileName: plumberDeclObj?.fileName || "Declaration_Of_Licensed_Plumber",
+        });
+      }
+
+      if (wfDocs.length === 0 && meterPhotoId) {
+        wfDocs.push({
+          documentType: "Document - 1",
+          fileStoreId: meterPhotoId,
+        });
+      }
 
       formData.comment = formDetails?.comments?.comments || "";
+      formData.comments = formDetails?.comments?.comments || "";
 
       const isPendingActivation =
         formData?.applicationStatus?.includes("PENDING_FOR_CONNECTION_ACTIVATION") ||
@@ -325,26 +588,35 @@ const ActivateConnection = () => {
       const currentAction = isPendingActivation ? "ACTIVATE_CONNECTION" : (isPendingMeter ? "ENTER_METER_DETAILS" : (filters?.action || "ACTIVATE_CONNECTION"));
 
       formData.action = currentAction;
-      formData.wfDocuments = docFileStoreId
-        ? [
-            {
-              documentType: "Document - 1",
-              fileStoreId: docFileStoreId,
-            },
-          ]
-        : [];
+      formData.wfDocuments = wfDocs;
       formData.processInstance = {
         action: currentAction,
         comment: formDetails?.comments?.comments || "",
-        documents: docFileStoreId
-          ? [
-              {
-                documentType: "Document - 1",
-                fileStoreId: docFileStoreId,
-              },
-            ]
-          : [],
+        documents: wfDocs,
       };
+
+      const existingDocs = Array.isArray(formData.documents)
+        ? formData.documents.filter(
+            (d) =>
+              ![
+                "METER_PHOTO",
+                "METER_WARRANTY_CARD_TESTING_REPORT_INVOICE",
+                "DECLARATION_OF_LICENSED_PLUMBER",
+                "Document - 1",
+              ].includes(d?.documentType)
+          )
+        : [];
+
+      formData.documents = [
+        ...existingDocs,
+        ...wfDocs.map((d) => ({
+          documentType: d.documentType,
+          fileStoreId: d.fileStoreId,
+          documentUid: d.fileStoreId,
+          fileName: d.fileName,
+          status: "ACTIVE",
+        })),
+      ];
 
       const isWater = filters?.service ? filters.service.toUpperCase() === "WATER" : (formData?.serviceType === "WATER" || !formData?.serviceType);
       const isReconnection =
@@ -371,36 +643,46 @@ const ActivateConnection = () => {
           ? { SewerageConnection: formData, reconnectRequest: true, disconnectRequest: false }
           : { SewerageConnection: formData, reconnectRequest: false, disconnectRequest: false };
 
-      if (reqDetails?.WaterConnection) {
-        reqDetails.WaterConnection.waterSource = "GROUND.WELL";
-        reqDetails.WaterConnection.proposedPipeSize = 0;
-        reqDetails.WaterConnection.proposedTaps = 0;
-        reqDetails.WaterConnection.pipeSize = 0;
-        reqDetails.WaterConnection.noOfTaps = 0;
-        reqDetails.WaterConnection.connectionType = "Metered";
-        if (!reqDetails.WaterConnection.additionalDetails) reqDetails.WaterConnection.additionalDetails = {};
-        reqDetails.WaterConnection.additionalDetails.connectionType = "Permanent";
-      }
-
-      if (reqDetails?.SewerageConnection) {
-        if (!reqDetails.SewerageConnection.additionalDetails) reqDetails.SewerageConnection.additionalDetails = {};
-        reqDetails.SewerageConnection.additionalDetails.connectionType = "Permanent";
+      const targetConn = reqDetails?.WaterConnection || reqDetails?.SewerageConnection;
+      if (targetConn) {
+        if (isWater) {
+          targetConn.waterSource = "GROUND.WELL";
+          targetConn.proposedPipeSize = 0;
+          targetConn.proposedTaps = 0;
+          targetConn.pipeSize = 0;
+          targetConn.noOfTaps = 0;
+        }
+        targetConn.connectionType = "Metered";
+        if (!targetConn.additionalDetails) targetConn.additionalDetails = {};
+        targetConn.additionalDetails.connectionType = "Permanent";
+        targetConn.meterId = formData.meterId;
+        targetConn.meterNo = formData.meterNo;
+        targetConn.meterMake = formData.meterMake;
+        targetConn.meterSize = formData.meterSize;
+        targetConn.ferruleSize = formData.ferruleSize;
+        targetConn.initialMeterReading = formData.initialMeterReading;
+        targetConn.meterInstallationDate = formData.meterInstallationDate;
+        targetConn.connectionExecutionDate = formData.connectionExecutionDate;
+        targetConn.additionalDetails = {
+          ...targetConn.additionalDetails,
+          ...formData.additionalDetails,
+        };
+        targetConn.wfDocuments = formData.wfDocuments;
+        targetConn.documents = formData.documents;
+        targetConn.processInstance = formData.processInstance;
+        targetConn.plumberInfo = formData.plumberInfo;
+        if (formData.nameOfJEOrFirm) targetConn.nameOfJEOrFirm = formData.nameOfJEOrFirm;
       }
 
       if (mutate) {
-        // setIsEnableLoader(true);
         mutate(reqDetails, {
           onError: (error, variables) => {
-            // setIsEnableLoader(false);
             setShowToast({ key: "error", message: error?.message ? error.message : error });
             setTimeout(closeToastOfError, 5000);
           },
           onSuccess: (data, variables) => {
-            // setIsEnableLoader(false);
             setShowToast({ key: false, message: "WS_ACTIVATE_SUCCESS_MESSAGE_MAIN" });
             setIsAppDetailsPage(true);
-            // setTimeout(closeToast(), 5000);
-            // setTimeout(closeToastForSucsss(), 5000)
           },
         });
       }
@@ -452,7 +734,6 @@ const ActivateConnection = () => {
   };
 
   if (isEnableLoader || isLoading || isappdetailsLoading || !Array.isArray(config) || config.length === 0) {
-    //updatingApplication ||
     return <Loader />;
   }
 
@@ -469,12 +750,11 @@ const ActivateConnection = () => {
               body: config.body,
             };
           })}
-          // userType={"employee"}
           defaultValues={defaultValues}
           onSubmit={onSubmit}
           label={getActionLabel()}
           onFormValueChange={onFormValueChange}
-          // isDisabled={!canSubmit}
+          isDisabled={!canSubmit}
           noBreakLine={true}
           noCard={true}
         />

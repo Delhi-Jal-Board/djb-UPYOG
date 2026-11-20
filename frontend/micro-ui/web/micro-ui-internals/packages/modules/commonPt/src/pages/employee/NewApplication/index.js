@@ -5,6 +5,7 @@ import { useQueryClient } from "react-query";
 import { Route, Switch, useHistory, useLocation, useRouteMatch } from "react-router-dom";
 
 import CreatePropertyForm from '../../pageComponents/createForm';
+import PropertyPreview from '../../pageComponents/PropertyPreview';
 import PTAcknowledgement from '../../pageComponents/PTAcknowledgement';
 
 const NewApplication = ({ path }) => {
@@ -44,6 +45,9 @@ const NewApplication = ({ path }) => {
     <Switch>
       <Route exact path={`${match.path}`}>
         <CreatePropertyForm onSelect={createProperty} value={params} userType={"employee"} redirectUrl={redirectUrl} />
+      </Route>
+      <Route exact path={`${match.path}/preview`}>
+        <PropertyPreview onSelect={createProperty} redirectUrl={redirectUrl} userType={"employee"} onSuccess={onSuccess} />
       </Route>
       <Route exact path={`${match.path}/save-property`}>
         <PTAcknowledgement data={params} onSuccess={onSuccess} redirectUrl={redirectUrl} userType={"employee"} />
