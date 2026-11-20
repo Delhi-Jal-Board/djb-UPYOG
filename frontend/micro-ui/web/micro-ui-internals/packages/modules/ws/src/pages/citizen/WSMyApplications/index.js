@@ -7,6 +7,14 @@ import WSApplication from "./ws-application";
 import { propertyCardBodyStyle, stringReplaceAll, getAddress, getServiceTypeDisplay } from "../../../utils";
 import WSInfoLabel from "../../../pageComponents/WSInfoLabel";
 
+const chunkArray = (arr, size = 100) => {
+  const chunks = [];
+  for (let i = 0; i < arr.length; i += size) {
+    chunks.push(arr.slice(i, i + size));
+  }
+  return chunks;
+};
+
 export const WSMyApplications = () => {
   const { t } = useTranslation();
   const user = Digit.UserService.getUser();
@@ -52,10 +60,30 @@ export const WSMyApplications = () => {
     { filters: { mobileNumber: userMobileNumber }, enabled: userMobileNumber ? true : false }
   );
 
-  const { data: userConnections } = Digit.Hooks.ws.useMyApplicationSearch(
+  const userConnectionsEnabled = !!(userMobileNumber && tenantId);
+
+  const {
+    isLoading: isConnectionsLoading,
+    data: userConnections,
+    error: connectionsError,
+  } = Digit.Hooks.ws.useMyApplicationSearch(
     { filters: { tenantId, mobileNumber: userMobileNumber, searchType: "CONNECTION" } },
-    { filters: { tenantId, mobileNumber: userMobileNumber, searchType: "CONNECTION" }, enabled: !!userMobileNumber }
+    { filters: { tenantId, mobileNumber: userMobileNumber, searchType: "CONNECTION" }, enabled: userConnectionsEnabled }
   );
+
+  const {
+    isLoading: isSWConnectionsLoading,
+    data: userSWConnections,
+    error: swConnectionsError,
+  } = Digit.Hooks.ws.useMyApplicationSearch(
+    { filters: { tenantId, mobileNumber: userMobileNumber, searchType: "CONNECTION" }, BusinessService: "SW" },
+    { filters: { tenantId, mobileNumber: userMobileNumber, searchType: "CONNECTION" }, enabled: userConnectionsEnabled }
+  );
+
+  // Active fetching flag: handles disabled state, errors, and prevents infinite loading
+  const isConnectionsFetching =
+    userConnectionsEnabled &&
+    ((isConnectionsLoading && !connectionsError) || (isSWConnectionsLoading && !swConnectionsError));
 
   const [pageOffset, setPageOffset] = useState(0);
   const [pageSize, setPageSize] = useState(10);
@@ -63,35 +91,87 @@ export const WSMyApplications = () => {
   const [billAmendments, setBillAmendments] = useState([]);
   const [isBillAmendLoading, setIsBillAmendLoading] = useState(false);
 
+  // Extract unique valid connection numbers strictly from established user connections
+  const wsConnectionKeys = useMemo(() => {
+    const codes = new Set();
+    (userConnections?.WaterConnection || []).forEach((c) => {
+      if (c?.connectionNo && typeof c.connectionNo === "string" && c.connectionNo.trim().length > 0) {
+        codes.add(c.connectionNo.trim());
+      }
+    });
+    return Array.from(codes).sort().join(",");
+  }, [userConnections?.WaterConnection]);
+
+  const swConnectionKeys = useMemo(() => {
+    const codes = new Set();
+    (userSWConnections?.SewerageConnections || []).forEach((c) => {
+      if (c?.connectionNo && typeof c.connectionNo === "string" && c.connectionNo.trim().length > 0) {
+        codes.add(c.connectionNo.trim());
+      }
+    });
+    return Array.from(codes).sort().join(",");
+  }, [userSWConnections?.SewerageConnections]);
+
   useEffect(() => {
     let isMounted = true;
     const fetchBillAmendments = async () => {
       if (!userMobileNumber) return;
+
+      // Protection: if connections are still actively loading (and not errored/disabled), wait to prevent flicker
+      if (isConnectionsFetching) return;
+
+      const wsCodes = wsConnectionKeys ? wsConnectionKeys.split(",").filter(Boolean) : [];
+      const swCodes = swConnectionKeys ? swConnectionKeys.split(",").filter(Boolean) : [];
+      const searchAppNo = searchParams?.applicationNo?.trim();
+
+      // If user has no established connections and no application number searched, or if connections errored out:
+      if (wsCodes.length === 0 && swCodes.length === 0 && !searchAppNo) {
+        setBillAmendments([]);
+        setIsBillAmendLoading(false);
+        return;
+      }
+
       setIsBillAmendLoading(true);
       try {
-        const consumerCodes = new Set();
-        (data?.WaterConnection || []).forEach((c) => c?.connectionNo && consumerCodes.add(c.connectionNo));
-        (SWdata?.SewerageConnections || []).forEach((c) => c?.connectionNo && consumerCodes.add(c.connectionNo));
-        (userConnections?.WaterConnection || []).forEach((c) => c?.connectionNo && consumerCodes.add(c.connectionNo));
-        (userConnections?.SewerageConnections || []).forEach((c) => c?.connectionNo && consumerCodes.add(c.connectionNo));
-
         const amendmentPromises = [];
-        consumerCodes.forEach((code) => {
-          amendmentPromises.push(
-            Digit.PaymentService.searchAmendment(tenantId, { consumerCode: code, businessService: "WS" }).catch(() => ({ Amendments: [] }))
-          );
-          amendmentPromises.push(
-            Digit.PaymentService.searchAmendment(tenantId, { consumerCode: code, businessService: "SW" }).catch(() => ({ Amendments: [] }))
-          );
-        });
 
-        if (searchParams?.applicationNo) {
-          amendmentPromises.push(
-            Digit.PaymentService.searchAmendment(tenantId, { amendmentId: searchParams.applicationNo, businessService: "WS" }).catch(() => ({ Amendments: [] }))
-          );
-          amendmentPromises.push(
-            Digit.PaymentService.searchAmendment(tenantId, { amendmentId: searchParams.applicationNo, businessService: "SW" }).catch(() => ({ Amendments: [] }))
-          );
+        // 1. Batch WS amendments in safe chunks of 100 (keeps URL length well within Tomcat's 8 KB limit)
+        if (wsCodes.length > 0) {
+          const wsChunks = chunkArray(wsCodes, 100);
+          wsChunks.forEach((chunk) => {
+            amendmentPromises.push(
+              Digit.PaymentService.searchAmendment(tenantId, {
+                consumerCode: chunk.join(","),
+                businessService: "WS",
+              }).catch(() => ({ Amendments: [] }))
+            );
+          });
+        }
+
+        // 2. Batch SW amendments in safe chunks of 100
+        if (swCodes.length > 0) {
+          const swChunks = chunkArray(swCodes, 100);
+          swChunks.forEach((chunk) => {
+            amendmentPromises.push(
+              Digit.PaymentService.searchAmendment(tenantId, {
+                consumerCode: chunk.join(","),
+                businessService: "SW",
+              }).catch(() => ({ Amendments: [] }))
+            );
+          });
+        }
+
+        // 3. Search by specific amendment application number if entered in search filter
+        if (searchAppNo) {
+          if (searchAppNo.includes("SW")) {
+            amendmentPromises.push(
+              Digit.PaymentService.searchAmendment(tenantId, { amendmentId: searchAppNo, businessService: "SW" }).catch(() => ({ Amendments: [] }))
+            );
+          } else {
+            amendmentPromises.push(
+              Digit.PaymentService.searchAmendment(tenantId, { amendmentId: searchAppNo, businessService: "WS" }).catch(() => ({ Amendments: [] }))
+            );
+          }
         }
 
         const responses = await Promise.all(amendmentPromises);
@@ -119,7 +199,7 @@ export const WSMyApplications = () => {
     return () => {
       isMounted = false;
     };
-  }, [tenantId, userMobileNumber, data, SWdata, userConnections, searchParams?.applicationNo]);
+  }, [tenantId, userMobileNumber, wsConnectionKeys, swConnectionKeys, searchParams?.applicationNo, isConnectionsFetching]);
 
   const isMobile = window.Digit.Utils.browser.isMobile();
 
@@ -307,7 +387,7 @@ export const WSMyApplications = () => {
     setPageOffset(0);
   };
 
-  if (isLoading || isSWLoading || PTisLoading || isBillAmendLoading) {
+  if (isLoading || isSWLoading || PTisLoading || isBillAmendLoading || isConnectionsFetching) {
     return <Loader />;
   }
   let { WaterConnection: WSapplicationsList = [] } = data || {};
