@@ -33,12 +33,7 @@ const getAddress = (address, t, property) => {
 
   // 2. Building / Colony Name
   const building =
-    addrObj?.buildingName ||
-    addrObj?.buildingColonyName ||
-    propAddr?.buildingName ||
-    propAddr?.buildingColonyName ||
-    property?.buildingName ||
-    "";
+    addrObj?.buildingName || addrObj?.buildingColonyName || propAddr?.buildingName || propAddr?.buildingColonyName || property?.buildingName || "";
   if (building && String(building).trim() && String(building).trim() !== "NA") {
     parts.push(String(building).trim());
   }
@@ -59,33 +54,19 @@ const getAddress = (address, t, property) => {
   }
 
   // 4. AddressLine2
-  const addressLine2 =
-    addrObj?.addressLine2 ||
-    propAddr?.addressLine2 ||
-    property?.addressLine2 ||
-    "";
+  const addressLine2 = addrObj?.addressLine2 || propAddr?.addressLine2 || property?.addressLine2 || "";
   if (addressLine2 && String(addressLine2).trim() && String(addressLine2).trim() !== "NA") {
     parts.push(String(addressLine2).trim());
   }
 
   // 5. Landmark
-  const landmark =
-    addrObj?.landmark ||
-    addrObj?.landmarkName ||
-    propAddr?.landmark ||
-    propAddr?.landmarkName ||
-    property?.landmark ||
-    "";
+  const landmark = addrObj?.landmark || addrObj?.landmarkName || propAddr?.landmark || propAddr?.landmarkName || property?.landmark || "";
   if (landmark && String(landmark).trim() && String(landmark).trim() !== "NA") {
     parts.push(String(landmark).trim());
   }
 
   // 6. Locality
-  const tenantId =
-    addrObj?.tenantId ||
-    propAddr?.tenantId ||
-    property?.tenantId ||
-    Digit.ULBService.getCurrentTenantId();
+  const tenantId = addrObj?.tenantId || propAddr?.tenantId || property?.tenantId || Digit.ULBService.getCurrentTenantId();
   const localityRaw = addrObj?.locality || propAddr?.locality || property?.locality;
   const localityCode = localityRaw?.code || (typeof localityRaw === "string" ? localityRaw : null);
 
@@ -171,13 +152,7 @@ const getAddress = (address, t, property) => {
   }
 
   // 11. Pincode
-  const pincode =
-    addrObj?.pincode ||
-    addrObj?.pinCode ||
-    propAddr?.pincode ||
-    propAddr?.pinCode ||
-    property?.pincode ||
-    "";
+  const pincode = addrObj?.pincode || addrObj?.pinCode || propAddr?.pincode || propAddr?.pinCode || property?.pincode || "";
   if (pincode && String(pincode).trim() && String(pincode).trim() !== "NA") {
     parts.push(String(pincode).trim());
   }
@@ -209,7 +184,9 @@ const WSInfoPage = () => {
 
   const searchParams = new URLSearchParams(location.search);
   const isFromPropertyCreate =
-    Boolean(location?.state?.property || location?.state?.propertyId || location?.state?.hasProperty === "YES" || location?.state?.fromPropertyCreate) ||
+    Boolean(
+      location?.state?.property || location?.state?.propertyId || location?.state?.hasProperty === "YES" || location?.state?.fromPropertyCreate
+    ) ||
     searchParams.get("hasProperty") === "YES" ||
     Boolean(searchParams.get("propertyId"));
 
@@ -308,7 +285,7 @@ const WSInfoPage = () => {
         const fullAddr = getAddress(target.address, t, target);
         const formatted = {
           ...target,
-          displayName: fullAddr ? `${target.propertyId} - ${fullAddr}` : target.propertyId,
+          displayName: fullAddr ? `${fullAddr}` : "",
         };
         setSelectedProperty(formatted);
         sessionStorage.setItem("WS_OTP_VERIFIED_PROPERTY_ID", target.propertyId);
@@ -431,7 +408,7 @@ const WSInfoPage = () => {
         const fullAddr = getAddress(fallbackProp.address, t, fallbackProp);
         const formatted = {
           ...fallbackProp,
-          displayName: fullAddr ? `${fallbackProp.propertyId} - ${fullAddr}` : fallbackProp.propertyId,
+          displayName: fullAddr ? `${fullAddr}` : "",
         };
         setSelectedProperty(formatted);
         sessionStorage.setItem("WS_OTP_VERIFIED_PROPERTY_ID", fallbackProp.propertyId);
@@ -489,19 +466,29 @@ const WSInfoPage = () => {
       const fullAddr = getAddress(prop.address, t, prop);
       return {
         ...prop,
-        displayName: fullAddr ? `${prop.propertyId} - ${fullAddr}` : prop.propertyId,
+        displayName: fullAddr ? `${fullAddr}` : "",
       };
     });
     if (selectedProperty && !list.some((p) => p.propertyId === selectedProperty.propertyId)) {
       const fullAddr = getAddress(selectedProperty.address, t, selectedProperty);
       const selProp = {
         ...selectedProperty,
-        displayName: fullAddr ? `${selectedProperty.propertyId} - ${fullAddr}` : selectedProperty.propertyId,
+        displayName: fullAddr ? `${fullAddr}` : "",
       };
       return [selProp, ...list];
     }
     return list;
   }, [propertyDetails, selectedProperty, t]);
+
+  const propertyAddressDisplay = React.useMemo(() => {
+    if (!isMobileVerified) return "";
+    const prop =
+      selectedProperty ||
+      (createdPropertyId && (propertyDetails?.Properties?.find((p) => p.propertyId === createdPropertyId) || propByIdData?.Properties?.[0])) ||
+      createdProperty;
+    if (!prop) return "";
+    return getAddress(prop?.address, t, prop) || prop?.displayName || "";
+  }, [isMobileVerified, selectedProperty, createdPropertyId, propertyDetails, propByIdData, createdProperty, t]);
 
   const handleDigiLockerLogin = async (e) => {
     if (e && e.preventDefault) e.preventDefault();
@@ -1408,73 +1395,42 @@ const WSInfoPage = () => {
           </div> */}
         {/* </div> */}
 
-        {/* DigiLocker Fast-Track Banner */}
-        <div className="ws-digilocker-box">
-          <div className="ws-digilocker-content">
-            <div className="ws-dl-icon-circle">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#003366" strokeWidth="2">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-              </svg>
-            </div>
-            <div className="ws-dl-info">
-              <div className="ws-dl-title-wrap">
-                <span className="ws-dl-title">{t("Fast-Track with DigiLocker")}</span>
-                <span className="ws-dl-pill">{t("RECOMMENDED")}</span>
+        {/* DigiLocker Fast-Track Banner - Only show when NOT in OTP session (hasProperty !== 'YES') */}
+        {hasProperty?.code !== "YES" && (
+          <div className="ws-digilocker-box">
+            <div className="ws-digilocker-content">
+              <div className="ws-dl-icon-circle">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#003366" strokeWidth="2">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                </svg>
               </div>
-              <p className="ws-dl-sub">
-                {t("Fetch your verified Aadhaar, Electricity Bill, and Identity documents directly without manual upload.")}
-              </p>
+              <div className="ws-dl-info">
+                <div className="ws-dl-title-wrap">
+                  <span className="ws-dl-title">{t("Fast-Track with DigiLocker")}</span>
+                  <span className="ws-dl-pill">{t("RECOMMENDED")}</span>
+                </div>
+                <p className="ws-dl-sub">
+                  {t("Fetch your verified Aadhaar, Electricity Bill, and Identity documents directly without manual upload.")}
+                </p>
+              </div>
             </div>
+            <button className="ws-btn ws-btn-primary" type="button" onClick={handleCreateProperty}>
+              {t("Start Your Application")}
+            </button>
+            <button type="button" className="ws-btn ws-btn-digilocker" onClick={handleDigiLockerLogin}>
+              <span>🔐</span>
+              <span>{t("DigiLocker Consent")}</span>
+            </button>
           </div>
-          <button type="button" className="ws-btn ws-btn-digilocker" onClick={handleDigiLockerLogin}>
-            <span>🔐</span>
-            <span>{t("DigiLocker Consent")}</span>
-          </button>
-        </div>
+        )}
 
-        {/* 2. Step 1: Property Verification Card */}
-        <div className="ws-card">
-          <div className="ws-step-header">
-            <div className="ws-step-num-badge">1</div>
-            <div>
-              <h2 className="ws-step-title">{t("Property Verification & Linking")}</h2>
-              <p className="ws-step-subtitle">
-                {t(
-                  "A Registered Property Details is required to apply for a water/sewerage connection. Linking your Details enables to apply for a New Connection."
-                )}
-              </p>
-            </div>
-          </div>
-
-          {/* <div className="ws-question-container">
-            <label className="ws-question-label">
-              <span className="ws-req-dot">*</span> {t("Do you have an existing property?")}
-            </label>
-            <RadioButtons
-              t={t}
-              options={radioOptions}
-              optionsKey="name"
-              value={hasProperty}
-              selectedOption={hasProperty}
-              onSelect={(val) => {
-                setHasProperty(val);
-                setSelectedProperty(null);
-                setShowOtpVerification(false);
-                setOtp("");
-                setIsMobileVerified(false);
-                sessionStorage.removeItem("WS_OTP_VERIFIED_PROPERTY_ID");
-                hasAutoSelected.current = false;
-              }}
-              style={{ display: "flex", gap: "24px" }}
-            />
-          </div> */}
-
-          {/* Property YES Flow */}
-          {hasProperty?.code === "YES" && (
-            <div>
+        {/* 2. Step 1: Property Verification Card & Action Bar (Only in Property YES / OTP flow) */}
+        {hasProperty?.code === "YES" && (
+          <React.Fragment>
+            <div className="ws-card">
               <div className="ws-prop-guide-banner">
                 <span className="ws-guide-step-tag">Step 1.1</span>
-                <span>{t("Enter your registered mobile number, verify via OTP, and select your property from the dropdown.")}</span>
+                <span>{t("Enter your registered mobile number and verify via OTP.")}</span>
               </div>
 
               <div className="ws-prop-grid">
@@ -1501,7 +1457,7 @@ const WSInfoPage = () => {
                         }}
                         placeholder={t("Enter 10-digit mobile number")}
                         maxLength={10}
-                        disabled={isMobileVerified}
+                        disabled={true}
                       />
                     </div>
                     {searchMobileNumber?.length === 10 && !isMobileVerified && !showOtpVerification && (
@@ -1513,7 +1469,7 @@ const WSInfoPage = () => {
                   <span className="ws-field-helper">{t("Enter the mobile number linked with your property registration.")}</span>
                 </div>
 
-                {/* Property Dropdown */}
+                {/* Property Address */}
                 <div className="ws-field-col">
                   <Label>{t("Select Existing Property")}</Label>
                   {isLoading ? (
@@ -1522,38 +1478,16 @@ const WSInfoPage = () => {
                     </div>
                   ) : (
                     <div>
-                      <Dropdown
-                        option={propertyOptions}
-                        optionKey="displayName"
-                        id="propertyId"
-                        selected={selectedProperty}
-                        select={(val) => {
-                          const fullAddr = getAddress(val?.address, t, val);
-                          const formattedVal = val
-                            ? {
-                                ...val,
-                                displayName: fullAddr ? `${val.propertyId} - ${fullAddr}` : val.propertyId,
-                              }
-                            : null;
-                          setSelectedProperty(formattedVal);
-                          setShowOtpVerification(false);
-                          setOtp("");
-                          if (val?.propertyId) {
-                            sessionStorage.setItem("WS_OTP_VERIFIED_PROPERTY_ID", val.propertyId);
-                          }
-                        }}
+                      <TextInput
                         t={t}
-                        placeholder={isMobileVerified ? t("Select Property from list") : t("Verify mobile number to view properties")}
-                        disable={!isMobileVerified || propertyOptions.length === 0}
+                        type="text"
+                        isMandatory={false}
+                        name="propertyAddress"
+                        value={propertyAddressDisplay}
+                        placeholder={isMobileVerified ? t("Property Address") : t("Verify mobile number to view property")}
+                        disabled={true}
+                        style={{ width: "100%" }}
                       />
-                      {selectedProperty && (
-                        <div className="ws-selected-prop-badge">
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00703c" strokeWidth="2.5">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                          </svg>
-                          <span>{t("Property details & address will be automatically populated in the application.")}</span>
-                        </div>
-                      )}
                     </div>
                   )}
                 </div>
@@ -1595,7 +1529,7 @@ const WSInfoPage = () => {
               )}
 
               {/* Verified Success Banner */}
-              {isMobileVerified && (
+              {/* {isMobileVerified && (
                 <div className="ws-verified-banner">
                   <div className="ws-verified-text">
                     <span className="ws-verified-check">✓</span>
@@ -1619,7 +1553,7 @@ const WSInfoPage = () => {
                     {t("Change Number")}
                   </button>
                 </div>
-              )}
+              )} */}
 
               {/* No Property Found */}
               {searchMobileNumber?.length === 10 && isMobileVerified && !isLoading && propertyOptions.length === 0 && (
@@ -1637,103 +1571,48 @@ const WSInfoPage = () => {
                 </div>
               )}
             </div>
-          )}
 
-          {/* Property NO Flow */}
-          {hasProperty?.code === "NO" && (
-            <div className="ws-prop-no-block">
-              <div className="ws-no-prop-notice">
-                <div className="ws-notice-icon-circle">ℹ️</div>
-                <div>
-                  <h4>{t("Property Registration is Mandatory")}</h4>
-                  <p>
-                    {t(
-                      "To apply for a new water or sewerage connection with Delhi Jal Board, your premises must first be registered with a Property ID. Please click below to register your property."
-                    )}
-                  </p>
+            {/* Bottom Action Card */}
+            <div className="ws-action-card">
+              <div className="ws-action-content">
+                <div className="ws-action-hint">
+                  {!selectedProperty ? (
+                    <div className="ws-hint-badge ws-hint-warning">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                      </svg>
+                      <span>{t("Please verify your mobile number via OTP to proceed.")}</span>
+                    </div>
+                  ) : (
+                    <div className="ws-hint-badge ws-hint-success">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                      <span>{t("All prerequisites verified! You are ready to start the application form.")}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="ws-action-buttons">
+                  <button
+                    type="button"
+                    className={`ws-btn ws-btn-next ${isNextDisabled ? "ws-btn-disabled" : ""}`}
+                    disabled={isNextDisabled}
+                    onClick={handleNext}
+                  >
+                    <span>{t("Next: Start Application")}</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <line x1="5" y1="12" x2="19" y2="12"></line>
+                      <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                  </button>
                 </div>
               </div>
-              <div style={{ display: "flex", gap: "16px", alignItems: "center", flexWrap: "wrap", marginTop: "12px" }}>
-                <button className="ws-btn ws-btn-primary" type="button" onClick={handleCreateProperty}>
-                  {t("WS_Register_New_Property")}
-                </button>
-                {/* <button
-                  type="button"
-                  style={{
-                    background: "none",
-                    border: "none",
-                    color: "#00703c",
-                    cursor: "pointer",
-                    textDecoration: "underline",
-                    fontSize: "14px",
-                    fontWeight: 600,
-                  }}
-                  onClick={() => setHasProperty(radioOptions[0])}
-                >
-                  {t("Already have a Property ID? Link Property")}
-                </button> */}
-              </div>
             </div>
-          )}
-        </div>
-
-        {/* Bottom Action Card */}
-        <div className="ws-action-card">
-          <div className="ws-action-content">
-            <div className="ws-action-hint">
-              {!hasProperty ? (
-                <div className="ws-hint-badge ws-hint-warning">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="12" y1="8" x2="12" y2="12"></line>
-                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                  </svg>
-                  <span>{t("Please select whether you have an existing property in Step 1 to continue.")}</span>
-                </div>
-              ) : hasProperty?.code === "YES" && !selectedProperty ? (
-                <div className="ws-hint-badge ws-hint-warning">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="12" y1="8" x2="12" y2="12"></line>
-                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                  </svg>
-                  <span>{t("Please verify your mobile number and select a property from the dropdown to proceed.")}</span>
-                </div>
-              ) : hasProperty?.code === "NO" ? (
-                <div className="ws-hint-badge ws-hint-info">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="12" y1="16" x2="12" y2="12"></line>
-                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
-                  </svg>
-                  <span>{t("Please register your property using the button in Step 1 before applying.")}</span>
-                </div>
-              ) : (
-                <div className="ws-hint-badge ws-hint-success">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <polyline points="20 6 9 17 4 12"></polyline>
-                  </svg>
-                  <span>{t("All prerequisites verified! You are ready to start the application form.")}</span>
-                </div>
-              )}
-            </div>
-
-            <div className="ws-action-buttons">
-              <button
-                type="button"
-                className={`ws-btn ws-btn-next ${isNextDisabled ? "ws-btn-disabled" : ""}`}
-                disabled={isNextDisabled}
-                onClick={handleNext}
-              >
-                <span>{t("Next: Start Application")}</span>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <line x1="5" y1="12" x2="19" y2="12"></line>
-                  <polyline points="12 5 19 12 12 19"></polyline>
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
+          </React.Fragment>
+        )}
       </div>
       {showToast && (
         <Toast

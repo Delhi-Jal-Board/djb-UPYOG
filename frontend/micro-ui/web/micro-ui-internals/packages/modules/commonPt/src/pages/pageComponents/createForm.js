@@ -14,7 +14,11 @@ const CreatePropertyForm = ({ config, onSelect, value, userType, redirectUrl }) 
   const location = useLocation();
 
   const [canSubmit, setCanSubmit] = useState(true);
-  const defaultValues = React.useMemo(() => ({ ...value }), []);
+  const defaultValues = React.useMemo(() => {
+    const stored = Digit.SessionStorage.get("PT_CREATE_PROPERTY_DATA") || {};
+    const stateForm = location?.state?.formData || {};
+    return { ...stored, ...value, ...stateForm };
+  }, [value, location?.state?.formData]);
   const history = useHistory();
   const match = useRouteMatch();
   sessionStorage.setItem("VisitedCommonPTSearch", true);
@@ -32,7 +36,17 @@ const CreatePropertyForm = ({ config, onSelect, value, userType, redirectUrl }) 
   const [owners, setOwners] = useState([]);
 
   useEffect(() => {
-    if (location?.state && (!owners || owners.length === 0)) {
+    const stateFormData = location?.state?.formData;
+    const storedData = Digit.SessionStorage.get("PT_CREATE_PROPERTY_DATA");
+    if (stateFormData || (storedData && !location.state?.applicant)) {
+      const dataToLoad = stateFormData || storedData;
+      if (dataToLoad?.owners && Array.isArray(dataToLoad.owners) && dataToLoad.owners.length > 0) {
+        setOwners(dataToLoad.owners);
+      }
+      if (dataToLoad?.locationDet || dataToLoad?.waterConnection) {
+        setFormValue(dataToLoad);
+      }
+    } else if (location?.state && (!owners || owners.length === 0)) {
       const applicant = location.state?.applicant;
       const contact = location.state?.contact;
       const useDetails = location.state?.useDetails;
@@ -179,13 +193,13 @@ const CreatePropertyForm = ({ config, onSelect, value, userType, redirectUrl }) 
 
     const plotAreaNum = parseFloat(useDetails?.plotArea);
     const builtUpAreaNum = parseFloat(useDetails?.builtUpArea);
-    if (!isNaN(plotAreaNum) && !isNaN(builtUpAreaNum) && plotAreaNum <= builtUpAreaNum) {
-      const plotTrans = t("WS_PLOT_AREA_MORE_THAN_BUILT_UP_AREA");
+    if (!isNaN(plotAreaNum) && !isNaN(builtUpAreaNum) && plotAreaNum < builtUpAreaNum) {
+      const plotTrans = t("WS_PLOT_AREA_MORE_THAN_OR_EQUAL_BUILT_UP_AREA") || t("WS_PLOT_AREA_MORE_THAN_BUILT_UP_AREA");
       setShowToast({
         key: true,
-        label: plotTrans && plotTrans !== "WS_PLOT_AREA_MORE_THAN_BUILT_UP_AREA"
+        label: plotTrans && plotTrans !== "WS_PLOT_AREA_MORE_THAN_OR_EQUAL_BUILT_UP_AREA" && plotTrans !== "WS_PLOT_AREA_MORE_THAN_BUILT_UP_AREA"
           ? plotTrans
-          : "Plot area should always be more than built up area.",
+          : "Plot area should always be more than or equal to built up area.",
       });
       return;
     }
@@ -210,9 +224,16 @@ const CreatePropertyForm = ({ config, onSelect, value, userType, redirectUrl }) 
     // Inject logged in user details if ownersArray is empty
     if (!ownersArray || ownersArray.length === 0 || !ownersArray[0]?.name) {
       const userInfo = Digit.UserService.getUser()?.info;
+      const uName = userInfo?.name || "Citizen";
+      const uParts = uName.trim().split(/\s+/);
       ownersArray = [
         {
-          name: userInfo?.name || "Citizen",
+          name: uName,
+          firstName: uParts[0] || uName,
+          middleName: uParts.length > 2 ? uParts.slice(1, -1).join(" ") : "",
+          lastName: uParts.length > 1 ? uParts[uParts.length - 1] : "",
+          emailId: userInfo?.emailId || userInfo?.email || "",
+          email: userInfo?.emailId || userInfo?.email || "",
           mobileNumber: userInfo?.mobileNumber,
           gender: { code: userInfo?.gender || "MALE", name: userInfo?.gender || "Male" },
           fatherOrHusbandName: "NA",
@@ -221,6 +242,21 @@ const CreatePropertyForm = ({ config, onSelect, value, userType, redirectUrl }) 
           ownershipCategory: "INDIVIDUAL.SINGLEOWNER",
         }
       ];
+    } else {
+      ownersArray = ownersArray.map((owner) => {
+        const fullName = owner?.name || "";
+        const nameParts = fullName.trim().split(/\s+/);
+        const fName = owner?.firstName || (nameParts.length > 0 && nameParts[0] ? nameParts[0] : "");
+        const mName = owner?.middleName || (nameParts.length > 2 ? nameParts.slice(1, -1).join(" ") : "");
+        const lName = owner?.lastName || (nameParts.length > 1 ? nameParts[nameParts.length - 1] : "");
+        return {
+          ...owner,
+          firstName: fName,
+          middleName: mName,
+          lastName: lName,
+          name: fullName || [fName, mName, lName].filter(Boolean).join(" "),
+        };
+      });
     }
 
     const firstOwner = ownersArray?.[0];
@@ -234,6 +270,20 @@ const CreatePropertyForm = ({ config, onSelect, value, userType, redirectUrl }) 
       return;
     }
 
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    for (const owner of ownersArray) {
+      const email = owner?.emailId || owner?.email;
+      if (email && typeof email === "string" && email.trim() !== "") {
+        if (!emailRegex.test(email.trim())) {
+          setShowToast({
+            key: true,
+            label: t("CORE_COMMON_INVALID_EMAIL", "Please enter a valid Email ID"),
+          });
+          return;
+        }
+      }
+    }
+
     if (
       (currentFormValue?.owners?.ownershipCategory?.includes("MULTIPLEOWNERS") ||
         currentFormValue?.owners?.[0]?.ownershipCategory?.code?.includes("MULTIPLEOWNERS")) &&
@@ -241,29 +291,12 @@ const CreatePropertyForm = ({ config, onSelect, value, userType, redirectUrl }) 
     ) {
       setShowToast({ key: true, label: "PT_COMMON_ONE_MORE_OWNER_INFROMATION_REQUIRED" });
     } else {
-      const payload = convertToPropertyLightWeight({ ...currentFormValue, owners: ownersArray });
-      payload.Property.tenantId = tenantId;
-
-      mutation.mutate(payload, {
-        onSuccess: (data) => {
-          if (data?.Errors && data?.Errors.length > 0) {
-            setShowToast({ key: true, label: data?.Errors[0]?.message || t("PT_COMMON_FAILED_TO_CREATE_PROPERTY") });
-            return;
-          }
-          // setShowToast({ key: false, label: `${t("CS_NEW_PROPERTY_APPLICATION_CREATED_SUCCESS")} - ${data?.Properties?.[0]?.propertyId}` });
-          setTimeout(() => {
-            if (onSelect) {
-              onSelect("cptNewProperty", { property: data?.Properties?.[0] });
-            } else {
-              history.push(`${match.path}/save-property?redirectToUrl=${redirectUrl || ""}`, {
-                property: data?.Properties?.[0]
-              });
-            }
-          }, 1000);
-        },
-        onError: (error) => {
-          setShowToast({ key: true, label: error?.response?.data?.Errors?.[0]?.message || t("PT_COMMON_FAILED_TO_CREATE_PROPERTY") });
-        },
+      const previewData = { ...currentFormValue, owners: ownersArray };
+      Digit.SessionStorage.set("PT_CREATE_PROPERTY_DATA", previewData);
+      history.push({
+        pathname: `${match.path}/preview`,
+        search: location.search,
+        state: { formData: previewData, redirectUrl: redirectUrl },
       });
     }
   };
@@ -314,7 +347,7 @@ const CreatePropertyForm = ({ config, onSelect, value, userType, redirectUrl }) 
           noBoxShadow
           inline
           config={currentConfig}
-          label={t("SUBMIT")}
+          label={t("CS_COMMON_PREVIEW", "PREVIEW")}
           isDisabled={!canSubmit}
           defaultValues={defaultValues}
           onFormValueChange={onFormValueChange}

@@ -7,13 +7,8 @@ const WSActivationCommentsDetails = ({ t, config, userType, formData, onSelect }
   });
 
   useEffect(() => {
-    if (formData && formData?.comments) {
-    }
-  });
-
-  useEffect(() => {
-    if (userType === "employee") {
-      onSelect(config.key, { ...formData[config.key], ...comments });
+    if (onSelect && config?.key) {
+      onSelect(config.key, { ...formData?.[config?.key], ...comments });
     }
   }, [comments]);
 

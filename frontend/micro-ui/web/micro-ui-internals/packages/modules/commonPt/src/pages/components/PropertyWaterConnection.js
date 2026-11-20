@@ -1,4 +1,4 @@
-import { LabelFieldPair, Dropdown, TextInput, CardLabelError, CardLabel, CollapsibleCardPage, Toast } from "@djb25/digit-ui-react-components";
+import { LabelFieldPair, Dropdown, TextInput, CardLabelError, CardLabel, CollapsibleCardPage, Toast, FieldLabelWithTooltip } from "@djb25/digit-ui-react-components";
 import React, { useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import _ from "lodash";
@@ -97,10 +97,10 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
   }, [showToast]);
 
   const getPlotAreaError = () => {
-    const trans = t("WS_PLOT_AREA_MORE_THAN_BUILT_UP_AREA");
-    return trans && trans !== "WS_PLOT_AREA_MORE_THAN_BUILT_UP_AREA"
+    const trans = t("WS_PLOT_AREA_MORE_THAN_OR_EQUAL_BUILT_UP_AREA") || t("WS_PLOT_AREA_MORE_THAN_BUILT_UP_AREA");
+    return trans && trans !== "WS_PLOT_AREA_MORE_THAN_OR_EQUAL_BUILT_UP_AREA" && trans !== "WS_PLOT_AREA_MORE_THAN_BUILT_UP_AREA"
       ? trans
-      : "Plot area should always be more than built up area.";
+      : "Plot area should always be more than or equal to built up area.";
   };
 
   const getHeightErrorMessage = () => {
@@ -115,7 +115,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
     const plot = parseFloat(watchPlotArea);
     const built = parseFloat(watchBuiltUpArea);
     if (!isNaN(plot) && !isNaN(built)) {
-      return plot <= built;
+      return plot < built;
     }
     return false;
   }, [watchPlotArea, watchBuiltUpArea]);
@@ -134,7 +134,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
   const handleAreaBlur = () => {
     const plot = parseFloat(watchPlotArea);
     const built = parseFloat(watchBuiltUpArea);
-    if (!isNaN(plot) && !isNaN(built) && plot <= built) {
+    if (!isNaN(plot) && !isNaN(built) && plot < built) {
       setShowToast({
         key: true,
         label: getPlotAreaError(),
@@ -599,9 +599,11 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
       >
       <div className="formcomposer-section-grid">
         <LabelFieldPair>
-          <CardLabel>
-            {`${t("WS_PROPERTY_TYPE")}`} <span className="check-page-link-button">*</span>
-          </CardLabel>
+          <FieldLabelWithTooltip
+            label={t("WS_PROPERTY_TYPE")}
+            isMandatory={true}
+            infoText={t("WS_PROPERTY_TYPE_INFO_MSG", "Select Property Type")}
+          />
           <div className="form-field">
             <Controller
               control={control}
@@ -654,7 +656,11 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
         {isSchoolCollegeProperty ? (
           <React.Fragment>
             <LabelFieldPair>
-              <CardLabel>{`${t("WS_NUMBER_OF_STUDENTS")}`}</CardLabel>
+              <FieldLabelWithTooltip
+                label={t("WS_NUMBER_OF_STUDENTS")}
+                isMandatory={false}
+                infoText={t("WS_NUMBER_OF_STUDENTS_INFO_MSG", "Enter Number of Students")}
+              />
               <div className="form-field">
                 <TextInput
                   t={t}
@@ -674,10 +680,11 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
         {isHotelRestaurantProperty ? (
           <React.Fragment>
             <LabelFieldPair>
-              <CardLabel>
-                {`${t("WS_NUMBER_OF_ROOMS")}`}
-                <span className="check-page-link-button"> *</span>
-              </CardLabel>
+              <FieldLabelWithTooltip
+                label={t("WS_NUMBER_OF_ROOMS")}
+                isMandatory={true}
+                infoText={t("WS_NUMBER_OF_ROOMS_INFO_MSG", "Enter Number of Rooms")}
+              />
               <div className="form-field">
                 <TextInput
                   t={t}
@@ -698,10 +705,11 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
         {isHospitalProperty ? (
           <React.Fragment>
             <LabelFieldPair>
-              <CardLabel>
-                {`${t("WS_NUMBER_OF_BEDS")}`}
-                <span className="check-page-link-button"> *</span>
-              </CardLabel>
+              <FieldLabelWithTooltip
+                label={t("WS_NUMBER_OF_BEDS")}
+                isMandatory={true}
+                infoText={t("WS_NUMBER_OF_BEDS_INFO_MSG", "Enter Number of Beds")}
+              />
               <div className="form-field">
                 <TextInput
                   t={t}
@@ -719,9 +727,11 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
           </React.Fragment>
         ) : null}
         <LabelFieldPair>
-          <CardLabel>
-            {`${t("WS_CATEGORY_TYPE")}`} <span className="check-page-link-button">*</span>
-          </CardLabel>
+          <FieldLabelWithTooltip
+            label={t("WS_CATEGORY_TYPE")}
+            isMandatory={true}
+            infoText={t("WS_CATEGORY_TYPE_INFO_MSG", "Select Category Type")}
+          />
           <div className="form-field">
             <Controller
               control={control}
@@ -744,9 +754,11 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
         </LabelFieldPair>
         {errors?.useDetails?.categoryType && <CardLabelError style={errorStyle}>{errors.useDetails.categoryType.message}</CardLabelError>}
         <LabelFieldPair>
-          <CardLabel>
-            {`${t("WS_PROPERTY_CATEGORY")}`} <span className="check-page-link-button">*</span>
-          </CardLabel>
+          <FieldLabelWithTooltip
+            label={t("WS_PROPERTY_CATEGORY")}
+            isMandatory={true}
+            infoText={t("WS_PROPERTY_CATEGORY_INFO_MSG", "Select Property Category")}
+          />
           <div className="form-field">
             <Controller
               control={control}
@@ -770,9 +782,11 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
         {errors?.useDetails?.propertyCategory && <CardLabelError style={errorStyle}>{errors.useDetails.propertyCategory.message}</CardLabelError>}
 
         <LabelFieldPair>
-          <CardLabel>
-            {`${t("WS_WATER_CONNECTION_USAGE_TYPE")}`} <span className="check-page-link-button">*</span>
-          </CardLabel>
+          <FieldLabelWithTooltip
+            label={t("WS_WATER_CONNECTION_USAGE_TYPE")}
+            isMandatory={true}
+            infoText={t("WS_WATER_CONNECTION_USAGE_TYPE_INFO_MSG", "Select Water Connection Usage Type")}
+          />
           <div className="form-field">
             <Controller
               control={control}
@@ -798,9 +812,11 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
         )}
 
         <LabelFieldPair>
-          <CardLabel>
-            {`${t("WS_PLOT_AREA")}`} <span className="check-page-link-button">*</span>
-          </CardLabel>
+          <FieldLabelWithTooltip
+            label={t("WS_PLOT_AREA")}
+            isMandatory={true}
+            infoText={t("WS_PLOT_AREA_INFO_MSG", "Enter Plot Area (sq. meter.)")}
+          />
           <div className="form-field">
             <TextInput
               t={t}
@@ -831,9 +847,11 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
         </LabelFieldPair>
 
         <LabelFieldPair>
-          <CardLabel>
-            {`${t("WS_BUILT_UP_AREA")}`} <span className="check-page-link-button">*</span>
-          </CardLabel>
+          <FieldLabelWithTooltip
+            label={t("WS_BUILT_UP_AREA")}
+            isMandatory={true}
+            infoText={t("WS_BUILT_UP_AREA_INFO_MSG", "Enter Built-up Area (sq. meter.)")}
+          />
           <div className="form-field">
             <TextInput
               t={t}
@@ -895,10 +913,11 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
             )}
         </div> */}
         <LabelFieldPair>
-          <CardLabel>
-            {`${t("WS_HEIGHT_OF_THE_BUILDING(meters)")}`}
-            <span className="check-page-link-button"> *</span>
-          </CardLabel>
+          <FieldLabelWithTooltip
+            label={t("WS_HEIGHT_OF_THE_BUILDING(meters)")}
+            isMandatory={true}
+            infoText={t("WS_HEIGHT_OF_THE_BUILDING_INFO_MSG", "Enter Height of The Building (meter)")}
+          />
           <div className="form-field">
             <TextInput
               t={t}
@@ -935,7 +954,11 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
           </div>
         </LabelFieldPair>
         <LabelFieldPair>
-          <CardLabel>{`${t("WS_SELECT_YEAR_OF_CONSTRUCTION")}`}</CardLabel>
+          <FieldLabelWithTooltip
+            label={t("WS_SELECT_YEAR_OF_CONSTRUCTION")}
+            isMandatory={false}
+            infoText={t("WS_SELECT_YEAR_OF_CONSTRUCTION_INFO_MSG", "Select Year of Construction")}
+          />
           <div className="form-field">
             <Controller
               control={control}
@@ -961,10 +984,11 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
         )}
         {isDwellingUnit ? (
           <LabelFieldPair>
-            <CardLabel>
-              {`${t("WS_NUMBER_OF_DWELLING_UNITS")}`}
-              <span className="check-page-link-button"> *</span>
-            </CardLabel>
+            <FieldLabelWithTooltip
+              label={t("WS_NUMBER_OF_DWELLING_UNITS")}
+              isMandatory={true}
+              infoText={t("WS_NUMBER_OF_DWELLING_UNITS_INFO_MSG", "Enter Number of Dwelling Units")}
+            />
             <div className="form-field">
               <TextInput
                 t={t}

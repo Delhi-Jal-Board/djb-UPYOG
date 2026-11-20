@@ -29,12 +29,7 @@ const WSBankDetails = ({ config, onSelect, userType, formData, setError, formSta
   };
 
   const initialVals = getInitialBankDetails();
-  const hasInitialData = Boolean(
-    initialVals.bankName ||
-    initialVals.bankBranchName ||
-    initialVals.ifscCode ||
-    initialVals.accountNumber
-  );
+  const hasInitialData = Boolean(initialVals.bankName || initialVals.bankBranchName || initialVals.ifscCode || initialVals.accountNumber);
   const isInitializedRef = React.useRef(hasInitialData);
   const currentAppId =
     formData?.applicationNo ||
@@ -60,7 +55,9 @@ const WSBankDetails = ({ config, onSelect, userType, formData, setError, formSta
     const errs = {};
     const bankName = String(values?.bankName || "").trim();
     const bankBranchName = String(values?.bankBranchName || values?.branchName || "").trim();
-    const ifscCode = String(values?.ifscCode || "").trim().toUpperCase();
+    const ifscCode = String(values?.ifscCode || "")
+      .trim()
+      .toUpperCase();
     const accountNumber = String(values?.accountNumber || values?.bankAccountNumber || "").trim();
 
     if (!bankName) {
@@ -146,14 +143,7 @@ const WSBankDetails = ({ config, onSelect, userType, formData, setError, formSta
       }, 150);
       return () => clearTimeout(timer);
     }
-  }, [
-    formValue?.bankName,
-    formValue?.bankBranchName,
-    formValue?.ifscCode,
-    formValue?.accountNumber,
-    formData?.bankDetails,
-    config?.key,
-  ]);
+  }, [formValue?.bankName, formValue?.bankBranchName, formValue?.ifscCode, formValue?.accountNumber, formData?.bankDetails, config?.key]);
 
   useEffect(() => {
     const configKey = config?.key || "bankDetails";
@@ -226,161 +216,176 @@ const WSBankDetails = ({ config, onSelect, userType, formData, setError, formSta
   const FormContent = (
     <CollapsibleCardPage title={t("WS_BANK_DETAILS")} defaultOpen={true}>
       <div className="formcomposer-section-grid">
-          {/* Row 1: Bank Name and Branch Name */}
-          <div>
-            <LabelFieldPair>
-              <CardLabel>
-                {t("WS_NAME_OF_BANK")} <span className="astericColor" style={{ color: "#d4351c" }}>*</span>
-              </CardLabel>
-              <div className="field">
-                <Controller
-                  control={control}
-                  name={"bankName"}
-                  rules={{ required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
-                  render={(props) => (
-                    <TextInput
-                      value={props.value}
-                      placeholder={t("WS_NAME_OF_BANK_PLACEHOLDER")}
-                      onChange={(e) => {
-                        props.onChange(e.target.value);
-                        trigger("bankName");
-                      }}
-                      onBlur={(e) => {
-                        props.onBlur(e);
-                        trigger("bankName");
-                        triggerParentSync();
-                      }}
-                    />
-                  )}
-                />
-              </div>
-            </LabelFieldPair>
-            {(localFormState.touched?.bankName || localFormState.isSubmitted) && (errors?.bankName?.message || bankErrors?.bankName) ? (
-              <CardLabelError style={errorStyle}> {errors?.bankName?.message || bankErrors?.bankName}</CardLabelError>
-            ) : null}
-          </div>
-
-          <div>
-            <LabelFieldPair>
-              <CardLabel>
-                {t("WS_NAME_OF_BRANCH")} <span className="astericColor" style={{ color: "#d4351c" }}>*</span>
-              </CardLabel>
-              <div className="field">
-                <Controller
-                  control={control}
-                  name={"bankBranchName"}
-                  rules={{ required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
-                  render={(props) => (
-                    <TextInput
-                      value={props.value}
-                      placeholder={t("WS_NAME_OF_BRANCH_PLACEHOLDER")}
-                      onChange={(e) => {
-                        props.onChange(e.target.value);
-                        trigger("bankBranchName");
-                      }}
-                      onBlur={(e) => {
-                        props.onBlur(e);
-                        trigger("bankBranchName");
-                        triggerParentSync();
-                      }}
-                    />
-                  )}
-                />
-              </div>
-            </LabelFieldPair>
-            {(localFormState.touched?.bankBranchName || localFormState.isSubmitted) && (errors?.bankBranchName?.message || bankErrors?.bankBranchName) ? (
-              <CardLabelError style={errorStyle}> {errors?.bankBranchName?.message || bankErrors?.bankBranchName}</CardLabelError>
-            ) : null}
-          </div>
-
-          {/* Row 2: IFSC Code and Account Number */}
-          <div>
-            <LabelFieldPair>
-              <CardLabel>
-                {t("WS_IFSC_CODE")} <span className="astericColor" style={{ color: "#d4351c" }}>*</span>
-              </CardLabel>
-              <div className="field">
-                <Controller
-                  control={control}
-                  name={"ifscCode"}
-                  rules={{
-                    required: t("CORE_COMMON_REQUIRED_ERRMSG"),
-                    pattern: { value: /^[A-Z]{4}0[A-Z0-9]{6}$/, message: t("ERR_INVALID_IFSC_CODE") },
-                  }}
-                  render={(props) => (
-                    <TextInput
-                      value={props.value}
-                      placeholder={t("WS_IFSC_CODE_PLACEHOLDER")}
-                      onChange={(e) => {
-                        let val = e.target.value.toUpperCase();
-                        if (val.length > 11) val = val.slice(0, 11);
-                        props.onChange(val);
-                        trigger("ifscCode");
-                      }}
-                      onBlur={(e) => {
-                        props.onBlur(e);
-                        trigger("ifscCode");
-                        triggerParentSync();
-                      }}
-                      maxLength={11}
-                    />
-                  )}
-                />
-              </div>
-            </LabelFieldPair>
-            {(localFormState.touched?.ifscCode || localFormState.isSubmitted) && (errors?.ifscCode?.message || bankErrors?.ifscCode) ? (
-              <CardLabelError style={errorStyle}> {errors?.ifscCode?.message || bankErrors?.ifscCode}</CardLabelError>
-            ) : null}
-          </div>
-
-          <div>
-            <LabelFieldPair>
-              <CardLabel>
-                {t("WS_BANK_ACCOUNT_NO")} <span className="astericColor" style={{ color: "#d4351c" }}>*</span>
-              </CardLabel>
-              <div className="field">
-                <Controller
-                  control={control}
-                  name={"accountNumber"}
-                  rules={{
-                    required: t("CORE_COMMON_REQUIRED_ERRMSG"),
-                    pattern: { value: /^[0-9]{1,18}$/, message: t("ERR_INVALID_BA_ACCOUNT_NUMBER") },
-                  }}
-                  render={(props) => (
-                    <TextInput
-                      value={props.value}
-                      placeholder={t("WS_BANK_ACCOUNT_NO_PLACEHOLDER")}
-                      onChange={(e) => {
-                        let value = e.target.value.replace(/\D/g, "");
-                        if (value.length > 18) {
-                          value = value.slice(0, 18);
-                        }
-                        props.onChange(value);
-                        setValue("confirmAccountNumber", value);
-                        trigger("accountNumber");
-                      }}
-                      onBlur={(e) => {
-                        props.onBlur(e);
-                        trigger("accountNumber");
-                        triggerParentSync();
-                      }}
-                      maxLength={18}
-                    />
-                  )}
-                />
-              </div>
-            </LabelFieldPair>
-            {(localFormState.touched?.accountNumber || localFormState.isSubmitted) && (errors?.accountNumber?.message || bankErrors?.accountNumber) ? (
-              <CardLabelError style={errorStyle}> {errors?.accountNumber?.message || bankErrors?.accountNumber}</CardLabelError>
-            ) : null}
-          </div>
-
-          {/* Keeping these for data consistency but can be hidden if not needed in UI */}
-          <div style={{ display: "none" }}>
-            <Controller control={control} name={"confirmAccountNumber"} render={(props) => <TextInput value={props.value} />} />
-            <Controller control={control} name={"accountHolderName"} render={(props) => <TextInput value={props.value} />} />
-          </div>
+        {/* Row 1: Bank Name and Branch Name */}
+        <div>
+          <LabelFieldPair>
+            <CardLabel>
+              {t("WS_IFSC_CODE")}{" "}
+              <span className="astericColor" style={{ color: "#d4351c" }}>
+                *
+              </span>
+            </CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name={"ifscCode"}
+                rules={{
+                  required: t("CORE_COMMON_REQUIRED_ERRMSG"),
+                  pattern: { value: /^[A-Z]{4}0[A-Z0-9]{6}$/, message: t("ERR_INVALID_IFSC_CODE") },
+                }}
+                render={(props) => (
+                  <TextInput
+                    value={props.value}
+                    placeholder={t("WS_IFSC_CODE_PLACEHOLDER")}
+                    onChange={(e) => {
+                      let val = e.target.value.toUpperCase();
+                      if (val.length > 11) val = val.slice(0, 11);
+                      props.onChange(val);
+                      trigger("ifscCode");
+                    }}
+                    onBlur={(e) => {
+                      props.onBlur(e);
+                      trigger("ifscCode");
+                      triggerParentSync();
+                    }}
+                    maxLength={11}
+                  />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
+          {(localFormState.touched?.ifscCode || localFormState.isSubmitted) && (errors?.ifscCode?.message || bankErrors?.ifscCode) ? (
+            <CardLabelError style={errorStyle}> {errors?.ifscCode?.message || bankErrors?.ifscCode}</CardLabelError>
+          ) : null}
         </div>
+        <div>
+          <LabelFieldPair>
+            <CardLabel>
+              {t("WS_NAME_OF_BANK")}{" "}
+              <span className="astericColor" style={{ color: "#d4351c" }}>
+                *
+              </span>
+            </CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name={"bankName"}
+                rules={{ required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
+                render={(props) => (
+                  <TextInput
+                    value={props.value}
+                    placeholder={t("WS_NAME_OF_BANK_PLACEHOLDER")}
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
+                      trigger("bankName");
+                    }}
+                    onBlur={(e) => {
+                      props.onBlur(e);
+                      trigger("bankName");
+                      triggerParentSync();
+                    }}
+                    disabled={true}
+                  />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
+          {(localFormState.touched?.bankName || localFormState.isSubmitted) && (errors?.bankName?.message || bankErrors?.bankName) ? (
+            <CardLabelError style={errorStyle}> {errors?.bankName?.message || bankErrors?.bankName}</CardLabelError>
+          ) : null}
+        </div>
+
+        <div>
+          <LabelFieldPair>
+            <CardLabel>
+              {t("WS_NAME_OF_BRANCH")}{" "}
+              <span className="astericColor" style={{ color: "#d4351c" }}>
+                *
+              </span>
+            </CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name={"bankBranchName"}
+                rules={{ required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
+                render={(props) => (
+                  <TextInput
+                    value={props.value}
+                    placeholder={t("WS_NAME_OF_BRANCH_PLACEHOLDER")}
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
+                      trigger("bankBranchName");
+                    }}
+                    onBlur={(e) => {
+                      props.onBlur(e);
+                      trigger("bankBranchName");
+                      triggerParentSync();
+                    }}
+                    disabled={true}
+                  />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
+          {(localFormState.touched?.bankBranchName || localFormState.isSubmitted) &&
+          (errors?.bankBranchName?.message || bankErrors?.bankBranchName) ? (
+            <CardLabelError style={errorStyle}> {errors?.bankBranchName?.message || bankErrors?.bankBranchName}</CardLabelError>
+          ) : null}
+        </div>
+
+        {/* Row 2: IFSC Code and Account Number */}
+
+        <div>
+          <LabelFieldPair>
+            <CardLabel>
+              {t("WS_BANK_ACCOUNT_NO")}{" "}
+              <span className="astericColor" style={{ color: "#d4351c" }}>
+                *
+              </span>
+            </CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name={"accountNumber"}
+                rules={{
+                  required: t("CORE_COMMON_REQUIRED_ERRMSG"),
+                  pattern: { value: /^[0-9]{1,18}$/, message: t("ERR_INVALID_BA_ACCOUNT_NUMBER") },
+                }}
+                render={(props) => (
+                  <TextInput
+                    value={props.value}
+                    placeholder={t("WS_BANK_ACCOUNT_NO_PLACEHOLDER")}
+                    onChange={(e) => {
+                      let value = e.target.value.replace(/\D/g, "");
+                      if (value.length > 18) {
+                        value = value.slice(0, 18);
+                      }
+                      props.onChange(value);
+                      setValue("confirmAccountNumber", value);
+                      trigger("accountNumber");
+                    }}
+                    onBlur={(e) => {
+                      props.onBlur(e);
+                      trigger("accountNumber");
+                      triggerParentSync();
+                    }}
+                    maxLength={18}
+                  />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
+          {(localFormState.touched?.accountNumber || localFormState.isSubmitted) && (errors?.accountNumber?.message || bankErrors?.accountNumber) ? (
+            <CardLabelError style={errorStyle}> {errors?.accountNumber?.message || bankErrors?.accountNumber}</CardLabelError>
+          ) : null}
+        </div>
+
+        {/* Keeping these for data consistency but can be hidden if not needed in UI */}
+        <div style={{ display: "none" }}>
+          <Controller control={control} name={"confirmAccountNumber"} render={(props) => <TextInput value={props.value} />} />
+          <Controller control={control} name={"accountHolderName"} render={(props) => <TextInput value={props.value} />} />
+        </div>
+      </div>
     </CollapsibleCardPage>
   );
 
@@ -389,9 +394,7 @@ const WSBankDetails = ({ config, onSelect, userType, formData, setError, formSta
       <div>
         <Timeline currentStep={2} />
         <FormStep t={t} config={config} onSelect={goNext} isDisabled={hasBankErrors || Object.keys(errors).length > 0}>
-          <div style={{ marginTop: "-30px", marginBottom: "-30px" }}>
-            {FormContent}
-          </div>
+          <div style={{ marginTop: "-30px", marginBottom: "-30px" }}>{FormContent}</div>
         </FormStep>
       </div>
     );

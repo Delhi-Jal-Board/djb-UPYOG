@@ -53,6 +53,42 @@ const ViewBreakup = ({ wsAdditionalDetails, workflowDetails, print, download }) 
     showPopUp(true);
   };
 
+  const isPropUpdated = Boolean(
+    wsAdditionalDetails?.additionalDetails?.isPropUpdated ||
+    wsAdditionalDetails?.additionalDetails?.hasAdditionalInfraCharge ||
+    breakUpData?.taxHeadEstimates?.some((b) => b?.taxHeadCode === "WS_ADDITIONAL_INFRASTRUCTURE_CHARGE") ||
+    breakUpData?.billDetails?.[0]?.billAccountDetails?.some((b) => b?.taxHeadCode === "WS_ADDITIONAL_INFRASTRUCTURE_CHARGE") ||
+    wsAdditionalDetails?.additionalDetails?.values?.some((v) => v?.title === "WS_ADDITIONAL_INFRASTRUCTURE_CHARGE" || v?.taxHeadCode === "WS_ADDITIONAL_INFRASTRUCTURE_CHARGE")
+  );
+
+  const renderAmountWithStatus = (data) => {
+    const rawStatus = data?.status || (data?.taxHeadCode === "WS_ADDITIONAL_INFRASTRUCTURE_CHARGE" ? "UNPAID" : "");
+    const status = String(rawStatus || "").toUpperCase();
+    const isItemPaid = status === "PAID";
+    const isItemUnpaid = status === "UNPAID";
+    const showItemStatus = isPropUpdated && (isItemPaid || isItemUnpaid);
+
+    if (!showItemStatus) {
+      return <span>&#8377;{Number(data?.amount) || 0}</span>;
+    }
+
+    return (
+      <span>
+        <span>&#8377;{Number(data?.amount) || 0}</span>
+        <span
+          style={{
+            color: isItemPaid ? "#2E9E8F" : "#D83A2F",
+            marginLeft: "8px",
+            fontWeight: "600",
+            fontSize: "14px",
+          }}
+        >
+          {isItemPaid ? "(paid)" : "(unpaid)"}
+        </span>
+      </span>
+    );
+  };
+
   const getBreakupReportDetails = () => {
     const amountRows = (rows = []) =>
       rows.map((row) => ({
@@ -251,7 +287,7 @@ const ViewBreakup = ({ wsAdditionalDetails, workflowDetails, print, download }) 
                       labelStyle={{ width: "50%" }}
                       key={`${data?.taxHeadCode}`}
                       label={`${t(`${data?.taxHeadCode}`)}`}
-                      text={<span>&#8377;{Number(data?.amount) || 0}</span>}
+                      text={renderAmountWithStatus(data)}
                       textStyle={{ textAlign: "right" }}
                     />
                   ))}
@@ -262,7 +298,7 @@ const ViewBreakup = ({ wsAdditionalDetails, workflowDetails, print, download }) 
                       labelStyle={{ width: "50%" }}
                       key={`${data?.taxHeadCode}`}
                       label={`${t(`${data?.taxHeadCode}`)}`}
-                      text={<span>&#8377;{Number(data?.amount) || 0}</span>}
+                      text={renderAmountWithStatus(data)}
                       textStyle={{ textAlign: "right" }}
                     />
                   ))}
@@ -274,7 +310,7 @@ const ViewBreakup = ({ wsAdditionalDetails, workflowDetails, print, download }) 
                       labelStyle={{ width: "50%" }}
                       key={`${data?.taxHeadCode}`}
                       label={`${t(`${data?.taxHeadCode}`)}`}
-                      text={<span>&#8377;{Number(data?.amount) || 0}</span>}
+                      text={renderAmountWithStatus(data)}
                       textStyle={{ textAlign: "right" }}
                     />
                   ))}

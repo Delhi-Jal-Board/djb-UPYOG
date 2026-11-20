@@ -141,13 +141,13 @@ const EditPropertyForm = ({ config, onSelect, userType }) => {
 
     const plotAreaNum = parseFloat(useDetails?.plotArea);
     const builtUpAreaNum = parseFloat(useDetails?.builtUpArea);
-    if (!isNaN(plotAreaNum) && !isNaN(builtUpAreaNum) && plotAreaNum <= builtUpAreaNum) {
-      const plotTrans = t("WS_PLOT_AREA_MORE_THAN_BUILT_UP_AREA");
+    if (!isNaN(plotAreaNum) && !isNaN(builtUpAreaNum) && plotAreaNum < builtUpAreaNum) {
+      const plotTrans = t("WS_PLOT_AREA_MORE_THAN_OR_EQUAL_BUILT_UP_AREA") || t("WS_PLOT_AREA_MORE_THAN_BUILT_UP_AREA");
       setShowToast({
         key: true,
-        label: plotTrans && plotTrans !== "WS_PLOT_AREA_MORE_THAN_BUILT_UP_AREA"
+        label: plotTrans && plotTrans !== "WS_PLOT_AREA_MORE_THAN_OR_EQUAL_BUILT_UP_AREA" && plotTrans !== "WS_PLOT_AREA_MORE_THAN_BUILT_UP_AREA"
           ? plotTrans
-          : "Plot area should always be more than built up area.",
+          : "Plot area should always be more than or equal to built up area.",
       });
       return;
     }

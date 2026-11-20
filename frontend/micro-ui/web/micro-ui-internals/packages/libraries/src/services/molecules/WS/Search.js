@@ -452,15 +452,33 @@ export const WSSearch = {
     }
 
     const billAccountDetails = fetchBillData?.Bill?.[0]?.billDetails?.[0]?.billAccountDetails || fetchBillData?.Bill?.[0]?.taxHeadEstimates || [];
+    const hasAdditionalInfraCharge = billAccountDetails.some(
+      (b) => b?.taxHeadCode === "WS_ADDITIONAL_INFRASTRUCTURE_CHARGE"
+    );
+    const isPropUpdated = Boolean(
+      hasAdditionalInfraCharge ||
+      wsDataDetails?.additionalDetails?.isPropertyUpdated === true ||
+      wsDataDetails?.additionalDetails?.isPropUpdated === true
+    );
+    const hasUnpaidCharge = billAccountDetails.some((b) => {
+      const st = String(b?.status || "").toUpperCase();
+      if (st === "UNPAID") return true;
+      if (b?.taxHeadCode === "WS_ADDITIONAL_INFRASTRUCTURE_CHARGE" && st !== "PAID") return true;
+      return false;
+    });
+
     const feeValues = billAccountDetails.length > 0
       ? billAccountDetails.map((bill) => ({
         title: bill?.taxHeadCode,
-        value: <span>&#8377;{Number(bill?.amount).toFixed(2)}</span>
+        value: <span>&#8377;{Number(bill?.amount ?? bill?.estimateAmount ?? 0).toFixed(2)}</span>,
+        status: bill?.status,
+        taxHeadCode: bill?.taxHeadCode,
+        amount: bill?.amount ?? bill?.estimateAmount ?? 0,
       }))
       : [
-        { title: "WS_APPLICATION_FEE_HEADER", value: <span>&#8377;{fetchBillData?.Bill?.[0]?.fee || 0}</span> },
-        { title: "WS_SERVICE_FEE_HEADER", value: <span>&#8377;{fetchBillData?.Bill?.[0]?.charge || 0}</span> },
-        { title: "WS_TAX_HEADER", value: <span>&#8377;{fetchBillData?.Bill?.[0]?.taxAmount || 0}</span> },
+        { title: "WS_APPLICATION_FEE_HEADER", value: <span>&#8377;{fetchBillData?.Bill?.[0]?.fee || 0}</span>, amount: fetchBillData?.Bill?.[0]?.fee || 0 },
+        { title: "WS_SERVICE_FEE_HEADER", value: <span>&#8377;{fetchBillData?.Bill?.[0]?.charge || 0}</span>, amount: fetchBillData?.Bill?.[0]?.charge || 0 },
+        { title: "WS_TAX_HEADER", value: <span>&#8377;{fetchBillData?.Bill?.[0]?.taxAmount || 0}</span>, amount: fetchBillData?.Bill?.[0]?.taxAmount || 0 },
       ];
 
     const appStatus =
@@ -552,7 +570,12 @@ export const WSSearch = {
         appDetails: { ...wtrSewDetails, property: propertyDataDetails, service: serviceDataType },
         isAdhocRebate: isAdhocRebate,
         isVisible: isVisible,
-        isPaid: isInfraPaymentPending
+        hasAdditionalInfraCharge: hasAdditionalInfraCharge,
+        isPropUpdated: isPropUpdated,
+        hasUnpaidCharge: hasUnpaidCharge,
+        isPaid: isPropUpdated
+          ? !hasUnpaidCharge
+          : isInfraPaymentPending
           ? false
           : colletionData?.Payments?.length > 0 || isWorkflowPaid || isCitizenActionPostPayment
           ? true

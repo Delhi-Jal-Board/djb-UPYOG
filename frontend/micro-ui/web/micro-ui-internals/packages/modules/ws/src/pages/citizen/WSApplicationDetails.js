@@ -351,7 +351,39 @@ const WSApplicationDetails = () => {
   const feeEstimationSection = appDetailsData?.applicationDetails?.find((section) => section?.title === "WS_TASK_DETAILS_FEE_ESTIMATE");
 
   if (feeEstimationSection && feeEstimationSection.additionalDetails) {
-    feeEstimationSection.additionalDetails.isPaid = isPaid;
+    const isPropUpdated = Boolean(
+      feeEstimationSection.additionalDetails.isPropUpdated ||
+      feeEstimationSection.additionalDetails.hasAdditionalInfraCharge ||
+      feeEstimationSection.additionalDetails.values?.some((v) => v?.title === "WS_ADDITIONAL_INFRASTRUCTURE_CHARGE" || v?.taxHeadCode === "WS_ADDITIONAL_INFRASTRUCTURE_CHARGE") ||
+      feeEstimationSection.additionalDetails.data?.taxHeadEstimates?.some(
+        (t) => t?.taxHeadCode === "WS_ADDITIONAL_INFRASTRUCTURE_CHARGE"
+      ) ||
+      feeEstimationSection.additionalDetails.data?.billDetails?.[0]?.billAccountDetails?.some(
+        (t) => t?.taxHeadCode === "WS_ADDITIONAL_INFRASTRUCTURE_CHARGE"
+      )
+    );
+
+    if (isPropUpdated) {
+      const hasUnpaid =
+        feeEstimationSection.additionalDetails.hasUnpaidCharge !== undefined
+          ? feeEstimationSection.additionalDetails.hasUnpaidCharge
+          : (
+              feeEstimationSection.additionalDetails.data?.taxHeadEstimates?.some((t) => {
+                const st = String(t?.status || "").toUpperCase();
+                return st === "UNPAID" || (t?.taxHeadCode === "WS_ADDITIONAL_INFRASTRUCTURE_CHARGE" && st !== "PAID");
+              }) ||
+              feeEstimationSection.additionalDetails.values?.some((v) => {
+                const st = String(v?.status || "").toUpperCase();
+                return st === "UNPAID" || ((v?.title === "WS_ADDITIONAL_INFRASTRUCTURE_CHARGE" || v?.taxHeadCode === "WS_ADDITIONAL_INFRASTRUCTURE_CHARGE") && st !== "PAID");
+              })
+            );
+
+      feeEstimationSection.additionalDetails.isPaid = !hasUnpaid;
+      feeEstimationSection.additionalDetails.hasUnpaidCharge = hasUnpaid;
+      feeEstimationSection.additionalDetails.isPropUpdated = true;
+    } else {
+      feeEstimationSection.additionalDetails.isPaid = isPaid;
+    }
   }
 
   if (isLoading || isAppDetailsLoading) {
