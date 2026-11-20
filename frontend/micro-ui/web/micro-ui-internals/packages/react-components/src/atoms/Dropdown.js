@@ -184,8 +184,8 @@ const Dropdown = (props) => {
     if (!triggerRef.current || !dropdownRef.current) return;
 
     window.requestAnimationFrame(() => {
-      const triggerRect = triggerRef.current.getBoundingClientRect();
-      const dropdownRect = dropdownRef.current.getBoundingClientRect();
+      const triggerRect = triggerRef?.current?.getBoundingClientRect();
+      const dropdownRect = dropdownRef?.current?.getBoundingClientRect();
       const width = triggerRect.width;
       const spaceBelow = window.innerHeight - triggerRect.bottom;
       const spaceAbove = triggerRect.top;
