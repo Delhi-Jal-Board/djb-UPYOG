@@ -33,13 +33,12 @@ curl --location --request POST 'https://dev.digit.org/egov-workflow-v2/egov-wf/b
                             "nextState": "INITIATED",
                             "roles": [
                                 "CITIZEN"
-                                
                             ]
                         }
                     ]
                 },
                 {
-                    "sla": null,
+                    "sla": 172800000,
                     "state": "INITIATED",
                     "applicationStatus": "INITIATED",
                     "docUploadRequired": false,
@@ -52,13 +51,12 @@ curl --location --request POST 'https://dev.digit.org/egov-workflow-v2/egov-wf/b
                             "nextState": "PENDING_FOR_PAYMENT",
                             "roles": [
                                 "CITIZEN"
-                                
                             ]
                         }
                     ]
                 },
                 {
-                    "sla": 43200000,
+                    "sla": 172800000,
                     "state": "PENDING_FOR_PAYMENT",
                     "applicationStatus": "PENDING_FOR_PAYMENT",
                     "docUploadRequired": false,
@@ -70,14 +68,13 @@ curl --location --request POST 'https://dev.digit.org/egov-workflow-v2/egov-wf/b
                             "action": "PAY",
                             "nextState": "PENDING_FOR_EE_APPROVAL",
                             "roles": [
-                                "CITIZEN" 
-                                
+                                "CITIZEN"
                             ]
                         }
                     ]
                 },
                 {
-                    "sla": 86400000,
+                    "sla": 172800000,
                     "state": "PENDING_FOR_EE_APPROVAL",
                     "applicationStatus": "PENDING_FOR_EE_APPROVAL",
                     "docUploadRequired": false,
@@ -85,6 +82,13 @@ curl --location --request POST 'https://dev.digit.org/egov-workflow-v2/egov-wf/b
                     "isTerminateState": false,
                     "isStateUpdatable": true,
                     "actions": [
+                        {
+                            "action": "FORWARD_TO_JE",
+                            "nextState": "PENDING_FOR_JE_VERIFICATION",
+                            "roles": [
+                                "EE"
+                            ]
+                        },
                         {
                             "action": "FORWARD_TO_ZRO",
                             "nextState": "PENDING_FOR_ZRO_APPROVAL",
@@ -95,7 +99,25 @@ curl --location --request POST 'https://dev.digit.org/egov-workflow-v2/egov-wf/b
                     ]
                 },
                 {
-                    "sla": 43200000,
+                    "sla": 172800000,
+                    "state": "PENDING_FOR_JE_VERIFICATION",
+                    "applicationStatus": "PENDING_FOR_JE_VERIFICATION",
+                    "docUploadRequired": false,
+                    "isStartState": false,
+                    "isTerminateState": false,
+                    "isStateUpdatable": true,
+                    "actions": [
+                        {
+                            "action": "FORWARD_TO_EE",
+                            "nextState": "PENDING_FOR_EE_APPROVAL",
+                            "roles": [
+                                "JE"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "sla": 172800000,
                     "state": "PENDING_FOR_ZRO_APPROVAL",
                     "applicationStatus": "PENDING_FOR_ZRO_APPROVAL",
                     "docUploadRequired": false,
@@ -103,6 +125,13 @@ curl --location --request POST 'https://dev.digit.org/egov-workflow-v2/egov-wf/b
                     "isTerminateState": false,
                     "isStateUpdatable": true,
                     "actions": [
+                        {
+                            "action": "FORWARD_TO_DEALING_ASSISTENCE",
+                            "nextState": "PENDING_FOR_DEALING_ASSISTENCE_VERIFICATION",
+                            "roles": [
+                                "WS_ZRO"
+                            ]
+                        },
                         {
                             "action": "APPROVE_FOR_CONNECTION",
                             "nextState": "PENDING_FOR_METER_INSTALLATION",
@@ -134,7 +163,25 @@ curl --location --request POST 'https://dev.digit.org/egov-workflow-v2/egov-wf/b
                     ]
                 },
                 {
-                    "sla": null,
+                    "sla": 172800000,
+                    "state": "PENDING_FOR_DEALING_ASSISTENCE_VERIFICATION",
+                    "applicationStatus": "PENDING_FOR_DEALING_ASSISTENCE_VERIFICATION",
+                    "docUploadRequired": false,
+                    "isStartState": false,
+                    "isTerminateState": false,
+                    "isStateUpdatable": true,
+                    "actions": [
+                        {
+                            "action": "FORWARD_TO_ZRO",
+                            "nextState": "PENDING_FOR_ZRO_APPROVAL",
+                            "roles": [
+                                "WS_DEALING_CLERK"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "sla": 172800000,
                     "state": "PENDING_FOR_CITIZEN_ACTION",
                     "applicationStatus": "PENDING_FOR_CITIZEN_ACTION",
                     "docUploadRequired": false,
@@ -159,7 +206,7 @@ curl --location --request POST 'https://dev.digit.org/egov-workflow-v2/egov-wf/b
                     ]
                 },
                 {
-                    "sla": null,
+                    "sla": 172800000,
                     "state": "PENDING_FOR_CITIZEN_ACTION_BY_ZRO",
                     "applicationStatus": "PENDING_FOR_CITIZEN_ACTION",
                     "docUploadRequired": false,
@@ -184,7 +231,7 @@ curl --location --request POST 'https://dev.digit.org/egov-workflow-v2/egov-wf/b
                     ]
                 },
                 {
-                    "sla": null,
+                    "sla": 172800000,
                     "state": "PENDING_FOR_INFRA_PAYMENT_EE",
                     "applicationStatus": "PENDING_FOR_INFRA_PAYMENT_EE",
                     "docUploadRequired": false,
@@ -202,7 +249,7 @@ curl --location --request POST 'https://dev.digit.org/egov-workflow-v2/egov-wf/b
                     ]
                 },
                 {
-                    "sla": null,
+                    "sla": 172800000,
                     "state": "PENDING_FOR_INFRA_PAYMENT_ZRO",
                     "applicationStatus": "PENDING_FOR_INFRA_PAYMENT_ZRO",
                     "docUploadRequired": false,
@@ -220,7 +267,7 @@ curl --location --request POST 'https://dev.digit.org/egov-workflow-v2/egov-wf/b
                     ]
                 },
                 {
-                    "sla": null,
+                    "sla": 172800000,
                     "state": "PENDING_FOR_METER_INSTALLATION",
                     "applicationStatus": "PENDING_FOR_METER_INSTALLATION",
                     "docUploadRequired": false,
@@ -238,7 +285,7 @@ curl --location --request POST 'https://dev.digit.org/egov-workflow-v2/egov-wf/b
                     ]
                 },
                 {
-                    "sla": null,
+                    "sla": 172800000,
                     "state": "PENDING_FOR_CONNECTION_ACTIVATION",
                     "applicationStatus": "PENDING_FOR_CONNECTION_ACTIVATION",
                     "docUploadRequired": false,
@@ -247,10 +294,42 @@ curl --location --request POST 'https://dev.digit.org/egov-workflow-v2/egov-wf/b
                     "isStateUpdatable": true,
                     "actions": [
                         {
+                            "action": "FORWARD_TO_DEALING_ASSISTENCE",
+                            "nextState": "PENDING_FOR_DEALING_ASSISTENCE_METER_VERIFICATION",
+                            "roles": [
+                                "WS_ZRO"
+                            ]
+                        },
+                        {
+                            "action": "SEND_BACK_FOR_METER_INSTALLATION",
+                            "nextState": "PENDING_FOR_METER_INSTALLATION",
+                            "roles": [
+                                "WS_ZRO"
+                            ]
+                        },
+                        {
                             "action": "ACTIVATE_CONNECTION",
                             "nextState": "CONNECTION_ACTIVATED",
                             "roles": [
                                 "WS_ZRO"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "sla": 172800000,
+                    "state": "PENDING_FOR_DEALING_ASSISTENCE_METER_VERIFICATION",
+                    "applicationStatus": "PENDING_FOR_DEALING_ASSISTENCE_METER_VERIFICATION",
+                    "docUploadRequired": false,
+                    "isStartState": false,
+                    "isTerminateState": false,
+                    "isStateUpdatable": true,
+                    "actions": [
+                        {
+                            "action": "FORWARD_TO_ZRO",
+                            "nextState": "PENDING_FOR_CONNECTION_ACTIVATION",
+                            "roles": [
+                                "WS_DEALING_CLERK"
                             ]
                         }
                     ]
