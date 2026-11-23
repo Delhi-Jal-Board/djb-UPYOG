@@ -1,4 +1,4 @@
-import { CardLabel, LabelFieldPair, TextInput, CardLabelError, CollapsibleCardPage, FormStep } from "@djb25/digit-ui-react-components";
+import { CardLabel, LabelFieldPair, TextInput, CardLabelError, CollapsibleCardPage, FormStep, FieldLabelWithTooltip } from "@djb25/digit-ui-react-components";
 import _ from "lodash";
 import React, { useState, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
@@ -219,12 +219,11 @@ const WSBankDetails = ({ config, onSelect, userType, formData, setError, formSta
         {/* Row 1: Bank Name and Branch Name */}
         <div>
           <LabelFieldPair>
-            <CardLabel>
-              {t("WS_IFSC_CODE")}{" "}
-              <span className="astericColor" style={{ color: "#d4351c" }}>
-                *
-              </span>
-            </CardLabel>
+            <FieldLabelWithTooltip
+              label={t("WS_IFSC_CODE")}
+              isMandatory={true}
+              infoText={t("WS_IFSC_CODE_INFO_MSG", "Enter 11-character IFSC code")}
+            />
             <div className="field">
               <Controller
                 control={control}
@@ -260,12 +259,11 @@ const WSBankDetails = ({ config, onSelect, userType, formData, setError, formSta
         </div>
         <div>
           <LabelFieldPair>
-            <CardLabel>
-              {t("WS_NAME_OF_BANK")}{" "}
-              <span className="astericColor" style={{ color: "#d4351c" }}>
-                *
-              </span>
-            </CardLabel>
+            <FieldLabelWithTooltip
+              label={t("WS_NAME_OF_BANK")}
+              isMandatory={true}
+              infoText={t("WS_NAME_OF_BANK_INFO_MSG", "Bank Name fetched automatically from IFSC code")}
+            />
             <div className="field">
               <Controller
                 control={control}
@@ -297,12 +295,11 @@ const WSBankDetails = ({ config, onSelect, userType, formData, setError, formSta
 
         <div>
           <LabelFieldPair>
-            <CardLabel>
-              {t("WS_NAME_OF_BRANCH")}{" "}
-              <span className="astericColor" style={{ color: "#d4351c" }}>
-                *
-              </span>
-            </CardLabel>
+            <FieldLabelWithTooltip
+              label={t("WS_NAME_OF_BRANCH")}
+              isMandatory={true}
+              infoText={t("WS_NAME_OF_BRANCH_INFO_MSG", "Branch Name fetched automatically from IFSC code")}
+            />
             <div className="field">
               <Controller
                 control={control}
@@ -337,12 +334,11 @@ const WSBankDetails = ({ config, onSelect, userType, formData, setError, formSta
 
         <div>
           <LabelFieldPair>
-            <CardLabel>
-              {t("WS_BANK_ACCOUNT_NO")}{" "}
-              <span className="astericColor" style={{ color: "#d4351c" }}>
-                *
-              </span>
-            </CardLabel>
+            <FieldLabelWithTooltip
+              label={t("WS_BANK_ACCOUNT_NO")}
+              isMandatory={true}
+              infoText={t("WS_BANK_ACCOUNT_NO_INFO_MSG", "Enter Bank Account Number")}
+            />
             <div className="field">
               <Controller
                 control={control}

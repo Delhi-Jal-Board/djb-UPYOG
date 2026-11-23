@@ -7,6 +7,7 @@ import {
   RadioButtons,
   CardLabelError,
   DatePicker,
+  FieldLabelWithTooltip,
 } from "@djb25/digit-ui-react-components";
 import _ from "lodash";
 import React, { useEffect, useState } from "react";
@@ -174,7 +175,11 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
     <CollapsibleCardPage title={t("Are you a DJB Employee?")} defaultOpen={true}>
       <div className="formcomposer-section-grid">
         <LabelFieldPair>
-          <CardLabel>{t("Are you a DJB Employee?")}</CardLabel>
+          <FieldLabelWithTooltip
+            label={t("Are you a DJB Employee?")}
+            isMandatory={false}
+            infoText={t("WS_DJB_EMPLOYEE_INFO_MSG", "Select Yes if applicant is an active or retired DJB Employee")}
+          />
           <div className="field">
             <Controller
               control={control}
@@ -203,10 +208,11 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
         <div className="formcomposer-section-grid">
         <div>
           <LabelFieldPair>
-            <CardLabel>
-              {t("Employee ID")}
-              {isDjbEmployee && <span className="check-page-link-button"> *</span>}
-            </CardLabel>
+            <FieldLabelWithTooltip
+              label={t("Employee ID")}
+              isMandatory={isDjbEmployee}
+              infoText={t("WS_EMPLOYEE_ID_INFO_MSG", "Enter 8-digit DJB Employee ID")}
+            />
             <div className="field" style={{ width: "100%" }}>
               <Controller
                 control={control}
@@ -255,10 +261,11 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
 
         <div>
           <LabelFieldPair>
-            <CardLabel>
-              {t("Date of Retirement")}
-              {isDjbEmployee && <span className="check-page-link-button"> *</span>}
-            </CardLabel>
+            <FieldLabelWithTooltip
+              label={t("Date of Retirement")}
+              isMandatory={isDjbEmployee}
+              infoText={t("WS_DOR_INFO_MSG", "Select Date of Retirement")}
+            />
             <div className="field">
               <Controller
                 control={control}
@@ -272,10 +279,11 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
 
         <div>
           <LabelFieldPair>
-            <CardLabel>
-              {t("Employee Designation")}
-              {isDjbEmployee && <span className="check-page-link-button"> *</span>}
-            </CardLabel>
+            <FieldLabelWithTooltip
+              label={t("Employee Designation")}
+              isMandatory={isDjbEmployee}
+              infoText={t("WS_EMPLOYEE_DESIGNATION_INFO_MSG", "Enter Employee Designation")}
+            />
             <div className="field" style={{ width: "100%" }}>
               <Controller
                 control={control}

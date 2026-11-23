@@ -13,6 +13,7 @@ import {
   ViewsIcon,
   FormStep,
   MobileNumber,
+  FieldLabelWithTooltip,
 } from "@djb25/digit-ui-react-components";
 import Timeline from "../components/Timeline";
 import React, { useEffect, useState } from "react";
@@ -807,10 +808,11 @@ const ConnectionDetails = (_props) => {
       <CollapsibleCardPage title={t("Connection Details")} defaultOpen={true}>
         <div className="formcomposer-section-grid">
           <LabelFieldPair>
-            <CardLabel>
-              {`${t("Service Type")}`}
-              <span className="check-page-link-button">*</span>
-            </CardLabel>
+            <FieldLabelWithTooltip
+              label={t("Service Type")}
+              isMandatory={true}
+              infoText={t("WS_SERVICE_TYPE_INFO_MSG", "Select Service Type")}
+            />
             <Controller
               control={control}
               name={"serviceType"}
@@ -937,10 +939,11 @@ const ConnectionDetails = (_props) => {
           />
         </LabelFieldPair> */}
           <LabelFieldPair>
-            <CardLabel>
-              {`${t("Applicant Type")}`}
-              <span className="check-page-link-button">*</span>
-            </CardLabel>
+            <FieldLabelWithTooltip
+              label={t("Applicant Type")}
+              isMandatory={true}
+              infoText={t("WS_APPLICANT_TYPE_INFO_MSG", "Select Applicant Type")}
+            />
             <Controller
               control={control}
               name={"applicantType"}
@@ -966,10 +969,11 @@ const ConnectionDetails = (_props) => {
             />
           </LabelFieldPair>
           <LabelFieldPair>
-            <CardLabel>
-              {t("WS_Billing_Address_Type")}
-              <span className="check-page-link-button">*</span>
-            </CardLabel>
+            <FieldLabelWithTooltip
+              label={t("WS_Billing_Address_Type")}
+              isMandatory={true}
+              infoText={t("WS_BILLING_ADDRESS_TYPE_INFO_MSG", "Enter or verify Billing Address")}
+            />
             <div className="field">
               <Controller
                 control={control}
@@ -1196,10 +1200,11 @@ const ConnectionDetails = (_props) => {
         <CollapsibleCardPage title={t("WS_AUTHORIZED_REPRESENTATIVE_DETAILS")} defaultOpen={true}>
           <div className="formcomposer-section-grid">
             <LabelFieldPair>
-              <CardLabel>
-                {`${t("Name")}`}
-                <span className="check-page-link-button">*</span>
-              </CardLabel>
+              <FieldLabelWithTooltip
+                label={t("Name")}
+                isMandatory={true}
+                infoText={t("WS_AUTH_REP_NAME_INFO_MSG", "Enter Authorized Representative Name")}
+              />
               <Controller
                 control={control}
                 name="authorizedRepresentativeName"
@@ -1237,10 +1242,11 @@ const ConnectionDetails = (_props) => {
               />
             </LabelFieldPair>
             <LabelFieldPair>
-              <CardLabel>
-                {`${t("Designation")}`}
-                <span className="check-page-link-button">*</span>
-              </CardLabel>
+              <FieldLabelWithTooltip
+                label={t("Designation")}
+                isMandatory={true}
+                infoText={t("WS_AUTH_REP_DESIGNATION_INFO_MSG", "Enter Authorized Representative Designation")}
+              />
               <Controller
                 control={control}
                 name="authorizedRepresentativeDesignation"
@@ -1285,10 +1291,11 @@ const ConnectionDetails = (_props) => {
             </LabelFieldPair>
 
             <LabelFieldPair>
-              <CardLabel>
-                {`${t("CORE_COMMON_MOBILE_NUMBER")}`}
-                <span className="check-page-link-button">*</span>
-              </CardLabel>
+              <FieldLabelWithTooltip
+                label={t("CORE_COMMON_MOBILE_NUMBER")}
+                isMandatory={true}
+                infoText={t("WS_AUTH_REP_MOBILE_INFO_MSG", "Enter 10-digit Mobile Number")}
+              />
               <div className="field">
                 <Controller
                   control={control}

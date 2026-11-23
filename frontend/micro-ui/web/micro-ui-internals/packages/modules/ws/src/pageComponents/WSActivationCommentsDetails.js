@@ -1,4 +1,4 @@
-import { CardLabel, LabelFieldPair, TextInput } from "@djb25/digit-ui-react-components";
+import { CardLabel, LabelFieldPair, TextInput, FieldLabelWithTooltip } from "@djb25/digit-ui-react-components";
 import React, { useState, useEffect } from "react";
 
 const WSActivationCommentsDetails = ({ t, config, userType, formData, onSelect }) => {
@@ -15,7 +15,12 @@ const WSActivationCommentsDetails = ({ t, config, userType, formData, onSelect }
   return (
     <React.Fragment>
       <LabelFieldPair>
-        <CardLabel>{t("WF_COMMON_COMMENTS")}:</CardLabel>
+        <FieldLabelWithTooltip
+          style={{ margin: 0 }}
+          label={t("WF_COMMON_COMMENTS") || "Comments"}
+          isMandatory={false}
+          infoText={t("WF_COMMON_COMMENTS_INFO_MSG", "Enter any remarks or comments")}
+        />
         <div className="field">
           <TextInput
             key={config.key}

@@ -1,4 +1,4 @@
-import { CardLabel, DatePicker, Dropdown, LabelFieldPair, TextInput } from "@djb25/digit-ui-react-components";
+import { CardLabel, DatePicker, Dropdown, LabelFieldPair, TextInput, FieldLabelWithTooltip } from "@djb25/digit-ui-react-components";
 import React from "react";
 import _ from "lodash";
 
@@ -111,10 +111,12 @@ const WSActivationDetails = ({ t, config, userType, formData, onSelect }) => {
     <React.Fragment>
       {/* 1. Meter make/brand name Drop down */}
       <LabelFieldPair>
-        <CardLabel>
-          {getTrans("WS_METER_MAKE_LABEL", "Meter make/brand name")}
-          <span className="check-page-link-button"> *</span>
-        </CardLabel>
+        <FieldLabelWithTooltip
+          style={{ margin: 0 }}
+          label={getTrans("WS_METER_MAKE_LABEL", "Meter make/brand name")}
+          isMandatory={true}
+          infoText={t("WS_METER_MAKE_INFO_MSG", "Select approved meter manufacturer or brand name")}
+        />
         <div className="field">
           <Dropdown
             className="form-field"
@@ -133,10 +135,12 @@ const WSActivationDetails = ({ t, config, userType, formData, onSelect }) => {
 
       {/* 2. Meter No (instead Meter Id) */}
       <LabelFieldPair>
-        <CardLabel>
-          {getTrans("WS_METER_NO_LABEL", "Meter No")}
-          <span className="check-page-link-button"> *</span>
-        </CardLabel>
+        <FieldLabelWithTooltip
+          style={{ margin: 0 }}
+          label={getTrans("WS_METER_NO_LABEL", "Meter No")}
+          isMandatory={true}
+          infoText={t("WS_METER_NO_INFO_MSG", "Enter Serial Number or Meter No engraved on the meter")}
+        />
         <div className="field">
           <TextInput
             t={t}
@@ -154,10 +158,12 @@ const WSActivationDetails = ({ t, config, userType, formData, onSelect }) => {
 
       {/* 3. Meter Size Text Field */}
       <LabelFieldPair>
-        <CardLabel>
-          {getTrans("WS_METER_SIZE_LABEL", "Meter Size")}
-          <span className="check-page-link-button"> *</span>
-        </CardLabel>
+        <FieldLabelWithTooltip
+          style={{ margin: 0 }}
+          label={getTrans("WS_METER_SIZE_LABEL", "Meter Size")}
+          isMandatory={true}
+          infoText={t("WS_METER_SIZE_INFO_MSG", "Enter diameter / size of the water meter")}
+        />
         <div className="field">
           <TextInput
             t={t}
@@ -175,10 +181,12 @@ const WSActivationDetails = ({ t, config, userType, formData, onSelect }) => {
 
       {/* 4. Ferrule Size Text Field */}
       <LabelFieldPair>
-        <CardLabel>
-          {getTrans("WS_FERRULE_SIZE_LABEL", "Ferrule Size")}
-          <span className="check-page-link-button"> *</span>
-        </CardLabel>
+        <FieldLabelWithTooltip
+          style={{ margin: 0 }}
+          label={getTrans("WS_FERRULE_SIZE_LABEL", "Ferrule Size")}
+          isMandatory={true}
+          infoText={t("WS_FERRULE_SIZE_INFO_MSG", "Enter size of ferrule connection")}
+        />
         <div className="field">
           <TextInput
             t={t}
@@ -196,10 +204,12 @@ const WSActivationDetails = ({ t, config, userType, formData, onSelect }) => {
 
       {/* 5. Meter installation date */}
       <LabelFieldPair>
-        <CardLabel>
-          {getTrans("WS_METER_INSTALLATION_DATE", "Meter Installation Date")}
-          <span className="check-page-link-button"> *</span>
-        </CardLabel>
+        <FieldLabelWithTooltip
+          style={{ margin: 0 }}
+          label={getTrans("WS_METER_INSTALLATION_DATE", "Meter Installation Date")}
+          isMandatory={true}
+          infoText={t("WS_METER_INSTALLATION_DATE_INFO_MSG", "Select date when the meter was physically installed")}
+        />
         <div className="field">
           <DatePicker
             date={activationDetails.meterInstallationDate}
@@ -213,10 +223,12 @@ const WSActivationDetails = ({ t, config, userType, formData, onSelect }) => {
 
       {/* 6. Initial Meter Reading */}
       <LabelFieldPair>
-        <CardLabel>
-          {getTrans("WS_INIT_METER_READING", "Initial Meter Reading")}
-          <span className="check-page-link-button"> *</span>
-        </CardLabel>
+        <FieldLabelWithTooltip
+          style={{ margin: 0 }}
+          label={getTrans("WS_INIT_METER_READING", "Initial Meter Reading")}
+          isMandatory={true}
+          infoText={t("WS_INIT_METER_READING_INFO_MSG", "Enter the initial reading shown on the meter dial")}
+        />
         <div className="field">
           <TextInput
             type="text"
@@ -231,10 +243,12 @@ const WSActivationDetails = ({ t, config, userType, formData, onSelect }) => {
 
       {/* 7. Connection Date */}
       <LabelFieldPair>
-        <CardLabel>
-          {getTrans("WS_CONN_EXEC_DATE", "Connection Date")}
-          <span className="check-page-link-button"> *</span>
-        </CardLabel>
+        <FieldLabelWithTooltip
+          style={{ margin: 0 }}
+          label={getTrans("WS_CONN_EXEC_DATE", "Connection Date")}
+          isMandatory={true}
+          infoText={t("WS_CONN_EXEC_DATE_INFO_MSG", "Select the date when connection was activated/executed")}
+        />
         <div className="field">
           <DatePicker
             date={activationDetails.connectionExecutionDate}

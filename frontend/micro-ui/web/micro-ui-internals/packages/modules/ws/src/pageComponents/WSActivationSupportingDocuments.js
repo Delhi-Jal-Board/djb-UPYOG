@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { CardLabel, CardLabelError, LabelFieldPair, UploadFile } from "@djb25/digit-ui-react-components";
+import { CardLabel, CardLabelError, LabelFieldPair, UploadFile, FieldLabelWithTooltip } from "@djb25/digit-ui-react-components";
 
 const DECLARATION_TEMPLATE_FILESTORE_ID = "ba8d1691-8f87-4e72-b398-968f4f999788";
 
@@ -218,10 +218,12 @@ const WSActivationSupportingDocuments = ({
     <React.Fragment>
       {/* 1. Meter Photo (JPEG/PDF size up to 500KB) - Mandatory for both Self and DJB */}
       <LabelFieldPair>
-        <CardLabel>
-          {getTrans("WS_METER_PHOTO_UPLOAD_LABEL", "Meter Photo(JPEG/PDF size up to 500KB)")}
-          <span className="check-page-link-button"> *</span>:
-        </CardLabel>
+        <FieldLabelWithTooltip
+          style={{ margin: 0 }}
+          label={getTrans("WS_METER_PHOTO_UPLOAD_LABEL", "Meter Photo(JPEG/PDF size up to 500KB)")}
+          isMandatory={true}
+          infoText={t("WS_METER_PHOTO_INFO_MSG", "Upload photo of installed water meter")}
+        />
         <div className="field">
           <UploadFile
             id="activation-meter-photo"
@@ -343,14 +345,12 @@ const WSActivationSupportingDocuments = ({
 
       {/* 4. Meter warranty card, Meter testing report, Invoice of meter JPEG/PDF up to size 1 MB - Mandatory for Self, Not mandatory for DJB */}
       <LabelFieldPair>
-        <CardLabel>
-          {getTrans("WS_METER_WARRANTY_REPORT_INVOICE_LABEL", "Meter warranty card, Meter testing report, Invoice of meter JPEG/PDF up to size 1 MB")}
-          {isSelf ? (
-            <span className="check-page-link-button"> *</span>
-          ) : (
-            <span style={{ fontSize: "12px", color: "#666", fontWeight: "normal" }}> (not mandatory)</span>
-          )}:
-        </CardLabel>
+        <FieldLabelWithTooltip
+          style={{ margin: 0 }}
+          label={getTrans("WS_METER_WARRANTY_REPORT_INVOICE_LABEL", "Meter warranty card, Meter testing report, Invoice of meter JPEG/PDF up to size 1 MB")}
+          isMandatory={isSelf}
+          infoText={t("WS_METER_WARRANTY_INFO_MSG", "Upload meter warranty card, testing report or invoice")}
+        />
         <div className="field">
           <UploadFile
             id="activation-meter-warranty"

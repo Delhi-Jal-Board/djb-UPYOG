@@ -1,4 +1,4 @@
-import { RadioButtons, LabelFieldPair, CardLabel, CollapsibleCardPage, FormStep } from "@djb25/digit-ui-react-components";
+import { RadioButtons, LabelFieldPair, CardLabel, CollapsibleCardPage, FormStep, FieldLabelWithTooltip } from "@djb25/digit-ui-react-components";
 import React, { useEffect, useRef } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -100,7 +100,11 @@ const WSSewerTreatmentPlant = ({ config, onSelect, userType, formData }) => {
     <CollapsibleCardPage title={t("Sewer Treatment Plant (STP)")} defaultOpen={true}>
       <div className="formcomposer-section-grid">
         <LabelFieldPair>
-          <CardLabel>{t("Sewer Treatment Plant (STP)")}</CardLabel>
+          <FieldLabelWithTooltip
+            label={t("Sewer Treatment Plant (STP)")}
+            isMandatory={false}
+            infoText={t("WS_STP_INFO_MSG", "Select Yes if Sewer Treatment Plant is available")}
+          />
           <div className="field">
             <Controller
               control={control}

@@ -1,4 +1,4 @@
-import { CardLabel, Dropdown, LabelFieldPair, TextInput, CardLabelError, WrapUnMaskComponent } from "@djb25/digit-ui-react-components";
+import { CardLabel, Dropdown, LabelFieldPair, TextInput, CardLabelError, WrapUnMaskComponent, FieldLabelWithTooltip } from "@djb25/digit-ui-react-components";
 import React, { useEffect, useState } from "react";
 import * as func from "../utils";
 import { useForm, Controller } from "react-hook-form";
@@ -203,9 +203,12 @@ const PlumberDetails = (_props) => {
   return (
     <React.Fragment>
       <LabelFieldPair>
-        <CardLabel>
-          {getTrans("WS_ADDN_DETAILS_PLUMBER_PROVIDED_BY", "Plumber Provided By")} <span style={{ color: "red" }}>*</span>
-        </CardLabel>
+        <FieldLabelWithTooltip
+          style={{ margin: 0 }}
+          label={getTrans("WS_ADDN_DETAILS_PLUMBER_PROVIDED_BY", "Plumber Provided By")}
+          isMandatory={true}
+          infoText={t("WS_PLUMBER_PROVIDED_BY_INFO_MSG", "Select whether plumber is Self or provided by Delhi Jal Board")}
+        />
         <Controller
           control={control}
           name={"detailsProvidedBy"}
@@ -270,9 +273,12 @@ const PlumberDetails = (_props) => {
       {/* If DJB is selected: Plumber details are NOT required, instead Name of JE / Name of Firm is shown */}
       {isDJB ? (
         <LabelFieldPair>
-          <CardLabel>
-            {getTrans("WS_NAME_OF_JE_OR_FIRM", "Name of JE / Name of Firm")} <span style={{ color: "red" }}>*</span>
-          </CardLabel>
+          <FieldLabelWithTooltip
+            style={{ margin: 0 }}
+            label={getTrans("WS_NAME_OF_JE_OR_FIRM", "Name of JE / Name of Firm")}
+            isMandatory={true}
+            infoText={t("WS_NAME_OF_JE_OR_FIRM_INFO_MSG", "Enter Name of JE or Name of Firm")}
+          />
           <div className="field">
             <Controller
               control={control}
@@ -306,9 +312,12 @@ const PlumberDetails = (_props) => {
       {isSelf || !currentPref ? (
         <React.Fragment>
           <LabelFieldPair>
-            <CardLabel>
-              {getTrans("WS_ADDN_DETAILS_PLUMBER_NAME_LABEL", "Name of Plumber")} <span style={{ color: "red" }}>*</span>
-            </CardLabel>
+            <FieldLabelWithTooltip
+              style={{ margin: 0 }}
+              label={getTrans("WS_ADDN_DETAILS_PLUMBER_NAME_LABEL", "Plumber Name")}
+              isMandatory={true}
+              infoText={t("WS_PLUMBER_NAME_INFO_MSG", "Enter Name of Plumber")}
+            />
             <div className="field">
               <Controller
                 control={control}
@@ -348,9 +357,12 @@ const PlumberDetails = (_props) => {
           </LabelFieldPair>
 
           <LabelFieldPair>
-            <CardLabel>
-              {getTrans("WS_PLIMBER_LICENSE_NO_LABEL", "Plumber License Number")} <span style={{ color: "red" }}>*</span>
-            </CardLabel>
+            <FieldLabelWithTooltip
+              style={{ margin: 0 }}
+              label={getTrans("WS_PLIMBER_LICENSE_NO_LABEL", "Plumber License Number")}
+              isMandatory={true}
+              infoText={t("WS_PLUMBER_LICENSE_NO_INFO_MSG", "Enter Plumber License Number")}
+            />
             <div className="field">
               <Controller
                 control={control}
@@ -382,9 +394,12 @@ const PlumberDetails = (_props) => {
           </LabelFieldPair>
 
           <LabelFieldPair>
-            <CardLabel>
-              {getTrans("WS_PLUMBER_MOBILE_NO_LABEL", "Plumber Mobile Number")} <span style={{ color: "red" }}>*</span>
-            </CardLabel>
+            <FieldLabelWithTooltip
+              style={{ margin: 0 }}
+              label={getTrans("WS_PLUMBER_MOBILE_NO_LABEL", "Plumber Mobile Number")}
+              isMandatory={true}
+              infoText={t("WS_PLUMBER_MOBILE_NO_INFO_MSG", "Enter 10-digit Plumber Mobile Number")}
+            />
             <div className="field">
               <Controller
                 control={control}

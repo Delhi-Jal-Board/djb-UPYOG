@@ -1,4 +1,4 @@
-import { RadioButtons, LabelFieldPair, CardLabel, CollapsibleCardPage, FormStep } from "@djb25/digit-ui-react-components";
+import { RadioButtons, LabelFieldPair, CardLabel, CollapsibleCardPage, FormStep, FieldLabelWithTooltip } from "@djb25/digit-ui-react-components";
 import React, { useEffect, useRef } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -78,7 +78,11 @@ const WSRainWaterHarvesting = ({ config, onSelect, userType, formData }) => {
     <CollapsibleCardPage title={t("Rain Water Harvesting Certificate")} defaultOpen={true}>
       <div className="formcomposer-section-grid">
         <LabelFieldPair>
-          <CardLabel>{t("Rain Water Harvesting Certificate")}</CardLabel>
+          <FieldLabelWithTooltip
+            label={t("Rain Water Harvesting Certificate")}
+            isMandatory={false}
+            infoText={t("WS_RWH_INFO_MSG", "Select Yes if Rain Water Harvesting Certificate is available")}
+          />
           <div className="field">
             <Controller
               control={control}

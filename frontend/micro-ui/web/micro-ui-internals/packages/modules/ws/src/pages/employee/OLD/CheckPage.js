@@ -678,16 +678,7 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
       </Card>
 
       {(() => {
-        const hasSignature = Boolean(
-          declarationData?.signatureFileStoreId ||
-            declarationData?.signature ||
-            declarationData?.signatureFile?.fileStoreId ||
-            (typeof declarationData?.signatureFile === "string" && declarationData?.signatureFile.trim()) ||
-            data?.declarationData?.signatureFileStoreId ||
-            data?.declaration?.signatureFileStoreId ||
-            data?.additionalDetails?.signatureFileStoreId
-        );
-        const isSubmitDisabled = !declarationData?.agree || !hasSignature;
+        const isSubmitDisabled = !declarationData?.agree;
 
         return (
           <ActionBar>
