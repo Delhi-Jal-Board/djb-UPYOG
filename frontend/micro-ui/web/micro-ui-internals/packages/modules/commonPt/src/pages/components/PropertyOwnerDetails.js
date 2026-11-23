@@ -252,7 +252,7 @@ const PropertyOwnerDetails = ({ t, config, onSelect, userType, formData, formSta
                   <FieldLabelWithTooltip
                     label={t("PT_FORM3_MOBILE_NUMBER")}
                     isMandatory={true}
-                    infoText={t("PT_MOBILE_NUMBER_INFO_MSG", "Enter 10 digit Mobile Number")}
+                    infoText={t("PT_MOBILE_NUMBER_INFO_MSG")}
                   />
 
                   <div className="form-field">
@@ -303,7 +303,7 @@ const PropertyOwnerDetails = ({ t, config, onSelect, userType, formData, formSta
                   <FieldLabelWithTooltip
                     label={t("CORE_COMMON_FIRST_NAME", "First Name")}
                     isMandatory={true}
-                    infoText={t("CORE_COMMON_FIRST_NAME_INFO_MSG", "Enter First Name")}
+                    infoText={t("CORE_COMMON_FIRST_NAME_INFO_MSG")}
                   />
                   <div className="form-field">
                     <Controller
@@ -347,7 +347,7 @@ const PropertyOwnerDetails = ({ t, config, onSelect, userType, formData, formSta
                   <FieldLabelWithTooltip
                     label={t("CORE_COMMON_MIDDLE_NAME", "Middle Name")}
                     isMandatory={false}
-                    infoText={t("CORE_COMMON_MIDDLE_NAME_INFO_MSG", "Enter Middle Name (Optional)")}
+                    infoText={t("CORE_COMMON_MIDDLE_NAME_INFO_MSG")}
                   />
                   <div className="form-field">
                     <Controller
@@ -390,7 +390,7 @@ const PropertyOwnerDetails = ({ t, config, onSelect, userType, formData, formSta
                   <FieldLabelWithTooltip
                     label={t("CORE_COMMON_LAST_NAME", "Last Name")}
                     isMandatory={false}
-                    infoText={t("CORE_COMMON_LAST_NAME_INFO_MSG", "Enter Last Name")}
+                    infoText={t("CORE_COMMON_LAST_NAME_INFO_MSG")}
                   />
                   <div className="form-field">
                     <Controller
@@ -433,7 +433,7 @@ const PropertyOwnerDetails = ({ t, config, onSelect, userType, formData, formSta
                   <FieldLabelWithTooltip
                     label={t("CORE_COMMON_EMAIL_ID", "Email")}
                     isMandatory={false}
-                    infoText={t("CORE_COMMON_EMAIL_INFO_MSG", "Enter Email Address")}
+                    infoText={t("CORE_COMMON_EMAIL_INFO_MSG")}
                   />
                   <div className="form-field">
                     <Controller
@@ -481,7 +481,7 @@ const PropertyOwnerDetails = ({ t, config, onSelect, userType, formData, formSta
                   <FieldLabelWithTooltip
                     label={t("PT_FORM3_GENDER")}
                     isMandatory={true}
-                    infoText={t("PT_GENDER_INFO_MSG", "Select Gender")}
+                    infoText={t("PT_GENDER_INFO_MSG")}
                   />
                   <div className="form-field">
                     <Controller

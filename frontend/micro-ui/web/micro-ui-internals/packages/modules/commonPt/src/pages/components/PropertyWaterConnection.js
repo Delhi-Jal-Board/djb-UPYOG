@@ -602,7 +602,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
           <FieldLabelWithTooltip
             label={t("WS_PROPERTY_TYPE")}
             isMandatory={true}
-            infoText={t("WS_PROPERTY_TYPE_INFO_MSG", "Select Property Type")}
+            infoText={t("WS_PROPERTY_TYPE_INFO_MSG")}
           />
           <div className="form-field">
             <Controller
@@ -659,7 +659,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
               <FieldLabelWithTooltip
                 label={t("WS_NUMBER_OF_STUDENTS")}
                 isMandatory={false}
-                infoText={t("WS_NUMBER_OF_STUDENTS_INFO_MSG", "Enter Number of Students")}
+                infoText={t("WS_NUMBER_OF_STUDENTS_INFO_MSG")}
               />
               <div className="form-field">
                 <TextInput
@@ -683,7 +683,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
               <FieldLabelWithTooltip
                 label={t("WS_NUMBER_OF_ROOMS")}
                 isMandatory={true}
-                infoText={t("WS_NUMBER_OF_ROOMS_INFO_MSG", "Enter Number of Rooms")}
+                infoText={t("WS_NUMBER_OF_ROOMS_INFO_MSG")}
               />
               <div className="form-field">
                 <TextInput
@@ -708,7 +708,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
               <FieldLabelWithTooltip
                 label={t("WS_NUMBER_OF_BEDS")}
                 isMandatory={true}
-                infoText={t("WS_NUMBER_OF_BEDS_INFO_MSG", "Enter Number of Beds")}
+                infoText={t("WS_NUMBER_OF_BEDS_INFO_MSG")}
               />
               <div className="form-field">
                 <TextInput
@@ -730,7 +730,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
           <FieldLabelWithTooltip
             label={t("WS_CATEGORY_TYPE")}
             isMandatory={true}
-            infoText={t("WS_CATEGORY_TYPE_INFO_MSG", "Select Category Type")}
+            infoText={t("WS_CATEGORY_TYPE_INFO_MSG")}
           />
           <div className="form-field">
             <Controller
@@ -757,7 +757,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
           <FieldLabelWithTooltip
             label={t("WS_PROPERTY_CATEGORY")}
             isMandatory={true}
-            infoText={t("WS_PROPERTY_CATEGORY_INFO_MSG", "Select Property Category")}
+            infoText={t("WS_PROPERTY_CATEGORY_INFO_MSG")}
           />
           <div className="form-field">
             <Controller
@@ -785,7 +785,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
           <FieldLabelWithTooltip
             label={t("WS_WATER_CONNECTION_USAGE_TYPE")}
             isMandatory={true}
-            infoText={t("WS_WATER_CONNECTION_USAGE_TYPE_INFO_MSG", "Select Water Connection Usage Type")}
+            infoText={t("WS_WATER_CONNECTION_USAGE_TYPE_INFO_MSG")}
           />
           <div className="form-field">
             <Controller
@@ -815,7 +815,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
           <FieldLabelWithTooltip
             label={t("WS_PLOT_AREA")}
             isMandatory={true}
-            infoText={t("WS_PLOT_AREA_INFO_MSG", "Enter Plot Area (sq. meter.)")}
+            infoText={t("WS_PLOT_AREA_INFO_MSG")}
           />
           <div className="form-field">
             <TextInput
@@ -850,7 +850,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
           <FieldLabelWithTooltip
             label={t("WS_BUILT_UP_AREA")}
             isMandatory={true}
-            infoText={t("WS_BUILT_UP_AREA_INFO_MSG", "Enter Built-up Area (sq. meter.)")}
+            infoText={t("WS_BUILT_UP_AREA_INFO_MSG")}
           />
           <div className="form-field">
             <TextInput
@@ -916,7 +916,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
           <FieldLabelWithTooltip
             label={t("WS_HEIGHT_OF_THE_BUILDING(meters)")}
             isMandatory={true}
-            infoText={t("WS_HEIGHT_OF_THE_BUILDING_INFO_MSG", "Enter Height of The Building (meter)")}
+            infoText={t("WS_HEIGHT_OF_THE_BUILDING_INFO_MSG")}
           />
           <div className="form-field">
             <TextInput
@@ -957,7 +957,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
           <FieldLabelWithTooltip
             label={t("WS_SELECT_YEAR_OF_CONSTRUCTION")}
             isMandatory={false}
-            infoText={t("WS_SELECT_YEAR_OF_CONSTRUCTION_INFO_MSG", "Select Year of Construction")}
+            infoText={t("WS_SELECT_YEAR_OF_CONSTRUCTION_INFO_MSG")}
           />
           <div className="form-field">
             <Controller
@@ -987,7 +987,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
             <FieldLabelWithTooltip
               label={t("WS_NUMBER_OF_DWELLING_UNITS")}
               isMandatory={true}
-              infoText={t("WS_NUMBER_OF_DWELLING_UNITS_INFO_MSG", "Enter Number of Dwelling Units")}
+              infoText={t("WS_NUMBER_OF_DWELLING_UNITS_INFO_MSG")}
             />
             <div className="form-field">
               <TextInput

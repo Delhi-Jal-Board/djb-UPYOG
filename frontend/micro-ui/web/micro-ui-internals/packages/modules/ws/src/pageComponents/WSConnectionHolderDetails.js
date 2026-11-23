@@ -478,7 +478,7 @@ const ConnectionDetails = (_props) => {
               <FieldLabelWithTooltip
                 label={t("WS_OWN_DETAIL_NAME")}
                 isMandatory={true}
-                infoText={t("CORE_COMMON_FIRST_NAME_INFO_MSG", "Enter First Name")}
+                infoText={t("CORE_COMMON_FIRST_NAME_INFO_MSG")}
               />
               <Controller
                 control={control}
@@ -550,7 +550,7 @@ const ConnectionDetails = (_props) => {
               <FieldLabelWithTooltip
                 label={t("WS_OWN_DETAIL_MIDDLE_NAME")}
                 isMandatory={false}
-                infoText={t("CORE_COMMON_MIDDLE_NAME_INFO_MSG", "Enter Middle Name (Optional)")}
+                infoText={t("CORE_COMMON_MIDDLE_NAME_INFO_MSG")}
               />
               <Controller
                 control={control}
@@ -592,7 +592,7 @@ const ConnectionDetails = (_props) => {
               <FieldLabelWithTooltip
                 label={t("WS_OWN_DETAIL_LAST_NAME")}
                 isMandatory={false}
-                infoText={t("CORE_COMMON_LAST_NAME_INFO_MSG", "Enter Last Name")}
+                infoText={t("CORE_COMMON_LAST_NAME_INFO_MSG")}
               />
               <Controller
                 control={control}
@@ -634,7 +634,7 @@ const ConnectionDetails = (_props) => {
               <FieldLabelWithTooltip
                 label={t("WS_CONN_HOLDER_OWN_DETAIL_GENDER_LABEL")}
                 isMandatory={true}
-                infoText={t("WS_GENDER_INFO_MSG", "Select Gender")}
+                infoText={t("WS_GENDER_INFO_MSG")}
               />
               <div className="field">
                 <Controller
@@ -832,7 +832,7 @@ const ConnectionDetails = (_props) => {
               <FieldLabelWithTooltip
                 label={t("CORE_COMMON_MOBILE_NUMBER")}
                 isMandatory={true}
-                infoText={t("PT_MOBILE_NUMBER_INFO_MSG", "Enter 10 digit Mobile Number")}
+                infoText={t("PT_MOBILE_NUMBER_INFO_MSG")}
               />
               <div className="field">
                 <Controller
@@ -920,7 +920,7 @@ const ConnectionDetails = (_props) => {
               <FieldLabelWithTooltip
                 label={t("CORE_COMMON_WHATSAPP_MOBILE_NUMBER")}
                 isMandatory={true}
-                infoText={t("WS_WHATSAPP_MOBILE_NUMBER_INFO_MSG", "Enter 10 digit WhatsApp or Alternate Mobile Number")}
+                infoText={t("WS_WHATSAPP_MOBILE_NUMBER_INFO_MSG")}
               />
               <div className="field">
                 <Controller
@@ -1035,7 +1035,7 @@ const ConnectionDetails = (_props) => {
               <FieldLabelWithTooltip
                 label={t("WS_EMAIL_ID")}
                 isMandatory={false}
-                infoText={t("CORE_COMMON_EMAIL_INFO_MSG", "Enter Email Address")}
+                infoText={t("CORE_COMMON_EMAIL_INFO_MSG")}
               />
               <div className="field">
                 <Controller

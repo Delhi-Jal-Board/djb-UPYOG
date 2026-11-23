@@ -36,7 +36,7 @@ const WSDivyangjan = ({ config, onSelect, userType, formData }) => {
           <FieldLabelWithTooltip
             label={t("Are you a Divyangjan/Person with Disability?")}
             isMandatory={false}
-            infoText={t("WS_DIVYANGJAN_INFO_MSG", "Select Yes if applicant is a Divyangjan / Person with Disability")}
+            infoText={t("WS_DIVYANGJAN_INFO_MSG")}
           />
           <div className="field">
             <Controller

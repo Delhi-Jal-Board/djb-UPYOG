@@ -222,7 +222,7 @@ const WSBankDetails = ({ config, onSelect, userType, formData, setError, formSta
             <FieldLabelWithTooltip
               label={t("WS_IFSC_CODE")}
               isMandatory={true}
-              infoText={t("WS_IFSC_CODE_INFO_MSG", "Enter 11-character IFSC code")}
+              infoText={t("WS_IFSC_CODE_INFO_MSG")}
             />
             <div className="field">
               <Controller
@@ -262,7 +262,7 @@ const WSBankDetails = ({ config, onSelect, userType, formData, setError, formSta
             <FieldLabelWithTooltip
               label={t("WS_NAME_OF_BANK")}
               isMandatory={true}
-              infoText={t("WS_NAME_OF_BANK_INFO_MSG", "Bank Name fetched automatically from IFSC code")}
+              infoText={t("WS_NAME_OF_BANK_INFO_MSG")}
             />
             <div className="field">
               <Controller
@@ -298,7 +298,7 @@ const WSBankDetails = ({ config, onSelect, userType, formData, setError, formSta
             <FieldLabelWithTooltip
               label={t("WS_NAME_OF_BRANCH")}
               isMandatory={true}
-              infoText={t("WS_NAME_OF_BRANCH_INFO_MSG", "Branch Name fetched automatically from IFSC code")}
+              infoText={t("WS_NAME_OF_BRANCH_INFO_MSG")}
             />
             <div className="field">
               <Controller
@@ -337,7 +337,7 @@ const WSBankDetails = ({ config, onSelect, userType, formData, setError, formSta
             <FieldLabelWithTooltip
               label={t("WS_BANK_ACCOUNT_NO")}
               isMandatory={true}
-              infoText={t("WS_BANK_ACCOUNT_NO_INFO_MSG", "Enter Bank Account Number")}
+              infoText={t("WS_BANK_ACCOUNT_NO_INFO_MSG")}
             />
             <div className="field">
               <Controller

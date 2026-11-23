@@ -743,7 +743,7 @@ function EmployeeIdDocumentUpload({ t, documents, setDocuments, formData, formSe
             style={{ margin: 0 }}
             label={t("WS_UPLOAD_EMPLOYEE_ID_DOC") || t("Upload Employee ID Document")}
             isMandatory={true}
-            infoText={t("WS_EMPLOYEE_ID_DOC_INFO_MSG", "Upload DJB Employee ID Card")}
+            infoText={t("WS_EMPLOYEE_ID_DOC_INFO_MSG")}
           />
         </div>
         <div style={{ fontSize: "12px", color: "#555", marginTop: "-2px", marginBottom: "4px" }}>{specs.uiMessage}</div>

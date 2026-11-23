@@ -81,7 +81,7 @@ const WSRainWaterHarvesting = ({ config, onSelect, userType, formData }) => {
           <FieldLabelWithTooltip
             label={t("Rain Water Harvesting Certificate")}
             isMandatory={false}
-            infoText={t("WS_RWH_INFO_MSG", "Select Yes if Rain Water Harvesting Certificate is available")}
+            infoText={t("WS_RWH_INFO_MSG")}
           />
           <div className="field">
             <Controller
