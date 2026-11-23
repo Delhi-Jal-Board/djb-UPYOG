@@ -14,7 +14,6 @@
     "packages/modules/dss",
     "packages/modules/engagement",
     "packages/modules/asset"
-   
   ],
   "license": "MIT",
   "private": true,
@@ -104,6 +103,8 @@
     "glob": "7.2.3",
     "minimatch": "3.1.2",
     "filelist": "1.0.4",
-    "dompurify": "3.0.6"
+    "dompurify": "3.0.6",
+    "unicode-trie": "2.0.0",
+    "**/unicode-trie": "2.0.0"
   }
 }
