@@ -1,9 +1,7 @@
 import React, { useState } from "react";
-import { Card, StatusTable, Row, CardHeader, TextInput, Toast } from "@djb25/digit-ui-react-components";
+import { Card, Toast } from "@djb25/digit-ui-react-components";
 
 const Step1_ExistingConnection = ({ t, applicationDetails, propertyId, mobileNumber, onVerify }) => {
-  const [otp, setOtp] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [showToast, setShowToast] = useState(null);
 
   const getMaskedName = (name) => {
@@ -16,9 +14,17 @@ const Step1_ExistingConnection = ({ t, applicationDetails, propertyId, mobileNum
     return `******${phone.slice(-4)}`;
   };
 
+  const getMaskedMeter = (meter) => {
+    if (!meter || meter === "NA") return "NA";
+    const str = String(meter).trim();
+    if (str.length <= 4) return "*".repeat(str.length);
+    return `******${str.slice(-4)}`;
+  };
+
   const appData = applicationDetails?.applicationData || {};
   const connectionNo = appData?.connectionNo || "NA";
   const meterId = appData?.meterId || "NA";
+  const registeredMeter = getMaskedMeter(meterId);
   const connectionStatus = appData?.status || "NA";
   
   const holderDetails = appData?.connectionHolders?.[0] || {};
@@ -46,31 +52,6 @@ const Step1_ExistingConnection = ({ t, applicationDetails, propertyId, mobileNum
   if (connectionNo === "NA") missingFields.push("Connection Number");
   if (registeredName === "NA") missingFields.push("Owner Name");
   if (formattedAddress === "NA") missingFields.push("Property Address");
-
-  const handleVerifyOtp = async () => {
-    if (!otp || otp.length < 6) {
-      setShowToast({ key: "warning", message: "Please enter a valid 6-digit OTP" });
-      return;
-    }
-    setIsLoading(true);
-    try {
-      const payload = {
-        otp: {
-          otp: otp,
-          identity: mobileNumber,
-          tenantId: "dl"
-        }
-      };
-
-      await Digit.UserService.validateOtp(payload);
-      
-      setIsLoading(false);
-      onVerify(); 
-    } catch (err) {
-      setIsLoading(false);
-      setShowToast({ key: "error", message: err?.response?.data?.Errors?.[0]?.message || err.message || "Failed to verify OTP" });
-    }
-  };
 
   const isMobileView = window.innerWidth < 768;
 
@@ -126,7 +107,7 @@ const Step1_ExistingConnection = ({ t, applicationDetails, propertyId, mobileNum
           </div>
           <div style={infoItemStyle}>
             <div style={{ color: "#555", fontSize: isMobileView ? "11px" : "13px", marginBottom: "4px" }}>Meter Number</div>
-            <div style={{ fontWeight: "bold", wordBreak: "break-all", fontSize: isMobileView ? "13px" : undefined }}>{meterId}</div>
+            <div style={{ fontWeight: "bold", wordBreak: "break-all", fontSize: isMobileView ? "13px" : undefined }}>{registeredMeter}</div>
           </div>
           <div style={infoItemStyle}>
             <div style={{ color: "#555", fontSize: isMobileView ? "11px" : "13px", marginBottom: "4px" }}>Mobile Number</div>
@@ -135,40 +116,26 @@ const Step1_ExistingConnection = ({ t, applicationDetails, propertyId, mobileNum
         </div>
       </div>
 
-      {/* OTP Section */}
-      <div style={{ marginTop: isMobileView ? "16px" : "24px", borderTop: "1px solid #e0e0e0", paddingTop: "16px" }}>
-        <h3 style={{ fontSize: isMobileView ? "14px" : "16px", fontWeight: "bold", marginBottom: "16px" }}>Verify OTP</h3>
-        <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "16px" }}>
-          <label style={{ fontWeight: "500", fontSize: isMobileView ? "13px" : "14px" }}>Enter OTP sent to +91 {getMaskedPhone(mobileNumber)} *</label>
-          <TextInput 
-            value={otp} 
-            onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-            placeholder="Enter 6-digit OTP"
-            maxLength={6}
-            style={{ width: "100%" }}
-          />
-        </div>
-        <div style={{ display: "flex", justifyContent: isMobileView ? "center" : "flex-end" }}>
-          <button
-            onClick={handleVerifyOtp}
-            disabled={isLoading || otp.length < 6}
-            style={{
-              padding: isMobileView ? "12px 16px" : "10px 20px",
-              backgroundColor: "#00497e",
-              color: "white",
-              border: "none",
-              borderRadius: "4px",
-              cursor: (isLoading || otp.length < 6) ? "not-allowed" : "pointer",
-              fontWeight: "bold",
-              opacity: (isLoading || otp.length < 6) ? 0.5 : 1,
-              width: isMobileView ? "100%" : "auto",
-              maxWidth: isMobileView ? "100%" : "200px",
-              fontSize: isMobileView ? "14px" : undefined
-            }}
-          >
-            {isLoading ? "Verifying..." : "Verify & Proceed →"}
-          </button>
-        </div>
+      {/* Action / Navigation Section */}
+      <div style={{ marginTop: isMobileView ? "16px" : "24px", borderTop: "1px solid #e0e0e0", paddingTop: "16px", display: "flex", justifyContent: isMobileView ? "center" : "flex-end" }}>
+        <button
+          type="button"
+          onClick={onVerify}
+          style={{
+            padding: isMobileView ? "12px 16px" : "10px 20px",
+            backgroundColor: "#00497e",
+            color: "white",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+            fontWeight: "bold",
+            width: isMobileView ? "100%" : "auto",
+            maxWidth: isMobileView ? "100%" : "200px",
+            fontSize: isMobileView ? "14px" : undefined
+          }}
+        >
+          Proceed →
+        </button>
       </div>
 
       {showToast && <Toast error={showToast?.key === "error"} warning={showToast?.key === "warning"} label={showToast?.message} onClose={() => setShowToast(null)} isDleteBtn={true} />}

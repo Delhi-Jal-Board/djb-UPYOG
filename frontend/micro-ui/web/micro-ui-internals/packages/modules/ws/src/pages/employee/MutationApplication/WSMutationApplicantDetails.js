@@ -12,12 +12,16 @@ const WSMutationApplicantDetails = ({ t, config, onSelect, formData, formState, 
   const { errors } = localFormState;
   
   const selectedReason = formValue?.reasonForNameChange;
-  const isDevolutionOrInheritance = selectedReason?.code === "DEVOLUTION_INHERITANCE" || selectedReason === "DEVOLUTION_INHERITANCE" || String(selectedReason?.code || "").toUpperCase().includes("DEVOLUTION") || String(selectedReason || "").toUpperCase().includes("DEVOLUTION");
+  const isDevolutionOrInheritance =
+    selectedReason?.code === "DEVOLUTION_INHERITANCE" ||
+    selectedReason === "DEVOLUTION_INHERITANCE" ||
+    String(selectedReason?.code || "").toUpperCase().includes("INHERITANCE") ||
+    String(selectedReason || "").toUpperCase().includes("INHERITANCE");
 
   const reasonOptions = [
     { code: "SALE_PURCHASE", i18nKey: "Sale / Purchase of Property" },
-    { code: "DEVOLUTION_INHERITANCE", i18nKey: "Devolution/Inheritance" },
-    { code: "OTHER", i18nKey: "Other Reason(Gift, Lease, etc)" }
+    { code: "DEVOLUTION_INHERITANCE", i18nKey: "Inheritance" },
+    { code: "OTHER", i18nKey: "Other (Devolution)" }
   ];
 
   const relationshipOptions = [

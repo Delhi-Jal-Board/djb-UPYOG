@@ -52,7 +52,7 @@ const Step4_Preview = ({ t, formData, applicationDetails, resolvedServiceType, o
 
   const getReasonName = (code) => {
     if (code?.code) return code.i18nKey;
-    const map = { "SALE_PURCHASE": "Sale / Purchase of Property", "DEVOLUTION_INHERITANCE": "Inheritance / Succession", "OTHER": "Other" };
+    const map = { "SALE_PURCHASE": "Purchase of Property", "DEVOLUTION_INHERITANCE": "Inheritance", "OTHER": "Other (Devolution)" };
     return map[code] || code;
   };
 
@@ -233,7 +233,7 @@ const Step4_Preview = ({ t, formData, applicationDetails, resolvedServiceType, o
               opacity: (!agreed || isLoading) ? 0.6 : 1
             }}
           >
-            {isLoading ? "Submitting..." : "Submit Mutation Application"}
+            {isLoading ? "Submitting..." : "Proceed"}
           </button>
           <button
             type="button"
@@ -253,7 +253,7 @@ const Step4_Preview = ({ t, formData, applicationDetails, resolvedServiceType, o
             ← Edit Information
           </button>
           <SubmitBar
-            label={isLoading ? "Submitting..." : "Submit Mutation Application"}
+            label={isLoading ? "Submitting..." : "Proceed"}
             onSubmit={onSubmit}
             disabled={!agreed || isLoading}
           />
