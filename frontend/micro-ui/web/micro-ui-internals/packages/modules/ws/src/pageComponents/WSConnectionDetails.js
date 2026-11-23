@@ -811,7 +811,7 @@ const ConnectionDetails = (_props) => {
             <FieldLabelWithTooltip
               label={t("Service Type")}
               isMandatory={true}
-              infoText={t("WS_SERVICE_TYPE_INFO_MSG", "Select Service Type")}
+              infoText={t("WS_SERVICE_TYPE_INFO_MSG")}
             />
             <Controller
               control={control}
@@ -942,7 +942,7 @@ const ConnectionDetails = (_props) => {
             <FieldLabelWithTooltip
               label={t("Applicant Type")}
               isMandatory={true}
-              infoText={t("WS_APPLICANT_TYPE_INFO_MSG", "Select Applicant Type")}
+              infoText={t("WS_APPLICANT_TYPE_INFO_MSG")}
             />
             <Controller
               control={control}
@@ -972,7 +972,7 @@ const ConnectionDetails = (_props) => {
             <FieldLabelWithTooltip
               label={t("WS_Billing_Address_Type")}
               isMandatory={true}
-              infoText={t("WS_BILLING_ADDRESS_TYPE_INFO_MSG", "Enter or verify Billing Address")}
+              infoText={t("WS_BILLING_ADDRESS_TYPE_INFO_MSG")}
             />
             <div className="field">
               <Controller
@@ -1203,7 +1203,7 @@ const ConnectionDetails = (_props) => {
               <FieldLabelWithTooltip
                 label={t("Name")}
                 isMandatory={true}
-                infoText={t("WS_AUTH_REP_NAME_INFO_MSG", "Enter Authorized Representative Name")}
+                infoText={t("WS_AUTH_REP_NAME_INFO_MSG")}
               />
               <Controller
                 control={control}
@@ -1245,7 +1245,7 @@ const ConnectionDetails = (_props) => {
               <FieldLabelWithTooltip
                 label={t("Designation")}
                 isMandatory={true}
-                infoText={t("WS_AUTH_REP_DESIGNATION_INFO_MSG", "Enter Authorized Representative Designation")}
+                infoText={t("WS_AUTH_REP_DESIGNATION_INFO_MSG")}
               />
               <Controller
                 control={control}
@@ -1294,7 +1294,7 @@ const ConnectionDetails = (_props) => {
               <FieldLabelWithTooltip
                 label={t("CORE_COMMON_MOBILE_NUMBER")}
                 isMandatory={true}
-                infoText={t("WS_AUTH_REP_MOBILE_INFO_MSG", "Enter 10-digit Mobile Number")}
+                infoText={t("WS_AUTH_REP_MOBILE_INFO_MSG")}
               />
               <div className="field">
                 <Controller

@@ -178,7 +178,7 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
           <FieldLabelWithTooltip
             label={t("Are you a DJB Employee?")}
             isMandatory={false}
-            infoText={t("WS_DJB_EMPLOYEE_INFO_MSG", "Select Yes if applicant is an active or retired DJB Employee")}
+            infoText={t("WS_DJB_EMPLOYEE_INFO_MSG")}
           />
           <div className="field">
             <Controller
