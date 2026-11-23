@@ -29,8 +29,8 @@ const Step3_UploadDocuments = ({ t, onNext, onBack, defaultValues }) => {
   const getReasonDocLabel = (reasonCode) => {
     switch(reasonCode) {
       case "SALE_PURCHASE": return "Upload Purchase of Property";
-      case "DEVOLUTION_INHERITANCE": return "Upload Devolution/ Inheritance";
-      case "OTHER": return "Upload Other (Gift Deed, Will registration, etc.)";
+      case "DEVOLUTION_INHERITANCE": return "Upload Inheritance";
+      case "OTHER": return "Upload Other (Devolution, Gift Deed, Will registration, etc.)";
       default: return "Upload Supporting Document";
     }
   };

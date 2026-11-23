@@ -220,8 +220,8 @@ const MutationApplication = () => {
 
         const reasonOptions = [
           { code: "SALE_PURCHASE", i18nKey: "Purchase of Property" },
-          { code: "DEVOLUTION_INHERITANCE", i18nKey: "Devolution/Inheritance" },
-          { code: "OTHER", i18nKey: "Other Reason(Gift Deed, Lease Agreement, etc)" },
+          { code: "DEVOLUTION_INHERITANCE", i18nKey: "Inheritance" },
+          { code: "OTHER", i18nKey: "Other (Devolution, Gift Deed, Lease Agreement, etc)" },
         ];
         const relationshipOptions = [
           { code: "BLOOD_RELATION", i18nKey: "Blood Relation (Son / Daughter / Spouse)" },
@@ -642,6 +642,8 @@ const MutationApplication = () => {
               <Step2_NewConsumerDetails
                 t={t}
                 defaultValues={formData}
+                applicationDetails={authActiveConnection ? { applicationData: authActiveConnection } : applicationDetails}
+                existingConnectionHolders={(authActiveConnection || applicationDetails?.applicationData)?.connectionHolders || []}
                 onNext={(data) => {
                   setFormData((prev) => ({ ...prev, ...data }));
                   setCompletedSteps((prev) => [...new Set([...prev, 3])]);

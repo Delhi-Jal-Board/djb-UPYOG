@@ -144,29 +144,11 @@ const Step1_SearchConnection = ({ t, defaultKNumber, onNext, isEditFlow }) => {
         return;
       }
 
-      // FIX: Skip OTP completely if it is the edit flow
-      if (isEditFlow) {
-        setIsLoading(false);
-        onNext({ kNumber, mobileNumber: fetchedMobileNumber, serviceType: detectedServiceType, activeConnection: connection });
-        return;
-      }
-
-      const userType = Digit.UserService.getType().toUpperCase();
-      const payload = {
-        otp: {
-          mobileNumber: fetchedMobileNumber,
-          tenantId: "dl",
-          type: "register",
-          userType: userType
-        }
-      };
-      
-      await Digit.UserService.sendOtp(payload, "dl");
       setIsLoading(false);
       onNext({ kNumber, mobileNumber: fetchedMobileNumber, serviceType: detectedServiceType, activeConnection: connection });
     } catch (err) {
       setIsLoading(false);
-      setShowToast({ key: "error", message: err?.response?.data?.Errors?.[0]?.message || "Failed to send OTP" });
+      setShowToast({ key: "error", message: err?.response?.data?.Errors?.[0]?.message || "Failed to search connection" });
     }
   };
 
@@ -181,7 +163,7 @@ const Step1_SearchConnection = ({ t, defaultKNumber, onNext, isEditFlow }) => {
       <CardText style={{ fontSize: isMobileView ? "13px" : undefined }}>
         {isEditFlow 
           ? "Please verify the K Number to proceed with the mutation edit." 
-          : "Please enter your K Number to proceed with the mutation application. An OTP will be sent to the registered mobile number."}
+          : "Please enter your K Number to proceed with the mutation application."}
       </CardText>
 
       <div style={{ marginBottom: "24px", marginTop: "16px", padding: isMobileView ? "12px" : "16px", backgroundColor: "#f9f9f9", borderRadius: "8px", borderLeft: "4px solid #00497e" }}>
@@ -214,9 +196,7 @@ const Step1_SearchConnection = ({ t, defaultKNumber, onNext, isEditFlow }) => {
             disabled={isLoading}
             style={{ padding: isMobileView ? "12px 16px" : "10px 20px", backgroundColor: "#00497e", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold", opacity: isLoading ? 0.7 : 1, width: isMobileView ? "100%" : "auto", maxWidth: isMobileView ? "100%" : "200px", fontSize: isMobileView ? "14px" : undefined }}
           >
-            {isLoading 
-              ? (isEditFlow ? "Proceeding..." : "Sending OTP...") 
-              : (isEditFlow ? "Proceed →" : "Send OTP →")}
+            {isLoading ? "Proceeding..." : "Proceed →"}
           </button>
         </div>
       </div>

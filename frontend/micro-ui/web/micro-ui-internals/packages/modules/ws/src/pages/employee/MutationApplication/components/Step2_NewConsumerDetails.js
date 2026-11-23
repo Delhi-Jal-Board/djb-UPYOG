@@ -2,22 +2,78 @@ import React, { useState } from "react";
 import { Card, CardHeader, CardLabel, TextInput, Dropdown, MobileNumber, CardLabelError, Button, Toast } from "@djb25/digit-ui-react-components";
 import { useForm, Controller, useWatch } from "react-hook-form";
 
-const Step2_NewConsumerDetails = ({ t, onNext, onBack, defaultValues }) => {
+const Step2_NewConsumerDetails = ({ t, onNext, onBack, defaultValues, applicationDetails, existingConnectionHolders }) => {
   const userInfo = Digit.UserService.getUser();
   const isCitizen = userInfo?.info?.type === "CITIZEN";
   
   const initialValues = { ...(defaultValues || {}) };
+
+  // Parse existing full name into three separate fields if not already populated
+  if (!initialValues.firstName && initialValues.proposedNewConsumerName) {
+    const parts = initialValues.proposedNewConsumerName.trim().split(/\s+/);
+    if (parts.length === 1) {
+      initialValues.firstName = parts[0];
+    } else if (parts.length === 2) {
+      initialValues.firstName = parts[0];
+      initialValues.lastName = parts[1];
+    } else if (parts.length > 2) {
+      initialValues.firstName = parts[0];
+      initialValues.middleName = parts.slice(1, -1).join(" ");
+      initialValues.lastName = parts[parts.length - 1];
+    }
+  } else if (!initialValues.firstName && isCitizen && userInfo?.info?.name) {
+    const parts = userInfo.info.name.trim().split(/\s+/);
+    if (parts.length === 1) {
+      initialValues.firstName = parts[0];
+    } else if (parts.length === 2) {
+      initialValues.firstName = parts[0];
+      initialValues.lastName = parts[1];
+    } else if (parts.length > 2) {
+      initialValues.firstName = parts[0];
+      initialValues.middleName = parts.slice(1, -1).join(" ");
+      initialValues.lastName = parts[parts.length - 1];
+    }
+  }
+
+  initialValues.firstName = initialValues.firstName || "";
+  initialValues.middleName = initialValues.middleName || "";
+  initialValues.lastName = initialValues.lastName || "";
+
+  // Do not auto-populate the mobile number in the application
+  initialValues.newOwnerMobileNumber = defaultValues?.newOwnerMobileNumber || "";
+
   if (isCitizen) {
-    if (!initialValues.proposedNewConsumerName && userInfo?.info?.name) {
-      initialValues.proposedNewConsumerName = userInfo.info.name;
-    }
-    if (!initialValues.newOwnerMobileNumber && userInfo?.info?.mobileNumber) {
-      initialValues.newOwnerMobileNumber = userInfo.info.mobileNumber;
-    }
     if (!initialValues.newOwnerEmailAddress && userInfo?.info?.emailId) {
       initialValues.newOwnerEmailAddress = userInfo.info.emailId;
     }
   }
+
+  // Collect all existing connection holder mobile numbers
+  const existingHolders = [
+    ...(existingConnectionHolders || []),
+    ...(applicationDetails?.applicationData?.connectionHolders || []),
+    ...(applicationDetails?.WaterConnection?.[0]?.connectionHolders || []),
+    ...(applicationDetails?.SewerageConnections?.[0]?.connectionHolders || [])
+  ];
+
+  const cachedConn = Digit.SessionStorage.get("MUTATION_APP_ACTIVE_CONN");
+  if (cachedConn?.connectionHolders && Array.isArray(cachedConn.connectionHolders)) {
+    existingHolders.push(...cachedConn.connectionHolders);
+  }
+
+  const existingMobileNumbers = Array.from(
+    new Set(
+      existingHolders
+        .map((h) => (h?.mobileNumber ? String(h.mobileNumber).trim() : null))
+        .filter(Boolean)
+    )
+  );
+
+  const isExistingMobile = (value) => {
+    if (!value) return false;
+    const cleanVal = String(value).trim();
+    return existingMobileNumbers.some((num) => num === cleanVal);
+  };
 
   const { control, handleSubmit, formState: { errors }, trigger, setError, clearErrors, setValue } = useForm({
     defaultValues: initialValues,
@@ -32,18 +88,23 @@ const Step2_NewConsumerDetails = ({ t, onNext, onBack, defaultValues }) => {
     name: "reasonForNameChange"
   });
 
-  const isDevolutionOrInheritance = selectedReason?.code === "DEVOLUTION_INHERITANCE" || selectedReason === "DEVOLUTION_INHERITANCE" || String(selectedReason?.code || "").toUpperCase().includes("DEVOLUTION") || String(selectedReason || "").toUpperCase().includes("DEVOLUTION");
+  const isInheritance =
+    selectedReason?.code === "DEVOLUTION_INHERITANCE" ||
+    selectedReason === "DEVOLUTION_INHERITANCE" ||
+    String(selectedReason?.code || "").toUpperCase().includes("INHERITANCE") ||
+    String(selectedReason?.i18nKey || "").toUpperCase().includes("INHERITANCE");
 
   const genderOptions = [
     { code: "MALE", i18nKey: "Male" },
     { code: "FEMALE", i18nKey: "Female" },
-    { code: "TRANSGENDER", i18nKey: "Transgender" }
+    { code: "TRANSGENDER", i18nKey: "Transgender" },
+    { code: "OTHER", i18nKey: "Other" }
   ];
 
   const reasonOptions = [
     { code: "SALE_PURCHASE", i18nKey: "Purchase of Property" },
-    { code: "DEVOLUTION_INHERITANCE", i18nKey: "Devolution/Inheritance" },
-    { code: "OTHER", i18nKey: "Other Reason(Registered Sale Deed/Convayed Deed/Transfer Deed, Registered GPA, Possession Letter/Allotment Letter)" }
+    { code: "DEVOLUTION_INHERITANCE", i18nKey: "Inheritance" },
+    { code: "OTHER", i18nKey: "Other (Devolution)" }
   ];
 
   const relationshipOptions = [
@@ -62,15 +123,36 @@ const Step2_NewConsumerDetails = ({ t, onNext, onBack, defaultValues }) => {
   };
 
   const onSubmit = (data) => {
-    if (data.proposedNewConsumerName && data.proposedNewConsumerName.trim().length < 3) {
-      setError("proposedNewConsumerName", { type: "manual", message: "Name must be at least 3 characters" });
+    const fullName = [data.firstName, data.middleName, data.lastName]
+      .map(s => (s || "").trim())
+      .filter(Boolean)
+      .join(" ");
+
+    if (fullName.length < 3) {
+      setError("firstName", { type: "manual", message: "Name must be at least 3 characters in total" });
       return;
     }
-    if (data.proposedNewConsumerName && !/^[a-zA-Z\s.'-]+$/.test(data.proposedNewConsumerName.trim())) {
-      setError("proposedNewConsumerName", { type: "manual", message: "Name should only contain alphabets, spaces, dots, hyphens" });
+    if (!/^[a-zA-Z\s.'-]+$/.test(fullName)) {
+      setError("firstName", { type: "manual", message: "Name should only contain alphabets, spaces, dots, hyphens" });
       return;
     }
-    onNext(data);
+
+    const enteredMobile = String(data.newOwnerMobileNumber || "").trim();
+    if (isExistingMobile(enteredMobile)) {
+      setError("newOwnerMobileNumber", {
+        type: "manual",
+        message: "Entered mobile number cannot be the same as existing connection holder's mobile number. Please enter a different mobile number."
+      });
+      return;
+    }
+
+    onNext({
+      ...data,
+      firstName: data.firstName ? data.firstName.trim() : "",
+      middleName: data.middleName ? data.middleName.trim() : "",
+      lastName: data.lastName ? data.lastName.trim() : "",
+      proposedNewConsumerName: fullName
+    });
   };
 
   const onError = () => {
@@ -106,26 +188,68 @@ const Step2_NewConsumerDetails = ({ t, onNext, onBack, defaultValues }) => {
         }}>
           
           <div>
-            <CardLabel style={{ fontWeight: "bold" }}>New Consumer Full Name {mandatoryIndicator}</CardLabel>
+            <CardLabel style={{ fontWeight: "bold" }}>First Name {mandatoryIndicator}</CardLabel>
             <Controller
               control={control}
-              name="proposedNewConsumerName"
+              name="firstName"
               rules={{ 
-                required: "Consumer name is required",
-                minLength: { value: 3, message: "Name must be at least 3 characters" },
+                required: "First name is required",
+                minLength: { value: 2, message: "First name must be at least 2 characters" },
                 pattern: { value: /^[a-zA-Z\s.'-]+$/, message: "Only alphabets, spaces, dots and hyphens allowed" }
               }}
               render={(props) => (
                 <TextInput 
-                  value={props.value} 
-                  onChange={(e) => { props.onChange(e.target.value); clearErrors("proposedNewConsumerName"); }}
-                  onBlur={() => { props.onBlur(); setTouched(p => ({...p, proposedNewConsumerName: true})); trigger("proposedNewConsumerName"); }}
-                  placeholder="Enter full name (e.g. Rajesh Kumar)" 
-                  style={getFieldBorderStyle("proposedNewConsumerName")}
+                  value={props.value || ""} 
+                  onChange={(e) => { props.onChange(e.target.value); clearErrors("firstName"); }}
+                  onBlur={() => { props.onBlur(); setTouched(p => ({...p, firstName: true})); trigger("firstName"); }}
+                  placeholder="Enter first name" 
+                  style={getFieldBorderStyle("firstName")}
                 />
               )}
             />
-            {errors?.proposedNewConsumerName && <CardLabelError style={errorStyle}>{errors?.proposedNewConsumerName?.message}</CardLabelError>}
+            {errors?.firstName && <CardLabelError style={errorStyle}>{errors?.firstName?.message}</CardLabelError>}
+          </div>
+
+          <div>
+            <CardLabel style={{ fontWeight: "bold" }}>Middle Name <span style={{ color: "#999", fontSize: "12px" }}>(Optional)</span></CardLabel>
+            <Controller
+              control={control}
+              name="middleName"
+              rules={{ 
+                pattern: { value: /^[a-zA-Z\s.'-]*$/, message: "Only alphabets, spaces, dots and hyphens allowed" }
+              }}
+              render={(props) => (
+                <TextInput 
+                  value={props.value || ""} 
+                  onChange={(e) => { props.onChange(e.target.value); clearErrors("middleName"); }}
+                  onBlur={() => { props.onBlur(); setTouched(p => ({...p, middleName: true})); trigger("middleName"); }}
+                  placeholder="Enter middle name" 
+                  style={getFieldBorderStyle("middleName")}
+                />
+              )}
+            />
+            {errors?.middleName && <CardLabelError style={errorStyle}>{errors?.middleName?.message}</CardLabelError>}
+          </div>
+
+          <div>
+            <CardLabel style={{ fontWeight: "bold" }}>Last Name <span style={{ color: "#999", fontSize: "12px" }}>(Optional)</span></CardLabel>
+            <Controller
+              control={control}
+              name="lastName"
+              rules={{ 
+                pattern: { value: /^[a-zA-Z\s.'-]*$/, message: "Only alphabets, spaces, dots and hyphens allowed" }
+              }}
+              render={(props) => (
+                <TextInput 
+                  value={props.value || ""} 
+                  onChange={(e) => { props.onChange(e.target.value); clearErrors("lastName"); }}
+                  onBlur={() => { props.onBlur(); setTouched(p => ({...p, lastName: true})); trigger("lastName"); }}
+                  placeholder="Enter last name" 
+                  style={getFieldBorderStyle("lastName")}
+                />
+              )}
+            />
+            {errors?.lastName && <CardLabelError style={errorStyle}>{errors?.lastName?.message}</CardLabelError>}
           </div>
 
           <div>
@@ -155,7 +279,15 @@ const Step2_NewConsumerDetails = ({ t, onNext, onBack, defaultValues }) => {
               name="newOwnerMobileNumber"
               rules={{ 
                 required: "Mobile number is required",
-                pattern: { value: /^[6-9]\d{9}$/, message: "Enter a valid 10-digit mobile number starting with 6-9" }
+                pattern: { value: /^[6-9]\d{9}$/, message: "Enter a valid 10-digit mobile number starting with 6-9" },
+                validate: {
+                  notExistingHolder: (val) => {
+                    if (isExistingMobile(val)) {
+                      return "Entered mobile number cannot be the same as existing connection holder's mobile number. Please enter a different mobile number.";
+                    }
+                    return true;
+                  }
+                }
               }}
               render={(props) => (
                 <MobileNumber
@@ -204,8 +336,8 @@ const Step2_NewConsumerDetails = ({ t, onNext, onBack, defaultValues }) => {
                   select={(val) => { 
                     props.onChange(val); 
                     setTouched(p => ({...p, reasonForNameChange: true})); 
-                    const isDev = val?.code === "DEVOLUTION_INHERITANCE" || val === "DEVOLUTION_INHERITANCE" || String(val?.code || "").toUpperCase().includes("DEVOLUTION") || String(val || "").toUpperCase().includes("DEVOLUTION");
-                    if (!isDev) {
+                    const isInherit = val?.code === "DEVOLUTION_INHERITANCE" || val === "DEVOLUTION_INHERITANCE" || String(val?.code || "").toUpperCase().includes("INHERITANCE") || String(val?.i18nKey || "").toUpperCase().includes("INHERITANCE");
+                    if (!isInherit) {
                       setValue("relationshipWithExistingConsumer", null);
                     }
                   }}
@@ -219,11 +351,11 @@ const Step2_NewConsumerDetails = ({ t, onNext, onBack, defaultValues }) => {
           </div>
 
           <div>
-            <CardLabel style={{ fontWeight: "bold", color: isDevolutionOrInheritance ? "inherit" : "#999" }}>Relationship with Existing Consumer {isDevolutionOrInheritance && mandatoryIndicator}</CardLabel>
+            <CardLabel style={{ fontWeight: "bold", color: isInheritance ? "inherit" : "#999" }}>Relationship with Existing Consumer {isInheritance && mandatoryIndicator}</CardLabel>
             <Controller
               control={control}
               name="relationshipWithExistingConsumer"
-              rules={{ required: isDevolutionOrInheritance ? "Relationship is required when 'Devolution/Inheritance' is selected" : false }}
+              rules={{ required: isInheritance ? "Relationship is required when 'Inheritance' is selected" : false }}
               render={(props) => (
                 <Dropdown
                   selected={props.value}
@@ -232,13 +364,13 @@ const Step2_NewConsumerDetails = ({ t, onNext, onBack, defaultValues }) => {
                   optionKey="i18nKey"
                   t={t}
                   placeholder="Select relationship"
-                  disable={!isDevolutionOrInheritance}
+                  disable={!isInheritance}
                 />
               )}
             />
-            {!isDevolutionOrInheritance && (
+            {!isInheritance && (
               <span style={{ fontSize: "11px", color: "#999", marginTop: "4px", display: "block" }}>
-                Enabled only when "Devolution/Inheritance" is selected above
+                Enabled only when "Inheritance" is selected above
               </span>
             )}
             {errors?.relationshipWithExistingConsumer && <CardLabelError style={errorStyle}>{errors?.relationshipWithExistingConsumer?.message}</CardLabelError>}
