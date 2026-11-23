@@ -545,15 +545,15 @@ const OLDApplication = () => {
       }
     }
 
-    const hasPhoto = allSubmitDocs.some(
-      (d) =>
-        (d?.documentType === "OWNER.PHOTO" || d?.documentType?.includes("PHOTO") || d?.documentType === "OWNER.APPLICANTPHOTO") &&
-        (d?.fileStoreId || d?.file)
-    );
-    if (!hasPhoto) {
-      setShowToast({ key: "error", message: t("WS_PHOTO_MANDATORY") || "Applicant Photo is mandatory" });
-      return;
-    }
+    // const hasPhoto = allSubmitDocs.some(
+    //   (d) =>
+    //     (d?.documentType === "OWNER.PHOTO" || d?.documentType?.includes("PHOTO") || d?.documentType === "OWNER.APPLICANTPHOTO") &&
+    //     (d?.fileStoreId || d?.file)
+    // );
+    // if (!hasPhoto) {
+    //   setShowToast({ key: "error", message: t("WS_PHOTO_MANDATORY") || "Applicant Photo is mandatory" });
+    //   return;
+    // }
 
     const hasIdentity = allSubmitDocs.some(
       (d) => (d?.documentType?.includes("IDENTITYPROOF") || d?.documentType?.includes("IDENTITY")) && (d?.fileStoreId || d?.file)
@@ -709,13 +709,13 @@ const OLDApplication = () => {
         data.declarationData?.signature ||
         null;
 
-      if (!sigFsId) {
-        setShowToast({
-          key: "error",
-          message: t("ERR_SIGNATURE_MANDATORY") || "Signature is mandatory to submit application",
-        });
-        return;
-      }
+      // if (!sigFsId) {
+      //   setShowToast({
+      //     key: "error",
+      //     message: t("ERR_SIGNATURE_MANDATORY") || "Signature is mandatory to submit application",
+      //   });
+      //   return;
+      // }
 
       const sigFileName =
         data.declarationData?.signatureFileName ||

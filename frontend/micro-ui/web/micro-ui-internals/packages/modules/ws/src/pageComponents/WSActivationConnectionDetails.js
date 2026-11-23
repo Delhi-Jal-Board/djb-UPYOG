@@ -1,4 +1,4 @@
-import { CardLabel, Dropdown, LabelFieldPair, Loader, TextInput, CardLabelError } from "@djb25/digit-ui-react-components";
+import { CardLabel, Dropdown, LabelFieldPair, Loader, TextInput, CardLabelError, FieldLabelWithTooltip } from "@djb25/digit-ui-react-components";
 import React, { useEffect, useState } from "react";
 import { stringReplaceAll, getPattern } from "../utils";
 import cloneDeep from "lodash/cloneDeep";
@@ -228,7 +228,12 @@ const ConnectionDetails = (_props) => {
     <React.Fragment>
       {!window.location.href.includes("by-config") && !window.location.href.includes("ws/modify-application") ? (
         <LabelFieldPair>
-          <CardLabel>{t("WS_ACK_COMMON_APP_NO_LABEL")} <span style={{ color: "red" }}>*</span></CardLabel>
+          <FieldLabelWithTooltip
+            style={{ margin: 0 }}
+            label={t("WS_ACK_COMMON_APP_NO_LABEL") || "Application Number"}
+            isMandatory={true}
+            infoText={t("WS_APP_NO_INFO_MSG", "Application Number of the connection")}
+          />
           <div className="field">
             <TextInput disabled={true} value={filters?.applicationNumber}></TextInput>
           </div>
@@ -237,7 +242,12 @@ const ConnectionDetails = (_props) => {
       {filters?.service === "WATER" ? (
         <React.Fragment>
           <LabelFieldPair>
-            <CardLabel>{t("WS_SERV_DETAIL_CONN_TYPE")} <span style={{ color: "red" }}>*</span></CardLabel>
+            <FieldLabelWithTooltip
+              style={{ margin: 0 }}
+              label={t("WS_SERV_DETAIL_CONN_TYPE") || "Nature of Connection"}
+              isMandatory={true}
+              infoText={t("WS_CONN_TYPE_INFO_MSG", "Nature / Type of Connection (Metered / Non-Metered)")}
+            />
             <Controller
               control={control}
               name={"connectionType"}
@@ -395,7 +405,12 @@ const ConnectionDetails = (_props) => {
       ) : (
         <React.Fragment>
           <LabelFieldPair>
-            <CardLabel>{t("WS_NUMBER_WATER_CLOSETS_LABEL")} <span style={{ color: "red" }}>*</span></CardLabel>
+            <FieldLabelWithTooltip
+              style={{ margin: 0 }}
+              label={t("WS_NUMBER_WATER_CLOSETS_LABEL") || "Number of Water Closets"}
+              isMandatory={true}
+              infoText={t("WS_NUMBER_WATER_CLOSETS_INFO_MSG", "Enter number of water closets")}
+            />
             <div className="field">
               <Controller
                 control={control}
@@ -428,7 +443,12 @@ const ConnectionDetails = (_props) => {
             ) : null}
           </LabelFieldPair>
           <LabelFieldPair>
-            <CardLabel>{t("WS_SERV_DETAIL_NO_OF_TOILETS")} <span style={{ color: "red" }}>*</span></CardLabel>
+            <FieldLabelWithTooltip
+              style={{ margin: 0 }}
+              label={t("WS_SERV_DETAIL_NO_OF_TOILETS") || "Number of Toilets"}
+              isMandatory={true}
+              infoText={t("WS_SERV_DETAIL_NO_OF_TOILETS_INFO_MSG", "Enter number of toilets")}
+            />
             <div className="field">
               <Controller
                 control={control}

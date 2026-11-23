@@ -247,6 +247,7 @@ const WSDeclaration = ({ config, onSelect, userType, formData, setError, formSta
             </LabelFieldPair>
           </div> */}
 
+          {/* Commented out as per requirement: comment out the photo and signed
           <div>
             <LabelFieldPair>
               <div>
@@ -311,6 +312,7 @@ const WSDeclaration = ({ config, onSelect, userType, formData, setError, formSta
               </div>
             </LabelFieldPair>
           </div>
+          */}
         </div>
       </CollapsibleCardPage>
       {showDocModal && (

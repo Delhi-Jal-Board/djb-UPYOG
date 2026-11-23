@@ -14,6 +14,7 @@ import {
   FormStep,
   RemoveIcon,
   DatePicker,
+  FieldLabelWithTooltip,
 } from "@djb25/digit-ui-react-components";
 import Timeline from "../components/Timeline";
 import { useLocation } from "react-router-dom";
@@ -314,7 +315,9 @@ const WSDocumentsEmployee = ({
 
   useEffect(() => {
     let count = 0;
-    wsDocs?.[wsDocsData]?.map((doc) => {
+    wsDocs?.[wsDocsData]
+      ?.filter((doc) => doc?.code !== "OWNER.APPLICANTPHOTO" && !doc?.code?.includes("APPLICANTPHOTO") && !doc?.code?.includes("PHOTO"))
+      ?.map((doc) => {
       const isDocRequired = isOtherDocument(doc?.code) ? false : doc.required;
       let isRequired = false;
       documents.map((data) => {
@@ -382,7 +385,9 @@ const WSDocumentsEmployee = ({
 
   const innerContent = (
     <div className="formcomposer-section-grid ws-doc-upload">
-      {wsDocs?.[wsDocsData]?.map((document, index) => {
+      {wsDocs?.[wsDocsData]
+        ?.filter((document) => document?.code !== "OWNER.APPLICANTPHOTO" && !document?.code?.includes("APPLICANTPHOTO") && !document?.code?.includes("PHOTO"))
+        ?.map((document, index) => {
         let modifiedDocument = { ...document };
         const isOther = isOtherDocument(document?.code);
         if (isOtherDocument(modifiedDocument.code)) {
@@ -734,10 +739,12 @@ function EmployeeIdDocumentUpload({ t, documents, setDocuments, formData, formSe
     >
       <div style={{ display: "flex", flexDirection: "column", gap: "8px", gridColumn: "span 1" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <CardLabel style={{ margin: 0 }}>
-            {t("WS_UPLOAD_EMPLOYEE_ID_DOC") || t("Upload Employee ID Document")}
-            <span className="check-page-link-button">*</span>
-          </CardLabel>
+          <FieldLabelWithTooltip
+            style={{ margin: 0 }}
+            label={t("WS_UPLOAD_EMPLOYEE_ID_DOC") || t("Upload Employee ID Document")}
+            isMandatory={true}
+            infoText={t("WS_EMPLOYEE_ID_DOC_INFO_MSG", "Upload DJB Employee ID Card")}
+          />
         </div>
         <div style={{ fontSize: "12px", color: "#555", marginTop: "-2px", marginBottom: "4px" }}>{specs.uiMessage}</div>
         <div className="field" style={{ display: "flex", gap: "10px", alignItems: "flex-start", width: "100%" }}>
@@ -1362,10 +1369,12 @@ function SelectDocument({
     >
       {doc?.hasDropdown && !isApplicantPhoto && Array.isArray(dropDownData) && dropDownData.length > 0 ? (
         <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-          <CardLabel style={{ margin: 0 }}>
-            {t(doc?.i18nKey)}
-            {(doc?.required || (!isTenant && isOther && (isRwhMandatory || isStpMandatory))) && <span className="check-page-link-button">*</span>}
-          </CardLabel>{" "}
+          <FieldLabelWithTooltip
+            style={{ margin: 0 }}
+            label={t(doc?.i18nKey)}
+            isMandatory={doc?.required || (!isTenant && isOther && (isRwhMandatory || isStpMandatory))}
+            infoText={t(`${doc?.i18nKey?.replaceAll(".", "_")}_INFO_MSG`, `Select ${t(doc?.i18nKey)}`)}
+          />{" "}
           {!isTenant && isOther && isRwhMandatory && !hasRwhUploaded && !(uploadedFile && isRwhDocType(selectedDocument)) && (
             <div style={{ fontSize: "12px", color: "#d32f2f", marginTop: "-4px" }}>
               * {t("WS_RWH_CERTIFICATE_MANDATORY_MSG") || "Rain Water Harvesting Certificate is mandatory to upload."}
@@ -1409,14 +1418,22 @@ function SelectDocument({
 
       {doc?.code !== "OWNER.APPLICANTPHOTO" && (
         <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-          <CardLabel style={{ margin: 0 }}>
-            {isOtherDocumentsRemark
-              ? !t("WS_OTHER_DOCUMENT_REMARK") || t("WS_OTHER_DOCUMENT_REMARK") === "WS_OTHER_DOCUMENT_REMARK"
-                ? "Other Document Remark"
-                : t("WS_OTHER_DOCUMENT_REMARK")
-              : t(`${doc?.i18nKey?.replaceAll(".", "_")}_DOCUMENT_NO`)}
-            {isDocNumberMandatory && <span className="check-page-link-button"> *</span>}
-          </CardLabel>
+          <FieldLabelWithTooltip
+            style={{ margin: 0 }}
+            label={
+              isOtherDocumentsRemark
+                ? !t("WS_OTHER_DOCUMENT_REMARK") || t("WS_OTHER_DOCUMENT_REMARK") === "WS_OTHER_DOCUMENT_REMARK"
+                  ? "Other Document Remark"
+                  : t("WS_OTHER_DOCUMENT_REMARK")
+                : t(`${doc?.i18nKey?.replaceAll(".", "_")}_DOCUMENT_NO`)
+            }
+            isMandatory={isDocNumberMandatory}
+            infoText={
+              isOtherDocumentsRemark
+                ? t("WS_OTHER_DOC_REMARK_INFO_MSG", "Enter Other Document Remark")
+                : t(`${doc?.i18nKey?.replaceAll(".", "_")}_DOC_NO_INFO_MSG`, `Enter ${t(`${doc?.i18nKey?.replaceAll(".", "_")}_DOCUMENT_NO`)}`)
+            }
+          />
           <div className="field">
             <TextInput
               type="text"
@@ -1514,14 +1531,22 @@ function SelectDocument({
 
       <div style={{ display: "flex", flexDirection: "column", gap: "8px", gridColumn: "span 1" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <CardLabel style={{ margin: 0 }}>
-            {doc?.code === "OWNER.APPLICANTPHOTO"
-              ? !t("WS_UPLOAD_APPLICANT_PHOTO") || t("WS_UPLOAD_APPLICANT_PHOTO") === "WS_UPLOAD_APPLICANT_PHOTO"
-                ? doc?.description || "Upload Applicant Photo"
-                : t("WS_UPLOAD_APPLICANT_PHOTO")
-              : t(`${doc?.i18nKey?.replaceAll(".", "_")}_UPLOAD_DOCUMENT`)}
-            {doc?.required && <span className="check-page-link-button">*</span>}
-          </CardLabel>
+          <FieldLabelWithTooltip
+            style={{ margin: 0 }}
+            label={
+              doc?.code === "OWNER.APPLICANTPHOTO"
+                ? !t("WS_UPLOAD_APPLICANT_PHOTO") || t("WS_UPLOAD_APPLICANT_PHOTO") === "WS_UPLOAD_APPLICANT_PHOTO"
+                  ? doc?.description || "Upload Applicant Photo"
+                  : t("WS_UPLOAD_APPLICANT_PHOTO")
+                : t(`${doc?.i18nKey?.replaceAll(".", "_")}_UPLOAD_DOCUMENT`)
+            }
+            isMandatory={doc?.required}
+            infoText={
+              doc?.code === "OWNER.APPLICANTPHOTO"
+                ? t("WS_UPLOAD_APPLICANT_PHOTO_INFO_MSG", "Upload recent passport size photo of applicant")
+                : t(`${doc?.i18nKey?.replaceAll(".", "_")}_UPLOAD_INFO_MSG`, `Upload ${t(`${doc?.i18nKey?.replaceAll(".", "_")}_UPLOAD_DOCUMENT`)}`)
+            }
+          />
         </div>
         <div style={{ fontSize: "12px", color: "#555", marginTop: "-2px", marginBottom: "4px" }}>{specs.uiMessage}</div>
         <div className="field" style={{ display: "flex", gap: "10px", alignItems: "flex-start", width: "100%" }}>
@@ -1730,11 +1755,16 @@ function SelectDocument({
 
       {doc?.code === "OWNER.APPLICANTPHOTO" && (
         <div style={{ display: "flex", flexDirection: "column", gap: "8px", gridColumn: "span 1" }}>
-          <CardLabel style={{ margin: 0 }}>
-            {!t("WS_CLICK_APPLICANT_PHOTO") || t("WS_CLICK_APPLICANT_PHOTO") === "WS_CLICK_APPLICANT_PHOTO"
-              ? "Click Applicant Photo"
-              : t("WS_CLICK_APPLICANT_PHOTO")}
-          </CardLabel>
+          <FieldLabelWithTooltip
+            style={{ margin: 0 }}
+            label={
+              !t("WS_CLICK_APPLICANT_PHOTO") || t("WS_CLICK_APPLICANT_PHOTO") === "WS_CLICK_APPLICANT_PHOTO"
+                ? "Click Applicant Photo"
+                : t("WS_CLICK_APPLICANT_PHOTO")
+            }
+            isMandatory={false}
+            infoText={t("WS_CLICK_APPLICANT_PHOTO_INFO_MSG", "Click photo directly using device camera")}
+          />
           <div style={{ display: "flex", alignItems: "center", gap: "20px", height: "100%" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
               <button

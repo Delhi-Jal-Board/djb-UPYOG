@@ -9,6 +9,7 @@ import {
   TextInput,
   WrapUnMaskComponent,
   FormStep,
+  FieldLabelWithTooltip,
 } from "@djb25/digit-ui-react-components";
 import Timeline from "../components/Timeline";
 import _ from "lodash";
@@ -474,9 +475,11 @@ const ConnectionDetails = (_props) => {
         <div className="formcomposer-section-grid">
           <div>
             <LabelFieldPair>
-              <CardLabel>
-                {`${t("WS_OWN_DETAIL_NAME")}`} <span className="check-page-link-button">*</span>
-              </CardLabel>
+              <FieldLabelWithTooltip
+                label={t("WS_OWN_DETAIL_NAME")}
+                isMandatory={true}
+                infoText={t("CORE_COMMON_FIRST_NAME_INFO_MSG", "Enter First Name")}
+              />
               <Controller
                 control={control}
                 name="name"
@@ -544,7 +547,11 @@ const ConnectionDetails = (_props) => {
           </div>
           <div>
             <LabelFieldPair>
-              <CardLabel>{`${t("WS_OWN_DETAIL_MIDDLE_NAME")}`}</CardLabel>
+              <FieldLabelWithTooltip
+                label={t("WS_OWN_DETAIL_MIDDLE_NAME")}
+                isMandatory={false}
+                infoText={t("CORE_COMMON_MIDDLE_NAME_INFO_MSG", "Enter Middle Name (Optional)")}
+              />
               <Controller
                 control={control}
                 name="middleName"
@@ -582,7 +589,11 @@ const ConnectionDetails = (_props) => {
           </div>
           <div>
             <LabelFieldPair>
-              <CardLabel>{`${t("WS_OWN_DETAIL_LAST_NAME")}`}</CardLabel>
+              <FieldLabelWithTooltip
+                label={t("WS_OWN_DETAIL_LAST_NAME")}
+                isMandatory={false}
+                infoText={t("CORE_COMMON_LAST_NAME_INFO_MSG", "Enter Last Name")}
+              />
               <Controller
                 control={control}
                 name="lastName"
@@ -620,9 +631,11 @@ const ConnectionDetails = (_props) => {
           </div>
           <div>
             <LabelFieldPair>
-              <CardLabel>
-                {`${t("WS_CONN_HOLDER_OWN_DETAIL_GENDER_LABEL")}`} <span className="check-page-link-button">*</span>
-              </CardLabel>
+              <FieldLabelWithTooltip
+                label={t("WS_CONN_HOLDER_OWN_DETAIL_GENDER_LABEL")}
+                isMandatory={true}
+                infoText={t("WS_GENDER_INFO_MSG", "Select Gender")}
+              />
               <div className="field">
                 <Controller
                   control={control}
@@ -816,9 +829,11 @@ const ConnectionDetails = (_props) => {
           </div> */}
           <div>
             <LabelFieldPair>
-              <CardLabel>
-                {`${t("CORE_COMMON_MOBILE_NUMBER")}`} <span className="check-page-link-button">*</span>
-              </CardLabel>
+              <FieldLabelWithTooltip
+                label={t("CORE_COMMON_MOBILE_NUMBER")}
+                isMandatory={true}
+                infoText={t("PT_MOBILE_NUMBER_INFO_MSG", "Enter 10 digit Mobile Number")}
+              />
               <div className="field">
                 <Controller
                   control={control}
@@ -902,10 +917,11 @@ const ConnectionDetails = (_props) => {
           </div>
           <div>
             <LabelFieldPair>
-              <CardLabel>
-                {`${t("CORE_COMMON_WHATSAPP_MOBILE_NUMBER")}`}
-                <span className="check-page-link-button">*</span>
-              </CardLabel>
+              <FieldLabelWithTooltip
+                label={t("CORE_COMMON_WHATSAPP_MOBILE_NUMBER")}
+                isMandatory={true}
+                infoText={t("WS_WHATSAPP_MOBILE_NUMBER_INFO_MSG", "Enter 10 digit WhatsApp or Alternate Mobile Number")}
+              />
               <div className="field">
                 <Controller
                   control={control}
@@ -1016,7 +1032,11 @@ const ConnectionDetails = (_props) => {
           </div>
           <div>
             <LabelFieldPair>
-              <CardLabel>{`${t("WS_EMAIL_ID")}`}</CardLabel>
+              <FieldLabelWithTooltip
+                label={t("WS_EMAIL_ID")}
+                isMandatory={false}
+                infoText={t("CORE_COMMON_EMAIL_INFO_MSG", "Enter Email Address")}
+              />
               <div className="field">
                 <Controller
                   control={control}
