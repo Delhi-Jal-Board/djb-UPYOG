@@ -45,7 +45,10 @@ const getDocumentDisplayName = (docItem, code, t) => {
   if (fullStr.includes("NOC_FROM_OWNER") || fullStr.includes("NOC FROM OWNER")) return t("WS_DOCUMENT_NOC_OWNER") && t("WS_DOCUMENT_NOC_OWNER") !== "WS_DOCUMENT_NOC_OWNER" ? t("WS_DOCUMENT_NOC_OWNER") : "NOC from Owner";
   if (fullStr.includes("NOC_FROM_MCD") || fullStr.includes("NOC FROM MCD")) return t("WS_DOCUMENT_NOC_MCD") && t("WS_DOCUMENT_NOC_MCD") !== "WS_DOCUMENT_NOC_MCD" ? t("WS_DOCUMENT_NOC_MCD") : "NOC from MCD";
   if (fullStr.includes("NOC_FROM_DPCC") || fullStr.includes("NOC FROM DPCC")) return t("WS_DOCUMENT_NOC_DPCC") && t("WS_DOCUMENT_NOC_DPCC") !== "WS_DOCUMENT_NOC_DPCC" ? t("WS_DOCUMENT_NOC_DPCC") : "NOC from DPCC";
+  if (fullStr.includes("SEWER") || fullStr.includes("STP")) return t("WS_SEWER_TREATMENT_PLANT_CERTIFICATE") && t("WS_SEWER_TREATMENT_PLANT_CERTIFICATE") !== "WS_SEWER_TREATMENT_PLANT_CERTIFICATE" ? t("WS_SEWER_TREATMENT_PLANT_CERTIFICATE") : "Sewer Treatment Plant (STP) Certificate";
   if (fullStr.includes("RAIN") || fullStr.includes("HARVEST")) return t("WS_RAIN_WATER_HARVESTING_CERTIFICATE") && t("WS_RAIN_WATER_HARVESTING_CERTIFICATE") !== "WS_RAIN_WATER_HARVESTING_CERTIFICATE" ? t("WS_RAIN_WATER_HARVESTING_CERTIFICATE") : "Rain Water Harvesting Certificate";
+  if (fullStr.includes("METER_PHOTO") || fullStr.includes("METER PHOTO")) return t("WS_METER_PHOTO_UPLOAD_LABEL") && t("WS_METER_PHOTO_UPLOAD_LABEL") !== "WS_METER_PHOTO_UPLOAD_LABEL" ? t("WS_METER_PHOTO_UPLOAD_LABEL") : "Meter Photo";
+  if (fullStr.includes("METER_WARRANTY") || fullStr.includes("WARRANTY")) return t("WS_METER_WARRANTY_REPORT_INVOICE_LABEL") && t("WS_METER_WARRANTY_REPORT_INVOICE_LABEL") !== "WS_METER_WARRANTY_REPORT_INVOICE_LABEL" ? t("WS_METER_WARRANTY_REPORT_INVOICE_LABEL") : "Meter Warranty Card, Testing Report, Invoice";
   if (fullStr.includes("APPLICANTPHOTO") || fullStr.includes("PHOTO")) return t("WS_DOCUMENT_APPLICANT_PHOTO") && t("WS_DOCUMENT_APPLICANT_PHOTO") !== "WS_DOCUMENT_APPLICANT_PHOTO" ? t("WS_DOCUMENT_APPLICANT_PHOTO") : "Applicant Photo";
   if (fullStr.includes("SIGNATURE")) return t("WS_DOCUMENT_SIGNATURE") && t("WS_DOCUMENT_SIGNATURE") !== "WS_DOCUMENT_SIGNATURE" ? t("WS_DOCUMENT_SIGNATURE") : "Signature";
   if (fullStr.includes("DJB_EMPLOYEE")) return t("WS_DOCUMENT_DJB_EMPLOYEE") && t("WS_DOCUMENT_DJB_EMPLOYEE") !== "WS_DOCUMENT_DJB_EMPLOYEE" ? t("WS_DOCUMENT_DJB_EMPLOYEE") : "DJB Employee ID";
@@ -109,7 +112,17 @@ const isInvalidDocNum = (val, doc) => {
 
 const getDocNumber = (document, isPhotoOrSig, t) => {
   if (isPhotoOrSig) return "";
-  const candidates = [document?.documentNumber, document?.documentUid];
+  const isStp = (document?.documentType || "").toUpperCase().includes("SEWER") || (document?.documentType || "").toUpperCase().includes("STP");
+  const candidates = [
+    document?.documentNumber,
+    document?.documentUid,
+    document?.additionalDetails?.documentNumber,
+    document?.additionalDetails?.documentUid,
+    document?.additionalDetails?.otherDocumentNumber,
+    document?.additionalDetails?.otherDocumentRemark,
+    isStp ? document?.additionalDetails?.otherDocumentNumber : null,
+    isStp ? document?.additionalDetails?.otherDocumentRemark : null,
+  ];
   for (const c of candidates) {
     if (c && !isInvalidDocNum(c, document)) {
       return String(c).trim();

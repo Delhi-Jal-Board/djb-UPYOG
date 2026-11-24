@@ -18,7 +18,11 @@ function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false, 
       document?.values?.forEach(value => {
         if (!value.isPhoto) {
           requiredDocsCount++;
-          const isChecked = checkedMap[value?.fileStoreId] ?? value?.isVerified ?? value?.originalDoc?.isVerified ?? false;
+          const defaultChecked =
+            applicationStatus === "PENDING_FOR_CONNECTION_ACTIVATION" ||
+            applicationStatus === "PENDING_FOR_DEALING_ASSISTENCE_VERIFICATION" ||
+            applicationStatus === "PENDING_FOR_DEALING_ASSISTANT_VERIFICATION";
+          const isChecked = checkedMap[value?.fileStoreId] ?? value?.isVerified ?? value?.originalDoc?.isVerified ?? defaultChecked;
           if (isChecked) {
             checkedCount++;
           }
@@ -31,7 +35,10 @@ function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false, 
       !applicationStatus || 
       applicationStatus === "PENDING_FOR_DOCUMENT_VERIFICATION" || 
       applicationStatus === "PENDING_APPROVAL_FOR_MUTATION" ||
-      applicationStatus === "PENDING_FOR_ZRO_APPROVAL" || applicationStatus === "PENDING_FOR_CITIZEN_ACTION";
+      applicationStatus === "PENDING_FOR_ZRO_APPROVAL" ||
+      applicationStatus === "PENDING_FOR_CITIZEN_ACTION" ||
+      applicationStatus === "PENDING_FOR_DEALING_ASSISTENCE_VERIFICATION" ||
+      applicationStatus === "PENDING_FOR_DEALING_ASSISTANT_VERIFICATION";
     const finalVerified = isDocVerifState ? allChecked : true;
 
     window.isDocumentsVerified = finalVerified;
@@ -67,7 +74,10 @@ function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false, 
     "PENDING_APPROVAL_FOR_MUTATION",
     "PENDING_FOR_ZRO_APPROVAL",
     "PENDING_FOR_CONNECTION_ACTIVATION",
-    "PENDING_FOR_CITIZEN_ACTION"
+    "PENDING_FOR_CITIZEN_ACTION",
+    "PENDING_FOR_DEALING_ASSISTENCE_VERIFICATION",
+    "PENDING_FOR_DEALING_ASSISTANT_VERIFICATION",
+    "PENDING_FOR_JE_VERIFICATION",
   ].includes(applicationStatus);
 
   const getDocSubType = (documentType) => {
@@ -218,6 +228,12 @@ function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false, 
       uploadLabel = "Upload Other Documents*";
     } else if (value.title === "WS_APPLICANT_PHOTO") {
       uploadLabel = "Upload Applicant Photo*";
+    } else if (value.title === "WS_METER_PHOTO_UPLOAD_LABEL" || value?.documentType?.includes("METER_PHOTO")) {
+      uploadLabel = "Upload Meter Photo*";
+    } else if (value.title === "WS_METER_WARRANTY_REPORT_INVOICE_LABEL" || value?.documentType?.includes("METER_WARRANTY")) {
+      typeLabel = "Meter Warranty Card, Testing Report, Invoice*";
+      numLabel = "";
+      uploadLabel = "Upload Document*";
     } else if (value.title === "WS_APPLICANT_SIGNATURE") {
       uploadLabel = "Upload Signature*";
     } else {
@@ -289,7 +305,13 @@ function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false, 
                             className="verify-doc-checkbox"
                             style={{ width: "18px", height: "18px", accentColor: "#1a67a3", cursor: (applicationStatus === "PENDING_FOR_CONNECTION_ACTIVATION" || window.location.href.includes("citizen")) ? "not-allowed" : "pointer" }}
                             disabled={applicationStatus === "PENDING_FOR_CONNECTION_ACTIVATION" || window.location.href.includes("citizen")}
-                            checked={applicationStatus === "PENDING_FOR_CONNECTION_ACTIVATION" ? true : (checkedMap[value?.fileStoreId] ?? value?.isVerified ?? value?.originalDoc?.isVerified ?? false)}
+                            checked={
+                              (applicationStatus === "PENDING_FOR_CONNECTION_ACTIVATION" ||
+                               applicationStatus === "PENDING_FOR_DEALING_ASSISTENCE_VERIFICATION" ||
+                               applicationStatus === "PENDING_FOR_DEALING_ASSISTANT_VERIFICATION")
+                                ? (checkedMap[value?.fileStoreId] ?? value?.isVerified ?? value?.originalDoc?.isVerified ?? true)
+                                : (checkedMap[value?.fileStoreId] ?? value?.isVerified ?? value?.originalDoc?.isVerified ?? false)
+                            }
                             onChange={(e) => {
                               const checked = e.target.checked;
                               value.isVerified = checked;

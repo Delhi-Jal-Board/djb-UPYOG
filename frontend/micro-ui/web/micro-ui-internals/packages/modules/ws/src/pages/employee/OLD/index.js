@@ -140,8 +140,8 @@ const OLDApplication = () => {
       "WSDivyangjan",
       "WSDjbEmployee",
       "WSRainWaterHarvesting",
+      "WSSewerTreatmentPlant",
       "WSBankDetails",
-      // "WSSewerTreatmentPlant",
       "WSPropertyLocationDetails",
       "PropertyWaterConnection",
       "WSActivationPlumberDetails",
@@ -241,21 +241,21 @@ const OLDApplication = () => {
             },
           ],
         });
-      // } else if (compName === "WSSewerTreatmentPlant") {
-      //   reorderedBody.push({
-      //     isCreateConnection: true,
-      //     body: [
-      //       {
-      //         type: "component",
-      //         key: "sewerTreatmentPlant",
-      //         component: "WSSewerTreatmentPlant",
-      //         withoutLabel: true,
-      //         texts: {
-      //           header: "Sewer Treatment Plant (STP)",
-      //         },
-      //       },
-      //     ],
-      //   });
+      } else if (compName === "WSSewerTreatmentPlant") {
+        reorderedBody.push({
+          isCreateConnection: true,
+          body: [
+            {
+              type: "component",
+              key: "sewerTreatmentPlant",
+              component: "WSSewerTreatmentPlant",
+              withoutLabel: true,
+              texts: {
+                header: "Sewer Treatment Plant (STP)",
+              },
+            },
+          ],
+        });
       } else if (compName === "WSBankDetails") {
         reorderedBody.push({
           isCreateConnection: true,
@@ -495,11 +495,20 @@ const OLDApplication = () => {
     }
 
     const rwhSubmitData = combinedData?.rainWaterHarvesting || combinedData?.additionalDetails;
-    const isRwhSubmitRequired =
+    const isRwhYes =
       rwhSubmitData?.hasCertificate === true ||
       String(rwhSubmitData?.hasCertificate) === "true" ||
       rwhSubmitData?.isRainwaterHarvesting === true ||
       String(rwhSubmitData?.isRainwaterHarvesting) === "true";
+    const isRwhAdequacyYes =
+      rwhSubmitData?.hasAdequacyCertificate === true ||
+      String(rwhSubmitData?.hasAdequacyCertificate) === "true" ||
+      rwhSubmitData?.hasRainWaterHarvestingAdequacyCertificate === true ||
+      String(rwhSubmitData?.hasRainWaterHarvestingAdequacyCertificate) === "true" ||
+      rwhSubmitData?.applyForAdequacyCertificate === true ||
+      String(rwhSubmitData?.applyForAdequacyCertificate) === "true";
+
+    const isRwhSubmitRequired = isRwhYes && isRwhAdequacyYes;
 
     const isRwhSubmitDocUploaded = Array.isArray(allSubmitDocs) && allSubmitDocs.some((d) => isRwhDoc(d) && (d?.fileStoreId || d?.file));
 
@@ -509,6 +518,46 @@ const OLDApplication = () => {
         message: t("ERR_RWH_CERTIFICATE_MANDATORY") || "Rain Water Harvesting Certificate is mandatory to upload",
       });
       return;
+    }
+
+    const stpSubmitData = combinedData?.sewerTreatmentPlant || combinedData?.additionalDetails;
+    const isStpYes =
+      stpSubmitData?.hasCertificate === true ||
+      String(stpSubmitData?.hasCertificate) === "true" ||
+      stpSubmitData?.hasStp === true ||
+      String(stpSubmitData?.hasStp) === "true" ||
+      stpSubmitData?.isSewerTreatmentPlant === true ||
+      String(stpSubmitData?.isSewerTreatmentPlant) === "true";
+    const isStpAdequacyYes =
+      stpSubmitData?.hasAdequacyCertificate === true ||
+      String(stpSubmitData?.hasAdequacyCertificate) === "true" ||
+      stpSubmitData?.hasStpAdequacyCertificate === true ||
+      String(stpSubmitData?.hasStpAdequacyCertificate) === "true" ||
+      stpSubmitData?.hasSewerTreatmentPlantAdequacyCertificate === true ||
+      String(stpSubmitData?.hasSewerTreatmentPlantAdequacyCertificate) === "true" ||
+      stpSubmitData?.applyForAdequacyCertificate === true ||
+      String(stpSubmitData?.applyForAdequacyCertificate) === "true" ||
+      stpSubmitData?.applyForStpAdequacyCertificate === true ||
+      String(stpSubmitData?.applyForStpAdequacyCertificate) === "true";
+
+    const isStpSubmitRequired = isStpYes && isStpAdequacyYes;
+    const stpDoc = Array.isArray(allSubmitDocs) ? allSubmitDocs.find((d) => isStpDoc(d) && (d?.fileStoreId || d?.file)) : null;
+
+    if (isStpSubmitRequired) {
+      if (!stpDoc) {
+        setShowToast({
+          key: "error",
+          message: t("ERR_STP_CERTIFICATE_MANDATORY") || "Sewer Treatment Plant (STP) Certificate is mandatory to upload",
+        });
+        return;
+      }
+      if (!stpDoc?.validityDate && !stpDoc?.validityUpTo && !stpDoc?.additionalDetails?.validityDate) {
+        setShowToast({
+          key: "error",
+          message: t("ERR_STP_VALIDITY_DATE_MANDATORY") || "Validity up to date is mandatory for Sewer Treatment Plant (STP) Certificate",
+        });
+        return;
+      }
     }
 
     if (djbDoc) {
@@ -772,11 +821,16 @@ const OLDApplication = () => {
       extractedValDate;
 
     if (data?.rainWaterHarvesting) {
+      const isRwh = !!(data?.rainWaterHarvesting?.hasCertificate || data?.rainWaterHarvesting?.isRainwaterHarvesting);
+      const isAdequacy = isRwh && !!(data?.rainWaterHarvesting?.hasAdequacyCertificate || data?.rainWaterHarvesting?.hasRainWaterHarvestingAdequacyCertificate || data?.rainWaterHarvesting?.applyForAdequacyCertificate);
       data.additionalDetails = {
         ...data.additionalDetails,
         ...data.rainWaterHarvesting,
-        hasRainWaterHarvestingCertificate: !!(data?.rainWaterHarvesting?.hasCertificate || data?.rainWaterHarvesting?.isRainwaterHarvesting),
-        isRainwaterHarvesting: !!(data?.rainWaterHarvesting?.hasCertificate || data?.rainWaterHarvesting?.isRainwaterHarvesting),
+        hasRainWaterHarvestingCertificate: isRwh,
+        isRainwaterHarvesting: isRwh,
+        hasAdequacyCertificate: isAdequacy,
+        hasRainWaterHarvestingAdequacyCertificate: isAdequacy,
+        applyForAdequacyCertificate: isAdequacy,
         validityDate: extractedRwhDate || undefined,
         validityUpTo: extractedRwhDate || undefined,
         date: extractedRwhDate || undefined,
@@ -790,12 +844,19 @@ const OLDApplication = () => {
     }
 
     if (data?.sewerTreatmentPlant) {
+      const isStp = !!(data?.sewerTreatmentPlant?.hasCertificate || data?.sewerTreatmentPlant?.hasStp || data?.sewerTreatmentPlant?.isSewerTreatmentPlant);
+      const isAdequacy = isStp && !!(data?.sewerTreatmentPlant?.hasAdequacyCertificate || data?.sewerTreatmentPlant?.hasStpAdequacyCertificate || data?.sewerTreatmentPlant?.hasSewerTreatmentPlantAdequacyCertificate || data?.sewerTreatmentPlant?.applyForAdequacyCertificate || data?.sewerTreatmentPlant?.applyForStpAdequacyCertificate);
       data.additionalDetails = {
         ...data.additionalDetails,
         ...data.sewerTreatmentPlant,
-        hasSewerTreatmentPlant: !!(data?.sewerTreatmentPlant?.hasCertificate || data?.sewerTreatmentPlant?.hasStp || data?.sewerTreatmentPlant?.isSewerTreatmentPlant),
-        isSewerTreatmentPlant: !!(data?.sewerTreatmentPlant?.hasCertificate || data?.sewerTreatmentPlant?.hasStp || data?.sewerTreatmentPlant?.isSewerTreatmentPlant),
-        hasStp: !!(data?.sewerTreatmentPlant?.hasCertificate || data?.sewerTreatmentPlant?.hasStp || data?.sewerTreatmentPlant?.isSewerTreatmentPlant),
+        hasSewerTreatmentPlant: isStp,
+        isSewerTreatmentPlant: isStp,
+        hasStp: isStp,
+        hasAdequacyCertificate: isAdequacy,
+        hasStpAdequacyCertificate: isAdequacy,
+        hasSewerTreatmentPlantAdequacyCertificate: isAdequacy,
+        applyForAdequacyCertificate: isAdequacy,
+        applyForStpAdequacyCertificate: isAdequacy,
         validityDate: extractedStpDate || undefined,
         validityUpTo: extractedStpDate || undefined,
         date: extractedStpDate || undefined,

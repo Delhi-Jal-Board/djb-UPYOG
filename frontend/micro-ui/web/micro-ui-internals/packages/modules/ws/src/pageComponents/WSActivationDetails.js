@@ -16,34 +16,7 @@ const METER_MAKES = [
   { name: "Other", code: "OTHER", i18nKey: "WS_METER_MAKE_OTHER" },
 ];
 
-const METER_SIZES = [
-  { name: '15 mm (1/2")', code: "15_MM", value: "15 mm" },
-  { name: '20 mm (3/4")', code: "20_MM", value: "20 mm" },
-  { name: '25 mm (1")', code: "25_MM", value: "25 mm" },
-  { name: '40 mm (1.5")', code: "40_MM", value: "40 mm" },
-  { name: '50 mm (2")', code: "50_MM", value: "50 mm" },
-  { name: '80 mm (3")', code: "80_MM", value: "80 mm" },
-  { name: '100 mm (4")', code: "100_MM", value: "100 mm" },
-  { name: '150 mm (6")', code: "150_MM", value: "150 mm" },
-];
-
-const FERRULE_SIZES = [
-  { name: "10 mm", code: "10_MM", value: "10 mm" },
-  { name: "12 mm", code: "12_MM", value: "12 mm" },
-  { name: "15 mm", code: "15_MM", value: "15 mm" },
-  { name: "20 mm", code: "20_MM", value: "20 mm" },
-  { name: "25 mm", code: "25_MM", value: "25 mm" },
-  { name: "32 mm", code: "32_MM", value: "32 mm" },
-  { name: "40 mm", code: "40_MM", value: "40 mm" },
-  { name: "50 mm", code: "50_MM", value: "50 mm" },
-];
-
 const WSActivationDetails = ({ t, config, userType, formData, onSelect }) => {
-  const getTrans = (key, defaultVal) => {
-    const val = t(key);
-    return val && val !== key ? val : defaultVal;
-  };
-
   const initialData = Array.isArray(formData?.activationDetails) ? formData?.activationDetails?.[0] : formData?.activationDetails || {};
   const appData =
     formData?.formDetails?.applicationData ||
@@ -75,7 +48,14 @@ const WSActivationDetails = ({ t, config, userType, formData, onSelect }) => {
     meterSize: findMeterSize(initialData?.meterSize || appData?.additionalDetails?.meterSize),
     ferruleSize: findFerruleSize(initialData?.ferruleSize || appData?.additionalDetails?.ferruleSize),
     meterInstallationDate: initialData?.meterInstallationDate || appData?.meterInstallationDate || "",
-    meterInitialReading: initialData?.meterInitialReading || appData?.additionalDetails?.initialMeterReading || "0",
+    meterInitialReading:
+      initialData?.meterInitialReading !== undefined && initialData?.meterInitialReading !== null && initialData?.meterInitialReading !== "null"
+        ? initialData.meterInitialReading
+        : appData?.additionalDetails?.initialMeterReading !== undefined &&
+          appData?.additionalDetails?.initialMeterReading !== null &&
+          appData?.additionalDetails?.initialMeterReading !== "null"
+        ? appData.additionalDetails.initialMeterReading
+        : "0",
     connectionExecutionDate: initialData?.connectionExecutionDate || appData?.connectionExecutionDate || "",
   });
 
@@ -90,7 +70,13 @@ const WSActivationDetails = ({ t, config, userType, formData, onSelect }) => {
           meterSize: actData.meterSize !== undefined ? findMeterSize(actData.meterSize) : prev.meterSize,
           ferruleSize: actData.ferruleSize !== undefined ? findFerruleSize(actData.ferruleSize) : prev.ferruleSize,
           meterInstallationDate: actData.meterInstallationDate !== undefined ? actData.meterInstallationDate : prev.meterInstallationDate,
-          meterInitialReading: actData.meterInitialReading !== undefined && actData.meterInitialReading !== "" ? actData.meterInitialReading : prev.meterInitialReading,
+          meterInitialReading:
+            actData.meterInitialReading !== undefined &&
+            actData.meterInitialReading !== null &&
+            actData.meterInitialReading !== "" &&
+            actData.meterInitialReading !== "null"
+              ? actData.meterInitialReading
+              : prev.meterInitialReading || "0",
           connectionExecutionDate: actData.connectionExecutionDate !== undefined ? actData.connectionExecutionDate : prev.connectionExecutionDate,
         };
         if (_.isEqual(prev, nextState)) {
@@ -113,9 +99,9 @@ const WSActivationDetails = ({ t, config, userType, formData, onSelect }) => {
       <LabelFieldPair>
         <FieldLabelWithTooltip
           style={{ margin: 0 }}
-          label={getTrans("WS_METER_MAKE_LABEL", "Meter make/brand name")}
+          label={t("WS_METER_MAKE_LABEL")}
           isMandatory={true}
-          infoText={t("WS_METER_MAKE_INFO_MSG", "Select approved meter manufacturer or brand name")}
+          infoText={t("WS_METER_MAKE_INFO_MSG")}
         />
         <div className="field">
           <Dropdown
@@ -123,7 +109,7 @@ const WSActivationDetails = ({ t, config, userType, formData, onSelect }) => {
             selected={activationDetails.meterMake}
             disable={false}
             option={METER_MAKES}
-            placeholder={getTrans("WS_METER_MAKE_PLACEHOLDER", "Select approved meter name")}
+            placeholder={t("WS_METER_MAKE_PLACEHOLDER")}
             select={(val) => {
               setActivationDetails({ ...activationDetails, meterMake: val });
             }}
@@ -137,9 +123,9 @@ const WSActivationDetails = ({ t, config, userType, formData, onSelect }) => {
       <LabelFieldPair>
         <FieldLabelWithTooltip
           style={{ margin: 0 }}
-          label={getTrans("WS_METER_NO_LABEL", "Meter No")}
+          label={t("WS_METER_NO_LABEL")}
           isMandatory={true}
-          infoText={t("WS_METER_NO_INFO_MSG", "Enter Serial Number or Meter No engraved on the meter")}
+          infoText={t("WS_METER_NO_INFO_MSG")}
         />
         <div className="field">
           <TextInput
@@ -147,7 +133,7 @@ const WSActivationDetails = ({ t, config, userType, formData, onSelect }) => {
             type="text"
             name="meterNo"
             value={activationDetails.meterNo}
-            placeholder={getTrans("WS_METER_NO_PLACEHOLDER", "Enter Meter No")}
+            placeholder={t("WS_METER_NO_PLACEHOLDER")}
             onChange={(ev) => {
               const val = ev.target.value;
               setActivationDetails({ ...activationDetails, meterNo: val, meterId: val });
@@ -160,9 +146,9 @@ const WSActivationDetails = ({ t, config, userType, formData, onSelect }) => {
       <LabelFieldPair>
         <FieldLabelWithTooltip
           style={{ margin: 0 }}
-          label={getTrans("WS_METER_SIZE_LABEL", "Meter Size")}
+          label={t("WS_METER_SIZE_LABEL")}
           isMandatory={true}
-          infoText={t("WS_METER_SIZE_INFO_MSG", "Enter diameter / size of the water meter")}
+          infoText={t("WS_METER_SIZE_INFO_MSG")}
         />
         <div className="field">
           <TextInput
@@ -170,7 +156,7 @@ const WSActivationDetails = ({ t, config, userType, formData, onSelect }) => {
             type="text"
             name="meterSize"
             value={typeof activationDetails.meterSize === "object" ? (activationDetails.meterSize?.name || activationDetails.meterSize?.value || "") : (activationDetails.meterSize || "")}
-            placeholder={getTrans("WS_METER_SIZE_PLACEHOLDER", "Enter Meter Size")}
+            placeholder={t("WS_METER_SIZE_PLACEHOLDER")}
             onChange={(ev) => {
               const val = ev.target.value;
               setActivationDetails({ ...activationDetails, meterSize: val });
@@ -183,9 +169,9 @@ const WSActivationDetails = ({ t, config, userType, formData, onSelect }) => {
       <LabelFieldPair>
         <FieldLabelWithTooltip
           style={{ margin: 0 }}
-          label={getTrans("WS_FERRULE_SIZE_LABEL", "Ferrule Size")}
+          label={t("WS_FERRULE_SIZE_LABEL")}
           isMandatory={true}
-          infoText={t("WS_FERRULE_SIZE_INFO_MSG", "Enter size of ferrule connection")}
+          infoText={t("WS_FERRULE_SIZE_INFO_MSG")}
         />
         <div className="field">
           <TextInput
@@ -193,7 +179,7 @@ const WSActivationDetails = ({ t, config, userType, formData, onSelect }) => {
             type="text"
             name="ferruleSize"
             value={typeof activationDetails.ferruleSize === "object" ? (activationDetails.ferruleSize?.name || activationDetails.ferruleSize?.value || "") : (activationDetails.ferruleSize || "")}
-            placeholder={getTrans("WS_FERRULE_SIZE_PLACEHOLDER", "Enter Ferrule Size")}
+            placeholder={t("WS_FERRULE_SIZE_PLACEHOLDER")}
             onChange={(ev) => {
               const val = ev.target.value;
               setActivationDetails({ ...activationDetails, ferruleSize: val });
@@ -206,14 +192,14 @@ const WSActivationDetails = ({ t, config, userType, formData, onSelect }) => {
       <LabelFieldPair>
         <FieldLabelWithTooltip
           style={{ margin: 0 }}
-          label={getTrans("WS_METER_INSTALLATION_DATE", "Meter Installation Date")}
+          label={t("WS_METER_INSTALLATION_DATE")}
           isMandatory={true}
-          infoText={t("WS_METER_INSTALLATION_DATE_INFO_MSG", "Select date when the meter was physically installed")}
+          infoText={t("WS_METER_INSTALLATION_DATE_INFO_MSG")}
         />
         <div className="field">
           <DatePicker
             date={activationDetails.meterInstallationDate}
-            placeholder={getTrans("WS_METER_INSTALLATION_DATE_PLACEHOLDER", "DD/MM/YYYY")}
+            placeholder={t("WS_METER_INSTALLATION_DATE_PLACEHOLDER")}
             onChange={(date) => {
               setActivationDetails({ ...activationDetails, meterInstallationDate: date });
             }}
@@ -225,15 +211,23 @@ const WSActivationDetails = ({ t, config, userType, formData, onSelect }) => {
       <LabelFieldPair>
         <FieldLabelWithTooltip
           style={{ margin: 0 }}
-          label={getTrans("WS_INIT_METER_READING", "Initial Meter Reading")}
+          label={t("WS_INIT_METER_READING")}
           isMandatory={true}
-          infoText={t("WS_INIT_METER_READING_INFO_MSG", "Enter the initial reading shown on the meter dial")}
+          infoText={t("WS_INIT_METER_READING_INFO_MSG")}
         />
         <div className="field">
           <TextInput
             type="text"
-            value={activationDetails.meterInitialReading !== undefined ? activationDetails.meterInitialReading : "0"}
-            placeholder={getTrans("WS_INIT_METER_READING_PLACEHOLDER", "0")}
+            disabled={true}
+            disable={true}
+            value={
+              activationDetails.meterInitialReading !== undefined &&
+              activationDetails.meterInitialReading !== null &&
+              activationDetails.meterInitialReading !== "null"
+                ? activationDetails.meterInitialReading
+                : "0"
+            }
+            placeholder={t("WS_INIT_METER_READING_PLACEHOLDER")}
             onChange={(ev) => {
               setActivationDetails({ ...activationDetails, meterInitialReading: ev.target.value });
             }}
@@ -245,14 +239,14 @@ const WSActivationDetails = ({ t, config, userType, formData, onSelect }) => {
       <LabelFieldPair>
         <FieldLabelWithTooltip
           style={{ margin: 0 }}
-          label={getTrans("WS_CONN_EXEC_DATE", "Connection Date")}
+          label={t("WS_CONN_EXEC_DATE")}
           isMandatory={true}
-          infoText={t("WS_CONN_EXEC_DATE_INFO_MSG", "Select the date when connection was activated/executed")}
+          infoText={t("WS_CONN_EXEC_DATE_INFO_MSG")}
         />
         <div className="field">
           <DatePicker
             date={activationDetails.connectionExecutionDate}
-            placeholder={getTrans("WS_CONN_EXEC_DATE_PLACEHOLDER", "DD/MM/YYYY")}
+            placeholder={t("WS_CONN_EXEC_DATE_PLACEHOLDER")}
             onChange={(date) => {
               setActivationDetails({ ...activationDetails, connectionExecutionDate: date });
             }}

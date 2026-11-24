@@ -216,7 +216,12 @@ const ActivateConnection = () => {
               : defaultFerruleSize
             : "",
           meterInstallationDate: state?.data?.meterInstallationDate ? convertEpochToDates(state?.data?.meterInstallationDate) : null,
-          meterInitialReading: state?.data?.additionalDetails?.initialMeterReading !== undefined ? state?.data?.additionalDetails?.initialMeterReading : "0",
+          meterInitialReading:
+            state?.data?.additionalDetails?.initialMeterReading !== undefined &&
+            state?.data?.additionalDetails?.initialMeterReading !== null &&
+            state?.data?.additionalDetails?.initialMeterReading !== "null"
+              ? state?.data?.additionalDetails?.initialMeterReading
+              : "0",
           connectionExecutionDate: state?.data?.connectionExecutionDate ? convertEpochToDates(state?.data?.connectionExecutionDate) : null,
         },
       ]
@@ -460,7 +465,11 @@ const ActivateConnection = () => {
       const meterNoVal = actObj?.meterNo || actObj?.meterId || "";
       const meterSizeVal = actObj?.meterSize?.name || actObj?.meterSize?.value || actObj?.meterSize || "";
       const ferruleSizeVal = actObj?.ferruleSize?.name || actObj?.ferruleSize?.value || actObj?.ferruleSize || "";
-      const initialReadingVal = actObj?.meterInitialReading !== undefined && actObj?.meterInitialReading !== "" ? String(actObj.meterInitialReading) : "0";
+      const rawReading = actObj?.meterInitialReading;
+      const initialReadingVal =
+        rawReading !== undefined && rawReading !== null && rawReading !== "" && rawReading !== "null"
+          ? (isNaN(Number(rawReading)) ? 0 : Number(rawReading))
+          : 0;
 
       formData.meterId = meterNoVal;
       formData.meterNo = meterNoVal;
@@ -569,7 +578,7 @@ const ActivateConnection = () => {
       }
 
       formData.comment = formDetails?.comments?.comments || "";
-      formData.comments = formDetails?.comments?.comments || "";
+      delete formData.comments;
 
       const isPendingActivation =
         formData?.applicationStatus?.includes("PENDING_FOR_CONNECTION_ACTIVATION") ||
@@ -660,7 +669,12 @@ const ActivateConnection = () => {
         targetConn.meterMake = formData.meterMake;
         targetConn.meterSize = formData.meterSize;
         targetConn.ferruleSize = formData.ferruleSize;
-        targetConn.initialMeterReading = formData.initialMeterReading;
+        targetConn.initialMeterReading =
+          formData.initialMeterReading !== undefined &&
+          formData.initialMeterReading !== null &&
+          formData.initialMeterReading !== "null"
+            ? (isNaN(Number(formData.initialMeterReading)) ? 0 : Number(formData.initialMeterReading))
+            : 0;
         targetConn.meterInstallationDate = formData.meterInstallationDate;
         targetConn.connectionExecutionDate = formData.connectionExecutionDate;
         targetConn.additionalDetails = {

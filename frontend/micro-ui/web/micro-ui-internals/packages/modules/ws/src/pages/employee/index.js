@@ -244,7 +244,7 @@ const BILLSBreadCrumbs = ({ location, showPrint }) => {
     },
     {
       path: "/digit-ui/employee/ws/water/bill-amendment/search-application",
-      label: t("WS_BILL_AMENDMENT_SEARCH_APPLICATION", "Search Bill Amendment"),
+      label: t("WS_BILL_AMENDMENT_SEARCH_APPLICATION"),
       show: location.pathname.includes("/bill-amendment/search-application") ? true : false,
     },
     {
@@ -499,7 +499,7 @@ const BILLSBreadCrumbs = ({ location, showPrint }) => {
     },
     {
       path: "/digit-ui/employee/ws/field-inspection",
-      label: t("WS_FIELD_INSPECTION", "Field Inspection"),
+      label: t("WS_FIELD_INSPECTION"),
       show: location.pathname.includes("/ws/field-inspection") ? true : false,
     },
   ];

@@ -65,7 +65,7 @@ const Response = () => {
                 )}
                 {data?.Amendments?.[0]?.amendmentId && !isEmployee && (
                   <SubmitBar 
-                    label={t("WS_TRACK_APPLICATION", "Track Application")} 
+                    label={t("WS_TRACK_APPLICATION")} 
                     onSubmit={() => history.push(`/digit-ui/citizen/ws/bill-amendment/application-details?applicationNumber=${data?.Amendments?.[0]?.amendmentId}`)}
                     style={{ marginRight: "1rem" }}
                   />

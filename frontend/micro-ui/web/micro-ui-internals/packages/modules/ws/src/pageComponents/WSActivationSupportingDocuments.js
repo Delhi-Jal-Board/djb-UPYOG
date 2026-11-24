@@ -16,11 +16,7 @@ const WSActivationSupportingDocuments = ({
 }) => {
   const tenantIdCode = Digit.ULBService.getCurrentTenantId();
 
-  const getTrans = (key, defaultVal) => {
-    const val = t(key);
-    return val && val !== key ? val : defaultVal;
-  };
-
+  
   // Determine whether Self or DJB
   const plumberPref =
     formData?.plumberDetails?.[0]?.detailsProvidedBy?.code ||
@@ -122,7 +118,7 @@ const WSActivationSupportingDocuments = ({
       if (setFormError && config?.key) {
         setFormError(config.key, {
           type: "required",
-          message: getTrans("CORE_COMMON_REQUIRED_ERRMSG", "Required"),
+          message: t("CORE_COMMON_REQUIRED_ERRMSG"),
         });
       }
     }
@@ -160,11 +156,11 @@ const WSActivationSupportingDocuments = ({
         else if (fieldKey === "meterWarranty") setMeterWarranty(fileObj);
         else if (fieldKey === "plumberDeclaration") setPlumberDeclaration(fileObj);
       } else {
-        setErrors((prev) => ({ ...prev, [fieldKey]: getTrans("CS_FILE_UPLOAD_ERROR", "File upload failed") }));
+        setErrors((prev) => ({ ...prev, [fieldKey]: t("CS_FILE_UPLOAD_ERROR") }));
       }
     } catch (err) {
       setUploading((prev) => ({ ...prev, [fieldKey]: false }));
-      setErrors((prev) => ({ ...prev, [fieldKey]: getTrans("CS_FILE_UPLOAD_ERROR", "File upload failed") }));
+      setErrors((prev) => ({ ...prev, [fieldKey]: t("CS_FILE_UPLOAD_ERROR") }));
     }
   };
 
@@ -220,9 +216,9 @@ const WSActivationSupportingDocuments = ({
       <LabelFieldPair>
         <FieldLabelWithTooltip
           style={{ margin: 0 }}
-          label={getTrans("WS_METER_PHOTO_UPLOAD_LABEL", "Meter Photo(JPEG/PDF size up to 500KB)")}
+          label={t("WS_METER_PHOTO_UPLOAD_LABEL")}
           isMandatory={true}
-          infoText={t("WS_METER_PHOTO_INFO_MSG", "Upload photo of installed water meter")}
+          infoText={t("WS_METER_PHOTO_INFO_MSG")}
         />
         <div className="field">
           <UploadFile
@@ -246,8 +242,8 @@ const WSActivationSupportingDocuments = ({
               uploading.meterPhoto
                 ? "Uploading..."
                 : meterPhoto
-                ? meterPhoto.fileName || `1 ${getTrans("CS_ACTION_FILEUPLOADED", "File Uploaded")}`
-                : getTrans("CS_ACTION_NO_FILEUPLOADED", "No File Uploaded")
+                ? meterPhoto.fileName || `1 ${t("CS_ACTION_FILEUPLOADED")}`
+                : t("CS_ACTION_NO_FILEUPLOADED")
             }
             textStyles={{ width: "100%" }}
             inputStyles={{ width: "280px" }}
@@ -263,7 +259,7 @@ const WSActivationSupportingDocuments = ({
       {/* 2. Download Declaration PDF Button - Commented out as per requirement */}
       {/* <LabelFieldPair>
         <CardLabel>
-          {getTrans("WS_DOWNLOAD_DECLARATION_LABEL", "Download the declaration of License Plumber PDF format")}:
+          {t("WS_DOWNLOAD_DECLARATION_LABEL")}:
         </CardLabel>
         <div className="field" style={{ display: "flex", alignItems: "center" }}>
           <button
@@ -290,7 +286,7 @@ const WSActivationSupportingDocuments = ({
             </svg>
             {isDownloadingTemplate
               ? "Downloading..."
-              : getTrans("WS_DOWNLOAD_DECLARATION_BUTTON", "Download Plumber Declaration PDF")}
+              : t("WS_DOWNLOAD_DECLARATION_BUTTON")}
           </button>
         </div>
       </LabelFieldPair> */}
@@ -298,7 +294,7 @@ const WSActivationSupportingDocuments = ({
       {/* 3. Upload signed and duly filled declaration PDF format - Commented out as per requirement */}
       {/* <LabelFieldPair>
         <CardLabel>
-          {getTrans("WS_UPLOAD_DECLARATION_LABEL", "Upload the signed and duly filled declaration PDF format")}
+          {t("WS_UPLOAD_DECLARATION_LABEL")}
           {isSelf ? (
             <span className="check-page-link-button"> *</span>
           ) : (
@@ -327,8 +323,8 @@ const WSActivationSupportingDocuments = ({
               uploading.plumberDeclaration
                 ? "Uploading..."
                 : plumberDeclaration
-                ? plumberDeclaration.fileName || `1 ${getTrans("CS_ACTION_FILEUPLOADED", "File Uploaded")}`
-                : getTrans("CS_ACTION_NO_FILEUPLOADED", "No File Uploaded")
+                ? plumberDeclaration.fileName || `1 ${t("CS_ACTION_FILEUPLOADED")}`
+                : t("CS_ACTION_NO_FILEUPLOADED")
             }
             textStyles={{ width: "100%" }}
             inputStyles={{ width: "280px" }}
@@ -347,9 +343,9 @@ const WSActivationSupportingDocuments = ({
       <LabelFieldPair>
         <FieldLabelWithTooltip
           style={{ margin: 0 }}
-          label={getTrans("WS_METER_WARRANTY_REPORT_INVOICE_LABEL", "Meter warranty card, Meter testing report, Invoice of meter JPEG/PDF up to size 1 MB")}
+          label={t("WS_METER_WARRANTY_REPORT_INVOICE_LABEL")}
           isMandatory={isSelf}
-          infoText={t("WS_METER_WARRANTY_INFO_MSG", "Upload meter warranty card, testing report or invoice")}
+          infoText={t("WS_METER_WARRANTY_INFO_MSG")}
         />
         <div className="field">
           <UploadFile
@@ -373,8 +369,8 @@ const WSActivationSupportingDocuments = ({
               uploading.meterWarranty
                 ? "Uploading..."
                 : meterWarranty
-                ? meterWarranty.fileName || `1 ${getTrans("CS_ACTION_FILEUPLOADED", "File Uploaded")}`
-                : getTrans("CS_ACTION_NO_FILEUPLOADED", "No File Uploaded")
+                ? meterWarranty.fileName || `1 ${t("CS_ACTION_FILEUPLOADED")}`
+                : t("CS_ACTION_NO_FILEUPLOADED")
             }
             textStyles={{ width: "100%" }}
             inputStyles={{ width: "280px" }}

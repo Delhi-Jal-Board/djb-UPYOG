@@ -65,7 +65,14 @@ const DueVerification = ({ applicationData }) => {
     [applicationData]
   );
 
-  const isPendingApproval = ["PENDING_FOR_FIELD_INSPECTION", "PENDING_FOR_ZRO_APPROVAL"].includes(applicationData?.applicationStatus);
+  const isPendingApproval = [
+    "PENDING_FOR_FIELD_INSPECTION",
+    "PENDING_FOR_ZRO_APPROVAL",
+    "PENDING_FOR_DEALING_ASSISTENCE_VERIFICATION",
+    "PENDING_FOR_DEALING_ASSISTANT_VERIFICATION",
+    "PENDING_FOR_DA_VERIFICATION",
+    "PENDING_FOR_JE_VERIFICATION",
+  ].includes(applicationData?.applicationStatus);
 
   const isActivation = [
     "PENDING_FOR_BILLING_CLERK_REVIEW",
@@ -141,8 +148,14 @@ const DueVerification = ({ applicationData }) => {
   }, [t, handleRemarkChange, handleRemoveRow, isPendingApproval, isActivation]);
 
   useEffect(() => {
-    if (applicationData?.dueVerification && Array.isArray(applicationData.dueVerification)) {
-      setTableData(applicationData.dueVerification);
+    const dues =
+      (applicationData?.dueVerification && Array.isArray(applicationData.dueVerification) && applicationData.dueVerification.length > 0)
+        ? applicationData.dueVerification
+        : (applicationData?.additionalDetails?.dueVerification && Array.isArray(applicationData.additionalDetails.dueVerification))
+        ? applicationData.additionalDetails.dueVerification
+        : [];
+    if (dues && dues.length > 0) {
+      setTableData(dues);
     }
   }, [applicationData]);
 

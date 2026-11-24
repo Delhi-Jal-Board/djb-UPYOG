@@ -184,7 +184,7 @@ const App = ({ path }) => {
     },
     {
       path: "/digit-ui/citizen/ws/bill-amendment/application-details",
-      label: t("WS_BILL_AMEND_APP_DETAILS", "Bill Amendment Details"),
+      label: t("WS_BILL_AMEND_APP_DETAILS"),
       show: location.pathname.includes("/bill-amendment/application-details"),
     },
   ];

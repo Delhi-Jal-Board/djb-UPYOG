@@ -277,7 +277,7 @@ const CreatePropertyForm = ({ config, onSelect, value, userType, redirectUrl }) 
         if (!emailRegex.test(email.trim())) {
           setShowToast({
             key: true,
-            label: t("CORE_COMMON_INVALID_EMAIL", "Please enter a valid Email ID"),
+            label: t("CORE_COMMON_INVALID_EMAIL"),
           });
           return;
         }
@@ -347,7 +347,7 @@ const CreatePropertyForm = ({ config, onSelect, value, userType, redirectUrl }) 
           noBoxShadow
           inline
           config={currentConfig}
-          label={t("CS_COMMON_PREVIEW", "PREVIEW")}
+          label={t("CS_COMMON_PREVIEW")}
           isDisabled={!canSubmit}
           defaultValues={defaultValues}
           onFormValueChange={onFormValueChange}

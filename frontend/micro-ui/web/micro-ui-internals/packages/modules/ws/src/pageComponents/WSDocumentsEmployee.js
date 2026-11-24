@@ -156,7 +156,7 @@ const WSDocumentsEmployee = ({
     checkIsTenant(formData?.ConnectionHolderDetails?.[0]?.applicantType) ||
     checkIsTenant(formData?.additionalDetails?.applicantType);
 
-  const isRwhMandatory = !!(
+  const isRwhYes = !!(
     formData?.rainWaterHarvesting?.hasCertificate === true ||
     String(formData?.rainWaterHarvesting?.hasCertificate) === "true" ||
     formData?.rainWaterHarvesting?.isRainwaterHarvesting === true ||
@@ -165,18 +165,57 @@ const WSDocumentsEmployee = ({
     formData?.additionalDetails?.isRainwaterHarvesting === true
   );
 
-  // const isStpMandatory = !!(
-  //   formData?.sewerTreatmentPlant?.hasCertificate === true ||
-  //   String(formData?.sewerTreatmentPlant?.hasCertificate) === "true" ||
-  //   formData?.sewerTreatmentPlant?.hasStp === true ||
-  //   String(formData?.sewerTreatmentPlant?.hasStp) === "true" ||
-  //   formData?.sewerTreatmentPlant?.isSewerTreatmentPlant === true ||
-  //   String(formData?.sewerTreatmentPlant?.isSewerTreatmentPlant) === "true" ||
-  //   formData?.additionalDetails?.hasSewerTreatmentPlant === true ||
-  //   formData?.additionalDetails?.hasStp === true ||
-  //   formData?.additionalDetails?.isSewerTreatmentPlant === true
-  // );
-  const isStpMandatory = false;
+  const isRwhAdequacyYes = !!(
+    formData?.rainWaterHarvesting?.hasAdequacyCertificate === true ||
+    String(formData?.rainWaterHarvesting?.hasAdequacyCertificate) === "true" ||
+    formData?.rainWaterHarvesting?.hasRainWaterHarvestingAdequacyCertificate === true ||
+    String(formData?.rainWaterHarvesting?.hasRainWaterHarvestingAdequacyCertificate) === "true" ||
+    formData?.rainWaterHarvesting?.applyForAdequacyCertificate === true ||
+    String(formData?.rainWaterHarvesting?.applyForAdequacyCertificate) === "true" ||
+    formData?.additionalDetails?.hasAdequacyCertificate === true ||
+    String(formData?.additionalDetails?.hasAdequacyCertificate) === "true" ||
+    formData?.additionalDetails?.hasRainWaterHarvestingAdequacyCertificate === true ||
+    String(formData?.additionalDetails?.hasRainWaterHarvestingAdequacyCertificate) === "true" ||
+    formData?.additionalDetails?.applyForAdequacyCertificate === true ||
+    String(formData?.additionalDetails?.applyForAdequacyCertificate) === "true"
+  );
+
+  const isRwhMandatory = isRwhYes && isRwhAdequacyYes;
+
+  const isStpYes = !!(
+    formData?.sewerTreatmentPlant?.hasCertificate === true ||
+    String(formData?.sewerTreatmentPlant?.hasCertificate) === "true" ||
+    formData?.sewerTreatmentPlant?.hasStp === true ||
+    String(formData?.sewerTreatmentPlant?.hasStp) === "true" ||
+    formData?.sewerTreatmentPlant?.isSewerTreatmentPlant === true ||
+    String(formData?.sewerTreatmentPlant?.isSewerTreatmentPlant) === "true" ||
+    formData?.additionalDetails?.hasSewerTreatmentPlant === true ||
+    formData?.additionalDetails?.hasStp === true ||
+    formData?.additionalDetails?.isSewerTreatmentPlant === true
+  );
+
+  const isStpAdequacyYes = !!(
+    formData?.sewerTreatmentPlant?.hasAdequacyCertificate === true ||
+    String(formData?.sewerTreatmentPlant?.hasAdequacyCertificate) === "true" ||
+    formData?.sewerTreatmentPlant?.hasStpAdequacyCertificate === true ||
+    String(formData?.sewerTreatmentPlant?.hasStpAdequacyCertificate) === "true" ||
+    formData?.sewerTreatmentPlant?.hasSewerTreatmentPlantAdequacyCertificate === true ||
+    String(formData?.sewerTreatmentPlant?.hasSewerTreatmentPlantAdequacyCertificate) === "true" ||
+    formData?.sewerTreatmentPlant?.applyForAdequacyCertificate === true ||
+    String(formData?.sewerTreatmentPlant?.applyForAdequacyCertificate) === "true" ||
+    formData?.sewerTreatmentPlant?.applyForStpAdequacyCertificate === true ||
+    String(formData?.sewerTreatmentPlant?.applyForStpAdequacyCertificate) === "true" ||
+    formData?.additionalDetails?.hasAdequacyCertificate === true ||
+    String(formData?.additionalDetails?.hasAdequacyCertificate) === "true" ||
+    formData?.additionalDetails?.hasStpAdequacyCertificate === true ||
+    String(formData?.additionalDetails?.hasStpAdequacyCertificate) === "true" ||
+    formData?.additionalDetails?.hasSewerTreatmentPlantAdequacyCertificate === true ||
+    String(formData?.additionalDetails?.hasSewerTreatmentPlantAdequacyCertificate) === "true" ||
+    formData?.additionalDetails?.applyForStpAdequacyCertificate === true ||
+    String(formData?.additionalDetails?.applyForStpAdequacyCertificate) === "true"
+  );
+
+  const isStpMandatory = isStpYes && isStpAdequacyYes;
 
   const sessionDjb = Digit.SessionStorage.get("PT_CREATE_EMP_WS_NEW_FORM")?.djbEmployee;
   const djbData = formData?.djbEmployee || sessionDjb || formData?.additionalDetails;
@@ -394,6 +433,8 @@ const WSDocumentsEmployee = ({
           modifiedDocument.required = false;
         }
         if (isOther && modifiedDocument.dropdownData) {
+          // Exclude STP options from Other Documents dropdown
+          modifiedDocument.dropdownData = modifiedDocument.dropdownData.filter((opt) => !isStpDocType(opt));
           if (isTenant) {
             modifiedDocument.dropdownData = modifiedDocument.dropdownData.filter((opt) => {
               const code = opt.code || "";
@@ -443,6 +484,18 @@ const WSDocumentsEmployee = ({
           />
         );
       })}
+      {isStpMandatory && (
+        <SewerTreatmentPlantDocumentUpload
+          t={t}
+          documents={documents}
+          setDocuments={setDocuments}
+          formData={formData}
+          formSetValue={formSetValue}
+          tenantId={tenantId}
+          isStpMandatory={isStpMandatory}
+          hasStpUploaded={hasStpUploaded}
+        />
+      )}
       {isDjbEmployee && (
         <EmployeeIdDocumentUpload
           t={t}
@@ -495,7 +548,7 @@ const WSDocumentsEmployee = ({
         <span style={{ fontSize: "14px", color: "#d32f2f", fontWeight: "600" }}>
           ⚠️{" "}
           {t("WS_STP_CERTIFICATE_MANDATORY_INSTRUCTION") ||
-            "Sewer Treatment Plant (STP) Certificate is mandatory to upload. Please upload it under Other Documents."}
+            "Sewer Treatment Plant (STP) Certificate is mandatory to upload."}
         </span>
       </div>
     ) : null;
@@ -561,6 +614,339 @@ const WSDocumentsEmployee = ({
     </CollapsibleCardPage>
   );
 };
+
+function SewerTreatmentPlantDocumentUpload({
+  t,
+  documents,
+  setDocuments,
+  formData,
+  formSetValue,
+  tenantId,
+  isStpMandatory,
+  hasStpUploaded,
+}) {
+  const existingStpDoc = documents?.find((d) => isStpDocType(d));
+  const initialFileId = existingStpDoc?.fileStoreId || null;
+
+  const [file, setFile] = useState(null);
+  const [uploadedFile, setUploadedFile] = useState(initialFileId);
+  const [fileName, setFileName] = useState(existingStpDoc?.fileName || "");
+  const [documentUid, setDocumentUid] = useState(existingStpDoc?.documentUid || existingStpDoc?.documentNumber || "");
+  const [validityDate, setValidityDate] = useState(
+    existingStpDoc?.validityDate ||
+    existingStpDoc?.validityUpTo ||
+    existingStpDoc?.additionalDetails?.validityDate ||
+    ""
+  );
+  const [errorUpload, setErrorUpload] = useState(null);
+  const [showDocModal, setShowDocModal] = useState(false);
+  const [docFileUrl, setDocFileUrl] = useState("");
+  const [docFileType, setDocFileType] = useState("");
+
+  const specs = {
+    maxSize: 1024 * 1024,
+    maxSizeText: "1MB",
+    allowedExtensions: ["pdf", "jpg", "jpeg"],
+    allowedMimeTypes: ["application/pdf", "image/jpeg", "image/jpg"],
+    accept: ".pdf, application/pdf, image/jpeg, .jpg, .jpeg",
+    uiMessage: "Allowed formats: PDF, JPEG | Max file size: 1MB",
+    formatErrorMessage: "Only PDF and JPEG formats are allowed for Sewer Treatment Plant (STP) Certificate",
+    sizeErrorMessage: "Sewer Treatment Plant (STP) Certificate size should not exceed 1MB",
+  };
+
+  useEffect(() => {
+    const doc = documents?.find((d) => isStpDocType(d));
+    if (doc?.fileStoreId && doc.fileStoreId !== uploadedFile) {
+      setUploadedFile(doc.fileStoreId);
+      if (doc.fileName) setFileName(doc.fileName);
+      if (doc.documentUid) setDocumentUid(doc.documentUid);
+      if (doc.validityDate) setValidityDate(doc.validityDate);
+    }
+  }, [documents]);
+
+  useEffect(() => {
+    (async () => {
+      setErrorUpload(null);
+      if (file) {
+        const ext = (file.name || "").split(".").pop().toLowerCase();
+        const isExtAllowed = specs.allowedExtensions.includes(ext);
+        const isMimeAllowed = specs.allowedMimeTypes.includes(file.type);
+
+        if (!isExtAllowed && !isMimeAllowed) {
+          setErrorUpload(specs.formatErrorMessage);
+          setFile(null);
+          return;
+        }
+
+        if (file.size > specs.maxSize) {
+          setErrorUpload(specs.sizeErrorMessage);
+          setFile(null);
+          return;
+        }
+
+        try {
+          setUploadedFile(null);
+          const stateOrTenantId = tenantId?.split(".")[0] || Digit.ULBService.getStateId();
+          const response = await Digit.UploadServices.Filestorage("WS", file, stateOrTenantId);
+          if (response?.data?.files?.length > 0) {
+            const fileId = response?.data?.files[0]?.fileStoreId;
+            const nameOfFile = file?.name || "STP_Certificate";
+            setUploadedFile(fileId);
+            setFileName(nameOfFile);
+
+            setDocuments((prevDocs) => {
+              const filtered = (prevDocs || []).filter((d) => !isStpDocType(d));
+              return [
+                ...filtered,
+                {
+                  documentType: "OWNER.OTHERDOCUMENTS.SEWER_TREATMENT_PLANT",
+                  fileStoreId: fileId,
+                  fileName: nameOfFile,
+                  documentName: "Sewer Treatment Plant (STP) Certificate",
+                  documentUid: documentUid,
+                  documentNumber: documentUid,
+                  validityDate: validityDate || undefined,
+                  validityUpTo: validityDate || undefined,
+                  date: validityDate || undefined,
+                  stpValidityDate: validityDate || undefined,
+                  additionalDetails: {
+                    validityDate: validityDate || undefined,
+                    validityUpTo: validityDate || undefined,
+                    date: validityDate || undefined,
+                    stpValidityDate: validityDate || undefined,
+                  },
+                  i18nKey: "OWNER_OTHERDOCUMENTS_SEWER_TREATMENT_PLANT",
+                  status: "ACTIVE",
+                },
+              ];
+            });
+          } else {
+            setErrorUpload(t("CS_FILE_UPLOAD_ERROR") || "File Upload Error");
+          }
+        } catch (err) {
+          setErrorUpload(t("CS_FILE_UPLOAD_ERROR") || "File Upload Error");
+        }
+      }
+    })();
+  }, [file]);
+
+  const updateStpDocFields = (newUid, newDate) => {
+    if (uploadedFile) {
+      setDocuments((prevDocs) => {
+        return (prevDocs || []).map((d) => {
+          if (isStpDocType(d)) {
+            return {
+              ...d,
+              documentUid: newUid !== undefined ? newUid : d.documentUid,
+              documentNumber: newUid !== undefined ? newUid : d.documentNumber,
+              validityDate: newDate !== undefined ? newDate : d.validityDate,
+              validityUpTo: newDate !== undefined ? newDate : d.validityUpTo,
+              date: newDate !== undefined ? newDate : d.date,
+              stpValidityDate: newDate !== undefined ? newDate : d.stpValidityDate,
+              additionalDetails: {
+                ...(d.additionalDetails || {}),
+                validityDate: newDate !== undefined ? newDate : d.validityDate,
+                validityUpTo: newDate !== undefined ? newDate : d.validityUpTo,
+                date: newDate !== undefined ? newDate : d.date,
+                stpValidityDate: newDate !== undefined ? newDate : d.stpValidityDate,
+              },
+            };
+          }
+          return d;
+        });
+      });
+    }
+  };
+
+  const handleDelete = () => {
+    setUploadedFile(null);
+    setFile(null);
+    setFileName("");
+    setErrorUpload(null);
+    const fileInput = document.getElementById("stp-doc-upload");
+    if (fileInput) fileInput.value = "";
+    setDocuments((prevDocs) => (prevDocs || []).filter((d) => !isStpDocType(d)));
+  };
+
+  const handleView = async (fileStoreId) => {
+    try {
+      const id = typeof fileStoreId === "object" ? fileStoreId?.fileStoreId : fileStoreId;
+      if (!id) return;
+      const stateOrTenantId = tenantId?.split(".")[0] || Digit.ULBService.getStateId();
+      const res = await Digit.UploadServices.Filefetch([id], stateOrTenantId);
+      const url = res?.data?.fileStoreIds?.[0]?.url;
+      if (url) {
+        setDocFileUrl(url);
+        setDocFileType(url.includes(".pdf") ? "pdf" : "image");
+        setShowDocModal(true);
+      }
+    } catch (e) {}
+  };
+
+  return (
+    <React.Fragment>
+      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+        <FieldLabelWithTooltip
+          style={{ margin: 0 }}
+          label={t("WS_STP_CERTIFICATE_LABEL")}
+          isMandatory={isStpMandatory}
+          infoText={t("WS_STP_CERTIFICATE_INFO_MSG")}
+        />
+        <div className="field">
+          <TextInput
+            type="text"
+            value={t("WS_STP_CERTIFICATE_OPTION")}
+            disabled={true}
+            style={{ backgroundColor: "#f7f7f7", cursor: "not-allowed", color: "#333", fontWeight: 500 }}
+          />
+        </div>
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+        <FieldLabelWithTooltip
+          style={{ margin: 0 }}
+          label={t("WS_STP_DOCUMENT_NO")}
+          isMandatory={false}
+          infoText={t("WS_STP_DOC_NO_INFO_MSG")}
+        />
+        <div className="field">
+          <TextInput
+            type="text"
+            value={documentUid}
+            onChange={(e) => {
+              setDocumentUid(e.target.value);
+              updateStpDocFields(e.target.value, validityDate);
+            }}
+            placeholder={t("WS_ENTER_IDENTITY_NUMBER")}
+          />
+        </div>
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+        <FieldLabelWithTooltip
+          style={{ margin: 0 }}
+          label={t("WS_UPLOAD_STP_DOCUMENT")}
+          isMandatory={isStpMandatory}
+          infoText={t("WS_UPLOAD_STP_DOC_INFO_MSG")}
+        />
+        <div style={{ fontSize: "12px", color: "#555", marginTop: "-2px", marginBottom: "4px" }}>
+          {specs.uiMessage}
+        </div>
+        <div className="field" style={{ display: "flex", gap: "10px", alignItems: "flex-start", width: "100%" }}>
+          <div style={{ flex: 1 }}>
+            <UploadFile
+              id="stp-doc-upload"
+              onUpload={(e) => {
+                const selected = e?.target?.files?.[0];
+                setErrorUpload(null);
+                if (selected) {
+                  const ext = (selected.name || "").split(".").pop().toLowerCase();
+                  if (!specs.allowedExtensions.includes(ext)) {
+                    setErrorUpload(specs.formatErrorMessage);
+                    if (e?.target) e.target.value = "";
+                    return;
+                  }
+                  if (selected.size > specs.maxSize) {
+                    setErrorUpload(specs.sizeErrorMessage);
+                    if (e?.target) e.target.value = "";
+                    return;
+                  }
+                  setFile(selected);
+                }
+              }}
+              onDelete={handleDelete}
+              message={uploadedFile ? `1 ${t("CS_ACTION_FILEUPLOADED")}` : t("CS_ACTION_NO_FILEUPLOADED")}
+              accept={specs.accept}
+            />
+          </div>
+        </div>
+        {errorUpload && <div style={{ fontSize: "12px", color: "#d32f2f", marginTop: "4px" }}>{errorUpload}</div>}
+        {uploadedFile && (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginTop: "8px",
+              padding: "4px 8px",
+              background: "#f7f7f7",
+              borderRadius: "4px",
+            }}
+          >
+            <span style={{ fontSize: "14px", color: "#00497e", fontWeight: "bold" }}>
+              {t("WS_STP_CERTIFICATE_OPTION")}
+              {fileName ? ` - ${fileName}` : ""}
+            </span>
+            {documentUid && <span>{documentUid}</span>}
+            {validityDate && (
+              <span style={{ fontSize: "13px", color: "#333" }}>
+                ({t("WS_VALIDITY_UP_TO")}: {validityDate})
+              </span>
+            )}
+            <button
+              type="button"
+              onClick={() => handleView(uploadedFile)}
+              title={t("WS_VIEW_DOCUMENT") || "View Document"}
+              style={{ border: "none", background: "transparent", color: "#00497e", cursor: "pointer", padding: 0 }}
+            >
+              <ViewsIcon />
+            </button>
+            <button
+              type="button"
+              onClick={handleDelete}
+              title={t("CS_ACTION_DELETE") || "Delete"}
+              style={{ border: "none", background: "transparent", color: "#d32f2f", cursor: "pointer", padding: 0 }}
+            >
+              <RemoveIcon />
+            </button>
+          </div>
+        )}
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+        <FieldLabelWithTooltip
+          style={{ margin: 0 }}
+          label={t("Validity up to date")}
+          isMandatory={isStpMandatory}
+          infoText={t("Validity up to date")}
+        />
+        <div className="field" style={{ width: "100%" }}>
+          <DatePicker
+            date={validityDate}
+            onChange={(date) => {
+              setValidityDate(date);
+              updateStpDocFields(documentUid, date);
+            }}
+            style={{ width: "100%" }}
+          />
+        </div>
+        {uploadedFile && isStpMandatory && !validityDate && (
+          <div style={{ fontSize: "12px", color: "#d32f2f", marginTop: "-4px" }}>
+            * {t("CORE_COMMON_REQUIRED_ERRMSG") || "This field is required"}
+          </div>
+        )}
+      </div>
+
+      {showDocModal && (
+        <Modal
+          headerBarMain={<h3>{t("WS_VIEW_DOCUMENT")}</h3>}
+          headerBarEnd={<span style={{ cursor: "pointer", fontWeight: "bold", fontSize: "16px" }} onClick={() => setShowDocModal(false)}>✕</span>}
+          actionCancelLabel={null}
+          actionSaveLabel={null}
+          hideSubmit={true}
+        >
+          <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "300px", padding: "10px" }}>
+            {docFileType === "pdf" ? (
+              <iframe src={docFileUrl} title="Document" width="100%" height="500px" style={{ border: "none" }} />
+            ) : (
+              <img src={docFileUrl} alt="Document" style={{ maxWidth: "100%", maxHeight: "500px" }} />
+            )}
+          </div>
+        </Modal>
+      )}
+    </React.Fragment>
+  );
+}
 
 function EmployeeIdDocumentUpload({ t, documents, setDocuments, formData, formSetValue, tenantId }) {
   const existingEmployeeDoc = documents?.find((d) => d?.documentType === "OWNER.DJB_EMPLOYEE_ID" || d?.documentType?.includes("DJB_EMPLOYEE_ID"));
@@ -851,10 +1237,6 @@ function SelectDocument({
       const rwhMatch = doc?.dropdownData?.find((d) => isRwhDocType(d));
       if (rwhMatch) return { ...rwhMatch, i18nKey: rwhMatch.code?.replaceAll(".", "_") };
     }
-    if (isOther && isStpMandatory && !hasStpUploaded && doc?.dropdownData) {
-      const stpMatch = doc?.dropdownData?.find((d) => isStpDocType(d));
-      if (stpMatch) return { ...stpMatch, i18nKey: stpMatch.code?.replaceAll(".", "_") };
-    }
     if (isApplicantPhoto) {
       return filteredDocument
         ? { ...filteredDocument, code: filteredDocument?.documentType || doc?.code || "OWNER.APPLICANTPHOTO", i18nKey: "OWNER_APPLICANTPHOTO" }
@@ -895,9 +1277,7 @@ function SelectDocument({
   const [docNumberError, setDocNumberError] = useState(null);
 
   const isSelectedRwh = isRwhDocType(selectedDocument);
-  const isSelectedStp = isStpDocType(selectedDocument);
-  // const showValidityDate = isOther && (isSelectedRwh || isSelectedStp || (isRwhMandatory && !hasRwhUploaded) || (isStpMandatory && !hasStpUploaded));
-  const showValidityDate = false;
+  const showValidityDate = isOther && (isRwhMandatory || isSelectedRwh);
 
   const isOtherDocumentsRemark = Boolean(
     isOther &&
@@ -1138,14 +1518,6 @@ function SelectDocument({
               setSelectedDocument({ ...rwhMatch, i18nKey: rwhMatch.code?.replaceAll(".", "_") });
             }
           }
-        } else if (isStpMandatory && !hasStpUploaded) {
-          const isCurrentStp = selectedDocument?.code && isStpDocType(selectedDocument);
-          if (!isCurrentStp && dropDownData?.length > 0) {
-            const stpMatch = dropDownData.find((d) => isStpDocType(d));
-            if (stpMatch && (!uploadedFile || !selectedDocument?.code)) {
-              setSelectedDocument({ ...stpMatch, i18nKey: stpMatch.code?.replaceAll(".", "_") });
-            }
-          }
         }
       }
     }
@@ -1233,9 +1605,9 @@ function SelectDocument({
     const isRwhSatisfied = hasRwhUploaded || (uploadedFile && isRwhDocType(selectedDocument));
     const rwhMissing = isRwhRequired && !isRwhSatisfied;
 
-    const isStpRequired = isOther && isStpMandatory;
-    const isStpSatisfied = hasStpUploaded || (uploadedFile && isStpDocType(selectedDocument));
-    const stpMissing = isStpRequired && !isStpSatisfied;
+    const isStpRequired = false;
+    const isStpSatisfied = true;
+    const stpMissing = false;
 
     const hasOtherUploaded = isOther && documents?.some((item) => item?.documentType?.includes(doc?.code));
     const isCompletelyEmpty = isApplicantPhoto ? !uploadedFile : !uploadedFile && (!documentUid || !documentUid.trim()) && !selectedDocument?.code;
@@ -1251,11 +1623,10 @@ function SelectDocument({
       (doc?.required && !hasOtherUploaded) ||
       isPartiallyFilled ||
       (isOther && isRwhMandatory && !hasRwhUploaded) ||
-      (isOther && isStpMandatory && !hasStpUploaded) ||
       isDocNumberMandatory;
     const err = validateDocumentNumber(documentUid, selectedDocument?.code, isDocNumberMandatory || effectiveRequired, !!uploadedFile);
 
-    const validityMissing = showValidityDate && (isRwhMandatory || isStpMandatory) && uploadedFile && !validityDate;
+    const validityMissing = showValidityDate && isRwhMandatory && uploadedFile && !validityDate;
 
     if (!isHidden) {
       if (err) {
@@ -1372,17 +1743,12 @@ function SelectDocument({
           <FieldLabelWithTooltip
             style={{ margin: 0 }}
             label={t(doc?.i18nKey)}
-            isMandatory={doc?.required || (!isTenant && isOther && (isRwhMandatory || isStpMandatory))}
+            isMandatory={doc?.required || (!isTenant && isOther && isRwhMandatory)}
             infoText={t(`${doc?.i18nKey?.replaceAll(".", "_")}_INFO_MSG`, `Select ${t(doc?.i18nKey)}`)}
           />{" "}
           {!isTenant && isOther && isRwhMandatory && !hasRwhUploaded && !(uploadedFile && isRwhDocType(selectedDocument)) && (
             <div style={{ fontSize: "12px", color: "#d32f2f", marginTop: "-4px" }}>
               * {t("WS_RWH_CERTIFICATE_MANDATORY_MSG") || "Rain Water Harvesting Certificate is mandatory to upload."}
-            </div>
-          )}
-          {!isTenant && isOther && isStpMandatory && !hasStpUploaded && !(uploadedFile && isStpDocType(selectedDocument)) && (
-            <div style={{ fontSize: "12px", color: "#d32f2f", marginTop: "-4px" }}>
-              * {t("WS_STP_CERTIFICATE_MANDATORY_MSG") || "Sewer Treatment Plant (STP) Certificate is mandatory to upload."}
             </div>
           )}
           <Dropdown
@@ -1399,12 +1765,14 @@ function SelectDocument({
         </div>
       ) : null}
 
-      {/* {showValidityDate && (
+      {showValidityDate && (
         <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-          <CardLabel style={{ margin: 0 }}>
-            {t("WS_VALIDITY_UP_TO") || "Validity up to"}
-            {(doc?.required || isRwhMandatory || isStpMandatory) && <span className="check-page-link-button">*</span>}
-          </CardLabel>
+          <FieldLabelWithTooltip
+            style={{ margin: 0 }}
+            label={t("Validity up to date")}
+            isMandatory={doc?.required || isRwhMandatory || isStpMandatory}
+            infoText={t("Validity up to date")}
+          />
           <div className="field" style={{ width: "100%" }}>
             <DatePicker date={validityDate} onChange={(date) => setValidityDate(date)} style={{ width: "100%" }} />
           </div>
@@ -1414,7 +1782,7 @@ function SelectDocument({
             </div>
           )}
         </div>
-      )} */}
+      )}
 
       {doc?.code !== "OWNER.APPLICANTPHOTO" && (
         <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
@@ -1430,7 +1798,7 @@ function SelectDocument({
             isMandatory={isDocNumberMandatory}
             infoText={
               isOtherDocumentsRemark
-                ? t("WS_OTHER_DOC_REMARK_INFO_MSG", "Enter Other Document Remark")
+                ? t("WS_OTHER_DOC_REMARK_INFO_MSG")
                 : t(`${doc?.i18nKey?.replaceAll(".", "_")}_DOC_NO_INFO_MSG`, `Enter ${t(`${doc?.i18nKey?.replaceAll(".", "_")}_DOCUMENT_NO`)}`)
             }
           />
@@ -1543,7 +1911,7 @@ function SelectDocument({
             isMandatory={doc?.required}
             infoText={
               doc?.code === "OWNER.APPLICANTPHOTO"
-                ? t("WS_UPLOAD_APPLICANT_PHOTO_INFO_MSG", "Upload recent passport size photo of applicant")
+                ? t("WS_UPLOAD_APPLICANT_PHOTO_INFO_MSG")
                 : t(`${doc?.i18nKey?.replaceAll(".", "_")}_UPLOAD_INFO_MSG`, `Upload ${t(`${doc?.i18nKey?.replaceAll(".", "_")}_UPLOAD_DOCUMENT`)}`)
             }
           />
@@ -1667,7 +2035,7 @@ function SelectDocument({
                   setError(docNumberError);
                   return;
                 }
-                if (showValidityDate && (isRwhMandatory || isStpMandatory) && !validityDate) {
+                if (showValidityDate && isRwhMandatory && !validityDate) {
                   setError(t("WS_PLEASE_SELECT_VALIDITY_DATE") || "Please select validity up to date.");
                   return;
                 }
@@ -1728,11 +2096,11 @@ function SelectDocument({
               {uploadedDocument.fileName ? ` - ${uploadedDocument.fileName}` : ""}
             </span>
             {uploadedDocument.documentNumber && <span>{uploadedDocument.documentNumber}</span>}
-            {/* {(uploadedDocument.validityDate || uploadedDocument.validityUpTo) && (
+            {(uploadedDocument.validityDate || uploadedDocument.validityUpTo) && (
               <span style={{ fontSize: "13px", color: "#333" }}>
                 ({t("WS_VALIDITY_UP_TO") || "Validity up to"}: {uploadedDocument.validityDate || uploadedDocument.validityUpTo})
               </span>
-            )} */}
+            )}
             <button
               type="button"
               onClick={() => viewDocument(uploadedDocument.fileStoreId)}
@@ -1763,7 +2131,7 @@ function SelectDocument({
                 : t("WS_CLICK_APPLICANT_PHOTO")
             }
             isMandatory={false}
-            infoText={t("WS_CLICK_APPLICANT_PHOTO_INFO_MSG", "Click photo directly using device camera")}
+            infoText={t("WS_CLICK_APPLICANT_PHOTO_INFO_MSG")}
           />
           <div style={{ display: "flex", alignItems: "center", gap: "20px", height: "100%" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>

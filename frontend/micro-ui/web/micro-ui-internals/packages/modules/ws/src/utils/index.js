@@ -810,6 +810,18 @@ export const createPayloadOfWS = async (data) => {
       isRainwaterHarvesting: !!(
         data?.rainWaterHarvesting?.hasCertificate || data?.rainWaterHarvesting?.isRainwaterHarvesting
       ),
+      hasAdequacyCertificate: !!(
+        (data?.rainWaterHarvesting?.hasCertificate || data?.rainWaterHarvesting?.isRainwaterHarvesting) &&
+        (data?.rainWaterHarvesting?.hasAdequacyCertificate || data?.rainWaterHarvesting?.hasRainWaterHarvestingAdequacyCertificate || data?.rainWaterHarvesting?.applyForAdequacyCertificate)
+      ),
+      hasRainWaterHarvestingAdequacyCertificate: !!(
+        (data?.rainWaterHarvesting?.hasCertificate || data?.rainWaterHarvesting?.isRainwaterHarvesting) &&
+        (data?.rainWaterHarvesting?.hasAdequacyCertificate || data?.rainWaterHarvesting?.hasRainWaterHarvestingAdequacyCertificate || data?.rainWaterHarvesting?.applyForAdequacyCertificate)
+      ),
+      applyForAdequacyCertificate: !!(
+        (data?.rainWaterHarvesting?.hasCertificate || data?.rainWaterHarvesting?.isRainwaterHarvesting) &&
+        (data?.rainWaterHarvesting?.hasAdequacyCertificate || data?.rainWaterHarvesting?.hasRainWaterHarvestingAdequacyCertificate || data?.rainWaterHarvesting?.applyForAdequacyCertificate)
+      ),
       hasSewerTreatmentPlant: !!(
         data?.sewerTreatmentPlant?.hasCertificate || data?.sewerTreatmentPlant?.hasStp || data?.sewerTreatmentPlant?.isSewerTreatmentPlant
       ),
@@ -818,6 +830,18 @@ export const createPayloadOfWS = async (data) => {
       ),
       hasStp: !!(
         data?.sewerTreatmentPlant?.hasCertificate || data?.sewerTreatmentPlant?.hasStp || data?.sewerTreatmentPlant?.isSewerTreatmentPlant
+      ),
+      hasStpAdequacyCertificate: !!(
+        (data?.sewerTreatmentPlant?.hasCertificate || data?.sewerTreatmentPlant?.hasStp || data?.sewerTreatmentPlant?.isSewerTreatmentPlant) &&
+        (data?.sewerTreatmentPlant?.hasAdequacyCertificate || data?.sewerTreatmentPlant?.hasStpAdequacyCertificate || data?.sewerTreatmentPlant?.hasSewerTreatmentPlantAdequacyCertificate || data?.sewerTreatmentPlant?.applyForAdequacyCertificate || data?.sewerTreatmentPlant?.applyForStpAdequacyCertificate)
+      ),
+      hasSewerTreatmentPlantAdequacyCertificate: !!(
+        (data?.sewerTreatmentPlant?.hasCertificate || data?.sewerTreatmentPlant?.hasStp || data?.sewerTreatmentPlant?.isSewerTreatmentPlant) &&
+        (data?.sewerTreatmentPlant?.hasAdequacyCertificate || data?.sewerTreatmentPlant?.hasStpAdequacyCertificate || data?.sewerTreatmentPlant?.hasSewerTreatmentPlantAdequacyCertificate || data?.sewerTreatmentPlant?.applyForAdequacyCertificate || data?.sewerTreatmentPlant?.applyForStpAdequacyCertificate)
+      ),
+      applyForStpAdequacyCertificate: !!(
+        (data?.sewerTreatmentPlant?.hasCertificate || data?.sewerTreatmentPlant?.hasStp || data?.sewerTreatmentPlant?.isSewerTreatmentPlant) &&
+        (data?.sewerTreatmentPlant?.hasAdequacyCertificate || data?.sewerTreatmentPlant?.hasStpAdequacyCertificate || data?.sewerTreatmentPlant?.hasSewerTreatmentPlantAdequacyCertificate || data?.sewerTreatmentPlant?.applyForAdequacyCertificate || data?.sewerTreatmentPlant?.applyForStpAdequacyCertificate)
       ),
       document:
         data?.djbEmployee?.document?.fileStoreId ||
@@ -1174,6 +1198,18 @@ export const convertToWSUpdate = (data) => {
               isRainwaterHarvesting: !!(
                 data?.rainWaterHarvesting?.hasCertificate || data?.rainWaterHarvesting?.isRainwaterHarvesting
               ),
+              hasAdequacyCertificate: !!(
+                (data?.rainWaterHarvesting?.hasCertificate || data?.rainWaterHarvesting?.isRainwaterHarvesting) &&
+                (data?.rainWaterHarvesting?.hasAdequacyCertificate || data?.rainWaterHarvesting?.hasRainWaterHarvestingAdequacyCertificate || data?.rainWaterHarvesting?.applyForAdequacyCertificate)
+              ),
+              hasRainWaterHarvestingAdequacyCertificate: !!(
+                (data?.rainWaterHarvesting?.hasCertificate || data?.rainWaterHarvesting?.isRainwaterHarvesting) &&
+                (data?.rainWaterHarvesting?.hasAdequacyCertificate || data?.rainWaterHarvesting?.hasRainWaterHarvestingAdequacyCertificate || data?.rainWaterHarvesting?.applyForAdequacyCertificate)
+              ),
+              applyForAdequacyCertificate: !!(
+                (data?.rainWaterHarvesting?.hasCertificate || data?.rainWaterHarvesting?.isRainwaterHarvesting) &&
+                (data?.rainWaterHarvesting?.hasAdequacyCertificate || data?.rainWaterHarvesting?.hasRainWaterHarvestingAdequacyCertificate || data?.rainWaterHarvesting?.applyForAdequacyCertificate)
+              ),
             }
           : {}),
         ...(data?.sewerTreatmentPlant !== undefined
@@ -1187,6 +1223,18 @@ export const convertToWSUpdate = (data) => {
               ),
               hasStp: !!(
                 data?.sewerTreatmentPlant?.hasCertificate || data?.sewerTreatmentPlant?.hasStp || data?.sewerTreatmentPlant?.isSewerTreatmentPlant
+              ),
+              hasStpAdequacyCertificate: !!(
+                (data?.sewerTreatmentPlant?.hasCertificate || data?.sewerTreatmentPlant?.hasStp || data?.sewerTreatmentPlant?.isSewerTreatmentPlant) &&
+                (data?.sewerTreatmentPlant?.hasAdequacyCertificate || data?.sewerTreatmentPlant?.hasStpAdequacyCertificate || data?.sewerTreatmentPlant?.hasSewerTreatmentPlantAdequacyCertificate || data?.sewerTreatmentPlant?.applyForAdequacyCertificate || data?.sewerTreatmentPlant?.applyForStpAdequacyCertificate)
+              ),
+              hasSewerTreatmentPlantAdequacyCertificate: !!(
+                (data?.sewerTreatmentPlant?.hasCertificate || data?.sewerTreatmentPlant?.hasStp || data?.sewerTreatmentPlant?.isSewerTreatmentPlant) &&
+                (data?.sewerTreatmentPlant?.hasAdequacyCertificate || data?.sewerTreatmentPlant?.hasStpAdequacyCertificate || data?.sewerTreatmentPlant?.hasSewerTreatmentPlantAdequacyCertificate || data?.sewerTreatmentPlant?.applyForAdequacyCertificate || data?.sewerTreatmentPlant?.applyForStpAdequacyCertificate)
+              ),
+              applyForStpAdequacyCertificate: !!(
+                (data?.sewerTreatmentPlant?.hasCertificate || data?.sewerTreatmentPlant?.hasStp || data?.sewerTreatmentPlant?.isSewerTreatmentPlant) &&
+                (data?.sewerTreatmentPlant?.hasAdequacyCertificate || data?.sewerTreatmentPlant?.hasStpAdequacyCertificate || data?.sewerTreatmentPlant?.hasSewerTreatmentPlantAdequacyCertificate || data?.sewerTreatmentPlant?.applyForAdequacyCertificate || data?.sewerTreatmentPlant?.applyForStpAdequacyCertificate)
               ),
             }
           : {}),
@@ -1304,6 +1352,18 @@ export const convertToEditWSUpdate = (data) => {
               isRainwaterHarvesting: !!(
                 data?.rainWaterHarvesting?.hasCertificate || data?.rainWaterHarvesting?.isRainwaterHarvesting
               ),
+              hasAdequacyCertificate: !!(
+                (data?.rainWaterHarvesting?.hasCertificate || data?.rainWaterHarvesting?.isRainwaterHarvesting) &&
+                (data?.rainWaterHarvesting?.hasAdequacyCertificate || data?.rainWaterHarvesting?.hasRainWaterHarvestingAdequacyCertificate || data?.rainWaterHarvesting?.applyForAdequacyCertificate)
+              ),
+              hasRainWaterHarvestingAdequacyCertificate: !!(
+                (data?.rainWaterHarvesting?.hasCertificate || data?.rainWaterHarvesting?.isRainwaterHarvesting) &&
+                (data?.rainWaterHarvesting?.hasAdequacyCertificate || data?.rainWaterHarvesting?.hasRainWaterHarvestingAdequacyCertificate || data?.rainWaterHarvesting?.applyForAdequacyCertificate)
+              ),
+              applyForAdequacyCertificate: !!(
+                (data?.rainWaterHarvesting?.hasCertificate || data?.rainWaterHarvesting?.isRainwaterHarvesting) &&
+                (data?.rainWaterHarvesting?.hasAdequacyCertificate || data?.rainWaterHarvesting?.hasRainWaterHarvestingAdequacyCertificate || data?.rainWaterHarvesting?.applyForAdequacyCertificate)
+              ),
             }
           : {}),
         ...(data?.sewerTreatmentPlant !== undefined
@@ -1317,6 +1377,18 @@ export const convertToEditWSUpdate = (data) => {
               ),
               hasStp: !!(
                 data?.sewerTreatmentPlant?.hasCertificate || data?.sewerTreatmentPlant?.hasStp || data?.sewerTreatmentPlant?.isSewerTreatmentPlant
+              ),
+              hasStpAdequacyCertificate: !!(
+                (data?.sewerTreatmentPlant?.hasCertificate || data?.sewerTreatmentPlant?.hasStp || data?.sewerTreatmentPlant?.isSewerTreatmentPlant) &&
+                (data?.sewerTreatmentPlant?.hasAdequacyCertificate || data?.sewerTreatmentPlant?.hasStpAdequacyCertificate || data?.sewerTreatmentPlant?.hasSewerTreatmentPlantAdequacyCertificate || data?.sewerTreatmentPlant?.applyForAdequacyCertificate || data?.sewerTreatmentPlant?.applyForStpAdequacyCertificate)
+              ),
+              hasSewerTreatmentPlantAdequacyCertificate: !!(
+                (data?.sewerTreatmentPlant?.hasCertificate || data?.sewerTreatmentPlant?.hasStp || data?.sewerTreatmentPlant?.isSewerTreatmentPlant) &&
+                (data?.sewerTreatmentPlant?.hasAdequacyCertificate || data?.sewerTreatmentPlant?.hasStpAdequacyCertificate || data?.sewerTreatmentPlant?.hasSewerTreatmentPlantAdequacyCertificate || data?.sewerTreatmentPlant?.applyForAdequacyCertificate || data?.sewerTreatmentPlant?.applyForStpAdequacyCertificate)
+              ),
+              applyForStpAdequacyCertificate: !!(
+                (data?.sewerTreatmentPlant?.hasCertificate || data?.sewerTreatmentPlant?.hasStp || data?.sewerTreatmentPlant?.isSewerTreatmentPlant) &&
+                (data?.sewerTreatmentPlant?.hasAdequacyCertificate || data?.sewerTreatmentPlant?.hasStpAdequacyCertificate || data?.sewerTreatmentPlant?.hasSewerTreatmentPlantAdequacyCertificate || data?.sewerTreatmentPlant?.applyForAdequacyCertificate || data?.sewerTreatmentPlant?.applyForStpAdequacyCertificate)
               ),
             }
           : {}),
@@ -1583,6 +1655,18 @@ export const convertToEditSWUpdate = (data) => {
               isRainwaterHarvesting: !!(
                 data?.rainWaterHarvesting?.hasCertificate || data?.rainWaterHarvesting?.isRainwaterHarvesting
               ),
+              hasAdequacyCertificate: !!(
+                (data?.rainWaterHarvesting?.hasCertificate || data?.rainWaterHarvesting?.isRainwaterHarvesting) &&
+                (data?.rainWaterHarvesting?.hasAdequacyCertificate || data?.rainWaterHarvesting?.hasRainWaterHarvestingAdequacyCertificate || data?.rainWaterHarvesting?.applyForAdequacyCertificate)
+              ),
+              hasRainWaterHarvestingAdequacyCertificate: !!(
+                (data?.rainWaterHarvesting?.hasCertificate || data?.rainWaterHarvesting?.isRainwaterHarvesting) &&
+                (data?.rainWaterHarvesting?.hasAdequacyCertificate || data?.rainWaterHarvesting?.hasRainWaterHarvestingAdequacyCertificate || data?.rainWaterHarvesting?.applyForAdequacyCertificate)
+              ),
+              applyForAdequacyCertificate: !!(
+                (data?.rainWaterHarvesting?.hasCertificate || data?.rainWaterHarvesting?.isRainwaterHarvesting) &&
+                (data?.rainWaterHarvesting?.hasAdequacyCertificate || data?.rainWaterHarvesting?.hasRainWaterHarvestingAdequacyCertificate || data?.rainWaterHarvesting?.applyForAdequacyCertificate)
+              ),
             }
           : {}),
         ...(data?.sewerTreatmentPlant !== undefined
@@ -1596,6 +1680,18 @@ export const convertToEditSWUpdate = (data) => {
               ),
               hasStp: !!(
                 data?.sewerTreatmentPlant?.hasCertificate || data?.sewerTreatmentPlant?.hasStp || data?.sewerTreatmentPlant?.isSewerTreatmentPlant
+              ),
+              hasStpAdequacyCertificate: !!(
+                (data?.sewerTreatmentPlant?.hasCertificate || data?.sewerTreatmentPlant?.hasStp || data?.sewerTreatmentPlant?.isSewerTreatmentPlant) &&
+                (data?.sewerTreatmentPlant?.hasAdequacyCertificate || data?.sewerTreatmentPlant?.hasStpAdequacyCertificate || data?.sewerTreatmentPlant?.hasSewerTreatmentPlantAdequacyCertificate || data?.sewerTreatmentPlant?.applyForAdequacyCertificate || data?.sewerTreatmentPlant?.applyForStpAdequacyCertificate)
+              ),
+              hasSewerTreatmentPlantAdequacyCertificate: !!(
+                (data?.sewerTreatmentPlant?.hasCertificate || data?.sewerTreatmentPlant?.hasStp || data?.sewerTreatmentPlant?.isSewerTreatmentPlant) &&
+                (data?.sewerTreatmentPlant?.hasAdequacyCertificate || data?.sewerTreatmentPlant?.hasStpAdequacyCertificate || data?.sewerTreatmentPlant?.hasSewerTreatmentPlantAdequacyCertificate || data?.sewerTreatmentPlant?.applyForAdequacyCertificate || data?.sewerTreatmentPlant?.applyForStpAdequacyCertificate)
+              ),
+              applyForStpAdequacyCertificate: !!(
+                (data?.sewerTreatmentPlant?.hasCertificate || data?.sewerTreatmentPlant?.hasStp || data?.sewerTreatmentPlant?.isSewerTreatmentPlant) &&
+                (data?.sewerTreatmentPlant?.hasAdequacyCertificate || data?.sewerTreatmentPlant?.hasStpAdequacyCertificate || data?.sewerTreatmentPlant?.hasSewerTreatmentPlantAdequacyCertificate || data?.sewerTreatmentPlant?.applyForAdequacyCertificate || data?.sewerTreatmentPlant?.applyForStpAdequacyCertificate)
               ),
             }
           : {}),
@@ -1839,6 +1935,18 @@ export const convertToSWUpdate = (data) => {
               isRainwaterHarvesting: !!(
                 data?.rainWaterHarvesting?.hasCertificate || data?.rainWaterHarvesting?.isRainwaterHarvesting
               ),
+              hasAdequacyCertificate: !!(
+                (data?.rainWaterHarvesting?.hasCertificate || data?.rainWaterHarvesting?.isRainwaterHarvesting) &&
+                (data?.rainWaterHarvesting?.hasAdequacyCertificate || data?.rainWaterHarvesting?.hasRainWaterHarvestingAdequacyCertificate || data?.rainWaterHarvesting?.applyForAdequacyCertificate)
+              ),
+              hasRainWaterHarvestingAdequacyCertificate: !!(
+                (data?.rainWaterHarvesting?.hasCertificate || data?.rainWaterHarvesting?.isRainwaterHarvesting) &&
+                (data?.rainWaterHarvesting?.hasAdequacyCertificate || data?.rainWaterHarvesting?.hasRainWaterHarvestingAdequacyCertificate || data?.rainWaterHarvesting?.applyForAdequacyCertificate)
+              ),
+              applyForAdequacyCertificate: !!(
+                (data?.rainWaterHarvesting?.hasCertificate || data?.rainWaterHarvesting?.isRainwaterHarvesting) &&
+                (data?.rainWaterHarvesting?.hasAdequacyCertificate || data?.rainWaterHarvesting?.hasRainWaterHarvestingAdequacyCertificate || data?.rainWaterHarvesting?.applyForAdequacyCertificate)
+              ),
             }
           : {}),
         ...(data?.sewerTreatmentPlant !== undefined
@@ -1852,6 +1960,18 @@ export const convertToSWUpdate = (data) => {
               ),
               hasStp: !!(
                 data?.sewerTreatmentPlant?.hasCertificate || data?.sewerTreatmentPlant?.hasStp || data?.sewerTreatmentPlant?.isSewerTreatmentPlant
+              ),
+              hasStpAdequacyCertificate: !!(
+                (data?.sewerTreatmentPlant?.hasCertificate || data?.sewerTreatmentPlant?.hasStp || data?.sewerTreatmentPlant?.isSewerTreatmentPlant) &&
+                (data?.sewerTreatmentPlant?.hasAdequacyCertificate || data?.sewerTreatmentPlant?.hasStpAdequacyCertificate || data?.sewerTreatmentPlant?.hasSewerTreatmentPlantAdequacyCertificate || data?.sewerTreatmentPlant?.applyForAdequacyCertificate || data?.sewerTreatmentPlant?.applyForStpAdequacyCertificate)
+              ),
+              hasSewerTreatmentPlantAdequacyCertificate: !!(
+                (data?.sewerTreatmentPlant?.hasCertificate || data?.sewerTreatmentPlant?.hasStp || data?.sewerTreatmentPlant?.isSewerTreatmentPlant) &&
+                (data?.sewerTreatmentPlant?.hasAdequacyCertificate || data?.sewerTreatmentPlant?.hasStpAdequacyCertificate || data?.sewerTreatmentPlant?.hasSewerTreatmentPlantAdequacyCertificate || data?.sewerTreatmentPlant?.applyForAdequacyCertificate || data?.sewerTreatmentPlant?.applyForStpAdequacyCertificate)
+              ),
+              applyForStpAdequacyCertificate: !!(
+                (data?.sewerTreatmentPlant?.hasCertificate || data?.sewerTreatmentPlant?.hasStp || data?.sewerTreatmentPlant?.isSewerTreatmentPlant) &&
+                (data?.sewerTreatmentPlant?.hasAdequacyCertificate || data?.sewerTreatmentPlant?.hasStpAdequacyCertificate || data?.sewerTreatmentPlant?.hasSewerTreatmentPlantAdequacyCertificate || data?.sewerTreatmentPlant?.applyForAdequacyCertificate || data?.sewerTreatmentPlant?.applyForStpAdequacyCertificate)
               ),
             }
           : {}),

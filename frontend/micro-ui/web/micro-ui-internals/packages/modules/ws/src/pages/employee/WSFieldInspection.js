@@ -167,7 +167,7 @@ const WSFieldInspection = () => {
     const knoQuery = searchKno.trim();
 
     if (!knoQuery) {
-      setToast({ key: "warning", message: t("WS_ENTER_KNO_WARNING", "Please enter K Number / Connection ID") });
+      setToast({ key: "warning", message: t("WS_ENTER_KNO_WARNING") });
       return;
     }
 
@@ -211,7 +211,7 @@ const WSFieldInspection = () => {
         setConnectionDetails({ ...emptyConnectionDetails, tenantId });
         setToast({
           key: "error",
-          message: t("WS_NO_CONNECTION_FOUND_ERR", "Active connection not found for the given K Number"),
+          message: t("WS_NO_CONNECTION_FOUND_ERR"),
         });
         return;
       }
@@ -294,12 +294,12 @@ const WSFieldInspection = () => {
       });
 
       setDataLoaded(true);
-      setToast({ key: "success", message: t("WS_KNO_FETCH_SUCCESS", "KNO details fetched successfully from DJB records.") });
+      setToast({ key: "success", message: t("WS_KNO_FETCH_SUCCESS") });
     } catch (err) {
       console.error("Error searching KNO:", err);
       setDataLoaded(false);
       setConnectionDetails({ ...emptyConnectionDetails });
-      setToast({ key: "error", message: err?.message || t("WS_KNO_SEARCH_ERROR", "Error fetching KNO details.") });
+      setToast({ key: "error", message: err?.message || t("WS_KNO_SEARCH_ERROR") });
     } finally {
       setIsSearching(false);
     }
@@ -318,7 +318,7 @@ const WSFieldInspection = () => {
     if (!file) return;
 
     if (file.size >= 5242880) {
-      setToast({ key: "error", message: t("CS_MAXIMUM_UPLOAD_SIZE_EXCEEDED", "Maximum file size is 5MB") });
+      setToast({ key: "error", message: t("CS_MAXIMUM_UPLOAD_SIZE_EXCEEDED") });
       return;
     }
 
@@ -339,13 +339,13 @@ const WSFieldInspection = () => {
             fileSize: (file.size / 1024).toFixed(1) + " KB",
           },
         ]);
-        setToast({ key: "success", message: t("WS_PHOTO_UPLOAD_SUCCESS", "Photograph uploaded successfully.") });
+        setToast({ key: "success", message: t("WS_PHOTO_UPLOAD_SUCCESS") });
       } else {
-        setToast({ key: "error", message: t("CS_FILE_UPLOAD_ERROR", "File upload failed.") });
+        setToast({ key: "error", message: t("CS_FILE_UPLOAD_ERROR") });
       }
     } catch (err) {
       console.error("File upload error:", err);
-      setToast({ key: "error", message: t("CS_FILE_UPLOAD_ERROR", "File upload failed.") });
+      setToast({ key: "error", message: t("CS_FILE_UPLOAD_ERROR") });
     } finally {
       setIsUploading(false);
       e.target.value = null;
@@ -357,7 +357,7 @@ const WSFieldInspection = () => {
   };
 
   const handleReset = () => {
-    if (window.confirm(t("WS_RESET_CONFIRMATION", "Are you sure you want to reset the checklist, evidence, and declaration?"))) {
+    if (window.confirm(t("WS_RESET_CONFIRMATION"))) {
       setChecklist({
         ...initialChecklist,
         siteInspectorName: loggedInUser?.name || "",
@@ -368,7 +368,7 @@ const WSFieldInspection = () => {
         ...initialDeclaration,
         inspectorName: loggedInUser?.name || "",
       });
-      setToast({ key: "info", message: t("WS_CHECKLIST_RESET", "Checklist and declaration have been reset.") });
+      setToast({ key: "info", message: t("WS_CHECKLIST_RESET") });
     }
   };
 
@@ -517,37 +517,37 @@ const WSFieldInspection = () => {
   // Submit Site Inspection to endpoint /site-inspection/_submit
   const handleSubmit = async () => {
     if (!dataLoaded) {
-      setToast({ key: "error", message: t("WS_LOAD_KNO_FIRST", "Please search and load a valid KNO record first.") });
+      setToast({ key: "error", message: t("WS_LOAD_KNO_FIRST") });
       return;
     }
 
     if (!checklist.inspectionDate) {
-      setToast({ key: "error", message: t("WS_REQ_INSPECTION_DATE", "Please specify the Inspection Date.") });
+      setToast({ key: "error", message: t("WS_REQ_INSPECTION_DATE") });
       return;
     }
 
     if (!checklist.inspectionTime) {
-      setToast({ key: "error", message: t("WS_REQ_INSPECTION_TIME", "Please specify the Inspection Time.") });
+      setToast({ key: "error", message: t("WS_REQ_INSPECTION_TIME") });
       return;
     }
 
     if (!checklist.siteInspectorName?.trim()) {
-      setToast({ key: "error", message: t("WS_REQ_INSPECTOR_NAME", "Please enter Site Inspector Name.") });
+      setToast({ key: "error", message: t("WS_REQ_INSPECTOR_NAME") });
       return;
     }
 
     if (!checklist.siteInspectorRemarks?.trim()) {
-      setToast({ key: "error", message: t("WS_REQ_INSPECTOR_REMARKS", "Please enter Site Inspector Observations / Remarks.") });
+      setToast({ key: "error", message: t("WS_REQ_INSPECTOR_REMARKS") });
       return;
     }
 
     if (uploadedDocuments.length === 0) {
-      setToast({ key: "error", message: t("WS_REQ_EVIDENCE_PHOTO", "Please upload at least one Site Photograph evidence.") });
+      setToast({ key: "error", message: t("WS_REQ_EVIDENCE_PHOTO") });
       return;
     }
 
     if (!declaration.agreed) {
-      setToast({ key: "error", message: t("WS_REQ_DECLARATION_AGREE", "Please accept the Declaration before submitting the report.") });
+      setToast({ key: "error", message: t("WS_REQ_DECLARATION_AGREE") });
       return;
     }
 
@@ -651,12 +651,12 @@ const WSFieldInspection = () => {
         responseInfo: response?.ResponseInfo || response?.responseInfo,
       });
       setIsSubmittedSuccess(true);
-      setToast({ key: "success", message: t("WS_SITE_INSPECTION_SUCCESS", "Site Inspection report submitted successfully!") });
+      setToast({ key: "success", message: t("WS_SITE_INSPECTION_SUCCESS") });
     } catch (err) {
       console.error("Error submitting site inspection:", err);
       setToast({
         key: "error",
-        message: err?.response?.data?.Errors?.[0]?.message || err?.message || t("WS_SUBMISSION_ERROR", "Submission failed. Please try again."),
+        message: err?.response?.data?.Errors?.[0]?.message || err?.message || t("WS_SUBMISSION_ERROR"),
       });
     } finally {
       setIsSubmitting(false);
@@ -1217,28 +1217,25 @@ const WSFieldInspection = () => {
 
         {/* Screen Success View */}
         <div className="field-inspection-screen-view">
-          <Header>{t("WS_SITE_INSPECTION_HEADER", "Site Inspection – New Water Connection")}</Header>
+          <Header>{t("WS_SITE_INSPECTION_HEADER")}</Header>
           <Card>
             <Banner
               successful={true}
-              message={t("WS_SITE_INSPECTION_SUBMITTED_SUCCESS", "Site Inspection Report Submitted Successfully")}
+              message={t("WS_SITE_INSPECTION_SUBMITTED_SUCCESS")}
               applicationNumber={submittedData?.connectionNo || connectionDetails.connectionNo}
-              info={t("WS_CONNECTION_NO_LABEL", "Connection No (KNO)")}
+              info={t("WS_CONNECTION_NO_LABEL")}
             />
             <CardText>
-              {t(
-                "WS_SITE_INSPECTION_SUCCESS_NOTE",
-                "The physical site inspection report and checklist evidence have been successfully recorded against the connection."
-              )}
+              {t("WS_SITE_INSPECTION_SUCCESS_NOTE")}
             </CardText>
             <ActionBar>
               <SubmitBar
-                label={t("WS_PRINT_FORM", "Print Form")}
+                label={t("WS_PRINT_FORM")}
                 onSubmit={handlePrint}
                 style={{ backgroundColor: "#e6f4ff", color: "#003366", border: "1px solid #91caff", marginRight: "12px" }}
               />
               <SubmitBar
-                label={t("WS_INSPECT_ANOTHER_KNO", "Inspect Another KNO")}
+                label={t("WS_INSPECT_ANOTHER_KNO")}
                 onSubmit={() => {
                   setIsSubmittedSuccess(false);
                   setDataLoaded(false);
@@ -1250,7 +1247,7 @@ const WSFieldInspection = () => {
                 style={{ marginRight: "12px" }}
               />
               <SubmitBar
-                label={t("CORE_COMMON_GO_TO_HOME", "Go to Home")}
+                label={t("CORE_COMMON_GO_TO_HOME")}
                 onSubmit={() => history.push("/digit-ui/employee/ws/water/inbox")}
               />
             </ActionBar>
@@ -1353,9 +1350,9 @@ const WSFieldInspection = () => {
 
       {/* Interactive Screen View */}
       <div className="field-inspection-screen-view">
-        <Header>{t("WS_SITE_INSPECTION_TITLE", "Site Inspection – New Water Connection")}</Header>
+        <Header>{t("WS_SITE_INSPECTION_TITLE")}</Header>
         <div style={{ color: "#505a5f", fontSize: "14px", marginTop: "-8px", marginBottom: "16px" }}>
-          {t("WS_SITE_INSPECTION_SUBTITLE", "Post KNO issuance | Site Inspector Form")}
+          {t("WS_SITE_INSPECTION_SUBTITLE")}
         </div>
 
         {/* Workflow Info Box */}
@@ -1367,70 +1364,70 @@ const WSFieldInspection = () => {
 
         {/* Section 1: Search KNO */}
         <Card>
-          <CardSubHeader>{t("WS_SEARCH_KNO_SECTION", "1. Search KNO")}</CardSubHeader>
+          <CardSubHeader>{t("WS_SEARCH_KNO_SECTION")}</CardSubHeader>
           <div style={{ maxWidth: "600px", marginTop: "12px" }}>
             <LabelFieldPair>
-              <CardLabel style={{ fontWeight: "600", width: "120px" }}>{`${t("WS_KNO_LABEL", "KNO")} *`}</CardLabel>
+              <CardLabel style={{ fontWeight: "600", width: "120px" }}>{`${t("WS_KNO_LABEL")} *`}</CardLabel>
               <div className="field" style={{ display: "flex", gap: "12px", width: "100%" }}>
                 <TextInput
                   name="searchKno"
                   value={searchKno}
                   onChange={(e) => setSearchKno(e.target.value)}
-                  placeholder={t("WS_ENTER_KNO_PLACEHOLDER", "Enter KNO")}
+                  placeholder={t("WS_ENTER_KNO_PLACEHOLDER")}
                   onKeyDown={(e) => e.key === "Enter" && handleSearch(e)}
                 />
                 <SubmitBar
-                  label={isSearching ? t("COMMON_SEARCHING", "Searching...") : t("WS_FETCH_KNO_DETAILS", "Fetch KNO Details")}
+                  label={isSearching ? t("COMMON_SEARCHING") : t("WS_FETCH_KNO_DETAILS")}
                   onSubmit={handleSearch}
                   disabled={isSearching}
                 />
               </div>
             </LabelFieldPair>
             <CardSectionSubText style={{ marginTop: "4px", fontSize: "12px" }}>
-              {t("WS_SEARCH_KNO_HELPER", "The live DJB application should retrieve the issued KNO record and populate the read-only sections below.")}
+              {t("WS_SEARCH_KNO_HELPER")}
             </CardSectionSubText>
           </div>
         </Card>
 
         {/* Section 2: KNO Issuance Details (Read-only) */}
         <Card>
-          <CardSubHeader>{t("WS_KNO_ISSUANCE_DETAILS", "2. KNO Issuance Details")}</CardSubHeader>
-          <CardSectionSubText>{t("WS_KNO_ISSUANCE_SUBTEXT", "Auto-fetched from KNO issuance record; read-only for site inspector.")}</CardSectionSubText>
+          <CardSubHeader>{t("WS_KNO_ISSUANCE_DETAILS")}</CardSubHeader>
+          <CardSectionSubText>{t("WS_KNO_ISSUANCE_SUBTEXT")}</CardSectionSubText>
           <div style={grid3Style}>
             <div>
-              <CardLabel>{t("WS_KNO_LABEL", "KNO")}</CardLabel>
+              <CardLabel>{t("WS_KNO_LABEL")}</CardLabel>
               <TextInput disabled={true} value={connectionDetails.kno} />
             </div>
             <div>
-              <CardLabel>{t("WS_APPLICATION_NUMBER_LABEL", "Application Number")}</CardLabel>
+              <CardLabel>{t("WS_APPLICATION_NUMBER_LABEL")}</CardLabel>
               <TextInput disabled={true} value={connectionDetails.applicationNo} />
             </div>
             <div>
-              <CardLabel>{t("WS_KNO_ISSUANCE_DATE_LABEL", "KNO Issuance Date")}</CardLabel>
+              <CardLabel>{t("WS_KNO_ISSUANCE_DATE_LABEL")}</CardLabel>
               <TextInput disabled={true} value={connectionDetails.knoIssuanceDate} />
             </div>
             <div>
-              <CardLabel>{t("WS_ZONE_LABEL", "Zone")}</CardLabel>
+              <CardLabel>{t("WS_ZONE_LABEL")}</CardLabel>
               <TextInput disabled={true} value={connectionDetails.zone} />
             </div>
             <div>
-              <CardLabel>{t("WS_ZRO_NAME_OFFICE_LABEL", "ZRO Name / Office")}</CardLabel>
+              <CardLabel>{t("WS_ZRO_NAME_OFFICE_LABEL")}</CardLabel>
               <TextInput disabled={true} value={connectionDetails.zroOffice} />
             </div>
             <div>
-              <CardLabel>{t("WS_CONNECTION_TYPE_LABEL", "Connection Type")}</CardLabel>
+              <CardLabel>{t("WS_CONNECTION_TYPE_LABEL")}</CardLabel>
               <TextInput disabled={true} value={connectionDetails.connectionType} />
             </div>
             <div>
-              <CardLabel>{t("WS_CONNECTION_CATEGORY_LABEL", "Connection Category")}</CardLabel>
+              <CardLabel>{t("WS_CONNECTION_CATEGORY_LABEL")}</CardLabel>
               <TextInput disabled={true} value={connectionDetails.connectionCategory} />
             </div>
             <div>
-              <CardLabel>{t("WS_APPLICATION_STATUS_LABEL", "Application Status")}</CardLabel>
+              <CardLabel>{t("WS_APPLICATION_STATUS_LABEL")}</CardLabel>
               <TextInput disabled={true} value={connectionDetails.applicationStatus} />
             </div>
             <div>
-              <CardLabel>{t("WS_ASSIGNED_LICENSED_PLUMBER_LABEL", "Assigned Licensed Plumber")}</CardLabel>
+              <CardLabel>{t("WS_ASSIGNED_LICENSED_PLUMBER_LABEL")}</CardLabel>
               <TextInput disabled={true} value={connectionDetails.assignedLicensedPlumber} />
             </div>
           </div>
@@ -1438,43 +1435,43 @@ const WSFieldInspection = () => {
 
         {/* Section 3: Property Details (Read-only) */}
         <Card>
-          <CardSubHeader>{t("WS_PROPERTY_DETAILS", "3. Property Details")}</CardSubHeader>
-          <CardSectionSubText>{t("WS_PREFILLED_FROM_CITIZEN_APP", "Prefilled from citizen application.")}</CardSectionSubText>
+          <CardSubHeader>{t("WS_PROPERTY_DETAILS")}</CardSubHeader>
+          <CardSectionSubText>{t("WS_PREFILLED_FROM_CITIZEN_APP")}</CardSectionSubText>
           <div style={grid3Style}>
             <div>
-              <CardLabel>{t("WS_PROPERTY_ADDRESS_LABEL", "Property Address")}</CardLabel>
+              <CardLabel>{t("WS_PROPERTY_ADDRESS_LABEL")}</CardLabel>
               <TextInput disabled={true} value={connectionDetails.propertyAddress} />
             </div>
             <div>
-              <CardLabel>{t("WS_CITY_LABEL", "City")}</CardLabel>
+              <CardLabel>{t("WS_CITY_LABEL")}</CardLabel>
               <TextInput disabled={true} value={connectionDetails.city} />
             </div>
             <div>
-              <CardLabel>{t("WS_PIN_CODE_LABEL", "PIN Code")}</CardLabel>
+              <CardLabel>{t("WS_PIN_CODE_LABEL")}</CardLabel>
               <TextInput disabled={true} value={connectionDetails.pincode} />
             </div>
             <div>
-              <CardLabel>{t("WS_LOCALITY_LABEL", "Locality")}</CardLabel>
+              <CardLabel>{t("WS_LOCALITY_LABEL")}</CardLabel>
               <TextInput disabled={true} value={connectionDetails.locality} />
             </div>
             <div>
-              <CardLabel>{t("WS_SUB_LOCALITY_LABEL", "Sub Locality")}</CardLabel>
+              <CardLabel>{t("WS_SUB_LOCALITY_LABEL")}</CardLabel>
               <TextInput disabled={true} value={connectionDetails.subLocality} />
             </div>
             <div>
-              <CardLabel>{t("WS_COLONY_CATEGORY_LABEL", "Colony Category")}</CardLabel>
+              <CardLabel>{t("WS_COLONY_CATEGORY_LABEL")}</CardLabel>
               <TextInput disabled={true} value={connectionDetails.colonyCategory} />
             </div>
             <div>
-              <CardLabel>{t("WS_PROPERTY_USE_LABEL", "Property Use")}</CardLabel>
+              <CardLabel>{t("WS_PROPERTY_USE_LABEL")}</CardLabel>
               <TextInput disabled={true} value={connectionDetails.propertyUse} />
             </div>
             <div>
-              <CardLabel>{t("WS_OWNERSHIP_TYPE_LABEL", "Ownership Type")}</CardLabel>
+              <CardLabel>{t("WS_OWNERSHIP_TYPE_LABEL")}</CardLabel>
               <TextInput disabled={true} value={connectionDetails.ownershipType} />
             </div>
             <div>
-              <CardLabel>{t("WS_HOUSE_PROPERTY_NO_LABEL", "House / Property Number")}</CardLabel>
+              <CardLabel>{t("WS_HOUSE_PROPERTY_NO_LABEL")}</CardLabel>
               <TextInput disabled={true} value={connectionDetails.houseNo} />
             </div>
           </div>
@@ -1482,31 +1479,31 @@ const WSFieldInspection = () => {
 
         {/* Section 4: Consumer Details (Read-only) */}
         <Card>
-          <CardSubHeader>{t("WS_CONSUMER_DETAILS", "4. Consumer Details")}</CardSubHeader>
-          <CardSectionSubText>{t("WS_PREFILLED_FROM_CITIZEN_APP", "Prefilled from citizen application.")}</CardSectionSubText>
+          <CardSubHeader>{t("WS_CONSUMER_DETAILS")}</CardSubHeader>
+          <CardSectionSubText>{t("WS_PREFILLED_FROM_CITIZEN_APP")}</CardSectionSubText>
           <div style={grid3Style}>
             <div>
-              <CardLabel>{t("WS_CONSUMER_NAME_LABEL", "Consumer / Applicant Name")}</CardLabel>
+              <CardLabel>{t("WS_CONSUMER_NAME_LABEL")}</CardLabel>
               <TextInput disabled={true} value={connectionDetails.consumerName} />
             </div>
             <div>
-              <CardLabel>{t("WS_MOBILE_NUMBER_LABEL", "Mobile Number")}</CardLabel>
+              <CardLabel>{t("WS_MOBILE_NUMBER_LABEL")}</CardLabel>
               <TextInput disabled={true} value={connectionDetails.mobileNumber} />
             </div>
             <div>
-              <CardLabel>{t("WS_EMAIL_ID_LABEL", "Email ID")}</CardLabel>
+              <CardLabel>{t("WS_EMAIL_ID_LABEL")}</CardLabel>
               <TextInput disabled={true} value={connectionDetails.emailId} />
             </div>
             <div>
-              <CardLabel>{t("WS_APPLICANT_TYPE_LABEL", "Applicant Type")}</CardLabel>
+              <CardLabel>{t("WS_APPLICANT_TYPE_LABEL")}</CardLabel>
               <TextInput disabled={true} value={connectionDetails.applicantType} />
             </div>
             <div>
-              <CardLabel>{t("WS_IDENTITY_TYPE_LABEL", "Identity / Reference Type")}</CardLabel>
+              <CardLabel>{t("WS_IDENTITY_TYPE_LABEL")}</CardLabel>
               <TextInput disabled={true} value={connectionDetails.identityType} />
             </div>
             <div>
-              <CardLabel>{t("WS_ALT_CONTACT_LABEL", "Alternate Contact Number")}</CardLabel>
+              <CardLabel>{t("WS_ALT_CONTACT_LABEL")}</CardLabel>
               <TextInput disabled={true} value={connectionDetails.alternateContactNumber} />
             </div>
           </div>
@@ -1514,43 +1511,43 @@ const WSFieldInspection = () => {
 
         {/* Section 5: Plot Details (Read-only) */}
         <Card>
-          <CardSubHeader>{t("WS_PLOT_DETAILS", "5. Plot Details")}</CardSubHeader>
-          <CardSectionSubText>{t("WS_PREFILLED_PLOT_INFO", "Prefilled plot / premises information as submitted in the application.")}</CardSectionSubText>
+          <CardSubHeader>{t("WS_PLOT_DETAILS")}</CardSubHeader>
+          <CardSectionSubText>{t("WS_PREFILLED_PLOT_INFO")}</CardSectionSubText>
           <div style={grid3Style}>
             <div>
-              <CardLabel>{t("WS_PLOT_NUMBER_LABEL", "Plot Number")}</CardLabel>
+              <CardLabel>{t("WS_PLOT_NUMBER_LABEL")}</CardLabel>
               <TextInput disabled={true} value={connectionDetails.plotNumber} />
             </div>
             <div>
-              <CardLabel>{t("WS_PLOT_AREA_LABEL", "Plot Area")}</CardLabel>
+              <CardLabel>{t("WS_PLOT_AREA_LABEL")}</CardLabel>
               <TextInput disabled={true} value={connectionDetails.plotArea} />
             </div>
             <div>
-              <CardLabel>{t("WS_PLOT_AREA_UNIT_LABEL", "Plot Area Unit")}</CardLabel>
+              <CardLabel>{t("WS_PLOT_AREA_UNIT_LABEL")}</CardLabel>
               <TextInput disabled={true} value={connectionDetails.plotAreaUnit} />
             </div>
             <div>
-              <CardLabel>{t("WS_NUMBER_OF_FLOORS_LABEL", "Number of Floors")}</CardLabel>
+              <CardLabel>{t("WS_NUMBER_OF_FLOORS_LABEL")}</CardLabel>
               <TextInput disabled={true} value={connectionDetails.numberOfFloors} />
             </div>
             <div>
-              <CardLabel>{t("WS_COVERED_AREA_LABEL", "Covered Area")}</CardLabel>
+              <CardLabel>{t("WS_COVERED_AREA_LABEL")}</CardLabel>
               <TextInput disabled={true} value={connectionDetails.coveredArea} />
             </div>
             <div>
-              <CardLabel>{t("WS_ROAD_WIDTH_LABEL", "Road Width")}</CardLabel>
+              <CardLabel>{t("WS_ROAD_WIDTH_LABEL")}</CardLabel>
               <TextInput disabled={true} value={connectionDetails.roadWidth} />
             </div>
             <div>
-              <CardLabel>{t("WS_PROPERTY_TYPE_LABEL", "Property Type")}</CardLabel>
+              <CardLabel>{t("WS_PROPERTY_TYPE_LABEL")}</CardLabel>
               <TextInput disabled={true} value={connectionDetails.propertyType} />
             </div>
             <div>
-              <CardLabel>{t("WS_BUILDING_STATUS_LABEL", "Building Status")}</CardLabel>
+              <CardLabel>{t("WS_BUILDING_STATUS_LABEL")}</CardLabel>
               <TextInput disabled={true} value={connectionDetails.buildingStatus} />
             </div>
             <div>
-              <CardLabel>{t("WS_EXISTING_WATER_CONN_LABEL", "Existing Water Connection")}</CardLabel>
+              <CardLabel>{t("WS_EXISTING_WATER_CONN_LABEL")}</CardLabel>
               <TextInput disabled={true} value={connectionDetails.existingWaterConnection} />
             </div>
           </div>
@@ -1558,13 +1555,13 @@ const WSFieldInspection = () => {
 
         {/* Section 6: Site Inspection Checklist (Editable) */}
         <Card>
-          <CardSubHeader>{t("WS_SITE_INSPECTION_CHECKLIST", "6. Site Inspection Checklist")}</CardSubHeader>
-          <CardSectionSubText>{t("WS_CHECKLIST_SUBTEXT", "To be filled by the site inspector during the physical site visit.")}</CardSectionSubText>
+          <CardSubHeader>{t("WS_SITE_INSPECTION_CHECKLIST")}</CardSubHeader>
+          <CardSectionSubText>{t("WS_CHECKLIST_SUBTEXT")}</CardSectionSubText>
 
           {/* Metadata Row 1 */}
           <div style={grid3Style}>
             <div>
-              <CardLabel>{`${t("WS_INSPECTION_DATE_LABEL", "Inspection Date")} *`}</CardLabel>
+              <CardLabel>{`${t("WS_INSPECTION_DATE_LABEL")} *`}</CardLabel>
               <TextInput
                 type="date"
                 value={checklist.inspectionDate}
@@ -1572,7 +1569,7 @@ const WSFieldInspection = () => {
               />
             </div>
             <div>
-              <CardLabel>{`${t("WS_INSPECTION_TIME_LABEL", "Inspection Time")} *`}</CardLabel>
+              <CardLabel>{`${t("WS_INSPECTION_TIME_LABEL")} *`}</CardLabel>
               <TextInput
                 value={checklist.inspectionTime}
                 placeholder="11:30 AM"
@@ -1580,10 +1577,10 @@ const WSFieldInspection = () => {
               />
             </div>
             <div>
-              <CardLabel>{`${t("WS_INSPECTOR_NAME_LABEL", "Site Inspector Name")} *`}</CardLabel>
+              <CardLabel>{`${t("WS_INSPECTOR_NAME_LABEL")} *`}</CardLabel>
               <TextInput
                 value={checklist.siteInspectorName}
-                placeholder={t("WS_ENTER_INSPECTOR_NAME", "Enter inspector name")}
+                placeholder={t("WS_ENTER_INSPECTOR_NAME")}
                 onChange={(e) => handleChecklistChange("siteInspectorName", e.target.value)}
               />
             </div>
@@ -1592,15 +1589,15 @@ const WSFieldInspection = () => {
           {/* Metadata Row 2 */}
           <div style={grid3Style}>
             <div>
-              <CardLabel>{t("WS_INSPECTOR_EMPLOYEE_ID_LABEL", "Inspector Employee ID")}</CardLabel>
+              <CardLabel>{t("WS_INSPECTOR_EMPLOYEE_ID_LABEL")}</CardLabel>
               <TextInput
                 value={checklist.inspectorEmployeeId}
-                placeholder={t("WS_EMPLOYEE_ID_PLACEHOLDER", "Employee ID")}
+                placeholder={t("WS_EMPLOYEE_ID_PLACEHOLDER")}
                 onChange={(e) => handleChecklistChange("inspectorEmployeeId", e.target.value)}
               />
             </div>
             <div>
-              <CardLabel>{t("WS_LICENSED_PLUMBER_PRESENT_LABEL", "Licensed Plumber Present?")}</CardLabel>
+              <CardLabel>{t("WS_LICENSED_PLUMBER_PRESENT_LABEL")}</CardLabel>
               <Dropdown
                 option={yesNoOptions}
                 selected={checklist.isLicensedPlumberPresent}
@@ -1610,7 +1607,7 @@ const WSFieldInspection = () => {
               />
             </div>
             <div>
-              <CardLabel>{t("WS_CONSUMER_REP_PRESENT_LABEL", "Consumer / Representative Present?")}</CardLabel>
+              <CardLabel>{t("WS_CONSUMER_REP_PRESENT_LABEL")}</CardLabel>
               <Dropdown
                 option={yesNoOptions}
                 selected={checklist.isConsumerRepresentativePresent}
@@ -1628,32 +1625,32 @@ const WSFieldInspection = () => {
               <CheckBox
                 checked={checklist.consumerIdentityVerified}
                 onChange={(e) => handleChecklistChange("consumerIdentityVerified", e.target.checked)}
-                label={t("WS_CHECKLIST_CONSUMER_IDENTITY", "Consumer identity / applicant details verified at site")}
+                label={t("WS_CHECKLIST_CONSUMER_IDENTITY")}
               />
               <CheckBox
                 checked={checklist.propertyAddressVerified}
                 onChange={(e) => handleChecklistChange("propertyAddressVerified", e.target.checked)}
-                label={t("WS_CHECKLIST_PROP_ADDRESS", "Property address and premises location verified")}
+                label={t("WS_CHECKLIST_PROP_ADDRESS")}
               />
               <CheckBox
                 checked={checklist.propertyUseVerified}
                 onChange={(e) => handleChecklistChange("propertyUseVerified", e.target.checked)}
-                label={t("WS_CHECKLIST_PROP_USE", "Property use and category verified")}
+                label={t("WS_CHECKLIST_PROP_USE")}
               />
               <CheckBox
                 checked={checklist.existingWaterConnectionChecked}
                 onChange={(e) => handleChecklistChange("existingWaterConnectionChecked", e.target.checked)}
-                label={t("WS_CHECKLIST_EXISTING_CONN", "Existing water connection / service line checked")}
+                label={t("WS_CHECKLIST_EXISTING_CONN")}
               />
               <CheckBox
                 checked={checklist.waterMainAndRoadAccessFeasible}
                 onChange={(e) => handleChecklistChange("waterMainAndRoadAccessFeasible", e.target.checked)}
-                label={t("WS_CHECKLIST_ROAD_ACCESS", "Water main and road access feasibility checked")}
+                label={t("WS_CHECKLIST_ROAD_ACCESS")}
               />
               <CheckBox
                 checked={checklist.licensedPlumberVerified}
                 onChange={(e) => handleChecklistChange("licensedPlumberVerified", e.target.checked)}
-                label={t("WS_CHECKLIST_PLUMBER_AUTH", "Licensed plumber details / authorization verified")}
+                label={t("WS_CHECKLIST_PLUMBER_AUTH")}
               />
             </div>
 
@@ -1662,32 +1659,32 @@ const WSFieldInspection = () => {
               <CheckBox
                 checked={checklist.knoDetailsMatched}
                 onChange={(e) => handleChecklistChange("knoDetailsMatched", e.target.checked)}
-                label={t("WS_CHECKLIST_KNO_MATCHED", "KNO and application details matched")}
+                label={t("WS_CHECKLIST_KNO_MATCHED")}
               />
               <CheckBox
                 checked={checklist.localityColonyVerified}
                 onChange={(e) => handleChecklistChange("localityColonyVerified", e.target.checked)}
-                label={t("WS_CHECKLIST_LOCALITY_VERIFIED", "Locality / colony details verified")}
+                label={t("WS_CHECKLIST_LOCALITY_VERIFIED")}
               />
               <CheckBox
                 checked={checklist.plotDetailsVerified}
                 onChange={(e) => handleChecklistChange("plotDetailsVerified", e.target.checked)}
-                label={t("WS_CHECKLIST_PLOT_DETAILS", "Plot details / area verified at site")}
+                label={t("WS_CHECKLIST_PLOT_DETAILS")}
               />
               <CheckBox
                 checked={checklist.proposedConnectionPointIdentified}
                 onChange={(e) => handleChecklistChange("proposedConnectionPointIdentified", e.target.checked)}
-                label={t("WS_CHECKLIST_PROPOSED_POINT", "Proposed connection point identified")}
+                label={t("WS_CHECKLIST_PROPOSED_POINT")}
               />
               <CheckBox
                 checked={checklist.meterLocationIdentifiedAndAccessible}
                 onChange={(e) => handleChecklistChange("meterLocationIdentifiedAndAccessible", e.target.checked)}
-                label={t("WS_CHECKLIST_METER_LOCATION", "Meter installation location identified and accessible")}
+                label={t("WS_CHECKLIST_METER_LOCATION")}
               />
               <CheckBox
                 checked={checklist.siteConditionsMatchedApplication}
                 onChange={(e) => handleChecklistChange("siteConditionsMatchedApplication", e.target.checked)}
-                label={t("WS_CHECKLIST_SITE_CONDITIONS", "Site conditions match application details")}
+                label={t("WS_CHECKLIST_SITE_CONDITIONS")}
               />
             </div>
           </div>
@@ -1695,7 +1692,7 @@ const WSFieldInspection = () => {
           {/* Dropdown Options Row */}
           <div style={grid3Style}>
             <div>
-              <CardLabel>{`${t("WS_SITE_ACCESSIBILITY_LABEL", "Site Accessibility")} *`}</CardLabel>
+              <CardLabel>{`${t("WS_SITE_ACCESSIBILITY_LABEL")} *`}</CardLabel>
               <Dropdown
                 option={siteAccessibilityOptions}
                 selected={checklist.siteAccessibility}
@@ -1705,7 +1702,7 @@ const WSFieldInspection = () => {
               />
             </div>
             <div>
-              <CardLabel>{`${t("WS_PROPOSED_METER_LOC_LABEL", "Proposed Meter Location")} *`}</CardLabel>
+              <CardLabel>{`${t("WS_PROPOSED_METER_LOC_LABEL")} *`}</CardLabel>
               <Dropdown
                 option={proposedMeterLocationOptions}
                 selected={checklist.proposedMeterLocation}
@@ -1715,7 +1712,7 @@ const WSFieldInspection = () => {
               />
             </div>
             <div>
-              <CardLabel>{`${t("WS_SITE_FEASIBILITY_LABEL", "Site Feasibility Observed")} *`}</CardLabel>
+              <CardLabel>{`${t("WS_SITE_FEASIBILITY_LABEL")} *`}</CardLabel>
               <Dropdown
                 option={siteFeasibilityOptions}
                 selected={checklist.siteFeasibilityObserved}
@@ -1728,11 +1725,11 @@ const WSFieldInspection = () => {
 
           {/* Observations / Remarks */}
           <div style={{ marginTop: "16px" }}>
-            <CardLabel>{`${t("WS_INSPECTOR_REMARKS_LABEL", "Site Inspector Observations / Remarks")} *`}</CardLabel>
+            <CardLabel>{`${t("WS_INSPECTOR_REMARKS_LABEL")} *`}</CardLabel>
             <TextArea
               name="siteInspectorRemarks"
               value={checklist.siteInspectorRemarks}
-              placeholder={t("WS_ENTER_SITE_REMARKS", "Enter site observations, discrepancies, measurements and findings")}
+              placeholder={t("WS_ENTER_SITE_REMARKS")}
               onChange={(e) => handleChecklistChange("siteInspectorRemarks", e.target.value)}
               style={{ minHeight: "90px" }}
             />
@@ -1741,9 +1738,9 @@ const WSFieldInspection = () => {
 
         {/* Section 7: Site Inspection Evidence (Editable) */}
         <Card>
-          <CardSubHeader>{t("WS_SITE_INSPECTION_EVIDENCE", "7. Site Inspection Evidence")}</CardSubHeader>
+          <CardSubHeader>{t("WS_SITE_INSPECTION_EVIDENCE")}</CardSubHeader>
           <div style={{ marginTop: "12px" }}>
-            <CardLabel>{`${t("WS_UPLOAD_SITE_PHOTOS", "Upload Site Photograph(s)")} *`}</CardLabel>
+            <CardLabel>{`${t("WS_UPLOAD_SITE_PHOTOS")} *`}</CardLabel>
             <UploadFile
               id="site-inspection-photos"
               accept="image/*"
@@ -1751,16 +1748,13 @@ const WSFieldInspection = () => {
               onDelete={() => setUploadedDocuments([])}
               message={
                 uploadedDocuments.length > 0
-                  ? `${uploadedDocuments.length} ${t("CS_ACTION_FILEUPLOADED", "file(s) uploaded")}`
-                  : t("ES_NO_FILE_SELECTED_LABEL", "No file selected")
+                  ? `${uploadedDocuments.length} ${t("CS_ACTION_FILEUPLOADED")}`
+                  : t("ES_NO_FILE_SELECTED_LABEL")
               }
               disabled={isUploading}
             />
             <CardSectionSubText style={{ marginTop: "6px", fontSize: "12px" }}>
-              {t(
-                "WS_UPLOAD_EVIDENCE_HELPER",
-                "Upload photographs of property frontage, premises, proposed connection point and proposed meter installation location. No supporting documents or coordinates are required."
-              )}
+              {t("WS_UPLOAD_EVIDENCE_HELPER")}
             </CardSectionSubText>
 
             {/* List of uploaded photos with remove option */}
@@ -1795,7 +1789,7 @@ const WSFieldInspection = () => {
                         fontSize: "12px",
                       }}
                     >
-                      {t("CS_COMMON_DELETE", "Remove")}
+                      {t("CS_COMMON_DELETE")}
                     </button>
                   </div>
                 ))}
@@ -1806,25 +1800,22 @@ const WSFieldInspection = () => {
 
         {/* Section 8: Declaration (Editable) */}
         <Card>
-          <CardSubHeader>{t("WS_DECLARATION", "8. Declaration")}</CardSubHeader>
+          <CardSubHeader>{t("WS_DECLARATION")}</CardSubHeader>
           <div style={{ marginTop: "12px", marginBottom: "16px" }}>
             <CheckBox
               checked={declaration.agreed}
               onChange={(e) => setDeclaration((prev) => ({ ...prev, agreed: e.target.checked }))}
-              label={t(
-                "WS_INSPECTION_DECLARATION_TEXT",
-                "I hereby declare that I have physically inspected the site and that the details, checklist responses, observations and photographs submitted in this inspection report are true and correct to the best of my knowledge. I understand that this report will be recorded against the respective KNO."
-              )}
+              label={t("WS_INSPECTION_DECLARATION_TEXT")}
             />
           </div>
 
           <div style={grid2Style}>
             <div>
-              <CardLabel>{t("WS_INSPECTOR_NAME_LABEL", "Inspector Name")}</CardLabel>
+              <CardLabel>{t("WS_INSPECTOR_NAME_LABEL")}</CardLabel>
               <TextInput disabled={true} value={declaration.inspectorName} />
             </div>
             <div>
-              <CardLabel>{t("WS_SUBMISSION_DATE_LABEL", "Submission Date")}</CardLabel>
+              <CardLabel>{t("WS_SUBMISSION_DATE_LABEL")}</CardLabel>
               <TextInput
                 type="date"
                 value={declaration.submissionDate}
@@ -1837,17 +1828,17 @@ const WSFieldInspection = () => {
         {/* Bottom Actions */}
         <ActionBar>
           <SubmitBar
-            label={t("WS_PRINT_FORM", "Print Form")}
+            label={t("WS_PRINT_FORM")}
             onSubmit={handlePrint}
             style={{ backgroundColor: "#e6f4ff", color: "#003366", border: "1px solid #91caff", marginRight: "12px" }}
           />
           <SubmitBar
-            label={t("WS_RESET", "Reset")}
+            label={t("WS_RESET")}
             onSubmit={handleReset}
             style={{ backgroundColor: "#fff1f0", color: "#cf1322", border: "1px solid #ffa39e", marginRight: "12px" }}
           />
           <SubmitBar
-            label={isSubmitting ? t("WS_SUBMITTING", "Submitting...") : t("WS_SUBMIT_SITE_INSPECTION", "Submit Site Inspection")}
+            label={isSubmitting ? t("WS_SUBMITTING") : t("WS_SUBMIT_SITE_INSPECTION")}
             onSubmit={handleSubmit}
             disabled={isSubmitting}
           />

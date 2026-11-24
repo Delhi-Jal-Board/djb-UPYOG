@@ -2277,12 +2277,40 @@ const NewApplication = () => {
                         ]}
                         optionsKey="i18nKey"
                         selectedOption={props.value ? { i18nKey: "CORE_COMMON_YES", code: true } : { i18nKey: "CORE_COMMON_NO", code: false }}
-                        onSelect={(e) => props.onChange(e.code)}
+                        onSelect={(e) => {
+                          props.onChange(e.code);
+                          if (!e.code) {
+                            setValue("rainWaterHarvesting.hasAdequacyCertificate", false);
+                          }
+                        }}
                         t={t}
                       />
                     )}
                   />
                 </FieldBlock>
+                {formValues?.rainWaterHarvesting?.hasCertificate ? (
+                  <FieldBlock label="Having Rain water harvesting Adequacy certificate?">
+                    <Controller
+                      control={control}
+                      name="rainWaterHarvesting.hasAdequacyCertificate"
+                      render={(props) => (
+                        <RadioButtons
+                          className="form-field"
+                          style={{ display: "flex", gap: "2rem", alignItems: "center" }}
+                          name="rainWaterHarvestingAdequacyRadio"
+                          options={[
+                            { i18nKey: "CORE_COMMON_YES", code: true },
+                            { i18nKey: "CORE_COMMON_NO", code: false },
+                          ]}
+                          optionsKey="i18nKey"
+                          selectedOption={props.value ? { i18nKey: "CORE_COMMON_YES", code: true } : { i18nKey: "CORE_COMMON_NO", code: false }}
+                          onSelect={(e) => props.onChange(e.code)}
+                          t={t}
+                        />
+                      )}
+                    />
+                  </FieldBlock>
+                ) : null}
               </SectionCard>
 
               <SectionCard
@@ -2999,6 +3027,9 @@ const NewApplication = () => {
                 onEditClick={() => handleSectionEdit("rainWaterHarvesting")}
               >
                 <PreviewItem label="Rain Water Harvesting Certificate" value={formValues?.rainWaterHarvesting?.hasCertificate} />
+                {formValues?.rainWaterHarvesting?.hasCertificate ? (
+                  <PreviewItem label="Having Rain water harvesting Adequacy certificate?" value={formValues?.rainWaterHarvesting?.hasAdequacyCertificate} />
+                ) : null}
               </SectionCard>
 
               {formValues?.governmentEmployee?.isGovernmentEmployee && (

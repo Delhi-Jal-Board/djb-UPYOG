@@ -8,7 +8,7 @@ const FieldLabelWithTooltip = ({ label, isMandatory = false, infoText, tooltipWi
     <CardLabel className={className} style={{ display: "flex", alignItems: "center", gap: "6px", position: "relative", ...style }}>
       <span>
         {label}
-        {isMandatory && <span className="check-page-link-button"> *</span>}
+        {isMandatory && <span className="check-page-link-button" style={{ color: "red" }}> *</span>}
       </span>
       {infoText && (
         <div

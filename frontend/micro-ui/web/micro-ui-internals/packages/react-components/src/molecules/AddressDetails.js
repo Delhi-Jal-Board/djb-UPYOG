@@ -864,7 +864,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
             <FieldLabelWithTooltip
               label={t("WS_ZRO_LOCATION")}
               isMandatory={true}
-              infoText={t("WS_ZRO_LOCATION_INFO_MSG", "Select ZRO Location")}
+              infoText={t("WS_ZRO_LOCATION_INFO_MSG")}
             />
             <div className="field">
               <Controller
@@ -895,7 +895,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
             <FieldLabelWithTooltip
               label={t("COMMON_ADDRESS_TYPE")}
               isMandatory={true}
-              infoText={t("WS_ADDRESS_TYPE_INFO_MSG", "Select Address Type")}
+              infoText={t("WS_ADDRESS_TYPE_INFO_MSG")}
             />
             <Dropdown
               className="form-field"
@@ -916,7 +916,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
             <FieldLabelWithTooltip
               label={t("CORE_COMMON_PROFILE_CITY")}
               isMandatory={true}
-              infoText={t("WS_CITY_INFO_MSG", "Select City")}
+              infoText={t("WS_CITY_INFO_MSG")}
             />
             <Controller
               control={control}
@@ -944,7 +944,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
           <FieldLabelWithTooltip
             label={t("PINCODE")}
             isMandatory={true}
-            infoText={t("WS_PINCODE_INFO_MSG", "Enter 6 digit Pincode")}
+            infoText={t("WS_PINCODE_INFO_MSG")}
           />
           <div className="form-field" style={{ position: "relative", width: "100%" }}>
             <TextInput
@@ -1009,7 +1009,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
           <FieldLabelWithTooltip
             label={t("LOCALITY")}
             isMandatory={true}
-            infoText={t("WS_LOCALITY_INFO_MSG", "Select Locality")}
+            infoText={t("WS_LOCALITY_INFO_MSG")}
           />
           <Controller
             control={control}
@@ -1048,7 +1048,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
         <LabelFieldPair>
           <FieldLabelWithTooltip
             label={t("SubLocality")}
-            infoText={t("WS_SUBLOCALITY_INFO_MSG", "Enter Sub-locality")}
+            infoText={t("WS_SUBLOCALITY_INFO_MSG")}
           />
           <TextInput
             t={t}
@@ -1075,7 +1075,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
         <LabelFieldPair>
           <FieldLabelWithTooltip
             label={t("COMMON_COLONY_MCD_CATEGORY")}
-            infoText={t("WS_COLONY_CATEGORY_INFO_MSG", "Select Colony Category")}
+            infoText={t("WS_COLONY_CATEGORY_INFO_MSG")}
           />
           <Dropdown
             className="form-field"
@@ -1091,7 +1091,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
         <LabelFieldPair>
           <FieldLabelWithTooltip
             label={t("STREET_NAME")}
-            infoText={t("WS_STREET_NAME_INFO_MSG", "Enter Street Name")}
+            infoText={t("WS_STREET_NAME_INFO_MSG")}
           />
           <TextInput
             t={t}
@@ -1118,7 +1118,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
           <FieldLabelWithTooltip
             label={t("HOUSE_NO")}
             isMandatory={true}
-            infoText={t("WS_HOUSE_NO_INFO_MSG", "Enter House No. / Flat No.")}
+            infoText={t("WS_HOUSE_NO_INFO_MSG")}
           />
           <TextInput
             t={t}
@@ -1147,7 +1147,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
             <FieldLabelWithTooltip
               label={t("WS_NUMBER_OF_FLOORS")}
               isMandatory={true}
-              infoText={t("WS_RESIDING_FLOOR_INFO_MSG", "Select At which Floor Consumer Resides")}
+              infoText={t("WS_RESIDING_FLOOR_INFO_MSG")}
             />
             <div className="form-field" style={{ width: "100%" }}>
               <Dropdown
@@ -1167,7 +1167,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
             <FieldLabelWithTooltip
               label={t("WS_TOTAL_NUMBER_OF_FLOORS_IN_THE_BUILDING", "Total Number of floor in the Building")}
               isMandatory={true}
-              infoText={t("WS_TOTAL_FLOORS_INFO_MSG", "Enter Total Number of Floors in the Building")}
+              infoText={t("WS_TOTAL_FLOORS_INFO_MSG")}
             />
             <TextInput
               t={t}
@@ -1220,7 +1220,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
           <LabelFieldPair>
             <FieldLabelWithTooltip
               label={t("ADDRESS_LINE2")}
-              infoText={t("WS_ADDRESS_LINE2_INFO_MSG", "Enter Address Line 2")}
+              infoText={t("WS_ADDRESS_LINE2_INFO_MSG")}
             />
             <TextInput
               t={t}
@@ -1244,7 +1244,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
             <FieldLabelWithTooltip
               label={t("EKYC_DOOR_IMAGE")}
               isMandatory={true}
-              infoText={t("WS_DOOR_IMAGE_INFO_MSG", "Upload Door Image")}
+              infoText={t("WS_DOOR_IMAGE_INFO_MSG")}
             />
             <UploadFile
               onUpload={uploadFile}
@@ -1263,7 +1263,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
           <FieldLabelWithTooltip
             label={t("LANDMARK")}
             isMandatory={true}
-            infoText={t("WS_LANDMARK_INFO_MSG", "Enter Landmark")}
+            infoText={t("WS_LANDMARK_INFO_MSG")}
           />
           <TextInput
             t={t}
@@ -1291,7 +1291,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
           <LabelFieldPair>
             <FieldLabelWithTooltip
               label={t("LATITUDE_GEOTAG")}
-              infoText={t("WS_LATITUDE_INFO_MSG", "Enter Latitude (e.g. 28.6139)")}
+              infoText={t("WS_LATITUDE_INFO_MSG")}
             />
             <TextInput
               t={t}
@@ -1322,7 +1322,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
           <LabelFieldPair>
             <FieldLabelWithTooltip
               label={t("LONGITUDE_GEOTAG")}
-              infoText={t("WS_LONGITUDE_INFO_MSG", "Enter Longitude (e.g. 77.2090)")}
+              infoText={t("WS_LONGITUDE_INFO_MSG")}
             />
             <TextInput
               t={t}
@@ -1351,7 +1351,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
         <LabelFieldPair>
           <FieldLabelWithTooltip
             label={t("COMMON_ASSEMBLY")}
-            infoText={t("WS_ASSEMBLY_INFO_MSG", "Assembly")}
+            infoText={t("WS_ASSEMBLY_INFO_MSG")}
           />
           <TextInput
             t={t}
@@ -1383,7 +1383,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
         <LabelFieldPair>
           <FieldLabelWithTooltip
             label={t("COMMON_WARD")}
-            infoText={t("WS_WARD_INFO_MSG", "Ward")}
+            infoText={t("WS_WARD_INFO_MSG")}
           />
           <TextInput
             t={t}
@@ -1400,7 +1400,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
         <LabelFieldPair>
           <FieldLabelWithTooltip
             label={t("COMMON_ZONE")}
-            infoText={t("WS_ZONE_INFO_MSG", "Zone")}
+            infoText={t("WS_ZONE_INFO_MSG")}
           />
           <TextInput
             t={t}

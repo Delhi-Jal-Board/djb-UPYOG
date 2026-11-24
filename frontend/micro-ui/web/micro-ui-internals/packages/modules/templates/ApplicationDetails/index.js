@@ -16,6 +16,9 @@ import {
   getWSCurrentState,
   isWSApprovalChecklistComplete,
   isWSApprovalChecklistState,
+  isWSApprovalChecklistEditableState,
+  isWSApprovalChecklistReadOnlyState,
+  parseBool,
 } from "./components/WSApprovalChecklist";
 
 const ApplicationDetails = (props) => {
@@ -60,13 +63,15 @@ const ApplicationDetails = (props) => {
   } = props;
 
   const currentWorkflowState = getWSCurrentState(applicationData, workflowDetails);
-  const showApprovalChecklist = moduleCode === "WS" && isWSApprovalChecklistState(applicationData, workflowDetails);
+  const isChecklistEditable = moduleCode === "WS" && isWSApprovalChecklistEditableState(applicationData, workflowDetails);
+  const isChecklistReadOnly = moduleCode === "WS" && isWSApprovalChecklistReadOnlyState(applicationData, workflowDetails);
+  const showApprovalChecklist = isChecklistEditable || isChecklistReadOnly;
 
   // While workflow is still loading, treat the checklist as valid so the button isn't blocked during load.
-  // Once loaded, require all mandatory fields to be checked.
+  // Once loaded, require all mandatory fields to be checked when in editable state.
   const approvalChecklistValid =
     workflowDetails?.isLoading ||
-    !showApprovalChecklist ||
+    !isChecklistEditable ||
     isWSApprovalChecklistComplete(applicationData, approvalChecklist);
 
   // Track the last seeded combination so we don't re-seed (and wipe user changes)
@@ -81,24 +86,31 @@ const ApplicationDetails = (props) => {
       // After the initial seed the user's checkbox interactions drive the state.
       if (seededKeyRef.current !== seedKey) {
         seededKeyRef.current = seedKey;
+        const addDetails =
+          applicationData?.additionalDetails ||
+          workflowDetails?.data?.processInstances?.find((pi) => pi?.additionalDetails?.waterPipelineFacility !== undefined)?.additionalDetails ||
+          {};
         const initialChecklist = getWSApprovalChecklistFields(applicationData).reduce((values, field) => {
-          if (typeof applicationData?.additionalDetails?.[field.name] === "boolean") {
-            values[field.name] = applicationData?.additionalDetails?.[field.name];
+          const parsedVal = parseBool(addDetails?.[field.name]);
+          if (parsedVal !== undefined) {
+            values[field.name] = parsedVal;
           }
-          if (applicationData?.additionalDetails?.[`${field.name}Remarks`]) {
-            values[`${field.name}Remarks`] = applicationData?.additionalDetails?.[`${field.name}Remarks`];
+          if (addDetails?.[`${field.name}Remarks`]) {
+            values[`${field.name}Remarks`] = addDetails?.[`${field.name}Remarks`];
           }
           return values;
         }, {});
-        if (typeof applicationData?.additionalDetails?.CompletelySatisfied === "boolean") {
-          initialChecklist.isFullySatisfied = applicationData?.additionalDetails?.CompletelySatisfied;
+        const rawSatisfied = addDetails?.CompletelySatisfied !== undefined ? addDetails?.CompletelySatisfied : addDetails?.isFullySatisfied;
+        const parsedSatisfied = parseBool(rawSatisfied);
+        if (parsedSatisfied !== undefined) {
+          initialChecklist.isFullySatisfied = parsedSatisfied;
         }
-        if (applicationData?.additionalDetails?.notCompletelySatisfiedRemarks) {
-          initialChecklist.notCompletelySatisfiedRemarks = applicationData.additionalDetails.notCompletelySatisfiedRemarks;
-          initialChecklist.completelySatisfiedRemarks = applicationData.additionalDetails.notCompletelySatisfiedRemarks;
-        } else if (applicationData?.additionalDetails?.completelySatisfiedRemarks) {
-          initialChecklist.notCompletelySatisfiedRemarks = applicationData.additionalDetails.completelySatisfiedRemarks;
-          initialChecklist.completelySatisfiedRemarks = applicationData.additionalDetails.completelySatisfiedRemarks;
+        if (addDetails?.notCompletelySatisfiedRemarks) {
+          initialChecklist.notCompletelySatisfiedRemarks = addDetails.notCompletelySatisfiedRemarks;
+          initialChecklist.completelySatisfiedRemarks = addDetails.notCompletelySatisfiedRemarks;
+        } else if (addDetails?.completelySatisfiedRemarks) {
+          initialChecklist.notCompletelySatisfiedRemarks = addDetails.completelySatisfiedRemarks;
+          initialChecklist.completelySatisfiedRemarks = addDetails.completelySatisfiedRemarks;
         }
         setApprovalChecklist(initialChecklist);
       }
@@ -301,6 +313,7 @@ const ApplicationDetails = (props) => {
             approvalChecklist={approvalChecklist}
             onApprovalChecklistChange={setApprovalChecklist}
             showApprovalChecklist={showApprovalChecklist}
+            isApprovalChecklistReadOnly={isChecklistReadOnly}
           />
           {showModal ? (
             <ActionModal
@@ -316,7 +329,7 @@ const ApplicationDetails = (props) => {
               actionData={workflowDetails?.data?.timeline}
               businessService={businessService}
               approvalChecklist={approvalChecklist}
-              showApprovalChecklist={showApprovalChecklist}
+              showApprovalChecklist={isChecklistEditable}
               moduleCode={moduleCode}
               cardFormWrapperClassName={"modal-form"}
             />
@@ -359,7 +372,7 @@ const ApplicationDetails = (props) => {
             applicationData={applicationDetails?.applicationData || applicationData}
             isApprovalChecklistValid={approvalChecklistValid}
             approvalChecklist={approvalChecklist}
-            showApprovalChecklist={showApprovalChecklist}
+            showApprovalChecklist={isChecklistEditable}
           />
         </React.Fragment>
       ) : (

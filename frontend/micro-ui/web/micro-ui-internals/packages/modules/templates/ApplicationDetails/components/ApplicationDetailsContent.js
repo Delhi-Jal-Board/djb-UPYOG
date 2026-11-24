@@ -58,6 +58,7 @@ function ApplicationDetailsContent({
   approvalChecklist,
   onApprovalChecklistChange,
   showApprovalChecklist = false,
+  isApprovalChecklistReadOnly = false,
 }) {
   const { t } = useTranslation();
   var base_url = window.location.origin;
@@ -566,21 +567,29 @@ function ApplicationDetailsContent({
           {!isDisconnectionExecuted && detail?.additionalDetails?.documents &&
             !applicationData?.applicationType?.includes("MUTATION") &&
             !businessService?.includes("MUTATION") &&
-            [
-              "PENDING_FOR_FIELD_INSPECTION",
-              "PENDING_APPROVAL_FOR_CONNECTION",
-              "PENDING_FOR_CONNECTION_ACTIVATION",
-              "PENDING_FOR_RECONNECTION",
-              "PENDING_FOR_DUE_VERIFICATION",
-              "PENDING_FOR_BILLING_CLERK_REVIEW",
-              "PENDING_FOR_ASO_APPROVAL",
-              "PENDING_FOR_ZRO_APPROVAL",
-              "PENDING_FOR_AE_APPROVAL",
-              "PENDING_FOR_FINAL_PAYMENT",
-              "CONNECTION_ACTIVATED",
-              "PENDING_FOR_CONNECTION_ACTIVATION",
-              "PENDING_FOR_CITIZEN_ACTION",
-            ].includes(applicationData?.applicationStatus) && <DueVerification applicationData={applicationData} />}
+            (
+              [
+                "PENDING_FOR_FIELD_INSPECTION",
+                "PENDING_APPROVAL_FOR_CONNECTION",
+                "PENDING_FOR_CONNECTION_ACTIVATION",
+                "PENDING_FOR_RECONNECTION",
+                "PENDING_FOR_DUE_VERIFICATION",
+                "PENDING_FOR_BILLING_CLERK_REVIEW",
+                "PENDING_FOR_ASO_APPROVAL",
+                "PENDING_FOR_ZRO_APPROVAL",
+                "PENDING_FOR_AE_APPROVAL",
+                "PENDING_FOR_FINAL_PAYMENT",
+                "CONNECTION_ACTIVATED",
+                "PENDING_FOR_CONNECTION_ACTIVATION",
+                "PENDING_FOR_CITIZEN_ACTION",
+                "PENDING_FOR_DEALING_ASSISTENCE_VERIFICATION",
+                "PENDING_FOR_DEALING_ASSISTANT_VERIFICATION",
+                "PENDING_FOR_DA_VERIFICATION",
+                "PENDING_FOR_JE_VERIFICATION",
+              ].includes(applicationData?.applicationStatus) ||
+              (applicationData?.dueVerification && applicationData.dueVerification.length > 0) ||
+              (applicationData?.additionalDetails?.dueVerification && applicationData.additionalDetails.dueVerification.length > 0)
+            ) && <DueVerification applicationData={applicationData} />}
           {detail?.additionalDetails?.taxHeadEstimatesCalculation && (
             <PropertyEstimates taxHeadEstimatesCalculation={detail?.additionalDetails?.taxHeadEstimatesCalculation} />
           )}
@@ -621,9 +630,11 @@ function ApplicationDetailsContent({
       {showApprovalChecklist && (
         <WSApprovalChecklist
           applicationData={applicationData}
+          workflowDetails={workflowDetails}
           showApprovalChecklist={showApprovalChecklist}
           values={approvalChecklist}
           onChange={onApprovalChecklistChange}
+          isReadOnly={isApprovalChecklistReadOnly}
         />
       )}
       {showTimeLine && workflowDetails?.data?.timeline?.length > 0 && (

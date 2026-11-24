@@ -13,8 +13,9 @@ import {
   SubmitBar,
   GenericFileIcon,
   Modal,
+  PDFSvg,
 } from "@djb25/digit-ui-react-components";
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useHistory } from "react-router-dom";
 //import PropertyDocument from "../../pageComponents/PropertyDocument";
@@ -269,6 +270,57 @@ const WSApplicationDetails = () => {
     return str;
   };
 
+  const getDocumentSectionHeader = (docType) => {
+    if (!docType) return "";
+    const upper = docType.toUpperCase();
+    if (upper.includes("SEWER") || upper.includes("STP")) {
+      return t("WS_SEWER_TREATMENT_PLANT_CERTIFICATE") && t("WS_SEWER_TREATMENT_PLANT_CERTIFICATE") !== "WS_SEWER_TREATMENT_PLANT_CERTIFICATE"
+        ? t("WS_SEWER_TREATMENT_PLANT_CERTIFICATE")
+        : "Sewer Treatment Plant (STP) Certificate";
+    }
+    if (upper.includes("RAIN") || upper.includes("HARVEST")) {
+      return t("WS_RAIN_WATER_HARVESTING_CERTIFICATE") && t("WS_RAIN_WATER_HARVESTING_CERTIFICATE") !== "WS_RAIN_WATER_HARVESTING_CERTIFICATE"
+        ? t("WS_RAIN_WATER_HARVESTING_CERTIFICATE")
+        : "Rain Water Harvesting Certificate";
+    }
+    return t(docType?.split(".").slice(0, 2).join("_"));
+  };
+
+  const getDocSortWeight = (doc) => {
+    const type = (doc?.documentType || "").toUpperCase();
+    if (type.includes("PHOTO")) return 1;
+    if (type.includes("IDENTITY")) return 2;
+    if (type.includes("OWNERSHIP") || type.includes("ADDRESS") || type.includes("SALE_DEED")) return 3;
+    if (type.includes("RAIN") || type.includes("HARVEST")) return 4;
+    if (type.includes("SEWER") || type.includes("STP")) return 5;
+    if (type.includes("DJB") || type.includes("EMPLOYEE")) return 6;
+    return 7;
+  };
+
+  const getEnrichedDocuments = (docs = []) => {
+    return (docs || []).map((doc) => {
+      const isStp = (doc?.documentType || "").toUpperCase().includes("SEWER") || (doc?.documentType || "").toUpperCase().includes("STP");
+      const isRwh = (doc?.documentType || "").toUpperCase().includes("RAIN") || (doc?.documentType || "").toUpperCase().includes("HARVEST");
+      let docNumber = doc?.documentNumber;
+      if (!docNumber || docNumber === "NA") {
+        if (isStp) {
+          docNumber = additionalDetails?.otherDocumentNumber || additionalDetails?.otherDocumentRemark || additionalDetails?.stpDocumentNumber;
+        } else if (isRwh) {
+          docNumber = additionalDetails?.rwhDocumentNumber || additionalDetails?.otherDocumentNumber;
+        }
+      }
+      return {
+        ...doc,
+        documentNumber: docNumber || doc?.documentNumber || doc?.documentUid,
+        additionalDetails: {
+          ...(doc?.additionalDetails || {}),
+          otherDocumentNumber: additionalDetails?.otherDocumentNumber,
+          otherDocumentRemark: additionalDetails?.otherDocumentRemark,
+        },
+      };
+    });
+  };
+
   const baseAssembly =
     propertyAddress?.assembly?.name ||
     propertyAddress?.assembly?.code ||
@@ -326,6 +378,41 @@ const WSApplicationDetails = () => {
 
   const applicationStatus = data?.WaterConnection?.[0]?.applicationStatus || data?.SewerageConnections?.[0]?.applicationStatus;
   const isDisconnectionExecuted = applicationStatus === "DISCONNECTION_EXECUTED";
+
+  const [activationDocUrls, setActivationDocUrls] = useState({});
+  const connData = data?.WaterConnection?.[0] || data?.SewerageConnections?.[0];
+  const allDocuments = connData?.documents || [];
+  const meterPhotoDoc =
+    allDocuments.find((d) => d?.documentType === "METER_PHOTO") ||
+    (connData?.additionalDetails?.meterPhotoFileStoreId ? { fileStoreId: connData?.additionalDetails?.meterPhotoFileStoreId, documentType: "METER_PHOTO" } : null) ||
+    (connData?.additionalDetails?.meterPhoto?.fileStoreId ? { fileStoreId: connData?.additionalDetails?.meterPhoto?.fileStoreId, documentType: "METER_PHOTO" } : null);
+
+  const meterWarrantyDoc =
+    allDocuments.find((d) => d?.documentType === "METER_WARRANTY_CARD_TESTING_REPORT_INVOICE") ||
+    (connData?.additionalDetails?.meterWarrantyFileStoreId ? { fileStoreId: connData?.additionalDetails?.meterWarrantyFileStoreId, documentType: "METER_WARRANTY_CARD_TESTING_REPORT_INVOICE" } : null) ||
+    (connData?.additionalDetails?.meterWarranty?.fileStoreId ? { fileStoreId: connData?.additionalDetails?.meterWarranty?.fileStoreId, documentType: "METER_WARRANTY_CARD_TESTING_REPORT_INVOICE" } : null);
+
+  useEffect(() => {
+    const ids = [meterPhotoDoc?.fileStoreId, meterWarrantyDoc?.fileStoreId].filter(Boolean);
+    if (ids.length > 0) {
+      Digit.UploadServices.Filefetch(ids, Digit.ULBService.getStateId())
+        .then((res) => {
+          if (res?.data) {
+            setActivationDocUrls(res.data);
+          }
+        })
+        .catch((e) => {
+          console.error("Error fetching activation docs", e);
+        });
+    }
+  }, [meterPhotoDoc?.fileStoreId, meterWarrantyDoc?.fileStoreId]);
+
+  const meterPhotoUrl = meterPhotoDoc?.fileStoreId
+    ? (activationDocUrls?.[meterPhotoDoc.fileStoreId]?.split(",")?.[0] || activationDocUrls?.[meterPhotoDoc.fileStoreId] || "")
+    : "";
+  const meterWarrantyUrl = meterWarrantyDoc?.fileStoreId
+    ? (activationDocUrls?.[meterWarrantyDoc.fileStoreId]?.split(",")?.[0] || activationDocUrls?.[meterWarrantyDoc.fileStoreId] || "")
+    : "";
 
   const isPaid =
     applicationStatus &&
@@ -823,24 +910,6 @@ const WSApplicationDetails = () => {
                   label={t("WS_DIVYANGJAN") && t("WS_DIVYANGJAN") !== "WS_DIVYANGJAN" ? t("WS_DIVYANGJAN") : "Divyangjan/Person with Disability?"}
                   text={`${connectionDetails?.isDivyangjan ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}`}
                 />
-                <Row
-                  label={
-                    t("WS_RAIN_WATER_HARVESTING_CERTIFICATE") && t("WS_RAIN_WATER_HARVESTING_CERTIFICATE") !== "WS_RAIN_WATER_HARVESTING_CERTIFICATE"
-                      ? t("WS_RAIN_WATER_HARVESTING_CERTIFICATE")
-                      : "Rain Water Harvesting Certificate"
-                  }
-                  text={`${
-                    connectionDetails?.hasRainWaterHarvestingCertificate || connectionDetails?.isRainwaterHarvesting
-                      ? t("CORE_COMMON_YES")
-                      : t("CORE_COMMON_NO")
-                  }`}
-                />
-                {/* <Row
-                  label={t("WS_SERVICE_TYPE")}
-                  text={`${t(
-                    checkForNA(connectionDetails?.domesticType?.i18nKey || connectionDetails?.domesticType?.code || connectionDetails?.domesticType)
-                  )}`}
-                /> */}
                 {connectionDetails?.domesticType?.code === "ORGANIZATION" && (
                   <React.Fragment>
                     <Row
@@ -1205,7 +1274,7 @@ const WSApplicationDetails = () => {
                 <Row label={t("HOUSE_NO")} text={`${t(checkForNA(propertyAddress?.houseNo || propertyAddress?.doorNo))}`} />
                 <Row
                   label={
-                    t("WS_AT_WHICH_FLOOR_CONSUMER_RESIDES", "At which Floor Consumer Resides") !== "WS_AT_WHICH_FLOOR_CONSUMER_RESIDES"
+                    t("WS_AT_WHICH_FLOOR_CONSUMER_RESIDES") !== "WS_AT_WHICH_FLOOR_CONSUMER_RESIDES"
                       ? t("WS_AT_WHICH_FLOOR_CONSUMER_RESIDES")
                       : "At which Floor Consumer Resides"
                   }
@@ -1213,7 +1282,7 @@ const WSApplicationDetails = () => {
                 />
                 <Row
                   label={
-                    t("WS_TOTAL_NUMBER_OF_FLOORS_IN_THE_BUILDING", "Total Number of floor in the Building") !== "WS_TOTAL_NUMBER_OF_FLOORS_IN_THE_BUILDING"
+                    t("WS_TOTAL_NUMBER_OF_FLOORS_IN_THE_BUILDING") !== "WS_TOTAL_NUMBER_OF_FLOORS_IN_THE_BUILDING"
                       ? t("WS_TOTAL_NUMBER_OF_FLOORS_IN_THE_BUILDING")
                       : "Total Number of floor in the Building"
                   }
@@ -1557,6 +1626,112 @@ const WSApplicationDetails = () => {
                 )}
               </StatusTable>
 
+              <CardHeader styles={{ fontSize: "28px" }}>
+                {t("WS_RAIN_WATER_HARVESTING_CERTIFICATE") && t("WS_RAIN_WATER_HARVESTING_CERTIFICATE") !== "WS_RAIN_WATER_HARVESTING_CERTIFICATE"
+                  ? t("WS_RAIN_WATER_HARVESTING_CERTIFICATE")
+                  : "Rain Water Harvesting Certificate"}
+              </CardHeader>
+              <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
+                <Row
+                  label={
+                    t("WS_RAIN_WATER_HARVESTING_CERTIFICATE") && t("WS_RAIN_WATER_HARVESTING_CERTIFICATE") !== "WS_RAIN_WATER_HARVESTING_CERTIFICATE"
+                      ? t("WS_RAIN_WATER_HARVESTING_CERTIFICATE")
+                      : "Rain Water Harvesting Certificate"
+                  }
+                  text={`${
+                    connectionDetails?.hasRainWaterHarvestingCertificate || connectionDetails?.isRainwaterHarvesting
+                      ? t("CORE_COMMON_YES")
+                      : t("CORE_COMMON_NO")
+                  }`}
+                />
+                {(connectionDetails?.hasRainWaterHarvestingCertificate || connectionDetails?.isRainwaterHarvesting) && (
+                  <Row
+                    label={
+                      t("WS_RAIN_WATER_HARVESTING_ADEQUACY_CERTIFICATE") && t("WS_RAIN_WATER_HARVESTING_ADEQUACY_CERTIFICATE") !== "WS_RAIN_WATER_HARVESTING_ADEQUACY_CERTIFICATE"
+                        ? t("WS_RAIN_WATER_HARVESTING_ADEQUACY_CERTIFICATE")
+                        : "Having Rain water harvesting Adequacy certificate?"
+                    }
+                    text={`${
+                      connectionDetails?.hasRainWaterHarvestingAdequacyCertificate || connectionDetails?.hasAdequacyCertificate || connectionDetails?.hasCertificate
+                        ? t("CORE_COMMON_YES")
+                        : t("CORE_COMMON_NO")
+                    }`}
+                  />
+                )}
+                {(connectionDetails?.hasRainWaterHarvestingCertificate || connectionDetails?.isRainwaterHarvesting) &&
+                  (connectionDetails?.hasRainWaterHarvestingAdequacyCertificate || connectionDetails?.hasAdequacyCertificate || connectionDetails?.hasCertificate) &&
+                  (connectionDetails?.validityDate || connectionDetails?.validityUpTo || connectionDetails?.rwhValidityUpTo) && (
+                    <Row
+                      label={
+                        t("WS_VALIDITY_UP_TO_DATE") && t("WS_VALIDITY_UP_TO_DATE") !== "WS_VALIDITY_UP_TO_DATE"
+                          ? t("WS_VALIDITY_UP_TO_DATE")
+                          : "Validity up to date"
+                      }
+                      text={
+                        connectionDetails?.validityDate ||
+                        connectionDetails?.validityUpTo ||
+                        connectionDetails?.rwhValidityUpTo ||
+                        "NA"
+                      }
+                    />
+                  )}
+              </StatusTable>
+
+              <CardHeader styles={{ fontSize: "28px" }}>
+                {t("WS_SEWER_TREATMENT_PLANT") && t("WS_SEWER_TREATMENT_PLANT") !== "WS_SEWER_TREATMENT_PLANT"
+                  ? t("WS_SEWER_TREATMENT_PLANT")
+                  : "Sewer Treatment Plant (STP)"}
+              </CardHeader>
+              <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
+                <Row
+                  label={
+                    t("WS_SEWER_TREATMENT_PLANT") && t("WS_SEWER_TREATMENT_PLANT") !== "WS_SEWER_TREATMENT_PLANT"
+                      ? t("WS_SEWER_TREATMENT_PLANT")
+                      : "Sewer Treatment Plant (STP)"
+                  }
+                  text={`${
+                    connectionDetails?.hasSewerTreatmentPlant ||
+                    connectionDetails?.isSewerTreatmentPlant ||
+                    connectionDetails?.hasStp
+                      ? t("CORE_COMMON_YES")
+                      : t("CORE_COMMON_NO")
+                  }`}
+                />
+                {(connectionDetails?.hasSewerTreatmentPlant || connectionDetails?.isSewerTreatmentPlant || connectionDetails?.hasStp) && (
+                  <Row
+                    label={
+                      t("WS_SEWER_TREATMENT_PLANT_ADEQUACY_CERTIFICATE") && t("WS_SEWER_TREATMENT_PLANT_ADEQUACY_CERTIFICATE") !== "WS_SEWER_TREATMENT_PLANT_ADEQUACY_CERTIFICATE"
+                        ? t("WS_SEWER_TREATMENT_PLANT_ADEQUACY_CERTIFICATE")
+                        : "Having STP certificate issued by DPCC?"
+                    }
+                    text={`${
+                      connectionDetails?.hasSewerTreatmentPlantAdequacyCertificate ||
+                      connectionDetails?.hasStpAdequacyCertificate ||
+                      connectionDetails?.applyForStpAdequacyCertificate
+                        ? t("CORE_COMMON_YES")
+                        : t("CORE_COMMON_NO")
+                    }`}
+                  />
+                )}
+                {(connectionDetails?.hasSewerTreatmentPlant || connectionDetails?.isSewerTreatmentPlant || connectionDetails?.hasStp) &&
+                  (connectionDetails?.hasSewerTreatmentPlantAdequacyCertificate || connectionDetails?.hasStpAdequacyCertificate || connectionDetails?.applyForStpAdequacyCertificate) &&
+                  (connectionDetails?.stpValidityDate || connectionDetails?.sewerTreatmentPlantValidityDate || connectionDetails?.stpValidityUpTo) && (
+                    <Row
+                      label={
+                        t("WS_SEWER_TREATMENT_PLANT_VALIDITY_DATE") && t("WS_SEWER_TREATMENT_PLANT_VALIDITY_DATE") !== "WS_SEWER_TREATMENT_PLANT_VALIDITY_DATE"
+                          ? t("WS_SEWER_TREATMENT_PLANT_VALIDITY_DATE")
+                          : "Validity up to date"
+                      }
+                      text={
+                        connectionDetails?.stpValidityDate ||
+                        connectionDetails?.sewerTreatmentPlantValidityDate ||
+                        connectionDetails?.stpValidityUpTo ||
+                        "NA"
+                      }
+                    />
+                  )}
+              </StatusTable>
+
               {applicationData?.dueVerification?.length > 0 && (
                 <React.Fragment>
                   <CardHeader styles={{ fontSize: "28px" }}>{t("WS_DUE_VERIFICATION_DETAILS")}</CardHeader>
@@ -1619,11 +1794,221 @@ const WSApplicationDetails = () => {
                   </StatusTable>
                 </React.Fragment>
               )}
+              {(connData?.applicationStatus === "PENDING_FOR_CONNECTION_ACTIVATION" ||
+                connData?.applicationStatus === "CONNECTION_ACTIVATED") && (
+                <React.Fragment>
+                  <CardHeader styles={{ fontSize: "28px", marginTop: "24px" }}>
+                    {t("WS_ACTIVATION_DETAILS") && t("WS_ACTIVATION_DETAILS") !== "WS_ACTIVATION_DETAILS"
+                      ? t("WS_ACTIVATION_DETAILS")
+                      : "Activate Connection Details"}
+                  </CardHeader>
+                  <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
+                    <Row
+                      label={t("WS_SERV_DETAIL_CONN_TYPE")}
+                      text={
+                        connData?.connectionType
+                          ? t(`WS_CONNECTIONTYPE_${connData?.connectionType?.toUpperCase()}`) && t(`WS_CONNECTIONTYPE_${connData?.connectionType?.toUpperCase()}`) !== `WS_CONNECTIONTYPE_${connData?.connectionType?.toUpperCase()}`
+                            ? t(`WS_CONNECTIONTYPE_${connData?.connectionType?.toUpperCase()}`)
+                            : connData?.connectionType
+                          : "Metered"
+                      }
+                    />
+                    <Row
+                      label={t("WS_ADDN_DETAILS_PLUMBER_PROVIDED_BY")}
+                      text={
+                        (() => {
+                          const pPref = connData?.additionalDetails?.detailsProvidedBy || connData?.additionalDetails?.plumberProvidedBy;
+                          const isUlb =
+                            pPref?.toUpperCase() === "ULB" ||
+                            pPref?.toUpperCase() === "DJB" ||
+                            pPref === "Delhi Jal Board" ||
+                            (typeof pPref === "string" && pPref.toLowerCase().includes("jal board"));
+                          return isUlb
+                            ? (t("WS_PLUMBER_DJB") && t("WS_PLUMBER_DJB") !== "WS_PLUMBER_DJB" ? t("WS_PLUMBER_DJB") : "Delhi Jal Board")
+                            : (t("WS_PLUMBER_SELF") && t("WS_PLUMBER_SELF") !== "WS_PLUMBER_SELF" ? t("WS_PLUMBER_SELF") : "Self");
+                        })()
+                      }
+                    />
+                    {(() => {
+                      const pPref = connData?.additionalDetails?.detailsProvidedBy || connData?.additionalDetails?.plumberProvidedBy;
+                      const isUlb =
+                        pPref?.toUpperCase() === "ULB" ||
+                        pPref?.toUpperCase() === "DJB" ||
+                        pPref === "Delhi Jal Board" ||
+                        (typeof pPref === "string" && pPref.toLowerCase().includes("jal board"));
+                      if (!isUlb) {
+                        return (
+                          <React.Fragment>
+                            <Row
+                              label={t("WS_ADDN_DETAILS_PLUMBER_NAME_LABEL")}
+                              text={connData?.additionalDetails?.plumberName || connData?.plumberInfo?.[0]?.name || t("NA")}
+                            />
+                            <Row
+                              label={t("WS_ADDN_DETAILS_PLUMBER_LICENCE_NO_LABEL")}
+                              text={connData?.additionalDetails?.plumberLicenseNo || connData?.plumberInfo?.[0]?.licenseNo || t("NA")}
+                            />
+                            <Row
+                              label={t("WS_PLUMBER_MOBILE_NO_LABEL")}
+                              text={connData?.additionalDetails?.plumberMobileNo || connData?.plumberInfo?.[0]?.mobileNumber || t("NA")}
+                            />
+                          </React.Fragment>
+                        );
+                      } else {
+                        return (
+                          <Row
+                            label={t("WS_NAME_OF_JE_OR_FIRM")}
+                            text={
+                              connData?.additionalDetails?.nameOfJEOrFirm ||
+                              connData?.additionalDetails?.jeOrFirmName ||
+                              connData?.nameOfJEOrFirm ||
+                              connData?.plumberInfo?.[0]?.name ||
+                              t("NA")
+                            }
+                          />
+                        );
+                      }
+                    })()}
+                    {(() => {
+                      const isMetered =
+                        !connData?.connectionType ||
+                        connData?.connectionType?.toUpperCase() === "METERED" ||
+                        connData?.additionalDetails?.connectionType?.toUpperCase() === "METERED";
+                      if (isMetered) {
+                        return (
+                          <React.Fragment>
+                            <Row
+                              label={t("WS_METER_MAKE_LABEL")}
+                              text={connData?.additionalDetails?.meterMake || connData?.meterMake || t("NA")}
+                            />
+                            <Row
+                              label={t("WS_METER_NO_LABEL")}
+                              text={connData?.meterId || connData?.meterNo || connData?.additionalDetails?.meterId || connData?.additionalDetails?.meterNo || t("NA")}
+                            />
+                            <Row
+                              label={t("WS_METER_SIZE_LABEL")}
+                              text={connData?.additionalDetails?.meterSize || connData?.meterSize || t("NA")}
+                            />
+                            <Row
+                              label={t("WS_FERRULE_SIZE_LABEL")}
+                              text={connData?.additionalDetails?.ferruleSize || connData?.ferruleSize || t("NA")}
+                            />
+                            <Row
+                              label={t("WS_INSTALLATION_DATE_LABEL")}
+                              text={
+                                connData?.meterInstallationDate
+                                  ? convertEpochToDate(connData?.meterInstallationDate)
+                                  : connData?.additionalDetails?.meterInstallationDate
+                                  ? convertEpochToDate(connData?.additionalDetails?.meterInstallationDate)
+                                  : t("NA")
+                              }
+                            />
+                            <Row
+                              label={t("WS_INITIAL_METER_READING_LABEL")}
+                              text={
+                                connData?.additionalDetails?.initialMeterReading !== undefined &&
+                                connData?.additionalDetails?.initialMeterReading !== null &&
+                                connData?.additionalDetails?.initialMeterReading !== "" &&
+                                connData?.additionalDetails?.initialMeterReading !== "null"
+                                  ? String(connData?.additionalDetails?.initialMeterReading)
+                                  : (connData?.initialMeterReading !== undefined &&
+                                     connData?.initialMeterReading !== null &&
+                                     connData?.initialMeterReading !== "" &&
+                                     connData?.initialMeterReading !== "null"
+                                    ? String(connData?.initialMeterReading)
+                                    : "0")
+                              }
+                            />
+                          </React.Fragment>
+                        );
+                      }
+                      return null;
+                    })()}
+                    <Row
+                      label={t("WS_SERV_DETAIL_CONN_EXECUTION_DATE")}
+                      text={
+                        connData?.connectionExecutionDate
+                          ? convertEpochToDate(connData?.connectionExecutionDate)
+                          : connData?.additionalDetails?.connectionExecutionDate
+                          ? convertEpochToDate(connData?.additionalDetails?.connectionExecutionDate)
+                          : t("NA")
+                      }
+                    />
+                    {(connData?.comment || connData?.comments || connData?.additionalDetails?.comments) && (
+                      <Row
+                        label={t("WS_COMMON_COMMENTS")}
+                        text={
+                          connData?.comment ||
+                          connData?.comments ||
+                          connData?.additionalDetails?.comments ||
+                          t("NA")
+                        }
+                      />
+                    )}
+                    {meterPhotoDoc && (
+                      <Row
+                        label={t("WS_METER_PHOTO_UPLOAD_LABEL")}
+                        text={
+                          <div style={{ display: "flex", alignItems: "center", gap: "12px", marginTop: "4px" }}>
+                            {meterPhotoUrl ? (
+                              <a
+                                href={meterPhotoUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{ display: "inline-block" }}
+                              >
+                                <img
+                                  src={meterPhotoUrl}
+                                  alt={t("WS_METER_PHOTO_UPLOAD_LABEL")}
+                                  style={{
+                                    width: "100px",
+                                    height: "100px",
+                                    objectFit: "cover",
+                                    borderRadius: "6px",
+                                    border: "1px solid #d6d5d4",
+                                    boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
+                                    cursor: "pointer",
+                                  }}
+                                />
+                              </a>
+                            ) : (
+                              <WSDocument value={[meterPhotoDoc]} Code="METER_PHOTO" index={0} />
+                            )}
+                          </div>
+                        }
+                      />
+                    )}
+                    {meterWarrantyDoc && (
+                      <Row
+                        label={t("WS_METER_WARRANTY_REPORT_INVOICE_LABEL")}
+                        text={
+                          <div style={{ display: "flex", alignItems: "center", gap: "12px", marginTop: "4px" }}>
+                            {meterWarrantyUrl ? (
+                              <a
+                                href={meterWarrantyUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{ display: "inline-flex", alignItems: "center", color: "#a82227", textDecoration: "none", fontWeight: "600", cursor: "pointer" }}
+                              >
+                                <PDFSvg style={{ width: "24px", height: "24px", marginRight: "8px" }} />
+                                <span>{t("CS_COMMON_VIEW") || "View"}</span>
+                              </a>
+                            ) : (
+                              <WSDocument value={[meterWarrantyDoc]} Code="METER_WARRANTY_CARD_TESTING_REPORT_INVOICE" index={1} />
+                            )}
+                          </div>
+                        }
+                      />
+                    )}
+                  </StatusTable>
+                </React.Fragment>
+              )}
+
               {!isDisconnectionExecuted && !isDisconnectionPaymentPending && (
                 <React.Fragment>
                   <CardHeader styles={{ fontSize: "28px" }}>{t("WS_COMMON_DOCUMENT_DETAILS")}</CardHeader>
                   {data?.WaterConnection?.[0]?.documents &&
-                    data?.WaterConnection?.[0]?.documents
+                    getEnrichedDocuments(data?.WaterConnection?.[0]?.documents)
+                      .filter((doc) => doc?.documentType !== "METER_PHOTO" && doc?.documentType !== "METER_WARRANTY_CARD_TESTING_REPORT_INVOICE")
                       .reduce((acc, current) => {
                         const x = acc.find((item) => item.documentType === current.documentType);
                         if (!x) {
@@ -1632,20 +2017,14 @@ const WSApplicationDetails = () => {
                           return acc;
                         }
                       }, [])
-                      .sort((a, b) => {
-                        const isPhotoA = (a?.documentType || "").toUpperCase().includes("PHOTO");
-                        const isPhotoB = (b?.documentType || "").toUpperCase().includes("PHOTO");
-                        if (isPhotoA && !isPhotoB) return -1;
-                        if (!isPhotoA && isPhotoB) return 1;
-                        return 0;
-                      })
+                      .sort((a, b) => getDocSortWeight(a) - getDocSortWeight(b))
                       .map((doc, index, array) => (
                         <div key={`doc-${index}`}>
                           {
                             <div>
-                              <CardSectionHeader>{t(doc?.documentType?.split(".").slice(0, 2).join("_"))}</CardSectionHeader>
+                              <CardSectionHeader>{getDocumentSectionHeader(doc?.documentType)}</CardSectionHeader>
                               <StatusTable>
-                                {<WSDocument value={data?.WaterConnection?.[0]?.documents} Code={doc?.documentType} index={index} />}
+                                {<WSDocument value={getEnrichedDocuments(data?.WaterConnection?.[0]?.documents)} Code={doc?.documentType} index={index} />}
                                 {array.length != index + 1 ? (
                                   <hr
                                     style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }}
@@ -1657,7 +2036,8 @@ const WSApplicationDetails = () => {
                         </div>
                       ))}
                   {data?.SewerageConnections?.[0]?.documents &&
-                    data?.SewerageConnections?.[0]?.documents
+                    getEnrichedDocuments(data?.SewerageConnections?.[0]?.documents)
+                      .filter((doc) => doc?.documentType !== "METER_PHOTO" && doc?.documentType !== "METER_WARRANTY_CARD_TESTING_REPORT_INVOICE")
                       .reduce((acc, current) => {
                         const x = acc.find((item) => item.documentType === current.documentType);
                         if (!x) {
@@ -1666,20 +2046,14 @@ const WSApplicationDetails = () => {
                           return acc;
                         }
                       }, [])
-                      .sort((a, b) => {
-                        const isPhotoA = (a?.documentType || "").toUpperCase().includes("PHOTO");
-                        const isPhotoB = (b?.documentType || "").toUpperCase().includes("PHOTO");
-                        if (isPhotoA && !isPhotoB) return -1;
-                        if (!isPhotoA && isPhotoB) return 1;
-                        return 0;
-                      })
+                      .sort((a, b) => getDocSortWeight(a) - getDocSortWeight(b))
                       .map((doc, index, array) => (
                         <div key={`doc-${index}`}>
                           {
                             <div>
-                              <CardSectionHeader>{t(doc?.documentType?.split(".").slice(0, 2).join("_"))}</CardSectionHeader>
+                              <CardSectionHeader>{getDocumentSectionHeader(doc?.documentType)}</CardSectionHeader>
                               <StatusTable>
-                                {<WSDocument value={data?.SewerageConnections?.[0]?.documents} Code={doc?.documentType} index={index} />}
+                                {<WSDocument value={getEnrichedDocuments(data?.SewerageConnections?.[0]?.documents)} Code={doc?.documentType} index={index} />}
                                 {array.length != index + 1 ? (
                                   <hr style={{ color: "white", backgroundColor: "white", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
                                 ) : null}
@@ -1691,96 +2065,7 @@ const WSApplicationDetails = () => {
                 </React.Fragment>
               )}
 
-              {(data?.WaterConnection?.[0]?.applicationStatus === "PENDING_FOR_CONNECTION_ACTIVATION" ||
-                data?.WaterConnection?.[0]?.applicationStatus === "CONNECTION_ACTIVATED" ||
-                data?.SewerageConnections?.[0]?.applicationStatus === "PENDING_FOR_CONNECTION_ACTIVATION" ||
-                data?.SewerageConnections?.[0]?.applicationStatus === "CONNECTION_ACTIVATED") && (
-                <React.Fragment>
-                  <CardHeader styles={{ fontSize: "28px", marginTop: "24px" }}>
-                    {t("WS_ACTIVATION_DETAILS") && t("WS_ACTIVATION_DETAILS") !== "WS_ACTIVATION_DETAILS"
-                      ? t("WS_ACTIVATION_DETAILS")
-                      : "Activate Connection Details"}
-                  </CardHeader>
-                  <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
-                    <Row
-                      label={t("WS_SERV_DETAIL_CONN_TYPE")}
-                      text={
-                        (data?.WaterConnection?.[0] || data?.SewerageConnections?.[0])?.connectionType
-                          ? t((data?.WaterConnection?.[0] || data?.SewerageConnections?.[0])?.connectionType) || "Metered"
-                          : "Metered"
-                      }
-                    />
-                    <Row
-                      label={t("WS_ADDN_DETAILS_PLUMBER_PROVIDED_BY")}
-                      text={
-                        (data?.WaterConnection?.[0] || data?.SewerageConnections?.[0])?.additionalDetails?.detailsProvidedBy
-                          ? (data?.WaterConnection?.[0] || data?.SewerageConnections?.[0])?.additionalDetails?.detailsProvidedBy?.toUpperCase() === "ULB"
-                            ? "DJB"
-                            : (data?.WaterConnection?.[0] || data?.SewerageConnections?.[0])?.additionalDetails?.detailsProvidedBy
-                          : t("NA")
-                      }
-                    />
-                    {((data?.WaterConnection?.[0] || data?.SewerageConnections?.[0])?.additionalDetails?.detailsProvidedBy?.toUpperCase() === "ULB" ||
-                      (data?.WaterConnection?.[0] || data?.SewerageConnections?.[0])?.additionalDetails?.detailsProvidedBy?.toUpperCase() === "DJB") && (
-                      <React.Fragment>
-                        <Row
-                          label={t("WS_ADDN_DETAILS_PLUMBER_LICENCE_NO_LABEL")}
-                          text={(data?.WaterConnection?.[0] || data?.SewerageConnections?.[0])?.plumberInfo?.[0]?.licenseNo || t("NA")}
-                        />
-                        <Row
-                          label={t("WS_ADDN_DETAILS_PLUMBER_NAME_LABEL")}
-                          text={(data?.WaterConnection?.[0] || data?.SewerageConnections?.[0])?.plumberInfo?.[0]?.name || t("NA")}
-                        />
-                        <Row
-                          label={t("WS_PLUMBER_MOBILE_NO_LABEL")}
-                          text={(data?.WaterConnection?.[0] || data?.SewerageConnections?.[0])?.plumberInfo?.[0]?.mobileNumber || t("NA")}
-                        />
-                      </React.Fragment>
-                    )}
-                    <Row
-                      label={t("WS_SERV_DETAIL_METER_ID")}
-                      text={(data?.WaterConnection?.[0] || data?.SewerageConnections?.[0])?.meterId || t("NA")}
-                    />
-                    <Row
-                      label={t("WS_INSTALLATION_DATE_LABEL")}
-                      text={
-                        (data?.WaterConnection?.[0] || data?.SewerageConnections?.[0])?.meterInstallationDate
-                          ? convertEpochToDate((data?.WaterConnection?.[0] || data?.SewerageConnections?.[0])?.meterInstallationDate)
-                          : t("NA")
-                      }
-                    />
-                    <Row
-                      label={t("WS_INITIAL_METER_READING_LABEL")}
-                      text={
-                        (data?.WaterConnection?.[0] || data?.SewerageConnections?.[0])?.additionalDetails?.initialMeterReading !== undefined &&
-                        (data?.WaterConnection?.[0] || data?.SewerageConnections?.[0])?.additionalDetails?.initialMeterReading !== null &&
-                        (data?.WaterConnection?.[0] || data?.SewerageConnections?.[0])?.additionalDetails?.initialMeterReading !== ""
-                          ? String((data?.WaterConnection?.[0] || data?.SewerageConnections?.[0])?.additionalDetails?.initialMeterReading)
-                          : "0"
-                      }
-                    />
-                    <Row
-                      label={t("WS_SERV_DETAIL_CONN_EXECUTION_DATE")}
-                      text={
-                        (data?.WaterConnection?.[0] || data?.SewerageConnections?.[0])?.connectionExecutionDate
-                          ? convertEpochToDate((data?.WaterConnection?.[0] || data?.SewerageConnections?.[0])?.connectionExecutionDate)
-                          : t("NA")
-                      }
-                    />
-                    {((data?.WaterConnection?.[0] || data?.SewerageConnections?.[0])?.comment ||
-                      (data?.WaterConnection?.[0] || data?.SewerageConnections?.[0])?.comments) && (
-                      <Row
-                        label={t("WS_COMMON_COMMENTS")}
-                        text={
-                          (data?.WaterConnection?.[0] || data?.SewerageConnections?.[0])?.comment ||
-                          (data?.WaterConnection?.[0] || data?.SewerageConnections?.[0])?.comments ||
-                          t("NA")
-                        }
-                      />
-                    )}
-                  </StatusTable>
-                </React.Fragment>
-              )}
+
 
               {data?.WaterConnection?.[0]?.applicationStatus === "PENDING_FOR_PAYMENT" ||
                 data?.WaterConnection?.[0]?.applicationStatus === "PENDING_FOR_FINAL_PAYMENT" ||

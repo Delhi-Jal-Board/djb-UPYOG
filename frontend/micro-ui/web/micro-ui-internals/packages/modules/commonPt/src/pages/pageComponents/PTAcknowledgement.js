@@ -22,16 +22,16 @@ const GetActionMessage = (props) => {
         : t("Property Updated Successfully");
     }
     return window.location.href.includes("employee")
-      ? t("CS_NEW_PROPERTY_APPLICATION_CREATED_SUCCESS", "Property Created Successfully")
-      : t("CS_NEW_PROPERTY_APPLICATION_SUBMITTED_SUCCESS", "Property Created Successfully");
+      ? t("CS_NEW_PROPERTY_APPLICATION_CREATED_SUCCESS")
+      : t("CS_NEW_PROPERTY_APPLICATION_SUBMITTED_SUCCESS");
   } else if (props.isLoading) {
     return isEdit
-      ? t("CS_PROPERTY_UPDATE_APPLICATION_PENDING", "Property Update Pending")
-      : t("CS_PROPERTY_APPLICATION_PENDING", "Property Application Pending");
+      ? t("CS_PROPERTY_UPDATE_APPLICATION_PENDING")
+      : t("CS_PROPERTY_APPLICATION_PENDING");
   } else if (!props.isSuccess) {
     return isEdit
-      ? t("CS_PROPERTY_UPDATE_APPLICATION_FAILED", "Property Update Failed")
-      : t("CS_PROPERTY_APPLICATION_FAILED", "Property Application Failed");
+      ? t("CS_PROPERTY_UPDATE_APPLICATION_FAILED")
+      : t("CS_PROPERTY_APPLICATION_FAILED");
   }
 };
 

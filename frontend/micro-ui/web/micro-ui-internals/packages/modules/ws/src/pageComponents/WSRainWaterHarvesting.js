@@ -25,9 +25,35 @@ const WSRainWaterHarvesting = ({ config, onSelect, userType, formData }) => {
     return false; // By default No
   };
 
+  const getInitialAdequacyValue = () => {
+    const configKey = config?.key || "rainWaterHarvesting";
+    const rwh = formData?.[configKey];
+    const add = formData?.additionalDetails;
+    if (rwh?.hasAdequacyCertificate !== undefined) {
+      return String(rwh.hasAdequacyCertificate) === "true" || rwh.hasAdequacyCertificate === true;
+    }
+    if (rwh?.hasRainWaterHarvestingAdequacyCertificate !== undefined) {
+      return String(rwh.hasRainWaterHarvestingAdequacyCertificate) === "true" || rwh.hasRainWaterHarvestingAdequacyCertificate === true;
+    }
+    if (rwh?.applyForAdequacyCertificate !== undefined) {
+      return String(rwh.applyForAdequacyCertificate) === "true" || rwh.applyForAdequacyCertificate === true;
+    }
+    if (add?.hasAdequacyCertificate !== undefined) {
+      return String(add.hasAdequacyCertificate) === "true" || add.hasAdequacyCertificate === true;
+    }
+    if (add?.hasRainWaterHarvestingAdequacyCertificate !== undefined) {
+      return String(add.hasRainWaterHarvestingAdequacyCertificate) === "true" || add.hasRainWaterHarvestingAdequacyCertificate === true;
+    }
+    if (add?.applyForAdequacyCertificate !== undefined) {
+      return String(add.applyForAdequacyCertificate) === "true" || add.applyForAdequacyCertificate === true;
+    }
+    return false; // By default No
+  };
+
   const { control, watch, setValue } = useForm({
     defaultValues: {
       hasCertificate: getInitialValue(),
+      hasAdequacyCertificate: getInitialAdequacyValue(),
     },
   });
 
@@ -37,6 +63,9 @@ const WSRainWaterHarvesting = ({ config, onSelect, userType, formData }) => {
     onSelect(config?.key || "rainWaterHarvesting", {
       hasCertificate: !!formValue.hasCertificate,
       isRainwaterHarvesting: !!formValue.hasCertificate,
+      hasAdequacyCertificate: !!formValue.hasCertificate && !!formValue.hasAdequacyCertificate,
+      hasRainWaterHarvestingAdequacyCertificate: !!formValue.hasCertificate && !!formValue.hasAdequacyCertificate,
+      applyForAdequacyCertificate: !!formValue.hasCertificate && !!formValue.hasAdequacyCertificate,
     });
   const onSkip = () => onSelect();
 
@@ -51,6 +80,7 @@ const WSRainWaterHarvesting = ({ config, onSelect, userType, formData }) => {
   useEffect(() => {
     if (!isInitializedRef.current && (formData?.[configKey] !== undefined || formData?.additionalDetails?.hasRainWaterHarvestingCertificate !== undefined)) {
       setValue("hasCertificate", getInitialValue());
+      setValue("hasAdequacyCertificate", getInitialAdequacyValue());
       isInitializedRef.current = true;
     }
   }, [formData?.[configKey], formData?.additionalDetails]);
@@ -64,15 +94,20 @@ const WSRainWaterHarvesting = ({ config, onSelect, userType, formData }) => {
 
     if (isEmployeeMode) {
       const currentVal = formData?.[configKey]?.hasCertificate;
+      const currentAdequacyVal = formData?.[configKey]?.hasAdequacyCertificate;
       const newVal = !!formValue.hasCertificate;
-      if (currentVal !== newVal) {
+      const newAdequacyVal = newVal ? !!formValue.hasAdequacyCertificate : false;
+      if (currentVal !== newVal || currentAdequacyVal !== newAdequacyVal) {
         onSelectRef.current(configKey, {
           hasCertificate: newVal,
           isRainwaterHarvesting: newVal,
+          hasAdequacyCertificate: newAdequacyVal,
+          hasRainWaterHarvestingAdequacyCertificate: newAdequacyVal,
+          applyForAdequacyCertificate: newAdequacyVal,
         });
       }
     }
-  }, [configKey, formValue.hasCertificate, userType, formData?.[configKey]?.hasCertificate]);
+  }, [configKey, formValue.hasCertificate, formValue.hasAdequacyCertificate, userType, formData?.[configKey]?.hasCertificate, formData?.[configKey]?.hasAdequacyCertificate]);
 
   const content = (
     <CollapsibleCardPage title={t("Rain Water Harvesting Certificate")} defaultOpen={true}>
@@ -81,7 +116,8 @@ const WSRainWaterHarvesting = ({ config, onSelect, userType, formData }) => {
           <FieldLabelWithTooltip
             label={t("Rain Water Harvesting Certificate")}
             isMandatory={false}
-            infoText={t("WS_RWH_INFO_MSG")}
+            infoText={t("Rain Water Harvesting Certificate")}
+            style={{ margin: 0 }}
           />
           <div className="field">
             <Controller
@@ -98,13 +134,50 @@ const WSRainWaterHarvesting = ({ config, onSelect, userType, formData }) => {
                   ]}
                   optionsKey="i18nKey"
                   selectedOption={props.value ? { i18nKey: "CORE_COMMON_YES", code: true } : { i18nKey: "CORE_COMMON_NO", code: false }}
-                  onSelect={(e) => props.onChange(e.code)}
+                  onSelect={(e) => {
+                    props.onChange(e.code);
+                    if (!e.code) {
+                      setValue("hasAdequacyCertificate", false);
+                    }
+                  }}
                   t={t}
                 />
               )}
             />
           </div>
         </LabelFieldPair>
+
+        {formValue?.hasCertificate ? (
+          <LabelFieldPair>
+            <FieldLabelWithTooltip
+              label={t("Having Rain water harvesting Adequacy certificate?")}
+              isMandatory={false}
+              infoText={t("Having Rain water harvesting Adequacy certificate?")}
+              style={{ margin: 0 }}
+            />
+            <div className="field">
+              <Controller
+                control={control}
+                name="hasAdequacyCertificate"
+                render={(props) => (
+                  <RadioButtons
+                    className="form-field"
+                    style={{ display: "flex", gap: "2rem", alignItems: "center" }}
+                    name="hasRainWaterHarvestingAdequacyCertificateRadio"
+                    options={[
+                      { i18nKey: "CORE_COMMON_YES", code: true },
+                      { i18nKey: "CORE_COMMON_NO", code: false },
+                    ]}
+                    optionsKey="i18nKey"
+                    selectedOption={props.value ? { i18nKey: "CORE_COMMON_YES", code: true } : { i18nKey: "CORE_COMMON_NO", code: false }}
+                    onSelect={(e) => props.onChange(e.code)}
+                    t={t}
+                  />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
+        ) : null}
       </div>
     </CollapsibleCardPage>
   );

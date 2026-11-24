@@ -87,12 +87,12 @@ const WSCard = () => {
         roles: ["WS_CEMP", "WS_ZRO", "EE"],
       },
       {
-        label: t("WS_BILL_AMENDMENT_INBOX", "Bill Amendment Inbox"),
+        label: t("WS_BILL_AMENDMENT_INBOX"),
         link: `/digit-ui/employee/ws/water/bill-amendment/inbox`,
         roles: ["WS_CEMP", "WS_ZRO", "EE"],
       },
       {
-        label: t("WS_BILL_AMENDMENT_APPLICATION_SEARCH", "Search Bill Amendment Application"),
+        label: t("WS_BILL_AMENDMENT_APPLICATION_SEARCH"),
         link: `/digit-ui/employee/ws/water/bill-amendment/search-application`,
         roles: ["WS_CEMP", "WS_ZRO", "EE"],
       },
@@ -135,7 +135,7 @@ const WSCard = () => {
         ],
       },
       {
-        label: t("WS_FIELD_INSPECTION", "Field Inspection"),
+        label: t("WS_FIELD_INSPECTION"),
         link: `/digit-ui/employee/ws/field-inspection`,
         roles: ["WS_CEMP", "WS_FIELD_INSPECTOR", "WS_APPROVER", "WS_ZRO", "EE", "WS_CLERK", "SW_FIELD_INSPECTOR"],
       },
