@@ -147,6 +147,21 @@ public class OtpServiceTest {
 		verify(otpEmailRepository).send("foo@bar.com", otpNumber);
 	}
 
+	@Test
+	public void test_should_send_email_otp_for_email_verification() {
+		final OtpRequest otpRequest = OtpRequest.builder()
+				.tenantId("dl")
+				.email("applicant@example.com")
+				.type(OtpRequestType.EMAIL_VERIFICATION)
+				.build();
+		final String otpNumber = "654321";
+		when(otpRepository.fetchOtp(otpRequest)).thenReturn(otpNumber);
+
+		otpService.sendOtp(otpRequest);
+
+		verify(otpEmailRepository).sendEmailOtp("applicant@example.com", otpNumber);
+	}
+
 	@Test(expected = OtpCooldownException.class)
 	public void test_should_throw_cooldown_exception_on_rapid_otp_resend() {
 		final OtpRequest otpRequest = OtpRequest.builder().tenantId("tenant").mobileNumber("9876543210")

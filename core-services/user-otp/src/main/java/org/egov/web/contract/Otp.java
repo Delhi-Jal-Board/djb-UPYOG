@@ -16,11 +16,22 @@ public class Otp {
     private static final String PASSWORD_RESET = "passwordreset";
     private static final String USER_LOGIN = "login";
     private static final String EKYC = "ekyc";
+    private static final String EMAIL_VERIFICATION = "email_verification";
+    private static final String EMAIL = "email";
     private String mobileNumber;
     private String tenantId;
     private String type;
     private String userType;
     private String name;
+    private String email;
+
+    public Otp(String mobileNumber, String tenantId, String type, String userType, String name) {
+        this.mobileNumber = mobileNumber;
+        this.tenantId = tenantId;
+        this.type = type;
+        this.userType = userType;
+        this.name = name;
+    }
 
     @JsonIgnore
     public OtpRequestType getTypeOrDefault() {
@@ -36,6 +47,8 @@ public class Otp {
             return OtpRequestType.PASSWORD_RESET;
         } else if (EKYC.equalsIgnoreCase(type)) {
             return OtpRequestType.EKYC;
+        } else if (EMAIL_VERIFICATION.equalsIgnoreCase(type) || EMAIL.equalsIgnoreCase(type)) {
+            return OtpRequestType.EMAIL_VERIFICATION;
         }
         return null;
     }

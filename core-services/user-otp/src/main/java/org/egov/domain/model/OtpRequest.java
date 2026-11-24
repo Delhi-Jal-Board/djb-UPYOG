@@ -18,14 +18,29 @@ public class OtpRequest {
     private OtpRequestType type;
     private String userType;
     private String name; // Added for dynamic template parameters (like eKYC Consumer name)
+    private String email;
+
+    public OtpRequest(String mobileNumber, String tenantId, OtpRequestType type, String userType, String name) {
+        this.mobileNumber = mobileNumber;
+        this.tenantId = tenantId;
+        this.type = type;
+        this.userType = userType;
+        this.name = name;
+    }
 
     public void validate() {
-        if(isTenantIdAbsent()
-				|| isMobileNumberAbsent()
-				|| isInvalidType()
-				|| isMobileNumberNumeric()
-				|| isMobileNumberValidLength()) {
-            throw new InvalidOtpRequestException(this);
+        if (isEmailVerificationRequestType()) {
+            if (isTenantIdAbsent() || isEmpty(email)) {
+                throw new InvalidOtpRequestException(this);
+            }
+        } else {
+            if (isTenantIdAbsent()
+                    || isMobileNumberAbsent()
+                    || isInvalidType()
+                    || isMobileNumberNumeric()
+                    || isMobileNumberValidLength()) {
+                throw new InvalidOtpRequestException(this);
+            }
         }
     }
 
@@ -53,6 +68,10 @@ public class OtpRequest {
 
 	public boolean isEkycRequestType() {
     	return OtpRequestType.EKYC.equals(getType());
+	}
+
+	public boolean isEmailVerificationRequestType() {
+		return OtpRequestType.EMAIL_VERIFICATION.equals(getType());
 	}
 
 	public boolean isInvalidType() {

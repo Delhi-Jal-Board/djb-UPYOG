@@ -15,11 +15,16 @@ public class OtpRequest {
     public org.egov.domain.model.OtpRequest toDomain() {
         return org.egov.domain.model.OtpRequest.builder()
                 .mobileNumber(getMobileNumber())
+                .email(getEmail())
                 .tenantId(getTenantId())
                 .type(getType())
                 .userType(getUserType())
                 .name(getName())
                 .build();
+    }
+
+    private String getEmail() {
+        return otp != null ? otp.getEmail() : null;
     }
 
     private OtpRequestType getType() {

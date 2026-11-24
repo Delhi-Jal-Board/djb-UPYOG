@@ -14,6 +14,8 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 public class OtpEmailRepository {
     private static final String PASSWORD_RESET_SUBJECT = "Password Reset";
     private static final String PASSWORD_RESET_BODY = "Your OTP for recovering password is %s.";
+    private static final String EMAIL_VERIFICATION_SUBJECT = "Email Verification OTP";
+    private static final String EMAIL_VERIFICATION_BODY = "Dear Applicant, Your OTP for email verification is %s. It is valid for 10 minutes.\n\nDelhi Jal Board";
     private CustomKafkaTemplate<String, EmailMessage> kafkaTemplate;
     private String emailTopic;
 
@@ -29,6 +31,19 @@ public class OtpEmailRepository {
 			return;
 		}
 		sendEmail(email, otpNumber);
+    }
+
+    public void sendEmailOtp(String email, String otpNumber) {
+        if (isEmpty(email)) {
+            return;
+        }
+        final EmailMessage emailMessage = EmailMessage.builder()
+                .body(format(EMAIL_VERIFICATION_BODY, otpNumber))
+                .subject(EMAIL_VERIFICATION_SUBJECT)
+                .email(email)
+                .sender(EMPTY)
+                .build();
+        kafkaTemplate.send(emailTopic, emailMessage);
     }
 
 	private void sendEmail(String email, String otpNumber) {
