@@ -39,6 +39,7 @@ const CheckPage = ({ onSubmit, value }) => {
   const djbEmployee = value?.djbEmployee || {};
   const disability = value?.disability || value?.additionalDetails || {};
   const rainWaterHarvesting = value?.rainWaterHarvesting || value?.additionalDetails || {};
+  const sewerTreatmentPlant = value?.sewerTreatmentPlant || value?.additionalDetails || {};
   const bankDetails =
     value?.bankDetails?.bankDetails ||
     value?.bankDetails ||
@@ -126,6 +127,22 @@ const CheckPage = ({ onSubmit, value }) => {
     }
   }
   const reversedOwners = Array.isArray(cpt?.details?.owners) ? cpt?.details?.owners.slice().reverse() : [];
+
+  const getDocumentSectionHeader = (docType) => {
+    if (!docType) return "";
+    const upper = docType.toUpperCase();
+    if (upper.includes("SEWER") || upper.includes("STP")) {
+      return t("WS_SEWER_TREATMENT_PLANT_CERTIFICATE") && t("WS_SEWER_TREATMENT_PLANT_CERTIFICATE") !== "WS_SEWER_TREATMENT_PLANT_CERTIFICATE"
+        ? t("WS_SEWER_TREATMENT_PLANT_CERTIFICATE")
+        : "Sewer Treatment Plant (STP) Certificate";
+    }
+    if (upper.includes("RAIN") || upper.includes("HARVEST")) {
+      return t("WS_RAIN_WATER_HARVESTING_CERTIFICATE") && t("WS_RAIN_WATER_HARVESTING_CERTIFICATE") !== "WS_RAIN_WATER_HARVESTING_CERTIFICATE"
+        ? t("WS_RAIN_WATER_HARVESTING_CERTIFICATE")
+        : "Rain Water Harvesting Certificate";
+    }
+    return t(docType?.split(".").slice(0, 2).join("_"));
+  };
 
   return (
     <React.Fragment>
@@ -331,6 +348,50 @@ const CheckPage = ({ onSubmit, value }) => {
               : t("CORE_COMMON_NO")
           }`}
         />
+        {(rainWaterHarvesting?.hasCertificate || rainWaterHarvesting?.isRainwaterHarvesting) && (
+          <Row
+            label={t("Having Rain water harvesting Adequacy certificate?")}
+            text={`${
+              rainWaterHarvesting?.hasAdequacyCertificate || rainWaterHarvesting?.hasRainWaterHarvestingAdequacyCertificate || rainWaterHarvesting?.applyForAdequacyCertificate
+                ? t("CORE_COMMON_YES")
+                : t("CORE_COMMON_NO")
+            }`}
+          />
+        )}
+        {(rainWaterHarvesting?.validityDate || rainWaterHarvesting?.validityUpTo || rainWaterHarvesting?.rwhValidityUpTo || rainWaterHarvesting?.date) && (
+          <Row
+            label={t("Validity up to date")}
+            text={checkForNA(rainWaterHarvesting?.validityDate || rainWaterHarvesting?.validityUpTo || rainWaterHarvesting?.rwhValidityUpTo || rainWaterHarvesting?.date)}
+          />
+        )}
+      </StatusTable>
+
+      <CardSubHeader>{t("Sewer Treatment Plant (STP)")}</CardSubHeader>
+      <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
+        <Row
+          label={t("Sewer Treatment Plant (STP)")}
+          text={`${
+            sewerTreatmentPlant?.hasCertificate || sewerTreatmentPlant?.hasStp || sewerTreatmentPlant?.isSewerTreatmentPlant
+              ? t("CORE_COMMON_YES")
+              : t("CORE_COMMON_NO")
+          }`}
+        />
+        {(sewerTreatmentPlant?.hasCertificate || sewerTreatmentPlant?.hasStp || sewerTreatmentPlant?.isSewerTreatmentPlant) && (
+          <Row
+            label={t("Having STP certificate issued by DPCC?")}
+            text={`${
+              sewerTreatmentPlant?.hasAdequacyCertificate || sewerTreatmentPlant?.hasStpAdequacyCertificate || sewerTreatmentPlant?.hasSewerTreatmentPlantAdequacyCertificate || sewerTreatmentPlant?.applyForAdequacyCertificate || sewerTreatmentPlant?.applyForStpAdequacyCertificate
+                ? t("CORE_COMMON_YES")
+                : t("CORE_COMMON_NO")
+            }`}
+          />
+        )}
+        {(sewerTreatmentPlant?.validityDate || sewerTreatmentPlant?.stpValidityDate || sewerTreatmentPlant?.sewerTreatmentPlantValidityDate || sewerTreatmentPlant?.stpValidityUpTo || sewerTreatmentPlant?.date) && (
+          <Row
+            label={t("Validity up to date")}
+            text={checkForNA(sewerTreatmentPlant?.validityDate || sewerTreatmentPlant?.stpValidityDate || sewerTreatmentPlant?.sewerTreatmentPlantValidityDate || sewerTreatmentPlant?.stpValidityUpTo || sewerTreatmentPlant?.date)}
+          />
+        )}
       </StatusTable>
 
       <CardSubHeader>{t("WS_BANK_DETAILS")}</CardSubHeader>
@@ -600,7 +661,7 @@ const CheckPage = ({ onSubmit, value }) => {
             <div key={`doc-${index}`}>
               {
                 <div>
-                  <CardSectionHeader>{t(doc?.documentType?.split(".").slice(0, 2).join("_"))}</CardSectionHeader>
+                  <CardSectionHeader>{getDocumentSectionHeader(doc?.documentType)}</CardSectionHeader>
                   <StatusTable>
                     {<WSDocument value={value} Code={doc?.documentType} index={index} />}
                     {documents?.documents.length != index + 1 ? (

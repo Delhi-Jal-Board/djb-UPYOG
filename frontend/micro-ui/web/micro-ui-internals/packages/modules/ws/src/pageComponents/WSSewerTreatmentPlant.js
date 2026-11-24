@@ -34,9 +34,47 @@ const WSSewerTreatmentPlant = ({ config, onSelect, userType, formData }) => {
     return false; // By default No
   };
 
+  const getInitialAdequacyValue = () => {
+    const configKey = config?.key || "sewerTreatmentPlant";
+    const stp = formData?.[configKey] || formData?.sewageTreatmentPlant;
+    const add = formData?.additionalDetails;
+    if (stp?.hasAdequacyCertificate !== undefined) {
+      return String(stp.hasAdequacyCertificate) === "true" || stp.hasAdequacyCertificate === true;
+    }
+    if (stp?.hasStpAdequacyCertificate !== undefined) {
+      return String(stp.hasStpAdequacyCertificate) === "true" || stp.hasStpAdequacyCertificate === true;
+    }
+    if (stp?.hasSewerTreatmentPlantAdequacyCertificate !== undefined) {
+      return String(stp.hasSewerTreatmentPlantAdequacyCertificate) === "true" || stp.hasSewerTreatmentPlantAdequacyCertificate === true;
+    }
+    if (stp?.applyForAdequacyCertificate !== undefined) {
+      return String(stp.applyForAdequacyCertificate) === "true" || stp.applyForAdequacyCertificate === true;
+    }
+    if (stp?.applyForStpAdequacyCertificate !== undefined) {
+      return String(stp.applyForStpAdequacyCertificate) === "true" || stp.applyForStpAdequacyCertificate === true;
+    }
+    if (add?.hasAdequacyCertificate !== undefined) {
+      return String(add.hasAdequacyCertificate) === "true" || add.hasAdequacyCertificate === true;
+    }
+    if (add?.hasStpAdequacyCertificate !== undefined) {
+      return String(add.hasStpAdequacyCertificate) === "true" || add.hasStpAdequacyCertificate === true;
+    }
+    if (add?.hasSewerTreatmentPlantAdequacyCertificate !== undefined) {
+      return String(add.hasSewerTreatmentPlantAdequacyCertificate) === "true" || add.hasSewerTreatmentPlantAdequacyCertificate === true;
+    }
+    if (add?.applyForAdequacyCertificate !== undefined) {
+      return String(add.applyForAdequacyCertificate) === "true" || add.applyForAdequacyCertificate === true;
+    }
+    if (add?.applyForStpAdequacyCertificate !== undefined) {
+      return String(add.applyForStpAdequacyCertificate) === "true" || add.applyForStpAdequacyCertificate === true;
+    }
+    return false; // By default No
+  };
+
   const { control, watch, setValue } = useForm({
     defaultValues: {
       hasCertificate: getInitialValue(),
+      hasAdequacyCertificate: getInitialAdequacyValue(),
     },
   });
 
@@ -47,6 +85,11 @@ const WSSewerTreatmentPlant = ({ config, onSelect, userType, formData }) => {
       hasCertificate: !!formValue.hasCertificate,
       hasStp: !!formValue.hasCertificate,
       isSewerTreatmentPlant: !!formValue.hasCertificate,
+      hasAdequacyCertificate: !!formValue.hasCertificate && !!formValue.hasAdequacyCertificate,
+      hasStpAdequacyCertificate: !!formValue.hasCertificate && !!formValue.hasAdequacyCertificate,
+      hasSewerTreatmentPlantAdequacyCertificate: !!formValue.hasCertificate && !!formValue.hasAdequacyCertificate,
+      applyForAdequacyCertificate: !!formValue.hasCertificate && !!formValue.hasAdequacyCertificate,
+      applyForStpAdequacyCertificate: !!formValue.hasCertificate && !!formValue.hasAdequacyCertificate,
     });
   const onSkip = () => onSelect();
 
@@ -72,6 +115,7 @@ const WSSewerTreatmentPlant = ({ config, onSelect, userType, formData }) => {
         formData?.additionalDetails?.hasStp !== undefined)
     ) {
       setValue("hasCertificate", getInitialValue());
+      setValue("hasAdequacyCertificate", getInitialAdequacyValue());
       isInitializedRef.current = true;
     }
   }, [formData?.[configKey], formData?.sewageTreatmentPlant, formData?.additionalDetails]);
@@ -85,16 +129,23 @@ const WSSewerTreatmentPlant = ({ config, onSelect, userType, formData }) => {
 
     if (isEmployeeMode) {
       const currentVal = formData?.[configKey]?.hasCertificate ?? formData?.[configKey]?.hasStp;
+      const currentAdequacyVal = formData?.[configKey]?.hasAdequacyCertificate ?? formData?.[configKey]?.hasStpAdequacyCertificate;
       const newVal = !!formValue.hasCertificate;
-      if (currentVal !== newVal) {
+      const newAdequacyVal = newVal ? !!formValue.hasAdequacyCertificate : false;
+      if (currentVal !== newVal || currentAdequacyVal !== newAdequacyVal) {
         onSelectRef.current(configKey, {
           hasCertificate: newVal,
           hasStp: newVal,
           isSewerTreatmentPlant: newVal,
+          hasAdequacyCertificate: newAdequacyVal,
+          hasStpAdequacyCertificate: newAdequacyVal,
+          hasSewerTreatmentPlantAdequacyCertificate: newAdequacyVal,
+          applyForAdequacyCertificate: newAdequacyVal,
+          applyForStpAdequacyCertificate: newAdequacyVal,
         });
       }
     }
-  }, [configKey, formValue.hasCertificate, userType, formData?.[configKey]?.hasCertificate, formData?.[configKey]?.hasStp]);
+  }, [configKey, formValue.hasCertificate, formValue.hasAdequacyCertificate, userType, formData?.[configKey]?.hasCertificate, formData?.[configKey]?.hasStp, formData?.[configKey]?.hasAdequacyCertificate]);
 
   const content = (
     <CollapsibleCardPage title={t("Sewer Treatment Plant (STP)")} defaultOpen={true}>
@@ -103,7 +154,8 @@ const WSSewerTreatmentPlant = ({ config, onSelect, userType, formData }) => {
           <FieldLabelWithTooltip
             label={t("Sewer Treatment Plant (STP)")}
             isMandatory={false}
-            infoText={t("WS_STP_INFO_MSG", "Select Yes if Sewer Treatment Plant is available")}
+            infoText={t("Sewer Treatment Plant (STP)")}
+            style={{ margin: 0 }}
           />
           <div className="field">
             <Controller
@@ -120,13 +172,50 @@ const WSSewerTreatmentPlant = ({ config, onSelect, userType, formData }) => {
                   ]}
                   optionsKey="i18nKey"
                   selectedOption={props.value ? { i18nKey: "CORE_COMMON_YES", code: true } : { i18nKey: "CORE_COMMON_NO", code: false }}
-                  onSelect={(e) => props.onChange(e.code)}
+                  onSelect={(e) => {
+                    props.onChange(e.code);
+                    if (!e.code) {
+                      setValue("hasAdequacyCertificate", false);
+                    }
+                  }}
                   t={t}
                 />
               )}
             />
           </div>
         </LabelFieldPair>
+
+        {formValue?.hasCertificate ? (
+          <LabelFieldPair>
+            <FieldLabelWithTooltip
+              label={t("Having STP certificate issued by DPCC?")}
+              isMandatory={false}
+              infoText={t("Having STP certificate issued by DPCC?")}
+              style={{ margin: 0 }}
+            />
+            <div className="field">
+              <Controller
+                control={control}
+                name="hasAdequacyCertificate"
+                render={(props) => (
+                  <RadioButtons
+                    className="form-field"
+                    style={{ display: "flex", gap: "2rem", alignItems: "center" }}
+                    name="havingSTPcertificateissuedbyDPCCRadio"
+                    options={[
+                      { i18nKey: "CORE_COMMON_YES", code: true },
+                      { i18nKey: "CORE_COMMON_NO", code: false },
+                    ]}
+                    optionsKey="i18nKey"
+                    selectedOption={props.value ? { i18nKey: "CORE_COMMON_YES", code: true } : { i18nKey: "CORE_COMMON_NO", code: false }}
+                    onSelect={(e) => props.onChange(e.code)}
+                    t={t}
+                  />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
+        ) : null}
       </div>
     </CollapsibleCardPage>
   );

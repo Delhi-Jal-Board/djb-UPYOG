@@ -1,4 +1,12 @@
-import { CardLabel, Dropdown, LabelFieldPair, TextInput, CardLabelError, WrapUnMaskComponent, FieldLabelWithTooltip } from "@djb25/digit-ui-react-components";
+import {
+  CardLabel,
+  Dropdown,
+  LabelFieldPair,
+  TextInput,
+  CardLabelError,
+  WrapUnMaskComponent,
+  FieldLabelWithTooltip,
+} from "@djb25/digit-ui-react-components";
 import React, { useEffect, useState } from "react";
 import * as func from "../utils";
 import { useForm, Controller } from "react-hook-form";
@@ -22,9 +30,7 @@ const getAppPlumberInfo = (formData) => {
 
 const createPlumberDetails = (formData) => {
   const appPlumber = getAppPlumberInfo(formData);
-  const existingPref =
-    formData?.formDetails?.applicationData?.additionalDetails?.detailsProvidedBy ||
-    formData?.additionalDetails?.detailsProvidedBy;
+  const existingPref = formData?.formDetails?.applicationData?.additionalDetails?.detailsProvidedBy || formData?.additionalDetails?.detailsProvidedBy;
 
   let defaultPref = null;
   if (existingPref === "DJB" || existingPref === "ULB" || existingPref === "Delhi Jal Board") {
@@ -121,11 +127,7 @@ const PlumberDetails = (_props) => {
     setPlumberDetails,
   } = _props;
 
-  const getTrans = (key, defaultVal) => {
-    const val = t(key);
-    return val && val !== key ? val : defaultVal;
-  };
-
+  
   const appPlumber = getAppPlumberInfo(formData);
 
   const initialPref =
@@ -137,37 +139,87 @@ const PlumberDetails = (_props) => {
       ? options[0]
       : plumberDetail?.detailsProvidedBy || null;
 
-  const {
-    control,
-    formState: localFormState,
-    watch,
-    setError: setLocalError,
-    clearErrors: clearLocalErrors,
-    setValue,
-    trigger,
-    getValues,
-  } = useForm({
-    defaultValues: {
-      detailsProvidedBy: initialPref,
-      plumberName: plumberDetail?.plumberName || appPlumber?.name || "",
-      plumberLicenseNo: plumberDetail?.plumberLicenseNo || appPlumber?.licenseNo || "",
-      plumberMobileNo: plumberDetail?.plumberMobileNo || appPlumber?.mobileNumber || "",
-      jeOrFirmName: plumberDetail?.jeOrFirmName || "",
-    },
-  });
+  const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue, getValues } = useForm(
+    {
+      mode: "all",
+      reValidateMode: "onChange",
+      defaultValues: {
+        detailsProvidedBy: initialPref,
+        plumberName: plumberDetail?.plumberName || appPlumber?.name || "",
+        plumberLicenseNo: plumberDetail?.plumberLicenseNo || appPlumber?.licenseNo || "",
+        plumberMobileNo: plumberDetail?.plumberMobileNo || appPlumber?.mobileNumber || "",
+        jeOrFirmName: plumberDetail?.jeOrFirmName || "",
+      },
+    }
+  );
 
   const formValue = watch();
-  const { errors } = localFormState;
   const isMobile = window.Digit.Utils.browser.isMobile();
   let isEmployee = window.location.href.includes("/employee");
 
   const currentPref = formValue?.detailsProvidedBy?.code || plumberDetail?.detailsProvidedBy?.code;
-  const isDJB = currentPref === "DJB" || currentPref === "ULB" || formValue?.detailsProvidedBy?.name === "Delhi Jal Board";
-  const isSelf = currentPref === "Self";
+  const isDJB =
+    currentPref === "DJB" ||
+    currentPref === "ULB" ||
+    formValue?.detailsProvidedBy?.name === "Delhi Jal Board" ||
+    plumberDetail?.detailsProvidedBy?.name === "Delhi Jal Board";
+  const isSelf = currentPref === "Self" || (!isDJB && (currentPref === undefined || currentPref === null) && appPlumber?.name);
 
-  useEffect(() => {
-    trigger();
-  }, []);
+  const [touchedFields, setTouchedFields] = useState({});
+  const markTouched = (fieldName) => {
+    setTouchedFields((prev) => ({ ...prev, [fieldName]: true }));
+  };
+
+  const isFieldTouched = (fieldName) => {
+    return Boolean(
+      localFormState?.touched?.[fieldName] ||
+      touchedFields[fieldName] ||
+      (formState?.submitCount > 0)
+    );
+  };
+
+  const getActiveErrors = () => {
+    const errs = {};
+    if (!currentPref) {
+      errs.detailsProvidedBy = { message: t("REQUIRED_FIELD") };
+      return errs;
+    }
+    if (isDJB) {
+      const val = formValue?.jeOrFirmName !== undefined ? formValue.jeOrFirmName : (plumberDetail?.jeOrFirmName || "");
+      if (!val || !val.trim()) {
+        errs.jeOrFirmName = { message: t("REQUIRED_FIELD") };
+      }
+    } else if (isSelf) {
+      const pName = formValue?.plumberName !== undefined ? formValue.plumberName : (plumberDetail?.plumberName || "");
+      if (!pName || !pName.trim()) {
+        errs.plumberName = { message: t("REQUIRED_FIELD") };
+      } else if (!/^[a-zA-Z\s]{1,50}$/.test(pName)) {
+        errs.plumberName = { message: t("WS_NAME_ERROR_MESSAGE") };
+      }
+
+      const pLic = formValue?.plumberLicenseNo !== undefined ? formValue.plumberLicenseNo : (plumberDetail?.plumberLicenseNo || "");
+      if (!pLic || !pLic.toString().trim()) {
+        errs.plumberLicenseNo = { message: t("REQUIRED_FIELD") };
+      }
+
+      const pMob = formValue?.plumberMobileNo !== undefined ? formValue.plumberMobileNo : (plumberDetail?.plumberMobileNo || "");
+      const cleanMob = pMob ? pMob.toString().trim() : "";
+      if (!cleanMob) {
+        errs.plumberMobileNo = { message: t("REQUIRED_FIELD") };
+      } else if (!cleanMob.includes("*") && !/^[6-9]\d{9}$/.test(cleanMob)) {
+        errs.plumberMobileNo = { message: t("CORE_COMMON_PHONENO_INVALID") };
+      }
+    }
+    return errs;
+  };
+
+  const activeErrors = getActiveErrors();
+
+  const showDetailsProvidedByError = Boolean(isFieldTouched("detailsProvidedBy") && activeErrors.detailsProvidedBy);
+  const showJeOrFirmError = Boolean(isFieldTouched("jeOrFirmName") && activeErrors.jeOrFirmName);
+  const showPlumberNameError = Boolean(isFieldTouched("plumberName") && activeErrors.plumberName);
+  const showPlumberLicenseNoError = Boolean(isFieldTouched("plumberLicenseNo") && activeErrors.plumberLicenseNo);
+  const showPlumberMobileNoError = Boolean(isFieldTouched("plumberMobileNo") && activeErrors.plumberMobileNo);
 
   useEffect(() => {
     if (isDJB) {
@@ -175,7 +227,6 @@ const PlumberDetails = (_props) => {
     } else if (isSelf) {
       clearLocalErrors(["jeOrFirmName"]);
     }
-    trigger();
   }, [currentPref]);
 
   useEffect(() => {
@@ -191,12 +242,28 @@ const PlumberDetails = (_props) => {
   }, [formValue]);
 
   useEffect(() => {
-    if (Object.keys(errors).length && !_.isEqual(formState.errors[config.key]?.type || {}, errors)) {
-      setError(config.key, { type: errors });
-    } else if (!Object.keys(errors).length && formState.errors[config.key]) {
+    const activeErrs = getActiveErrors();
+    const hasActiveErrs = Object.keys(activeErrs).length > 0;
+    if (hasActiveErrs) {
+      setError(config.key, { type: activeErrs });
+    } else {
       clearErrors(config.key);
     }
-  }, [errors]);
+  }, [
+    currentPref,
+    formValue?.jeOrFirmName,
+    formValue?.plumberName,
+    formValue?.plumberLicenseNo,
+    formValue?.plumberMobileNo,
+    formValue?.detailsProvidedBy,
+    formState?.submitCount,
+  ]);
+
+  useEffect(() => {
+    return () => {
+      clearErrors(config.key);
+    };
+  }, []);
 
   const errorStyle = { width: "100%", marginLeft: "0px", fontSize: "12px", marginTop: "-21px" };
 
@@ -205,25 +272,25 @@ const PlumberDetails = (_props) => {
       <LabelFieldPair>
         <FieldLabelWithTooltip
           style={{ margin: 0 }}
-          label={getTrans("WS_ADDN_DETAILS_PLUMBER_PROVIDED_BY", "Plumber Provided By")}
+          label={t("WS_ADDN_DETAILS_PLUMBER_PROVIDED_BY")}
           isMandatory={true}
-          infoText={t("WS_PLUMBER_PROVIDED_BY_INFO_MSG", "Select whether plumber is Self or provided by Delhi Jal Board")}
+          infoText={t("WS_PLUMBER_PROVIDED_BY_INFO_MSG")}
         />
         <Controller
           control={control}
           name={"detailsProvidedBy"}
           defaultValue={initialPref}
-          rules={{ required: getTrans("REQUIRED_FIELD", "Required") }}
-          isMandatory={true}
+          rules={{ required: t("REQUIRED_FIELD") }}
           render={(props) => (
             <Dropdown
               className="form-field"
               selected={props.value || getValues("detailsProvidedBy")}
               disable={false}
               option={options}
-              placeholder={getTrans("WS_ADDN_DETAILS_PLUMBER_PROVIDED_BY_PLACEHOLDER", "Select plumber provided by")}
-              errorStyle={localFormState.touched.detailsProvidedBy && errors?.detailsProvidedBy?.message ? true : false}
+              placeholder={t("WS_ADDN_DETAILS_PLUMBER_PROVIDED_BY_PLACEHOLDER")}
+              errorStyle={showDetailsProvidedByError}
               select={(e) => {
+                markTouched("detailsProvidedBy");
                 if (e.code === "DJB") {
                   setValue("plumberName", "");
                   setValue("plumberLicenseNo", "");
@@ -260,13 +327,16 @@ const PlumberDetails = (_props) => {
                 props.onChange(e);
               }}
               optionKey="name"
-              onBlur={props.onBlur}
+              onBlur={() => {
+                markTouched("detailsProvidedBy");
+                props.onBlur();
+              }}
               t={t}
             />
           )}
         />
-        {localFormState.touched.detailsProvidedBy && errors?.detailsProvidedBy?.message ? (
-          <CardLabelError style={errorStyle}> {errors?.detailsProvidedBy?.message}</CardLabelError>
+        {showDetailsProvidedByError ? (
+          <CardLabelError style={errorStyle}> {activeErrors.detailsProvidedBy?.message || t("REQUIRED_FIELD")}</CardLabelError>
         ) : null}
       </LabelFieldPair>
 
@@ -275,35 +345,40 @@ const PlumberDetails = (_props) => {
         <LabelFieldPair>
           <FieldLabelWithTooltip
             style={{ margin: 0 }}
-            label={getTrans("WS_NAME_OF_JE_OR_FIRM", "Name of JE / Name of Firm")}
+            label={t("WS_NAME_OF_JE_OR_FIRM")}
             isMandatory={true}
-            infoText={t("WS_NAME_OF_JE_OR_FIRM_INFO_MSG", "Enter Name of JE or Name of Firm")}
+            infoText={t("WS_NAME_OF_JE_OR_FIRM_INFO_MSG")}
           />
           <div className="field">
             <Controller
               control={control}
               name="jeOrFirmName"
               defaultValue={plumberDetail?.jeOrFirmName}
-              rules={{ required: getTrans("REQUIRED_FIELD", "Required") }}
-              isMandatory={true}
+              rules={isDJB ? { required: t("REQUIRED_FIELD") } : {}}
               render={(props) => (
                 <TextInput
                   value={props.value}
                   autoFocus={focusIndex.index === plumberDetail?.key && focusIndex.type === "jeOrFirmName"}
-                  errorStyle={localFormState.touched.jeOrFirmName && errors?.jeOrFirmName?.message ? true : false}
+                  errorStyle={showJeOrFirmError}
                   onChange={(e) => {
-                    props.onChange(e.target.value);
+                    markTouched("jeOrFirmName");
+                    const val = e.target.value;
+                    props.onChange(val);
+                    clearLocalErrors("jeOrFirmName");
                     setFocusIndex({ index: plumberDetail?.key, type: "jeOrFirmName" });
                   }}
                   labelStyle={{ marginTop: "unset" }}
-                  onBlur={props.onBlur}
-                  placeholder={getTrans("WS_NAME_OF_JE_OR_FIRM_PLACEHOLDER", "Enter Name of JE / Name of Firm")}
+                  onBlur={() => {
+                    markTouched("jeOrFirmName");
+                    props.onBlur();
+                  }}
+                  placeholder={t("WS_NAME_OF_JE_OR_FIRM_PLACEHOLDER")}
                 />
               )}
             />
           </div>
-          {localFormState.touched.jeOrFirmName && errors?.jeOrFirmName?.message ? (
-            <CardLabelError style={errorStyle}> {errors?.jeOrFirmName?.message}</CardLabelError>
+          {showJeOrFirmError ? (
+            <CardLabelError style={errorStyle}> {activeErrors.jeOrFirmName?.message || t("REQUIRED_FIELD")}</CardLabelError>
           ) : null}
         </LabelFieldPair>
       ) : null}
@@ -314,108 +389,122 @@ const PlumberDetails = (_props) => {
           <LabelFieldPair>
             <FieldLabelWithTooltip
               style={{ margin: 0 }}
-              label={getTrans("WS_ADDN_DETAILS_PLUMBER_NAME_LABEL", "Plumber Name")}
+              label={t("WS_ADDN_DETAILS_PLUMBER_NAME_LABEL")}
               isMandatory={true}
-              infoText={t("WS_PLUMBER_NAME_INFO_MSG", "Enter Name of Plumber")}
+              infoText={t("WS_PLUMBER_NAME_INFO_MSG")}
             />
             <div className="field">
               <Controller
                 control={control}
                 name="plumberName"
                 defaultValue={plumberDetail?.plumberName || appPlumber?.name || ""}
-                rules={{
-                  validate: (e) =>
-                    !e || !e.trim()
-                      ? getTrans("REQUIRED_FIELD", "Required")
-                      : /^[a-zA-Z\s]{1,50}$/.test(e)
-                      ? true
-                      : getTrans("WS_NAME_ERROR_MESSAGE", "Only alphabets are allowed"),
-                  required: getTrans("REQUIRED_FIELD", "Required"),
-                }}
-                isMandatory={true}
+                rules={
+                  isSelf
+                    ? {
+                        validate: (e) =>
+                          !e || !e.trim()
+                            ? t("REQUIRED_FIELD")
+                            : /^[a-zA-Z\s]{1,50}$/.test(e)
+                            ? true
+                            : t("WS_NAME_ERROR_MESSAGE"),
+                        required: t("REQUIRED_FIELD"),
+                      }
+                    : {}
+                }
                 render={(props) => (
                   <TextInput
                     value={props.value}
                     autoFocus={focusIndex.index === plumberDetail?.key && focusIndex.type === "plumberName"}
-                    errorStyle={localFormState.touched.plumberName && errors?.plumberName?.message ? true : false}
+                    errorStyle={showPlumberNameError}
                     onChange={(e) => {
+                      markTouched("plumberName");
                       const val = e.target.value;
                       const cleanVal = val.replace(/[^a-zA-Z\s]/g, "").slice(0, 50);
                       props.onChange(cleanVal);
+                      clearLocalErrors("plumberName");
                       setFocusIndex({ index: plumberDetail?.key, type: "plumberName" });
                     }}
                     labelStyle={{ marginTop: "unset" }}
-                    onBlur={props.onBlur}
-                    placeholder={getTrans("WS_ADDN_DETAILS_PLUMBER_NAME_PLACEHOLDER", "Enter Name of Plumber")}
+                    onBlur={() => {
+                      markTouched("plumberName");
+                      props.onBlur();
+                    }}
+                    placeholder={t("WS_ADDN_DETAILS_PLUMBER_NAME_PLACEHOLDER")}
                   />
                 )}
               />
             </div>
-            {localFormState.touched.plumberName && errors?.plumberName?.message ? (
-              <CardLabelError style={errorStyle}> {errors?.plumberName?.message}</CardLabelError>
+            {showPlumberNameError ? (
+              <CardLabelError style={errorStyle}> {activeErrors.plumberName?.message || t("REQUIRED_FIELD")}</CardLabelError>
             ) : null}
           </LabelFieldPair>
 
           <LabelFieldPair>
             <FieldLabelWithTooltip
               style={{ margin: 0 }}
-              label={getTrans("WS_PLIMBER_LICENSE_NO_LABEL", "Plumber License Number")}
+              label={t("WS_PLIMBER_LICENSE_NO_LABEL")}
               isMandatory={true}
-              infoText={t("WS_PLUMBER_LICENSE_NO_INFO_MSG", "Enter Plumber License Number")}
+              infoText={t("WS_PLUMBER_LICENSE_NO_INFO_MSG")}
             />
             <div className="field">
               <Controller
                 control={control}
                 name="plumberLicenseNo"
                 defaultValue={plumberDetail?.plumberLicenseNo || appPlumber?.licenseNo || ""}
-                rules={{
-                  required: getTrans("REQUIRED_FIELD", "Required"),
-                }}
-                isMandatory={true}
+                rules={isSelf ? { required: t("REQUIRED_FIELD") } : {}}
                 render={(props) => (
                   <TextInput
                     value={props.value}
                     autoFocus={focusIndex.index === plumberDetail?.key && focusIndex.type === "plumberLicenseNo"}
-                    errorStyle={localFormState.touched.plumberLicenseNo && errors?.plumberLicenseNo?.message ? true : false}
+                    errorStyle={showPlumberLicenseNoError}
                     onChange={(e) => {
-                      props.onChange(e.target.value);
+                      markTouched("plumberLicenseNo");
+                      const val = e.target.value;
+                      props.onChange(val);
+                      clearLocalErrors("plumberLicenseNo");
                       setFocusIndex({ index: plumberDetail?.key, type: "plumberLicenseNo" });
                     }}
                     labelStyle={{ marginTop: "unset" }}
-                    onBlur={props.onBlur}
-                    placeholder={getTrans("WS_PLIMBER_LICENSE_NO_PLACEHOLDER", "Enter Plumber License Number")}
+                    onBlur={() => {
+                      markTouched("plumberLicenseNo");
+                      props.onBlur();
+                    }}
+                    placeholder={t("WS_PLIMBER_LICENSE_NO_PLACEHOLDER")}
                   />
                 )}
               />
             </div>
-            {localFormState.touched.plumberLicenseNo && errors?.plumberLicenseNo?.message ? (
-              <CardLabelError style={errorStyle}>{errors?.plumberLicenseNo?.message}</CardLabelError>
+            {showPlumberLicenseNoError ? (
+              <CardLabelError style={errorStyle}>{activeErrors.plumberLicenseNo?.message || t("REQUIRED_FIELD")}</CardLabelError>
             ) : null}
           </LabelFieldPair>
 
           <LabelFieldPair>
             <FieldLabelWithTooltip
               style={{ margin: 0 }}
-              label={getTrans("WS_PLUMBER_MOBILE_NO_LABEL", "Plumber Mobile Number")}
+              label={t("WS_PLUMBER_MOBILE_NO_LABEL")}
               isMandatory={true}
-              infoText={t("WS_PLUMBER_MOBILE_NO_INFO_MSG", "Enter 10-digit Plumber Mobile Number")}
+              infoText={t("WS_PLUMBER_MOBILE_NO_INFO_MSG")}
             />
             <div className="field">
               <Controller
                 control={control}
                 name="plumberMobileNo"
                 defaultValue={plumberDetail?.plumberMobileNo || appPlumber?.mobileNumber || ""}
-                rules={{
-                  validate: (e) => {
-                    if (!e || !e.trim()) return getTrans("REQUIRED_FIELD", "Required");
-                    if (e.includes("*")) return true;
-                    if (/^[6-9]\d{9}$/.test(e)) return true;
-                    return getTrans("CORE_COMMON_PHONENO_INVALID", "Please enter a valid 10-digit mobile number");
-                  },
-                  required: getTrans("REQUIRED_FIELD", "Required"),
-                }}
+                rules={
+                  isSelf
+                    ? {
+                        validate: (e) => {
+                          if (!e || !e.trim()) return t("REQUIRED_FIELD");
+                          if (e.includes("*")) return true;
+                          if (/^[6-9]\d{9}$/.test(e)) return true;
+                          return t("CORE_COMMON_PHONENO_INVALID");
+                        },
+                        required: t("REQUIRED_FIELD"),
+                      }
+                    : {}
+                }
                 type="mobileNumber"
-                isMandatory={true}
                 render={(props) => (
                   <div style={{ display: "flex", alignItems: "baseline", marginRight: "unset" }}>
                     <div style={{ position: "relative", zIndex: "1", left: "35px", marginTop: "-24.5px", marginLeft: "-26px" }}>+91</div>
@@ -426,16 +515,27 @@ const PlumberDetails = (_props) => {
                       maxlength={10}
                       maxLength={10}
                       autoFocus={focusIndex.index === plumberDetail?.key && focusIndex.type === "plumberMobileNo"}
-                      errorStyle={localFormState.touched.plumberMobileNo && errors?.plumberMobileNo?.message ? true : false}
+                      errorStyle={showPlumberMobileNoError}
                       onChange={(e) => {
+                        markTouched("plumberMobileNo");
                         const val = e.target.value;
-                        const cleanVal = val && val.includes("*") ? val : (val || "").replace(/[^0-9]/g, "").slice(0, 10);
+                        let rawDigits = (val || "").replace(/[^0-9]/g, "");
+                        if (rawDigits.length === 12 && rawDigits.startsWith("91")) {
+                          rawDigits = rawDigits.slice(2);
+                        } else if (rawDigits.length === 11 && rawDigits.startsWith("0")) {
+                          rawDigits = rawDigits.slice(1);
+                        }
+                        const cleanVal = val && val.includes("*") ? val : rawDigits.slice(0, 10);
                         props.onChange(cleanVal);
+                        clearLocalErrors("plumberMobileNo");
                         setFocusIndex({ index: plumberDetail?.key, type: "plumberMobileNo" });
                       }}
                       labelStyle={{ marginTop: "unset" }}
-                      onBlur={props.onBlur}
-                      placeholder={getTrans("WS_PLUMBER_MOBILE_NO_PLACEHOLDER", "Enter Plumber Mobile Number")}
+                      onBlur={() => {
+                        markTouched("plumberMobileNo");
+                        props.onBlur();
+                      }}
+                      placeholder={t("WS_PLUMBER_MOBILE_NO_PLACEHOLDER")}
                     />
                     <div style={isMobile && isEmployee ? {} : { marginRight: "-50px", marginLeft: "10px" }}>
                       <WrapUnMaskComponent
@@ -472,8 +572,8 @@ const PlumberDetails = (_props) => {
                 )}
               />
             </div>
-            {localFormState.touched.plumberMobileNo && errors?.plumberMobileNo?.message ? (
-              <CardLabelError style={errorStyle}> {errors?.plumberMobileNo?.message}</CardLabelError>
+            {showPlumberMobileNoError ? (
+              <CardLabelError style={errorStyle}> {activeErrors.plumberMobileNo?.message || t("REQUIRED_FIELD")}</CardLabelError>
             ) : null}
           </LabelFieldPair>
         </React.Fragment>

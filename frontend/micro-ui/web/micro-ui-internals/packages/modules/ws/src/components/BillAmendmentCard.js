@@ -88,7 +88,7 @@ const BillAmendmentCard = () => {
         roles: ["WS_CEMP", "WS_APPROVER", "WS_FIELD_INSPECTOR", "WS_DOC_VERIFIER", "WS_CLERK"],
       },
       {
-        label: t("WS_BILL_AMENDMENT_APPLICATION_SEARCH", "Search Application"),
+        label: t("WS_BILL_AMENDMENT_APPLICATION_SEARCH"),
         link: `/digit-ui/employee/ws/water/bill-amendment/search-application`,
         roles: ["WS_CEMP", "WS_APPROVER", "EE", "WS_DEALING_CLERK", "WS_CLERK", "WS_FIELD_INSPECTOR", "WS_DOC_VERIFIER"],
       }

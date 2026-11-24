@@ -419,6 +419,12 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
               text={rainWaterHarvesting?.hasCertificate || rainWaterHarvesting?.isRainwaterHarvesting ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}
               actionButton={<ActionButton onClick={onEdit} />}
             />
+            {(rainWaterHarvesting?.hasCertificate || rainWaterHarvesting?.isRainwaterHarvesting) && (
+              <Row
+                label={t("Having Rain water harvesting Adequacy certificate?")}
+                text={rainWaterHarvesting?.hasAdequacyCertificate || rainWaterHarvesting?.hasRainWaterHarvestingAdequacyCertificate || rainWaterHarvesting?.applyForAdequacyCertificate ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}
+              />
+            )}
           </StatusTable>
 
           <CardSubHeader>{t("WS_BANK_DETAILS")}</CardSubHeader>
@@ -429,14 +435,20 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
             <Row label={t("WS_BANK_ACCOUNT_NO")} text={`${t(checkForNA(bankDetails?.bankAccountNumber || bankDetails?.accountNumber))}`} />
           </StatusTable>
 
-          {/* <CardSubHeader>{t("Sewer Treatment Plant (STP)")}</CardSubHeader>
+          <CardSubHeader>{t("Sewer Treatment Plant (STP)")}</CardSubHeader>
           <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
             <Row
               label={t("Sewer Treatment Plant (STP)")}
               text={sewerTreatmentPlant?.hasCertificate || sewerTreatmentPlant?.hasStp || sewerTreatmentPlant?.isSewerTreatmentPlant ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}
               actionButton={<ActionButton onClick={onEdit} />}
             />
-          </StatusTable> */}
+            {(sewerTreatmentPlant?.hasCertificate || sewerTreatmentPlant?.hasStp || sewerTreatmentPlant?.isSewerTreatmentPlant) && (
+              <Row
+                label={t("Having STP certificate issued by DPCC?")}
+                text={sewerTreatmentPlant?.hasAdequacyCertificate || sewerTreatmentPlant?.hasStpAdequacyCertificate || sewerTreatmentPlant?.hasSewerTreatmentPlantAdequacyCertificate || sewerTreatmentPlant?.applyForAdequacyCertificate || sewerTreatmentPlant?.applyForStpAdequacyCertificate ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}
+              />
+            )}
+          </StatusTable>
 
           <CardSubHeader>{t("PT_LOCATION_DETAILS")}</CardSubHeader>
           <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>

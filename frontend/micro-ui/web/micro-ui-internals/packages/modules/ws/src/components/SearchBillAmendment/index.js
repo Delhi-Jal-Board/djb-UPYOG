@@ -42,7 +42,7 @@ const SearchBillAmendment = () => {
     const consumerCode = formData?.consumerCode?.trim();
 
     if (!amendmentId && !consumerCode) {
-      setShowToast({ error: true, label: t("WS_FILL_ATLEAST_ONE_FIELD", "Please fill at least one field to search") });
+      setShowToast({ error: true, label: t("WS_FILL_ATLEAST_ONE_FIELD") });
       setTimeout(() => setShowToast(null), 3000);
       return;
     }
@@ -58,7 +58,7 @@ const SearchBillAmendment = () => {
     } catch (err) {
       console.error("Error searching bill amendment:", err);
       setSearchResult([]);
-      setShowToast({ error: true, label: err?.response?.data?.Errors?.[0]?.message || t("CS_WATER_SEARCH_FAILED", "Search failed") });
+      setShowToast({ error: true, label: err?.response?.data?.Errors?.[0]?.message || t("CS_WATER_SEARCH_FAILED") });
       setTimeout(() => setShowToast(null), 5000);
     } finally {
       setIsLoading(false);
@@ -76,7 +76,7 @@ const SearchBillAmendment = () => {
   const columns = useMemo(
     () => [
       {
-        Header: t("WS_ACK_COMMON_APP_NO_LABEL", "Application No"),
+        Header: t("WS_ACK_COMMON_APP_NO_LABEL"),
         accessor: "amendmentId",
         Cell: ({ row }) => {
           const service = row.original?.businessService?.includes("SW") ? "SEWERAGE" : "WATER";
@@ -90,7 +90,7 @@ const SearchBillAmendment = () => {
         },
       },
       {
-        Header: t("WS_MYCONNECTIONS_CONSUMER_NO", "Consumer No"),
+        Header: t("WS_MYCONNECTIONS_CONSUMER_NO"),
         accessor: "consumerCode",
         Cell: ({ row }) => (
           <span className="link">
@@ -101,25 +101,25 @@ const SearchBillAmendment = () => {
         ),
       },
       {
-        Header: t("WS_AMENDMENT_REASON", "Amendment Reason"),
+        Header: t("WS_AMENDMENT_REASON"),
         accessor: (row) => t(row?.amendmentReason || "NA"),
       },
       {
-        Header: t("WS_COMMON_TABLE_COL_APPLICATION_STATUS", "Status"),
+        Header: t("WS_COMMON_TABLE_COL_APPLICATION_STATUS"),
         accessor: (row) => t(row?.status || "NA"),
       },
       {
-        Header: t("WS_COMMON_TABLE_COL_APPLICATION_DATE", "Application Date"),
+        Header: t("WS_COMMON_TABLE_COL_APPLICATION_DATE"),
         accessor: (row) => convertEpochToDate(row?.auditDetails?.createdTime),
       },
       {
-        Header: t("WS_COMMON_TABLE_COL_ACTION", "Action"),
+        Header: t("WS_COMMON_TABLE_COL_ACTION"),
         Cell: ({ row }) => {
           const service = row.original?.businessService?.includes("SW") ? "SEWERAGE" : "WATER";
           return (
             <span className="link">
               <Link to={`/digit-ui/employee/ws/generate-note-bill-amendment?applicationNumber=${row.original.amendmentId}&tenantId=${tenantId}&service=${service}&from=WS_BILL_AMENDMENT_SEARCH_APPLICATION`}>
-                {t("ES_COMMON_VIEW", "View")}
+                {t("ES_COMMON_VIEW")}
               </Link>
             </span>
           );
@@ -132,7 +132,7 @@ const SearchBillAmendment = () => {
   return (
     <div className="employee-wrapper" style={{ padding: "16px" }}>
       <Header styles={{ fontSize: "32px", marginBottom: "16px" }}>
-        {t("WS_SEARCH_BILL_AMENDMENT_APPLICATION", "Search Bill Amendment Application")}
+        {t("WS_SEARCH_BILL_AMENDMENT_APPLICATION")}
       </Header>
 
       <Card style={{ padding: "24px", marginBottom: "24px" }}>
@@ -140,28 +140,28 @@ const SearchBillAmendment = () => {
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px", marginBottom: "24px" }}>
             <div>
               <CardLabel style={{ fontWeight: "600", marginBottom: "8px" }}>
-                {t("WS_ACK_COMMON_APP_NO_LABEL", "Application No")}
+                {t("WS_ACK_COMMON_APP_NO_LABEL")}
               </CardLabel>
               <TextInput
                 name="amendmentId"
                 inputRef={register()}
-                placeholder={t("WS_SEARCH_APP_NO_PLACEHOLDER", "Enter Bill Amendment Application No")}
+                placeholder={t("WS_SEARCH_APP_NO_PLACEHOLDER")}
               />
             </div>
             <div>
               <CardLabel style={{ fontWeight: "600", marginBottom: "8px" }}>
-                {t("WS_MYCONNECTIONS_CONSUMER_NO", "Consumer No")}
+                {t("WS_MYCONNECTIONS_CONSUMER_NO")}
               </CardLabel>
               <TextInput
                 name="consumerCode"
                 inputRef={register()}
-                placeholder={t("WS_SEARCH_CONSUMER_NO_PLACEHOLDER", "Enter Consumer / Connection No")}
+                placeholder={t("WS_SEARCH_CONSUMER_NO_PLACEHOLDER")}
               />
             </div>
           </div>
 
           <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
-            <SubmitBar label={t("ES_COMMON_SEARCH", "Search")} submit={true} />
+            <SubmitBar label={t("ES_COMMON_SEARCH")} submit={true} />
             <button
               type="button"
               className="clear-search generic-button"
@@ -175,7 +175,7 @@ const SearchBillAmendment = () => {
                 fontSize: "16px",
               }}
             >
-              {t("ES_COMMON_CLEAR_SEARCH", "Clear Search")}
+              {t("ES_COMMON_CLEAR_SEARCH")}
             </button>
           </div>
         </form>
@@ -200,7 +200,7 @@ const SearchBillAmendment = () => {
             />
           ) : (
             <CardText style={{ textAlign: "center", padding: "24px" }}>
-              {t("ES_COMMON_NO_DATA", "No applications found")}
+              {t("ES_COMMON_NO_DATA")}
             </CardText>
           )}
         </Card>

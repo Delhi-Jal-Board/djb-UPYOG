@@ -191,7 +191,7 @@ const PropertyPreview = ({ onSelect, redirectUrl, userType, onSuccess }) => {
             {/* Section 1: Property Address */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
               <h2 style={{ fontSize: "24px", fontWeight: "700", color: "#0b0c0c", margin: 0 }}>
-                {t("PT_PROPERTY_ADDRESS_SUB_HEADER", "Property Address")}
+                {t("PT_PROPERTY_ADDRESS_SUB_HEADER")}
               </h2>
               <LinkButton
                 label={<EditIcon style={{ width: "20px", height: "20px", cursor: "pointer" }} />}
@@ -201,53 +201,53 @@ const PropertyPreview = ({ onSelect, redirectUrl, userType, onSuccess }) => {
               />
             </div>
             <StatusTable style={{ marginBottom: "36px" }}>
-              <Row label={t("MYCITY_CODE_LABEL", "City")} text={getLocalizedText(locationDet?.city, t)} />
-              <Row label={t("CORE_COMMON_PINCODE", "Pincode")} text={getText(locationDet?.pincode)} />
-              <Row label={t("PT_PROPERTY_ADDRESS_LOCALITY", "Locality")} text={getLocalizedText(locationDet?.locality, t)} />
+              <Row label={t("MYCITY_CODE_LABEL")} text={getLocalizedText(locationDet?.city, t)} />
+              <Row label={t("CORE_COMMON_PINCODE")} text={getText(locationDet?.pincode)} />
+              <Row label={t("PT_PROPERTY_ADDRESS_LOCALITY")} text={getLocalizedText(locationDet?.locality, t)} />
               {locationDet?.subLocality ? (
-                <Row label={t("PT_PROPERTY_ADDRESS_SUB_LOCALITY", "Sub Locality")} text={getText(locationDet?.subLocality)} />
+                <Row label={t("PT_PROPERTY_ADDRESS_SUB_LOCALITY")} text={getText(locationDet?.subLocality)} />
               ) : null}
               {locationDet?.colonyMcdCategory ? (
-                <Row label={t("WS_COLONY_CATEGORY", "Colony Category")} text={getText(locationDet?.colonyMcdCategory)} />
+                <Row label={t("WS_COLONY_CATEGORY")} text={getText(locationDet?.colonyMcdCategory)} />
               ) : null}
               {locationDet?.streetName || locationDet?.street ? (
                 <Row
-                  label={t("PT_PROPERTY_ADDRESS_STREET_NAME", "Street Name/ Gali Name")}
+                  label={t("PT_PROPERTY_ADDRESS_STREET_NAME")}
                   text={getText(locationDet?.streetName || locationDet?.street)}
                 />
               ) : null}
-              <Row label={t("PT_PROPERTY_ADDRESS_HOUSE_NO", "Door/House No.")} text={getText(locationDet?.houseNo || locationDet?.houseDoorNo)} />
+              <Row label={t("PT_PROPERTY_ADDRESS_HOUSE_NO")} text={getText(locationDet?.houseNo || locationDet?.houseDoorNo)} />
               <Row
-                label={t("WS_CONSUMER_RESIDES_FLOOR", "At which Floor Consumer Resides.")}
+                label={t("WS_CONSUMER_RESIDES_FLOOR")}
                 text={getLocalizedText(locationDet?.noOfFloors || locationDet?.numberOfFloors, t)}
               />
               <Row
-                label={t("WS_TOTAL_FLOORS_IN_BUILDING", "Total Number of floor in the Building")}
+                label={t("WS_TOTAL_FLOORS_IN_BUILDING")}
                 text={getText(locationDet?.totalNoOfFloors || locationDet?.totalFloors)}
               />
-              <Row label={t("PT_PROPERTY_ADDRESS_LINE_1", "Address Line 1")} text={getText(locationDet?.addressLine1)} />
-              <Row label={t("PT_PROPERTY_ADDRESS_LINE_2", "Address Line 2")} text={getText(locationDet?.addressLine2 || "NA")} />
-              <Row label={t("PT_PROPERTY_ADDRESS_LANDMARK", "Landmark")} text={getText(locationDet?.landmark || locationDet?.landmarkName)} />
-              <Row label={t("CORE_COMMON_LATITUDE", "Latitude")} text={getText(locationDet?.latitude)} />
-              <Row label={t("CORE_COMMON_LONGITUDE", "Longitude")} text={getText(locationDet?.longitude)} />
-              <Row label={t("WS_ASSEMBLY", "Assembly")} text={getText(locationDet?.assembly)} />
-              <Row label={t("WS_WARD", "Ward")} text={getText(locationDet?.block || locationDet?.ward)} />
-              <Row label={t("WS_ZONE", "Zone")} text={getText(locationDet?.zone)} />
+              <Row label={t("PT_PROPERTY_ADDRESS_LINE_1")} text={getText(locationDet?.addressLine1)} />
+              <Row label={t("PT_PROPERTY_ADDRESS_LINE_2")} text={getText(locationDet?.addressLine2 || "NA")} />
+              <Row label={t("PT_PROPERTY_ADDRESS_LANDMARK")} text={getText(locationDet?.landmark || locationDet?.landmarkName)} />
+              <Row label={t("CORE_COMMON_LATITUDE")} text={getText(locationDet?.latitude)} />
+              <Row label={t("CORE_COMMON_LONGITUDE")} text={getText(locationDet?.longitude)} />
+              <Row label={t("WS_ASSEMBLY")} text={getText(locationDet?.assembly)} />
+              <Row label={t("WS_WARD")} text={getText(locationDet?.block || locationDet?.ward)} />
+              <Row label={t("WS_ZONE")} text={getText(locationDet?.zone)} />
               {locationDet?.actualAssembly ? (
-                <Row label={t("WS_ACTUAL_ASSEMBLY", "Actual Assembly")} text={getText(locationDet?.actualAssembly)} />
+                <Row label={t("WS_ACTUAL_ASSEMBLY")} text={getText(locationDet?.actualAssembly)} />
               ) : null}
               {locationDet?.actualWard ? (
-                <Row label={t("WS_ACTUAL_WARD", "Actual Ward")} text={getText(locationDet?.actualWard)} />
+                <Row label={t("WS_ACTUAL_WARD")} text={getText(locationDet?.actualWard)} />
               ) : null}
               {locationDet?.actualZone ? (
-                <Row label={t("WS_ACTUAL_ZONE", "Actual Zone")} text={getText(locationDet?.actualZone)} />
+                <Row label={t("WS_ACTUAL_ZONE")} text={getText(locationDet?.actualZone)} />
               ) : null}
             </StatusTable>
 
             {/* Section 2: Proposed Usage Details */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", marginTop: "32px", borderTop: "1px solid #e5ebf3", paddingTop: "24px" }}>
               <h2 style={{ fontSize: "24px", fontWeight: "700", color: "#0b0c0c", margin: 0 }}>
-                {t("WS_PROPOSED_USAGE_DETAILS", "Proposed Usage Details")}
+                {t("WS_PROPOSED_USAGE_DETAILS")}
               </h2>
               <LinkButton
                 label={<EditIcon style={{ width: "20px", height: "20px", cursor: "pointer" }} />}
@@ -257,44 +257,44 @@ const PropertyPreview = ({ onSelect, redirectUrl, userType, onSuccess }) => {
               />
             </div>
             <StatusTable style={{ marginBottom: "36px" }}>
-              <Row label={t("WS_PROPERTY_TYPE", "Select Property Type")} text={getLocalizedText(useDetails?.propertyType, t)} />
-              <Row label={t("WS_CATEGORY_TYPE", "Select Category Type")} text={getLocalizedText(useDetails?.categoryType, t)} />
-              <Row label={t("WS_PROPERTY_CATEGORY", "Select Property Category")} text={getLocalizedText(useDetails?.propertyCategory, t)} />
+              <Row label={t("WS_PROPERTY_TYPE")} text={getLocalizedText(useDetails?.propertyType, t)} />
+              <Row label={t("WS_CATEGORY_TYPE")} text={getLocalizedText(useDetails?.categoryType, t)} />
+              <Row label={t("WS_PROPERTY_CATEGORY")} text={getLocalizedText(useDetails?.propertyCategory, t)} />
               <Row
-                label={t("WS_WATER_CONNECTION_USAGE_TYPE", "Select Water Connection Usage Type")}
+                label={t("WS_WATER_CONNECTION_USAGE_TYPE")}
                 text={getLocalizedText(useDetails?.WaterConnectionUsageType, t)}
               />
-              <Row label={t("WS_PLOT_AREA", "Enter Plot Area (sq. meter.)")} text={getText(useDetails?.plotArea)} />
-              <Row label={t("WS_BUILT_UP_AREA", "Enter Built-up Area (sq. meter.)")} text={getText(useDetails?.builtUpArea)} />
+              <Row label={t("WS_PLOT_AREA")} text={getText(useDetails?.plotArea)} />
+              <Row label={t("WS_BUILT_UP_AREA")} text={getText(useDetails?.builtUpArea)} />
               <Row
-                label={t("WS_HEIGHT_OF_THE_BUILDING", "Enter Height of The Building (meter)")}
+                label={t("WS_HEIGHT_OF_THE_BUILDING")}
                 text={getText(useDetails?.heightOfTheBuilding)}
               />
               <Row
-                label={t("WS_SELECT_YEAR_OF_CONSTRUCTION", "Select Year of Construction")}
+                label={t("WS_SELECT_YEAR_OF_CONSTRUCTION")}
                 text={getText(useDetails?.SelectYearofConstruction || "NA")}
               />
               {useDetails?.NumberofDwellingUnits ? (
                 <Row
-                  label={t("WS_NUMBER_OF_DWELLING_UNITS", "Enter Number of Dwelling Units")}
+                  label={t("WS_NUMBER_OF_DWELLING_UNITS")}
                   text={getText(useDetails?.NumberofDwellingUnits)}
                 />
               ) : null}
               {useDetails?.NumberofRooms ? (
-                <Row label={t("WS_NUMBER_OF_ROOMS", "Enter Number of Rooms")} text={getText(useDetails?.NumberofRooms)} />
+                <Row label={t("WS_NUMBER_OF_ROOMS")} text={getText(useDetails?.NumberofRooms)} />
               ) : null}
               {useDetails?.numberOfBeds ? (
-                <Row label={t("WS_NUMBER_OF_BEDS", "Enter Number of Beds")} text={getText(useDetails?.numberOfBeds)} />
+                <Row label={t("WS_NUMBER_OF_BEDS")} text={getText(useDetails?.numberOfBeds)} />
               ) : null}
               {useDetails?.numberOfStudents ? (
-                <Row label={t("WS_NUMBER_OF_STUDENTS", "Enter Number of Students")} text={getText(useDetails?.numberOfStudents)} />
+                <Row label={t("WS_NUMBER_OF_STUDENTS")} text={getText(useDetails?.numberOfStudents)} />
               ) : null}
             </StatusTable>
 
             {/* Section 3: Owner details */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", marginTop: "32px", borderTop: "1px solid #e5ebf3", paddingTop: "24px" }}>
               <h2 style={{ fontSize: "24px", fontWeight: "700", color: "#0b0c0c", margin: 0 }}>
-                {t("PT_OWNER_DETAILS", "Owner details")}
+                {t("PT_OWNER_DETAILS")}
               </h2>
               <LinkButton
                 label={<EditIcon style={{ width: "20px", height: "20px", cursor: "pointer" }} />}
@@ -308,26 +308,26 @@ const PropertyPreview = ({ onSelect, redirectUrl, userType, onSuccess }) => {
                 <StatusTable key={idx} style={idx > 0 ? { marginTop: "20px", borderTop: "1px dashed #d6d5d4", paddingTop: "16px" } : { marginBottom: "20px" }}>
                   {owners.length > 1 && (
                     <CardSectionHeader style={{ marginBottom: "12px", fontSize: "16px" }}>
-                      {`${t("PT_OWNER", "Owner")} ${idx + 1}`}
+                      {`${t("PT_OWNER")} ${idx + 1}`}
                     </CardSectionHeader>
                   )}
-                  <Row label={t("PT_FORM3_MOBILE_NUMBER", "Mobile Number")} text={getText(owner?.mobileNumber)} />
-                  <Row label={t("CORE_COMMON_FIRST_NAME", "First Name")} text={getText(owner?.firstName)} />
+                  <Row label={t("PT_FORM3_MOBILE_NUMBER")} text={getText(owner?.mobileNumber)} />
+                  <Row label={t("CORE_COMMON_FIRST_NAME")} text={getText(owner?.firstName)} />
                   {owner?.middleName ? (
-                    <Row label={t("CORE_COMMON_MIDDLE_NAME", "Middle Name")} text={getText(owner?.middleName)} />
+                    <Row label={t("CORE_COMMON_MIDDLE_NAME")} text={getText(owner?.middleName)} />
                   ) : null}
                   {owner?.lastName ? (
-                    <Row label={t("CORE_COMMON_LAST_NAME", "Last Name")} text={getText(owner?.lastName)} />
+                    <Row label={t("CORE_COMMON_LAST_NAME")} text={getText(owner?.lastName)} />
                   ) : null}
                   {owner?.emailId || owner?.email ? (
-                    <Row label={t("CORE_COMMON_EMAIL_ID", "Email ID")} text={getText(owner?.emailId || owner?.email)} />
+                    <Row label={t("CORE_COMMON_EMAIL_ID")} text={getText(owner?.emailId || owner?.email)} />
                   ) : null}
-                  <Row label={t("PT_FORM3_GENDER", "Gender")} text={getLocalizedText(owner?.gender, t)} />
+                  <Row label={t("PT_FORM3_GENDER")} text={getLocalizedText(owner?.gender, t)} />
                 </StatusTable>
               ))
             ) : (
               <StatusTable>
-                <Row label={t("PT_OWNER_DETAILS", "Owner")} text={"NA"} />
+                <Row label={t("PT_OWNER_DETAILS")} text={"NA"} />
               </StatusTable>
             )}
           </Card>
@@ -336,7 +336,7 @@ const PropertyPreview = ({ onSelect, redirectUrl, userType, onSuccess }) => {
 
       <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "center" }}>
         <SubmitBar
-          label={t("CS_COMMON_BACK", "Back")}
+          label={t("CS_COMMON_BACK")}
           onSubmit={handleEdit}
           style={{
             marginRight: "16px",
@@ -345,7 +345,7 @@ const PropertyPreview = ({ onSelect, redirectUrl, userType, onSuccess }) => {
         <SubmitBar
           label={
             isSubmitting
-              ? t("CS_COMMON_SUBMITTING", "Submitting...")
+              ? t("CS_COMMON_SUBMITTING")
               : (t("CS_COMMON_PROCEED") && t("CS_COMMON_PROCEED") !== "CS_COMMON_PROCEED")
               ? t("CS_COMMON_PROCEED")
               : "Continue Application for New Connection"

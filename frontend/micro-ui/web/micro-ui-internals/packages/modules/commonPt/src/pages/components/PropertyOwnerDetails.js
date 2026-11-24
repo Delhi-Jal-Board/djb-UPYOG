@@ -301,7 +301,7 @@ const PropertyOwnerDetails = ({ t, config, onSelect, userType, formData, formSta
 
                 <LabelFieldPair>
                   <FieldLabelWithTooltip
-                    label={t("CORE_COMMON_FIRST_NAME", "First Name")}
+                    label={t("CORE_COMMON_FIRST_NAME")}
                     isMandatory={true}
                     infoText={t("CORE_COMMON_FIRST_NAME_INFO_MSG")}
                   />
@@ -333,7 +333,7 @@ const PropertyOwnerDetails = ({ t, config, onSelect, userType, formData, formSta
                           }}
                           disable={isUpdateProperty || isEditProperty}
                           onBlur={onBlur}
-                          placeholder={t("CORE_COMMON_FIRST_NAME_PLACEHOLDER", "Enter First Name")}
+                          placeholder={t("CORE_COMMON_FIRST_NAME_PLACEHOLDER")}
                         />
                       )}
                     />
@@ -345,7 +345,7 @@ const PropertyOwnerDetails = ({ t, config, onSelect, userType, formData, formSta
 
                 <LabelFieldPair>
                   <FieldLabelWithTooltip
-                    label={t("CORE_COMMON_MIDDLE_NAME", "Middle Name")}
+                    label={t("CORE_COMMON_MIDDLE_NAME")}
                     isMandatory={false}
                     infoText={t("CORE_COMMON_MIDDLE_NAME_INFO_MSG")}
                   />
@@ -376,7 +376,7 @@ const PropertyOwnerDetails = ({ t, config, onSelect, userType, formData, formSta
                           }}
                           disable={isUpdateProperty || isEditProperty}
                           onBlur={onBlur}
-                          placeholder={t("CORE_COMMON_MIDDLE_NAME_PLACEHOLDER", "Enter Middle Name")}
+                          placeholder={t("CORE_COMMON_MIDDLE_NAME_PLACEHOLDER")}
                         />
                       )}
                     />
@@ -388,7 +388,7 @@ const PropertyOwnerDetails = ({ t, config, onSelect, userType, formData, formSta
 
                 <LabelFieldPair>
                   <FieldLabelWithTooltip
-                    label={t("CORE_COMMON_LAST_NAME", "Last Name")}
+                    label={t("CORE_COMMON_LAST_NAME")}
                     isMandatory={false}
                     infoText={t("CORE_COMMON_LAST_NAME_INFO_MSG")}
                   />
@@ -419,7 +419,7 @@ const PropertyOwnerDetails = ({ t, config, onSelect, userType, formData, formSta
                           }}
                           disable={isUpdateProperty || isEditProperty}
                           onBlur={onBlur}
-                          placeholder={t("CORE_COMMON_LAST_NAME_PLACEHOLDER", "Enter Last Name")}
+                          placeholder={t("CORE_COMMON_LAST_NAME_PLACEHOLDER")}
                         />
                       )}
                     />
@@ -431,7 +431,7 @@ const PropertyOwnerDetails = ({ t, config, onSelect, userType, formData, formSta
 
                 <LabelFieldPair>
                   <FieldLabelWithTooltip
-                    label={t("CORE_COMMON_EMAIL_ID", "Email")}
+                    label={t("CORE_COMMON_EMAIL_ID")}
                     isMandatory={false}
                     infoText={t("CORE_COMMON_EMAIL_INFO_MSG")}
                   />
@@ -446,7 +446,7 @@ const PropertyOwnerDetails = ({ t, config, onSelect, userType, formData, formSta
                           if (!value || typeof value !== "string" || value.trim() === "") return true;
                           return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(value.trim())
                             ? true
-                            : t("CORE_COMMON_INVALID_EMAIL", "Please enter a valid Email ID");
+                            : t("CORE_COMMON_INVALID_EMAIL");
                         },
                       }}
                       render={({ value, onChange, onBlur }) => (
@@ -464,7 +464,7 @@ const PropertyOwnerDetails = ({ t, config, onSelect, userType, formData, formSta
                           }}
                           disable={isUpdateProperty || isEditProperty}
                           onBlur={onBlur}
-                          placeholder={t("CORE_COMMON_EMAIL_PLACEHOLDER", "Enter Email Address")}
+                          placeholder={t("CORE_COMMON_EMAIL_PLACEHOLDER")}
                         />
                       )}
                     />
@@ -473,7 +473,7 @@ const PropertyOwnerDetails = ({ t, config, onSelect, userType, formData, formSta
                 {(errors?.["emailId" + index]?.message ||
                   (owner?.emailId && typeof owner?.emailId === "string" && owner?.emailId.trim() !== "" && !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(owner.emailId.trim()))) && (
                   <CardLabelError style={errorStyle}>
-                    {errors?.["emailId" + index]?.message || t("CORE_COMMON_INVALID_EMAIL", "Please enter a valid Email ID")}
+                    {errors?.["emailId" + index]?.message || t("CORE_COMMON_INVALID_EMAIL")}
                   </CardLabelError>
                 )}
 

@@ -18,6 +18,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
     formState: { errors },
     watch,
     setValue,
+    clearErrors: formClearErrors,
   } = useForm({
     defaultValues: formData?.[config.key] || {
       useDetails: {
@@ -234,22 +235,100 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
     return [];
   }, [ptServicesMastersData]);
 
+  const matchesCategory = (item, categoryNorm) => {
+    if (!categoryNorm) return true;
+    const raw = item?.propertyCategory;
+    if (!raw) return false;
+    if (Array.isArray(raw)) {
+      return raw.some((c) => normalizeCode(typeof c === "object" ? c?.code || c?.name : c) === categoryNorm);
+    }
+    const itemNorm = normalizeCode(typeof raw === "object" ? raw?.code || raw?.name : raw);
+    return itemNorm === categoryNorm;
+  };
+
   const categoryOptions = useMemo(() => {
     const list = propertyType2List?.length > 0 ? propertyType2List : ptServicesMastersData?.PropertyTax?.PropertyType || [];
-    const uniqueCats = [...new Set(list.map((item) => item.propertyCategory).filter(Boolean))];
-    return uniqueCats
-      .sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" }))
-      .map((cat) => ({
-        code: cat,
-        name: cat,
-        i18nKey: cat,
-      }));
-  }, [propertyType2List, ptServicesMastersData]);
+    const catMap = new Map();
+
+    list.forEach((item) => {
+      const rawCat = item?.propertyCategory;
+      if (!rawCat) return;
+      if (Array.isArray(rawCat)) {
+        rawCat.forEach((c) => {
+          const name = typeof c === "object" ? c?.name || c?.code : String(c);
+          const code = typeof c === "object" ? c?.code || c?.name : String(c);
+          const norm = normalizeCode(code || name);
+          if (norm && !catMap.has(norm)) {
+            catMap.set(norm, { code: code || name, name: name || code, i18nKey: name || code });
+          }
+        });
+      } else {
+        const name = typeof rawCat === "object" ? rawCat?.name || rawCat?.code : String(rawCat);
+        const code = typeof rawCat === "object" ? rawCat?.code || rawCat?.name : String(rawCat);
+        const norm = normalizeCode(code || name);
+        if (norm && !catMap.has(norm)) {
+          catMap.set(norm, { code: code || name, name: name || code, i18nKey: name || code });
+        }
+      }
+    });
+
+    const masterCats = ptServicesMastersData?.PropertyTax?.PropertyCategory || [];
+    if (Array.isArray(masterCats)) {
+      masterCats.forEach((mc) => {
+        const name = typeof mc === "object" ? mc?.name || mc?.code : String(mc);
+        const code = typeof mc === "object" ? mc?.code || mc?.name : String(mc);
+        const norm = normalizeCode(code || name);
+        if (norm && !catMap.has(norm)) {
+          catMap.set(norm, { code: code || name, name: name || code, i18nKey: name || code });
+        }
+      });
+    }
+
+    if (watchPropertyCategory) {
+      const name =
+        typeof watchPropertyCategory === "object"
+          ? watchPropertyCategory?.name || watchPropertyCategory?.code
+          : String(watchPropertyCategory);
+      const code =
+        typeof watchPropertyCategory === "object"
+          ? watchPropertyCategory?.code || watchPropertyCategory?.name
+          : String(watchPropertyCategory);
+      const norm = normalizeCode(code || name);
+      if (norm && !catMap.has(norm)) {
+        catMap.set(norm, { code: code || name, name: name || code, i18nKey: name || code });
+      }
+    }
+
+    return Array.from(catMap.values()).sort((a, b) =>
+      (a.name || a.code || "").localeCompare(b.name || b.code || "", undefined, { numeric: true, sensitivity: "base" })
+    );
+  }, [propertyType2List, ptServicesMastersData, watchPropertyCategory]);
 
   const propertyTypeOptions = useMemo(() => {
     const list = propertyType2List?.length > 0 ? propertyType2List : ptServicesMastersData?.PropertyTax?.PropertyType || [];
-    return list
-      .filter((item) => item.active !== false)
+    const activeList = list.filter((item) => item.active !== false);
+
+    const selectedCategory =
+      typeof watchPropertyCategory === "object"
+        ? watchPropertyCategory?.code || watchPropertyCategory?.name
+        : watchPropertyCategory;
+    const catNorm = normalizeCode(selectedCategory);
+
+    let filtered = catNorm ? activeList.filter((item) => matchesCategory(item, catNorm)) : [];
+
+    if (
+      watchPropertyType?.code &&
+      !filtered.some((item) => normalizeCode(item.code) === normalizeCode(watchPropertyType.code))
+    ) {
+      const existingInList = list.find((item) => normalizeCode(item.code) === normalizeCode(watchPropertyType.code));
+      if (existingInList) {
+        filtered = [existingInList, ...filtered];
+      } else {
+        filtered = [watchPropertyType, ...filtered];
+      }
+    }
+
+    return filtered
       .map((item) => ({
         ...item,
         code: item.code,
@@ -257,7 +336,62 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
         i18nKey: item.i18nKey || item.code,
       }))
       .sort((a, b) => (a.name || "").localeCompare(b.name || "", undefined, { numeric: true, sensitivity: "base" }));
-  }, [propertyType2List, ptServicesMastersData]);
+  }, [propertyType2List, ptServicesMastersData, watchPropertyCategory, watchPropertyType]);
+
+  const selectedCategoryCode =
+    typeof watchPropertyCategory === "object"
+      ? watchPropertyCategory?.code || watchPropertyCategory?.name
+      : watchPropertyCategory;
+  const hasSelectedCategory = Boolean(normalizeCode(selectedCategoryCode));
+
+  const handleCategoryChange = (selectedCategory) => {
+    setValue("useDetails.propertyCategory", selectedCategory, { shouldValidate: true, shouldDirty: true });
+    if (clearErrors) clearErrors("useDetails.propertyCategory");
+    if (formClearErrors) formClearErrors("useDetails.propertyCategory");
+
+    if (!selectedCategory) {
+      setValue("useDetails.propertyType", null, { shouldValidate: true, shouldDirty: true });
+      setValue("useDetails.categoryType", null);
+      setValue("useDetails.WaterConnectionUsageType", null);
+      prevPropertyTypeCode.current = null;
+      if (clearErrors) {
+        clearErrors("useDetails.propertyType");
+        clearErrors("useDetails.categoryType");
+        clearErrors("useDetails.WaterConnectionUsageType");
+      }
+      if (formClearErrors) {
+        formClearErrors("useDetails.propertyType");
+        formClearErrors("useDetails.categoryType");
+        formClearErrors("useDetails.WaterConnectionUsageType");
+      }
+      return;
+    }
+
+    if (watchPropertyType?.code) {
+      const list = propertyType2List?.length > 0 ? propertyType2List : ptServicesMastersData?.PropertyTax?.PropertyType || [];
+      const matched = list.find((item) => normalizeCode(item.code) === normalizeCode(watchPropertyType.code));
+      const selNorm = normalizeCode(
+        typeof selectedCategory === "object" ? selectedCategory?.code || selectedCategory?.name : selectedCategory
+      );
+      const isMatch = matchesCategory(matched || watchPropertyType, selNorm);
+      if (!isMatch) {
+        setValue("useDetails.propertyType", null, { shouldValidate: true, shouldDirty: true });
+        setValue("useDetails.categoryType", null);
+        setValue("useDetails.WaterConnectionUsageType", null);
+        prevPropertyTypeCode.current = null;
+        if (clearErrors) {
+          clearErrors("useDetails.propertyType");
+          clearErrors("useDetails.categoryType");
+          clearErrors("useDetails.WaterConnectionUsageType");
+        }
+        if (formClearErrors) {
+          formClearErrors("useDetails.propertyType");
+          formClearErrors("useDetails.categoryType");
+          formClearErrors("useDetails.WaterConnectionUsageType");
+        }
+      }
+    }
+  };
 
   const usageTypeOptions = useMemo(() => {
     const list = propertyType2List?.length > 0 ? propertyType2List : ptServicesMastersData?.PropertyTax?.PropertyType || [];
@@ -363,6 +497,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
         if (targetCat) {
           setValue("useDetails.categoryType", targetCat, { shouldValidate: true, shouldDirty: true });
           if (clearErrors) clearErrors("useDetails.categoryType");
+          if (formClearErrors) formClearErrors("useDetails.categoryType");
         }
       }
 
@@ -378,6 +513,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
         };
         setValue("useDetails.propertyCategory", foundPropCat, { shouldValidate: true, shouldDirty: true });
         if (clearErrors) clearErrors("useDetails.propertyCategory");
+        if (formClearErrors) formClearErrors("useDetails.propertyCategory");
       }
 
       // 3. Water Connection Usage Type
@@ -393,9 +529,10 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
         };
         setValue("useDetails.WaterConnectionUsageType", foundUsage, { shouldValidate: true, shouldDirty: true });
         if (clearErrors) clearErrors("useDetails.WaterConnectionUsageType");
+        if (formClearErrors) formClearErrors("useDetails.WaterConnectionUsageType");
       }
     },
-    [propertyType2List, ptServicesMastersData, categoryTypeList, categoryOptions, usageTypeOptions, setValue, clearErrors, t]
+    [propertyType2List, ptServicesMastersData, categoryTypeList, categoryOptions, usageTypeOptions, setValue, clearErrors, formClearErrors, t]
   );
 
   const prevPropertyTypeCode = React.useRef(null);
@@ -600,6 +737,38 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
       <div className="formcomposer-section-grid">
         <LabelFieldPair>
           <FieldLabelWithTooltip
+            label={t("WS_PROPERTY_CATEGORY")}
+            isMandatory={true}
+            infoText={t("WS_PROPERTY_CATEGORY_INFO_MSG")}
+          />
+          <div className="form-field">
+            <Controller
+              control={control}
+              name="useDetails.propertyCategory"
+              rules={{ required: t("REQUIRED_FIELD") }}
+              render={(props) => (
+                <Dropdown
+                  option={categoryOptions}
+                  optionKey="name"
+                  selected={props.value}
+                  select={(selected) => handleCategoryChange(selected)}
+                  t={t}
+                  onBlur={props.onBlur}
+                  disable={isPropertyFound}
+                  placeholder={t("WS_PROPERTY_CATEGORY")}
+                />
+              )}
+            />
+            {errors?.useDetails?.propertyCategory && (
+              <CardLabelError style={{ fontSize: "12px", color: "#d4351c", marginTop: "4px" }}>
+                {errors.useDetails.propertyCategory.message}
+              </CardLabelError>
+            )}
+          </div>
+        </LabelFieldPair>
+
+        <LabelFieldPair>
+          <FieldLabelWithTooltip
             label={t("WS_PROPERTY_TYPE")}
             isMandatory={true}
             infoText={t("WS_PROPERTY_TYPE_INFO_MSG")}
@@ -621,111 +790,25 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
                   }}
                   t={t}
                   onBlur={props.onBlur}
-                  disable={isPropertyFound}
-                  placeholder={t("WS_PROPERTY_TYPE")}
+                  disable={isPropertyFound || !hasSelectedCategory}
+                  placeholder={
+                    !hasSelectedCategory
+                      ? t("WS_SELECT_PROPERTY_CATEGORY_FIRST") && t("WS_SELECT_PROPERTY_CATEGORY_FIRST") !== "WS_SELECT_PROPERTY_CATEGORY_FIRST"
+                        ? t("WS_SELECT_PROPERTY_CATEGORY_FIRST")
+                        : "Select Property Category first"
+                      : t("WS_PROPERTY_TYPE")
+                  }
                 />
               )}
             />
+            {errors?.useDetails?.propertyType && (
+              <CardLabelError style={{ fontSize: "12px", color: "#d4351c", marginTop: "4px" }}>
+                {errors.useDetails.propertyType.message}
+              </CardLabelError>
+            )}
           </div>
         </LabelFieldPair>
-        {errors?.useDetails?.propertyType && <CardLabelError style={errorStyle}>{errors.useDetails.propertyType.message}</CardLabelError>}
 
-        {activeQuestions &&
-          activeQuestions.length > 0 &&
-          activeQuestions.map((questionText, index) => {
-            const rawQ = String(questionText || "").trim();
-            const label = rawQ.toLowerCase().startsWith("question") ? rawQ : `Question : ${rawQ}`;
-            return (
-              <LabelFieldPair key={`question_${index}_${rawQ}`}>
-                <CardLabel style={{ whiteSpace: "normal", wordBreak: "break-word", fontWeight: "bold" }}>
-                  <strong>{label}</strong>
-                </CardLabel>
-                <div className="form-field">
-                  <TextInput
-                    name={`useDetails.question_${index}`}
-                    value={questionAnswers[index]?.answer !== undefined ? questionAnswers[index].answer : ""}
-                    disabled={isPropertyFound}
-                    placeholder="Enter Answer"
-                    onChange={(e) => handleAnswerChange(index, questionText, e.target.value)}
-                  />
-                </div>
-              </LabelFieldPair>
-            );
-          })}
-
-        {isSchoolCollegeProperty ? (
-          <React.Fragment>
-            <LabelFieldPair>
-              <FieldLabelWithTooltip
-                label={t("WS_NUMBER_OF_STUDENTS")}
-                isMandatory={false}
-                infoText={t("WS_NUMBER_OF_STUDENTS_INFO_MSG")}
-              />
-              <div className="form-field">
-                <TextInput
-                  t={t}
-                  inputRef={register({
-                    pattern: { value: NUMBER_PATTERN, message: t("ERR_INVALID_NUMBER") },
-                  })}
-                  name="useDetails.numberOfStudents"
-                  disabled={isPropertyFound}
-                  placeholder={t("WS_NUMBER_OF_STUDENTS")}
-                />
-              </div>
-            </LabelFieldPair>
-            {errors?.useDetails?.numberOfStudents && <CardLabelError style={errorStyle}>{errors.useDetails.numberOfStudents.message}</CardLabelError>}
-          </React.Fragment>
-        ) : null}
-
-        {isHotelRestaurantProperty ? (
-          <React.Fragment>
-            <LabelFieldPair>
-              <FieldLabelWithTooltip
-                label={t("WS_NUMBER_OF_ROOMS")}
-                isMandatory={true}
-                infoText={t("WS_NUMBER_OF_ROOMS_INFO_MSG")}
-              />
-              <div className="form-field">
-                <TextInput
-                  t={t}
-                  inputRef={register({
-                    pattern: { value: NUMBER_PATTERN, message: t("ERR_INVALID_NUMBER") },
-                    required: isHotelRestaurantProperty ? t("REQUIRED_FIELD") : false,
-                  })}
-                  name="useDetails.NumberofRooms"
-                  disabled={isPropertyFound}
-                  placeholder={t("WS_NUMBER_OF_ROOMS")}
-                />
-              </div>
-            </LabelFieldPair>
-            {errors?.useDetails?.NumberofRooms && <CardLabelError style={errorStyle}>{errors.useDetails.NumberofRooms.message}</CardLabelError>}
-          </React.Fragment>
-        ) : null}
-
-        {isHospitalProperty ? (
-          <React.Fragment>
-            <LabelFieldPair>
-              <FieldLabelWithTooltip
-                label={t("WS_NUMBER_OF_BEDS")}
-                isMandatory={true}
-                infoText={t("WS_NUMBER_OF_BEDS_INFO_MSG")}
-              />
-              <div className="form-field">
-                <TextInput
-                  t={t}
-                  inputRef={register({
-                    pattern: { value: NUMBER_PATTERN, message: t("ERR_INVALID_NUMBER") },
-                    required: isHospitalProperty ? t("REQUIRED_FIELD") : false,
-                  })}
-                  name="useDetails.numberOfBeds"
-                  disabled={isPropertyFound}
-                  placeholder={t("WS_NUMBER_OF_BEDS")}
-                />
-              </div>
-            </LabelFieldPair>
-            {errors?.useDetails?.numberOfBeds && <CardLabelError style={errorStyle}>{errors.useDetails.numberOfBeds.message}</CardLabelError>}
-          </React.Fragment>
-        ) : null}
         <LabelFieldPair>
           <FieldLabelWithTooltip
             label={t("WS_CATEGORY_TYPE")}
@@ -750,36 +833,13 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
                 />
               )}
             />
+            {errors?.useDetails?.categoryType && (
+              <CardLabelError style={{ fontSize: "12px", color: "#d4351c", marginTop: "4px" }}>
+                {errors.useDetails.categoryType.message}
+              </CardLabelError>
+            )}
           </div>
         </LabelFieldPair>
-        {errors?.useDetails?.categoryType && <CardLabelError style={errorStyle}>{errors.useDetails.categoryType.message}</CardLabelError>}
-        <LabelFieldPair>
-          <FieldLabelWithTooltip
-            label={t("WS_PROPERTY_CATEGORY")}
-            isMandatory={true}
-            infoText={t("WS_PROPERTY_CATEGORY_INFO_MSG")}
-          />
-          <div className="form-field">
-            <Controller
-              control={control}
-              name="useDetails.propertyCategory"
-              rules={{ required: t("REQUIRED_FIELD") }}
-              render={(props) => (
-                <Dropdown
-                  option={categoryOptions}
-                  optionKey="name"
-                  selected={props.value}
-                  select={props.onChange}
-                  t={t}
-                  onBlur={props.onBlur}
-                  disable={true}
-                  placeholder={t("WS_PROPERTY_CATEGORY")}
-                />
-              )}
-            />
-          </div>
-        </LabelFieldPair>
-        {errors?.useDetails?.propertyCategory && <CardLabelError style={errorStyle}>{errors.useDetails.propertyCategory.message}</CardLabelError>}
 
         <LabelFieldPair>
           <FieldLabelWithTooltip
@@ -805,11 +865,13 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
                 />
               )}
             />
+            {errors?.useDetails?.WaterConnectionUsageType && (
+              <CardLabelError style={{ fontSize: "12px", color: "#d4351c", marginTop: "4px" }}>
+                {errors.useDetails.WaterConnectionUsageType.message}
+              </CardLabelError>
+            )}
           </div>
         </LabelFieldPair>
-        {errors?.useDetails?.WaterConnectionUsageType && (
-          <CardLabelError style={errorStyle}>{errors.useDetails.WaterConnectionUsageType.message}</CardLabelError>
-        )}
 
         <LabelFieldPair>
           <FieldLabelWithTooltip
@@ -977,11 +1039,123 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
                 />
               )}
             />
+            {errors?.useDetails?.SelectYearofConstruction && (
+              <CardLabelError style={{ fontSize: "12px", color: "#d4351c", marginTop: "4px" }}>
+                {errors.useDetails.SelectYearofConstruction.message}
+              </CardLabelError>
+            )}
           </div>
         </LabelFieldPair>
-        {errors?.useDetails?.SelectYearofConstruction && (
-          <CardLabelError style={errorStyle}>{errors.useDetails.SelectYearofConstruction.message}</CardLabelError>
-        )}
+
+        {activeQuestions &&
+          activeQuestions.length > 0 &&
+          activeQuestions.map((questionText, index) => {
+            const rawQ = String(questionText || "").trim();
+            const label = rawQ.toLowerCase().startsWith("question") ? rawQ : `Question : ${rawQ}`;
+            return (
+              <LabelFieldPair key={`question_${index}_${rawQ}`}>
+                <CardLabel style={{ whiteSpace: "normal", wordBreak: "break-word", fontWeight: "bold" }}>
+                  <strong>{label}</strong>
+                </CardLabel>
+                <div className="form-field">
+                  <TextInput
+                    name={`useDetails.question_${index}`}
+                    value={questionAnswers[index]?.answer !== undefined ? questionAnswers[index].answer : ""}
+                    disabled={isPropertyFound}
+                    placeholder="Enter Answer"
+                    onChange={(e) => handleAnswerChange(index, questionText, e.target.value)}
+                  />
+                </div>
+              </LabelFieldPair>
+            );
+          })}
+
+        {isSchoolCollegeProperty ? (
+          <React.Fragment>
+            <LabelFieldPair>
+              <FieldLabelWithTooltip
+                label={t("WS_NUMBER_OF_STUDENTS")}
+                isMandatory={false}
+                infoText={t("WS_NUMBER_OF_STUDENTS_INFO_MSG")}
+              />
+              <div className="form-field">
+                <TextInput
+                  t={t}
+                  inputRef={register({
+                    pattern: { value: NUMBER_PATTERN, message: t("ERR_INVALID_NUMBER") },
+                  })}
+                  name="useDetails.numberOfStudents"
+                  disabled={isPropertyFound}
+                  placeholder={t("WS_NUMBER_OF_STUDENTS")}
+                />
+                {errors?.useDetails?.numberOfStudents && (
+                  <CardLabelError style={{ fontSize: "12px", color: "#d4351c", marginTop: "4px" }}>
+                    {errors.useDetails.numberOfStudents.message}
+                  </CardLabelError>
+                )}
+              </div>
+            </LabelFieldPair>
+          </React.Fragment>
+        ) : null}
+
+        {isHotelRestaurantProperty ? (
+          <React.Fragment>
+            <LabelFieldPair>
+              <FieldLabelWithTooltip
+                label={t("WS_NUMBER_OF_ROOMS")}
+                isMandatory={true}
+                infoText={t("WS_NUMBER_OF_ROOMS_INFO_MSG")}
+              />
+              <div className="form-field">
+                <TextInput
+                  t={t}
+                  inputRef={register({
+                    pattern: { value: NUMBER_PATTERN, message: t("ERR_INVALID_NUMBER") },
+                    required: isHotelRestaurantProperty ? t("REQUIRED_FIELD") : false,
+                  })}
+                  name="useDetails.NumberofRooms"
+                  disabled={isPropertyFound}
+                  placeholder={t("WS_NUMBER_OF_ROOMS")}
+                />
+                {errors?.useDetails?.NumberofRooms && (
+                  <CardLabelError style={{ fontSize: "12px", color: "#d4351c", marginTop: "4px" }}>
+                    {errors.useDetails.NumberofRooms.message}
+                  </CardLabelError>
+                )}
+              </div>
+            </LabelFieldPair>
+          </React.Fragment>
+        ) : null}
+
+        {isHospitalProperty ? (
+          <React.Fragment>
+            <LabelFieldPair>
+              <FieldLabelWithTooltip
+                label={t("WS_NUMBER_OF_BEDS")}
+                isMandatory={true}
+                infoText={t("WS_NUMBER_OF_BEDS_INFO_MSG")}
+              />
+              <div className="form-field">
+                <TextInput
+                  t={t}
+                  inputRef={register({
+                    pattern: { value: NUMBER_PATTERN, message: t("ERR_INVALID_NUMBER") },
+                    required: isHospitalProperty ? t("REQUIRED_FIELD") : false,
+                  })}
+                  name="useDetails.numberOfBeds"
+                  disabled={isPropertyFound}
+                  placeholder={t("WS_NUMBER_OF_BEDS")}
+                />
+                {errors?.useDetails?.numberOfBeds && (
+                  <CardLabelError style={{ fontSize: "12px", color: "#d4351c", marginTop: "4px" }}>
+                    {errors.useDetails.numberOfBeds.message}
+                  </CardLabelError>
+                )}
+              </div>
+            </LabelFieldPair>
+          </React.Fragment>
+        ) : null}
+
         {isDwellingUnit ? (
           <LabelFieldPair>
             <FieldLabelWithTooltip
@@ -1001,13 +1175,14 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
                 rules={{ required: t("REQUIRED_FIELD") }}
                 placeholder={t("WS_NUMBER_OF_DWELLING_UNITS")}
               />
+              {errors?.useDetails?.NumberofDwellingUnits && (
+                <CardLabelError style={{ fontSize: "12px", color: "#d4351c", marginTop: "4px" }}>
+                  {errors.useDetails.NumberofDwellingUnits.message}
+                </CardLabelError>
+              )}
             </div>
           </LabelFieldPair>
         ) : null}
-
-        {isDwellingUnit && errors?.useDetails?.NumberofDwellingUnits && (
-          <CardLabelError style={errorStyle}>{errors.useDetails.NumberofDwellingUnits.message}</CardLabelError>
-        )}
 
         {/* {isServentHouse ? (
           <LabelFieldPair>

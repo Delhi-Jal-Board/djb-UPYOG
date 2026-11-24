@@ -364,16 +364,16 @@ const ConnectionDetails = () => {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
                 <div>
                   <div style={{ fontWeight: "700", color: "#1E40AF", fontSize: "16px" }}>
-                    {t("WS_ACTIVE_BILL_AMENDMENT_LABEL", "Active Bill Correction / Amendment Request")}
+                    {t("WS_ACTIVE_BILL_AMENDMENT_LABEL")}
                   </div>
                   <div style={{ color: "#1E3A8A", fontSize: "14px", marginTop: "4px" }}>
-                    {t("WS_APPLICATION_NO_LABEL", "Application No:")} <strong>{activeAmendment.amendmentId}</strong> | {t("WS_STATUS_LABEL", "Status:")}{" "}
+                    {t("WS_APPLICATION_NO_LABEL")} <strong>{activeAmendment.amendmentId}</strong> | {t("WS_STATUS_LABEL")}{" "}
                     <span style={{ fontWeight: "600", color: "#B45309" }}>{t(`CS_${activeAmendment.status}`, activeAmendment.status)}</span>
                   </div>
                 </div>
                 <Link to={`/digit-ui/citizen/ws/bill-amendment/application-details?applicationNumber=${activeAmendment.amendmentId}`}>
                   <button className="selector-button-border" style={{ height: "36px", padding: "0 16px", margin: 0, cursor: "pointer" }}>
-                    {t("WS_TRACK_OR_RESUBMIT_LABEL", "View Details & Track / Re-Submit")}
+                    {t("WS_TRACK_OR_RESUBMIT_LABEL")}
                   </button>
                 </Link>
               </div>
@@ -795,7 +795,17 @@ const ConnectionDetails = () => {
               <div key={`doc-${index}`}>
                 {
                   <div>
-                    <CardSectionHeader>{t(doc?.documentType?.split(".").slice(0, 2).join("_"))}</CardSectionHeader>
+                    <CardSectionHeader>
+                      {(doc?.documentType?.toUpperCase().includes("SEWER") || doc?.documentType?.toUpperCase().includes("STP"))
+                        ? (t("WS_SEWER_TREATMENT_PLANT_CERTIFICATE") && t("WS_SEWER_TREATMENT_PLANT_CERTIFICATE") !== "WS_SEWER_TREATMENT_PLANT_CERTIFICATE"
+                          ? t("WS_SEWER_TREATMENT_PLANT_CERTIFICATE")
+                          : "Sewer Treatment Plant (STP) Certificate")
+                        : (doc?.documentType?.toUpperCase().includes("RAIN") || doc?.documentType?.toUpperCase().includes("HARVEST"))
+                        ? (t("WS_RAIN_WATER_HARVESTING_CERTIFICATE") && t("WS_RAIN_WATER_HARVESTING_CERTIFICATE") !== "WS_RAIN_WATER_HARVESTING_CERTIFICATE"
+                          ? t("WS_RAIN_WATER_HARVESTING_CERTIFICATE")
+                          : "Rain Water Harvesting Certificate")
+                        : t(doc?.documentType?.split(".").slice(0, 2).join("_"))}
+                    </CardSectionHeader>
                     <StatusTable>
                       {<WSDocument value={state?.documents} Code={doc?.documentType} index={index} />}
                       {state?.documents.length != index + 1 ? (

@@ -211,7 +211,7 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
             <FieldLabelWithTooltip
               label={t("Employee ID")}
               isMandatory={isDjbEmployee}
-              infoText={t("WS_EMPLOYEE_ID_INFO_MSG", "Enter 8-digit DJB Employee ID")}
+              infoText={t("WS_EMPLOYEE_ID_INFO_MSG")}
             />
             <div className="field" style={{ width: "100%" }}>
               <Controller
@@ -264,7 +264,7 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
             <FieldLabelWithTooltip
               label={t("Date of Retirement")}
               isMandatory={isDjbEmployee}
-              infoText={t("WS_DOR_INFO_MSG", "Select Date of Retirement")}
+              infoText={t("WS_DOR_INFO_MSG")}
             />
             <div className="field">
               <Controller
@@ -282,7 +282,7 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
             <FieldLabelWithTooltip
               label={t("Employee Designation")}
               isMandatory={isDjbEmployee}
-              infoText={t("WS_EMPLOYEE_DESIGNATION_INFO_MSG", "Enter Employee Designation")}
+              infoText={t("WS_EMPLOYEE_DESIGNATION_INFO_MSG")}
             />
             <div className="field" style={{ width: "100%" }}>
               <Controller

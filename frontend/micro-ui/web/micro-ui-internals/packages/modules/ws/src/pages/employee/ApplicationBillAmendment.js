@@ -383,14 +383,14 @@ const ApplicationBillAmendment = () => {
         <Header>{t("WS_BILL_AMEND_APP")}</Header>
         <CardText style={{ marginTop: "16px", marginBottom: "20px" }}>
           {isApplicationNo
-            ? t("WS_BILL_AMENDMENT_NOT_FOR_APPLICATION", "Bill Amendment is only applicable for active connections, not for new connection applications.")
+            ? t("WS_BILL_AMENDMENT_NOT_FOR_APPLICATION")
             : isConnInactive
-            ? t("WS_BILL_AMENDMENT_CONN_NOT_ACTIVE", "Bill Amendment is only allowed on active connections. The selected connection is not active.")
-            : t("WS_SELECT_CONNECTION_FOR_BILL_AMENDMENT_MSG", "Please select a connection from your connections list to apply for Bill Amendment.")}
+            ? t("WS_BILL_AMENDMENT_CONN_NOT_ACTIVE")
+            : t("WS_SELECT_CONNECTION_FOR_BILL_AMENDMENT_MSG")}
         </CardText>
         <ActionBar>
           <SubmitBar
-            label={t("WS_VIEW_MY_CONNECTIONS", "Go to My Connections")}
+            label={t("WS_VIEW_MY_CONNECTIONS")}
             onSubmit={() => history.push(isEmployee ? "/digit-ui/employee/ws/water/search-connection" : "/digit-ui/citizen/ws/my-connections")}
           />
         </ActionBar>

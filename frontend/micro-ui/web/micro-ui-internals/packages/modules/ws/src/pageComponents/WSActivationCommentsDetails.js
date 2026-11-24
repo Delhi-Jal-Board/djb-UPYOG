@@ -19,7 +19,7 @@ const WSActivationCommentsDetails = ({ t, config, userType, formData, onSelect }
           style={{ margin: 0 }}
           label={t("WF_COMMON_COMMENTS") || "Comments"}
           isMandatory={false}
-          infoText={t("WF_COMMON_COMMENTS_INFO_MSG", "Enter any remarks or comments")}
+          infoText={t("WF_COMMON_COMMENTS_INFO_MSG")}
         />
         <div className="field">
           <TextInput

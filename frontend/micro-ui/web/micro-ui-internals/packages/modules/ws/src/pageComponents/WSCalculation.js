@@ -10,6 +10,7 @@ import {
   Card,
   Loader,
   CheckBox,
+  FieldLabelWithTooltip,
 } from "@djb25/digit-ui-react-components";
 import React, { useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -598,7 +599,12 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
         <CollapsibleCardPage title={t("WS_CALCULATION")} defaultOpen={true} style={props.style}>
           <div className="formcomposer-section-grid">
             <LabelFieldPair>
-              <CardLabel>{`${t("WS_CATEGORY_TYPE")}*`}</CardLabel>
+              <FieldLabelWithTooltip
+                style={{ margin: 0 }}
+                label={t("WS_CATEGORY_TYPE") || "Select Category Type"}
+                isMandatory={true}
+                infoText={t("WS_CATEGORY_TYPE_INFO_MSG")}
+              />
               <div className="form-field">
                 <Controller
                   control={control}
@@ -619,7 +625,12 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
             </LabelFieldPair>
             {errors?.useDetails?.categoryType && <CardLabelError style={errorStyle}>{errors.useDetails.categoryType.message}</CardLabelError>}
             <LabelFieldPair>
-              <CardLabel>{`${t("WS_PROPERTY_CATEGORY")}*`}</CardLabel>
+              <FieldLabelWithTooltip
+                style={{ margin: 0 }}
+                label={t("WS_PROPERTY_CATEGORY") || "Select Property Category"}
+                isMandatory={true}
+                infoText={t("WS_PROPERTY_CATEGORY_INFO_MSG")}
+              />
               <div className="form-field">
                 <Controller
                   control={control}
@@ -634,7 +645,12 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
             {errors?.useDetails?.propertyCategory && <CardLabelError style={errorStyle}>{errors.useDetails.propertyCategory.message}</CardLabelError>}
 
             <LabelFieldPair>
-              <CardLabel>{`${t("WS_PROPERTY_TYPE")}*`}</CardLabel>
+              <FieldLabelWithTooltip
+                style={{ margin: 0 }}
+                label={t("WS_PROPERTY_TYPE") || "Select Property Type"}
+                isMandatory={true}
+                infoText={t("WS_PROPERTY_TYPE_INFO_MSG")}
+              />
               <div className="form-field">
                 <Controller
                   control={control}
@@ -656,7 +672,12 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
             {errors?.useDetails?.propertyType && <CardLabelError style={errorStyle}>{errors.useDetails.propertyType.message}</CardLabelError>}
 
             <LabelFieldPair>
-              <CardLabel>{`${t("WS_WATER_CONNECTION_USAGE_TYPE")}*`}</CardLabel>
+              <FieldLabelWithTooltip
+                style={{ margin: 0 }}
+                label={t("WS_WATER_CONNECTION_USAGE_TYPE") || "Select Water Connection Usage Type"}
+                isMandatory={true}
+                infoText={t("WS_WATER_CONNECTION_USAGE_TYPE_INFO_MSG")}
+              />
               <div className="form-field">
                 <Controller
                   control={control}
@@ -673,7 +694,12 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
             )}
 
             <LabelFieldPair>
-              <CardLabel>{`${t("WS_COLONY_NAME")}*`}</CardLabel>
+              <FieldLabelWithTooltip
+                style={{ margin: 0 }}
+                label={t("WS_COLONY_NAME") || "Colony Category"}
+                isMandatory={true}
+                infoText={t("WS_COLONY_NAME_INFO_MSG")}
+              />
               <div className="form-field">
                 <Controller
                   control={control}
@@ -695,7 +721,12 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
             {errors?.useDetails?.colonyName && <CardLabelError style={errorStyle}>{errors.useDetails.colonyName.message}</CardLabelError>}
 
             <LabelFieldPair>
-              <CardLabel>{`${t("WS_PLOT_AREA")}`}</CardLabel>
+              <FieldLabelWithTooltip
+                style={{ margin: 0 }}
+                label={t("WS_PLOT_AREA") || "Enter Plot Area (sq. meter.)"}
+                isMandatory={false}
+                infoText={t("WS_PLOT_AREA_INFO_MSG")}
+              />
               <div className="form-field">
                 <TextInput
                   t={t}
@@ -710,7 +741,12 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
 
             <div>
               <LabelFieldPair>
-                <CardLabel>{`${t("WS_BUILT_UP_AREA")}`}</CardLabel>
+                <FieldLabelWithTooltip
+                  style={{ margin: 0 }}
+                  label={t("WS_BUILT_UP_AREA") || "Enter Built-up Area (sq. meter.)"}
+                  isMandatory={false}
+                  infoText={t("WS_BUILT_UP_AREA_INFO_MSG")}
+                />
                 <div className="form-field">
                   <TextInput
                     t={t}
@@ -734,7 +770,12 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
 
             <div>
               <LabelFieldPair>
-                <CardLabel>{`${t("WS_FAR_AREA")}`}</CardLabel>
+                <FieldLabelWithTooltip
+                  style={{ margin: 0 }}
+                  label={t("WS_FAR_AREA") || "Far Area"}
+                  isMandatory={false}
+                  infoText={t("WS_FAR_AREA_INFO_MSG")}
+                />
                 <div className="form-field">
                   <TextInput
                     t={t}
@@ -762,7 +803,12 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
 
             {isDwellingUnit ? (
               <LabelFieldPair>
-                <CardLabel>{`${t("WS_NUMBER_OF_DWELLING_UNITS")}`}</CardLabel>
+                <FieldLabelWithTooltip
+                  style={{ margin: 0 }}
+                  label={t("WS_NUMBER_OF_DWELLING_UNITS") || "Number of Dwelling Units"}
+                  isMandatory={false}
+                  infoText={t("WS_NUMBER_OF_DWELLING_UNITS_INFO_MSG")}
+                />
                 <div className="form-field">
                   <TextInput
                     t={t}
@@ -781,7 +827,12 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
 
             {isHotelRestaurantProperty ? (
               <LabelFieldPair>
-                <CardLabel>{`${t("WS_NUMBER_OF_ROOMS")}*`}</CardLabel>
+                <FieldLabelWithTooltip
+                  style={{ margin: 0 }}
+                  label={t("WS_NUMBER_OF_ROOMS") || "Number of Rooms"}
+                  isMandatory={isHotelRestaurantProperty}
+                  infoText={t("WS_NUMBER_OF_ROOMS_INFO_MSG")}
+                />
                 <div className="form-field">
                   <TextInput
                     t={t}
@@ -800,7 +851,12 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
 
             {isHospitalProperty ? (
               <LabelFieldPair>
-                <CardLabel>{`${t("WS_NUMBER_OF_BEDS")}*`}</CardLabel>
+                <FieldLabelWithTooltip
+                  style={{ margin: 0 }}
+                  label={t("WS_NUMBER_OF_BEDS") || "Number of Beds"}
+                  isMandatory={isHospitalProperty}
+                  infoText={t("WS_NUMBER_OF_BEDS_INFO_MSG")}
+                />
                 <div className="form-field">
                   <TextInput
                     t={t}
@@ -819,7 +875,12 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
 
             {isSchoolCollegeProperty ? (
               <LabelFieldPair>
-                <CardLabel>{`${t("WS_NUMBER_OF_STUDENTS")}`}</CardLabel>
+                <FieldLabelWithTooltip
+                  style={{ margin: 0 }}
+                  label={t("WS_NUMBER_OF_STUDENTS") || "Number of Students"}
+                  isMandatory={false}
+                  infoText={t("WS_NUMBER_OF_STUDENTS_INFO_MSG")}
+                />
                 <div className="form-field">
                   <TextInput
                     t={t}
@@ -837,7 +898,12 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
 
             {isServentHouse ? (
               <LabelFieldPair>
-                <CardLabel>{`${t("WS_SERVENT_HOUSE")}`}</CardLabel>
+                <FieldLabelWithTooltip
+                  style={{ margin: 0 }}
+                  label={t("WS_SERVENT_HOUSE") || "Servant House"}
+                  isMandatory={false}
+                  infoText={t("WS_SERVENT_HOUSE_INFO_MSG")}
+                />
                 <div className="form-field">
                   <TextInput
                     t={t}

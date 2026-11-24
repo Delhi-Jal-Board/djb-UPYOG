@@ -230,9 +230,9 @@ const ConnectionDetails = (_props) => {
         <LabelFieldPair>
           <FieldLabelWithTooltip
             style={{ margin: 0 }}
-            label={t("WS_ACK_COMMON_APP_NO_LABEL") || "Application Number"}
+            label={t("WS_ACK_COMMON_APP_NO_LABEL")}
             isMandatory={true}
-            infoText={t("WS_APP_NO_INFO_MSG", "Application Number of the connection")}
+            infoText={t("WS_APP_NO_INFO_MSG")}
           />
           <div className="field">
             <TextInput disabled={true} value={filters?.applicationNumber}></TextInput>
@@ -244,9 +244,9 @@ const ConnectionDetails = (_props) => {
           <LabelFieldPair>
             <FieldLabelWithTooltip
               style={{ margin: 0 }}
-              label={t("WS_SERV_DETAIL_CONN_TYPE") || "Nature of Connection"}
+              label={t("WS_SERV_DETAIL_CONN_TYPE")}
               isMandatory={true}
-              infoText={t("WS_CONN_TYPE_INFO_MSG", "Nature / Type of Connection (Metered / Non-Metered)")}
+              infoText={t("WS_CONN_TYPE_INFO_MSG")}
             />
             <Controller
               control={control}
@@ -409,7 +409,7 @@ const ConnectionDetails = (_props) => {
               style={{ margin: 0 }}
               label={t("WS_NUMBER_WATER_CLOSETS_LABEL") || "Number of Water Closets"}
               isMandatory={true}
-              infoText={t("WS_NUMBER_WATER_CLOSETS_INFO_MSG", "Enter number of water closets")}
+              infoText={t("WS_NUMBER_WATER_CLOSETS_INFO_MSG")}
             />
             <div className="field">
               <Controller
@@ -447,7 +447,7 @@ const ConnectionDetails = (_props) => {
               style={{ margin: 0 }}
               label={t("WS_SERV_DETAIL_NO_OF_TOILETS") || "Number of Toilets"}
               isMandatory={true}
-              infoText={t("WS_SERV_DETAIL_NO_OF_TOILETS_INFO_MSG", "Enter number of toilets")}
+              infoText={t("WS_SERV_DETAIL_NO_OF_TOILETS_INFO_MSG")}
             />
             <div className="field">
               <Controller

@@ -1165,23 +1165,30 @@ export const WSSearch = {
     };
 
     const otherDocsValues = unmappedDocs.map(d => {
+      const isStp = d?.documentType?.includes("SEWER") || d?.documentType?.includes("STP");
+      const isRwh = d?.documentType?.includes("RAIN") || d?.documentType?.includes("HARVEST");
       const isOtherDoc = d?.documentType?.includes("OTHER_DOCUMENTS") || d?.documentType?.includes("OTHERDOCUMENTS") || d?.documentType?.includes("OTHER");
       const cleanNum = getCleanDocNumber([
         d?.documentUid,
         d?.documentNumber,
-        (isOtherDoc ? wsDataDetails?.additionalDetails?.otherDocumentNumber : null)
+        (isOtherDoc || isStp ? wsDataDetails?.additionalDetails?.otherDocumentNumber || wsDataDetails?.additionalDetails?.otherDocumentRemark : null)
       ], d);
       return {
         title: d?.documentType?.includes("ELECTRICITY") ? "WS_ELECTRICITY_BILL" : 
                d?.documentType?.includes("PLUMBER") ? "WS_PLUMBER_REPORT" :
                d?.documentType?.includes("BUILDING") ? "WS_BUILDING_PLAN" :
-               d?.documentType?.includes("TAX") ? "WS_PROPERTY_TAX" : "WS_OTHER_DOCUMENTS",
-        categoryLabel: "Other Documents",
+               d?.documentType?.includes("TAX") ? "WS_PROPERTY_TAX" : 
+               isStp ? "WS_SEWER_TREATMENT_PLANT_CERTIFICATE" :
+               isRwh ? "WS_RAIN_WATER_HARVESTING_CERTIFICATE" : "WS_OTHER_DOCUMENTS",
+        categoryLabel: isStp ? "Sewer Treatment Plant (STP) Certificate" :
+                       isRwh ? "Rain Water Harvesting Certificate" : "Other Documents",
         documentType: d?.documentType,
         documentUid: cleanNum,
         documentNumber: cleanNum === "NA" ? "" : cleanNum,
         fileStoreId: d?.fileStoreId,
         numberLabel:
+          isStp ? "Sewer Treatment Plant Document Number" :
+          isRwh ? "Rain Water Harvesting Document Number" :
           d?.documentType?.includes("OTHER_DOCUMENTS") || d?.documentType?.includes("OTHERDOCUMENTS")
             ? "Other Document Remark"
             : "Other Document Number",
@@ -1200,6 +1207,44 @@ export const WSSearch = {
       isPhoto: false,
       originalDoc: employeeIdDoc,
     } : null;
+
+    const meterPhotoDocObj =
+      (wsDataDetails?.documents || []).find((d) => d?.documentType === "METER_PHOTO") ||
+      (wsDataDetails?.additionalDetails?.meterPhotoFileStoreId ? { fileStoreId: wsDataDetails?.additionalDetails?.meterPhotoFileStoreId, documentType: "METER_PHOTO" } : null) ||
+      (wsDataDetails?.additionalDetails?.meterPhoto?.fileStoreId ? { fileStoreId: wsDataDetails?.additionalDetails?.meterPhoto?.fileStoreId, documentType: "METER_PHOTO" } : null);
+
+    const meterWarrantyDocObj =
+      (wsDataDetails?.documents || []).find((d) => d?.documentType === "METER_WARRANTY_CARD_TESTING_REPORT_INVOICE") ||
+      (wsDataDetails?.additionalDetails?.meterWarrantyFileStoreId ? { fileStoreId: wsDataDetails?.additionalDetails?.meterWarrantyFileStoreId, documentType: "METER_WARRANTY_CARD_TESTING_REPORT_INVOICE" } : null) ||
+      (wsDataDetails?.additionalDetails?.meterWarranty?.fileStoreId ? { fileStoreId: wsDataDetails?.additionalDetails?.meterWarranty?.fileStoreId, documentType: "METER_WARRANTY_CARD_TESTING_REPORT_INVOICE" } : null);
+
+    const meterPhotoDocValue = meterPhotoDocObj?.fileStoreId
+      ? {
+          title: "WS_METER_PHOTO_UPLOAD_LABEL",
+          categoryLabel: "Meter Photo",
+          documentType: meterPhotoDocObj?.documentType || "METER_PHOTO",
+          documentUid: "",
+          documentNumber: "",
+          fileStoreId: meterPhotoDocObj?.fileStoreId,
+          numberLabel: "",
+          isPhoto: true,
+          originalDoc: meterPhotoDocObj,
+        }
+      : null;
+
+    const meterWarrantyDocValue = meterWarrantyDocObj?.fileStoreId
+      ? {
+          title: "WS_METER_WARRANTY_REPORT_INVOICE_LABEL",
+          categoryLabel: "Meter Warranty Card, Testing Report, Invoice",
+          documentType: meterWarrantyDocObj?.documentType || "METER_WARRANTY_CARD_TESTING_REPORT_INVOICE",
+          documentUid: "",
+          documentNumber: "",
+          fileStoreId: meterWarrantyDocObj?.fileStoreId,
+          numberLabel: "",
+          isPhoto: false,
+          originalDoc: meterWarrantyDocObj,
+        }
+      : null;
 
     const documentDetails = {
       title: "WS_DOCUMENTS",
@@ -1266,6 +1311,8 @@ export const WSSearch = {
                 : null,
               employeeIdDocValue,
               ...(isMutationApp ? [] : otherDocsValues),
+              meterPhotoDocValue,
+              meterWarrantyDocValue,
               signatureDoc
                 ? {
                   title: "WS_APPLICANT_SIGNATURE",
@@ -1573,15 +1620,92 @@ export const WSSearch = {
         ? t("WS_RAIN_WATER_HARVESTING_CERTIFICATE")
         : "Rain Water Harvesting Certificate";
 
+    const hasRwhAdequacy =
+      wsDataDetails?.additionalDetails?.hasRainWaterHarvestingAdequacyCertificate === true ||
+      wsDataDetails?.additionalDetails?.hasAdequacyCertificate === true ||
+      wsDataDetails?.additionalDetails?.applyForAdequacyCertificate === true ||
+      String(wsDataDetails?.additionalDetails?.hasRainWaterHarvestingAdequacyCertificate) === "true" ||
+      String(wsDataDetails?.additionalDetails?.hasAdequacyCertificate) === "true" ||
+      wsDataDetails?.rainWaterHarvesting?.hasAdequacyCertificate === true ||
+      String(wsDataDetails?.rainWaterHarvesting?.hasAdequacyCertificate) === "true";
+
+    const rwhValidityDate =
+      wsDataDetails?.additionalDetails?.rwhValidityUpTo ||
+      wsDataDetails?.additionalDetails?.validityUpTo ||
+      wsDataDetails?.additionalDetails?.validityDate ||
+      wsDataDetails?.additionalDetails?.rainWaterHarvestingValidityUpTo ||
+      wsDataDetails?.additionalDetails?.date;
+
+    const rwhValues = [
+      {
+        title: rwhLabel,
+        value: hasRwh ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO"),
+      },
+    ];
+    if (hasRwh) {
+      rwhValues.push({
+        title: "Having Rain water harvesting Adequacy certificate?",
+        value: hasRwhAdequacy ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO"),
+      });
+      if (hasRwhAdequacy && rwhValidityDate) {
+        rwhValues.push({
+          title: "Validity up to date",
+          value: rwhValidityDate,
+        });
+      }
+    }
+
     const rainWaterHarvestingDetails = {
       title: rwhLabel,
       asSectionHeader: true,
-      values: [
-        {
-          title: rwhLabel,
-          value: hasRwh ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO"),
-        },
-      ],
+      values: rwhValues,
+    };
+
+    const hasStp =
+      wsDataDetails?.additionalDetails?.hasSewerTreatmentPlant === true ||
+      wsDataDetails?.additionalDetails?.isSewerTreatmentPlant === true ||
+      wsDataDetails?.additionalDetails?.hasStp === true ||
+      String(wsDataDetails?.additionalDetails?.hasSewerTreatmentPlant) === "true" ||
+      String(wsDataDetails?.additionalDetails?.isSewerTreatmentPlant) === "true" ||
+      String(wsDataDetails?.additionalDetails?.hasStp) === "true" ||
+      wsDataDetails?.sewerTreatmentPlant?.hasCertificate === true;
+
+    const hasStpAdequacy =
+      wsDataDetails?.additionalDetails?.hasSewerTreatmentPlantAdequacyCertificate === true ||
+      wsDataDetails?.additionalDetails?.hasStpAdequacyCertificate === true ||
+      wsDataDetails?.additionalDetails?.applyForStpAdequacyCertificate === true ||
+      String(wsDataDetails?.additionalDetails?.hasSewerTreatmentPlantAdequacyCertificate) === "true" ||
+      String(wsDataDetails?.additionalDetails?.hasStpAdequacyCertificate) === "true" ||
+      wsDataDetails?.sewerTreatmentPlant?.hasAdequacyCertificate === true;
+
+    const stpValidityDate =
+      wsDataDetails?.additionalDetails?.stpValidityDate ||
+      wsDataDetails?.additionalDetails?.sewerTreatmentPlantValidityDate ||
+      wsDataDetails?.additionalDetails?.stpValidityUpTo;
+
+    const stpValues = [
+      {
+        title: "Sewer Treatment Plant (STP)",
+        value: hasStp ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO"),
+      },
+    ];
+    if (hasStp) {
+      stpValues.push({
+        title: "Having STP certificate issued by DPCC?",
+        value: hasStpAdequacy ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO"),
+      });
+      if (hasStpAdequacy && stpValidityDate) {
+        stpValues.push({
+          title: "Validity up to date",
+          value: stpValidityDate,
+        });
+      }
+    }
+
+    const sewerTreatmentPlantDetails = {
+      title: "Sewer Treatment Plant (STP)",
+      asSectionHeader: true,
+      values: stpValues,
     };
 
     const bankDetails = {
@@ -1624,22 +1748,7 @@ export const WSSearch = {
       isLabelShow: true,
       additionalDetails: { isLabelShow: true },
     };
-    details = [
-      ...details,
-      isLabelShow,
-      applicationHeaderDetails,
-      feeEstimation,
-      AdditionalDetailsByWS,
-      connectionHolderDetails,
-      propertyDetails,
-      propertyWaterConnectionUseDetails,
-      divyangjanDetails,
-      djbEmployeeDetails,
-      rainWaterHarvestingDetails,
-      ...(isMutationApp ? [] : [bankDetails]),
-      documentDetails,
-    ];
-
+    let activateConnectionDetails = null;
     if (
       wsDataDetails?.applicationStatus === "PENDING_FOR_CONNECTION_ACTIVATION" ||
       wsDataDetails?.applicationStatus === "CONNECTION_ACTIVATED"
@@ -1649,8 +1758,25 @@ export const WSSearch = {
         wsDataDetails?.connectionType?.toUpperCase() === "METERED" ||
         wsDataDetails?.additionalDetails?.connectionType?.toUpperCase() === "METERED";
 
-      const plumberProvidedBy = wsDataDetails?.additionalDetails?.detailsProvidedBy;
-      const isULBPlumber = plumberProvidedBy?.toUpperCase() === "ULB" || plumberProvidedBy?.toUpperCase() === "DJB";
+      const plumberProvidedBy =
+        wsDataDetails?.additionalDetails?.detailsProvidedBy ||
+        wsDataDetails?.additionalDetails?.plumberProvidedBy;
+      const isULBPlumber =
+        plumberProvidedBy?.toUpperCase() === "ULB" ||
+        plumberProvidedBy?.toUpperCase() === "DJB" ||
+        plumberProvidedBy === "Delhi Jal Board" ||
+        (typeof plumberProvidedBy === "string" && plumberProvidedBy.toLowerCase().includes("jal board"));
+      const isSelfPlumber = !isULBPlumber;
+
+      const meterPhotoDoc =
+        (wsDataDetails?.documents || []).find((d) => d?.documentType === "METER_PHOTO") ||
+        (wsDataDetails?.additionalDetails?.meterPhotoFileStoreId ? { fileStoreId: wsDataDetails?.additionalDetails?.meterPhotoFileStoreId, documentType: "METER_PHOTO" } : null) ||
+        (wsDataDetails?.additionalDetails?.meterPhoto?.fileStoreId ? { fileStoreId: wsDataDetails?.additionalDetails?.meterPhoto?.fileStoreId, documentType: "METER_PHOTO" } : null);
+
+      const meterWarrantyDoc =
+        (wsDataDetails?.documents || []).find((d) => d?.documentType === "METER_WARRANTY_CARD_TESTING_REPORT_INVOICE") ||
+        (wsDataDetails?.additionalDetails?.meterWarrantyFileStoreId ? { fileStoreId: wsDataDetails?.additionalDetails?.meterWarrantyFileStoreId, documentType: "METER_WARRANTY_CARD_TESTING_REPORT_INVOICE" } : null) ||
+        (wsDataDetails?.additionalDetails?.meterWarranty?.fileStoreId ? { fileStoreId: wsDataDetails?.additionalDetails?.meterWarranty?.fileStoreId, documentType: "METER_WARRANTY_CARD_TESTING_REPORT_INVOICE" } : null);
 
       const activationValues = [
         {
@@ -1663,54 +1789,112 @@ export const WSSearch = {
         },
         {
           title: "WS_ADDN_DETAILS_PLUMBER_PROVIDED_BY",
-          value: plumberProvidedBy
-            ? isULBPlumber
-              ? "DJB"
-              : t(`WS_PLUMBER_${plumberProvidedBy?.toUpperCase()}`) && t(`WS_PLUMBER_${plumberProvidedBy?.toUpperCase()}`) !== `WS_PLUMBER_${plumberProvidedBy?.toUpperCase()}`
-              ? t(`WS_PLUMBER_${plumberProvidedBy?.toUpperCase()}`)
-              : plumberProvidedBy
-            : t("NA"),
+          value: isULBPlumber
+            ? (t("WS_PLUMBER_DJB") && t("WS_PLUMBER_DJB") !== "WS_PLUMBER_DJB" ? t("WS_PLUMBER_DJB") : "Delhi Jal Board")
+            : (t("WS_PLUMBER_SELF") && t("WS_PLUMBER_SELF") !== "WS_PLUMBER_SELF" ? t("WS_PLUMBER_SELF") : "Self"),
         },
-        ...(isULBPlumber
+        ...(isSelfPlumber
           ? [
               {
-                title: "WS_ADDN_DETAILS_PLUMBER_LICENCE_NO_LABEL",
-                value: wsDataDetails?.plumberInfo?.[0]?.licenseNo || t("NA"),
+                title: "WS_ADDN_DETAILS_PLUMBER_NAME_LABEL",
+                value:
+                  wsDataDetails?.additionalDetails?.plumberName ||
+                  wsDataDetails?.plumberInfo?.[0]?.name ||
+                  t("NA"),
               },
               {
-                title: "WS_ADDN_DETAILS_PLUMBER_NAME_LABEL",
-                value: wsDataDetails?.plumberInfo?.[0]?.name || t("NA"),
+                title: "WS_ADDN_DETAILS_PLUMBER_LICENCE_NO_LABEL",
+                value:
+                  wsDataDetails?.additionalDetails?.plumberLicenseNo ||
+                  wsDataDetails?.plumberInfo?.[0]?.licenseNo ||
+                  t("NA"),
               },
               {
                 title: "WS_PLUMBER_MOBILE_NO_LABEL",
-                value: wsDataDetails?.plumberInfo?.[0]?.mobileNumber || t("NA"),
+                value:
+                  wsDataDetails?.additionalDetails?.plumberMobileNo ||
+                  wsDataDetails?.plumberInfo?.[0]?.mobileNumber ||
+                  t("NA"),
+              },
+            ]
+          : []),
+        ...(isULBPlumber
+          ? [
+              {
+                title: "WS_NAME_OF_JE_OR_FIRM",
+                value:
+                  wsDataDetails?.additionalDetails?.nameOfJEOrFirm ||
+                  wsDataDetails?.additionalDetails?.jeOrFirmName ||
+                  wsDataDetails?.nameOfJEOrFirm ||
+                  wsDataDetails?.plumberInfo?.[0]?.name ||
+                  t("NA"),
               },
             ]
           : []),
         ...(isMetered
           ? [
               {
-                title: "WS_SERV_DETAIL_METER_ID",
-                value: wsDataDetails?.meterId || t("NA"),
+                title: "WS_METER_MAKE_LABEL",
+                value:
+                  wsDataDetails?.additionalDetails?.meterMake ||
+                  wsDataDetails?.meterMake ||
+                  t("NA"),
+              },
+              {
+                title: "WS_METER_NO_LABEL",
+                value:
+                  wsDataDetails?.meterId ||
+                  wsDataDetails?.meterNo ||
+                  wsDataDetails?.additionalDetails?.meterId ||
+                  wsDataDetails?.additionalDetails?.meterNo ||
+                  t("NA"),
+              },
+              {
+                title: "WS_METER_SIZE_LABEL",
+                value:
+                  wsDataDetails?.additionalDetails?.meterSize ||
+                  wsDataDetails?.meterSize ||
+                  t("NA"),
+              },
+              {
+                title: "WS_FERRULE_SIZE_LABEL",
+                value:
+                  wsDataDetails?.additionalDetails?.ferruleSize ||
+                  wsDataDetails?.ferruleSize ||
+                  t("NA"),
               },
               {
                 title: "WS_INSTALLATION_DATE_LABEL",
-                value: wsDataDetails?.meterInstallationDate ? convertEpochToDate(wsDataDetails?.meterInstallationDate) : t("NA"),
+                value: wsDataDetails?.meterInstallationDate
+                  ? convertEpochToDate(wsDataDetails?.meterInstallationDate)
+                  : (wsDataDetails?.additionalDetails?.meterInstallationDate
+                    ? convertEpochToDate(wsDataDetails?.additionalDetails?.meterInstallationDate)
+                    : t("NA")),
               },
               {
                 title: "WS_INITIAL_METER_READING_LABEL",
                 value:
                   wsDataDetails?.additionalDetails?.initialMeterReading !== undefined &&
                   wsDataDetails?.additionalDetails?.initialMeterReading !== null &&
-                  wsDataDetails?.additionalDetails?.initialMeterReading !== ""
+                  wsDataDetails?.additionalDetails?.initialMeterReading !== "" &&
+                  wsDataDetails?.additionalDetails?.initialMeterReading !== "null"
                     ? String(wsDataDetails?.additionalDetails?.initialMeterReading)
-                    : "0",
+                    : (wsDataDetails?.initialMeterReading !== undefined &&
+                       wsDataDetails?.initialMeterReading !== null &&
+                       wsDataDetails?.initialMeterReading !== "" &&
+                       wsDataDetails?.initialMeterReading !== "null"
+                      ? String(wsDataDetails?.initialMeterReading)
+                      : "0"),
               },
             ]
           : []),
         {
           title: "WS_SERV_DETAIL_CONN_EXECUTION_DATE",
-          value: wsDataDetails?.connectionExecutionDate ? convertEpochToDate(wsDataDetails?.connectionExecutionDate) : t("NA"),
+          value: wsDataDetails?.connectionExecutionDate
+            ? convertEpochToDate(wsDataDetails?.connectionExecutionDate)
+            : (wsDataDetails?.additionalDetails?.connectionExecutionDate
+              ? convertEpochToDate(wsDataDetails?.additionalDetails?.connectionExecutionDate)
+              : t("NA")),
         },
       ];
 
@@ -1726,30 +1910,56 @@ export const WSSearch = {
         });
       }
 
-      // const activationDoc =
-      //   wsDataDetails?.wfDocuments?.[0] ||
-      //   workFlowDataDetails?.ProcessInstances?.find((pi) => pi?.documents?.length > 0)?.documents?.[0] ||
-      //   wsDataDetails?.documents?.find((d) => d?.documentType === "Document - 1" || d?.documentType?.includes("ACTIVATION"));
+      if (meterPhotoDoc?.fileStoreId) {
+        activationValues.push({
+          title: "WS_METER_PHOTO_UPLOAD_LABEL",
+          value: t("CS_COMMON_VIEW") || "View",
+          isLink: true,
+          to: `/digit-ui/employee/common/view-pdf?tenantId=${tenantId}&fileStoreId=${meterPhotoDoc.fileStoreId}`,
+        });
+      }
 
-      // if (activationDoc?.fileStoreId) {
-      //   activationValues.push({
-      //     title: "WS_SUPPORTING_DOCUMENTS",
-      //     value: t("CS_COMMON_VIEW") || "View",
-      //     isLink: true,
-      //     to: `/digit-ui/employee/common/view-pdf?tenantId=${tenantId}&fileStoreId=${activationDoc.fileStoreId}`,
-      //   });
-      // }
+      if (meterWarrantyDoc?.fileStoreId) {
+        activationValues.push({
+          title: "WS_METER_WARRANTY_REPORT_INVOICE_LABEL",
+          value: t("CS_COMMON_VIEW") || "View",
+          isLink: true,
+          to: `/digit-ui/employee/common/view-pdf?tenantId=${tenantId}&fileStoreId=${meterWarrantyDoc.fileStoreId}`,
+        });
+      }
 
-      const activateConnectionDetails = {
+      activateConnectionDetails = {
         title: "WS_ACTIVATION_DETAILS",
         asSectionHeader: true,
         values: activationValues,
       };
-
-      details.push(activateConnectionDetails);
     }
 
-    if (wsDataDetails?.applicationStatus === "PENDING_FOR_FIELD_INSPECTION" || wsDataDetails?.applicationStatus === "PENDING_FOR_CITIZEN_ACTION") {
+    details = [
+      ...details,
+      isLabelShow,
+      applicationHeaderDetails,
+      feeEstimation,
+      AdditionalDetailsByWS,
+      connectionHolderDetails,
+      propertyDetails,
+      propertyWaterConnectionUseDetails,
+      divyangjanDetails,
+      djbEmployeeDetails,
+      rainWaterHarvestingDetails,
+      sewerTreatmentPlantDetails,
+      ...(isMutationApp ? [] : [bankDetails]),
+      ...(activateConnectionDetails ? [activateConnectionDetails] : []),
+      documentDetails,
+    ];
+
+    if (
+      wsDataDetails?.applicationStatus === "PENDING_FOR_FIELD_INSPECTION" ||
+      wsDataDetails?.applicationStatus === "PENDING_FOR_CITIZEN_ACTION" ||
+      wsDataDetails?.applicationStatus === "PENDING_FOR_DEALING_ASSISTENCE_VERIFICATION" ||
+      wsDataDetails?.applicationStatus === "PENDING_FOR_DEALING_ASSISTANT_VERIFICATION" ||
+      wsDataDetails?.applicationStatus === "PENDING_FOR_JE_VERIFICATION"
+    ) {
       const dueVerificationDetails = {
         title: " ",
         asSectionHeader: false,
