@@ -22,8 +22,11 @@ import org.egov.waterconnection.web.models.*;
 import org.egov.waterconnection.web.models.collection.PaymentDetail;
 import org.egov.waterconnection.web.models.collection.PaymentRequest;
 import org.egov.waterconnection.web.models.users.UserDetailResponse;
+import org.egov.waterconnection.web.models.workflow.BusinessService;
 import org.egov.waterconnection.web.models.workflow.ProcessInstance;
+import org.egov.waterconnection.web.models.workflow.State;
 import org.egov.waterconnection.workflow.WorkflowIntegrator;
+import org.egov.waterconnection.workflow.WorkflowService;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -56,6 +59,9 @@ public class PaymentUpdateService {
 
 	@Autowired
 	private WorkflowIntegrator wfIntegrator;
+
+	@Autowired
+	private WorkflowService workflowService;
 
 	@Autowired
 	private WaterDao repo;
@@ -155,9 +161,52 @@ public class PaymentUpdateService {
 						paymentDetail.getBusinessService().equalsIgnoreCase(config.getMutationFeeBusinessServiceName()) || 
 						waterServiceUtil.isMutationConnectionRequest(waterConnectionRequest)) {
 
-					waterConnectionRequest.getWaterConnection().setApplicationStatus(WCConstants.PENDING_APPROVAL_FOR_MUTATION_STATUS_CODE);
-					repo.updateWaterConnection(waterConnectionRequest, true);
-					log.info("Mutation payment successful. Moving to " + WCConstants.PENDING_APPROVAL_FOR_MUTATION_STATUS_CODE);
+					Map<String, Object> addDetails = connection.getAdditionalDetails() != null 
+							? mapper.convertValue(connection.getAdditionalDetails(), Map.class) : Collections.emptyMap();
+					boolean isOtpVerified = Boolean.parseBoolean(String.valueOf(addDetails.get("isOtpVerified")));
+					if (isOtpVerified) {
+						log.info("Processing OTP-verified mutation auto-activation for application: {}", connection.getApplicationNo());
+
+						// Dynamically fetch roles required for APPROVE_MUTATION and ACTIVATE_MUTATION from workflow definition
+						if (requestInfo.getUserInfo().getRoles() == null) {
+							requestInfo.getUserInfo().setRoles(new ArrayList<>());
+						}
+						Set<String> requiredRoles = getRolesForActions(property.getTenantId(), requestInfo,
+								config.getMutationWSBusinessServiceName(), WCConstants.APPROVE_MUTATION_CONST, WCConstants.ACTIVATE_MUTATION_CONST);
+						if (CollectionUtils.isEmpty(requiredRoles)) {
+							requiredRoles = Collections.singleton("WS_ZRO");
+						}
+						for (String roleCode : requiredRoles) {
+							boolean hasRole = requestInfo.getUserInfo().getRoles().stream()
+									.anyMatch(r -> roleCode.equalsIgnoreCase(r.getCode()));
+							if (!hasRole) {
+								requestInfo.getUserInfo().getRoles().add(Role.builder().code(roleCode).tenantId(property.getTenantId()).build());
+							}
+						}
+
+						// Step 1: APPROVE_MUTATION (PENDING_APPROVAL_FOR_MUTATION -> PENDING_FOR_MUTATION_ACTIVATION)
+						waterConnectionRequest.getWaterConnection().getProcessInstance().setAction(WCConstants.APPROVE_MUTATION_CONST);
+						wfIntegrator.callWorkFlow(waterConnectionRequest, property);
+
+						// Step 2: ACTIVATE_MUTATION (PENDING_FOR_MUTATION_ACTIVATION -> CONNECTION_ACTIVATED)
+						waterConnectionRequest.getWaterConnection().getProcessInstance().setAction(WCConstants.ACTIVATE_MUTATION_CONST);
+						wfIntegrator.callWorkFlow(waterConnectionRequest, property);
+
+						// Step 3: Archive previous connection applications
+						waterService.markOldApplication(waterConnectionRequest);
+
+						// Step 4: Set terminal active status and persist
+						waterConnectionRequest.getWaterConnection().setApplicationStatus(WCConstants.STATUS_APPROVED);
+						waterConnectionRequest.getWaterConnection().setStatus(Connection.StatusEnum.ACTIVE);
+						repo.updateWaterConnection(waterConnectionRequest, true);
+
+						log.info("Mutation payment with OTP successful. Connection auto-activated to {} for application {}", 
+								WCConstants.STATUS_APPROVED, connection.getApplicationNo());
+					} else {
+						waterConnectionRequest.getWaterConnection().setApplicationStatus(WCConstants.PENDING_APPROVAL_FOR_MUTATION_STATUS_CODE);
+						repo.updateWaterConnection(waterConnectionRequest, true);
+						log.info("Mutation payment without OTP successful. Moving to " + WCConstants.PENDING_APPROVAL_FOR_MUTATION_STATUS_CODE);
+					}
 
 				} else if (paymentDetail.getBusinessService().equalsIgnoreCase(config.getReceiptDisconnectionBusinessservice()) ||
 						WCConstants.DISCONNECT_WATER_CONNECTION.equalsIgnoreCase(connection.getApplicationType())) {
@@ -782,5 +831,36 @@ public class PaymentUpdateService {
 		waterRequest.setApplicationStatus("CONNECTION_ACTIVATED");
 		waterRequest.setStatus(Connection.StatusEnum.ACTIVE);
 		repo.updateWaterConnection(request, true);
+	}
+
+	/**
+	 * Dynamically extracts authorized roles for the specified workflow actions from the BusinessService definition.
+	 *
+	 * @param tenantId Tenant ID
+	 * @param requestInfo RequestInfo
+	 * @param businessServiceName Workflow Business Service name (e.g. mutationWSConnection)
+	 * @param actions Target actions (e.g. APPROVE_MUTATION, ACTIVATE_MUTATION)
+	 * @return Set of role codes configured in workflow for the given actions
+	 */
+	private Set<String> getRolesForActions(String tenantId, RequestInfo requestInfo, String businessServiceName, String... actions) {
+		Set<String> roles = new HashSet<>();
+		try {
+			BusinessService businessService = workflowService.getBusinessService(tenantId, requestInfo, businessServiceName);
+			if (businessService != null && !CollectionUtils.isEmpty(businessService.getStates())) {
+				Set<String> targetActions = new HashSet<>(Arrays.asList(actions));
+				for (State state : businessService.getStates()) {
+					if (!CollectionUtils.isEmpty(state.getActions())) {
+						for (org.egov.waterconnection.web.models.workflow.Action action : state.getActions()) {
+							if (targetActions.contains(action.getAction()) && !CollectionUtils.isEmpty(action.getRoles())) {
+								roles.addAll(action.getRoles());
+							}
+						}
+					}
+				}
+			}
+		} catch (Exception e) {
+			log.error("Failed to dynamically fetch workflow roles for businessService: {}", businessServiceName, e);
+		}
+		return roles;
 	}
 }
