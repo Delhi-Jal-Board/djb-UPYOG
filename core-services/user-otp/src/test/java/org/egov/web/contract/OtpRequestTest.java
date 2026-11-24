@@ -81,4 +81,15 @@ public class OtpRequestTest {
 
 		assertEquals(OtpRequestType.LOGIN, domainOtpRequest.getType());
 	}
+
+	@Test
+	public void test_should_set_request_type_to_email_verification_when_type_is_email_verification() {
+		final Otp otp = new Otp("mobileNumber", "tenantId", "email_verification", "CITIZEN", null, "test@example.com");
+		final OtpRequest request = new OtpRequest(null, otp);
+
+		final org.egov.domain.model.OtpRequest domainOtpRequest = request.toDomain();
+
+		assertEquals(OtpRequestType.EMAIL_VERIFICATION, domainOtpRequest.getType());
+		assertEquals("test@example.com", domainOtpRequest.getEmail());
+	}
 }

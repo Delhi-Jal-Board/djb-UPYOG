@@ -42,6 +42,11 @@ public class OtpService {
     public void sendOtp(OtpRequest otpRequest) {
         otpRequest.validate();
 
+        if (otpRequest.isEmailVerificationRequestType()) {
+            sendOtpForEmailVerification(otpRequest);
+            return;
+        }
+
         // Enforce anti-flooding / rate-limiting (CWE-400)
         otpRateLimiterService.validateRateLimit(otpRequest.getMobileNumber());
 
@@ -52,6 +57,12 @@ public class OtpService {
         } else {
             sendOtpForPasswordReset(otpRequest);
         }
+    }
+
+    private void sendOtpForEmailVerification(OtpRequest otpRequest) {
+        otpRateLimiterService.validateRateLimit(otpRequest.getEmail());
+        final String otpNumber = otpRepository.fetchOtp(otpRequest);
+        otpEmailRepository.sendEmailOtp(otpRequest.getEmail(), otpNumber);
     }
 
     private void sendOtpForUserRegistration(OtpRequest otpRequest) {

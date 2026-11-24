@@ -11,9 +11,12 @@ public class OtpRequest {
     private Otp otp;
 
     public OtpRequest(org.egov.domain.model.OtpRequest otpRequest) {
+        String identity = otpRequest.isEmailVerificationRequestType()
+                ? otpRequest.getEmail()
+                : otpRequest.getMobileNumber();
         this.otp = Otp.builder()
                 .tenantId(otpRequest.getTenantId())
-                .identity(otpRequest.getMobileNumber())
+                .identity(identity)
                 .build();
     }
 }

@@ -4,5 +4,6 @@ public enum  OtpRequestType {
 	REGISTER,
 	PASSWORD_RESET,
 	LOGIN,
-	EKYC
+	EKYC,
+	EMAIL_VERIFICATION
 }
