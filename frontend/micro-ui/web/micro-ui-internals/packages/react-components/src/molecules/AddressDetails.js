@@ -707,8 +707,8 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
       }
     } else if (config === undefined) {
       const mandatoryFields = isEkyc
-        ? houseNo && locality && pincode && addressLine1 && streetName && latitude && longitude && doorImageId
-        : houseNo && city && locality && pincode && addressLine1 && streetName && addressLine2 && latitude && longitude;
+        ? houseNo && locality && pincode && streetName && latitude && longitude && doorImageId
+        : houseNo && city && locality && pincode && streetName && addressLine2 && latitude && longitude;
 
       if (mandatoryFields) {
         onSelect(addressStep);
@@ -836,8 +836,8 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
         t={t}
         isDisabled={
           config?.doorImage
-            ? !houseNo || !locality || !pincode || !addressLine1 || !streetName || !doorImageId || !landmark
-            : !houseNo || !city || !locality || !pincode || !addressLine1 || !landmark || (showZRO && !zro) || (showNoOfFloors ? (!noOfFloors || !totalNoOfFloors) : false)
+            ? !houseNo || !locality || !pincode || !streetName || !doorImageId || !landmark
+            : !houseNo || !city || !locality || !pincode || !landmark || (showZRO && !zro) || (showNoOfFloors ? (!noOfFloors || !totalNoOfFloors) : false)
         }
         className="no-box-shadow flex-box flex-box-col flex-gap-3 p-top-0"
       >
@@ -1194,7 +1194,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
             />
           </LabelFieldPair>
         )}
-        <LabelFieldPair>
+        {/* <LabelFieldPair>
           <FieldLabelWithTooltip
             label={t(config?.doorImage ? "EKYC_SUB_LOCALITY" : "ADDRESS_LINE1")}
             isMandatory={true}
@@ -1215,7 +1215,7 @@ const AddressDetails = ({ t, config, onSelect, formData, isEdit, userDetails, di
             disabled={disable}
             ValidationRequired={false}
           />
-        </LabelFieldPair>
+        </LabelFieldPair> */}
         {!config?.doorImage && (
           <LabelFieldPair>
             <FieldLabelWithTooltip

@@ -165,7 +165,7 @@ const CreatePropertyForm = ({ config, onSelect, value, userType, redirectUrl }) 
       !loc?.city ||
       !loc?.pincode ||
       !loc?.locality ||
-      !loc?.addressLine1 ||
+      // !loc?.addressLine1 ||
       !loc?.houseNo ||
       (typeof loc?.houseNo === "string" && !loc?.houseNo?.trim()) ||
       !loc?.landmark ||

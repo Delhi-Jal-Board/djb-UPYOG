@@ -403,6 +403,18 @@ export const convertToPropertyLightWeight = (data = {}) => {
           data.waterConnection?.useDetails?.questionAnswers ||
           data.useDetails?.questionAnswers ||
           [],
+        categoryTypeSelectionQuestion:
+          data.waterConnection?.useDetails?.categoryTypeSelectionQuestion ||
+          data.useDetails?.categoryTypeSelectionQuestion ||
+          null,
+        categoryTypeSelectionAnswer:
+          data.waterConnection?.useDetails?.categoryTypeSelectionAnswer ||
+          data.useDetails?.categoryTypeSelectionAnswer ||
+          null,
+        categoryTypeSelectionQuestionCode:
+          data.waterConnection?.useDetails?.categoryTypeSelectionQuestionCode ||
+          data.useDetails?.categoryTypeSelectionQuestionCode ||
+          null,
         owners: [
           ...(data.owners || []).map((owner, index) => {
             const computedName =
@@ -549,6 +561,18 @@ export const convertToUpdatePropertyLightWeight = (data = {}) => {
           data.waterConnection?.useDetails?.questionAnswers ||
           data.useDetails?.questionAnswers ||
           [],
+        categoryTypeSelectionQuestion:
+          data.waterConnection?.useDetails?.categoryTypeSelectionQuestion ||
+          data.useDetails?.categoryTypeSelectionQuestion ||
+          null,
+        categoryTypeSelectionAnswer:
+          data.waterConnection?.useDetails?.categoryTypeSelectionAnswer ||
+          data.useDetails?.categoryTypeSelectionAnswer ||
+          null,
+        categoryTypeSelectionQuestionCode:
+          data.waterConnection?.useDetails?.categoryTypeSelectionQuestionCode ||
+          data.useDetails?.categoryTypeSelectionQuestionCode ||
+          null,
         owners: [
           ...data.owners.map((owner, index) => {
             const computedName =

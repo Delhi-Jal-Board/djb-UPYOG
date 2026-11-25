@@ -956,6 +956,23 @@ export const createPayloadOfWS = async (data) => {
           }
         : {}),
       ...(getNormalizedBankDetails(data) ? { ...getNormalizedBankDetails(data), bankDetails: getNormalizedBankDetails(data) } : {}),
+      questions:
+        useDetailsObject?.questions ||
+        data?.cpt?.details?.additionalDetails?.questions ||
+        data?.property?.additionalDetails?.questions ||
+        [],
+      categoryTypeSelectionQuestion:
+        useDetailsObject?.categoryTypeSelectionQuestion ||
+        data?.cpt?.details?.additionalDetails?.categoryTypeSelectionQuestion ||
+        null,
+      categoryTypeSelectionAnswer:
+        useDetailsObject?.categoryTypeSelectionAnswer ||
+        data?.cpt?.details?.additionalDetails?.categoryTypeSelectionAnswer ||
+        null,
+      categoryTypeSelectionQuestionCode:
+        useDetailsObject?.categoryTypeSelectionQuestionCode ||
+        data?.cpt?.details?.additionalDetails?.categoryTypeSelectionQuestionCode ||
+        null,
       detailsProvidedBy: "",
       channel: isCitizen ? "CITIZEN" : "CFC_COUNTER",
     },
@@ -1026,6 +1043,26 @@ export const updatePayloadOfWS = async (data, type) => {
         : {}),
       connectionType: data?.additionalDetails?.connectionType || "Permanent",
       waterDemandType: data?.additionalDetails?.waterDemandType || { code: "NON_BULK", i18nKey: "WS_WATER_DEMAND_NON_BULK" },
+      questions:
+        data?.additionalDetails?.questions ||
+        data?.property?.additionalDetails?.questions ||
+        data?.cpt?.details?.additionalDetails?.questions ||
+        [],
+      categoryTypeSelectionQuestion:
+        data?.additionalDetails?.categoryTypeSelectionQuestion ||
+        data?.property?.additionalDetails?.categoryTypeSelectionQuestion ||
+        data?.cpt?.details?.additionalDetails?.categoryTypeSelectionQuestion ||
+        null,
+      categoryTypeSelectionAnswer:
+        data?.additionalDetails?.categoryTypeSelectionAnswer ||
+        data?.property?.additionalDetails?.categoryTypeSelectionAnswer ||
+        data?.cpt?.details?.additionalDetails?.categoryTypeSelectionAnswer ||
+        null,
+      categoryTypeSelectionQuestionCode:
+        data?.additionalDetails?.categoryTypeSelectionQuestionCode ||
+        data?.property?.additionalDetails?.categoryTypeSelectionQuestionCode ||
+        data?.cpt?.details?.additionalDetails?.categoryTypeSelectionQuestionCode ||
+        null,
     },
   };
   /* use customiseCreateFormData hook to make some chnages to the water object */
@@ -1153,6 +1190,32 @@ export const convertToWSUpdate = (data) => {
       additionalDetails: {
         ...(data?.WaterConnectionResult?.WaterConnection?.[0]?.additionalDetails || {}),
         ...(data?.additionalDetails || {}),
+        questions:
+          data?.waterConnection?.useDetails?.questions ||
+          data?.waterConnection?.questions ||
+          data?.useDetails?.questions ||
+          data?.additionalDetails?.questions ||
+          data?.cpt?.details?.additionalDetails?.questions ||
+          data?.WaterConnectionResult?.WaterConnection?.[0]?.additionalDetails?.questions ||
+          [],
+        categoryTypeSelectionQuestion:
+          data?.waterConnection?.useDetails?.categoryTypeSelectionQuestion ||
+          data?.categoryTypeSelectionQuestion ||
+          data?.cpt?.details?.additionalDetails?.categoryTypeSelectionQuestion ||
+          data?.WaterConnectionResult?.WaterConnection?.[0]?.additionalDetails?.categoryTypeSelectionQuestion ||
+          null,
+        categoryTypeSelectionAnswer:
+          data?.waterConnection?.useDetails?.categoryTypeSelectionAnswer ||
+          data?.categoryTypeSelectionAnswer ||
+          data?.cpt?.details?.additionalDetails?.categoryTypeSelectionAnswer ||
+          data?.WaterConnectionResult?.WaterConnection?.[0]?.additionalDetails?.categoryTypeSelectionAnswer ||
+          null,
+        categoryTypeSelectionQuestionCode:
+          data?.waterConnection?.useDetails?.categoryTypeSelectionQuestionCode ||
+          data?.categoryTypeSelectionQuestionCode ||
+          data?.cpt?.details?.additionalDetails?.categoryTypeSelectionQuestionCode ||
+          data?.WaterConnectionResult?.WaterConnection?.[0]?.additionalDetails?.categoryTypeSelectionQuestionCode ||
+          null,
         ...(signatureFileStoreId
           ? {
               signatureFileStoreId: signatureFileStoreId,
@@ -1410,6 +1473,58 @@ export const convertToEditWSUpdate = (data) => {
                 data?.cpt?.details?.additionalDetails?.numberOfDwellingUnits ||
                 waterResult?.additionalDetails?.numberOfDwellingUnits ||
                 "",
+              questions:
+                data?.waterConnection?.useDetails?.questions ||
+                data?.waterConnection?.questions ||
+                data?.useDetails?.questions ||
+                data?.additionalDetails?.questions ||
+                data?.cpt?.details?.additionalDetails?.questions ||
+                waterResult?.additionalDetails?.questions ||
+                [],
+              categoryTypeSelectionQuestion:
+                data?.waterConnection?.useDetails?.categoryTypeSelectionQuestion ||
+                data?.categoryTypeSelectionQuestion ||
+                data?.cpt?.details?.additionalDetails?.categoryTypeSelectionQuestion ||
+                waterResult?.additionalDetails?.categoryTypeSelectionQuestion ||
+                null,
+              categoryTypeSelectionAnswer:
+                data?.waterConnection?.useDetails?.categoryTypeSelectionAnswer ||
+                data?.categoryTypeSelectionAnswer ||
+                data?.cpt?.details?.additionalDetails?.categoryTypeSelectionAnswer ||
+                waterResult?.additionalDetails?.categoryTypeSelectionAnswer ||
+                null,
+              categoryTypeSelectionQuestionCode:
+                data?.waterConnection?.useDetails?.categoryTypeSelectionQuestionCode ||
+                data?.categoryTypeSelectionQuestionCode ||
+                data?.cpt?.details?.additionalDetails?.categoryTypeSelectionQuestionCode ||
+                waterResult?.additionalDetails?.categoryTypeSelectionQuestionCode ||
+                null,
+              questions:
+                data?.waterConnection?.useDetails?.questions ||
+                data?.waterConnection?.questions ||
+                data?.useDetails?.questions ||
+                data?.additionalDetails?.questions ||
+                data?.cpt?.details?.additionalDetails?.questions ||
+                waterResult?.additionalDetails?.questions ||
+                [],
+              categoryTypeSelectionQuestion:
+                data?.waterConnection?.useDetails?.categoryTypeSelectionQuestion ||
+                data?.categoryTypeSelectionQuestion ||
+                data?.cpt?.details?.additionalDetails?.categoryTypeSelectionQuestion ||
+                waterResult?.additionalDetails?.categoryTypeSelectionQuestion ||
+                null,
+              categoryTypeSelectionAnswer:
+                data?.waterConnection?.useDetails?.categoryTypeSelectionAnswer ||
+                data?.categoryTypeSelectionAnswer ||
+                data?.cpt?.details?.additionalDetails?.categoryTypeSelectionAnswer ||
+                waterResult?.additionalDetails?.categoryTypeSelectionAnswer ||
+                null,
+              categoryTypeSelectionQuestionCode:
+                data?.waterConnection?.useDetails?.categoryTypeSelectionQuestionCode ||
+                data?.categoryTypeSelectionQuestionCode ||
+                data?.cpt?.details?.additionalDetails?.categoryTypeSelectionQuestionCode ||
+                waterResult?.additionalDetails?.categoryTypeSelectionQuestionCode ||
+                null,
             }
           : {}),
       },
@@ -1713,6 +1828,32 @@ export const convertToEditSWUpdate = (data) => {
                 data?.cpt?.details?.additionalDetails?.numberOfDwellingUnits ||
                 SewerageResult?.additionalDetails?.numberOfDwellingUnits ||
                 "",
+              questions:
+                data?.waterConnection?.useDetails?.questions ||
+                data?.waterConnection?.questions ||
+                data?.useDetails?.questions ||
+                data?.additionalDetails?.questions ||
+                data?.cpt?.details?.additionalDetails?.questions ||
+                SewerageResult?.additionalDetails?.questions ||
+                [],
+              categoryTypeSelectionQuestion:
+                data?.waterConnection?.useDetails?.categoryTypeSelectionQuestion ||
+                data?.categoryTypeSelectionQuestion ||
+                data?.cpt?.details?.additionalDetails?.categoryTypeSelectionQuestion ||
+                SewerageResult?.additionalDetails?.categoryTypeSelectionQuestion ||
+                null,
+              categoryTypeSelectionAnswer:
+                data?.waterConnection?.useDetails?.categoryTypeSelectionAnswer ||
+                data?.categoryTypeSelectionAnswer ||
+                data?.cpt?.details?.additionalDetails?.categoryTypeSelectionAnswer ||
+                SewerageResult?.additionalDetails?.categoryTypeSelectionAnswer ||
+                null,
+              categoryTypeSelectionQuestionCode:
+                data?.waterConnection?.useDetails?.categoryTypeSelectionQuestionCode ||
+                data?.categoryTypeSelectionQuestionCode ||
+                data?.cpt?.details?.additionalDetails?.categoryTypeSelectionQuestionCode ||
+                SewerageResult?.additionalDetails?.categoryTypeSelectionQuestionCode ||
+                null,
             }
           : {}),
       },
@@ -1890,6 +2031,32 @@ export const convertToSWUpdate = (data) => {
       additionalDetails: {
         ...(data?.SewerageConnectionResult?.SewerageConnections?.[0]?.additionalDetails || {}),
         ...(data?.additionalDetails || {}),
+        questions:
+          data?.waterConnection?.useDetails?.questions ||
+          data?.waterConnection?.questions ||
+          data?.useDetails?.questions ||
+          data?.additionalDetails?.questions ||
+          data?.cpt?.details?.additionalDetails?.questions ||
+          data?.SewerageConnectionResult?.SewerageConnections?.[0]?.additionalDetails?.questions ||
+          [],
+        categoryTypeSelectionQuestion:
+          data?.waterConnection?.useDetails?.categoryTypeSelectionQuestion ||
+          data?.categoryTypeSelectionQuestion ||
+          data?.cpt?.details?.additionalDetails?.categoryTypeSelectionQuestion ||
+          data?.SewerageConnectionResult?.SewerageConnections?.[0]?.additionalDetails?.categoryTypeSelectionQuestion ||
+          null,
+        categoryTypeSelectionAnswer:
+          data?.waterConnection?.useDetails?.categoryTypeSelectionAnswer ||
+          data?.categoryTypeSelectionAnswer ||
+          data?.cpt?.details?.additionalDetails?.categoryTypeSelectionAnswer ||
+          data?.SewerageConnectionResult?.SewerageConnections?.[0]?.additionalDetails?.categoryTypeSelectionAnswer ||
+          null,
+        categoryTypeSelectionQuestionCode:
+          data?.waterConnection?.useDetails?.categoryTypeSelectionQuestionCode ||
+          data?.categoryTypeSelectionQuestionCode ||
+          data?.cpt?.details?.additionalDetails?.categoryTypeSelectionQuestionCode ||
+          data?.SewerageConnectionResult?.SewerageConnections?.[0]?.additionalDetails?.categoryTypeSelectionQuestionCode ||
+          null,
         ...(signatureFileStoreId
           ? {
               signatureFileStoreId: signatureFileStoreId,

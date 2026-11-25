@@ -225,7 +225,7 @@ const PropertyPreview = ({ onSelect, redirectUrl, userType, onSuccess }) => {
                 label={t("WS_TOTAL_FLOORS_IN_BUILDING")}
                 text={getText(locationDet?.totalNoOfFloors || locationDet?.totalFloors)}
               />
-              <Row label={t("PT_PROPERTY_ADDRESS_LINE_1")} text={getText(locationDet?.addressLine1)} />
+              {/* <Row label={t("PT_PROPERTY_ADDRESS_LINE_1")} text={getText(locationDet?.addressLine1)} /> */}
               <Row label={t("PT_PROPERTY_ADDRESS_LINE_2")} text={getText(locationDet?.addressLine2 || "NA")} />
               <Row label={t("PT_PROPERTY_ADDRESS_LANDMARK")} text={getText(locationDet?.landmark || locationDet?.landmarkName)} />
               <Row label={t("CORE_COMMON_LATITUDE")} text={getText(locationDet?.latitude)} />
@@ -274,7 +274,15 @@ const PropertyPreview = ({ onSelect, redirectUrl, userType, onSuccess }) => {
                 label={t("WS_SELECT_YEAR_OF_CONSTRUCTION")}
                 text={getText(useDetails?.SelectYearofConstruction || "NA")}
               />
-              {useDetails?.NumberofDwellingUnits ? (
+              {Array.isArray(useDetails?.questions) &&
+                useDetails.questions.map((qItem, idx) => (
+                  <Row
+                    key={`q_prev_${idx}`}
+                    label={qItem?.question || `Question ${idx + 1}`}
+                    text={getText(qItem?.answer)}
+                  />
+                ))}
+              {/* {useDetails?.NumberofDwellingUnits ? (
                 <Row
                   label={t("WS_NUMBER_OF_DWELLING_UNITS")}
                   text={getText(useDetails?.NumberofDwellingUnits)}
@@ -288,7 +296,7 @@ const PropertyPreview = ({ onSelect, redirectUrl, userType, onSuccess }) => {
               ) : null}
               {useDetails?.numberOfStudents ? (
                 <Row label={t("WS_NUMBER_OF_STUDENTS")} text={getText(useDetails?.numberOfStudents)} />
-              ) : null}
+              ) : null} */}
             </StatusTable>
 
             {/* Section 3: Owner details */}
