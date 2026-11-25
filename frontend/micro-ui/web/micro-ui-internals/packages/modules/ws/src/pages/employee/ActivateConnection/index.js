@@ -251,17 +251,14 @@ const ActivateConnection = () => {
   }, [newConfig, isLoading, isappdetailsLoading, applicationDetails]);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (isAppDetailsPage) {
-        const isCitizen = Digit.UserService.getUser()?.info?.type === "CITIZEN";
-        if (isCitizen) {
-          window.location.href = `${window.location.origin}/digit-ui/citizen/ws/connection/application/${filters?.applicationNumber}`;
-        } else {
-          window.location.href = `${window.location.origin}/digit-ui/employee/ws/application-details?applicationNumber=${filters?.applicationNumber}&service=${filters?.service}`;
-        }
-      }
-    }, 3000);
-    return () => clearTimeout(timer);
+    if (isAppDetailsPage) {
+      const isCitizen = Digit.UserService.getUser()?.info?.type === "CITIZEN";
+      const basePath = isCitizen ? "/digit-ui/citizen/ws" : "/digit-ui/employee/ws";
+      history.push({
+        pathname: `${basePath}/ws-response`,
+        search: `?applicationNumber=${filters?.applicationNumber}&service=${filters?.service || "WATER"}&action=ACTIVATE_CONNECTION`,
+      });
+    }
   }, [isAppDetailsPage]);
 
   const checkCanSubmit = (formData) => {
@@ -696,7 +693,18 @@ const ActivateConnection = () => {
           },
           onSuccess: (data, variables) => {
             setShowToast({ key: false, message: "WS_ACTIVATE_SUCCESS_MESSAGE_MAIN" });
-            setIsAppDetailsPage(true);
+            const activatedConn = data?.WaterConnection?.[0] || data?.SewerageConnections?.[0];
+            const connNo = activatedConn?.connectionNo || "";
+            const appNo = activatedConn?.applicationNo || filters?.applicationNumber;
+            const isCitizen = Digit.UserService.getUser()?.info?.type === "CITIZEN";
+            const basePath = isCitizen ? "/digit-ui/citizen/ws" : "/digit-ui/employee/ws";
+            setTimeout(() => {
+              history.push({
+                pathname: `${basePath}/ws-response`,
+                search: `?applicationNumber=${appNo}&service=${filters?.service || "WATER"}&connectionNo=${connNo}&action=ACTIVATE_CONNECTION`,
+                state: { connectionNo: connNo, data: data },
+              });
+            }, 1000);
           },
         });
       }

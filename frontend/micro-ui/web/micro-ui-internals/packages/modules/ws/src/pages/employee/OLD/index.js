@@ -62,14 +62,14 @@ const OLDApplication = () => {
     { label: "WS_COMMON_PROPERTY_DETAILS" },
     { label: "WS_COMMON_CONNECTION_DETAIL" },
     { label: "WS_COMMON_CONNECTION_HOLDER_DETAILS_HEADER" },
-    { label: "Are you a Divyangjan/Person with Disability?" },
-    { label: "WS_DJB_EMPLOYEE" },
-    { label: "Rain Water Harvesting Certificate" },
-    { label: "WS_BANK_DETAILS" },
-    // { label: "Sewer Treatment Plant (STP)" },
+    { label: "Divyangjan Information" },
+    { label: "DJB Employee Information" },
+    { label: "Rain Water Harvesting Information" },
+    // { label: "Sewer Treatment Plant (STP) Information" },
     { label: "PT_LOCATION_DETAILS" },
     { label: "WS_PROPERTY_AND_WATER_CONNECTION_USE_DETAILS" },
-    // ...(isCitizen ? [] : [{ label: "WS_DJB_EMPLOYEE" }]),
+    { label: "WS_BANK_DETAILS" },
+    // ...(isCitizen ? [] : [{ label: "DJB Employee Information" }]),
     { label: "WS_DOCUMENTS" },
     { label: "WS_DECLARATION" },
   ].map((step, index) => ({
@@ -141,11 +141,11 @@ const OLDApplication = () => {
       "WSDjbEmployee",
       "WSRainWaterHarvesting",
       "WSSewerTreatmentPlant",
-      "WSBankDetails",
       "WSPropertyLocationDetails",
       "PropertyWaterConnection",
       "WSActivationPlumberDetails",
       "WSRoadCuttingDetails",
+      "WSBankDetails",
       "WSDocumentsEmployee",
     ];
 
@@ -221,7 +221,7 @@ const OLDApplication = () => {
               component: "WSDivyangjan",
               withoutLabel: true,
               texts: {
-                header: "Divyangjan/Person with Disability?",
+                header: "Divyangjan Information",
               },
             },
           ],
@@ -236,7 +236,7 @@ const OLDApplication = () => {
               component: "WSRainWaterHarvesting",
               withoutLabel: true,
               texts: {
-                header: "Rain Water Harvesting Certificate",
+                header: "Rain Water Harvesting Information",
               },
             },
           ],
@@ -251,7 +251,7 @@ const OLDApplication = () => {
               component: "WSSewerTreatmentPlant",
               withoutLabel: true,
               texts: {
-                header: "Sewer Treatment Plant (STP)",
+                header: "Sewer Treatment Plant (STP) Information",
               },
             },
           ],
@@ -510,14 +510,28 @@ const OLDApplication = () => {
 
     const isRwhSubmitRequired = isRwhYes && isRwhAdequacyYes;
 
-    const isRwhSubmitDocUploaded = Array.isArray(allSubmitDocs) && allSubmitDocs.some((d) => isRwhDoc(d) && (d?.fileStoreId || d?.file));
+    const rwhSubmitDoc = Array.isArray(allSubmitDocs) ? allSubmitDocs.find((d) => isRwhDoc(d) && (d?.fileStoreId || d?.file)) : null;
+    const rwhSubmitDocNum =
+      rwhSubmitDoc?.documentUid ||
+      rwhSubmitDoc?.documentNumber ||
+      combinedData?.additionalDetails?.rainWaterHarvestingDocumentNumber ||
+      combinedData?.additionalDetails?.otherDocumentNumber;
 
-    if (isRwhSubmitRequired && !isRwhSubmitDocUploaded) {
-      setShowToast({
-        key: "error",
-        message: t("ERR_RWH_CERTIFICATE_MANDATORY") || "Rain Water Harvesting Certificate is mandatory to upload",
-      });
-      return;
+    if (isRwhSubmitRequired) {
+      if (!rwhSubmitDoc) {
+        setShowToast({
+          key: "error",
+          message: t("ERR_RWH_CERTIFICATE_MANDATORY") || "Rain Water Harvesting Certificate is mandatory to upload",
+        });
+        return;
+      }
+      if (!rwhSubmitDocNum || !String(rwhSubmitDocNum).trim()) {
+        setShowToast({
+          key: "error",
+          message: t("ERR_RWH_DOC_NUMBER_MANDATORY") || "Rain Water Harvesting Certificate Document Number is mandatory",
+        });
+        return;
+      }
     }
 
     const stpSubmitData = combinedData?.sewerTreatmentPlant || combinedData?.additionalDetails;
@@ -823,6 +837,7 @@ const OLDApplication = () => {
     if (data?.rainWaterHarvesting) {
       const isRwh = !!(data?.rainWaterHarvesting?.hasCertificate || data?.rainWaterHarvesting?.isRainwaterHarvesting);
       const isAdequacy = isRwh && !!(data?.rainWaterHarvesting?.hasAdequacyCertificate || data?.rainWaterHarvesting?.hasRainWaterHarvestingAdequacyCertificate || data?.rainWaterHarvesting?.applyForAdequacyCertificate);
+      const rwhDocNum = rwhDocFromList?.documentUid || rwhDocFromList?.documentNumber || data?.additionalDetails?.rainWaterHarvestingDocumentNumber;
       data.additionalDetails = {
         ...data.additionalDetails,
         ...data.rainWaterHarvesting,
@@ -835,11 +850,16 @@ const OLDApplication = () => {
         validityUpTo: extractedRwhDate || undefined,
         date: extractedRwhDate || undefined,
         rwhValidityDate: extractedRwhDate || undefined,
+        ...(rwhDocNum ? { rainWaterHarvestingDocumentNumber: rwhDocNum } : {}),
       };
       if (extractedRwhDate) {
         data.rainWaterHarvesting.validityDate = extractedRwhDate;
         data.rainWaterHarvesting.validityUpTo = extractedRwhDate;
         data.rainWaterHarvesting.date = extractedRwhDate;
+      }
+      if (rwhDocNum) {
+        data.rainWaterHarvesting.rainWaterHarvestingDocumentNumber = rwhDocNum;
+        data.rainWaterHarvesting.documentNumber = rwhDocNum;
       }
     }
 

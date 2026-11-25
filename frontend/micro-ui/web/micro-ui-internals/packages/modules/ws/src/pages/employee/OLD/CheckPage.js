@@ -26,6 +26,14 @@ const ActionButton = ({ onClick }) => {
   );
 };
 
+const maskDocNumber = (val) => {
+  if (!val || val === "NA") return val || "";
+  const str = String(val).trim();
+  if (!str || str === "NA") return str;
+  if (str.length <= 4) return str;
+  return "*".repeat(str.length - 4) + str.slice(-4);
+};
+
 const openFilePDF = (fileId) => {
   Digit.UploadServices.Filefetch([fileId], Digit.ULBService.getStateId())
     .then((res) => {
@@ -373,82 +381,226 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
             <Row label={t("WS_EMAIL_ID")} text={`${t(checkForNA(holderDetails?.emailId))}`} />
           </StatusTable>
 
-          <CardSubHeader>Divyangjan/Person with Disability?</CardSubHeader>
+          <CardSubHeader>{t("WS_DIVYANGJAN_INFORMATION") && t("WS_DIVYANGJAN_INFORMATION") !== "WS_DIVYANGJAN_INFORMATION" ? t("WS_DIVYANGJAN_INFORMATION") : "Divyangjan Information"}</CardSubHeader>
           <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
             <Row
-              label="Divyangjan/Person with Disability?"
+              label={t("WS_DIVYANGJAN_INFORMATION") && t("WS_DIVYANGJAN_INFORMATION") !== "WS_DIVYANGJAN_INFORMATION" ? t("WS_DIVYANGJAN_INFORMATION") : "Divyangjan Information"}
               text={disability?.isDivyangjan ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}
               actionButton={<ActionButton onClick={onEdit} />}
             />
           </StatusTable>
 
-          <React.Fragment>
-            <CardSubHeader>{t("WS_DJB_EMPLOYEE")}</CardSubHeader>
-            <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
-              <Row
-                label={t("WS_DJB_EMPLOYEE")}
-                text={`${djbEmployee?.isDjbEmployee ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}`}
-                actionButton={<ActionButton onClick={onEdit} />}
-              />
-              {(djbEmployee?.isDjbEmployee || djbEmployee?.employeeId || djbEmployee?.designation || djbEmployee?.document) && (
-                <React.Fragment>
-                  <Row label={t("WS_EMPLOYEE_ID")} text={`${t(checkForNA(djbEmployee?.employeeId))}`} />
-                  <Row label={t("WS_EMPLOYEE_DESIGNATION")} text={`${t(checkForNA(djbEmployee?.designation))}`} />
-                  {djbEmployee?.document && (
-                    <Row
-                      label={t("WS_UPLOAD_EMPLOYEE_ID_DOC")}
-                      text={
-                        <span
-                          style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", color: "#f47738" }}
-                          onClick={() => openFilePDF(djbEmployee?.document)}
-                        >
-                          <GenericFileIcon /> {t("CS_COMMON_VIEW")}
-                        </span>
-                      }
-                    />
+          {(() => {
+            const djbDoc =
+              djbEmployee?.document ||
+              (documents || []).find((d) => {
+                const dt = (d?.documentType || "").toUpperCase();
+                return dt.includes("DJB_EMPLOYEE") || dt.includes("EMPLOYEE_ID");
+              });
+
+            return (
+              <React.Fragment>
+                <CardSubHeader>{t("WS_DJB_EMPLOYEE_INFORMATION") && t("WS_DJB_EMPLOYEE_INFORMATION") !== "WS_DJB_EMPLOYEE_INFORMATION" ? t("WS_DJB_EMPLOYEE_INFORMATION") : "DJB Employee Information"}</CardSubHeader>
+                <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
+                  <Row
+                    label={t("WS_DJB_EMPLOYEE_INFORMATION") && t("WS_DJB_EMPLOYEE_INFORMATION") !== "WS_DJB_EMPLOYEE_INFORMATION" ? t("WS_DJB_EMPLOYEE_INFORMATION") : "DJB Employee Information"}
+                    text={`${djbEmployee?.isDjbEmployee ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}`}
+                    actionButton={<ActionButton onClick={onEdit} />}
+                  />
+                  {(djbEmployee?.isDjbEmployee || djbEmployee?.employeeId || djbEmployee?.designation || djbDoc) && (
+                    <React.Fragment>
+                      <Row label={t("WS_EMPLOYEE_ID")} text={`${t(checkForNA(djbEmployee?.employeeId || djbDoc?.documentNumber || djbDoc?.documentUid))}`} />
+                      <Row label={t("WS_EMPLOYEE_DESIGNATION")} text={`${t(checkForNA(djbEmployee?.designation))}`} />
+                      {(djbDoc?.fileStoreId || djbDoc?.documentUid || (typeof djbDoc === "string" && djbDoc.trim()) || djbEmployee?.document) && (
+                        <Row
+                          label={t("WS_UPLOAD_EMPLOYEE_ID_DOC") || "Upload Employee ID Document*"}
+                          text={
+                            <span
+                              style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", color: "#f47738" }}
+                              onClick={() => openFilePDF(djbDoc?.fileStoreId || djbDoc?.documentUid || (typeof djbDoc === "string" ? djbDoc : djbEmployee?.document))}
+                            >
+                              <GenericFileIcon /> {t("CS_COMMON_VIEW")}
+                            </span>
+                          }
+                        />
+                      )}
+                    </React.Fragment>
                   )}
-                </React.Fragment>
-              )}
-            </StatusTable>
-          </React.Fragment>
+                </StatusTable>
+              </React.Fragment>
+            );
+          })()}
 
-          <CardSubHeader>{t("Rain Water Harvesting Certificate")}</CardSubHeader>
-          <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
-            <Row
-              label={t("Rain Water Harvesting Certificate")}
-              text={rainWaterHarvesting?.hasCertificate || rainWaterHarvesting?.isRainwaterHarvesting ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}
-              actionButton={<ActionButton onClick={onEdit} />}
-            />
-            {(rainWaterHarvesting?.hasCertificate || rainWaterHarvesting?.isRainwaterHarvesting) && (
-              <Row
-                label={t("Having Rain water harvesting Adequacy certificate?")}
-                text={rainWaterHarvesting?.hasAdequacyCertificate || rainWaterHarvesting?.hasRainWaterHarvestingAdequacyCertificate || rainWaterHarvesting?.applyForAdequacyCertificate ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}
-              />
-            )}
-          </StatusTable>
+          {(() => {
+            const rwhDoc = (documents || []).find((d) => {
+              const dt = (d?.documentType || "").toUpperCase();
+              return dt.includes("RAIN") || dt.includes("HARVEST");
+            });
+            const hasRwh = rainWaterHarvesting?.hasCertificate || rainWaterHarvesting?.isRainwaterHarvesting;
 
-          <CardSubHeader>{t("WS_BANK_DETAILS")}</CardSubHeader>
-          <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
-            <Row label={t("WS_NAME_OF_BANK")} text={`${t(checkForNA(bankDetails?.bankName))}`} actionButton={<ActionButton onClick={onEdit} />} />
-            <Row label={t("WS_NAME_OF_BRANCH")} text={`${t(checkForNA(bankDetails?.bankBranchName || bankDetails?.branchName))}`} />
-            <Row label={t("WS_IFSC_CODE")} text={`${t(checkForNA(bankDetails?.ifscCode))}`} />
-            <Row label={t("WS_BANK_ACCOUNT_NO")} text={`${t(checkForNA(bankDetails?.bankAccountNumber || bankDetails?.accountNumber))}`} />
-          </StatusTable>
+            return (
+              <React.Fragment>
+                <CardSubHeader>{t("WS_RAIN_WATER_HARVESTING_INFORMATION") && t("WS_RAIN_WATER_HARVESTING_INFORMATION") !== "WS_RAIN_WATER_HARVESTING_INFORMATION" ? t("WS_RAIN_WATER_HARVESTING_INFORMATION") : "Rain Water Harvesting Information"}</CardSubHeader>
+                <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
+                  <Row
+                    label={t("Rain Water Harvesting Certificate")}
+                    text={hasRwh ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}
+                    actionButton={<ActionButton onClick={onEdit} />}
+                  />
+                  {hasRwh && (
+                    <React.Fragment>
+                      <Row
+                        label={t("Having Rain water harvesting Adequacy certificate?")}
+                        text={
+                          rainWaterHarvesting?.hasAdequacyCertificate ||
+                          rainWaterHarvesting?.hasRainWaterHarvestingAdequacyCertificate ||
+                          rainWaterHarvesting?.applyForAdequacyCertificate
+                            ? t("CORE_COMMON_YES")
+                            : t("CORE_COMMON_NO")
+                        }
+                      />
+                      {(() => {
+                        const validity =
+                          rainWaterHarvesting?.validityDate ||
+                          rainWaterHarvesting?.validityUpTo ||
+                          rainWaterHarvesting?.rwhValidityUpTo ||
+                          rainWaterHarvesting?.date ||
+                          rwhDoc?.validityDate ||
+                          rwhDoc?.validityUpTo ||
+                          rwhDoc?.additionalDetails?.validityDate;
+                        return validity ? (
+                          <Row label={t("Validity up to date")} text={checkForNA(validity)} />
+                        ) : null;
+                      })()}
+                      {rwhDoc && (
+                        <React.Fragment>
+                          <Row
+                            label={t("Rain Water Harvesting Certificate*")}
+                            text={
+                              rwhDoc?.name ||
+                              (rwhDoc?.documentType
+                                ? rwhDoc.documentType.split(".").pop().replace(/_/g, " ").toUpperCase()
+                                : "RAIN WATER HARVESTING CERTIFICATE")
+                            }
+                          />
+                          <Row
+                            label={t("Document Number")}
+                            text={maskDocNumber(
+                              rwhDoc?.documentUid ||
+                              rwhDoc?.documentNumber ||
+                              rainWaterHarvesting?.rainWaterHarvestingDocumentNumber ||
+                              rainWaterHarvesting?.documentNumber ||
+                              "NA"
+                            )}
+                          />
+                          {(rwhDoc?.fileStoreId || rwhDoc?.documentUid) && (
+                            <Row
+                              label={t("Upload Document*")}
+                              text={
+                                <span
+                                  style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", color: "#f47738" }}
+                                  onClick={() => openFilePDF(rwhDoc.fileStoreId || rwhDoc.documentUid)}
+                                >
+                                  <GenericFileIcon /> {t("CS_COMMON_VIEW")}
+                                </span>
+                              }
+                            />
+                          )}
+                        </React.Fragment>
+                      )}
+                    </React.Fragment>
+                  )}
+                </StatusTable>
+              </React.Fragment>
+            );
+          })()}
 
-          <CardSubHeader>{t("Sewer Treatment Plant (STP)")}</CardSubHeader>
-          <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
-            <Row
-              label={t("Sewer Treatment Plant (STP)")}
-              text={sewerTreatmentPlant?.hasCertificate || sewerTreatmentPlant?.hasStp || sewerTreatmentPlant?.isSewerTreatmentPlant ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}
-              actionButton={<ActionButton onClick={onEdit} />}
-            />
-            {(sewerTreatmentPlant?.hasCertificate || sewerTreatmentPlant?.hasStp || sewerTreatmentPlant?.isSewerTreatmentPlant) && (
-              <Row
-                label={t("Having STP certificate issued by DPCC?")}
-                text={sewerTreatmentPlant?.hasAdequacyCertificate || sewerTreatmentPlant?.hasStpAdequacyCertificate || sewerTreatmentPlant?.hasSewerTreatmentPlantAdequacyCertificate || sewerTreatmentPlant?.applyForAdequacyCertificate || sewerTreatmentPlant?.applyForStpAdequacyCertificate ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}
-              />
-            )}
-          </StatusTable>
+          {(() => {
+            const stpDoc = (documents || []).find((d) => {
+              const dt = (d?.documentType || "").toUpperCase();
+              return dt.includes("SEWER") || dt.includes("STP");
+            });
+            const hasStp = sewerTreatmentPlant?.hasCertificate || sewerTreatmentPlant?.hasStp || sewerTreatmentPlant?.isSewerTreatmentPlant;
+
+            return (
+              <React.Fragment>
+                <CardSubHeader>{t("WS_SEWER_TREATMENT_PLANT_INFORMATION") && t("WS_SEWER_TREATMENT_PLANT_INFORMATION") !== "WS_SEWER_TREATMENT_PLANT_INFORMATION" ? t("WS_SEWER_TREATMENT_PLANT_INFORMATION") : "Sewer Treatment Plant (STP) Information"}</CardSubHeader>
+                <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
+                  <Row
+                    label={t("Sewer Treatment Plant (STP)")}
+                    text={hasStp ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}
+                    actionButton={<ActionButton onClick={onEdit} />}
+                  />
+                  {hasStp && (
+                    <React.Fragment>
+                      <Row
+                        label={t("Having STP certificate issued by DPCC?")}
+                        text={
+                          sewerTreatmentPlant?.hasAdequacyCertificate ||
+                          sewerTreatmentPlant?.hasStpAdequacyCertificate ||
+                          sewerTreatmentPlant?.hasSewerTreatmentPlantAdequacyCertificate ||
+                          sewerTreatmentPlant?.applyForAdequacyCertificate ||
+                          sewerTreatmentPlant?.applyForStpAdequacyCertificate
+                            ? t("CORE_COMMON_YES")
+                            : t("CORE_COMMON_NO")
+                        }
+                      />
+                      {(() => {
+                        const validity =
+                          sewerTreatmentPlant?.validityDate ||
+                          sewerTreatmentPlant?.stpValidityDate ||
+                          sewerTreatmentPlant?.sewerTreatmentPlantValidityDate ||
+                          sewerTreatmentPlant?.stpValidityUpTo ||
+                          sewerTreatmentPlant?.date ||
+                          stpDoc?.validityDate ||
+                          stpDoc?.validityUpTo ||
+                          stpDoc?.additionalDetails?.validityDate;
+                        return validity ? (
+                          <Row label={t("Validity up to date")} text={checkForNA(validity)} />
+                        ) : null;
+                      })()}
+                      {stpDoc && (
+                        <React.Fragment>
+                          <Row
+                            label={t("Sewer Treatment Plant (STP) Certificate*")}
+                            text={
+                              stpDoc?.name ||
+                              (stpDoc?.documentType
+                                ? stpDoc.documentType.split(".").pop().replace(/_/g, " ").toUpperCase()
+                                : "SEWER TREATMENT PLANT (STP) CERTIFICATE")
+                            }
+                          />
+                          <Row
+                            label={t("Document Number")}
+                            text={maskDocNumber(
+                              stpDoc?.documentUid ||
+                              stpDoc?.documentNumber ||
+                              sewerTreatmentPlant?.sewerTreatmentPlantDocumentNumber ||
+                              sewerTreatmentPlant?.documentNumber ||
+                              "NA"
+                            )}
+                          />
+                          {(stpDoc?.fileStoreId || stpDoc?.documentUid) && (
+                            <Row
+                              label={t("Upload Document*")}
+                              text={
+                                <span
+                                  style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", color: "#f47738" }}
+                                  onClick={() => openFilePDF(stpDoc.fileStoreId || stpDoc.documentUid)}
+                                >
+                                  <GenericFileIcon /> {t("CS_COMMON_VIEW")}
+                                </span>
+                              }
+                            />
+                          )}
+                        </React.Fragment>
+                      )}
+                    </React.Fragment>
+                  )}
+                </StatusTable>
+              </React.Fragment>
+            );
+          })()}
 
           <CardSubHeader>{t("PT_LOCATION_DETAILS")}</CardSubHeader>
           <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
@@ -488,7 +640,6 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
             <Row label={t("HOUSE_NO")} text={`${t(checkForNA(propertyAddress?.houseNo || propertyAddress?.doorNo))}`} />
             <Row label={t("WS_NUMBER_OF_FLOORS")} text={`${getFloorDisplay(rawNumberOfFloors)}`} />
             <Row label={t("WS_TOTAL_NUMBER_OF_FLOORS_IN_THE_BUILDING")} text={`${getTotalFloorsDisplay(rawTotalNoOfFloors)}`} />
-            <Row label={t("ADDRESS_LINE1")} text={`${t(checkForNA(propertyAddress?.addressLine1 || propertyAddress?.street))}`} />
             <Row label={t("ADDRESS_LINE2")} text={`${t(checkForNA(propertyAddress?.addressLine2))}`} />
             <Row label={t("LANDMARK")} text={`${t(checkForNA(propertyAddress?.landmark))}`} />
 
@@ -646,40 +797,59 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
             })}
           </StatusTable>
 
-          <CardSubHeader>{t("WS_DOCUMENTS")}</CardSubHeader>
+          <CardSubHeader>{t("WS_BANK_DETAILS")}</CardSubHeader>
           <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
-            {documents?.map((doc, index) => (
-              <React.Fragment key={index}>
-                <Row
-                  label={t(
-                    doc?.i18nKey ||
-                      (doc?.documentType === "OWNER.DJB_EMPLOYEE_ID" || doc?.documentType?.includes("DJB_EMPLOYEE_ID")
-                        ? "WS_UPLOAD_EMPLOYEE_ID_DOC"
-                        : doc?.documentType?.replaceAll(".", "_"))
-                  )}
-                  text={checkForNA(doc?.documentUid)}
-                  actionButton={index === 0 ? <ActionButton onClick={onEdit} /> : null}
-                />
-                {/* {(doc?.validityDate || doc?.validityUpTo || doc?.additionalDetails?.validityDate) && (
-                  <Row
-                    label={t("WS_VALIDITY_UP_TO") || "Validity up to"}
-                    text={checkForNA(doc?.validityDate || doc?.validityUpTo || doc?.additionalDetails?.validityDate)}
-                  />
-                )} */}
-                <Row
-                  // label={t("WS_VIEW_DOCUMENT")}
-                  text={
-                    <span
-                      style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", color: "#f47738" }}
-                      onClick={() => openFilePDF(doc?.fileStoreId || doc?.documentUid)}
-                    >
-                      <GenericFileIcon /> {t("CS_COMMON_VIEW")}
-                    </span>
-                  }
-                />
-              </React.Fragment>
-            ))}
+            <Row label={t("WS_NAME_OF_BANK")} text={`${t(checkForNA(bankDetails?.bankName))}`} actionButton={<ActionButton onClick={onEdit} />} />
+            <Row label={t("WS_NAME_OF_BRANCH")} text={`${t(checkForNA(bankDetails?.bankBranchName || bankDetails?.branchName))}`} />
+            <Row label={t("WS_IFSC_CODE")} text={`${t(checkForNA(bankDetails?.ifscCode))}`} />
+            <Row label={t("WS_BANK_ACCOUNT_NO")} text={`${t(checkForNA(bankDetails?.bankAccountNumber || bankDetails?.accountNumber))}`} />
           </StatusTable>
+
+          {(() => {
+            const filteredDocs = (documents || []).filter((doc) => {
+              const dt = (doc?.documentType || "").toUpperCase();
+              return (
+                !dt.includes("DJB_EMPLOYEE") &&
+                !dt.includes("EMPLOYEE_ID") &&
+                !dt.includes("SEWER") &&
+                !dt.includes("STP") &&
+                !dt.includes("RAIN") &&
+                !dt.includes("HARVEST")
+              );
+            });
+
+            if (!filteredDocs || filteredDocs.length === 0) return null;
+
+            return (
+              <React.Fragment>
+                <CardSubHeader>{t("WS_DOCUMENTS")}</CardSubHeader>
+                <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
+                  {filteredDocs.map((doc, index) => (
+                    <React.Fragment key={index}>
+                      <Row
+                        label={t(
+                          doc?.i18nKey ||
+                            doc?.documentType?.replaceAll(".", "_")
+                        )}
+                        text={checkForNA(maskDocNumber(doc?.documentUid || doc?.documentNumber))}
+                        actionButton={index === 0 ? <ActionButton onClick={onEdit} /> : null}
+                      />
+                      <Row
+                        text={
+                          <span
+                            style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", color: "#f47738" }}
+                            onClick={() => openFilePDF(doc?.fileStoreId || doc?.documentUid)}
+                          >
+                            <GenericFileIcon /> {t("CS_COMMON_VIEW")}
+                          </span>
+                        }
+                      />
+                    </React.Fragment>
+                  ))}
+                </StatusTable>
+              </React.Fragment>
+            );
+          })()}
 
           <WSDeclaration
             config={{ key: "declarationData" }}

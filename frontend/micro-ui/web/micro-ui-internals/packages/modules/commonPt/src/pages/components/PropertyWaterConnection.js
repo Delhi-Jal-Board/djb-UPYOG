@@ -107,10 +107,28 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
   };
 
   const getHeightErrorMessage = () => {
-    const trans = t("WS_HEIGHT_OF_BUILDING_NORMAL_ERROR");
-    return trans && trans !== "WS_HEIGHT_OF_BUILDING_NORMAL_ERROR"
-      ? trans
-      : "Height of the building must be 17.5 meters or less for Normal connection.";
+    const usageCode = typeof watchWaterConnectionUsageType === "object"
+      ? watchWaterConnectionUsageType?.code || watchWaterConnectionUsageType?.value || watchWaterConnectionUsageType?.name
+      : watchWaterConnectionUsageType;
+    const isNormal = normalizeCode(usageCode) === "NORMAL";
+    const val = String(watchHeightOfTheBuilding || "").trim();
+    if (isNormal) {
+      if (val && !/^\d+(\.\d{1,2})?$/.test(val)) {
+        const trans = t("WS_HEIGHT_UPTO_TWO_DECIMAL_ERROR");
+        return trans && trans !== "WS_HEIGHT_UPTO_TWO_DECIMAL_ERROR"
+          ? trans
+          : "Height of the building can have up to two decimal places only.";
+      }
+      const trans = t("WS_HEIGHT_OF_BUILDING_NORMAL_ERROR");
+      return trans && trans !== "WS_HEIGHT_OF_BUILDING_NORMAL_ERROR"
+        ? trans
+        : "Height of the building must be 17.5 meters or less for Normal connection.";
+    } else {
+      const trans = t("WS_HEIGHT_INTEGER_ONLY_ERROR");
+      return trans && trans !== "WS_HEIGHT_INTEGER_ONLY_ERROR"
+        ? trans
+        : "Decimal values are not allowed. Please enter a whole number.";
+    }
   };
 
   const isPlotAreaInvalid = useMemo(() => {
@@ -129,9 +147,14 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
       ? watchWaterConnectionUsageType?.code || watchWaterConnectionUsageType?.value || watchWaterConnectionUsageType?.name
       : watchWaterConnectionUsageType;
     const isNormal = normalizeCode(usageCode) === "NORMAL";
-    if (!isNormal) return false;
-    const height = parseFloat(watchHeightOfTheBuilding);
-    return !isNaN(height) && height > 17.5;
+    const val = String(watchHeightOfTheBuilding).trim();
+    if (isNormal) {
+      if (!/^\d+(\.\d{1,2})?$/.test(val)) return true;
+      const height = parseFloat(val);
+      return !isNaN(height) && height > 17.5;
+    } else {
+      return !/^\d+$/.test(val);
+    }
   }, [watchHeightOfTheBuilding, watchWaterConnectionUsageType]);
 
   const handleAreaBlur = () => {
@@ -145,17 +168,71 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
     }
   };
 
+  const handleHeightChange = (e) => {
+    const rawVal = e?.target?.value !== undefined ? e.target.value : "";
+    const usageCode = typeof watchWaterConnectionUsageType === "object"
+      ? watchWaterConnectionUsageType?.code || watchWaterConnectionUsageType?.value || watchWaterConnectionUsageType?.name
+      : watchWaterConnectionUsageType;
+    const isNormal = normalizeCode(usageCode) === "NORMAL";
+
+    if (!rawVal) {
+      setValue("useDetails.heightOfTheBuilding", "", { shouldValidate: true, shouldDirty: true });
+      return;
+    }
+
+    // Only allow numbers and decimal point
+    let cleaned = String(rawVal).replace(/[^0-9.]/g, "");
+
+    if (!isNormal) {
+      // Whole numbers only for Non-Normal
+      cleaned = cleaned.replace(/\./g, "");
+    } else {
+      // Allow only one decimal point and at most 2 digits after the decimal point
+      const parts = cleaned.split(".");
+      if (parts.length > 1) {
+        cleaned = parts[0] + "." + parts.slice(1).join("").slice(0, 2);
+      }
+    }
+
+    if (e?.target) {
+      e.target.value = cleaned;
+    }
+    setValue("useDetails.heightOfTheBuilding", cleaned, { shouldValidate: true, shouldDirty: true });
+  };
+
   const handleHeightBlur = (e) => {
     const usageCode = typeof watchWaterConnectionUsageType === "object"
       ? watchWaterConnectionUsageType?.code || watchWaterConnectionUsageType?.value || watchWaterConnectionUsageType?.name
       : watchWaterConnectionUsageType;
     const isNormal = normalizeCode(usageCode) === "NORMAL";
-    const height = parseFloat(e?.target?.value !== undefined ? e.target.value : watchHeightOfTheBuilding);
-    if (isNormal && !isNaN(height) && height > 17.5) {
-      setShowToast({
-        key: true,
-        label: getHeightErrorMessage(),
-      });
+    const val = String(e?.target?.value !== undefined ? e.target.value : watchHeightOfTheBuilding || "").trim();
+    if (!val) return;
+    if (isNormal) {
+      if (!/^\d+(\.\d{1,2})?$/.test(val)) {
+        setShowToast({
+          key: true,
+          label: t("WS_HEIGHT_UPTO_TWO_DECIMAL_ERROR") && t("WS_HEIGHT_UPTO_TWO_DECIMAL_ERROR") !== "WS_HEIGHT_UPTO_TWO_DECIMAL_ERROR"
+            ? t("WS_HEIGHT_UPTO_TWO_DECIMAL_ERROR")
+            : "Height of the building can have up to two decimal places only.",
+        });
+        return;
+      }
+      const height = parseFloat(val);
+      if (!isNaN(height) && height > 17.5) {
+        setShowToast({
+          key: true,
+          label: getHeightErrorMessage(),
+        });
+      }
+    } else {
+      if (!/^\d+$/.test(val)) {
+        setShowToast({
+          key: true,
+          label: t("WS_HEIGHT_INTEGER_ONLY_ERROR") && t("WS_HEIGHT_INTEGER_ONLY_ERROR") !== "WS_HEIGHT_INTEGER_ONLY_ERROR"
+            ? t("WS_HEIGHT_INTEGER_ONLY_ERROR")
+            : "Decimal values are not allowed. Please enter a whole number.",
+        });
+      }
     }
   };
 
@@ -1054,7 +1131,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
                   }}
                   t={t}
                   onBlur={props.onBlur}
-                  disable={isPropertyFound}
+                  disable={true}
                   placeholder={t("WS_CATEGORY_TYPE")}
                 />
               )}
@@ -1133,7 +1210,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
                 validate: (value) => {
                   const built = parseFloat(watchBuiltUpArea);
                   const plot = parseFloat(value);
-                  if (!isNaN(plot) && !isNaN(built) && plot <= built) {
+                  if (!isNaN(plot) && !isNaN(built) && plot < built) {
                     return getPlotAreaError();
                   }
                   return true;
@@ -1168,7 +1245,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
                 validate: (value) => {
                   const plot = parseFloat(watchPlotArea);
                   const built = parseFloat(value);
-                  if (!isNaN(plot) && !isNaN(built) && plot <= built) {
+                  if (!isNaN(plot) && !isNaN(built) && plot < built) {
                     return getPlotAreaError();
                   }
                   return true;
@@ -1230,15 +1307,31 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
               t={t}
               inputRef={register({
                 required: t("REQUIRED_FIELD"),
-                pattern: { value: DECIMAL_PATTERN, message: t("ERR_INVALID_DECIMAL") },
                 validate: (value) => {
+                  if (!value) return t("REQUIRED_FIELD");
                   const usageCode = typeof watchWaterConnectionUsageType === "object"
                     ? watchWaterConnectionUsageType?.code || watchWaterConnectionUsageType?.value || watchWaterConnectionUsageType?.name
                     : watchWaterConnectionUsageType;
                   const isNormal = normalizeCode(usageCode) === "NORMAL";
-                  const height = parseFloat(value);
-                  if (isNormal && !isNaN(height) && height > 17.5) {
-                    return getHeightErrorMessage();
+                  const valStr = String(value).trim();
+                  if (isNormal) {
+                    if (!/^\d+(\.\d{1,2})?$/.test(valStr)) {
+                      const trans = t("WS_HEIGHT_UPTO_TWO_DECIMAL_ERROR");
+                      return trans && trans !== "WS_HEIGHT_UPTO_TWO_DECIMAL_ERROR"
+                        ? trans
+                        : "Height of the building can have up to two decimal places only.";
+                    }
+                    const height = parseFloat(valStr);
+                    if (!isNaN(height) && height > 17.5) {
+                      return getHeightErrorMessage();
+                    }
+                  } else {
+                    if (!/^\d+$/.test(valStr)) {
+                      const trans = t("WS_HEIGHT_INTEGER_ONLY_ERROR");
+                      return trans && trans !== "WS_HEIGHT_INTEGER_ONLY_ERROR"
+                        ? trans
+                        : "Decimal values are not allowed. Please enter a whole number.";
+                    }
                   }
                   return true;
                 },
@@ -1247,6 +1340,8 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
               rules={{ required: t("REQUIRED_FIELD") }}
               disabled={isPropertyFound}
               placeholder={t("WS_HEIGHT_OF_THE_BUILDING")}
+              value={watchHeightOfTheBuilding !== undefined && watchHeightOfTheBuilding !== null ? watchHeightOfTheBuilding : ""}
+              onChange={handleHeightChange}
               onBlur={handleHeightBlur}
             />
             {errors?.useDetails?.heightOfTheBuilding ? (

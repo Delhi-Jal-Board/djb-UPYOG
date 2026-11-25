@@ -19,6 +19,8 @@ import {
   isWSApprovalChecklistEditableState,
   isWSApprovalChecklistReadOnlyState,
   parseBool,
+  getRainWaterHarvestingDefault,
+  checkCameFromCitizenAction,
 } from "./components/WSApprovalChecklist";
 
 const ApplicationDetails = (props) => {
@@ -72,7 +74,7 @@ const ApplicationDetails = (props) => {
   const approvalChecklistValid =
     workflowDetails?.isLoading ||
     !isChecklistEditable ||
-    isWSApprovalChecklistComplete(applicationData, approvalChecklist);
+    isWSApprovalChecklistComplete(applicationData, approvalChecklist, workflowDetails);
 
   // Track the last seeded combination so we don't re-seed (and wipe user changes)
   // every time workflowDetails reloads and currentWorkflowState flickers.
@@ -94,23 +96,40 @@ const ApplicationDetails = (props) => {
           const parsedVal = parseBool(addDetails?.[field.name]);
           if (parsedVal !== undefined) {
             values[field.name] = parsedVal;
+          } else if (field.name === "rainWaterHarvesting") {
+            values[field.name] = getRainWaterHarvestingDefault(applicationData);
           }
           if (addDetails?.[`${field.name}Remarks`]) {
             values[`${field.name}Remarks`] = addDetails?.[`${field.name}Remarks`];
           }
           return values;
         }, {});
-        const rawSatisfied = addDetails?.CompletelySatisfied !== undefined ? addDetails?.CompletelySatisfied : addDetails?.isFullySatisfied;
-        const parsedSatisfied = parseBool(rawSatisfied);
-        if (parsedSatisfied !== undefined) {
-          initialChecklist.isFullySatisfied = parsedSatisfied;
+        const piWithSatisfaction = workflowDetails?.data?.processInstances?.find(
+          (pi) => pi?.additionalDetails?.CompletelySatisfied !== undefined || pi?.additionalDetails?.isFullySatisfied !== undefined
+        );
+        const cameFromCitizenAction = checkCameFromCitizenAction(applicationData, workflowDetails);
+        if (!cameFromCitizenAction) {
+          const rawSatisfied =
+            addDetails?.CompletelySatisfied !== undefined
+              ? addDetails?.CompletelySatisfied
+              : addDetails?.isFullySatisfied !== undefined
+              ? addDetails?.isFullySatisfied
+              : piWithSatisfaction?.additionalDetails?.CompletelySatisfied !== undefined
+              ? piWithSatisfaction?.additionalDetails?.CompletelySatisfied
+              : piWithSatisfaction?.additionalDetails?.isFullySatisfied;
+          const parsedSatisfied = parseBool(rawSatisfied);
+          if (parsedSatisfied !== undefined) {
+            initialChecklist.isFullySatisfied = parsedSatisfied;
+          }
         }
-        if (addDetails?.notCompletelySatisfiedRemarks) {
-          initialChecklist.notCompletelySatisfiedRemarks = addDetails.notCompletelySatisfiedRemarks;
-          initialChecklist.completelySatisfiedRemarks = addDetails.notCompletelySatisfiedRemarks;
-        } else if (addDetails?.completelySatisfiedRemarks) {
-          initialChecklist.notCompletelySatisfiedRemarks = addDetails.completelySatisfiedRemarks;
-          initialChecklist.completelySatisfiedRemarks = addDetails.completelySatisfiedRemarks;
+        const satRemark =
+          addDetails?.notCompletelySatisfiedRemarks ||
+          addDetails?.completelySatisfiedRemarks ||
+          piWithSatisfaction?.additionalDetails?.notCompletelySatisfiedRemarks ||
+          piWithSatisfaction?.additionalDetails?.completelySatisfiedRemarks;
+        if (satRemark) {
+          initialChecklist.notCompletelySatisfiedRemarks = satRemark;
+          initialChecklist.completelySatisfiedRemarks = satRemark;
         }
         setApprovalChecklist(initialChecklist);
       }
@@ -132,6 +151,12 @@ const ApplicationDetails = (props) => {
   function onActionSelect(action) {
     sessionStorage.setItem("SELECTED_ACTION", action?.action);
     if (action) {
+      if (action?.action === "ACTIVATE_CONNECTION" && window.location.href.includes("/employee/ws")) {
+        setSelectedAction(action);
+        setShowModal(true);
+        setDisplayMenu(false);
+        return;
+      }
       if (action?.action === "PAY" && !action?.redirectionUrl && !action?.redirectionUrll) {
         if (window.location.href.includes("/employee")) {
             history.push(`/digit-ui/employee/payment/collect/${businessService}/${applicationNumber}?tenantId=${tenantId}`);
@@ -146,13 +171,8 @@ const ApplicationDetails = (props) => {
       } else if (action?.isWarningPopUp) {
         setWarningPopUp(true);
       } else if (action?.redirectionUrll) {
-        if (action?.redirectionUrll?.action === "ACTIVATE_CONNECTION") {
-          // window.location.assign(`${window.location.origin}digit-ui/employee/ws/${action?.redirectionUrll?.pathname}`, { data: action?.redirectionUrll?.state });
-
-          history.push(
-            `${action?.redirectionUrll?.pathname}`,
-            JSON.stringify({ data: action?.redirectionUrll?.state, url: `${location?.pathname}${location.search}` })
-          );
+        if (action?.action === "ACTIVATE_CONNECTION" || action?.redirectionUrll?.action === "ACTIVATE_CONNECTION") {
+          setShowModal(true);
         } else if (action?.redirectionUrll?.action === "RE-SUBMIT-APPLICATION") {
           history.push(`${action?.redirectionUrll?.pathname}`, { data: action?.redirectionUrll?.state });
         } else {
@@ -229,6 +249,32 @@ const ApplicationDetails = (props) => {
           onSuccess: (data, variables) => {
             sessionStorage.removeItem("WS_SESSION_APPLICATION_DETAILS");
             setIsEnableLoader(false);
+            if (
+              moduleCode?.includes("WS") &&
+              (selectedAction?.action === "ACTIVATE_CONNECTION" ||
+                data?.WaterConnection?.[0]?.applicationStatus === "CONNECTION_ACTIVATED" ||
+                data?.SewerageConnections?.[0]?.applicationStatus === "CONNECTION_ACTIVATED")
+            ) {
+              const waterConnection = data?.WaterConnection?.[0] || data?.WaterConnection || variables?.WaterConnection;
+              const sewerageConnection = data?.SewerageConnections?.[0] || data?.SewerageConnections || variables?.SewerageConnection;
+              const activatedConn = waterConnection || sewerageConnection || {};
+              const connNo =
+                activatedConn?.connectionNo ||
+                activatedConn?.connectionNumber ||
+                data?.connectionNo ||
+                data?.connectionNumber ||
+                "";
+              const appNo = activatedConn?.applicationNo || applicationNumber;
+              const isCitizen = window.location.href.includes("/citizen");
+              const basePath = isCitizen ? "/digit-ui/citizen/ws" : "/digit-ui/employee/ws";
+              const service = waterConnection ? "WATER" : sewerageConnection ? "SEWERAGE" : "WATER";
+              history.push({
+                pathname: `${basePath}/ws-response`,
+                search: `?${service === "WATER" ? "applicationNumber" : "applicationNumber1"}=${appNo}&service=${service}&connectionNo=${encodeURIComponent(connNo)}&action=ACTIVATE_CONNECTION`,
+                state: { connectionNo: connNo, data: data },
+              });
+              return;
+            }
             if (isOBPS?.bpa) {
               data.selectedAction = selectedAction;
               history.replace(`/digit-ui/employee/obps/response`, { data: data });

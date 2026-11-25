@@ -155,16 +155,38 @@ const EditPropertyForm = ({ config, onSelect, userType }) => {
     const usageTypeObj = useDetails?.WaterConnectionUsageType;
     const usageTypeCode = typeof usageTypeObj === "object" ? usageTypeObj?.code || usageTypeObj?.value || usageTypeObj?.name : usageTypeObj;
     const isNormalUsage = String(usageTypeCode || "").toUpperCase() === "NORMAL";
-    const heightNum = parseFloat(useDetails?.heightOfTheBuilding);
-    if (isNormalUsage && !isNaN(heightNum) && heightNum > 17.5) {
-      const heightTrans = t("WS_HEIGHT_OF_BUILDING_NORMAL_ERROR");
-      setShowToast({
-        key: true,
-        label: heightTrans && heightTrans !== "WS_HEIGHT_OF_BUILDING_NORMAL_ERROR"
-          ? heightTrans
-          : "Height of the building must be 17.5 meters or less for Normal connection.",
-      });
-      return;
+    const heightStr = String(useDetails?.heightOfTheBuilding || "").trim();
+    const heightNum = parseFloat(heightStr);
+    if (isNormalUsage) {
+      if (!/^\d+(\.\d{1,2})?$/.test(heightStr)) {
+        setShowToast({
+          key: true,
+          label: t("WS_HEIGHT_UPTO_TWO_DECIMAL_ERROR") && t("WS_HEIGHT_UPTO_TWO_DECIMAL_ERROR") !== "WS_HEIGHT_UPTO_TWO_DECIMAL_ERROR"
+            ? t("WS_HEIGHT_UPTO_TWO_DECIMAL_ERROR")
+            : "Height of the building can have up to two decimal places only.",
+        });
+        return;
+      }
+      if (!isNaN(heightNum) && heightNum > 17.5) {
+        const heightTrans = t("WS_HEIGHT_OF_BUILDING_NORMAL_ERROR");
+        setShowToast({
+          key: true,
+          label: heightTrans && heightTrans !== "WS_HEIGHT_OF_BUILDING_NORMAL_ERROR"
+            ? heightTrans
+            : "Height of the building must be 17.5 meters or less for Normal connection.",
+        });
+        return;
+      }
+    } else {
+      if (!/^\d+$/.test(heightStr)) {
+        setShowToast({
+          key: true,
+          label: t("WS_HEIGHT_INTEGER_ONLY_ERROR") && t("WS_HEIGHT_INTEGER_ONLY_ERROR") !== "WS_HEIGHT_INTEGER_ONLY_ERROR"
+            ? t("WS_HEIGHT_INTEGER_ONLY_ERROR")
+            : "Decimal values are not allowed. Please enter a whole number.",
+        });
+        return;
+      }
     }
 
     // Parse noOfFloors code → integer

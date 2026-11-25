@@ -172,7 +172,14 @@ const WSDjbEmployee = ({ config, onSelect, userType, formData, setError, formSta
   const errorStyle = { width: "100%", marginLeft: "0px", fontSize: "12px", marginTop: "4px" };
 
   const FormContent = (
-    <CollapsibleCardPage title={t("Are you a DJB Employee?")} defaultOpen={true}>
+    <CollapsibleCardPage
+      title={
+        t("WS_DJB_EMPLOYEE_INFORMATION") && t("WS_DJB_EMPLOYEE_INFORMATION") !== "WS_DJB_EMPLOYEE_INFORMATION"
+          ? t("WS_DJB_EMPLOYEE_INFORMATION")
+          : "DJB Employee Information"
+      }
+      defaultOpen={true}
+    >
       <div className="formcomposer-section-grid">
         <LabelFieldPair>
           <FieldLabelWithTooltip

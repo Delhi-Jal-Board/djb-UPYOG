@@ -20,6 +20,14 @@ import { getFiles } from "../../../utils";
 import Timeline from "../../../components/Timeline";
 import WSDocument from "../../../pageComponents/WSDocument";
 
+const maskDocNumber = (val) => {
+  if (!val || val === "NA") return val || "";
+  const str = String(val).trim();
+  if (!str || str === "NA") return str;
+  if (str.length <= 4) return str;
+  return "*".repeat(str.length - 4) + str.slice(-4);
+};
+
 const CheckPage = ({ onSubmit, value }) => {
   const { t } = useTranslation();
   const history = useHistory();
@@ -193,6 +201,29 @@ const CheckPage = ({ onSubmit, value }) => {
                 checkForNA(connectionDetails?.applicantType?.i18nKey || connectionDetails?.applicantType?.code || connectionDetails?.applicantType)
               )}`}
             />
+            {(() => {
+              const authRepName =
+                value?.additionalDetails?.authorizedRepresentativeName ||
+                connectionDetails?.authorizedRepresentativeName;
+              const authRepDesig =
+                value?.additionalDetails?.authorizedRepresentativeDesignation ||
+                connectionDetails?.authorizedRepresentativeDesignation;
+              const authRepMobile =
+                value?.additionalDetails?.authorizedRepresentativeMobileNumber ||
+                value?.additionalDetails?.authorizedMobileNumber ||
+                connectionDetails?.authorizedRepresentativeMobileNumber;
+
+              if (authRepName || authRepDesig || authRepMobile) {
+                return (
+                  <React.Fragment>
+                    {authRepName && <Row label={t("Authorized Representative Name")} text={authRepName} />}
+                    {authRepDesig && <Row label={t("Authorized Representative Designation")} text={authRepDesig} />}
+                    {authRepMobile && <Row label={t("Authorized Representative Mobile Number")} text={authRepMobile} />}
+                  </React.Fragment>
+                );
+              }
+              return null;
+            })()}
             <Row
               label={t("WS_Billing_Address_Type")}
               text={`${t(
@@ -305,15 +336,15 @@ const CheckPage = ({ onSubmit, value }) => {
         </StatusTable>
       </Card>
 
-      <CardSubHeader>{t("WS_DIVYANGJAN")}</CardSubHeader>
+      <CardSubHeader>{t("WS_DIVYANGJAN_INFORMATION") && t("WS_DIVYANGJAN_INFORMATION") !== "WS_DIVYANGJAN_INFORMATION" ? t("WS_DIVYANGJAN_INFORMATION") : "Divyangjan Information"}</CardSubHeader>
       <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
-        <Row label={t("WS_DIVYANGJAN")} text={`${disability?.isDivyangjan ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}`} />
+        <Row label={t("WS_DIVYANGJAN_INFORMATION") && t("WS_DIVYANGJAN_INFORMATION") !== "WS_DIVYANGJAN_INFORMATION" ? t("WS_DIVYANGJAN_INFORMATION") : "Divyangjan Information"} text={`${disability?.isDivyangjan ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}`} />
       </StatusTable>
 
-      <CardSubHeader>{t("WS_DJB_EMPLOYEE")}</CardSubHeader>
+      <CardSubHeader>{t("WS_DJB_EMPLOYEE_INFORMATION") && t("WS_DJB_EMPLOYEE_INFORMATION") !== "WS_DJB_EMPLOYEE_INFORMATION" ? t("WS_DJB_EMPLOYEE_INFORMATION") : "DJB Employee Information"}</CardSubHeader>
       <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
         <Row
-          label={t("WS_DJB_EMPLOYEE")}
+          label={t("WS_DJB_EMPLOYEE_INFORMATION") && t("WS_DJB_EMPLOYEE_INFORMATION") !== "WS_DJB_EMPLOYEE_INFORMATION" ? t("WS_DJB_EMPLOYEE_INFORMATION") : "DJB Employee Information"}
           text={`${djbEmployee?.isDjbEmployee ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}`}
           actionButton={<ActionButton onClick={onEdit} />}
         />
@@ -338,7 +369,7 @@ const CheckPage = ({ onSubmit, value }) => {
         )}
       </StatusTable>
 
-      <CardSubHeader>{t("Rain Water Harvesting Certificate")}</CardSubHeader>
+      <CardSubHeader>{t("WS_RAIN_WATER_HARVESTING_INFORMATION") && t("WS_RAIN_WATER_HARVESTING_INFORMATION") !== "WS_RAIN_WATER_HARVESTING_INFORMATION" ? t("WS_RAIN_WATER_HARVESTING_INFORMATION") : "Rain Water Harvesting Information"}</CardSubHeader>
       <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
         <Row
           label={t("Rain Water Harvesting Certificate")}
@@ -364,9 +395,39 @@ const CheckPage = ({ onSubmit, value }) => {
             text={checkForNA(rainWaterHarvesting?.validityDate || rainWaterHarvesting?.validityUpTo || rainWaterHarvesting?.rwhValidityUpTo || rainWaterHarvesting?.date)}
           />
         )}
+        {(() => {
+          const doc = (documents?.documents || []).find((d) => {
+            const dt = (d?.documentType || "").toUpperCase();
+            return dt.includes("RAIN") || dt.includes("HARVEST");
+          });
+          if (!doc) return null;
+          const docSubType = doc?.documentType
+            ? doc.documentType.split(".").pop().replace(/_/g, " ").toUpperCase()
+            : "RAIN WATER HARVESTING CERTIFICATE";
+          const docUid = doc?.documentUid || doc?.documentNumber || rainWaterHarvesting?.rainWaterHarvestingDocumentNumber || "NA";
+          return (
+            <React.Fragment>
+              <Row label={t("Rain Water Harvesting Certificate*")} text={docSubType} />
+              <Row label={t("Document Number")} text={maskDocNumber(docUid)} />
+              {doc?.fileStoreId && (
+                <Row
+                  label={t("Upload Document*")}
+                  text={
+                    <span
+                      style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", color: "#f47738" }}
+                      onClick={() => openFilePDF(doc.fileStoreId)}
+                    >
+                      <GenericFileIcon /> {t("CS_COMMON_VIEW")}
+                    </span>
+                  }
+                />
+              )}
+            </React.Fragment>
+          );
+        })()}
       </StatusTable>
 
-      <CardSubHeader>{t("Sewer Treatment Plant (STP)")}</CardSubHeader>
+      <CardSubHeader>{t("WS_SEWER_TREATMENT_PLANT_INFORMATION") && t("WS_SEWER_TREATMENT_PLANT_INFORMATION") !== "WS_SEWER_TREATMENT_PLANT_INFORMATION" ? t("WS_SEWER_TREATMENT_PLANT_INFORMATION") : "Sewer Treatment Plant (STP) Information"}</CardSubHeader>
       <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
         <Row
           label={t("Sewer Treatment Plant (STP)")}
@@ -392,14 +453,36 @@ const CheckPage = ({ onSubmit, value }) => {
             text={checkForNA(sewerTreatmentPlant?.validityDate || sewerTreatmentPlant?.stpValidityDate || sewerTreatmentPlant?.sewerTreatmentPlantValidityDate || sewerTreatmentPlant?.stpValidityUpTo || sewerTreatmentPlant?.date)}
           />
         )}
-      </StatusTable>
-
-      <CardSubHeader>{t("WS_BANK_DETAILS")}</CardSubHeader>
-      <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
-        <Row label={t("WS_NAME_OF_BANK")} text={`${t(checkForNA(bankDetails?.bankName))}`} actionButton={<ActionButton onClick={onEdit} />} />
-        <Row label={t("WS_NAME_OF_BRANCH")} text={`${t(checkForNA(bankDetails?.bankBranchName || bankDetails?.branchName))}`} />
-        <Row label={t("WS_IFSC_CODE")} text={`${t(checkForNA(bankDetails?.ifscCode))}`} />
-        <Row label={t("WS_BANK_ACCOUNT_NO")} text={`${t(checkForNA(bankDetails?.bankAccountNumber || bankDetails?.accountNumber))}`} />
+        {(() => {
+          const doc = (documents?.documents || []).find((d) => {
+            const dt = (d?.documentType || "").toUpperCase();
+            return dt.includes("SEWER") || dt.includes("STP");
+          });
+          if (!doc) return null;
+          const docSubType = doc?.documentType
+            ? doc.documentType.split(".").pop().replace(/_/g, " ").toUpperCase()
+            : "SEWER TREATMENT PLANT";
+          const docUid = doc?.documentUid || doc?.documentNumber || sewerTreatmentPlant?.sewerTreatmentPlantDocumentNumber || "NA";
+          return (
+            <React.Fragment>
+              <Row label={t("Sewer Treatment Plant (STP) Certificate*")} text={docSubType} />
+              <Row label={t("Document Number")} text={maskDocNumber(docUid)} />
+              {doc?.fileStoreId && (
+                <Row
+                  label={t("Upload Document*")}
+                  text={
+                    <span
+                      style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", color: "#f47738" }}
+                      onClick={() => openFilePDF(doc.fileStoreId)}
+                    >
+                      <GenericFileIcon /> {t("CS_COMMON_VIEW")}
+                    </span>
+                  }
+                />
+              )}
+            </React.Fragment>
+          );
+        })()}
       </StatusTable>
 
       <CardSubHeader>{t("WS_PROPERTY_AND_WATER_CONNECTION_USE_DETAILS")}</CardSubHeader>
@@ -436,7 +519,6 @@ const CheckPage = ({ onSubmit, value }) => {
           text={`${t(checkForNA(propertyAddress?.subLocality?.name || propertyAddress?.subLocality?.code || propertyAddress?.subLocality))}`}
         />
         <Row label={t("STREET_NAME")} text={`${t(checkForNA(propertyAddress?.streetName || propertyAddress?.street))}`} />
-        <Row label={t("ADDRESS_LINE1")} text={`${t(checkForNA(propertyAddress?.addressLine1 || propertyAddress?.street))}`} />
         <Row label={t("ADDRESS_LINE2")} text={`${t(checkForNA(propertyAddress?.addressLine2))}`} />
         <Row label={t("HOUSE_NO")} text={`${t(checkForNA(propertyAddress?.houseNo || propertyAddress?.doorNo))}`} />
         <Row label={t("LATITUDE_GEOTAG")} text={`${t(checkForNA(propertyAddress?.latitude))}`} />
@@ -647,6 +729,13 @@ const CheckPage = ({ onSubmit, value }) => {
           )}
         </StatusTable>
       </Card> */}
+      <CardSubHeader>{t("WS_BANK_DETAILS")}</CardSubHeader>
+      <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
+        <Row label={t("WS_NAME_OF_BANK")} text={`${t(checkForNA(bankDetails?.bankName))}`} actionButton={<ActionButton onClick={onEdit} />} />
+        <Row label={t("WS_NAME_OF_BRANCH")} text={`${t(checkForNA(bankDetails?.bankBranchName || bankDetails?.branchName))}`} />
+        <Row label={t("WS_IFSC_CODE")} text={`${t(checkForNA(bankDetails?.ifscCode))}`} />
+        <Row label={t("WS_BANK_ACCOUNT_NO")} text={`${t(checkForNA(bankDetails?.bankAccountNumber || bankDetails?.accountNumber))}`} />
+      </StatusTable>
       <Card style={{ paddingRight: "16px" }}>
         <div style={{ position: "relative" }}>
           <CardHeader styles={{ fontSize: "28px" }}>{t("WS_COMMON_DOCUMENT_DETAILS")}</CardHeader>
@@ -657,14 +746,26 @@ const CheckPage = ({ onSubmit, value }) => {
           />
         </div>
         {documents &&
-          documents?.documents.map((doc, index) => (
+          documents?.documents
+            .filter((doc) => {
+              const dt = (doc?.documentType || "").toUpperCase();
+              return (
+                !dt.includes("DJB_EMPLOYEE") &&
+                !dt.includes("EMPLOYEE_ID") &&
+                !dt.includes("SEWER") &&
+                !dt.includes("STP") &&
+                !dt.includes("RAIN") &&
+                !dt.includes("HARVEST")
+              );
+            })
+            .map((doc, index, array) => (
             <div key={`doc-${index}`}>
               {
                 <div>
                   <CardSectionHeader>{getDocumentSectionHeader(doc?.documentType)}</CardSectionHeader>
                   <StatusTable>
                     {<WSDocument value={value} Code={doc?.documentType} index={index} />}
-                    {documents?.documents.length != index + 1 ? (
+                    {array.length != index + 1 ? (
                       <hr style={{ color: "white", backgroundColor: "white", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
                     ) : null}
                   </StatusTable>

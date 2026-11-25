@@ -14,7 +14,7 @@ import {
   ViewsIcon,
   // DeleteIcon,
 } from "@djb25/digit-ui-react-components";
-import React, { Fragment, useState } from "react";
+import React, { Fragment, useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router-dom";
 import BPADocuments from "./BPADocuments";
@@ -40,7 +40,7 @@ import ArrearSummary from "../../../common/src/payments/citizen/bills/routes/bil
 import RenewPopup from "../../../asset/src/components/RenewPopup";
 import DueVerification from "./DueVerification";
 import InspectionInformation from "./InspectionInformation";
-import WSApprovalChecklist from "./WSApprovalChecklist";
+import WSApprovalChecklist, { hasDAVerifiedInWorkflow, checkCameFromCitizenAction } from "./WSApprovalChecklist";
 
 function ApplicationDetailsContent({
   applicationDetails,
@@ -236,10 +236,25 @@ function ApplicationDetailsContent({
     }
   };
 
+  const maskDocNumber = (val) => {
+    if (!val || val === "NA" || val === t("NA") || val === t("N/A")) return val || "";
+    const str = String(val).trim();
+    if (!str || str === "NA" || str === t("NA") || str === t("N/A")) return str;
+    if (str.length <= 4) return str;
+    return "*".repeat(str.length - 4) + str.slice(-4);
+  };
+
   const getTextValue = (value) => {
-    if (value?.skip) return value.value;
-    else if (value?.isUnit) return value?.value ? `${getTranslatedValues(value?.value, value?.isNotTranslated)} ${t(value?.isUnit)}` : t("N/A");
-    else return value?.value ? getTranslatedValues(value?.value, value?.isNotTranslated) : t("N/A");
+    let result = "";
+    if (value?.skip) result = value.value;
+    else if (value?.isUnit) result = value?.value ? `${getTranslatedValues(value?.value, value?.isNotTranslated)} ${t(value?.isUnit)}` : t("N/A");
+    else result = value?.value ? getTranslatedValues(value?.value, value?.isNotTranslated) : t("N/A");
+
+    const titleLower = String(value?.title || "").toLowerCase();
+    if (titleLower.includes("document number") || titleLower.includes("document no")) {
+      return maskDocNumber(result);
+    }
+    return result;
   };
 
   const getClickInfoDetails = () => {
@@ -289,6 +304,29 @@ function ApplicationDetailsContent({
       });
   };
 
+  const downloadFilePDF = (fileId, fileName = "Document.pdf") => {
+    Digit.UploadServices.Filefetch([fileId], Digit.ULBService.getStateId())
+      .then((res) => {
+        const concatenatedUrls = res?.data?.fileStoreIds?.[0]?.url;
+        if (concatenatedUrls) {
+          const urlArray = concatenatedUrls.split(",");
+          const fileUrl = urlArray[0];
+          if (fileUrl) {
+            const anchor = document.createElement("a");
+            anchor.href = fileUrl;
+            anchor.download = fileName;
+            anchor.target = "_blank";
+            document.body.appendChild(anchor);
+            anchor.click();
+            document.body.removeChild(anchor);
+          }
+        }
+      })
+      .catch((error) => {
+        console.error("Error downloading file:", error);
+      });
+  };
+
   const handleViewClick = (data) => {
     // setSelectedData(data);
     setShowPopup(true);
@@ -296,6 +334,151 @@ function ApplicationDetailsContent({
 
   const documentsDetailIndex = applicationDetails?.applicationDetails?.findIndex((detail) => detail?.additionalDetails?.documents);
   const isDisconnectionExecuted = applicationData?.applicationStatus === "DISCONNECTION_EXECUTED" && applicationData?.applicationType?.includes("DISCONNECT");
+
+  const [docCheckedMap, setDocCheckedMap] = useState({});
+
+  const isEmployeeSide = typeof window !== "undefined" && !window.location.href.includes("/citizen");
+
+  const currentWorkflowStatus =
+    workflowDetails?.data?.actionState?.state ||
+    workflowDetails?.data?.processInstances?.[0]?.state?.state ||
+    workflowDetails?.data?.ProcessInstances?.[0]?.state?.state ||
+    applicationData?.applicationStatus ||
+    applicationData?.status;
+
+  const isNewConn =
+    applicationData?.applicationType?.includes("NEW_") ||
+    applicationData?.applicationType === "NEW_WATER_CONNECTION" ||
+    businessService?.toUpperCase() === "NEWWS1" ||
+    applicationData?.businessService?.toUpperCase() === "NEWWS1" ||
+    applicationData?.applicationNo?.includes("WS_AP") ||
+    applicationData?.applicationNo?.includes("SW_AP") ||
+    (typeof window !== "undefined" && window.location.href.includes("WS_AP"));
+
+  const isDAState =
+    currentWorkflowStatus === "PENDING_FOR_DEALING_ASSISTENCE_VERIFICATION" ||
+    currentWorkflowStatus === "WF_PENDING_FOR_DEALING_ASSISTENCE_VERIFICATION" ||
+    currentWorkflowStatus === "PENDING_FOR_DEALING_ASSISTANT_VERIFICATION" ||
+    currentWorkflowStatus === "WF_PENDING_FOR_DEALING_ASSISTANT_VERIFICATION" ||
+    currentWorkflowStatus === "PENDING_FOR_DA_VERIFICATION" ||
+    currentWorkflowStatus === "WF_PENDING_FOR_DA_VERIFICATION" ||
+    String(currentWorkflowStatus).toUpperCase().includes("DEALING_ASSIST") ||
+    workflowDetails?.data?.actionState?.state === "PENDING_FOR_DEALING_ASSISTENCE_VERIFICATION" ||
+    workflowDetails?.data?.actionState?.state === "WF_PENDING_FOR_DEALING_ASSISTENCE_VERIFICATION" ||
+    workflowDetails?.data?.actionState?.state === "PENDING_FOR_DEALING_ASSISTANT_VERIFICATION" ||
+    workflowDetails?.data?.actionState?.state === "WF_PENDING_FOR_DEALING_ASSISTANT_VERIFICATION" ||
+    workflowDetails?.data?.actionState?.state === "PENDING_FOR_DA_VERIFICATION" ||
+    workflowDetails?.data?.actionState?.state === "WF_PENDING_FOR_DA_VERIFICATION" ||
+    String(workflowDetails?.data?.actionState?.state).toUpperCase().includes("DEALING_ASSIST");
+
+  const isZROState =
+    currentWorkflowStatus === "PENDING_FOR_ZRO_APPROVAL" ||
+    currentWorkflowStatus === "WF_PENDING_FOR_ZRO_APPROVAL" ||
+    workflowDetails?.data?.actionState?.state === "PENDING_FOR_ZRO_APPROVAL" ||
+    workflowDetails?.data?.actionState?.state === "WF_PENDING_FOR_ZRO_APPROVAL" ||
+    String(currentWorkflowStatus).toUpperCase().includes("ZRO_APPROVAL") ||
+    String(workflowDetails?.data?.actionState?.state).toUpperCase().includes("ZRO_APPROVAL");
+
+  const hasDAVerified = hasDAVerifiedInWorkflow(applicationData, workflowDetails);
+  const cameFromCitizenAction = checkCameFromCitizenAction(applicationData, workflowDetails);
+
+  const canVerifyDocuments = isEmployeeSide && (
+    isNewConn
+      ? isDAState || (isZROState && hasDAVerified) || (isZROState && cameFromCitizenAction) || currentWorkflowStatus === "PENDING_FOR_CONNECTION_ACTIVATION" || String(currentWorkflowStatus).includes("CONNECTION_ACTIVATION")
+      : [
+          "PENDING_FOR_DOCUMENT_VERIFICATION",
+          "PENDING_APPROVAL_FOR_MUTATION",
+          "PENDING_FOR_ZRO_APPROVAL",
+          "PENDING_FOR_CONNECTION_ACTIVATION",
+          "PENDING_FOR_CITIZEN_ACTION",
+          "PENDING_FOR_DEALING_ASSISTENCE_VERIFICATION",
+          "PENDING_FOR_DEALING_ASSISTANT_VERIFICATION",
+        ].includes(currentWorkflowStatus)
+  );
+
+  const isCheckboxDisabled =
+    (!cameFromCitizenAction && isZROState && hasDAVerified) ||
+    !isEmployeeSide;
+
+  const defaultChecked =
+    currentWorkflowStatus === "PENDING_FOR_CONNECTION_ACTIVATION" ||
+    (!cameFromCitizenAction && isZROState && hasDAVerified);
+
+  const handleDocCheck = (fileStoreId, checked) => {
+    if (!fileStoreId) return;
+    setDocCheckedMap((prev) => ({
+      ...prev,
+      [fileStoreId]: checked,
+    }));
+  };
+
+  const allRequiredDocsMap = new Map();
+  applicationDetails?.applicationDetails?.forEach((detail) => {
+    // 1. Section document rows (DJB Employee ID, RWH, STP)
+    detail?.values?.forEach((val) => {
+      if (val?.isDocumentRow && val?.fileStoreId) {
+        allRequiredDocsMap.set(val.fileStoreId, val);
+      }
+    });
+    // 2. Upload Documents from PropertyDocuments
+    detail?.additionalDetails?.documents?.forEach((element) => {
+      element?.values?.forEach((val) => {
+        const isMeter =
+          val.title === "WS_METER_PHOTO_UPLOAD_LABEL" ||
+          val?.documentType?.includes("METER_PHOTO") ||
+          val.title === "WS_METER_WARRANTY_REPORT_INVOICE_LABEL" ||
+          val?.documentType?.includes("METER_WARRANTY") ||
+          val?.documentType?.includes("METER");
+        const isSectionDoc =
+          val.title === "WS_DJB_EMPLOYEE_ID" ||
+          val?.documentType?.includes("DJB_EMPLOYEE") ||
+          val?.documentType?.includes("EMPLOYEE_ID") ||
+          val?.documentType?.includes("SEWER") ||
+          val?.documentType?.includes("STP") ||
+          val?.documentType?.includes("RAIN") ||
+          val?.documentType?.includes("HARVEST");
+        if (!val.isPhoto && !isMeter && !isSectionDoc && val?.fileStoreId) {
+          allRequiredDocsMap.set(val.fileStoreId, val);
+        }
+      });
+    });
+  });
+
+  const allRequiredDocs = Array.from(allRequiredDocsMap.values());
+
+  const isDocChecked = (doc) => {
+    if (defaultChecked) return true;
+    return docCheckedMap[doc.fileStoreId] ?? doc?.isVerified ?? doc?.originalDoc?.isVerified ?? false;
+  };
+
+  const allDocumentsVerified =
+    allRequiredDocs.length === 0 ||
+    allRequiredDocs.every((doc) => isDocChecked(doc) === true);
+
+  const isDocVerifState =
+    isNewConn
+      ? isDAState || (isZROState && hasDAVerified) || (isZROState && cameFromCitizenAction)
+      : [
+          "PENDING_FOR_DOCUMENT_VERIFICATION",
+          "PENDING_APPROVAL_FOR_MUTATION",
+          "PENDING_FOR_ZRO_APPROVAL",
+          "PENDING_FOR_CITIZEN_ACTION",
+          "PENDING_FOR_DEALING_ASSISTENCE_VERIFICATION",
+          "PENDING_FOR_DEALING_ASSISTANT_VERIFICATION",
+        ].includes(currentWorkflowStatus);
+
+  const finalVerified = isDocVerifState ? allDocumentsVerified : true;
+
+  if (typeof window !== "undefined" && isEmployeeSide && isDocVerifState) {
+    window.isDocumentsVerified = finalVerified;
+  }
+
+  useEffect(() => {
+    if (isEmployeeSide && isDocVerifState) {
+      window.isDocumentsVerified = finalVerified;
+      window.dispatchEvent(new CustomEvent("DOCUMENTS_VERIFIED", { detail: finalVerified }));
+    }
+  }, [docCheckedMap, finalVerified, isEmployeeSide, isDocVerifState]);
 
   return (
     <Card className={"employeeCard-override"}>
@@ -412,6 +595,60 @@ function ApplicationDetailsContent({
               {detail?.title &&
                 !detail?.title.includes("NOC") &&
                 detail?.values?.map((value, index) => {
+                  if (value?.isDocumentRow && value?.fileStoreId) {
+                    const isChecked = isDocChecked(value);
+                    return (
+                      <div key={index}>
+                        <Row
+                          key={t(value.title)}
+                          label={t(value.title)}
+                          text={
+                            <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                              <div
+                                onClick={() => openFilePDF(value.fileStoreId)}
+                                style={{ cursor: "pointer", display: "flex", alignItems: "center" }}
+                                title={t("CS_COMMON_VIEW") || "View"}
+                              >
+                                <ViewsIcon />
+                              </div>
+                              <div
+                                onClick={() => downloadFilePDF(value.fileStoreId, `${value.title || "Document"}.pdf`)}
+                                title="Download Document"
+                                style={{ cursor: "pointer", display: "flex", alignItems: "center" }}
+                              >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                              </div>
+                              {canVerifyDocuments && (
+                                <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "14px", color: "#0B0C0C", margin: 0 }}>
+                                  <input
+                                    key={`chk-sec-${value.fileStoreId}`}
+                                    type="checkbox"
+                                    className="verify-doc-checkbox"
+                                    style={{
+                                      width: "18px",
+                                      height: "18px",
+                                      accentColor: "#1a67a3",
+                                      cursor: isCheckboxDisabled ? "not-allowed" : "pointer",
+                                    }}
+                                    disabled={isCheckboxDisabled}
+                                    checked={isChecked}
+                                    onChange={(e) => {
+                                      const checked = e.target.checked;
+                                      value.isVerified = checked;
+                                      handleDocCheck(value.fileStoreId, checked);
+                                    }}
+                                  />
+                                  {t("Check Verified")}
+                                </label>
+                              )}
+                            </div>
+                          }
+                          className="border-none"
+                          rowContainerStyle={getRowStyles()}
+                        />
+                      </div>
+                    );
+                  }
                   if (value.map === true && value.value !== "N/A") {
                     return (
                       <Row
@@ -555,18 +792,48 @@ function ApplicationDetailsContent({
           {!isDisconnectionExecuted && detail?.additionalDetails?.documents && index === documentsDetailIndex && (
             <PropertyDocuments
               documents={detail?.additionalDetails?.documents}
-              applicationStatus={
-                workflowDetails?.data?.actionState?.state ||
-                workflowDetails?.data?.processInstances?.[0]?.state?.state ||
-                workflowDetails?.data?.ProcessInstances?.[0]?.state?.state ||
-                applicationData?.applicationStatus ||
-                applicationData?.status
-              }
+              applicationStatus={currentWorkflowStatus}
+              applicationData={applicationData}
+              businessService={businessService}
+              workflowDetails={workflowDetails}
+              docCheckedMap={docCheckedMap}
+              onDocCheck={handleDocCheck}
+              parentHandlesVerification={true}
             />
           )}
           {!isDisconnectionExecuted && detail?.additionalDetails?.documents &&
             !applicationData?.applicationType?.includes("MUTATION") &&
             !businessService?.includes("MUTATION") &&
+            !(
+              (applicationData?.applicationType?.includes("NEW_") ||
+                applicationData?.applicationType === "NEW_WATER_CONNECTION" ||
+                businessService?.toUpperCase() === "NEWWS1" ||
+                applicationData?.businessService?.toUpperCase() === "NEWWS1" ||
+                applicationData?.applicationNo?.includes("WS_AP") ||
+                applicationData?.applicationNo?.includes("SW_AP") ||
+                (typeof window !== "undefined" && window.location.href.includes("WS_AP"))) &&
+              !(
+                applicationData?.applicationStatus === "PENDING_FOR_DEALING_ASSISTENCE_VERIFICATION" ||
+                applicationData?.applicationStatus === "PENDING_FOR_DEALING_ASSISTANT_VERIFICATION" ||
+                applicationData?.applicationStatus === "PENDING_FOR_DA_VERIFICATION" ||
+                workflowDetails?.data?.actionState?.state === "PENDING_FOR_DEALING_ASSISTENCE_VERIFICATION" ||
+                workflowDetails?.data?.actionState?.state === "PENDING_FOR_DEALING_ASSISTANT_VERIFICATION" ||
+                workflowDetails?.data?.actionState?.state === "PENDING_FOR_DA_VERIFICATION" ||
+                workflowDetails?.data?.processInstances?.[0]?.state?.state === "PENDING_FOR_DEALING_ASSISTENCE_VERIFICATION" ||
+                workflowDetails?.data?.processInstances?.[0]?.state?.state === "PENDING_FOR_DEALING_ASSISTANT_VERIFICATION" ||
+                workflowDetails?.data?.processInstances?.[0]?.state?.state === "PENDING_FOR_DA_VERIFICATION" ||
+                ((applicationData?.applicationStatus === "PENDING_FOR_ZRO_APPROVAL" ||
+                  workflowDetails?.data?.actionState?.state === "PENDING_FOR_ZRO_APPROVAL" ||
+                  workflowDetails?.data?.processInstances?.[0]?.state?.state === "PENDING_FOR_ZRO_APPROVAL") &&
+                  hasDAVerifiedInWorkflow(applicationData, workflowDetails) &&
+                  !applicationData?.additionalDetails?.isDueVerificationRemoved &&
+                  applicationData?.additionalDetails?.hasDueVerification !== false &&
+                  (
+                    (Array.isArray(applicationData?.dueVerification) && applicationData.dueVerification.length > 0) ||
+                    (Array.isArray(applicationData?.additionalDetails?.dueVerification) && applicationData.additionalDetails.dueVerification.length > 0)
+                  ))
+              )
+            ) &&
             (
               [
                 "PENDING_FOR_FIELD_INSPECTION",
@@ -589,7 +856,7 @@ function ApplicationDetailsContent({
               ].includes(applicationData?.applicationStatus) ||
               (applicationData?.dueVerification && applicationData.dueVerification.length > 0) ||
               (applicationData?.additionalDetails?.dueVerification && applicationData.additionalDetails.dueVerification.length > 0)
-            ) && <DueVerification applicationData={applicationData} />}
+            ) && <DueVerification applicationData={applicationData} workflowDetails={workflowDetails} />}
           {detail?.additionalDetails?.taxHeadEstimatesCalculation && (
             <PropertyEstimates taxHeadEstimatesCalculation={detail?.additionalDetails?.taxHeadEstimatesCalculation} />
           )}

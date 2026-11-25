@@ -62,7 +62,9 @@ export const convertEpochToDate = (dateEpoch) => {
   const isNewConnection =
     business_service?.includes("ONE_TIME_FEE") ||
     paymentData?.paymentDetails?.[0]?.bill?.businessService?.includes("ONE_TIME_FEE") ||
-    window?.location?.href?.includes("ONE_TIME_FEE");
+    window?.location?.href?.includes("ONE_TIME_FEE") ||
+    consumerCode?.includes("WS_AP") ||
+    consumerCode?.includes("SW_AP");
   const isMutation =
     business_service?.includes("MUTATION") ||
     paymentData?.paymentDetails?.[0]?.bill?.businessService?.includes("MUTATION") ||
@@ -776,39 +778,67 @@ export const convertEpochToDate = (dateEpoch) => {
       <CardText></CardText>
       <StatusTable>
         <Row rowContainerStyle={rowContainerStyle} last label={t(label)} text={applicationNo} />
-        {/** TODO : move this key and value into the hook based on business Service */}
-        {(business_service === "PT" || workflw) && !hideBillingPeriod && (
-          <Row
-            rowContainerStyle={rowContainerStyle}
-            last
-            label={t("CS_PAYMENT_BILLING_PERIOD")}
-            text={getBillingPeriod(paymentData?.paymentDetails?.[0]?.bill?.billDetails?.[0])}
-          />
-        )}
+        {isNewConnection ? (
+          <React.Fragment>
+            <Row rowContainerStyle={rowContainerStyle} last label={t("CS_PAYMENT_TRANSANCTION_ID")} text={egId} />
+            {(business_service !== "PT" || workflw) && (
+              <Row
+                rowContainerStyle={rowContainerStyle}
+                last
+                label={t("CS_PAYMENT_TRANSANCTION_DATE")}
+                text={transactionDate && new Date(transactionDate).toLocaleDateString("in")}
+              />
+            )}
+            <Row
+              rowContainerStyle={rowContainerStyle}
+              last
+              label={t(ommitRupeeSymbol ? "CS_PAYMENT_AMOUNT_PAID_WITHOUT_SYMBOL" : "CS_PAYMENT_AMOUNT_PAID")}
+              text={paymentData?.totalAmountPaid || (reciept_data?.paymentDetails?.[0]?.totalAmountPaid ? ("₹ " + reciept_data?.paymentDetails?.[0]?.totalAmountPaid) : `₹ 0`)}
+            />
+            <Row
+              rowContainerStyle={rowContainerStyle}
+              last
+              label={t("CS_PAYMENT_AMOUNT_PENDING")}
+              text={paymentData?.totalDue - paymentData?.totalAmountPaid || (reciept_data?.paymentDetails?.[0]?.totalDue && reciept_data?.paymentDetails?.[0]?.totalAmountPaid) ? `₹ ${reciept_data?.paymentDetails?.[0]?.totalDue - reciept_data?.paymentDetails?.[0]?.totalAmountPaid}` : `₹ ${0}`}
+            />
+          </React.Fragment>
+        ) : (
+          <React.Fragment>
+            {/** TODO : move this key and value into the hook based on business Service */}
+            {(business_service === "PT" || workflw) && !hideBillingPeriod && (
+              <Row
+                rowContainerStyle={rowContainerStyle}
+                last
+                label={t("CS_PAYMENT_BILLING_PERIOD")}
+                text={getBillingPeriod(paymentData?.paymentDetails?.[0]?.bill?.billDetails?.[0])}
+              />
+            )}
 
-        {(business_service === "PT" || workflw) && (
-          <Row
-            rowContainerStyle={rowContainerStyle}
-            last
-            label={t("CS_PAYMENT_AMOUNT_PENDING")}
-            text={paymentData?.totalDue-paymentData?.totalAmountPaid || (reciept_data?.paymentDetails?.[0]?.totalDue && reciept_data?.paymentDetails?.[0]?.totalAmountPaid ) ? `₹ ${reciept_data?.paymentDetails?.[0]?.totalDue - reciept_data?.paymentDetails?.[0]?.totalAmountPaid}` : `₹ ${0}`}
-          />
-        )}
+            {(business_service === "PT" || workflw) && (
+              <Row
+                rowContainerStyle={rowContainerStyle}
+                last
+                label={t("CS_PAYMENT_AMOUNT_PENDING")}
+                text={paymentData?.totalDue-paymentData?.totalAmountPaid || (reciept_data?.paymentDetails?.[0]?.totalDue && reciept_data?.paymentDetails?.[0]?.totalAmountPaid ) ? `₹ ${reciept_data?.paymentDetails?.[0]?.totalDue - reciept_data?.paymentDetails?.[0]?.totalAmountPaid}` : `₹ ${0}`}
+              />
+            )}
 
-        <Row rowContainerStyle={rowContainerStyle} last label={t("CS_PAYMENT_TRANSANCTION_ID")} text={egId} />
-        <Row
-          rowContainerStyle={rowContainerStyle}
-          last
-          label={t(ommitRupeeSymbol ? "CS_PAYMENT_AMOUNT_PAID_WITHOUT_SYMBOL" : "CS_PAYMENT_AMOUNT_PAID")}
-          text={paymentData?.totalAmountPaid ||( reciept_data?.paymentDetails?.[0]?.totalAmountPaid ? ("₹ " +  reciept_data?.paymentDetails?.[0]?.totalAmountPaid) : `₹ 0`) }
-        />
-        {(business_service !== "PT" || workflw) && (
-          <Row
-            rowContainerStyle={rowContainerStyle}
-            last
-            label={t("CS_PAYMENT_TRANSANCTION_DATE")}
-            text={transactionDate && new Date(transactionDate).toLocaleDateString("in")}
-          />
+            <Row rowContainerStyle={rowContainerStyle} last label={t("CS_PAYMENT_TRANSANCTION_ID")} text={egId} />
+            <Row
+              rowContainerStyle={rowContainerStyle}
+              last
+              label={t(ommitRupeeSymbol ? "CS_PAYMENT_AMOUNT_PAID_WITHOUT_SYMBOL" : "CS_PAYMENT_AMOUNT_PAID")}
+              text={paymentData?.totalAmountPaid ||( reciept_data?.paymentDetails?.[0]?.totalAmountPaid ? ("₹ " +  reciept_data?.paymentDetails?.[0]?.totalAmountPaid) : `₹ 0`) }
+            />
+            {(business_service !== "PT" || workflw) && (
+              <Row
+                rowContainerStyle={rowContainerStyle}
+                last
+                label={t("CS_PAYMENT_TRANSANCTION_DATE")}
+                text={transactionDate && new Date(transactionDate).toLocaleDateString("in")}
+              />
+            )}
+          </React.Fragment>
         )}
       </StatusTable>
       <div style={{display:"flex"}}>
