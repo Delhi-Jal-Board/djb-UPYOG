@@ -155,6 +155,7 @@ public class PaymentUpdateService {
 
 				waterConnectionRequest.getWaterConnection().getProcessInstance().setAction(WCConstants.ACTION_PAY);
 				wfIntegrator.callWorkFlow(waterConnectionRequest, property);
+				repo.updateWaterConnection(waterConnectionRequest, true);
 				enrichmentService.enrichFileStoreIds(waterConnectionRequest);
 
 				if (paymentDetail.getBusinessService().equalsIgnoreCase(config.getMutationWSBusinessServiceName()) || 
@@ -187,8 +188,15 @@ public class PaymentUpdateService {
 						// Step 1: APPROVE_MUTATION (PENDING_APPROVAL_FOR_MUTATION -> PENDING_FOR_MUTATION_ACTIVATION)
 						waterConnectionRequest.getWaterConnection().getProcessInstance().setAction(WCConstants.APPROVE_MUTATION_CONST);
 						wfIntegrator.callWorkFlow(waterConnectionRequest, property);
+						repo.updateWaterConnection(waterConnectionRequest, true);
 
 						// Step 2: ACTIVATE_MUTATION (PENDING_FOR_MUTATION_ACTIVATION -> CONNECTION_ACTIVATED)
+						try {
+							Thread.sleep(10000);
+						} catch (InterruptedException e) {
+							log.error("Interrupted while waiting for workflow persistence", e);
+							Thread.currentThread().interrupt();
+						}
 						waterConnectionRequest.getWaterConnection().getProcessInstance().setAction(WCConstants.ACTIVATE_MUTATION_CONST);
 						wfIntegrator.callWorkFlow(waterConnectionRequest, property);
 
