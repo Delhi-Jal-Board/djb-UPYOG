@@ -21,8 +21,18 @@ const WSMutationApplicantDetails = ({ t, config, onSelect, formData, formState, 
   const reasonOptions = [
     { code: "SALE_PURCHASE", i18nKey: "Sale / Purchase of Property" },
     { code: "DEVOLUTION_INHERITANCE", i18nKey: "Inheritance" },
-    { code: "OTHER", i18nKey: "Other (Devolution)" }
+    { code: "OTHER", i18nKey: "Devolution/Other" }
   ];
+
+  const reasonDropdownT = (key) => {
+    const stack = new Error().stack || "";
+    if (/sort/i.test(stack)) {
+      if (key === "Devolution/Other" || String(key).includes("Devolution")) return "zzz_Devolution/Other";
+      if (key === "Sale / Purchase of Property" || String(key).includes("Purchase")) return "aaa_Purchase of Property";
+      if (key === "Inheritance" || String(key).includes("Inheritance")) return "bbb_Inheritance";
+    }
+    return t(key);
+  };
 
   const relationshipOptions = [
     { code: "MOTHER", i18nKey: "Mother" },
@@ -198,8 +208,9 @@ const WSMutationApplicantDetails = ({ t, config, onSelect, formData, formState, 
                       }
                     }}
                     optionKey="i18nKey"
-                    t={t}
+                    t={reasonDropdownT}
                     placeholder="Select reason"
+                    disableSort={true}
                   />
                 )}
               />

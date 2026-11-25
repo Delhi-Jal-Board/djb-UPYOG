@@ -40,6 +40,7 @@ const MutationApplication = () => {
   const [formData, setFormData, clearFormData] = Digit.Hooks.useSessionStorage("MUTATION_APP_FORM_DATA", {});
   const [showToast, setShowToast] = useState(null);
   const [generatedAppNo, setGeneratedAppNo] = Digit.Hooks.useSessionStorage("MUTATION_APP_GENERATED_NO", null);
+  const [submissionIsOtpVerified, setSubmissionIsOtpVerified] = Digit.Hooks.useSessionStorage("MUTATION_APP_IS_OTP_VERIFIED", false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [completedSteps, setCompletedSteps, clearCompletedSteps] = Digit.Hooks.useSessionStorage("MUTATION_APP_COMPLETED_STEPS", []);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -221,7 +222,7 @@ const MutationApplication = () => {
         const reasonOptions = [
           { code: "SALE_PURCHASE", i18nKey: "Purchase of Property" },
           { code: "DEVOLUTION_INHERITANCE", i18nKey: "Inheritance" },
-          { code: "OTHER", i18nKey: "Other (Devolution, Gift Deed, Lease Agreement, etc)" },
+          { code: "OTHER", i18nKey: "Devolution/Other" },
         ];
         const relationshipOptions = [
           { code: "BLOOD_RELATION", i18nKey: "Blood Relation (Son / Daughter / Spouse)" },
@@ -571,6 +572,7 @@ const MutationApplication = () => {
                 clearAuthMobileNumber();
                 clearAuthServiceType();
                 clearAuthActiveConnection();
+                setSubmissionIsOtpVerified(!!params?.isOtpVerified);
                 const newAppNo =
                   resolvedServiceType === "WATER"
                     ? updateData?.WaterConnection?.[0]?.applicationNo
@@ -714,6 +716,7 @@ const MutationApplication = () => {
                 serviceType={resolvedServiceType}
                 tenantId={tenantId}
                 formData={formData}
+                isOtpVerified={submissionIsOtpVerified}
               />
             </Route>
 

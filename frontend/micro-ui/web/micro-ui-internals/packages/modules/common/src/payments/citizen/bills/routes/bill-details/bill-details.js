@@ -68,6 +68,20 @@ const BillDetails = ({ paymentRules, businessService }) => {
     window?.location?.href?.includes("ONE_TIME_FEE") ||
     bill?.billDetails?.[0]?.billAccountDetails?.some((head) => head?.taxHeadCode?.includes("ONE_TIME_FEE"));
 
+  const isMutation =
+    businessService?.includes("MUTATION") ||
+    bill?.businessService?.includes("MUTATION") ||
+    pathname?.includes("MUTATION") ||
+    window?.location?.href?.includes("MUTATION");
+
+  const isDisconnection =
+    businessService?.includes("DISCONNECTION") ||
+    bill?.businessService?.includes("DISCONNECTION") ||
+    pathname?.includes("DISCONNECTION") ||
+    window?.location?.href?.includes("DISCONNECTION");
+
+  const hideBillingPeriod = isNewConnection || isMutation || isDisconnection;
+
   const normalizedConsumerCode = stringReplaceAll(consumerCode || "", "+", "/");
   const isApplicationNo =
     normalizedConsumerCode.includes("_AP") ||
@@ -265,7 +279,7 @@ const BillDetails = ({ paymentRules, businessService }) => {
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginBottom: "20px" }}>
               <KeyNote keyValue={t(label)} note={stringReplaceAll(consumerCode, "+", "/")} />
               {billDetails?.currentBillNo && <KeyNote keyValue={t("CS_BILL_NO")} note={billDetails?.currentBillNo} />}
-              {!isNewConnection && <KeyNote keyValue={t("CS_PAYMENT_BILLING_PERIOD")} note={getBillingPeriod()} />}
+              {!hideBillingPeriod && <KeyNote keyValue={t("CS_PAYMENT_BILLING_PERIOD")} note={getBillingPeriod()} />}
               <KeyNote keyValue={t("WS_CONSUMER_NAME")} note={ConsumerName} />
             </div>
           ) : (
@@ -292,7 +306,7 @@ const BillDetails = ({ paymentRules, businessService }) => {
                   </CardSubHeader>
                 )}
               </div>
-              {businessService !== "PT.MUTATION" && businessService !== "FSM.TRIP_CHARGES" && !isNewConnection && (
+              {businessService !== "PT.MUTATION" && businessService !== "FSM.TRIP_CHARGES" && !hideBillingPeriod && (
                 <KeyNote keyValue={t("CS_PAYMENT_BILLING_PERIOD")} note={getBillingPeriod()} />
               )}
             </div>

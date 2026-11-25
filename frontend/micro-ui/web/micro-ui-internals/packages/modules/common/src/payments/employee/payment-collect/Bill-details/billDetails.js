@@ -378,6 +378,21 @@ const BillDetails = ({ businessService, consumerCode, _amount, onChange }) => {
         {!checkFSM &&
           bill &&
           config.details.map((obj, index) => {
+            const isNewConnection =
+              businessService?.includes("ONE_TIME_FEE") ||
+              bill?.businessService?.includes("ONE_TIME_FEE");
+            const isMutation =
+              businessService?.includes("MUTATION") ||
+              bill?.businessService?.includes("MUTATION");
+            const isDisconnection =
+              businessService?.includes("DISCONNECTION") ||
+              bill?.businessService?.includes("DISCONNECTION");
+            const hideBillingPeriod = isNewConnection || isMutation || isDisconnection;
+
+            if (hideBillingPeriod && obj.keyValue === "CS_PAYMENT_BILLING_PERIOD") {
+              return null;
+            }
+
             const value = obj.keyPath.reduce((acc, key) => {
               if (typeof key === "function") acc = key(acc);
               else acc = acc[key];

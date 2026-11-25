@@ -118,13 +118,7 @@ const SelectPaymentType = (props) => {
           if (isCombinedLocalized) {
             return (
               <span key={index}>
-                <span
-                  id={data?.linkId}
-                  onClick={(e) => {
-                    onLinkClick(e);
-                  }}
-                  style={{ color: "#a82227", cursor: "pointer" }}
-                >
+                <span>
                   {t(combinedKey)}
                 </span>
               </span>
@@ -135,13 +129,7 @@ const SelectPaymentType = (props) => {
             <span key={index}>
               {data?.linkPrefix && <span>{t(data?.linkPrefix)} </span>}
               {data?.link && (
-                <span
-                  id={data?.linkId}
-                  onClick={(e) => {
-                    onLinkClick(e);
-                  }}
-                  style={{ color: "#a82227", cursor: "pointer" }}
-                >
+                <span>
                   {t(data?.link)}
                 </span>
               )}

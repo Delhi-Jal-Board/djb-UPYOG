@@ -16,7 +16,6 @@ const Step3_UploadDocuments = ({ t, onNext, onBack, defaultValues }) => {
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
   const [digiLockerUpload, setDigilockerUpload] = useState(false);
   const [isDocumentUidLocked, setIsDocumentUidLocked] = useState(false);
-  const [showDocumentNumber, setShowDocumentNumber] = useState(false);
   const [isDeclarationChecked, setIsDeclarationChecked] = useState(defaultValues?.isDeclarationChecked || false);
 
   const identityOptions = [
@@ -217,6 +216,8 @@ const Step3_UploadDocuments = ({ t, onNext, onBack, defaultValues }) => {
       documentNumber: documentNumber.trim(),
       identityProofDocumentId: identityProofFile,
       saleDeedDocumentId: mutationDocFile,
+      identityFileName: rawFiles.identity?.name || identityFileName || "Identity_Document",
+      saleDeedFileName: rawFiles.mutation?.name || mutationFileName || "Supporting_Document",
       isDeclarationChecked
     });
   };
@@ -256,36 +257,61 @@ const Step3_UploadDocuments = ({ t, onNext, onBack, defaultValues }) => {
         </div>
       )}
 
-      <div style={{ display: "grid", gridTemplateColumns: isMobileView ? "1fr" : "repeat(auto-fill, minmax(280px, 1fr))", gap: isMobileView ? "20px" : "24px" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: "24px", width: "100%" }}>
         
-        {/* Address / Identity Proof */}
-        <div>
-          <CardLabel style={{ fontWeight: "bold" }}>1. Identity Proof {mandatoryIndicator}</CardLabel>
-          <Dropdown
-            selected={identityProofType}
-            option={identityOptions}
-            select={(val) => { 
-              if (val.code !== identityProofType?.code) {
-                setIdentityProofFile(null);
-                setRawFiles(prev => ({ ...prev, identity: null }));
-                setDocumentNumber("");
-                setIsDocumentUidLocked(false);
-              }
-              setIdentityProofType(val); 
-              setFieldErrors(prev => ({ ...prev, identityType: null })); 
-            }}
-            optionKey="i18nKey"
-            t={t}
-            placeholder="Select Document Type"
-            style={{ marginBottom: "12px" }}
-          />
-          {fieldErrors.identityType && <div style={errorTextStyle}>{fieldErrors.identityType}</div>}
+        {/* Row 1: Identity Proof */}
+        <div
+          style={{
+            border: "1px solid #e0e0e0",
+            borderRadius: "8px",
+            padding: isMobileView ? "14px" : "20px",
+            backgroundColor: "#ffffff",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px", flexWrap: "wrap", gap: "8px" }}>
+            <h3 style={{ fontSize: isMobileView ? "14px" : "16px", fontWeight: "bold", color: "#00497e", margin: 0 }}>
+              1. {t("Identity Proof")} {mandatoryIndicator}
+            </h3>
+            {identityProofFile && <span style={successTextStyle}>✓ {t("Uploaded")}</span>}
+          </div>
 
-          <CardLabel style={{ fontWeight: "bold", marginTop: "8px" }}>Document Number {mandatoryIndicator}</CardLabel>
-          <div style={{ display: "flex", alignItems: "flex-start", gap: "8px", marginBottom: "4px" }}>
-            <div style={{ flex: 1 }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: isMobileView ? "1fr" : "1fr 1fr",
+              gap: isMobileView ? "14px" : "20px",
+              marginBottom: "16px",
+              width: "100%",
+            }}
+          >
+            <div>
+              <CardLabel style={{ fontWeight: "bold" }}>{t("Document Type")} {mandatoryIndicator}</CardLabel>
+              <Dropdown
+                selected={identityProofType}
+                option={identityOptions}
+                select={(val) => { 
+                  if (val.code !== identityProofType?.code) {
+                    setIdentityProofFile(null);
+                    setRawFiles(prev => ({ ...prev, identity: null }));
+                    setDocumentNumber("");
+                    setIsDocumentUidLocked(false);
+                  }
+                  setIdentityProofType(val); 
+                  setFieldErrors(prev => ({ ...prev, identityType: null })); 
+                }}
+                optionKey="i18nKey"
+                t={t}
+                placeholder="Select Document Type"
+                style={{ marginBottom: "0px" }}
+              />
+              {fieldErrors.identityType && <div style={errorTextStyle}>{fieldErrors.identityType}</div>}
+            </div>
+
+            <div>
+              <CardLabel style={{ fontWeight: "bold" }}>{t("Document Number")} {mandatoryIndicator}</CardLabel>
               <TextInput 
-                type={"text"}
+                type="text"
                 value={documentNumber} 
                 onChange={(e) => { 
                   if (!isDocumentUidLocked) {
@@ -303,123 +329,130 @@ const Step3_UploadDocuments = ({ t, onNext, onBack, defaultValues }) => {
                 disabled={isDocumentUidLocked}
                 style={{ 
                   marginBottom: "0", 
-                  WebkitTextSecurity: showDocumentNumber ? "none" : "disc",
+                  WebkitTextSecurity: "disc",
+                  width: "100%",
                   ...(fieldErrors.documentNumber ? { border: "1px solid #d32f2f" } : {}),
                   ...(isDocumentUidLocked ? { backgroundColor: "#f0f0f0", cursor: "not-allowed", color: "#555" } : {})
                 }}
               />
+              {fieldErrors.documentNumber && <div style={errorTextStyle}>{fieldErrors.documentNumber}</div>}
+              {identityProofType?.code === "AADHAAR" && !fieldErrors.documentNumber && (
+                <span style={{ fontSize: "11px", color: "#999", marginTop: "4px", display: "block" }}>Format: 12-digit numeric (e.g. 123456789012)</span>
+              )}
+              {identityProofType?.code === "PAN" && !fieldErrors.documentNumber && (
+                <span style={{ fontSize: "11px", color: "#999", marginTop: "4px", display: "block" }}>Format: ABCDE1234F</span>
+              )}
             </div>
-            <button 
-              type="button" 
-              onClick={() => setShowDocumentNumber(!showDocumentNumber)}
-              style={{
-                padding: "8px 16px",
-                backgroundColor: "#f4f9fc",
-                border: "1px solid #ccc",
-                borderRadius: "4px",
-                cursor: "pointer",
-                fontWeight: "500",
-                fontSize: "14px",
-                height: "40px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center"
-              }}
-            >
-              {showDocumentNumber ? "Hide" : "View"}
-            </button>
           </div>
-          {fieldErrors.documentNumber && <div style={errorTextStyle}>{fieldErrors.documentNumber}</div>}
-          {identityProofType?.code === "AADHAAR" && !fieldErrors.documentNumber && (
-            <span style={{ fontSize: "11px", color: "#999" }}>Format: 12-digit numeric (e.g. 123456789012)</span>
-          )}
-          {identityProofType?.code === "PAN" && !fieldErrors.documentNumber && (
-            <span style={{ fontSize: "11px", color: "#999" }}>Format: ABCDE1234F</span>
-          )}
 
-          <div style={uploadBoxStyle(!!fieldErrors.identityFile, !!identityProofFile)}>
-            {digiLockerUpload ? (
-              <UploadFileDigiLocker
-                id="identity-upload"
-                onUpload={(e, newFile) => {
-                  if (newFile) {
-                    setRawFiles(prev => ({ ...prev, identity: newFile }));
-                  } else {
-                    setRawFiles(prev => ({ ...prev, identity: e.target.files[0] }));
-                  }
-                }}
-                onDelete={() => { 
-                  setIdentityProofFile(null); 
-                  setRawFiles(prev => ({ ...prev, identity: null })); 
-                  setDocumentNumber(""); 
-                  setIsDocumentUidLocked(false);
-                }}
-                message={identityProofFile ? `Uploaded` : `Click to Choose File`}
-                accept="image/*, .pdf, .png, .jpeg, .jpg"
-                uploadedFiles={identityProofFile && !rawFiles.identity ? [["Document", { fileStoreId: identityProofFile }]] : undefined}
-                removeTargetedFile={() => { 
-                  setIdentityProofFile(null); 
-                  setRawFiles(prev => ({ ...prev, identity: null })); 
-                  setDocumentNumber(""); 
-                  setIsDocumentUidLocked(false);
-                }}
-                documentType={identityProofType?.code}
-                onDocumentNumber={(num) => {
-                  setDocumentNumber(num);
-                  setIsDocumentUidLocked(true);
-                  setFieldErrors(prev => ({ ...prev, documentNumber: null }));
-                }}
-              />
-            ) : (
-              <UploadFile
-                id="identity-upload"
-                onUpload={(e) => setRawFiles(prev => ({ ...prev, identity: e.target.files[0] }))}
-                onDelete={() => { setIdentityProofFile(null); setRawFiles(prev => ({ ...prev, identity: null })); }}
-                message={identityProofFile ? `Uploaded` : `Click to Choose File`}
-                accept="image/*, .pdf, .png, .jpeg, .jpg"
-                uploadedFiles={identityProofFile && !rawFiles.identity ? [["Document", { fileStoreId: identityProofFile }]] : undefined}
-                removeTargetedFile={() => { setIdentityProofFile(null); setRawFiles(prev => ({ ...prev, identity: null })); }}
-              />
+          <div>
+            <CardLabel style={{ fontWeight: "bold", marginBottom: "8px" }}>{t("Upload Scanned File")} {mandatoryIndicator}</CardLabel>
+            <div style={uploadBoxStyle(!!fieldErrors.identityFile, !!identityProofFile)}>
+              {digiLockerUpload ? (
+                <UploadFileDigiLocker
+                  id="identity-upload"
+                  onUpload={(e, newFile) => {
+                    if (newFile) {
+                      setRawFiles(prev => ({ ...prev, identity: newFile }));
+                    } else {
+                      setRawFiles(prev => ({ ...prev, identity: e.target.files[0] }));
+                    }
+                  }}
+                  onDelete={() => { 
+                    setIdentityProofFile(null); 
+                    setRawFiles(prev => ({ ...prev, identity: null })); 
+                    setDocumentNumber(""); 
+                    setIsDocumentUidLocked(false);
+                  }}
+                  message={identityProofFile ? `Uploaded` : `Click to Choose File`}
+                  accept="image/*, .pdf, .png, .jpeg, .jpg"
+                  uploadedFiles={identityProofFile && !rawFiles.identity ? [["Document", { fileStoreId: identityProofFile }]] : undefined}
+                  removeTargetedFile={() => { 
+                    setIdentityProofFile(null); 
+                    setRawFiles(prev => ({ ...prev, identity: null })); 
+                    setDocumentNumber(""); 
+                    setIsDocumentUidLocked(false);
+                  }}
+                  documentType={identityProofType?.code}
+                  onDocumentNumber={(num) => {
+                    setDocumentNumber(num);
+                    setIsDocumentUidLocked(true);
+                    setFieldErrors(prev => ({ ...prev, documentNumber: null }));
+                  }}
+                />
+              ) : (
+                <UploadFile
+                  id="identity-upload"
+                  onUpload={(e) => setRawFiles(prev => ({ ...prev, identity: e.target.files[0] }))}
+                  onDelete={() => { setIdentityProofFile(null); setRawFiles(prev => ({ ...prev, identity: null })); }}
+                  message={identityProofFile ? `Uploaded` : `Click to Choose File`}
+                  accept="image/*, .pdf, .png, .jpeg, .jpg"
+                  uploadedFiles={identityProofFile && !rawFiles.identity ? [["Document", { fileStoreId: identityProofFile }]] : undefined}
+                  removeTargetedFile={() => { setIdentityProofFile(null); setRawFiles(prev => ({ ...prev, identity: null })); }}
+                />
+              )}
+            </div>
+            {fieldErrors.identityFile && <div style={errorTextStyle}>{fieldErrors.identityFile}</div>}
+            {identityProofFile && <div style={successTextStyle}>✓ Document uploaded successfully</div>}
+            {identityProofFile && identityFileUrl && !rawFiles.identity && (
+              <div style={{ marginTop: "8px" }}>
+                <a href={identityFileUrl} target="_blank" rel="noreferrer" style={{ color: "#f47738", textDecoration: "underline", fontSize: "14px", display: "inline-flex", alignItems: "center" }}>
+                  <span style={{ marginRight: "4px" }}></span> View {identityFileName}
+                </a>
+              </div>
             )}
           </div>
-          {fieldErrors.identityFile && <div style={errorTextStyle}>{fieldErrors.identityFile}</div>}
-          {identityProofFile && <div style={successTextStyle}>✓ Document uploaded successfully</div>}
-          {identityProofFile && identityFileUrl && !rawFiles.identity && (
-            <div style={{ marginTop: "8px" }}>
-              <a href={identityFileUrl} target="_blank" rel="noreferrer" style={{ color: "#f47738", textDecoration: "underline", fontSize: "14px", display: "inline-flex", alignItems: "center" }}>
-                <span style={{ marginRight: "4px" }}></span> View {identityFileName}
-              </a>
-            </div>
-          )}
         </div>
 
-        {/* Reason-Based Document */}
-        <div>
-          <CardLabel style={{ fontWeight: "bold" }}>2. Reason-Based Supporting Document {mandatoryIndicator}</CardLabel>
-          <div style={{ padding: "10px", backgroundColor: "#e9ecef", borderRadius: "4px", marginBottom: "12px", color: "#495057", fontSize: "14px", minHeight: "42px", display: "flex", alignItems: "center" }}>
-            {reasonDocLabel}
+        {/* Row 2: Reason-Based Supporting Document */}
+        <div
+          style={{
+            border: "1px solid #e0e0e0",
+            borderRadius: "8px",
+            padding: isMobileView ? "14px" : "20px",
+            backgroundColor: "#ffffff",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px", flexWrap: "wrap", gap: "8px" }}>
+            <h3 style={{ fontSize: isMobileView ? "14px" : "16px", fontWeight: "bold", color: "#00497e", margin: 0 }}>
+              2. {t("Reason-Based Supporting Document")} {mandatoryIndicator}
+            </h3>
+            {mutationDocFile && <span style={successTextStyle}>✓ {t("Uploaded")}</span>}
           </div>
-          <div style={uploadBoxStyle(!!fieldErrors.mutationFile, !!mutationDocFile)}>
-            <UploadFile
-              id="mutation-upload"
-              onUpload={(e) => setRawFiles(prev => ({ ...prev, mutation: e.target.files[0] }))}
-              onDelete={() => { setMutationDocFile(null); setRawFiles(prev => ({ ...prev, mutation: null })); }}
-              message={mutationDocFile ? `Uploaded` : `Click to Upload`}
-              accept="image/*, .pdf, .png, .jpeg, .jpg"
-              uploadedFiles={mutationDocFile && !rawFiles.mutation ? [["Document", { fileStoreId: mutationDocFile }]] : undefined}
-              removeTargetedFile={() => { setMutationDocFile(null); setRawFiles(prev => ({ ...prev, mutation: null })); }}
-            />
-          </div>
-          {fieldErrors.mutationFile && <div style={errorTextStyle}>{fieldErrors.mutationFile}</div>}
-          {mutationDocFile && <div style={successTextStyle}>✓ Document uploaded successfully</div>}
-          {mutationDocFile && mutationFileUrl && !rawFiles.mutation && (
-            <div style={{ marginTop: "8px" }}>
-              <a href={mutationFileUrl} target="_blank" rel="noreferrer" style={{ color: "#f47738", textDecoration: "underline", fontSize: "14px", display: "inline-flex", alignItems: "center" }}>
-                <span style={{ marginRight: "4px" }}></span> View {mutationFileName}
-              </a>
+
+          <div style={{ marginBottom: "16px" }}>
+            <CardLabel style={{ fontWeight: "bold" }}>{t("Document Requirement")}</CardLabel>
+            <div style={{ padding: "10px 14px", backgroundColor: "#e9ecef", borderRadius: "4px", color: "#495057", fontSize: "14px", minHeight: "42px", display: "flex", alignItems: "center" }}>
+              {reasonDocLabel}
             </div>
-          )}
+          </div>
+
+          <div>
+            <CardLabel style={{ fontWeight: "bold", marginBottom: "8px" }}>{t("Upload Scanned File")} {mandatoryIndicator}</CardLabel>
+            <div style={uploadBoxStyle(!!fieldErrors.mutationFile, !!mutationDocFile)}>
+              <UploadFile
+                id="mutation-upload"
+                onUpload={(e) => setRawFiles(prev => ({ ...prev, mutation: e.target.files[0] }))}
+                onDelete={() => { setMutationDocFile(null); setRawFiles(prev => ({ ...prev, mutation: null })); }}
+                message={mutationDocFile ? `Uploaded` : `Click to Upload`}
+                accept="image/*, .pdf, .png, .jpeg, .jpg"
+                uploadedFiles={mutationDocFile && !rawFiles.mutation ? [["Document", { fileStoreId: mutationDocFile }]] : undefined}
+                removeTargetedFile={() => { setMutationDocFile(null); setRawFiles(prev => ({ ...prev, mutation: null })); }}
+              />
+            </div>
+            {fieldErrors.mutationFile && <div style={errorTextStyle}>{fieldErrors.mutationFile}</div>}
+            {mutationDocFile && <div style={successTextStyle}>✓ Document uploaded successfully</div>}
+            {mutationDocFile && mutationFileUrl && !rawFiles.mutation && (
+              <div style={{ marginTop: "8px" }}>
+                <a href={mutationFileUrl} target="_blank" rel="noreferrer" style={{ color: "#f47738", textDecoration: "underline", fontSize: "14px", display: "inline-flex", alignItems: "center" }}>
+                  <span style={{ marginRight: "4px" }}></span> View {mutationFileName}
+                </a>
+              </div>
+            )}
+          </div>
         </div>
+
       </div>
 
       {/* Declaration Checkbox */}

@@ -63,6 +63,15 @@ export const convertEpochToDate = (dateEpoch) => {
     business_service?.includes("ONE_TIME_FEE") ||
     paymentData?.paymentDetails?.[0]?.bill?.businessService?.includes("ONE_TIME_FEE") ||
     window?.location?.href?.includes("ONE_TIME_FEE");
+  const isMutation =
+    business_service?.includes("MUTATION") ||
+    paymentData?.paymentDetails?.[0]?.bill?.businessService?.includes("MUTATION") ||
+    window?.location?.href?.includes("MUTATION");
+  const isDisconnection =
+    business_service?.includes("DISCONNECTION") ||
+    paymentData?.paymentDetails?.[0]?.bill?.businessService?.includes("DISCONNECTION") ||
+    window?.location?.href?.includes("DISCONNECTION");
+  const hideBillingPeriod = isNewConnection || isMutation || isDisconnection;
   const newTenantId = (business_service?.includes("WS.ONE_TIME_FEE") || business_service?.includes("SW.ONE_TIME_FEE") || isNewConnection) ? Digit.ULBService.getStateId() : tenantId;
   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
     {
@@ -768,7 +777,7 @@ export const convertEpochToDate = (dateEpoch) => {
       <StatusTable>
         <Row rowContainerStyle={rowContainerStyle} last label={t(label)} text={applicationNo} />
         {/** TODO : move this key and value into the hook based on business Service */}
-        {(business_service === "PT" || workflw) && !isNewConnection && (
+        {(business_service === "PT" || workflw) && !hideBillingPeriod && (
           <Row
             rowContainerStyle={rowContainerStyle}
             last

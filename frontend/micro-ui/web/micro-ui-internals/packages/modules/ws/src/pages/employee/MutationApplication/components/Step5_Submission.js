@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Card, Toast } from "@djb25/digit-ui-react-components";
 import { useHistory } from "react-router-dom";
 
-const Step5_Submission = ({ applicationNumber, serviceType, tenantId, formData, t }) => {
+const Step5_Submission = ({ applicationNumber, serviceType, tenantId, formData, isOtpVerified, t }) => {
   const history = useHistory();
   const [showToast, setShowToast] = useState(null);
   const [isPaymentRedirecting, setIsPaymentRedirecting] = useState(false);
@@ -120,59 +120,108 @@ const Step5_Submission = ({ applicationNumber, serviceType, tenantId, formData, 
 
   return (
     <div style={{ padding: isMobileView ? "8px 0" : "16px 0" }}>
-      {/* Success Banner */}
-      <div
-        style={{
-          backgroundColor: "#fff",
-          border: "1px solid #d4edda",
-          borderTop: "4px solid #28a745",
-          borderRadius: "8px",
-          padding: isMobileView ? "16px" : "20px",
-          display: "flex",
-          flexDirection: isMobileView ? "column" : "row",
-          justifyContent: "space-between",
-          alignItems: isMobileView ? "stretch" : "flex-start",
-          gap: "12px",
-          marginBottom: "20px",
-          boxShadow: "0 2px 6px rgba(0,0,0,0.04)",
-        }}
-      >
-        <div>
-          <h2
+      {/* Top Banner - Conditional based on OTP verification */}
+      {isOtpVerified ? (
+        /* Section containing only the generated Mutation Application ID/Number when submitted with OTP */
+        <div
+          style={{
+            backgroundColor: "#ffffff",
+            border: "1px solid #cce5ff",
+            borderTop: "4px solid #00497e",
+            borderRadius: "8px",
+            padding: isMobileView ? "16px" : "20px",
+            marginBottom: "20px",
+            boxShadow: "0 2px 6px rgba(0,0,0,0.04)",
+          }}
+        >
+          <div
             style={{
-              color: "#28a745",
-              fontSize: isMobileView ? "15px" : "18px",
-              fontWeight: "bold",
-              margin: "0 0 6px",
               display: "flex",
-              alignItems: "center",
-              flexWrap: "wrap",
-              gap: "8px",
+              flexDirection: isMobileView ? "column" : "row",
+              justifyContent: "space-between",
+              alignItems: isMobileView ? "flex-start" : "center",
+              gap: "12px",
             }}
           >
-            <span>✅</span> {t("Your mutation application has been submitted successfully to the respective Zonal Officer!")}
-          </h2>
-          <div style={{ color: "#555", marginTop: "4px", fontSize: isMobileView ? "13px" : "14px", wordBreak: "break-all" }}>
-            {t("Your SRN Reference No. is:")} <strong style={{ color: "#00497e" }}>{applicationNumber}</strong>
+            <div>
+              <div style={{ fontSize: isMobileView ? "12px" : "13px", color: "#666", marginBottom: "4px" }}>
+                {t("Generated Mutation Application Number")}
+              </div>
+              <div style={{ fontSize: isMobileView ? "18px" : "22px", fontWeight: "bold", color: "#00497e", wordBreak: "break-all" }}>
+                {applicationNumber || "NA"}
+              </div>
+            </div>
+            <span
+              style={{
+                padding: "6px 12px",
+                backgroundColor: "#e8f5e9",
+                color: "#2e7d32",
+                borderRadius: "16px",
+                fontSize: isMobileView ? "11px" : "12px",
+                fontWeight: "bold",
+                whiteSpace: "nowrap",
+                border: "1px solid #c8e6c9",
+              }}
+            >
+              ✓ {t("OTP Verified Application")}
+            </span>
           </div>
         </div>
-        <div style={{ alignSelf: isMobileView ? "flex-start" : undefined }}>
-          <span
-            style={{
-              padding: "6px 12px",
-              backgroundColor: "#fff3cd",
-              color: "#856404",
-              borderRadius: "16px",
-              fontSize: isMobileView ? "11px" : "12px",
-              fontWeight: "bold",
-              whiteSpace: "nowrap",
-              border: "1px solid #ffeeba",
-            }}
-          >
-            {t("Pending for Zonal Officer approval")}
-          </span>
+      ) : (
+        /* Normal Submission Banner when submitted without OTP */
+        <div
+          style={{
+            backgroundColor: "#fff",
+            border: "1px solid #d4edda",
+            borderTop: "4px solid #28a745",
+            borderRadius: "8px",
+            padding: isMobileView ? "16px" : "20px",
+            display: "flex",
+            flexDirection: isMobileView ? "column" : "row",
+            justifyContent: "space-between",
+            alignItems: isMobileView ? "stretch" : "flex-start",
+            gap: "12px",
+            marginBottom: "20px",
+            boxShadow: "0 2px 6px rgba(0,0,0,0.04)",
+          }}
+        >
+          <div>
+            <h2
+              style={{
+                color: "#28a745",
+                fontSize: isMobileView ? "15px" : "18px",
+                fontWeight: "bold",
+                margin: "0 0 6px",
+                display: "flex",
+                alignItems: "center",
+                flexWrap: "wrap",
+                gap: "8px",
+              }}
+            >
+              <span>✅</span> {t("Your mutation application has been submitted successfully to the respective Zonal Officer!")}
+            </h2>
+            <div style={{ color: "#555", marginTop: "4px", fontSize: isMobileView ? "13px" : "14px", wordBreak: "break-all" }}>
+              {t("Your SRN Reference No. is:")} <strong style={{ color: "#00497e" }}>{applicationNumber}</strong>
+            </div>
+          </div>
+          <div style={{ alignSelf: isMobileView ? "flex-start" : undefined }}>
+            <span
+              style={{
+                padding: "6px 12px",
+                backgroundColor: "#fff3cd",
+                color: "#856404",
+                borderRadius: "16px",
+                fontSize: isMobileView ? "11px" : "12px",
+                fontWeight: "bold",
+                whiteSpace: "nowrap",
+                border: "1px solid #ffeeba",
+              }}
+            >
+              {t("Pending for Zonal Officer approval")}
+            </span>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Make Payment Section */}
       <div
