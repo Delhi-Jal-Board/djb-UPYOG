@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Fragment } from "react";
 import { Card, CheckBox, ActionBar, SubmitBar, TextInput, Toast } from "@djb25/digit-ui-react-components";
 
 const Step4_Preview = ({
@@ -13,26 +13,50 @@ const Step4_Preview = ({
   authMobileNumber,
 }) => {
   const [agreed, setAgreed] = useState(false);
-  const [fee, setFee] = useState(0);
+  const [fee, setFee] = useState(1350);
   const [taxHeads, setTaxHeads] = useState([]);
-  const [slab, setSlab] = useState(t("Calculating..."));
+  const [slab, setSlab] = useState("");
 
   // OTP Verification state
   const [selectedOption, setSelectedOption] = useState(null); // null | "OTP" | "WITHOUT_OTP"
+
+  // Existing Consumer OTP states
+  const [existingOtpSent, setExistingOtpSent] = useState(false);
+  const [isSendingExistingOtp, setIsSendingExistingOtp] = useState(false);
+  const [existingTimeLeft, setExistingTimeLeft] = useState(0);
   const [existingOtp, setExistingOtp] = useState("");
-  const [newOtp, setNewOtp] = useState("");
-  const [isExistingOtpVerified, setIsExistingOtpVerified] = useState(false);
-  const [isNewOtpVerified, setIsNewOtpVerified] = useState(false);
-
-  const [isSendingOtp, setIsSendingOtp] = useState(false);
   const [isVerifyingExisting, setIsVerifyingExisting] = useState(false);
-  const [isVerifyingNew, setIsVerifyingNew] = useState(false);
-
+  const [isExistingOtpVerified, setIsExistingOtpVerified] = useState(false);
   const [otpErrorExisting, setOtpErrorExisting] = useState("");
+
+  // New Applicant OTP states
+  const [newOtpSent, setNewOtpSent] = useState(false);
+  const [isSendingNewOtp, setIsSendingNewOtp] = useState(false);
+  const [newTimeLeft, setNewTimeLeft] = useState(0);
+  const [newOtp, setNewOtp] = useState("");
+  const [isVerifyingNew, setIsVerifyingNew] = useState(false);
+  const [isNewOtpVerified, setIsNewOtpVerified] = useState(false);
   const [otpErrorNew, setOtpErrorNew] = useState("");
 
-  const [timeLeft, setTimeLeft] = useState(0);
+  // Document filenames state
+  const [identityFileName, setIdentityFileName] = useState(formData?.identityFileName || "");
+  const [mutationFileName, setMutationFileName] = useState(formData?.saleDeedFileName || formData?.mutationFileName || "");
+
   const [showToast, setShowToast] = useState(null);
+
+  const getMaskedMeterNumber = (meter) => {
+    if (!meter || meter === "NA") return "NA";
+    const str = String(meter).trim();
+    if (str.length <= 4) return "****";
+    return `******${str.slice(-4)}`;
+  };
+
+  const getMaskedDocNumber = (doc) => {
+    if (!doc || doc === "NA") return "NA";
+    const str = String(doc).trim();
+    if (str.length <= 4) return "****";
+    return `******${str.slice(-4)}`;
+  };
 
   const getMaskedName = (name) => {
     if (!name) return "NA";
@@ -94,7 +118,7 @@ const Step4_Preview = ({
 
   const getReasonName = (code) => {
     if (code?.code) return code.i18nKey;
-    const map = { SALE_PURCHASE: t("Purchase of Property"), DEVOLUTION_INHERITANCE: t("Inheritance"), OTHER: t("Other (Devolution)") };
+    const map = { SALE_PURCHASE: t("Purchase of Property"), DEVOLUTION_INHERITANCE: t("Inheritance"), OTHER: t("Devolution/Other") };
     return map[code] || code;
   };
 
@@ -113,38 +137,163 @@ const Step4_Preview = ({
   };
 
   useEffect(() => {
-    const calculateStaticFee = () => {
-      const relationCode = formData?.relationshipWithExistingConsumer?.code || formData?.relationshipWithExistingConsumer;
+    const fetchDocNames = async () => {
+      const stateId = Digit.ULBService.getStateId();
+      const idsToFetch = [];
+      if (!identityFileName && identityProofDocumentId) idsToFetch.push(identityProofDocumentId);
+      if (!mutationFileName && saleDeedDocumentId) idsToFetch.push(saleDeedDocumentId);
 
-      if (relationCode === "BLOOD_RELATION") {
-        setFee(100);
-        setTaxHeads([]);
-        setSlab(t("Blood relation slab"));
-      } else {
-        setFee(1350);
-        setTaxHeads([
-          { taxHeadCode: "WS_MUTATION_TRADE_SECURITY", estimateAmount: 250.0 },
-          { taxHeadCode: "WS_MUTATION_FEE", estimateAmount: 100.0 },
-          { taxHeadCode: "WS_WATER_ADVANCE", estimateAmount: 1000.0 },
-        ]);
-        setSlab(t("Other Slab"));
+      if (idsToFetch.length > 0) {
+        try {
+          const res = await window.Digit.UploadServices.Filefetch(idsToFetch, stateId);
+          if (identityProofDocumentId && res?.data?.[identityProofDocumentId]) {
+            const url = res.data[identityProofDocumentId].split(",")[0];
+            let name = "Identity_Document";
+            try {
+              const decoded = decodeURIComponent(url);
+              const parts = decoded.split("?")[0].split("/");
+              name = parts[parts.length - 1];
+              if (name.includes("-")) name = name.split("-").slice(1).join("-");
+            } catch (e) {}
+            setIdentityFileName(name);
+          }
+          if (saleDeedDocumentId && res?.data?.[saleDeedDocumentId]) {
+            const url = res.data[saleDeedDocumentId].split(",")[0];
+            let name = "Supporting_Document";
+            try {
+              const decoded = decodeURIComponent(url);
+              const parts = decoded.split("?")[0].split("/");
+              name = parts[parts.length - 1];
+              if (name.includes("-")) name = name.split("-").slice(1).join("-");
+            } catch (e) {}
+            setMutationFileName(name);
+          }
+        } catch (e) {
+          console.error("Failed to fetch doc names", e);
+        }
+      }
+    };
+    fetchDocNames();
+  }, [identityProofDocumentId, saleDeedDocumentId]);
+
+  // Static fee calculation logic preserved as earlier
+  useEffect(() => {
+    const relationCode = formData?.relationshipWithExistingConsumer?.code || formData?.relationshipWithExistingConsumer;
+    if (relationCode === "BLOOD_RELATION") {
+      setFee(100);
+      setTaxHeads([]);
+      setSlab(t("Blood relation slab"));
+    } else {
+      setFee(1350);
+      setTaxHeads([
+        { taxHeadCode: "WS_MUTATION_TRADE_SECURITY", estimateAmount: 250.0 },
+        { taxHeadCode: "WS_MUTATION_FEE", estimateAmount: 100.0 },
+        { taxHeadCode: "WS_WATER_ADVANCE", estimateAmount: 1000.0 },
+      ]);
+      setSlab(t("Other Slab"));
+    }
+  }, [formData?.relationshipWithExistingConsumer, t]);
+
+  // Background estimate API call to log calculation payload and response
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchMutationEstimate = async () => {
+      const isWater = (resolvedServiceType || "WATER").toUpperCase() === "WATER";
+      const businessService = isWater ? "WS" : "SW";
+      const stateCode = tenantId || Digit.ULBService.getCurrentTenantId() || "dl";
+
+      const connectionPayload = {
+        ...appData,
+        applicationType: isWater ? "MUTATION_WATER_CONNECTION" : "MUTATION_SEWERAGE_CONNECTION",
+        property: propertyData?.Properties?.[0] || appData?.property,
+        connectionHolders: [
+          {
+            name: formData?.proposedNewConsumerName,
+            mobileNumber: formData?.newOwnerMobileNumber,
+            relationship: formData?.relationshipWithExistingConsumer?.code || formData?.relationshipWithExistingConsumer,
+            gender: formData?.gender?.code || formData?.gender,
+            emailId: formData?.newOwnerEmailAddress,
+            isPrimaryOwner: true,
+          },
+        ],
+        additionalDetails: {
+          ...(appData?.additionalDetails || {}),
+          reasonForNameChange: formData?.reasonForNameChange?.code || formData?.reasonForNameChange,
+          relationshipWithExistingConsumer: formData?.relationshipWithExistingConsumer?.code || formData?.relationshipWithExistingConsumer,
+        },
+      };
+
+      const criteria = isWater
+        ? {
+            applicationNo: appData?.applicationNo || appData?.connectionNo,
+            tenantId: stateCode,
+            waterConnection: connectionPayload,
+          }
+        : {
+            applicationNo: appData?.applicationNo || appData?.connectionNo,
+            tenantId: stateCode,
+            sewerageConnection: { ...connectionPayload, service: "SEWERAGE" },
+          };
+
+      const estimatePayload = {
+        CalculationCriteria: [criteria],
+        isconnectionCalculation: false,
+      };
+
+      console.log("Calling Mutation Estimate API:", {
+        url: businessService === "WS" ? "/ws-calculator/waterCalculator/_estimate" : "/sw-calculator/sewerageCalculator/_estimate",
+        payload: estimatePayload,
+      });
+
+      try {
+        let res = null;
+        if (Digit?.WSService?.wsCalculationEstimate) {
+          res = await Digit.WSService.wsCalculationEstimate(estimatePayload, businessService);
+        } else {
+          const url = businessService === "WS" ? "/ws-calculator/waterCalculator/_estimate" : "/sw-calculator/sewerageCalculator/_estimate";
+          res = await Digit.CustomService.getResponse({
+            url,
+            data: estimatePayload,
+            useCache: false,
+            userService: true,
+            method: "POST",
+          });
+        }
+
+        console.log("Mutation Estimate API Response:", res);
+      } catch (err) {
+        console.warn("Mutation Estimate API call failed or returned error:", err);
       }
     };
 
-    calculateStaticFee();
-  }, [formData]);
+    fetchMutationEstimate();
 
-  // Resend timer countdown
+    return () => {
+      isMounted = false;
+    };
+  }, [formData, appData, propertyData, resolvedServiceType, tenantId]);
+
+  // Existing consumer resend countdown timer
   useEffect(() => {
     let timer;
-    if (timeLeft > 0) {
-      timer = setTimeout(() => setTimeLeft((prev) => prev - 1), 1000);
+    if (existingTimeLeft > 0) {
+      timer = setTimeout(() => setExistingTimeLeft((prev) => prev - 1), 1000);
     }
     return () => clearTimeout(timer);
-  }, [timeLeft]);
+  }, [existingTimeLeft]);
 
-  // Dispatch OTP simultaneously to existing and new mobile numbers
-  const triggerSimultaneousOtpDispatch = async () => {
+  // New applicant resend countdown timer
+  useEffect(() => {
+    let timer;
+    if (newTimeLeft > 0) {
+      timer = setTimeout(() => setNewTimeLeft((prev) => prev - 1), 1000);
+    }
+    return () => clearTimeout(timer);
+  }, [newTimeLeft]);
+
+  // Dispatch OTP to existing consumer's registered mobile number independently
+  const handleSendExistingOtp = async () => {
     if (!existingMobileNumber || existingMobileNumber.length < 10) {
       setShowToast({
         key: "error",
@@ -152,22 +301,13 @@ const Step4_Preview = ({
       });
       return;
     }
-    if (!newOwnerMobileNumber || newOwnerMobileNumber.length < 10) {
-      setShowToast({
-        key: "error",
-        message: t("Valid mobile number not found for new applicant"),
-      });
-      return;
-    }
-
-    setIsSendingOtp(true);
-    setTimeLeft(30);
+    setIsSendingExistingOtp(true);
+    setOtpErrorExisting("");
 
     try {
       const stateCode = Digit.ULBService.getStateId() || "dl";
       const userType = Digit.UserService.getType() ? Digit.UserService.getType().toUpperCase() : "CITIZEN";
-
-      const sendToExisting = Digit.UserService.sendOtp(
+      const res = await Digit.UserService.sendOtp(
         {
           otp: {
             mobileNumber: existingMobileNumber,
@@ -179,7 +319,38 @@ const Step4_Preview = ({
         stateCode
       );
 
-      const sendToNew = Digit.UserService.sendOtp(
+      setIsSendingExistingOtp(false);
+      setExistingOtpSent(true);
+      setExistingTimeLeft(30);
+      setShowToast({
+        key: "success",
+        message: t("OTP sent successfully to existing consumer's registered mobile number."),
+      });
+    } catch (err) {
+      setIsSendingExistingOtp(false);
+      setShowToast({
+        key: "error",
+        message: err?.response?.data?.Errors?.[0]?.message || err?.message || t("Failed to send OTP to existing consumer"),
+      });
+    }
+  };
+
+  // Dispatch OTP to new applicant's mobile number independently
+  const handleSendNewOtp = async () => {
+    if (!newOwnerMobileNumber || newOwnerMobileNumber.length < 10) {
+      setShowToast({
+        key: "error",
+        message: t("Valid mobile number not found for new applicant"),
+      });
+      return;
+    }
+    setIsSendingNewOtp(true);
+    setOtpErrorNew("");
+
+    try {
+      const stateCode = Digit.ULBService.getStateId() || "dl";
+      const userType = Digit.UserService.getType() ? Digit.UserService.getType().toUpperCase() : "CITIZEN";
+      const res = await Digit.UserService.sendOtp(
         {
           otp: {
             mobileNumber: newOwnerMobileNumber,
@@ -191,49 +362,18 @@ const Step4_Preview = ({
         stateCode
       );
 
-      const [resExisting, resNew] = await Promise.allSettled([sendToExisting, sendToNew]);
-      setIsSendingOtp(false);
-
-      const isExistingErr =
-        resExisting.status === "rejected" ||
-        resExisting.value?.error ||
-        resExisting.value?.data?.error ||
-        resExisting.value?.Errors ||
-        resExisting.value?.data?.Errors;
-
-      const isNewErr =
-        resNew.status === "rejected" ||
-        resNew.value?.error ||
-        resNew.value?.data?.error ||
-        resNew.value?.Errors ||
-        resNew.value?.data?.Errors;
-
-      if (isExistingErr && isNewErr) {
-        setShowToast({
-          key: "error",
-          message: t("Failed to send OTP to mobile numbers. Please click Resend OTP to try again."),
-        });
-      } else if (isExistingErr) {
-        setShowToast({
-          key: "warning",
-          message: t("OTP sent to new applicant, but failed for existing consumer."),
-        });
-      } else if (isNewErr) {
-        setShowToast({
-          key: "warning",
-          message: t("OTP sent to existing consumer, but failed for new applicant."),
-        });
-      } else {
-        setShowToast({
-          key: "success",
-          message: t("OTP sent successfully to both registered mobile numbers."),
-        });
-      }
+      setIsSendingNewOtp(false);
+      setNewOtpSent(true);
+      setNewTimeLeft(30);
+      setShowToast({
+        key: "success",
+        message: t("OTP sent successfully to new applicant's mobile number."),
+      });
     } catch (err) {
-      setIsSendingOtp(false);
+      setIsSendingNewOtp(false);
       setShowToast({
         key: "error",
-        message: err?.response?.data?.Errors?.[0]?.message || err?.message || t("Failed to send OTP"),
+        message: err?.response?.data?.Errors?.[0]?.message || err?.message || t("Failed to send OTP to new applicant"),
       });
     }
   };
@@ -243,18 +383,18 @@ const Step4_Preview = ({
     if (selectedOption === option) return;
 
     // Reset OTP verification states when switching
+    setExistingOtpSent(false);
+    setNewOtpSent(false);
     setExistingOtp("");
     setNewOtp("");
     setIsExistingOtpVerified(false);
     setIsNewOtpVerified(false);
+    setExistingTimeLeft(0);
+    setNewTimeLeft(0);
     setOtpErrorExisting("");
     setOtpErrorNew("");
 
     setSelectedOption(option);
-
-    if (option === "OTP") {
-      triggerSimultaneousOtpDispatch();
-    }
   };
 
   // Verify OTP for Existing Consumer
@@ -426,12 +566,12 @@ const Step4_Preview = ({
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: isMobileView ? "1fr 1fr" : "repeat(auto-fill, minmax(150px, 1fr))",
+            gridTemplateColumns: isMobileView ? "1fr 1fr" : "repeat(auto-fill, minmax(180px, 1fr))",
             gap: isMobileView ? "12px" : "16px",
           }}
         >
           {infoItem(t("Connection No"), connectionNo)}
-          {infoItem(t("Meter Number"), meterId)}
+          {infoItem(t("Meter Number"), getMaskedMeterNumber(meterId))}
         </div>
       </div>
 
@@ -439,20 +579,19 @@ const Step4_Preview = ({
       {!isEditFlow && (
         <div style={{ ...sectionStyle, borderLeft: "4px solid #f29c1f" }}>
           <h3 style={{ fontSize: isMobileView ? "13px" : "15px", fontWeight: "bold", color: "#f29c1f", marginBottom: "12px" }}>
-            {t("Existing / Previous Owner Details (Masked)")}
+            {t("Existing / Previous Owner Details")}
           </h3>
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: isMobileView ? "1fr" : "repeat(auto-fill, minmax(150px, 1fr))",
+              gridTemplateColumns: isMobileView ? "1fr" : "repeat(auto-fill, minmax(200px, 1fr))",
               gap: isMobileView ? "12px" : "16px",
-              marginBottom: "12px",
             }}
           >
-            {infoItem(t("Registered Name:"), oldName)}
-            {infoItem(t("Registered Phone:"), oldPhone)}
+            {infoItem(t("Registered Consumer Name"), oldName)}
+            {infoItem(t("Registered Mobile Number"), oldPhone)}
+            {infoItem(t("Property Address"), oldAddress)}
           </div>
-          {infoItem(t("Registered Address:"), oldAddress)}
         </div>
       )}
 
@@ -464,79 +603,118 @@ const Step4_Preview = ({
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: isMobileView ? "1fr 1fr" : "repeat(auto-fill, minmax(150px, 1fr))",
+            gridTemplateColumns: isMobileView ? "1fr 1fr" : "repeat(auto-fill, minmax(180px, 1fr))",
             gap: isMobileView ? "12px" : "16px",
           }}
         >
           {infoItem(t("New Owner Name"), proposedNewConsumerName)}
           {infoItem(t("Mobile Number"), newOwnerMobileNumber ? `+91 ${getMaskedPhone(newOwnerMobileNumber)}` : "NA")}
-          {infoItem(t("Relation Type"), getRelationshipName(relationshipWithExistingConsumer))}
           {infoItem(t("Transfer Reason"), getReasonName(reasonForNameChange))}
+          {infoItem(t("Relation Type"), getRelationshipName(relationshipWithExistingConsumer))}
         </div>
       </div>
 
-      {/* Documents */}
+      {/* Uploaded Documents */}
       <div style={{ ...sectionStyle, borderLeft: "4px solid #17a2b8" }}>
-        <h3 style={{ fontSize: isMobileView ? "13px" : "15px", fontWeight: "bold", color: "#17a2b8", marginBottom: "12px" }}>
+        <h3 style={{ fontSize: isMobileView ? "13px" : "15px", fontWeight: "bold", color: "#17a2b8", marginBottom: "14px" }}>
           {t("Uploaded Documents")}
         </h3>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: isMobileView ? "1fr" : "repeat(auto-fill, minmax(150px, 1fr))",
-            gap: isMobileView ? "12px" : "16px",
-          }}
-        >
-          <div>
-            <div style={labelStyle}>{t("Address / Identity Proof")}</div>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
-              <span style={uploadDocStatusStyle}>✓ {identityProofType?.i18nKey || t("Document")}</span>
-              {identityProofDocumentId && (
-                <button
-                  type="button"
-                  onClick={() => viewDocument(identityProofDocumentId)}
-                  style={{
-                    color: "#00497e",
-                    background: "none",
-                    border: "none",
-                    textDecoration: "underline",
-                    cursor: "pointer",
-                    fontSize: isMobileView ? "12px" : "14px",
-                    fontWeight: "bold",
-                    padding: 0,
-                  }}
-                >
-                  {t("View")}
-                </button>
-              )}
+
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          {/* Document 1: Identity Proof */}
+          <div
+            style={{
+              padding: "12px 14px",
+              backgroundColor: "#f9fbfd",
+              borderRadius: "6px",
+              border: "1px solid #e1effa",
+              display: "grid",
+              gridTemplateColumns: isMobileView ? "1fr" : "1fr 1fr 1.5fr",
+              gap: isMobileView ? "8px" : "16px",
+              alignItems: "center",
+            }}
+          >
+            <div>
+              <div style={labelStyle}>{t("Document Type")}</div>
+              <div style={valueStyle}>{identityProofType?.i18nKey || t("Identity Proof")}</div>
+            </div>
+
+            <div>
+              <div style={labelStyle}>{t("Document Number")}</div>
+              <div style={valueStyle}>{getMaskedDocNumber(documentNumber)}</div>
+            </div>
+
+            <div>
+              <div style={labelStyle}>{t("Uploaded File")}</div>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                <span style={{ fontSize: isMobileView ? "12px" : "13px", fontWeight: "600", color: "#333", wordBreak: "break-all" }}>
+                  {identityFileName || t("Identity Proof File")}
+                </span>
+                {identityProofDocumentId && (
+                  <button
+                    type="button"
+                    onClick={() => viewDocument(identityProofDocumentId)}
+                    style={{
+                      color: "#00497e",
+                      background: "none",
+                      border: "none",
+                      textDecoration: "underline",
+                      cursor: "pointer",
+                      fontSize: isMobileView ? "12px" : "13px",
+                      fontWeight: "bold",
+                      padding: 0,
+                    }}
+                  >
+                    {t("View")}
+                  </button>
+                )}
+              </div>
             </div>
           </div>
-          <div>
-            <div style={labelStyle}>{t("Document Number")}</div>
-            <div style={valueStyle}>{documentNumber || "NA"}</div>
-          </div>
-          <div>
-            <div style={labelStyle}>{t("Reason-Based Proof")}</div>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
-              <span style={uploadDocStatusStyle}>✓ {t("Uploaded")}</span>
-              {saleDeedDocumentId && (
-                <button
-                  type="button"
-                  onClick={() => viewDocument(saleDeedDocumentId)}
-                  style={{
-                    color: "#00497e",
-                    background: "none",
-                    border: "none",
-                    textDecoration: "underline",
-                    cursor: "pointer",
-                    fontSize: isMobileView ? "12px" : "14px",
-                    fontWeight: "bold",
-                    padding: 0,
-                  }}
-                >
-                  {t("View")}
-                </button>
-              )}
+
+          {/* Document 2: Reason-Based Supporting Document */}
+          <div
+            style={{
+              padding: "12px 14px",
+              backgroundColor: "#f9fbfd",
+              borderRadius: "6px",
+              border: "1px solid #e1effa",
+              display: "grid",
+              gridTemplateColumns: isMobileView ? "1fr" : "1fr 2.5fr",
+              gap: isMobileView ? "8px" : "16px",
+              alignItems: "center",
+            }}
+          >
+            <div>
+              <div style={labelStyle}>{t("Supporting Document Type")}</div>
+              <div style={valueStyle}>{getReasonName(reasonForNameChange)}</div>
+            </div>
+
+            <div>
+              <div style={labelStyle}>{t("Uploaded File")}</div>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                <span style={{ fontSize: isMobileView ? "12px" : "13px", fontWeight: "600", color: "#333", wordBreak: "break-all" }}>
+                  {mutationFileName || t("Supporting Document File")}
+                </span>
+                {saleDeedDocumentId && (
+                  <button
+                    type="button"
+                    onClick={() => viewDocument(saleDeedDocumentId)}
+                    style={{
+                      color: "#00497e",
+                      background: "none",
+                      border: "none",
+                      textDecoration: "underline",
+                      cursor: "pointer",
+                      fontSize: isMobileView ? "12px" : "13px",
+                      fontWeight: "bold",
+                      padding: 0,
+                    }}
+                  >
+                    {t("View")}
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -556,7 +734,7 @@ const Step4_Preview = ({
         </h3>
 
         {taxHeads && taxHeads.length > 0 && (
-          <div style={{ marginBottom: "16px" }}>
+          <div style={{ marginBottom: "12px" }}>
             {taxHeads.map((tax, index) => (
               <div
                 key={index}
@@ -571,31 +749,25 @@ const Step4_Preview = ({
                 <div style={valueStyle}>₹ {tax.estimateAmount}.00</div>
               </div>
             ))}
-            <hr style={{ borderTop: "1px solid #c3e6cb", margin: "12px 0", maxWidth: isMobileView ? "100%" : "400px" }} />
           </div>
         )}
 
-        <div style={{ display: "flex", justifyContent: "space-between", maxWidth: isMobileView ? "100%" : "400px", flexWrap: "wrap", gap: "8px" }}>
-          <div>
-            <div style={labelStyle}>{t("Total Amount Payable:")}</div>
-            <div style={{ ...valueStyle, color: "#28a745", fontSize: isMobileView ? "18px" : "20px" }}>₹ {fee}.00</div>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            maxWidth: isMobileView ? "100%" : "400px",
+            borderTop: "1px solid #c3e6cb",
+            paddingTop: "10px",
+            marginTop: "4px",
+          }}
+        >
+          <div style={{ fontSize: isMobileView ? "14px" : "16px", fontWeight: "bold", color: "#333" }}>
+            {t("Grand total")}
           </div>
-          <div>
-            <div style={labelStyle}>{t("Fee Status:")}</div>
-            <span
-              style={{
-                padding: "4px 8px",
-                backgroundColor: "#d1ecf1",
-                color: "#0c5460",
-                borderRadius: "16px",
-                fontSize: isMobileView ? "10px" : "12px",
-                fontWeight: "bold",
-                display: "inline-block",
-                marginTop: "4px",
-              }}
-            >
-              {t("PAYABLE POST VERIFICATION")}
-            </span>
+          <div style={{ ...valueStyle, color: "#28a745", fontSize: isMobileView ? "18px" : "20px" }}>
+            ₹ {fee}.00
           </div>
         </div>
       </div>
@@ -672,7 +844,7 @@ const Step4_Preview = ({
               </div>
               <div style={{ fontSize: isMobileView ? "12px" : "13px", color: "#555", marginTop: "4px", lineHeight: "1.4" }}>
                 {t(
-                  "Sends OTP simultaneously to both existing consumer's registered mobile number and new applicant's mobile number. Both must be verified to enable submission."
+                  "Sends OTP simultaneously to both existing consumer's registered mobile number and new applicant's mobile number. Both must be verified so that name change/mutation can be done instantly after payment processed."
                 )}
               </div>
             </div>
@@ -718,7 +890,7 @@ const Step4_Preview = ({
               </label>
               <div style={{ fontSize: isMobileView ? "12px" : "13px", color: "#555", marginTop: "4px", lineHeight: "1.4" }}>
                 {t(
-                  "Submit application directly without OTP verification. The application will undergo standard department inspection and verification."
+                  "Submit application directly without OTP verification. The application will undergo standard department inspection and verification after payment processed."
                 )}
               </div>
             </div>
@@ -738,41 +910,16 @@ const Step4_Preview = ({
               boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
             }}
           >
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "8px", marginBottom: "14px" }}>
-              <div>
-                <h4 style={{ fontSize: isMobileView ? "14px" : "15px", fontWeight: "bold", color: "#00497e", margin: 0 }}>
-                  {t("OTP Verification Section")}
-                </h4>
-                <p style={{ fontSize: isMobileView ? "11px" : "12px", color: "#666", margin: "4px 0 0 0" }}>
-                  {t("Enter the 6-digit OTP sent to each mobile number and click Verify.")}
-                </p>
-              </div>
-
-              {/* Resend OTP button */}
-              <button
-                type="button"
-                onClick={triggerSimultaneousOtpDispatch}
-                disabled={isSendingOtp || timeLeft > 0}
-                style={{
-                  background: "none",
-                  border: "none",
-                  color: isSendingOtp || timeLeft > 0 ? "#999" : "#00497e",
-                  fontWeight: "bold",
-                  fontSize: isMobileView ? "12px" : "13px",
-                  cursor: isSendingOtp || timeLeft > 0 ? "not-allowed" : "pointer",
-                  textDecoration: isSendingOtp || timeLeft > 0 ? "none" : "underline",
-                  padding: "4px 0",
-                }}
-              >
-                {isSendingOtp
-                  ? t("Sending OTP...")
-                  : timeLeft > 0
-                  ? `${t("Resend OTP")} (${timeLeft}s)`
-                  : t("Resend OTP")}
-              </button>
+            <div style={{ marginBottom: "14px" }}>
+              <h4 style={{ fontSize: isMobileView ? "14px" : "15px", fontWeight: "bold", color: "#00497e", margin: 0 }}>
+                {t("OTP Verification Section")}
+              </h4>
+              <p style={{ fontSize: isMobileView ? "11px" : "12px", color: "#666", margin: "4px 0 0 0" }}>
+                {t("Send and verify OTP independently for each mobile number. Both must be verified to enable submission.")}
+              </p>
             </div>
 
-            {/* Two OTP Input Cards Grid */}
+            {/* Two OTP Cards Grid */}
             <div
               style={{
                 display: "grid",
@@ -810,12 +957,35 @@ const Step4_Preview = ({
                   )}
                 </div>
                 <div style={{ fontSize: isMobileView ? "11px" : "12px", color: "#666", marginBottom: "10px" }}>
-                  {t("Sent to")}: <strong>+91 {oldPhone}</strong>
+                  {t("Registered Mobile")}: <strong>+91 {oldPhone}</strong>
                 </div>
 
                 {isExistingOtpVerified ? (
                   <div style={{ padding: "8px 12px", backgroundColor: "#e8f5e9", color: "#2e7d32", borderRadius: "4px", fontSize: isMobileView ? "12px" : "13px", fontWeight: "600" }}>
                     ✓ {t("Mobile number verified successfully")}
+                  </div>
+                ) : !existingOtpSent ? (
+                  <div>
+                    <p style={{ fontSize: isMobileView ? "11px" : "12px", color: "#555", margin: "0 0 10px 0" }}>
+                      {t("Click Send OTP to send a 6-digit verification code to existing consumer's number.")}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={handleSendExistingOtp}
+                      disabled={isSendingExistingOtp}
+                      style={{
+                        padding: "10px 18px",
+                        backgroundColor: isSendingExistingOtp ? "#ccc" : "#00497e",
+                        color: "#ffffff",
+                        border: "none",
+                        borderRadius: "4px",
+                        cursor: isSendingExistingOtp ? "not-allowed" : "pointer",
+                        fontWeight: "bold",
+                        fontSize: isMobileView ? "12px" : "13px",
+                      }}
+                    >
+                      {isSendingExistingOtp ? t("Sending OTP...") : t("Send OTP")}
+                    </button>
                   </div>
                 ) : (
                   <div>
@@ -855,11 +1025,35 @@ const Step4_Preview = ({
                         {isVerifyingExisting ? t("Verifying...") : t("Verify")}
                       </button>
                     </div>
-                    {otpErrorExisting && (
-                      <div style={{ color: "#d32f2f", fontSize: "11px", marginTop: "4px", fontWeight: "500" }}>
-                        {otpErrorExisting}
-                      </div>
-                    )}
+
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "8px" }}>
+                      {otpErrorExisting ? (
+                        <div style={{ color: "#d32f2f", fontSize: "11px", fontWeight: "500" }}>
+                          {otpErrorExisting}
+                        </div>
+                      ) : <div />}
+                      <button
+                        type="button"
+                        onClick={handleSendExistingOtp}
+                        disabled={isSendingExistingOtp || existingTimeLeft > 0}
+                        style={{
+                          background: "none",
+                          border: "none",
+                          color: isSendingExistingOtp || existingTimeLeft > 0 ? "#999" : "#00497e",
+                          fontWeight: "bold",
+                          fontSize: "12px",
+                          cursor: isSendingExistingOtp || existingTimeLeft > 0 ? "not-allowed" : "pointer",
+                          textDecoration: isSendingExistingOtp || existingTimeLeft > 0 ? "none" : "underline",
+                          padding: 0,
+                        }}
+                      >
+                        {isSendingExistingOtp
+                          ? t("Sending OTP...")
+                          : existingTimeLeft > 0
+                          ? `${t("Resend OTP")} (${existingTimeLeft}s)`
+                          : t("Resend OTP")}
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
@@ -893,12 +1087,35 @@ const Step4_Preview = ({
                   )}
                 </div>
                 <div style={{ fontSize: isMobileView ? "11px" : "12px", color: "#666", marginBottom: "10px" }}>
-                  {t("Sent to")}: <strong>+91 {getMaskedPhone(newOwnerMobileNumber)}</strong>
+                  {t("Applicant Mobile")}: <strong>+91 {getMaskedPhone(newOwnerMobileNumber)}</strong>
                 </div>
 
                 {isNewOtpVerified ? (
                   <div style={{ padding: "8px 12px", backgroundColor: "#e8f5e9", color: "#2e7d32", borderRadius: "4px", fontSize: isMobileView ? "12px" : "13px", fontWeight: "600" }}>
                     ✓ {t("Mobile number verified successfully")}
+                  </div>
+                ) : !newOtpSent ? (
+                  <div>
+                    <p style={{ fontSize: isMobileView ? "11px" : "12px", color: "#555", margin: "0 0 10px 0" }}>
+                      {t("Click Send OTP to send a 6-digit verification code to new applicant's number.")}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={handleSendNewOtp}
+                      disabled={isSendingNewOtp}
+                      style={{
+                        padding: "10px 18px",
+                        backgroundColor: isSendingNewOtp ? "#ccc" : "#00497e",
+                        color: "#ffffff",
+                        border: "none",
+                        borderRadius: "4px",
+                        cursor: isSendingNewOtp ? "not-allowed" : "pointer",
+                        fontWeight: "bold",
+                        fontSize: isMobileView ? "12px" : "13px",
+                      }}
+                    >
+                      {isSendingNewOtp ? t("Sending OTP...") : t("Send OTP")}
+                    </button>
                   </div>
                 ) : (
                   <div>
@@ -938,11 +1155,35 @@ const Step4_Preview = ({
                         {isVerifyingNew ? t("Verifying...") : t("Verify")}
                       </button>
                     </div>
-                    {otpErrorNew && (
-                      <div style={{ color: "#d32f2f", fontSize: "11px", marginTop: "4px", fontWeight: "500" }}>
-                        {otpErrorNew}
-                      </div>
-                    )}
+
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "8px" }}>
+                      {otpErrorNew ? (
+                        <div style={{ color: "#d32f2f", fontSize: "11px", fontWeight: "500" }}>
+                          {otpErrorNew}
+                        </div>
+                      ) : <div />}
+                      <button
+                        type="button"
+                        onClick={handleSendNewOtp}
+                        disabled={isSendingNewOtp || newTimeLeft > 0}
+                        style={{
+                          background: "none",
+                          border: "none",
+                          color: isSendingNewOtp || newTimeLeft > 0 ? "#999" : "#00497e",
+                          fontWeight: "bold",
+                          fontSize: "12px",
+                          cursor: isSendingNewOtp || newTimeLeft > 0 ? "not-allowed" : "pointer",
+                          textDecoration: isSendingNewOtp || newTimeLeft > 0 ? "none" : "underline",
+                          padding: 0,
+                        }}
+                      >
+                        {isSendingNewOtp
+                          ? t("Sending OTP...")
+                          : newTimeLeft > 0
+                          ? `${t("Resend OTP")} (${newTimeLeft}s)`
+                          : t("Resend OTP")}
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>

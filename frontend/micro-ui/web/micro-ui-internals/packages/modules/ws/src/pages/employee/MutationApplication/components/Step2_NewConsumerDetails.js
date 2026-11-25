@@ -97,15 +97,24 @@ const Step2_NewConsumerDetails = ({ t, onNext, onBack, defaultValues, applicatio
   const genderOptions = [
     { code: "MALE", i18nKey: "Male" },
     { code: "FEMALE", i18nKey: "Female" },
-    { code: "TRANSGENDER", i18nKey: "Transgender" },
     { code: "OTHER", i18nKey: "Other" }
   ];
 
   const reasonOptions = [
     { code: "SALE_PURCHASE", i18nKey: "Purchase of Property" },
     { code: "DEVOLUTION_INHERITANCE", i18nKey: "Inheritance" },
-    { code: "OTHER", i18nKey: "Other (Devolution)" }
+    { code: "OTHER", i18nKey: "Devolution/Other" }
   ];
+
+  const reasonDropdownT = (key) => {
+    const stack = new Error().stack || "";
+    if (/sort/i.test(stack)) {
+      if (key === "Devolution/Other" || String(key).includes("Devolution")) return "zzz_Devolution/Other";
+      if (key === "Purchase of Property" || String(key).includes("Purchase")) return "aaa_Purchase of Property";
+      if (key === "Inheritance" || String(key).includes("Inheritance")) return "bbb_Inheritance";
+    }
+    return t(key);
+  };
 
   const relationshipOptions = [
     { code: "BLOOD_RELATION", i18nKey: "Blood Relation (Son / Daughter / Spouse)" },
@@ -266,6 +275,7 @@ const Step2_NewConsumerDetails = ({ t, onNext, onBack, defaultValues, applicatio
                   optionKey="i18nKey"
                   t={t}
                   placeholder="Select Gender"
+                  disableSort={true}
                 />
               )}
             />
@@ -304,22 +314,45 @@ const Step2_NewConsumerDetails = ({ t, onNext, onBack, defaultValues, applicatio
 
           <div>
             <CardLabel style={{ fontWeight: "bold" }}>Email ID <span style={{ color: "#999", fontSize: "12px" }}>(Optional)</span></CardLabel>
-            <Controller
-              control={control}
-              name="newOwnerEmailAddress"
-              rules={{
-                pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: "Please enter a valid email address" }
-              }}
-              render={(props) => (
-                <TextInput 
-                  value={props.value} 
-                  onChange={(e) => { props.onChange(e.target.value); clearErrors("newOwnerEmailAddress"); }} 
-                  onBlur={() => { props.onBlur(); setTouched(p => ({...p, newOwnerEmailAddress: true})); trigger("newOwnerEmailAddress"); }}
-                  placeholder="example@email.com" 
-                  style={getFieldBorderStyle("newOwnerEmailAddress")}
+            <div style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}>
+              <div style={{ flex: 1 }}>
+                <Controller
+                  control={control}
+                  name="newOwnerEmailAddress"
+                  rules={{
+                    pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: "Please enter a valid email address" }
+                  }}
+                  render={(props) => (
+                    <TextInput 
+                      value={props.value || ""} 
+                      onChange={(e) => { props.onChange(e.target.value); clearErrors("newOwnerEmailAddress"); }} 
+                      onBlur={() => { props.onBlur(); setTouched(p => ({...p, newOwnerEmailAddress: true})); trigger("newOwnerEmailAddress"); }}
+                      placeholder="example@email.com" 
+                      style={{ ...getFieldBorderStyle("newOwnerEmailAddress"), marginBottom: "0px" }}
+                    />
+                  )}
                 />
-              )}
-            />
+              </div>
+              <button
+                type="button"
+                onClick={(e) => { e.preventDefault(); }}
+                style={{
+                  height: "40px",
+                  padding: "0 16px",
+                  backgroundColor: "#00497e",
+                  color: "#ffffff",
+                  border: "none",
+                  borderRadius: "4px",
+                  fontSize: "14px",
+                  fontWeight: "600",
+                  cursor: "pointer",
+                  whiteSpace: "nowrap",
+                  flexShrink: 0
+                }}
+              >
+                {t("Verify")}
+              </button>
+            </div>
             {errors?.newOwnerEmailAddress && <CardLabelError style={errorStyle}>{errors?.newOwnerEmailAddress?.message}</CardLabelError>}
           </div>
 
@@ -342,8 +375,9 @@ const Step2_NewConsumerDetails = ({ t, onNext, onBack, defaultValues, applicatio
                     }
                   }}
                   optionKey="i18nKey"
-                  t={t}
+                  t={reasonDropdownT}
                   placeholder="Select reason"
+                  disableSort={true}
                 />
               )}
             />
@@ -365,6 +399,7 @@ const Step2_NewConsumerDetails = ({ t, onNext, onBack, defaultValues, applicatio
                   t={t}
                   placeholder="Select relationship"
                   disable={!isInheritance}
+                  disableSort={true}
                 />
               )}
             />
