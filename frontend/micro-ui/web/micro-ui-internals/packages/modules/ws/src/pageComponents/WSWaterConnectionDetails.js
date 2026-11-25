@@ -89,7 +89,23 @@ const WSWaterConnectionDetails = ({ t, config, userType, onSelect, formData }) =
               "detailsProvidedBy": "",
               "locality": formData?.cpt?.details?.address?.locality?.code,
               "completeAddress": formData?.ConnectionDetails?.[0]?.completeAddress || "",
-              "addressType": formData?.ConnectionDetails?.[0]?.addressType?.code || formData?.ConnectionDetails?.[0]?.addressType || ""
+              "addressType": formData?.ConnectionDetails?.[0]?.addressType?.code || formData?.ConnectionDetails?.[0]?.addressType || "",
+              questions:
+                formData?.waterConnection?.useDetails?.questions ||
+                formData?.cpt?.details?.additionalDetails?.questions ||
+                [],
+              categoryTypeSelectionQuestion:
+                formData?.waterConnection?.useDetails?.categoryTypeSelectionQuestion ||
+                formData?.cpt?.details?.additionalDetails?.categoryTypeSelectionQuestion ||
+                null,
+              categoryTypeSelectionAnswer:
+                formData?.waterConnection?.useDetails?.categoryTypeSelectionAnswer ||
+                formData?.cpt?.details?.additionalDetails?.categoryTypeSelectionAnswer ||
+                null,
+              categoryTypeSelectionQuestionCode:
+                formData?.waterConnection?.useDetails?.categoryTypeSelectionQuestionCode ||
+                formData?.cpt?.details?.additionalDetails?.categoryTypeSelectionQuestionCode ||
+                null,
           },
           "tenantId": formData?.cpt?.details?.tenantId,
           "processInstance": {

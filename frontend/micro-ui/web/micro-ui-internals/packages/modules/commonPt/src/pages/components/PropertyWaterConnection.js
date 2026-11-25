@@ -1,4 +1,4 @@
-import { LabelFieldPair, Dropdown, TextInput, CardLabelError, CardLabel, CollapsibleCardPage, Toast, FieldLabelWithTooltip } from "@djb25/digit-ui-react-components";
+import { LabelFieldPair, Dropdown, TextInput, CardLabelError, CardLabel, CollapsibleCardPage, Toast, FieldLabelWithTooltip, RadioButtons } from "@djb25/digit-ui-react-components";
 import React, { useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import _ from "lodash";
@@ -20,6 +20,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
     setValue,
     clearErrors: formClearErrors,
   } = useForm({
+    mode: "onChange",
     defaultValues: formData?.[config.key] || {
       useDetails: {
         categoryType: null,
@@ -37,6 +38,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
         numberOfStudents: "",
         servantQuarterArea: "",
         questions: [],
+        categoryTypeSelectionAnswer: null,
       },
     },
   });
@@ -345,14 +347,16 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
   const hasSelectedCategory = Boolean(normalizeCode(selectedCategoryCode));
 
   const handleCategoryChange = (selectedCategory) => {
+    setRuleAnswer(null);
+    setValue("useDetails.categoryTypeSelectionAnswer", null);
     setValue("useDetails.propertyCategory", selectedCategory, { shouldValidate: true, shouldDirty: true });
     if (clearErrors) clearErrors("useDetails.propertyCategory");
     if (formClearErrors) formClearErrors("useDetails.propertyCategory");
 
     if (!selectedCategory) {
-      setValue("useDetails.propertyType", null, { shouldValidate: true, shouldDirty: true });
-      setValue("useDetails.categoryType", null);
-      setValue("useDetails.WaterConnectionUsageType", null);
+      setValue("useDetails.propertyType", null, { shouldValidate: false, shouldDirty: true });
+      setValue("useDetails.categoryType", null, { shouldValidate: false, shouldDirty: true });
+      setValue("useDetails.WaterConnectionUsageType", null, { shouldValidate: false, shouldDirty: true });
       prevPropertyTypeCode.current = null;
       if (clearErrors) {
         clearErrors("useDetails.propertyType");
@@ -375,9 +379,9 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
       );
       const isMatch = matchesCategory(matched || watchPropertyType, selNorm);
       if (!isMatch) {
-        setValue("useDetails.propertyType", null, { shouldValidate: true, shouldDirty: true });
-        setValue("useDetails.categoryType", null);
-        setValue("useDetails.WaterConnectionUsageType", null);
+        setValue("useDetails.propertyType", null, { shouldValidate: false, shouldDirty: true });
+        setValue("useDetails.categoryType", null, { shouldValidate: false, shouldDirty: true });
+        setValue("useDetails.WaterConnectionUsageType", null, { shouldValidate: false, shouldDirty: true });
         prevPropertyTypeCode.current = null;
         if (clearErrors) {
           clearErrors("useDetails.propertyType");
@@ -448,6 +452,59 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
     });
   }, [watchPropertyType, propertyType2List, ptServicesMastersData, categoryTypeList, t]);
 
+  const isCommercialCategory = useMemo(() => {
+    const catCode =
+      typeof watchPropertyCategory === "object"
+        ? watchPropertyCategory?.code || watchPropertyCategory?.name
+        : watchPropertyCategory;
+    return normalizeCode(catCode) === "COMMERCIAL";
+  }, [watchPropertyCategory]);
+
+  const matchedPropertyTypeFull = useMemo(() => {
+    if (!watchPropertyType?.code) return null;
+    const list = propertyType2List?.length > 0 ? propertyType2List : ptServicesMastersData?.PropertyTax?.PropertyType || [];
+    return list.find((item) => normalizeCode(item.code) === normalizeCode(watchPropertyType.code)) || watchPropertyType;
+  }, [watchPropertyType, propertyType2List, ptServicesMastersData]);
+
+  const categoryTypeRule = useMemo(() => {
+    if (!isCommercialCategory) return null;
+    return matchedPropertyTypeFull?.categoryTypeSelectionRule || null;
+  }, [isCommercialCategory, matchedPropertyTypeFull]);
+
+  const [ruleAnswer, setRuleAnswer] = useState(() => {
+    return (
+      formData?.[config?.key]?.useDetails?.categoryTypeSelectionAnswer ||
+      formData?.[config?.key]?.categoryTypeSelectionAnswer ||
+      null
+    );
+  });
+
+  const handleCategoryTypeRuleSelect = (option) => {
+    const ansCode = String(option?.code || option?.name || option || "").toUpperCase();
+    setRuleAnswer(ansCode);
+    setValue("useDetails.categoryTypeSelectionAnswer", ansCode, { shouldDirty: true });
+
+    const matchedRule = categoryTypeRule?.rules?.find(
+      (r) => String(r.answer || "").toUpperCase() === ansCode
+    );
+
+    const targetCategoryTypeName = matchedRule?.categoryType;
+    if (targetCategoryTypeName) {
+      const normTarget = normalizeCode(targetCategoryTypeName);
+      const targetCat = categoryTypeList.find(
+        (c) => normalizeCode(c.code) === normTarget || normalizeCode(c.name) === normTarget
+      ) || {
+        code: normTarget === "DOMESTIC" ? "DOMESTIC" : normTarget === "NONDOMESTIC" ? "NON_DOMESTIC" : targetCategoryTypeName,
+        name: targetCategoryTypeName,
+        i18nKey: t && t(`WS_CATEGORY_${normTarget}`) !== `WS_CATEGORY_${normTarget}` ? `WS_CATEGORY_${normTarget}` : targetCategoryTypeName,
+      };
+
+      setValue("useDetails.categoryType", targetCat, { shouldValidate: true, shouldDirty: true });
+      if (clearErrors) clearErrors("useDetails.categoryType");
+      if (formClearErrors) formClearErrors("useDetails.categoryType");
+    }
+  };
+
   const autoFillFromPropertyType = React.useCallback(
     (propTypeItem) => {
       if (!propTypeItem?.code) return;
@@ -459,7 +516,33 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
       console.log("[PropertyWaterConnection] Matched item from MDMS:", matched);
 
       // 1. Category Type
-      if (matched?.categoryType) {
+      const hasCategoryTypeRule = isCommercialCategory && Boolean(matched?.categoryTypeSelectionRule);
+
+      if (hasCategoryTypeRule) {
+        // Commercial case with categoryTypeSelectionRule:
+        // Category type is determined by the rule's question and answer
+        const currentAns = ruleAnswer || formData?.[config?.key]?.useDetails?.categoryTypeSelectionAnswer;
+        if (currentAns) {
+          const matchedRule = matched.categoryTypeSelectionRule?.rules?.find(
+            (r) => String(r.answer || "").toUpperCase() === String(currentAns).toUpperCase()
+          );
+          if (matchedRule?.categoryType) {
+            const normTarget = normalizeCode(matchedRule.categoryType);
+            const targetCat = categoryTypeList.find(
+              (c) => normalizeCode(c.code) === normTarget || normalizeCode(c.name) === normTarget
+            ) || {
+              code: normTarget === "DOMESTIC" ? "DOMESTIC" : normTarget === "NONDOMESTIC" ? "NON_DOMESTIC" : matchedRule.categoryType,
+              name: matchedRule.categoryType,
+              i18nKey: t && t(`WS_CATEGORY_${normTarget}`) !== `WS_CATEGORY_${normTarget}` ? `WS_CATEGORY_${normTarget}` : matchedRule.categoryType,
+            };
+            setValue("useDetails.categoryType", targetCat, { shouldValidate: true, shouldDirty: true });
+            if (clearErrors) clearErrors("useDetails.categoryType");
+            if (formClearErrors) formClearErrors("useDetails.categoryType");
+          }
+        } else {
+          setValue("useDetails.categoryType", null, { shouldValidate: false, shouldDirty: true });
+        }
+      } else if (matched?.categoryType) {
         let rawCats = matched.categoryType;
         if (!Array.isArray(rawCats)) rawCats = [rawCats];
         rawCats = rawCats
@@ -531,8 +614,10 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
         if (clearErrors) clearErrors("useDetails.WaterConnectionUsageType");
         if (formClearErrors) formClearErrors("useDetails.WaterConnectionUsageType");
       }
+      if (clearErrors) clearErrors("useDetails.propertyType");
+      if (formClearErrors) formClearErrors("useDetails.propertyType");
     },
-    [propertyType2List, ptServicesMastersData, categoryTypeList, categoryOptions, usageTypeOptions, setValue, clearErrors, formClearErrors, t]
+    [propertyType2List, ptServicesMastersData, categoryTypeList, categoryOptions, usageTypeOptions, setValue, clearErrors, formClearErrors, t, isCommercialCategory, ruleAnswer, formData, config]
   );
 
   const prevPropertyTypeCode = React.useRef(null);
@@ -540,15 +625,22 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
   useEffect(() => {
     if (!watchPropertyType?.code) {
       prevPropertyTypeCode.current = null;
+      setRuleAnswer(null);
       return;
     }
 
     const isNewType = prevPropertyTypeCode.current !== watchPropertyType.code;
     if (isNewType) {
+      if (prevPropertyTypeCode.current !== null) {
+        setRuleAnswer(null);
+        setValue("useDetails.categoryTypeSelectionAnswer", null);
+      }
       prevPropertyTypeCode.current = watchPropertyType.code;
+      if (formClearErrors) formClearErrors("useDetails.propertyType");
+      if (clearErrors) clearErrors("useDetails.propertyType");
       autoFillFromPropertyType(watchPropertyType);
     }
-  }, [watchPropertyType?.code, autoFillFromPropertyType]);
+  }, [watchPropertyType?.code, autoFillFromPropertyType, formClearErrors, clearErrors, setValue]);
 
   const activeQuestions = useMemo(() => {
     if (!watchPropertyType?.code) return [];
@@ -599,29 +691,53 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
     });
   };
 
+  const allQuestionsPayload = useMemo(() => {
+    const list = [...(questionAnswers || [])];
+    if (categoryTypeRule && ruleAnswer) {
+      const qText = categoryTypeRule.question || "Is this shop located within a property that also contains residential units?";
+      const existingIdx = list.findIndex(
+        (q) => (categoryTypeRule.questionCode && q.questionCode === categoryTypeRule.questionCode) || q.question === qText
+      );
+      const ruleQObj = {
+        question: qText,
+        questionCode: categoryTypeRule.questionCode,
+        answer: ruleAnswer,
+      };
+      if (existingIdx >= 0) {
+        list[existingIdx] = ruleQObj;
+      } else {
+        list.push(ruleQObj);
+      }
+    }
+    return list;
+  }, [questionAnswers, categoryTypeRule, ruleAnswer]);
+
   const prevQuestionsRef = React.useRef(null);
   useEffect(() => {
-    if (!_.isEqual(prevQuestionsRef.current, questionAnswers)) {
-      prevQuestionsRef.current = _.cloneDeep(questionAnswers);
-      setValue("useDetails.questions", questionAnswers);
+    if (!_.isEqual(prevQuestionsRef.current, allQuestionsPayload)) {
+      prevQuestionsRef.current = _.cloneDeep(allQuestionsPayload);
+      setValue("useDetails.questions", allQuestionsPayload);
     }
-  }, [questionAnswers, setValue]);
+  }, [allQuestionsPayload, setValue]);
 
   const lastSentValue = React.useRef(null);
   useEffect(() => {
     const payloadToSend = {
       ...formValue,
-      questions: questionAnswers,
+      questions: allQuestionsPayload,
       useDetails: {
         ...formValue?.useDetails,
-        questions: questionAnswers,
+        questions: allQuestionsPayload,
+        categoryTypeSelectionQuestion: categoryTypeRule?.question || null,
+        categoryTypeSelectionAnswer: ruleAnswer || null,
+        categoryTypeSelectionQuestionCode: categoryTypeRule?.questionCode || null,
       },
     };
     if (!_.isEqual(lastSentValue.current, payloadToSend)) {
       lastSentValue.current = _.cloneDeep(payloadToSend);
       onSelect(config.key, payloadToSend);
     }
-  }, [formValue, questionAnswers, config.key, onSelect]);
+  }, [formValue, allQuestionsPayload, categoryTypeRule, ruleAnswer, config.key, onSelect]);
 
   useEffect(() => {
     if (!formData?.cpt?.details) {
@@ -745,7 +861,13 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
             <Controller
               control={control}
               name="useDetails.propertyCategory"
-              rules={{ required: t("REQUIRED_FIELD") }}
+              rules={{
+                validate: (val) => {
+                  if (!val) return t("REQUIRED_FIELD");
+                  const code = typeof val === "object" ? val?.code || val?.name : val;
+                  return code && String(code).trim().length > 0 ? true : t("REQUIRED_FIELD");
+                },
+              }}
               render={(props) => (
                 <Dropdown
                   option={categoryOptions}
@@ -759,11 +881,17 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
                 />
               )}
             />
-            {errors?.useDetails?.propertyCategory && (
-              <CardLabelError style={{ fontSize: "12px", color: "#d4351c", marginTop: "4px" }}>
-                {errors.useDetails.propertyCategory.message}
-              </CardLabelError>
-            )}
+            {(!watchPropertyCategory ||
+              !(
+                watchPropertyCategory?.code ||
+                watchPropertyCategory?.name ||
+                (typeof watchPropertyCategory === "string" && watchPropertyCategory.trim().length > 0)
+              )) &&
+              errors?.useDetails?.propertyCategory && (
+                <CardLabelError style={{ fontSize: "12px", color: "#d4351c", marginTop: "4px" }}>
+                  {errors.useDetails.propertyCategory.message}
+                </CardLabelError>
+              )}
           </div>
         </LabelFieldPair>
 
@@ -777,7 +905,13 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
             <Controller
               control={control}
               name="useDetails.propertyType"
-              rules={{ required: t("REQUIRED_FIELD") }}
+              rules={{
+                validate: (val) => {
+                  if (!val) return t("REQUIRED_FIELD");
+                  const code = typeof val === "object" ? val?.code || val?.name : val;
+                  return code && String(code).trim().length > 0 ? true : t("REQUIRED_FIELD");
+                },
+              }}
               render={(props) => (
                 <Dropdown
                   option={propertyTypeOptions}
@@ -785,6 +919,9 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
                   selected={props.value}
                   select={(selected) => {
                     props.onChange(selected);
+                    setValue("useDetails.propertyType", selected, { shouldValidate: false, shouldDirty: true });
+                    if (formClearErrors) formClearErrors("useDetails.propertyType");
+                    if (clearErrors) clearErrors("useDetails.propertyType");
                     prevPropertyTypeCode.current = selected?.code;
                     autoFillFromPropertyType(selected);
                   }}
@@ -801,13 +938,83 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
                 />
               )}
             />
-            {errors?.useDetails?.propertyType && (
-              <CardLabelError style={{ fontSize: "12px", color: "#d4351c", marginTop: "4px" }}>
-                {errors.useDetails.propertyType.message}
-              </CardLabelError>
-            )}
+            {(!watchPropertyType ||
+              !(
+                watchPropertyType?.code ||
+                watchPropertyType?.name ||
+                (typeof watchPropertyType === "string" && watchPropertyType.trim().length > 0)
+              )) &&
+              errors?.useDetails?.propertyType && (
+                <CardLabelError style={{ fontSize: "12px", color: "#d4351c", marginTop: "4px" }}>
+                  {errors.useDetails.propertyType.message}
+                </CardLabelError>
+              )}
           </div>
         </LabelFieldPair>
+
+        {categoryTypeRule && (
+          <LabelFieldPair key="categoryTypeSelectionRule">
+            <CardLabel style={{ whiteSpace: "normal", wordBreak: "break-word", fontWeight: "bold" }}>
+              <strong>
+                {categoryTypeRule.question?.toLowerCase().startsWith("question")
+                  ? categoryTypeRule.question
+                  : `Question : ${categoryTypeRule.question}`}
+              </strong>
+            </CardLabel>
+            <div className="form-field" style={{ display: "flex", alignItems: "center" }}>
+              <RadioButtons
+                t={t}
+                name="categoryTypeRuleRadio"
+                options={[
+                  { code: "YES", name: t("CS_COMMON_YES") && t("CS_COMMON_YES") !== "CS_COMMON_YES" ? t("CS_COMMON_YES") : "Yes" },
+                  { code: "NO", name: t("CS_COMMON_NO") && t("CS_COMMON_NO") !== "CS_COMMON_NO" ? t("CS_COMMON_NO") : "No" },
+                ]}
+                optionsKey="name"
+                selectedOption={
+                  ruleAnswer
+                    ? {
+                        code: ruleAnswer,
+                        name:
+                          ruleAnswer === "YES"
+                            ? t("CS_COMMON_YES") && t("CS_COMMON_YES") !== "CS_COMMON_YES"
+                              ? t("CS_COMMON_YES")
+                              : "Yes"
+                            : t("CS_COMMON_NO") && t("CS_COMMON_NO") !== "CS_COMMON_NO"
+                            ? t("CS_COMMON_NO")
+                            : "No",
+                      }
+                    : null
+                }
+                onSelect={handleCategoryTypeRuleSelect}
+                disabled={isPropertyFound}
+                style={{ display: "flex", gap: "24px", alignItems: "center", marginBottom: "0px" }}
+              />
+            </div>
+          </LabelFieldPair>
+        )}
+
+        {activeQuestions &&
+          activeQuestions.length > 0 &&
+          activeQuestions.map((questionText, index) => {
+            const rawQ = String(questionText || "").trim();
+            const label = rawQ.toLowerCase().startsWith("question") ? rawQ : `Question : ${rawQ}`;
+            return (
+              <LabelFieldPair key={`question_${index}_${rawQ}`}>
+                <CardLabel style={{ whiteSpace: "normal", wordBreak: "break-word", fontWeight: "bold" }}>
+                  <strong>{label}</strong>
+                </CardLabel>
+                <div className="form-field">
+                  <TextInput
+                    name={`useDetails.question_${index}`}
+                    value={questionAnswers[index]?.answer !== undefined ? questionAnswers[index].answer : ""}
+                    disabled={isPropertyFound}
+                    placeholder="Enter Answer"
+                    onChange={(e) => handleAnswerChange(index, questionText, e.target.value)}
+                  />
+                </div>
+              </LabelFieldPair>
+            );
+          })}
 
         <LabelFieldPair>
           <FieldLabelWithTooltip
@@ -819,13 +1026,32 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
             <Controller
               control={control}
               name={"useDetails.categoryType"}
-              rules={{ required: t("REQUIRED_FIELD") }}
+              rules={{
+                validate: (val) => {
+                  if (!val) return t("REQUIRED_FIELD");
+                  const code = typeof val === "object" ? val?.code || val?.name : val;
+                  return code && String(code).trim().length > 0 ? true : t("REQUIRED_FIELD");
+                },
+              }}
               render={(props) => (
                 <Dropdown
                   option={availableCategoryOptions}
                   optionKey="i18nKey"
                   selected={props.value}
-                  select={props.onChange}
+                  select={(selected) => {
+                    props.onChange(selected);
+                    if (formClearErrors) formClearErrors("useDetails.categoryType");
+                    if (clearErrors) clearErrors("useDetails.categoryType");
+                    if (categoryTypeRule?.rules) {
+                      const norm = normalizeCode(selected?.code || selected?.name);
+                      const matchedRule = categoryTypeRule.rules.find((r) => normalizeCode(r.categoryType) === norm);
+                      if (matchedRule) {
+                        const ansUpper = String(matchedRule.answer).toUpperCase();
+                        setRuleAnswer(ansUpper);
+                        setValue("useDetails.categoryTypeSelectionAnswer", ansUpper, { shouldDirty: true });
+                      }
+                    }
+                  }}
                   t={t}
                   onBlur={props.onBlur}
                   disable={isPropertyFound}
@@ -833,11 +1059,17 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
                 />
               )}
             />
-            {errors?.useDetails?.categoryType && (
-              <CardLabelError style={{ fontSize: "12px", color: "#d4351c", marginTop: "4px" }}>
-                {errors.useDetails.categoryType.message}
-              </CardLabelError>
-            )}
+            {(!watchCategoryType ||
+              !(
+                watchCategoryType?.code ||
+                watchCategoryType?.name ||
+                (typeof watchCategoryType === "string" && watchCategoryType.trim().length > 0)
+              )) &&
+              errors?.useDetails?.categoryType && (
+                <CardLabelError style={{ fontSize: "12px", color: "#d4351c", marginTop: "4px" }}>
+                  {errors.useDetails.categoryType.message}
+                </CardLabelError>
+              )}
           </div>
         </LabelFieldPair>
 
@@ -851,7 +1083,13 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
             <Controller
               control={control}
               name="useDetails.WaterConnectionUsageType"
-              rules={{ required: t("REQUIRED_FIELD") }}
+              rules={{
+                validate: (val) => {
+                  if (!val) return t("REQUIRED_FIELD");
+                  const code = typeof val === "object" ? val?.code || val?.name || val?.value : val;
+                  return code && String(code).trim().length > 0 ? true : t("REQUIRED_FIELD");
+                },
+              }}
               render={(props) => (
                 <Dropdown
                   option={usageTypeOptions}
@@ -865,11 +1103,18 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
                 />
               )}
             />
-            {errors?.useDetails?.WaterConnectionUsageType && (
-              <CardLabelError style={{ fontSize: "12px", color: "#d4351c", marginTop: "4px" }}>
-                {errors.useDetails.WaterConnectionUsageType.message}
-              </CardLabelError>
-            )}
+            {(!watchWaterConnectionUsageType ||
+              !(
+                watchWaterConnectionUsageType?.code ||
+                watchWaterConnectionUsageType?.name ||
+                watchWaterConnectionUsageType?.value ||
+                (typeof watchWaterConnectionUsageType === "string" && watchWaterConnectionUsageType.trim().length > 0)
+              )) &&
+              errors?.useDetails?.WaterConnectionUsageType && (
+                <CardLabelError style={{ fontSize: "12px", color: "#d4351c", marginTop: "4px" }}>
+                  {errors.useDetails.WaterConnectionUsageType.message}
+                </CardLabelError>
+              )}
           </div>
         </LabelFieldPair>
 
@@ -1047,30 +1292,8 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
           </div>
         </LabelFieldPair>
 
-        {activeQuestions &&
-          activeQuestions.length > 0 &&
-          activeQuestions.map((questionText, index) => {
-            const rawQ = String(questionText || "").trim();
-            const label = rawQ.toLowerCase().startsWith("question") ? rawQ : `Question : ${rawQ}`;
-            return (
-              <LabelFieldPair key={`question_${index}_${rawQ}`}>
-                <CardLabel style={{ whiteSpace: "normal", wordBreak: "break-word", fontWeight: "bold" }}>
-                  <strong>{label}</strong>
-                </CardLabel>
-                <div className="form-field">
-                  <TextInput
-                    name={`useDetails.question_${index}`}
-                    value={questionAnswers[index]?.answer !== undefined ? questionAnswers[index].answer : ""}
-                    disabled={isPropertyFound}
-                    placeholder="Enter Answer"
-                    onChange={(e) => handleAnswerChange(index, questionText, e.target.value)}
-                  />
-                </div>
-              </LabelFieldPair>
-            );
-          })}
-
-        {isSchoolCollegeProperty ? (
+        {/* Frontend questions commented out - only MDMS questions are asked */}
+        {/* {isSchoolCollegeProperty ? (
           <React.Fragment>
             <LabelFieldPair>
               <FieldLabelWithTooltip
@@ -1182,7 +1405,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
               )}
             </div>
           </LabelFieldPair>
-        ) : null}
+        ) : null} */}
 
         {/* {isServentHouse ? (
           <LabelFieldPair>
