@@ -39,7 +39,7 @@ const MutationApplication = () => {
     : 1;
   const [formData, setFormData, clearFormData] = Digit.Hooks.useSessionStorage("MUTATION_APP_FORM_DATA", {});
   const [showToast, setShowToast] = useState(null);
-  const [generatedAppNo, setGeneratedAppNo] = useState(null);
+  const [generatedAppNo, setGeneratedAppNo] = Digit.Hooks.useSessionStorage("MUTATION_APP_GENERATED_NO", null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [completedSteps, setCompletedSteps, clearCompletedSteps] = Digit.Hooks.useSessionStorage("MUTATION_APP_COMPLETED_STEPS", []);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -272,7 +272,7 @@ const MutationApplication = () => {
 
   // Handled inline in Route component
 
-  const submitApplication = async () => {
+  const submitApplication = async (params = {}) => {
     setIsSubmitting(true);
     try {
       let finalData = { ...sessionFormData };
@@ -365,6 +365,15 @@ const MutationApplication = () => {
         }
       }
 
+      if (params?.isOtpVerified) {
+        if (!convertAppData.additionalDetails) convertAppData.additionalDetails = {};
+        convertAppData.additionalDetails.isOtpVerified = true;
+      } else {
+        if (convertAppData?.additionalDetails && "isOtpVerified" in convertAppData.additionalDetails) {
+          delete convertAppData.additionalDetails.isOtpVerified;
+        }
+      }
+
       // Replaced by custom document mapping logic below
 
       convertAppData.applicationType = resolvedServiceType === "WATER" ? "MUTATION_WATER_CONNECTION" : "MUTATION_SEWERAGE_CONNECTION";
@@ -418,6 +427,15 @@ const MutationApplication = () => {
             updatePayload,
             resolvedServiceType
           );
+        }
+
+        if (params?.isOtpVerified) {
+          if (!updatePayload.additionalDetails) updatePayload.additionalDetails = {};
+          updatePayload.additionalDetails.isOtpVerified = true;
+        } else {
+          if (updatePayload?.additionalDetails && "isOtpVerified" in updatePayload.additionalDetails) {
+            delete updatePayload.additionalDetails.isOtpVerified;
+          }
         }
 
         const updateMutation = resolvedServiceType === "WATER" ? waterUpdateMutation : sewerageUpdateMutation;
@@ -510,6 +528,15 @@ const MutationApplication = () => {
             // Apply customization if it exists in the platform
             if (Digit?.Customizations?.WS?.customiseUpdatePayloadOfWS) {
               updatePayload = Digit.Customizations.WS.customiseUpdatePayloadOfWS(createdConnection, updatePayload, resolvedServiceType);
+            }
+
+            if (params?.isOtpVerified) {
+              if (!updatePayload.additionalDetails) updatePayload.additionalDetails = {};
+              updatePayload.additionalDetails.isOtpVerified = true;
+            } else {
+              if (updatePayload?.additionalDetails && "isOtpVerified" in updatePayload.additionalDetails) {
+                delete updatePayload.additionalDetails.isOtpVerified;
+              }
             }
 
             let reqDetailsUpdate =
@@ -676,11 +703,18 @@ const MutationApplication = () => {
                 onSubmit={submitApplication}
                 isLoading={isSubmitting}
                 isEditFlow={isEditFlow}
+                authMobileNumber={authMobileNumber}
               />
             </Route>
 
             <Route path={`${path}/submission`}>
-              <Step5_Submission t={t} applicationNumber={generatedAppNo} serviceType={resolvedServiceType} />
+              <Step5_Submission
+                t={t}
+                applicationNumber={generatedAppNo}
+                serviceType={resolvedServiceType}
+                tenantId={tenantId}
+                formData={formData}
+              />
             </Route>
 
             <Route exact path={path}>
