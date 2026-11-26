@@ -12,7 +12,7 @@
     "@djb25/digit-ui-module-bills": "1.0.5",
     "@djb25/digit-ui-module-common": "1.0.15",
     "@djb25/digit-ui-module-engagement": "1.0.9",
-    "@djb25/digit-ui-module-fsm": "1.0.26",
+    "@djb25/digit-ui-module-fsm": "1.0.27",
     "@djb25/digit-ui-module-mcollect": "1.0.0",
     "@djb25/digit-ui-module-receipts": "1.0.0",
     "@djb25/digit-ui-module-commonpt": "1.0.54",

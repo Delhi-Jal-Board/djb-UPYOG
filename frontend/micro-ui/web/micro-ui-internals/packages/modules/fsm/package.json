@@ -1,6 +1,6 @@
 {
   "name": "@djb25/digit-ui-module-fsm",
-  "version": "1.0.26",
+  "version": "1.0.27",
   "license": "MIT",
   "author": "Shivam Nishad",
   "main": "dist/index.js",

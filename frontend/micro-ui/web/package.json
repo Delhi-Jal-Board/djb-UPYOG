@@ -20,7 +20,7 @@
     "@djb25/digit-ui-module-core": "1.0.0",
     "@djb25/digit-ui-module-engagement": "1.0.9",
     "@djb25/digit-ui-module-dss": "1.0.2",
-    "@djb25/digit-ui-module-fsm": "1.0.26",
+    "@djb25/digit-ui-module-fsm": "1.0.27",
     "@djb25/digit-ui-module-hrms": "1.0.21",
     "@djb25/digit-ui-module-finance": "1.0.0",
     "@djb25/digit-ui-module-mcollect": "1.0.0",
