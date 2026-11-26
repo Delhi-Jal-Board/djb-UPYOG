@@ -12,6 +12,7 @@ import org.egov.pt.models.OwnerInfo;
 import org.egov.pt.models.Property;
 import org.egov.pt.models.PropertyCriteria;
 import org.egov.pt.models.oldProperty.OldPropertyCriteria;
+import org.egov.pt.service.EnrichmentService;
 import org.egov.pt.service.FuzzySearchService;
 import org.egov.pt.service.MigrationService;
 import org.egov.pt.service.PropertyEncryptionService;
@@ -41,6 +42,9 @@ public class PropertyController {
 
     @Autowired
     private PropertyService propertyService;
+
+    @Autowired
+    private EnrichmentService enrichmentService;
 
     @Autowired
     private ResponseInfoFactory responseInfoFactory;
@@ -207,6 +211,7 @@ public class PropertyController {
                                                         @Valid @ModelAttribute PropertyCriteria fuzzySearchCriteria) {
 
         List<Property> properties = fuzzySearchService.getProperties(requestInfoWrapper.getRequestInfo(), fuzzySearchCriteria);
+        enrichmentService.enrichWaterConnectionDetails(properties, requestInfoWrapper.getRequestInfo());
         PropertyResponse response = PropertyResponse.builder().properties(properties).responseInfo(
                         responseInfoFactory.createResponseInfoFromRequestInfo(requestInfoWrapper.getRequestInfo(), true))
                 .build();
