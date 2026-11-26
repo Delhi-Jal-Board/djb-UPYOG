@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import ReactDOM from "react-dom";
 import { ArrowDown } from "./svgindex";
 import { useTranslation } from "react-i18next";
@@ -85,7 +85,7 @@ const TextField = (props) => {
   return (
     <input
       ref={inputRef}
-      className={`${disable && "disabled"}`}
+      className={disable ? "disabled" : ""}
       type="text"
       value={value}
       onChange={inputChange}
@@ -121,9 +121,16 @@ const Dropdown = (props) => {
   const [forceSet, setforceSet] = useState(0);
   const [optionIndex, setOptionIndex] = useState(-1);
   const [openUpward, setOpenUpward] = useState(false);
-  const [dropdownStyles, setDropdownStyles] = useState({});
+  const [dropdownStyles, setDropdownStyles] = useState({
+    position: "absolute",
+    top: "-9999px",
+    left: "-9999px",
+    visibility: "hidden",
+  });
   const triggerRef = useRef(null);
+  const inputRef = useRef(null);
   const dropdownRef = useRef(null);
+  const rafRef = useRef(null);
   const hasCustomSelector = !!props.customSelector;
   const { t: i18nT } = useTranslation();
   const t = props.t || i18nT || translateDummy;
@@ -180,34 +187,62 @@ const Dropdown = (props) => {
     }
   }, [props.isBPAREG, props.option, selectedOption]);
 
+  const computeDropdownPosition = useCallback(() => {
+    const triggerEl = triggerRef.current;
+    const dropdownEl = dropdownRef.current;
+    if (!triggerEl || !dropdownEl) return;
+
+    const triggerRect = triggerEl.getBoundingClientRect();
+    const dropdownRect = dropdownEl.getBoundingClientRect();
+    if (!triggerRect || !dropdownRect) return;
+
+    const width = triggerRect.width;
+    const spaceBelow = window.innerHeight - triggerRect.bottom;
+    const spaceAbove = triggerRect.top;
+    const openUp = spaceBelow < dropdownRect.height && spaceAbove > spaceBelow;
+    const top = openUp ? triggerRect.top + window.scrollY - dropdownRect.height : triggerRect.bottom + window.scrollY;
+
+    setOpenUpward(openUp);
+    setDropdownStyles({
+      position: "absolute",
+      top: `${top}px`,
+      left: `${triggerRect.left + window.scrollX}px`,
+      width: `${width}px`,
+      minWidth: `${width}px`,
+      zIndex: 10000000,
+      visibility: "visible",
+    });
+  }, []);
+
   const updateDropdownPosition = useCallback(() => {
     if (!triggerRef.current || !dropdownRef.current) return;
 
-    window.requestAnimationFrame(() => {
-      const triggerRect = triggerRef?.current?.getBoundingClientRect();
-      const dropdownRect = dropdownRef?.current?.getBoundingClientRect();
-      const width = triggerRect.width;
-      const spaceBelow = window.innerHeight - triggerRect.bottom;
-      const spaceAbove = triggerRect.top;
-      const openUp = spaceBelow < dropdownRect.height && spaceAbove > spaceBelow;
-      const top = openUp ? triggerRect.top + window.scrollY - dropdownRect.height : triggerRect.bottom + window.scrollY;
+    if (rafRef.current) {
+      window.cancelAnimationFrame(rafRef.current);
+    }
 
-      setOpenUpward(openUp);
+    rafRef.current = window.requestAnimationFrame(() => {
+      rafRef.current = null;
+      computeDropdownPosition();
+    });
+  }, [computeDropdownPosition]);
+
+  useLayoutEffect(() => {
+    if (!dropdownStatus) {
       setDropdownStyles({
         position: "absolute",
-        top: `${top}px`,
-        left: `${triggerRect.left + window.scrollX}px`,
-        width: `${width}px`,
-        minWidth: `${width}px`,
-        zIndex: 10000000,
+        top: "-9999px",
+        left: "-9999px",
+        visibility: "hidden",
       });
-    });
-  }, []);
+      return;
+    }
+    computeDropdownPosition();
+  }, [dropdownStatus, computeDropdownPosition]);
 
   useEffect(() => {
     if (!dropdownStatus) return;
 
-    updateDropdownPosition();
     const handleScrollOrResize = () => updateDropdownPosition();
 
     window.addEventListener("resize", handleScrollOrResize);
@@ -215,6 +250,10 @@ const Dropdown = (props) => {
     window.addEventListener("scroll", handleScrollOrResize, true);
 
     return () => {
+      if (rafRef.current) {
+        window.cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
       window.removeEventListener("resize", handleScrollOrResize);
       window.removeEventListener("orientationchange", handleScrollOrResize);
       window.removeEventListener("scroll", handleScrollOrResize, true);
@@ -362,7 +401,7 @@ const Dropdown = (props) => {
       {hasCustomSelector && (
         <div className={props.showArrow ? "cp flex-right column-gap-5" : "cp"} onClick={dropdownSwitch}>
           {props.customSelector}
-          {props.showArrow && <ArrowDown onClick={dropdownSwitch} className={props.disable && "disabled"} />}
+          {props.showArrow && <ArrowDown onClick={dropdownSwitch} className={props.disable ? "disabled" : ""} />}
         </div>
       )}
       {!hasCustomSelector && (
@@ -393,7 +432,7 @@ const Dropdown = (props) => {
             autoFocus={props.autoFocus}
             placeholder={props.placeholder}
             onBlur={props?.onBlur}
-            inputRef={triggerRef}
+            inputRef={inputRef}
             closeOnBlur={false}
             onClick={openDropdown}
           />

@@ -46,6 +46,7 @@ const VehicleDetails = (props) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const { t } = useTranslation();
   const history = useHistory();
+  const registryRoute = `${props.parentRoute || "/digit-ui/employee/fsm"}/registry`;
   const queryClient = useQueryClient();
   let { id: vehicleNumber } = useParams();
 
@@ -115,9 +116,9 @@ const VehicleDetails = (props) => {
       case "DELETE_VENDOR":
         return setShowModal(true);
       case "EDIT":
-        return history.push("/digit-ui/employee/fsm/registry/modify-vehicle/" + vehicleNumber);
+        return history.push(`${registryRoute}/modify-vehicle/${vehicleNumber}`);
       case "HOME":
-        return history.push("/digit-ui/employee/fsm/registry?selectedTabs=VEHICLE");
+        return history.push(`${registryRoute}?selectedTabs=VEHICLE`);
       default:
         break;
     }
@@ -161,7 +162,7 @@ const VehicleDetails = (props) => {
         queryClient.invalidateQueries("FSM_VEICLES_SEARCH");
         setTimeout(() => {
           closeToast();
-          history.push(`/digit-ui/employee/fsm/registry`);
+          history.push(registryRoute);
         }, 5000);
       },
     });

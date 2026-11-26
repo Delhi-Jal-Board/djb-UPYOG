@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Header, InfoIcon } from "@djb25/digit-ui-react-components";
-import { useParams, useHistory, useLocation } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 
 import RegisryInbox from "../../../components/RegistryInbox";
 
@@ -214,7 +214,7 @@ const FSMRegistry = (props) => {
   const onTabChange = (tab) => {
     setTab(tab);
     if (selectedTabs !== tab) {
-      history.push(`/digit-ui/employee/fsm/registry?selectedTabs=${tab}`);
+      history.push(`${props?.parentRoute || "/digit-ui/employee/fsm"}/registry?selectedTabs=${tab}`);
     }
   };
 

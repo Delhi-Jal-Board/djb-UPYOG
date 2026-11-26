@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { Loader, ShippingTruck, EmployeeModuleCard } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
-import { useHistory, useLocation } from "react-router-dom";
+import { Link, useHistory, useLocation } from "react-router-dom";
 
 const svgIcon = (
   <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
@@ -10,13 +10,14 @@ const svgIcon = (
   </svg>
 );
 
-const DsoDashboard = () => {
+const DsoDashboard = ({ parentRoute }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const { t } = useTranslation();
   const history = useHistory();
   const { pathname } = useLocation();
   const isEmployee = pathname.includes("/employee/");
   const inboxLink = isEmployee ? "/digit-ui/employee/fsm/inbox" : "/digit-ui/citizen/fsm/inbox";
+  const registryLink = `${parentRoute || (isEmployee ? "/digit-ui/employee/fsm" : "/digit-ui/citizen/fsm")}/registry?selectedTabs=VEHICLE`;
 
   const [total, setTotal] = useState("-");
   const [loader, setLoader] = useState(true);
@@ -72,8 +73,12 @@ const DsoDashboard = () => {
         label: t("ES_TITLE_INBOX"),
         count: total,
       },
+      {
+        link: registryLink,
+        label: t("ES_TITLE_FSM_REGISTRY"),
+      },
     ],
-    [total, t, inboxLink]
+    [total, t, inboxLink, registryLink]
   );
 
   useEffect(() => {
@@ -113,6 +118,9 @@ const DsoDashboard = () => {
   return (
     <div className="ground-container moduleCardWrapper">
       <EmployeeModuleCard {...propsForModuleCard} onDetailsClick={handleCardClick} />
+      <div style={{ marginTop: "16px", textAlign: "right" }}>
+        <Link to={registryLink}>{t("ES_TITLE_FSM_REGISTRY")}</Link>
+      </div>
     </div>
   );
 };

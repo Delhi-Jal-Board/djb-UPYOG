@@ -94,19 +94,24 @@ const SelectTripData = ({ t, config, onSelect, formData = {}, userType }) => {
   }
   useEffect(() => {
     (async () => {
-      if (formData?.tripData?.vehicleType !== vehicle) {
-        setVehicle({ label: formData?.tripData?.vehicleType?.capacity });
+      const nextCapacity = formData?.tripData?.vehicleType?.capacity ?? formData?.tripData?.vehicleCapacity;
+      if (nextCapacity !== undefined && nextCapacity !== null && nextCapacity !== vehicle?.label) {
+        setVehicle({ label: nextCapacity });
       }
 
       const trips = Number(formData?.tripData?.noOfTrips) || 1;
 
       if (formData?.address?.propertyLocation?.code === "FROM_GRAM_PANCHAYAT") {
+        const rate = Number(formData?.tripData?.amountPerTrip);
+        const totalAmt = !isNaN(rate) && formData?.tripData?.amountPerTrip !== "" ? rate * trips : "";
         if (formData?.tripData?.amount !== totalAmt) {
           setValue({
             amount: totalAmt,
           });
         }
-        Digit.SessionStorage.set("total_amount", totalAmt);
+        if (totalAmt !== "") {
+          Digit.SessionStorage.set("total_amount", totalAmt);
+        }
         setError(false);
       } else if (
         formData?.propertyType &&
@@ -168,7 +173,7 @@ const SelectTripData = ({ t, config, onSelect, formData = {}, userType }) => {
         <LabelFieldPair key={index}>
           <CardLabel className="card-label-smaller">
             {t(input.label) + " (₹)"}
-            {input.isMandatory ? " * " : null}
+            {input.isMandatory ? <span className="check-page-link-button"> * </span> : null}
           </CardLabel>
           <div className="field">
             <TextInput

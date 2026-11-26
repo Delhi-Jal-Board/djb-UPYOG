@@ -65,53 +65,62 @@ const SelectName = ({ t, config, onSelect, formData = {}, userType, register, er
     onSelect(config.key, { ...formData[config.key], applicantGender: value.code });
   };
 
+  const visibleInputs = config?.fields?.length
+    ? inputs.filter((input) => config.fields.includes(input.name))
+    : inputs;
+
+  const renderInput = (input, index) => (
+    <div key={index} style={{ width: "100%" }}>
+      {input.type === "text" && (
+        <React.Fragment>
+          {errors[input.name] && <CardLabelError>{t(input.error)}</CardLabelError>}
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">
+              {t(input.label)}
+              {input.isMandatory ? <span className="check-page-link-button"> * </span> : null}
+            </CardLabel>
+            <div className="field" style={{ display: "flex", width: "100%" }}>
+              {input.componentInFront ? input.componentInFront : null}
+              <TextInput
+                key={input.name}
+                value={formData && formData[config.key] ? formData[config.key][input.name] : null}
+                onChange={(e) => setValue(e.target.value, input.name)}
+                disable={editScreen}
+                {...input.validation}
+              />
+            </div>
+          </LabelFieldPair>
+        </React.Fragment>
+      )}
+      {input.type === "dropdown" && (
+        <LabelFieldPair>
+          <CardLabel className="card-label-smaller">
+            {t(input.label)}
+            {input.isMandatory ? <span className="check-page-link-button"> * </span> : null}
+          </CardLabel>
+          <div className="field" style={{ width: "100%" }}>
+            <Dropdown
+              option={[...(input.options || [])].sort((a, b) => (a?.code || "").localeCompare(b?.code || ""))}
+              optionKey="i18nKey"
+              id="dropdown"
+              selected={formData && formData[config.key] ? input.options.find((data) => data.code === formData[config.key][input.name]) : null}
+              select={selectDropdown}
+              t={t}
+              disable={editScreen}
+            />
+          </div>
+        </LabelFieldPair>
+      )}
+    </div>
+  );
+
+  if (config?.fields?.length === 1) {
+    return renderInput(visibleInputs[0], 0);
+  }
+
   return (
     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px 24px", width: "100%" }}>
-      {inputs?.map((input, index) => (
-        <div key={index} style={{ width: "100%" }}>
-          {input.type === "text" && (
-            <React.Fragment>
-              {errors[input.name] && <CardLabelError>{t(input.error)}</CardLabelError>}
-              <LabelFieldPair>
-                <CardLabel className="card-label-smaller">
-                  {t(input.label)}
-                  {input.isMandatory ? " * " : null}
-                </CardLabel>
-                <div className="field" style={{ display: "flex", width: "100%" }}>
-                  {input.componentInFront ? input.componentInFront : null}
-                  <TextInput
-                    key={input.name}
-                    value={formData && formData[config.key] ? formData[config.key][input.name] : null}
-                    onChange={(e) => setValue(e.target.value, input.name)}
-                    disable={editScreen}
-                    {...input.validation}
-                  />
-                </div>
-              </LabelFieldPair>
-            </React.Fragment>
-          )}
-                    {input.type === "dropdown" && (
-            <LabelFieldPair>
-              <CardLabel className="card-label-smaller">
-                {t(input.label)}
-                {input.isMandatory ? " * " : null}
-              </CardLabel>
-              <div className="field" style={{ width: "100%" }}>
-                <Dropdown
-                  option={input.options?.sort((a, b) => a.code.localeCompare(b.code))}
-                  optionKey="i18nKey"
-                  id="dropdown"
-                  selected={formData && formData[config.key] ? input.options.find((data) => data.code === formData[config.key][input.name]) : null}
-                  select={selectDropdown}
-                  t={t}
-                  disable={editScreen}
-                  autoFocus={!editScreen}
-                />
-              </div>
-            </LabelFieldPair>
-          )}
-        </div>
-      ))}
+      {visibleInputs?.map((input, index) => renderInput(input, index))}
     </div>
   );
 };

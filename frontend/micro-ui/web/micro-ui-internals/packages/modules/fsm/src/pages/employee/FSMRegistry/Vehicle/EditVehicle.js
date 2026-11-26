@@ -5,7 +5,7 @@ import { useHistory, useParams } from "react-router-dom";
 import { useQueryClient } from "react-query";
 import VehicleConfig from "../../configs/VehicleConfig";
 
-const EditVehicle = ({ parentUrl, heading }) => {
+const EditVehicle = ({ parentUrl, parentRoute, heading }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
   let { id: dsoId } = useParams();
@@ -199,7 +199,7 @@ const EditVehicle = ({ parentUrl, heading }) => {
         queryClient.invalidateQueries("DSO_SEARCH");
         setTimeout(() => {
           closeToast();
-          history.push(`/digit-ui/employee/fsm/registry/vehicle-details/${data?.registrationNumber || dsoId}`);
+          history.push(`${parentRoute || "/digit-ui/employee/fsm"}/registry/vehicle-details/${data?.registrationNumber || dsoId}`);
         }, 5000);
       },
     });

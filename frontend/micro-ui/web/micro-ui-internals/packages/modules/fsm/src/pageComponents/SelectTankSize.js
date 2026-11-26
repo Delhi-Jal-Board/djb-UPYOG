@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { FormStep, PitDimension, ImageUploadHandler } from "@djb25/digit-ui-react-components";
+import { FormStep, PitDimension, ImageUploadHandler, LabelFieldPair, CardLabel } from "@djb25/digit-ui-react-components";
 import Timeline from "../components/TLTimelineInFSM";
 
 const isConventionalSpecticTank = (tankDimension) => tankDimension === "lbd";
 
-const SelectTankSize = ({ config, onSelect, t, formData = {}, userType }) => {
+const SelectTankSize = ({ config, onSelect, t, formData = {}, userType, isInline }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const tankDimension = formData?.pitType?.dimension;
   const [disable, setDisable] = useState(true);
@@ -54,7 +54,21 @@ const SelectTankSize = ({ config, onSelect, t, formData = {}, userType }) => {
 
   const onSkip = () => onSelect();
   if (userType === "employee") {
-    return <PitDimension sanitationType={formData.pitType} size={size} handleChange={handleChange} t={t} disable={!formData?.pitType} />;
+    const pitDimension = (
+      <PitDimension sanitationType={formData.pitType} size={size} handleChange={handleChange} t={t} disable={!formData?.pitType} />
+    );
+    if (!isInline && config?.label) {
+      return (
+        <LabelFieldPair>
+          <CardLabel className="card-label-smaller">
+            {t(config.label)}
+            {config.isMandatory ? <span className="check-page-link-button"> * </span> : null}
+          </CardLabel>
+          <div className="field">{pitDimension}</div>
+        </LabelFieldPair>
+      );
+    }
+    return pitDimension;
   }
 
   return (

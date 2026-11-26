@@ -5,7 +5,7 @@ import { useHistory } from "react-router-dom";
 import DriverConfig from "../../configs/DriverConfig";
 import { useQueryClient } from "react-query";
 
-const AddDriver = ({ parentUrl, heading }) => {
+const AddDriver = ({ parentUrl, parentRoute, heading }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
   const [showToast, setShowToast] = useState(null);
@@ -98,7 +98,7 @@ const AddDriver = ({ parentUrl, heading }) => {
         queryClient.invalidateQueries("FSM_DRIVER_SEARCH");
         setTimeout(() => {
           closeToast();
-          history.push(`/digit-ui/employee/fsm/registry?selectedTabs=DRIVER`);
+          history.push(`${parentRoute || "/digit-ui/employee/fsm"}/registry?selectedTabs=DRIVER`);
         }, 5000);
       },
     });

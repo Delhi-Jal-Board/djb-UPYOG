@@ -144,11 +144,16 @@ export const FormComposer = (props) => {
           />
         );
       case "component":
+        if (!Component) {
+          console.error(`FormComposer: Component "${component}" is not registered or is undefined.`);
+          return null;
+        }
         return (
           <Controller
             render={(prop) => (
               <Component
                 userType={"employee"}
+                isInline={true}
                 t={t}
                 setValue={setValue}
                 onSelect={setValue}
@@ -319,13 +324,13 @@ export const FormComposer = (props) => {
                     return (
                       <Fragment key={index}>
                         {field.type === "component" ? (
-                          <Controller
-                            name={field.key}
-                            control={control}
-                            defaultValue={props.defaultValues?.[field.key]}
-                            render={(props) => {
-                              return (
-                                <>
+                          Component ? (
+                            <Controller
+                              name={field.key}
+                              control={control}
+                              defaultValue={props.defaultValues?.[field.key]}
+                              render={(props) => {
+                                const renderedComponent = (
                                   <Component
                                     userType={"employee"}
                                     t={t}
@@ -335,7 +340,7 @@ export const FormComposer = (props) => {
                                     data={formData}
                                     formData={{
                                       ...formData,
-                                      [field.key]: props.value ?? formData[field.key], // ✅ inject latest value
+                                      [field.key]: formData[field.key] !== undefined ? formData[field.key] : props.value,
                                     }}
                                     register={register}
                                     errors={errors}
@@ -343,15 +348,27 @@ export const FormComposer = (props) => {
                                     clearErrors={clearErrors}
                                     formState={formState}
                                     {...field?.props}
+                                  />
+                                );
+                                if (!field?.colSpan || field.colSpan === "contents") {
+                                  return renderedComponent;
+                                }
+                                return (
+                                  <div
                                     style={{
-                                      gridColumn: field?.colSpan ? field.colSpan : "span 1",
+                                      gridColumn: field.colSpan,
+                                      width: "100%",
                                       ...props?.fieldStyle,
                                     }}
-                                  />
-                                </>
-                              );
-                            }}
-                          />
+                                  >
+                                    {renderedComponent}
+                                  </div>
+                                );
+                              }}
+                            />
+                          ) : (
+                            (console.error(`FormComposer: Component "${field?.component}" is not registered or is undefined.`), null)
+                          )
                         ) : (
                           <div>
                             <LabelFieldPair
@@ -439,13 +456,13 @@ export const FormComposer = (props) => {
                   return (
                     <Fragment key={index}>
                       {field.type === "component" ? (
-                        <Controller
-                          name={field.key}
-                          control={control}
-                          defaultValue={props.defaultValues?.[field.key]}
-                          render={(props) => {
-                            return (
-                              <>
+                        Component ? (
+                          <Controller
+                            name={field.key}
+                            control={control}
+                            defaultValue={props.defaultValues?.[field.key]}
+                            render={(props) => {
+                              const renderedComponent = (
                                 <Component
                                   userType={"employee"}
                                   t={t}
@@ -455,7 +472,7 @@ export const FormComposer = (props) => {
                                   data={formData}
                                   formData={{
                                     ...formData,
-                                    [field.key]: props.value ?? formData[field.key], // ✅ inject latest value
+                                    [field.key]: formData[field.key] !== undefined ? formData[field.key] : props.value,
                                   }}
                                   register={register}
                                   errors={errors}
@@ -463,15 +480,26 @@ export const FormComposer = (props) => {
                                   clearErrors={clearErrors}
                                   formState={formState}
                                   {...field?.props}
-                                  style={{
-                                    gridColumn: field?.colSpan ? field.colSpan : "span 1",
-                                    ...props?.fieldStyle,
-                                  }}
                                 />
-                              </>
-                            );
-                          }}
-                        />
+                              );
+                              if (!field?.colSpan || field.colSpan === "contents") {
+                                return renderedComponent;
+                              }
+                              return (
+                                <div
+                                  style={{
+                                    gridColumn: field.colSpan,
+                                    width: "100%",
+                                  }}
+                                >
+                                  {renderedComponent}
+                                </div>
+                              );
+                            }}
+                          />
+                        ) : (
+                          (console.error(`FormComposer: Component "${field?.component}" is not registered or is undefined.`), null)
+                        )
                       ) : (
                         <div style={{
                           gridColumn: field?.colSpan ? field.colSpan : "span 1",

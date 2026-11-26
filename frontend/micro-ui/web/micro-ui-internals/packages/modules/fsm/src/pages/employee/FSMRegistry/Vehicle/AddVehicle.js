@@ -5,7 +5,7 @@ import { useHistory } from "react-router-dom";
 import VehicleConfig from "../../configs/VehicleConfig";
 import { useQueryClient } from "react-query";
 
-const AddVehicle = ({ parentUrl, heading }) => {
+const AddVehicle = ({ parentUrl, parentRoute, heading }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
   const [showToast, setShowToast] = useState(null);
@@ -133,7 +133,7 @@ const AddVehicle = ({ parentUrl, heading }) => {
         queryClient.invalidateQueries("FSM_VEICLES_SEARCH");
         setTimeout(() => {
           closeToast();
-          history.push(`/digit-ui/employee/fsm/registry?selectedTabs=VEHICLE`);
+          history.push(`${parentRoute || "/digit-ui/employee/fsm"}/registry?selectedTabs=VEHICLE`);
         }, 5000);
       },
     });

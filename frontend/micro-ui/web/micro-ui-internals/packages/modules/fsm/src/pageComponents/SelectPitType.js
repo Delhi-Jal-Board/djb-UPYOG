@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { FormStep, Dropdown, Loader, CardLabel, RadioButtons, RadioOrSelect } from "@djb25/digit-ui-react-components";
+import { FormStep, Dropdown, Loader, CardLabel, LabelFieldPair, RadioButtons, RadioOrSelect } from "@djb25/digit-ui-react-components";
 import Timeline from "../components/TLTimelineInFSM";
 
-const SelectPitType = ({ t, formData, config, onSelect, userType }) => {
+const SelectPitType = ({ t, formData, config, onSelect, userType, isInline }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
 
@@ -29,7 +29,7 @@ const SelectPitType = ({ t, formData, config, onSelect, userType }) => {
     return <Loader />;
   }
   if (userType === "employee") {
-    return (
+    const dropdown = (
       <Dropdown
         isMandatory={true}
         option={sanitationMenu?.sort((a, b) => a.name.localeCompare(b.name))}
@@ -39,6 +39,18 @@ const SelectPitType = ({ t, formData, config, onSelect, userType }) => {
         t={t}
       />
     );
+    if (!isInline && config?.label) {
+      return (
+        <LabelFieldPair>
+          <CardLabel className="card-label-smaller">
+            {t(config.label)}
+            {config.isMandatory ? <span className="check-page-link-button"> * </span> : null}
+          </CardLabel>
+          <div className="field">{dropdown}</div>
+        </LabelFieldPair>
+      );
+    }
+    return dropdown;
   }
   return (
     <React.Fragment>

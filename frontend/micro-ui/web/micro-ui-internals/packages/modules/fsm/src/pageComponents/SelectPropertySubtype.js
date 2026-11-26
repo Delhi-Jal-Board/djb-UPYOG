@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { Loader, Dropdown, FormStep, CardLabel, RadioOrSelect } from "@djb25/digit-ui-react-components";
+import { Loader, Dropdown, FormStep, CardLabel, LabelFieldPair, RadioOrSelect } from "@djb25/digit-ui-react-components";
 import Timeline from "../components/TLTimelineInFSM";
 import { useLocation } from "react-router-dom";
 
-const SelectPropertySubtype = ({ config, onSelect, t, userType, formData }) => {
+const SelectPropertySubtype = ({ config, onSelect, t, userType, formData, isInline }) => {
   const { pathname: url } = useLocation();
-  let property = sessionStorage?.getItem("Digit_FSM_PT");
-  if (property !== "undefined") {
-    property = JSON.parse(sessionStorage?.getItem("Digit_FSM_PT"));
+  let property = null;
+  try {
+    const rawProperty = sessionStorage?.getItem("Digit_FSM_PT");
+    property = rawProperty && rawProperty !== "undefined" ? JSON.parse(rawProperty) : null;
+  } catch (e) {
+    property = null;
   }
   const select = (items) => items.map((item) => ({ ...item, i18nKey: t(item.i18nKey) }));
   const stateId = Digit.ULBService.getStateId();
@@ -18,9 +21,8 @@ const SelectPropertySubtype = ({ config, onSelect, t, userType, formData }) => {
   const [subtype, setSubtype] = useState();
 
   const [subtypeOptions, setSubtypeOptions] = useState([]);
-  console.log("propertyType", formData);
-  formData.propertyType = property?.usageCategory || formData.propertyType;
-  const { propertyType } = formData || {};
+  const rawPropertyType = property?.propertyDetails?.usageCategory || property?.usageCategory || formData?.propertyType;
+  const propertyType = typeof rawPropertyType === "string" ? rawPropertyType.split(".")[0] : rawPropertyType;
 
   useEffect(() => {
     if (!propertySubtypesDataLoading && propertySubtypesData) {
@@ -55,6 +57,7 @@ const SelectPropertySubtype = ({ config, onSelect, t, userType, formData }) => {
   };
 
   function selectedSubType(value) {
+    setSubtype(value);
     onSelect(config.key, value.code);
   }
 
@@ -67,17 +70,32 @@ const SelectPropertySubtype = ({ config, onSelect, t, userType, formData }) => {
   // }, [propertyType])
 
   if (userType === "employee") {
-    return (
+    const sortedSubtypes = [...(subtypeOptions || [])].sort((a, b) =>
+      (a?.name || a?.i18nKey || a?.code || "").localeCompare(b?.name || b?.i18nKey || b?.code || "")
+    );
+    const dropdown = (
       <Dropdown
-        option={subtypeOptions?.sort((a, b) => a.name.localeCompare(b.name))}
+        option={sortedSubtypes}
         optionKey="i18nKey"
         id="propertySubType"
         selected={subtype}
         select={selectedSubType}
         t={t}
-        disable={url.includes("/modify-application/") || url.includes("/new-application") ? false : true}
+        disable={!(url.includes("/modify-application/") || url.includes("/new-application"))}
       />
     );
+    if (!isInline && config?.label) {
+      return (
+        <LabelFieldPair>
+          <CardLabel className="card-label-smaller">
+            {t(config.label)}
+            {config.isMandatory ? <span className="check-page-link-button"> * </span> : null}
+          </CardLabel>
+          <div className="field">{dropdown}</div>
+        </LabelFieldPair>
+      );
+    }
+    return dropdown;
   } else {
     return (
       <React.Fragment>

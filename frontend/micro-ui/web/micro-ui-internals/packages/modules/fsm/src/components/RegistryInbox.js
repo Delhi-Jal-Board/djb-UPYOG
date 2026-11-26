@@ -126,6 +126,42 @@ const RegisryInbox = (props) => {
     });
   };
 
+  const onDriverSelect = (row, selectedDriver) => {
+    const vehicle = {
+      ...row.original,
+      driverData: selectedDriver,
+    };
+    delete vehicle.vendor;
+    delete vehicle.popup;
+    delete vehicle.driver;
+
+    mutateVehicle(
+      { vehicle },
+      {
+        onError: (error) => {
+          setShowToast({ key: "error", action: error?.message || error });
+          setTimeout(closeToast, 5000);
+        },
+        onSuccess: (data) => {
+          const isError = data?.error === true || data?.Errors?.length > 0 || data?.data?.Errors?.length > 0;
+          if (isError) {
+            setShowToast({
+              key: "error",
+              action: data?.data?.Errors?.[0]?.message || data?.Errors?.[0]?.message || data?.message || "UPDATE_FAILED",
+            });
+            return;
+          }
+          setShowToast({ key: "success", action: "DRIVER_MAPPING" });
+          queryClient.invalidateQueries("FSM_VEICLES_SEARCH");
+          queryClient.invalidateQueries("DSO_SEARCH");
+          props.refetchVendor();
+          props.refetchData();
+          setTimeout(closeToast, 3000);
+        },
+      }
+    );
+  };
+
   const onDriverUpdate = (row) => {
     let formDetails = row.original;
     const formData = {
@@ -262,22 +298,24 @@ const RegisryInbox = (props) => {
   };
 
   const onActionSelect = (action, type, data) => {
+    const registryRoute = `${props.parentRoute || "/digit-ui/employee/fsm"}/registry`;
     if (type === "VEHICLE") {
-      history.push("/digit-ui/employee/fsm/registry/vehicle-details/" + action);
+      history.push(`${registryRoute}/vehicle-details/${action}`);
     } else {
       let driver = data.find((ele) => ele.name === action);
-      history.push("/digit-ui/employee/fsm/registry/driver-details/" + driver?.id);
+      history.push(`${registryRoute}/driver-details/${driver?.id}`);
     }
   };
 
   const onSelectAdd = () => {
+    const registryRoute = `${props.parentRoute || "/digit-ui/employee/fsm"}/registry`;
     switch (props.selectedTab) {
       case "VENDOR":
-        return history.push("/digit-ui/employee/fsm/registry/new-vendor");
+        return history.push(`${registryRoute}/new-vendor`);
       case "VEHICLE":
-        return history.push("/digit-ui/employee/fsm/registry/new-vehicle");
+        return history.push(`${registryRoute}/new-vehicle`);
       case "DRIVER":
-        return history.push("/digit-ui/employee/fsm/registry/new-driver");
+        return history.push(`${registryRoute}/new-driver`);
       default:
         break;
     }
@@ -294,7 +332,7 @@ const RegisryInbox = (props) => {
               return (
                 <div>
                   <span className="link">
-                    <Link to={"/digit-ui/employee/fsm/registry/vendor-details/" + row.original["id"]}>
+                    <Link to={`${props.parentRoute || "/digit-ui/employee/fsm"}/registry/vendor-details/${row.original.id}`}>
                       <div>
                         {row.original.name}
                         <br />
@@ -434,7 +472,7 @@ const RegisryInbox = (props) => {
               return (
                 <div>
                   <span className="link">
-                    <Link to={"/digit-ui/employee/fsm/registry/vehicle-details/" + row.original["registrationNumber"]}>
+                    <Link to={`${props.parentRoute || "/digit-ui/employee/fsm"}/registry/vehicle-details/${row.original.registrationNumber}`}>
                       <div>
                         {row.original.registrationNumber}
                         <br />
@@ -455,6 +493,34 @@ const RegisryInbox = (props) => {
             Header: t("ES_FSM_REGISTRY_INBOX_VENDOR_NAME"),
             disableSortBy: true,
             Cell: ({ row }) => GetCell(row.original?.vendor?.name || "NA"),
+          },
+          {
+            Header: t("ES_FSM_REGISTRY_SELECT_DRIVER"),
+            disableSortBy: true,
+            minWidth: 250,
+            Cell: ({ row }) => {
+              const vendorDrivers = (row.original?.vendor?.drivers || [])
+                .filter((driver) => driver?.status === "ACTIVE" && driver?.vendorDriverStatus !== "INACTIVE")
+                .map((driver) => ({
+                  ...driver,
+                  displayName: `${driver.name} (${driver.owner?.mobileNumber || "N/A"})`,
+                }));
+              const selectedDriverId = row.original?.driverData?.id || row.original?.driver?.id;
+              const selectedDriver = vendorDrivers.find((driver) => driver.id === selectedDriverId) || null;
+
+              return (
+                <Dropdown
+                  className="fsm-registry-dropdown"
+                  selected={selectedDriver}
+                  option={vendorDrivers}
+                  select={(value) => onDriverSelect(row, value)}
+                  optionKey="displayName"
+                  t={t}
+                  style={{ textAlign: "left", width: "100%", minWidth: "250px" }}
+                  disable={isUpdateVehicleLoading || !row.original?.vendor || !vendorDrivers.length}
+                />
+              );
+            },
           },
           {
             Header: t("ES_FSM_REGISTRY_INBOX_ENABLED"),
@@ -481,7 +547,7 @@ const RegisryInbox = (props) => {
               return (
                 <div>
                   <span className="link">
-                    <Link to={"/digit-ui/employee/fsm/registry/driver-details/" + row.original["id"]}>
+                    <Link to={`${props.parentRoute || "/digit-ui/employee/fsm"}/registry/driver-details/${row.original.id}`}>
                       <div>
                         {row.original.name}
                         <br />
@@ -609,7 +675,13 @@ const RegisryInbox = (props) => {
       {showToast && (
         <Toast
           error={showToast.key === "error" ? true : false}
-          label={t(showToast.key === "success" ? `ES_FSM_REGISTRY_${showToast.action}_DISABLE_SUCCESS` : showToast.action)}
+          label={
+            showToast.key === "success"
+              ? showToast.action === "DRIVER_MAPPING"
+                ? t("ES_FSM_REGISTRY_DRIVER_MAPPING_SUCCESS", "Driver mapped successfully")
+                : t(`ES_FSM_REGISTRY_${showToast.action}_DISABLE_SUCCESS`)
+              : t(showToast.action)
+          }
           onClose={closeToast}
         />
       )}

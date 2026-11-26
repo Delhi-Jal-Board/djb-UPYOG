@@ -47,6 +47,7 @@ const DriverDetails = (props) => {
   // const state = Digit.ULBService.getStateId();
   const { t } = useTranslation();
   const history = useHistory();
+  const registryRoute = `${props.parentRoute || "/digit-ui/employee/fsm"}/registry`;
   const queryClient = useQueryClient();
   const { id: dsoId } = useParams();
 
@@ -110,9 +111,9 @@ const DriverDetails = (props) => {
       case "DELETE_VENDOR":
         return setShowModal(true);
       case "EDIT":
-        return history.push("/digit-ui/employee/fsm/registry/modify-driver/" + dsoId);
+        return history.push(`${registryRoute}/modify-driver/${dsoId}`);
       case "HOME":
-        return history.push("/digit-ui/employee/fsm/registry?selectedTabs=DRIVER");
+        return history.push(`${registryRoute}?selectedTabs=DRIVER`);
       default:
         break;
     }
@@ -157,7 +158,7 @@ const DriverDetails = (props) => {
 
         setTimeout(() => {
           closeToast();
-          history.push(`/digit-ui/employee/fsm/registry`);
+          history.push(registryRoute);
         }, 5000);
       },
     });

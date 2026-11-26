@@ -78,8 +78,9 @@ const SelectTrips = ({ t, config, onSelect, formData = {}, userType, styles, FSM
 
   useEffect(() => {
     (async () => {
-      if (formData?.tripData?.vehicleType !== vehicle) {
-        setVehicle({ label: formData?.tripData?.vehicleType?.capacity });
+      const nextCapacity = formData?.tripData?.vehicleType?.capacity ?? formData?.tripData?.vehicleCapacity;
+      if (nextCapacity !== undefined && nextCapacity !== null && nextCapacity !== vehicle?.label) {
+        setVehicle({ label: nextCapacity });
       }
 
       const trips = Number(formData?.tripData?.noOfTrips) || 1;
@@ -141,7 +142,7 @@ const SelectTrips = ({ t, config, onSelect, formData = {}, userType, styles, FSM
   ) : (
     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px 24px", width: "100%" }}>
       <LabelFieldPair>
-        <CardLabel className="card-label-smaller">{t("ES_NEW_APPLICATION_LOCATION_VEHICLE_REQUESTED") + " * "}</CardLabel>
+        <CardLabel className="card-label-smaller">{t("ES_NEW_APPLICATION_LOCATION_VEHICLE_REQUESTED")}<span className="check-page-link-button"> *</span></CardLabel>
         <Dropdown
           className="form-field"
           style={styles}
@@ -159,7 +160,7 @@ const SelectTrips = ({ t, config, onSelect, formData = {}, userType, styles, FSM
         <LabelFieldPair key={index}>
           <CardLabel className="card-label-smaller">
             {t(input.label)}
-            {input.isMandatory ? " * " : null}
+            {input.isMandatory ? <span className="check-page-link-button"> * </span> : null}
           </CardLabel>
           <div className="field">
             <TextInput
