@@ -41,10 +41,7 @@ const PropertyPreview = ({ onSelect, redirectUrl, userType, onSuccess }) => {
 
   const basePath = location.pathname.replace(/\/preview\/?$/, "");
 
-  const previewData =
-    location?.state?.formData ||
-    Digit.SessionStorage.get("PT_CREATE_PROPERTY_DATA") ||
-    {};
+  const previewData = location?.state?.formData || Digit.SessionStorage.get("PT_CREATE_PROPERTY_DATA") || {};
 
   const locationDet = previewData?.locationDet || {};
   const useDetails = previewData?.waterConnection?.useDetails || previewData?.useDetails || {};
@@ -177,9 +174,7 @@ const PropertyPreview = ({ onSelect, redirectUrl, userType, onSuccess }) => {
         <VerticalTimeline
           config={[
             {
-              timeLine: [
-                { actions: getHeaderLabel(), currentStep: 2 },
-              ],
+              timeLine: [{ actions: getHeaderLabel(), currentStep: 2 }],
             },
           ]}
           showFinalStep={false}
@@ -190,9 +185,7 @@ const PropertyPreview = ({ onSelect, redirectUrl, userType, onSuccess }) => {
           <Card style={{ width: "100%", padding: "28px 36px", margin: 0 }}>
             {/* Section 1: Property Address */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-              <h2 style={{ fontSize: "24px", fontWeight: "700", color: "#0b0c0c", margin: 0 }}>
-                {t("PT_PROPERTY_ADDRESS_SUB_HEADER")}
-              </h2>
+              <h2 style={{ fontSize: "24px", fontWeight: "700", color: "#0b0c0c", margin: 0 }}>{t("PT_PROPERTY_ADDRESS_SUB_HEADER")}</h2>
               <LinkButton
                 label={<EditIcon style={{ width: "20px", height: "20px", cursor: "pointer" }} />}
                 className="check-page-link-button"
@@ -204,27 +197,14 @@ const PropertyPreview = ({ onSelect, redirectUrl, userType, onSuccess }) => {
               <Row label={t("MYCITY_CODE_LABEL")} text={getLocalizedText(locationDet?.city, t)} />
               <Row label={t("CORE_COMMON_PINCODE")} text={getText(locationDet?.pincode)} />
               <Row label={t("PT_PROPERTY_ADDRESS_LOCALITY")} text={getLocalizedText(locationDet?.locality, t)} />
-              {locationDet?.subLocality ? (
-                <Row label={t("PT_PROPERTY_ADDRESS_SUB_LOCALITY")} text={getText(locationDet?.subLocality)} />
-              ) : null}
-              {locationDet?.colonyMcdCategory ? (
-                <Row label={t("WS_COLONY_CATEGORY")} text={getText(locationDet?.colonyMcdCategory)} />
-              ) : null}
+              {locationDet?.subLocality ? <Row label={t("PT_PROPERTY_ADDRESS_SUB_LOCALITY")} text={getText(locationDet?.subLocality)} /> : null}
+              {locationDet?.colonyMcdCategory ? <Row label={t("WS_COLONY_CATEGORY")} text={getText(locationDet?.colonyMcdCategory)} /> : null}
               {locationDet?.streetName || locationDet?.street ? (
-                <Row
-                  label={t("PT_PROPERTY_ADDRESS_STREET_NAME")}
-                  text={getText(locationDet?.streetName || locationDet?.street)}
-                />
+                <Row label={t("PT_PROPERTY_ADDRESS_STREET_NAME")} text={getText(locationDet?.streetName || locationDet?.street)} />
               ) : null}
               <Row label={t("PT_PROPERTY_ADDRESS_HOUSE_NO")} text={getText(locationDet?.houseNo || locationDet?.houseDoorNo)} />
-              <Row
-                label={t("WS_CONSUMER_RESIDES_FLOOR")}
-                text={getLocalizedText(locationDet?.noOfFloors || locationDet?.numberOfFloors, t)}
-              />
-              <Row
-                label={t("WS_TOTAL_FLOORS_IN_BUILDING")}
-                text={getText(locationDet?.totalNoOfFloors || locationDet?.totalFloors)}
-              />
+              <Row label={t("WS_CONSUMER_RESIDES_FLOOR")} text={getLocalizedText(locationDet?.noOfFloors || locationDet?.numberOfFloors, t)} />
+              <Row label={t("WS_TOTAL_FLOORS_IN_BUILDING")} text={getText(locationDet?.totalNoOfFloors || locationDet?.totalFloors)} />
               {/* <Row label={t("PT_PROPERTY_ADDRESS_LINE_1")} text={getText(locationDet?.addressLine1)} /> */}
               <Row label={t("PT_PROPERTY_ADDRESS_LINE_2")} text={getText(locationDet?.addressLine2 || "NA")} />
               <Row label={t("PT_PROPERTY_ADDRESS_LANDMARK")} text={getText(locationDet?.landmark || locationDet?.landmarkName)} />
@@ -233,22 +213,24 @@ const PropertyPreview = ({ onSelect, redirectUrl, userType, onSuccess }) => {
               <Row label={t("WS_ASSEMBLY")} text={getText(locationDet?.assembly)} />
               <Row label={t("WS_WARD")} text={getText(locationDet?.block || locationDet?.ward)} />
               <Row label={t("WS_ZONE")} text={getText(locationDet?.zone)} />
-              {locationDet?.actualAssembly ? (
-                <Row label={t("WS_ACTUAL_ASSEMBLY")} text={getText(locationDet?.actualAssembly)} />
-              ) : null}
-              {locationDet?.actualWard ? (
-                <Row label={t("WS_ACTUAL_WARD")} text={getText(locationDet?.actualWard)} />
-              ) : null}
-              {locationDet?.actualZone ? (
-                <Row label={t("WS_ACTUAL_ZONE")} text={getText(locationDet?.actualZone)} />
-              ) : null}
+              {locationDet?.actualAssembly ? <Row label={t("WS_ACTUAL_ASSEMBLY")} text={getText(locationDet?.actualAssembly)} /> : null}
+              {locationDet?.actualWard ? <Row label={t("WS_ACTUAL_WARD")} text={getText(locationDet?.actualWard)} /> : null}
+              {locationDet?.actualZone ? <Row label={t("WS_ACTUAL_ZONE")} text={getText(locationDet?.actualZone)} /> : null}
             </StatusTable>
 
             {/* Section 2: Proposed Usage Details */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", marginTop: "32px", borderTop: "1px solid #e5ebf3", paddingTop: "24px" }}>
-              <h2 style={{ fontSize: "24px", fontWeight: "700", color: "#0b0c0c", margin: 0 }}>
-                {t("WS_PROPOSED_USAGE_DETAILS")}
-              </h2>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "16px",
+                marginTop: "32px",
+                borderTop: "1px solid #e5ebf3",
+                paddingTop: "24px",
+              }}
+            >
+              <h2 style={{ fontSize: "24px", fontWeight: "700", color: "#0b0c0c", margin: 0 }}>{t("WS_PROPOSED_USAGE_DETAILS")}</h2>
               <LinkButton
                 label={<EditIcon style={{ width: "20px", height: "20px", cursor: "pointer" }} />}
                 className="check-page-link-button"
@@ -260,28 +242,55 @@ const PropertyPreview = ({ onSelect, redirectUrl, userType, onSuccess }) => {
               <Row label={t("WS_PROPERTY_TYPE")} text={getLocalizedText(useDetails?.propertyType, t)} />
               <Row label={t("WS_CATEGORY_TYPE")} text={getLocalizedText(useDetails?.categoryType, t)} />
               <Row label={t("WS_PROPERTY_CATEGORY")} text={getLocalizedText(useDetails?.propertyCategory, t)} />
-              <Row
-                label={t("WS_WATER_CONNECTION_USAGE_TYPE")}
-                text={getLocalizedText(useDetails?.WaterConnectionUsageType, t)}
-              />
+              <Row label={t("WS_WATER_CONNECTION_USAGE_TYPE")} text={getLocalizedText(useDetails?.WaterConnectionUsageType, t)} />
               <Row label={t("WS_PLOT_AREA")} text={getText(useDetails?.plotArea)} />
               <Row label={t("WS_BUILT_UP_AREA")} text={getText(useDetails?.builtUpArea)} />
-              <Row
-                label={t("WS_HEIGHT_OF_THE_BUILDING")}
-                text={getText(useDetails?.heightOfTheBuilding)}
-              />
-              <Row
-                label={t("WS_SELECT_YEAR_OF_CONSTRUCTION")}
-                text={getText(useDetails?.SelectYearofConstruction || "NA")}
-              />
+              <Row label={t("WS_HEIGHT_OF_THE_BUILDING")} text={getText(useDetails?.heightOfTheBuilding)} />
+              <Row label={t("WS_SELECT_YEAR_OF_CONSTRUCTION")} text={getText(useDetails?.SelectYearofConstruction || "NA")} />
               {Array.isArray(useDetails?.questions) &&
                 useDetails.questions.map((qItem, idx) => (
-                  <Row
-                    key={`q_prev_${idx}`}
-                    label={qItem?.question || `Question ${idx + 1}`}
-                    text={getText(qItem?.answer)}
-                  />
+                  <Row key={`q_prev_${idx}`} label={qItem?.question || `Question ${idx + 1}`} text={getText(qItem?.answer)} />
                 ))}
+              <Row
+                label={t("WS_IS_PROPERTY_USED_FOR_MIXED_OCCUPANCIES") || "Mixed Occupancies"}
+                text={
+                  useDetails?.isMixedOccupancy === "YES" || previewData?.isMixedOccupancy === "YES"
+                    ? t("CS_COMMON_YES") || "Yes"
+                    : useDetails?.isMixedOccupancy === "NO" || previewData?.isMixedOccupancy === "NO"
+                    ? t("CS_COMMON_NO") || "No"
+                    : "NA"
+                }
+              />
+              {/* If Mixed Occupancy is YES, show the usage list */}
+              {(useDetails?.isMixedOccupancy === "YES" || previewData?.isMixedOccupancy === "YES") &&
+                Array.isArray(useDetails?.mixedOccupancyDetails || previewData?.mixedOccupancyDetails) &&
+                (useDetails?.mixedOccupancyDetails || previewData?.mixedOccupancyDetails).length > 0 && (
+                  <div style={{ marginTop: "12px", paddingTop: "12px" }}>
+                    <div style={{ fontWeight: "700", fontSize: "14px", marginBottom: "8px", color: "#0b0c0c" }}>
+                      {t("WS_MIXED_OCCUPANCY_DETAILS")}:
+                    </div>
+                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
+                      <thead>
+                        <tr style={{ backgroundColor: "#f3f4f6", borderBottom: "1px solid #d1d5db" }}>
+                          <th style={{ padding: "6px 10px", textAlign: "left" }}>{t("CS_COMMON_S_NO")}</th>
+                          <th style={{ padding: "6px 10px", textAlign: "left" }}>{t("WS_PROPERTY_TYPE")}</th>
+                          <th style={{ padding: "6px 10px", textAlign: "left" }}>{t("WS_BUILT_UP_AREA")}</th>
+                          <th style={{ padding: "6px 10px", textAlign: "left" }}>{t("WS_HEIGHT_OF_THE_BUILDING(meters)")}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {(useDetails?.mixedOccupancyDetails || previewData?.mixedOccupancyDetails).map((r, i) => (
+                          <tr key={`prev_mixed_${i}`} style={{ borderBottom: "1px solid #e5e7eb" }}>
+                            <td style={{ padding: "6px 10px" }}>{i + 1}</td>
+                            <td style={{ padding: "6px 10px", fontWeight: "600" }}>{r.propertyTypeName || r.propertyTypeCode}</td>
+                            <td style={{ padding: "6px 10px" }}>{r.builtUpArea} sq. meter</td>
+                            <td style={{ padding: "6px 10px" }}>{r.heightOfTheBuilding} meter</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               {/* {useDetails?.NumberofDwellingUnits ? (
                 <Row
                   label={t("WS_NUMBER_OF_DWELLING_UNITS")}
@@ -300,10 +309,18 @@ const PropertyPreview = ({ onSelect, redirectUrl, userType, onSuccess }) => {
             </StatusTable>
 
             {/* Section 3: Owner details */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", marginTop: "32px", borderTop: "1px solid #e5ebf3", paddingTop: "24px" }}>
-              <h2 style={{ fontSize: "24px", fontWeight: "700", color: "#0b0c0c", margin: 0 }}>
-                {t("PT_OWNER_DETAILS")}
-              </h2>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "16px",
+                marginTop: "32px",
+                borderTop: "1px solid #e5ebf3",
+                paddingTop: "24px",
+              }}
+            >
+              <h2 style={{ fontSize: "24px", fontWeight: "700", color: "#0b0c0c", margin: 0 }}>{t("PT_OWNER_DETAILS")}</h2>
               <LinkButton
                 label={<EditIcon style={{ width: "20px", height: "20px", cursor: "pointer" }} />}
                 className="check-page-link-button"
@@ -313,23 +330,18 @@ const PropertyPreview = ({ onSelect, redirectUrl, userType, onSuccess }) => {
             </div>
             {owners && Array.isArray(owners) && owners.length > 0 ? (
               owners.map((owner, idx) => (
-                <StatusTable key={idx} style={idx > 0 ? { marginTop: "20px", borderTop: "1px dashed #d6d5d4", paddingTop: "16px" } : { marginBottom: "20px" }}>
+                <StatusTable
+                  key={idx}
+                  style={idx > 0 ? { marginTop: "20px", borderTop: "1px dashed #d6d5d4", paddingTop: "16px" } : { marginBottom: "20px" }}
+                >
                   {owners.length > 1 && (
-                    <CardSectionHeader style={{ marginBottom: "12px", fontSize: "16px" }}>
-                      {`${t("PT_OWNER")} ${idx + 1}`}
-                    </CardSectionHeader>
+                    <CardSectionHeader style={{ marginBottom: "12px", fontSize: "16px" }}>{`${t("PT_OWNER")} ${idx + 1}`}</CardSectionHeader>
                   )}
                   <Row label={t("PT_FORM3_MOBILE_NUMBER")} text={getText(owner?.mobileNumber)} />
                   <Row label={t("CORE_COMMON_FIRST_NAME")} text={getText(owner?.firstName)} />
-                  {owner?.middleName ? (
-                    <Row label={t("CORE_COMMON_MIDDLE_NAME")} text={getText(owner?.middleName)} />
-                  ) : null}
-                  {owner?.lastName ? (
-                    <Row label={t("CORE_COMMON_LAST_NAME")} text={getText(owner?.lastName)} />
-                  ) : null}
-                  {owner?.emailId || owner?.email ? (
-                    <Row label={t("CORE_COMMON_EMAIL_ID")} text={getText(owner?.emailId || owner?.email)} />
-                  ) : null}
+                  {owner?.middleName ? <Row label={t("CORE_COMMON_MIDDLE_NAME")} text={getText(owner?.middleName)} /> : null}
+                  {owner?.lastName ? <Row label={t("CORE_COMMON_LAST_NAME")} text={getText(owner?.lastName)} /> : null}
+                  {owner?.emailId || owner?.email ? <Row label={t("CORE_COMMON_EMAIL_ID")} text={getText(owner?.emailId || owner?.email)} /> : null}
                   <Row label={t("PT_FORM3_GENDER")} text={getLocalizedText(owner?.gender, t)} />
                 </StatusTable>
               ))
@@ -354,7 +366,7 @@ const PropertyPreview = ({ onSelect, redirectUrl, userType, onSuccess }) => {
           label={
             isSubmitting
               ? t("CS_COMMON_SUBMITTING")
-              : (t("CS_COMMON_PROCEED") && t("CS_COMMON_PROCEED") !== "CS_COMMON_PROCEED")
+              : t("CS_COMMON_PROCEED") && t("CS_COMMON_PROCEED") !== "CS_COMMON_PROCEED"
               ? t("CS_COMMON_PROCEED")
               : "Continue Application for New Connection"
           }
@@ -369,14 +381,7 @@ const PropertyPreview = ({ onSelect, redirectUrl, userType, onSuccess }) => {
         />
       </ActionBar>
 
-      {showToast && (
-        <Toast
-          error={showToast.key}
-          label={showToast.label}
-          isDleteBtn={true}
-          onClose={() => setShowToast(null)}
-        />
-      )}
+      {showToast && <Toast error={showToast.key} label={showToast.label} isDleteBtn={true} onClose={() => setShowToast(null)} />}
     </React.Fragment>
   );
 };

@@ -1,4 +1,17 @@
-import { LabelFieldPair, Dropdown, TextInput, CardLabelError, CardLabel, CollapsibleCardPage, Toast, FieldLabelWithTooltip, RadioButtons } from "@djb25/digit-ui-react-components";
+import {
+  LabelFieldPair,
+  Dropdown,
+  TextInput,
+  CardLabelError,
+  CardLabel,
+  CollapsibleCardPage,
+  Toast,
+  FieldLabelWithTooltip,
+  RadioButtons,
+  EditIcon,
+  DeleteIcon,
+  LinkButton,
+} from "@djb25/digit-ui-react-components";
 import React, { useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import _ from "lodash";
@@ -39,6 +52,8 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
         servantQuarterArea: "",
         questions: [],
         categoryTypeSelectionAnswer: null,
+        isMixedOccupancy: formData?.[config.key]?.useDetails?.isMixedOccupancy || null,
+        mixedOccupancyDetails: formData?.[config.key]?.useDetails?.mixedOccupancyDetails || [],
       },
     },
   });
@@ -90,6 +105,18 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
   const watchHeightOfTheBuilding = watch("useDetails.heightOfTheBuilding");
   const [showToast, setShowToast] = useState(null);
 
+  // Mixed Occupancy State
+  const initialMixed = formData?.[config.key]?.useDetails?.isMixedOccupancy || null;
+  const initialMixedRows = formData?.[config.key]?.useDetails?.mixedOccupancyDetails || [];
+  const [isMixedOcc, setIsMixedOcc] = useState(initialMixed); // "YES", "NO", or null
+  const [mixedOccRows, setMixedOccRows] = useState(Array.isArray(initialMixedRows) ? initialMixedRows : []);
+  const [editingRowIndex, setEditingRowIndex] = useState(null);
+  const [mixedForm, setMixedForm] = useState({
+    propertyType: null,
+    builtUpArea: "",
+    heightOfTheBuilding: "",
+  });
+
   useEffect(() => {
     if (showToast) {
       const timer = setTimeout(() => {
@@ -107,17 +134,16 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
   };
 
   const getHeightErrorMessage = () => {
-    const usageCode = typeof watchWaterConnectionUsageType === "object"
-      ? watchWaterConnectionUsageType?.code || watchWaterConnectionUsageType?.value || watchWaterConnectionUsageType?.name
-      : watchWaterConnectionUsageType;
+    const usageCode =
+      typeof watchWaterConnectionUsageType === "object"
+        ? watchWaterConnectionUsageType?.code || watchWaterConnectionUsageType?.value || watchWaterConnectionUsageType?.name
+        : watchWaterConnectionUsageType;
     const isNormal = normalizeCode(usageCode) === "NORMAL";
     const val = String(watchHeightOfTheBuilding || "").trim();
     if (isNormal) {
       if (val && !/^\d+(\.\d{1,2})?$/.test(val)) {
         const trans = t("WS_HEIGHT_UPTO_TWO_DECIMAL_ERROR");
-        return trans && trans !== "WS_HEIGHT_UPTO_TWO_DECIMAL_ERROR"
-          ? trans
-          : "Height of the building can have up to two decimal places only.";
+        return trans && trans !== "WS_HEIGHT_UPTO_TWO_DECIMAL_ERROR" ? trans : "Height of the building can have up to two decimal places only.";
       }
       const trans = t("WS_HEIGHT_OF_BUILDING_NORMAL_ERROR");
       return trans && trans !== "WS_HEIGHT_OF_BUILDING_NORMAL_ERROR"
@@ -125,9 +151,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
         : "Height of the building must be 17.5 meters or less for Normal connection.";
     } else {
       const trans = t("WS_HEIGHT_INTEGER_ONLY_ERROR");
-      return trans && trans !== "WS_HEIGHT_INTEGER_ONLY_ERROR"
-        ? trans
-        : "Decimal values are not allowed. Please enter a whole number.";
+      return trans && trans !== "WS_HEIGHT_INTEGER_ONLY_ERROR" ? trans : "Decimal values are not allowed. Please enter a whole number.";
     }
   };
 
@@ -143,9 +167,10 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
 
   const isHeightInvalid = useMemo(() => {
     if (!watchHeightOfTheBuilding) return false;
-    const usageCode = typeof watchWaterConnectionUsageType === "object"
-      ? watchWaterConnectionUsageType?.code || watchWaterConnectionUsageType?.value || watchWaterConnectionUsageType?.name
-      : watchWaterConnectionUsageType;
+    const usageCode =
+      typeof watchWaterConnectionUsageType === "object"
+        ? watchWaterConnectionUsageType?.code || watchWaterConnectionUsageType?.value || watchWaterConnectionUsageType?.name
+        : watchWaterConnectionUsageType;
     const isNormal = normalizeCode(usageCode) === "NORMAL";
     const val = String(watchHeightOfTheBuilding).trim();
     if (isNormal) {
@@ -170,9 +195,10 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
 
   const handleHeightChange = (e) => {
     const rawVal = e?.target?.value !== undefined ? e.target.value : "";
-    const usageCode = typeof watchWaterConnectionUsageType === "object"
-      ? watchWaterConnectionUsageType?.code || watchWaterConnectionUsageType?.value || watchWaterConnectionUsageType?.name
-      : watchWaterConnectionUsageType;
+    const usageCode =
+      typeof watchWaterConnectionUsageType === "object"
+        ? watchWaterConnectionUsageType?.code || watchWaterConnectionUsageType?.value || watchWaterConnectionUsageType?.name
+        : watchWaterConnectionUsageType;
     const isNormal = normalizeCode(usageCode) === "NORMAL";
 
     if (!rawVal) {
@@ -201,9 +227,10 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
   };
 
   const handleHeightBlur = (e) => {
-    const usageCode = typeof watchWaterConnectionUsageType === "object"
-      ? watchWaterConnectionUsageType?.code || watchWaterConnectionUsageType?.value || watchWaterConnectionUsageType?.name
-      : watchWaterConnectionUsageType;
+    const usageCode =
+      typeof watchWaterConnectionUsageType === "object"
+        ? watchWaterConnectionUsageType?.code || watchWaterConnectionUsageType?.value || watchWaterConnectionUsageType?.name
+        : watchWaterConnectionUsageType;
     const isNormal = normalizeCode(usageCode) === "NORMAL";
     const val = String(e?.target?.value !== undefined ? e.target.value : watchHeightOfTheBuilding || "").trim();
     if (!val) return;
@@ -211,9 +238,10 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
       if (!/^\d+(\.\d{1,2})?$/.test(val)) {
         setShowToast({
           key: true,
-          label: t("WS_HEIGHT_UPTO_TWO_DECIMAL_ERROR") && t("WS_HEIGHT_UPTO_TWO_DECIMAL_ERROR") !== "WS_HEIGHT_UPTO_TWO_DECIMAL_ERROR"
-            ? t("WS_HEIGHT_UPTO_TWO_DECIMAL_ERROR")
-            : "Height of the building can have up to two decimal places only.",
+          label:
+            t("WS_HEIGHT_UPTO_TWO_DECIMAL_ERROR") && t("WS_HEIGHT_UPTO_TWO_DECIMAL_ERROR") !== "WS_HEIGHT_UPTO_TWO_DECIMAL_ERROR"
+              ? t("WS_HEIGHT_UPTO_TWO_DECIMAL_ERROR")
+              : "Height of the building can have up to two decimal places only.",
         });
         return;
       }
@@ -228,9 +256,10 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
       if (!/^\d+$/.test(val)) {
         setShowToast({
           key: true,
-          label: t("WS_HEIGHT_INTEGER_ONLY_ERROR") && t("WS_HEIGHT_INTEGER_ONLY_ERROR") !== "WS_HEIGHT_INTEGER_ONLY_ERROR"
-            ? t("WS_HEIGHT_INTEGER_ONLY_ERROR")
-            : "Decimal values are not allowed. Please enter a whole number.",
+          label:
+            t("WS_HEIGHT_INTEGER_ONLY_ERROR") && t("WS_HEIGHT_INTEGER_ONLY_ERROR") !== "WS_HEIGHT_INTEGER_ONLY_ERROR"
+              ? t("WS_HEIGHT_INTEGER_ONLY_ERROR")
+              : "Decimal values are not allowed. Please enter a whole number.",
         });
       }
     }
@@ -365,13 +394,9 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
 
     if (watchPropertyCategory) {
       const name =
-        typeof watchPropertyCategory === "object"
-          ? watchPropertyCategory?.name || watchPropertyCategory?.code
-          : String(watchPropertyCategory);
+        typeof watchPropertyCategory === "object" ? watchPropertyCategory?.name || watchPropertyCategory?.code : String(watchPropertyCategory);
       const code =
-        typeof watchPropertyCategory === "object"
-          ? watchPropertyCategory?.code || watchPropertyCategory?.name
-          : String(watchPropertyCategory);
+        typeof watchPropertyCategory === "object" ? watchPropertyCategory?.code || watchPropertyCategory?.name : String(watchPropertyCategory);
       const norm = normalizeCode(code || name);
       if (norm && !catMap.has(norm)) {
         catMap.set(norm, { code: code || name, name: name || code, i18nKey: name || code });
@@ -388,17 +413,12 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
     const activeList = list.filter((item) => item.active !== false);
 
     const selectedCategory =
-      typeof watchPropertyCategory === "object"
-        ? watchPropertyCategory?.code || watchPropertyCategory?.name
-        : watchPropertyCategory;
+      typeof watchPropertyCategory === "object" ? watchPropertyCategory?.code || watchPropertyCategory?.name : watchPropertyCategory;
     const catNorm = normalizeCode(selectedCategory);
 
     let filtered = catNorm ? activeList.filter((item) => matchesCategory(item, catNorm)) : [];
 
-    if (
-      watchPropertyType?.code &&
-      !filtered.some((item) => normalizeCode(item.code) === normalizeCode(watchPropertyType.code))
-    ) {
+    if (watchPropertyType?.code && !filtered.some((item) => normalizeCode(item.code) === normalizeCode(watchPropertyType.code))) {
       const existingInList = list.find((item) => normalizeCode(item.code) === normalizeCode(watchPropertyType.code));
       if (existingInList) {
         filtered = [existingInList, ...filtered];
@@ -418,9 +438,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
   }, [propertyType2List, ptServicesMastersData, watchPropertyCategory, watchPropertyType]);
 
   const selectedCategoryCode =
-    typeof watchPropertyCategory === "object"
-      ? watchPropertyCategory?.code || watchPropertyCategory?.name
-      : watchPropertyCategory;
+    typeof watchPropertyCategory === "object" ? watchPropertyCategory?.code || watchPropertyCategory?.name : watchPropertyCategory;
   const hasSelectedCategory = Boolean(normalizeCode(selectedCategoryCode));
 
   const handleCategoryChange = (selectedCategory) => {
@@ -451,9 +469,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
     if (watchPropertyType?.code) {
       const list = propertyType2List?.length > 0 ? propertyType2List : ptServicesMastersData?.PropertyTax?.PropertyType || [];
       const matched = list.find((item) => normalizeCode(item.code) === normalizeCode(watchPropertyType.code));
-      const selNorm = normalizeCode(
-        typeof selectedCategory === "object" ? selectedCategory?.code || selectedCategory?.name : selectedCategory
-      );
+      const selNorm = normalizeCode(typeof selectedCategory === "object" ? selectedCategory?.code || selectedCategory?.name : selectedCategory);
       const isMatch = matchesCategory(matched || watchPropertyType, selNorm);
       if (!isMatch) {
         setValue("useDetails.propertyType", null, { shouldValidate: false, shouldDirty: true });
@@ -485,6 +501,20 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
         name: type,
         value: type,
       }));
+  }, [propertyType2List, ptServicesMastersData]);
+
+  // All property types across all categories for Mixed Occupancy dropdown
+  const allPropertyTypeOptions = useMemo(() => {
+    const list = propertyType2List?.length > 0 ? propertyType2List : ptServicesMastersData?.PropertyTax?.PropertyType || [];
+    const activeList = list.filter((item) => item.active !== false);
+    return activeList
+      .map((item) => ({
+        ...item,
+        code: item.code,
+        name: item.name || item.code,
+        i18nKey: item.i18nKey || item.code,
+      }))
+      .sort((a, b) => (a.name || "").localeCompare(b.name || "", undefined, { numeric: true, sensitivity: "base" }));
   }, [propertyType2List, ptServicesMastersData]);
 
   const availableCategoryOptions = useMemo(() => {
@@ -530,10 +560,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
   }, [watchPropertyType, propertyType2List, ptServicesMastersData, categoryTypeList, t]);
 
   const isCommercialCategory = useMemo(() => {
-    const catCode =
-      typeof watchPropertyCategory === "object"
-        ? watchPropertyCategory?.code || watchPropertyCategory?.name
-        : watchPropertyCategory;
+    const catCode = typeof watchPropertyCategory === "object" ? watchPropertyCategory?.code || watchPropertyCategory?.name : watchPropertyCategory;
     return normalizeCode(catCode) === "COMMERCIAL";
   }, [watchPropertyCategory]);
 
@@ -549,11 +576,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
   }, [isCommercialCategory, matchedPropertyTypeFull]);
 
   const [ruleAnswer, setRuleAnswer] = useState(() => {
-    return (
-      formData?.[config?.key]?.useDetails?.categoryTypeSelectionAnswer ||
-      formData?.[config?.key]?.categoryTypeSelectionAnswer ||
-      null
-    );
+    return formData?.[config?.key]?.useDetails?.categoryTypeSelectionAnswer || formData?.[config?.key]?.categoryTypeSelectionAnswer || null;
   });
 
   const handleCategoryTypeRuleSelect = (option) => {
@@ -561,16 +584,12 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
     setRuleAnswer(ansCode);
     setValue("useDetails.categoryTypeSelectionAnswer", ansCode, { shouldDirty: true });
 
-    const matchedRule = categoryTypeRule?.rules?.find(
-      (r) => String(r.answer || "").toUpperCase() === ansCode
-    );
+    const matchedRule = categoryTypeRule?.rules?.find((r) => String(r.answer || "").toUpperCase() === ansCode);
 
     const targetCategoryTypeName = matchedRule?.categoryType;
     if (targetCategoryTypeName) {
       const normTarget = normalizeCode(targetCategoryTypeName);
-      const targetCat = categoryTypeList.find(
-        (c) => normalizeCode(c.code) === normTarget || normalizeCode(c.name) === normTarget
-      ) || {
+      const targetCat = categoryTypeList.find((c) => normalizeCode(c.code) === normTarget || normalizeCode(c.name) === normTarget) || {
         code: normTarget === "DOMESTIC" ? "DOMESTIC" : normTarget === "NONDOMESTIC" ? "NON_DOMESTIC" : targetCategoryTypeName,
         name: targetCategoryTypeName,
         i18nKey: t && t(`WS_CATEGORY_${normTarget}`) !== `WS_CATEGORY_${normTarget}` ? `WS_CATEGORY_${normTarget}` : targetCategoryTypeName,
@@ -605,9 +624,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
           );
           if (matchedRule?.categoryType) {
             const normTarget = normalizeCode(matchedRule.categoryType);
-            const targetCat = categoryTypeList.find(
-              (c) => normalizeCode(c.code) === normTarget || normalizeCode(c.name) === normTarget
-            ) || {
+            const targetCat = categoryTypeList.find((c) => normalizeCode(c.code) === normTarget || normalizeCode(c.name) === normTarget) || {
               code: normTarget === "DOMESTIC" ? "DOMESTIC" : normTarget === "NONDOMESTIC" ? "NON_DOMESTIC" : matchedRule.categoryType,
               name: matchedRule.categoryType,
               i18nKey: t && t(`WS_CATEGORY_${normTarget}`) !== `WS_CATEGORY_${normTarget}` ? `WS_CATEGORY_${normTarget}` : matchedRule.categoryType,
@@ -694,7 +711,21 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
       if (clearErrors) clearErrors("useDetails.propertyType");
       if (formClearErrors) formClearErrors("useDetails.propertyType");
     },
-    [propertyType2List, ptServicesMastersData, categoryTypeList, categoryOptions, usageTypeOptions, setValue, clearErrors, formClearErrors, t, isCommercialCategory, ruleAnswer, formData, config]
+    [
+      propertyType2List,
+      ptServicesMastersData,
+      categoryTypeList,
+      categoryOptions,
+      usageTypeOptions,
+      setValue,
+      clearErrors,
+      formClearErrors,
+      t,
+      isCommercialCategory,
+      ruleAnswer,
+      formData,
+      config,
+    ]
   );
 
   const prevPropertyTypeCode = React.useRef(null);
@@ -799,6 +830,22 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
 
   const lastSentValue = React.useRef(null);
   useEffect(() => {
+    // If rows were added to table, use mixedOccRows; if no rows added yet, check if single inputs are filled
+    let effectiveMixedDetails = mixedOccRows;
+    if (isMixedOcc === "YES" && (!mixedOccRows || mixedOccRows.length === 0)) {
+      if (mixedForm.propertyType && mixedForm.builtUpArea && mixedForm.heightOfTheBuilding) {
+        effectiveMixedDetails = [
+          {
+            propertyType: mixedForm.propertyType,
+            propertyTypeCode: mixedForm.propertyType?.code || mixedForm.propertyType?.name,
+            propertyTypeName: mixedForm.propertyType?.name || mixedForm.propertyType?.code,
+            builtUpArea: String(parseFloat(mixedForm.builtUpArea)),
+            heightOfTheBuilding: String(parseFloat(mixedForm.heightOfTheBuilding)),
+          },
+        ];
+      }
+    }
+
     const payloadToSend = {
       ...formValue,
       questions: allQuestionsPayload,
@@ -808,13 +855,17 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
         categoryTypeSelectionQuestion: categoryTypeRule?.question || null,
         categoryTypeSelectionAnswer: ruleAnswer || null,
         categoryTypeSelectionQuestionCode: categoryTypeRule?.questionCode || null,
+        isMixedOccupancy: isMixedOcc,
+        mixedOccupancyDetails: isMixedOcc === "YES" ? effectiveMixedDetails : [],
       },
+      isMixedOccupancy: isMixedOcc,
+      mixedOccupancyDetails: isMixedOcc === "YES" ? effectiveMixedDetails : [],
     };
     if (!_.isEqual(lastSentValue.current, payloadToSend)) {
       lastSentValue.current = _.cloneDeep(payloadToSend);
       onSelect(config.key, payloadToSend);
     }
-  }, [formValue, allQuestionsPayload, categoryTypeRule, ruleAnswer, config.key, onSelect]);
+  }, [formValue, allQuestionsPayload, categoryTypeRule, ruleAnswer, isMixedOcc, mixedOccRows, mixedForm, config.key, onSelect]);
 
   useEffect(() => {
     if (!formData?.cpt?.details) {
@@ -845,7 +896,9 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
 
     const details = formData.cpt.details;
     const additionalDetails = details?.additionalDetails || {};
-    const propKey = `${details?.propertyId}_${details?.auditDetails?.lastModifiedTime || ""}_${additionalDetails?.numberOfDwellingUnits || additionalDetails?.noOfDwellingUnits || ""}_${details?.landArea || ""}_${details?.superBuiltUpArea || ""}`;
+    const propKey = `${details?.propertyId}_${details?.auditDetails?.lastModifiedTime || ""}_${
+      additionalDetails?.numberOfDwellingUnits || additionalDetails?.noOfDwellingUnits || ""
+    }_${details?.landArea || ""}_${details?.superBuiltUpArea || ""}`;
     if (initializedPropertyRef.current === propKey) return;
     initializedPropertyRef.current = propKey;
 
@@ -907,7 +960,42 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
 
   const lastErrorState = React.useRef(null);
   useEffect(() => {
-    const hasErrors = Object.keys(errors).length > 0;
+    let hasErrors = Object.keys(errors).length > 0;
+    // Check mixed occupancy built-up area and height equality
+    if (isMixedOcc === "YES") {
+      const parentBuilt = parseFloat(watchBuiltUpArea) || 0;
+      const parentHeight = parseFloat(watchHeightOfTheBuilding) || 0;
+
+      let effectiveRows = mixedOccRows;
+      if (!effectiveRows || effectiveRows.length === 0) {
+        if (mixedForm.propertyType && mixedForm.builtUpArea && mixedForm.heightOfTheBuilding) {
+          effectiveRows = [
+            {
+              builtUpArea: mixedForm.builtUpArea,
+              heightOfTheBuilding: mixedForm.heightOfTheBuilding,
+            },
+          ];
+        }
+      }
+
+      if (!effectiveRows || effectiveRows.length === 0) {
+        hasErrors = true;
+      } else if (effectiveRows.length === 1) {
+        // Single row (e.g. not added to table yet): check if builtUpArea and height equal parent values
+        const rowBuilt = parseFloat(effectiveRows[0]?.builtUpArea) || 0;
+        const rowHeight = parseFloat(effectiveRows[0]?.heightOfTheBuilding) || 0;
+        if (Math.abs(rowBuilt - parentBuilt) > 0.01 || Math.abs(rowHeight - parentHeight) > 0.01) {
+          hasErrors = true;
+        }
+      } else {
+        // Multiple rows added: sum of built-up areas and sum of heights must equal parent values
+        const totalUsageBuilt = effectiveRows.reduce((acc, r) => acc + (parseFloat(r.builtUpArea) || 0), 0);
+        const totalUsageHeight = effectiveRows.reduce((acc, r) => acc + (parseFloat(r.heightOfTheBuilding) || 0), 0);
+        if (Math.abs(totalUsageBuilt - parentBuilt) > 0.01 || Math.abs(totalUsageHeight - parentHeight) > 0.01) {
+          hasErrors = true;
+        }
+      }
+    }
     if (lastErrorState.current !== hasErrors) {
       lastErrorState.current = hasErrors;
       if (hasErrors) {
@@ -916,7 +1004,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
         if (clearErrors) clearErrors(config.key);
       }
     }
-  }, [errors, config.key, setError, clearErrors]);
+  }, [errors, isMixedOcc, mixedOccRows, mixedForm, watchBuiltUpArea, watchHeightOfTheBuilding, config.key, setError, clearErrors]);
 
   const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
 
@@ -927,348 +1015,337 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
         defaultOpen={config?.isAutomaticFill ? false : true}
         style={props.style}
       >
-      <div className="formcomposer-section-grid">
-        <LabelFieldPair>
-          <FieldLabelWithTooltip
-            label={t("WS_PROPERTY_CATEGORY")}
-            isMandatory={true}
-            infoText={t("WS_PROPERTY_CATEGORY_INFO_MSG")}
-          />
-          <div className="form-field">
-            <Controller
-              control={control}
-              name="useDetails.propertyCategory"
-              rules={{
-                validate: (val) => {
-                  if (!val) return t("REQUIRED_FIELD");
-                  const code = typeof val === "object" ? val?.code || val?.name : val;
-                  return code && String(code).trim().length > 0 ? true : t("REQUIRED_FIELD");
-                },
-              }}
-              render={(props) => (
-                <Dropdown
-                  option={categoryOptions}
-                  optionKey="name"
-                  selected={props.value}
-                  select={(selected) => handleCategoryChange(selected)}
-                  t={t}
-                  onBlur={props.onBlur}
-                  disable={isPropertyFound}
-                  placeholder={t("WS_PROPERTY_CATEGORY")}
-                />
-              )}
-            />
-            {(!watchPropertyCategory ||
-              !(
-                watchPropertyCategory?.code ||
-                watchPropertyCategory?.name ||
-                (typeof watchPropertyCategory === "string" && watchPropertyCategory.trim().length > 0)
-              )) &&
-              errors?.useDetails?.propertyCategory && (
-                <CardLabelError style={{ fontSize: "12px", color: "#d4351c", marginTop: "4px" }}>
-                  {errors.useDetails.propertyCategory.message}
-                </CardLabelError>
-              )}
-          </div>
-        </LabelFieldPair>
-
-        <LabelFieldPair>
-          <FieldLabelWithTooltip
-            label={t("WS_PROPERTY_TYPE")}
-            isMandatory={true}
-            infoText={t("WS_PROPERTY_TYPE_INFO_MSG")}
-          />
-          <div className="form-field">
-            <Controller
-              control={control}
-              name="useDetails.propertyType"
-              rules={{
-                validate: (val) => {
-                  if (!val) return t("REQUIRED_FIELD");
-                  const code = typeof val === "object" ? val?.code || val?.name : val;
-                  return code && String(code).trim().length > 0 ? true : t("REQUIRED_FIELD");
-                },
-              }}
-              render={(props) => (
-                <Dropdown
-                  option={propertyTypeOptions}
-                  optionKey="name"
-                  selected={props.value}
-                  select={(selected) => {
-                    props.onChange(selected);
-                    setValue("useDetails.propertyType", selected, { shouldValidate: false, shouldDirty: true });
-                    if (formClearErrors) formClearErrors("useDetails.propertyType");
-                    if (clearErrors) clearErrors("useDetails.propertyType");
-                    prevPropertyTypeCode.current = selected?.code;
-                    autoFillFromPropertyType(selected);
-                  }}
-                  t={t}
-                  onBlur={props.onBlur}
-                  disable={isPropertyFound || !hasSelectedCategory}
-                  placeholder={
-                    !hasSelectedCategory
-                      ? t("WS_SELECT_PROPERTY_CATEGORY_FIRST") && t("WS_SELECT_PROPERTY_CATEGORY_FIRST") !== "WS_SELECT_PROPERTY_CATEGORY_FIRST"
-                        ? t("WS_SELECT_PROPERTY_CATEGORY_FIRST")
-                        : "Select Property Category first"
-                      : t("WS_PROPERTY_TYPE")
-                  }
-                />
-              )}
-            />
-            {(!watchPropertyType ||
-              !(
-                watchPropertyType?.code ||
-                watchPropertyType?.name ||
-                (typeof watchPropertyType === "string" && watchPropertyType.trim().length > 0)
-              )) &&
-              errors?.useDetails?.propertyType && (
-                <CardLabelError style={{ fontSize: "12px", color: "#d4351c", marginTop: "4px" }}>
-                  {errors.useDetails.propertyType.message}
-                </CardLabelError>
-              )}
-          </div>
-        </LabelFieldPair>
-
-        {categoryTypeRule && (
-          <LabelFieldPair key="categoryTypeSelectionRule">
-            <CardLabel style={{ whiteSpace: "normal", wordBreak: "break-word", fontWeight: "bold" }}>
-              <strong>
-                {categoryTypeRule.question?.toLowerCase().startsWith("question")
-                  ? categoryTypeRule.question
-                  : `Question : ${categoryTypeRule.question}`}
-              </strong>
-            </CardLabel>
-            <div className="form-field" style={{ display: "flex", alignItems: "center" }}>
-              <RadioButtons
-                t={t}
-                name="categoryTypeRuleRadio"
-                options={[
-                  { code: "YES", name: t("CS_COMMON_YES") && t("CS_COMMON_YES") !== "CS_COMMON_YES" ? t("CS_COMMON_YES") : "Yes" },
-                  { code: "NO", name: t("CS_COMMON_NO") && t("CS_COMMON_NO") !== "CS_COMMON_NO" ? t("CS_COMMON_NO") : "No" },
-                ]}
-                optionsKey="name"
-                selectedOption={
-                  ruleAnswer
-                    ? {
-                        code: ruleAnswer,
-                        name:
-                          ruleAnswer === "YES"
-                            ? t("CS_COMMON_YES") && t("CS_COMMON_YES") !== "CS_COMMON_YES"
-                              ? t("CS_COMMON_YES")
-                              : "Yes"
-                            : t("CS_COMMON_NO") && t("CS_COMMON_NO") !== "CS_COMMON_NO"
-                            ? t("CS_COMMON_NO")
-                            : "No",
-                      }
-                    : null
-                }
-                onSelect={handleCategoryTypeRuleSelect}
-                disabled={isPropertyFound}
-                style={{ display: "flex", gap: "24px", alignItems: "center", marginBottom: "0px" }}
+        <div className="formcomposer-section-grid">
+          <LabelFieldPair>
+            <FieldLabelWithTooltip label={t("WS_PROPERTY_CATEGORY")} isMandatory={true} infoText={t("WS_PROPERTY_CATEGORY_INFO_MSG")} />
+            <div className="form-field">
+              <Controller
+                control={control}
+                name="useDetails.propertyCategory"
+                rules={{
+                  validate: (val) => {
+                    if (!val) return t("REQUIRED_FIELD");
+                    const code = typeof val === "object" ? val?.code || val?.name : val;
+                    return code && String(code).trim().length > 0 ? true : t("REQUIRED_FIELD");
+                  },
+                }}
+                render={(props) => (
+                  <Dropdown
+                    option={categoryOptions}
+                    optionKey="name"
+                    selected={props.value}
+                    select={(selected) => handleCategoryChange(selected)}
+                    t={t}
+                    onBlur={props.onBlur}
+                    disable={isPropertyFound}
+                    placeholder={t("WS_PROPERTY_CATEGORY")}
+                  />
+                )}
               />
+              {(!watchPropertyCategory ||
+                !(
+                  watchPropertyCategory?.code ||
+                  watchPropertyCategory?.name ||
+                  (typeof watchPropertyCategory === "string" && watchPropertyCategory.trim().length > 0)
+                )) &&
+                errors?.useDetails?.propertyCategory && (
+                  <CardLabelError style={{ fontSize: "12px", color: "#d4351c", marginTop: "4px" }}>
+                    {errors.useDetails.propertyCategory.message}
+                  </CardLabelError>
+                )}
             </div>
           </LabelFieldPair>
-        )}
 
-        {activeQuestions &&
-          activeQuestions.length > 0 &&
-          activeQuestions.map((questionText, index) => {
-            const rawQ = String(questionText || "").trim();
-            const label = rawQ.toLowerCase().startsWith("question") ? rawQ : `Question : ${rawQ}`;
-            return (
-              <LabelFieldPair key={`question_${index}_${rawQ}`}>
-                <CardLabel style={{ whiteSpace: "normal", wordBreak: "break-word", fontWeight: "bold" }}>
-                  <strong>{label}</strong>
-                </CardLabel>
-                <div className="form-field">
-                  <TextInput
-                    name={`useDetails.question_${index}`}
-                    value={questionAnswers[index]?.answer !== undefined ? questionAnswers[index].answer : ""}
-                    disabled={isPropertyFound}
-                    placeholder="Enter Answer"
-                    onChange={(e) => handleAnswerChange(index, questionText, e.target.value)}
-                  />
-                </div>
-              </LabelFieldPair>
-            );
-          })}
-
-        <LabelFieldPair>
-          <FieldLabelWithTooltip
-            label={t("WS_CATEGORY_TYPE")}
-            isMandatory={true}
-            infoText={t("WS_CATEGORY_TYPE_INFO_MSG")}
-          />
-          <div className="form-field">
-            <Controller
-              control={control}
-              name={"useDetails.categoryType"}
-              rules={{
-                validate: (val) => {
-                  if (!val) return t("REQUIRED_FIELD");
-                  const code = typeof val === "object" ? val?.code || val?.name : val;
-                  return code && String(code).trim().length > 0 ? true : t("REQUIRED_FIELD");
-                },
-              }}
-              render={(props) => (
-                <Dropdown
-                  option={availableCategoryOptions}
-                  optionKey="i18nKey"
-                  selected={props.value}
-                  select={(selected) => {
-                    props.onChange(selected);
-                    if (formClearErrors) formClearErrors("useDetails.categoryType");
-                    if (clearErrors) clearErrors("useDetails.categoryType");
-                    if (categoryTypeRule?.rules) {
-                      const norm = normalizeCode(selected?.code || selected?.name);
-                      const matchedRule = categoryTypeRule.rules.find((r) => normalizeCode(r.categoryType) === norm);
-                      if (matchedRule) {
-                        const ansUpper = String(matchedRule.answer).toUpperCase();
-                        setRuleAnswer(ansUpper);
-                        setValue("useDetails.categoryTypeSelectionAnswer", ansUpper, { shouldDirty: true });
-                      }
+          <LabelFieldPair>
+            <FieldLabelWithTooltip label={t("WS_PROPERTY_TYPE")} isMandatory={true} infoText={t("WS_PROPERTY_TYPE_INFO_MSG")} />
+            <div className="form-field">
+              <Controller
+                control={control}
+                name="useDetails.propertyType"
+                rules={{
+                  validate: (val) => {
+                    if (!val) return t("REQUIRED_FIELD");
+                    const code = typeof val === "object" ? val?.code || val?.name : val;
+                    return code && String(code).trim().length > 0 ? true : t("REQUIRED_FIELD");
+                  },
+                }}
+                render={(props) => (
+                  <Dropdown
+                    option={propertyTypeOptions}
+                    optionKey="name"
+                    selected={props.value}
+                    select={(selected) => {
+                      props.onChange(selected);
+                      setValue("useDetails.propertyType", selected, { shouldValidate: false, shouldDirty: true });
+                      if (formClearErrors) formClearErrors("useDetails.propertyType");
+                      if (clearErrors) clearErrors("useDetails.propertyType");
+                      prevPropertyTypeCode.current = selected?.code;
+                      autoFillFromPropertyType(selected);
+                    }}
+                    t={t}
+                    onBlur={props.onBlur}
+                    disable={isPropertyFound || !hasSelectedCategory}
+                    placeholder={
+                      !hasSelectedCategory
+                        ? t("WS_SELECT_PROPERTY_CATEGORY_FIRST") && t("WS_SELECT_PROPERTY_CATEGORY_FIRST") !== "WS_SELECT_PROPERTY_CATEGORY_FIRST"
+                          ? t("WS_SELECT_PROPERTY_CATEGORY_FIRST")
+                          : "Select Property Category first"
+                        : t("WS_PROPERTY_TYPE")
                     }
-                  }}
+                  />
+                )}
+              />
+              {(!watchPropertyType ||
+                !(
+                  watchPropertyType?.code ||
+                  watchPropertyType?.name ||
+                  (typeof watchPropertyType === "string" && watchPropertyType.trim().length > 0)
+                )) &&
+                errors?.useDetails?.propertyType && (
+                  <CardLabelError style={{ fontSize: "12px", color: "#d4351c", marginTop: "4px" }}>
+                    {errors.useDetails.propertyType.message}
+                  </CardLabelError>
+                )}
+            </div>
+          </LabelFieldPair>
+
+          {categoryTypeRule && (
+            <LabelFieldPair key="categoryTypeSelectionRule">
+              <CardLabel style={{ whiteSpace: "normal", wordBreak: "break-word", fontWeight: "bold" }}>
+                <strong>
+                  {categoryTypeRule.question?.toLowerCase().startsWith("question")
+                    ? categoryTypeRule.question
+                    : `Question : ${categoryTypeRule.question}`}
+                </strong>
+              </CardLabel>
+              <div className="form-field" style={{ display: "flex", alignItems: "center" }}>
+                <RadioButtons
                   t={t}
-                  onBlur={props.onBlur}
-                  disable={true}
-                  placeholder={t("WS_CATEGORY_TYPE")}
-                />
-              )}
-            />
-            {(!watchCategoryType ||
-              !(
-                watchCategoryType?.code ||
-                watchCategoryType?.name ||
-                (typeof watchCategoryType === "string" && watchCategoryType.trim().length > 0)
-              )) &&
-              errors?.useDetails?.categoryType && (
-                <CardLabelError style={{ fontSize: "12px", color: "#d4351c", marginTop: "4px" }}>
-                  {errors.useDetails.categoryType.message}
-                </CardLabelError>
-              )}
-          </div>
-        </LabelFieldPair>
-
-        <LabelFieldPair>
-          <FieldLabelWithTooltip
-            label={t("WS_WATER_CONNECTION_USAGE_TYPE")}
-            isMandatory={true}
-            infoText={t("WS_WATER_CONNECTION_USAGE_TYPE_INFO_MSG")}
-          />
-          <div className="form-field">
-            <Controller
-              control={control}
-              name="useDetails.WaterConnectionUsageType"
-              rules={{
-                validate: (val) => {
-                  if (!val) return t("REQUIRED_FIELD");
-                  const code = typeof val === "object" ? val?.code || val?.name || val?.value : val;
-                  return code && String(code).trim().length > 0 ? true : t("REQUIRED_FIELD");
-                },
-              }}
-              render={(props) => (
-                <Dropdown
-                  option={usageTypeOptions}
-                  optionKey="name"
-                  selected={props.value}
-                  select={props.onChange}
-                  t={t}
-                  onBlur={props.onBlur}
-                  disable={true}
-                  placeholder={t("WS_WATER_CONNECTION_USAGE_TYPE")}
-                />
-              )}
-            />
-            {(!watchWaterConnectionUsageType ||
-              !(
-                watchWaterConnectionUsageType?.code ||
-                watchWaterConnectionUsageType?.name ||
-                watchWaterConnectionUsageType?.value ||
-                (typeof watchWaterConnectionUsageType === "string" && watchWaterConnectionUsageType.trim().length > 0)
-              )) &&
-              errors?.useDetails?.WaterConnectionUsageType && (
-                <CardLabelError style={{ fontSize: "12px", color: "#d4351c", marginTop: "4px" }}>
-                  {errors.useDetails.WaterConnectionUsageType.message}
-                </CardLabelError>
-              )}
-          </div>
-        </LabelFieldPair>
-
-        <LabelFieldPair>
-          <FieldLabelWithTooltip
-            label={t("WS_PLOT_AREA")}
-            isMandatory={true}
-            infoText={t("WS_PLOT_AREA_INFO_MSG")}
-          />
-          <div className="form-field">
-            <TextInput
-              t={t}
-              inputRef={register({
-                required: t("REQUIRED_FIELD"),
-                pattern: { value: DECIMAL_PATTERN, message: t("ERR_INVALID_DECIMAL") },
-                validate: (value) => {
-                  const built = parseFloat(watchBuiltUpArea);
-                  const plot = parseFloat(value);
-                  if (!isNaN(plot) && !isNaN(built) && plot < built) {
-                    return getPlotAreaError();
+                  name="categoryTypeRuleRadio"
+                  options={[
+                    { code: "YES", name: t("CS_COMMON_YES") && t("CS_COMMON_YES") !== "CS_COMMON_YES" ? t("CS_COMMON_YES") : "Yes" },
+                    { code: "NO", name: t("CS_COMMON_NO") && t("CS_COMMON_NO") !== "CS_COMMON_NO" ? t("CS_COMMON_NO") : "No" },
+                  ]}
+                  optionsKey="name"
+                  selectedOption={
+                    ruleAnswer
+                      ? {
+                          code: ruleAnswer,
+                          name:
+                            ruleAnswer === "YES"
+                              ? t("CS_COMMON_YES") && t("CS_COMMON_YES") !== "CS_COMMON_YES"
+                                ? t("CS_COMMON_YES")
+                                : "Yes"
+                              : t("CS_COMMON_NO") && t("CS_COMMON_NO") !== "CS_COMMON_NO"
+                              ? t("CS_COMMON_NO")
+                              : "No",
+                        }
+                      : null
                   }
-                  return true;
-                },
-              })}
-              rules={{ required: t("REQUIRED_FIELD") }}
-              name="useDetails.plotArea"
-              disabled={isPropertyFound}
-              placeholder={t("WS_PLOT_AREA")}
-              onBlur={handleAreaBlur}
-            />
-            {errors?.useDetails?.plotArea && (
-              <CardLabelError style={{ fontSize: "12px", color: "#d4351c", marginTop: "4px" }}>
-                {errors.useDetails.plotArea.message}
-              </CardLabelError>
-            )}
-          </div>
-        </LabelFieldPair>
+                  onSelect={handleCategoryTypeRuleSelect}
+                  disabled={isPropertyFound}
+                  style={{ display: "flex", gap: "24px", alignItems: "center", marginBottom: "0px" }}
+                />
+              </div>
+            </LabelFieldPair>
+          )}
 
-        <LabelFieldPair>
-          <FieldLabelWithTooltip
-            label={t("WS_BUILT_UP_AREA")}
-            isMandatory={true}
-            infoText={t("WS_BUILT_UP_AREA_INFO_MSG")}
-          />
-          <div className="form-field">
-            <TextInput
-              t={t}
-              inputRef={register({
-                required: t("REQUIRED_FIELD"),
-                pattern: { value: DECIMAL_PATTERN, message: t("ERR_INVALID_DECIMAL") },
-                validate: (value) => {
-                  const plot = parseFloat(watchPlotArea);
-                  const built = parseFloat(value);
-                  if (!isNaN(plot) && !isNaN(built) && plot < built) {
-                    return getPlotAreaError();
-                  }
-                  return true;
-                },
-              })}
-              name="useDetails.builtUpArea"
-              rules={{ required: t("REQUIRED_FIELD") }}
-              disabled={isPropertyFound}
-              placeholder={t("WS_BUILT_UP_AREA")}
-              onBlur={handleAreaBlur}
+          {activeQuestions &&
+            activeQuestions.length > 0 &&
+            activeQuestions.map((questionText, index) => {
+              const rawQ = String(questionText || "").trim();
+              const translatedQ =
+                rawQ === "numberOfDwellingUnits" || rawQ.toLowerCase() === "numberofdwellingunits"
+                  ? t("WS_NUMBER_OF_DWELLING_UNITS") && t("WS_NUMBER_OF_DWELLING_UNITS") !== "WS_NUMBER_OF_DWELLING_UNITS"
+                    ? t("WS_NUMBER_OF_DWELLING_UNITS")
+                    : "Number of Dwelling Units"
+                  : t(rawQ);
+              const label = translatedQ.toLowerCase().startsWith("question") ? translatedQ : `Question : ${translatedQ}`;
+              const isInvalid = !questionAnswers[index]?.answer || String(questionAnswers[index]?.answer).trim() === "";
+              return (
+                <LabelFieldPair key={`question_${index}_${rawQ}`}>
+                  <CardLabel style={{ whiteSpace: "normal", wordBreak: "break-word", fontWeight: "bold" }}>
+                    <strong>
+                      {label}
+                      <span className="check-page-link-button" style={{ color: "red" }}>
+                        {" "}
+                        *
+                      </span>
+                    </strong>
+                  </CardLabel>
+                  <div className="form-field">
+                    <TextInput
+                      name={`useDetails.question_${index}`}
+                      value={questionAnswers[index]?.answer !== undefined ? questionAnswers[index].answer : ""}
+                      disabled={isPropertyFound}
+                      placeholder="Enter Answer"
+                      onChange={(e) => handleAnswerChange(index, questionText, e.target.value)}
+                    />
+                  </div>
+                </LabelFieldPair>
+              );
+            })}
+
+          <LabelFieldPair>
+            <FieldLabelWithTooltip label={t("WS_CATEGORY_TYPE")} isMandatory={true} infoText={t("WS_CATEGORY_TYPE_INFO_MSG")} />
+            <div className="form-field">
+              <Controller
+                control={control}
+                name={"useDetails.categoryType"}
+                rules={{
+                  validate: (val) => {
+                    if (!val) return t("REQUIRED_FIELD");
+                    const code = typeof val === "object" ? val?.code || val?.name : val;
+                    return code && String(code).trim().length > 0 ? true : t("REQUIRED_FIELD");
+                  },
+                }}
+                render={(props) => (
+                  <Dropdown
+                    option={availableCategoryOptions}
+                    optionKey="i18nKey"
+                    selected={props.value}
+                    select={(selected) => {
+                      props.onChange(selected);
+                      if (formClearErrors) formClearErrors("useDetails.categoryType");
+                      if (clearErrors) clearErrors("useDetails.categoryType");
+                      if (categoryTypeRule?.rules) {
+                        const norm = normalizeCode(selected?.code || selected?.name);
+                        const matchedRule = categoryTypeRule.rules.find((r) => normalizeCode(r.categoryType) === norm);
+                        if (matchedRule) {
+                          const ansUpper = String(matchedRule.answer).toUpperCase();
+                          setRuleAnswer(ansUpper);
+                          setValue("useDetails.categoryTypeSelectionAnswer", ansUpper, { shouldDirty: true });
+                        }
+                      }
+                    }}
+                    t={t}
+                    onBlur={props.onBlur}
+                    disable={true}
+                    placeholder={t("WS_CATEGORY_TYPE")}
+                  />
+                )}
+              />
+              {(!watchCategoryType ||
+                !(
+                  watchCategoryType?.code ||
+                  watchCategoryType?.name ||
+                  (typeof watchCategoryType === "string" && watchCategoryType.trim().length > 0)
+                )) &&
+                errors?.useDetails?.categoryType && (
+                  <CardLabelError style={{ fontSize: "12px", color: "#d4351c", marginTop: "4px" }}>
+                    {errors.useDetails.categoryType.message}
+                  </CardLabelError>
+                )}
+            </div>
+          </LabelFieldPair>
+
+          <LabelFieldPair>
+            <FieldLabelWithTooltip
+              label={t("WS_WATER_CONNECTION_USAGE_TYPE")}
+              isMandatory={true}
+              infoText={t("WS_WATER_CONNECTION_USAGE_TYPE_INFO_MSG")}
             />
-            {errors?.useDetails?.builtUpArea ? (
-              <CardLabelError style={{ fontSize: "12px", color: "#d4351c", marginTop: "4px" }}>
-                {errors.useDetails.builtUpArea.message}
-              </CardLabelError>
-            ) : isPlotAreaInvalid ? (
-              <CardLabelError style={{ fontSize: "12px", color: "#d4351c", marginTop: "4px" }}>
-                {getPlotAreaError()}
-              </CardLabelError>
-            ) : null}
-          </div>
-        </LabelFieldPair>
-        {/* <div>
+            <div className="form-field">
+              <Controller
+                control={control}
+                name="useDetails.WaterConnectionUsageType"
+                rules={{
+                  validate: (val) => {
+                    if (!val) return t("REQUIRED_FIELD");
+                    const code = typeof val === "object" ? val?.code || val?.name || val?.value : val;
+                    return code && String(code).trim().length > 0 ? true : t("REQUIRED_FIELD");
+                  },
+                }}
+                render={(props) => (
+                  <Dropdown
+                    option={usageTypeOptions}
+                    optionKey="name"
+                    selected={props.value}
+                    select={props.onChange}
+                    t={t}
+                    onBlur={props.onBlur}
+                    disable={true}
+                    placeholder={t("WS_WATER_CONNECTION_USAGE_TYPE")}
+                  />
+                )}
+              />
+              {(!watchWaterConnectionUsageType ||
+                !(
+                  watchWaterConnectionUsageType?.code ||
+                  watchWaterConnectionUsageType?.name ||
+                  watchWaterConnectionUsageType?.value ||
+                  (typeof watchWaterConnectionUsageType === "string" && watchWaterConnectionUsageType.trim().length > 0)
+                )) &&
+                errors?.useDetails?.WaterConnectionUsageType && (
+                  <CardLabelError style={{ fontSize: "12px", color: "#d4351c", marginTop: "4px" }}>
+                    {errors.useDetails.WaterConnectionUsageType.message}
+                  </CardLabelError>
+                )}
+            </div>
+          </LabelFieldPair>
+
+          <LabelFieldPair>
+            <FieldLabelWithTooltip label={t("WS_PLOT_AREA")} isMandatory={true} infoText={t("WS_PLOT_AREA_INFO_MSG")} />
+            <div className="form-field">
+              <TextInput
+                t={t}
+                inputRef={register({
+                  required: t("REQUIRED_FIELD"),
+                  pattern: { value: DECIMAL_PATTERN, message: t("ERR_INVALID_DECIMAL") },
+                  validate: (value) => {
+                    const built = parseFloat(watchBuiltUpArea);
+                    const plot = parseFloat(value);
+                    if (!isNaN(plot) && !isNaN(built) && plot < built) {
+                      return getPlotAreaError();
+                    }
+                    return true;
+                  },
+                })}
+                rules={{ required: t("REQUIRED_FIELD") }}
+                name="useDetails.plotArea"
+                disabled={isPropertyFound}
+                placeholder={t("WS_PLOT_AREA")}
+                onBlur={handleAreaBlur}
+              />
+              {errors?.useDetails?.plotArea && (
+                <CardLabelError style={{ fontSize: "12px", color: "#d4351c", marginTop: "4px" }}>{errors.useDetails.plotArea.message}</CardLabelError>
+              )}
+            </div>
+          </LabelFieldPair>
+
+          <LabelFieldPair>
+            <FieldLabelWithTooltip label={t("WS_BUILT_UP_AREA")} isMandatory={true} infoText={t("WS_BUILT_UP_AREA_INFO_MSG")} />
+            <div className="form-field">
+              <TextInput
+                t={t}
+                inputRef={register({
+                  required: t("REQUIRED_FIELD"),
+                  pattern: { value: DECIMAL_PATTERN, message: t("ERR_INVALID_DECIMAL") },
+                  validate: (value) => {
+                    const plot = parseFloat(watchPlotArea);
+                    const built = parseFloat(value);
+                    if (!isNaN(plot) && !isNaN(built) && plot < built) {
+                      return getPlotAreaError();
+                    }
+                    return true;
+                  },
+                })}
+                name="useDetails.builtUpArea"
+                rules={{ required: t("REQUIRED_FIELD") }}
+                disabled={isPropertyFound}
+                placeholder={t("WS_BUILT_UP_AREA")}
+                onBlur={handleAreaBlur}
+              />
+              {errors?.useDetails?.builtUpArea ? (
+                <CardLabelError style={{ fontSize: "12px", color: "#d4351c", marginTop: "4px" }}>
+                  {errors.useDetails.builtUpArea.message}
+                </CardLabelError>
+              ) : isPlotAreaInvalid ? (
+                <CardLabelError style={{ fontSize: "12px", color: "#d4351c", marginTop: "4px" }}>{getPlotAreaError()}</CardLabelError>
+              ) : null}
+            </div>
+          </LabelFieldPair>
+          {/* <div>
           <LabelFieldPair>
             <CardLabel>{`${t("WS_FAR_AREA")}`}</CardLabel>
             <div className="form-field">
@@ -1296,99 +1373,98 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
               </CardLabelError>
             )}
         </div> */}
-        <LabelFieldPair>
-          <FieldLabelWithTooltip
-            label={t("WS_HEIGHT_OF_THE_BUILDING(meters)")}
-            isMandatory={true}
-            infoText={t("WS_HEIGHT_OF_THE_BUILDING_INFO_MSG")}
-          />
-          <div className="form-field">
-            <TextInput
-              t={t}
-              inputRef={register({
-                required: t("REQUIRED_FIELD"),
-                validate: (value) => {
-                  if (!value) return t("REQUIRED_FIELD");
-                  const usageCode = typeof watchWaterConnectionUsageType === "object"
-                    ? watchWaterConnectionUsageType?.code || watchWaterConnectionUsageType?.value || watchWaterConnectionUsageType?.name
-                    : watchWaterConnectionUsageType;
-                  const isNormal = normalizeCode(usageCode) === "NORMAL";
-                  const valStr = String(value).trim();
-                  if (isNormal) {
-                    if (!/^\d+(\.\d{1,2})?$/.test(valStr)) {
-                      const trans = t("WS_HEIGHT_UPTO_TWO_DECIMAL_ERROR");
-                      return trans && trans !== "WS_HEIGHT_UPTO_TWO_DECIMAL_ERROR"
-                        ? trans
-                        : "Height of the building can have up to two decimal places only.";
-                    }
-                    const height = parseFloat(valStr);
-                    if (!isNaN(height) && height > 17.5) {
-                      return getHeightErrorMessage();
-                    }
-                  } else {
-                    if (!/^\d+$/.test(valStr)) {
-                      const trans = t("WS_HEIGHT_INTEGER_ONLY_ERROR");
-                      return trans && trans !== "WS_HEIGHT_INTEGER_ONLY_ERROR"
-                        ? trans
-                        : "Decimal values are not allowed. Please enter a whole number.";
-                    }
-                  }
-                  return true;
-                },
-              })}
-              name="useDetails.heightOfTheBuilding"
-              rules={{ required: t("REQUIRED_FIELD") }}
-              disabled={isPropertyFound}
-              placeholder={t("WS_HEIGHT_OF_THE_BUILDING")}
-              value={watchHeightOfTheBuilding !== undefined && watchHeightOfTheBuilding !== null ? watchHeightOfTheBuilding : ""}
-              onChange={handleHeightChange}
-              onBlur={handleHeightBlur}
+          <LabelFieldPair>
+            <FieldLabelWithTooltip
+              label={t("WS_HEIGHT_OF_THE_BUILDING(meters)")}
+              isMandatory={true}
+              infoText={t("WS_HEIGHT_OF_THE_BUILDING_INFO_MSG")}
             />
-            {errors?.useDetails?.heightOfTheBuilding ? (
-              <CardLabelError style={{ fontSize: "12px", color: "#d4351c", marginTop: "4px" }}>
-                {errors.useDetails.heightOfTheBuilding.message}
-              </CardLabelError>
-            ) : isHeightInvalid ? (
-              <CardLabelError style={{ fontSize: "12px", color: "#d4351c", marginTop: "4px" }}>
-                {getHeightErrorMessage()}
-              </CardLabelError>
-            ) : null}
-          </div>
-        </LabelFieldPair>
-        <LabelFieldPair>
-          <FieldLabelWithTooltip
-            label={t("WS_SELECT_YEAR_OF_CONSTRUCTION")}
-            isMandatory={false}
-            infoText={t("WS_SELECT_YEAR_OF_CONSTRUCTION_INFO_MSG")}
-          />
-          <div className="form-field">
-            <Controller
-              control={control}
-              name="useDetails.SelectYearofConstruction"
-              // rules={{ required: t("REQUIRED_FIELD") }}
-              render={(props) => (
-                <Dropdown
-                  option={yearOptions}
-                  optionKey="value"
-                  selected={props.value}
-                  select={props.onChange}
-                  t={t}
-                  onBlur={props.onBlur}
-                  disable={isPropertyFound}
-                  placeholder={t("WS_SELECT_YEAR_OF_CONSTRUCTION")}
-                />
+            <div className="form-field">
+              <TextInput
+                t={t}
+                inputRef={register({
+                  required: t("REQUIRED_FIELD"),
+                  validate: (value) => {
+                    if (!value) return t("REQUIRED_FIELD");
+                    const usageCode =
+                      typeof watchWaterConnectionUsageType === "object"
+                        ? watchWaterConnectionUsageType?.code || watchWaterConnectionUsageType?.value || watchWaterConnectionUsageType?.name
+                        : watchWaterConnectionUsageType;
+                    const isNormal = normalizeCode(usageCode) === "NORMAL";
+                    const valStr = String(value).trim();
+                    if (isNormal) {
+                      if (!/^\d+(\.\d{1,2})?$/.test(valStr)) {
+                        const trans = t("WS_HEIGHT_UPTO_TWO_DECIMAL_ERROR");
+                        return trans && trans !== "WS_HEIGHT_UPTO_TWO_DECIMAL_ERROR"
+                          ? trans
+                          : "Height of the building can have up to two decimal places only.";
+                      }
+                      const height = parseFloat(valStr);
+                      if (!isNaN(height) && height > 17.5) {
+                        return getHeightErrorMessage();
+                      }
+                    } else {
+                      if (!/^\d+$/.test(valStr)) {
+                        const trans = t("WS_HEIGHT_INTEGER_ONLY_ERROR");
+                        return trans && trans !== "WS_HEIGHT_INTEGER_ONLY_ERROR"
+                          ? trans
+                          : "Decimal values are not allowed. Please enter a whole number.";
+                      }
+                    }
+                    return true;
+                  },
+                })}
+                name="useDetails.heightOfTheBuilding"
+                rules={{ required: t("REQUIRED_FIELD") }}
+                disabled={isPropertyFound}
+                placeholder={t("WS_HEIGHT_OF_THE_BUILDING")}
+                value={watchHeightOfTheBuilding !== undefined && watchHeightOfTheBuilding !== null ? watchHeightOfTheBuilding : ""}
+                onChange={handleHeightChange}
+                onBlur={handleHeightBlur}
+              />
+              {errors?.useDetails?.heightOfTheBuilding ? (
+                <CardLabelError style={{ fontSize: "12px", color: "#d4351c", marginTop: "4px" }}>
+                  {errors.useDetails.heightOfTheBuilding.message}
+                </CardLabelError>
+              ) : isHeightInvalid ? (
+                <CardLabelError style={{ fontSize: "12px", color: "#d4351c", marginTop: "4px" }}>{getHeightErrorMessage()}</CardLabelError>
+              ) : null}
+            </div>
+          </LabelFieldPair>
+          <LabelFieldPair>
+            <FieldLabelWithTooltip
+              label={t("WS_SELECT_YEAR_OF_CONSTRUCTION")}
+              isMandatory={false}
+              infoText={t("WS_SELECT_YEAR_OF_CONSTRUCTION_INFO_MSG")}
+            />
+            <div className="form-field">
+              <Controller
+                control={control}
+                name="useDetails.SelectYearofConstruction"
+                // rules={{ required: t("REQUIRED_FIELD") }}
+                render={(props) => (
+                  <Dropdown
+                    option={yearOptions}
+                    optionKey="value"
+                    selected={props.value}
+                    select={props.onChange}
+                    t={t}
+                    onBlur={props.onBlur}
+                    disable={isPropertyFound}
+                    placeholder={t("WS_SELECT_YEAR_OF_CONSTRUCTION")}
+                  />
+                )}
+              />
+              {errors?.useDetails?.SelectYearofConstruction && (
+                <CardLabelError style={{ fontSize: "12px", color: "#d4351c", marginTop: "4px" }}>
+                  {errors.useDetails.SelectYearofConstruction.message}
+                </CardLabelError>
               )}
-            />
-            {errors?.useDetails?.SelectYearofConstruction && (
-              <CardLabelError style={{ fontSize: "12px", color: "#d4351c", marginTop: "4px" }}>
-                {errors.useDetails.SelectYearofConstruction.message}
-              </CardLabelError>
-            )}
-          </div>
-        </LabelFieldPair>
+            </div>
+          </LabelFieldPair>
 
-        {/* Frontend questions commented out - only MDMS questions are asked */}
-        {/* {isSchoolCollegeProperty ? (
+          {/* Frontend questions commented out - only MDMS questions are asked */}
+          {/* {isSchoolCollegeProperty ? (
           <React.Fragment>
             <LabelFieldPair>
               <FieldLabelWithTooltip
@@ -1502,7 +1578,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
           </LabelFieldPair>
         ) : null} */}
 
-        {/* {isServentHouse ? (
+          {/* {isServentHouse ? (
           <LabelFieldPair>
             <CardLabel>{`${t("WS_SERVENT_HOUSE")}`}</CardLabel>
             <div className="form-field">
@@ -1521,19 +1597,321 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
         {isServentHouse && errors?.useDetails?.servantQuarterArea && (
           <CardLabelError style={errorStyle}>{errors.useDetails.servantQuarterArea.message}</CardLabelError>
         )} */}
-      </div>
-    </CollapsibleCardPage>
-    {showToast && (
-      <Toast
-        error={showToast.key}
-        label={showToast.label}
-        isDleteBtn={true}
-        onClose={() => {
-          setShowToast(null);
-        }}
-      />
-    )}
-  </React.Fragment>
+        </div>
+      </CollapsibleCardPage>
+
+      {/* Mixed Occupancy Section */}
+      <CollapsibleCardPage
+        title={t("WS_MIXED_OCCUPANCY_TITLE") || "Mixed Occupancy"}
+        defaultOpen={true}
+        style={{ marginTop: "24px", ...props.style }}
+      >
+        <div style={{ padding: "8px 0" }}>
+          {/* Mixed Occupancy Question */}
+          <div style={{ marginBottom: "20px" }}>
+            <CardLabel style={{ fontWeight: "600", fontSize: "16px", marginBottom: "6px" }}>
+              {t("WS_IS_PROPERTY_USED_FOR_MIXED_OCCUPANCIES") || "Is this property used for mixed occupancies?"}
+              <span style={{ color: "red", marginLeft: "4px" }}>*</span>
+            </CardLabel>
+            <div style={{ fontSize: "13px", color: "#505a5f", marginBottom: "12px" }}>
+              {t("WS_MIXED_OCCUPANCIES_INFO_MSG") ||
+                "Does this property include multiple types of usage, such as residential block, medical shop, etc.?"}
+            </div>
+            <div style={{ display: "flex", alignItems: "center" }}>
+              <RadioButtons
+                t={t}
+                name="mixedOccupancyRadio"
+                options={[
+                  { code: "YES", name: t("CS_COMMON_YES") && t("CS_COMMON_YES") !== "CS_COMMON_YES" ? t("CS_COMMON_YES") : "Yes" },
+                  { code: "NO", name: t("CS_COMMON_NO") && t("CS_COMMON_NO") !== "CS_COMMON_NO" ? t("CS_COMMON_NO") : "No" },
+                ]}
+                optionsKey="name"
+                isPTFlow={true}
+                selectedOption={
+                  isMixedOcc
+                    ? {
+                        code: isMixedOcc,
+                        name:
+                          isMixedOcc === "YES"
+                            ? t("CS_COMMON_YES") && t("CS_COMMON_YES") !== "CS_COMMON_YES"
+                              ? t("CS_COMMON_YES")
+                              : "Yes"
+                            : t("CS_COMMON_NO") && t("CS_COMMON_NO") !== "CS_COMMON_NO"
+                            ? t("CS_COMMON_NO")
+                            : "No",
+                      }
+                    : null
+                }
+                onSelect={(option) => {
+                  const choice = typeof option === "object" ? option?.code : option;
+                  setIsMixedOcc(choice);
+                  setValue("useDetails.isMixedOccupancy", choice, { shouldDirty: true });
+                  if (choice === "NO") {
+                    setMixedOccRows([]);
+                    setEditingRowIndex(null);
+                    setMixedForm({ propertyType: null, builtUpArea: "", heightOfTheBuilding: "" });
+                    setValue("useDetails.mixedOccupancyDetails", [], { shouldDirty: true });
+                  }
+                }}
+                style={{ display: "flex", gap: "24px", alignItems: "center", marginBottom: "0px" }}
+              />
+            </div>
+          </div>
+
+          {/* If YES, show Add Details of Usage of Property */}
+          {isMixedOcc === "YES" && (
+            <div style={{ borderTop: "1px solid #e0e0e0", paddingTop: "20px", marginTop: "16px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", marginBottom: "16px" }}>
+                <div>
+                  <h4 style={{ margin: "0 0 4px 0", fontSize: "16px", fontWeight: "700", color: "#0b0c0c" }}>
+                    {t("WS_ADD_DETAILS_OF_USAGE_OF_PROPERTY") || "Add Details of Usage of Property"}
+                  </h4>
+                  <div style={{ fontSize: "13px", color: "#505a5f" }}>
+                    {t("WS_MIXED_USAGE_DESC_PREFIX") ||
+                      "Add each property usage type with its built-up area and height of the building. The total built-up area must be equal to "}
+                    <strong>{watchBuiltUpArea ? `${parseFloat(watchBuiltUpArea) || 0} sq. meter` : t("WS_PARENT_BUILT_UP_AREA")}</strong>
+                    {"."}
+                  </div>
+                </div>
+              </div>
+
+              {/* Form to Add / Edit a Usage Type row */}
+              <div
+                style={{
+                  backgroundColor: "#f9fafb",
+                  border: "1px solid #e5ebf3",
+                  borderRadius: "4px",
+                  padding: "16px",
+                  marginBottom: "20px",
+                }}
+              >
+                <div style={{ fontWeight: "600", fontSize: "14px", marginBottom: "12px", color: "#0b0c0c" }}>
+                  {editingRowIndex !== null ? `${t("WS_EDIT_PROPERTY_USAGE")} (#${editingRowIndex + 1})` : t("WS_ADD_NEW_PROPERTY_USAGE")}
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px", alignItems: "flex-start" }}>
+                  {/* 1. Select Property Type */}
+                  <div>
+                    <div style={{ fontSize: "13px", fontWeight: "600", marginBottom: "4px" }}>
+                      {t("WS_PROPERTY_TYPE")} <span style={{ color: "red" }}>*</span>
+                    </div>
+                    <Dropdown
+                      option={allPropertyTypeOptions}
+                      optionKey="name"
+                      selected={mixedForm.propertyType}
+                      select={(val) => setMixedForm((prev) => ({ ...prev, propertyType: val }))}
+                      t={t}
+                      placeholder={t("WS_PROPERTY_TYPE")}
+                    />
+                  </div>
+
+                  {/* 2. Enter Built-up Area */}
+                  <div>
+                    <div style={{ fontSize: "13px", fontWeight: "600", marginBottom: "4px" }}>
+                      {t("WS_BUILT_UP_AREA")} <span style={{ color: "red" }}>*</span>
+                    </div>
+                    <TextInput
+                      t={t}
+                      type="text"
+                      value={mixedForm.builtUpArea}
+                      placeholder={t("WS_BUILT_UP_AREA")}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val === "" || DECIMAL_PATTERN.test(val)) {
+                          setMixedForm((prev) => ({ ...prev, builtUpArea: val }));
+                        }
+                      }}
+                    />
+                  </div>
+
+                  {/* 3. Enter Height of the Building */}
+                  <div>
+                    <div style={{ fontSize: "13px", fontWeight: "600", marginBottom: "4px" }}>
+                      {t("WS_HEIGHT_OF_THE_BUILDING(meters)")} <span style={{ color: "red" }}>*</span>
+                    </div>
+                    <TextInput
+                      t={t}
+                      type="text"
+                      value={mixedForm.heightOfTheBuilding}
+                      placeholder={t("WS_HEIGHT_OF_THE_BUILDING")}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val === "" || DECIMAL_PATTERN.test(val)) {
+                          setMixedForm((prev) => ({ ...prev, heightOfTheBuilding: val }));
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Add / Update / Cancel Buttons */}
+                <div style={{ display: "flex", gap: "10px", marginTop: "16px", justifyContent: "flex-end" }}>
+                  {editingRowIndex !== null && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingRowIndex(null);
+                        setMixedForm({ propertyType: null, builtUpArea: "", heightOfTheBuilding: "" });
+                      }}
+                      style={{
+                        padding: "8px 16px",
+                        backgroundColor: "#fff",
+                        border: "1px solid #d6d5d4",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                        fontSize: "14px",
+                        fontWeight: "600",
+                      }}
+                    >
+                      {t("CS_COMMON_CANCEL") || "Cancel"}
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!mixedForm.propertyType) {
+                        setShowToast({ key: true, label: t("WS_ERR_SELECT_PROPERTY_TYPE") || "Please select Property Type" });
+                        return;
+                      }
+                      if (!mixedForm.builtUpArea || isNaN(parseFloat(mixedForm.builtUpArea)) || parseFloat(mixedForm.builtUpArea) <= 0) {
+                        setShowToast({ key: true, label: t("WS_ERR_VALID_BUILT_UP_AREA") || "Please enter valid Built-up Area" });
+                        return;
+                      }
+                      if (
+                        !mixedForm.heightOfTheBuilding ||
+                        isNaN(parseFloat(mixedForm.heightOfTheBuilding)) ||
+                        parseFloat(mixedForm.heightOfTheBuilding) <= 0
+                      ) {
+                        setShowToast({ key: true, label: t("WS_ERR_VALID_HEIGHT") || "Please enter valid Height of The Building" });
+                        return;
+                      }
+
+                      const newRow = {
+                        propertyType: mixedForm.propertyType,
+                        propertyTypeCode: mixedForm.propertyType?.code || mixedForm.propertyType?.name,
+                        propertyTypeName: mixedForm.propertyType?.name || mixedForm.propertyType?.code,
+                        builtUpArea: String(parseFloat(mixedForm.builtUpArea)),
+                        heightOfTheBuilding: String(parseFloat(mixedForm.heightOfTheBuilding)),
+                      };
+
+                      let updatedRows;
+                      if (editingRowIndex !== null) {
+                        updatedRows = mixedOccRows.map((r, idx) => (idx === editingRowIndex ? newRow : r));
+                        setEditingRowIndex(null);
+                      } else {
+                        updatedRows = [...mixedOccRows, newRow];
+                      }
+                      setMixedOccRows(updatedRows);
+                      setValue("useDetails.mixedOccupancyDetails", updatedRows, { shouldDirty: true });
+                      setMixedForm({ propertyType: null, builtUpArea: "", heightOfTheBuilding: "" });
+                    }}
+                    style={{
+                      padding: "8px 18px",
+                      backgroundColor: "#00703c",
+                      color: "#fff",
+                      border: "none",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                      fontSize: "14px",
+                      fontWeight: "600",
+                    }}
+                  >
+                    {editingRowIndex !== null ? `✓ ${t("CS_COMMON_UPDATE") || "Update Usage"}` : `+ ${t("WS_ADD_USAGE") || "Add Usage"}`}
+                  </button>
+                </div>
+              </div>
+
+              {/* Usage Table */}
+              {mixedOccRows.length > 0 ? (
+                <div style={{ overflowX: "auto", border: "1px solid #e0e0e0", borderRadius: "4px", marginBottom: "16px" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "14px" }}>
+                    <thead>
+                      <tr style={{ backgroundColor: "#f3f4f6", borderBottom: "2px solid #e5e7eb" }}>
+                        <th style={{ padding: "10px 14px", width: "40px" }}>{t("CS_COMMON_S_NO")}</th>
+                        <th style={{ padding: "10px 14px" }}>{t("WS_PROPERTY_TYPE")}</th>
+                        <th style={{ padding: "10px 14px" }}>{t("WS_BUILT_UP_AREA")}</th>
+                        <th style={{ padding: "10px 14px" }}>{t("WS_HEIGHT_OF_THE_BUILDING(meters)")}</th>
+                        <th style={{ padding: "10px 14px", textAlign: "center", width: "100px" }}>{t("CS_COMMON_ACTIONS")} *</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {mixedOccRows.map((row, idx) => {
+                        const rowHeight = parseFloat(row.heightOfTheBuilding) || 0;
+                        const parentHeight = parseFloat(watchHeightOfTheBuilding) || 0;
+                        const isRowHeightMismatch = Math.abs(rowHeight - parentHeight) > 0.01;
+
+                        return (
+                          <tr
+                            key={`mixed_row_${idx}`}
+                            style={{ borderBottom: "1px solid #f0f0f0", backgroundColor: idx % 2 === 0 ? "#ffffff" : "#fafafa" }}
+                          >
+                            <td style={{ padding: "10px 14px" }}>{idx + 1}</td>
+                            <td style={{ padding: "10px 14px", fontWeight: "600", color: "#0b0c0c" }}>
+                              {row.propertyTypeName || row.propertyType?.name || row.propertyTypeCode}
+                            </td>
+                            <td style={{ padding: "10px 14px" }}>{row.builtUpArea} sq. meter</td>
+                            <td style={{ padding: "10px 14px" }}>
+                              {row.heightOfTheBuilding} meter
+                            </td>
+                            <td style={{ padding: "10px 14px", textAlign: "center" }}>
+                              <div style={{ display: "flex", justifyContent: "center", gap: "14px", alignItems: "center" }}>
+                                <span
+                                  title={t("CS_COMMON_EDIT") || "Edit"}
+                                  onClick={() => {
+                                    setEditingRowIndex(idx);
+                                    setMixedForm({
+                                      propertyType: row.propertyType ||
+                                        allPropertyTypeOptions.find((p) => p.code === row.propertyTypeCode) || {
+                                          name: row.propertyTypeName,
+                                          code: row.propertyTypeCode,
+                                        },
+                                      builtUpArea: row.builtUpArea,
+                                      heightOfTheBuilding: row.heightOfTheBuilding,
+                                    });
+                                  }}
+                                  style={{ cursor: "pointer", display: "inline-flex", alignItems: "center" }}
+                                >
+                                  <EditIcon style={{ width: "18px", height: "18px", fill: "#00703c" }} />
+                                </span>
+                                <span
+                                  title={t("CS_COMMON_DELETE") || "Delete"}
+                                  onClick={() => {
+                                    const filtered = mixedOccRows.filter((_, i) => i !== idx);
+                                    setMixedOccRows(filtered);
+                                    setValue("useDetails.mixedOccupancyDetails", filtered, { shouldDirty: true });
+                                    if (editingRowIndex === idx) {
+                                      setEditingRowIndex(null);
+                                      setMixedForm({ propertyType: null, builtUpArea: "", heightOfTheBuilding: "" });
+                                    }
+                                  }}
+                                  style={{ cursor: "pointer", display: "inline-flex", alignItems: "center" }}
+                                >
+                                  <DeleteIcon style={{ width: "18px", height: "18px", fill: "#d4351c" }} />
+                                </span>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              ) : null}
+            </div>
+          )}
+        </div>
+      </CollapsibleCardPage>
+      {showToast && (
+        <Toast
+          error={showToast.key}
+          label={showToast.label}
+          isDleteBtn={true}
+          onClose={() => {
+            setShowToast(null);
+          }}
+        />
+      )}
+    </React.Fragment>
   );
 };
 

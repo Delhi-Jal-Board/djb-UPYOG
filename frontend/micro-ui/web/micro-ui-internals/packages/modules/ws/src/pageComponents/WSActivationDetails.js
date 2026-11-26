@@ -1,32 +1,43 @@
 import { CardLabel, DatePicker, Dropdown, LabelFieldPair, TextInput, FieldLabelWithTooltip } from "@djb25/digit-ui-react-components";
-import React from "react";
+import React, { useMemo } from "react";
 import _ from "lodash";
 
-const METER_MAKES = [
-  { name: "Anand Asahi", code: "ANAND_ASAHI", i18nKey: "WS_METER_MAKE_ANAND_ASAHI" },
-  { name: "Arad", code: "ARAD", i18nKey: "WS_METER_MAKE_ARAD" },
-  { name: "Baylan", code: "BAYLAN", i18nKey: "WS_METER_MAKE_BAYLAN" },
-  { name: "Crescent", code: "CRESCENT", i18nKey: "WS_METER_MAKE_CRESCENT" },
-  { name: "Dasmesh / DMB", code: "DASMESH", i18nKey: "WS_METER_MAKE_DASMESH" },
-  { name: "Fedrel", code: "FEDREL", i18nKey: "WS_METER_MAKE_FEDREL" },
-  { name: "Itron", code: "ITRON", i18nKey: "WS_METER_MAKE_ITRON" },
-  { name: "Konark", code: "KONARK", i18nKey: "WS_METER_MAKE_KONARK" },
-  { name: "Kranti", code: "KRANTI", i18nKey: "WS_METER_MAKE_KRANTI" },
-  { name: "Teksan", code: "TEKSAN", i18nKey: "WS_METER_MAKE_TEKSAN" },
-  { name: "Other", code: "OTHER", i18nKey: "WS_METER_MAKE_OTHER" },
-];
-
 const WSActivationDetails = ({ t, config, userType, formData, onSelect }) => {
+  const tenantId = Digit.ULBService.getStateId() || Digit.ULBService.getCurrentTenantId();
+
+  // Call MDMS to fetch MeterMake master from ws-services-calculation module
+  const { data: mdmsMeterMakeData } = Digit.Hooks.ws.useMDMS(
+    tenantId,
+    "ws-services-calculation",
+    ["MeterMake"]
+  );
+
+  const meterMakeOptions = useMemo(() => {
+    const rawList = mdmsMeterMakeData?.["ws-services-calculation"]?.MeterMake;
+    if (Array.isArray(rawList) && rawList.length > 0) {
+      return rawList
+        .filter((item) => item?.active === true || String(item?.active).toLowerCase() === "true")
+        .map((item) => ({
+          name: item.name || item.code,
+          code: item.code || item.name,
+          i18nKey: `WS_METER_MAKE_${(item.code || item.name).replace(/\s+/g, "_").toUpperCase()}`,
+          active: item.active,
+        }));
+    }
+    return [];
+  }, [mdmsMeterMakeData]);
+
   const initialData = Array.isArray(formData?.activationDetails) ? formData?.activationDetails?.[0] : formData?.activationDetails || {};
   const appData =
     formData?.formDetails?.applicationData ||
     formData?.connectionDetails?.[0]?.formDetails?.applicationData ||
     {};
 
-  const findMeterMake = (val) => {
+  const findMeterMake = (val, options = meterMakeOptions) => {
     if (!val) return null;
     if (typeof val === "object" && val?.name) return val;
-    return METER_MAKES.find((m) => m.code === val || m.name === val) || { name: val, code: val };
+    const found = (options || []).find((m) => m.code === val || m.name === val);
+    return found || { name: val, code: val };
   };
 
   const findMeterSize = (val) => {
@@ -88,6 +99,16 @@ const WSActivationDetails = ({ t, config, userType, formData, onSelect }) => {
   }, [formData?.activationDetails]);
 
   React.useEffect(() => {
+    if (meterMakeOptions && meterMakeOptions.length > 0 && activationDetails.meterMake) {
+      const current = activationDetails.meterMake;
+      const matched = meterMakeOptions.find((m) => m.code === (current?.code || current) || m.name === (current?.name || current));
+      if (matched && matched !== current) {
+        setActivationDetails((prev) => ({ ...prev, meterMake: matched }));
+      }
+    }
+  }, [meterMakeOptions]);
+
+  React.useEffect(() => {
     if (onSelect && config?.key) {
       onSelect(config.key, [activationDetails]);
     }
@@ -108,7 +129,7 @@ const WSActivationDetails = ({ t, config, userType, formData, onSelect }) => {
             className="form-field"
             selected={activationDetails.meterMake}
             disable={false}
-            option={METER_MAKES}
+            option={meterMakeOptions}
             placeholder={t("WS_METER_MAKE_PLACEHOLDER")}
             select={(val) => {
               setActivationDetails({ ...activationDetails, meterMake: val });

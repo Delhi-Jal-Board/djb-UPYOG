@@ -8,20 +8,6 @@ import { stringReplaceAll, convertDateToEpochNew, convertEpochToDates } from "..
 import * as func from "../../../utils";
 import _ from "lodash";
 
-const METER_MAKES = [
-  { name: "Anand Asahi", code: "ANAND_ASAHI", i18nKey: "WS_METER_MAKE_ANAND_ASAHI" },
-  { name: "Arad", code: "ARAD", i18nKey: "WS_METER_MAKE_ARAD" },
-  { name: "Baylan", code: "BAYLAN", i18nKey: "WS_METER_MAKE_BAYLAN" },
-  { name: "Crescent", code: "CRESCENT", i18nKey: "WS_METER_MAKE_CRESCENT" },
-  { name: "Dasmesh / DMB", code: "DASMESH", i18nKey: "WS_METER_MAKE_DASMESH" },
-  { name: "Fedrel", code: "FEDREL", i18nKey: "WS_METER_MAKE_FEDREL" },
-  { name: "Itron", code: "ITRON", i18nKey: "WS_METER_MAKE_ITRON" },
-  { name: "Konark", code: "KONARK", i18nKey: "WS_METER_MAKE_KONARK" },
-  { name: "Kranti", code: "KRANTI", i18nKey: "WS_METER_MAKE_KRANTI" },
-  { name: "Teksan", code: "TEKSAN", i18nKey: "WS_METER_MAKE_TEKSAN" },
-  { name: "Other", code: "OTHER", i18nKey: "WS_METER_MAKE_OTHER" },
-];
-
 const ActivateConnection = () => {
   const { t } = useTranslation();
   const location = useLocation();
@@ -32,6 +18,27 @@ const ActivateConnection = () => {
   let details = initialAppData;
   const stateId = Digit.ULBService.getStateId();
   let tenantId = Digit.ULBService.getCurrentTenantId() || Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code;
+
+  const { data: mdmsMeterMakeData } = Digit.Hooks.ws.useMDMS(
+    stateId,
+    "ws-services-calculation",
+    ["MeterMake"]
+  );
+
+  const meterMakeList = React.useMemo(() => {
+    const rawList = mdmsMeterMakeData?.["ws-services-calculation"]?.MeterMake;
+    if (Array.isArray(rawList) && rawList.length > 0) {
+      return rawList
+        .filter((item) => item?.active === true || String(item?.active).toLowerCase() === "true")
+        .map((item) => ({
+          name: item.name || item.code,
+          code: item.code || item.name,
+          i18nKey: `WS_METER_MAKE_${(item.code || item.name).replace(/\s+/g, "_").toUpperCase()}`,
+          active: item.active,
+        }));
+    }
+    return [];
+  }, [mdmsMeterMakeData]);
 
   const [canSubmit, setSubmitValve] = useState(false);
   const [isEnableLoader, setIsEnableLoader] = useState(false);
@@ -201,7 +208,7 @@ const ActivateConnection = () => {
           meterMake: defaultMeterMake
             ? typeof defaultMeterMake === "object"
               ? defaultMeterMake
-              : METER_MAKES.find((m) => m.code === defaultMeterMake || m.name === defaultMeterMake) || { name: defaultMeterMake, code: defaultMeterMake }
+              : meterMakeList.find((m) => m.code === defaultMeterMake || m.name === defaultMeterMake) || { name: defaultMeterMake, code: defaultMeterMake }
             : null,
           meterNo: state?.data?.meterId || state?.data?.additionalDetails?.meterNo || "",
           meterId: state?.data?.meterId || state?.data?.additionalDetails?.meterNo || "",
@@ -699,11 +706,15 @@ const ActivateConnection = () => {
             const isCitizen = Digit.UserService.getUser()?.info?.type === "CITIZEN";
             const basePath = isCitizen ? "/digit-ui/citizen/ws" : "/digit-ui/employee/ws";
             setTimeout(() => {
-              history.push({
-                pathname: `${basePath}/ws-response`,
-                search: `?applicationNumber=${appNo}&service=${filters?.service || "WATER"}&connectionNo=${connNo}&action=ACTIVATE_CONNECTION`,
-                state: { connectionNo: connNo, data: data },
-              });
+              if (isCitizen && isPendingMeter) {
+                history.push(`/digit-ui/citizen/ws/connection/application/${encodeURI(appNo)}`);
+              } else {
+                history.push({
+                  pathname: `${basePath}/ws-response`,
+                  search: `?applicationNumber=${appNo}&service=${filters?.service || "WATER"}&connectionNo=${connNo}&action=ACTIVATE_CONNECTION`,
+                  state: { connectionNo: connNo, data: data },
+                });
+              }
             }, 1000);
           },
         });
