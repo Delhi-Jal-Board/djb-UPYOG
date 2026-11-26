@@ -79,6 +79,29 @@ class WaterDemandCalculatorNorms2Test {
     }
 
     @Test
+    void b1UsesQuestionStrengthWithThePublishedBothShiftMdmsFormula() {
+        Map<String, Object> propertyDetails = details("B-1");
+        propertyDetails.put("builtUpArea", new BigDecimal("400"));
+
+        Map<String, Object> question = new LinkedHashMap<>();
+        question.put("question", "totalStrengthIncludingStaffAndStudents");
+        question.put("answer", "760");
+        propertyDetails.put("questions", Arrays.asList(question));
+
+        Map<String, Object> b1Norm = norm("B-1", "INSTITUTIONAL",
+                "MAX(built_up_area / 4.0, total_strength_including_students_and_staff_of_both_shifts)",
+                45, 15, 30, "POTABLE_ONLY_IF_OVER_12500");
+        b1Norm.put("contingencyPercentage", new BigDecimal("10"));
+
+        WaterDemandResult result = calculate(property("College", propertyDetails), Arrays.asList(b1Norm));
+
+        assertEquals(new BigDecimal("760"), result.getCalculatedOccupancy());
+        assertEquals(new BigDecimal("15"), result.getChosenLpcd());
+        assertTrue(result.getPotableThresholdApplied());
+        assertEquals(new BigDecimal("12540.00"), result.getTotalWaterDemand());
+    }
+
+    @Test
     void b1NormUsesAreaBasedOccupancyWhenStrengthIsNotCollected() {
         Map<String, Object> propertyDetails = details("B-1");
         propertyDetails.put("builtUpArea", new BigDecimal("800"));
@@ -161,9 +184,13 @@ class WaterDemandCalculatorNorms2Test {
         basisByUse.put("MERCANTILE", "POTABLE_ONLY_IF_OVER_12500");
         basisByUse.put("ASSEMBLY", "TOTAL_WATER_ALWAYS");
         b2.put("ifcCalculationBasisByUseClass", basisByUse);
+        // The deployed WaterDemandNorms2 B-2 master configures 10% contingency.
+        b2.put("contingencyPercentage", new BigDecimal("10"));
         WaterDemandResult result = calculate(property("AssemblyHall", propertyDetails), Arrays.asList(b2));
         assertEquals(new BigDecimal("89"), result.getCalculatedOccupancy());
         assertEquals(new BigDecimal("45"), result.getChosenLpcd());
+        assertEquals(new BigDecimal("10"), result.getContingencyPercentage());
+        assertEquals(new BigDecimal("4405.50"), result.getTotalWaterDemand());
         assertFalse(result.getPotableThresholdApplied());
     }
 
@@ -234,7 +261,6 @@ class WaterDemandCalculatorNorms2Test {
     void hospitalNormEvaluatesTotalAndPotableLpcdFormulas() {
         Map<String, Object> propertyDetails = details("C-4");
         propertyDetails.put("questions", Arrays.asList(questionAnswer("numberOfBeds", "30")));
-        propertyDetails.put("builtUpArea", new BigDecimal("1000"));
         propertyDetails.put("plotArea", new BigDecimal("3000"));
         WaterDemandResult result = calculate(property("Hospital", propertyDetails),
                 Arrays.asList(hospitalNorm()));
@@ -251,7 +277,6 @@ class WaterDemandCalculatorNorms2Test {
     void hospitalNormSwitchesToPotableLpcdAboveOneHundredBedsAndThreshold() {
         Map<String, Object> propertyDetails = details("C-4");
         propertyDetails.put("questions", Arrays.asList(questionAnswer("numberOfBeds", "101")));
-        propertyDetails.put("builtUpArea", new BigDecimal("1000"));
         propertyDetails.put("plotArea", new BigDecimal("3000"));
         WaterDemandResult result = calculate(property("Hospital", propertyDetails),
                 Arrays.asList(hospitalNorm()));
@@ -265,17 +290,57 @@ class WaterDemandCalculatorNorms2Test {
     }
 
     @Test
-    void nursingHomeUsesOneBedPerSixtySquareMetresAsMinimum() {
+    void nursingHomeUsesOnlySuppliedNumberOfBedsAndIgnoresBuiltUpAreaForOccupancy() {
         Map<String, Object> propertyDetails = details("C-4");
         propertyDetails.put("questions", Arrays.asList(questionAnswer("numberOfBeds", "10")));
-        propertyDetails.put("builtUpArea", new BigDecimal("1200"));
+        // Deliberately large built-up area: it must not replace the supplied bed count.
+        propertyDetails.put("builtUpArea", new BigDecimal("12000"));
         propertyDetails.put("plotArea", new BigDecimal("2000"));
         WaterDemandResult result = calculate(property("NursingHome", propertyDetails),
                 Arrays.asList(hospitalNorm()));
-        // Nursing home minimum is 1 bed / 60 sqm: 1,200 / 60 = 20 beds.
-        assertEquals(new BigDecimal("20"), result.getCalculatedOccupancy());
+
+        assertEquals(new BigDecimal("10"), result.getCalculatedOccupancy());
         assertEquals(new BigDecimal("10"), result.getContingencyPercentage());
-        assertEquals(new BigDecimal("6000"), result.getOpdPotableDemand());
+        assertEquals(new BigDecimal("3000"), result.getOpdPotableDemand());
+        assertEquals(new BigDecimal("7040.00"), result.getTotalWaterDemand());
+    }
+
+    @Test
+    void c4RejectsMissingNumberOfBedsInsteadOfFallingBackToBuiltUpArea() {
+        Map<String, Object> propertyDetails = details("C-4");
+        propertyDetails.put("builtUpArea", new BigDecimal("1200"));
+        propertyDetails.put("plotArea", new BigDecimal("2000"));
+
+        IllegalStateException exception = assertThrows(IllegalStateException.class,
+                () -> calculate(property("NursingHome", propertyDetails), Arrays.asList(hospitalNorm())));
+
+        assertTrue(exception.getMessage().contains("sanctioned_beds"));
+    }
+
+    @Test
+    void c4OpdAreaCanIncreaseOccupancyUsingConfiguredOpdFormula() {
+        Map<String, Object> propertyDetails = details("C-4");
+        propertyDetails.put("questions", Arrays.asList(questionAnswer("numberOfBeds", "30")));
+        propertyDetails.put("plotArea", new BigDecimal("3000"));
+        propertyDetails.put("opdArea", new BigDecimal("1000"));
+
+        WaterDemandResult result = calculate(property("Hospital", propertyDetails), Arrays.asList(hospitalNorm()));
+
+        // MAX(1000 / 1.5, 30 * 20) = 666.67, rounded up to 667 OPD occupants.
+        assertEquals(new BigDecimal("30"), result.getCalculatedOccupancy());
+        assertEquals(new BigDecimal("10005"), result.getOpdPotableDemand());
+    }
+
+    @Test
+    void c4RejectsMissingOpdAreaInsteadOfAssumingZero() {
+        Map<String, Object> propertyDetails = details("C-4");
+        propertyDetails.remove("opdArea");
+        propertyDetails.put("questions", Arrays.asList(questionAnswer("numberOfBeds", "30")));
+        propertyDetails.put("plotArea", new BigDecimal("3000"));
+
+        IllegalStateException exception = assertThrows(IllegalStateException.class,
+                () -> calculate(property("Hospital", propertyDetails), Arrays.asList(hospitalNorm())));
+        assertTrue(exception.getMessage().contains("explicit OPD area input"));
     }
 
     @Test
@@ -336,6 +401,10 @@ class WaterDemandCalculatorNorms2Test {
         propertyTypeEntry.put("categoryType", Arrays.asList(
                 "RESIDENTIAL".equalsIgnoreCase(propertyCategory) ? "Domestic" : "Non-Domestic"));
         propertyTypeEntry.put("demandNormCode", normCode);
+        if ("C-4".equals(normCode)) {
+            propertyTypeEntry.put("facilityType",
+                    "NursingHome".equalsIgnoreCase(property.getPropertyType()) ? "NURSING_HOME" : "HOSPITAL");
+        }
         propertyTypeEntry.put("active", true);
         List<String> configuredQuestionCodes = new java.util.ArrayList<>();
         Object rawQuestionAnswers = selectedDetails.get("questions");
@@ -343,6 +412,7 @@ class WaterDemandCalculatorNorms2Test {
             for (Object rawQuestionAnswer : (Iterable<?>) rawQuestionAnswers) {
                 if (rawQuestionAnswer instanceof Map<?, ?>) {
                     Object code = ((Map<?, ?>) rawQuestionAnswer).get("questionCode");
+                    if (code == null) code = ((Map<?, ?>) rawQuestionAnswer).get("question");
                     if (code != null) configuredQuestionCodes.add(code.toString());
                 }
             }
@@ -386,6 +456,11 @@ class WaterDemandCalculatorNorms2Test {
     private Map<String, Object> details(String normCode) {
         Map<String, Object> details = new LinkedHashMap<>();
         details.put("demandNormCode", normCode);
+        if ("C-4".equals(normCode)) {
+            // The C-4 formula includes OPD occupancy. An explicit zero means
+            // that no separate OPD area applies in these fixture scenarios.
+            details.put("opdArea", BigDecimal.ZERO);
+        }
         return details;
     }
 
@@ -442,6 +517,9 @@ class WaterDemandCalculatorNorms2Test {
         norm.put("ifcCalculationBasis", "POTABLE_ONLY_IF_OVER_12500");
         norm.put("ifcThresholdLpd", new BigDecimal("12500"));
         norm.put("parentUsageCodes", Arrays.asList("INSTITUTIONAL"));
+        norm.put("opdOccupancyFormula", "MAX(opd_area / 1.5, effective_beds * 20)");
+        norm.put("opdDemandLpcd", new BigDecimal("15"));
+        norm.put("opdDemandType", "POTABLE_ONLY");
         Map<String, Object> plotRules = new LinkedHashMap<>();
         plotRules.put("HOSPITAL", "plot_area >= 2500");
         plotRules.put("NURSING_HOME", "plot_area <= 2500");
