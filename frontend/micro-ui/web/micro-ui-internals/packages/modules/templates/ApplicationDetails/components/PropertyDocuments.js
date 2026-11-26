@@ -22,14 +22,21 @@ function PropertyDocuments({
   const [modalFile, setModalFile] = useState(null);
   const [checkedMap, setCheckedMap] = useState({});
 
+  const isMutation =
+    applicationData?.applicationType?.includes("MUTATION") ||
+    businessService?.toUpperCase()?.includes("MUTATION") ||
+    applicationData?.businessService?.toUpperCase()?.includes("MUTATION");
+
   const isNewConn =
-    applicationData?.applicationType?.includes("NEW_") ||
-    applicationData?.applicationType === "NEW_WATER_CONNECTION" ||
-    businessService?.toUpperCase() === "NEWWS1" ||
-    applicationData?.businessService?.toUpperCase() === "NEWWS1" ||
-    applicationData?.applicationNo?.includes("WS_AP") ||
-    applicationData?.applicationNo?.includes("SW_AP") ||
-    (typeof window !== "undefined" && window.location.href.includes("WS_AP"));
+    !isMutation && (
+      applicationData?.applicationType?.includes("NEW_") ||
+      applicationData?.applicationType === "NEW_WATER_CONNECTION" ||
+      businessService?.toUpperCase() === "NEWWS1" ||
+      applicationData?.businessService?.toUpperCase() === "NEWWS1" ||
+      applicationData?.applicationNo?.includes("WS_AP") ||
+      applicationData?.applicationNo?.includes("SW_AP") ||
+      (typeof window !== "undefined" && window.location.href.includes("WS_AP"))
+    );
 
   const isDAState =
     applicationStatus === "PENDING_FOR_DEALING_ASSISTENCE_VERIFICATION" ||

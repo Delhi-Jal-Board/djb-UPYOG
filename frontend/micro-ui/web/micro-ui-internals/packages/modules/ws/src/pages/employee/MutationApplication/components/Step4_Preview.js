@@ -122,6 +122,21 @@ const Step4_Preview = ({
     return map[code] || code;
   };
 
+  const getTaxHeadLabel = (code) => {
+    if (!code) return t("Fee");
+    const map = {
+      WS_MUTATION_FEE: t("Mutation Fee"),
+      WS_WATER_ADVANCE: t("Water Advance"),
+      WS_OCCUPY_SECURITY_CHARGE: t("Security Deposit"),
+      WS_MUTATION_TRADE_SECURITY: t("Trade Security"),
+      SW_MUTATION_FEE: t("Mutation Fee"),
+      SW_WATER_ADVANCE: t("Water Advance"),
+      SW_OCCUPY_SECURITY_CHARGE: t("Security Deposit"),
+      SW_MUTATION_TRADE_SECURITY: t("Trade Security"),
+    };
+    return map[code] || t(code, code?.replace(/_/g, " "));
+  };
+
   const viewDocument = async (fileStoreId) => {
     if (!fileStoreId) return;
     try {
@@ -262,6 +277,29 @@ const Step4_Preview = ({
         }
 
         console.log("Mutation Estimate API Response:", res);
+
+        const relationCode = formData?.relationshipWithExistingConsumer?.code || formData?.relationshipWithExistingConsumer;
+        const isBloodRelation = relationCode === "BLOOD_RELATION";
+
+        if (isMounted) {
+          if (isBloodRelation) {
+            setFee(100);
+            setTaxHeads([]);
+            setSlab(t("Blood relation slab"));
+          } else {
+            const calcData = res?.Calculation?.[0] || res?.data?.Calculation?.[0];
+            if (calcData) {
+              const totalAmt = Number(calcData?.totalAmount ?? calcData?.fee ?? 0);
+              setFee(totalAmt);
+              if (Array.isArray(calcData?.taxHeadEstimates) && calcData.taxHeadEstimates.length > 0) {
+                setTaxHeads(calcData.taxHeadEstimates);
+              }
+              if (Array.isArray(calcData?.billingSlabIds) && calcData.billingSlabIds[0]) {
+                setSlab(calcData.billingSlabIds[0]);
+              }
+            }
+          }
+        }
       } catch (err) {
         console.warn("Mutation Estimate API call failed or returned error:", err);
       }
@@ -745,8 +783,8 @@ const Step4_Preview = ({
                   maxWidth: isMobileView ? "100%" : "400px",
                 }}
               >
-                <div style={labelStyle}>{t(tax.taxHeadCode)}:</div>
-                <div style={valueStyle}>₹ {tax.estimateAmount}.00</div>
+                <div style={labelStyle}>{getTaxHeadLabel(tax.taxHeadCode)}:</div>
+                <div style={valueStyle}>₹ {Number(tax.estimateAmount ?? tax.amount ?? 0).toFixed(2)}</div>
               </div>
             ))}
           </div>
@@ -767,7 +805,7 @@ const Step4_Preview = ({
             {t("Grand total")}
           </div>
           <div style={{ ...valueStyle, color: "#28a745", fontSize: isMobileView ? "18px" : "20px" }}>
-            ₹ {fee}.00
+            ₹ {Number(fee ?? 0).toFixed(2)}
           </div>
         </div>
       </div>

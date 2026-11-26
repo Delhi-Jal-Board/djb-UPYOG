@@ -541,6 +541,275 @@ const ApplicationDetails = () => {
     return a.order - b.order;
   });
 
+  const isMutationApp =
+    applicationDetails?.applicationData?.applicationType === "MUTATION_WATER_CONNECTION" ||
+    applicationDetails?.applicationData?.applicationType?.includes("MUTATION") ||
+    applicationDetails?.processInstancesDetails?.[0]?.businessService?.toLowerCase()?.includes("mutation");
+
+  const getMaskedMeterNumber = (meter) => {
+    if (!meter || meter === "NA") return t("NA");
+    const str = String(meter).trim();
+    if (str.length <= 4) return "****";
+    return `******${str.slice(-4)}`;
+  };
+
+  const getMaskedDocNumber = (doc) => {
+    if (!doc || doc === "NA") return t("NA");
+    const str = String(doc).trim();
+    if (str.length <= 4) return "****";
+    return `******${str.slice(-4)}`;
+  };
+
+  const getMaskedName = (name) => {
+    if (!name) return t("NA");
+    return String(name)
+      .split("")
+      .map((char, index) => (index % 2 === 1 && char !== " " ? "*" : char))
+      .join("");
+  };
+
+  const getMaskedPhone = (phone) => {
+    if (!phone || String(phone).length < 10) return t("NA");
+    const str = String(phone).replace(/\D/g, "").slice(-10);
+    return `******${str.slice(-4)}`;
+  };
+
+  const getRelationshipName = (code) => {
+    if (!code) return t("NA");
+    if (code?.code) return t(code.i18nKey || code.name || code.code);
+    const map = { BLOOD_RELATION: t("Blood Relation"), LEGAL_HEIR: t("Legal Heir"), OTHER: t("Other") };
+    return map[code] || t(code);
+  };
+
+  const getReasonName = (code) => {
+    if (!code) return t("NA");
+    if (code?.code) return t(code.i18nKey || code.name || code.code);
+    const map = { SALE_PURCHASE: t("Purchase of Property"), DEVOLUTION_INHERITANCE: t("Inheritance"), OTHER: t("Devolution/Other") };
+    return map[code] || t(code);
+  };
+
+  let renderedApplicationDetails = applicationDetails;
+  if (isMutationApp && applicationDetails?.applicationData && Array.isArray(applicationDetails?.applicationDetails)) {
+    const appData = applicationDetails.applicationData;
+    const propData = applicationDetails.propertyDetails || {};
+    const addDetails = appData.additionalDetails || {};
+    const transfereeHolder = appData.connectionHolders?.[0] || {};
+
+    // 1. Header Section
+    let headerSection = applicationDetails.applicationDetails.find((s) => s?.title === " " || s?.title === "");
+    if (!headerSection) {
+      headerSection = {
+        title: " ",
+        asSectionHeader: true,
+        values: [
+          { title: t("PDF_STATIC_LABEL_APPLICATION_NUMBER_LABEL", "Application Number"), value: appData.applicationNo || t("NA") },
+          {
+            title: t("WS_SERVICE_NAME_LABEL", "Connection Category"),
+            value: addDetails?.serviceType?.name || t("Water Connection"),
+          },
+        ],
+      };
+    }
+
+    // 2. Fee Estimation Section
+    const feeSection = applicationDetails.applicationDetails.find((s) => s?.title === "WS_TASK_DETAILS_FEE_ESTIMATE");
+
+    // 3. Existing Consumer / Connection Details
+    let existingConsumerDetails = applicationDetails.applicationDetails.find(
+      (s) =>
+        s?.title === "WS_EXISTING_CONSUMER_DETAILS_HEADER" ||
+        s?.title === t("WS_EXISTING_CONSUMER_DETAILS_HEADER", "Existing Consumer / Connection Details")
+    );
+    if (!existingConsumerDetails) {
+      existingConsumerDetails = {
+        title: t("WS_EXISTING_CONSUMER_DETAILS_HEADER", "Existing Consumer / Connection Details"),
+        asSectionHeader: true,
+        values: [
+          {
+            title: t("WS_ACK_COMMON_CONNECTION_NO", "Consumer Number"),
+            value: appData.connectionNo || t("NA"),
+          },
+          {
+            title: t("WS_REGISTERED_CONSUMER_NAME", "Registered Consumer Name"),
+            value: getMaskedName(
+              addDetails?.ownerName ||
+              propData?.owners?.[0]?.name ||
+              appData?.connectionHolders?.find((h) => h?.isPrimaryOwner)?.name ||
+              appData?.connectionHolders?.[0]?.name
+            ),
+          },
+          {
+            title: t("WS_REGISTERED_MOBILE_NUMBER", "Registered Mobile Number"),
+            value: getMaskedPhone(
+              addDetails?.ownerContactNumber ||
+              propData?.owners?.[0]?.mobileNumber ||
+              addDetails?.ownerMobileNumber ||
+              appData?.mobileNumber
+            ),
+          },
+          {
+            title: t("WS_SERV_DETAIL_METER_NO", "Meter Number"),
+            value: getMaskedMeterNumber(appData?.meterId || addDetails?.meterNo || addDetails?.meterId),
+          },
+          {
+            title: t("WS_PROPERTY_ID_LABEL", "Property ID"),
+            value: appData?.propertyId || propData?.propertyId || t("NA"),
+          },
+          {
+            title: t("WS_PROPERTY_ADDRESS_LABEL", "Property Address"),
+            value:
+              addDetails?.completeAddress ||
+              addDetails?.addressType ||
+              func.getAddress?.(propData?.address, t) ||
+              t("NA"),
+          },
+        ],
+      };
+    }
+
+    // 4. Transferee (New Owner) Details
+    let newConsumerDetails = applicationDetails.applicationDetails.find(
+      (s) =>
+        s?.title === "WS_MUTATION_NEW_CONSUMER_DETAILS_HEADER" ||
+        s?.title === t("WS_MUTATION_NEW_CONSUMER_DETAILS_HEADER", "Transferee (New Owner) Details")
+    );
+    if (!newConsumerDetails) {
+      const reasonChange = addDetails?.reasonForNameChange || addDetails?.reason || t("NA");
+      const relationShip =
+        transfereeHolder?.relationship ||
+        addDetails?.relationshipWithExistingConsumer ||
+        addDetails?.relationship ||
+        t("NA");
+
+      newConsumerDetails = {
+        title: t("WS_MUTATION_NEW_CONSUMER_DETAILS_HEADER", "Transferee (New Owner) Details"),
+        asSectionHeader: true,
+        values: [
+          {
+            title: t("WS_NEW_CONSUMER_NAME", "New Consumer Name"),
+            value: transfereeHolder?.name || addDetails?.proposedNewConsumerName || t("NA"),
+          },
+          {
+            title: t("CORE_COMMON_MOBILE_NUMBER", "Mobile Number"),
+            value: transfereeHolder?.mobileNumber || addDetails?.newOwnerMobileNumber || t("NA"),
+          },
+          {
+            title: t("WS_EMAIL_ID", "Email ID"),
+            value: transfereeHolder?.emailId || addDetails?.emailId || t("NA"),
+          },
+          {
+            title: t("WS_CONN_HOLDER_OWN_DETAIL_GENDER_LABEL", "Gender"),
+            value: transfereeHolder?.gender
+              ? t(`GENDER_${transfereeHolder?.gender}`, transfereeHolder?.gender)
+              : t("NA"),
+          },
+          {
+            title: t("WS_REASON_FOR_TRANSFER", "Reason for Name Change / Mutation"),
+            value: getReasonName(reasonChange),
+          },
+          {
+            title: t("WS_RELATIONSHIP_WITH_EXISTING_CONSUMER", "Relationship with Existing Consumer"),
+            value: getRelationshipName(relationShip),
+          },
+          ...(addDetails?.isOtpVerified !== undefined
+            ? [
+                {
+                  title: t("WS_OTP_VERIFICATION_STATUS", "OTP Verification Status"),
+                  value: addDetails?.isOtpVerified
+                    ? t("Verified with OTP")
+                    : t("Without OTP Verification"),
+                },
+              ]
+            : []),
+        ],
+      };
+    }
+
+    // 5. Filter Documents Section (Only Proof of Identity and Supporting Document)
+    let rawDocSection = applicationDetails.applicationDetails.find((s) => s?.title === "WS_DOCUMENTS");
+    let mutationDocs = [];
+
+    // Identity Proof
+    const idDocId = addDetails?.identityProofDocumentId;
+    const idDocNum = addDetails?.identityProofDocumentNumber || addDetails?.identityProofNumber;
+    const idDocType = addDetails?.identityProofDocumentName || "AADHAAR";
+
+    // Supporting Doc
+    const saleDocId = addDetails?.saleDeedDocumentId || appData?.documents?.find((d) => d?.documentType === "REGISTERED_SALE_DEED" || d?.documentType?.includes("SALE_DEED"))?.fileStoreId;
+    const saleDocType = appData?.documents?.find((d) => d?.documentType === "REGISTERED_SALE_DEED" || d?.documentType?.includes("SALE_DEED"))?.documentType || "SUPPORTING_DOCUMENT";
+
+    const idDocObj = {
+      title: "WS_IDENTITY_PROOF",
+      categoryLabel: "Proof of Identity",
+      documentType: idDocType,
+      documentUid: getMaskedDocNumber(idDocNum),
+      documentNumber: getMaskedDocNumber(idDocNum),
+      fileStoreId: idDocId,
+      numberLabel: "Identity Proof Document Number",
+    };
+
+    const saleDocObj = {
+      title: "WS_REASON_BASED_DOCUMENT",
+      categoryLabel: "Supporting Document",
+      documentType: saleDocType,
+      documentUid: "",
+      documentNumber: "",
+      fileStoreId: saleDocId,
+      numberLabel: "",
+    };
+
+    if (rawDocSection?.additionalDetails?.documents?.[0]?.values) {
+      const existingValues = rawDocSection.additionalDetails.documents[0].values;
+      const filteredValues = existingValues.filter((v) => {
+        const isMeter =
+          v?.title === "WS_METER_PHOTO_UPLOAD_LABEL" ||
+          v?.documentType?.includes("METER_PHOTO") ||
+          v?.title === "WS_METER_WARRANTY_REPORT_INVOICE_LABEL" ||
+          v?.documentType?.includes("METER_WARRANTY") ||
+          v?.documentType?.includes("METER");
+        const isSig = v?.title === "WS_APPLICANT_SIGNATURE" || v?.documentType?.includes("SIGNATURE") || v?.documentType?.includes("SIGN");
+        const isPhoto = v?.isPhoto;
+        return !isMeter && !isSig && !isPhoto;
+      });
+
+      filteredValues.forEach((v) => {
+        if (v.documentNumber) v.documentNumber = getMaskedDocNumber(v.documentNumber);
+        if (v.documentUid) v.documentUid = getMaskedDocNumber(v.documentUid);
+      });
+
+      mutationDocs = filteredValues;
+    }
+
+    if (mutationDocs.length === 0) {
+      if (idDocId) mutationDocs.push(idDocObj);
+      if (saleDocId) mutationDocs.push(saleDocObj);
+    }
+
+    const docSection = {
+      title: "WS_DOCUMENTS",
+      asSectionHeader: true,
+      additionalDetails: {
+        documents: [
+          {
+            title: "",
+            values: mutationDocs,
+          },
+        ],
+      },
+    };
+
+    renderedApplicationDetails = {
+      ...applicationDetails,
+      applicationDetails: [
+        headerSection,
+        feeSection,
+        existingConsumerDetails,
+        newConsumerDetails,
+        docSection,
+      ].filter(Boolean),
+    };
+  }
+
   return (
     <React.Fragment>
       <div className={"employee-main-application-details"} style={{ display: "flex", gap: "20px" }}>
@@ -555,19 +824,19 @@ const ApplicationDetails = () => {
         {/* Right Column: Application Details */}
         <div style={{ flex: "2 1 500px", minWidth: "300px" }}>
           <ApplicationDetailsTemplate
-            applicationDetails={applicationDetails}
+            applicationDetails={renderedApplicationDetails}
             isLoading={isLoading || isBillingServiceLoading || isCommonmastersLoading || isServicesMasterLoading}
             isDataLoading={isLoading || isBillingServiceLoading || isCommonmastersLoading || isServicesMasterLoading}
-            applicationData={applicationDetails?.applicationData}
+            applicationData={renderedApplicationDetails?.applicationData}
             mutate={mutate}
             id={"timeline"}
             workflowDetails={workflowDetails}
-            businessService={applicationDetails?.processInstancesDetails?.[0]?.businessService?.toUpperCase()}
+            businessService={renderedApplicationDetails?.processInstancesDetails?.[0]?.businessService?.toUpperCase()}
             moduleCode="WS"
             showToast={showToast}
             setShowToast={setShowToast}
             closeToast={closeToast}
-            timelineStatusPrefix={`WF_${applicationDetails?.processInstancesDetails?.[0]?.businessService?.toUpperCase()}_`}
+            timelineStatusPrefix={`WF_${renderedApplicationDetails?.processInstancesDetails?.[0]?.businessService?.toUpperCase()}_`}
             oldValue={res}
             isInfoLabel={checkforPrivacyenablement()}
             clearDataDetails={clearDataDetails}
