@@ -1,7 +1,7 @@
 import React from "react";
 import { Route, Redirect } from "react-router-dom";
 
-export const PrivateRoute = ({ component: Component, roles, ...rest }) => {
+export const PrivateRoute = ({ component: Component, roles, children, ...rest }) => {
   const kc = window.keycloak;
 
   return (
@@ -9,25 +9,23 @@ export const PrivateRoute = ({ component: Component, roles, ...rest }) => {
       {...rest}
       render={(props) => {
         const userInfo = Digit.SessionStorage.get("User");
-
         const userType = userInfo?.info?.type?.toLowerCase();
 
         const currentPath = props.location.pathname.toLowerCase();
 
         const isEmployeeRoute = currentPath.includes("/employee");
-
         const isCitizenRoute = currentPath.includes("/citizen");
 
-        function getLoginRedirectionLink() {
+        const getLoginRedirectionLink = () => {
           if (isEmployeeRoute) {
             return "/digit-ui/employee/user/login";
           }
 
           return "/digit-ui/citizen/login";
-        }
+        };
 
-        // Not authenticated
-        if (!userInfo || !kc?.authenticated) {
+        // Check authentication
+        if (!userInfo || kc?.authenticated !== true) {
           return (
             <Redirect
               to={{
@@ -40,20 +38,19 @@ export const PrivateRoute = ({ component: Component, roles, ...rest }) => {
           );
         }
 
-        // Prevent cross portal access
+        // Prevent cross-portal access
         const isUnauthorized = (isEmployeeRoute && userType === "citizen") || (isCitizenRoute && userType === "employee");
 
         if (isUnauthorized) {
-          return (
-            <Redirect
-              to={{
-                pathname: "/digit-ui/access-denied",
-              }}
-            />
-          );
+          return <Redirect to="/digit-ui/access-denied" />;
         }
 
-        return <Component {...props} />;
+        // Support both component and children
+        if (Component) {
+          return <Component {...props} />;
+        }
+
+        return children;
       }}
     />
   );
