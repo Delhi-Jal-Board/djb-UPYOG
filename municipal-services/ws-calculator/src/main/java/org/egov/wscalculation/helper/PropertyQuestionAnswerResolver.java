@@ -49,7 +49,20 @@ public final class PropertyQuestionAnswerResolver {
         if (questionCode == null || questionCode.trim().isEmpty()) {
             return null;
         }
-        return extractAnswers(additionalDetails).get(normalizeCode(questionCode));
+        String normalizedCode = normalizeCode(questionCode);
+        String questionAnswer = extractAnswers(additionalDetails).get(normalizedCode);
+        if (questionAnswer != null || additionalDetails == null
+                || !normalizeCode(PREMISES_HAS_RESIDENTIAL_UNITS).equals(normalizedCode)) {
+            return questionAnswer;
+        }
+
+        Object suppliedCode = additionalDetails.get("categoryTypeSelectionQuestionCode");
+        if (suppliedCode != null && !normalizedCode.equals(normalizeCode(suppliedCode.toString()))) {
+            throw new IllegalArgumentException("categoryTypeSelectionQuestionCode does not match configured questionCode '"
+                    + questionCode + "'.");
+        }
+        Object suppliedAnswer = additionalDetails.get("categoryTypeSelectionAnswer");
+        return suppliedAnswer == null ? null : suppliedAnswer.toString().trim();
     }
 
     /** Returns a numeric answer for a stable questionCode, or null when absent. */
@@ -63,13 +76,15 @@ public final class PropertyQuestionAnswerResolver {
     }
 
     /**
-     * Every code listed by PropertyType2.questions is a required form answer.
-     * This prevents a missing answer from silently becoming zero in a formula.
+     * Every stable question code listed by PropertyType2.questions is mandatory.
+     * The MDMS contract is a plain array of string codes; no per-question
+     * required flag or optional question object is supported.
      */
     public static void validateRequiredQuestions(Map<String, Object> additionalDetails,
             Object configuredQuestions, String propertyTypeCode) {
         if (!(configuredQuestions instanceof Iterable<?>)) {
-            return;
+            throw new IllegalStateException("PropertyType2.questions must be an array of stable question codes for property type '"
+                    + propertyTypeCode + "'. Use [] when no questions are required.");
         }
         for (Object configuredQuestion : (Iterable<?>) configuredQuestions) {
             String questionCode = questionCodeFromDefinition(configuredQuestion);
@@ -169,10 +184,14 @@ public final class PropertyQuestionAnswerResolver {
             String code = normalizeCode(rawCode);
             Object rawAnswer = item.get("answer");
             String answer = rawAnswer == null ? null : rawAnswer.toString().trim();
-            String previous = answers.putIfAbsent(code, answer);
-            if (previous != null && answer != null && !previous.equals(answer)) {
-                throw new IllegalArgumentException("Conflicting answers were supplied for questionCode '" + rawCode + "'.");
+            if (answers.containsKey(code)) {
+                String previous = answers.get(code);
+                if (previous == null ? answer != null : !previous.equals(answer)) {
+                    throw new IllegalArgumentException("Conflicting answers were supplied for questionCode '" + rawCode + "'.");
+                }
+                throw new IllegalArgumentException("Duplicate answer supplied for questionCode '" + rawCode + "'.");
             }
+            answers.put(code, answer);
         }
         return answers;
     }
@@ -196,13 +215,16 @@ public final class PropertyQuestionAnswerResolver {
     }
 
     private static String questionCodeFromDefinition(Object definition) {
-        if (definition == null) return null;
-        if (definition instanceof Map<?, ?>) {
-            Object code = ((Map<?, ?>) definition).get("questionCode");
-            return code == null ? null : code.toString().trim();
+        if (!(definition instanceof String)) {
+            throw new IllegalStateException("PropertyType2.questions must contain plain string question codes. "
+                    + "Do not configure question objects or per-question required flags.");
         }
-        // Current MDMS schema intentionally stores an array of code strings.
-        return definition.toString().trim();
+        String code = ((String) definition).trim();
+        if (!code.matches("[A-Za-z][A-Za-z0-9_]*")) {
+            throw new IllegalStateException("PropertyType2.questions must contain stable question codes, not display labels: '"
+                    + code + "'.");
+        }
+        return code;
     }
 
     private static String calculationVariable(String normalizedCode) {
@@ -214,9 +236,23 @@ public final class PropertyQuestionAnswerResolver {
             case "NUMBEROFROOMS":
                 return "total_rooms";
             case "TOTALSTRENGTHINCLUDINGSTAFFANDSTUDENTS":
+            case "TOTALSTRENGTHINCLUDINGSTUDENTSANDSTAFFOFBOTHSHIFTS":
                 return "total_strength_including_staff_and_students";
             case "TOTALSTRENGTH":
                 return "total_strength";
+            case "NUMBEROFSTUDENTS":
+            case "TOTALSTUDENTS":
+                return "total_students";
+            case "NUMBEROFSTAFF":
+            case "TOTALSTAFF":
+                return "total_staff";
+            case "NUMBEROFSEATS":
+            case "TOTALSEATS":
+                return "total_seats";
+            case "OPDAREA":
+            case "OPDEARMARKEDAREA":
+            case "OPDBUILTUPAREA":
+                return "opd_area";
             default:
                 return null;
         }

@@ -52,11 +52,6 @@ public abstract class AbstractWaterDemandGroupStrategy implements GroupDemandStr
         }
 
         String occupancyFormula = asString(matchedNorm.get("minOccupancyFormula"));
-        // C-4 minimum bed count differs by facility type in the revised DJB sheet:
-        // Hospital = 1 bed / 80 sqm; Nursing Home = 1 bed / 60 sqm.
-        if ("C-4".equals(normCode)) {
-            occupancyFormula = "MAX(sanctioned_beds, minimum_beds_by_area)";
-        }
         if (StringUtils.isBlank(occupancyFormula)) {
             throw new IllegalStateException("minOccupancyFormula is required for WaterDemandNorms2 code " + normCode);
         }
@@ -73,9 +68,8 @@ public abstract class AbstractWaterDemandGroupStrategy implements GroupDemandStr
                     + normCode + ". Verify the required property inputs.");
         }
 
-        // C-4's LPCD changes at 100 effective beds. Feed the calculated
-        // (sanctioned-vs-area minimum) bed count into the MDMS formula so that
-        // the rates remain configuration-driven rather than hard-coded here.
+        // C-4's primary occupancy is the supplied Number of Beds only. Feed that
+        // bed count into the MDMS LPCD and separate OPD formulas.
         if ("C-4".equals(normCode)) {
             context.put("effective_beds", occupancy);
         }
@@ -114,12 +108,22 @@ public abstract class AbstractWaterDemandGroupStrategy implements GroupDemandStr
         }
         BigDecimal opdPotableDemand = BigDecimal.ZERO;
         if ("C-4".equals(normCode)) {
-            // OPD occupancy is the higher of 1 person per 1.5 sqm of OPD area
-            // or 20 persons per bed. OPD demand is 15 LPCD potable.
-            BigDecimal opdByArea = value(context, "opd_area")
-                    .divide(new BigDecimal("1.5"), 8, RoundingMode.CEILING);
-            BigDecimal opdByBeds = occupancy.multiply(new BigDecimal("20"));
-            opdPotableDemand = opdByArea.max(opdByBeds).multiply(new BigDecimal("15"));
+            String opdFormula = asString(matchedNorm.get("opdOccupancyFormula"));
+            if (StringUtils.isBlank(opdFormula)) {
+                throw new IllegalStateException("C-4 opdOccupancyFormula is required in WaterDemandNorms2.");
+            }
+            BigDecimal opdOccupancy = expressionEvaluator.evaluateExpression(opdFormula, context)
+                    .setScale(0, RoundingMode.CEILING);
+            BigDecimal opdDemandLpcd = configuredNumber(matchedNorm, "opdDemandLpcd", BigDecimal.ZERO);
+            String opdDemandType = asString(matchedNorm.get("opdDemandType"));
+            if (!"POTABLE_ONLY".equalsIgnoreCase(opdDemandType)) {
+                throw new IllegalStateException("C-4 currently supports opdDemandType POTABLE_ONLY; configured value was '"
+                        + opdDemandType + "'.");
+            }
+            if (opdDemandLpcd.compareTo(BigDecimal.ZERO) <= 0) {
+                throw new IllegalStateException("C-4 opdDemandLpcd must be greater than zero.");
+            }
+            opdPotableDemand = opdOccupancy.multiply(opdDemandLpcd);
         }
 
         BigDecimal totalDemandBeforeIfcBasis = occupancy.multiply(totalLpcd).add(opdPotableDemand);
@@ -239,9 +243,13 @@ public abstract class AbstractWaterDemandGroupStrategy implements GroupDemandStr
                 }
                 break;
             case "C-4":
+                // C-4 primary occupancy is driven only by the sanctioned Number of Beds.
+                // Built-up area is not used as an occupancy substitute or fallback.
                 requirePositiveInput(context, "sanctioned_beds", normCode);
-                requirePositiveInput(context, "built_up_area", normCode);
                 requirePositiveInput(context, "plot_area", normCode);
+                if (value(context, "opd_area_provided").compareTo(BigDecimal.ONE) != 0) {
+                    throw new IllegalStateException("C-4 requires an explicit OPD area input. Supply additionalDetails.opdArea (zero is allowed when no separate OPD area applies) or questions[{questionCode:'opdArea', answer:'...'}].");
+                }
                 break;
             default:
                 throw new IllegalStateException("Unsupported revised WaterDemandNorms2 code '" + normCode + "'. "

@@ -143,6 +143,13 @@ public class WaterDemandCalculator {
 
         Map<String, BigDecimal> context = contextExtractor.extractContextVariablesForNormsV2(property);
 
+        // C-4 occupancy is based only on the supplied Number of Beds. The explicit
+        // facilityType is retained solely to select the Hospital/Nursing Home
+        // plot-area applicability rule; built-up area does not derive bed occupancy.
+        if ("C-4".equalsIgnoreCase(usageCode)) {
+            configureC4FacilityContext(propertyTypeEntry, context);
+        }
+
         // B-2 has two IFC calculation bases, but both use the same Commercial
         // property category and the same B-2 water-demand formula. The use class
         // is taken from the selected PropertyType2 record, never guessed from a label.
@@ -163,6 +170,21 @@ public class WaterDemandCalculator {
 
         printCalculationReport(property, matchedNorm, result);
         return result;
+    }
+
+    private void configureC4FacilityContext(Map<String, Object> propertyTypeEntry,
+            Map<String, BigDecimal> context) {
+        Object rawFacilityType = propertyTypeEntry.get("facilityType");
+        String facilityType = rawFacilityType == null ? ""
+                : rawFacilityType.toString().trim().toUpperCase(java.util.Locale.ROOT);
+        if (!"HOSPITAL".equals(facilityType) && !"NURSING_HOME".equals(facilityType)) {
+            throw new IllegalStateException("C-4 PropertyType2 entry '" + propertyTypeEntry.get("code")
+                    + "' must configure facilityType as HOSPITAL or NURSING_HOME. Do not infer it from the display name.");
+        }
+
+        // Facility type is used only for the independent plot-area applicability
+        // check. The C-4 bed occupancy comes exclusively from sanctioned_beds.
+        context.put("is_hospital_property", "HOSPITAL".equals(facilityType) ? BigDecimal.ONE : BigDecimal.ZERO);
     }
 
     /**
