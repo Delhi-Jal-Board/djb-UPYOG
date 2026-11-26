@@ -143,6 +143,7 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
   const validActualAssembly = getValidActualValue(propertyAddress?.actualAssembly, baseAssembly);
   const validActualWard = getValidActualValue(propertyAddress?.actualWard, baseWard);
   const validActualZone = getValidActualValue(propertyAddress?.actualZone, baseZone);
+  const useDetails = data?.useDetails?.useDetails || data?.useDetails || {};
 
   const rawNumberOfFloors =
     propertyAddress?.numberOfFloors ||
@@ -216,7 +217,6 @@ const CheckPage = ({ data, onSubmit, onEdit }) => {
   if (Array.isArray(holderDetails)) {
     holderDetails = holderDetails[0] || {};
   }
-  const useDetails = data?.useDetails?.useDetails || data?.useDetails || {};
   const bankDetails = data?.bankDetails?.bankDetails || data?.bankDetails || data?.additionalDetails?.bankDetails || data?.additionalDetails || {};
   const documents = data?.DocumentsRequired?.documents || data?.documents?.documents || [];
   const declaration = data?.declarationData || data?.declaration || {};

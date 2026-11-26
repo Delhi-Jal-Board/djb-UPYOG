@@ -30,14 +30,9 @@ export const isWSNewConnection = (applicationData, workflowDetails, businessServ
     applicationData?.businessService ||
     "";
   const bServiceUpper = typeof bService === "string" ? bService.trim().toUpperCase() : "";
-  if (bServiceUpper === "NEWWS1" || bServiceUpper === "NEWSW1") return true;
 
   const appType = applicationData?.applicationType || "";
   const appTypeUpper = typeof appType === "string" ? appType.trim().toUpperCase() : "";
-  if (appTypeUpper.includes("NEW_") || appTypeUpper.includes("NEWWS")) return true;
-
-  const appNo = applicationData?.applicationNo || applicationData?.applicationNumber || "";
-  if (appNo.includes("WS_AP") || appNo.includes("SW_AP")) return true;
 
   if (
     appTypeUpper.includes("MUTATION") ||
@@ -50,6 +45,12 @@ export const isWSNewConnection = (applicationData, workflowDetails, businessServ
   ) {
     return false;
   }
+
+  if (bServiceUpper === "NEWWS1" || bServiceUpper === "NEWSW1") return true;
+  if (appTypeUpper.includes("NEW_") || appTypeUpper.includes("NEWWS")) return true;
+
+  const appNo = applicationData?.applicationNo || applicationData?.applicationNumber || "";
+  if (appNo.includes("WS_AP") || appNo.includes("SW_AP")) return true;
 
   return true;
 };
@@ -275,7 +276,13 @@ export const isWSApprovalChecklistState = (applicationData, workflowDetails) =>
   isWSApprovalChecklistReadOnlyState(applicationData, workflowDetails);
 
 export const getRainWaterHarvestingDefault = (applicationData, workflowDetails) => {
-  const piWithChecklist = workflowDetails?.data?.processInstances?.find(
+  const processInstances = [
+    ...(workflowDetails?.data?.processInstances || []),
+    ...(workflowDetails?.data?.ProcessInstances || []),
+    ...(workflowDetails?.ProcessInstances || []),
+    ...(applicationData?.processInstancesDetails || []),
+  ];
+  const piWithChecklist = processInstances.find(
     (pi) =>
       pi?.additionalDetails?.waterPipelineFacility !== undefined ||
       pi?.additionalDetails?.infrastructureChargesApplicable !== undefined ||

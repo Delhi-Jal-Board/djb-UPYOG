@@ -271,7 +271,7 @@ const Step5_Submission = ({ applicationNumber, serviceType, tenantId, formData, 
         </div>
 
         {/* Bill Amount Display */}
-        <div
+        {/* <div
           style={{
             display: "flex",
             alignItems: "center",
@@ -307,7 +307,7 @@ const Step5_Submission = ({ applicationNumber, serviceType, tenantId, formData, 
               </div>
             </div>
           )}
-        </div>
+        </div> */}
 
         {/* Action Buttons */}
         <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", alignItems: "center" }}>

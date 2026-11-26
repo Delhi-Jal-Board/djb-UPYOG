@@ -1179,6 +1179,41 @@ export const WSSearch = {
       return "*".repeat(str.length - 4) + str.slice(-4);
     };
 
+    const getMaskedMeterNumber = (meter) => {
+      if (!meter || meter === "NA") return t("NA");
+      const str = String(meter).trim();
+      if (str.length <= 4) return "****";
+      return `******${str.slice(-4)}`;
+    };
+
+    const getMaskedName = (name) => {
+      if (!name) return t("NA");
+      return String(name)
+        .split("")
+        .map((char, index) => (index % 2 === 1 && char !== " " ? "*" : char))
+        .join("");
+    };
+
+    const getMaskedPhone = (phone) => {
+      if (!phone || String(phone).length < 10) return t("NA");
+      const str = String(phone).replace(/\D/g, "").slice(-10);
+      return `******${str.slice(-4)}`;
+    };
+
+    const getRelationshipName = (code) => {
+      if (!code) return t("NA");
+      if (code?.code) return t(code.i18nKey || code.name || code.code);
+      const map = { BLOOD_RELATION: t("Blood Relation"), LEGAL_HEIR: t("Legal Heir"), OTHER: t("Other") };
+      return map[code] || t(code);
+    };
+
+    const getReasonName = (code) => {
+      if (!code) return t("NA");
+      if (code?.code) return t(code.i18nKey || code.name || code.code);
+      const map = { SALE_PURCHASE: t("Purchase of Property"), DEVOLUTION_INHERITANCE: t("Inheritance"), OTHER: t("Devolution/Other") };
+      return map[code] || t(code);
+    };
+
     const otherDocsValues = unmappedDocs.map(d => {
       const isStp = d?.documentType?.includes("SEWER") || d?.documentType?.includes("STP");
       const isRwh = d?.documentType?.includes("RAIN") || d?.documentType?.includes("HARVEST");
@@ -1269,18 +1304,32 @@ export const WSSearch = {
                   title: "WS_IDENTITY_PROOF",
                   categoryLabel: "Proof of Identity",
                   documentType: identityDoc?.documentType,
-                  documentUid: getCleanDocNumber([
-                    wsDataDetails?.additionalDetails?.identityProofDocumentNumber,
-                    wsDataDetails?.additionalDetails?.identityProofNumber,
-                    identityDoc?.documentNumber,
-                    identityDoc?.documentUid,
-                  ], identityDoc),
-                  documentNumber: getCleanDocNumber([
-                    wsDataDetails?.additionalDetails?.identityProofDocumentNumber,
-                    wsDataDetails?.additionalDetails?.identityProofNumber,
-                    identityDoc?.documentNumber,
-                    identityDoc?.documentUid,
-                  ], identityDoc),
+                  documentUid: isMutationApp
+                    ? maskDocNumber(getCleanDocNumber([
+                        wsDataDetails?.additionalDetails?.identityProofDocumentNumber,
+                        wsDataDetails?.additionalDetails?.identityProofNumber,
+                        identityDoc?.documentNumber,
+                        identityDoc?.documentUid,
+                      ], identityDoc))
+                    : getCleanDocNumber([
+                        wsDataDetails?.additionalDetails?.identityProofDocumentNumber,
+                        wsDataDetails?.additionalDetails?.identityProofNumber,
+                        identityDoc?.documentNumber,
+                        identityDoc?.documentUid,
+                      ], identityDoc),
+                  documentNumber: isMutationApp
+                    ? maskDocNumber(getCleanDocNumber([
+                        wsDataDetails?.additionalDetails?.identityProofDocumentNumber,
+                        wsDataDetails?.additionalDetails?.identityProofNumber,
+                        identityDoc?.documentNumber,
+                        identityDoc?.documentUid,
+                      ], identityDoc))
+                    : getCleanDocNumber([
+                        wsDataDetails?.additionalDetails?.identityProofDocumentNumber,
+                        wsDataDetails?.additionalDetails?.identityProofNumber,
+                        identityDoc?.documentNumber,
+                        identityDoc?.documentUid,
+                      ], identityDoc),
                   fileStoreId: identityDoc?.fileStoreId,
                   numberLabel: "Identity Proof Document Number",
                   originalDoc: identityDoc,
@@ -1291,35 +1340,51 @@ export const WSSearch = {
                   title: isMutationApp ? "WS_REASON_BASED_DOCUMENT" : "WS_OWNERSHIP_PROOF",
                   categoryLabel: isMutationApp ? "Supporting Document" : "Proof of Ownership",
                   documentType: ownershipDoc?.documentType || (isMutationApp ? "SUPPORTING_DOCUMENT" : ""),
-                  documentUid: getCleanDocNumber([
-                    wsDataDetails?.additionalDetails?.ownershipDocumentNumber,
-                    ownershipDoc?.documentNumber,
-                    ownershipDoc?.documentUid,
-                  ], ownershipDoc),
-                  documentNumber: getCleanDocNumber([
-                    wsDataDetails?.additionalDetails?.ownershipDocumentNumber,
-                    ownershipDoc?.documentNumber,
-                    ownershipDoc?.documentUid,
-                  ], ownershipDoc),
+                  documentUid: isMutationApp
+                    ? maskDocNumber(getCleanDocNumber([
+                        wsDataDetails?.additionalDetails?.ownershipDocumentNumber,
+                        ownershipDoc?.documentNumber,
+                        ownershipDoc?.documentUid,
+                      ], ownershipDoc))
+                    : getCleanDocNumber([
+                        wsDataDetails?.additionalDetails?.ownershipDocumentNumber,
+                        ownershipDoc?.documentNumber,
+                        ownershipDoc?.documentUid,
+                      ], ownershipDoc),
+                  documentNumber: isMutationApp
+                    ? maskDocNumber(getCleanDocNumber([
+                        wsDataDetails?.additionalDetails?.ownershipDocumentNumber,
+                        ownershipDoc?.documentNumber,
+                        ownershipDoc?.documentUid,
+                      ], ownershipDoc))
+                    : getCleanDocNumber([
+                        wsDataDetails?.additionalDetails?.ownershipDocumentNumber,
+                        ownershipDoc?.documentNumber,
+                        ownershipDoc?.documentUid,
+                      ], ownershipDoc),
                   fileStoreId: ownershipDoc?.fileStoreId,
                   numberLabel: isMutationApp ? "" : "Ownership Proof Document Number",
                   originalDoc: ownershipDoc,
                 }
                 : null,
               ...(isMutationApp ? [] : otherDocsValues),
-              signatureDoc
-                ? {
-                  title: "WS_APPLICANT_SIGNATURE",
-                  categoryLabel: "Applicant Signature",
-                  documentType: signatureDoc?.documentType || "OWNER.SIGNATURE",
-                  documentUid: "",
-                  documentNumber: "",
-                  fileStoreId: signatureDoc?.fileStoreId,
-                  numberLabel: "",
-                  isPhoto: false,
-                  originalDoc: signatureDoc,
-                }
-                : null,
+              ...(!isMutationApp ? [
+                meterPhotoDocValue,
+                meterWarrantyDocValue,
+                signatureDoc
+                  ? {
+                    title: "WS_APPLICANT_SIGNATURE",
+                    categoryLabel: "Applicant Signature",
+                    documentType: signatureDoc?.documentType || "OWNER.SIGNATURE",
+                    documentUid: "",
+                    documentNumber: "",
+                    fileStoreId: signatureDoc?.fileStoreId,
+                    numberLabel: "",
+                    isPhoto: false,
+                    originalDoc: signatureDoc,
+                  }
+                  : null,
+              ] : []),
             ].filter(Boolean),
           },
         ],
@@ -2054,30 +2119,147 @@ export const WSSearch = {
       };
     }
 
-    details = [
-      ...details,
-      isLabelShow,
-      applicationHeaderDetails,
-      feeEstimation,
-      AdditionalDetailsByWS,
-      connectionHolderDetails,
-      propertyDetails,
-      propertyWaterConnectionUseDetails,
-      divyangjanDetails,
-      djbEmployeeDetails,
-      rainWaterHarvestingDetails,
-      sewerTreatmentPlantDetails,
-      ...(isMutationApp ? [] : [bankDetails]),
-      ...(activateConnectionDetails ? [activateConnectionDetails] : []),
-      documentDetails,
-    ];
+    const existingConsumerDetails = {
+      title: t("WS_EXISTING_CONSUMER_DETAILS_HEADER", "Existing Consumer / Connection Details"),
+      asSectionHeader: true,
+      values: [
+        {
+          title: t("WS_ACK_COMMON_CONNECTION_NO", "Consumer Number"),
+          value: wsDataDetails?.connectionNo || t("NA"),
+        },
+        {
+          title: t("WS_REGISTERED_CONSUMER_NAME", "Registered Consumer Name"),
+          value: getMaskedName(
+            wsDataDetails?.additionalDetails?.ownerName ||
+            propertyDataDetails?.owners?.[0]?.name ||
+            wsDataDetails?.connectionHolders?.find((h) => h?.isPrimaryOwner)?.name ||
+            wsDataDetails?.connectionHolders?.[0]?.name
+          ),
+        },
+        {
+          title: t("WS_REGISTERED_MOBILE_NUMBER", "Registered Mobile Number"),
+          value: getMaskedPhone(
+            wsDataDetails?.additionalDetails?.ownerContactNumber ||
+            propertyDataDetails?.owners?.[0]?.mobileNumber ||
+            wsDataDetails?.additionalDetails?.ownerMobileNumber ||
+            wsDataDetails?.mobileNumber
+          ),
+        },
+        {
+          title: t("WS_SERV_DETAIL_METER_NO", "Meter Number"),
+          value: getMaskedMeterNumber(
+            wsDataDetails?.meterId ||
+            wsDataDetails?.additionalDetails?.meterNo ||
+            wsDataDetails?.additionalDetails?.meterId
+          ),
+        },
+        {
+          title: t("WS_PROPERTY_ID_LABEL", "Property ID"),
+          value: wsDataDetails?.propertyId || t("NA"),
+        },
+        {
+          title: t("WS_PROPERTY_ADDRESS_LABEL", "Property Address"),
+          value:
+            wsDataDetails?.additionalDetails?.completeAddress ||
+            wsDataDetails?.additionalDetails?.addressType ||
+            getAddress(propertyDataDetails?.address, t) ||
+            t("NA"),
+        },
+      ],
+    };
+
+    const transfereeHolder = wsDataDetails?.connectionHolders?.[0] || {};
+    const reasonChange =
+      wsDataDetails?.additionalDetails?.reasonForNameChange ||
+      wsDataDetails?.additionalDetails?.reason ||
+      t("NA");
+    const relationShip =
+      transfereeHolder?.relationship ||
+      wsDataDetails?.additionalDetails?.relationshipWithExistingConsumer ||
+      wsDataDetails?.additionalDetails?.relationship ||
+      t("NA");
+
+    const newConsumerDetails = {
+      title: t("WS_MUTATION_NEW_CONSUMER_DETAILS_HEADER", "Transferee (New Owner) Details"),
+      asSectionHeader: true,
+      values: [
+        {
+          title: t("WS_NEW_CONSUMER_NAME", "New Consumer Name"),
+          value: transfereeHolder?.name || wsDataDetails?.additionalDetails?.proposedNewConsumerName || t("NA"),
+        },
+        {
+          title: t("CORE_COMMON_MOBILE_NUMBER", "Mobile Number"),
+          value: transfereeHolder?.mobileNumber || wsDataDetails?.additionalDetails?.newOwnerMobileNumber || t("NA"),
+        },
+        {
+          title: t("WS_EMAIL_ID", "Email ID"),
+          value: transfereeHolder?.emailId || wsDataDetails?.additionalDetails?.emailId || t("NA"),
+        },
+        {
+          title: t("WS_CONN_HOLDER_OWN_DETAIL_GENDER_LABEL", "Gender"),
+          value: transfereeHolder?.gender
+            ? t(`GENDER_${transfereeHolder?.gender}`, transfereeHolder?.gender)
+            : t("NA"),
+        },
+        {
+          title: t("WS_REASON_FOR_TRANSFER", "Reason for Name Change / Mutation"),
+          value: getReasonName(reasonChange),
+        },
+        {
+          title: t("WS_RELATIONSHIP_WITH_EXISTING_CONSUMER", "Relationship with Existing Consumer"),
+          value: getRelationshipName(relationShip),
+        },
+        ...(wsDataDetails?.additionalDetails?.isOtpVerified !== undefined
+          ? [
+              {
+                title: t("WS_OTP_VERIFICATION_STATUS", "OTP Verification Status"),
+                value: wsDataDetails?.additionalDetails?.isOtpVerified
+                  ? t("Verified with OTP")
+                  : t("Without OTP Verification"),
+              },
+            ]
+          : []),
+      ],
+    };
+
+    if (isMutationApp) {
+      details = [
+        ...details,
+        isLabelShow,
+        applicationHeaderDetails,
+        feeEstimation,
+        existingConsumerDetails,
+        newConsumerDetails,
+        documentDetails,
+      ].filter(Boolean);
+    } else {
+      details = [
+        ...details,
+        isLabelShow,
+        applicationHeaderDetails,
+        feeEstimation,
+        AdditionalDetailsByWS,
+        connectionHolderDetails,
+        propertyDetails,
+        propertyWaterConnectionUseDetails,
+        divyangjanDetails,
+        djbEmployeeDetails,
+        rainWaterHarvestingDetails,
+        sewerTreatmentPlantDetails,
+        bankDetails,
+        ...(activateConnectionDetails ? [activateConnectionDetails] : []),
+        documentDetails,
+      ].filter(Boolean);
+    }
 
     const isNewConnSearch =
-      wsDataDetails?.applicationType?.includes("NEW_") ||
-      wsDataDetails?.applicationType === "NEW_WATER_CONNECTION" ||
-      wsDataDetails?.applicationNo?.includes("WS_AP") ||
-      wsDataDetails?.applicationNo?.includes("SW_AP") ||
-      (typeof window !== "undefined" && window.location.href.includes("WS_AP"));
+      !isMutationApp && (
+        wsDataDetails?.applicationType?.includes("NEW_") ||
+        wsDataDetails?.applicationType === "NEW_WATER_CONNECTION" ||
+        wsDataDetails?.applicationNo?.includes("WS_AP") ||
+        wsDataDetails?.applicationNo?.includes("SW_AP") ||
+        (typeof window !== "undefined" && window.location.href.includes("WS_AP"))
+      );
 
     const isDAStatusSearch =
       wsDataDetails?.applicationStatus === "PENDING_FOR_DEALING_ASSISTENCE_VERIFICATION" ||
@@ -2126,13 +2308,14 @@ export const WSSearch = {
         (Array.isArray(wsDataDetails?.additionalDetails?.dueVerification) && wsDataDetails.additionalDetails.dueVerification.length > 0));
 
     if (
-      (!isNewConnSearch &&
+      !isMutationApp &&
+      ((!isNewConnSearch &&
         (wsDataDetails?.applicationStatus === "PENDING_FOR_FIELD_INSPECTION" ||
           wsDataDetails?.applicationStatus === "PENDING_FOR_CITIZEN_ACTION" ||
           wsDataDetails?.applicationStatus === "PENDING_FOR_DEALING_ASSISTENCE_VERIFICATION" ||
           wsDataDetails?.applicationStatus === "PENDING_FOR_DEALING_ASSISTANT_VERIFICATION" ||
           wsDataDetails?.applicationStatus === "PENDING_FOR_JE_VERIFICATION")) ||
-      (isNewConnSearch && (isDAStatusSearch || (isZROStatusSearch && hasDAVerifiedSearch && hasDueRecordsSearch)))
+      (isNewConnSearch && (isDAStatusSearch || (isZROStatusSearch && hasDAVerifiedSearch && hasDueRecordsSearch))))
     ) {
       const dueVerificationDetails = {
         title: " ",
