@@ -274,7 +274,7 @@ export const isWSApprovalChecklistState = (applicationData, workflowDetails) =>
   isWSApprovalChecklistEditableState(applicationData, workflowDetails) ||
   isWSApprovalChecklistReadOnlyState(applicationData, workflowDetails);
 
-export const getRainWaterHarvestingDefault = (applicationData) => {
+export const getRainWaterHarvestingDefault = (applicationData, workflowDetails) => {
   const piWithChecklist = workflowDetails?.data?.processInstances?.find(
     (pi) =>
       pi?.additionalDetails?.waterPipelineFacility !== undefined ||
@@ -556,7 +556,7 @@ const WSApprovalChecklist = ({ applicationData, workflowDetails, showApprovalChe
           {getWSApprovalChecklistFields(applicationData).map((field) => {
             let rawFieldValue = values?.[field.name] !== undefined ? values[field.name] : addDetails[field.name];
             if (rawFieldValue === undefined && field.name === "rainWaterHarvesting") {
-              rawFieldValue = getRainWaterHarvestingDefault(applicationData);
+              rawFieldValue = getRainWaterHarvestingDefault(applicationData, workflowDetails);
             }
             const fieldBool = parseBool(rawFieldValue);
             const isNoSelected = fieldBool === false;

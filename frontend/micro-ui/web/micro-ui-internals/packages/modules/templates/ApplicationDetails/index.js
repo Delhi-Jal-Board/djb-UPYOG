@@ -104,7 +104,7 @@ const ApplicationDetails = (props) => {
           if (parsedVal !== undefined) {
             values[field.name] = parsedVal;
           } else if (field.name === "rainWaterHarvesting") {
-            values[field.name] = getRainWaterHarvestingDefault(applicationData);
+            values[field.name] = getRainWaterHarvestingDefault(applicationData, workflowDetails);
           }
           if (sourceDetails?.[`${field.name}Remarks`]) {
             values[`${field.name}Remarks`] = sourceDetails?.[`${field.name}Remarks`];
