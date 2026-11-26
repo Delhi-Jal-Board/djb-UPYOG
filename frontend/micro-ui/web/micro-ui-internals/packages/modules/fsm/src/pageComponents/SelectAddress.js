@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   FormStep,
   CardLabel,
@@ -14,6 +14,15 @@ import { useLocation } from "react-router-dom";
 // const Digit = window.Digit;
 
 const SelectAddress = ({ t, config, onSelect, userType, formData }) => {
+  const isMounted = useRef(true);
+
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+
   const allCities = Digit.Hooks.fsm.useTenants();
   let tenantId = Digit.ULBService.getCurrentTenantId();
   if (userType !== "employee") {
@@ -51,17 +60,16 @@ const SelectAddress = ({ t, config, onSelect, userType, formData }) => {
     userType === "employee"
       ? allCities.filter((city) => city.code === tenantId)
       : pincode
-      ? allCities.filter((city) => city?.pincode?.some((pin) => pin == pincode))
-      : allCities;
-const property = sessionStorage.getItem("Digit_FSM_PT")
-const [selectedCity, setSelectedCity] = useState(() => formData?.address?.city || sessionStorage.getItem("Digit_FSM_PT") || null);
-  const [newLocality, setNewLocality] = useState();
-
+        ? allCities.filter((city) => city?.pincode?.some((pin) => pin == pincode))
+        : allCities;
+  const property = sessionStorage.getItem("Digit_FSM_PT");
   const [selectedCity, setSelectedCity] = useState(
     () =>
       formData?.address?.city ||
       Digit.SessionStorage.get("fsm.file.address.city") ||
-      Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")
+      Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY") ||
+      property ||
+      null
   );
   const [newLocality, setNewLocality] = useState();
 
@@ -81,14 +89,14 @@ const [selectedCity, setSelectedCity] = useState(() => formData?.address?.city |
   const isUrcEnable =
     urcConfig && urcConfig.length > 0 && urcConfig[0].URCEnable;
 
-    const [selectLocation, setSelectLocation] = useState(() =>
-      formData?.address?.propertyLocation
-        ? formData?.address?.propertyLocation
-        : Digit.SessionStorage.get("locationType")
+  const [selectLocation, setSelectLocation] = useState(() =>
+    formData?.address?.propertyLocation
+      ? formData?.address?.propertyLocation
+      : Digit.SessionStorage.get("locationType")
         ? Digit.SessionStorage.get("locationType")
         : inputs[0]
-    );
-  
+  );
+
   const [localities, setLocalities] = useState();
   const [selectedLocality, setSelectedLocality] = useState();
 
@@ -99,7 +107,7 @@ const [selectedCity, setSelectedCity] = useState(() => formData?.address?.city |
       }
     }
   }, [cities]);
- 
+
   useEffect(() => {
     if (selectedCity && selectLocation) {
       if (userType === "employee") {
@@ -206,7 +214,7 @@ const [selectedCity, setSelectedCity] = useState(() => formData?.address?.city |
         <LabelFieldPair>
           <CardLabel className="card-label-smaller">
             {t("MYCITY_CODE_LABEL")}
-            {config.isMandatory ? " * " : null}
+            {config.isMandatory ? <span className="check-page-link-button"> * </span> : null}
           </CardLabel>
           <Dropdown
             className="form-field"
@@ -223,7 +231,7 @@ const [selectedCity, setSelectedCity] = useState(() => formData?.address?.city |
           <div>
             <LabelFieldPair>
               <CardLabel className="card-label-smaller">
-                {`${t("CS_CREATECOMPLAINT_MOHALLA")} *`}
+                {`${t("CS_CREATECOMPLAINT_MOHALLA")}`} <span className="check-page-link-button"> * </span>
                 {/* {config.isMandatory ? " * " : null} */}
               </CardLabel>
               <Dropdown
@@ -245,7 +253,7 @@ const [selectedCity, setSelectedCity] = useState(() => formData?.address?.city |
                 <LabelFieldPair>
                   <CardLabel className="card-label-smaller">{`${t(
                     "ES_INBOX_PLEASE_SPECIFY_LOCALITY"
-                  )} *`}</CardLabel>
+                  )} `} <span className="check-page-link-button"> * </span></CardLabel>
                   <div className="field">
                     <TextInput
                       id="newLocality"
@@ -259,7 +267,7 @@ const [selectedCity, setSelectedCity] = useState(() => formData?.address?.city |
           </div>
         ) : (
           <LabelFieldPair>
-            <CardLabel>{`${t("CS_PROPERTY_LOCATION")} *`}</CardLabel>
+            <CardLabel>{`${t("CS_PROPERTY_LOCATION")}`} <span className="check-page-link-button"> * </span></CardLabel>
             <div className="field">
               <RadioButtons
                 selectedOption={selectLocation}
@@ -268,7 +276,7 @@ const [selectedCity, setSelectedCity] = useState(() => formData?.address?.city |
                 innerStyles={{ marginLeft: "10px" }}
                 options={inputs}
                 optionsKey="i18nKey"
-                // disabled={editScreen}
+              // disabled={editScreen}
               />
             </div>
           </LabelFieldPair>
@@ -287,7 +295,7 @@ const [selectedCity, setSelectedCity] = useState(() => formData?.address?.city |
       >
         {isUrcEnable && (
           <>
-            <CardLabel>{`${t("CS_PROPERTY_LOCATION")} *`}</CardLabel>
+            <CardLabel>{`${t("CS_PROPERTY_LOCATION")}`} <span className="check-page-link-button"> * </span></CardLabel>
             <RadioOrSelect
               isMandatory={config.isMandatory}
               options={inputs}
@@ -302,7 +310,7 @@ const [selectedCity, setSelectedCity] = useState(() => formData?.address?.city |
             />
           </>
         )}
-        <CardLabel>{`${t("MYCITY_CODE_LABEL")} *`}</CardLabel>
+        <CardLabel>{`${t("MYCITY_CODE_LABEL")}`} <span className="check-page-link-button"> * </span></CardLabel>
         <RadioOrSelect
           options={cities?.sort((a, b) => a.name.localeCompare(b.name))}
           selectedOption={cities?.length === 1 ? cities[0] : selectedCity}

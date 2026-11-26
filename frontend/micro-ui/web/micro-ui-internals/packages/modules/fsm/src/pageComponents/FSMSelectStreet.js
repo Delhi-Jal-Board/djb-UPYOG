@@ -145,14 +145,12 @@ if (property !== "undefined")
   };
 
   if (userType === "employee") {
-    return (
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px 24px", width: "100%" }}>
-        {inputs?.map((input, index) => {
+    const fieldItems = inputs?.map((input, index) => {
       return (
         <LabelFieldPair key={index}>
           <CardLabel className="card-label-smaller">
             {t(input.label)}
-            {input.isMandatory ? " * " : null}
+            {input.isMandatory ? <span className="check-page-link-button"> * </span> : null}
           </CardLabel>
           <div className="field">
             <Controller
@@ -207,9 +205,13 @@ if (property !== "undefined")
           </div>
         </LabelFieldPair>
       );
-        })}
-      </div>
-    );
+    });
+
+    if (config?.colSpan === "contents") {
+      return fieldItems;
+    }
+
+    return <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px 24px", width: "100%" }}>{fieldItems}</div>;
   }
   return (
     <React.Fragment>

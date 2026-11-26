@@ -42,7 +42,7 @@ const SelectLandmark = ({ t, config, onSelect, formData, userType }) => {
         <LabelFieldPair key={index}>
           <CardLabel className="card-label-smaller">
             {t(input.label)}
-            {config.isMandatory ? " * " : null}
+            {config.isMandatory ? <span className="check-page-link-button"> * </span> : null}
           </CardLabel>
           <TextArea className="form-field" id={input.name} value={landmark} onChange={onChange} name={input.name || ""} {...input.validation} />
         </LabelFieldPair>

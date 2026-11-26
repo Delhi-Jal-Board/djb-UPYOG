@@ -6,16 +6,17 @@ import { getPropertyTypeLocale, getPropertySubtypeLocale, getVehicleType } from 
 
 const displayPitDimension = (pitDeminsion) => {
   const result = [];
-  if (pitDeminsion.length) {
+  if (!pitDeminsion) return "";
+  if (pitDeminsion?.length) {
     result.push(`${pitDeminsion.length}m`);
   }
-  if (pitDeminsion.width) {
+  if (pitDeminsion?.width) {
     result.push(`${pitDeminsion.width}m`);
   }
-  if (pitDeminsion.diameter) {
+  if (pitDeminsion?.diameter) {
     result.push(`${pitDeminsion.diameter}m`);
   }
-  if (pitDeminsion.height) {
+  if (pitDeminsion?.height) {
     result.push(`${pitDeminsion.height}m`);
   }
   return result.join(" x ");

@@ -106,7 +106,7 @@ const AdvanceCollection = ({ t, config, onSelect, formData, userType, FSMTextFie
           setAdvanceAmounts(0);
           if (formData?.advancepaymentPreference?.advanceAmount !== 0) {
             setValue({
-              advanceAmount: advanceBalanceAmount,
+              advanceAmount: 0,
             });
           }
 
@@ -142,7 +142,7 @@ const AdvanceCollection = ({ t, config, onSelect, formData, userType, FSMTextFie
               <LabelFieldPair key={index}>
                 <CardLabel className="card-label-smaller">
                   {t(input.label) + " (₹)"}
-                  {input.isMandatory ? " * " : null}
+                  {input.isMandatory ? <span className="check-page-link-button"> * </span> : null}
                 </CardLabel>
                 <div className="field">
                   <TextInput

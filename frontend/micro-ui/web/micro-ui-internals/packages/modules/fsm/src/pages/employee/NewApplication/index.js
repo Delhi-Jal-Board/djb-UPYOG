@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { FormComposer, Loader, Header } from "@djb25/digit-ui-react-components";
+import { FormComposer, Loader, VerticalTimeline } from "@djb25/digit-ui-react-components";
 import { useHistory } from "react-router-dom";
 
 const isConventionalSpecticTank = (tankDimension) => tankDimension === "lbd";
@@ -31,6 +31,9 @@ export const NewApplication = ({ parentUrl, heading }) => {
   const history = useHistory();
 
   const [canSubmit, setSubmitValve] = useState(true);
+  const [currentStep, setCurrentStep] = useState(1);
+  const prevAutoStepRef = useRef(1);
+  const formWrapperRef = useRef(null);
   // const [channel, setChannel] = useState(null);
 
   const defaultValues = {
@@ -44,6 +47,31 @@ export const NewApplication = ({ parentUrl, heading }) => {
   };
 
   const onFormValueChange = (setValue, formData) => {
+    const pitDetailValues = formData?.pitDetail ? Object.values(formData?.pitDetail).filter((value) => value > 0) : null;
+    const isPitDimensionsValid =
+      pitDetailValues === null ||
+      pitDetailValues?.length === 0 ||
+      (isConventionalSpecticTank(formData?.pitType?.dimension) ? pitDetailValues?.length >= 3 : pitDetailValues?.length >= 2);
+
+    const isStep1Done = Boolean(
+      formData?.channel &&
+        formData?.applicationData?.applicantName?.trim() &&
+        formData?.applicationData?.mobileNumber
+    );
+    const isStep2Done = Boolean(formData?.propertyType && formData?.subtype);
+    const isStep3Done = Boolean(
+      (formData?.address?.locality?.code || formData?.address?.city?.code) &&
+        formData?.address?.street &&
+        formData?.address?.doorNo
+    );
+    const isStep4Done = Boolean(formData?.pitType && isPitDimensionsValid);
+
+    const nextAutoStep = !isStep1Done ? 1 : !isStep2Done ? 2 : !isStep3Done ? 3 : !isStep4Done ? 4 : 5;
+    if (nextAutoStep !== prevAutoStepRef.current) {
+      prevAutoStepRef.current = nextAutoStep;
+      setCurrentStep(nextAutoStep);
+    }
+
     if (
       formData?.channel &&
       formData?.propertyType &&
@@ -56,17 +84,7 @@ export const NewApplication = ({ parentUrl, heading }) => {
       formData?.tripData?.noOfTrips &&
       (formData?.tripData?.amountPerTrip || formData?.tripData?.amountPerTrip === 0)
     ) {
-      setSubmitValve(true);
-      const pitDetailValues = formData?.pitDetail ? Object.values(formData?.pitDetail).filter((value) => value > 0) : null;
-      if (formData?.pitType) {
-        if (pitDetailValues === null || pitDetailValues?.length === 0) {
-          setSubmitValve(true);
-        } else if (isConventionalSpecticTank(formData?.pitType?.dimension) && pitDetailValues?.length >= 3) {
-          setSubmitValve(true);
-        } else if (!isConventionalSpecticTank(formData?.pitType?.dimension) && pitDetailValues?.length >= 2) {
-          setSubmitValve(true);
-        } else setSubmitValve(false);
-      }
+      setSubmitValve(formData?.pitType ? isPitDimensionsValid : true);
     } else {
       setSubmitValve(false);
     }
@@ -94,7 +112,7 @@ export const NewApplication = ({ parentUrl, heading }) => {
     const localityName = data?.cpt?.details?.address?.locality?.name || data?.address?.locality?.name;
     const gender = data?.applicationData?.applicantGender;
     const paymentPreference = data?.paymentPreference ? (data?.paymentPreference?.code || data?.paymentPreference) : "POST_PAY";
-    const advanceAmount = 0;
+    const advanceAmount = data?.advancepaymentPreference?.advanceAmount ?? 0;
     const distancefromroad = data?.tripData?.distancefromroad || "";
     const roadWidth = data?.tripData?.roadWidth || "";
     const gramPanchayat = data?.address?.gramPanchayat;
@@ -162,7 +180,7 @@ export const NewApplication = ({ parentUrl, heading }) => {
         },
         noOfTrips,
         paymentPreference,
-        advanceAmount: "0",
+        advanceAmount: typeof advanceAmount === "number" ? JSON.stringify(advanceAmount) : advanceAmount || "0",
       },
       workflow: null,
     };
@@ -183,6 +201,9 @@ export const NewApplication = ({ parentUrl, heading }) => {
   let conf = [
     {
       head: "ES_TITLE_APPLICANT_DETAILS",
+      route: "applicant-details",
+      isCollapsible: true,
+      isDefaultOpen: true,
       body: [
         {
           label: "ES_NEW_APPLICATION_APPLICATION_CHANNEL",
@@ -197,21 +218,49 @@ export const NewApplication = ({ parentUrl, heading }) => {
           type: "component",
           key: "applicationData",
           withoutLabel: true,
-          colSpan: "span 2",
+          colSpan: "span 1",
+          fields: ["applicantName"],
+          component: "SelectName",
+        },
+        {
+          type: "component",
+          key: "applicationData",
+          withoutLabel: true,
+          colSpan: "span 1",
+          fields: ["mobileNumber"],
+          component: "SelectName",
+        },
+        {
+          type: "component",
+          key: "applicationData",
+          withoutLabel: true,
+          colSpan: "span 1",
+          fields: ["applicantGender"],
           component: "SelectName",
         },
         {
           type: "component",
           key: "paymentPreference",
           withoutLabel: true,
-          colSpan: "span 2",
+          colSpan: "span 1",
           component: "SelectPaymentType",
         },
       ],
     },
     {
       head: "ES_NEW_APPLICATION_PROPERTY_DETAILS",
+      route: "property-details",
+      isCollapsible: true,
+      isDefaultOpen: true,
       body: [
+        {
+          label: "ES_NEW_APPLICATION_PROPERTY_ID",
+          isMandatory: false,
+          type: "component",
+          key: "propertyID",
+          colSpan: "span 1",
+          component: "SelectPropertyID",
+        },
         {
           label: "ES_NEW_APPLICATION_PROPERTY_TYPE",
           isMandatory: true,
@@ -248,6 +297,9 @@ export const NewApplication = ({ parentUrl, heading }) => {
     },
     {
       head: "ES_NEW_APPLICATION_LOCATION_DETAILS",
+      route: "location-details",
+      isCollapsible: true,
+      isDefaultOpen: true,
       body: [
         {
           route: "pincode",
@@ -276,7 +328,7 @@ export const NewApplication = ({ parentUrl, heading }) => {
             submitBarLabel: "CS_COMMON_NEXT",
           },
           key: "address",
-          colSpan: "span 1",
+          colSpan: "contents",
           nextStep: "locality-gramPanchayat",
           isMandatory: true,
           type: "component",
@@ -292,7 +344,7 @@ export const NewApplication = ({ parentUrl, heading }) => {
             submitBarLabel: "CS_COMMON_NEXT",
           },
           key: "address",
-          colSpan: "span 1",
+          colSpan: "contents",
           nextStep: "select-trip-number",
           isMandatory: true,
           type: "component",
@@ -302,7 +354,7 @@ export const NewApplication = ({ parentUrl, heading }) => {
           route: "slum-details",
           isMandatory: true,
           component: "SelectSlumName",
-          colSpan: "span 2",
+          colSpan: "contents",
           texts: {
             header: "CS_NEW_APPLICATION_SLUM_NAME",
             cardText: "CS_NEW_APPLICATION_SLUM_TEXT",
@@ -317,7 +369,7 @@ export const NewApplication = ({ parentUrl, heading }) => {
           route: "street",
           component: "FSMSelectStreet",
           key: "address",
-          colSpan: "span 2",
+          colSpan: "contents",
           withoutLabel: true,
           texts: {
             headerCaption: "CS_FILE_APPLICATION_PROPERTY_LOCATION_LABEL",
@@ -348,6 +400,9 @@ export const NewApplication = ({ parentUrl, heading }) => {
     },
     {
       head: "CS_CHECK_PIT_SEPTIC_TANK_DETAILS",
+      route: "pit-details",
+      isCollapsible: true,
+      isDefaultOpen: true,
       body: [
         {
           label: "ES_NEW_APPLICATION_PIT_TYPE",
@@ -385,6 +440,9 @@ export const NewApplication = ({ parentUrl, heading }) => {
     },
     {
       head: "ES_TITLE_PAYMENT_DETAILS",
+      route: "payment-details",
+      isCollapsible: true,
+      isDefaultOpen: true,
       body: [
         {
           type: "component",
@@ -400,28 +458,53 @@ export const NewApplication = ({ parentUrl, heading }) => {
           colSpan: "span 2",
           component: "SelectTripData",
         },
+        {
+          type: "component",
+          key: "advancepaymentPreference",
+          withoutLabel: true,
+          colSpan: "span 2",
+          component: "AdvanceCollection",
+        },
       ],
     },
   ];
-  console.log(conf, "confffffffff")
+  const filteredConfig = conf
+    .filter((i) => !i.hideInEmployee)
+    .map((config) => ({
+      ...config,
+      body: config.body.filter((a) => !a.hideInEmployee),
+    }));
+
+  const timelineConfig = filteredConfig.map((section, index) => ({
+    route: section.route || `step-${index + 1}`,
+    timeLine: [{ actions: section.head, currentStep: index + 1 }],
+  }));
+
+  const handleStepSelect = (_route, index) => {
+    setCurrentStep(index + 1);
+    const cards = formWrapperRef.current?.querySelectorAll(".collapsible-card");
+    if (cards && cards[index]) {
+      cards[index].scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
   return (
-    <FormComposer
-      heading={heading || t("ES_TITLE_NEW_DESULDGING_APPLICATION")}
-      isDisabled={!canSubmit}
-      label={t("ES_COMMON_APPLICATION_SUBMIT")}
-      config={conf
-        .filter((i) => !i.hideInEmployee)
-        .map((config) => {
-          return {
-            ...config,
-            body: config.body.filter((a) => !a.hideInEmployee),
-          };
-        })}
-      fieldStyle={{ marginRight: 0 }}
-      onSubmit={onSubmit}
-      defaultValues={defaultValues}
-      onFormValueChange={onFormValueChange}
-      noBreakLine={true}
-    />
+    <div className="employee-form-section-wrapper">
+      <VerticalTimeline config={timelineConfig} currentActiveIndex={currentStep - 1} showFinalStep={false} onSelect={handleStepSelect} />
+      <div ref={formWrapperRef} className="employee-form-section" style={{ flex: "1", minWidth: 0 }}>
+        <FormComposer
+          heading={heading}
+          isDisabled={!canSubmit}
+          label={t("ES_COMMON_APPLICATION_SUBMIT")}
+          config={filteredConfig}
+          fieldStyle={{ marginRight: 0 }}
+          onSubmit={onSubmit}
+          defaultValues={defaultValues}
+          onFormValueChange={onFormValueChange}
+          noCard={true}
+          noBreakLine={true}
+        />
+      </div>
+    </div>
   );
 };

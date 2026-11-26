@@ -5,7 +5,7 @@ import { useHistory, useParams } from "react-router-dom";
 import { useQueryClient } from "react-query";
 import DriverConfig from "../../configs/DriverConfig";
 
-const EditDriver = ({ parentUrl, heading }) => {
+const EditDriver = ({ parentUrl, parentRoute, heading }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
   let { id: dsoId } = useParams();
@@ -103,7 +103,7 @@ const EditDriver = ({ parentUrl, heading }) => {
         queryClient.invalidateQueries("FSM_DRIVER_SEARCH");
         setTimeout(() => {
           closeToast();
-          history.push(`/digit-ui/employee/fsm/registry/driver-details/${dsoId}`);
+          history.push(`${parentRoute || "/digit-ui/employee/fsm"}/registry/driver-details/${dsoId}`);
         }, 5000);
       },
     });

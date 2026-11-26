@@ -1,9 +1,18 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { FormStep, CardLabel, Dropdown, RadioButtons, LabelFieldPair, RadioOrSelect, TextInput } from "@djb25/digit-ui-react-components";
 import Timeline from "../components/TLTimelineInFSM";
 import { useLocation } from "react-router-dom";
 
 const FSMSelectAddress = ({ t, config, onSelect, userType, formData }) => {
+  const isMounted = useRef(true);
+
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+
   const allCities = Digit.Hooks.fsm.useTenants();
   let tenantId = Digit.ULBService.getCurrentTenantId();
 
@@ -71,6 +80,7 @@ const FSMSelectAddress = ({ t, config, onSelect, userType, formData }) => {
   const [selectedLocality, setSelectedLocality] = useState();
 
   useEffect(() => {
+    if (!isMounted.current) return;
     if (cities) {
       if (cities.length === 1) {
         setSelectedCity(cities[0]);
@@ -79,6 +89,7 @@ const FSMSelectAddress = ({ t, config, onSelect, userType, formData }) => {
   }, [cities]);
 
   useEffect(() => {
+    if (!isMounted.current) return;
     if (selectedCity && selectLocation) {
       if (userType === "employee") {
         onSelect(config.key, {
@@ -93,36 +104,42 @@ const FSMSelectAddress = ({ t, config, onSelect, userType, formData }) => {
       let filteredLocalityList = [];
 
       if (formData?.address?.locality) {
-        setSelectedLocality(formData.address.locality);
+        if (isMounted.current) setSelectedLocality(formData.address.locality);
       }
 
       if (formData?.address?.pincode) {
         filteredLocalityList = __localityList.filter((obj) => obj.pincode?.find((item) => item == formData.address.pincode));
-        if (!formData?.address?.locality) setSelectedLocality();
+        if (!formData?.address?.locality && isMounted.current) setSelectedLocality();
       }
 
       if (userType === "employee") {
         onSelect(config.key, { ...formData[config.key], city: selectedCity });
       }
-      setLocalities(() => (filteredLocalityList.length > 0 ? filteredLocalityList : __localityList));
-      if (filteredLocalityList.length === 1) {
-        setSelectedLocality(filteredLocalityList[0]);
-        if (userType === "employee") {
-          onSelect(config.key, { ...formData[config.key], locality: filteredLocalityList[0] });
+      if (isMounted.current) {
+        setLocalities(() => (filteredLocalityList.length > 0 ? filteredLocalityList : __localityList));
+        if (filteredLocalityList.length === 1) {
+          setSelectedLocality(filteredLocalityList[0]);
+          if (userType === "employee") {
+            onSelect(config.key, { ...formData[config.key], locality: filteredLocalityList[0] });
+          }
         }
       }
     }
   }, [selectedCity, selectLocation, fetchedLocalities]);
 
   function selectCity(city) {
-    setSelectedLocality(null);
-    setLocalities(null);
+    if (isMounted.current) {
+      setSelectedLocality(null);
+      setLocalities(null);
+      setSelectedCity(city);
+    }
     Digit.SessionStorage.set("fsm.file.address.city", city);
-    setSelectedCity(city);
   }
 
   function selectedValue(value) {
-    setSelectLocation(value);
+    if (isMounted.current) {
+      setSelectLocation(value);
+    }
     Digit.SessionStorage.set("locationType", value);
     if (userType === "employee") {
       if (value.code === "FROM_GRAM_PANCHAYAT") {
@@ -145,14 +162,18 @@ const FSMSelectAddress = ({ t, config, onSelect, userType, formData }) => {
   }
 
   function selectLocality(locality) {
-    setSelectedLocality(locality);
+    if (isMounted.current) {
+      setSelectedLocality(locality);
+    }
     if (userType === "employee") {
       onSelect(config.key, { ...formData[config.key], locality: locality });
     }
   }
 
   const onNewLocality = (value) => {
-    setNewLocality(value);
+    if (isMounted.current) {
+      setNewLocality(value);
+    }
     if (userType === "employee") {
       onSelect(config.key, { ...formData[config.key], newLocality: value });
     }
@@ -166,12 +187,12 @@ const FSMSelectAddress = ({ t, config, onSelect, userType, formData }) => {
   }
 
   if (userType === "employee") {
-    return (
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px 24px", width: "100%" }}>
+    const content = (
+      <React.Fragment>
         <LabelFieldPair>
           <CardLabel className="card-label-smaller">
             {t("MYCITY_CODE_LABEL")}
-            {config.isMandatory ? " * " : null}
+            {config.isMandatory ? <span className="check-page-link-button"> * </span> : null}
           </CardLabel>
           <Dropdown
             className="form-field"
@@ -189,7 +210,7 @@ const FSMSelectAddress = ({ t, config, onSelect, userType, formData }) => {
             <LabelFieldPair>
               <CardLabel className="card-label-smaller">
                 {t("ES_NEW_APPLICATION_LOCATION_MOHALLA")}
-                {config.isMandatory ? " * " : null}
+                {config.isMandatory ? <span className="check-page-link-button"> * </span> : null}
               </CardLabel>
               <Dropdown
                 className="form-field"
@@ -203,7 +224,10 @@ const FSMSelectAddress = ({ t, config, onSelect, userType, formData }) => {
             </LabelFieldPair>
             {!isNewVendor && !isEditVendor && !isUrcEnable && formData?.address?.locality?.name === "Other" && (
               <LabelFieldPair>
-                <CardLabel className="card-label-smaller">{`${t("ES_INBOX_PLEASE_SPECIFY_LOCALITY")} *`}</CardLabel>
+                <CardLabel className="card-label-smaller">
+                  {t("ES_INBOX_PLEASE_SPECIFY_LOCALITY")}
+                  {config.isMandatory ? <span className="check-page-link-button"> * </span> : null}
+                </CardLabel>
                 <div className="field">
                   <TextInput id="newLocality" key="newLocality" value={newLocality} onChange={(e) => onNewLocality(e.target.value)} />
                 </div>
@@ -212,7 +236,10 @@ const FSMSelectAddress = ({ t, config, onSelect, userType, formData }) => {
           </React.Fragment>
         ) : (
           <LabelFieldPair>
-            <CardLabel>{`${t("CS_PROPERTY_LOCATION")} *`}</CardLabel>
+            <CardLabel className="card-label-smaller">
+              {t("CS_PROPERTY_LOCATION")}
+              {config.isMandatory ? <span className="check-page-link-button"> * </span> : null}
+            </CardLabel>
             <div className="field">
               <RadioButtons
                 selectedOption={selectLocation}
@@ -226,8 +253,14 @@ const FSMSelectAddress = ({ t, config, onSelect, userType, formData }) => {
             </div>
           </LabelFieldPair>
         )}
-      </div>
+      </React.Fragment>
     );
+
+    if (config?.colSpan === "contents") {
+      return content;
+    }
+
+    return <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px 24px", width: "100%" }}>{content}</div>;
   }
   return (
     <React.Fragment>
@@ -235,7 +268,10 @@ const FSMSelectAddress = ({ t, config, onSelect, userType, formData }) => {
       <FormStep config={config} onSelect={onSubmit} t={t} isDisabled={selectLocation ? false : true}>
         {isUrcEnable && (
           <React.Fragment>
-            <CardLabel>{`${t("CS_PROPERTY_LOCATION")} *`}</CardLabel>
+            <CardLabel>
+              {t("CS_PROPERTY_LOCATION")}
+              {config.isMandatory ? <span className="check-page-link-button"> * </span> : null}
+            </CardLabel>
             <RadioOrSelect
               isMandatory={config.isMandatory}
               options={inputs}
@@ -247,7 +283,10 @@ const FSMSelectAddress = ({ t, config, onSelect, userType, formData }) => {
           </React.Fragment>
         )}
 
-        <CardLabel>{`${t("MYCITY_CODE_LABEL")} *`}</CardLabel>
+        <CardLabel>
+          {t("MYCITY_CODE_LABEL")}
+          {config.isMandatory ? <span className="check-page-link-button"> * </span> : null}
+        </CardLabel>
         <RadioOrSelect options={cities} selectedOption={selectedCity} optionKey="i18nKey" onSelect={selectCity} t={t} />
       </FormStep>
     </React.Fragment>

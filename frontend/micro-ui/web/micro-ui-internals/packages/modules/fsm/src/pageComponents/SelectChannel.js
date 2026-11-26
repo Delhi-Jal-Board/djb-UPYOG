@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { Loader } from "@djb25/digit-ui-react-components";
-import { Dropdown } from "@djb25/digit-ui-react-components";
+import { Loader, Dropdown, LabelFieldPair, CardLabel } from "@djb25/digit-ui-react-components";
 import { useLocation } from "react-router-dom";
 
-const SelectChannel = ({ t, config, onSelect, formData = {}, userType }) => {
+const SelectChannel = ({ t, config, onSelect, formData = {}, userType, isInline }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
 
   const { pathname: url } = useLocation();
@@ -30,7 +29,11 @@ const SelectChannel = ({ t, config, onSelect, formData = {}, userType }) => {
     onSelect(config.key, value);
   }
 
-  return channelMenu ? (
+  if (!channelMenu) {
+    return <Loader />;
+  }
+
+  const dropdown = (
     <Dropdown
       option={channelMenu}
       optionKey="i18nKey"
@@ -39,11 +42,22 @@ const SelectChannel = ({ t, config, onSelect, formData = {}, userType }) => {
       select={selectChannel}
       t={t}
       disable={editScreen}
-      autoFocus={!editScreen}
     />
-  ) : (
-    <Loader />
   );
+
+  if (!isInline && config?.label) {
+    return (
+      <LabelFieldPair>
+        <CardLabel className="card-label-smaller">
+          {t(config.label)}
+          {config.isMandatory ? <span className="check-page-link-button"> * </span> : null}
+        </CardLabel>
+        <div className="field">{dropdown}</div>
+      </LabelFieldPair>
+    );
+  }
+
+  return dropdown;
 };
 
 export default SelectChannel;
