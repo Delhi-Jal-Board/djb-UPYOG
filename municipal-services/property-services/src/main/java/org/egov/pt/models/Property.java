@@ -120,6 +120,9 @@ public class Property extends PropertyInfo {
 	@JsonProperty("AlternateUpdated")
 	private boolean AlternateUpdated;
 
+	@JsonProperty("waterConnectionDetails")
+	private WaterConnectionDetails waterConnectionDetails;
+
 	@Builder.Default
 	@JsonProperty("isOldDataEncryptionRequest")
 	private boolean isOldDataEncryptionRequest = false;
