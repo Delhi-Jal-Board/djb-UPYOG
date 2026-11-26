@@ -275,7 +275,17 @@ export const isWSApprovalChecklistState = (applicationData, workflowDetails) =>
   isWSApprovalChecklistReadOnlyState(applicationData, workflowDetails);
 
 export const getRainWaterHarvestingDefault = (applicationData) => {
-  const addDetails = applicationData?.additionalDetails || {};
+  const piWithChecklist = workflowDetails?.data?.processInstances?.find(
+    (pi) =>
+      pi?.additionalDetails?.waterPipelineFacility !== undefined ||
+      pi?.additionalDetails?.infrastructureChargesApplicable !== undefined ||
+      pi?.additionalDetails?.rainWaterHarvesting !== undefined ||
+      pi?.additionalDetails?.bulkConnectionVerification !== undefined
+  );
+  const addDetails = {
+    ...(piWithChecklist?.additionalDetails || {}),
+    ...(applicationData?.additionalDetails || {}),
+  };
   const rootRwh = applicationData?.rainWaterHarvesting;
 
   const hasRwh =
@@ -427,12 +437,12 @@ const WSApprovalChecklist = ({ applicationData, workflowDetails, showApprovalChe
     normState === "PENDING_FOR_ZRO_APPROVAL";
 
   // Show satisfaction declaration:
-  // - At second PENDING_FOR_EE_APPROVAL (after JE verification)
-  // - At PENDING_FOR_ZRO_APPROVAL (including when returned from citizen action)
-  // - Or when checklist data exists
+  // - In New Connection: show everywhere EXCEPT at PENDING_FOR_JE_VERIFICATION
+  //   and EXCEPT at First EE Approval (before JE has verified)
+  // - In other modules: when approval checklist data exists
   const showSatisfaction =
     isNewConn
-      ? ((jeVerified || cameFromCitizenAction) && (normState === "PENDING_FOR_EE_APPROVAL" || isDAOrZROState))
+      ? (normState !== "PENDING_FOR_JE_VERIFICATION" && !(normState === "PENDING_FOR_EE_APPROVAL" && !jeVerified))
       : hasWSApprovalChecklistData(applicationData, workflowDetails);
 
   // Satisfaction Declaration is editable:
@@ -454,7 +464,17 @@ const WSApprovalChecklist = ({ applicationData, workflowDetails, showApprovalChe
     normState === "PENDING_FOR_EE_APPROVAL" &&
     !jeVerified;
 
-  const addDetails = applicationData?.additionalDetails || {};
+  const piWithChecklist = workflowDetails?.data?.processInstances?.find(
+    (pi) =>
+      pi?.additionalDetails?.waterPipelineFacility !== undefined ||
+      pi?.additionalDetails?.infrastructureChargesApplicable !== undefined ||
+      pi?.additionalDetails?.rainWaterHarvesting !== undefined ||
+      pi?.additionalDetails?.bulkConnectionVerification !== undefined
+  );
+  const addDetails = {
+    ...(piWithChecklist?.additionalDetails || {}),
+    ...(applicationData?.additionalDetails || {}),
+  };
 
   const yesNoOptions = [
     { label: t("CORE_COMMON_YES", "Yes"), code: true },
@@ -597,28 +617,46 @@ const WSApprovalChecklist = ({ applicationData, workflowDetails, showApprovalChe
                     <div style={{ marginBottom: "6px", fontSize: "14px", fontWeight: "500", color: "#0B0C0C" }}>
                       {t("Remarks")} {!isQuestionsReadOnly && field.isMandatory && <span style={{ color: "#D4351C" }}>*</span>}
                     </div>
-                    <TextArea
-                      name={`${field.name}Remarks`}
-                      value={remarkValue}
-                      disabled={isQuestionsReadOnly}
-                      onChange={(event) =>
-                        !isQuestionsReadOnly &&
-                        onChange &&
-                        onChange({ ...values, [`${field.name}Remarks`]: event.target.value })
-                      }
-                      placeholder={isQuestionsReadOnly ? "" : t("Enter mandatory remarks for selecting No")}
-                      style={{
-                        width: "100%",
-                        minHeight: "60px",
-                        backgroundColor: isQuestionsReadOnly ? "#F3F3F3" : "#FFFFFF",
-                        color: "#0B0C0C",
-                        cursor: isQuestionsReadOnly ? "default" : "text",
-                      }}
-                    />
-                    {!isQuestionsReadOnly && !remarkValue?.trim() && (
-                      <span className="card-label-error" style={{ fontSize: "12px", marginTop: "4px", display: "block" }}>
-                        {t("CS_REMARK_IS_MANDATORY", "Remarks are mandatory when selecting No")}
-                      </span>
+                    {isQuestionsReadOnly ? (
+                      <div
+                        style={{
+                          padding: "10px 12px",
+                          backgroundColor: "#F3F3F3",
+                          border: "1px solid #D6D5D4",
+                          borderRadius: "4px",
+                          color: "#0B0C0C",
+                          fontSize: "14px",
+                          lineHeight: "1.4",
+                          wordBreak: "break-word",
+                        }}
+                      >
+                        {remarkValue || t("CS_COMMON_NO_REMARKS", "No remarks provided")}
+                      </div>
+                    ) : (
+                      <React.Fragment>
+                        <TextArea
+                          name={`${field.name}Remarks`}
+                          value={remarkValue}
+                          disabled={false}
+                          onChange={(event) =>
+                            onChange &&
+                            onChange({ ...values, [`${field.name}Remarks`]: event.target.value })
+                          }
+                          placeholder={t("Enter mandatory remarks for selecting No")}
+                          style={{
+                            width: "100%",
+                            minHeight: "60px",
+                            backgroundColor: "#FFFFFF",
+                            color: "#0B0C0C",
+                            cursor: "text",
+                          }}
+                        />
+                        {!remarkValue?.trim() && (
+                          <span className="card-label-error" style={{ fontSize: "12px", marginTop: "4px", display: "block" }}>
+                            {t("CS_REMARK_IS_MANDATORY", "Remarks are mandatory when selecting No")}
+                          </span>
+                        )}
+                      </React.Fragment>
                     )}
                   </div>
                 )}
