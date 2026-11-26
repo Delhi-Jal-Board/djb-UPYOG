@@ -341,7 +341,9 @@ public class WaterServiceImpl implements WaterService {
 		}
 		
 		log.info("Filtered connection after search" +waterConnectionList.size() );
-		waterConnectionList = enrichmentService.enrichPropertyDetails(waterConnectionList, criteria, requestInfo);
+		if (!Boolean.TRUE.equals(criteria.getIsInternalCall())) {
+			waterConnectionList = enrichmentService.enrichPropertyDetails(waterConnectionList, criteria, requestInfo);
+		}
 		waterConnectionValidator.validatePropertyForConnection(waterConnectionList);
 		enrichmentService.enrichConnectionHolderDeatils(waterConnectionList, criteria, requestInfo);
 		enrichmentService.enrichProcessInstance(waterConnectionList, criteria, requestInfo);

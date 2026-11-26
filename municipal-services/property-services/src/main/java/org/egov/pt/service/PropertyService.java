@@ -537,7 +537,9 @@ public class PropertyService {
 		else if(!criteria.getIsRequestForOldDataEncryption())
 			properties = encryptionDecryptionUtil.decryptObject(properties, PTConstants.PROPERTY_MODEL, Property.class, requestInfo);
 
-		enrichmentService.enrichWaterConnectionDetails(properties, requestInfo);
+		if (!Boolean.TRUE.equals(criteria.getIsSearchInternal())) {
+			enrichmentService.enrichWaterConnectionDetails(properties, requestInfo);
+		}
 
 		return properties;
 	}
@@ -567,7 +569,9 @@ public class PropertyService {
 		List<Property> properties = getPropertiesPlainSearch(criteria, requestInfo);
 		for(Property property:properties)
 			enrichmentService.enrichBoundary(property,requestInfo);
-		enrichmentService.enrichWaterConnectionDetails(properties, requestInfo);
+		if (!Boolean.TRUE.equals(criteria.getIsSearchInternal())) {
+			enrichmentService.enrichWaterConnectionDetails(properties, requestInfo);
+		}
 		return properties;
 	}
 
