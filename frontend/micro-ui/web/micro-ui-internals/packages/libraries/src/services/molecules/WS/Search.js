@@ -1264,19 +1264,6 @@ export const WSSearch = {
           {
             title: "",
             values: [
-              applicantPhoto
-                ? {
-                  title: "WS_APPLICANT_PHOTO",
-                  categoryLabel: "Applicant Photo",
-                  documentType: applicantPhoto?.documentType,
-                  documentUid: "",
-                  documentNumber: "",
-                  fileStoreId: applicantPhoto?.fileStoreId,
-                  numberLabel: "",
-                  isPhoto: true,
-                  originalDoc: applicantPhoto,
-                }
-                : null,
               (isMutationApp ? identityDoc?.fileStoreId : identityDoc)
                 ? {
                   title: "WS_IDENTITY_PROOF",
@@ -1320,8 +1307,6 @@ export const WSSearch = {
                 }
                 : null,
               ...(isMutationApp ? [] : otherDocsValues),
-              meterPhotoDocValue,
-              meterWarrantyDocValue,
               signatureDoc
                 ? {
                   title: "WS_APPLICANT_SIGNATURE",
@@ -1872,35 +1857,40 @@ export const WSSearch = {
       isLabelShow: true,
       additionalDetails: { isLabelShow: true },
     };
+    const meterPhotoDoc =
+      (wsDataDetails?.documents || []).find((d) => d?.documentType === "METER_PHOTO" || d?.documentType?.includes("METER_PHOTO")) ||
+      (wsDataDetails?.additionalDetails?.meterPhotoFileStoreId ? { fileStoreId: wsDataDetails?.additionalDetails?.meterPhotoFileStoreId, documentType: "METER_PHOTO" } : null) ||
+      (wsDataDetails?.additionalDetails?.meterPhoto?.fileStoreId ? { fileStoreId: wsDataDetails?.additionalDetails?.meterPhoto?.fileStoreId, documentType: "METER_PHOTO" } : null);
+
+    const meterWarrantyDoc =
+      (wsDataDetails?.documents || []).find((d) => d?.documentType === "METER_WARRANTY_CARD_TESTING_REPORT_INVOICE" || d?.documentType?.includes("METER_WARRANTY") || d?.documentType?.includes("WARRANTY") || d?.documentType?.includes("TESTING_REPORT") || d?.documentType?.includes("INVOICE")) ||
+      (wsDataDetails?.additionalDetails?.meterWarrantyFileStoreId ? { fileStoreId: wsDataDetails?.additionalDetails?.meterWarrantyFileStoreId, documentType: "METER_WARRANTY_CARD_TESTING_REPORT_INVOICE" } : null) ||
+      (wsDataDetails?.additionalDetails?.meterWarranty?.fileStoreId ? { fileStoreId: wsDataDetails?.additionalDetails?.meterWarranty?.fileStoreId, documentType: "METER_WARRANTY_CARD_TESTING_REPORT_INVOICE" } : null);
+
     let activateConnectionDetails = null;
     if (
       wsDataDetails?.applicationStatus === "PENDING_FOR_CONNECTION_ACTIVATION" ||
-      wsDataDetails?.applicationStatus === "CONNECTION_ACTIVATED"
+      wsDataDetails?.applicationStatus === "CONNECTION_ACTIVATED" ||
+      meterPhotoDoc?.fileStoreId ||
+      meterWarrantyDoc?.fileStoreId ||
+      wsDataDetails?.meterInstallationDate ||
+      wsDataDetails?.additionalDetails?.meterInstallationDate ||
+      wsDataDetails?.connectionExecutionDate ||
+      wsDataDetails?.additionalDetails?.connectionExecutionDate
     ) {
-      const isMetered =
-        !wsDataDetails?.connectionType ||
-        wsDataDetails?.connectionType?.toUpperCase() === "METERED" ||
-        wsDataDetails?.additionalDetails?.connectionType?.toUpperCase() === "METERED";
-
-      const plumberProvidedBy =
-        wsDataDetails?.additionalDetails?.detailsProvidedBy ||
-        wsDataDetails?.additionalDetails?.plumberProvidedBy;
       const isULBPlumber =
-        plumberProvidedBy?.toUpperCase() === "ULB" ||
-        plumberProvidedBy?.toUpperCase() === "DJB" ||
-        plumberProvidedBy === "Delhi Jal Board" ||
-        (typeof plumberProvidedBy === "string" && plumberProvidedBy.toLowerCase().includes("jal board"));
-      const isSelfPlumber = !isULBPlumber;
-
-      const meterPhotoDoc =
-        (wsDataDetails?.documents || []).find((d) => d?.documentType === "METER_PHOTO" || d?.documentType?.includes("METER_PHOTO")) ||
-        (wsDataDetails?.additionalDetails?.meterPhotoFileStoreId ? { fileStoreId: wsDataDetails?.additionalDetails?.meterPhotoFileStoreId, documentType: "METER_PHOTO" } : null) ||
-        (wsDataDetails?.additionalDetails?.meterPhoto?.fileStoreId ? { fileStoreId: wsDataDetails?.additionalDetails?.meterPhoto?.fileStoreId, documentType: "METER_PHOTO" } : null);
-
-      const meterWarrantyDoc =
-        (wsDataDetails?.documents || []).find((d) => d?.documentType === "METER_WARRANTY_CARD_TESTING_REPORT_INVOICE" || d?.documentType?.includes("METER_WARRANTY") || d?.documentType?.includes("WARRANTY") || d?.documentType?.includes("TESTING_REPORT") || d?.documentType?.includes("INVOICE")) ||
-        (wsDataDetails?.additionalDetails?.meterWarrantyFileStoreId ? { fileStoreId: wsDataDetails?.additionalDetails?.meterWarrantyFileStoreId, documentType: "METER_WARRANTY_CARD_TESTING_REPORT_INVOICE" } : null) ||
-        (wsDataDetails?.additionalDetails?.meterWarranty?.fileStoreId ? { fileStoreId: wsDataDetails?.additionalDetails?.meterWarranty?.fileStoreId, documentType: "METER_WARRANTY_CARD_TESTING_REPORT_INVOICE" } : null);
+        wsDataDetails?.additionalDetails?.plumberProvidedBy?.code === "ULB" ||
+        wsDataDetails?.additionalDetails?.plumberProvidedBy === "ULB" ||
+        wsDataDetails?.plumberInfo?.[0]?.providedBy?.code === "ULB" ||
+        wsDataDetails?.plumberInfo?.[0]?.providedBy === "ULB";
+      const isSelfPlumber =
+        wsDataDetails?.additionalDetails?.plumberProvidedBy?.code === "Self" ||
+        wsDataDetails?.additionalDetails?.plumberProvidedBy === "Self" ||
+        wsDataDetails?.plumberInfo?.[0]?.providedBy?.code === "Self" ||
+        wsDataDetails?.plumberInfo?.[0]?.providedBy === "Self";
+      const isMetered =
+        wsDataDetails?.connectionType === "Metered" ||
+        wsDataDetails?.additionalDetails?.connectionType === "Metered";
 
       const activationValues = [
         {

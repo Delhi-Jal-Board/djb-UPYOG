@@ -1,7 +1,7 @@
 import React, { useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { SubmitBar, ActionBar, Menu, CardLabel } from "@djb25/digit-ui-react-components";
-import { checkCameFromCitizenAction } from "./WSApprovalChecklist";
+import { checkCameFromCitizenAction, getWSCurrentState, hasJEVerifiedInWorkflow } from "./WSApprovalChecklist";
 
 function ApplicationDetailsActionBar({
   workflowDetails,
@@ -178,11 +178,30 @@ function ApplicationDetailsActionBar({
     currentWorkflowStatus === "PENDING_FOR_CONNECTION_ACTIVATION" ||
     String(currentWorkflowStatus).includes("CONNECTION_ACTIVATION");
 
+  const currentState = getWSCurrentState(applicationData, workflowDetails);
+  const normState = typeof currentState === "string" ? currentState.trim().toUpperCase() : "";
+
+  const isFirstEEApproval =
+    normState === "PENDING_FOR_EE_APPROVAL" &&
+    !hasJEVerifiedInWorkflow(applicationData, workflowDetails);
+
+  const isJEVerification = normState === "PENDING_FOR_JE_VERIFICATION";
+
+  const isDAVerification =
+    normState.includes("DEALING_ASSIST") ||
+    normState === "PENDING_FOR_DEALING_ASSISTENCE_VERIFICATION" ||
+    normState === "PENDING_FOR_DEALING_ASSISTANT_VERIFICATION" ||
+    normState === "PENDING_FOR_DA_VERIFICATION";
+
   let isSubmitDisabled = false;
   if (isConnectionActivationState) {
     isSubmitDisabled = false;
   } else if (isWSNewConn) {
-    if (completelySatisfied === true) {
+    if (isFirstEEApproval || isJEVerification) {
+      isSubmitDisabled = false;
+    } else if (isDAVerification) {
+      isSubmitDisabled = !isDocsVerified;
+    } else if (completelySatisfied === true) {
       if (cameFromCitizenAction) {
         isSubmitDisabled = !isDocsVerified;
       } else {

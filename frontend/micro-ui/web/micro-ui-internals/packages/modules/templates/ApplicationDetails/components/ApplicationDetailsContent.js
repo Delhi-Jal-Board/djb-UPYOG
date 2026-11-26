@@ -382,23 +382,27 @@ function ApplicationDetailsContent({
   const hasDAVerified = hasDAVerifiedInWorkflow(applicationData, workflowDetails);
   const cameFromCitizenAction = checkCameFromCitizenAction(applicationData, workflowDetails);
 
-  const canVerifyDocuments = isEmployeeSide && (
-    isNewConn
-      ? isDAState || (isZROState && hasDAVerified) || (isZROState && cameFromCitizenAction) || currentWorkflowStatus === "PENDING_FOR_CONNECTION_ACTIVATION" || String(currentWorkflowStatus).includes("CONNECTION_ACTIVATION")
-      : [
-          "PENDING_FOR_DOCUMENT_VERIFICATION",
-          "PENDING_APPROVAL_FOR_MUTATION",
-          "PENDING_FOR_ZRO_APPROVAL",
-          "PENDING_FOR_CONNECTION_ACTIVATION",
-          "PENDING_FOR_CITIZEN_ACTION",
-          "PENDING_FOR_DEALING_ASSISTENCE_VERIFICATION",
-          "PENDING_FOR_DEALING_ASSISTANT_VERIFICATION",
-        ].includes(currentWorkflowStatus)
-  );
+  const isJEState =
+    currentWorkflowStatus === "PENDING_FOR_JE_VERIFICATION" ||
+    workflowDetails?.data?.actionState?.state === "PENDING_FOR_JE_VERIFICATION" ||
+    String(currentWorkflowStatus).toUpperCase().includes("JE_VERIF") ||
+    String(workflowDetails?.data?.actionState?.state).toUpperCase().includes("JE_VERIF");
 
-  const isCheckboxDisabled =
-    (!cameFromCitizenAction && isZROState && hasDAVerified) ||
-    !isEmployeeSide;
+  const isEEState =
+    currentWorkflowStatus === "PENDING_FOR_EE_APPROVAL" ||
+    workflowDetails?.data?.actionState?.state === "PENDING_FOR_EE_APPROVAL" ||
+    String(currentWorkflowStatus).toUpperCase().includes("EE_APPROVAL") ||
+    String(workflowDetails?.data?.actionState?.state).toUpperCase().includes("EE_APPROVAL");
+
+  const isZROFirstTime =
+    isNewConn &&
+    isZROState &&
+    !hasDAVerified &&
+    !cameFromCitizenAction;
+
+  const canVerifyDocuments = isEmployeeSide && !isJEState && !isEEState && !isZROFirstTime;
+
+  const isCheckboxDisabled = !isEmployeeSide;
 
   const defaultChecked =
     currentWorkflowStatus === "PENDING_FOR_CONNECTION_ACTIVATION" ||
@@ -447,8 +451,8 @@ function ApplicationDetailsContent({
   const allRequiredDocs = Array.from(allRequiredDocsMap.values());
 
   const isDocChecked = (doc) => {
-    if (defaultChecked) return true;
-    return docCheckedMap[doc.fileStoreId] ?? doc?.isVerified ?? doc?.originalDoc?.isVerified ?? false;
+    if (docCheckedMap[doc.fileStoreId] !== undefined) return docCheckedMap[doc.fileStoreId];
+    return doc?.isVerified ?? doc?.originalDoc?.isVerified ?? defaultChecked;
   };
 
   const allDocumentsVerified =

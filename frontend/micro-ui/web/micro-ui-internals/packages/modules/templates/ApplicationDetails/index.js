@@ -88,32 +88,44 @@ const ApplicationDetails = (props) => {
       // After the initial seed the user's checkbox interactions drive the state.
       if (seededKeyRef.current !== seedKey) {
         seededKeyRef.current = seedKey;
-        const addDetails =
+        const piWithChecklist = workflowDetails?.data?.processInstances?.find(
+          (pi) =>
+            pi?.additionalDetails?.waterPipelineFacility !== undefined ||
+            pi?.additionalDetails?.infrastructureChargesApplicable !== undefined ||
+            pi?.additionalDetails?.rainWaterHarvesting !== undefined ||
+            pi?.additionalDetails?.bulkConnectionVerification !== undefined
+        );
+        const sourceDetails =
           applicationData?.additionalDetails ||
-          workflowDetails?.data?.processInstances?.find((pi) => pi?.additionalDetails?.waterPipelineFacility !== undefined)?.additionalDetails ||
+          piWithChecklist?.additionalDetails ||
           {};
         const initialChecklist = getWSApprovalChecklistFields(applicationData).reduce((values, field) => {
-          const parsedVal = parseBool(addDetails?.[field.name]);
+          const parsedVal = parseBool(sourceDetails?.[field.name]);
           if (parsedVal !== undefined) {
             values[field.name] = parsedVal;
           } else if (field.name === "rainWaterHarvesting") {
             values[field.name] = getRainWaterHarvestingDefault(applicationData);
           }
-          if (addDetails?.[`${field.name}Remarks`]) {
-            values[`${field.name}Remarks`] = addDetails?.[`${field.name}Remarks`];
+          if (sourceDetails?.[`${field.name}Remarks`]) {
+            values[`${field.name}Remarks`] = sourceDetails?.[`${field.name}Remarks`];
           }
           return values;
         }, {});
         const piWithSatisfaction = workflowDetails?.data?.processInstances?.find(
           (pi) => pi?.additionalDetails?.CompletelySatisfied !== undefined || pi?.additionalDetails?.isFullySatisfied !== undefined
         );
+        const satDetails =
+          applicationData?.additionalDetails ||
+          piWithSatisfaction?.additionalDetails ||
+          sourceDetails ||
+          {};
         const cameFromCitizenAction = checkCameFromCitizenAction(applicationData, workflowDetails);
         if (!cameFromCitizenAction) {
           const rawSatisfied =
-            addDetails?.CompletelySatisfied !== undefined
-              ? addDetails?.CompletelySatisfied
-              : addDetails?.isFullySatisfied !== undefined
-              ? addDetails?.isFullySatisfied
+            satDetails?.CompletelySatisfied !== undefined
+              ? satDetails?.CompletelySatisfied
+              : satDetails?.isFullySatisfied !== undefined
+              ? satDetails?.isFullySatisfied
               : piWithSatisfaction?.additionalDetails?.CompletelySatisfied !== undefined
               ? piWithSatisfaction?.additionalDetails?.CompletelySatisfied
               : piWithSatisfaction?.additionalDetails?.isFullySatisfied;
@@ -123,8 +135,8 @@ const ApplicationDetails = (props) => {
           }
         }
         const satRemark =
-          addDetails?.notCompletelySatisfiedRemarks ||
-          addDetails?.completelySatisfiedRemarks ||
+          satDetails?.notCompletelySatisfiedRemarks ||
+          satDetails?.completelySatisfiedRemarks ||
           piWithSatisfaction?.additionalDetails?.notCompletelySatisfiedRemarks ||
           piWithSatisfaction?.additionalDetails?.completelySatisfiedRemarks;
         if (satRemark) {

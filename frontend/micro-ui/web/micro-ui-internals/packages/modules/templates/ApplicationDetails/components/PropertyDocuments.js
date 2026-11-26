@@ -62,9 +62,7 @@ function PropertyDocuments({
     applicationStatus === "PENDING_FOR_CONNECTION_ACTIVATION" ||
     (!cameFromCitizenAction && isZROState && hasDAVerified);
 
-  const isCheckboxDisabled =
-    (!cameFromCitizenAction && isZROState && hasDAVerified) ||
-    window.location.href.includes("citizen");
+  const isCheckboxDisabled = window.location.href.includes("citizen");
 
   useEffect(() => {
     if (parentHandlesVerification) return;
@@ -139,19 +137,25 @@ function PropertyDocuments({
   const isWSLocation = window.location.href.includes("/ws/") || window.location.href.includes("employee/ws") || window.location.href.includes("citizen/ws");
   const isStakeholderApplication = window.location.href.includes("stakeholder");
 
-  const canVerifyDocuments = !window.location.href.includes("citizen") && (
-    isNewConn
-      ? isDAState || (isZROState && hasDAVerified) || applicationStatus === "PENDING_FOR_CONNECTION_ACTIVATION" || String(applicationStatus).includes("CONNECTION_ACTIVATION")
-      : [
-          "PENDING_FOR_DOCUMENT_VERIFICATION",
-          "PENDING_APPROVAL_FOR_MUTATION",
-          "PENDING_FOR_ZRO_APPROVAL",
-          "PENDING_FOR_CONNECTION_ACTIVATION",
-          "PENDING_FOR_CITIZEN_ACTION",
-          "PENDING_FOR_DEALING_ASSISTENCE_VERIFICATION",
-          "PENDING_FOR_DEALING_ASSISTANT_VERIFICATION",
-        ].includes(applicationStatus)
-  );
+  const isJEState =
+    applicationStatus === "PENDING_FOR_JE_VERIFICATION" ||
+    workflowDetails?.data?.actionState?.state === "PENDING_FOR_JE_VERIFICATION" ||
+    String(applicationStatus).toUpperCase().includes("JE_VERIF") ||
+    String(workflowDetails?.data?.actionState?.state).toUpperCase().includes("JE_VERIF");
+
+  const isEEState =
+    applicationStatus === "PENDING_FOR_EE_APPROVAL" ||
+    workflowDetails?.data?.actionState?.state === "PENDING_FOR_EE_APPROVAL" ||
+    String(applicationStatus).toUpperCase().includes("EE_APPROVAL") ||
+    String(workflowDetails?.data?.actionState?.state).toUpperCase().includes("EE_APPROVAL");
+
+  const isZROFirstTime =
+    isNewConn &&
+    isZROState &&
+    !hasDAVerified &&
+    !cameFromCitizenAction;
+
+  const canVerifyDocuments = !window.location.href.includes("citizen") && !isJEState && !isEEState && !isZROFirstTime;
 
   const getDocSubType = (documentType) => {
     if (!documentType) return "";
@@ -277,6 +281,21 @@ function PropertyDocuments({
 
   /** Render a single document row in the structured format */
   const renderDocumentRow = (value, index) => {
+    if (value.title === "WS_APPLICANT_PHOTO" || value?.documentType?.includes("APPLICANT_PHOTO")) {
+      return null;
+    }
+    if (
+      value.title === "WS_METER_PHOTO_UPLOAD_LABEL" ||
+      value?.documentType?.includes("METER_PHOTO") ||
+      value.title === "WS_METER_WARRANTY_REPORT_INVOICE_LABEL" ||
+      value?.documentType?.includes("METER_WARRANTY") ||
+      value?.documentType?.includes("WARRANTY") ||
+      value?.documentType?.includes("TESTING_REPORT") ||
+      value?.documentType?.includes("INVOICE")
+    ) {
+      return null;
+    }
+
     const fileUrl = pdfFiles[value.fileStoreId]?.split(",")[0];
     const docSubType = getDocSubType(value?.documentType);
     const docUid = getDocNumber(value);
@@ -394,14 +413,12 @@ function PropertyDocuments({
                             }}
                             disabled={isCheckboxDisabled}
                             checked={
+                              (docCheckedMap
+                                ? docCheckedMap[value?.fileStoreId]
+                                : checkedMap[value?.fileStoreId]) ??
+                              value?.isVerified ??
+                              value?.originalDoc?.isVerified ??
                               defaultChecked
-                                ? true
-                                : (docCheckedMap
-                                    ? docCheckedMap[value?.fileStoreId]
-                                    : checkedMap[value?.fileStoreId]) ??
-                                  value?.isVerified ??
-                                  value?.originalDoc?.isVerified ??
-                                  false
                             }
                             onChange={(e) => {
                               const checked = e.target.checked;
