@@ -189,6 +189,74 @@ const EditPropertyForm = ({ config, onSelect, userType }) => {
       }
     }
 
+    if (Array.isArray(useDetails?.questions) && useDetails.questions.length > 0) {
+      const hasUnansweredQuestion = useDetails.questions.some(
+        (q) => !q?.answer || String(q?.answer).trim() === ""
+      );
+      if (hasUnansweredQuestion) {
+        setShowToast({ key: true, label: t("Please fill all the mandatory fields") });
+        return;
+      }
+    }
+
+    // Validation for Mixed Occupancy
+    const isMixedOcc = useDetails?.isMixedOccupancy || currentFormValue?.isMixedOccupancy;
+    const mixedRows = useDetails?.mixedOccupancyDetails || currentFormValue?.mixedOccupancyDetails || [];
+    if (isMixedOcc === "YES") {
+      if (!Array.isArray(mixedRows) || mixedRows.length === 0) {
+        setShowToast({
+          key: true,
+          label: t("WS_ERR_ADD_MIXED_OCCUPANCY_ROWS") || "Please add at least one property usage entry in Mixed Occupancy section.",
+        });
+        return;
+      }
+
+      const parentBuilt = parseFloat(useDetails?.builtUpArea) || 0;
+      const parentHeight = parseFloat(useDetails?.heightOfTheBuilding) || 0;
+
+      if (mixedRows.length === 1) {
+        // If single row: built-up area and height must equal parent
+        const rowBuilt = parseFloat(mixedRows[0]?.builtUpArea) || 0;
+        const rowHeight = parseFloat(mixedRows[0]?.heightOfTheBuilding) || 0;
+
+        if (Math.abs(rowBuilt - parentBuilt) > 0.01) {
+          setShowToast({
+            key: true,
+            label: `${t("WS_ERR_TOTAL_USAGE_AREA_NOT_EQUAL") || "Built-up area of usage details must equal the overall built-up area"} (${parentBuilt} sq. meter). Current is ${rowBuilt} sq. meter.`,
+          });
+          return;
+        }
+
+        if (Math.abs(rowHeight - parentHeight) > 0.01) {
+          setShowToast({
+            key: true,
+            label: `${t("WS_ERR_USAGE_HEIGHT_NOT_EQUAL") || "Height of the building must equal Proposed Usage Details height"} (${parentHeight} meter). Current is ${rowHeight} meter.`,
+          });
+          return;
+        }
+      } else {
+        // If multiple rows: sum of built-up areas and sum of heights must equal parent
+        const totalUsageBuilt = mixedRows.reduce((acc, r) => acc + (parseFloat(r.builtUpArea) || 0), 0);
+        const totalUsageHeight = mixedRows.reduce((acc, r) => acc + (parseFloat(r.heightOfTheBuilding) || 0), 0);
+
+        if (Math.abs(totalUsageBuilt - parentBuilt) > 0.01) {
+          setShowToast({
+            key: true,
+            label: `${t("WS_ERR_TOTAL_USAGE_AREA_NOT_EQUAL") || "Sum of built-up area of all usage details must equal the overall built-up area"} (${parentBuilt} sq. meter). Current sum is ${totalUsageBuilt.toFixed(2)} sq. meter.`,
+          });
+          return;
+        }
+
+        if (Math.abs(totalUsageHeight - parentHeight) > 0.01) {
+          setShowToast({
+            key: true,
+            label: `${t("WS_ERR_SUM_HEIGHT_NOT_EQUAL") || "Sum of height of all usage details must equal Proposed Usage Details height"} (${parentHeight} meter). Current sum is ${totalUsageHeight.toFixed(2)} meter.`,
+          });
+          return;
+        }
+      }
+    }
+
     // Parse noOfFloors code → integer
     // "GROUND_FLOOR" → 0, "1_FLOOR" → 1, "2_FLOORS" → 2, etc.
     const loc = currentFormValue?.locationDet || {};
@@ -291,6 +359,8 @@ const EditPropertyForm = ({ config, onSelect, userType }) => {
           numberOfRooms: useDetails?.NumberofRooms || rawProperty.additionalDetails?.numberOfRooms || "",
           heightOfTheBuilding: useDetails?.heightOfTheBuilding || rawProperty.additionalDetails?.heightOfTheBuilding || "",
           questions: useDetails?.questions || useDetails?.questionAnswers || rawProperty.additionalDetails?.questions || rawProperty.additionalDetails?.questionAnswers || [],
+          isMixedOccupancy: isMixedOcc,
+          mixedOccupancyDetails: isMixedOcc === "YES" ? mixedRows : [],
           owners: additionalOwners,
         },
       },

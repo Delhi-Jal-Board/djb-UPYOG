@@ -415,6 +415,18 @@ export const convertToPropertyLightWeight = (data = {}) => {
           data.waterConnection?.useDetails?.categoryTypeSelectionQuestionCode ||
           data.useDetails?.categoryTypeSelectionQuestionCode ||
           null,
+        isMixedOccupancy:
+          data.waterConnection?.useDetails?.isMixedOccupancy ||
+          data.useDetails?.isMixedOccupancy ||
+          data.waterConnection?.isMixedOccupancy ||
+          data.isMixedOccupancy ||
+          null,
+        mixedOccupancyDetails:
+          data.waterConnection?.useDetails?.mixedOccupancyDetails ||
+          data.useDetails?.mixedOccupancyDetails ||
+          data.waterConnection?.mixedOccupancyDetails ||
+          data.mixedOccupancyDetails ||
+          [],
         owners: [
           ...(data.owners || []).map((owner, index) => {
             const computedName =
@@ -573,6 +585,18 @@ export const convertToUpdatePropertyLightWeight = (data = {}) => {
           data.waterConnection?.useDetails?.categoryTypeSelectionQuestionCode ||
           data.useDetails?.categoryTypeSelectionQuestionCode ||
           null,
+        isMixedOccupancy:
+          data.waterConnection?.useDetails?.isMixedOccupancy ||
+          data.useDetails?.isMixedOccupancy ||
+          data.waterConnection?.isMixedOccupancy ||
+          data.isMixedOccupancy ||
+          null,
+        mixedOccupancyDetails:
+          data.waterConnection?.useDetails?.mixedOccupancyDetails ||
+          data.useDetails?.mixedOccupancyDetails ||
+          data.waterConnection?.mixedOccupancyDetails ||
+          data.mixedOccupancyDetails ||
+          [],
         owners: [
           ...data.owners.map((owner, index) => {
             const computedName =

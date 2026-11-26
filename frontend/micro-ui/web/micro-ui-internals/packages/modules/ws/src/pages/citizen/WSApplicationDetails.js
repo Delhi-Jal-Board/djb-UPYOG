@@ -1898,7 +1898,15 @@ const WSApplicationDetails = () => {
                 </React.Fragment>
               )}
               {(connData?.applicationStatus === "PENDING_FOR_CONNECTION_ACTIVATION" ||
-                connData?.applicationStatus === "CONNECTION_ACTIVATED") && (
+                connData?.applicationStatus === "CONNECTION_ACTIVATED" ||
+                meterPhotoDoc?.fileStoreId ||
+                meterWarrantyDoc?.fileStoreId ||
+                connData?.meterId ||
+                connData?.additionalDetails?.meterId ||
+                connData?.meterInstallationDate ||
+                connData?.additionalDetails?.meterInstallationDate ||
+                connData?.connectionExecutionDate ||
+                connData?.additionalDetails?.connectionExecutionDate) && (
                 <React.Fragment>
                   <CardHeader styles={{ fontSize: "28px", marginTop: "24px" }}>
                     {t("WS_ACTIVATION_DETAILS") && t("WS_ACTIVATION_DETAILS") !== "WS_ACTIVATION_DETAILS"
