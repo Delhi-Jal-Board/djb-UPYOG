@@ -662,7 +662,6 @@ export const WSSearch = {
             t("NA"),
         },
         { title: "PT_PROPERTY_ADDRESS_STREET_NAME", value: propertyDataDetails?.address?.street || t("NA") },
-        { title: "ADDRESS_LINE1", value: propertyDataDetails?.address?.street || t("NA") },
         { title: "ADDRESS_LINE2", value: propertyDataDetails?.address?.address2 || propertyDataDetails?.address?.subLocality || t("NA") },
         {
           title: "LATITUDE",
@@ -1083,7 +1082,8 @@ export const WSSearch = {
     let ownershipDoc = allDocs.find(
       (d) => d?.documentType?.includes("ADDRESSPROOF") || d?.documentType?.includes("OWNERSHIP") || d?.documentType?.includes("PROPERTY") || ["REGISTERED_SALE_DEED", "CONVEYANCE_DEED", "GIFT_DEED", "WILL", "RELINQUISHMENT_DEED", "MUTATION_CERTIFICATE", "GPA", "ALLOTMENT_LETTER", "ELECTRICITY_BILL", "WATER_BILL"].includes(d?.documentType)
     );
-    const applicantPhoto = allDocs.find((d) => d?.documentType?.includes("APPLICANTPHOTO") || d?.documentType?.includes("PHOTO"));
+    // Applicant Photo is captured in the citizen upload flow but is not displayed in employee application details.
+    const applicantPhoto = null;
     const signatureDoc = allDocs.find(
       (d) => d?.documentType?.includes("SIGNATURE") || d?.documentType?.includes("SIGN")
     ) || (wsDataDetails?.additionalDetails?.signatureFileStoreId ? {
@@ -1131,7 +1131,14 @@ export const WSSearch = {
         !d?.documentType?.includes("DJB_EMPLOYEE") &&
         !d?.documentType?.includes("EMPLOYEE_ID") &&
         !d?.documentType?.includes("SIGNATURE") &&
-        !d?.documentType?.includes("SIGN")
+        !d?.documentType?.includes("SIGN") &&
+        !d?.documentType?.includes("METER_PHOTO") &&
+        !d?.documentType?.includes("METER_WARRANTY") &&
+        !d?.documentType?.includes("METER") &&
+        !d?.documentType?.includes("SEWER") &&
+        !d?.documentType?.includes("STP") &&
+        !d?.documentType?.includes("RAIN") &&
+        !d?.documentType?.includes("HARVEST")
     );
 
     const isInvalidDocVal = (val, d) => {
@@ -1164,6 +1171,14 @@ export const WSSearch = {
       return "NA";
     };
 
+    const maskDocNumber = (val) => {
+      if (!val || val === "NA") return val || "";
+      const str = String(val).trim();
+      if (!str || str === "NA") return str;
+      if (str.length <= 4) return str;
+      return "*".repeat(str.length - 4) + str.slice(-4);
+    };
+
     const otherDocsValues = unmappedDocs.map(d => {
       const isStp = d?.documentType?.includes("SEWER") || d?.documentType?.includes("STP");
       const isRwh = d?.documentType?.includes("RAIN") || d?.documentType?.includes("HARVEST");
@@ -1183,15 +1198,10 @@ export const WSSearch = {
         categoryLabel: isStp ? "Sewer Treatment Plant (STP) Certificate" :
                        isRwh ? "Rain Water Harvesting Certificate" : "Other Documents",
         documentType: d?.documentType,
-        documentUid: cleanNum,
-        documentNumber: cleanNum === "NA" ? "" : cleanNum,
+        documentUid: "",
+        documentNumber: "",
         fileStoreId: d?.fileStoreId,
-        numberLabel:
-          isStp ? "Sewer Treatment Plant Document Number" :
-          isRwh ? "Rain Water Harvesting Document Number" :
-          d?.documentType?.includes("OTHER_DOCUMENTS") || d?.documentType?.includes("OTHERDOCUMENTS")
-            ? "Other Document Remark"
-            : "Other Document Number",
+        numberLabel: "",
         originalDoc: d,
       };
     });
@@ -1209,12 +1219,12 @@ export const WSSearch = {
     } : null;
 
     const meterPhotoDocObj =
-      (wsDataDetails?.documents || []).find((d) => d?.documentType === "METER_PHOTO") ||
+      (wsDataDetails?.documents || []).find((d) => d?.documentType === "METER_PHOTO" || d?.documentType?.includes("METER_PHOTO")) ||
       (wsDataDetails?.additionalDetails?.meterPhotoFileStoreId ? { fileStoreId: wsDataDetails?.additionalDetails?.meterPhotoFileStoreId, documentType: "METER_PHOTO" } : null) ||
       (wsDataDetails?.additionalDetails?.meterPhoto?.fileStoreId ? { fileStoreId: wsDataDetails?.additionalDetails?.meterPhoto?.fileStoreId, documentType: "METER_PHOTO" } : null);
 
     const meterWarrantyDocObj =
-      (wsDataDetails?.documents || []).find((d) => d?.documentType === "METER_WARRANTY_CARD_TESTING_REPORT_INVOICE") ||
+      (wsDataDetails?.documents || []).find((d) => d?.documentType === "METER_WARRANTY_CARD_TESTING_REPORT_INVOICE" || d?.documentType?.includes("METER_WARRANTY") || d?.documentType?.includes("WARRANTY") || d?.documentType?.includes("TESTING_REPORT") || d?.documentType?.includes("INVOICE")) ||
       (wsDataDetails?.additionalDetails?.meterWarrantyFileStoreId ? { fileStoreId: wsDataDetails?.additionalDetails?.meterWarrantyFileStoreId, documentType: "METER_WARRANTY_CARD_TESTING_REPORT_INVOICE" } : null) ||
       (wsDataDetails?.additionalDetails?.meterWarranty?.fileStoreId ? { fileStoreId: wsDataDetails?.additionalDetails?.meterWarranty?.fileStoreId, documentType: "METER_WARRANTY_CARD_TESTING_REPORT_INVOICE" } : null);
 
@@ -1309,7 +1319,6 @@ export const WSSearch = {
                   originalDoc: ownershipDoc,
                 }
                 : null,
-              employeeIdDocValue,
               ...(isMutationApp ? [] : otherDocsValues),
               meterPhotoDocValue,
               meterWarrantyDocValue,
@@ -1414,6 +1423,46 @@ export const WSSearch = {
                 ? t(`WS_APPLICANT_${wsDataDetails?.additionalDetails?.applicantType}`)
                 : t("NA"),
           });
+
+          const authRepName =
+            wsDataDetails?.additionalDetails?.authorizedRepresentativeName ||
+            wsDataDetails?.connectionDetails?.[0]?.authorizedRepresentativeName ||
+            wsDataDetails?.ConnectionDetails?.[0]?.authorizedRepresentativeName ||
+            wsDataDetails?.authorizedRepresentativeName;
+
+          const authRepDesig =
+            wsDataDetails?.additionalDetails?.authorizedRepresentativeDesignation ||
+            wsDataDetails?.connectionDetails?.[0]?.authorizedRepresentativeDesignation ||
+            wsDataDetails?.ConnectionDetails?.[0]?.authorizedRepresentativeDesignation ||
+            wsDataDetails?.authorizedRepresentativeDesignation;
+
+          const authRepMobile =
+            wsDataDetails?.additionalDetails?.authorizedRepresentativeMobileNumber ||
+            wsDataDetails?.additionalDetails?.authorizedMobileNumber ||
+            wsDataDetails?.connectionDetails?.[0]?.authorizedRepresentativeMobileNumber ||
+            wsDataDetails?.ConnectionDetails?.[0]?.authorizedRepresentativeMobileNumber ||
+            wsDataDetails?.authorizedRepresentativeMobileNumber;
+
+          if (authRepName || authRepDesig || authRepMobile) {
+            if (authRepName) {
+              fields.push({
+                title: "Authorized Representative Name",
+                value: authRepName,
+              });
+            }
+            if (authRepDesig) {
+              fields.push({
+                title: "Authorized Representative Designation",
+                value: authRepDesig,
+              });
+            }
+            if (authRepMobile) {
+              fields.push({
+                title: "Authorized Representative Mobile Number",
+                value: authRepMobile,
+              });
+            }
+          }
 
           const rawAddressType =
             wsDataDetails?.additionalDetails?.addressType ||
@@ -1544,9 +1593,9 @@ export const WSSearch = {
       String(wsDataDetails?.additionalDetails?.isDivyangjan).toLowerCase() === "yes";
 
     const divyangjanLabel =
-      t("WS_DIVYANGJAN") && t("WS_DIVYANGJAN") !== "WS_DIVYANGJAN"
-        ? t("WS_DIVYANGJAN")
-        : "Divyangjan/Person with Disability?";
+      t("WS_DIVYANGJAN_INFORMATION") && t("WS_DIVYANGJAN_INFORMATION") !== "WS_DIVYANGJAN_INFORMATION"
+        ? t("WS_DIVYANGJAN_INFORMATION")
+        : "Divyangjan Information";
 
     const divyangjanDetails = {
       title: divyangjanLabel,
@@ -1565,40 +1614,51 @@ export const WSSearch = {
       String(wsDataDetails?.additionalDetails?.isDjbEmployee).toLowerCase() === "yes";
 
     const djbEmployeeLabel =
-      t("WS_DJB_EMPLOYEE") && t("WS_DJB_EMPLOYEE") !== "WS_DJB_EMPLOYEE"
-        ? t("WS_DJB_EMPLOYEE")
-        : "DJB Employee";
+      t("WS_DJB_EMPLOYEE_INFORMATION") && t("WS_DJB_EMPLOYEE_INFORMATION") !== "WS_DJB_EMPLOYEE_INFORMATION"
+        ? t("WS_DJB_EMPLOYEE_INFORMATION")
+        : "DJB Employee Information";
+
+    const djbEmployeeValues = isDjbEmp
+      ? [
+          {
+            title: djbEmployeeLabel,
+            value: t("CORE_COMMON_YES"),
+          },
+          {
+            title:
+              t("WS_EMPLOYEE_ID") && t("WS_EMPLOYEE_ID") !== "WS_EMPLOYEE_ID"
+                ? t("WS_EMPLOYEE_ID")
+                : "Employee ID",
+            value: wsDataDetails?.additionalDetails?.employeeId || t("NA"),
+          },
+          {
+            title:
+              t("WS_EMPLOYEE_DESIGNATION") && t("WS_EMPLOYEE_DESIGNATION") !== "WS_EMPLOYEE_DESIGNATION"
+                ? t("WS_EMPLOYEE_DESIGNATION")
+                : "Employee Designation",
+            value: wsDataDetails?.additionalDetails?.designation || t("NA"),
+          },
+        ]
+      : [
+          {
+            title: djbEmployeeLabel,
+            value: t("CORE_COMMON_NO"),
+          },
+        ];
+
+    if (isDjbEmp && employeeIdDoc?.fileStoreId) {
+      djbEmployeeValues.push({
+        title: "Upload Employee ID Document*",
+        value: "View",
+        fileStoreId: employeeIdDoc.fileStoreId,
+        isDocumentRow: true,
+      });
+    }
 
     const djbEmployeeDetails = {
       title: djbEmployeeLabel,
       asSectionHeader: true,
-      values: isDjbEmp
-        ? [
-            {
-              title: djbEmployeeLabel,
-              value: t("CORE_COMMON_YES"),
-            },
-            {
-              title:
-                t("WS_EMPLOYEE_ID") && t("WS_EMPLOYEE_ID") !== "WS_EMPLOYEE_ID"
-                  ? t("WS_EMPLOYEE_ID")
-                  : "Employee ID",
-              value: wsDataDetails?.additionalDetails?.employeeId || t("NA"),
-            },
-            {
-              title:
-                t("WS_EMPLOYEE_DESIGNATION") && t("WS_EMPLOYEE_DESIGNATION") !== "WS_EMPLOYEE_DESIGNATION"
-                  ? t("WS_EMPLOYEE_DESIGNATION")
-                  : "Employee Designation",
-              value: wsDataDetails?.additionalDetails?.designation || t("NA"),
-            },
-          ]
-        : [
-            {
-              title: djbEmployeeLabel,
-              value: t("CORE_COMMON_NO"),
-            },
-          ],
+      values: djbEmployeeValues,
     };
 
     const hasRwh =
@@ -1616,9 +1676,9 @@ export const WSSearch = {
       String(wsDataDetails?.rainWaterHarvesting?.hasCertificate).toLowerCase() === "yes";
 
     const rwhLabel =
-      t("WS_RAIN_WATER_HARVESTING_CERTIFICATE") && t("WS_RAIN_WATER_HARVESTING_CERTIFICATE") !== "WS_RAIN_WATER_HARVESTING_CERTIFICATE"
-        ? t("WS_RAIN_WATER_HARVESTING_CERTIFICATE")
-        : "Rain Water Harvesting Certificate";
+      t("WS_RAIN_WATER_HARVESTING_INFORMATION") && t("WS_RAIN_WATER_HARVESTING_INFORMATION") !== "WS_RAIN_WATER_HARVESTING_INFORMATION"
+        ? t("WS_RAIN_WATER_HARVESTING_INFORMATION")
+        : "Rain Water Harvesting Information";
 
     const hasRwhAdequacy =
       wsDataDetails?.additionalDetails?.hasRainWaterHarvestingAdequacyCertificate === true ||
@@ -1652,6 +1712,36 @@ export const WSSearch = {
           title: "Validity up to date",
           value: rwhValidityDate,
         });
+      }
+      const rwhDoc = allDocs.find((d) => {
+        const dt = (d?.documentType || "").toUpperCase();
+        return dt.includes("RAIN") || dt.includes("HARVEST");
+      });
+      if (rwhDoc) {
+        const cleanNum = getCleanDocNumber([
+          rwhDoc?.documentUid,
+          rwhDoc?.documentNumber,
+          wsDataDetails?.additionalDetails?.rainWaterHarvestingDocumentNumber,
+        ], rwhDoc);
+        const subType = rwhDoc?.documentType
+          ? rwhDoc.documentType.split(".").pop().replace(/_/g, " ").toUpperCase()
+          : "RAIN WATER HARVESTING CERTIFICATE";
+        rwhValues.push({
+          title: "Rain Water Harvesting Certificate*",
+          value: subType || "RAIN WATER HARVESTING CERTIFICATE",
+        });
+        rwhValues.push({
+          title: "Document Number",
+          value: cleanNum !== "NA" ? maskDocNumber(cleanNum) : maskDocNumber(wsDataDetails?.additionalDetails?.rainWaterHarvestingDocumentNumber || "NA"),
+        });
+        if (rwhDoc?.fileStoreId) {
+          rwhValues.push({
+            title: "Upload Document*",
+            value: "View",
+            fileStoreId: rwhDoc.fileStoreId,
+            isDocumentRow: true,
+          });
+        }
       }
     }
 
@@ -1700,10 +1790,44 @@ export const WSSearch = {
           value: stpValidityDate,
         });
       }
+      const stpDoc = allDocs.find((d) => {
+        const dt = (d?.documentType || "").toUpperCase();
+        return dt.includes("SEWER") || dt.includes("STP");
+      });
+      if (stpDoc) {
+        const cleanNum = getCleanDocNumber([
+          stpDoc?.documentUid,
+          stpDoc?.documentNumber,
+          wsDataDetails?.additionalDetails?.sewerTreatmentPlantDocumentNumber,
+          wsDataDetails?.additionalDetails?.otherDocumentNumber,
+        ], stpDoc);
+        const subType = stpDoc?.documentType
+          ? stpDoc.documentType.split(".").pop().replace(/_/g, " ").toUpperCase()
+          : "SEWER TREATMENT PLANT";
+        stpValues.push({
+          title: "Sewer Treatment Plant (STP) Certificate*",
+          value: subType || "SEWER TREATMENT PLANT",
+        });
+        stpValues.push({
+          title: "Document Number",
+          value: cleanNum !== "NA" ? maskDocNumber(cleanNum) : maskDocNumber(wsDataDetails?.additionalDetails?.sewerTreatmentPlantDocumentNumber || "NA"),
+        });
+        if (stpDoc?.fileStoreId) {
+          stpValues.push({
+            title: "Upload Document*",
+            value: "View",
+            fileStoreId: stpDoc.fileStoreId,
+            isDocumentRow: true,
+          });
+        }
+      }
     }
 
     const sewerTreatmentPlantDetails = {
-      title: "Sewer Treatment Plant (STP)",
+      title:
+        t("WS_SEWER_TREATMENT_PLANT_INFORMATION") && t("WS_SEWER_TREATMENT_PLANT_INFORMATION") !== "WS_SEWER_TREATMENT_PLANT_INFORMATION"
+          ? t("WS_SEWER_TREATMENT_PLANT_INFORMATION")
+          : "Sewer Treatment Plant (STP) Information",
       asSectionHeader: true,
       values: stpValues,
     };
@@ -1769,12 +1893,12 @@ export const WSSearch = {
       const isSelfPlumber = !isULBPlumber;
 
       const meterPhotoDoc =
-        (wsDataDetails?.documents || []).find((d) => d?.documentType === "METER_PHOTO") ||
+        (wsDataDetails?.documents || []).find((d) => d?.documentType === "METER_PHOTO" || d?.documentType?.includes("METER_PHOTO")) ||
         (wsDataDetails?.additionalDetails?.meterPhotoFileStoreId ? { fileStoreId: wsDataDetails?.additionalDetails?.meterPhotoFileStoreId, documentType: "METER_PHOTO" } : null) ||
         (wsDataDetails?.additionalDetails?.meterPhoto?.fileStoreId ? { fileStoreId: wsDataDetails?.additionalDetails?.meterPhoto?.fileStoreId, documentType: "METER_PHOTO" } : null);
 
       const meterWarrantyDoc =
-        (wsDataDetails?.documents || []).find((d) => d?.documentType === "METER_WARRANTY_CARD_TESTING_REPORT_INVOICE") ||
+        (wsDataDetails?.documents || []).find((d) => d?.documentType === "METER_WARRANTY_CARD_TESTING_REPORT_INVOICE" || d?.documentType?.includes("METER_WARRANTY") || d?.documentType?.includes("WARRANTY") || d?.documentType?.includes("TESTING_REPORT") || d?.documentType?.includes("INVOICE")) ||
         (wsDataDetails?.additionalDetails?.meterWarrantyFileStoreId ? { fileStoreId: wsDataDetails?.additionalDetails?.meterWarrantyFileStoreId, documentType: "METER_WARRANTY_CARD_TESTING_REPORT_INVOICE" } : null) ||
         (wsDataDetails?.additionalDetails?.meterWarranty?.fileStoreId ? { fileStoreId: wsDataDetails?.additionalDetails?.meterWarranty?.fileStoreId, documentType: "METER_WARRANTY_CARD_TESTING_REPORT_INVOICE" } : null);
 
@@ -1910,21 +2034,26 @@ export const WSSearch = {
         });
       }
 
+      // // Show meter photo and warranty as document rows in Activation Details
       if (meterPhotoDoc?.fileStoreId) {
         activationValues.push({
-          title: "WS_METER_PHOTO_UPLOAD_LABEL",
-          value: t("CS_COMMON_VIEW") || "View",
-          isLink: true,
-          to: `/digit-ui/employee/common/view-pdf?tenantId=${tenantId}&fileStoreId=${meterPhotoDoc.fileStoreId}`,
+          title: "Upload Meter Photo",
+          categoryLabel: "Meter Photo",
+          documentType: meterPhotoDoc.documentType || "METER_PHOTO",
+          isDocumentRow: true,
+          fileStoreId: meterPhotoDoc.fileStoreId,
+          isPhoto: true,
         });
       }
 
       if (meterWarrantyDoc?.fileStoreId) {
         activationValues.push({
-          title: "WS_METER_WARRANTY_REPORT_INVOICE_LABEL",
-          value: t("CS_COMMON_VIEW") || "View",
-          isLink: true,
-          to: `/digit-ui/employee/common/view-pdf?tenantId=${tenantId}&fileStoreId=${meterWarrantyDoc.fileStoreId}`,
+          title: "Meter Warranty Card, Testing Report, Invoice",
+          categoryLabel: "Meter Warranty Card, Testing Report, Invoice",
+          documentType: meterWarrantyDoc.documentType || "METER_WARRANTY_CARD_TESTING_REPORT_INVOICE",
+          isDocumentRow: true,
+          fileStoreId: meterWarrantyDoc.fileStoreId,
+          isPhoto: false,
         });
       }
 
@@ -1953,12 +2082,67 @@ export const WSSearch = {
       documentDetails,
     ];
 
-    if (
-      wsDataDetails?.applicationStatus === "PENDING_FOR_FIELD_INSPECTION" ||
-      wsDataDetails?.applicationStatus === "PENDING_FOR_CITIZEN_ACTION" ||
+    const isNewConnSearch =
+      wsDataDetails?.applicationType?.includes("NEW_") ||
+      wsDataDetails?.applicationType === "NEW_WATER_CONNECTION" ||
+      wsDataDetails?.applicationNo?.includes("WS_AP") ||
+      wsDataDetails?.applicationNo?.includes("SW_AP") ||
+      (typeof window !== "undefined" && window.location.href.includes("WS_AP"));
+
+    const isDAStatusSearch =
       wsDataDetails?.applicationStatus === "PENDING_FOR_DEALING_ASSISTENCE_VERIFICATION" ||
       wsDataDetails?.applicationStatus === "PENDING_FOR_DEALING_ASSISTANT_VERIFICATION" ||
-      wsDataDetails?.applicationStatus === "PENDING_FOR_JE_VERIFICATION"
+      wsDataDetails?.applicationStatus === "PENDING_FOR_DA_VERIFICATION";
+
+    const isZROStatusSearch =
+      wsDataDetails?.applicationStatus === "PENDING_FOR_ZRO_APPROVAL";
+
+    const hasDAVerifiedSearch = (() => {
+      const processInstances = [
+        ...(workFlowDataDetails?.ProcessInstances || []),
+        ...(workflowDetails?.ProcessInstances || []),
+      ];
+      const isDAStateName = (st) => {
+        if (!st || typeof st !== "string") return false;
+        const upper = st.trim().toUpperCase();
+        return (
+          upper.includes("DEALING_ASSIST") ||
+          upper.includes("DEALING_ASSISTENCE") ||
+          upper.includes("DEALING_ASSISTANT") ||
+          upper.includes("DA_VERIF")
+        );
+      };
+      if (processInstances.some((inst) => isDAStateName(inst?.state?.state || inst?.state?.applicationStatus || inst?.status))) {
+        return true;
+      }
+      const details = wsDataDetails?.additionalDetails || {};
+      if (
+        (wsDataDetails?.dueVerification && wsDataDetails.dueVerification.length > 0) ||
+        (details?.dueVerification && details.dueVerification.length > 0) ||
+        details?.hasDueVerification === true
+      ) {
+        return true;
+      }
+      return false;
+    })();
+
+    const isDueRemovedSearch =
+      wsDataDetails?.additionalDetails?.isDueVerificationRemoved === true ||
+      wsDataDetails?.additionalDetails?.hasDueVerification === false;
+
+    const hasDueRecordsSearch =
+      !isDueRemovedSearch &&
+      ((Array.isArray(wsDataDetails?.dueVerification) && wsDataDetails.dueVerification.length > 0) ||
+        (Array.isArray(wsDataDetails?.additionalDetails?.dueVerification) && wsDataDetails.additionalDetails.dueVerification.length > 0));
+
+    if (
+      (!isNewConnSearch &&
+        (wsDataDetails?.applicationStatus === "PENDING_FOR_FIELD_INSPECTION" ||
+          wsDataDetails?.applicationStatus === "PENDING_FOR_CITIZEN_ACTION" ||
+          wsDataDetails?.applicationStatus === "PENDING_FOR_DEALING_ASSISTENCE_VERIFICATION" ||
+          wsDataDetails?.applicationStatus === "PENDING_FOR_DEALING_ASSISTANT_VERIFICATION" ||
+          wsDataDetails?.applicationStatus === "PENDING_FOR_JE_VERIFICATION")) ||
+      (isNewConnSearch && (isDAStatusSearch || (isZROStatusSearch && hasDAVerifiedSearch && hasDueRecordsSearch)))
     ) {
       const dueVerificationDetails = {
         title: " ",

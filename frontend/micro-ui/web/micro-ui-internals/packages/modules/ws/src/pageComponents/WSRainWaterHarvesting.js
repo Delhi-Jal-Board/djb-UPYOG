@@ -110,7 +110,14 @@ const WSRainWaterHarvesting = ({ config, onSelect, userType, formData }) => {
   }, [configKey, formValue.hasCertificate, formValue.hasAdequacyCertificate, userType, formData?.[configKey]?.hasCertificate, formData?.[configKey]?.hasAdequacyCertificate]);
 
   const content = (
-    <CollapsibleCardPage title={t("Rain Water Harvesting Certificate")} defaultOpen={true}>
+    <CollapsibleCardPage
+      title={
+        t("WS_RAIN_WATER_HARVESTING_INFORMATION") && t("WS_RAIN_WATER_HARVESTING_INFORMATION") !== "WS_RAIN_WATER_HARVESTING_INFORMATION"
+          ? t("WS_RAIN_WATER_HARVESTING_INFORMATION")
+          : "Rain Water Harvesting Information"
+      }
+      defaultOpen={true}
+    >
       <div className="formcomposer-section-grid">
         <LabelFieldPair>
           <FieldLabelWithTooltip

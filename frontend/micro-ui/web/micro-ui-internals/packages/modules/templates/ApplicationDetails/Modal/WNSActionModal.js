@@ -252,16 +252,42 @@ const ActionModal = ({
         ...applicationData?.additionalDetails,
         ...(showApprovalChecklist
           ? {
-              waterPipelineFacility: approvalChecklist?.waterPipelineFacility === true,
-              waterPipelineFacilityRemarks: approvalChecklist?.waterPipelineFacilityRemarks || "",
-        infrastructureChargesApplicable: approvalChecklist?.infrastructureChargesApplicable === true,
-              infrastructureChargesApplicableRemarks: approvalChecklist?.infrastructureChargesApplicableRemarks || "",
-        rainWaterHarvesting: approvalChecklist?.rainWaterHarvesting === true,
-              rainWaterHarvestingRemarks: approvalChecklist?.rainWaterHarvestingRemarks || "",
-        bulkConnectionVerification: approvalChecklist?.bulkConnectionVerification === true,
+              waterPipelineFacility:
+                approvalChecklist?.waterPipelineFacility !== undefined
+                  ? approvalChecklist.waterPipelineFacility === true
+                  : applicationData?.additionalDetails?.waterPipelineFacility,
+              waterPipelineFacilityRemarks:
+                approvalChecklist?.waterPipelineFacilityRemarks !== undefined
+                  ? approvalChecklist.waterPipelineFacilityRemarks
+                  : applicationData?.additionalDetails?.waterPipelineFacilityRemarks || "",
+              infrastructureChargesApplicable:
+                approvalChecklist?.infrastructureChargesApplicable !== undefined
+                  ? approvalChecklist.infrastructureChargesApplicable === true
+                  : applicationData?.additionalDetails?.infrastructureChargesApplicable,
+              infrastructureChargesApplicableRemarks:
+                approvalChecklist?.infrastructureChargesApplicableRemarks !== undefined
+                  ? approvalChecklist.infrastructureChargesApplicableRemarks
+                  : applicationData?.additionalDetails?.infrastructureChargesApplicableRemarks || "",
+              rainWaterHarvesting:
+                approvalChecklist?.rainWaterHarvesting !== undefined
+                  ? approvalChecklist.rainWaterHarvesting === true
+                  : applicationData?.additionalDetails?.rainWaterHarvesting !== undefined
+                  ? applicationData?.additionalDetails?.rainWaterHarvesting
+                  : undefined,
+              rainWaterHarvestingRemarks:
+                approvalChecklist?.rainWaterHarvestingRemarks !== undefined
+                  ? approvalChecklist.rainWaterHarvestingRemarks
+                  : applicationData?.additionalDetails?.rainWaterHarvestingRemarks || "",
+              bulkConnectionVerification:
+                approvalChecklist?.bulkConnectionVerification !== undefined
+                  ? approvalChecklist.bulkConnectionVerification === true
+                  : applicationData?.additionalDetails?.bulkConnectionVerification,
+              bulkConnectionVerificationRemarks:
+                approvalChecklist?.bulkConnectionVerificationRemarks !== undefined
+                  ? approvalChecklist.bulkConnectionVerificationRemarks
+                  : applicationData?.additionalDetails?.bulkConnectionVerificationRemarks || "",
             }
           : {}),
-        bulkConnectionVerificationRemarks: approvalChecklist?.bulkConnectionVerificationRemarks || "",
         CompletelySatisfied: resolvedCompletelySatisfied,
         ...remarksPayload,
       };
@@ -305,6 +331,15 @@ const ActionModal = ({
     } else {
       if (!applicationData?.additionalDetails) {
         applicationData.additionalDetails = {};
+      }
+      const currentDues = window.dueVerificationData !== undefined ? window.dueVerificationData : applicationData?.dueVerification;
+      if (currentDues !== undefined) {
+        applicationData.dueVerification = currentDues;
+        applicationData.additionalDetails.dueVerification = currentDues;
+        applicationData.additionalDetails.hasDueVerification =
+          Array.isArray(currentDues) && currentDues.length > 0;
+        applicationData.additionalDetails.isDueVerificationRemoved =
+          Array.isArray(currentDues) && currentDues.length === 0;
       }
       const adhocRebateData = sessionStorage.getItem("Digit.ADHOC_ADD_REBATE_DATA");
       const parsedAdhocRebateData = adhocRebateData ? JSON.parse(adhocRebateData) : "";

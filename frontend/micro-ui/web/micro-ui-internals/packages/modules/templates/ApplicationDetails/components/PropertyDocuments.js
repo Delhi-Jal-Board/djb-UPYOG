@@ -1,8 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { CardSubHeader, PDFSvg, StatusTable, Row, ViewsIcon, Modal } from "@djb25/digit-ui-react-components";
+import { hasDAVerifiedInWorkflow, checkCameFromCitizenAction } from "./WSApprovalChecklist";
 
-function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false, applicationStatus }) {
+function PropertyDocuments({
+  documents,
+  svgStyles = {},
+  isSendBackFlow = false,
+  applicationStatus,
+  applicationData,
+  businessService,
+  workflowDetails,
+  docCheckedMap,
+  onDocCheck,
+  parentHandlesVerification = false,
+}) {
   const { t } = useTranslation();
   const [filesArray, setFilesArray] = useState(() => []);
   const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -10,19 +22,74 @@ function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false, 
   const [modalFile, setModalFile] = useState(null);
   const [checkedMap, setCheckedMap] = useState({});
 
+  const isNewConn =
+    applicationData?.applicationType?.includes("NEW_") ||
+    applicationData?.applicationType === "NEW_WATER_CONNECTION" ||
+    businessService?.toUpperCase() === "NEWWS1" ||
+    applicationData?.businessService?.toUpperCase() === "NEWWS1" ||
+    applicationData?.applicationNo?.includes("WS_AP") ||
+    applicationData?.applicationNo?.includes("SW_AP") ||
+    (typeof window !== "undefined" && window.location.href.includes("WS_AP"));
+
+  const isDAState =
+    applicationStatus === "PENDING_FOR_DEALING_ASSISTENCE_VERIFICATION" ||
+    applicationStatus === "WF_PENDING_FOR_DEALING_ASSISTENCE_VERIFICATION" ||
+    applicationStatus === "PENDING_FOR_DEALING_ASSISTANT_VERIFICATION" ||
+    applicationStatus === "WF_PENDING_FOR_DEALING_ASSISTANT_VERIFICATION" ||
+    applicationStatus === "PENDING_FOR_DA_VERIFICATION" ||
+    applicationStatus === "WF_PENDING_FOR_DA_VERIFICATION" ||
+    String(applicationStatus).toUpperCase().includes("DEALING_ASSIST") ||
+    workflowDetails?.data?.actionState?.state === "PENDING_FOR_DEALING_ASSISTENCE_VERIFICATION" ||
+    workflowDetails?.data?.actionState?.state === "WF_PENDING_FOR_DEALING_ASSISTENCE_VERIFICATION" ||
+    workflowDetails?.data?.actionState?.state === "PENDING_FOR_DEALING_ASSISTANT_VERIFICATION" ||
+    workflowDetails?.data?.actionState?.state === "WF_PENDING_FOR_DEALING_ASSISTANT_VERIFICATION" ||
+    workflowDetails?.data?.actionState?.state === "PENDING_FOR_DA_VERIFICATION" ||
+    workflowDetails?.data?.actionState?.state === "WF_PENDING_FOR_DA_VERIFICATION" ||
+    String(workflowDetails?.data?.actionState?.state).toUpperCase().includes("DEALING_ASSIST");
+
+  const isZROState =
+    applicationStatus === "PENDING_FOR_ZRO_APPROVAL" ||
+    applicationStatus === "WF_PENDING_FOR_ZRO_APPROVAL" ||
+    workflowDetails?.data?.actionState?.state === "PENDING_FOR_ZRO_APPROVAL" ||
+    workflowDetails?.data?.actionState?.state === "WF_PENDING_FOR_ZRO_APPROVAL" ||
+    String(applicationStatus).toUpperCase().includes("ZRO_APPROVAL") ||
+    String(workflowDetails?.data?.actionState?.state).toUpperCase().includes("ZRO_APPROVAL");
+
+  const hasDAVerified = hasDAVerifiedInWorkflow(applicationData, workflowDetails);
+  const cameFromCitizenAction = checkCameFromCitizenAction(applicationData, workflowDetails);
+
+  const defaultChecked =
+    applicationStatus === "PENDING_FOR_CONNECTION_ACTIVATION" ||
+    (!cameFromCitizenAction && isZROState && hasDAVerified);
+
+  const isCheckboxDisabled =
+    (!cameFromCitizenAction && isZROState && hasDAVerified) ||
+    window.location.href.includes("citizen");
+
   useEffect(() => {
+    if (parentHandlesVerification) return;
     let requiredDocsCount = 0;
     let checkedCount = 0;
 
     documents?.forEach(document => {
       document?.values?.forEach(value => {
-        if (!value.isPhoto) {
+        const isMeter =
+          value.title === "WS_METER_PHOTO_UPLOAD_LABEL" ||
+          value?.documentType?.includes("METER_PHOTO") ||
+          value.title === "WS_METER_WARRANTY_REPORT_INVOICE_LABEL" ||
+          value?.documentType?.includes("METER_WARRANTY") ||
+          value?.documentType?.includes("METER");
+        const isSectionDoc =
+          value.title === "WS_DJB_EMPLOYEE_ID" ||
+          value?.documentType?.includes("DJB_EMPLOYEE") ||
+          value?.documentType?.includes("EMPLOYEE_ID") ||
+          value?.documentType?.includes("SEWER") ||
+          value?.documentType?.includes("STP") ||
+          value?.documentType?.includes("RAIN") ||
+          value?.documentType?.includes("HARVEST");
+        if (!value.isPhoto && !isMeter && !isSectionDoc) {
           requiredDocsCount++;
-          const defaultChecked =
-            applicationStatus === "PENDING_FOR_CONNECTION_ACTIVATION" ||
-            applicationStatus === "PENDING_FOR_DEALING_ASSISTENCE_VERIFICATION" ||
-            applicationStatus === "PENDING_FOR_DEALING_ASSISTANT_VERIFICATION";
-          const isChecked = checkedMap[value?.fileStoreId] ?? value?.isVerified ?? value?.originalDoc?.isVerified ?? defaultChecked;
+          const isChecked = (docCheckedMap ? docCheckedMap[value?.fileStoreId] : checkedMap[value?.fileStoreId]) ?? value?.isVerified ?? value?.originalDoc?.isVerified ?? defaultChecked;
           if (isChecked) {
             checkedCount++;
           }
@@ -32,18 +99,20 @@ function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false, 
 
     const allChecked = requiredDocsCount === 0 || checkedCount === requiredDocsCount;
     const isDocVerifState = 
-      !applicationStatus || 
-      applicationStatus === "PENDING_FOR_DOCUMENT_VERIFICATION" || 
-      applicationStatus === "PENDING_APPROVAL_FOR_MUTATION" ||
-      applicationStatus === "PENDING_FOR_ZRO_APPROVAL" ||
-      applicationStatus === "PENDING_FOR_CITIZEN_ACTION" ||
-      applicationStatus === "PENDING_FOR_DEALING_ASSISTENCE_VERIFICATION" ||
-      applicationStatus === "PENDING_FOR_DEALING_ASSISTANT_VERIFICATION";
+      isNewConn
+        ? isDAState || (isZROState && hasDAVerified) || (isZROState && cameFromCitizenAction)
+        : (!applicationStatus || 
+           applicationStatus === "PENDING_FOR_DOCUMENT_VERIFICATION" || 
+           applicationStatus === "PENDING_APPROVAL_FOR_MUTATION" ||
+           applicationStatus === "PENDING_FOR_ZRO_APPROVAL" ||
+           applicationStatus === "PENDING_FOR_CITIZEN_ACTION" ||
+           applicationStatus === "PENDING_FOR_DEALING_ASSISTENCE_VERIFICATION" ||
+           applicationStatus === "PENDING_FOR_DEALING_ASSISTANT_VERIFICATION");
     const finalVerified = isDocVerifState ? allChecked : true;
 
     window.isDocumentsVerified = finalVerified;
     window.dispatchEvent(new CustomEvent("DOCUMENTS_VERIFIED", { detail: finalVerified }));
-  }, [checkedMap, documents, applicationStatus]);
+  }, [checkedMap, docCheckedMap, documents, applicationStatus, isNewConn, isDAState, isZROState, hasDAVerified, parentHandlesVerification]);
 
   useEffect(() => {
     let acc = [];
@@ -69,16 +138,20 @@ function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false, 
     window.location.href.includes("employee/tl") || window.location.href.includes("/obps") || window.location.href.includes("employee/ws");
   const isWSLocation = window.location.href.includes("/ws/") || window.location.href.includes("employee/ws") || window.location.href.includes("citizen/ws");
   const isStakeholderApplication = window.location.href.includes("stakeholder");
-  const canVerifyDocuments = [
-    "PENDING_FOR_DOCUMENT_VERIFICATION",
-    "PENDING_APPROVAL_FOR_MUTATION",
-    "PENDING_FOR_ZRO_APPROVAL",
-    "PENDING_FOR_CONNECTION_ACTIVATION",
-    "PENDING_FOR_CITIZEN_ACTION",
-    "PENDING_FOR_DEALING_ASSISTENCE_VERIFICATION",
-    "PENDING_FOR_DEALING_ASSISTANT_VERIFICATION",
-    "PENDING_FOR_JE_VERIFICATION",
-  ].includes(applicationStatus);
+
+  const canVerifyDocuments = !window.location.href.includes("citizen") && (
+    isNewConn
+      ? isDAState || (isZROState && hasDAVerified) || applicationStatus === "PENDING_FOR_CONNECTION_ACTIVATION" || String(applicationStatus).includes("CONNECTION_ACTIVATION")
+      : [
+          "PENDING_FOR_DOCUMENT_VERIFICATION",
+          "PENDING_APPROVAL_FOR_MUTATION",
+          "PENDING_FOR_ZRO_APPROVAL",
+          "PENDING_FOR_CONNECTION_ACTIVATION",
+          "PENDING_FOR_CITIZEN_ACTION",
+          "PENDING_FOR_DEALING_ASSISTENCE_VERIFICATION",
+          "PENDING_FOR_DEALING_ASSISTANT_VERIFICATION",
+        ].includes(applicationStatus)
+  );
 
   const getDocSubType = (documentType) => {
     if (!documentType) return "";
@@ -194,11 +267,20 @@ function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false, 
     return t("NA");
   };
 
+  const maskDocNumber = (val) => {
+    if (!val || val === "NA" || val === t("NA")) return val || "";
+    const str = String(val).trim();
+    if (!str || str === "NA" || str === t("NA")) return str;
+    if (str.length <= 4) return str;
+    return "*".repeat(str.length - 4) + str.slice(-4);
+  };
+
   /** Render a single document row in the structured format */
   const renderDocumentRow = (value, index) => {
     const fileUrl = pdfFiles[value.fileStoreId]?.split(",")[0];
     const docSubType = getDocSubType(value?.documentType);
     const docUid = getDocNumber(value);
+    const maskedDocUid = maskDocNumber(docUid);
     const isPhoto = value?.isPhoto;
 
     let typeLabel = "";
@@ -219,12 +301,7 @@ function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false, 
       uploadLabel = "Upload Employee ID Document*";
     } else if (value.title === "WS_OTHER_DOCUMENTS") {
       typeLabel = "Other Documents*";
-      const isOtherDocRemark =
-        value?.documentType?.includes("OTHER_DOCUMENTS") ||
-        value?.documentType?.includes("OTHERDOCUMENTS") ||
-        String(docSubType).toUpperCase().includes("OTHER_DOCUMENTS") ||
-        String(docSubType).toUpperCase().includes("OTHER DOCUMENT");
-      numLabel = isOtherDocRemark ? "Other Document Remark" : (value.numberLabel || "Other Document Number");
+      numLabel = ""; // User requested: remove the Other Document Number
       uploadLabel = "Upload Other Documents*";
     } else if (value.title === "WS_APPLICANT_PHOTO") {
       uploadLabel = "Upload Applicant Photo*";
@@ -248,7 +325,7 @@ function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false, 
           {!isPhoto && value.title !== "WS_APPLICANT_SIGNATURE" && value.title !== "WS_DJB_EMPLOYEE_ID" && !value?.documentType?.includes("DJB_EMPLOYEE") && !value?.documentType?.includes("EMPLOYEE_ID") && (
             <React.Fragment>
               {typeLabel ? <Row label={typeLabel} text={docSubType || t("NA")} /> : null}
-              {numLabel ? <Row label={numLabel} text={docUid || t("NA")} /> : null}
+              {numLabel ? <Row label={numLabel} text={maskedDocUid || t("NA")} /> : null}
             </React.Fragment>
           )}
           <Row
@@ -278,7 +355,13 @@ function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false, 
                     <ViewsIcon />
                   </div>
                 )}
-                {!isPhoto && (() => {
+                {(() => {
+                  const isMeterDoc =
+                    value.title === "WS_METER_PHOTO_UPLOAD_LABEL" ||
+                    value?.documentType?.includes("METER_PHOTO") ||
+                    value.title === "WS_METER_WARRANTY_REPORT_INVOICE_LABEL" ||
+                    value?.documentType?.includes("METER_WARRANTY") ||
+                    value?.documentType?.includes("METER");
                   const isChecked = checkedMap[value?.fileStoreId] ?? value?.isVerified ?? value?.originalDoc?.isVerified ?? false;
                   return (
                     <React.Fragment>
@@ -300,17 +383,25 @@ function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false, 
                       {canVerifyDocuments && (
                         <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "14px", color: "#0B0C0C", margin: 0 }}>
                           <input
-                            key={`chk-${value?.fileStoreId}-${value?.isVerified ?? value?.originalDoc?.isVerified}`}
+                            key={`chk-${value?.fileStoreId}`}
                             type="checkbox"
                             className="verify-doc-checkbox"
-                            style={{ width: "18px", height: "18px", accentColor: "#1a67a3", cursor: (applicationStatus === "PENDING_FOR_CONNECTION_ACTIVATION" || window.location.href.includes("citizen")) ? "not-allowed" : "pointer" }}
-                            disabled={applicationStatus === "PENDING_FOR_CONNECTION_ACTIVATION" || window.location.href.includes("citizen")}
+                            style={{
+                              width: "18px",
+                              height: "18px",
+                              accentColor: "#1a67a3",
+                              cursor: isCheckboxDisabled ? "not-allowed" : "pointer"
+                            }}
+                            disabled={isCheckboxDisabled}
                             checked={
-                              (applicationStatus === "PENDING_FOR_CONNECTION_ACTIVATION" ||
-                               applicationStatus === "PENDING_FOR_DEALING_ASSISTENCE_VERIFICATION" ||
-                               applicationStatus === "PENDING_FOR_DEALING_ASSISTANT_VERIFICATION")
-                                ? (checkedMap[value?.fileStoreId] ?? value?.isVerified ?? value?.originalDoc?.isVerified ?? true)
-                                : (checkedMap[value?.fileStoreId] ?? value?.isVerified ?? value?.originalDoc?.isVerified ?? false)
+                              defaultChecked
+                                ? true
+                                : (docCheckedMap
+                                    ? docCheckedMap[value?.fileStoreId]
+                                    : checkedMap[value?.fileStoreId]) ??
+                                  value?.isVerified ??
+                                  value?.originalDoc?.isVerified ??
+                                  false
                             }
                             onChange={(e) => {
                               const checked = e.target.checked;
@@ -318,8 +409,10 @@ function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false, 
                               if (value?.originalDoc) {
                                 value.originalDoc.isVerified = checked;
                               }
-                              if (value?.fileStoreId) {
-                                setCheckedMap(prev => ({ ...prev, [value.fileStoreId]: checked }));
+                              if (onDocCheck && value?.fileStoreId) {
+                                onDocCheck(value.fileStoreId, checked);
+                              } else if (value?.fileStoreId) {
+                                setCheckedMap((prev) => ({ ...prev, [value.fileStoreId]: checked }));
                               }
                             }}
                           />
@@ -358,7 +451,19 @@ function PropertyDocuments({ documents, svgStyles = {}, isSendBackFlow = false, 
             {isWSLocation ? (
               <div style={{ marginTop: "8px" }}>
                 {document?.values && document?.values.length > 0
-                  ? document.values.map((value, idx) => renderDocumentRow(value, idx))
+                  ? document.values
+                      .filter((val) => {
+                        const dt = (val?.documentType || val?.title || "").toUpperCase();
+                        return (
+                          !dt.includes("DJB_EMPLOYEE") &&
+                          !dt.includes("EMPLOYEE_ID") &&
+                          !dt.includes("SEWER") &&
+                          !dt.includes("STP") &&
+                          !dt.includes("RAIN") &&
+                          !dt.includes("HARVEST")
+                        );
+                      })
+                      .map((value, idx) => renderDocumentRow(value, idx))
                   : !window.location.href.includes("citizen") && (
                     <div>
                       <p>{t("BPA_NO_DOCUMENTS_UPLOADED_LABEL")}</p>

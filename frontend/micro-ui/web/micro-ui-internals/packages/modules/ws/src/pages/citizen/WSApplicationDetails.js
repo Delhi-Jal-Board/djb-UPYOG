@@ -35,6 +35,14 @@ const checkForNA = (value) => {
   return value ? value : "CS_NA";
 };
 
+const maskDocNumber = (val) => {
+  if (!val || val === "NA") return val || "";
+  const str = String(val).trim();
+  if (!str || str === "NA") return str;
+  if (str.length <= 4) return str;
+  return "*".repeat(str.length - 4) + str.slice(-4);
+};
+
 const WSApplicationDetails = () => {
   const { t } = useTranslation();
   const history = useHistory();
@@ -857,6 +865,29 @@ const WSApplicationDetails = () => {
                     )
                   )}`}
                 />
+                {(() => {
+                  const authRepName =
+                    applicationData?.additionalDetails?.authorizedRepresentativeName ||
+                    connectionDetails?.authorizedRepresentativeName;
+                  const authRepDesig =
+                    applicationData?.additionalDetails?.authorizedRepresentativeDesignation ||
+                    connectionDetails?.authorizedRepresentativeDesignation;
+                  const authRepMobile =
+                    applicationData?.additionalDetails?.authorizedRepresentativeMobileNumber ||
+                    applicationData?.additionalDetails?.authorizedMobileNumber ||
+                    connectionDetails?.authorizedRepresentativeMobileNumber;
+
+                  if (authRepName || authRepDesig || authRepMobile) {
+                    return (
+                      <React.Fragment>
+                        {authRepName && <Row label={t("Authorized Representative Name")} text={authRepName} />}
+                        {authRepDesig && <Row label={t("Authorized Representative Designation")} text={authRepDesig} />}
+                        {authRepMobile && <Row label={t("Authorized Representative Mobile Number")} text={authRepMobile} />}
+                      </React.Fragment>
+                    );
+                  }
+                  return null;
+                })()}
                 <Row
                   label={t("WS_Billing_Address_Type")}
                   text={`${t(
@@ -907,7 +938,7 @@ const WSApplicationDetails = () => {
                   return null;
                 })()}
                 <Row
-                  label={t("WS_DIVYANGJAN") && t("WS_DIVYANGJAN") !== "WS_DIVYANGJAN" ? t("WS_DIVYANGJAN") : "Divyangjan/Person with Disability?"}
+                  label={t("WS_DIVYANGJAN_INFORMATION") && t("WS_DIVYANGJAN_INFORMATION") !== "WS_DIVYANGJAN_INFORMATION" ? t("WS_DIVYANGJAN_INFORMATION") : "Divyangjan Information"}
                   text={`${connectionDetails?.isDivyangjan ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}`}
                 />
                 {connectionDetails?.domesticType?.code === "ORGANIZATION" && (
@@ -1269,7 +1300,6 @@ const WSApplicationDetails = () => {
                 />
                 <Row label={t("COMMON_COLONY_MCD_CATEGORY")} text={`${t(checkForNA(propertyAddress?.colonyMcdCategory))}`} />
                 <Row label={t("STREET_NAME")} text={`${t(checkForNA(propertyAddress?.streetName || propertyAddress?.street))}`} />
-                <Row label={t("ADDRESS_LINE1")} text={`${t(checkForNA(propertyAddress?.addressLine1 || propertyAddress?.street))}`} />
                 <Row label={t("ADDRESS_LINE2")} text={`${t(checkForNA(propertyAddress?.addressLine2))}`} />
                 <Row label={t("HOUSE_NO")} text={`${t(checkForNA(propertyAddress?.houseNo || propertyAddress?.doorNo))}`} />
                 <Row
@@ -1602,9 +1632,20 @@ const WSApplicationDetails = () => {
                 })}
               </StatusTable>
 
-              <CardHeader styles={{ fontSize: "28px" }}>{t("WS_DJB_EMPLOYEE")}</CardHeader>
+              <CardHeader styles={{ fontSize: "28px" }}>
+                {t("WS_DJB_EMPLOYEE_INFORMATION") && t("WS_DJB_EMPLOYEE_INFORMATION") !== "WS_DJB_EMPLOYEE_INFORMATION"
+                  ? t("WS_DJB_EMPLOYEE_INFORMATION")
+                  : "DJB Employee Information"}
+              </CardHeader>
               <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
-                <Row label={t("WS_DJB_EMPLOYEE")} text={`${djbEmployee?.isDjbEmployee ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}`} />
+                <Row
+                  label={
+                    t("WS_DJB_EMPLOYEE_INFORMATION") && t("WS_DJB_EMPLOYEE_INFORMATION") !== "WS_DJB_EMPLOYEE_INFORMATION"
+                      ? t("WS_DJB_EMPLOYEE_INFORMATION")
+                      : "DJB Employee Information"
+                  }
+                  text={`${djbEmployee?.isDjbEmployee ? t("CORE_COMMON_YES") : t("CORE_COMMON_NO")}`}
+                />
                 {djbEmployee?.isDjbEmployee && (
                   <React.Fragment>
                     <Row label={t("WS_EMPLOYEE_ID")} text={`${t(checkForNA(djbEmployee?.employeeId))}`} />
@@ -1627,16 +1668,16 @@ const WSApplicationDetails = () => {
               </StatusTable>
 
               <CardHeader styles={{ fontSize: "28px" }}>
-                {t("WS_RAIN_WATER_HARVESTING_CERTIFICATE") && t("WS_RAIN_WATER_HARVESTING_CERTIFICATE") !== "WS_RAIN_WATER_HARVESTING_CERTIFICATE"
-                  ? t("WS_RAIN_WATER_HARVESTING_CERTIFICATE")
-                  : "Rain Water Harvesting Certificate"}
+                {t("WS_RAIN_WATER_HARVESTING_INFORMATION") && t("WS_RAIN_WATER_HARVESTING_INFORMATION") !== "WS_RAIN_WATER_HARVESTING_INFORMATION"
+                  ? t("WS_RAIN_WATER_HARVESTING_INFORMATION")
+                  : "Rain Water Harvesting Information"}
               </CardHeader>
               <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
                 <Row
                   label={
-                    t("WS_RAIN_WATER_HARVESTING_CERTIFICATE") && t("WS_RAIN_WATER_HARVESTING_CERTIFICATE") !== "WS_RAIN_WATER_HARVESTING_CERTIFICATE"
-                      ? t("WS_RAIN_WATER_HARVESTING_CERTIFICATE")
-                      : "Rain Water Harvesting Certificate"
+                    t("WS_RAIN_WATER_HARVESTING_INFORMATION") && t("WS_RAIN_WATER_HARVESTING_INFORMATION") !== "WS_RAIN_WATER_HARVESTING_INFORMATION"
+                      ? t("WS_RAIN_WATER_HARVESTING_INFORMATION")
+                      : "Rain Water Harvesting Information"
                   }
                   text={`${
                     connectionDetails?.hasRainWaterHarvestingCertificate || connectionDetails?.isRainwaterHarvesting
@@ -1675,19 +1716,50 @@ const WSApplicationDetails = () => {
                       }
                     />
                   )}
+                {(() => {
+                  const allDocs = [...(data?.WaterConnection?.[0]?.documents || []), ...(data?.SewerageConnections?.[0]?.documents || [])];
+                  const rwhDoc = allDocs.find((doc) => {
+                    const dt = (doc?.documentType || "").toUpperCase();
+                    return dt.includes("RAIN") || dt.includes("HARVEST");
+                  });
+                  if (!rwhDoc) return null;
+                  const docSubType = rwhDoc?.documentType
+                    ? rwhDoc.documentType.split(".").pop().replace(/_/g, " ").toUpperCase()
+                    : "RAIN WATER HARVESTING CERTIFICATE";
+                  const docUid = rwhDoc?.documentUid || rwhDoc?.documentNumber || connectionDetails?.rainWaterHarvestingDocumentNumber || "NA";
+                  return (
+                    <React.Fragment>
+                      <Row label={t("Rain Water Harvesting Certificate*")} text={docSubType} />
+                      <Row label={t("Document Number")} text={maskDocNumber(docUid)} />
+                      {rwhDoc?.fileStoreId && (
+                        <Row
+                          label={t("Upload Document*")}
+                          text={
+                            <span
+                              style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", color: "#f47738" }}
+                              onClick={() => handleViewEmployeeDoc(rwhDoc.fileStoreId)}
+                            >
+                              <GenericFileIcon /> {t("CS_COMMON_VIEW")}
+                            </span>
+                          }
+                        />
+                      )}
+                    </React.Fragment>
+                  );
+                })()}
               </StatusTable>
 
               <CardHeader styles={{ fontSize: "28px" }}>
-                {t("WS_SEWER_TREATMENT_PLANT") && t("WS_SEWER_TREATMENT_PLANT") !== "WS_SEWER_TREATMENT_PLANT"
-                  ? t("WS_SEWER_TREATMENT_PLANT")
-                  : "Sewer Treatment Plant (STP)"}
+                {t("WS_SEWER_TREATMENT_PLANT_INFORMATION") && t("WS_SEWER_TREATMENT_PLANT_INFORMATION") !== "WS_SEWER_TREATMENT_PLANT_INFORMATION"
+                  ? t("WS_SEWER_TREATMENT_PLANT_INFORMATION")
+                  : "Sewer Treatment Plant (STP) Information"}
               </CardHeader>
               <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
                 <Row
                   label={
-                    t("WS_SEWER_TREATMENT_PLANT") && t("WS_SEWER_TREATMENT_PLANT") !== "WS_SEWER_TREATMENT_PLANT"
-                      ? t("WS_SEWER_TREATMENT_PLANT")
-                      : "Sewer Treatment Plant (STP)"
+                    t("WS_SEWER_TREATMENT_PLANT_INFORMATION") && t("WS_SEWER_TREATMENT_PLANT_INFORMATION") !== "WS_SEWER_TREATMENT_PLANT_INFORMATION"
+                      ? t("WS_SEWER_TREATMENT_PLANT_INFORMATION")
+                      : "Sewer Treatment Plant (STP) Information"
                   }
                   text={`${
                     connectionDetails?.hasSewerTreatmentPlant ||
@@ -1730,6 +1802,37 @@ const WSApplicationDetails = () => {
                       }
                     />
                   )}
+                {(() => {
+                  const allDocs = [...(data?.WaterConnection?.[0]?.documents || []), ...(data?.SewerageConnections?.[0]?.documents || [])];
+                  const stpDoc = allDocs.find((doc) => {
+                    const dt = (doc?.documentType || "").toUpperCase();
+                    return dt.includes("SEWER") || dt.includes("STP");
+                  });
+                  if (!stpDoc) return null;
+                  const docSubType = stpDoc?.documentType
+                    ? stpDoc.documentType.split(".").pop().replace(/_/g, " ").toUpperCase()
+                    : "SEWER TREATMENT PLANT";
+                  const docUid = stpDoc?.documentUid || stpDoc?.documentNumber || connectionDetails?.sewerTreatmentPlantDocumentNumber || "NA";
+                  return (
+                    <React.Fragment>
+                      <Row label={t("Sewer Treatment Plant (STP) Certificate*")} text={docSubType} />
+                      <Row label={t("Document Number")} text={maskDocNumber(docUid)} />
+                      {stpDoc?.fileStoreId && (
+                        <Row
+                          label={t("Upload Document*")}
+                          text={
+                            <span
+                              style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", color: "#f47738" }}
+                              onClick={() => handleViewEmployeeDoc(stpDoc.fileStoreId)}
+                            >
+                              <GenericFileIcon /> {t("CS_COMMON_VIEW")}
+                            </span>
+                          }
+                        />
+                      )}
+                    </React.Fragment>
+                  );
+                })()}
               </StatusTable>
 
               {applicationData?.dueVerification?.length > 0 && (
@@ -2008,7 +2111,19 @@ const WSApplicationDetails = () => {
                   <CardHeader styles={{ fontSize: "28px" }}>{t("WS_COMMON_DOCUMENT_DETAILS")}</CardHeader>
                   {data?.WaterConnection?.[0]?.documents &&
                     getEnrichedDocuments(data?.WaterConnection?.[0]?.documents)
-                      .filter((doc) => doc?.documentType !== "METER_PHOTO" && doc?.documentType !== "METER_WARRANTY_CARD_TESTING_REPORT_INVOICE")
+                      .filter((doc) => {
+                        const dt = (doc?.documentType || "").toUpperCase();
+                        return (
+                          dt !== "METER_PHOTO" &&
+                          dt !== "METER_WARRANTY_CARD_TESTING_REPORT_INVOICE" &&
+                          !dt.includes("DJB_EMPLOYEE") &&
+                          !dt.includes("EMPLOYEE_ID") &&
+                          !dt.includes("SEWER") &&
+                          !dt.includes("STP") &&
+                          !dt.includes("RAIN") &&
+                          !dt.includes("HARVEST")
+                        );
+                      })
                       .reduce((acc, current) => {
                         const x = acc.find((item) => item.documentType === current.documentType);
                         if (!x) {
@@ -2037,7 +2152,19 @@ const WSApplicationDetails = () => {
                       ))}
                   {data?.SewerageConnections?.[0]?.documents &&
                     getEnrichedDocuments(data?.SewerageConnections?.[0]?.documents)
-                      .filter((doc) => doc?.documentType !== "METER_PHOTO" && doc?.documentType !== "METER_WARRANTY_CARD_TESTING_REPORT_INVOICE")
+                      .filter((doc) => {
+                        const dt = (doc?.documentType || "").toUpperCase();
+                        return (
+                          dt !== "METER_PHOTO" &&
+                          dt !== "METER_WARRANTY_CARD_TESTING_REPORT_INVOICE" &&
+                          !dt.includes("DJB_EMPLOYEE") &&
+                          !dt.includes("EMPLOYEE_ID") &&
+                          !dt.includes("SEWER") &&
+                          !dt.includes("STP") &&
+                          !dt.includes("RAIN") &&
+                          !dt.includes("HARVEST")
+                        );
+                      })
                       .reduce((acc, current) => {
                         const x = acc.find((item) => item.documentType === current.documentType);
                         if (!x) {

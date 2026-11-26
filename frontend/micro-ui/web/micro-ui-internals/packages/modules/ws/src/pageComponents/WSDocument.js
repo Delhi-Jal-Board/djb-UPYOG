@@ -110,6 +110,14 @@ const isInvalidDocNum = (val, doc) => {
   return false;
 };
 
+const maskDocNumber = (val) => {
+  if (!val || val === "NA") return val || "";
+  const str = String(val).trim();
+  if (!str || str === "NA") return str;
+  if (str.length <= 4) return str;
+  return "*".repeat(str.length - 4) + str.slice(-4);
+};
+
 const getDocNumber = (document, isPhotoOrSig, t) => {
   if (isPhotoOrSig) return "";
   const isStp = (document?.documentType || "").toUpperCase().includes("SEWER") || (document?.documentType || "").toUpperCase().includes("STP");
@@ -125,7 +133,7 @@ const getDocNumber = (document, isPhotoOrSig, t) => {
   ];
   for (const c of candidates) {
     if (c && !isInvalidDocNum(c, document)) {
-      return String(c).trim();
+      return maskDocNumber(String(c).trim());
     }
   }
   return t ? t("NA") : "NA";

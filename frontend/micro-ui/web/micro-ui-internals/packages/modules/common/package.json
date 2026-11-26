@@ -1,6 +1,6 @@
 {
   "name": "@djb25/digit-ui-module-common",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "license": "MIT",
   "description": "Digit Common Payment Module",
   "main": "dist/index.js",
@@ -11,7 +11,7 @@
   ],
   "scripts": {
     "start": "microbundle-crl watch --no-compress --format modern,cjs",
-    "build": "microbundle-crl --compress --no-sourcemap --format cjs",
+    "build": "microbundle-crl --no-compress --no-sourcemap --format modern,cjs",
     "prepublish": "yarn build"
   },
   "dependencies": {

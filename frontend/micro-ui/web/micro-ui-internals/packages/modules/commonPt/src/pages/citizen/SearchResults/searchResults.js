@@ -4,6 +4,7 @@ import PropTypes from "prop-types";
 import { useHistory, Link, useLocation, useRouteMatch } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
+import WaterConnectionDetailsModal from "../../../components/WaterConnectionDetailsModal";
 const TYPE_REGISTER = { type: "register" };
 const TYPE_LOGIN = { type: "login" };
 const DEFAULT_USER = "digit-user";
@@ -26,6 +27,8 @@ const PropertySearchResults = ({
   const { mobileNumber, propertyIds, oldPropertyIds, locality, city, tenantId: tId, doorNo, name, PToffset } = Digit.Hooks.useQueryParams();
   const filters = {};
   const [modalData, setShowModal] = useState(false);
+  const [showWaterModal, setShowWaterModal] = useState(false);
+  const [waterConnectionModalData, setWaterConnectionModalData] = useState(null);
 
   const PrivacyInfoLabel = Digit.ComponentRegistryService.getComponent("WSInfoLabel");
 
@@ -182,6 +185,7 @@ const PropertySearchResults = ({
       address: property?.address,
       owners: property.owners,
       propertyDetails: property,
+      waterConnectionDetails: property?.waterConnectionDetails || property?.additionalDetails?.waterConnectionDetails,
       privacy: {
         property_address: {
           uuid: property?.owners?.[0]?.uuid,
@@ -249,6 +253,31 @@ const PropertySearchResults = ({
     }
   };
 
+  const handleContinueWithNewApplication = (item) => {
+    const prop = item?.propertyDetails || item;
+    const waterDetails =
+      item?.waterConnectionDetails ||
+      prop?.waterConnectionDetails ||
+      prop?.additionalDetails?.waterConnectionDetails;
+
+    if (waterDetails && waterDetails.canApply === false) {
+      setWaterConnectionModalData(waterDetails);
+      setShowWaterModal(true);
+      return;
+    }
+
+    const propId = item?.property_id || prop?.propertyId || prop?.id;
+    const mobileNo = item?.owner_mobile || prop?.owners?.[0]?.mobileNumber;
+    const targetUrl = `/digit-ui/citizen/ws/info?hasProperty=YES&propertyId=${propId || ""}`;
+    history.push(targetUrl, {
+      property: prop,
+      propertyId: propId,
+      mobileNumber: mobileNo,
+      hasProperty: "YES",
+      fromPropertyCreate: true,
+    });
+  };
+
   const sendOtp = async (data) => {
     try {
       const res = await Digit.UserService.sendOtp(data, stateCode);
@@ -285,17 +314,7 @@ const PropertySearchResults = ({
                 Cell: ({ row }) => {
                   return (
                     <div>
-                      <span className="link">
-                        <Link 
-                          to={{
-                            pathname: `/digit-ui/citizen/commonpt/view-property`,
-                            search: `?propertyId=${row.original.property_id}&tenantId=${tenantId}`,
-                            state: { fromSearch: true }
-                          }}
-                        >
-                          {row.original.property_id}
-                        </Link>
-                      </span>
+                      <span>{row.original.property_id}</span>
                     </div>
                   );
                 },
@@ -314,7 +333,77 @@ const PropertySearchResults = ({
                 Header: t("zroLocation"),
                 disableSortBy: true,
                 accessor: "zroLocation",
-              }
+              },
+              {
+                Header: t("ACTION") && t("ACTION") !== "ACTION" ? t("ACTION") : "ACTION",
+                disableSortBy: true,
+                Cell: ({ row }) => {
+                  const viewLabel =
+                    t("CS_COMMON_VIEW") && t("CS_COMMON_VIEW") !== "CS_COMMON_VIEW"
+                      ? t("CS_COMMON_VIEW")
+                      : (t("VIEW") && t("VIEW") !== "VIEW" ? t("VIEW") : "View");
+                  const continueLabel =
+                    t("WS_CONTINUE_WITH_NEW_APPLICATION") && t("WS_CONTINUE_WITH_NEW_APPLICATION") !== "WS_CONTINUE_WITH_NEW_APPLICATION"
+                      ? t("WS_CONTINUE_WITH_NEW_APPLICATION")
+                      : "Continue with New Application";
+
+                  return (
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap", padding: "4px 0" }}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          history.push({
+                            pathname: `/digit-ui/citizen/commonpt/view-property`,
+                            search: `?propertyId=${row.original.property_id}&tenantId=${tenantId}`,
+                            state: {
+                              fromSearch: true,
+                              property: row.original.propertyDetails,
+                              waterConnectionDetails:
+                                row.original.waterConnectionDetails ||
+                                row.original.propertyDetails?.waterConnectionDetails ||
+                                row.original.propertyDetails?.additionalDetails?.waterConnectionDetails,
+                            },
+                          });
+                        }}
+                        style={{
+                          padding: "6px 14px",
+                          fontSize: "13px",
+                          fontWeight: "600",
+                          color: "#ffffff",
+                          backgroundColor: "#1a67a3",
+                          border: "1px solid #1a67a3",
+                          borderRadius: "4px",
+                          cursor: "pointer",
+                          whiteSpace: "nowrap",
+                          lineHeight: "1.4",
+                          boxShadow: "0 1px 2px rgba(0,0,0,0.08)",
+                        }}
+                      >
+                        {viewLabel}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleContinueWithNewApplication(row.original)}
+                        style={{
+                          padding: "6px 14px",
+                          fontSize: "13px",
+                          fontWeight: "600",
+                          color: "#ffffff",
+                          backgroundColor: "#1a67a3",
+                          border: "1px solid #1a67a3",
+                          borderRadius: "4px",
+                          cursor: "pointer",
+                          whiteSpace: "nowrap",
+                          lineHeight: "1.4",
+                          boxShadow: "0 1px 2px rgba(0,0,0,0.08)",
+                        }}
+                      >
+                        {continueLabel}
+                      </button>
+                    </div>
+                  );
+                },
+              },
             ]}
           />
         )}
@@ -347,6 +436,12 @@ const PropertySearchResults = ({
           </div>
         </Modal>
       ) : null}
+      <WaterConnectionDetailsModal
+        isOpen={showWaterModal}
+        onClose={() => setShowWaterModal(false)}
+        details={waterConnectionModalData}
+        t={t}
+      />
       {searchResults?.length === 0 && <p style={{ marginLeft: "16px", marginTop: "16px" }}>{t("PT_NO_PROP_FOUND_MSG")}</p>}
       {searchResults?.length !== 0 &&
         (searchResults?.length == 5 || searchResults?.length == 50) &&

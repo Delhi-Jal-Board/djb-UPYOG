@@ -304,6 +304,10 @@ const ApplicationDetails = () => {
   // }
 
   workflowDetails?.data?.actionState?.nextActions?.forEach((action) => {
+    if (action?.action === "ACTIVATE_CONNECTION") {
+      delete action.redirectionUrll;
+      delete action.redirectionUrl;
+    }
     if (action?.action === "EDIT") {
       const isMutation = applicationDetails?.applicationData?.applicationType?.includes("MUTATION");
       let pathName = isMutation

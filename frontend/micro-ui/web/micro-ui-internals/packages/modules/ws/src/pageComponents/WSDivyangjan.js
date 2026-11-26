@@ -30,7 +30,14 @@ const WSDivyangjan = ({ config, onSelect, userType, formData }) => {
     }
   }, [config.key, formValue.isDivyangjan, userType, formData?.[config.key]?.isDivyangjan]);
   const content = (
-    <CollapsibleCardPage title={t("Are you a Divyangjan/Person with Disability?")} defaultOpen={true}>
+    <CollapsibleCardPage
+      title={
+        t("WS_DIVYANGJAN_INFORMATION") && t("WS_DIVYANGJAN_INFORMATION") !== "WS_DIVYANGJAN_INFORMATION"
+          ? t("WS_DIVYANGJAN_INFORMATION")
+          : "Divyangjan Information"
+      }
+      defaultOpen={true}
+    >
       <div className="formcomposer-section-grid">
         <LabelFieldPair>
           <FieldLabelWithTooltip

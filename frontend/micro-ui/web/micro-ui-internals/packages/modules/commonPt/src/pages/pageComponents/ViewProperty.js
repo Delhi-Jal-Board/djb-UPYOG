@@ -1,9 +1,10 @@
 import { Header, ActionBar, SubmitBar } from "@djb25/digit-ui-react-components";
-import React, {useEffect} from "react";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
 import { useLocation, Link } from "react-router-dom";
 import ApplicationDetails from "../../../../templates/ApplicationDetails";
+import WaterConnectionDetailsModal from "../../components/WaterConnectionDetailsModal";
 
 /**
  * Page which renders a
@@ -26,7 +27,34 @@ const ViewProperty = () => {
   const { isLoading, data: applicationDetails } = Digit.Hooks.pt.useGenericViewProperty(t, tenantId, propertyId, {});
   const { state } = useLocation();
   const history = useHistory();
+  const [showWaterModal, setShowWaterModal] = useState(false);
+  const [waterConnectionModalData, setWaterConnectionModalData] = useState(null);
   let workflowDetails = {};
+
+  const handleContinueWithNewApplication = () => {
+    const prop = applicationDetails?.applicationData || state?.property;
+    const waterDetails =
+      prop?.waterConnectionDetails ||
+      prop?.additionalDetails?.waterConnectionDetails ||
+      state?.waterConnectionDetails;
+
+    if (waterDetails && waterDetails.canApply === false) {
+      setWaterConnectionModalData(waterDetails);
+      setShowWaterModal(true);
+      return;
+    }
+
+    const propId = propertyId || prop?.propertyId || prop?.id;
+    const mobileNo = prop?.owners?.[0]?.mobileNumber || state?.mobileNumber;
+    const targetUrl = `/digit-ui/citizen/ws/info?hasProperty=YES&propertyId=${propId || ""}`;
+    history.push(targetUrl, {
+      property: prop,
+      propertyId: propId,
+      mobileNumber: mobileNo,
+      hasProperty: "YES",
+      fromPropertyCreate: true,
+    });
+  };
 
   const onSubmit = () => {
     const scrollConst = redirectToUrl?.includes("employee/tl") ? 1600 : 300;
@@ -56,13 +84,27 @@ const ViewProperty = () => {
         moduleCode="PT"
       />
       {window.location.href.includes("/digit-ui/citizen/") && applicationDetails?.applicationData?.status !== "INACTIVE" && (
-        <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
+        <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline", gap: "16px" }}>
           <SubmitBar
             label={t("PT_UPDATE_PROPERTY_BUTTON")}
             onSubmit={() => history.push(`/digit-ui/citizen/commonpt/edit-property/${propertyId}`)}
           />
+          <SubmitBar
+            label={
+              t("WS_CONTINUE_WITH_NEW_APPLICATION") && t("WS_CONTINUE_WITH_NEW_APPLICATION") !== "WS_CONTINUE_WITH_NEW_APPLICATION"
+                ? t("WS_CONTINUE_WITH_NEW_APPLICATION")
+                : "Continue with New Application"
+            }
+            onSubmit={handleContinueWithNewApplication}
+          />
         </ActionBar>
       )}
+      <WaterConnectionDetailsModal
+        isOpen={showWaterModal}
+        onClose={() => setShowWaterModal(false)}
+        details={waterConnectionModalData}
+        t={t}
+      />
       {window.location.href.includes("redirectToUrl") && window.location.href.includes("redirectToUrl=null") === false && window.location.href.includes("redirectToUrl=undefined") === false && applicationDetails?.applicationData?.status !== "INACTIVE" && (
         <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
           <div>

@@ -38,6 +38,14 @@ const isDigiLockerEligible = (code = "") => {
 
 const isOtherDocument = (code = "") => code.toUpperCase().includes("OTHER");
 
+const maskDocNumber = (val) => {
+  if (!val || (typeof val !== "string" && typeof val !== "number")) return "";
+  const str = String(val).trim();
+  if (!str || str === "NA") return str;
+  if (str.length <= 4) return str;
+  return "*".repeat(str.length - 4) + str.slice(-4);
+};
+
 const isRwhDocType = (doc) => {
   if (!doc) return false;
   const str = (
@@ -245,7 +253,9 @@ const WSDocumentsEmployee = ({
 
   const [enableSubmit, setEnableSubmit] = useState(true);
   const [error, setError] = useState(null);
-  const hasRwhUploaded = documents?.some((item) => isRwhDocType(item) && item?.fileStoreId);
+  const hasRwhUploaded = documents?.some(
+    (item) => isRwhDocType(item) && item?.fileStoreId && (item?.documentUid || item?.documentNumber) && String(item?.documentUid || item?.documentNumber).trim()
+  );
   const hasStpUploaded = documents?.some((item) => isStpDocType(item) && item?.fileStoreId);
   const wsDocsData = window.location.href.includes("modify")
     ? "ModifyConnectionDocuments"
@@ -525,8 +535,9 @@ const WSDocumentsEmployee = ({
       >
         <span style={{ fontSize: "14px", color: "#d32f2f", fontWeight: "600" }}>
           ⚠️{" "}
-          {t("WS_RWH_CERTIFICATE_MANDATORY_INSTRUCTION") ||
-            "Rain Water Harvesting Certificate is mandatory to upload. Please upload it under Other Documents."}
+          {t("WS_RWH_CERTIFICATE_MANDATORY_INSTRUCTION") && t("WS_RWH_CERTIFICATE_MANDATORY_INSTRUCTION") !== "WS_RWH_CERTIFICATE_MANDATORY_INSTRUCTION"
+            ? t("WS_RWH_CERTIFICATE_MANDATORY_INSTRUCTION")
+            : "Rainwater Harvesting (RWH) Certificate is mandatory."}
         </span>
       </div>
     ) : null;
@@ -547,8 +558,9 @@ const WSDocumentsEmployee = ({
       >
         <span style={{ fontSize: "14px", color: "#d32f2f", fontWeight: "600" }}>
           ⚠️{" "}
-          {t("WS_STP_CERTIFICATE_MANDATORY_INSTRUCTION") ||
-            "Sewer Treatment Plant (STP) Certificate is mandatory to upload."}
+          {t("WS_STP_CERTIFICATE_MANDATORY_INSTRUCTION") && t("WS_STP_CERTIFICATE_MANDATORY_INSTRUCTION") !== "WS_STP_CERTIFICATE_MANDATORY_INSTRUCTION"
+            ? t("WS_STP_CERTIFICATE_MANDATORY_INSTRUCTION")
+            : "Sewer Treatment Plant (STP) Certificate is mandatory to upload."}
         </span>
       </div>
     ) : null;
@@ -632,6 +644,8 @@ function SewerTreatmentPlantDocumentUpload({
   const [uploadedFile, setUploadedFile] = useState(initialFileId);
   const [fileName, setFileName] = useState(existingStpDoc?.fileName || "");
   const [documentUid, setDocumentUid] = useState(existingStpDoc?.documentUid || existingStpDoc?.documentNumber || "");
+  const [isFocused, setIsFocused] = useState(false);
+  const [showUnmasked, setShowUnmasked] = useState(false);
   const [validityDate, setValidityDate] = useState(
     existingStpDoc?.validityDate ||
     existingStpDoc?.validityUpTo ||
@@ -809,16 +823,48 @@ function SewerTreatmentPlantDocumentUpload({
           isMandatory={false}
           infoText={t("WS_STP_DOC_NO_INFO_MSG")}
         />
-        <div className="field">
+        <div className="field" style={{ position: "relative" }}>
           <TextInput
             type="text"
-            value={documentUid}
+            value={isFocused || showUnmasked ? documentUid : maskDocNumber(documentUid)}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
             onChange={(e) => {
               setDocumentUid(e.target.value);
               updateStpDocFields(e.target.value, validityDate);
             }}
             placeholder={t("WS_ENTER_IDENTITY_NUMBER")}
+            style={{ paddingRight: documentUid ? "36px" : "12px" }}
           />
+          {documentUid && (
+            <span
+              onClick={() => setShowUnmasked((prev) => !prev)}
+              title={showUnmasked ? "Hide" : "Show"}
+              style={{
+                position: "absolute",
+                right: "10px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                color: "#505A5F",
+                userSelect: "none",
+              }}
+            >
+              {showUnmasked ? (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              ) : (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                  <line x1="1" y1="1" x2="23" y2="23"></line>
+                </svg>
+              )}
+            </span>
+          )}
         </div>
       </div>
 
@@ -1227,7 +1273,8 @@ function SelectDocument({
     doc?.code === "OWNER.OWNERSHIPPROOF" ||
     doc?.code?.includes("ADDRESSPROOF") ||
     doc?.code?.includes("OWNERSHIP");
-  const isDocNumberMandatory = isIdentityProof || isOwnershipProof;
+  const [isFocused, setIsFocused] = useState(false);
+  const [showUnmasked, setShowUnmasked] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState(() => {
     if (filteredDocument && doc?.dropdownData) {
       const match = doc?.dropdownData?.find((d) => d.code === filteredDocument.documentType);
@@ -1278,6 +1325,8 @@ function SelectDocument({
 
   const isSelectedRwh = isRwhDocType(selectedDocument);
   const showValidityDate = isOther && (isRwhMandatory || isSelectedRwh);
+  const isRwhDoc = isOther && (isRwhMandatory || isSelectedRwh);
+  const isDocNumberMandatory = isIdentityProof || isOwnershipProof || (isRwhDoc && isRwhMandatory);
 
   const isOtherDocumentsRemark = Boolean(
     isOther &&
@@ -1602,7 +1651,7 @@ function SelectDocument({
     }
 
     const isRwhRequired = isOther && isRwhMandatory;
-    const isRwhSatisfied = hasRwhUploaded || (uploadedFile && isRwhDocType(selectedDocument));
+    const isRwhSatisfied = hasRwhUploaded || (uploadedFile && isRwhDocType(selectedDocument) && documentUid && documentUid.trim());
     const rwhMissing = isRwhRequired && !isRwhSatisfied;
 
     const isStpRequired = false;
@@ -1745,12 +1794,7 @@ function SelectDocument({
             label={t(doc?.i18nKey)}
             isMandatory={doc?.required || (!isTenant && isOther && isRwhMandatory)}
             infoText={t(`${doc?.i18nKey?.replaceAll(".", "_")}_INFO_MSG`, `Select ${t(doc?.i18nKey)}`)}
-          />{" "}
-          {!isTenant && isOther && isRwhMandatory && !hasRwhUploaded && !(uploadedFile && isRwhDocType(selectedDocument)) && (
-            <div style={{ fontSize: "12px", color: "#d32f2f", marginTop: "-4px" }}>
-              * {t("WS_RWH_CERTIFICATE_MANDATORY_MSG") || "Rain Water Harvesting Certificate is mandatory to upload."}
-            </div>
-          )}
+          />
           <Dropdown
             id={`doc-${doc?.code}`}
             key={`doc-${doc?.code}`}
@@ -1762,6 +1806,13 @@ function SelectDocument({
             t={t}
             placeholder={t("PT_MUTATION_SELECT_DOC_LABEL")}
           />
+          {!isTenant && isOther && isRwhMandatory && !hasRwhUploaded && !(uploadedFile && isRwhDocType(selectedDocument)) && (
+            <div style={{ fontSize: "12px", color: "#d32f2f", marginTop: "4px" }}>
+              * {t("WS_RWH_CERTIFICATE_MANDATORY_MSG") && t("WS_RWH_CERTIFICATE_MANDATORY_MSG") !== "WS_RWH_CERTIFICATE_MANDATORY_MSG"
+                ? t("WS_RWH_CERTIFICATE_MANDATORY_MSG")
+                : "Please upload the Rainwater Harvesting Certificate to proceed."}
+            </div>
+          )}
         </div>
       ) : null}
 
@@ -1802,10 +1853,11 @@ function SelectDocument({
                 : t(`${doc?.i18nKey?.replaceAll(".", "_")}_DOC_NO_INFO_MSG`, `Enter ${t(`${doc?.i18nKey?.replaceAll(".", "_")}_DOCUMENT_NO`)}`)
             }
           />
-          <div className="field">
+          <div className="field" style={{ position: "relative" }}>
             <TextInput
               type="text"
-              value={documentUid}
+              value={isFocused || showUnmasked ? documentUid : maskDocNumber(documentUid)}
+              onFocus={() => setIsFocused(true)}
               onChange={(e) => {
                 if (!isDocumentUidLocked) {
                   let val = e.target.value;
@@ -1836,6 +1888,7 @@ function SelectDocument({
                 }
               }}
               onBlur={() => {
+                setIsFocused(false);
                 setDocNumberError(validateDocumentNumber(documentUid, selectedDocument?.code, isDocNumberMandatory || doc?.required, !!uploadedFile));
               }}
               placeholder={
@@ -1846,13 +1899,14 @@ function SelectDocument({
                   : t("WS_IDENTITY_NO_PLACEHOLDER")
               }
               disabled={isDocumentUidLocked}
-              style={
-                isDocumentUidLocked
+              style={{
+                ...(isDocumentUidLocked
                   ? { backgroundColor: "#f0f0f0", cursor: "not-allowed", color: "#555" }
                   : docNumberError
                   ? { border: "1px solid #d32f2f" }
-                  : {}
-              }
+                  : {}),
+                paddingRight: documentUid && !isDocumentUidLocked ? "36px" : "12px",
+              }}
               maxLength={
                 selectedDocument?.code?.toUpperCase().includes("AADHAAR") || selectedDocument?.code?.toUpperCase().includes("AADHAR")
                   ? 12
@@ -1869,6 +1923,35 @@ function SelectDocument({
                   : 64
               }
             />
+            {documentUid && !isDocumentUidLocked && (
+              <span
+                onClick={() => setShowUnmasked((prev) => !prev)}
+                title={showUnmasked ? "Hide" : "Show"}
+                style={{
+                  position: "absolute",
+                  right: "10px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  color: "#505A5F",
+                  userSelect: "none",
+                }}
+              >
+                {showUnmasked ? (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                ) : (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                  </svg>
+                )}
+              </span>
+            )}
             {docNumberError && <div style={{ fontSize: "12px", color: "#d32f2f", marginTop: "4px" }}>{docNumberError}</div>}
 
             {(selectedDocument?.code?.toUpperCase().includes("AADHAAR") || selectedDocument?.code?.toUpperCase().includes("AADHAR")) &&
@@ -1908,7 +1991,7 @@ function SelectDocument({
                   : t("WS_UPLOAD_APPLICANT_PHOTO")
                 : t(`${doc?.i18nKey?.replaceAll(".", "_")}_UPLOAD_DOCUMENT`)
             }
-            isMandatory={doc?.required}
+            isMandatory={doc?.required || (!isTenant && isOther && isRwhMandatory)}
             infoText={
               doc?.code === "OWNER.APPLICANTPHOTO"
                 ? t("WS_UPLOAD_APPLICANT_PHOTO_INFO_MSG")
@@ -2095,7 +2178,7 @@ function SelectDocument({
                 : t("CS_COMMON_DOCUMENT")}
               {uploadedDocument.fileName ? ` - ${uploadedDocument.fileName}` : ""}
             </span>
-            {uploadedDocument.documentNumber && <span>{uploadedDocument.documentNumber}</span>}
+            {uploadedDocument.documentNumber && <span>{maskDocNumber(uploadedDocument.documentNumber)}</span>}
             {(uploadedDocument.validityDate || uploadedDocument.validityUpTo) && (
               <span style={{ fontSize: "13px", color: "#333" }}>
                 ({t("WS_VALIDITY_UP_TO") || "Validity up to"}: {uploadedDocument.validityDate || uploadedDocument.validityUpTo})

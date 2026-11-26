@@ -148,7 +148,14 @@ const WSSewerTreatmentPlant = ({ config, onSelect, userType, formData }) => {
   }, [configKey, formValue.hasCertificate, formValue.hasAdequacyCertificate, userType, formData?.[configKey]?.hasCertificate, formData?.[configKey]?.hasStp, formData?.[configKey]?.hasAdequacyCertificate]);
 
   const content = (
-    <CollapsibleCardPage title={t("Sewer Treatment Plant (STP)")} defaultOpen={true}>
+    <CollapsibleCardPage
+      title={
+        t("WS_SEWER_TREATMENT_PLANT_INFORMATION") && t("WS_SEWER_TREATMENT_PLANT_INFORMATION") !== "WS_SEWER_TREATMENT_PLANT_INFORMATION"
+          ? t("WS_SEWER_TREATMENT_PLANT_INFORMATION")
+          : "Sewer Treatment Plant (STP) Information"
+      }
+      defaultOpen={true}
+    >
       <div className="formcomposer-section-grid">
         <LabelFieldPair>
           <FieldLabelWithTooltip

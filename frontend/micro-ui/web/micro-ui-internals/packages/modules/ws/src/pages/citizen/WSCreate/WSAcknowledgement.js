@@ -185,7 +185,7 @@ const WSAcknowledgement = ({ data, onSuccess, clearParams }) => {
       }}>
         <SubmitBar label={t("COMMON_MAKE_PAYMENT")} />
       </Link>} */}
-      {(data?.serviceName?.code === "WATER" || data?.serviceName?.code === "BOTH") && WSmutation.isSuccess && <LinkButton
+      {/* {(data?.serviceName?.code === "WATER" || data?.serviceName?.code === "BOTH") && WSmutation.isSuccess && <LinkButton
       label={
         <div className="response-download-button">
           <span>
@@ -212,7 +212,7 @@ const WSAcknowledgement = ({ data, onSuccess, clearParams }) => {
       }
       //style={{ width: "100px" }}
       onClick={handleDownloadPdfSewerage}
-    />}
+    />} */}
       {((WSmutation?.data?.WaterConnection?.[0]?.applicationStatus?.includes("INFRA_PAYMENT") ||
          WSmutation?.data?.WaterConnection?.[0]?.applicationStatus === "PENDING_FOR_PAYMENT") ||
         (SWmutation?.data?.SewerageConnections?.[0]?.applicationStatus?.includes("INFRA_PAYMENT") ||

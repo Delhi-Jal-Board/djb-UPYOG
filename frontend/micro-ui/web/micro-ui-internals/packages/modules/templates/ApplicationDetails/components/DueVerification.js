@@ -1,9 +1,49 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { TextInput, Table, AddIcon, Toast, Dropdown, SearchIconSvg, RadioButtons, CardLabel } from "@djb25/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
+import { hasDAVerifiedInWorkflow } from "./WSApprovalChecklist";
 
-const DueVerification = ({ applicationData }) => {
+const DueVerification = ({ applicationData, workflowDetails }) => {
   const { t } = useTranslation();
+
+  const isNewConn =
+    applicationData?.applicationType?.includes("NEW_") ||
+    applicationData?.applicationType === "NEW_WATER_CONNECTION" ||
+    applicationData?.businessService?.toUpperCase() === "NEWWS1" ||
+    applicationData?.applicationNo?.includes("WS_AP") ||
+    applicationData?.applicationNo?.includes("SW_AP") ||
+    (typeof window !== "undefined" && window.location.href.includes("WS_AP"));
+
+  const currentStatus =
+    applicationData?.applicationStatus ||
+    workflowDetails?.data?.actionState?.state ||
+    workflowDetails?.data?.processInstances?.[0]?.state?.state;
+
+  const isDAState =
+    currentStatus === "PENDING_FOR_DEALING_ASSISTENCE_VERIFICATION" ||
+    currentStatus === "PENDING_FOR_DEALING_ASSISTANT_VERIFICATION" ||
+    currentStatus === "PENDING_FOR_DA_VERIFICATION";
+
+  const isZROState =
+    currentStatus === "PENDING_FOR_ZRO_APPROVAL" ||
+    workflowDetails?.data?.actionState?.state === "PENDING_FOR_ZRO_APPROVAL";
+
+  const hasDAVerified = hasDAVerifiedInWorkflow(applicationData, workflowDetails);
+
+  const isDueRemoved =
+    applicationData?.additionalDetails?.isDueVerificationRemoved === true ||
+    applicationData?.additionalDetails?.hasDueVerification === false;
+
+  const dueRecords =
+    (Array.isArray(applicationData?.dueVerification) && applicationData.dueVerification) ||
+    (Array.isArray(applicationData?.additionalDetails?.dueVerification) && applicationData.additionalDetails.dueVerification) ||
+    [];
+
+  const hasDueData = !isDueRemoved && dueRecords.length > 0;
+
+  if (isNewConn && !isDAState && !(isZROState && hasDAVerified && hasDueData)) {
+    return null;
+  }
   const [kno, setKno] = useState("");
   const [remarks, setRemarks] = useState("");
   const [tableData, setTableData] = useState([]);
@@ -32,7 +72,12 @@ const DueVerification = ({ applicationData }) => {
     setTableData(newTableData);
     if (applicationData) {
       applicationData.dueVerification = newTableData;
+      if (applicationData.additionalDetails) {
+        applicationData.additionalDetails.dueVerification = newTableData;
+        applicationData.additionalDetails.hasDueVerification = true;
+      }
     }
+    window.dueVerificationData = newTableData;
     setManualForm({ kno: "", fullName: "", address: "", dueAmount: "", remarks: "" });
   };
 
@@ -58,7 +103,13 @@ const DueVerification = ({ applicationData }) => {
         newData.splice(index, 1);
         if (applicationData) {
           applicationData.dueVerification = newData;
+          if (applicationData.additionalDetails) {
+            applicationData.additionalDetails.dueVerification = newData;
+            applicationData.additionalDetails.hasDueVerification = newData.length > 0;
+            applicationData.additionalDetails.isDueVerificationRemoved = newData.length === 0;
+          }
         }
+        window.dueVerificationData = newData;
         return newData;
       });
     },
@@ -172,6 +223,19 @@ const DueVerification = ({ applicationData }) => {
     let isMounted = true;
     const fetchDueVerification = async () => {
       if (isZROApproval && applicationData?.applicationNo) {
+        if (
+          isDueRemoved ||
+          !hasDueData ||
+          applicationData?.additionalDetails?.isDueVerificationRemoved === true ||
+          applicationData?.additionalDetails?.hasDueVerification === false ||
+          (Array.isArray(applicationData?.dueVerification) && applicationData.dueVerification.length === 0) ||
+          (Array.isArray(applicationData?.additionalDetails?.dueVerification) && applicationData.additionalDetails.dueVerification.length === 0)
+        ) {
+          setTableData([]);
+          setZroDropdownOptions([]);
+          return;
+        }
+
         try {
           const response = await checkDueVerification({ DueVerification: { applicationNo: applicationData.applicationNo } });
           if (!isMounted) return;
@@ -183,6 +247,10 @@ const DueVerification = ({ applicationData }) => {
               ...item
             }));
             setZroDropdownOptions(options);
+            setTableData((prev) => (prev && prev.length > 0 ? prev : dueVerifications));
+            if (applicationData && (!applicationData.dueVerification || applicationData.dueVerification.length === 0)) {
+              applicationData.dueVerification = dueVerifications;
+            }
           } else {
              setZroDropdownOptions([]);
           }
@@ -242,6 +310,10 @@ const DueVerification = ({ applicationData }) => {
       }
     }
   };
+
+  if (isNewConn && isZROState && (!tableData || tableData.length === 0)) {
+    return null;
+  }
 
   return (
     <div style={{ marginBottom: "20px" }}>

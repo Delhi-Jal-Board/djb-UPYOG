@@ -6,7 +6,6 @@ import getModifyPDFData from "../../utils/getWsAckDataForModifyPdfs";
 import { useHistory } from "react-router-dom";
 import * as func from "../../utils";
 
-
 const WSResponse = (props) => {
   const { t } = useTranslation();
   const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -20,11 +19,19 @@ const WSResponse = (props) => {
 
   // Fix: 5th arg is userInfo, 6th is config — pass config correctly
   const { isLoading: waterLoading, isError: waterError, data: waterApplicationDetails } = Digit.Hooks.ws.useWSDetailsPage(
-    t, tenantId, filters?.applicationNumber, "WATER", {},
+    t,
+    tenantId,
+    filters?.applicationNumber,
+    "WATER",
+    {},
     { enabled: hasWaterApp }
   );
   const { isLoading: sewerageLoading, isError: sewerageError, data: sewerageApplicationDetails } = Digit.Hooks.ws.useWSDetailsPage(
-    t, tenantId, filters?.applicationNumber1, "SEWERAGE", {},
+    t,
+    tenantId,
+    filters?.applicationNumber1,
+    "SEWERAGE",
+    {},
     { enabled: hasSewerageApp }
   );
 
@@ -33,21 +40,50 @@ const WSResponse = (props) => {
     setSewerageApplicationData(sewerageApplicationDetails);
   }, [waterApplicationDetails, sewerageApplicationDetails]);
 
-  const { data: oldDataWater } = Digit.Hooks.ws.useOldValue({
-    tenantId,
-    filters: { connectionNumber: waterApplicationData?.applicationData?.connectionNo, isConnectionSearch: true },
-    businessService: "WATER"
-  }, {
-    enabled: waterApplicationData?.applicationData?.applicationType?.includes("MODIFY_") ? true : false
-  });
+  const connectionNo =
+    filters?.connectionNo ||
+    filters?.connectionNumber ||
+    props?.location?.state?.connectionNo ||
+    props?.location?.state?.data?.WaterConnection?.[0]?.connectionNo ||
+    props?.location?.state?.data?.WaterConnection?.connectionNo ||
+    props?.location?.state?.data?.SewerageConnections?.[0]?.connectionNo ||
+    props?.location?.state?.data?.SewerageConnections?.connectionNo ||
+    props?.location?.state?.data?.WaterConnection?.[0]?.connectionNumber ||
+    props?.location?.state?.data?.SewerageConnections?.[0]?.connectionNumber ||
+    props?.location?.state?.data?.connectionNo ||
+    props?.location?.state?.data?.connectionNumber ||
+    waterApplicationData?.applicationData?.connectionNo ||
+    sewerageApplicationData?.applicationData?.connectionNo ||
+    "";
 
-  const { data: oldDataSew } = Digit.Hooks.ws.useOldValue({
-    tenantId,
-    filters: { connectionNumber: sewerageApplicationData?.applicationData?.connectionNo, isConnectionSearch: true },
-    businessService: "SEWERAGE"
-  }, {
-    enabled: sewerageApplicationData?.applicationData?.applicationType?.includes("MODIFY_") ? true : false
-  });
+  const isConnectionActivated =
+    filters?.action === "ACTIVATE_CONNECTION" ||
+    filters?.status === "CONNECTION_ACTIVATED" ||
+    waterApplicationData?.applicationData?.applicationStatus === "CONNECTION_ACTIVATED" ||
+    sewerageApplicationData?.applicationData?.applicationStatus === "CONNECTION_ACTIVATED" ||
+    Boolean(connectionNo);
+
+  const { data: oldDataWater } = Digit.Hooks.ws.useOldValue(
+    {
+      tenantId,
+      filters: { connectionNumber: waterApplicationData?.applicationData?.connectionNo, isConnectionSearch: true },
+      businessService: "WATER",
+    },
+    {
+      enabled: waterApplicationData?.applicationData?.applicationType?.includes("MODIFY_") ? true : false,
+    }
+  );
+
+  const { data: oldDataSew } = Digit.Hooks.ws.useOldValue(
+    {
+      tenantId,
+      filters: { connectionNumber: sewerageApplicationData?.applicationData?.connectionNo, isConnectionSearch: true },
+      businessService: "SEWERAGE",
+    },
+    {
+      enabled: sewerageApplicationData?.applicationData?.applicationType?.includes("MODIFY_") ? true : false,
+    }
+  );
 
   const oldApplicationWater = oldDataWater?.WaterConnection?.[oldDataWater?.WaterConnection?.length - 1];
   const oldApplicationSew = oldDataSew?.SewerageConnections?.[oldDataSew?.SewerageConnections?.length - 1];
@@ -56,9 +92,7 @@ const WSResponse = (props) => {
   const isLoading = (hasWaterApp && waterLoading) || (hasSewerageApp && sewerageLoading);
 
   // Error: no application numbers in URL at all, OR any active fetch returned error
-  const isError = (!hasWaterApp && !hasSewerageApp)
-    || (hasWaterApp && waterError)
-    || (hasSewerageApp && sewerageError);
+  const isError = (!hasWaterApp && !hasSewerageApp) || (hasWaterApp && waterError) || (hasSewerageApp && sewerageError);
 
   const isSuccess = !isLoading && !isError;
 
@@ -66,7 +100,13 @@ const WSResponse = (props) => {
     const tenantInfo = waterApplicationData?.applicationData?.tenantId;
     let result = waterApplicationData?.applicationData;
     if (waterApplicationData?.applicationData?.applicationType?.includes("MODIFY_")) {
-      const PDFdata = getModifyPDFData({ ...oldDataWater?.WaterConnection?.[0] }, { ...waterApplicationData?.propertyDetails }, tenantInfo, t, oldApplicationWater);
+      const PDFdata = getModifyPDFData(
+        { ...oldDataWater?.WaterConnection?.[0] },
+        { ...waterApplicationData?.propertyDetails },
+        tenantInfo,
+        t,
+        oldApplicationWater
+      );
       PDFdata.then((ress) => Digit.Utils.pdf.generateModifyPdf(ress));
       return;
     }
@@ -78,7 +118,13 @@ const WSResponse = (props) => {
     const tenantInfo = sewerageApplicationData?.applicationData?.tenantId;
     let result = sewerageApplicationData?.applicationData;
     if (sewerageApplicationData?.applicationData?.applicationType?.includes("MODIFY_")) {
-      const PDFdata = getModifyPDFData({ ...oldDataSew?.SewerageConnections?.[0] }, { ...sewerageApplicationData?.propertyDetails }, tenantInfo, t, oldApplicationSew);
+      const PDFdata = getModifyPDFData(
+        { ...oldDataSew?.SewerageConnections?.[0] },
+        { ...sewerageApplicationData?.propertyDetails },
+        tenantInfo,
+        t,
+        oldApplicationSew
+      );
       PDFdata.then((ress) => Digit.Utils.pdf.generateModifyPdf(ress));
       return;
     }
@@ -111,19 +157,42 @@ const WSResponse = (props) => {
     return <Loader />;
   }
 
+  const bannerMessage = !isSuccess
+    ? t("WS_APPLICATION_SUBMIT_FAILED_LABEL")
+    : isConnectionActivated
+    ? t("WS_CONNECTION_ACTIVATED_SUCCESSFULLY_LABEL") &&
+      t("WS_CONNECTION_ACTIVATED_SUCCESSFULLY_LABEL") !== "WS_CONNECTION_ACTIVATED_SUCCESSFULLY_LABEL"
+      ? t("WS_CONNECTION_ACTIVATED_SUCCESSFULLY_LABEL")
+      : "Connection Activated Successfully"
+    : t("WS_APPLICATION_SUBMITTED_SUCCESSFULLY_LABEL");
+
+  const bannerInfo = connectionNo
+    ? t("WS_ACK_COMMON_CONNECTION_NO") || "Connection No"
+    : isSuccess && filters?.applicationNumber
+    ? t("WS_WATER_APPLICATION_NUMBER_LABEL")
+    : "";
+
+  const bannerAppNumber = connectionNo || (isSuccess ? filters?.applicationNumber : undefined);
+
+  const bannerInfoOne =
+    connectionNo && filters?.applicationNumber
+      ? t("WS_WATER_APPLICATION_NUMBER_LABEL") || "Application No"
+      : isSuccess && filters?.applicationNumber1
+      ? t("WS_SEWERAGE_APPLICATION_NUMBER_LABEL")
+      : "";
+
+  const bannerAppNumberOne =
+    connectionNo && filters?.applicationNumber ? filters?.applicationNumber : isSuccess ? filters?.applicationNumber1 : undefined;
+
   return (
     <div>
       <Card>
         <Banner
-          message={
-            isSuccess
-              ? t("WS_APPLICATION_SUBMITTED_SUCCESSFULLY_LABEL")
-              : t("WS_APPLICATION_SUBMIT_FAILED_LABEL")
-          }
-          applicationNumber={isSuccess ? filters?.applicationNumber : undefined}
-          applicationNumberOne={isSuccess ? filters?.applicationNumber1 : undefined}
-          info={isSuccess && filters?.applicationNumber ? t("WS_WATER_APPLICATION_NUMBER_LABEL") : ""}
-          infoOne={isSuccess && filters?.applicationNumber1 ? t("WS_SEWERAGE_APPLICATION_NUMBER_LABEL") : ""}
+          message={bannerMessage}
+          applicationNumber={bannerAppNumber}
+          applicationNumberOne={bannerAppNumberOne}
+          info={bannerInfo}
+          infoOne={bannerInfoOne}
           successful={isSuccess}
           style={{ padding: "10px" }}
           headerStyles={{ fontSize: "32px" }}
@@ -132,10 +201,36 @@ const WSResponse = (props) => {
 
         {isSuccess && (
           <React.Fragment>
+            {connectionNo && (
+              <div
+                style={{
+                  marginTop: "16px",
+                  marginBottom: "16px",
+                  padding: "16px",
+                  background: "#f8fafc",
+                  borderRadius: "4px",
+                  border: "1px solid #cbd5e1",
+                }}
+              >
+                <CardText style={{ fontSize: "18px", color: "#0B0C0C", margin: 0 }}>
+                  <strong>{t("WS_COMMON_TABLE_COL_CONNECTION_NO") || "Connection No"}: </strong>
+                  <span style={{ color: "#1a67a3", fontWeight: "bold", fontSize: "20px" }}>{connectionNo}</span>
+                </CardText>
+                {filters?.applicationNumber && (
+                  <CardText style={{ fontSize: "14px", color: "#505A5F", marginTop: "6px", marginBottom: 0 }}>
+                    <strong>{t("WS_WATER_APPLICATION_NUMBER_LABEL") || "Application No"}: </strong>
+                    <span>{filters?.applicationNumber}</span>
+                  </CardText>
+                )}
+              </div>
+            )}
             <CardText style={{ paddingBottom: "10px", marginBottom: "10px" }}>
-              {t("WS_MESSAGE_SUB_DESCRIPTION_LABEL")}
+              {isConnectionActivated
+                ? t("WS_CONNECTION_ACTIVATED_DESC") ||
+                  "The water connection has been successfully activated. You can track this connection using the Connection Number above."
+                : t("WS_MESSAGE_SUB_DESCRIPTION_LABEL")}
             </CardText>
-            <div style={{ display: "flex" }}>
+            {/* <div style={{ display: "flex" }}>
               {filters?.applicationNumber && (
                 <div
                   className="primary-label-btn d-grid"
@@ -160,7 +255,7 @@ const WSResponse = (props) => {
                   {t("WS_PRINT_SEWERAGE_APPLICATION_LABEL")}
                 </div>
               )}
-            </div>
+            </div> */}
             <div>
               {waterApplicationData?.applicationData?.applicationStatus === "PENDING_FOR_PAYMENT" && (
                 <div style={{ marginTop: "10px" }}>
@@ -174,8 +269,9 @@ const WSResponse = (props) => {
                         : waterApplicationData?.applicationData?.applicationNo;
                       let consumerCode = func.stringReplaceAll(consumerCodeOriginal, "/", "+");
                       let tenantId = waterApplicationData?.applicationData?.tenantId;
-                      let consumerName = waterApplicationData?.applicationData?.connectionHolders?.map((o) => o.name).join(",")
-                        || waterApplicationData?.propertyDetails?.owners?.map((o) => o.name).join(",");
+                      let consumerName =
+                        waterApplicationData?.applicationData?.connectionHolders?.map((o) => o.name).join(",") ||
+                        waterApplicationData?.propertyDetails?.owners?.map((o) => o.name).join(",");
                       let isDisconnectFlow = waterApplicationData?.applicationData?.applicationNo?.includes("DC");
                       if (isEmployee) {
                         history.push({
@@ -206,8 +302,9 @@ const WSResponse = (props) => {
                         : sewerageApplicationData?.applicationData?.applicationNo;
                       let consumerCode = func.stringReplaceAll(consumerCodeOriginal, "/", "+");
                       let tenantId = sewerageApplicationData?.applicationData?.tenantId;
-                      let consumerName = sewerageApplicationData?.applicationData?.connectionHolders?.map((o) => o.name).join(",")
-                        || sewerageApplicationData?.propertyDetails?.owners?.map((o) => o.name).join(",");
+                      let consumerName =
+                        sewerageApplicationData?.applicationData?.connectionHolders?.map((o) => o.name).join(",") ||
+                        sewerageApplicationData?.propertyDetails?.owners?.map((o) => o.name).join(",");
                       let isDisconnectFlow = sewerageApplicationData?.applicationData?.applicationNo?.includes("DC");
                       if (isEmployee) {
                         history.push({
@@ -231,17 +328,11 @@ const WSResponse = (props) => {
         )}
 
         {isError && (
-          <CardText style={{ paddingBottom: "10px", marginBottom: "10px", color: "#B91900" }}>
-            {t("WS_APPLICATION_SUBMIT_FAILED_DESC")}
-          </CardText>
+          <CardText style={{ paddingBottom: "10px", marginBottom: "10px", color: "#B91900" }}>{t("WS_APPLICATION_SUBMIT_FAILED_DESC")}</CardText>
         )}
 
         <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
-          <SubmitBar
-            label={t("CORE_COMMON_GO_TO_HOME")}
-            onSubmit={onSubmit}
-            style={{ margin: "10px 10px 0px 0px" }}
-          />
+          <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} onSubmit={onSubmit} style={{ margin: "10px 10px 0px 0px" }} />
         </ActionBar>
       </Card>
     </div>

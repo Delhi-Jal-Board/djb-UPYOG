@@ -872,6 +872,7 @@ const EditApplication = ({ parentRoute }) => {
     "disability-details",
     "bank-details",
     "rain-water-harvesting",
+    "sewer-treatment-plant",
     "property-location-details",
     "property-water-details",
     "due-verification-details",

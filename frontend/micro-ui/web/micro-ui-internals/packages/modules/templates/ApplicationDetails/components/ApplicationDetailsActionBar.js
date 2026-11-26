@@ -1,6 +1,7 @@
 import React, { useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { SubmitBar, ActionBar, Menu, CardLabel } from "@djb25/digit-ui-react-components";
+import { checkCameFromCitizenAction } from "./WSApprovalChecklist";
 
 function ApplicationDetailsActionBar({
   workflowDetails,
@@ -21,9 +22,9 @@ function ApplicationDetailsActionBar({
   const { t } = useTranslation();
   let user = Digit.UserService.getUser();
   const menuRef = React.useRef();
-  const [isSubmitDisabled, setIsSubmitDisabled] = React.useState(() => {
+  const [isDocsVerified, setIsDocsVerified] = React.useState(() => {
     if (typeof window !== "undefined" && typeof window.isDocumentsVerified !== "undefined") {
-      return !window.isDocumentsVerified;
+      return !!window.isDocumentsVerified;
     }
     return false;
   });
@@ -31,10 +32,10 @@ function ApplicationDetailsActionBar({
   React.useEffect(() => {
     // Sync immediately in case the event already fired before this component mounted
     if (typeof window !== "undefined" && typeof window.isDocumentsVerified !== "undefined") {
-      setIsSubmitDisabled(!window.isDocumentsVerified);
+      setIsDocsVerified(!!window.isDocumentsVerified);
     }
     const handleDocVerification = (e) => {
-      setIsSubmitDisabled(!e.detail);
+      setIsDocsVerified(!!e.detail);
     };
     if (typeof window !== "undefined") {
       window.addEventListener("DOCUMENTS_VERIFIED", handleDocVerification);
@@ -72,6 +73,75 @@ function ApplicationDetailsActionBar({
     applicationData?.applicationNo?.includes("RC") ||
     applicationData?.reconnectRequest;
 
+  const cameFromCitizenAction = React.useMemo(() => {
+    return checkCameFromCitizenAction(applicationData, workflowDetails);
+  }, [applicationData, workflowDetails]);
+
+  const isWSNewConn =
+    !isMutationOrReconnection &&
+    (businessService?.toUpperCase() === "NEWWS1" ||
+      businessService?.toUpperCase() === "NEWSW1" ||
+      applicationData?.applicationType?.includes("NEW_") ||
+      applicationData?.applicationNo?.includes("WS_AP") ||
+      applicationData?.applicationNo?.includes("SW_AP"));
+
+  const getActionTargetState = (act) => {
+    if (typeof act?.state === "string") return act.state.toUpperCase();
+    if (typeof act?.state?.state === "string") return act.state.state.toUpperCase();
+    if (typeof act?.state?.applicationStatus === "string") return act.state.applicationStatus.toUpperCase();
+    if (typeof act?.applicationStatus === "string") return act.applicationStatus.toUpperCase();
+    return "";
+  };
+
+  const isDAAction = (act) => {
+    const targetState = getActionTargetState(act);
+    const actName = (act?.action || "").toUpperCase();
+
+    if (
+      targetState.includes("DEALING_ASSIST") ||
+      targetState.includes("DA_VERIF") ||
+      targetState === "PENDING_FOR_DEALING_ASSISTENCE_VERIFICATION" ||
+      targetState === "PENDING_FOR_DEALING_ASSISTANT_VERIFICATION" ||
+      targetState === "WF_PENDING_FOR_DEALING_ASSISTENCE_VERIFICATION" ||
+      targetState === "WF_PENDING_FOR_DEALING_ASSISTANT_VERIFICATION"
+    ) {
+      return true;
+    }
+
+    if (actName.includes("DEALING_ASSIST") || actName.includes("TO_DA") || actName.includes("FORWARD_TO_DA")) {
+      return true;
+    }
+
+    if ((actName === "FORWARD" || actName === "VERIFY_AND_FORWARD" || actName === "APPROVE") && !actName.includes("JE") && !actName.includes("CITIZEN")) {
+      return true;
+    }
+
+    return false;
+  };
+
+  const isJEAction = (act) => {
+    const targetState = getActionTargetState(act);
+    const actName = (act?.action || "").toUpperCase();
+
+    if (
+      targetState.includes("JE_VERIF") ||
+      targetState === "PENDING_FOR_JE_VERIFICATION" ||
+      targetState === "WF_PENDING_FOR_JE_VERIFICATION"
+    ) {
+      return true;
+    }
+
+    if (actName.includes("TO_JE") || actName.includes("SEND_BACK_TO_JE") || actName.includes("FORWARD_TO_JE")) {
+      return true;
+    }
+
+    if ((actName === "SEND_BACK" || actName === "REJECT_TO_JE") && !actName.includes("CITIZEN")) {
+      return true;
+    }
+
+    return false;
+  };
+
   const hasDirectSendBack = actions?.some((e) => e.action === "SEND_BACK_TO_CITIZEN_DIRECT");
 
   const completelySatisfied =
@@ -85,7 +155,13 @@ function ApplicationDetailsActionBar({
       ? applicationDetails?.applicationData?.additionalDetails?.CompletelySatisfied
       : applicationData?.additionalDetails?.CompletelySatisfied;
 
-  if (!isMutationOrReconnection && hasDirectSendBack && completelySatisfied !== undefined) {
+  if (isWSNewConn && completelySatisfied !== undefined) {
+    if (completelySatisfied === true) {
+      actions = actions?.filter((e) => !isJEAction(e) && e.action !== "SEND_BACK_TO_CITIZEN");
+    } else if (completelySatisfied === false) {
+      actions = actions?.filter((e) => !isDAAction(e) && e.action !== "SEND_BACK_TO_CITIZEN_DIRECT");
+    }
+  } else if (!isMutationOrReconnection && hasDirectSendBack && completelySatisfied !== undefined) {
     if (completelySatisfied === true) {
       actions = actions?.filter((e) => e.action !== "SEND_BACK_TO_CITIZEN");
     } else if (completelySatisfied === false) {
@@ -93,7 +169,57 @@ function ApplicationDetailsActionBar({
     }
   }
 
+  const currentWorkflowStatus =
+    workflowDetails?.data?.actionState?.state ||
+    workflowDetails?.data?.processInstances?.[0]?.state?.state ||
+    applicationData?.applicationStatus ||
+    applicationData?.status;
+  const isConnectionActivationState =
+    currentWorkflowStatus === "PENDING_FOR_CONNECTION_ACTIVATION" ||
+    String(currentWorkflowStatus).includes("CONNECTION_ACTIVATION");
+
+  let isSubmitDisabled = false;
+  if (isConnectionActivationState) {
+    isSubmitDisabled = false;
+  } else if (isWSNewConn) {
+    if (completelySatisfied === true) {
+      if (cameFromCitizenAction) {
+        isSubmitDisabled = !isDocsVerified;
+      } else {
+        isSubmitDisabled = false;
+      }
+    } else if (completelySatisfied === false) {
+      isSubmitDisabled = false;
+    } else {
+      isSubmitDisabled = true;
+    }
+  } else {
+    isSubmitDisabled = !isDocsVerified;
+  }
+
   actions?.forEach((action) => {
+    if (isDAAction(action) && !action.forcedName) {
+      const daKey = "WF_PENDING_FOR_DEALING_ASSISTENCE_VERIFICATION";
+      const transDA = t(daKey);
+      const defaultKey = `WF_EMPLOYEE_${businessService?.toUpperCase()}_${action?.action}`;
+      const transDefault = t(defaultKey);
+      if (transDefault && transDefault !== defaultKey) {
+        // default translation exists
+      } else if (transDA && transDA !== daKey) {
+        action.forcedName = daKey;
+      }
+    }
+    if (isJEAction(action) && !action.forcedName) {
+      const jeKey = "WF_PENDING_FOR_JE_VERIFICATION";
+      const transJE = t(jeKey);
+      const defaultKey = `WF_EMPLOYEE_${businessService?.toUpperCase()}_${action?.action}`;
+      const transDefault = t(defaultKey);
+      if (transDefault && transDefault !== defaultKey) {
+        // default translation exists
+      } else if (transJE && transJE !== jeKey) {
+        action.forcedName = jeKey;
+      }
+    }
     if (action?.action === "SEND_BACK_TO_CITIZEN" && !action.forcedName) {
       const primaryKey = forcedActionPrefix ? `${forcedActionPrefix}_SEND_BACK_TO_CITIZEN` : `WF_EMPLOYEE_${businessService?.toUpperCase()}_SEND_BACK_TO_CITIZEN`;
       const translatedPrimary = t(primaryKey);
@@ -157,7 +283,7 @@ function ApplicationDetailsActionBar({
                 ref={menuRef}
                 label={t("WF_TAKE_ACTION")}
                 onSubmit={() => setDisplayMenu(!displayMenu)}
-                disabled={isSubmitDisabled || !isApprovalChecklistValid}
+                disabled={isConnectionActivationState ? false : (isSubmitDisabled || !isApprovalChecklistValid)}
               />
             ) : (
               <CardLabel style={{ color: "red", font: "30px", fontWeight: "bold" }}>{`${t("EW_ALERT_ANOTHER_VENDOR")}`}</CardLabel>
@@ -167,7 +293,7 @@ function ApplicationDetailsActionBar({
               ref={menuRef}
               label={t("WF_TAKE_ACTION")}
               onSubmit={() => setDisplayMenu(!displayMenu)}
-              disabled={isSubmitDisabled || !isApprovalChecklistValid}
+              disabled={isConnectionActivationState ? false : (isSubmitDisabled || !isApprovalChecklistValid)}
             />
           )}
           {/* <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} /> */}

@@ -196,7 +196,7 @@ const WSInfoPage = () => {
   const [hasProperty, setHasProperty] = useState(isFromPropertyCreate ? radioOptions[0] : radioOptions[1]);
   const [selectedProperty, setSelectedProperty] = useState(null);
   const [searchMobileNumber, setSearchMobileNumber] = useState(
-    createdProperty?.owners?.[0]?.mobileNumber || (isEmployee ? "" : userMobileNumber || "")
+    createdProperty?.owners?.[0]?.mobileNumber || location?.state?.mobileNumber || (isEmployee ? "" : userMobileNumber || "")
   );
   const [showOtpVerification, setShowOtpVerification] = useState(false);
   const [otp, setOtp] = useState("");
@@ -228,6 +228,8 @@ const WSInfoPage = () => {
       setHasProperty(radioOptions[0]);
       if (createdProperty?.owners?.[0]?.mobileNumber) {
         setSearchMobileNumber(createdProperty.owners[0].mobileNumber);
+      } else if (location?.state?.mobileNumber) {
+        setSearchMobileNumber(location.state.mobileNumber);
       }
     } else {
       setHasProperty(radioOptions[1]);
@@ -1349,7 +1351,7 @@ const WSInfoPage = () => {
         {/* <div className="ws-info-header-card"> */}
         <div className="ws-header-badge-row">
           <span className="ws-service-tag">{t("Apply For New Connection")}</span>
-          <span className="ws-portal-tag">{isEmployee ? t("Employee Portal") : t("Citizen Services")}</span>
+          {/* <span className="ws-portal-tag">{isEmployee ? t("Employee Portal") : t("Citizen Services")}</span> */}
         </div>
         {/* <h1 className="ws-page-title">{t("Apply For New Connection")}</h1> */}
         {/* <p className="ws-page-subtitle">
