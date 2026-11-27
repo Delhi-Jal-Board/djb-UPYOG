@@ -251,46 +251,61 @@ const PropertyPreview = ({ onSelect, redirectUrl, userType, onSuccess }) => {
                 useDetails.questions.map((qItem, idx) => (
                   <Row key={`q_prev_${idx}`} label={qItem?.question || `Question ${idx + 1}`} text={getText(qItem?.answer)} />
                 ))}
-              <Row
-                label={t("WS_IS_PROPERTY_USED_FOR_MIXED_OCCUPANCIES") || "Mixed Occupancies"}
-                text={
-                  useDetails?.isMixedOccupancy === "YES" || previewData?.isMixedOccupancy === "YES"
-                    ? t("CS_COMMON_YES") || "Yes"
-                    : useDetails?.isMixedOccupancy === "NO" || previewData?.isMixedOccupancy === "NO"
-                    ? t("CS_COMMON_NO") || "No"
-                    : "NA"
-                }
-              />
-              {/* If Mixed Occupancy is YES, show the usage list */}
-              {(useDetails?.isMixedOccupancy === "YES" || previewData?.isMixedOccupancy === "YES") &&
-                Array.isArray(useDetails?.mixedOccupancyDetails || previewData?.mixedOccupancyDetails) &&
-                (useDetails?.mixedOccupancyDetails || previewData?.mixedOccupancyDetails).length > 0 && (
-                  <div style={{ marginTop: "12px", paddingTop: "12px" }}>
-                    <div style={{ fontWeight: "700", fontSize: "14px", marginBottom: "8px", color: "#0b0c0c" }}>
-                      {t("WS_MIXED_OCCUPANCY_DETAILS")}:
-                    </div>
-                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
-                      <thead>
-                        <tr style={{ backgroundColor: "#f3f4f6", borderBottom: "1px solid #d1d5db" }}>
-                          <th style={{ padding: "6px 10px", textAlign: "left" }}>{t("CS_COMMON_S_NO")}</th>
-                          <th style={{ padding: "6px 10px", textAlign: "left" }}>{t("WS_PROPERTY_TYPE")}</th>
-                          <th style={{ padding: "6px 10px", textAlign: "left" }}>{t("WS_BUILT_UP_AREA")}</th>
-                          <th style={{ padding: "6px 10px", textAlign: "left" }}>{t("WS_HEIGHT_OF_THE_BUILDING(meters)")}</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {(useDetails?.mixedOccupancyDetails || previewData?.mixedOccupancyDetails).map((r, i) => (
-                          <tr key={`prev_mixed_${i}`} style={{ borderBottom: "1px solid #e5e7eb" }}>
-                            <td style={{ padding: "6px 10px" }}>{i + 1}</td>
-                            <td style={{ padding: "6px 10px", fontWeight: "600" }}>{r.propertyTypeName || r.propertyTypeCode}</td>
-                            <td style={{ padding: "6px 10px" }}>{r.builtUpArea} sq. meter</td>
-                            <td style={{ padding: "6px 10px" }}>{r.heightOfTheBuilding} meter</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
+              {/* Mixed Occupancy Details - Only for Institutional property category */}
+              {(String(
+                (typeof useDetails?.propertyCategory === "object"
+                  ? useDetails?.propertyCategory?.code || useDetails?.propertyCategory?.name
+                  : useDetails?.propertyCategory) ||
+                  (typeof previewData?.propertyCategory === "object"
+                    ? previewData?.propertyCategory?.code || previewData?.propertyCategory?.name
+                    : previewData?.propertyCategory) ||
+                  ""
+              )
+                .toUpperCase()
+                .trim() === "INSTITUTIONAL") && (
+                <React.Fragment>
+                  <Row
+                    label={t("WS_IS_PROPERTY_USED_FOR_MIXED_OCCUPANCIES") || "Mixed Occupancies"}
+                    text={
+                      useDetails?.isMixedOccupancy === "YES" || previewData?.isMixedOccupancy === "YES"
+                        ? t("CS_COMMON_YES") || "Yes"
+                        : useDetails?.isMixedOccupancy === "NO" || previewData?.isMixedOccupancy === "NO"
+                        ? t("CS_COMMON_NO") || "No"
+                        : "NA"
+                    }
+                  />
+                  {/* If Mixed Occupancy is YES, show the usage list */}
+                  {(useDetails?.isMixedOccupancy === "YES" || previewData?.isMixedOccupancy === "YES") &&
+                    Array.isArray(useDetails?.mixedOccupancyDetails || previewData?.mixedOccupancyDetails) &&
+                    (useDetails?.mixedOccupancyDetails || previewData?.mixedOccupancyDetails).length > 0 && (
+                      <div style={{ marginTop: "12px", paddingTop: "12px" }}>
+                        <div style={{ fontWeight: "700", fontSize: "14px", marginBottom: "8px", color: "#0b0c0c" }}>
+                          {t("WS_MIXED_OCCUPANCY_DETAILS")}:
+                        </div>
+                        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
+                          <thead>
+                            <tr style={{ backgroundColor: "#f3f4f6", borderBottom: "1px solid #d1d5db" }}>
+                              <th style={{ padding: "6px 10px", textAlign: "left" }}>{t("CS_COMMON_S_NO")}</th>
+                              <th style={{ padding: "6px 10px", textAlign: "left" }}>{t("WS_PROPERTY_TYPE")}</th>
+                              <th style={{ padding: "6px 10px", textAlign: "left" }}>{t("WS_BUILT_UP_AREA")}</th>
+                              <th style={{ padding: "6px 10px", textAlign: "left" }}>{t("WS_HEIGHT_OF_THE_BUILDING(meters)")}</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {(useDetails?.mixedOccupancyDetails || previewData?.mixedOccupancyDetails).map((r, i) => (
+                              <tr key={`prev_mixed_${i}`} style={{ borderBottom: "1px solid #e5e7eb" }}>
+                                <td style={{ padding: "6px 10px" }}>{i + 1}</td>
+                                <td style={{ padding: "6px 10px", fontWeight: "600" }}>{r.propertyTypeName || r.propertyTypeCode}</td>
+                                <td style={{ padding: "6px 10px" }}>{r.builtUpArea} sq. meter</td>
+                                <td style={{ padding: "6px 10px" }}>{r.heightOfTheBuilding} meter</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                </React.Fragment>
+              )}
               {/* {useDetails?.NumberofDwellingUnits ? (
                 <Row
                   label={t("WS_NUMBER_OF_DWELLING_UNITS")}

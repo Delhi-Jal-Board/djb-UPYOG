@@ -699,6 +699,60 @@ const CheckPage = ({ onSubmit, value }) => {
         })}
       </StatusTable>
 
+      {/* Mixed Occupancy Details Table - Only shown for Institutional property when mixed occupancy rows exist */}
+      {(() => {
+        const propCatCode = String(
+          useDetails?.propertyCategory?.code ||
+            useDetails?.propertyCategory?.name ||
+            useDetails?.propertyCategory ||
+            cpt?.additionalDetails?.propertyCategory?.code ||
+            cpt?.additionalDetails?.propertyCategory ||
+            cpt?.propertyType?.propertyCategory ||
+            cpt?.usageCategory ||
+            ""
+        ).toUpperCase().trim();
+        const isInst = propCatCode === "INSTITUTIONAL";
+        const mixedRows =
+          (Array.isArray(useDetails?.mixedOccupancyDetails) && useDetails.mixedOccupancyDetails.length > 0 && useDetails.mixedOccupancyDetails) ||
+          (Array.isArray(cpt?.additionalDetails?.mixedOccupancyDetails) && cpt.additionalDetails.mixedOccupancyDetails.length > 0 && cpt.additionalDetails.mixedOccupancyDetails) ||
+          [];
+
+        if (!isInst || mixedRows.length === 0) return null;
+
+        return (
+          <div style={{ marginTop: "20px", marginBottom: "30px" }}>
+            <CardSubHeader>{t("WS_MIXED_OCCUPANCY_DETAILS") || "Mixed Occupancy Details"}</CardSubHeader>
+            <div style={{ overflowX: "auto", border: "1px solid #e0e0e0", borderRadius: "4px", marginTop: "10px" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "14px" }}>
+                <thead>
+                  <tr style={{ backgroundColor: "#f3f4f6", borderBottom: "2px solid #e5e7eb" }}>
+                    <th style={{ padding: "10px 14px", width: "40px" }}>{t("CS_COMMON_S_NO") || "S.No."}</th>
+                    <th style={{ padding: "10px 14px" }}>{t("WS_PROPERTY_TYPE") || "Property Type"}</th>
+                    <th style={{ padding: "10px 14px" }}>{t("WS_BUILT_UP_AREA") || "Built-up Area (sq. meter)"}</th>
+                    <th style={{ padding: "10px 14px" }}>{t("WS_HEIGHT_OF_THE_BUILDING_METERS") || "Height of the Building (meter)"}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {mixedRows.map((row, idx) => (
+                    <tr
+                      key={`mixed_summary_row_${idx}`}
+                      style={{ borderBottom: "1px solid #f0f0f0", backgroundColor: idx % 2 === 0 ? "#ffffff" : "#fafafa" }}
+                    >
+                      <td style={{ padding: "10px 14px" }}>{idx + 1}</td>
+                      <td style={{ padding: "10px 14px", fontWeight: "600", color: "#0b0c0c" }}>
+                        {row.propertyTypeName || row.propertyType?.name || row.propertyTypeCode}
+                      </td>
+                      <td style={{ padding: "10px 14px" }}>{row.builtUpArea} sq. meter</td>
+                      <td style={{ padding: "10px 14px" }}>{row.heightOfTheBuilding} meter</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* <Card style={{ paddingRight: "16px" }}>
         <div style={{ position: "relative" }}>
           <CardHeader styles={{ fontSize: "28px" }}>{t("WS_COMMON_CONNECTION_DETAIL")}</CardHeader>
