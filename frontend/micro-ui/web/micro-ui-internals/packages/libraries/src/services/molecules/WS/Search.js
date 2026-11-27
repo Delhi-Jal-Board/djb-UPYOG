@@ -63,6 +63,8 @@ const checkFeeEstimateVisible = async (wsDatas) => {
   const dataDetails =
     wsDatas?.[0]?.applicationType?.includes("NEW") ||
     wsDatas?.[0]?.applicationType?.includes("MUTATION") ||
+    wsDatas?.[0]?.applicationStatus?.includes("MUTATION") ||
+    wsDatas?.[0]?.additionalDetails?.reasonForNameChange ||
     wsDatas?.[0]?.applicationType?.includes("DISCONNECT") ||
     wsDatas?.[0]?.applicationType?.includes("RECONNECT");
   return dataDetails;
@@ -251,17 +253,25 @@ export const WSSearch = {
     tenantId = wsData?.[0]?.tenantId ? wsData?.[0]?.tenantId : tenantId;
     // Set dedicated disconnection business service for disconnection flow; retain existing logic for other services
     const isDisconnection = wsData?.[0]?.applicationType?.includes("DISCONNECT");
+    const isMutationApplication = Boolean(
+      wsData?.[0]?.applicationType?.includes("MUTATION") ||
+      wsData?.[0]?.applicationStatus?.includes("MUTATION") ||
+      wsData?.[0]?.additionalDetails?.reasonForNameChange ||
+      workflowDetails?.ProcessInstances?.[0]?.businessService?.toLowerCase()?.includes("mutation") ||
+      workflowDetails?.ProcessInstances?.[0]?.state?.state?.includes("MUTATION") ||
+      workflowDetails?.ProcessInstances?.[0]?.state?.applicationStatus?.includes("MUTATION")
+    );
     const serviceTypeOfData = isDisconnection
       ? (serviceType == "WATER" ? "WS.DISCONNECTION" : "SW.DISCONNECTION")
       : (serviceType == "WATER"
         ? workflowDetails?.ProcessInstances[0]?.businessService === "WSReconnection"
           ? "WSReconnection"
-          : wsData?.[0]?.applicationType?.includes("MUTATION")
+          : isMutationApplication
             ? "WS.MUTATION"
             : "WS.ONE_TIME_FEE"
         : workflowDetails?.ProcessInstances[0]?.businessService == "SWReconnection"
           ? "SWReconnection"
-          : wsData?.[0]?.applicationType?.includes("MUTATION")
+          : isMutationApplication
             ? "SW.MUTATION"
             : "SW.ONE_TIME_FEE");
     const collectionNumber = filters?.applicationNumber;
@@ -948,7 +958,18 @@ export const WSSearch = {
       });
     }
 
-    const isMutationApp = wsDataDetails?.applicationType?.includes("MUTATION");
+    const isMutationApp = Boolean(
+      wsDataDetails?.applicationType?.includes("MUTATION") ||
+      wsDataDetails?.applicationStatus?.includes("MUTATION") ||
+      wsDataDetails?.additionalDetails?.reasonForNameChange ||
+      wsDataDetails?.additionalDetails?.relationshipWithExistingConsumer ||
+      workFlowDataDetails?.ProcessInstances?.[0]?.businessService?.toLowerCase()?.includes("mutation") ||
+      workFlowDataDetails?.ProcessInstances?.[0]?.state?.state?.includes("MUTATION") ||
+      workFlowDataDetails?.ProcessInstances?.[0]?.state?.applicationStatus?.includes("MUTATION") ||
+      workflowDetails?.ProcessInstances?.[0]?.businessService?.toLowerCase()?.includes("mutation") ||
+      workflowDetails?.ProcessInstances?.[0]?.state?.state?.includes("MUTATION") ||
+      workflowDetails?.ProcessInstances?.[0]?.state?.applicationStatus?.includes("MUTATION")
+    );
     const uuid = wsDataDetails?.connectionHolders?.[0]?.uuid;
     const applicationNoForPrivacy = wsDataDetails?.applicationNo;
     const connectionHolderDetails = {
@@ -2337,7 +2358,10 @@ export const WSSearch = {
     sessionStorage.removeItem("IsDetailsExists");
 
     return {
-      applicationData: wsDataDetails,
+      applicationData: {
+        ...wsDataDetails,
+        applicationType: isMutationApp ? (wsDataDetails?.applicationType || "MUTATION_WATER_CONNECTION") : wsDataDetails?.applicationType,
+      },
       applicationDetails: details,
       tenantId: wsDataDetails?.tenantId,
       applicationNo: wsDataDetails?.applicationNo,

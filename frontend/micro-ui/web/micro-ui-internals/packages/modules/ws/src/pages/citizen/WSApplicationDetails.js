@@ -135,8 +135,16 @@ const WSApplicationDetails = () => {
     select: (data) =>
       data["common-masters"]?.uiCommonPay?.filter(({ code }) => "WS.ONE_TIME_FEE"?.includes(code))[0]?.receiptKey || "consolidatedreceipt",
   });
-  const isMutation =
-    data?.WaterConnection?.[0]?.applicationType?.includes("MUTATION") || data?.SewerageConnections?.[0]?.applicationType?.includes("MUTATION");
+  const isMutation = Boolean(
+    data?.WaterConnection?.[0]?.applicationType?.includes("MUTATION") ||
+    data?.SewerageConnections?.[0]?.applicationType?.includes("MUTATION") ||
+    data?.WaterConnection?.[0]?.applicationStatus?.includes("MUTATION") ||
+    data?.SewerageConnections?.[0]?.applicationStatus?.includes("MUTATION") ||
+    data?.WaterConnection?.[0]?.additionalDetails?.reasonForNameChange ||
+    data?.SewerageConnections?.[0]?.additionalDetails?.reasonForNameChange ||
+    data?.WaterConnection?.[0]?.additionalDetails?.relationshipWithExistingConsumer ||
+    data?.SewerageConnections?.[0]?.additionalDetails?.relationshipWithExistingConsumer
+  );
   const isReconnection =
     data?.WaterConnection?.[0]?.applicationType?.includes("RECONNECT") ||
     data?.SewerageConnections?.[0]?.applicationType?.includes("RECONNECT") ||
@@ -278,9 +286,57 @@ const WSApplicationDetails = () => {
     return str;
   };
 
+  const getMaskedMeterNumber = (meter) => {
+    if (!meter || meter === "NA") return t("NA");
+    const str = String(meter).trim();
+    if (str.length <= 4) return "****";
+    return `******${str.slice(-4)}`;
+  };
+
+  const getMaskedDocNumber = (doc) => {
+    if (!doc || doc === "NA") return t("NA");
+    const str = String(doc).trim();
+    if (str.length <= 4) return "****";
+    return `******${str.slice(-4)}`;
+  };
+
+  const getMaskedName = (name) => {
+    if (!name) return t("NA");
+    return String(name)
+      .split("")
+      .map((char, index) => (index % 2 === 1 && char !== " " ? "*" : char))
+      .join("");
+  };
+
+  const getMaskedPhone = (phone) => {
+    if (!phone || String(phone).length < 10) return t("NA");
+    const str = String(phone).replace(/\D/g, "").slice(-10);
+    return `******${str.slice(-4)}`;
+  };
+
+  const getRelationshipName = (code) => {
+    if (!code) return t("NA");
+    if (code?.code) return t(code.i18nKey || code.name || code.code);
+    const map = { BLOOD_RELATION: t("Blood Relation"), LEGAL_HEIR: t("Legal Heir"), OTHER: t("Other") };
+    return map[code] || t(code);
+  };
+
+  const getReasonName = (code) => {
+    if (!code) return t("NA");
+    if (code?.code) return t(code.i18nKey || code.name || code.code);
+    const map = { SALE_PURCHASE: t("Purchase of Property"), DEVOLUTION_INHERITANCE: t("Inheritance"), OTHER: t("Devolution/Other") };
+    return map[code] || t(code);
+  };
+
   const getDocumentSectionHeader = (docType) => {
     if (!docType) return "";
     const upper = docType.toUpperCase();
+    if (isMutation) {
+      if (upper.includes("IDENTITY") || upper.includes("AADHAAR") || upper.includes("VOTER") || upper.includes("PAN") || upper.includes("PASSPORT") || upper.includes("DRIVING")) {
+        return t("WS_IDENTITY_PROOF", "Proof of Identity");
+      }
+      return t("WS_REASON_BASED_DOCUMENT", "Supporting Document");
+    }
     if (upper.includes("SEWER") || upper.includes("STP")) {
       return t("WS_SEWER_TREATMENT_PLANT_CERTIFICATE") && t("WS_SEWER_TREATMENT_PLANT_CERTIFICATE") !== "WS_SEWER_TREATMENT_PLANT_CERTIFICATE"
         ? t("WS_SEWER_TREATMENT_PLANT_CERTIFICATE")
@@ -306,7 +362,20 @@ const WSApplicationDetails = () => {
   };
 
   const getEnrichedDocuments = (docs = []) => {
-    return (docs || []).map((doc) => {
+    let allDocs = [...(docs || [])];
+    if (isMutation) {
+      if (
+        additionalDetails?.identityProofDocumentId &&
+        !allDocs.some((d) => (d?.documentType || "").toUpperCase().includes("IDENTITY") || (d?.documentType || "").toUpperCase().includes("AADHAAR"))
+      ) {
+        allDocs.push({
+          documentType: additionalDetails?.identityProofDocumentName || "IDENTITY_PROOF",
+          fileStoreId: additionalDetails?.identityProofDocumentId,
+          documentNumber: additionalDetails?.identityProofDocumentNumber || additionalDetails?.identityProofNumber,
+        });
+      }
+    }
+    return allDocs.map((doc) => {
       const isStp = (doc?.documentType || "").toUpperCase().includes("SEWER") || (doc?.documentType || "").toUpperCase().includes("STP");
       const isRwh = (doc?.documentType || "").toUpperCase().includes("RAIN") || (doc?.documentType || "").toUpperCase().includes("HARVEST");
       let docNumber = doc?.documentNumber;
@@ -316,6 +385,9 @@ const WSApplicationDetails = () => {
         } else if (isRwh) {
           docNumber = additionalDetails?.rwhDocumentNumber || additionalDetails?.otherDocumentNumber;
         }
+      }
+      if (isMutation && docNumber) {
+        docNumber = getMaskedDocNumber(docNumber);
       }
       return {
         ...doc,
@@ -835,7 +907,9 @@ const WSApplicationDetails = () => {
                 </React.Fragment>
               )}
 
-              <CardHeader styles={{ fontSize: "28px" }}>{t("WS_COMMON_CONNECTION_DETAIL")}</CardHeader>
+              {!isMutation ? (
+                <React.Fragment>
+                  <CardHeader styles={{ fontSize: "28px" }}>{t("WS_COMMON_CONNECTION_DETAIL")}</CardHeader>
               <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
                 <Row
                   label={t("WS_SERVICE_TYPE")}
@@ -2113,6 +2187,108 @@ const WSApplicationDetails = () => {
                   </StatusTable>
                 </React.Fragment>
               )}
+                </React.Fragment>
+              ) : (
+                <React.Fragment>
+                  {/* Existing Consumer / Connection Details */}
+                  <CardHeader styles={{ fontSize: "28px" }}>{t("WS_EXISTING_CONSUMER_DETAILS_HEADER", "Existing Consumer / Connection Details")}</CardHeader>
+                  <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
+                    <Row
+                      label={t("WS_ACK_COMMON_CONNECTION_NO", "Consumer Number")}
+                      text={applicationData?.connectionNo || t("NA")}
+                    />
+                    <Row
+                      label={t("WS_REGISTERED_CONSUMER_NAME", "Registered Consumer Name")}
+                      text={getMaskedName(
+                        additionalDetails?.ownerName ||
+                        PTData?.Properties?.[0]?.owners?.[0]?.name ||
+                        applicationData?.connectionHolders?.find((h) => h?.isPrimaryOwner)?.name ||
+                        applicationData?.connectionHolders?.[0]?.name
+                      )}
+                    />
+                    <Row
+                      label={t("WS_REGISTERED_MOBILE_NUMBER", "Registered Mobile Number")}
+                      text={getMaskedPhone(
+                        additionalDetails?.ownerContactNumber ||
+                        PTData?.Properties?.[0]?.owners?.[0]?.mobileNumber ||
+                        additionalDetails?.ownerMobileNumber ||
+                        applicationData?.mobileNumber
+                      )}
+                    />
+                    <Row
+                      label={t("WS_SERV_DETAIL_METER_NO", "Meter Number")}
+                      text={getMaskedMeterNumber(applicationData?.meterId || additionalDetails?.meterNo || additionalDetails?.meterId)}
+                    />
+                    <Row
+                      label={t("WS_PROPERTY_ID_LABEL", "Property ID")}
+                      text={applicationData?.propertyId || PTData?.Properties?.[0]?.propertyId || t("NA")}
+                    />
+                    <Row
+                      label={t("WS_PROPERTY_ADDRESS_LABEL", "Property Address")}
+                      text={
+                        additionalDetails?.completeAddress ||
+                        additionalDetails?.addressType ||
+                        (PTData?.Properties?.[0]?.address
+                          ? [
+                              PTData.Properties[0].address.doorNo,
+                              PTData.Properties[0].address.buildingName,
+                              PTData.Properties[0].address.street,
+                              PTData.Properties[0].address.locality?.name,
+                              PTData.Properties[0].address.city,
+                              PTData.Properties[0].address.pincode,
+                            ]
+                              .filter(Boolean)
+                              .join(", ")
+                          : t("NA"))
+                      }
+                      textStyle={{ wordBreak: "break-word" }}
+                    />
+                  </StatusTable>
+
+                  {/* Transferee (New Owner) Details */}
+                  <CardHeader styles={{ fontSize: "28px" }}>{t("WS_MUTATION_NEW_CONSUMER_DETAILS_HEADER", "Transferee (New Owner) Details")}</CardHeader>
+                  <StatusTable style={{ marginTop: "10px", marginBottom: "30px" }}>
+                    <Row
+                      label={t("WS_NEW_CONSUMER_NAME", "New Consumer Name")}
+                      text={applicationData?.connectionHolders?.[0]?.name || additionalDetails?.proposedNewConsumerName || t("NA")}
+                    />
+                    <Row
+                      label={t("CORE_COMMON_MOBILE_NUMBER", "Mobile Number")}
+                      text={applicationData?.connectionHolders?.[0]?.mobileNumber || additionalDetails?.newOwnerMobileNumber || t("NA")}
+                    />
+                    <Row
+                      label={t("WS_EMAIL_ID", "Email ID")}
+                      text={applicationData?.connectionHolders?.[0]?.emailId || additionalDetails?.emailId || t("NA")}
+                    />
+                    <Row
+                      label={t("WS_CONN_HOLDER_OWN_DETAIL_GENDER_LABEL", "Gender")}
+                      text={
+                        applicationData?.connectionHolders?.[0]?.gender
+                          ? t(`GENDER_${applicationData?.connectionHolders?.[0]?.gender}`, applicationData?.connectionHolders?.[0]?.gender)
+                          : t("NA")
+                      }
+                    />
+                    <Row
+                      label={t("WS_REASON_FOR_TRANSFER", "Reason for Name Change / Mutation")}
+                      text={getReasonName(additionalDetails?.reasonForNameChange || additionalDetails?.reason)}
+                    />
+                    <Row
+                      label={t("WS_RELATIONSHIP_WITH_EXISTING_CONSUMER", "Relationship with Existing Consumer")}
+                      text={getRelationshipName(
+                        applicationData?.connectionHolders?.[0]?.relationship ||
+                        additionalDetails?.relationshipWithExistingConsumer ||
+                        additionalDetails?.relationship
+                      )}
+                    />
+                    {additionalDetails?.isOtpVerified !== undefined && (
+                      <Row
+                        label={t("WS_OTP_VERIFICATION_STATUS", "OTP Verification Status")}
+                        text={additionalDetails?.isOtpVerified ? t("Verified with OTP") : t("Without OTP Verification")}
+                      />
+                    )}
+                  </StatusTable>
+                </React.Fragment>
+              )}
 
               {!isDisconnectionExecuted && !isDisconnectionPaymentPending && (
                 <React.Fragment>
@@ -2121,6 +2297,17 @@ const WSApplicationDetails = () => {
                     getEnrichedDocuments(data?.WaterConnection?.[0]?.documents)
                       .filter((doc) => {
                         const dt = (doc?.documentType || "").toUpperCase();
+                        if (isMutation) {
+                          return (
+                            !dt.includes("METER") &&
+                            !dt.includes("SIGN") &&
+                            !dt.includes("EMPLOYEE") &&
+                            !dt.includes("SEWER") &&
+                            !dt.includes("STP") &&
+                            !dt.includes("RAIN") &&
+                            !dt.includes("HARVEST")
+                          );
+                        }
                         return (
                           dt !== "METER_PHOTO" &&
                           dt !== "METER_WARRANTY_CARD_TESTING_REPORT_INVOICE" &&
@@ -2162,6 +2349,17 @@ const WSApplicationDetails = () => {
                     getEnrichedDocuments(data?.SewerageConnections?.[0]?.documents)
                       .filter((doc) => {
                         const dt = (doc?.documentType || "").toUpperCase();
+                        if (isMutation) {
+                          return (
+                            !dt.includes("METER") &&
+                            !dt.includes("SIGN") &&
+                            !dt.includes("EMPLOYEE") &&
+                            !dt.includes("SEWER") &&
+                            !dt.includes("STP") &&
+                            !dt.includes("RAIN") &&
+                            !dt.includes("HARVEST")
+                          );
+                        }
                         return (
                           dt !== "METER_PHOTO" &&
                           dt !== "METER_WARRANTY_CARD_TESTING_REPORT_INVOICE" &&

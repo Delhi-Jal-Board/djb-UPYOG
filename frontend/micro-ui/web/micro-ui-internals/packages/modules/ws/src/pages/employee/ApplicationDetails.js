@@ -541,10 +541,21 @@ const ApplicationDetails = () => {
     return a.order - b.order;
   });
 
-  const isMutationApp =
+  const isMutationApp = Boolean(
     applicationDetails?.applicationData?.applicationType === "MUTATION_WATER_CONNECTION" ||
     applicationDetails?.applicationData?.applicationType?.includes("MUTATION") ||
-    applicationDetails?.processInstancesDetails?.[0]?.businessService?.toLowerCase()?.includes("mutation");
+    applicationDetails?.applicationData?.applicationStatus?.includes("MUTATION") ||
+    applicationDetails?.applicationData?.additionalDetails?.reasonForNameChange ||
+    applicationDetails?.applicationData?.additionalDetails?.relationshipWithExistingConsumer ||
+    applicationDetails?.processInstancesDetails?.[0]?.businessService?.toLowerCase()?.includes("mutation") ||
+    applicationDetails?.processInstancesDetails?.[0]?.state?.state?.includes("MUTATION") ||
+    applicationDetails?.processInstancesDetails?.[0]?.state?.applicationStatus?.includes("MUTATION") ||
+    workflowDetails?.data?.processInstances?.[0]?.businessService?.toLowerCase()?.includes("mutation") ||
+    workflowDetails?.data?.processInstances?.[0]?.state?.state?.includes("MUTATION") ||
+    workflowDetails?.data?.processInstances?.[0]?.state?.applicationStatus?.includes("MUTATION") ||
+    workflowDetails?.data?.timeline?.[0]?.state?.includes("MUTATION") ||
+    workflowDetails?.data?.timeline?.[0]?.status?.includes("MUTATION")
+  );
 
   const getMaskedMeterNumber = (meter) => {
     if (!meter || meter === "NA") return t("NA");
@@ -596,20 +607,17 @@ const ApplicationDetails = () => {
     const transfereeHolder = appData.connectionHolders?.[0] || {};
 
     // 1. Header Section
-    let headerSection = applicationDetails.applicationDetails.find((s) => s?.title === " " || s?.title === "");
-    if (!headerSection) {
-      headerSection = {
-        title: " ",
-        asSectionHeader: true,
-        values: [
-          { title: t("PDF_STATIC_LABEL_APPLICATION_NUMBER_LABEL", "Application Number"), value: appData.applicationNo || t("NA") },
-          {
-            title: t("WS_SERVICE_NAME_LABEL", "Connection Category"),
-            value: addDetails?.serviceType?.name || t("Water Connection"),
-          },
-        ],
-      };
-    }
+    let headerSection = {
+      title: " ",
+      asSectionHeader: true,
+      values: [
+        { title: t("PDF_STATIC_LABEL_APPLICATION_NUMBER_LABEL", "Application Number"), value: appData.applicationNo || t("NA") },
+        {
+          title: t("WS_SERVICE_NAME_LABEL", "Connection Category"),
+          value: addDetails?.serviceType?.name || (appData?.serviceType === "SEWERAGE" || appData?.applicationNo?.includes("SW") ? t("Sewerage Connection") : t("Water Connection")),
+        },
+      ],
+    };
 
     // 2. Fee Estimation Section
     const feeSection = applicationDetails.applicationDetails.find((s) => s?.title === "WS_TASK_DETAILS_FEE_ESTIMATE");

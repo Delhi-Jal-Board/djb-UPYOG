@@ -34,11 +34,26 @@ export const isWSNewConnection = (applicationData, workflowDetails, businessServ
   const appType = applicationData?.applicationType || "";
   const appTypeUpper = typeof appType === "string" ? appType.trim().toUpperCase() : "";
 
-  if (
+  const appStatus =
+    applicationData?.applicationStatus ||
+    workflowDetails?.data?.timeline?.[0]?.state ||
+    workflowDetails?.data?.timeline?.[0]?.status ||
+    workflowDetails?.data?.processInstances?.[0]?.state?.state ||
+    workflowDetails?.data?.processInstances?.[0]?.state?.applicationStatus ||
+    "";
+  const appStatusUpper = typeof appStatus === "string" ? appStatus.trim().toUpperCase() : "";
+
+  const isMutation =
     appTypeUpper.includes("MUTATION") ||
+    bServiceUpper.includes("MUTATION") ||
+    appStatusUpper.includes("MUTATION") ||
+    Boolean(applicationData?.additionalDetails?.reasonForNameChange) ||
+    Boolean(applicationData?.additionalDetails?.relationshipWithExistingConsumer);
+
+  if (
+    isMutation ||
     appTypeUpper.includes("DISCONNECT") ||
     appTypeUpper.includes("RECONNECT") ||
-    bServiceUpper.includes("MUTATION") ||
     bServiceUpper.includes("DISCONNECT") ||
     bServiceUpper.includes("RECONNECT") ||
     bServiceUpper.includes("AMENDMENT")

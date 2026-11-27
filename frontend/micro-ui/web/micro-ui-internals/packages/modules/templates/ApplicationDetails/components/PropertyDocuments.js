@@ -22,10 +22,16 @@ function PropertyDocuments({
   const [modalFile, setModalFile] = useState(null);
   const [checkedMap, setCheckedMap] = useState({});
 
-  const isMutation =
+  const isMutation = Boolean(
     applicationData?.applicationType?.includes("MUTATION") ||
+    applicationData?.applicationStatus?.includes("MUTATION") ||
+    applicationData?.additionalDetails?.reasonForNameChange ||
     businessService?.toUpperCase()?.includes("MUTATION") ||
-    applicationData?.businessService?.toUpperCase()?.includes("MUTATION");
+    applicationData?.businessService?.toUpperCase()?.includes("MUTATION") ||
+    workflowDetails?.data?.processInstances?.[0]?.state?.state?.includes("MUTATION") ||
+    workflowDetails?.data?.processInstances?.[0]?.state?.applicationStatus?.includes("MUTATION") ||
+    workflowDetails?.data?.timeline?.[0]?.state?.includes("MUTATION")
+  );
 
   const isNewConn =
     !isMutation && (
