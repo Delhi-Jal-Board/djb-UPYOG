@@ -263,10 +263,13 @@ public class WaterServicesUtil {
 		}
 		if (!CollectionUtils.isEmpty(criteria.getUuids())) {
 			if (isanyparametermatch)url.append("&");
+			isanyparametermatch = true;
 			String uuidString = criteria.getUuids().stream().map(uuid -> uuid).collect(Collectors.toSet()).stream()
 					.collect(Collectors.joining(","));
 			url.append(uuids).append(uuidString);
 		}
+		if (isanyparametermatch) url.append("&");
+		url.append("skipWaterConnection=true");
 		return url;
 	}
 	

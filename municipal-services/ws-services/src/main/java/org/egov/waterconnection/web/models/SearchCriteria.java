@@ -116,6 +116,10 @@ public class SearchCriteria {
 	@JsonProperty("isSkipLevelSearch")
 	private Boolean	isSkipLevelSearch = false;
 
+	@Builder.Default
+	@JsonProperty("skipDetailsEnrichment")
+	private Boolean skipDetailsEnrichment = false;
+
 	public enum SortOrder {
 	    ASC,
 	    DESC

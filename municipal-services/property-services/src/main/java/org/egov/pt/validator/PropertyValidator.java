@@ -323,7 +323,8 @@ public class PropertyValidator {
 				.append("?tenantId=").append(property.getTenantId())
 				.append("&propertyIds=").append(property.getPropertyId())
 				.append("&searchType=APPLICATION")
-				.append("&isInternalCall=true");
+				.append("&isInternalCall=true")
+				.append("&skipDetailsEnrichment=true");
 
 		try {
 			Optional<Object> response = serviceRequestRepository.fetchResult(uri,
