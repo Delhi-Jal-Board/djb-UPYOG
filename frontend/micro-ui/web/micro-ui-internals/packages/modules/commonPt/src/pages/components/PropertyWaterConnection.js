@@ -440,6 +440,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
   const selectedCategoryCode =
     typeof watchPropertyCategory === "object" ? watchPropertyCategory?.code || watchPropertyCategory?.name : watchPropertyCategory;
   const hasSelectedCategory = Boolean(normalizeCode(selectedCategoryCode));
+  const isInstitutionalCategory = normalizeCode(selectedCategoryCode) === "INSTITUTIONAL";
 
   const handleCategoryChange = (selectedCategory) => {
     setRuleAnswer(null);
@@ -447,6 +448,16 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
     setValue("useDetails.propertyCategory", selectedCategory, { shouldValidate: true, shouldDirty: true });
     if (clearErrors) clearErrors("useDetails.propertyCategory");
     if (formClearErrors) formClearErrors("useDetails.propertyCategory");
+
+    const newCatNorm = normalizeCode(typeof selectedCategory === "object" ? selectedCategory?.code || selectedCategory?.name : selectedCategory);
+    if (newCatNorm !== "INSTITUTIONAL") {
+      setIsMixedOcc(null);
+      setMixedOccRows([]);
+      setEditingRowIndex(null);
+      setMixedForm({ propertyType: null, builtUpArea: "", heightOfTheBuilding: "" });
+      setValue("useDetails.isMixedOccupancy", null, { shouldDirty: true });
+      setValue("useDetails.mixedOccupancyDetails", [], { shouldDirty: true });
+    }
 
     if (!selectedCategory) {
       setValue("useDetails.propertyType", null, { shouldValidate: false, shouldDirty: true });
@@ -830,9 +841,9 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
 
   const lastSentValue = React.useRef(null);
   useEffect(() => {
-    // If rows were added to table, use mixedOccRows; if no rows added yet, check if single inputs are filled
-    let effectiveMixedDetails = mixedOccRows;
-    if (isMixedOcc === "YES" && (!mixedOccRows || mixedOccRows.length === 0)) {
+    const effectiveIsMixedOcc = isInstitutionalCategory ? isMixedOcc : null;
+    let effectiveMixedDetails = isInstitutionalCategory ? mixedOccRows : [];
+    if (effectiveIsMixedOcc === "YES" && (!mixedOccRows || mixedOccRows.length === 0)) {
       if (mixedForm.propertyType && mixedForm.builtUpArea && mixedForm.heightOfTheBuilding) {
         effectiveMixedDetails = [
           {
@@ -855,17 +866,17 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
         categoryTypeSelectionQuestion: categoryTypeRule?.question || null,
         categoryTypeSelectionAnswer: ruleAnswer || null,
         categoryTypeSelectionQuestionCode: categoryTypeRule?.questionCode || null,
-        isMixedOccupancy: isMixedOcc,
-        mixedOccupancyDetails: isMixedOcc === "YES" ? effectiveMixedDetails : [],
+        isMixedOccupancy: effectiveIsMixedOcc,
+        mixedOccupancyDetails: effectiveIsMixedOcc === "YES" ? effectiveMixedDetails : [],
       },
-      isMixedOccupancy: isMixedOcc,
-      mixedOccupancyDetails: isMixedOcc === "YES" ? effectiveMixedDetails : [],
+      isMixedOccupancy: effectiveIsMixedOcc,
+      mixedOccupancyDetails: effectiveIsMixedOcc === "YES" ? effectiveMixedDetails : [],
     };
     if (!_.isEqual(lastSentValue.current, payloadToSend)) {
       lastSentValue.current = _.cloneDeep(payloadToSend);
       onSelect(config.key, payloadToSend);
     }
-  }, [formValue, allQuestionsPayload, categoryTypeRule, ruleAnswer, isMixedOcc, mixedOccRows, mixedForm, config.key, onSelect]);
+  }, [formValue, allQuestionsPayload, categoryTypeRule, ruleAnswer, isMixedOcc, mixedOccRows, mixedForm, isInstitutionalCategory, config.key, onSelect]);
 
   useEffect(() => {
     if (!formData?.cpt?.details) {
@@ -956,13 +967,24 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
       setQuestionAnswers(savedQAs);
       setValue("useDetails.questions", savedQAs);
     }
+
+    const savedIsMixed = additionalDetails.isMixedOccupancy || details?.isMixedOccupancy || null;
+    const savedMixedDetails = additionalDetails.mixedOccupancyDetails || details?.mixedOccupancyDetails || [];
+    if (savedIsMixed) {
+      setIsMixedOcc(savedIsMixed);
+      setValue("useDetails.isMixedOccupancy", savedIsMixed);
+    }
+    if (Array.isArray(savedMixedDetails) && savedMixedDetails.length > 0) {
+      setMixedOccRows(savedMixedDetails);
+      setValue("useDetails.mixedOccupancyDetails", savedMixedDetails);
+    }
   }, [formData?.cpt?.details, formData?.cpt, categoryOptions, propertyTypeOptions, usageTypeOptions, yearOptions, categoryTypeList, setValue]);
 
   const lastErrorState = React.useRef(null);
   useEffect(() => {
     let hasErrors = Object.keys(errors).length > 0;
-    // Check mixed occupancy built-up area and height equality
-    if (isMixedOcc === "YES") {
+    // Check mixed occupancy built-up area and height equality (only for Property Creation/Edit when not read-only from property search)
+    if (!isPropertyFound && isMixedOcc === "YES") {
       const parentBuilt = parseFloat(watchBuiltUpArea) || 0;
       const parentHeight = parseFloat(watchHeightOfTheBuilding) || 0;
 
@@ -1600,12 +1622,13 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
         </div>
       </CollapsibleCardPage>
 
-      {/* Mixed Occupancy Section */}
-      <CollapsibleCardPage
-        title={t("WS_MIXED_OCCUPANCY_TITLE") || "Mixed Occupancy"}
-        defaultOpen={true}
-        style={{ marginTop: "24px", ...props.style }}
-      >
+      {/* Mixed Occupancy Section - Only for Institutional category */}
+      {isInstitutionalCategory && (
+        <CollapsibleCardPage
+          title={t("WS_MIXED_OCCUPANCY_TITLE") || "Mixed Occupancy Details"}
+          defaultOpen={config?.isAutomaticFill ? false : true}
+          style={{ marginTop: "24px", ...props.style }}
+        >
         <div style={{ padding: "8px 0" }}>
           {/* Mixed Occupancy Question */}
           <div style={{ marginBottom: "20px" }}>
@@ -1621,6 +1644,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
               <RadioButtons
                 t={t}
                 name="mixedOccupancyRadio"
+                disabled={isPropertyFound}
                 options={[
                   { code: "YES", name: t("CS_COMMON_YES") && t("CS_COMMON_YES") !== "CS_COMMON_YES" ? t("CS_COMMON_YES") : "Yes" },
                   { code: "NO", name: t("CS_COMMON_NO") && t("CS_COMMON_NO") !== "CS_COMMON_NO" ? t("CS_COMMON_NO") : "No" },
@@ -1643,6 +1667,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
                     : null
                 }
                 onSelect={(option) => {
+                  if (isPropertyFound) return;
                   const choice = typeof option === "object" ? option?.code : option;
                   setIsMixedOcc(choice);
                   setValue("useDetails.isMixedOccupancy", choice, { shouldDirty: true });
@@ -1664,162 +1689,166 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", marginBottom: "16px" }}>
                 <div>
                   <h4 style={{ margin: "0 0 4px 0", fontSize: "16px", fontWeight: "700", color: "#0b0c0c" }}>
-                    {t("WS_ADD_DETAILS_OF_USAGE_OF_PROPERTY") || "Add Details of Usage of Property"}
+                    {isPropertyFound ? t("WS_MIXED_OCCUPANCY_DETAILS") || "Mixed Occupancy Details" : t("WS_ADD_DETAILS_OF_USAGE_OF_PROPERTY") || "Add Details of Usage of Property"}
                   </h4>
-                  <div style={{ fontSize: "13px", color: "#505a5f" }}>
-                    {t("WS_MIXED_USAGE_DESC_PREFIX") ||
-                      "Add each property usage type with its built-up area and height of the building. The total built-up area must be equal to "}
-                    <strong>{watchBuiltUpArea ? `${parseFloat(watchBuiltUpArea) || 0} sq. meter` : t("WS_PARENT_BUILT_UP_AREA")}</strong>
-                    {"."}
-                  </div>
+                  {!isPropertyFound && (
+                    <div style={{ fontSize: "13px", color: "#505a5f" }}>
+                      {t("WS_MIXED_USAGE_DESC_PREFIX") ||
+                        "Add each property usage type with its built-up area and height of the building. The total built-up area must be equal to "}
+                      <strong>{watchBuiltUpArea ? `${parseFloat(watchBuiltUpArea) || 0} sq. meter` : t("WS_PARENT_BUILT_UP_AREA")}</strong>
+                      {"."}
+                    </div>
+                  )}
                 </div>
               </div>
 
-              {/* Form to Add / Edit a Usage Type row */}
-              <div
-                style={{
-                  backgroundColor: "#f9fafb",
-                  border: "1px solid #e5ebf3",
-                  borderRadius: "4px",
-                  padding: "16px",
-                  marginBottom: "20px",
-                }}
-              >
-                <div style={{ fontWeight: "600", fontSize: "14px", marginBottom: "12px", color: "#0b0c0c" }}>
-                  {editingRowIndex !== null ? `${t("WS_EDIT_PROPERTY_USAGE")} (#${editingRowIndex + 1})` : t("WS_ADD_NEW_PROPERTY_USAGE")}
-                </div>
-
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px", alignItems: "flex-start" }}>
-                  {/* 1. Select Property Type */}
-                  <div>
-                    <div style={{ fontSize: "13px", fontWeight: "600", marginBottom: "4px" }}>
-                      {t("WS_PROPERTY_TYPE")} <span style={{ color: "red" }}>*</span>
-                    </div>
-                    <Dropdown
-                      option={allPropertyTypeOptions}
-                      optionKey="name"
-                      selected={mixedForm.propertyType}
-                      select={(val) => setMixedForm((prev) => ({ ...prev, propertyType: val }))}
-                      t={t}
-                      placeholder={t("WS_PROPERTY_TYPE")}
-                    />
+              {/* Form to Add / Edit a Usage Type row (Only shown in Property Creation / Edit, NOT in New Connection / old-application) */}
+              {!isPropertyFound && (
+                <div
+                  style={{
+                    backgroundColor: "#f9fafb",
+                    border: "1px solid #e5ebf3",
+                    borderRadius: "4px",
+                    padding: "16px",
+                    marginBottom: "20px",
+                  }}
+                >
+                  <div style={{ fontWeight: "600", fontSize: "14px", marginBottom: "12px", color: "#0b0c0c" }}>
+                    {editingRowIndex !== null ? `${t("WS_EDIT_PROPERTY_USAGE")} (#${editingRowIndex + 1})` : t("WS_ADD_NEW_PROPERTY_USAGE")}
                   </div>
 
-                  {/* 2. Enter Built-up Area */}
-                  <div>
-                    <div style={{ fontSize: "13px", fontWeight: "600", marginBottom: "4px" }}>
-                      {t("WS_BUILT_UP_AREA")} <span style={{ color: "red" }}>*</span>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px", alignItems: "flex-start" }}>
+                    {/* 1. Select Property Type */}
+                    <div>
+                      <div style={{ fontSize: "13px", fontWeight: "600", marginBottom: "4px" }}>
+                        {t("WS_PROPERTY_TYPE")} <span style={{ color: "red" }}>*</span>
+                      </div>
+                      <Dropdown
+                        option={allPropertyTypeOptions}
+                        optionKey="name"
+                        selected={mixedForm.propertyType}
+                        select={(val) => setMixedForm((prev) => ({ ...prev, propertyType: val }))}
+                        t={t}
+                        placeholder={t("WS_PROPERTY_TYPE")}
+                      />
                     </div>
-                    <TextInput
-                      t={t}
-                      type="text"
-                      value={mixedForm.builtUpArea}
-                      placeholder={t("WS_BUILT_UP_AREA")}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        if (val === "" || DECIMAL_PATTERN.test(val)) {
-                          setMixedForm((prev) => ({ ...prev, builtUpArea: val }));
-                        }
-                      }}
-                    />
+
+                    {/* 2. Enter Built-up Area */}
+                    <div>
+                      <div style={{ fontSize: "13px", fontWeight: "600", marginBottom: "4px" }}>
+                        {t("WS_BUILT_UP_AREA")} <span style={{ color: "red" }}>*</span>
+                      </div>
+                      <TextInput
+                        t={t}
+                        type="text"
+                        value={mixedForm.builtUpArea}
+                        placeholder={t("WS_BUILT_UP_AREA")}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (val === "" || DECIMAL_PATTERN.test(val)) {
+                            setMixedForm((prev) => ({ ...prev, builtUpArea: val }));
+                          }
+                        }}
+                      />
+                    </div>
+
+                    {/* 3. Enter Height of the Building */}
+                    <div>
+                      <div style={{ fontSize: "13px", fontWeight: "600", marginBottom: "4px" }}>
+                        {t("WS_HEIGHT_OF_THE_BUILDING(meters)")} <span style={{ color: "red" }}>*</span>
+                      </div>
+                      <TextInput
+                        t={t}
+                        type="text"
+                        value={mixedForm.heightOfTheBuilding}
+                        placeholder={t("WS_HEIGHT_OF_THE_BUILDING")}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (val === "" || DECIMAL_PATTERN.test(val)) {
+                            setMixedForm((prev) => ({ ...prev, heightOfTheBuilding: val }));
+                          }
+                        }}
+                      />
+                    </div>
                   </div>
 
-                  {/* 3. Enter Height of the Building */}
-                  <div>
-                    <div style={{ fontSize: "13px", fontWeight: "600", marginBottom: "4px" }}>
-                      {t("WS_HEIGHT_OF_THE_BUILDING(meters)")} <span style={{ color: "red" }}>*</span>
-                    </div>
-                    <TextInput
-                      t={t}
-                      type="text"
-                      value={mixedForm.heightOfTheBuilding}
-                      placeholder={t("WS_HEIGHT_OF_THE_BUILDING")}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        if (val === "" || DECIMAL_PATTERN.test(val)) {
-                          setMixedForm((prev) => ({ ...prev, heightOfTheBuilding: val }));
-                        }
-                      }}
-                    />
-                  </div>
-                </div>
-
-                {/* Add / Update / Cancel Buttons */}
-                <div style={{ display: "flex", gap: "10px", marginTop: "16px", justifyContent: "flex-end" }}>
-                  {editingRowIndex !== null && (
+                  {/* Add / Update / Cancel Buttons */}
+                  <div style={{ display: "flex", gap: "10px", marginTop: "16px", justifyContent: "flex-end" }}>
+                    {editingRowIndex !== null && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingRowIndex(null);
+                          setMixedForm({ propertyType: null, builtUpArea: "", heightOfTheBuilding: "" });
+                        }}
+                        style={{
+                          padding: "8px 16px",
+                          backgroundColor: "#fff",
+                          border: "1px solid #d6d5d4",
+                          borderRadius: "4px",
+                          cursor: "pointer",
+                          fontSize: "14px",
+                          fontWeight: "600",
+                        }}
+                      >
+                        {t("CS_COMMON_CANCEL") || "Cancel"}
+                      </button>
+                    )}
                     <button
                       type="button"
                       onClick={() => {
-                        setEditingRowIndex(null);
+                        if (!mixedForm.propertyType) {
+                          setShowToast({ key: true, label: t("WS_ERR_SELECT_PROPERTY_TYPE") || "Please select Property Type" });
+                          return;
+                        }
+                        if (!mixedForm.builtUpArea || isNaN(parseFloat(mixedForm.builtUpArea)) || parseFloat(mixedForm.builtUpArea) <= 0) {
+                          setShowToast({ key: true, label: t("WS_ERR_VALID_BUILT_UP_AREA") || "Please enter valid Built-up Area" });
+                          return;
+                        }
+                        if (
+                          !mixedForm.heightOfTheBuilding ||
+                          isNaN(parseFloat(mixedForm.heightOfTheBuilding)) ||
+                          parseFloat(mixedForm.heightOfTheBuilding) <= 0
+                        ) {
+                          setShowToast({ key: true, label: t("WS_ERR_VALID_HEIGHT") || "Please enter valid Height of The Building" });
+                          return;
+                        }
+
+                        const newRow = {
+                          propertyType: mixedForm.propertyType,
+                          propertyTypeCode: mixedForm.propertyType?.code || mixedForm.propertyType?.name,
+                          propertyTypeName: mixedForm.propertyType?.name || mixedForm.propertyType?.code,
+                          builtUpArea: String(parseFloat(mixedForm.builtUpArea)),
+                          heightOfTheBuilding: String(parseFloat(mixedForm.heightOfTheBuilding)),
+                        };
+
+                        let updatedRows;
+                        if (editingRowIndex !== null) {
+                          updatedRows = mixedOccRows.map((r, idx) => (idx === editingRowIndex ? newRow : r));
+                          setEditingRowIndex(null);
+                        } else {
+                          updatedRows = [...mixedOccRows, newRow];
+                        }
+                        setMixedOccRows(updatedRows);
+                        setValue("useDetails.mixedOccupancyDetails", updatedRows, { shouldDirty: true });
                         setMixedForm({ propertyType: null, builtUpArea: "", heightOfTheBuilding: "" });
                       }}
                       style={{
-                        padding: "8px 16px",
-                        backgroundColor: "#fff",
-                        border: "1px solid #d6d5d4",
+                        padding: "8px 18px",
+                        backgroundColor: "#00703c",
+                        color: "#fff",
+                        border: "none",
                         borderRadius: "4px",
                         cursor: "pointer",
                         fontSize: "14px",
                         fontWeight: "600",
                       }}
                     >
-                      {t("CS_COMMON_CANCEL") || "Cancel"}
+                      {editingRowIndex !== null ? `✓ ${t("CS_COMMON_UPDATE") || "Update Usage"}` : `+ ${t("WS_ADD_USAGE") || "Add Usage"}`}
                     </button>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (!mixedForm.propertyType) {
-                        setShowToast({ key: true, label: t("WS_ERR_SELECT_PROPERTY_TYPE") || "Please select Property Type" });
-                        return;
-                      }
-                      if (!mixedForm.builtUpArea || isNaN(parseFloat(mixedForm.builtUpArea)) || parseFloat(mixedForm.builtUpArea) <= 0) {
-                        setShowToast({ key: true, label: t("WS_ERR_VALID_BUILT_UP_AREA") || "Please enter valid Built-up Area" });
-                        return;
-                      }
-                      if (
-                        !mixedForm.heightOfTheBuilding ||
-                        isNaN(parseFloat(mixedForm.heightOfTheBuilding)) ||
-                        parseFloat(mixedForm.heightOfTheBuilding) <= 0
-                      ) {
-                        setShowToast({ key: true, label: t("WS_ERR_VALID_HEIGHT") || "Please enter valid Height of The Building" });
-                        return;
-                      }
-
-                      const newRow = {
-                        propertyType: mixedForm.propertyType,
-                        propertyTypeCode: mixedForm.propertyType?.code || mixedForm.propertyType?.name,
-                        propertyTypeName: mixedForm.propertyType?.name || mixedForm.propertyType?.code,
-                        builtUpArea: String(parseFloat(mixedForm.builtUpArea)),
-                        heightOfTheBuilding: String(parseFloat(mixedForm.heightOfTheBuilding)),
-                      };
-
-                      let updatedRows;
-                      if (editingRowIndex !== null) {
-                        updatedRows = mixedOccRows.map((r, idx) => (idx === editingRowIndex ? newRow : r));
-                        setEditingRowIndex(null);
-                      } else {
-                        updatedRows = [...mixedOccRows, newRow];
-                      }
-                      setMixedOccRows(updatedRows);
-                      setValue("useDetails.mixedOccupancyDetails", updatedRows, { shouldDirty: true });
-                      setMixedForm({ propertyType: null, builtUpArea: "", heightOfTheBuilding: "" });
-                    }}
-                    style={{
-                      padding: "8px 18px",
-                      backgroundColor: "#00703c",
-                      color: "#fff",
-                      border: "none",
-                      borderRadius: "4px",
-                      cursor: "pointer",
-                      fontSize: "14px",
-                      fontWeight: "600",
-                    }}
-                  >
-                    {editingRowIndex !== null ? `✓ ${t("CS_COMMON_UPDATE") || "Update Usage"}` : `+ ${t("WS_ADD_USAGE") || "Add Usage"}`}
-                  </button>
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Usage Table */}
               {mixedOccRows.length > 0 ? (
@@ -1831,15 +1860,13 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
                         <th style={{ padding: "10px 14px" }}>{t("WS_PROPERTY_TYPE")}</th>
                         <th style={{ padding: "10px 14px" }}>{t("WS_BUILT_UP_AREA")}</th>
                         <th style={{ padding: "10px 14px" }}>{t("WS_HEIGHT_OF_THE_BUILDING(meters)")}</th>
-                        <th style={{ padding: "10px 14px", textAlign: "center", width: "100px" }}>{t("CS_COMMON_ACTIONS")} *</th>
+                        {!isPropertyFound && (
+                          <th style={{ padding: "10px 14px", textAlign: "center", width: "100px" }}>{t("CS_COMMON_ACTIONS")} *</th>
+                        )}
                       </tr>
                     </thead>
                     <tbody>
                       {mixedOccRows.map((row, idx) => {
-                        const rowHeight = parseFloat(row.heightOfTheBuilding) || 0;
-                        const parentHeight = parseFloat(watchHeightOfTheBuilding) || 0;
-                        const isRowHeightMismatch = Math.abs(rowHeight - parentHeight) > 0.01;
-
                         return (
                           <tr
                             key={`mixed_row_${idx}`}
@@ -1853,43 +1880,45 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
                             <td style={{ padding: "10px 14px" }}>
                               {row.heightOfTheBuilding} meter
                             </td>
-                            <td style={{ padding: "10px 14px", textAlign: "center" }}>
-                              <div style={{ display: "flex", justifyContent: "center", gap: "14px", alignItems: "center" }}>
-                                <span
-                                  title={t("CS_COMMON_EDIT") || "Edit"}
-                                  onClick={() => {
-                                    setEditingRowIndex(idx);
-                                    setMixedForm({
-                                      propertyType: row.propertyType ||
-                                        allPropertyTypeOptions.find((p) => p.code === row.propertyTypeCode) || {
-                                          name: row.propertyTypeName,
-                                          code: row.propertyTypeCode,
-                                        },
-                                      builtUpArea: row.builtUpArea,
-                                      heightOfTheBuilding: row.heightOfTheBuilding,
-                                    });
-                                  }}
-                                  style={{ cursor: "pointer", display: "inline-flex", alignItems: "center" }}
-                                >
-                                  <EditIcon style={{ width: "18px", height: "18px", fill: "#00703c" }} />
-                                </span>
-                                <span
-                                  title={t("CS_COMMON_DELETE") || "Delete"}
-                                  onClick={() => {
-                                    const filtered = mixedOccRows.filter((_, i) => i !== idx);
-                                    setMixedOccRows(filtered);
-                                    setValue("useDetails.mixedOccupancyDetails", filtered, { shouldDirty: true });
-                                    if (editingRowIndex === idx) {
-                                      setEditingRowIndex(null);
-                                      setMixedForm({ propertyType: null, builtUpArea: "", heightOfTheBuilding: "" });
-                                    }
-                                  }}
-                                  style={{ cursor: "pointer", display: "inline-flex", alignItems: "center" }}
-                                >
-                                  <DeleteIcon style={{ width: "18px", height: "18px", fill: "#d4351c" }} />
-                                </span>
-                              </div>
-                            </td>
+                            {!isPropertyFound && (
+                              <td style={{ padding: "10px 14px", textAlign: "center" }}>
+                                <div style={{ display: "flex", justifyContent: "center", gap: "14px", alignItems: "center" }}>
+                                  <span
+                                    title={t("CS_COMMON_EDIT") || "Edit"}
+                                    onClick={() => {
+                                      setEditingRowIndex(idx);
+                                      setMixedForm({
+                                        propertyType: row.propertyType ||
+                                          allPropertyTypeOptions.find((p) => p.code === row.propertyTypeCode) || {
+                                            name: row.propertyTypeName,
+                                            code: row.propertyTypeCode,
+                                          },
+                                        builtUpArea: row.builtUpArea,
+                                        heightOfTheBuilding: row.heightOfTheBuilding,
+                                      });
+                                    }}
+                                    style={{ cursor: "pointer", display: "inline-flex", alignItems: "center" }}
+                                  >
+                                    <EditIcon style={{ width: "18px", height: "18px", fill: "#00703c" }} />
+                                  </span>
+                                  <span
+                                    title={t("CS_COMMON_DELETE") || "Delete"}
+                                    onClick={() => {
+                                      const filtered = mixedOccRows.filter((_, i) => i !== idx);
+                                      setMixedOccRows(filtered);
+                                      setValue("useDetails.mixedOccupancyDetails", filtered, { shouldDirty: true });
+                                      if (editingRowIndex === idx) {
+                                        setEditingRowIndex(null);
+                                        setMixedForm({ propertyType: null, builtUpArea: "", heightOfTheBuilding: "" });
+                                      }
+                                    }}
+                                    style={{ cursor: "pointer", display: "inline-flex", alignItems: "center" }}
+                                  >
+                                    <DeleteIcon style={{ width: "18px", height: "18px", fill: "#d4351c" }} />
+                                  </span>
+                                </div>
+                              </td>
+                            )}
                           </tr>
                         );
                       })}
@@ -1901,6 +1930,7 @@ const PropertyWaterConnection = ({ t, config, onSelect, formData, formState, set
           )}
         </div>
       </CollapsibleCardPage>
+      )}
       {showToast && (
         <Toast
           error={showToast.key}

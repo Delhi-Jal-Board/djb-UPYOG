@@ -251,9 +251,14 @@ const CreatePropertyForm = ({ config, onSelect, value, userType, redirectUrl }) 
       }
     }
 
-    // Validation for Mixed Occupancy
-    const isMixedOcc = useDetails?.isMixedOccupancy || currentFormValue?.isMixedOccupancy;
-    const mixedRows = useDetails?.mixedOccupancyDetails || currentFormValue?.mixedOccupancyDetails || [];
+    // Validation for Mixed Occupancy - only applicable for Institutional property category
+    const catCode = typeof useDetails?.propertyCategory === "object"
+      ? useDetails?.propertyCategory?.code || useDetails?.propertyCategory?.name
+      : useDetails?.propertyCategory;
+    const isInstitutional = String(catCode || "").toUpperCase().trim() === "INSTITUTIONAL";
+
+    const isMixedOcc = isInstitutional ? (useDetails?.isMixedOccupancy || currentFormValue?.isMixedOccupancy) : null;
+    const mixedRows = isInstitutional ? (useDetails?.mixedOccupancyDetails || currentFormValue?.mixedOccupancyDetails || []) : [];
     if (isMixedOcc === "YES") {
       if (!Array.isArray(mixedRows) || mixedRows.length === 0) {
         setShowToast({
