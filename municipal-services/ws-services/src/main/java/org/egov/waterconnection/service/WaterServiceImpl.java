@@ -341,18 +341,22 @@ public class WaterServiceImpl implements WaterService {
 		}
 		
 		log.info("Filtered connection after search" +waterConnectionList.size() );
-		if (!Boolean.TRUE.equals(criteria.getIsInternalCall())) {
+		if (!Boolean.TRUE.equals(criteria.getIsInternalCall())
+				&& !Boolean.TRUE.equals(criteria.getSkipDetailsEnrichment())) {
 			waterConnectionList = enrichmentService.enrichPropertyDetails(waterConnectionList, criteria, requestInfo);
 		}
-		waterConnectionValidator.validatePropertyForConnection(waterConnectionList);
-		enrichmentService.enrichConnectionHolderDeatils(waterConnectionList, criteria, requestInfo);
-		enrichmentService.enrichProcessInstance(waterConnectionList, criteria, requestInfo);
-//		enrichmentService.enrichDocumentDetails(waterConnectionList, criteria, requestInfo);
-		enrichmentService.enrichDocumentNumbers(waterConnectionList);
+		if (!Boolean.TRUE.equals(criteria.getSkipDetailsEnrichment())) {
+			waterConnectionValidator.validatePropertyForConnection(waterConnectionList);
+			enrichmentService.enrichConnectionHolderDeatils(waterConnectionList, criteria, requestInfo);
+			enrichmentService.enrichProcessInstance(waterConnectionList, criteria, requestInfo);
+//			enrichmentService.enrichDocumentDetails(waterConnectionList, criteria, requestInfo);
+			enrichmentService.enrichDocumentNumbers(waterConnectionList);
+		}
 
 		requestInfo.setPlainAccessRequest(apiPlainAccessRequest);
 		/* decrypt here */
-		if (criteria.getIsInternalCall()) {
+		if (Boolean.TRUE.equals(criteria.getIsInternalCall())
+				|| Boolean.TRUE.equals(criteria.getSkipDetailsEnrichment())) {
 			waterConnectionList = encryptionDecryptionUtil.decryptObject(waterConnectionList, "WnSConnectionPlumberDecrypDisabled", WaterConnection.class, requestInfo);
 			requestInfo.setPlainAccessRequest(apiPlainAccessRequestCopy);
 			return encryptionDecryptionUtil.decryptObject(waterConnectionList, "WnSConnectionDecrypDisabled", WaterConnection.class, requestInfo);

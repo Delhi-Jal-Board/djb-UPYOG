@@ -11,6 +11,7 @@ import java.util.List;
 import org.egov.pt.models.Document;
 import org.egov.pt.models.OwnerInfo;
 import org.egov.pt.models.Property;
+import org.egov.pt.models.WaterConnectionDetails;
 import org.egov.pt.util.PTConstants;
 import org.egov.tracer.model.CustomException;
 import org.javers.core.Javers;
@@ -147,7 +148,8 @@ public class DiffService {
 				javersForMutation = JaversBuilder.javers()
 						.withListCompareAlgorithm(ListCompareAlgorithm.AS_SET)
 						.registerIgnoredClass(OwnerInfo.class)
-						.registerIgnoredClass(Document.class).build();
+						.registerIgnoredClass(Document.class)
+						.registerIgnoredClass(WaterConnectionDetails.class).build();
 			
 			javersLocal = javersForMutation;
 			break;
@@ -156,6 +158,7 @@ public class DiffService {
 			if (javers == null)
 				javers = JaversBuilder.javers()
 						.withListCompareAlgorithm(ListCompareAlgorithm.AS_SET)
+						.registerIgnoredClass(WaterConnectionDetails.class)
 						.build();
 			javersLocal = javers;
 		}

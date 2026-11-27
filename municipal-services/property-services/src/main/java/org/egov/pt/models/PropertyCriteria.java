@@ -67,6 +67,9 @@ public class PropertyCriteria {
 	private Boolean isSearchInternal = false;
 
 	@Builder.Default
+	private Boolean skipWaterConnection = false;
+
+	@Builder.Default
 	private Boolean isInboxSearch = false;
 	
 	@Builder.Default

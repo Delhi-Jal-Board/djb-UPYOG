@@ -27,11 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.*;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -211,7 +207,10 @@ public class PropertyController {
                                                         @Valid @ModelAttribute PropertyCriteria fuzzySearchCriteria) {
 
         List<Property> properties = fuzzySearchService.getProperties(requestInfoWrapper.getRequestInfo(), fuzzySearchCriteria);
-        enrichmentService.enrichWaterConnectionDetails(properties, requestInfoWrapper.getRequestInfo());
+        if (!Boolean.TRUE.equals(fuzzySearchCriteria.getIsSearchInternal())
+                && !Boolean.TRUE.equals(fuzzySearchCriteria.getSkipWaterConnection())) {
+            enrichmentService.enrichWaterConnectionDetails(properties, requestInfoWrapper.getRequestInfo());
+        }
         PropertyResponse response = PropertyResponse.builder().properties(properties).responseInfo(
                         responseInfoFactory.createResponseInfoFromRequestInfo(requestInfoWrapper.getRequestInfo(), true))
                 .build();

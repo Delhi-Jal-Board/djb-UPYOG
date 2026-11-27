@@ -366,7 +366,7 @@ public class EnrichmentService {
 
 	/**
 	 * Enriches water connection details for a list of properties by querying ws-services.
-	 * Supports the 'One Property One Water Connection' business rule.
+	 * Supports the 'One Property One Water Connection' rule for new water connections.
 	 *
 	 * @param properties list of properties to enrich
 	 * @param requestInfo caller requestInfo
@@ -376,14 +376,12 @@ public class EnrichmentService {
 			return;
 		}
 
-		// Initialize default NOT_APPLIED for all properties first (fail-safe)
 		for (Property property : properties) {
 			if (property != null && property.getWaterConnectionDetails() == null) {
 				property.setWaterConnectionDetails(getDefaultNotAppliedDetails());
 			}
 		}
 
-		// Group properties by tenantId
 		Map<String, List<Property>> tenantPropertyMap = properties.stream()
 				.filter(p -> p != null && !StringUtils.isEmpty(p.getPropertyId()) && !StringUtils.isEmpty(p.getTenantId()))
 				.collect(Collectors.groupingBy(Property::getTenantId));
@@ -391,39 +389,20 @@ public class EnrichmentService {
 		for (Map.Entry<String, List<Property>> entry : tenantPropertyMap.entrySet()) {
 			String tenantId = entry.getKey();
 			List<Property> propList = entry.getValue();
-
-			try {
-				enrichWaterConnectionsForTenant(tenantId, propList, requestInfo);
-			} catch (Exception e) {
-				log.error("Error while enriching water connection details for tenant {}: {}", tenantId, e.getMessage(), e);
-				// Do not throw exception, keep default NOT_APPLIED so property search never fails
+			for (int i = 0; i < propList.size(); i += 30) {
+				enrichWaterConnectionsBatch(tenantId, propList.subList(i, Math.min(i + 30, propList.size())), requestInfo);
 			}
 		}
 	}
 
-	private void enrichWaterConnectionsForTenant(String tenantId, List<Property> propList, RequestInfo requestInfo) {
-		int batchSize = 30;
-		for (int i = 0; i < propList.size(); i += batchSize) {
-			List<Property> batch = propList.subList(i, Math.min(i + batchSize, propList.size()));
-			enrichWaterConnectionsBatch(tenantId, batch, requestInfo);
-		}
-	}
-
+	@SuppressWarnings("unchecked")
 	private void enrichWaterConnectionsBatch(String tenantId, List<Property> batch, RequestInfo requestInfo) {
-		String propertyIdsJoined = batch.stream()
-				.map(Property::getPropertyId)
-				.collect(Collectors.joining(","));
-
+		String propertyIdsJoined = batch.stream().map(Property::getPropertyId).collect(Collectors.joining(","));
 		String callerUuid = (requestInfo != null && requestInfo.getUserInfo() != null
 				&& !StringUtils.isEmpty(requestInfo.getUserInfo().getUuid()))
 						? requestInfo.getUserInfo().getUuid()
 						: "SYSTEM";
-		org.egov.common.contract.request.User internalUser = org.egov.common.contract.request.User.builder()
-				.uuid(callerUuid)
-				.type("SYSTEM")
-				.tenantId(tenantId)
-				.roles(Collections.emptyList())
-				.build();
+
 		RequestInfo internalRequestInfo = RequestInfo.builder()
 				.apiId(requestInfo != null ? requestInfo.getApiId() : null)
 				.ver(requestInfo != null ? requestInfo.getVer() : null)
@@ -434,15 +413,17 @@ public class EnrichmentService {
 				.msgId(requestInfo != null ? requestInfo.getMsgId() : null)
 				.authToken(requestInfo != null ? requestInfo.getAuthToken() : null)
 				.correlationId(requestInfo != null ? requestInfo.getCorrelationId() : null)
-				.userInfo(internalUser)
+				.userInfo(org.egov.common.contract.request.User.builder()
+						.uuid(callerUuid).type("SYSTEM").tenantId(tenantId).roles(Collections.emptyList()).build())
 				.build();
 
-		StringBuilder uri = new StringBuilder(config.getWsHost())
-				.append(config.getWsSearchEndpoint())
+		String host = StringUtils.trimTrailingCharacter(config.getWsHost(), '/');
+		String endpoint = config.getWsSearchEndpoint().startsWith("/")
+				? config.getWsSearchEndpoint() : "/" + config.getWsSearchEndpoint();
+		StringBuilder uri = new StringBuilder(host).append(endpoint)
 				.append("?tenantId=").append(tenantId)
 				.append("&propertyIds=").append(propertyIdsJoined)
-				.append("&searchType=APPLICATION")
-				.append("&isInternalCall=true");
+				.append("&searchType=APPLICATION&isInternalCall=true&skipDetailsEnrichment=true");
 
 		try {
 			Optional<Object> response = serviceRequestRepository.fetchResult(uri,
@@ -450,31 +431,24 @@ public class EnrichmentService {
 			if (!response.isPresent()) {
 				return;
 			}
-
-			Map<String, Object> responseMap = (Map<String, Object>) response.get();
-			List<Map<String, Object>> connections = (List<Map<String, Object>>) responseMap.get("WaterConnection");
+			List<Map<String, Object>> connections = (List<Map<String, Object>>) ((Map<String, Object>) response.get())
+					.get("WaterConnection");
 			if (CollectionUtils.isEmpty(connections)) {
 				return;
 			}
 
-			// Group returned connections by propertyId
 			Map<String, List<Map<String, Object>>> propConnectionsMap = new HashMap<>();
 			for (Map<String, Object> conn : connections) {
-				if (conn == null) continue;
-				String propId = conn.get("propertyId") != null ? String.valueOf(conn.get("propertyId")).trim() : null;
-				if (!StringUtils.isEmpty(propId)) {
+				String propId = conn != null ? strVal(conn, "propertyId") : null;
+				if (propId != null) {
 					propConnectionsMap.computeIfAbsent(propId, k -> new ArrayList<>()).add(conn);
 				}
 			}
 
-			// Evaluate water connection details for each property in this batch
 			for (Property property : batch) {
 				List<Map<String, Object>> connList = propConnectionsMap.get(property.getPropertyId());
 				if (!CollectionUtils.isEmpty(connList)) {
-					WaterConnectionDetails details = evaluateWaterConnectionDetails(connList);
-					if (details != null) {
-						property.setWaterConnectionDetails(details);
-					}
+					property.setWaterConnectionDetails(evaluateWaterConnectionDetails(connList));
 				}
 			}
 		} catch (Exception e) {
@@ -483,113 +457,71 @@ public class EnrichmentService {
 	}
 
 	private WaterConnectionDetails evaluateWaterConnectionDetails(List<Map<String, Object>> connList) {
-		Map<String, Object> newConnActivatedMatch = null;
-		Map<String, Object> newConnInProgressMatch = null;
-		Map<String, Object> anyConnectionWithNoMatch = null;
+		Map<String, Object> newActivated = null;
+		Map<String, Object> newInProgress = null;
+		Map<String, Object> anyWithConnNo = null;
 
 		for (Map<String, Object> conn : connList) {
 			if (conn == null) continue;
+			String appType = strVal(conn, "applicationType");
+			String appStatus = strVal(conn, "applicationStatus");
+			if (appStatus == null) appStatus = strVal(conn, "status");
+			String connNo = strVal(conn, "connectionNo");
 
-			String appType = conn.get("applicationType") != null
-					? String.valueOf(conn.get("applicationType")).trim()
-					: null;
-			String appStatus = conn.get("applicationStatus") != null
-					? String.valueOf(conn.get("applicationStatus")).trim()
-					: null;
-			if (StringUtils.isEmpty(appStatus) && conn.get("status") != null) {
-				appStatus = String.valueOf(conn.get("status")).trim();
+			if (connNo != null && anyWithConnNo == null) {
+				anyWithConnNo = conn;
 			}
-			String rawConnNo = conn.get("connectionNo") != null
-					? String.valueOf(conn.get("connectionNo")).trim()
-					: null;
-			String connNo = (!StringUtils.isEmpty(rawConnNo) && !"null".equalsIgnoreCase(rawConnNo))
-					? rawConnNo
-					: null;
-
-			if (connNo != null && anyConnectionWithNoMatch == null) {
-				anyConnectionWithNoMatch = conn;
-			}
-
-			boolean isNewConn = StringUtils.isEmpty(appType)
-					|| "NEW_WATER_CONNECTION".equalsIgnoreCase(appType);
-
-			if (isNewConn) {
-				boolean isConnectionActivated = "CONNECTION_ACTIVATED".equalsIgnoreCase(appStatus)
-						|| "APPROVED".equalsIgnoreCase(appStatus);
-
-				if (connNo != null || isConnectionActivated) {
-					if (newConnActivatedMatch == null) {
-						newConnActivatedMatch = conn;
-					}
-				} else {
-					boolean isTerminated = "REJECTED".equalsIgnoreCase(appStatus)
-							|| "CANCELLED".equalsIgnoreCase(appStatus);
-					if (!isTerminated && newConnInProgressMatch == null) {
-						newConnInProgressMatch = conn;
-					}
+			if (appType == null || "NEW_WATER_CONNECTION".equalsIgnoreCase(appType)) {
+				if (connNo != null || "CONNECTION_ACTIVATED".equalsIgnoreCase(appStatus)
+						|| "APPROVED".equalsIgnoreCase(appStatus)) {
+					if (newActivated == null) newActivated = conn;
+				} else if (!"REJECTED".equalsIgnoreCase(appStatus) && !"CANCELLED".equalsIgnoreCase(appStatus)) {
+					if (newInProgress == null) newInProgress = conn;
 				}
 			}
 		}
 
-		// Priority 1: A NEW_WATER_CONNECTION that has a connectionNo or is ACTIVATED/APPROVED
-		if (newConnActivatedMatch != null) {
+		if (newActivated != null) {
 			WaterConnectionDetails details = buildConnectionDetails("CONNECTION_EXISTS", true, true, false,
-					newConnActivatedMatch, "Water connection already exists for this property.");
-			// If connectionNo is missing on the new connection row, take it from any record that has it
-			if (StringUtils.isEmpty(details.getConnectionNo()) && anyConnectionWithNoMatch != null) {
-				String rawConnNo = anyConnectionWithNoMatch.get("connectionNo") != null
-						? String.valueOf(anyConnectionWithNoMatch.get("connectionNo")).trim()
-						: null;
-				if (!StringUtils.isEmpty(rawConnNo) && !"null".equalsIgnoreCase(rawConnNo)) {
-					details.setConnectionNo(rawConnNo);
-				}
+					newActivated, "Water connection already exists for this property.");
+			if (details.getConnectionNo() == null && anyWithConnNo != null) {
+				details.setConnectionNo(strVal(anyWithConnNo, "connectionNo"));
 			}
 			return details;
 		}
-
-		// Priority 2: Any other record having a valid connectionNo (e.g. legacy/service record when NEW_WATER_CONNECTION row is missing)
-		if (anyConnectionWithNoMatch != null) {
+		if (anyWithConnNo != null) {
 			return buildConnectionDetails("CONNECTION_EXISTS", true, true, false,
-					anyConnectionWithNoMatch, "Water connection already exists for this property.");
+					anyWithConnNo, "Water connection already exists for this property.");
 		}
-
-		// Priority 3: A NEW_WATER_CONNECTION that is in progress (not terminated)
-		if (newConnInProgressMatch != null) {
+		if (newInProgress != null) {
 			return buildConnectionDetails("APPLICATION_IN_PROGRESS", false, true, false,
-					newConnInProgressMatch, "A water connection application is already in progress for this property.");
+					newInProgress, "A water connection application is already in progress for this property.");
 		}
-
 		return getDefaultNotAppliedDetails();
 	}
 
 	private WaterConnectionDetails buildConnectionDetails(String status, boolean hasWaterConnection,
 			boolean hasExistingApplication, boolean canApply, Map<String, Object> conn, String message) {
-		String appNo = conn.get("applicationNo") != null
-				? String.valueOf(conn.get("applicationNo")).trim()
-				: null;
-		String appStatus = conn.get("applicationStatus") != null
-				? String.valueOf(conn.get("applicationStatus")).trim()
-				: null;
-		if (StringUtils.isEmpty(appStatus) && conn.get("status") != null) {
-			appStatus = String.valueOf(conn.get("status")).trim();
-		}
-		String rawConnNo = conn.get("connectionNo") != null
-				? String.valueOf(conn.get("connectionNo")).trim()
-				: null;
-		String connNo = (!StringUtils.isEmpty(rawConnNo) && !"null".equalsIgnoreCase(rawConnNo))
-				? rawConnNo
-				: null;
+		String appStatus = strVal(conn, "applicationStatus");
+		if (appStatus == null) appStatus = strVal(conn, "status");
 
 		return WaterConnectionDetails.builder()
 				.status(status)
 				.hasWaterConnection(hasWaterConnection)
 				.hasExistingApplication(hasExistingApplication)
-				.applicationNo(appNo)
+				.applicationNo(strVal(conn, "applicationNo"))
 				.applicationStatus(appStatus)
-				.connectionNo(connNo)
+				.connectionNo(strVal(conn, "connectionNo"))
 				.canApply(canApply)
 				.message(message)
 				.build();
+	}
+
+	private String strVal(Map<String, Object> map, String key) {
+		Object val = map.get(key);
+		if (val == null) return null;
+		String s = String.valueOf(val).trim();
+		return (s.isEmpty() || "null".equalsIgnoreCase(s)) ? null : s;
 	}
 
 	private WaterConnectionDetails getDefaultNotAppliedDetails() {
@@ -597,9 +529,6 @@ public class EnrichmentService {
 				.status("NOT_APPLIED")
 				.hasWaterConnection(false)
 				.hasExistingApplication(false)
-				.applicationNo(null)
-				.applicationStatus(null)
-				.connectionNo(null)
 				.canApply(true)
 				.message("No existing water connection or application found for this property.")
 				.build();
