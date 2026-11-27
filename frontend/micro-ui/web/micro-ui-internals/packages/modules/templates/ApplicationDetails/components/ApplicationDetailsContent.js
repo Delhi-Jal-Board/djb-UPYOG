@@ -415,7 +415,7 @@ function ApplicationDetailsContent({
 
   const canVerifyDocuments = isEmployeeSide && !isJEState && !isEEState && !isZROFirstTime;
 
-  const isCheckboxDisabled = !isEmployeeSide;
+  const isCheckboxDisabled = !isEmployeeSide || isZROState;
 
   const defaultChecked =
     currentWorkflowStatus === "PENDING_FOR_CONNECTION_ACTIVATION" ||

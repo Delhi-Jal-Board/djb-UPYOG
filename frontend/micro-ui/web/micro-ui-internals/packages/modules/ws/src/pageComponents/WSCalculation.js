@@ -61,26 +61,35 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
   });
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
+  const mdmsTenantId = Digit.ULBService.getStateId?.() || tenantId;
   const { t } = useTranslation();
 
   const { mutate: calculateCharges, isLoading } = Digit.Hooks.ws.useWSCalculater({ tenantId });
 
-  const { data: ptServicesMastersData } = Digit.Hooks.pt.usePropertyMDMS(tenantId, "PropertyTax", [
+  const { data: ptServicesMastersData } = Digit.Hooks.pt.usePropertyMDMS(mdmsTenantId, "PropertyTax", [
     "PropertyCategory",
     "PropertyType",
     "PropertyNewUsageType",
     "PropertyToUsageMapping",
+    "PropertyType2",
   ]);
 
-  const { data: wsServicesMastersData } = Digit.Hooks.ws.useMDMS(tenantId, "ws-services-masters", ["WsCategoryType"]);
+  const { data: wsServicesMastersData } = Digit.Hooks.ws.useMDMS(mdmsTenantId, "ws-services-masters", ["WsCategoryType"]);
 
   const [categoryTypeList, setCategoryTypeList] = useState([]);
   const [calculationData, setCalculationData] = useState(null);
 
   useEffect(() => {
     const categories = wsServicesMastersData?.["ws-services-masters"]?.WsCategoryType || [];
-    categories.forEach((data) => (data.i18nKey = data.i18nKey || `WS_CATEGORY_${data.code}`));
-    setCategoryTypeList(categories);
+    if (categories.length > 0) {
+      categories.forEach((data) => (data.i18nKey = data.i18nKey || `WS_CATEGORY_${data.code}`));
+      setCategoryTypeList(categories);
+    } else {
+      setCategoryTypeList([
+        { code: "DOMESTIC", name: "Domestic", i18nKey: "WS_CATEGORY_DOMESTIC" },
+        { code: "NON_DOMESTIC", name: "Non-Domestic", i18nKey: "WS_CATEGORY_NON_DOMESTIC" },
+      ]);
+    }
   }, [wsServicesMastersData]);
 
   useEffect(() => {
@@ -120,18 +129,56 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
 
   const isServentHouse = dwellingPropertyTypes.includes(watchPropertyType?.code);
 
+  const normalizeCode = (val) => String(val || "").replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
+
   const categoryOptions = useMemo(() => {
-    if (!watchCategoryType?.code) return [];
-    let options = ptServicesMastersData?.PropertyTax?.PropertyCategory?.filter((item) => item.active) || [];
-    options = options.filter((item) => item.type === watchCategoryType.code);
-    return options.map((item) => ({
-      code: item.code,
-      name: item.name,
-    }));
+    const masterCats = ptServicesMastersData?.PropertyTax?.PropertyCategory || [];
+    const activeCats = masterCats.filter((item) => item.active !== false);
+
+    if (watchCategoryType?.code) {
+      const filteredByType = activeCats.filter(
+        (item) => item.type && item.type.toUpperCase() === watchCategoryType.code.toUpperCase()
+      );
+      if (filteredByType.length > 0) {
+        return filteredByType.map((item) => ({
+          code: item.code,
+          name: item.name || item.code,
+        }));
+      }
+    }
+
+    const catMap = new Map();
+    const type2List = ptServicesMastersData?.PropertyTax?.PropertyType2 || [];
+    type2List.forEach((item) => {
+      const rawCat = item?.propertyCategory;
+      if (!rawCat) return;
+      const cats = Array.isArray(rawCat) ? rawCat : [rawCat];
+      cats.forEach((c) => {
+        const name = typeof c === "object" ? c?.name || c?.code : String(c);
+        const code = typeof c === "object" ? c?.code || c?.name : String(c);
+        const norm = normalizeCode(code || name);
+        if (norm && !catMap.has(norm)) {
+          catMap.set(norm, { code: code || name, name: name || code });
+        }
+      });
+    });
+
+    activeCats.forEach((item) => {
+      const name = item?.name || item?.code;
+      const code = item?.code || item?.name;
+      const norm = normalizeCode(code || name);
+      if (norm && !catMap.has(norm)) {
+        catMap.set(norm, { code, name });
+      }
+    });
+
+    return Array.from(catMap.values()).sort((a, b) =>
+      (a.name || a.code || "").localeCompare(b.name || b.code || "", undefined, { numeric: true, sensitivity: "base" })
+    );
   }, [ptServicesMastersData, watchCategoryType]);
 
   useEffect(() => {
-    if (watchCategoryType && watchPropertyCategory) {
+    if (watchCategoryType && watchPropertyCategory && categoryOptions.length > 0) {
       const isCategoryValid = categoryOptions.some((opt) => opt.code === watchPropertyCategory.code);
       if (!isCategoryValid) {
         setValue("useDetails.propertyCategory", null);
@@ -141,19 +188,34 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
 
   const propertyTypeOptions = useMemo(() => {
     if (!watchPropertyCategory?.code) return [];
-    let options = ptServicesMastersData?.PropertyTax?.PropertyType?.filter((item) => item.active) || [];
-    let mapping = ptServicesMastersData?.PropertyTax?.PropertyToUsageMapping || [];
+    const catNorm = normalizeCode(watchPropertyCategory.code);
+    const type2List = ptServicesMastersData?.PropertyTax?.PropertyType2 || [];
+    const baseList =
+      type2List.length > 0
+        ? type2List.filter((item) => item.active !== false)
+        : ptServicesMastersData?.PropertyTax?.PropertyType?.filter((item) => item.active !== false) || [];
 
-    if (mapping.length > 0) {
-      options = options.filter((item) => mapping.some((m) => m.propertyTypeCode === item.code));
+    let options = baseList;
+    if (type2List.length === 0) {
+      const mapping = ptServicesMastersData?.PropertyTax?.PropertyToUsageMapping || [];
+      if (mapping.length > 0) {
+        options = options.filter((item) => mapping.some((m) => m.propertyTypeCode === item.code));
+      }
     }
 
-    if (watchPropertyCategory?.code?.toUpperCase() !== "MIXED") {
-      options = options.filter((item) => item.type?.toUpperCase() === watchPropertyCategory.code?.toUpperCase());
+    if (catNorm !== "MIXED") {
+      options = options.filter((item) => {
+        const rawCat = item.propertyCategory || item.type;
+        if (Array.isArray(rawCat)) {
+          return rawCat.some((c) => normalizeCode(typeof c === "object" ? c?.code || c?.name : c) === catNorm);
+        }
+        return normalizeCode(typeof rawCat === "object" ? rawCat?.code || rawCat?.name : rawCat) === catNorm;
+      });
     }
+
     return options.map((item) => ({
       code: item.code,
-      name: item.name,
+      name: item.name || item.code,
     }));
   }, [ptServicesMastersData, watchPropertyCategory]);
 
@@ -168,7 +230,7 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
 
   const usageTypeOptions = useMemo(() => {
     if (!watchPropertyType?.code) return [];
-    let options = ptServicesMastersData?.PropertyTax?.PropertyNewUsageType?.filter((item) => item.active) || [];
+    let options = ptServicesMastersData?.PropertyTax?.PropertyNewUsageType?.filter((item) => item.active !== false) || [];
     let mapping = ptServicesMastersData?.PropertyTax?.PropertyToUsageMapping || [];
 
     const selectedMapping = mapping.find((m) => m.propertyTypeCode === watchPropertyType.code);
@@ -178,9 +240,19 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
       options = [];
     }
 
+    if (options.length === 0) {
+      const list = ptServicesMastersData?.PropertyTax?.PropertyType2 || ptServicesMastersData?.PropertyTax?.PropertyType || [];
+      const uniqueTypes = [...new Set(list.map((item) => item.waterConnectionUsageType).filter(Boolean))];
+      const typesToMap = uniqueTypes.length > 0 ? uniqueTypes : ["Normal", "Bulk"];
+      return typesToMap.map((type) => ({
+        code: type,
+        name: type,
+      }));
+    }
+
     return options.map((item) => ({
       code: item.code,
-      name: item.name,
+      name: item.name || item.code,
     }));
   }, [ptServicesMastersData, watchPropertyCategory, watchPropertyType]);
 
@@ -601,32 +673,6 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
             <LabelFieldPair>
               <FieldLabelWithTooltip
                 style={{ margin: 0 }}
-                label={t("WS_CATEGORY_TYPE") || "Select Category Type"}
-                isMandatory={true}
-                infoText={t("WS_CATEGORY_TYPE_INFO_MSG")}
-              />
-              <div className="form-field">
-                <Controller
-                  control={control}
-                  name={"useDetails.categoryType"}
-                  rules={{ required: t("REQUIRED_FIELD") }}
-                  render={(props) => (
-                    <Dropdown
-                      option={categoryTypeList}
-                      optionKey="i18nKey"
-                      selected={props.value}
-                      select={props.onChange}
-                      t={t}
-                      onBlur={props.onBlur}
-                    />
-                  )}
-                />
-              </div>
-            </LabelFieldPair>
-            {errors?.useDetails?.categoryType && <CardLabelError style={errorStyle}>{errors.useDetails.categoryType.message}</CardLabelError>}
-            <LabelFieldPair>
-              <FieldLabelWithTooltip
-                style={{ margin: 0 }}
                 label={t("WS_PROPERTY_CATEGORY") || "Select Property Category"}
                 isMandatory={true}
                 infoText={t("WS_PROPERTY_CATEGORY_INFO_MSG")}
@@ -670,6 +716,33 @@ const WSCalculation = ({ config, onSelect, formData, formState, setError, clearE
               </div>
             </LabelFieldPair>
             {errors?.useDetails?.propertyType && <CardLabelError style={errorStyle}>{errors.useDetails.propertyType.message}</CardLabelError>}
+
+            <LabelFieldPair>
+              <FieldLabelWithTooltip
+                style={{ margin: 0 }}
+                label={t("WS_CATEGORY_TYPE") || "Select Category Type"}
+                isMandatory={true}
+                infoText={t("WS_CATEGORY_TYPE_INFO_MSG")}
+              />
+              <div className="form-field">
+                <Controller
+                  control={control}
+                  name={"useDetails.categoryType"}
+                  rules={{ required: t("REQUIRED_FIELD") }}
+                  render={(props) => (
+                    <Dropdown
+                      option={categoryTypeList}
+                      optionKey="i18nKey"
+                      selected={props.value}
+                      select={props.onChange}
+                      t={t}
+                      onBlur={props.onBlur}
+                    />
+                  )}
+                />
+              </div>
+            </LabelFieldPair>
+            {errors?.useDetails?.categoryType && <CardLabelError style={errorStyle}>{errors.useDetails.categoryType.message}</CardLabelError>}
 
             <LabelFieldPair>
               <FieldLabelWithTooltip

@@ -950,12 +950,91 @@ export const WSSearch = {
           aText = String(rawAns !== null && rawAns !== undefined ? rawAns : "");
         }
         const trimmedQ = String(qText || "").trim();
-        const displayLabel = trimmedQ.toLowerCase().startsWith("question") ? trimmedQ : `Question : ${trimmedQ}`;
+        const directTrans = t(trimmedQ);
+        const snakeKey = `WS_${trimmedQ.replace(/([a-z0-9])([A-Z])/g, "$1_$2").replace(/[\s-]+/g, "_").toUpperCase()}`;
+        const snakeTrans = t(snakeKey);
+        const displayLabel =
+          directTrans && directTrans !== trimmedQ
+            ? directTrans
+            : snakeTrans && snakeTrans !== snakeKey
+            ? snakeTrans
+            : trimmedQ.toLowerCase().startsWith("question")
+            ? trimmedQ
+            : trimmedQ
+                .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+                .replace(/[_-]+/g, " ")
+                .replace(/\s+/g, " ")
+                .trim()
+                .replace(/\b\w/g, (c) => c.toUpperCase());
         propertyWaterConnectionUseDetails.values.push({
           title: displayLabel,
           value: aText.trim() ? aText : t("NA"),
         });
       });
+    }
+
+    const propCatCode = String(
+      propertyDataDetails?.additionalDetails?.propertyCategory?.code ||
+        propertyDataDetails?.additionalDetails?.propertyCategory?.name ||
+        propertyDataDetails?.additionalDetails?.propertyCategory ||
+        propertyDataDetails?.propertyCategory ||
+        propertyDataDetails?.usageCategory ||
+        wsDataDetails?.additionalDetails?.propertyCategory?.code ||
+        wsDataDetails?.additionalDetails?.propertyCategory?.name ||
+        wsDataDetails?.additionalDetails?.propertyCategory ||
+        wsDataDetails?.property?.additionalDetails?.propertyCategory?.code ||
+        wsDataDetails?.property?.additionalDetails?.propertyCategory ||
+        wsDataDetails?.property?.propertyCategory ||
+        ""
+    ).toUpperCase().trim();
+    const isInst = propCatCode === "INSTITUTIONAL";
+    const mixedOccupancyRows =
+      (Array.isArray(propertyDataDetails?.additionalDetails?.mixedOccupancyDetails) &&
+        propertyDataDetails.additionalDetails.mixedOccupancyDetails.length > 0 &&
+        propertyDataDetails.additionalDetails.mixedOccupancyDetails) ||
+      (Array.isArray(wsDataDetails?.property?.additionalDetails?.mixedOccupancyDetails) &&
+        wsDataDetails.property.additionalDetails.mixedOccupancyDetails.length > 0 &&
+        wsDataDetails.property.additionalDetails.mixedOccupancyDetails) ||
+      (Array.isArray(wsDataDetails?.additionalDetails?.mixedOccupancyDetails) &&
+        wsDataDetails.additionalDetails.mixedOccupancyDetails.length > 0 &&
+        wsDataDetails.additionalDetails.mixedOccupancyDetails) ||
+      [];
+
+    if (isInst && mixedOccupancyRows.length > 0) {
+      propertyWaterConnectionUseDetails.belowComponent = () => (
+        <div style={{ marginTop: "20px", marginBottom: "30px" }}>
+          <div style={{ fontSize: "24px", fontWeight: "700", color: "#0b0c0c", marginBottom: "12px" }}>
+            {t("WS_MIXED_OCCUPANCY_DETAILS") || "Mixed Occupancy Details"}
+          </div>
+          <div style={{ overflowX: "auto", border: "1px solid #e0e0e0", borderRadius: "4px", marginTop: "10px" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", fontSize: "14px" }}>
+              <thead>
+                <tr style={{ backgroundColor: "#f3f4f6", borderBottom: "2px solid #e5e7eb" }}>
+                  <th style={{ padding: "10px 14px", width: "40px" }}>{t("CS_COMMON_S_NO") || "S.No."}</th>
+                  <th style={{ padding: "10px 14px" }}>{t("WS_PROPERTY_TYPE") || "Property Type"}</th>
+                  <th style={{ padding: "10px 14px" }}>{t("WS_BUILT_UP_AREA") || "Built-up Area (sq. meter)"}</th>
+                  <th style={{ padding: "10px 14px" }}>{t("WS_HEIGHT_OF_THE_BUILDING_METERS") || "Height of the Building (meter)"}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {mixedOccupancyRows.map((row, idx) => (
+                  <tr
+                    key={`mixed_emp_app_details_row_${idx}`}
+                    style={{ borderBottom: "1px solid #f0f0f0", backgroundColor: idx % 2 === 0 ? "#ffffff" : "#fafafa" }}
+                  >
+                    <td style={{ padding: "10px 14px" }}>{idx + 1}</td>
+                    <td style={{ padding: "10px 14px", fontWeight: "600", color: "#0b0c0c" }}>
+                      {row.propertyTypeName || row.propertyType?.name || row.propertyTypeCode}
+                    </td>
+                    <td style={{ padding: "10px 14px" }}>{row.builtUpArea} sq. meter</td>
+                    <td style={{ padding: "10px 14px" }}>{row.heightOfTheBuilding} meter</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      );
     }
 
     const isMutationApp = Boolean(

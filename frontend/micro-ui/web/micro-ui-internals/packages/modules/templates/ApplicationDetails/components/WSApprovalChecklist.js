@@ -244,9 +244,9 @@ export const isWSApprovalChecklistEditableState = (applicationData, workflowDeta
     return hasJEVerifiedInWorkflow(applicationData, workflowDetails);
   }
 
-  // In PENDING_FOR_ZRO_APPROVAL (including after citizen action), checklist satisfaction is editable
+  // In PENDING_FOR_ZRO_APPROVAL, EE checklist & satisfaction declaration are read-only for ZRO
   if (normState === "PENDING_FOR_ZRO_APPROVAL") {
-    return true;
+    return false;
   }
 
   return false;
@@ -270,9 +270,9 @@ export const isWSApprovalChecklistReadOnlyState = (applicationData, workflowDeta
     return false;
   }
 
-  // At PENDING_FOR_ZRO_APPROVAL: it is editable (satisfaction declaration, etc.), not read-only
+  // At PENDING_FOR_ZRO_APPROVAL: EE checklist & satisfaction are read-only for ZRO
   if (normState === "PENDING_FOR_ZRO_APPROVAL") {
-    return false;
+    return hasWSApprovalChecklistData(applicationData, workflowDetails);
   }
 
   if (
@@ -397,8 +397,12 @@ export const isWSApprovalChecklistComplete = (applicationData, values = {}, work
     return remarksValid;
   }
 
-  // In PENDING_FOR_EE_APPROVAL or PENDING_FOR_ZRO_APPROVAL:
-  if (normState === "PENDING_FOR_EE_APPROVAL" || normState === "PENDING_FOR_ZRO_APPROVAL") {
+  if (normState === "PENDING_FOR_ZRO_APPROVAL") {
+    return true;
+  }
+
+  // In PENDING_FOR_EE_APPROVAL:
+  if (normState === "PENDING_FOR_EE_APPROVAL") {
     const jeVerified = hasJEVerifiedInWorkflow(applicationData, workflowDetails);
     // Before JE verification, EE does not need to fill anything; can forward to JE directly
     if (normState === "PENDING_FOR_EE_APPROVAL" && !jeVerified) {
@@ -468,14 +472,13 @@ const WSApprovalChecklist = ({ applicationData, workflowDetails, showApprovalChe
       : hasWSApprovalChecklistData(applicationData, workflowDetails);
 
   // Satisfaction Declaration is editable:
-  // - At PENDING_FOR_ZRO_APPROVAL
   // - At second PENDING_FOR_EE_APPROVAL (after JE verification)
-  // - Whenever returning from citizen action
+  // - Whenever returning from citizen action (except at ZRO where EE part is read-only)
   const isSatisfactionReadOnly =
     isReadOnly ||
     !isNewConn ||
+    normState === "PENDING_FOR_ZRO_APPROVAL" ||
     !(
-      normState === "PENDING_FOR_ZRO_APPROVAL" ||
       (normState === "PENDING_FOR_EE_APPROVAL" && jeVerified) ||
       cameFromCitizenAction
     );

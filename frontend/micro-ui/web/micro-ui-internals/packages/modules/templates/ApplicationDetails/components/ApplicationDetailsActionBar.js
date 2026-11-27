@@ -199,8 +199,8 @@ function ApplicationDetailsActionBar({
   } else if (isWSNewConn) {
     if (isFirstEEApproval || isJEVerification) {
       isSubmitDisabled = false;
-    } else if (isDAVerification) {
-      isSubmitDisabled = !isDocsVerified;
+    } else if (isDAVerification || normState === "PENDING_FOR_ZRO_APPROVAL") {
+      isSubmitDisabled = normState === "PENDING_FOR_ZRO_APPROVAL" ? false : !isDocsVerified;
     } else if (completelySatisfied === true) {
       if (cameFromCitizenAction) {
         isSubmitDisabled = !isDocsVerified;

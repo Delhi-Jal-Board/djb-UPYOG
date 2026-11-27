@@ -255,11 +255,6 @@ export const WSMyApplications = () => {
         },
       },
       {
-        Header: t("WS_PROPERTY_ID"),
-        disableSortBy: true,
-        Cell: ({ row }) => GetCell(row.original?.propertyId || t("CS_NA")),
-      },
-      {
         Header: t("WS_STATUS"),
         disableSortBy: true,
         Cell: ({ row }) => GetCell(t(`CS_${row.original?.applicationStatus}`, row.original?.applicationStatus) || t("CS_NA")),
