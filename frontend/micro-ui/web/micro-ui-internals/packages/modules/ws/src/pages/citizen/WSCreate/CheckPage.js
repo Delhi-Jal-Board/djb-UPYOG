@@ -694,7 +694,20 @@ const CheckPage = ({ onSubmit, value }) => {
           const qText = typeof q === "object" ? q?.question || q?.questionText || q?.title || `Question ${idx + 1}` : `Question ${idx + 1}`;
           const aText = typeof q === "object" ? (typeof q?.answer === "object" ? (q?.answer?.name || q?.answer?.value || q?.answer?.code) : q?.answer) : q;
           const trimmedQ = String(qText || "").trim();
-          const displayLabel = trimmedQ.toLowerCase().startsWith("question") ? trimmedQ : `${trimmedQ}`;
+          const directTrans = t(trimmedQ);
+          const snakeKey = `WS_${trimmedQ.replace(/([a-z0-9])([A-Z])/g, "$1_$2").replace(/[\s-]+/g, "_").toUpperCase()}`;
+          const snakeTrans = t(snakeKey);
+          const displayLabel =
+            directTrans && directTrans !== trimmedQ
+              ? directTrans
+              : snakeTrans && snakeTrans !== snakeKey
+              ? snakeTrans
+              : trimmedQ
+                  .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+                  .replace(/[_-]+/g, " ")
+                  .replace(/\s+/g, " ")
+                  .trim()
+                  .replace(/\b\w/g, (c) => c.toUpperCase());
           return <Row key={`question_${idx}`} label={displayLabel} text={`${t(checkForNA(aText))}`} />;
         })}
       </StatusTable>

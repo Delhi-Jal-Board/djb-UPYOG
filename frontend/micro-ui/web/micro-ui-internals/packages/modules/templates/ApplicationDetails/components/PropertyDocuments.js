@@ -75,7 +75,7 @@ function PropertyDocuments({
     applicationStatus === "PENDING_FOR_CONNECTION_ACTIVATION" ||
     (!cameFromCitizenAction && isZROState && hasDAVerified);
 
-  const isCheckboxDisabled = window.location.href.includes("citizen");
+  const isCheckboxDisabled = window.location.href.includes("citizen") || isZROState;
 
   useEffect(() => {
     if (parentHandlesVerification) return;

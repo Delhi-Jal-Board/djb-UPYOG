@@ -1584,44 +1584,43 @@ const WSApplicationDetails = () => {
                     )
                   )}`}
                 />
-                {(String(
-                  propertyAdditionalDetails?.propertyCategory?.code ||
-                  propertyAdditionalDetails?.propertyCategory?.name ||
-                  propertyAdditionalDetails?.propertyCategory ||
-                  PTData?.Properties?.[0]?.usageCategory ||
-                  PTData?.Properties?.[0]?.propertyType ||
-                  useDetails?.propertyCategory?.code ||
-                  useDetails?.propertyCategory?.name ||
-                  useDetails?.propertyCategory ||
-                  applicationData?.additionalDetails?.propertyCategory?.code ||
-                  applicationData?.additionalDetails?.propertyCategory ||
-                  applicationData?.property?.propertyType?.propertyCategory ||
-                  applicationData?.property?.usageCategory ||
-                  ""
-                ).toUpperCase().includes("RESIDENTIAL")) ? (
-                  <Row
-                    label={t("WS_NUMBER_OF_DWELLING_UNITS")}
-                    text={`${t(
-                      checkForNA(
-                        (propertyAdditionalDetails?.numberOfDwellingUnits !== undefined && propertyAdditionalDetails?.numberOfDwellingUnits !== null && propertyAdditionalDetails?.numberOfDwellingUnits !== "")
-                          ? propertyAdditionalDetails.numberOfDwellingUnits
-                          : (propertyAdditionalDetails?.NumberofDwellingUnits !== undefined && propertyAdditionalDetails?.NumberofDwellingUnits !== null && propertyAdditionalDetails?.NumberofDwellingUnits !== "")
-                          ? propertyAdditionalDetails.NumberofDwellingUnits
-                          : (propertyAdditionalDetails?.noOfDwellingUnits !== undefined && propertyAdditionalDetails?.noOfDwellingUnits !== null && propertyAdditionalDetails?.noOfDwellingUnits !== "")
-                          ? propertyAdditionalDetails.noOfDwellingUnits
-                          : (PTData?.Properties?.[0]?.numberOfDwellingUnits !== undefined && PTData?.Properties?.[0]?.numberOfDwellingUnits !== null && PTData?.Properties?.[0]?.numberOfDwellingUnits !== "")
-                          ? PTData.Properties[0].numberOfDwellingUnits
-                          : (PTData?.Properties?.[0]?.noOfDwellingUnits !== undefined && PTData?.Properties?.[0]?.noOfDwellingUnits !== null && PTData?.Properties?.[0]?.noOfDwellingUnits !== "")
-                          ? PTData.Properties[0].noOfDwellingUnits
-                          : (useDetails?.NumberofDwellingUnits !== undefined && useDetails?.NumberofDwellingUnits !== null && useDetails?.NumberofDwellingUnits !== "")
-                          ? useDetails.NumberofDwellingUnits
-                          : (useDetails?.noOfDwellingUnits !== undefined && useDetails?.noOfDwellingUnits !== null && useDetails?.noOfDwellingUnits !== "")
-                          ? useDetails.noOfDwellingUnits
-                          : useDetails?.numberOfDwellingUnits
-                      )
-                    )}`}
-                  />
-                ) : null}
+                {(() => {
+                  const isRes = String(
+                    propertyAdditionalDetails?.propertyCategory?.code ||
+                    propertyAdditionalDetails?.propertyCategory?.name ||
+                    propertyAdditionalDetails?.propertyCategory ||
+                    PTData?.Properties?.[0]?.usageCategory ||
+                    PTData?.Properties?.[0]?.propertyType ||
+                    useDetails?.propertyCategory?.code ||
+                    useDetails?.propertyCategory?.name ||
+                    useDetails?.propertyCategory ||
+                    applicationData?.additionalDetails?.propertyCategory?.code ||
+                    applicationData?.additionalDetails?.propertyCategory ||
+                    applicationData?.property?.propertyType?.propertyCategory ||
+                    applicationData?.property?.usageCategory ||
+                    ""
+                  ).toUpperCase().includes("RESIDENTIAL");
+                  const duVal =
+                    (propertyAdditionalDetails?.numberOfDwellingUnits !== undefined && propertyAdditionalDetails?.numberOfDwellingUnits !== null && propertyAdditionalDetails?.numberOfDwellingUnits !== "")
+                      ? propertyAdditionalDetails.numberOfDwellingUnits
+                      : (propertyAdditionalDetails?.NumberofDwellingUnits !== undefined && propertyAdditionalDetails?.NumberofDwellingUnits !== null && propertyAdditionalDetails?.NumberofDwellingUnits !== "")
+                      ? propertyAdditionalDetails.NumberofDwellingUnits
+                      : (propertyAdditionalDetails?.noOfDwellingUnits !== undefined && propertyAdditionalDetails?.noOfDwellingUnits !== null && propertyAdditionalDetails?.noOfDwellingUnits !== "")
+                      ? propertyAdditionalDetails.noOfDwellingUnits
+                      : (PTData?.Properties?.[0]?.numberOfDwellingUnits !== undefined && PTData?.Properties?.[0]?.numberOfDwellingUnits !== null && PTData?.Properties?.[0]?.numberOfDwellingUnits !== "")
+                      ? PTData.Properties[0].numberOfDwellingUnits
+                      : (PTData?.Properties?.[0]?.noOfDwellingUnits !== undefined && PTData?.Properties?.[0]?.noOfDwellingUnits !== null && PTData?.Properties?.[0]?.noOfDwellingUnits !== "")
+                      ? PTData.Properties[0].noOfDwellingUnits
+                      : (useDetails?.NumberofDwellingUnits !== undefined && useDetails?.NumberofDwellingUnits !== null && useDetails?.NumberofDwellingUnits !== "")
+                      ? useDetails.NumberofDwellingUnits
+                      : (useDetails?.noOfDwellingUnits !== undefined && useDetails?.noOfDwellingUnits !== null && useDetails?.noOfDwellingUnits !== "")
+                      ? useDetails.noOfDwellingUnits
+                      : useDetails?.numberOfDwellingUnits;
+                  if (!isRes || duVal === undefined || duVal === null || duVal === "" || duVal === "NA" || duVal === "N/A") {
+                    return null;
+                  }
+                  return <Row label={t("WS_NUMBER_OF_DWELLING_UNITS")} text={`${t(duVal)}`} />;
+                })()}
                 {Boolean(
                   propertyAdditionalDetails?.numberOfRooms ||
                   propertyAdditionalDetails?.NumberofRooms ||
@@ -1701,7 +1700,20 @@ const WSApplicationDetails = () => {
                   const qText = typeof q === "object" ? q?.question || q?.questionText || q?.title || `Question ${idx + 1}` : `Question ${idx + 1}`;
                   const aText = typeof q === "object" ? (typeof q?.answer === "object" ? (q?.answer?.name || q?.answer?.value || q?.answer?.code) : q?.answer) : q;
                   const trimmedQ = String(qText || "").trim();
-                  const displayLabel = trimmedQ.toLowerCase().startsWith("question") ? trimmedQ : `${trimmedQ}`;
+                  const directTrans = t(trimmedQ);
+                  const snakeKey = `WS_${trimmedQ.replace(/([a-z0-9])([A-Z])/g, "$1_$2").replace(/[\s-]+/g, "_").toUpperCase()}`;
+                  const snakeTrans = t(snakeKey);
+                  const displayLabel =
+                    directTrans && directTrans !== trimmedQ
+                      ? directTrans
+                      : snakeTrans && snakeTrans !== snakeKey
+                      ? snakeTrans
+                      : trimmedQ
+                          .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+                          .replace(/[_-]+/g, " ")
+                          .replace(/\s+/g, " ")
+                          .trim()
+                          .replace(/\b\w/g, (c) => c.toUpperCase());
                   return <Row key={`question_${idx}`} label={displayLabel} text={`${t(checkForNA(aText))}`} />;
                 })}
               </StatusTable>

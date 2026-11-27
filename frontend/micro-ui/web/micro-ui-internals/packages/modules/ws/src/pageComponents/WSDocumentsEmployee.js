@@ -46,6 +46,26 @@ const maskDocNumber = (val) => {
   return "*".repeat(str.length - 4) + str.slice(-4);
 };
 
+const resolveUnmaskedInput = (newVal, currentUnmasked, isMaskedView) => {
+  if (!isMaskedView) return newVal;
+  const raw = String(currentUnmasked || "");
+  const prevMasked = maskDocNumber(raw);
+  if (!newVal) return "";
+  if (!newVal.includes("*")) return newVal;
+  if (newVal.startsWith(prevMasked)) {
+    return raw + newVal.slice(prevMasked.length);
+  }
+  if (prevMasked.startsWith(newVal)) {
+    const diff = prevMasked.length - newVal.length;
+    return raw.slice(0, Math.max(0, raw.length - diff));
+  }
+  const starCount = (prevMasked.match(/^\*+/) || [""])[0].length;
+  if (newVal.length >= starCount && newVal.slice(0, starCount) === "*".repeat(starCount)) {
+    return raw.slice(0, starCount) + newVal.slice(starCount);
+  }
+  return newVal.replace(/\*/g, "");
+};
+
 const isRwhDocType = (doc) => {
   if (!doc) return false;
   const str = (
@@ -823,15 +843,17 @@ function SewerTreatmentPlantDocumentUpload({
           isMandatory={false}
           infoText={t("WS_STP_DOC_NO_INFO_MSG")}
         />
-        <div className="field" style={{ position: "relative" }}>
+        <div
+          className="field"
+          style={{ position: "relative" }}
+        >
           <TextInput
             type="text"
-            value={isFocused || showUnmasked ? documentUid : maskDocNumber(documentUid)}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
+            value={showUnmasked ? documentUid : maskDocNumber(documentUid)}
             onChange={(e) => {
-              setDocumentUid(e.target.value);
-              updateStpDocFields(e.target.value, validityDate);
+              const nextUid = resolveUnmaskedInput(e.target.value, documentUid, !showUnmasked);
+              setDocumentUid(nextUid);
+              updateStpDocFields(nextUid, validityDate);
             }}
             placeholder={t("WS_ENTER_IDENTITY_NUMBER")}
             style={{ paddingRight: documentUid ? "36px" : "12px" }}
@@ -1853,14 +1875,19 @@ function SelectDocument({
                 : t(`${doc?.i18nKey?.replaceAll(".", "_")}_DOC_NO_INFO_MSG`, `Enter ${t(`${doc?.i18nKey?.replaceAll(".", "_")}_DOCUMENT_NO`)}`)
             }
           />
-          <div className="field" style={{ position: "relative" }}>
+          <div
+            className="field"
+            style={{ position: "relative" }}
+            onBlur={() => {
+              setDocNumberError(validateDocumentNumber(documentUid, selectedDocument?.code, isDocNumberMandatory || doc?.required, !!uploadedFile));
+            }}
+          >
             <TextInput
               type="text"
-              value={isFocused || showUnmasked ? documentUid : maskDocNumber(documentUid)}
-              onFocus={() => setIsFocused(true)}
+              value={showUnmasked ? documentUid : maskDocNumber(documentUid)}
               onChange={(e) => {
                 if (!isDocumentUidLocked) {
-                  let val = e.target.value;
+                  let val = resolveUnmaskedInput(e.target.value, documentUid, !showUnmasked);
                   const upperCode = selectedDocument?.code?.toUpperCase() || "";
                   const maxLen =
                     upperCode.includes("AADHAAR") || upperCode.includes("AADHAR")
@@ -1886,10 +1913,6 @@ function SelectDocument({
                     setDocNumberError(validateDocumentNumber(val, selectedDocument?.code, isDocNumberMandatory || doc?.required, !!uploadedFile));
                   }
                 }
-              }}
-              onBlur={() => {
-                setIsFocused(false);
-                setDocNumberError(validateDocumentNumber(documentUid, selectedDocument?.code, isDocNumberMandatory || doc?.required, !!uploadedFile));
               }}
               placeholder={
                 isOtherDocumentsRemark
