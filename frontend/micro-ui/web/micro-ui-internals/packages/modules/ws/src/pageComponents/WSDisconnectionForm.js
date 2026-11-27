@@ -50,6 +50,7 @@ const DISCONNECTION_REASONS = {
     { code: "TEMPORARY_RELOCATION_TRAVELLING_ABROAD", i18nKey: "Temporary relocation/Travelling abroad" },
     { code: "MINOR_PROPERTY_RENOVATION_BUILDING_MAINTENANCE", i18nKey: "Minor property renovation/building maintenance" },
     { code: "TEMPORARY_SHIFT_TO_ALTERNATIVE_WATER_SOURCE", i18nKey: "Temporary shift to alternative water source" },
+    { code: "PROPERTY_DEMOLITION_RECONSTRUCTION", i18nKey: "Property Demolition/Reconstruction" },
   ],
 };
 
